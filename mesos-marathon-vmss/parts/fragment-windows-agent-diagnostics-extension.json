@@ -1,0 +1,19 @@
+,
+              {
+                "name": "AzureDiagnostic",
+                "properties":
+                {
+                    "publisher": "Microsoft.Azure.Diagnostics",
+                    "type": "IaaSDiagnostics",
+                    "typeHandlerVersion": "1.5",
+                    "autoUpgradeMinorVersion": true,
+                    "settings": {
+                        "xmlCfg": "[base64(concat(variables('windowswadcfgxstart'), variables('agentVMNamePrefix'), variables('windowswadcfgxend')))]",
+                        "StorageAccount": "[variables(concat('diagnosticsStorageAccountName', '-', variables('enableVMDiagnostics')))]"
+                    },
+                    "protectedSettings": {
+                        "storageAccountName": "[variables(concat('diagnosticsStorageAccountName', '-', variables('enableVMDiagnostics')))]",
+                        "storageAccountKey": "[listKeys(variables('accountid'), variables('storageApiVersion')).key1]"
+                    }
+                }
+              }

@@ -1,0 +1,1041 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "linuxAdminUsername": {
+      "type": "string",
+      "defaultValue": "azureuser",
+      "metadata": {
+        "description": "User name for the Linux Virtual Machines (SSH or Password)."
+      }
+    },
+    "linuxAdminPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Password for the Linux Virtual Machine.  Not Required.  If not set, you must provide a SSH key."
+      }
+    },
+    "sshRSAPublicKey": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "SSH public key used for auth to all Linux machines.  Not Required.  If not set, you must provide a password key."
+      }
+    },
+    "windowsAdminUsername": {
+      "type": "string",
+      "defaultValue": "azureuser",
+      "metadata": {
+        "description": "User name for the Windows Jumpbox Virtual Machine (Password Only Supported)."
+      }
+    },
+    "windowsAdminPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Password for the Windows Jumpbox Virtual Machine."
+      }
+    },
+    "jumpboxEndpointDNSNamePrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Sets the Domain name label for the jumpbox.  The concatenation of the domain name label and the regionalized DNS zone make up the fully qualified domain name associated with the public IP address."
+      }
+    },
+    "masterEndpointDNSNamePrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Sets the Domain name label for the master IP Address.  The concatenation of the domain name label and the regional DNS zone make up the fully qualified domain name associated with the public IP address."
+      }
+    },
+    "agentEndpointDNSNamePrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Sets the Domain name label for the agent pool IP Address.  The concatenation of the domain name label and the regional DNS zone make up the fully qualified domain name associated with the public IP address."
+      }
+    },
+    "agentCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+      },
+      "allowedValues": [
+        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
+        21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
+        41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,
+        61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,
+        81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100
+      ]
+    },
+    "masterCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "allowedValues": [
+        1,
+        3,
+        5
+      ],
+      "metadata": {
+        "description": "The number of Mesos masters for the cluster."
+      }
+    },
+    "agentVMSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2",
+      "allowedValues": [
+        "Standard_A0", "Standard_A1", "Standard_A2", "Standard_A3", "Standard_A4", "Standard_A5",
+        "Standard_A6", "Standard_A7", "Standard_A8", "Standard_A9", "Standard_A10", "Standard_A11",
+        "Standard_D1", "Standard_D2", "Standard_D3", "Standard_D4",
+        "Standard_D11", "Standard_D12", "Standard_D13", "Standard_D14",
+        "Standard_D1_v2", "Standard_D2_v2", "Standard_D3_v2", "Standard_D4_v2", "Standard_D5_v2",
+        "Standard_D11_v2", "Standard_D12_v2", "Standard_D13_v2", "Standard_D14_v2",
+        "Standard_G1", "Standard_G2", "Standard_G3", "Standard_G4", "Standard_G5",
+        "Standard_DS1", "Standard_DS2", "Standard_DS3", "Standard_DS4",
+        "Standard_DS11", "Standard_DS12", "Standard_DS13", "Standard_DS14",
+        "Standard_GS1", "Standard_GS2", "Standard_GS3", "Standard_GS4", "Standard_GS5"
+      ],
+      "metadata": {
+        "description": "The size of the Virtual Machine."
+      }
+    },
+    "enableVMDiagnostics": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Allows user to enable/disable Boot and VM diagnostics."
+      }
+    },
+    "linuxPublisher": {
+      "type": "string",
+      "defaultValue": "Canonical",
+      "metadata": {
+        "description": "This is the publisher of the image used by the linux cluster"
+      }
+    },
+    "linuxOffer": {
+      "type": "string",
+      "defaultValue": "UbuntuServer",
+      "metadata": {
+        "description": "This is the offer of the image used by the linux cluster"
+      }
+    },
+    "linuxSku": {
+      "type": "string",
+      "defaultValue": "14.04.4-LTS",
+      "metadata": {
+        "description": "This is the linux sku used by the linux cluster"
+      }
+    },
+    "linuxVersion": {
+      "type": "string",
+      "defaultValue": "latest",
+      "metadata": {
+        "description": "This is the linux version used by the linux cluster"
+      }
+    },
+    "windowsJumpboxPublisher": {
+      "type": "string",
+      "defaultValue": "MicrosoftVisualStudio",
+      "metadata": {
+        "description": "This is the windows publisher used by the windows jumpbox"
+      }
+    },
+    "windowsJumpboxOffer": {
+      "type": "string",
+      "defaultValue": "VisualStudio",
+      "metadata": {
+        "description": "This is the windows offer used by the windows jumpbox"
+      }
+    },
+    "windowsJumpboxSku": {
+      "type": "string",
+      "defaultValue": "VS-2015-Ent-AzureSDK-2.8-WS2012R2.2",
+      "metadata": {
+        "description": "This is the windows sku used by the windows jumpbox"
+      }
+    },
+    "isValidation": {
+      "type": "int",
+      "defaultValue": 0,
+      "allowedValues": [0,1],
+      "metadata": {
+        "description": "This is testing in the validation region"
+      }
+    },
+    "disablePasswordAuthentication": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "This setting controls whether password auth is disabled for Linux VMs provisioned by this template. Default is true which disables password and makes SSH key required."
+      }
+    },
+    "setLinuxConfigurationForVMCreate": {
+      "type": "int",
+      "defaultValue": 1,
+      "allowedValues": [0,1],
+      "metadata": {
+        "description": "This setting controls whether Linux configuration with SSH Key is passed in VM PUT Payload.  Defaults to 1.  If SSH Key is blank, this must be set to 0."
+      }
+    },
+    "nameSuffix": {
+      "type": "string",
+      "defaultValue": "01234567",
+      "metadata": {
+        "description": "A string to include in the names of resources created.  Defaults to 0.  Can not be blank."
+      }
+    },
+    "vmsPerStorageAccount": {
+      "type": "int",
+      "defaultValue": 20,
+      "metadata": {
+        "description": "This specifies the number of VMs per storage accounts"
+      }
+    },
+    "postInstallScriptURI": {
+      "type": "string",
+      "defaultValue": "disabled",
+      "metadata": {
+        "description": "After installation, this specifies a script to download and install.  To disabled, set value to 'disabled'."
+      }
+    },
+    "enableNewStorageAccountNaming": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "If true: uses DNS name prefix + Orchestrator name + Region to create storage account name to reduce name collision probability. If false: uses DNS name prefix + Orchestrator name to create storage account name to maintain template idempotency."
+      }
+    }
+  },
+  "variables": {
+    "adminUsername": "[parameters('linuxAdminUsername')]",
+    "adminPassword": "[parameters('linuxAdminPassword')]",
+    "jumpboxEndpointDNSNamePrefix": "[tolower(parameters('jumpboxEndpointDNSNamePrefix'))]",
+    "masterEndpointDNSNamePrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
+    "agentEndpointDNSNamePrefix": "[tolower(parameters('agentEndpointDNSNamePrefix'))]",
+    "agentCount": "[parameters('agentCount')]",
+    "masterCount": "[parameters('masterCount')]",
+    "agentVMSize": "[parameters('agentVMSize')]",
+    "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
+    "linuxPublisher": "[parameters('linuxPublisher')]",
+    "linuxOffer": "[parameters('linuxOffer')]",
+    "linuxSku": "[parameters('linuxSku')]",
+    "linuxVersion": "[parameters('linuxVersion')]",
+    "windowsJumpboxPublisher": "[parameters('windowsJumpboxPublisher')]",
+    "windowsJumpboxOffer": "[parameters('windowsJumpboxOffer')]",
+    "windowsJumpboxSku": "[parameters('windowsJumpboxSku')]",
+    "windowsAdminUsername": "[parameters('windowsAdminUsername')]",
+    "windowsAdminPassword": "[parameters('windowsAdminPassword')]",
+    "vmsPerStorageAccount": "[parameters('vmsPerStorageAccount')]",
+    "postInstallScriptURI": "[parameters('postInstallScriptURI')]",
+
+    "nameSuffix": "[parameters('nameSuffix')]",
+
+    "isValidation": "[parameters('isValidation')]",
+    "storageLocations": [
+      "[resourceGroup().location]",
+      "East US 2 (Stage)"
+    ],
+    "storageLocation": "[variables('storageLocations')[variables('isValidation')]]",
+
+    "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]",
+    "disablePasswordAuthentication": "[parameters('disablePasswordAuthentication')]",
+    "setLinuxConfigurationForVMCreate": "[parameters('setLinuxConfigurationForVMCreate')]",
+    "linuxConfigurations": [
+        {},
+        {
+            "disablePasswordAuthentication": "[variables('disablePasswordAuthentication')]",
+            "ssh": {
+                "publicKeys": [
+                    {
+                        "path": "[variables('sshKeyPath')]",
+                        "keyData": "[variables('sshRSAPublicKey')]"
+                    }
+                ]
+            }
+        }
+    ],
+    "linuxConfiguration": "[variables('linuxConfigurations')[variables('setLinuxConfigurationForVMCreate')]]",
+
+    "orchestratorName": "mesos",
+
+    "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]",
+    "agentPublicIPAddressName": "[concat(variables('orchestratorName'), '-agent-ip-', variables('agentEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]",
+    "jumpboxPublicIPAddressName": "[concat(variables('orchestratorName'), '-jumpbox-ip-', variables('jumpboxEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]",
+    "marathonEnabled": true,
+    "chronosEnabled": true,
+    "swarmEnabled": false,
+    "osImagePublisher": "[variables('linuxPublisher')]",
+    "osImageOffer": "[variables('linuxOffer')]",
+    "osImageSKU": "[variables('linuxSku')]",
+    "osImageVersion": "[variables('linuxVersion')]",
+    "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+    "masterSubnetName": "[concat(variables('orchestratorName'), '-masterSubnet')]",
+    "masterSubnetRef": "[concat(variables('vnetID'),'/subnets/',variables('masterSubnetName'))]",
+    "masterAddressPrefix": "172.16.0.0/24",
+    "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
+    "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
+    "addressPrefix": "10.0.0.0/8",
+    "subnetPrefix": "10.0.0.0/11",
+    "storageAccountPrefixes": [
+      "0","6","c","i","o","u","1","7","d","j","p","v",
+      "2","8","e","k","q","w","3","9","f","l","r","x",
+      "4","a","g","m","s","y","5","b","h","n","t","z"
+    ],
+    "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]",
+    "enableNewStorageAccountNaming": "[parameters('enableNewStorageAccountNaming')]",
+    "storageAccountBaseNameNewSuffix-true":"[resourceGroup().location]",
+    "storageAccountBaseNameNewSuffix-false":"",
+    "storageAccountBaseName": "[concat(uniqueString(concat(variables('masterEndpointDNSNamePrefix'),variables(concat('storageAccountBaseNameNewSuffix', '-', variables('enableNewStorageAccountNaming'))))), variables('orchestratorName'))]",
+    "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), '0')]",
+    "omsStorageAccount": "none",
+    "omsStorageAccountKey": "none",
+    "clusterInstallParameters": "[concat(variables('masterCount'), ' ',variables('masterVMNamePrefix'), ' ',variables('masterFirstAddr'), ' ',variables('swarmEnabled'),' ',variables('marathonEnabled'),' ',variables('chronosEnabled'),' ',variables('omsStorageAccount'),' ',variables('omsStorageAccountKey'),' ', variables('adminUsername'),' ',variables('postInstallScriptURI'),' ',split(variables('masterAddressPrefix'),'0/24')[0])]",
+
+    "jumpboxNSGName": "[concat(variables('orchestratorName'), '-jumpbox-nsg-', variables('nameSuffix'))]",
+    "jumpboxNSGID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('jumpboxNSGName'))]",
+    "jumpboxAddr": 4,
+    "jumpboxVMName": "[concat('jb-', variables('nameSuffix'))]",
+    "jumpboxVMSize": "Standard_A1",
+
+    "jumpboxLinuxInstallParameters": "[concat(variables('adminUsername'), ' ', variables('masterCount'), ' ', variables('masterFirstAddr'))]",
+    "jumpboxLinuxCustomScript": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/configure-ubuntu.sh ',variables('jumpboxLinuxInstallParameters'),' >> /var/log/azure/jumpbox-bootstrap.log 2>&1 &\" &')]",
+
+    "setBrowserFirstTabDefaultPrefix": "powershell.exe -ExecutionPolicy Unrestricted -command \"New-Item -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer' ; New-Item -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\BrowserEmulation' ; New-ItemProperty -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\BrowserEmulation' -Name IntranetCompatibilityMode -Value 0 -Type DWord; New-Item -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main' ; New-ItemProperty -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main' -Name 'Start Page' -Type String -Value http://\"",
+    "setBrowserFirstTabDefaultSuffix": "0:5050",
+    "jumpboxWindowsCustomScript": "[concat(variables('setBrowserFirstTabDefaultPrefix'),variables('masterVMNamePrefix'),variables('setBrowserFirstTabDefaultSuffix'))]",
+
+    "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]",
+    "masterFirstAddr": 5,
+    "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]",
+    "masterLbName": "[concat(variables('orchestratorName'), '-master-lb-', variables('nameSuffix'))]",
+    "masterSizes": ["Standard_D2", "Standard_A1"],
+    "masterVMSize": "[variables('masterSizes')[variables('isValidation')]]",
+    "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]",
+    "masterLbIPConfigName": "[concat(variables('orchestratorName'), '-master-lbFrontEnd-', variables('nameSuffix'))]",
+    "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]",
+    "masterLbBackendPoolName": "[concat(variables('orchestratorName'), '-master-pool-', variables('nameSuffix'))]",
+    "masterCustomScript": "[concat('/bin/bash -c \"/bin/bash /opt/azure/containers/configure-mesos-cluster.sh ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1\"')]",
+
+    "agentFirstAddr": 20,
+    "agentVMNamePrefix": "[concat(variables('orchestratorName'), '-agent-', variables('nameSuffix'))]",
+    "agentsLbName": "[concat(variables('orchestratorName'), '-agent-lb-', variables('nameSuffix'))]",
+    "agentsLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('agentsLbName'))]",
+    "agentsLbIPConfigName": "[concat(variables('orchestratorName'), '-agent-lbFrontEnd-', variables('nameSuffix'))]",
+    "agentsLbIPConfigID": "[concat(variables('agentsLbID'),'/frontendIPConfigurations/', variables('agentsLbIPConfigName'))]",
+    "agentsLbBackendPoolName": "[concat(variables('orchestratorName'), '-agent-pool-', variables('nameSuffix'))]",
+    "agentMaxVMs" : 100,
+    "agentStorageAccountsCount": "[div(variables('agentMaxVMs'), variables('vmsPerStorageAccount'))]",
+    "agentsPerIPv4Octet": 200,
+    "agentCustomScript": "[concat('/bin/bash /opt/azure/containers/configure-mesos-cluster.sh ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1')]",
+    "agentRunCmdFile": "[concat(' -  content: |\n        #!/bin/bash\n        ',variables('agentCustomScript'),'\n    path: /opt/azure/containers/install-cluster.sh\n    permissions: \"0744\"\n')]",
+    "agentRunCmd": "[concat('runcmd:\n -  [ /bin/bash, /opt/azure/containers/install-cluster.sh ]\n\n')]",
+
+    "enableVMDiagnostics": "[parameters('enableVMDiagnostics')]",
+    "diagnosticsStorageAccountName": "[concat(variables('storageAccountBaseName'), 'diag', '0')]",
+    "diagnosticsStorageAccountName-true" : "[variables('diagnosticsStorageAccountName')]",
+    "diagnosticsStorageAccountName-false" : "",
+    "diagnosticsStorageAccountResourceGroup": "[resourceGroup().name]",
+    "accountid": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',variables('diagnosticsStorageAccountResourceGroup'),'/providers/','Microsoft.Storage/storageAccounts/', variables('diagnosticsStorageAccountName'))]",
+    "wadlogs": "<WadCfg><DiagnosticMonitorConfiguration>",
+    "wadperfcounters1-true": "<PerformanceCounters scheduledTransferPeriod=\"PT1M\"><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\AvailableMemory\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Memory available\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\PercentAvailableMemory\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"Mem. percent available\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\UsedMemory\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Memory used\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\PercentUsedMemory\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"Memory percentage\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\PercentUsedByCache\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"Mem. used by cache\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor\\PercentIdleTime\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU idle time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor\\PercentUserTime\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU user time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor\\PercentProcessorTime\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU percentage guest OS\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor\\PercentIOWaitTime\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU IO wait time\" locale=\"en-us\"/></PerformanceCounterConfiguration>",
+    "wadperfcounters2-true": "<PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\BytesPerSecond\" sampleRate=\"PT15S\" unit=\"BytesPerSecond\"><annotation displayName=\"Disk total bytes\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\ReadBytesPerSecond\" sampleRate=\"PT15S\" unit=\"BytesPerSecond\"><annotation displayName=\"Disk read guest OS\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\WriteBytesPerSecond\" sampleRate=\"PT15S\" unit=\"BytesPerSecond\"><annotation displayName=\"Disk write guest OS\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\TransfersPerSecond\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Disk transfers\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\ReadsPerSecond\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Disk reads\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\WritesPerSecond\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Disk writes\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\AverageReadTime\" sampleRate=\"PT15S\" unit=\"Seconds\"><annotation displayName=\"Disk read time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\AverageWriteTime\" sampleRate=\"PT15S\" unit=\"Seconds\"><annotation displayName=\"Disk write time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\AverageTransferTime\" sampleRate=\"PT15S\" unit=\"Seconds\"><annotation displayName=\"Disk transfer time\" locale=\"en-us\"/></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk\\AverageDiskQueueLength\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Disk queue length\" locale=\"en-us\"/></PerformanceCounterConfiguration></PerformanceCounters>",
+    "wadperfcounters1-false": "",
+    "wadperfcounters2-false": "",
+    "wadcfgxstart": "[concat(variables('wadlogs'),variables(concat('wadperfcounters1','-',variables('enableVMDiagnostics'))),variables(concat('wadperfcounters2','-',variables('enableVMDiagnostics'))),'<Metrics resourceId=\"')]",
+    "wadcfgxend": "[concat('\"><MetricAggregation scheduledTransferPeriod=\"PT1H\"/><MetricAggregation scheduledTransferPeriod=\"PT1M\"/></Metrics></DiagnosticMonitorConfiguration></WadCfg>')]",
+
+    "computeApiVersion": "2016-03-30",
+    "networkApiVersion": "2016-03-30",
+    "storageApiVersion": "2015-06-15",
+
+    "vmSizesMap": {
+         "Standard_A0": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_A1": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_A2": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_A3": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_A4": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_A5": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_A6": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_A7": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_A8": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_A9": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_A10": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_A11": {
+           "storageAccountType":"Standard_LRS"
+         }, 
+         "Standard_D1": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D2": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D3": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D4": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D11": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D12": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D13": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D14": {
+           "storageAccountType":"Standard_LRS"
+         }, 
+         "Standard_D1_v2": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D2_v2": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D3_v2": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D4_v2": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D5_v2": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D11_v2": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D12_v2": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D13_v2": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_D14_v2": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_G1": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_G2": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_G3": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_G4": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_G5": {
+           "storageAccountType":"Standard_LRS"
+         },
+         "Standard_DS1": {
+           "storageAccountType":"Premium_LRS"
+         },
+         "Standard_DS2": {
+           "storageAccountType":"Premium_LRS"
+         },
+         "Standard_DS3": {
+           "storageAccountType":"Premium_LRS"
+         },
+         "Standard_DS4": {
+           "storageAccountType":"Premium_LRS"
+         },
+         "Standard_DS11": {
+           "storageAccountType":"Premium_LRS"
+         },
+         "Standard_DS12": {
+           "storageAccountType":"Premium_LRS"
+         },
+         "Standard_DS13": {
+           "storageAccountType":"Premium_LRS"
+         },
+         "Standard_DS14": {
+           "storageAccountType":"Premium_LRS"
+         },
+         "Standard_GS1": {
+           "storageAccountType":"Premium_LRS"
+         },
+         "Standard_GS2": {
+           "storageAccountType":"Premium_LRS"
+         },
+         "Standard_GS3": {
+           "storageAccountType":"Premium_LRS"
+         },
+         "Standard_GS4": {
+           "storageAccountType":"Premium_LRS"
+         },
+         "Standard_GS5": {
+           "storageAccountType":"Premium_LRS"
+         }
+    }
+  },
+  "resources": [
+
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('masterStorageAccountName')]",
+      "apiVersion": "[variables('storageApiVersion')]",
+      "location": "[variables('storageLocation')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
+      ],
+      "properties": {
+        "accountType":"[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('diagnosticsStorageAccountName')]",
+      "apiVersion": "[variables('storageApiVersion')]",
+      "location": "[variables('storageLocation')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
+      ],
+      "properties": {
+        "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
+      }
+    },
+    {
+      "apiVersion": "[variables('networkApiVersion')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('virtualNetworkName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('addressPrefix')]",
+            "[variables('masterAddressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('subnetPrefix')]"
+            }
+          },
+          {
+            "name": "[variables('masterSubnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('masterAddressPrefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('computeApiVersion')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('masterAvailabilitySet')]",
+      "location": "[resourceGroup().location]",
+      "properties": {}
+    },
+    {
+      "apiVersion": "[variables('networkApiVersion')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('masterPublicIPAddressName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[variables('masterEndpointDNSNamePrefix')]"
+        }
+      }
+    },
+    {
+      "apiVersion": "[variables('networkApiVersion')]",
+      "name": "[variables('masterLbName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('masterLbIPConfigName')]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('masterPublicIPAddressName'))]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('masterLbBackendPoolName')]"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('networkApiVersion')]",
+      "type": "Microsoft.Network/loadBalancers/inboundNatRules",
+      "name": "[concat(variables('masterLbName'), '/', 'SSH-', variables('masterVMNamePrefix'), copyIndex())]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "masterLbLoopNode",
+        "count": "[variables('masterCount')]"
+      },
+      "dependsOn": [
+        "[variables('masterLbID')]"
+      ],
+      "properties": {
+        "frontendIPConfiguration": {
+          "id": "[variables('masterLbIPConfigID')]"
+        },
+        "protocol": "tcp",
+        "frontendPort": "[copyIndex(2200)]",
+        "backendPort": 22,
+        "enableFloatingIP": false
+      }
+    },
+    {
+      "apiVersion": "[variables('networkApiVersion')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nicLoopNode",
+        "count": "[variables('masterCount')]"
+      },
+      "dependsOn": [
+        "[variables('masterLbID')]",
+        "[variables('vnetID')]",
+        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipConfigNode",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[concat(split(variables('masterAddressPrefix'),'0/24')[0], copyIndex(variables('masterFirstAddr')))]",
+              "subnet": {
+                "id": "[variables('masterSubnetRef')]"
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
+                }
+              ],
+              "loadBalancerInboundNatRules": [
+                {
+                  "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('computeApiVersion')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "vmLoopNode",
+        "count": "[variables('masterCount')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Compute/availabilitySets/',variables('masterAvailabilitySet'))]",
+        "[variables('masterStorageAccountName')]",
+        "[variables('diagnosticsStorageAccountName')]"
+      ],
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('masterAvailabilitySet'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[variables('masterVMSize')]"
+        },
+        "osProfile": {
+          "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[variables('adminPassword')]",
+          "customData": "[base64('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        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\n    path: /opt/azure/containers/configure-mesos-cluster.sh\n    permissions: \"0744\"\n -  encoding: gzip\n    content: !!binary |\n        H4sIAD21D1cC/+2Y/2/jNBTAf+9fYW2Ruu1I3I0NjhV2OsYhJoE2HRwgJi7ynNc219SObKfbQONv59lO0i9r0pa7CSQuldo0fs/v5b1P7PcCSkkVZ3JItElAqX6nA1MQRpM/OwSPW6nGoGIuhQBuUik0OewdHfc7DygopuT88vWryx/jqzdff39xHl9c/YxDnZExeanPOAetnQE6ZYriCRXDVNxRPxLhhb6ThNqTJUE34OWcYFawOGd8zIaAv2ZEukGuYJDeUfRyQF9EKNDvd0vpVPCsSIBM0glE5j4H7c0lMGBFZmJ7ibA8z1LO7P1RyQ2YUBsFbFLOoUEkgzQDIoVXHgPkLEunEBucVhaGfHZSyu6SQqM10FKHidDumsJ/2RQUOTz6POrh57CeWNnLPlTu3lJtQJDnvdo/L9KvJfz/WLAJkIRLHR3MxpSUhlCZG+rs5yNQgHE26Ci1smGR0kKr0rizJ/1dk6+I15nzxXt+q1ID5K0fDUig+QgmcEppYLMcj6QurVGSg5owgfDMPHp4bOmvajK69+LLQmVn0cF+sGQ2V/LuHm/dxCNgiCX5Ds2QmcV+u/RLRCs34SvBZZKKIdnZWVTQxY2OMaEGA+mQWADgna7SvEKeXLPwj5fhb73wi/D3Z6fPe5iqwAeBKYQR9Ykabqp+fNyr1PlISWGjuKy9iwgjFCwhcoBs2fspco8nuUXSCozMQCqOFGO6wpK1Tx7NQThDMDMfIT5iYgh6RRhzpjWxgcYUe+HIZev0pHfSowEmLEh1zNRQB/ZrPtUrqdIGT3kjVn64lSsvsiletfj7EPVfijmGPG0I+RPAfxe+Y1OmuUpz00zxTpfSLnlGbOTwp0t33KVgljUFSaqWZYZrabGrbPMa5EZbWXESG6NSSv8PSFkV7noh9rm6fkvdgta8Ki9tBl4tOsCEoALJmDZbGURDOmNTsEG129mZ82C/2T7mBHNvVViSKNLtzm1k9phIBTHHsKg4FXlRJVAvPxL9Le7qBjM5XqkQ39zHthRxhYGrPBbuxlUhnXayymO7za08fg1fA8vCiysSKJhI9McGZVPdb6W6ZSqBxJ6RwAviBPFdPKiG7Nn2810paWT1iK4MwDzDs3SuR8eJ1tSkydk17qJ+Ow3/VW68YwvevAdAH8H54OBgyZxyj44/XYQnQnroixk/K/HxijajH56f0r9Fl7CRQYbo9hD52T5i1IrRXEJX2XC7ADa8NW6uxqgSFdQYUbLq4uYzbq++TmXVQ4A7m2EJM2yJbOQFu03zmKFK3kPUOrXrKyv5xVoKO2SmW/vRWg8Mp2uLw6rDai5LSoGmErHu0Frrw13y0+U3l3t8wjIp4H7/lPzAxkDMCMgvcEPeXLiXIrZmY7Yo9nmR6j5qqHgqq3uPl5Z/0ufOr4ITrLnqEtD2ojQ43K49K9vOxpCW4w0RrZvWzVv/SuWpo2Fb6+2iQfPxMGciYSWi0U2RZrhuD2Q0KLIssu8Fljy2K1bp6znD+ITn+EQpmZEdIUNuryw1X22PxCp7658JO0uciDUvbqxEW+Nkx7d+geOUnpzqw6NP2/Lovx86fwP7JpfqyRQAAA==\n    path: /opt/azure/containers/nginx.conf\n    permissions: \"0744\"\n\n')]",
+          "linuxConfiguration": "[variables('linuxConfiguration')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('osImagePublisher')]",
+            "offer": "[variables('osImageOffer')]",
+            "sku": "[variables('osImageSKU')]",
+            "version": "[variables('osImageVersion')]"
+          },
+          "osDisk": {
+            "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'-osdisk')]",
+            "vhd": {
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('masterStorageAccountName')), variables('storageApiVersion')).primaryEndpoints.blob, 'vhds/', variables('masterVMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('masterVMNamePrefix'), 'nic-', copyIndex()))]"
+            }
+          ]
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": "[variables('enableVMDiagnostics')]",
+            "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('diagnosticsStorageAccountName')), variables('storageApiVersion') ).primaryEndpoints.blob]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(), '/linuxdiagnostic')]",
+      "apiVersion": "[variables('computeApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "vmLoopNode",
+        "count": "[variables('masterCount')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', concat(variables('masterVMNamePrefix'), copyIndex()))]"
+      ],
+      "properties":
+      {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "LinuxDiagnostic",
+        "typeHandlerVersion": "2.3",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+           "xmlCfg": "[base64(concat(variables('wadcfgxstart'), variables('masterVMNamePrefix'), copyIndex(), variables('wadcfgxend')))]",
+           "StorageAccount": "[variables(concat('diagnosticsStorageAccountName', '-', variables('enableVMDiagnostics')))]"
+        },
+        "protectedSettings": {
+            "storageAccountName": "[variables(concat('diagnosticsStorageAccountName', '-', variables('enableVMDiagnostics')))]",
+            "storageAccountKey": "[listKeys(variables('accountid'), variables('storageApiVersion')).key1]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(), '/configuremaster')]",
+      "apiVersion": "[variables('computeApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "vmLoopNode",
+        "count": "[variables('masterCount')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(), '/extensions/linuxdiagnostic')]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.4",
+        "settings": {
+          "fileUris": [],
+          "commandToExecute": "[variables('masterCustomScript')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[concat(variables('storageAccountPrefixes')[mod(copyIndex(),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(copyIndex(),variables('storageAccountPrefixesCount'))],variables('storageAccountBaseName'),copyIndex(1))]",
+      "apiVersion": "[variables('storageApiVersion')]",
+      "location": "[variables('storageLocation')]",
+      "copy": {
+        "name": "vmLoopNode",
+        "count": "[variables('agentStorageAccountsCount')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('agentPublicIPAddressName'))]"
+      ],
+      "properties": {
+        "accountType": "[variables('vmSizesMap')[variables('agentVMSize')].storageAccountType]"
+      }
+    },
+    {
+      "apiVersion": "[variables('networkApiVersion')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('agentPublicIPAddressName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[variables('agentEndpointDNSNamePrefix')]"
+        }
+      }
+    },
+    {
+      "apiVersion": "[variables('networkApiVersion')]",
+      "name": "[variables('agentsLbName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('agentPublicIPAddressName'))]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('agentsLbIPConfigName')]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('agentPublicIPAddressName'))]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('agentsLbBackendPoolName')]"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "LBRuleHTTP",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('agentsLbIPConfigID')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(variables('agentsLbID'), '/backendAddressPools/', variables('agentsLbBackendPoolName'))]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 80,
+              "backendPort": 80,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 5,
+              "loadDistribution": "Default",
+              "probe": {
+                "id": "[concat(variables('agentsLbID'),'/probes/tcpHTTPProbe')]"
+              }
+            }
+          },
+          {
+            "name": "LBRuleHTTPS",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('agentsLbIPConfigID')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(variables('agentsLbID'), '/backendAddressPools/', variables('agentsLbBackendPoolName'))]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 443,
+              "backendPort": 443,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 5,
+              "loadDistribution": "Default",
+              "probe": {
+                "id": "[concat(variables('agentsLbID'),'/probes/tcpHTTPSProbe')]"
+              }
+            }
+          },
+          {
+            "name": "LBRulePort8080",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('agentsLbIPConfigID')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(variables('agentsLbID'), '/backendAddressPools/', variables('agentsLbBackendPoolName'))]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 8080,
+              "backendPort": 8080,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 5,
+              "loadDistribution": "Default",
+              "probe": {
+                "id": "[concat(variables('agentsLbID'),'/probes/tcpPort8080Probe')]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "tcpHTTPProbe",
+            "properties": {
+              "protocol": "tcp",
+              "port": 80,
+              "intervalInSeconds": "5",
+              "numberOfProbes": "2"
+            }
+          },
+          {
+            "name": "tcpHTTPSProbe",
+            "properties": {
+              "protocol": "tcp",
+              "port": 443,
+              "intervalInSeconds": "5",
+              "numberOfProbes": "2"
+            }
+          },
+          {
+            "name": "tcpPort8080Probe",
+            "properties": {
+              "protocol": "tcp",
+              "port": 8080,
+              "intervalInSeconds": "5",
+              "numberOfProbes": "2"
+            }
+          }
+        ],
+        "inboundNatRules": []
+      }
+    },
+    {
+      "apiVersion": "[variables('computeApiVersion')]",
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "name": "[concat(variables('agentVMNamePrefix'), '-vmss')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(0,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(0,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseName'),1)]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(1,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(1,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseName'),2)]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(2,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(2,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseName'),3)]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(3,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(3,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseName'),4)]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(4,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(4,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseName'),5)]",
+        "[variables('agentsLbID')]",
+        "[variables('vnetID')]",
+        "[variables('diagnosticsStorageAccountName')]"
+      ],
+      "sku": {
+        "name": "[variables('agentVMSize')]",
+        "tier": "Standard",
+        "capacity": "[variables('agentCount')]"
+      },
+      "properties": {
+        "upgradePolicy": {
+          "mode": "Automatic"
+        },
+        "virtualMachineProfile": {
+          "storageProfile": {
+            "imageReference": {
+              "publisher": "[variables('osImagePublisher')]",
+              "offer": "[variables('osImageOffer')]",
+              "sku": "[variables('osImageSKU')]",
+              "version": "latest"
+            },
+            "osDisk": {
+              "name": "[concat(variables('agentVMNamePrefix'), 'vmssosdisk', 0)]",
+              "vhdContainers": [
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(0,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(0,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseName'),1), variables('storageApiVersion')).primaryEndpoints.blob, 'osdisk')]",
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(1,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(1,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseName'),2), variables('storageApiVersion')).primaryEndpoints.blob, 'osdisk')]",
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(2,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(2,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseName'),3), variables('storageApiVersion')).primaryEndpoints.blob, 'osdisk')]",
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(3,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(3,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseName'),4), variables('storageApiVersion')).primaryEndpoints.blob, 'osdisk')]",
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(4,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(4,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseName'),5), variables('storageApiVersion')).primaryEndpoints.blob, 'osdisk')]"
+
+              ],
+              "caching": "ReadWrite",
+              "createOption": "FromImage"
+            }
+          },
+          "osProfile": {
+            "computerNamePrefix": "[variables('agentVMNamePrefix')]",
+            "adminUsername": "[variables('adminUsername')]",
+            "customData": "[base64(concat('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        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\n    path: /opt/azure/containers/configure-mesos-cluster.sh\n    permissions: \"0744\"\n -  encoding: gzip\n    content: !!binary |\n        H4sIAD21D1cC/+2Y/2/jNBTAf+9fYW2Ruu1I3I0NjhV2OsYhJoE2HRwgJi7ynNc219SObKfbQONv59lO0i9r0pa7CSQuldo0fs/v5b1P7PcCSkkVZ3JItElAqX6nA1MQRpM/OwSPW6nGoGIuhQBuUik0OewdHfc7DygopuT88vWryx/jqzdff39xHl9c/YxDnZExeanPOAetnQE6ZYriCRXDVNxRPxLhhb6ThNqTJUE34OWcYFawOGd8zIaAv2ZEukGuYJDeUfRyQF9EKNDvd0vpVPCsSIBM0glE5j4H7c0lMGBFZmJ7ibA8z1LO7P1RyQ2YUBsFbFLOoUEkgzQDIoVXHgPkLEunEBucVhaGfHZSyu6SQqM10FKHidDumsJ/2RQUOTz6POrh57CeWNnLPlTu3lJtQJDnvdo/L9KvJfz/WLAJkIRLHR3MxpSUhlCZG+rs5yNQgHE26Ci1smGR0kKr0rizJ/1dk6+I15nzxXt+q1ID5K0fDUig+QgmcEppYLMcj6QurVGSg5owgfDMPHp4bOmvajK69+LLQmVn0cF+sGQ2V/LuHm/dxCNgiCX5Ds2QmcV+u/RLRCs34SvBZZKKIdnZWVTQxY2OMaEGA+mQWADgna7SvEKeXLPwj5fhb73wi/D3Z6fPe5iqwAeBKYQR9Ykabqp+fNyr1PlISWGjuKy9iwgjFCwhcoBs2fspco8nuUXSCozMQCqOFGO6wpK1Tx7NQThDMDMfIT5iYgh6RRhzpjWxgcYUe+HIZev0pHfSowEmLEh1zNRQB/ZrPtUrqdIGT3kjVn64lSsvsiletfj7EPVfijmGPG0I+RPAfxe+Y1OmuUpz00zxTpfSLnlGbOTwp0t33KVgljUFSaqWZYZrabGrbPMa5EZbWXESG6NSSv8PSFkV7noh9rm6fkvdgta8Ki9tBl4tOsCEoALJmDZbGURDOmNTsEG129mZ82C/2T7mBHNvVViSKNLtzm1k9phIBTHHsKg4FXlRJVAvPxL9Le7qBjM5XqkQ39zHthRxhYGrPBbuxlUhnXayymO7za08fg1fA8vCiysSKJhI9McGZVPdb6W6ZSqBxJ6RwAviBPFdPKiG7Nn2810paWT1iK4MwDzDs3SuR8eJ1tSkydk17qJ+Ow3/VW68YwvevAdAH8H54OBgyZxyj44/XYQnQnroixk/K/HxijajH56f0r9Fl7CRQYbo9hD52T5i1IrRXEJX2XC7ADa8NW6uxqgSFdQYUbLq4uYzbq++TmXVQ4A7m2EJM2yJbOQFu03zmKFK3kPUOrXrKyv5xVoKO2SmW/vRWg8Mp2uLw6rDai5LSoGmErHu0Frrw13y0+U3l3t8wjIp4H7/lPzAxkDMCMgvcEPeXLiXIrZmY7Yo9nmR6j5qqHgqq3uPl5Z/0ufOr4ITrLnqEtD2ojQ43K49K9vOxpCW4w0RrZvWzVv/SuWpo2Fb6+2iQfPxMGciYSWi0U2RZrhuD2Q0KLIssu8Fljy2K1bp6znD+ITn+EQpmZEdIUNuryw1X22PxCp7658JO0uciDUvbqxEW+Nkx7d+geOUnpzqw6NP2/Lovx86fwP7JpfqyRQAAA==\n    path: /opt/azure/containers/nginx.conf\n    permissions: \"0744\"\n\n',variables('agentRunCmdFile'),variables('agentRunCmd')))]",
+            "linuxConfiguration": "[variables('linuxConfiguration')]"
+          },
+          "networkProfile": {
+            "networkInterfaceConfigurations": [
+              {
+                "name": "agentNodeNic",
+                "properties": {
+                  "primary": "true",
+                  "ipConfigurations": [
+                    {
+                      "name": "nicipconfig",
+                      "properties": {
+                        "subnet": {
+                          "id": "[variables('subnetRef')]"
+                        },
+                        "loadBalancerBackendAddressPools": [
+                          {
+                            "id": "[concat(variables('agentsLbID'), '/backendAddressPools/', variables('agentsLbBackendPoolName'))]"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "extensionProfile": {
+            "extensions": [
+              {
+                "name": "LinuxDiagnostic",
+                "properties":
+                {
+                    "publisher": "Microsoft.OSTCExtensions",
+                    "type": "LinuxDiagnostic",
+                    "typeHandlerVersion": "2.3",
+                    "autoUpgradeMinorVersion": true,
+                    "settings": {
+                        "xmlCfg": "[base64(concat(variables('wadcfgxstart'), variables('agentVMNamePrefix'), variables('wadcfgxend')))]",
+                        "StorageAccount": "[variables(concat('diagnosticsStorageAccountName', '-', variables('enableVMDiagnostics')))]"
+                    },
+                    "protectedSettings": {
+                        "storageAccountName": "[variables(concat('diagnosticsStorageAccountName', '-', variables('enableVMDiagnostics')))]",
+                        "storageAccountKey": "[listKeys(variables('accountid'), variables('storageApiVersion')).key1]"
+                    }
+                }
+              }
+            ]
+          },
+          "diagnosticsProfile": {
+            "bootDiagnostics": {
+              "enabled": "[variables('enableVMDiagnostics')]",
+              "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('diagnosticsStorageAccountName')), variables('storageApiVersion')).primaryEndpoints.blob]"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "jumpboxFQDN": {
+      "type": "string",
+      "value": ""
+    },
+    "masterFQDN": {
+      "type": "string",
+      "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn]"
+    },
+    "agentFQDN": {
+      "type": "string",
+      "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('agentPublicIPAddressName'))).dnsSettings.fqdn]"
+    },
+    "diagnosticsStorageAccountUri": {
+      "type": "string",
+      "value": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('diagnosticsStorageAccountName')), variables('storageApiVersion')).primaryEndpoints.blob]"
+    }
+  }
+}

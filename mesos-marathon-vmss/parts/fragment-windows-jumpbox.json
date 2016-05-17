@@ -1,0 +1,127 @@
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('jumpboxPublicIPAddressName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[variables('jumpboxEndpointDNSNamePrefix')]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('jumpboxNSGName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "ssh",
+            "properties": {
+              "description": "Allow RDP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 200,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('jumpboxVMName'), '-nic')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('jumpboxPublicIPAddressName'))]",
+        "[variables('vnetID')]",
+        "[variables('jumpboxNSGID')]"
+      ],
+      "properties": {
+        "networkSecurityGroup": {
+          "id": "[variables('jumpboxNSGID')]"
+        },
+        "ipConfigurations": [
+          {
+            "name": "ipConfig",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[concat(split(variables('masterAddressPrefix'),'0/24')[0], variables('jumpboxAddr'))]",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('jumpboxPublicIPAddressName'))]"
+              },
+              "subnet": {
+                "id": "[variables('masterSubnetRef')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('jumpboxVMName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('jumpboxVMName'), '-nic')]",
+        "[variables('masterStorageAccountName')]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('jumpboxVMSize')]"
+        },
+        "osProfile": {
+          "computername": "[variables('jumpboxVMName')]",
+          "adminUsername": "[variables('windowsAdminUsername')]",
+          "adminPassword": "[variables('windowsAdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('windowsJumpboxPublisher')]",
+            "offer": "[variables('windowsJumpboxOffer')]",
+            "sku": "[variables('windowsJumpboxSku')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[concat(variables('jumpboxVMName'),'-osdisk')]",
+            "vhd": {
+              "uri": "[concat('http://', variables('masterStorageAccountName'), '.blob.core.windows.net/vhds/', variables('jumpboxVMName'), '-osdisk.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('jumpboxVMName'), '-nic'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('jumpboxVMName'),'/installcustomscript')]",
+      "apiVersion": "2015-06-15",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('jumpboxVMName'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.4",
+        "settings": {
+          "commandToExecute": "[variables('jumpboxWindowsCustomScript')]"
+        }
+      }
+    },
