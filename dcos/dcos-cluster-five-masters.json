@@ -248,7 +248,7 @@
       "type": "string"
     }, 
     "linuxVersion": {
-      "defaultValue": "latest", 
+      "defaultValue": "16.04.201605161", 
       "metadata": {
         "description": "This is the linux version used by the linux cluster"
       }, 
@@ -1273,7 +1273,7 @@
               "offer": "[variables('osImageOffer')]", 
               "publisher": "[variables('osImagePublisher')]", 
               "sku": "[variables('osImageSKU')]", 
-              "version": "latest"
+              "version": "[variables('osImageVersion')]"
             }, 
             "osDisk": {
               "caching": "ReadOnly", 
@@ -1399,7 +1399,7 @@
               "offer": "[variables('osImageOffer')]", 
               "publisher": "[variables('osImagePublisher')]", 
               "sku": "[variables('osImageSKU')]", 
-              "version": "latest"
+              "version": "[variables('osImageVersion')]"
             }, 
             "osDisk": {
               "caching": "ReadOnly", 
