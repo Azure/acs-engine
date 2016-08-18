@@ -1,0 +1,53 @@
+{
+   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+   "contentVersion": "1.0.0.0", 
+   "parameters": {
+       "name": {
+           "type": "string",
+           "metadata": {
+               "description": "The location for this subnet"
+           }
+       },
+       "location": {
+           "type": "string",
+           "metadata": {
+               "description": "The location for this subnet"
+           }
+       },
+       "apiVersion": {
+           "type": "string",
+           "metadata": {
+               "description": "The api version for this subnet"
+           }
+       },
+       "publicNetworkSecurityGroupName": {
+           "type": "string",
+           "metadata": {
+               "description": ""
+           }
+       },
+       "privateNetworkSecurityGroupName": {
+           "type": "string",
+           "metadata": {
+               "description": ""
+           }
+       },
+       "masterAddressPrefix": {
+           "type": "string"
+       },
+       "agentAddressPrefix": {
+           "type": "string"
+       },
+       "masterSubnetName": {
+           "type": "string"
+       },
+       "agentPublicSubnetName": {"type": "string"},
+       "agentPublicAddressPrefix": {"type": "string"},
+       "agentPublicNSGId": {"type": "string"},
+       "agentPrivateSubnetName": {"type": "string"},
+       "agentPrivateAddressPrefix": {"type": "string"},
+       "agentPrivateNSGId": {"type": "string"}
+   },
+   "resources": [
+   ]
+}
