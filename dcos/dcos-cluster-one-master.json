@@ -241,7 +241,7 @@
       "type": "string"
     }, 
     "linuxSku": {
-      "defaultValue": "16.04.0-DAILY-LTS", 
+      "defaultValue": "16.04.0-LTS", 
       "metadata": {
         "description": "This is the linux sku used by the linux cluster"
       }, 
@@ -271,7 +271,35 @@
         "description": "Sets the Domain name label for the master IP Address.  The concatenation of the domain name label and the regional DNS zone make up the fully qualified domain name associated with the public IP address."
       }, 
       "type": "string"
-    }, 
+    },
+    "masterSubnetName": {
+      "metadata": {
+        "description": "The name of the subnet to place the master VM into"
+      },
+      "defaultValue": "[concat(parameters('orchestratorName'), '-masterSubnet')]",
+      "type": "string"
+    },
+    "orchestratorName": {
+      "metadata": {
+        "description": "The name of the container orcheastrator, default 'dcos'"
+      },
+      "type": "string",
+      "defaultValue": "dcos"
+    },
+    "publicAgentSubnetName": {
+      "metadata": {
+        "description": "The name of the subnet to place the public agent VMs into"
+      },
+      "defaultValue": "[concat(parameters('orchestratorName'), '-agentPublicSubnet')]",
+      "type": "string"
+    },
+    "privateAgentSubnetName": {
+      "metadata": {
+        "description": "The name of the subnet to place the private agent VMs into"
+      },
+      "defaultValue": "[concat(parameters('orchestratorName'), '-agentPrivateSubnet')]",
+      "type": "string"
+    },
     "nameSuffix": {
       "defaultValue": "01234567", 
       "metadata": {
@@ -345,6 +373,24 @@
         "description": "This is the windows sku used by the windows"
       }, 
       "type": "string"
+    },
+    "virtualNetworkName": {
+      "defaultValue": "acs-network",
+      "metadata": {
+        "description": "The name of the virtual network, either to be created or pre-existing depending on the 'newOrExisting' parameter"
+      },
+      "type": "string"
+    },
+    "virtualNetworkNewOrExisting": {
+      "defaultValue": "new",
+      "allowedValues": [
+        "new",
+        "existing"
+      ],
+      "metadata": {
+        "description": "Whether the virtual network is new or pre-existing"
+      },
+      "type": "string"
     }
   }, 
   "variables": {
@@ -354,16 +400,16 @@
     "adminPassword": "[parameters('linuxAdminPassword')]", 
     "adminUsername": "[parameters('linuxAdminUsername')]", 
     "agentAddressPrefix": "10.0.0.0/8", 
-    "agentAvailabilitySet": "[concat(variables('orchestratorName'), '-agent-availabilitySet-', variables('nameSuffix'))]", 
+    "agentAvailabilitySet": "[concat(parameters('orchestratorName'), '-agent-availabilitySet-', variables('nameSuffix'))]", 
     "agentCustomScript": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/configure-mesos-cluster.sh ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1 &\" &')]", 
     "agentEndpointDNSNamePrefix": "[tolower(parameters('agentEndpointDNSNamePrefix'))]", 
     "agentFirstAddr": 20, 
     "agentPrivateAddressPrefix": "10.32.0.0/11", 
     "agentPrivateCount": "[parameters('agentCount')]", 
     "agentPrivateNSGID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('agentPrivateNSGName'))]", 
-    "agentPrivateNSGName": "[concat(variables('orchestratorName'), '-agent-private-nsg-', variables('nameSuffix'))]", 
-    "agentPrivateSubnetName": "[concat(variables('orchestratorName'), '-agentPrivateSubnet')]", 
-    "agentPrivateVMNamePrefix": "[concat(variables('orchestratorName'), '-agent-private-', variables('nameSuffix'))]", 
+    "agentPrivateNSGName": "[concat(parameters('orchestratorName'), '-agent-private-nsg-', variables('nameSuffix'))]", 
+    "agentPrivateSubnetName": "[parameters('privateAgentSubnetName')]", 
+    "agentPrivateVMNamePrefix": "[concat(parameters('orchestratorName'), '-agent-private-', variables('nameSuffix'))]", 
     "agentPrivateVMSSCount": 1, 
     "agentPublicAddressPrefix": "10.0.0.0/11", 
     "agentPublicCount": "[variables('agentPublicCountPerMasterCount')[string(variables('masterCount'))]]", 
@@ -372,22 +418,22 @@
       "3": 3, 
       "5": 3
     }, 
-    "agentPublicIPAddressName": "[concat(variables('orchestratorName'), '-agent-ip-', variables('agentEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]", 
+    "agentPublicIPAddressName": "[concat(parameters('orchestratorName'), '-agent-ip-', variables('agentEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]", 
     "agentPublicNSGID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('agentPublicNSGName'))]", 
-    "agentPublicNSGName": "[concat(variables('orchestratorName'), '-agent-public-nsg-', variables('nameSuffix'))]", 
-    "agentPublicSubnetName": "[concat(variables('orchestratorName'), '-agentPublicSubnet')]", 
-    "agentPublicVMNamePrefix": "[concat(variables('orchestratorName'), '-agent-public-', variables('nameSuffix'))]", 
+    "agentPublicNSGName": "[concat(parameters('orchestratorName'), '-agent-public-nsg-', variables('nameSuffix'))]", 
+    "agentPublicSubnetName": "[parameters('publicAgentSubnetName')]", 
+    "agentPublicVMNamePrefix": "[concat(parameters('orchestratorName'), '-agent-public-', variables('nameSuffix'))]", 
     "agentPublicVMSSCount": 1, 
     "agentStorageAccountsCount": 5, 
     "agentStoragePrivateAccountName": "[concat(variables('storageAccountBaseName'), 'agntpri')]", 
     "agentStoragePublicAccountName": "[concat(variables('storageAccountBaseName'), 'agntpub')]", 
     "agentVMSize": "[parameters('agentVMSize')]", 
     "agentsPerIPv4Octet": 200, 
-    "agentsPublicLbBackendPoolName": "[concat(variables('orchestratorName'), '-agent-pool-', variables('nameSuffix'))]", 
+    "agentsPublicLbBackendPoolName": "[concat(parameters('orchestratorName'), '-agent-pool-', variables('nameSuffix'))]", 
     "agentsPublicLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('agentsPublicLbName'))]", 
     "agentsPublicLbIPConfigID": "[concat(variables('agentsPublicLbID'),'/frontendIPConfigurations/', variables('agentsPublicLbIPConfigName'))]", 
-    "agentsPublicLbIPConfigName": "[concat(variables('orchestratorName'), '-agent-lbFrontEnd-', variables('nameSuffix'))]", 
-    "agentsPublicLbName": "[concat(variables('orchestratorName'), '-agent-lb-', variables('nameSuffix'))]", 
+    "agentsPublicLbIPConfigName": "[concat(parameters('orchestratorName'), '-agent-lbFrontEnd-', variables('nameSuffix'))]", 
+    "agentsPublicLbName": "[concat(parameters('orchestratorName'), '-agent-lb-', variables('nameSuffix'))]", 
     "apiVersionDefault": "2016-03-30", 
     "apiVersionStorage": "2015-06-15", 
     "chronosEnabled": true, 
@@ -422,27 +468,27 @@
     "linuxVersion": "[parameters('linuxVersion')]", 
     "marathonEnabled": true, 
     "masterAddressPrefix": "172.16.0.0/24", 
-    "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]", 
+    "masterAvailabilitySet": "[concat(parameters('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]", 
     "masterCount": 1, 
     "masterCustomScript": "[concat('/bin/bash -c \"/bin/bash /opt/azure/containers/configure-mesos-cluster.sh ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1\"')]", 
     "masterEndpointDNSNamePrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]", 
     "masterFirstAddr": 5, 
-    "masterLbBackendPoolName": "[concat(variables('orchestratorName'), '-master-pool-', variables('nameSuffix'))]", 
+    "masterLbBackendPoolName": "[concat(parameters('orchestratorName'), '-master-pool-', variables('nameSuffix'))]", 
     "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]", 
     "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]", 
-    "masterLbIPConfigName": "[concat(variables('orchestratorName'), '-master-lbFrontEnd-', variables('nameSuffix'))]", 
-    "masterLbName": "[concat(variables('orchestratorName'), '-master-lb-', variables('nameSuffix'))]", 
+    "masterLbIPConfigName": "[concat(parameters('orchestratorName'), '-master-lbFrontEnd-', variables('nameSuffix'))]", 
+    "masterLbName": "[concat(parameters('orchestratorName'), '-master-lb-', variables('nameSuffix'))]", 
     "masterNSGID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('masterNSGName'))]", 
-    "masterNSGName": "[concat(variables('orchestratorName'), '-master-nsg-', variables('nameSuffix'))]", 
-    "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]", 
+    "masterNSGName": "[concat(parameters('orchestratorName'), '-master-nsg-', variables('nameSuffix'))]", 
+    "masterPublicIPAddressName": "[concat(parameters('orchestratorName'), '-master-ip-', variables('masterEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]", 
     "masterSizes": [
       "Standard_D2", 
       "Standard_A1"
     ], 
     "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]", 
-    "masterSubnetName": "[concat(variables('orchestratorName'), '-masterSubnet')]", 
+    "masterSubnetName": "[parameters('masterSubnetName')]", 
     "masterSubnetRef": "[concat(variables('vnetID'),'/subnets/',variables('masterSubnetName'))]", 
-    "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]", 
+    "masterVMNamePrefix": "[concat(parameters('orchestratorName'), '-master-', variables('nameSuffix'), '-')]", 
     "masterVMNic": [
       "[concat(variables('masterVMNamePrefix'), 'nic-0')]", 
       "[concat(variables('masterVMNamePrefix'), 'nic-1')]", 
@@ -457,7 +503,6 @@
     "oauthEnabled": "false", 
     "omsStorageAccount": "none", 
     "omsStorageAccountKey": "none", 
-    "orchestratorName": "dcos", 
     "osImageOffer": "[variables('linuxOffer')]", 
     "osImagePublisher": "[variables('linuxPublisher')]", 
     "osImageSKU": "[variables('linuxSku')]", 
@@ -468,7 +513,7 @@
     "setLinuxConfigurationForVMCreate": "[parameters('setLinuxConfigurationForVMCreate')]", 
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]", 
     "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]", 
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),variables(concat('storageAccountBaseNameNewSuffix', '-', variables('enableNewStorageAccountNaming'))), variables('orchestratorName')))]", 
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),variables(concat('storageAccountBaseNameNewSuffix', '-', variables('enableNewStorageAccountNaming'))), parameters('orchestratorName')))]", 
     "storageAccountBaseNameNewSuffix-false": "", 
     "storageAccountBaseNameNewSuffix-true": "[resourceGroup().location]", 
     "storageAccountPrefixes": [
@@ -517,7 +562,7 @@
       "East US 2 (Stage)"
     ], 
     "swarmEnabled": false, 
-    "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]", 
+    "virtualNetworkName": "[parameters('virtualNetworkName')]", 
     "vmSizesMap": {
       "Standard_A0": {
         "storageAccountType": "Standard_LRS"
@@ -699,48 +744,36 @@
       "type": "Microsoft.Storage/storageAccounts"
     }, 
     {
-      "apiVersion": "[variables('apiVersionDefault')]", 
+      "apiVersion": "2016-07-01",
+      "name": "[variables('virtualNetworkName')]",
+      "type": "Microsoft.Resources/deployments", 
       "dependsOn": [
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('agentPublicNSGName'))]", 
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('agentPrivateNSGName'))]"
       ], 
-      "location": "[resourceGroup().location]", 
-      "name": "[variables('virtualNetworkName')]", 
-      "properties": {
-        "addressSpace": {
-          "addressPrefixes": [
-            "[variables('masterAddressPrefix')]", 
-            "[variables('agentAddressPrefix')]"
-          ]
-        }, 
-        "subnets": [
-          {
-            "name": "[variables('masterSubnetName')]", 
-            "properties": {
-              "addressPrefix": "[variables('masterAddressPrefix')]"
-            }
-          }, 
-          {
-            "name": "[variables('agentPublicSubnetName')]", 
-            "properties": {
-              "addressPrefix": "[variables('agentPublicAddressPrefix')]", 
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('agentPublicNSGName'))]"
-              }
-            }
-          }, 
-          {
-            "name": "[variables('agentPrivateSubnetName')]", 
-            "properties": {
-              "addressPrefix": "[variables('agentPrivateAddressPrefix')]", 
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('agentPrivateNSGName'))]"
-              }
-            }
-          }
-        ]
-      }, 
-      "type": "Microsoft.Network/virtualNetworks"
+      "properties": { 
+        "mode": "incremental", 
+        "templateLink": {
+          "uri": "[concat('https://raw.githubusercontent.com/brendandburns/acs/master/dcos/dcos-', parameters('virtualNetworkNewOrExisting'), '-vnet.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "apiVersion": { "value": "[variables('apiVersionDefault')]" },
+          "location": { "value": "[resourceGroup().location]" },
+          "name": { "value": "[variables('virtualNetworkName')]"},
+          "publicNetworkSecurityGroupName": {"value": "[variables('agentPublicNSGName')]"}, 
+          "privateNetworkSecurityGroupName": {"value": "[variables('agentPrivateNSGName')]"}, 
+          "masterAddressPrefix": {"value": "[variables('masterAddressPrefix')]"},
+          "agentAddressPrefix": {"value": "[variables('agentAddressPrefix')]"},
+          "masterSubnetName": {"value": "[variables('masterSubnetName')]"},
+          "agentPublicSubnetName": {"value": "[variables('agentPublicSubnetName')]"},
+          "agentPublicAddressPrefix": {"value": "[variables('agentPublicAddressPrefix')]"},
+          "agentPublicNSGId": {"value": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('agentPublicNSGName'))]"},
+          "agentPrivateSubnetName": {"value": "[variables('agentPrivateSubnetName')]"},
+          "agentPrivateAddressPrefix": {"value": "[variables('agentPrivateAddressPrefix')]"},
+          "agentPrivateNSGId": {"value": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('agentPrivateNSGName'))]"}
+        }
+      },
     }, 
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
@@ -899,7 +932,7 @@
       }, 
       "dependsOn": [
         "[variables('masterLbID')]", 
-        "[variables('vnetID')]", 
+        "[concat('Microsoft.Resources/deployments/', variables('virtualNetworkName'))]", 
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]", 
         "[variables('masterNSGID')]"
       ], 
@@ -1189,7 +1222,7 @@
       }, 
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('agentStoragePublicAccountName'))]", 
-        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]", 
+        "[concat('Microsoft.Resources/deployments/', variables('virtualNetworkName'))]", 
         "[concat('Microsoft.Network/loadBalancers/', variables('agentsPublicLbName'))]", 
         "[variables('diagnosticsStorageAccountName')]"
       ], 
@@ -1321,7 +1354,7 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(2,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(2,variables('storageAccountPrefixesCount'))],variables('agentStoragePrivateAccountName'),2)]", 
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(3,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(3,variables('storageAccountPrefixesCount'))],variables('agentStoragePrivateAccountName'),3)]", 
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(4,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(4,variables('storageAccountPrefixesCount'))],variables('agentStoragePrivateAccountName'),4)]", 
-        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]", 
+        "[concat('Microsoft.Resources/deployments/', variables('virtualNetworkName'))]", 
         "[variables('diagnosticsStorageAccountName')]"
       ], 
       "location": "[resourceGroup().location]", 
