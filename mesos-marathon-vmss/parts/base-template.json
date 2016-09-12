@@ -685,7 +685,7 @@
               "backendAddressPool": {
                 "id": "[concat(variables('agentsLbID'), '/backendAddressPools/', variables('agentsLbBackendPoolName'))]"
               },
-	      "protocol": "http",
+              "protocol": "http",
               "path": '/',
               "frontendPort": 80,
               "backendPort": 80,
