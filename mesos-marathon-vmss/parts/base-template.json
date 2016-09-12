@@ -686,7 +686,7 @@
                 "id": "[concat(variables('agentsLbID'), '/backendAddressPools/', variables('agentsLbBackendPoolName'))]"
               },
               "protocol": "http",
-              "path": '/',
+              "path": "/",
               "frontendPort": 80,
               "backendPort": 80,
               "enableFloatingIP": false,
@@ -707,7 +707,7 @@
                 "id": "[concat(variables('agentsLbID'), '/backendAddressPools/', variables('agentsLbBackendPoolName'))]"
               },
               "protocol": "http",
-              "path": '/',
+              "path": "/",
               "frontendPort": 443,
               "backendPort": 443,
               "enableFloatingIP": false,
@@ -728,7 +728,7 @@
                 "id": "[concat(variables('agentsLbID'), '/backendAddressPools/', variables('agentsLbBackendPoolName'))]"
               },
               "protocol": "http",
-              "path": '/',
+              "path": "/",
               "frontendPort": 8080,
               "backendPort": 8080,
               "enableFloatingIP": false,
