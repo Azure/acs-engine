@@ -241,14 +241,14 @@
       "type": "string"
     },
     "linuxSku": {
-      "defaultValue": "16.04.0-DAILY-LTS",
+      "defaultValue": "16.04.0-LTS",
       "metadata": {
         "description": "This is the linux sku used by the linux cluster"
       },
       "type": "string"
     },
     "linuxVersion": {
-      "defaultValue": "16.04.201605161",
+      "defaultValue": "16.04.201606270",
       "metadata": {
         "description": "This is the linux version used by the linux cluster"
       },
@@ -348,23 +348,23 @@
     }
   },
   "variables": {
-    "DcosImageCommit": "92d61c576b3fe0dd1b8b15e7695b55ff7ce254fd",
-    "TemplateGenerationDate": "2016-04-16 21:32:06.654230",
+    "DcosImageCommit": "fbec5b3732e80f2d5f65192539c49ba5ab9ab753",
+    "TemplateGenerationDate": "2016-07-28 21:04:52.168081",
     "accountid": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',variables('diagnosticsStorageAccountResourceGroup'),'/providers/','Microsoft.Storage/storageAccounts/', variables('diagnosticsStorageAccountName'))]",
     "adminPassword": "[parameters('linuxAdminPassword')]",
     "adminUsername": "[parameters('linuxAdminUsername')]",
     "agentAddressPrefix": "10.0.0.0/8",
-    "agentPrivateAvailabilitySet": "[concat(variables('orchestratorName'), '-priagent-availabilitySet-', variables('nameSuffix'))]",
-    "agentPublicAvailabilitySet": "[concat(variables('orchestratorName'), '-pubagent-availabilitySet-', variables('nameSuffix'))]",
     "agentCustomScript": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/configure-mesos-cluster.sh ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1 &\" &')]",
     "agentEndpointDNSNamePrefix": "[tolower(parameters('agentEndpointDNSNamePrefix'))]",
     "agentFirstAddr": 4,
     "agentPrivateAddressPrefix": "10.32.0.0/11",
+    "agentPrivateAvailabilitySet": "[concat(variables('orchestratorName'), '-priagent-availabilitySet-', variables('nameSuffix'))]",
     "agentPrivateCount": "[parameters('agentCount')]",
     "agentPrivateSubnetName": "[concat(variables('orchestratorName'), '-agentPrivateSubnet')]",
     "agentPrivateVMNamePrefix": "[concat(variables('orchestratorName'), '-agent-private-', variables('nameSuffix'))]",
     "agentPrivateVMSSCount": 1,
     "agentPublicAddressPrefix": "10.0.0.0/11",
+    "agentPublicAvailabilitySet": "[concat(variables('orchestratorName'), '-pubagent-availabilitySet-', variables('nameSuffix'))]",
     "agentPublicCount": "[variables('agentPublicCountPerMasterCount')[string(variables('masterCount'))]]",
     "agentPublicCountPerMasterCount": {
       "1": 1,
@@ -390,6 +390,7 @@
     "apiVersionStorage": "2015-06-15",
     "chronosEnabled": true,
     "clusterInstallParameters": "[concat(variables('masterCount'), ' ',variables('masterVMNamePrefix'), ' ',variables('masterFirstAddr'), ' ',variables('swarmEnabled'),' ',variables('marathonEnabled'),' ',variables('chronosEnabled'),' ',variables('omsStorageAccount'),' ',variables('omsStorageAccountKey'),' ', variables('adminUsername'),' ',variables('postInstallScriptURI'))]",
+    "dataStorageAccountPrefixSeed": 97,
     "deployEnvironment": "acs",
     "diagnosticsStorageAccountName": "[concat(variables('storageAccountBaseName'), 'diag', '0')]",
     "diagnosticsStorageAccountName-false": "",
@@ -467,7 +468,6 @@
     "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),variables(concat('storageAccountBaseNameNewSuffix', '-', variables('enableNewStorageAccountNaming'))), variables('orchestratorName')))]",
     "storageAccountBaseNameNewSuffix-false": "",
     "storageAccountBaseNameNewSuffix-true": "[resourceGroup().location]",
-    "dataStorageAccountPrefixSeed": 97,
     "storageAccountPrefixes": [
       "0",
       "6",
@@ -837,63 +837,63 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('agentPrivateVMNamePrefix'), 'nic-', copyIndex())]",
-      "location": "[resourceGroup().location]",
       "copy": {
-        "name": "nicAgentLoopNode",
-        "count": "[variables('agentPrivateCount')]"
+        "count": "[variables('agentPrivateCount')]",
+        "name": "nicAgentLoopNode"
       },
       "dependsOn": [
         "[variables('vnetID')]"
       ],
+      "location": "[resourceGroup().location]",
+      "name": "[concat(variables('agentPrivateVMNamePrefix'), 'nic-', copyIndex())]",
       "properties": {
         "ipConfigurations": [
           {
             "name": "ipConfigNode",
             "properties": {
-              "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[concat(split(variables('agentPrivateAddressPrefix'),'0.0/11')[0], div(copyIndex(),variables('agentsPerIPv4Octet')), '.', add(mod(copyIndex(),variables('agentsPerIPv4Octet')), variables('agentFirstAddr')))]",
+              "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'), '/subnets/', variables('agentPrivateSubnetName'))]"
               }
             }
           }
         ]
-      }
+      },
+      "type": "Microsoft.Network/networkInterfaces"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('agentPublicVMNamePrefix'), 'nic-', copyIndex())]",
-      "location": "[resourceGroup().location]",
       "copy": {
-        "name": "nicAgentLoopNode",
-        "count": "[variables('agentPublicCount')]"
+        "count": "[variables('agentPublicCount')]",
+        "name": "nicAgentLoopNode"
       },
       "dependsOn": [
         "[variables('agentsPublicLbID')]",
         "[variables('vnetID')]"
       ],
+      "location": "[resourceGroup().location]",
+      "name": "[concat(variables('agentPublicVMNamePrefix'), 'nic-', copyIndex())]",
       "properties": {
         "ipConfigurations": [
           {
             "name": "ipConfigNode",
             "properties": {
-              "privateIPAllocationMethod": "Static",
-              "privateIPAddress": "[concat(split(variables('agentPublicAddressPrefix'),'0.0/11')[0], div(copyIndex(),variables('agentsPerIPv4Octet')), '.', add(mod(copyIndex(),variables('agentsPerIPv4Octet')), variables('agentFirstAddr')))]",
-              "subnet": {
-                "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'), '/subnets/', variables('agentPublicSubnetName'))]"
-              },
               "loadBalancerBackendAddressPools": [
                 {
                   "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('agentsPublicLbName'), '/backendAddressPools/',variables('agentsPublicLbBackendPoolName'))]"
                 }
-              ]
+              ],
+              "privateIPAddress": "[concat(split(variables('agentPublicAddressPrefix'),'0.0/11')[0], div(copyIndex(),variables('agentsPerIPv4Octet')), '.', add(mod(copyIndex(),variables('agentsPerIPv4Octet')), variables('agentFirstAddr')))]",
+              "privateIPAllocationMethod": "Static",
+              "subnet": {
+                "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'), '/subnets/', variables('agentPublicSubnetName'))]"
+              }
             }
           }
         ]
-      }
+      },
+      "type": "Microsoft.Network/networkInterfaces"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
@@ -933,7 +933,7 @@
           "adminPassword": "[variables('adminPassword')]",
           "adminUsername": "[variables('adminUsername')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
-          "customData": "[base64(concat('#cloud-config\n\n', '{\"bootcmd\": [\"bash -c \\\"if [ ! -f /var/lib/sdb-gpt ];then echo DCOS-5890;parted -s /dev/sdb mklabel gpt;touch /var/lib/sdb-gpt;fi\\\"\"], \"disk_setup\": {\"ephemeral0\": {\"layout\": [50, 50], \"overwrite\": true, \"table_type\": \"gpt\"}}, \"fs_setup\": [{\"device\": \"ephemeral0.1\", \"filesystem\": \"ext4\", \"overwrite\": true}, {\"device\": \"ephemeral0.2\", \"filesystem\": \"ext4\", \"overwrite\": true}], \"mounts\": [[\"ephemeral0.1\", \"/var/lib/mesos\"], [\"ephemeral0.2\", \"/var/lib/docker\"]], \"runcmd\": [[\"ln\", \"-s\", \"/bin/rm\", \"/usr/bin/rm\"], [\"ln\", \"-s\", \"/bin/mkdir\", \"/usr/bin/mkdir\"], [\"ln\", \"-s\", \"/bin/tar\", \"/usr/bin/tar\"], [\"ln\", \"-s\", \"/bin/ln\", \"/usr/bin/ln\"], [\"ln\", \"-s\", \"/bin/cp\", \"/usr/bin/cp\"], [\"ln\", \"-s\", \"/bin/systemctl\", \"/usr/bin/systemctl\"], [\"ln\", \"-s\", \"/bin/mount\", \"/usr/bin/mount\"], [\"ln\", \"-s\", \"/bin/bash\", \"/usr/bin/bash\"], [\"systemctl\", \"stop\", \"resolvconf.service\"], [\"systemctl\", \"disable\", \"resolvconf.service\"], [\"systemctl\", \"stop\", \"lxc-net.service\"], [\"systemctl\", \"disable\", \"lxc-net.service\"], [\"systemctl\", \"mask\", \"lxc-net.service\"], \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/1.deb https://az837203.vo.msecnd.net/dcos-deps/libipset3_6.29-1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/2.deb https://az837203.vo.msecnd.net/dcos-deps/ipset_6.29-1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/3.deb https://az837203.vo.msecnd.net/dcos-deps/unzip_6.0-20ubuntu1_amd64.deb\", \"bash -c \\\"try=1;until dpkg -i /tmp/{1,2,3}.deb || ((try > 5));do echo retry \\\\$((try++));sleep 120;done\\\"\", [\"cp\", \"-p\", \"/etc/resolv.conf\", \"/tmp/resolv.conf\"], [\"rm\", \"-f\", \"/etc/resolv.conf\"], [\"cp\", \"-p\", \"/tmp/resolv.conf\", \"/etc/resolv.conf\"], [\"systemctl\", \"start\", \"dcos-docker-install.service\"], [\"systemctl\", \"start\", \"dcos-link-env.service\"], [\"systemctl\", \"start\", \"dcos-download.service\"], [\"systemctl\", \"start\", \"dcos-setup.service\"], [\"systemctl\", \"start\", \"dcos-config-writer.service\"]], \"write_files\": [{\"content\": \"https://az837203.vo.msecnd.net/dcos/testing\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/repository-url\", \"permissions\": \"0644\"}, {\"content\": \"BOOTSTRAP_ID=0ab2e04446f34465aed3b1ffb4f56836d681d6c7\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/bootstrap-id\", \"permissions\": \"0644\"}, {\"content\": \"[\\\"dcos-config--setup_4386f62826972199942ab0061fb8ccaa44926575\\\", \\\"dcos-metadata--setup_4386f62826972199942ab0061fb8ccaa44926575\\\"]\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/cluster-packages.json\", \"permissions\": \"0644\"}, {\"content\": \"[Journal]\\nMaxLevelConsole=warning\\n\", \"owner\": \"root\", \"path\": \"/etc/systemd/journald.conf.d/dcos.conf\", \"permissions\": \"0644\"}, {\"content\": \"', variables('nameSuffix'),'\\n\", \"path\": \"/etc/mesosphere/cluster-id\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nBefore=dcos.target\\n[Service]\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/mkdir -p /etc/profile.d\\nExecStart=/usr/bin/ln -sf /opt/mesosphere/environment.export /etc/profile.d/dcos.sh\\n\", \"path\": \"/etc/systemd/system/dcos-link-env.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nAfter=network-online.target\\nWants=network-online.target\\nConditionPathExists=!/opt/mesosphere/\\n[Service]\\nEnvironmentFile=/etc/mesosphere/setup-flags/bootstrap-id\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/bootstrap.tar.xz https://az837203.vo.msecnd.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz\\nExecStartPre=/usr/bin/mkdir -p /opt/mesosphere\\nExecStart=/usr/bin/tar -axf /tmp/bootstrap.tar.xz -C /opt/mesosphere\\nExecStartPost=-/usr/bin/rm -f /tmp/bootstrap.tar.xz\\n\", \"path\": \"/etc/systemd/system/dcos-download.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nRequires=dcos-download.service\\nAfter=dcos-download.service\\n[Service]\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nEnvironmentFile=/opt/mesosphere/environment\\nExecStart=/opt/mesosphere/bin/pkgpanda setup --no-block-systemd\\n[Install]\\nWantedBy=multi-user.target\\n\", \"path\": \"/etc/systemd/system/dcos-setup.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nAfter=network-online.target\\nWants=network-online.target\\n[Service]\\nType=oneshot\\nEnvironment=DEBIAN_FRONTEND=noninteractive\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/d.deb https://az837203.vo.msecnd.net/dcos-deps/docker-engine_1.11.0-0~xenial_amd64.deb\\nExecStart=/usr/bin/bash -c \\\"try=1;until dpkg -D3 -i /tmp/d.deb || ((try > 5));do echo retry $((try++));sleep 120;done;systemctl --now start docker\\\"\\n\", \"path\": \"/etc/systemd/system/dcos-docker-install.service\", \"permissions\": \"0644\"}, {\"content\": \"[Service]\\nRestart=always\\nStartLimitInterval=0\\nRestartSec=15\\nExecStart=\\nExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\\n\", \"path\": \"/etc/systemd/system/docker.service.d/execstart.conf\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nPartOf=docker.service\\n[Socket]\\nListenStream=/var/run/docker.sock\\nSocketMode=0660\\nSocketUser=root\\nSocketGroup=docker\\nListenStream=2375\\nBindIPv6Only=both\\n[Install]\\nWantedBy=sockets.target\\n\", \"path\": \"/etc/systemd/system/docker.socket\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nRequires=dcos-setup.service\\nAfter=dcos-setup.service\\n[Service]\\nType=oneshot\\nEnvironmentFile=/etc/environment\\nEnvironmentFile=/opt/mesosphere/environment\\nExecStart=/usr/bin/bash -c \\\"echo $(detect_ip) $(hostname) > /etc/hosts\\\"\\n\", \"path\": \"/etc/systemd/system/dcos-config-writer.service\", \"permissions\": \"0644\"}, {\"content\": \"MESOS_CLUSTER=', variables('masterPublicIPAddressName'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/mesos-master-provider\"}, {\"content\": \"\\nADMINROUTER_ACTIVATE_AUTH_MODULE=', variables('oauthEnabled'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/adminrouter.env\"}, {\"content\": \"[\\\"', reference(variables('masterVMNic')[0]).ipConfigurations[0].properties.privateIPAddress,'\\\", \\\"', reference(variables('masterVMNic')[1]).ipConfigurations[0].properties.privateIPAddress,'\\\", \\\"', reference(variables('masterVMNic')[2]).ipConfigurations[0].properties.privateIPAddress,'\\\"]\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/master_list\"}, {\"content\": \"EXHIBITOR_BACKEND=AZURE\\nAZURE_CONTAINER=dcos-exhibitor\\nAZURE_PREFIX=', variables('masterPublicIPAddressName'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/exhibitor\"}, {\"content\": \"com.netflix.exhibitor.azure.account-name=', variables('masterStorageAccountName'),'\\ncom.netflix.exhibitor.azure.account-key=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('masterStorageAccountName')), '2015-06-15').key1,'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/exhibitor.properties\"}, {\"content\": \"{\\\"uiConfiguration\\\":{\\\"plugins\\\":{\\\"banner\\\":{\\\"enabled\\\":false,\\\"backgroundColor\\\":\\\"#1E232F\\\",\\\"foregroundColor\\\":\\\"#FFFFFF\\\",\\\"headerTitle\\\":null,\\\"headerContent\\\":null,\\\"footerContent\\\":null,\\\"imagePath\\\":null,\\\"dismissible\\\":null},\\\"branding\\\":{\\\"enabled\\\":false},\\\"external-links\\\": {\\\"enabled\\\": false},\\n\\n\\\"authentication\\\":{\\\"enabled\\\":false},\\n\\n\\\"oauth\\\":{\\\"enabled\\\":', variables('oauthEnabled'),',\\\"authHost\\\":\\\"https://dcos.auth0.com\\\"},\\n\\n\\n\\\"networking\\\":{\\\"enabled\\\":false},\\\"organization\\\":{\\\"enabled\\\":false},\\\"tracking\\\":{\\\"enabled\\\":false}}}}\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/ui-config.json\"}, {\"content\": \"{}\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/pkginfo.json\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/master\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/azure_master\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/azure\"}]}'))]",
+          "customData": "[base64(concat('#cloud-config\n\n', '{\"bootcmd\": [\"bash -c \\\"if [ ! -f /var/lib/sdb-gpt ];then echo DCOS-5890;parted -s /dev/sdb mklabel gpt;touch /var/lib/sdb-gpt;fi\\\"\"], \"disk_setup\": {\"ephemeral0\": {\"layout\": [50, 50], \"overwrite\": true, \"table_type\": \"gpt\"}}, \"fs_setup\": [{\"device\": \"ephemeral0.1\", \"filesystem\": \"ext4\", \"overwrite\": true}, {\"device\": \"ephemeral0.2\", \"filesystem\": \"ext4\", \"overwrite\": true}], \"mounts\": [[\"ephemeral0.1\", \"/var/lib/mesos\"], [\"ephemeral0.2\", \"/var/lib/docker\"]], \"runcmd\": [[\"ln\", \"-s\", \"/bin/rm\", \"/usr/bin/rm\"], [\"ln\", \"-s\", \"/bin/mkdir\", \"/usr/bin/mkdir\"], [\"ln\", \"-s\", \"/bin/tar\", \"/usr/bin/tar\"], [\"ln\", \"-s\", \"/bin/ln\", \"/usr/bin/ln\"], [\"ln\", \"-s\", \"/bin/cp\", \"/usr/bin/cp\"], [\"ln\", \"-s\", \"/bin/systemctl\", \"/usr/bin/systemctl\"], [\"ln\", \"-s\", \"/bin/mount\", \"/usr/bin/mount\"], [\"ln\", \"-s\", \"/bin/bash\", \"/usr/bin/bash\"], [\"systemctl\", \"stop\", \"resolvconf.service\"], [\"systemctl\", \"disable\", \"resolvconf.service\"], [\"systemctl\", \"stop\", \"lxc-net.service\"], [\"systemctl\", \"disable\", \"lxc-net.service\"], [\"systemctl\", \"mask\", \"lxc-net.service\"], \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/1.deb https://az837203.vo.msecnd.net/dcos-deps/libipset3_6.29-1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/2.deb https://az837203.vo.msecnd.net/dcos-deps/ipset_6.29-1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/3.deb https://az837203.vo.msecnd.net/dcos-deps/unzip_6.0-20ubuntu1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/4.deb https://az837203.vo.msecnd.net/dcos-deps/libltdl7_2.4.6-0.1_amd64.deb\", \"bash -c \\\"try=1;until dpkg -i /tmp/{1,2,3,4}.deb || ((try>9));do echo retry \\\\$((try++));sleep \\\\$((try*try));done\\\"\", [\"cp\", \"-p\", \"/etc/resolv.conf\", \"/tmp/resolv.conf\"], [\"rm\", \"-f\", \"/etc/resolv.conf\"], [\"cp\", \"-p\", \"/tmp/resolv.conf\", \"/etc/resolv.conf\"], [\"systemctl\", \"start\", \"dcos-docker-install.service\"], [\"systemctl\", \"start\", \"dcos-link-env.service\"], [\"systemctl\", \"start\", \"dcos-download.service\"], [\"systemctl\", \"start\", \"dcos-setup.service\"], [\"systemctl\", \"start\", \"dcos-config-writer.service\"]], \"write_files\": [{\"content\": \"https://az837203.vo.msecnd.net/dcos/testing\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/repository-url\", \"permissions\": \"0644\"}, {\"content\": \"BOOTSTRAP_ID=df308b6fc3bd91e1277baa5a3db928ae70964722\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/bootstrap-id\", \"permissions\": \"0644\"}, {\"content\": \"[\\\"dcos-config--setup_6af5097e7956962a3d4318d28fbf280a47305485\\\", \\\"dcos-metadata--setup_6af5097e7956962a3d4318d28fbf280a47305485\\\"]\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/cluster-packages.json\", \"permissions\": \"0644\"}, {\"content\": \"[Journal]\\nMaxLevelConsole=warning\\n\", \"owner\": \"root\", \"path\": \"/etc/systemd/journald.conf.d/dcos.conf\", \"permissions\": \"0644\"}, {\"content\": \"', variables('nameSuffix'),'\\n\", \"path\": \"/etc/mesosphere/cluster-id\", \"permissions\": \"0644\"}, {\"content\": \"\\nrexray:\\n  loglevel: info\\n  modules:\\n    default-docker:\\n      disabled: true\\n\", \"path\": \"/etc/rexray/config.yml\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nBefore=dcos.target\\n[Service]\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/mkdir -p /etc/profile.d\\nExecStart=/usr/bin/ln -sf /opt/mesosphere/environment.export /etc/profile.d/dcos.sh\\n\", \"path\": \"/etc/systemd/system/dcos-link-env.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nAfter=network-online.target\\nWants=network-online.target\\nConditionPathExists=!/opt/mesosphere/\\n[Service]\\nEnvironmentFile=/etc/mesosphere/setup-flags/bootstrap-id\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/bootstrap.tar.xz https://az837203.vo.msecnd.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz\\nExecStartPre=/usr/bin/mkdir -p /opt/mesosphere\\nExecStart=/usr/bin/tar -axf /tmp/bootstrap.tar.xz -C /opt/mesosphere\\nExecStartPost=-/usr/bin/rm -f /tmp/bootstrap.tar.xz\\n\", \"path\": \"/etc/systemd/system/dcos-download.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nRequires=dcos-download.service\\nAfter=dcos-download.service\\n[Service]\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nEnvironmentFile=/opt/mesosphere/environment\\nExecStart=/opt/mesosphere/bin/pkgpanda setup --no-block-systemd\\n[Install]\\nWantedBy=multi-user.target\\n\", \"path\": \"/etc/systemd/system/dcos-setup.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nAfter=network-online.target\\nWants=network-online.target\\n[Service]\\nType=oneshot\\nEnvironment=DEBIAN_FRONTEND=noninteractive\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/d.deb https://az837203.vo.msecnd.net/dcos-deps/docker-engine_1.11.2-0~xenial_amd64.deb\\nExecStart=/usr/bin/bash -c \\\"try=1;until dpkg -D3 -i /tmp/d.deb || ((try>9));do echo retry $((try++));sleep $((try*try));done;systemctl --now start docker;systemctl restart docker.socket\\\"\\n\", \"path\": \"/etc/systemd/system/dcos-docker-install.service\", \"permissions\": \"0644\"}, {\"content\": \"[Service]\\nRestart=always\\nStartLimitInterval=0\\nRestartSec=15\\nExecStart=\\nExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\\n\", \"path\": \"/etc/systemd/system/docker.service.d/execstart.conf\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nPartOf=docker.service\\n[Socket]\\nListenStream=/var/run/docker.sock\\nSocketMode=0660\\nSocketUser=root\\nSocketGroup=docker\\nListenStream=2375\\nBindIPv6Only=both\\n[Install]\\nWantedBy=sockets.target\\n\", \"path\": \"/etc/systemd/system/docker.socket\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nRequires=dcos-setup.service\\nAfter=dcos-setup.service\\n[Service]\\nType=oneshot\\nEnvironmentFile=/etc/environment\\nEnvironmentFile=/opt/mesosphere/environment\\nExecStart=/usr/bin/bash -c \\\"echo -e \\\\\\\"127.0.0.1 localhost\\\\n$(detect_ip) $(hostname)\\\\\\\" > /etc/hosts\\\"\\n\", \"path\": \"/etc/systemd/system/dcos-config-writer.service\", \"permissions\": \"0644\"}, {\"content\": \"MESOS_CLUSTER=', variables('masterPublicIPAddressName'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/mesos-master-provider\"}, {\"content\": \"\\nADMINROUTER_ACTIVATE_AUTH_MODULE=', variables('oauthEnabled'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/adminrouter.env\"}, {\"content\": \"[\\\"', reference(variables('masterVMNic')[0]).ipConfigurations[0].properties.privateIPAddress,'\\\", \\\"', reference(variables('masterVMNic')[1]).ipConfigurations[0].properties.privateIPAddress,'\\\", \\\"', reference(variables('masterVMNic')[2]).ipConfigurations[0].properties.privateIPAddress,'\\\"]\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/master_list\"}, {\"content\": \"EXHIBITOR_BACKEND=AZURE\\nAZURE_CONTAINER=dcos-exhibitor\\nAZURE_PREFIX=', variables('masterPublicIPAddressName'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/exhibitor\"}, {\"content\": \"com.netflix.exhibitor.azure.account-name=', variables('masterStorageAccountName'),'\\ncom.netflix.exhibitor.azure.account-key=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('masterStorageAccountName')), '2015-06-15').key1,'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/exhibitor.properties\"}, {\"content\": \"{\\\"uiConfiguration\\\":{\\\"plugins\\\":{\\\"banner\\\":{\\\"enabled\\\":false,\\\"backgroundColor\\\":\\\"#1E232F\\\",\\\"foregroundColor\\\":\\\"#FFFFFF\\\",\\\"headerTitle\\\":null,\\\"headerContent\\\":null,\\\"footerContent\\\":null,\\\"imagePath\\\":null,\\\"dismissible\\\":null},\\\"branding\\\":{\\\"enabled\\\":false},\\\"external-links\\\": {\\\"enabled\\\": false},\\n\\n\\\"authentication\\\":{\\\"enabled\\\":false},\\n\\n\\\"oauth\\\":{\\\"enabled\\\":', variables('oauthEnabled'),',\\\"authHost\\\":\\\"https://dcos.auth0.com\\\"},\\n\\n\\n\\\"networking\\\":{\\\"enabled\\\":false},\\\"organization\\\":{\\\"enabled\\\":false},\\\"tracking\\\":{\\\"enabled\\\":false}}}}\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/ui-config.json\"}, {\"content\": \"{}\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/pkginfo.json\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/master\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/azure_master\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/azure\"}]}'))]",
           "linuxConfiguration": "[variables('linuxConfiguration')]"
         },
         "storageProfile": {
@@ -1176,61 +1176,43 @@
     },
     {
       "apiVersion": "2015-06-15",
-      "type": "Microsoft.Compute/availabilitySets",
+      "location": "[resourceGroup().location]",
       "name": "[variables('agentPrivateAvailabilitySet')]",
-      "location": "[resourceGroup().location]",
-      "properties": {}
+      "properties": {},
+      "type": "Microsoft.Compute/availabilitySets"
     },
     {
       "apiVersion": "2015-06-15",
-      "type": "Microsoft.Compute/availabilitySets",
+      "location": "[resourceGroup().location]",
       "name": "[variables('agentPublicAvailabilitySet')]",
-      "location": "[resourceGroup().location]",
-      "properties": {}
+      "properties": {},
+      "type": "Microsoft.Compute/availabilitySets"
     },
     {
       "apiVersion": "2015-06-15",
-      "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(variables('agentPublicVMNamePrefix'), copyIndex())]",
-      "location": "[resourceGroup().location]",
       "copy": {
-        "name": "vmLoopNode",
-        "count": "[variables('agentPublicCount')]"
+        "count": "[variables('agentPublicCount')]",
+        "name": "vmLoopNode"
       },
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('agentStoragePublicAccountName'))]",
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentPublicVMNamePrefix'), 'nic-', copyIndex())]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentPublicAvailabilitySet'))]"
       ],
+      "location": "[resourceGroup().location]",
+      "name": "[concat(variables('agentPublicVMNamePrefix'), copyIndex())]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentPublicAvailabilitySet'))]"
         },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": "[variables('enableVMDiagnostics')]",
+            "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('diagnosticsStorageAccountName')), variables('apiVersionStorage')).primaryEndpoints.blob]"
+          }
+        },
         "hardwareProfile": {
           "vmSize": "[variables('agentVMSize')]"
-        },
-        "osProfile": {
-          "computername": "[concat(variables('agentPublicVMNamePrefix'), copyIndex())]",
-          "adminUsername": "[variables('adminUsername')]",
-          "adminPassword": "[variables('adminPassword')]",
-          "customData": "[base64(concat('#cloud-config\n\n', '{\"bootcmd\": [\"bash -c \\\"if [ ! -f /var/lib/sdb-gpt ];then echo DCOS-5890;parted -s /dev/sdb mklabel gpt;touch /var/lib/sdb-gpt;fi\\\"\"], \"disk_setup\": {\"ephemeral0\": {\"layout\": [50, 50], \"overwrite\": true, \"table_type\": \"gpt\"}}, \"fs_setup\": [{\"device\": \"ephemeral0.1\", \"filesystem\": \"ext4\", \"overwrite\": true}, {\"device\": \"ephemeral0.2\", \"filesystem\": \"ext4\", \"overwrite\": true}], \"mounts\": [[\"ephemeral0.1\", \"/var/lib/mesos\"], [\"ephemeral0.2\", \"/var/lib/docker\"]], \"runcmd\": [[\"ln\", \"-s\", \"/bin/rm\", \"/usr/bin/rm\"], [\"ln\", \"-s\", \"/bin/mkdir\", \"/usr/bin/mkdir\"], [\"ln\", \"-s\", \"/bin/tar\", \"/usr/bin/tar\"], [\"ln\", \"-s\", \"/bin/ln\", \"/usr/bin/ln\"], [\"ln\", \"-s\", \"/bin/cp\", \"/usr/bin/cp\"], [\"ln\", \"-s\", \"/bin/systemctl\", \"/usr/bin/systemctl\"], [\"ln\", \"-s\", \"/bin/mount\", \"/usr/bin/mount\"], [\"ln\", \"-s\", \"/bin/bash\", \"/usr/bin/bash\"], [\"systemctl\", \"stop\", \"resolvconf.service\"], [\"systemctl\", \"disable\", \"resolvconf.service\"], [\"systemctl\", \"stop\", \"lxc-net.service\"], [\"systemctl\", \"disable\", \"lxc-net.service\"], [\"systemctl\", \"mask\", \"lxc-net.service\"], \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/1.deb https://az837203.vo.msecnd.net/dcos-deps/libipset3_6.29-1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/2.deb https://az837203.vo.msecnd.net/dcos-deps/ipset_6.29-1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/3.deb https://az837203.vo.msecnd.net/dcos-deps/unzip_6.0-20ubuntu1_amd64.deb\", \"bash -c \\\"try=1;until dpkg -i /tmp/{1,2,3}.deb || ((try > 5));do echo retry \\\\$((try++));sleep 120;done\\\"\", [\"cp\", \"-p\", \"/etc/resolv.conf\", \"/tmp/resolv.conf\"], [\"rm\", \"-f\", \"/etc/resolv.conf\"], [\"cp\", \"-p\", \"/tmp/resolv.conf\", \"/etc/resolv.conf\"], [\"systemctl\", \"start\", \"dcos-docker-install.service\"], [\"systemctl\", \"start\", \"dcos-link-env.service\"], [\"systemctl\", \"start\", \"dcos-download.service\"], [\"systemctl\", \"start\", \"dcos-setup.service\"], [\"systemctl\", \"start\", \"dcos-config-writer.service\"]], \"write_files\": [{\"content\": \"https://az837203.vo.msecnd.net/dcos/testing\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/repository-url\", \"permissions\": \"0644\"}, {\"content\": \"BOOTSTRAP_ID=0ab2e04446f34465aed3b1ffb4f56836d681d6c7\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/bootstrap-id\", \"permissions\": \"0644\"}, {\"content\": \"[\\\"dcos-config--setup_4386f62826972199942ab0061fb8ccaa44926575\\\", \\\"dcos-metadata--setup_4386f62826972199942ab0061fb8ccaa44926575\\\"]\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/cluster-packages.json\", \"permissions\": \"0644\"}, {\"content\": \"[Journal]\\nMaxLevelConsole=warning\\n\", \"owner\": \"root\", \"path\": \"/etc/systemd/journald.conf.d/dcos.conf\", \"permissions\": \"0644\"}, {\"content\": \"', variables('nameSuffix'),'\\n\", \"path\": \"/etc/mesosphere/cluster-id\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nBefore=dcos.target\\n[Service]\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/mkdir -p /etc/profile.d\\nExecStart=/usr/bin/ln -sf /opt/mesosphere/environment.export /etc/profile.d/dcos.sh\\n\", \"path\": \"/etc/systemd/system/dcos-link-env.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nAfter=network-online.target\\nWants=network-online.target\\nConditionPathExists=!/opt/mesosphere/\\n[Service]\\nEnvironmentFile=/etc/mesosphere/setup-flags/bootstrap-id\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/bootstrap.tar.xz https://az837203.vo.msecnd.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz\\nExecStartPre=/usr/bin/mkdir -p /opt/mesosphere\\nExecStart=/usr/bin/tar -axf /tmp/bootstrap.tar.xz -C /opt/mesosphere\\nExecStartPost=-/usr/bin/rm -f /tmp/bootstrap.tar.xz\\n\", \"path\": \"/etc/systemd/system/dcos-download.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nRequires=dcos-download.service\\nAfter=dcos-download.service\\n[Service]\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nEnvironmentFile=/opt/mesosphere/environment\\nExecStart=/opt/mesosphere/bin/pkgpanda setup --no-block-systemd\\n[Install]\\nWantedBy=multi-user.target\\n\", \"path\": \"/etc/systemd/system/dcos-setup.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nAfter=network-online.target\\nWants=network-online.target\\n[Service]\\nType=oneshot\\nEnvironment=DEBIAN_FRONTEND=noninteractive\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/d.deb https://az837203.vo.msecnd.net/dcos-deps/docker-engine_1.11.0-0~xenial_amd64.deb\\nExecStart=/usr/bin/bash -c \\\"try=1;until dpkg -D3 -i /tmp/d.deb || ((try > 5));do echo retry $((try++));sleep 120;done;systemctl --now start docker\\\"\\n\", \"path\": \"/etc/systemd/system/dcos-docker-install.service\", \"permissions\": \"0644\"}, {\"content\": \"[Service]\\nRestart=always\\nStartLimitInterval=0\\nRestartSec=15\\nExecStart=\\nExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\\n\", \"path\": \"/etc/systemd/system/docker.service.d/execstart.conf\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nPartOf=docker.service\\n[Socket]\\nListenStream=/var/run/docker.sock\\nSocketMode=0660\\nSocketUser=root\\nSocketGroup=docker\\nListenStream=2375\\nBindIPv6Only=both\\n[Install]\\nWantedBy=sockets.target\\n\", \"path\": \"/etc/systemd/system/docker.socket\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nRequires=dcos-setup.service\\nAfter=dcos-setup.service\\n[Service]\\nType=oneshot\\nEnvironmentFile=/etc/environment\\nEnvironmentFile=/opt/mesosphere/environment\\nExecStart=/usr/bin/bash -c \\\"echo $(detect_ip) $(hostname) > /etc/hosts\\\"\\n\", \"path\": \"/etc/systemd/system/dcos-config-writer.service\", \"permissions\": \"0644\"}, {\"content\": \"MESOS_CLUSTER=', variables('masterPublicIPAddressName'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/mesos-master-provider\"}, {\"content\": \"\\nADMINROUTER_ACTIVATE_AUTH_MODULE=', variables('oauthEnabled'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/adminrouter.env\"}, {\"content\": \"[\\\"', reference(variables('masterVMNic')[0]).ipConfigurations[0].properties.privateIPAddress,'\\\", \\\"', reference(variables('masterVMNic')[1]).ipConfigurations[0].properties.privateIPAddress,'\\\", \\\"', reference(variables('masterVMNic')[2]).ipConfigurations[0].properties.privateIPAddress,'\\\"]\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/master_list\"}, {\"content\": \"EXHIBITOR_BACKEND=AZURE\\nAZURE_CONTAINER=dcos-exhibitor\\nAZURE_PREFIX=', variables('masterPublicIPAddressName'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/exhibitor\"}, {\"content\": \"com.netflix.exhibitor.azure.account-name=', variables('masterStorageAccountName'),'\\ncom.netflix.exhibitor.azure.account-key=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('masterStorageAccountName')), '2015-06-15').key1,'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/exhibitor.properties\"}, {\"content\": \"{\\\"uiConfiguration\\\":{\\\"plugins\\\":{\\\"banner\\\":{\\\"enabled\\\":false,\\\"backgroundColor\\\":\\\"#1E232F\\\",\\\"foregroundColor\\\":\\\"#FFFFFF\\\",\\\"headerTitle\\\":null,\\\"headerContent\\\":null,\\\"footerContent\\\":null,\\\"imagePath\\\":null,\\\"dismissible\\\":null},\\\"branding\\\":{\\\"enabled\\\":false},\\\"external-links\\\": {\\\"enabled\\\": false},\\n\\n\\\"authentication\\\":{\\\"enabled\\\":false},\\n\\n\\\"oauth\\\":{\\\"enabled\\\":', variables('oauthEnabled'),',\\\"authHost\\\":\\\"https://dcos.auth0.com\\\"},\\n\\n\\n\\\"networking\\\":{\\\"enabled\\\":false},\\\"organization\\\":{\\\"enabled\\\":false},\\\"tracking\\\":{\\\"enabled\\\":false}}}}\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/ui-config.json\"}, {\"content\": \"{}\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/pkginfo.json\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/slave_public\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/azure\"}]}'))]",
-          "linuxConfiguration": "[variables('linuxConfiguration')]"
-        },
-        "storageProfile": {
-          "imageReference": {
-            "publisher": "[variables('osImagePublisher')]",
-            "offer": "[variables('osImageOffer')]",
-            "sku": "[variables('osImageSKU')]",
-            "version": "[variables('osImageVersion')]"
-          },
-          "osDisk": {
-            "name": "[concat(variables('agentPublicVMNamePrefix'), copyIndex(),'-osdisk')]",
-            "vhd": {
-              "uri": "[concat('http://', variables('agentStoragePublicAccountName'), '.blob.core.windows.net/vhds/', variables('agentPublicVMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
-            },
-            "caching": "ReadOnly",
-            "createOption": "FromImage"
-          }
         },
         "networkProfile": {
           "networkInterfaces": [
@@ -1239,22 +1221,37 @@
             }
           ]
         },
-        "diagnosticsProfile": {
-          "bootDiagnostics": {
-            "enabled": "[variables('enableVMDiagnostics')]",
-            "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('diagnosticsStorageAccountName')), variables('apiVersionStorage')).primaryEndpoints.blob]"
+        "osProfile": {
+          "adminPassword": "[variables('adminPassword')]",
+          "adminUsername": "[variables('adminUsername')]",
+          "computername": "[concat(variables('agentPublicVMNamePrefix'), copyIndex())]",
+          "customData": "[base64(concat('#cloud-config\n\n', '{\"bootcmd\": [\"bash -c \\\"if [ ! -f /var/lib/sdb-gpt ];then echo DCOS-5890;parted -s /dev/sdb mklabel gpt;touch /var/lib/sdb-gpt;fi\\\"\"], \"disk_setup\": {\"ephemeral0\": {\"layout\": [50, 50], \"overwrite\": true, \"table_type\": \"gpt\"}}, \"fs_setup\": [{\"device\": \"ephemeral0.1\", \"filesystem\": \"ext4\", \"overwrite\": true}, {\"device\": \"ephemeral0.2\", \"filesystem\": \"ext4\", \"overwrite\": true}], \"mounts\": [[\"ephemeral0.1\", \"/var/lib/mesos\"], [\"ephemeral0.2\", \"/var/lib/docker\"]], \"runcmd\": [[\"ln\", \"-s\", \"/bin/rm\", \"/usr/bin/rm\"], [\"ln\", \"-s\", \"/bin/mkdir\", \"/usr/bin/mkdir\"], [\"ln\", \"-s\", \"/bin/tar\", \"/usr/bin/tar\"], [\"ln\", \"-s\", \"/bin/ln\", \"/usr/bin/ln\"], [\"ln\", \"-s\", \"/bin/cp\", \"/usr/bin/cp\"], [\"ln\", \"-s\", \"/bin/systemctl\", \"/usr/bin/systemctl\"], [\"ln\", \"-s\", \"/bin/mount\", \"/usr/bin/mount\"], [\"ln\", \"-s\", \"/bin/bash\", \"/usr/bin/bash\"], [\"systemctl\", \"stop\", \"resolvconf.service\"], [\"systemctl\", \"disable\", \"resolvconf.service\"], [\"systemctl\", \"stop\", \"lxc-net.service\"], [\"systemctl\", \"disable\", \"lxc-net.service\"], [\"systemctl\", \"mask\", \"lxc-net.service\"], \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/1.deb https://az837203.vo.msecnd.net/dcos-deps/libipset3_6.29-1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/2.deb https://az837203.vo.msecnd.net/dcos-deps/ipset_6.29-1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/3.deb https://az837203.vo.msecnd.net/dcos-deps/unzip_6.0-20ubuntu1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/4.deb https://az837203.vo.msecnd.net/dcos-deps/libltdl7_2.4.6-0.1_amd64.deb\", \"bash -c \\\"try=1;until dpkg -i /tmp/{1,2,3,4}.deb || ((try>9));do echo retry \\\\$((try++));sleep \\\\$((try*try));done\\\"\", [\"cp\", \"-p\", \"/etc/resolv.conf\", \"/tmp/resolv.conf\"], [\"rm\", \"-f\", \"/etc/resolv.conf\"], [\"cp\", \"-p\", \"/tmp/resolv.conf\", \"/etc/resolv.conf\"], [\"systemctl\", \"start\", \"dcos-docker-install.service\"], [\"systemctl\", \"start\", \"dcos-link-env.service\"], [\"systemctl\", \"start\", \"dcos-download.service\"], [\"systemctl\", \"start\", \"dcos-setup.service\"], [\"systemctl\", \"start\", \"dcos-config-writer.service\"]], \"write_files\": [{\"content\": \"https://az837203.vo.msecnd.net/dcos/testing\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/repository-url\", \"permissions\": \"0644\"}, {\"content\": \"BOOTSTRAP_ID=df308b6fc3bd91e1277baa5a3db928ae70964722\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/bootstrap-id\", \"permissions\": \"0644\"}, {\"content\": \"[\\\"dcos-config--setup_6af5097e7956962a3d4318d28fbf280a47305485\\\", \\\"dcos-metadata--setup_6af5097e7956962a3d4318d28fbf280a47305485\\\"]\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/cluster-packages.json\", \"permissions\": \"0644\"}, {\"content\": \"[Journal]\\nMaxLevelConsole=warning\\n\", \"owner\": \"root\", \"path\": \"/etc/systemd/journald.conf.d/dcos.conf\", \"permissions\": \"0644\"}, {\"content\": \"', variables('nameSuffix'),'\\n\", \"path\": \"/etc/mesosphere/cluster-id\", \"permissions\": \"0644\"}, {\"content\": \"\\nrexray:\\n  loglevel: info\\n  modules:\\n    default-docker:\\n      disabled: true\\n\", \"path\": \"/etc/rexray/config.yml\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nBefore=dcos.target\\n[Service]\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/mkdir -p /etc/profile.d\\nExecStart=/usr/bin/ln -sf /opt/mesosphere/environment.export /etc/profile.d/dcos.sh\\n\", \"path\": \"/etc/systemd/system/dcos-link-env.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nAfter=network-online.target\\nWants=network-online.target\\nConditionPathExists=!/opt/mesosphere/\\n[Service]\\nEnvironmentFile=/etc/mesosphere/setup-flags/bootstrap-id\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/bootstrap.tar.xz https://az837203.vo.msecnd.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz\\nExecStartPre=/usr/bin/mkdir -p /opt/mesosphere\\nExecStart=/usr/bin/tar -axf /tmp/bootstrap.tar.xz -C /opt/mesosphere\\nExecStartPost=-/usr/bin/rm -f /tmp/bootstrap.tar.xz\\n\", \"path\": \"/etc/systemd/system/dcos-download.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nRequires=dcos-download.service\\nAfter=dcos-download.service\\n[Service]\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nEnvironmentFile=/opt/mesosphere/environment\\nExecStart=/opt/mesosphere/bin/pkgpanda setup --no-block-systemd\\n[Install]\\nWantedBy=multi-user.target\\n\", \"path\": \"/etc/systemd/system/dcos-setup.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nAfter=network-online.target\\nWants=network-online.target\\n[Service]\\nType=oneshot\\nEnvironment=DEBIAN_FRONTEND=noninteractive\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/d.deb https://az837203.vo.msecnd.net/dcos-deps/docker-engine_1.11.2-0~xenial_amd64.deb\\nExecStart=/usr/bin/bash -c \\\"try=1;until dpkg -D3 -i /tmp/d.deb || ((try>9));do echo retry $((try++));sleep $((try*try));done;systemctl --now start docker;systemctl restart docker.socket\\\"\\n\", \"path\": \"/etc/systemd/system/dcos-docker-install.service\", \"permissions\": \"0644\"}, {\"content\": \"[Service]\\nRestart=always\\nStartLimitInterval=0\\nRestartSec=15\\nExecStart=\\nExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\\n\", \"path\": \"/etc/systemd/system/docker.service.d/execstart.conf\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nPartOf=docker.service\\n[Socket]\\nListenStream=/var/run/docker.sock\\nSocketMode=0660\\nSocketUser=root\\nSocketGroup=docker\\nListenStream=2375\\nBindIPv6Only=both\\n[Install]\\nWantedBy=sockets.target\\n\", \"path\": \"/etc/systemd/system/docker.socket\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nRequires=dcos-setup.service\\nAfter=dcos-setup.service\\n[Service]\\nType=oneshot\\nEnvironmentFile=/etc/environment\\nEnvironmentFile=/opt/mesosphere/environment\\nExecStart=/usr/bin/bash -c \\\"echo -e \\\\\\\"127.0.0.1 localhost\\\\n$(detect_ip) $(hostname)\\\\\\\" > /etc/hosts\\\"\\n\", \"path\": \"/etc/systemd/system/dcos-config-writer.service\", \"permissions\": \"0644\"}, {\"content\": \"MESOS_CLUSTER=', variables('masterPublicIPAddressName'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/mesos-master-provider\"}, {\"content\": \"\\nADMINROUTER_ACTIVATE_AUTH_MODULE=', variables('oauthEnabled'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/adminrouter.env\"}, {\"content\": \"[\\\"', reference(variables('masterVMNic')[0]).ipConfigurations[0].properties.privateIPAddress,'\\\", \\\"', reference(variables('masterVMNic')[1]).ipConfigurations[0].properties.privateIPAddress,'\\\", \\\"', reference(variables('masterVMNic')[2]).ipConfigurations[0].properties.privateIPAddress,'\\\"]\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/master_list\"}, {\"content\": \"EXHIBITOR_BACKEND=AZURE\\nAZURE_CONTAINER=dcos-exhibitor\\nAZURE_PREFIX=', variables('masterPublicIPAddressName'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/exhibitor\"}, {\"content\": \"com.netflix.exhibitor.azure.account-name=', variables('masterStorageAccountName'),'\\ncom.netflix.exhibitor.azure.account-key=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('masterStorageAccountName')), '2015-06-15').key1,'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/exhibitor.properties\"}, {\"content\": \"{\\\"uiConfiguration\\\":{\\\"plugins\\\":{\\\"banner\\\":{\\\"enabled\\\":false,\\\"backgroundColor\\\":\\\"#1E232F\\\",\\\"foregroundColor\\\":\\\"#FFFFFF\\\",\\\"headerTitle\\\":null,\\\"headerContent\\\":null,\\\"footerContent\\\":null,\\\"imagePath\\\":null,\\\"dismissible\\\":null},\\\"branding\\\":{\\\"enabled\\\":false},\\\"external-links\\\": {\\\"enabled\\\": false},\\n\\n\\\"authentication\\\":{\\\"enabled\\\":false},\\n\\n\\\"oauth\\\":{\\\"enabled\\\":', variables('oauthEnabled'),',\\\"authHost\\\":\\\"https://dcos.auth0.com\\\"},\\n\\n\\n\\\"networking\\\":{\\\"enabled\\\":false},\\\"organization\\\":{\\\"enabled\\\":false},\\\"tracking\\\":{\\\"enabled\\\":false}}}}\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/ui-config.json\"}, {\"content\": \"{}\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/pkginfo.json\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/slave_public\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/azure\"}]}'))]",
+          "linuxConfiguration": "[variables('linuxConfiguration')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "offer": "[variables('osImageOffer')]",
+            "publisher": "[variables('osImagePublisher')]",
+            "sku": "[variables('osImageSKU')]",
+            "version": "[variables('osImageVersion')]"
+          },
+          "osDisk": {
+            "caching": "ReadOnly",
+            "createOption": "FromImage",
+            "name": "[concat(variables('agentPublicVMNamePrefix'), copyIndex(),'-osdisk')]",
+            "vhd": {
+              "uri": "[concat('http://', variables('agentStoragePublicAccountName'), '.blob.core.windows.net/vhds/', variables('agentPublicVMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+            }
           }
         }
-      }
+      },
+      "type": "Microsoft.Compute/virtualMachines"
     },
     {
       "apiVersion": "2015-06-15",
-      "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(variables('agentPrivateVMNamePrefix'), copyIndex())]",
-      "location": "[resourceGroup().location]",
       "copy": {
-        "name": "vmLoopNode",
-        "count": "[variables('agentPrivateCount')]"
+        "count": "[variables('agentPrivateCount')]",
+        "name": "vmLoopNode"
       },
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(div(copyIndex(),variables('vmsPerStorageAccount')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(div(copyIndex(),variables('vmsPerStorageAccount')),variables('storageAccountPrefixesCount'))],variables('agentStoragePrivateAccountName'),div(copyIndex(),variables('vmsPerStorageAccount')))]",
@@ -1262,46 +1259,20 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentPrivateVMNamePrefix'), 'nic-', copyIndex())]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentPrivateAvailabilitySet'))]"
       ],
+      "location": "[resourceGroup().location]",
+      "name": "[concat(variables('agentPrivateVMNamePrefix'), copyIndex())]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentPrivateAvailabilitySet'))]"
         },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": "[variables('enableVMDiagnostics')]",
+            "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('diagnosticsStorageAccountName')), variables('apiVersionStorage')).primaryEndpoints.blob]"
+          }
+        },
         "hardwareProfile": {
           "vmSize": "[variables('agentVMSize')]"
-        },
-        "osProfile": {
-          "computername": "[concat(variables('agentPrivateVMNamePrefix'), copyIndex())]",
-          "adminUsername": "[variables('adminUsername')]",
-          "adminPassword": "[variables('adminPassword')]",
-          "customData": "[base64(concat('#cloud-config\n\n', '{\"bootcmd\": [\"bash -c \\\"if [ ! -f /var/lib/sdb-gpt ];then echo DCOS-5890;parted -s /dev/sdb mklabel gpt;touch /var/lib/sdb-gpt;fi\\\"\"], \"disk_setup\": {\"ephemeral0\": {\"layout\": [50, 50], \"overwrite\": true, \"table_type\": \"gpt\"}}, \"fs_setup\": [{\"device\": \"ephemeral0.1\", \"filesystem\": \"ext4\", \"overwrite\": true}, {\"device\": \"ephemeral0.2\", \"filesystem\": \"ext4\", \"overwrite\": true}], \"mounts\": [[\"ephemeral0.1\", \"/var/lib/mesos\"], [\"ephemeral0.2\", \"/var/lib/docker\"]], \"runcmd\": [[\"ln\", \"-s\", \"/bin/rm\", \"/usr/bin/rm\"], [\"ln\", \"-s\", \"/bin/mkdir\", \"/usr/bin/mkdir\"], [\"ln\", \"-s\", \"/bin/tar\", \"/usr/bin/tar\"], [\"ln\", \"-s\", \"/bin/ln\", \"/usr/bin/ln\"], [\"ln\", \"-s\", \"/bin/cp\", \"/usr/bin/cp\"], [\"ln\", \"-s\", \"/bin/systemctl\", \"/usr/bin/systemctl\"], [\"ln\", \"-s\", \"/bin/mount\", \"/usr/bin/mount\"], [\"ln\", \"-s\", \"/bin/bash\", \"/usr/bin/bash\"], [\"systemctl\", \"stop\", \"resolvconf.service\"], [\"systemctl\", \"disable\", \"resolvconf.service\"], [\"systemctl\", \"stop\", \"lxc-net.service\"], [\"systemctl\", \"disable\", \"lxc-net.service\"], [\"systemctl\", \"mask\", \"lxc-net.service\"], \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/1.deb https://az837203.vo.msecnd.net/dcos-deps/libipset3_6.29-1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/2.deb https://az837203.vo.msecnd.net/dcos-deps/ipset_6.29-1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/3.deb https://az837203.vo.msecnd.net/dcos-deps/unzip_6.0-20ubuntu1_amd64.deb\", \"bash -c \\\"try=1;until dpkg -i /tmp/{1,2,3}.deb || ((try > 5));do echo retry \\\\$((try++));sleep 120;done\\\"\", [\"cp\", \"-p\", \"/etc/resolv.conf\", \"/tmp/resolv.conf\"], [\"rm\", \"-f\", \"/etc/resolv.conf\"], [\"cp\", \"-p\", \"/tmp/resolv.conf\", \"/etc/resolv.conf\"], [\"systemctl\", \"start\", \"dcos-docker-install.service\"], [\"systemctl\", \"start\", \"dcos-link-env.service\"], [\"systemctl\", \"start\", \"dcos-download.service\"], [\"systemctl\", \"start\", \"dcos-setup.service\"], [\"systemctl\", \"start\", \"dcos-config-writer.service\"]], \"write_files\": [{\"content\": \"https://az837203.vo.msecnd.net/dcos/testing\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/repository-url\", \"permissions\": \"0644\"}, {\"content\": \"BOOTSTRAP_ID=0ab2e04446f34465aed3b1ffb4f56836d681d6c7\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/bootstrap-id\", \"permissions\": \"0644\"}, {\"content\": \"[\\\"dcos-config--setup_4386f62826972199942ab0061fb8ccaa44926575\\\", \\\"dcos-metadata--setup_4386f62826972199942ab0061fb8ccaa44926575\\\"]\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/cluster-packages.json\", \"permissions\": \"0644\"}, {\"content\": \"[Journal]\\nMaxLevelConsole=warning\\n\", \"owner\": \"root\", \"path\": \"/etc/systemd/journald.conf.d/dcos.conf\", \"permissions\": \"0644\"}, {\"content\": \"', variables('nameSuffix'),'\\n\", \"path\": \"/etc/mesosphere/cluster-id\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nBefore=dcos.target\\n[Service]\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/mkdir -p /etc/profile.d\\nExecStart=/usr/bin/ln -sf /opt/mesosphere/environment.export /etc/profile.d/dcos.sh\\n\", \"path\": \"/etc/systemd/system/dcos-link-env.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nAfter=network-online.target\\nWants=network-online.target\\nConditionPathExists=!/opt/mesosphere/\\n[Service]\\nEnvironmentFile=/etc/mesosphere/setup-flags/bootstrap-id\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/bootstrap.tar.xz https://az837203.vo.msecnd.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz\\nExecStartPre=/usr/bin/mkdir -p /opt/mesosphere\\nExecStart=/usr/bin/tar -axf /tmp/bootstrap.tar.xz -C /opt/mesosphere\\nExecStartPost=-/usr/bin/rm -f /tmp/bootstrap.tar.xz\\n\", \"path\": \"/etc/systemd/system/dcos-download.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nRequires=dcos-download.service\\nAfter=dcos-download.service\\n[Service]\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nEnvironmentFile=/opt/mesosphere/environment\\nExecStart=/opt/mesosphere/bin/pkgpanda setup --no-block-systemd\\n[Install]\\nWantedBy=multi-user.target\\n\", \"path\": \"/etc/systemd/system/dcos-setup.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nAfter=network-online.target\\nWants=network-online.target\\n[Service]\\nType=oneshot\\nEnvironment=DEBIAN_FRONTEND=noninteractive\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/d.deb https://az837203.vo.msecnd.net/dcos-deps/docker-engine_1.11.0-0~xenial_amd64.deb\\nExecStart=/usr/bin/bash -c \\\"try=1;until dpkg -D3 -i /tmp/d.deb || ((try > 5));do echo retry $((try++));sleep 120;done;systemctl --now start docker\\\"\\n\", \"path\": \"/etc/systemd/system/dcos-docker-install.service\", \"permissions\": \"0644\"}, {\"content\": \"[Service]\\nRestart=always\\nStartLimitInterval=0\\nRestartSec=15\\nExecStart=\\nExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\\n\", \"path\": \"/etc/systemd/system/docker.service.d/execstart.conf\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nPartOf=docker.service\\n[Socket]\\nListenStream=/var/run/docker.sock\\nSocketMode=0660\\nSocketUser=root\\nSocketGroup=docker\\nListenStream=2375\\nBindIPv6Only=both\\n[Install]\\nWantedBy=sockets.target\\n\", \"path\": \"/etc/systemd/system/docker.socket\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nRequires=dcos-setup.service\\nAfter=dcos-setup.service\\n[Service]\\nType=oneshot\\nEnvironmentFile=/etc/environment\\nEnvironmentFile=/opt/mesosphere/environment\\nExecStart=/usr/bin/bash -c \\\"echo $(detect_ip) $(hostname) > /etc/hosts\\\"\\n\", \"path\": \"/etc/systemd/system/dcos-config-writer.service\", \"permissions\": \"0644\"}, {\"content\": \"MESOS_CLUSTER=', variables('masterPublicIPAddressName'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/mesos-master-provider\"}, {\"content\": \"\\nADMINROUTER_ACTIVATE_AUTH_MODULE=', variables('oauthEnabled'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/adminrouter.env\"}, {\"content\": \"[\\\"', reference(variables('masterVMNic')[0]).ipConfigurations[0].properties.privateIPAddress,'\\\", \\\"', reference(variables('masterVMNic')[1]).ipConfigurations[0].properties.privateIPAddress,'\\\", \\\"', reference(variables('masterVMNic')[2]).ipConfigurations[0].properties.privateIPAddress,'\\\"]\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/master_list\"}, {\"content\": \"EXHIBITOR_BACKEND=AZURE\\nAZURE_CONTAINER=dcos-exhibitor\\nAZURE_PREFIX=', variables('masterPublicIPAddressName'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/exhibitor\"}, {\"content\": \"com.netflix.exhibitor.azure.account-name=', variables('masterStorageAccountName'),'\\ncom.netflix.exhibitor.azure.account-key=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('masterStorageAccountName')), '2015-06-15').key1,'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/exhibitor.properties\"}, {\"content\": \"{\\\"uiConfiguration\\\":{\\\"plugins\\\":{\\\"banner\\\":{\\\"enabled\\\":false,\\\"backgroundColor\\\":\\\"#1E232F\\\",\\\"foregroundColor\\\":\\\"#FFFFFF\\\",\\\"headerTitle\\\":null,\\\"headerContent\\\":null,\\\"footerContent\\\":null,\\\"imagePath\\\":null,\\\"dismissible\\\":null},\\\"branding\\\":{\\\"enabled\\\":false},\\\"external-links\\\": {\\\"enabled\\\": false},\\n\\n\\\"authentication\\\":{\\\"enabled\\\":false},\\n\\n\\\"oauth\\\":{\\\"enabled\\\":', variables('oauthEnabled'),',\\\"authHost\\\":\\\"https://dcos.auth0.com\\\"},\\n\\n\\n\\\"networking\\\":{\\\"enabled\\\":false},\\\"organization\\\":{\\\"enabled\\\":false},\\\"tracking\\\":{\\\"enabled\\\":false}}}}\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/ui-config.json\"}, {\"content\": \"{}\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/pkginfo.json\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/slave\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/azure\"}]}'))]",
-          "linuxConfiguration": "[variables('linuxConfiguration')]"
-        },
-        "storageProfile": {
-          "imageReference": {
-            "publisher": "[variables('osImagePublisher')]",
-            "offer": "[variables('osImageOffer')]",
-            "sku": "[variables('osImageSKU')]",
-            "version": "[variables('osImageVersion')]"
-          },
-          "osDisk": {
-            "name": "[concat(variables('agentPrivateVMNamePrefix'), copyIndex(),'-osdisk')]",
-            "vhd": {
-              "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(div(copyIndex(),variables('vmsPerStorageAccount')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(div(copyIndex(),variables('vmsPerStorageAccount')),variables('storageAccountPrefixesCount'))],variables('agentStoragePrivateAccountName'),div(copyIndex(),variables('vmsPerStorageAccount')), '.blob.core.windows.net/vhds/', variables('agentPrivateVMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
-            },
-            "caching": "ReadOnly",
-            "createOption": "FromImage"
-          },
-          "dataDisks": [
-            {
-              "name": "[concat(variables('agentPrivateVMNamePrefix'), copyIndex(),'-datadisk')]",
-              "diskSizeGB": "128",
-              "lun": 0,
-              "vhd": {
-                "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(variables('dataStorageAccountPrefixSeed'),div(copyIndex(),variables('vmsPerStorageAccount'))),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(variables('dataStorageAccountPrefixSeed'),div(copyIndex(),variables('vmsPerStorageAccount'))),variables('storageAccountPrefixesCount'))],variables('agentStoragePrivateDataAccountName'),div(copyIndex(),variables('vmsPerStorageAccount')), '.blob.core.windows.net/vhds/', variables('agentPrivateVMNamePrefix'), copyIndex(), '--datadisk.vhd')]"
-              },
-              "createOption": "Empty"
-            }
-          ]
         },
         "networkProfile": {
           "networkInterfaces": [
@@ -1310,13 +1281,42 @@
             }
           ]
         },
-        "diagnosticsProfile": {
-          "bootDiagnostics": {
-            "enabled": "[variables('enableVMDiagnostics')]",
-            "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('diagnosticsStorageAccountName')), variables('apiVersionStorage')).primaryEndpoints.blob]"
+        "osProfile": {
+          "adminPassword": "[variables('adminPassword')]",
+          "adminUsername": "[variables('adminUsername')]",
+          "computername": "[concat(variables('agentPrivateVMNamePrefix'), copyIndex())]",
+          "customData": "[base64(concat('#cloud-config\n\n', '{\"bootcmd\": [\"bash -c \\\"if [ ! -f /var/lib/sdb-gpt ];then echo DCOS-5890;parted -s /dev/sdb mklabel gpt;touch /var/lib/sdb-gpt;fi\\\"\"], \"disk_setup\": {\"ephemeral0\": {\"layout\": [50, 50], \"overwrite\": true, \"table_type\": \"gpt\"}}, \"fs_setup\": [{\"device\": \"ephemeral0.1\", \"filesystem\": \"ext4\", \"overwrite\": true}, {\"device\": \"ephemeral0.2\", \"filesystem\": \"ext4\", \"overwrite\": true}], \"mounts\": [[\"ephemeral0.1\", \"/var/lib/mesos\"], [\"ephemeral0.2\", \"/var/lib/docker\"]], \"runcmd\": [[\"ln\", \"-s\", \"/bin/rm\", \"/usr/bin/rm\"], [\"ln\", \"-s\", \"/bin/mkdir\", \"/usr/bin/mkdir\"], [\"ln\", \"-s\", \"/bin/tar\", \"/usr/bin/tar\"], [\"ln\", \"-s\", \"/bin/ln\", \"/usr/bin/ln\"], [\"ln\", \"-s\", \"/bin/cp\", \"/usr/bin/cp\"], [\"ln\", \"-s\", \"/bin/systemctl\", \"/usr/bin/systemctl\"], [\"ln\", \"-s\", \"/bin/mount\", \"/usr/bin/mount\"], [\"ln\", \"-s\", \"/bin/bash\", \"/usr/bin/bash\"], [\"systemctl\", \"stop\", \"resolvconf.service\"], [\"systemctl\", \"disable\", \"resolvconf.service\"], [\"systemctl\", \"stop\", \"lxc-net.service\"], [\"systemctl\", \"disable\", \"lxc-net.service\"], [\"systemctl\", \"mask\", \"lxc-net.service\"], \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/1.deb https://az837203.vo.msecnd.net/dcos-deps/libipset3_6.29-1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/2.deb https://az837203.vo.msecnd.net/dcos-deps/ipset_6.29-1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/3.deb https://az837203.vo.msecnd.net/dcos-deps/unzip_6.0-20ubuntu1_amd64.deb\", \"curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/4.deb https://az837203.vo.msecnd.net/dcos-deps/libltdl7_2.4.6-0.1_amd64.deb\", \"bash -c \\\"try=1;until dpkg -i /tmp/{1,2,3,4}.deb || ((try>9));do echo retry \\\\$((try++));sleep \\\\$((try*try));done\\\"\", [\"cp\", \"-p\", \"/etc/resolv.conf\", \"/tmp/resolv.conf\"], [\"rm\", \"-f\", \"/etc/resolv.conf\"], [\"cp\", \"-p\", \"/tmp/resolv.conf\", \"/etc/resolv.conf\"], [\"systemctl\", \"start\", \"dcos-docker-install.service\"], [\"systemctl\", \"start\", \"dcos-link-env.service\"], [\"systemctl\", \"start\", \"dcos-download.service\"], [\"systemctl\", \"start\", \"dcos-setup.service\"], [\"systemctl\", \"start\", \"dcos-config-writer.service\"]], \"write_files\": [{\"content\": \"https://az837203.vo.msecnd.net/dcos/testing\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/repository-url\", \"permissions\": \"0644\"}, {\"content\": \"BOOTSTRAP_ID=df308b6fc3bd91e1277baa5a3db928ae70964722\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/bootstrap-id\", \"permissions\": \"0644\"}, {\"content\": \"[\\\"dcos-config--setup_6af5097e7956962a3d4318d28fbf280a47305485\\\", \\\"dcos-metadata--setup_6af5097e7956962a3d4318d28fbf280a47305485\\\"]\\n\", \"owner\": \"root\", \"path\": \"/etc/mesosphere/setup-flags/cluster-packages.json\", \"permissions\": \"0644\"}, {\"content\": \"[Journal]\\nMaxLevelConsole=warning\\n\", \"owner\": \"root\", \"path\": \"/etc/systemd/journald.conf.d/dcos.conf\", \"permissions\": \"0644\"}, {\"content\": \"', variables('nameSuffix'),'\\n\", \"path\": \"/etc/mesosphere/cluster-id\", \"permissions\": \"0644\"}, {\"content\": \"\\nrexray:\\n  loglevel: info\\n  modules:\\n    default-docker:\\n      disabled: true\\n\", \"path\": \"/etc/rexray/config.yml\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nBefore=dcos.target\\n[Service]\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/mkdir -p /etc/profile.d\\nExecStart=/usr/bin/ln -sf /opt/mesosphere/environment.export /etc/profile.d/dcos.sh\\n\", \"path\": \"/etc/systemd/system/dcos-link-env.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nAfter=network-online.target\\nWants=network-online.target\\nConditionPathExists=!/opt/mesosphere/\\n[Service]\\nEnvironmentFile=/etc/mesosphere/setup-flags/bootstrap-id\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/bootstrap.tar.xz https://az837203.vo.msecnd.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz\\nExecStartPre=/usr/bin/mkdir -p /opt/mesosphere\\nExecStart=/usr/bin/tar -axf /tmp/bootstrap.tar.xz -C /opt/mesosphere\\nExecStartPost=-/usr/bin/rm -f /tmp/bootstrap.tar.xz\\n\", \"path\": \"/etc/systemd/system/dcos-download.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nRequires=dcos-download.service\\nAfter=dcos-download.service\\n[Service]\\nType=oneshot\\nStandardOutput=journal+console\\nStandardError=journal+console\\nEnvironmentFile=/opt/mesosphere/environment\\nExecStart=/opt/mesosphere/bin/pkgpanda setup --no-block-systemd\\n[Install]\\nWantedBy=multi-user.target\\n\", \"path\": \"/etc/systemd/system/dcos-setup.service\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nAfter=network-online.target\\nWants=network-online.target\\n[Service]\\nType=oneshot\\nEnvironment=DEBIAN_FRONTEND=noninteractive\\nStandardOutput=journal+console\\nStandardError=journal+console\\nExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/d.deb https://az837203.vo.msecnd.net/dcos-deps/docker-engine_1.11.2-0~xenial_amd64.deb\\nExecStart=/usr/bin/bash -c \\\"try=1;until dpkg -D3 -i /tmp/d.deb || ((try>9));do echo retry $((try++));sleep $((try*try));done;systemctl --now start docker;systemctl restart docker.socket\\\"\\n\", \"path\": \"/etc/systemd/system/dcos-docker-install.service\", \"permissions\": \"0644\"}, {\"content\": \"[Service]\\nRestart=always\\nStartLimitInterval=0\\nRestartSec=15\\nExecStart=\\nExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\\n\", \"path\": \"/etc/systemd/system/docker.service.d/execstart.conf\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nPartOf=docker.service\\n[Socket]\\nListenStream=/var/run/docker.sock\\nSocketMode=0660\\nSocketUser=root\\nSocketGroup=docker\\nListenStream=2375\\nBindIPv6Only=both\\n[Install]\\nWantedBy=sockets.target\\n\", \"path\": \"/etc/systemd/system/docker.socket\", \"permissions\": \"0644\"}, {\"content\": \"[Unit]\\nRequires=dcos-setup.service\\nAfter=dcos-setup.service\\n[Service]\\nType=oneshot\\nEnvironmentFile=/etc/environment\\nEnvironmentFile=/opt/mesosphere/environment\\nExecStart=/usr/bin/bash -c \\\"echo -e \\\\\\\"127.0.0.1 localhost\\\\n$(detect_ip) $(hostname)\\\\\\\" > /etc/hosts\\\"\\n\", \"path\": \"/etc/systemd/system/dcos-config-writer.service\", \"permissions\": \"0644\"}, {\"content\": \"MESOS_CLUSTER=', variables('masterPublicIPAddressName'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/mesos-master-provider\"}, {\"content\": \"\\nADMINROUTER_ACTIVATE_AUTH_MODULE=', variables('oauthEnabled'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/adminrouter.env\"}, {\"content\": \"[\\\"', reference(variables('masterVMNic')[0]).ipConfigurations[0].properties.privateIPAddress,'\\\", \\\"', reference(variables('masterVMNic')[1]).ipConfigurations[0].properties.privateIPAddress,'\\\", \\\"', reference(variables('masterVMNic')[2]).ipConfigurations[0].properties.privateIPAddress,'\\\"]\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/master_list\"}, {\"content\": \"EXHIBITOR_BACKEND=AZURE\\nAZURE_CONTAINER=dcos-exhibitor\\nAZURE_PREFIX=', variables('masterPublicIPAddressName'),'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/exhibitor\"}, {\"content\": \"com.netflix.exhibitor.azure.account-name=', variables('masterStorageAccountName'),'\\ncom.netflix.exhibitor.azure.account-key=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('masterStorageAccountName')), '2015-06-15').key1,'\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/exhibitor.properties\"}, {\"content\": \"{\\\"uiConfiguration\\\":{\\\"plugins\\\":{\\\"banner\\\":{\\\"enabled\\\":false,\\\"backgroundColor\\\":\\\"#1E232F\\\",\\\"foregroundColor\\\":\\\"#FFFFFF\\\",\\\"headerTitle\\\":null,\\\"headerContent\\\":null,\\\"footerContent\\\":null,\\\"imagePath\\\":null,\\\"dismissible\\\":null},\\\"branding\\\":{\\\"enabled\\\":false},\\\"external-links\\\": {\\\"enabled\\\": false},\\n\\n\\\"authentication\\\":{\\\"enabled\\\":false},\\n\\n\\\"oauth\\\":{\\\"enabled\\\":', variables('oauthEnabled'),',\\\"authHost\\\":\\\"https://dcos.auth0.com\\\"},\\n\\n\\n\\\"networking\\\":{\\\"enabled\\\":false},\\\"organization\\\":{\\\"enabled\\\":false},\\\"tracking\\\":{\\\"enabled\\\":false}}}}\\n\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/etc/ui-config.json\"}, {\"content\": \"{}\", \"path\": \"/etc/mesosphere/setup-packages/dcos-provider-azure--setup/pkginfo.json\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/slave\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/azure\"}]}'))]",
+          "linuxConfiguration": "[variables('linuxConfiguration')]"
+        },
+        "storageProfile": {
+          "dataDisks": [
+            {
+              "createOption": "Empty",
+              "diskSizeGB": "128",
+              "lun": 0,
+              "name": "[concat(variables('agentPrivateVMNamePrefix'), copyIndex(),'-datadisk')]",
+              "vhd": {
+                "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(variables('dataStorageAccountPrefixSeed'),div(copyIndex(),variables('vmsPerStorageAccount'))),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(variables('dataStorageAccountPrefixSeed'),div(copyIndex(),variables('vmsPerStorageAccount'))),variables('storageAccountPrefixesCount'))],variables('agentStoragePrivateDataAccountName'),div(copyIndex(),variables('vmsPerStorageAccount')), '.blob.core.windows.net/vhds/', variables('agentPrivateVMNamePrefix'), copyIndex(), '--datadisk.vhd')]"
+              }
+            }
+          ],
+          "imageReference": {
+            "offer": "[variables('osImageOffer')]",
+            "publisher": "[variables('osImagePublisher')]",
+            "sku": "[variables('osImageSKU')]",
+            "version": "[variables('osImageVersion')]"
+          },
+          "osDisk": {
+            "caching": "ReadOnly",
+            "createOption": "FromImage",
+            "name": "[concat(variables('agentPrivateVMNamePrefix'), copyIndex(),'-osdisk')]",
+            "vhd": {
+              "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(div(copyIndex(),variables('vmsPerStorageAccount')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(div(copyIndex(),variables('vmsPerStorageAccount')),variables('storageAccountPrefixesCount'))],variables('agentStoragePrivateAccountName'),div(copyIndex(),variables('vmsPerStorageAccount')), '.blob.core.windows.net/vhds/', variables('agentPrivateVMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+            }
           }
         }
-      }
+      },
+      "type": "Microsoft.Compute/virtualMachines"
     }
   ],
   "outputs": {
