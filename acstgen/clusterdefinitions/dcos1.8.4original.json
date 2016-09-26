@@ -1,10 +1,10 @@
 {
   "orchestratorProfile": {
-    "orchestratorType": "DCOS173"
+    "orchestratorType": "DCOS"
   },
   "masterProfile": {
     "count": 5,
-    "dnsPrefix": "mgmtanhowe0925b",
+    "dnsPrefix": "mgmtanhowe0923a",
 		"vmSize": "Standard_D2_v2",
     "subnet": "172.16.0.0/24"
   },

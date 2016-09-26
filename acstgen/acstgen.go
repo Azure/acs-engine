@@ -22,6 +22,7 @@ func loadAcsCluster(jsonFile string) (*vlabs.AcsCluster, error) {
 	if e := json.Unmarshal(contents, &acsCluster); e != nil {
 		return nil, fmt.Errorf("error unmarshalling file %s: %s", jsonFile, e.Error())
 	}
+	acsCluster.SetDefaults()
 	if e := acsCluster.Validate(); e != nil {
 		return nil, fmt.Errorf("error validating acs cluster from file %s: %s", jsonFile, e.Error())
 	}

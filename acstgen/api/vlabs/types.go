@@ -18,6 +18,7 @@ type MasterProfile struct {
 	Count     int    `json:"count"`
 	DNSPrefix string `json:"dnsPrefix"`
 	VMSize    string `json:"vmSize"`
+	Subnet    string `json:"subnet"`
 }
 
 // AgentPoolProfiles represents an agent pool definition
@@ -42,5 +43,6 @@ type LinuxProfile struct {
 
 // APIObject defines the required functionality of an api object
 type APIObject interface {
+	SetDefaults()
 	Validate() error
 }

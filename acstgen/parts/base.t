@@ -2,21 +2,15 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-	{{.Parameters}}
+    {{template "masterparams.t" .}}
   },
   "variables": {
-	{{.Variables.Master}}
-	{{.Variables.Agents}}
-	{{.Variables.Diagnostics}}
+{{if IsDCOS}}{{template "dcosmastervars.t" .}}{{else if IsSwarm}}{{template "swarmmastervars.t" .}}{{end}}
   },
   "resources": [
-	{{.Resources.Master}}
-	{{.Resources.Agents}}
-	{{.Resources.Diagnostics}}
+{{if IsDCOS}}{{template "dcosmasterresources.t" .}}{{else if IsSwarm}}{{template "swarmmasterresources.t" .}}{{end}}
   ],
   "outputs": {
-	{{.Outputs.Master}}
-	{{.Outputs.Agents}}
-	{{.Outputs.Diagnostics}}
+    {{template "masteroutputs.t" .}}
   }
 }

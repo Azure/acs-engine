@@ -3,12 +3,16 @@ package vlabs
 import (
 	"errors"
 	"fmt"
+	"regexp"
+	"strconv"
 )
 
 // Validate implements APIObject
 func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case DCOS:
+	case DCOS184:
+	case DCOS173:
 	case SWARM:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
@@ -27,6 +31,14 @@ func (m *MasterProfile) Validate() error {
 	if e := validateName(m.VMSize, "MasterProfile.VMSize"); e != nil {
 		return e
 	}
+	_, _, _, _, subnet, err := parseCIDR(m.Subnet)
+	if err != nil {
+		return fmt.Errorf("MasterProfile.Subnet must be specified in cidr format, it returns error: %s", err.Error())
+	}
+	if subnet != 24 {
+		return fmt.Errorf("MasterProfile.Subnet must have a /24 subnet")
+	}
+
 	return nil
 }
 
@@ -92,4 +104,34 @@ func validateName(name string, label string) error {
 		return fmt.Errorf("%s must be a non-empty value", label)
 	}
 	return nil
+}
+
+func parseCIDR(cidr string) (octet1 int, octet2 int, octet3 int, octet4 int, subnet int, err error) {
+	// verify cidr format and a /24 subnet
+	// regular expression inspired by http://blog.markhatton.co.uk/2011/03/15/regular-expressions-for-ip-addresses-cidr-ranges-and-hostnames/
+	cidrRegex := `^((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\/((?:[0-9]|[1-2][0-9]|3[0-2]))$`
+	var re *regexp.Regexp
+	if re, err = regexp.Compile(cidrRegex); err != nil {
+		return 0, 0, 0, 0, 0, err
+	}
+	submatches := re.FindStringSubmatch(cidr)
+	if len(submatches) != 6 {
+		return 0, 0, 0, 0, 0, fmt.Errorf("address %s is not specified as valid cidr", cidr)
+	}
+	if octet1, err = strconv.Atoi(submatches[1]); err != nil {
+		return 0, 0, 0, 0, 0, err
+	}
+	if octet2, err = strconv.Atoi(submatches[2]); err != nil {
+		return 0, 0, 0, 0, 0, err
+	}
+	if octet3, err = strconv.Atoi(submatches[3]); err != nil {
+		return 0, 0, 0, 0, 0, err
+	}
+	if octet4, err = strconv.Atoi(submatches[4]); err != nil {
+		return 0, 0, 0, 0, 0, err
+	}
+	if subnet, err = strconv.Atoi(submatches[5]); err != nil {
+		return 0, 0, 0, 0, 0, err
+	}
+	return octet1, octet2, octet3, octet4, subnet, nil
 }
