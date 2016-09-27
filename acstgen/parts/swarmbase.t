@@ -7,12 +7,15 @@
   },
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}
+        {{template "swarmagentvars.t" .}}
         "{{.Name}}Index": {{$index}},
         "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]",
     {{end}}
+
     {{template "swarmmastervars.t" .}}
   },
   "resources": [
+    {{range .AgentPoolProfiles}}{{template "swarmagentresources.t" .}},{{end}}
     {{template "swarmmasterresources.t" .}}
   ],
   "outputs": {

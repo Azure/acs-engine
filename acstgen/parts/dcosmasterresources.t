@@ -36,7 +36,7 @@
           ]
         }, 
         "subnets": [
-          {{GetVNETSubnets}}
+          {{GetVNETSubnets true}}
         ]
       }, 
       "type": "Microsoft.Network/virtualNetworks"

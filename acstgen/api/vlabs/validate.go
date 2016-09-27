@@ -69,9 +69,12 @@ func (a *AgentPoolProfile) Validate() error {
 				return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
 			}
 		}
-		if e := validateName(a.Name, "AgentPoolProfile.DNSPrefix when specifying AgentPoolProfile Ports"); e != nil {
+		if e := validateName(a.DNSPrefix, "AgentPoolProfile.DNSPrefix when specifying AgentPoolProfile Ports"); e != nil {
 			return e
 		}
+	}
+	if len(a.Ports) == 0 && len(a.DNSPrefix) > 0 {
+		return fmt.Errorf("AgentPoolProfile.Ports must be non empty when AgentPoolProfile.DNSPrefix is specified")
 	}
 	return nil
 }

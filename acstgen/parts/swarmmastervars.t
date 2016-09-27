@@ -1,4 +1,8 @@
-    "adminUsername": "[parameters('linuxAdminUsername')]", 
+    "adminUsername": "[parameters('linuxAdminUsername')]",
+    "agentStorageAccountsCount": 5,
+    "agentCustomScript": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/configure-swarm-cluster.sh ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1 &\" &')]",
+    "agentRunCmd": "[concat('runcmd:\n -  [ /bin/bash, /opt/azure/containers/install-cluster.sh ]\n\n')]", 
+    "agentRunCmdFile": "[concat(' -  content: |\n        #!/bin/bash\n        ',variables('agentCustomScript'),'\n    path: /opt/azure/containers/install-cluster.sh\n    permissions: \"0744\"\n')]",
     "clusterInstallParameters": "[concat(variables('masterCount'), ' ',variables('masterVMNamePrefix'), ' ',variables('masterFirstAddr'), ' ',variables('adminUsername'),' ',variables('postInstallScriptURI'),' ',split(variables('masterSubnet'),'0/24')[0])]", 
     "computeApiVersion": "2016-03-30", 
     "masterSubnet": "[parameters('masterSubnet')]", 
@@ -28,7 +32,7 @@
     "postInstallScriptURI": "disabled", 
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]", 
     "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]", 
-    "storageAccountBaseName": "[concat(uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location)), variables('orchestratorName'))]", 
+    "storageAccountBaseName": "[concat(uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location)))]", 
     "storageAccountPrefixes": [
       "0", 
       "6", 

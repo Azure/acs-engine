@@ -21,7 +21,7 @@
           ]
         }, 
         "subnets": [
-          {{GetVNETSubnets}}
+          {{GetVNETSubnets false}}
         ]
       }, 
       "type": "Microsoft.Network/virtualNetworks"
@@ -162,7 +162,7 @@
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]", 
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]", 
-          "customData": "[base64({{template "swarmcustomdata.t" .}})]",
+          "customData": "[base64({{template "swarmmastercustomdata.t" .}})]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true", 
             "ssh": {

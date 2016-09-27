@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -14,25 +15,28 @@ import (
 )
 
 const (
-	agentOutputs         = "agentoutputs.t"
-	agentParams          = "agentparams.t"
-	dcosAgentResources   = "dcosagentresources.t"
-	dcosAgentVars        = "dcosagentvars.t"
-	dcosBaseFile         = "dcosbase.t"
-	dcosCustomData173    = "dcoscustomdata173.t"
-	dcosCustomData184    = "dcoscustomdata184.t"
-	dcosMasterResources  = "dcosmasterresources.t"
-	dcosMasterVars       = "dcosmastervars.t"
-	masterOutputs        = "masteroutputs.t"
-	masterParams         = "masterparams.t"
-	swarmBaseFile        = "swarmbase.t"
-	swarmCustomData      = "swarmcustomdata.t"
-	swarmMasterResources = "swarmmasterresources.t"
-	swarmMasterVars      = "swarmmastervars.t"
+	agentOutputs          = "agentoutputs.t"
+	agentParams           = "agentparams.t"
+	dcosAgentResources    = "dcosagentresources.t"
+	dcosAgentVars         = "dcosagentvars.t"
+	dcosBaseFile          = "dcosbase.t"
+	dcosCustomData173     = "dcoscustomdata173.t"
+	dcosCustomData184     = "dcoscustomdata184.t"
+	dcosMasterResources   = "dcosmasterresources.t"
+	dcosMasterVars        = "dcosmastervars.t"
+	masterOutputs         = "masteroutputs.t"
+	masterParams          = "masterparams.t"
+	swarmBaseFile         = "swarmbase.t"
+	swarmAgentCustomData  = "swarmagentcustomdata.t"
+	swarmAgentResources   = "swarmagentresources.t"
+	swarmAgentVars        = "swarmagentvars.t"
+	swarmMasterCustomData = "swarmmastercustomdata.t"
+	swarmMasterResources  = "swarmmasterresources.t"
+	swarmMasterVars       = "swarmmastervars.t"
 )
 
 var dcosTemplateFiles = []string{agentOutputs, agentParams, dcosAgentResources, dcosAgentVars, dcosBaseFile, dcosCustomData173, dcosCustomData184, dcosMasterResources, dcosMasterVars, masterOutputs, masterParams}
-var swarmTemplateFiles = []string{agentOutputs, agentParams, swarmBaseFile, masterOutputs, masterParams, swarmBaseFile, swarmCustomData, swarmMasterResources, swarmMasterVars}
+var swarmTemplateFiles = []string{agentOutputs, agentParams, masterParams, swarmBaseFile, swarmAgentCustomData, swarmAgentResources, swarmAgentVars, swarmBaseFile, masterOutputs, swarmMasterCustomData, swarmMasterResources, swarmMasterVars}
 
 // VerifyFiles verifies that the required template files exist
 func VerifyFiles(partsDirectory string) error {
@@ -94,8 +98,8 @@ func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (stri
 		"GetVNETAddressPrefixes": func() string {
 			return getVNETAddressPrefixes(acsCluster)
 		},
-		"GetVNETSubnets": func() string {
-			return getVNETSubnets(acsCluster)
+		"GetVNETSubnets": func(addNSG bool) string {
+			return getVNETSubnets(acsCluster, addNSG)
 		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
@@ -145,11 +149,11 @@ func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (stri
 
 func generateUniqueNameSuffix(acsCluster *vlabs.AcsCluster) string {
 	uniqueNameSuffixSize := 8
-	var seed int64
-	for _, c := range acsCluster.MasterProfile.DNSPrefix {
-		seed += int64(c)
-	}
-	rand.Seed(seed)
+	// the name suffix uniquely identifies the cluster and is generated off a hash
+	// from the master dns name
+	h := fnv.New64a()
+	h.Write([]byte(acsCluster.MasterProfile.DNSPrefix))
+	rand.Seed(int64(h.Sum64()))
 	return fmt.Sprintf("%08d", rand.Uint32())[:uniqueNameSuffixSize]
 }
 
@@ -196,7 +200,7 @@ func getVNETAddressPrefixes(acsCluster *vlabs.AcsCluster) string {
 	var buf bytes.Buffer
 	buf.WriteString(`"[variables('masterSubnet')]"`)
 	for _, agentProfile := range acsCluster.AgentPoolProfiles {
-		buf.WriteString(fmt.Sprintf(",\n            \"[variables('%sAddressPrefix')]\"", agentProfile.Name))
+		buf.WriteString(fmt.Sprintf(",\n            \"[variables('%sSubnet')]\"", agentProfile.Name))
 	}
 	return buf.String()
 }
@@ -213,7 +217,7 @@ func getVNETSubnetDependencies(acsCluster *vlabs.AcsCluster) string {
 	return buf.String()
 }
 
-func getVNETSubnets(acsCluster *vlabs.AcsCluster) string {
+func getVNETSubnets(acsCluster *vlabs.AcsCluster, addNSG bool) string {
 	masterString := `{
             "name": "[variables('masterSubnetName')]", 
             "properties": {
@@ -223,7 +227,13 @@ func getVNETSubnets(acsCluster *vlabs.AcsCluster) string {
 	agentString := `          {
             "name": "[variables('%sSubnetName')]", 
             "properties": {
-              "addressPrefix": "[variables('%sAddressPrefix')]", 
+              "addressPrefix": "[variables('%sSubnet')]"
+            }
+          }`
+	agentStringNSG := `          {
+            "name": "[variables('%sSubnetName')]", 
+            "properties": {
+              "addressPrefix": "[variables('%sSubnet')]", 
               "networkSecurityGroup": {
                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('%sNSGName'))]"
               }
@@ -233,7 +243,12 @@ func getVNETSubnets(acsCluster *vlabs.AcsCluster) string {
 	buf.WriteString(masterString)
 	for _, agentProfile := range acsCluster.AgentPoolProfiles {
 		buf.WriteString(",\n")
-		buf.WriteString(fmt.Sprintf(agentString, agentProfile.Name, agentProfile.Name, agentProfile.Name))
+		if addNSG {
+			buf.WriteString(fmt.Sprintf(agentStringNSG, agentProfile.Name, agentProfile.Name, agentProfile.Name))
+		} else {
+			buf.WriteString(fmt.Sprintf(agentString, agentProfile.Name, agentProfile.Name))
+		}
+
 	}
 	return buf.String()
 }
