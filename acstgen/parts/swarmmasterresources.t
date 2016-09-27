@@ -17,11 +17,11 @@
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
-            {{.VNETAddressPrefixes}}
+            {{GetVNETAddressPrefixes}}
           ]
         }, 
         "subnets": [
-          {{.VNETSubnets}}
+          {{GetVNETSubnets}}
         ]
       }, 
       "type": "Microsoft.Network/virtualNetworks"

@@ -4,22 +4,23 @@
   },
   "masterProfile": {
     "count": 5,
-    "dnsPrefix": "mgmtanhowe0923a",
+    "dnsPrefix": "mgmtanhowe0926i",
 		"vmSize": "Standard_D2_v2",
     "subnet": "172.16.0.0/24"
   },
   "agentPoolProfiles": [
     {
-      "name": "agentpool1",
-      "count": 5,
-      "vmSize": "Standard_D2_v2",
-			"isStateless": false
-    },
-    {
-      "name": "agentpool2",
+      "name": "agentPrivate",
       "count": 3,
       "vmSize": "Standard_D2_v2",
-      "dnsPrefix": "appanhowe0923a",
+      "subnet": "10.0.0.0/11"
+    },
+    {
+      "name": "agentPublic",
+      "count": 3,
+      "vmSize": "Standard_D2_v2",
+      "subnet": "10.32.0.0/11",
+      "dnsPrefix": "appanhowe0926i",
       "ports": [
         80,
         443,

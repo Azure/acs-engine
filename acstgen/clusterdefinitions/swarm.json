@@ -14,6 +14,7 @@
       "count": 3,
       "vmSize": "Standard_D2_v2",
       "dnsPrefix": "appanhowe0923a",
+      "subnet": "10.0.0.0/11",
       "ports": [
         80,
         443,

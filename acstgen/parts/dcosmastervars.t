@@ -1,4 +1,5 @@
     "adminUsername": "[parameters('linuxAdminUsername')]",
+    "agentStorageAccountsCount": 5,
     "apiVersionDefault": "2016-03-30", 
     "apiVersionStorage": "2015-06-15", 
     "masterSubnet": "[parameters('masterSubnet')]", 
@@ -29,7 +30,7 @@
       "[concat(variables('masterVMNamePrefix'), 'nic-6')]"
     ], 
     "masterVMSize": "[parameters('masterVMSize')]", 
-    "nameSuffix": "{{.UniqueNameSuffix}}", 
+    "nameSuffix": "{{GetUniqueNameSuffix}}", 
     "oauthEnabled": "false", 
     "orchestratorName": "dcos", 
     "osImageOffer": "UbuntuServer", 

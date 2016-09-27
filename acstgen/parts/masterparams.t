@@ -76,7 +76,7 @@
       "type": "string"
     }, 
     "sshRSAPublicKey": {
-      "defaultValue": "{{.LinuxProfileFirstSSHPublicKey}}", 
+      "defaultValue": "{{GetLinuxProfileFirstSSHPublicKey}}", 
       "metadata": {
         "description": "SSH public key used for auth to all Linux machines.  Not Required.  If not set, you must provide a password key."
       }, 

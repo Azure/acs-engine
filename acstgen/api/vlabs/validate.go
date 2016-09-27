@@ -43,23 +43,33 @@ func (m *MasterProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *AgentPoolProfiles) Validate() error {
-	if e := validateName(a.Name, "AgentPoolProfiles.Name"); e != nil {
+func (a *AgentPoolProfile) Validate() error {
+	if e := validateName(a.Name, "AgentPoolProfile.Name"); e != nil {
 		return e
 	}
 	if a.Count < MinAgentCount || a.Count > MaxAgentCount {
-		return fmt.Errorf("AgentPoolProfiles count needs to be in the range [%d,%d]", MinAgentCount, MaxAgentCount)
+		return fmt.Errorf("AgentPoolProfile count needs to be in the range [%d,%d]", MinAgentCount, MaxAgentCount)
 	}
-	if e := validateName(a.VMSize, "AgentPoolProfiles.VMSize"); e != nil {
+	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
 		return e
 	}
+	if e := validateName(a.Subnet, "AgentPoolProfile.Subnet"); e != nil {
+		return e
+	}
+	_, _, _, _, _, err := parseCIDR(a.Subnet)
+	if err != nil {
+		return fmt.Errorf("AgentPoolProfile.Subnet must be specified in cidr format, it returns error: %s", err.Error())
+	}
 	if len(a.Ports) > 0 {
+		if e := validateUniquePorts(a.Ports, a.Name); e != nil {
+			return e
+		}
 		for _, port := range a.Ports {
 			if port < MinPort || port > MaxPort {
-				return fmt.Errorf("AgentPoolProfiles Ports must be in the range[%d, %d]", MinPort, MaxPort)
+				return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
 			}
 		}
-		if e := validateName(a.Name, "AgentPoolProfiles.DNSPrefix when specifying AgentPoolProfiles Ports"); e != nil {
+		if e := validateName(a.Name, "AgentPoolProfile.DNSPrefix when specifying AgentPoolProfile Ports"); e != nil {
 			return e
 		}
 	}
@@ -88,10 +98,16 @@ func (a *AcsCluster) Validate() error {
 	if e := a.MasterProfile.Validate(); e != nil {
 		return e
 	}
+	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
+		return e
+	}
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
 		if e := agentPoolProfile.Validate(); e != nil {
 			return e
 		}
+	}
+	if e := validateUniqueSubnets(a.AgentPoolProfiles); e != nil {
+		return e
 	}
 	if e := a.LinuxProfile.Validate(); e != nil {
 		return e
@@ -134,4 +150,37 @@ func parseCIDR(cidr string) (octet1 int, octet2 int, octet3 int, octet4 int, sub
 		return 0, 0, 0, 0, 0, err
 	}
 	return octet1, octet2, octet3, octet4, subnet, nil
+}
+
+func validateUniqueProfileNames(profiles []AgentPoolProfile) error {
+	profileNames := make(map[string]bool)
+	for _, profile := range profiles {
+		if _, ok := profileNames[profile.Name]; ok {
+			return fmt.Errorf("profile name '%s' already exists, profile names must be unique across pools", profile.Name)
+		}
+		profileNames[profile.Name] = true
+	}
+	return nil
+}
+
+func validateUniqueSubnets(profiles []AgentPoolProfile) error {
+	profileSubnets := make(map[string]bool)
+	for _, profile := range profiles {
+		if _, ok := profileSubnets[profile.Subnet]; ok {
+			return fmt.Errorf("profile subnet '%s' already exists, subnets must be unique across pools", profile.Subnet)
+		}
+		profileSubnets[profile.Subnet] = true
+	}
+	return nil
+}
+
+func validateUniquePorts(ports []int, name string) error {
+	portMap := make(map[int]bool)
+	for _, port := range ports {
+		if _, ok := portMap[port]; ok {
+			return fmt.Errorf("agent profile '%s' has duplicate port '%d', ports must be unique", name, port)
+		}
+		portMap[port] = true
+	}
+	return nil
 }

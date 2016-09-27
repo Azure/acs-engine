@@ -12,7 +12,7 @@ func (m *MasterProfile) SetDefaults() {
 }
 
 // SetDefaults implements APIObject
-func (a *AgentPoolProfiles) SetDefaults() {
+func (a *AgentPoolProfile) SetDefaults() {
 }
 
 // SetDefaults implements APIObject

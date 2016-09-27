@@ -18,7 +18,7 @@
     "masterSubnetRef": "[concat(variables('vnetID'),'/subnets/',variables('masterSubnetName'))]", 
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]", 
     "masterVMSize": "[parameters('masterVMSize')]", 
-    "nameSuffix": "{{.UniqueNameSuffix}}", 
+    "nameSuffix": "{{GetUniqueNameSuffix}}", 
     "networkApiVersion": "2016-03-30", 
     "orchestratorName": "swarm", 
     "osImageOffer": "UbuntuServer", 

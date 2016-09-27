@@ -25,17 +25,18 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
       "dependsOn": [
+          {{GetVNETSubnetDependencies}}
       ], 
       "location": "[resourceGroup().location]", 
       "name": "[variables('virtualNetworkName')]", 
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
-            {{.VNETAddressPrefixes}}
+            {{GetVNETAddressPrefixes}}
           ]
         }, 
         "subnets": [
-          {{.VNETSubnets}}
+          {{GetVNETSubnets}}
         ]
       }, 
       "type": "Microsoft.Network/virtualNetworks"
@@ -211,7 +212,7 @@
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]", 
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]", 
-          "customData": "[base64(concat({{if IsDCOS173}}{{template "dcoscustomdata173.t" .}}{{else if IsDCOS184}}{{template "dcoscustomdata184.t" .}}{{end}}))]", 
+          "customData": "[base64(concat({{if IsDCOS173}}{{template "dcoscustomdata173.t" dict "DCOSCustomDataPublicIPStr" GetDCOSCustomDataPublicIPStr "DCOSGUID" GetDCOSGUID "RolesString" GetMasterRolesFileContents}}{{else if IsDCOS184}}{{template "dcoscustomdata184.t" dict "DCOSCustomDataPublicIPStr" GetDCOSCustomDataPublicIPStr "DCOSGUID" GetDCOSGUID "RolesString" GetMasterRolesFileContents}}{{end}}))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true", 
             "ssh": {

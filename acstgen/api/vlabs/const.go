@@ -17,6 +17,8 @@ const (
 	MinPort = 1
 	// MaxPort specifies the maximum tcp port to open
 	MaxPort = 65535
-	// DefaultMasterSubnet
+	// BaseLBPriority specifies the base lb priority.
+	BaseLBPriority = 200
+	// DefaultMasterSubnet specifies the default master subnet
 	DefaultMasterSubnet = "172.16.0.0/24"
 )
