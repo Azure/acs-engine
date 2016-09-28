@@ -25,4 +25,6 @@ const (
 	DefaultFirstConsecutiveStaticIP = "172.16.0.5"
 	// DefaultAgentSubnetTemplate specifies a default agent subnet
 	DefaultAgentSubnetTemplate = "10.%d.0.0/24"
+	// MaxDisks specifies the maximum attached disks to add to the cluster
+	MaxDisks = 4
 )

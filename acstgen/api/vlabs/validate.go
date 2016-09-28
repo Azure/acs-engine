@@ -28,16 +28,21 @@ func (m *MasterProfile) Validate() error {
 	if e := validateName(m.DNSPrefix, "MasterProfile.DNSPrefix"); e != nil {
 		return e
 	}
+	if e := validateDNSName(m.DNSPrefix); e != nil {
+		return e
+	}
 	if e := validateName(m.VMSize, "MasterProfile.VMSize"); e != nil {
 		return e
 	}
-
 	return nil
 }
 
 // Validate implements APIObject
 func (a *AgentPoolProfile) Validate() error {
 	if e := validateName(a.Name, "AgentPoolProfile.Name"); e != nil {
+		return e
+	}
+	if e := validatePoolName(a.Name); e != nil {
 		return e
 	}
 	if a.Count < MinAgentCount || a.Count > MaxAgentCount {
@@ -58,6 +63,15 @@ func (a *AgentPoolProfile) Validate() error {
 		if e := validateName(a.DNSPrefix, "AgentPoolProfile.DNSPrefix when specifying AgentPoolProfile Ports"); e != nil {
 			return e
 		}
+		if e := validateDNSName(a.DNSPrefix); e != nil {
+			return e
+		}
+	}
+	if len(a.DiskSizesGB) > 0 && !a.IsStateful {
+		return fmt.Errorf("Disks were specified on a non stateful cluster named '%s'.  Ensure you add '\"isStateful\": true' to the model", a.Name)
+	}
+	if len(a.DiskSizesGB) > MaxDisks {
+		return fmt.Errorf("A maximum of %d disks may be specified.  %d disks were specified for cluster named '%s'", MaxDisks, len(a.DiskSizesGB), a.Name)
 	}
 	if len(a.Ports) == 0 && len(a.DNSPrefix) > 0 {
 		return fmt.Errorf("AgentPoolProfile.Ports must be non empty when AgentPoolProfile.DNSPrefix is specified")
@@ -93,6 +107,9 @@ func (a *AcsCluster) Validate() error {
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
 		if e := agentPoolProfile.Validate(); e != nil {
 			return e
+		}
+		if a.OrchestratorProfile.OrchestratorType == SWARM && agentPoolProfile.IsStateful {
+			return errors.New("stateful deployments are not supported with SWARM, please let us know if you want this feature")
 		}
 	}
 	if e := a.LinuxProfile.Validate(); e != nil {
@@ -139,6 +156,33 @@ func parseCIDR(cidr string) (octet1 int, octet2 int, octet3 int, octet4 int, sub
 		return 0, 0, 0, 0, 0, err
 	}
 	return octet1, octet2, octet3, octet4, subnet, nil
+}
+
+func validatePoolName(poolName string) error {
+	// we will cap at length of 12 and all lowercase letters since this makes up the VMName
+	poolNameRegex := `^([a-z][a-z0-9]{0,11})$`
+	re, err := regexp.Compile(poolNameRegex)
+	if err != nil {
+		return err
+	}
+	submatches := re.FindStringSubmatch(poolName)
+	if len(submatches) != 2 {
+		return fmt.Errorf("pool name '%s' is invalid. A pool name must start with a lowercase letter, have max length of 12, and only have characters a-z0-9", poolName)
+	}
+	return nil
+}
+
+func validateDNSName(dnsName string) error {
+	dnsNameRegex := `^([a-z][a-z0-9-]{1,13}[a-z0-9])$`
+	re, err := regexp.Compile(dnsNameRegex)
+	if err != nil {
+		return err
+	}
+	submatches := re.FindStringSubmatch(dnsName)
+	if len(submatches) != 2 {
+		return fmt.Errorf("DNS name '%s' is invalid. The DNS name must contain between 3 and 15 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number", dnsName)
+	}
+	return nil
 }
 
 func parseIP(ipaddress string) (octet1 int, octet2 int, octet3 int, octet4 int, err error) {
@@ -199,7 +243,7 @@ func validateVNET(a *AcsCluster) error {
 	}
 	if isCustomVNET {
 		if a.OrchestratorProfile.OrchestratorType == SWARM {
-			return errors.New("bring your own VNET is not supported with SWARM")
+			return errors.New("bring your own VNET is not supported with SWARM, please let us know if you want this feature")
 		}
 		subscription, resourcegroup, vnetname, _, e := GetVNETSubnetIDComponents(a.MasterProfile.VnetSubnetID)
 		if e != nil {

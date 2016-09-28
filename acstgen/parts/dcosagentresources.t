@@ -12,7 +12,7 @@
     {
       "apiVersion": "[variables('apiVersionStorage')]", 
       "copy": {
-        "count": "[variables('agentStorageAccountsCount')]", 
+        "count": "[variables('{{.Name}}StorageAccountsCount')]", 
         "name": "loop"
       }, 
       "dependsOn": [

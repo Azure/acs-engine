@@ -84,11 +84,12 @@ func usage(errs ...error) {
 	fmt.Fprintf(os.Stderr, "usage: %s ClusterDefinitionFile\n", os.Args[0])
 	fmt.Fprintf(os.Stderr, "       read the ClusterDefinitionFile and output an arm template")
 	fmt.Fprintf(os.Stderr, "\n")
-	fmt.Fprintf(os.Stderr, "options:")
+	fmt.Fprintf(os.Stderr, "options:\n")
 	flag.PrintDefaults()
 }
 
 var templateDirectory = flag.String("templateDirectory", "./parts", "directory containing base template files")
+var noPrettyPrint = flag.Bool("noPrettyPrint", false, "do not pretty print output")
 
 func main() {
 	var acsCluster *vlabs.AcsCluster
@@ -128,10 +129,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if template, err = prettyPrintArmTemplate(template); err != nil {
-		fmt.Fprintf(os.Stderr, "error pretty printing template %s", err.Error())
-		os.Exit(1)
+	if !*noPrettyPrint {
+		if template, err = prettyPrintArmTemplate(template); err != nil {
+			fmt.Fprintf(os.Stderr, "error pretty printing template %s", err.Error())
+			os.Exit(1)
+		}
 	}
-
 	fmt.Print(template)
 }

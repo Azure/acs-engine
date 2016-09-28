@@ -15,27 +15,28 @@ import (
 )
 
 const (
-	agentOutputs          = "agentoutputs.t"
-	agentParams           = "agentparams.t"
-	dcosAgentResources    = "dcosagentresources.t"
-	dcosAgentVars         = "dcosagentvars.t"
-	dcosBaseFile          = "dcosbase.t"
-	dcosCustomData173     = "dcoscustomdata173.t"
-	dcosCustomData184     = "dcoscustomdata184.t"
-	dcosMasterResources   = "dcosmasterresources.t"
-	dcosMasterVars        = "dcosmastervars.t"
-	masterOutputs         = "masteroutputs.t"
-	masterParams          = "masterparams.t"
-	swarmBaseFile         = "swarmbase.t"
-	swarmAgentCustomData  = "swarmagentcustomdata.t"
-	swarmAgentResources   = "swarmagentresources.t"
-	swarmAgentVars        = "swarmagentvars.t"
-	swarmMasterCustomData = "swarmmastercustomdata.t"
-	swarmMasterResources  = "swarmmasterresources.t"
-	swarmMasterVars       = "swarmmastervars.t"
+	agentOutputs            = "agentoutputs.t"
+	agentParams             = "agentparams.t"
+	dcosAgentResources      = "dcosagentresources.t"
+	dcosAgentResourcesDisks = "dcosagentresourcesdisks.t"
+	dcosAgentVars           = "dcosagentvars.t"
+	dcosBaseFile            = "dcosbase.t"
+	dcosCustomData173       = "dcoscustomdata173.t"
+	dcosCustomData184       = "dcoscustomdata184.t"
+	dcosMasterResources     = "dcosmasterresources.t"
+	dcosMasterVars          = "dcosmastervars.t"
+	masterOutputs           = "masteroutputs.t"
+	masterParams            = "masterparams.t"
+	swarmBaseFile           = "swarmbase.t"
+	swarmAgentCustomData    = "swarmagentcustomdata.t"
+	swarmAgentResources     = "swarmagentresources.t"
+	swarmAgentVars          = "swarmagentvars.t"
+	swarmMasterCustomData   = "swarmmastercustomdata.t"
+	swarmMasterResources    = "swarmmasterresources.t"
+	swarmMasterVars         = "swarmmastervars.t"
 )
 
-var dcosTemplateFiles = []string{agentOutputs, agentParams, dcosAgentResources, dcosAgentVars, dcosBaseFile, dcosCustomData173, dcosCustomData184, dcosMasterResources, dcosMasterVars, masterOutputs, masterParams}
+var dcosTemplateFiles = []string{agentOutputs, agentParams, dcosAgentResources, dcosAgentResourcesDisks, dcosAgentVars, dcosBaseFile, dcosCustomData173, dcosCustomData184, dcosMasterResources, dcosMasterVars, masterOutputs, masterParams}
 var swarmTemplateFiles = []string{agentOutputs, agentParams, masterParams, swarmBaseFile, swarmAgentCustomData, swarmAgentResources, swarmAgentVars, swarmBaseFile, masterOutputs, swarmMasterCustomData, swarmMasterResources, swarmMasterVars}
 
 // VerifyFiles verifies that the required template files exist
@@ -100,6 +101,9 @@ func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (stri
 		},
 		"GetVNETSubnets": func(addNSG bool) string {
 			return getVNETSubnets(acsCluster, addNSG)
+		},
+		"GetDataDisks": func(profile *vlabs.AgentPoolProfile) string {
+			return getDataDisks(profile)
 		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
@@ -325,6 +329,31 @@ func getSecurityRule(port int, portIndex int) string {
               "sourcePortRange": "*"
             }
           }`, port, port, port, vlabs.BaseLBPriority+portIndex)
+}
+
+func getDataDisks(a *vlabs.AgentPoolProfile) string {
+	if !a.HasDisks() {
+		return ""
+	}
+	var buf bytes.Buffer
+	buf.WriteString("\"dataDisks\": [\n")
+	dataDisks := `            {
+              "createOption": "Empty", 
+              "diskSizeGB": "%d", 
+              "lun": %d, 
+              "name": "[concat(variables('%sVMNamePrefix'), copyIndex(),'-datadisk%d')]", 
+              "vhd": {
+                "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('%sDataAccountName'),'.blob.core.windows.net/vhds/',variables('%sVMNamePrefix'),copyIndex(), '--datadisk%d.vhd')]"
+              }
+            }`
+	for i, diskSize := range a.DiskSizesGB {
+		if i > 0 {
+			buf.WriteString(",\n")
+		}
+		buf.WriteString(fmt.Sprintf(dataDisks, diskSize, i, a.Name, i, a.Name, a.Name, a.Name, a.Name, i))
+	}
+	buf.WriteString("\n          ],")
+	return buf.String()
 }
 
 func getSecurityRules(ports []int) string {
