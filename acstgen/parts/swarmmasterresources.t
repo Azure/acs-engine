@@ -121,7 +121,7 @@
                   "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
                 }
               ], 
-              "privateIPAddress": "[concat(split(variables('masterSubnet'),'0/24')[0], copyIndex(variables('masterFirstAddr')))]", 
+              "privateIPAddress": "[concat(split(variables('masterSubnet'),'0/24')[0], copyIndex(variables('masterFirstAddrOctet4')))]", 
               "privateIPAllocationMethod": "Static", 
               "subnet": {
                 "id": "[variables('masterSubnetRef')]"

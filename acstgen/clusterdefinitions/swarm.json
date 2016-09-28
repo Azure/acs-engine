@@ -5,8 +5,7 @@
   "masterProfile": {
     "count": 1,
     "dnsPrefix": "mgmtanhowe0927c",
-		"vmSize": "Standard_D2_v2",
-    "subnet": "172.16.0.0/24"
+		"vmSize": "Standard_D2_v2"
   },
   "agentPoolProfiles": [
     {
@@ -14,7 +13,6 @@
       "count": 3,
       "vmSize": "Standard_D2_v2",
       "dnsPrefix": "appanhowe0927c",
-      "subnet": "10.0.0.0/11",
       "ports": [
         80,
         443,
@@ -24,8 +22,7 @@
     {
       "name": "agentpool2",
       "count": 3,
-      "vmSize": "Standard_D2_v2",
-      "subnet": "10.32.0.0/11"
+      "vmSize": "Standard_D2_v2"
     }
   ],
   "linuxProfile": {

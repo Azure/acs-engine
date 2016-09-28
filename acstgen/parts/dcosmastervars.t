@@ -2,11 +2,9 @@
     "agentStorageAccountsCount": 5,
     "apiVersionDefault": "2016-03-30", 
     "apiVersionStorage": "2015-06-15", 
-    "masterSubnet": "[parameters('masterSubnet')]", 
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]", 
     "masterCount": {{.MasterProfile.Count}}, 
     "masterEndpointDNSNamePrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
-    "masterFirstAddr": 5, 
     "masterLbBackendPoolName": "[concat(variables('orchestratorName'), '-master-pool-', variables('nameSuffix'))]", 
     "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]", 
     "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]", 
@@ -16,9 +14,19 @@
     "masterNSGName": "[concat(variables('orchestratorName'), '-master-nsg-', variables('nameSuffix'))]", 
     "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]", 
     "masterStorageAccountExhibitorName": "[concat(variables('storageAccountBaseName'), 'exhb0')]", 
-    "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]", 
-    "masterSubnetName": "[concat(variables('orchestratorName'), '-masterSubnet')]", 
-    "masterSubnetRef": "[concat(variables('vnetID'),'/subnets/',variables('masterSubnetName'))]", 
+    "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
+{{if .MasterProfile.IsCustomVNET}}
+    "masterVnetSubnetID": "[parameters('masterVnetSubnetID')]",
+{{else}}
+    "masterSubnet": "[parameters('masterSubnet')]",
+    "masterSubnetName": "[concat(variables('orchestratorName'), '-masterSubnet')]",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+    "masterVnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('masterSubnetName'))]",
+    "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]", 
+{{end}}
+    "masterFirstAddrOctets": "[split(parameters('firstConsecutiveStaticIP'),'.')]",
+    "masterFirstAddrOctet4": "[variables('masterFirstAddrOctets')[3]]",
+    "masterFirstAddrPrefix": "[concat(variables('masterFirstAddrOctets')[0],'.',variables('masterFirstAddrOctets')[1],'.',variables('masterFirstAddrOctets')[2],'.')]",
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]", 
     "masterVMNic": [
       "[concat(variables('masterVMNamePrefix'), 'nic-0')]", 
@@ -81,7 +89,6 @@
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]", 
     "storageAccountType": "Standard_LRS", 
     "storageLocation": "[resourceGroup().location]", 
-    "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]", 
     "vmSizesMap": {
       "Standard_A0": {
         "storageAccountType": "Standard_LRS"
@@ -224,5 +231,4 @@
       "Standard_GS5": {
         "storageAccountType": "Premium_LRS"
       }
-    }, 
-    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]"
+    }

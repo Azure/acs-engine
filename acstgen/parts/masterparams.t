@@ -12,10 +12,27 @@
       }, 
       "type": "string"
     },
-    "masterSubnet": {
-      "defaultValue": "{{.MasterProfile.Subnet}}",
+{{if .MasterProfile.IsCustomVNET}}
+    "masterVnetSubnetID": {
+      "defaultValue": "{{.MasterProfile.VnetSubnetID}}",
       "metadata": {
-        "description": "Sets the subnet of the master, must be specified in CIDR format with a /24 subnet."
+        "description": "Sets the vnet subnet of the master."
+      }, 
+      "type": "string"
+    },
+{{else}}
+    "masterSubnet": {
+      "defaultValue": "{{.MasterProfile.GetSubnet}}",
+      "metadata": {
+        "description": "Sets the subnet of the master."
+      }, 
+      "type": "string"
+    },
+{{end}}
+    "firstConsecutiveStaticIP": {
+      "defaultValue": "{{.MasterProfile.FirstConsecutiveStaticIP}}",
+      "metadata": {
+        "description": "Sets the static IP of the first master"
       }, 
       "type": "string"
     },

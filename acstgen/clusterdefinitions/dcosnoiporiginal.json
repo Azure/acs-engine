@@ -1,20 +1,20 @@
 {
   "orchestratorProfile": {
-    "orchestratorType": "DCOS173"
+    "orchestratorType": "DCOS"
   },
   "masterProfile": {
-    "count": 1,
+    "count": 5,
     "dnsPrefix": "mgmtanhowe0926i",
 		"vmSize": "Standard_D2_v2"
   },
   "agentPoolProfiles": [
     {
-      "name": "agentpool1",
-      "count": 5,
+      "name": "agentPrivate",
+      "count": 3,
       "vmSize": "Standard_D2_v2"
     },
     {
-      "name": "agentpool2",
+      "name": "agentPublic",
       "count": 3,
       "vmSize": "Standard_D2_v2",
       "dnsPrefix": "appanhowe0926i",

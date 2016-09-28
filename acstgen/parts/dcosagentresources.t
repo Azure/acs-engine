@@ -79,10 +79,14 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(1,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]", 
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(2,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]", 
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(3,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(3,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]", 
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",  
-        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
-{{if IsPublic .Ports}},
-        "[concat('Microsoft.Network/loadBalancers/', variables('{{.Name}}LbName'))]"
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]"
+{{if .IsCustomVNET}}
+      ,"[concat('Microsoft.Network/networkSecurityGroups/', variables('{{.Name}}NSGName'))]" 
+{{else}}
+      ,"[variables('vnetID')]"
+{{end}}
+{{if IsPublic .Ports}}
+       ,"[concat('Microsoft.Network/loadBalancers/', variables('{{.Name}}LbName'))]"
 {{end}}
       ], 
       "location": "[resourceGroup().location]", 
@@ -97,6 +101,11 @@
               {
                 "name": "nic", 
                 "properties": {
+{{if .IsCustomVNET}}                  
+                  "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('{{.Name}}NSGName'))]"
+                  },
+{{end}}
                   "ipConfigurations": [
                     {
                       "name": "nicipconfig", 
@@ -109,7 +118,7 @@
                         ], 
 {{end}}
                         "subnet": {
-                          "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'), '/subnets/', variables('{{.Name}}SubnetName'))]"
+                          "id": "[variables('{{.Name}}VnetSubnetID')]"
                         }
                       }
                     }

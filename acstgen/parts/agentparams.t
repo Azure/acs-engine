@@ -163,13 +163,23 @@
       }, 
       "type": "string"
     },
-    "{{.Name}}Subnet": {
-      "defaultValue": "{{.Subnet}}",
+{{if .IsCustomVNET}}
+    "{{.Name}}VnetSubnetID": {
+      "defaultValue": "{{.VnetSubnetID}}",
       "metadata": {
-        "description": "Sets the subnet of the master, must be specified in CIDR format with a /24 subnet."
+        "description": "Sets the vnet subnet of agent pool '{{.Name}}'."
       }, 
       "type": "string"
     }
+{{else}}
+    "{{.Name}}Subnet": {
+      "defaultValue": "{{.GetSubnet}}",
+      "metadata": {
+        "description": "Sets the subnet of agent pool '{{.Name}}'."
+      }, 
+      "type": "string"
+    }
+{{end}}
 {{if IsPublic .Ports}}
   ,"{{.Name}}EndpointDNSNamePrefix": {
       "defaultValue": "{{.DNSPrefix}}",

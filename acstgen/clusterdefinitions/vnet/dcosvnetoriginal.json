@@ -3,21 +3,25 @@
     "orchestratorType": "DCOS"
   },
   "masterProfile": {
-    "count": 3,
-    "dnsPrefix": "mgmtanhowe0927i",
-    "vmSize": "Standard_D2_v2"
+    "count": 5,
+    "dnsPrefix": "mgmtanhowe0927h",
+		"vmSize": "Standard_D2_v2",
+    "vnetSubnetId": "/subscriptions/b52fce95-de5f-4b37-afca-db203a5d0b6a/resourceGroups/anhoweExampleRG/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/ExampleMasterSubnet",
+    "firstConsecutiveStaticIP": "10.100.0.5" 
   },
   "agentPoolProfiles": [
     {
       "name": "agentPrivate",
       "count": 3,
-      "vmSize": "Standard_D2_v2"
+      "vmSize": "Standard_D2_v2",
+      "vnetSubnetId": "/subscriptions/b52fce95-de5f-4b37-afca-db203a5d0b6a/resourceGroups/anhoweExampleRG/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/ExampleAgentSubnet"
     },
     {
       "name": "agentPublic",
       "count": 3,
       "vmSize": "Standard_D2_v2",
-      "dnsPrefix": "appanhowe0927i",
+      "dnsPrefix": "appanhowe0927h",
+      "vnetSubnetId": "/subscriptions/b52fce95-de5f-4b37-afca-db203a5d0b6a/resourceGroups/anhoweExampleRG/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/ExampleAgentSubnet",
       "ports": [
         80,
         443,

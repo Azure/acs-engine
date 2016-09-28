@@ -21,7 +21,8 @@
         "accountType": "Standard_LRS"
       }, 
       "type": "Microsoft.Storage/storageAccounts"
-    }, 
+    },
+{{if not .MasterProfile.IsCustomVNET}}
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
       "dependsOn": [
@@ -40,7 +41,8 @@
         ]
       }, 
       "type": "Microsoft.Network/virtualNetworks"
-    }, 
+    },
+{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
       "location": "[resourceGroup().location]", 
@@ -139,8 +141,10 @@
         "name": "nicLoopNode"
       }, 
       "dependsOn": [
+{{if not .MasterProfile.IsCustomVNET}}     
+        "[variables('vnetID')]",
+{{end}} 
         "[variables('masterLbID')]", 
-        "[variables('vnetID')]", 
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]", 
         "[variables('masterNSGID')]"
       ], 
@@ -161,10 +165,10 @@
                   "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
                 }
               ], 
-              "privateIPAddress": "[concat(split(variables('masterSubnet'),'0/24')[0], copyIndex(variables('masterFirstAddr')))]", 
+              "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(int(variables('masterFirstAddrOctet4'))))]", 
               "privateIPAllocationMethod": "Static", 
               "subnet": {
-                "id": "[variables('masterSubnetRef')]"
+                "id": "[variables('masterVnetSubnetID')]"
               }
             }
           }

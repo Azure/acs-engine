@@ -21,4 +21,8 @@ const (
 	BaseLBPriority = 200
 	// DefaultMasterSubnet specifies the default master subnet
 	DefaultMasterSubnet = "172.16.0.0/24"
+	// DefaultFirstConsecutiveStaticIP specifies the static IP address on master 0
+	DefaultFirstConsecutiveStaticIP = "172.16.0.5"
+	// DefaultAgentSubnetTemplate specifies a default agent subnet
+	DefaultAgentSubnetTemplate = "10.%d.0.0/24"
 )

@@ -31,13 +31,6 @@ func (m *MasterProfile) Validate() error {
 	if e := validateName(m.VMSize, "MasterProfile.VMSize"); e != nil {
 		return e
 	}
-	_, _, _, _, subnet, err := parseCIDR(m.Subnet)
-	if err != nil {
-		return fmt.Errorf("MasterProfile.Subnet must be specified in cidr format, it returns error: %s", err.Error())
-	}
-	if subnet != 24 {
-		return fmt.Errorf("MasterProfile.Subnet must have a /24 subnet")
-	}
 
 	return nil
 }
@@ -52,13 +45,6 @@ func (a *AgentPoolProfile) Validate() error {
 	}
 	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
 		return e
-	}
-	if e := validateName(a.Subnet, "AgentPoolProfile.Subnet"); e != nil {
-		return e
-	}
-	_, _, _, _, _, err := parseCIDR(a.Subnet)
-	if err != nil {
-		return fmt.Errorf("AgentPoolProfile.Subnet must be specified in cidr format, it returns error: %s", err.Error())
 	}
 	if len(a.Ports) > 0 {
 		if e := validateUniquePorts(a.Ports, a.Name); e != nil {
@@ -85,7 +71,7 @@ func (l *LinuxProfile) Validate() error {
 		return e
 	}
 	if len(l.SSH.PublicKeys) != 1 {
-		return errors.New("LinuxProfile.PublicKeys requires 1 SSH Key")
+		return errors.New("LinuxProfile.PublicKeys requires only 1 SSH Key")
 	}
 	if e := validateName(l.SSH.PublicKeys[0].KeyData, "LinuxProfile.PublicKeys.KeyData"); e != nil {
 		return e
@@ -109,10 +95,10 @@ func (a *AcsCluster) Validate() error {
 			return e
 		}
 	}
-	if e := validateUniqueSubnets(a.AgentPoolProfiles); e != nil {
+	if e := a.LinuxProfile.Validate(); e != nil {
 		return e
 	}
-	if e := a.LinuxProfile.Validate(); e != nil {
+	if e := validateVNET(a); e != nil {
 		return e
 	}
 	return nil
@@ -155,6 +141,33 @@ func parseCIDR(cidr string) (octet1 int, octet2 int, octet3 int, octet4 int, sub
 	return octet1, octet2, octet3, octet4, subnet, nil
 }
 
+func parseIP(ipaddress string) (octet1 int, octet2 int, octet3 int, octet4 int, err error) {
+	// verify cidr format and a /24 subnet
+	// regular expression inspired by http://blog.markhatton.co.uk/2011/03/15/regular-expressions-for-ip-addresses-cidr-ranges-and-hostnames/
+	ipRegex := `^((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$`
+	var re *regexp.Regexp
+	if re, err = regexp.Compile(ipRegex); err != nil {
+		return 0, 0, 0, 0, err
+	}
+	submatches := re.FindStringSubmatch(ipaddress)
+	if len(submatches) != 5 {
+		return 0, 0, 0, 0, fmt.Errorf("address %s is not specified as a valid ip address", ipaddress)
+	}
+	if octet1, err = strconv.Atoi(submatches[1]); err != nil {
+		return 0, 0, 0, 0, err
+	}
+	if octet2, err = strconv.Atoi(submatches[2]); err != nil {
+		return 0, 0, 0, 0, err
+	}
+	if octet3, err = strconv.Atoi(submatches[3]); err != nil {
+		return 0, 0, 0, 0, err
+	}
+	if octet4, err = strconv.Atoi(submatches[4]); err != nil {
+		return 0, 0, 0, 0, err
+	}
+	return octet1, octet2, octet3, octet4, nil
+}
+
 func validateUniqueProfileNames(profiles []AgentPoolProfile) error {
 	profileNames := make(map[string]bool)
 	for _, profile := range profiles {
@@ -162,17 +175,6 @@ func validateUniqueProfileNames(profiles []AgentPoolProfile) error {
 			return fmt.Errorf("profile name '%s' already exists, profile names must be unique across pools", profile.Name)
 		}
 		profileNames[profile.Name] = true
-	}
-	return nil
-}
-
-func validateUniqueSubnets(profiles []AgentPoolProfile) error {
-	profileSubnets := make(map[string]bool)
-	for _, profile := range profiles {
-		if _, ok := profileSubnets[profile.Subnet]; ok {
-			return fmt.Errorf("profile subnet '%s' already exists, subnets must be unique across pools", profile.Subnet)
-		}
-		profileSubnets[profile.Subnet] = true
 	}
 	return nil
 }
@@ -186,4 +188,54 @@ func validateUniquePorts(ports []int, name string) error {
 		portMap[port] = true
 	}
 	return nil
+}
+
+func validateVNET(a *AcsCluster) error {
+	isCustomVNET := a.MasterProfile.IsCustomVNET()
+	for _, agentPool := range a.AgentPoolProfiles {
+		if agentPool.IsCustomVNET() != isCustomVNET {
+			return fmt.Errorf("Multiple VNET Subnet configurations specified.  The master profile and each agent pool profile must all specify a custom VNET Subnet, or none at all.")
+		}
+	}
+	if isCustomVNET {
+		if a.OrchestratorProfile.OrchestratorType == SWARM {
+			return errors.New("bring your own VNET is not supported with SWARM")
+		}
+		subscription, resourcegroup, vnetname, _, e := GetVNETSubnetIDComponents(a.MasterProfile.VnetSubnetID)
+		if e != nil {
+			return e
+		}
+
+		for _, agentPool := range a.AgentPoolProfiles {
+			agentSubID, agentRG, agentVNET, _, err := GetVNETSubnetIDComponents(agentPool.VnetSubnetID)
+			if err != nil {
+				return err
+			}
+			if agentSubID != subscription ||
+				agentRG != resourcegroup ||
+				agentVNET != vnetname {
+				return errors.New("Multipe VNETS specified.  The master profile and each agent pool must reference the same VNET (but it is ok to reference different subnets on that VNET)")
+			}
+		}
+
+		// validate that the first master IP address has been set
+		if e = validateName(a.MasterProfile.FirstConsecutiveStaticIP, "MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification)"); e != nil {
+			return e
+		}
+	}
+	return nil
+}
+
+// GetVNETSubnetIDComponents extract subscription, resourcegroup, vnetname, subnetname from the vnetSubnetID
+func GetVNETSubnetIDComponents(vnetSubnetID string) (string, string, string, string, error) {
+	vnetSubnetIDRegex := `^\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Network\/virtualNetworks\/([^\/]*)\/subnets\/([^\/]*)$`
+	re, err := regexp.Compile(vnetSubnetIDRegex)
+	if err != nil {
+		return "", "", "", "", err
+	}
+	submatches := re.FindStringSubmatch(vnetSubnetID)
+	if len(submatches) != 4 {
+		return "", "", "", "", err
+	}
+	return submatches[1], submatches[2], submatches[3], submatches[4], nil
 }
