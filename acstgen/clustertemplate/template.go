@@ -388,5 +388,5 @@ func isDCOS(acsCluster *vlabs.AcsCluster) bool {
 }
 
 func isSwarm(acsCluster *vlabs.AcsCluster) bool {
-	return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.SWARM
+	return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Swarm
 }

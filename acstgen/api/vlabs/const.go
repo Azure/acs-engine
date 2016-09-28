@@ -7,8 +7,8 @@ const (
 	DCOS184 = "DCOS184"
 	// DCOS173 is the string constant for DCOS 1.7.3 orchestrator type
 	DCOS173 = "DCOS173"
-	// SWARM is the string constant for the Swarm orchestrator type
-	SWARM = "Swarm"
+	// Swarm is the string constant for the Swarm orchestrator type
+	Swarm = "Swarm"
 	// MinAgentCount are the minimum number of agents
 	MinAgentCount = 1
 	// MaxAgentCount are the maximum number of agents

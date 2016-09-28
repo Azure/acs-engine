@@ -13,7 +13,7 @@ func (o *OrchestratorProfile) Validate() error {
 	case DCOS:
 	case DCOS184:
 	case DCOS173:
-	case SWARM:
+	case Swarm:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
@@ -108,8 +108,8 @@ func (a *AcsCluster) Validate() error {
 		if e := agentPoolProfile.Validate(); e != nil {
 			return e
 		}
-		if a.OrchestratorProfile.OrchestratorType == SWARM && agentPoolProfile.IsStateful {
-			return errors.New("stateful deployments are not supported with SWARM, please let us know if you want this feature")
+		if a.OrchestratorProfile.OrchestratorType == Swarm && agentPoolProfile.IsStateful {
+			return errors.New("stateful deployments are not supported with Swarm, please let us know if you want this feature")
 		}
 	}
 	if e := a.LinuxProfile.Validate(); e != nil {
@@ -242,8 +242,8 @@ func validateVNET(a *AcsCluster) error {
 		}
 	}
 	if isCustomVNET {
-		if a.OrchestratorProfile.OrchestratorType == SWARM {
-			return errors.New("bring your own VNET is not supported with SWARM, please let us know if you want this feature")
+		if a.OrchestratorProfile.OrchestratorType == Swarm {
+			return errors.New("bring your own VNET is not supported with Swarm, please let us know if you want this feature")
 		}
 		subscription, resourcegroup, vnetname, _, e := GetVNETSubnetIDComponents(a.MasterProfile.VnetSubnetID)
 		if e != nil {
