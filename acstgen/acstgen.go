@@ -62,7 +62,7 @@ func prettyPrintJSON(content string) (string, error) {
 func prettyPrintArmTemplate(template string) (string, error) {
 	translateParams := [][]string{
 		{"parameters", "dparameters"},
-		{"variables", "eparameters"},
+		{"variables", "evariables"},
 		{"resources", "fresources"},
 		{"outputs", "zoutputs"},
 	}
