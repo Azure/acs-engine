@@ -3,8 +3,8 @@ package vlabs
 import (
 	"errors"
 	"fmt"
+	"net"
 	"regexp"
-	"strconv"
 )
 
 // Validate implements APIObject
@@ -14,9 +14,33 @@ func (o *OrchestratorProfile) Validate() error {
 	case DCOS184:
 	case DCOS173:
 	case Swarm:
+	case Kubernetes:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
+
+	if o.OrchestratorType == Kubernetes && len(o.ServicePrincipalClientID) == 0 {
+		return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", o.OrchestratorType)
+	}
+
+	if o.OrchestratorType == Kubernetes && len(o.ServicePrincipalClientSecret) == 0 {
+		return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", o.OrchestratorType)
+	}
+
+	if o.OrchestratorType != Kubernetes && (len(o.ServicePrincipalClientID) > 0 || len(o.ServicePrincipalClientSecret) > 0) {
+		return fmt.Errorf("Service principal and secret is not required for orchestrator %s", o.OrchestratorType)
+	}
+
+	if o.OrchestratorType == Kubernetes {
+		if len(o.ApiserverCertificate) > 0 || len(o.ApiserverPrivateKey) > 0 || len(o.CaCertificate) > 0 || len(o.ClientCertificate) > 0 || len(o.ClientPrivateKey) > 0 {
+			return fmt.Errorf("API, CA, and Client certs are required for orchestrator %s", o.OrchestratorType)
+		}
+	} else {
+		if len(o.ApiserverCertificate) > 0 || len(o.ApiserverPrivateKey) > 0 || len(o.CaCertificate) > 0 || len(o.ClientCertificate) > 0 || len(o.ClientPrivateKey) > 0 {
+			return fmt.Errorf("API, CA, and Client certs are not required for orchestrator %s", o.OrchestratorType)
+		}
+	}
+
 	return nil
 }
 
@@ -111,6 +135,15 @@ func (a *AcsCluster) Validate() error {
 		if a.OrchestratorProfile.OrchestratorType == Swarm && agentPoolProfile.IsStateful {
 			return errors.New("stateful deployments are not supported with Swarm, please let us know if you want this feature")
 		}
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && !agentPoolProfile.IsStateful {
+			return errors.New("stateless (VMSS) deployments are not supported with Kubernetes, Kubernetes requires the ability to attach/detach disks.  To fix specify 'isStateful=true'")
+		}
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && agentPoolProfile.IsStateful && len(agentPoolProfile.DiskSizesGB) > 0 {
+			return errors.New("diskSizesGB cannot be used with Kubernetes - Kubernetes attaches its own disks")
+		}
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(agentPoolProfile.DNSPrefix) > 0 {
+			return errors.New("DNSPrefix not support for agent pools in Kubernetes - Kubernetes marks its own clusters public")
+		}
 	}
 	if e := a.LinuxProfile.Validate(); e != nil {
 		return e
@@ -126,36 +159,6 @@ func validateName(name string, label string) error {
 		return fmt.Errorf("%s must be a non-empty value", label)
 	}
 	return nil
-}
-
-func parseCIDR(cidr string) (octet1 int, octet2 int, octet3 int, octet4 int, subnet int, err error) {
-	// verify cidr format and a /24 subnet
-	// regular expression inspired by http://blog.markhatton.co.uk/2011/03/15/regular-expressions-for-ip-addresses-cidr-ranges-and-hostnames/
-	cidrRegex := `^((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\/((?:[0-9]|[1-2][0-9]|3[0-2]))$`
-	var re *regexp.Regexp
-	if re, err = regexp.Compile(cidrRegex); err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-	submatches := re.FindStringSubmatch(cidr)
-	if len(submatches) != 6 {
-		return 0, 0, 0, 0, 0, fmt.Errorf("address %s is not specified as valid cidr", cidr)
-	}
-	if octet1, err = strconv.Atoi(submatches[1]); err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-	if octet2, err = strconv.Atoi(submatches[2]); err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-	if octet3, err = strconv.Atoi(submatches[3]); err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-	if octet4, err = strconv.Atoi(submatches[4]); err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-	if subnet, err = strconv.Atoi(submatches[5]); err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-	return octet1, octet2, octet3, octet4, subnet, nil
 }
 
 func validatePoolName(poolName string) error {
@@ -183,33 +186,6 @@ func validateDNSName(dnsName string) error {
 		return fmt.Errorf("DNS name '%s' is invalid. The DNS name must contain between 3 and 15 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number", dnsName)
 	}
 	return nil
-}
-
-func parseIP(ipaddress string) (octet1 int, octet2 int, octet3 int, octet4 int, err error) {
-	// verify cidr format and a /24 subnet
-	// regular expression inspired by http://blog.markhatton.co.uk/2011/03/15/regular-expressions-for-ip-addresses-cidr-ranges-and-hostnames/
-	ipRegex := `^((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$`
-	var re *regexp.Regexp
-	if re, err = regexp.Compile(ipRegex); err != nil {
-		return 0, 0, 0, 0, err
-	}
-	submatches := re.FindStringSubmatch(ipaddress)
-	if len(submatches) != 5 {
-		return 0, 0, 0, 0, fmt.Errorf("address %s is not specified as a valid ip address", ipaddress)
-	}
-	if octet1, err = strconv.Atoi(submatches[1]); err != nil {
-		return 0, 0, 0, 0, err
-	}
-	if octet2, err = strconv.Atoi(submatches[2]); err != nil {
-		return 0, 0, 0, 0, err
-	}
-	if octet3, err = strconv.Atoi(submatches[3]); err != nil {
-		return 0, 0, 0, 0, err
-	}
-	if octet4, err = strconv.Atoi(submatches[4]); err != nil {
-		return 0, 0, 0, 0, err
-	}
-	return octet1, octet2, octet3, octet4, nil
 }
 
 func validateUniqueProfileNames(profiles []AgentPoolProfile) error {
@@ -262,9 +238,9 @@ func validateVNET(a *AcsCluster) error {
 			}
 		}
 
-		// validate that the first master IP address has been set
-		if e = validateName(a.MasterProfile.FirstConsecutiveStaticIP, "MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification)"); e != nil {
-			return e
+		masterFirstIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)
+		if masterFirstIP != nil {
+			return fmt.Errorf("MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification) '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
 		}
 	}
 	return nil

@@ -3,7 +3,8 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     {{range .AgentPoolProfiles}}{{template "agentparams.t" .}},{{end}}
-    {{template "masterparams.t" .}}
+    {{template "masterparams.t" .}},
+    {{GetSizeMap}}
   },
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}

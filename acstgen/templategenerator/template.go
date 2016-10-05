@@ -1,4 +1,4 @@
-package clustertemplate
+package templategenerator
 
 import (
 	"bytes"
@@ -15,33 +15,46 @@ import (
 )
 
 const (
-	agentOutputs            = "agentoutputs.t"
-	agentParams             = "agentparams.t"
-	dcosAgentResources      = "dcosagentresources.t"
-	dcosAgentResourcesDisks = "dcosagentresourcesdisks.t"
-	dcosAgentVars           = "dcosagentvars.t"
-	dcosBaseFile            = "dcosbase.t"
-	dcosCustomData173       = "dcoscustomdata173.t"
-	dcosCustomData184       = "dcoscustomdata184.t"
-	dcosMasterResources     = "dcosmasterresources.t"
-	dcosMasterVars          = "dcosmastervars.t"
-	masterOutputs           = "masteroutputs.t"
-	masterParams            = "masterparams.t"
-	swarmBaseFile           = "swarmbase.t"
-	swarmAgentCustomData    = "swarmagentcustomdata.t"
-	swarmAgentResources     = "swarmagentresources.t"
-	swarmAgentVars          = "swarmagentvars.t"
-	swarmMasterCustomData   = "swarmmastercustomdata.t"
-	swarmMasterResources    = "swarmmasterresources.t"
-	swarmMasterVars         = "swarmmastervars.t"
+	agentOutputs               = "agentoutputs.t"
+	agentParams                = "agentparams.t"
+	dcosAgentResources         = "dcosagentresources.t"
+	dcosAgentResourcesDisks    = "dcosagentresourcesdisks.t"
+	dcosAgentVars              = "dcosagentvars.t"
+	dcosBaseFile               = "dcosbase.t"
+	dcosCustomData173          = "dcoscustomdata173.t"
+	dcosCustomData184          = "dcoscustomdata184.t"
+	dcosMasterResources        = "dcosmasterresources.t"
+	dcosMasterVars             = "dcosmastervars.t"
+	kubernetesBaseFile         = "kubernetesbase.t"
+	kubernetesAgentCustomData  = "kubernetesagentcustomdata.t"
+	kubernetesAgentResources   = "kubernetesagentresources.t"
+	kubernetesAgentVars        = "kubernetesagentvars.t"
+	kubernetesMasterCustomData = "kubernetesmastercustomdata.t"
+	kubernetesMasterResources  = "kubernetesmasterresources.t"
+	kubernetesMasterVars       = "kubernetesmastervars.t"
+	kubernetesParams           = "kubernetesparams.t"
+	masterOutputs              = "masteroutputs.t"
+	masterParams               = "masterparams.t"
+	swarmBaseFile              = "swarmbase.t"
+	swarmAgentCustomData       = "swarmagentcustomdata.t"
+	swarmAgentResources        = "swarmagentresources.t"
+	swarmAgentVars             = "swarmagentvars.t"
+	swarmMasterCustomData      = "swarmmastercustomdata.t"
+	swarmMasterResources       = "swarmmasterresources.t"
+	swarmMasterVars            = "swarmmastervars.t"
 )
 
-var dcosTemplateFiles = []string{agentOutputs, agentParams, dcosAgentResources, dcosAgentResourcesDisks, dcosAgentVars, dcosBaseFile, dcosCustomData173, dcosCustomData184, dcosMasterResources, dcosMasterVars, masterOutputs, masterParams}
-var swarmTemplateFiles = []string{agentOutputs, agentParams, masterParams, swarmBaseFile, swarmAgentCustomData, swarmAgentResources, swarmAgentVars, swarmBaseFile, masterOutputs, swarmMasterCustomData, swarmMasterResources, swarmMasterVars}
+var commonTemplateFiles = []string{agentOutputs, agentParams, masterOutputs, masterParams}
+var dcosTemplateFiles = []string{dcosAgentResources, dcosAgentResourcesDisks, dcosAgentVars, dcosBaseFile, dcosCustomData173, dcosCustomData184, dcosMasterResources, dcosMasterVars}
+var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentCustomData, kubernetesAgentResources, kubernetesAgentVars, kubernetesMasterCustomData, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
+var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentCustomData, swarmAgentResources, swarmAgentVars, swarmBaseFile, swarmMasterCustomData, swarmMasterResources, swarmMasterVars}
 
 // VerifyFiles verifies that the required template files exist
 func VerifyFiles(partsDirectory string) error {
-	for _, file := range append(dcosTemplateFiles, swarmTemplateFiles...) {
+	allFiles := append(commonTemplateFiles, dcosTemplateFiles...)
+	allFiles = append(allFiles, kubernetesTemplateFiles...)
+	allFiles = append(allFiles, swarmTemplateFiles...)
+	for _, file := range allFiles {
 		templateFile := path.Join(partsDirectory, file)
 		if _, err := os.Stat(templateFile); os.IsNotExist(err) {
 			return fmt.Errorf("template file %s does not exist, did you specify the correct template directory?", templateFile)
@@ -105,6 +118,15 @@ func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (stri
 		"GetDataDisks": func(profile *vlabs.AgentPoolProfile) string {
 			return getDataDisks(profile)
 		},
+		"GetMasterAllowedSizes": func() string {
+			return GetMasterAllowedSizes()
+		},
+		"GetAgentAllowedSizes": func() string {
+			return GetAgentAllowedSizes()
+		},
+		"GetSizeMap": func() string {
+			return GetSizeMap()
+		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
 			if len(values)%2 != 0 {
@@ -126,11 +148,16 @@ func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (stri
 	var files []string
 	var baseFile string
 	if isDCOS(acsCluster) {
-		files = dcosTemplateFiles
+		files = append(commonTemplateFiles, dcosTemplateFiles...)
 		baseFile = dcosBaseFile
 	} else if isSwarm(acsCluster) {
-		files = swarmTemplateFiles
+		files = append(commonTemplateFiles, swarmTemplateFiles...)
 		baseFile = swarmBaseFile
+	} else if isKubernetes(acsCluster) {
+		files = append(commonTemplateFiles, kubernetesTemplateFiles...)
+		baseFile = kubernetesBaseFile
+	} else {
+		return "", fmt.Errorf("orchestrator '%s' is unsupported", acsCluster.OrchestratorProfile.OrchestratorType)
 	}
 
 	for _, file := range files {
@@ -201,10 +228,15 @@ func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) stri
 }
 
 func getVNETAddressPrefixes(acsCluster *vlabs.AcsCluster) string {
+	visitedSubnets := make(map[string]bool)
 	var buf bytes.Buffer
 	buf.WriteString(`"[variables('masterSubnet')]"`)
-	for _, agentProfile := range acsCluster.AgentPoolProfiles {
-		buf.WriteString(fmt.Sprintf(",\n            \"[variables('%sSubnet')]\"", agentProfile.Name))
+	visitedSubnets[acsCluster.MasterProfile.GetSubnet()] = true
+	for i := range acsCluster.AgentPoolProfiles {
+		profile := &acsCluster.AgentPoolProfiles[i]
+		if _, ok := visitedSubnets[profile.GetSubnet()]; !ok {
+			buf.WriteString(fmt.Sprintf(",\n            \"[variables('%sSubnet')]\"", profile.Name))
+		}
 	}
 	return buf.String()
 }
@@ -328,7 +360,7 @@ func getSecurityRule(port int, portIndex int) string {
               "sourceAddressPrefix": "Internet", 
               "sourcePortRange": "*"
             }
-          }`, port, port, port, vlabs.BaseLBPriority+portIndex)
+          }`, port, port, port, BaseLBPriority+portIndex)
 }
 
 func getDataDisks(a *vlabs.AgentPoolProfile) string {
@@ -375,10 +407,9 @@ func getAgentRolesFileContents(ports []int) string {
 	if len(ports) > 0 {
 		// public agents
 		return `{\"content\": \"\", \"path\": \"/etc/mesosphere/roles/slave_public\"},`
-	} else {
-		// private agents
-		return `{\"content\": \"\", \"path\": \"/etc/mesosphere/roles/slave\"},`
 	}
+	// private agents
+	return `{\"content\": \"\", \"path\": \"/etc/mesosphere/roles/slave\"},`
 }
 
 func isDCOS(acsCluster *vlabs.AcsCluster) bool {
@@ -389,4 +420,8 @@ func isDCOS(acsCluster *vlabs.AcsCluster) bool {
 
 func isSwarm(acsCluster *vlabs.AcsCluster) bool {
 	return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Swarm
+}
+
+func isKubernetes(acsCluster *vlabs.AcsCluster) bool {
+	return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes
 }

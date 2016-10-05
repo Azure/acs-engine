@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"./api/vlabs"
-	"./clustertemplate"
+	tgen "./templategenerator"
 )
 
 // loadAcsCluster loads an ACS Cluster API Model from a JSON file
@@ -23,7 +23,7 @@ func loadAcsCluster(jsonFile string) (*vlabs.AcsCluster, error) {
 	if e := json.Unmarshal(contents, &acsCluster); e != nil {
 		return nil, fmt.Errorf("error unmarshalling file %s: %s", jsonFile, e.Error())
 	}
-	acsCluster.SetDefaults()
+
 	if e := acsCluster.Validate(); e != nil {
 		return nil, fmt.Errorf("error validating acs cluster from file %s: %s", jsonFile, e.Error())
 	}
@@ -114,7 +114,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = clustertemplate.VerifyFiles(*templateDirectory); err != nil {
+	if err = tgen.VerifyFiles(*templateDirectory); err != nil {
 		fmt.Fprintf(os.Stderr, "verification failed: %s\n", err.Error())
 		os.Exit(1)
 	}
@@ -124,7 +124,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	if template, err = clustertemplate.GenerateTemplate(acsCluster, *templateDirectory); err != nil {
+	if err = tgen.SetAcsClusterDefaults(acsCluster); err != nil {
+		fmt.Fprintf(os.Stderr, "error while setting defaults %s: %s", jsonFile, err.Error())
+		os.Exit(1)
+	}
+
+	if template, err = tgen.GenerateTemplate(acsCluster, *templateDirectory); err != nil {
 		fmt.Fprintf(os.Stderr, "error generating template %s: %s", jsonFile, err.Error())
 		os.Exit(1)
 	}
