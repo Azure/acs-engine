@@ -9,44 +9,49 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"regexp"
+	"strings"
 	"text/template"
 
 	"./../api/vlabs"
 )
 
 const (
-	agentOutputs               = "agentoutputs.t"
-	agentParams                = "agentparams.t"
-	dcosAgentResources         = "dcosagentresources.t"
-	dcosAgentResourcesDisks    = "dcosagentresourcesdisks.t"
-	dcosAgentVars              = "dcosagentvars.t"
-	dcosBaseFile               = "dcosbase.t"
-	dcosCustomData173          = "dcoscustomdata173.t"
-	dcosCustomData184          = "dcoscustomdata184.t"
-	dcosMasterResources        = "dcosmasterresources.t"
-	dcosMasterVars             = "dcosmastervars.t"
-	kubernetesBaseFile         = "kubernetesbase.t"
-	kubernetesAgentCustomData  = "kubernetesagentcustomdata.t"
-	kubernetesAgentResources   = "kubernetesagentresources.t"
-	kubernetesAgentVars        = "kubernetesagentvars.t"
-	kubernetesMasterCustomData = "kubernetesmastercustomdata.t"
-	kubernetesMasterResources  = "kubernetesmasterresources.t"
-	kubernetesMasterVars       = "kubernetesmastervars.t"
-	kubernetesParams           = "kubernetesparams.t"
-	masterOutputs              = "masteroutputs.t"
-	masterParams               = "masterparams.t"
-	swarmBaseFile              = "swarmbase.t"
-	swarmAgentCustomData       = "swarmagentcustomdata.t"
-	swarmAgentResources        = "swarmagentresources.t"
-	swarmAgentVars             = "swarmagentvars.t"
-	swarmMasterCustomData      = "swarmmastercustomdata.t"
-	swarmMasterResources       = "swarmmasterresources.t"
-	swarmMasterVars            = "swarmmastervars.t"
+	kubernetesMasterCustomDataYaml = "kubernetesmastercustomdata.yml"
+	kubeConfigJSON                 = "kubeconfig.json"
+)
+
+const (
+	agentOutputs              = "agentoutputs.t"
+	agentParams               = "agentparams.t"
+	dcosAgentResources        = "dcosagentresources.t"
+	dcosAgentResourcesDisks   = "dcosagentresourcesdisks.t"
+	dcosAgentVars             = "dcosagentvars.t"
+	dcosBaseFile              = "dcosbase.t"
+	dcosCustomData173         = "dcoscustomdata173.t"
+	dcosCustomData184         = "dcoscustomdata184.t"
+	dcosMasterResources       = "dcosmasterresources.t"
+	dcosMasterVars            = "dcosmastervars.t"
+	kubernetesBaseFile        = "kubernetesbase.t"
+	kubernetesAgentResources  = "kubernetesagentresources.t"
+	kubernetesAgentVars       = "kubernetesagentvars.t"
+	kubernetesMasterResources = "kubernetesmasterresources.t"
+	kubernetesMasterVars      = "kubernetesmastervars.t"
+	kubernetesParams          = "kubernetesparams.t"
+	masterOutputs             = "masteroutputs.t"
+	masterParams              = "masterparams.t"
+	swarmBaseFile             = "swarmbase.t"
+	swarmAgentCustomData      = "swarmagentcustomdata.t"
+	swarmAgentResources       = "swarmagentresources.t"
+	swarmAgentVars            = "swarmagentvars.t"
+	swarmMasterCustomData     = "swarmmastercustomdata.t"
+	swarmMasterResources      = "swarmmasterresources.t"
+	swarmMasterVars           = "swarmmastervars.t"
 )
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, masterOutputs, masterParams}
 var dcosTemplateFiles = []string{dcosAgentResources, dcosAgentResourcesDisks, dcosAgentVars, dcosBaseFile, dcosCustomData173, dcosCustomData184, dcosMasterResources, dcosMasterVars}
-var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentCustomData, kubernetesAgentResources, kubernetesAgentVars, kubernetesMasterCustomData, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
+var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResources, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentCustomData, swarmAgentResources, swarmAgentVars, swarmBaseFile, swarmMasterCustomData, swarmMasterResources, swarmMasterVars}
 
 // VerifyFiles verifies that the required template files exist
@@ -126,6 +131,20 @@ func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (stri
 		},
 		"GetSizeMap": func() string {
 			return GetSizeMap()
+		},
+		"GetKubernetesMasterCustomData": func() string {
+			str, e := getSingleLineForTemplate(kubernetesMasterCustomDataYaml, partsDirectory)
+			if e != nil {
+				return ""
+			}
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+		},
+		"GetKubernetesKubeConfig": func() string {
+			str, e := getSingleLineForTemplate(kubeConfigJSON, partsDirectory)
+			if e != nil {
+				return ""
+			}
+			return str
 		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
@@ -424,4 +443,29 @@ func isSwarm(acsCluster *vlabs.AcsCluster) bool {
 
 func isKubernetes(acsCluster *vlabs.AcsCluster) bool {
 	return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes
+}
+
+// getSingleLineForTemplate returns the file as a single line for embedding in an arm template
+func getSingleLineForTemplate(yamlFilename string, partsDirectory string) (string, error) {
+	yamlFile := path.Join(partsDirectory, yamlFilename)
+	if _, err := os.Stat(yamlFile); os.IsNotExist(err) {
+		return "", fmt.Errorf("yaml file %s does not exist, did you specify the correct template directory?", yamlFile)
+	}
+	b, err := ioutil.ReadFile(yamlFile)
+	if err != nil {
+		return "", fmt.Errorf("error reading yaml file %s: %s", yamlFile, err.Error())
+	}
+	yamlStr := string(b)
+	yamlStr = strings.Replace(yamlStr, "\\", "\\\\", -1)
+	yamlStr = strings.Replace(yamlStr, "\r\n", "\\n", -1)
+	yamlStr = strings.Replace(yamlStr, "\n", "\\n", -1)
+	yamlStr = strings.Replace(yamlStr, "\"", "\\\"", -1)
+
+	// variable replacement
+	rVariable := regexp.MustCompile("{{{([^}]*)}}}")
+	yamlStr = rVariable.ReplaceAllString(yamlStr, "',variables('$1'),'")
+	// verbatim replacement
+	rVerbatim := regexp.MustCompile("<<<([^>]*)>>>")
+	yamlStr = rVerbatim.ReplaceAllString(yamlStr, "',$1,'")
+	return yamlStr, nil
 }

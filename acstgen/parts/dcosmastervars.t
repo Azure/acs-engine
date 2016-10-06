@@ -47,7 +47,7 @@
     "osImageOffer": "UbuntuServer", 
     "osImagePublisher": "Canonical", 
     "osImageSKU": "16.04.0-LTS", 
-    "osImageVersion": "16.04.201606270", 
+    "osImageVersion": "16.04.201606270",
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]", 
     "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]", 
     "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location, variables('orchestratorName')))]", 

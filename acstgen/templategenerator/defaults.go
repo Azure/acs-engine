@@ -54,14 +54,12 @@ func setAgentNetworkDefaults(a *vlabs.AcsCluster) {
 }
 
 func setDefaultCerts(o *vlabs.OrchestratorProfile, m *vlabs.MasterProfile) error {
-	// auto generate certs if not specified and the dns profile exists
-	if len(m.DNSPrefix) > 0 &&
-		len(o.ApiserverCertificate) > 0 && len(o.ApiserverPrivateKey) > 0 &&
-		len(o.CaCertificate) > 0 &&
-		len(o.ClientCertificate) > 0 && len(o.ClientPrivateKey) > 0 {
-
-		masterWildCardFQDN := util.FormatAzureProdFQDN(m.DNSPrefix, "*")
-		masterExtraFQDNs := util.FormatAzureProdFQDNs(m.DNSPrefix)
+	// auto generate certs if none of them have been set by customer
+	if len(o.ApiServerCertificate) == 0 && len(o.ApiServerPrivateKey) == 0 &&
+		len(o.CaCertificate) == 0 &&
+		len(o.ClientCertificate) == 0 && len(o.ClientPrivateKey) == 0 {
+		masterWildCardFQDN := FormatAzureProdFQDN(m.DNSPrefix, "*")
+		masterExtraFQDNs := FormatAzureProdFQDNs(m.DNSPrefix)
 
 		firstMasterIP := net.ParseIP(m.FirstConsecutiveStaticIP)
 
@@ -80,8 +78,8 @@ func setDefaultCerts(o *vlabs.OrchestratorProfile, m *vlabs.MasterProfile) error
 			return err
 		}
 
-		o.ApiserverCertificate = base64.URLEncoding.EncodeToString([]byte(apiServerPair.CertificatePem))
-		o.ApiserverPrivateKey = base64.URLEncoding.EncodeToString([]byte(apiServerPair.PrivateKeyPem))
+		o.ApiServerCertificate = base64.URLEncoding.EncodeToString([]byte(apiServerPair.CertificatePem))
+		o.ApiServerPrivateKey = base64.URLEncoding.EncodeToString([]byte(apiServerPair.PrivateKeyPem))
 		o.CaCertificate = base64.URLEncoding.EncodeToString([]byte(caPair.CertificatePem))
 		o.SetCAPrivateKey(base64.URLEncoding.EncodeToString([]byte(caPair.PrivateKeyPem)))
 		o.ClientCertificate = base64.URLEncoding.EncodeToString([]byte(clientPair.CertificatePem))

@@ -32,11 +32,11 @@ func (o *OrchestratorProfile) Validate() error {
 	}
 
 	if o.OrchestratorType == Kubernetes {
-		if len(o.ApiserverCertificate) > 0 || len(o.ApiserverPrivateKey) > 0 || len(o.CaCertificate) > 0 || len(o.ClientCertificate) > 0 || len(o.ClientPrivateKey) > 0 {
+		if len(o.ApiServerCertificate) > 0 || len(o.ApiServerPrivateKey) > 0 || len(o.CaCertificate) > 0 || len(o.ClientCertificate) > 0 || len(o.ClientPrivateKey) > 0 {
 			return fmt.Errorf("API, CA, and Client certs are required for orchestrator %s", o.OrchestratorType)
 		}
 	} else {
-		if len(o.ApiserverCertificate) > 0 || len(o.ApiserverPrivateKey) > 0 || len(o.CaCertificate) > 0 || len(o.ClientCertificate) > 0 || len(o.ClientPrivateKey) > 0 {
+		if len(o.ApiServerCertificate) > 0 || len(o.ApiServerPrivateKey) > 0 || len(o.CaCertificate) > 0 || len(o.ClientCertificate) > 0 || len(o.ClientPrivateKey) > 0 {
 			return fmt.Errorf("API, CA, and Client certs are not required for orchestrator %s", o.OrchestratorType)
 		}
 	}
@@ -137,9 +137,6 @@ func (a *AcsCluster) Validate() error {
 		}
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && !agentPoolProfile.IsStateful {
 			return errors.New("stateless (VMSS) deployments are not supported with Kubernetes, Kubernetes requires the ability to attach/detach disks.  To fix specify 'isStateful=true'")
-		}
-		if a.OrchestratorProfile.OrchestratorType == Kubernetes && agentPoolProfile.IsStateful && len(agentPoolProfile.DiskSizesGB) > 0 {
-			return errors.New("diskSizesGB cannot be used with Kubernetes - Kubernetes attaches its own disks")
 		}
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(agentPoolProfile.DNSPrefix) > 0 {
 			return errors.New("DNSPrefix not support for agent pools in Kubernetes - Kubernetes marks its own clusters public")

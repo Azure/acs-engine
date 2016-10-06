@@ -1,40 +1,40 @@
-    "apiserverCertificate": {
-      "defaultValue": "{{.MasterProfile.ApiserverCertificate}}", 
+    "apiServerCertificate": {
+      "defaultValue": "{{.OrchestratorProfile.ApiServerCertificate}}", 
       "metadata": {
         "description": "The AD Tenant Id"
       }, 
       "type": "string"
     }, 
-    "apiserverPrivateKey": {
-      "defaultValue": "{{.MasterProfile.ApiserverPrivateKey}}", 
+    "apiServerPrivateKey": {
+      "defaultValue": "{{.OrchestratorProfile.ApiServerPrivateKey}}", 
       "metadata": {
         "description": "User name for the Linux Virtual Machines (SSH or Password)."
       }, 
       "type": "securestring"
     }, 
     "caCertificate": {
-      "defaultValue": "{{.MasterProfile.CaCertificate}}",  
+      "defaultValue": "{{.OrchestratorProfile.CaCertificate}}",  
       "metadata": {
         "description": "The certificate authority certificate"
       },  
       "type": "string"
     }, 
     "caPrivateKey": {
-      "defaultValue": "{{.MasterProfile.GetCaPrivateKey}}",  
+      "defaultValue": "{{.OrchestratorProfile.GetCAPrivateKey}}",  
       "metadata": {
         "description": "The certificate authority private key, this is only generated once and not used in this file, save this file for future updates"
       },  
       "type": "string"
     }, 
     "clientCertificate": {
-      "defaultValue": "{{.MasterProfile.ClientCertificate}}",  
+      "defaultValue": "{{.OrchestratorProfile.ClientCertificate}}",  
       "metadata": {
         "description": "The client certificate used to communicate with the master"
       }, 
       "type": "string"
     }, 
     "clientPrivateKey": {
-      "defaultValue": "{{.MasterProfile.ClientPrivateKey}}", 
+      "defaultValue": "{{.OrchestratorProfile.ClientPrivateKey}}", 
       "metadata": {
         "description": "The client private key used to communicate with the master"
       },  
@@ -48,14 +48,14 @@
       "type": "string"
     }, 
     "servicePrincipalClientId": {
-      "defaultValue": "{{.MasterProfile.ServicePrincipalClientID}}",
+      "defaultValue": "{{.OrchestratorProfile.ServicePrincipalClientID}}",
       "metadata": {
         "description": "Client ID (used by cloudprovider)"
       }, 
       "type": "string"
     }, 
     "servicePrincipalClientSecret": {
-      "defaultValue": "{{.MasterProfile.ServicePrincipalClientSecret}}",
+      "defaultValue": "{{.OrchestratorProfile.ServicePrincipalClientSecret}}",
       "metadata": {
         "description": "The Service Principal Client Secret."
       },

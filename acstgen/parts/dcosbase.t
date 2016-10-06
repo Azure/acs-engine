@@ -3,8 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     {{range .AgentPoolProfiles}}{{template "agentparams.t" .}},{{end}}
-    {{template "masterparams.t" .}},
-    {{GetSizeMap}}
+    {{template "masterparams.t" .}}
   },
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}
@@ -16,7 +15,9 @@
         "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]", 
     {{end}}
     
-    {{template "dcosmastervars.t" .}}
+    {{template "dcosmastervars.t" .}},
+    
+    {{GetSizeMap}}
   },
   "resources": [
     {{range .AgentPoolProfiles}}

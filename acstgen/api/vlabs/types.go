@@ -13,8 +13,8 @@ type OrchestratorProfile struct {
 	OrchestratorType             string `json:"orchestratorType"`
 	ServicePrincipalClientID     string `json:"servicePrincipalClientID,omitempty"`
 	ServicePrincipalClientSecret string `json:"servicePrincipalClientSecret,omitempty"`
-	ApiserverCertificate         string `json:"apiserverCertificate,omitempty"`
-	ApiserverPrivateKey          string `json:"apiserverPrivateKey,omitempty"`
+	ApiServerCertificate         string `json:"apiServerCertificate,omitempty"`
+	ApiServerPrivateKey          string `json:"apiServerPrivateKey,omitempty"`
 	CaCertificate                string `json:"caCertificate,omitempty"`
 	ClientCertificate            string `json:"clientCertificate,omitempty"`
 	ClientPrivateKey             string `json:"clientPrivateKey,omitempty"`

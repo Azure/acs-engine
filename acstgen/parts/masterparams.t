@@ -24,7 +24,7 @@
     "masterSubnet": {
       "defaultValue": "{{.MasterProfile.GetSubnet}}",
       "metadata": {
-        "description": "Sets the subnet of the master."
+        "description": "Sets the subnet of the master node(s)."
       }, 
       "type": "string"
     },

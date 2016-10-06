@@ -37,7 +37,7 @@ func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, cluste
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	apiserverCertificate, apiserverPrivateKey, err := createCertificate("apiserver", caCertificate, caPrivateKey, true, masterFQDN, extraFQDNs, extraIPs)
+	apiServerCertificate, apiServerPrivateKey, err := createCertificate("apiserver", caCertificate, caPrivateKey, true, masterFQDN, extraFQDNs, extraIPs)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -47,7 +47,7 @@ func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, cluste
 	}
 
 	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))},
-		&PkiKeyCertPair{CertificatePem: string(certificateToPem(apiserverCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiserverPrivateKey))},
+		&PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(clientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(clientPrivateKey))}, nil
 }
 

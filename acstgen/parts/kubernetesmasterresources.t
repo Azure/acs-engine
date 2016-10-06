@@ -1,5 +1,5 @@
     {
-      "apiVersion": "[variables('computeApiVersion')]", 
+      "apiVersion": "[variables('apiVersionDefault')]", 
       "location": "[variables('location')]", 
       "name": "[variables('masterAvailabilitySet')]", 
       "properties": {}, 
@@ -116,8 +116,41 @@
               }
             }
           }
+        ],
+        "loadBalancingRules": [
+         {
+            "name": "LBRuleHTTPS",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('masterLbIPConfigID')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 443,
+              "backendPort": 443,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 5,
+              "loadDistribution": "Default",
+              "probe": {
+                "id": "[concat(variables('masterLbID'),'/probes/tcpHTTPSProbe')]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "tcpHTTPSProbe",
+            "properties": {
+              "protocol": "tcp",
+              "port": 443,
+              "intervalInSeconds": "5",
+              "numberOfProbes": "2"
+            }
+          }
         ]
-      }, 
+      },
       "type": "Microsoft.Network/loadBalancers"
     }, 
     {
@@ -131,32 +164,71 @@
         "publicIPAllocationMethod": "Dynamic"
       }, 
       "type": "Microsoft.Network/publicIPAddresses"
-    },
+    }, 
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
+      "copy": {
+        "count": "[variables('masterCount')]", 
+        "name": "masterLbLoopNode"
+      }, 
       "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName')]", 
-        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
+        "[variables('masterLbID')]"
       ], 
       "location": "[variables('location')]", 
-      "name": "[concat(variables('masterFqdnPrefix'), '-nic-master')]", 
+      "name": "[concat(variables('masterLbName'), '/', 'SSH-', variables('masterVMNamePrefix'), copyIndex())]", 
+      "properties": {
+        "backendPort": 22, 
+        "enableFloatingIP": false, 
+        "frontendIPConfiguration": {
+          "id": "[variables('masterLbIPConfigID')]"
+        }, 
+        "frontendPort": "[variables('sshNatPorts')[copyIndex()]]", 
+        "protocol": "tcp"
+      }, 
+      "type": "Microsoft.Network/loadBalancers/inboundNatRules"
+    },
+    {
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "copy": {
+        "count": "[variables('masterCount')]", 
+        "name": "nicLoopNode"
+      }, 
+      "dependsOn": [
+{{if not .MasterProfile.IsCustomVNET}}     
+        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+{{end}} 
+        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]", 
+        "[variables('masterNSGID')]" 
+      ], 
+      "location": "[variables('location')]", 
+      "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]", 
       "properties": {
         "ipConfigurations": [
           {
             "name": "ipconfig1", 
             "properties": {
-              "privateIPAddress": "[variables('masterPrivateIp')]", 
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
+                }
+              ],
+              "loadBalancerInboundNatRules": [
+                {
+                  "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
+                }
+              ],
+              "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(int(variables('masterFirstAddrOctet4'))))]", 
               "privateIPAllocationMethod": "Static", 
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIpAddresses', concat(variables('masterFqdnPrefix'), '-pip-master'))]"
-              }, 
               "subnet": {
                 "id": "[variables('subnetRef')]"
               }
             }
           }
         ],
-        "enableIPForwarding": true
+        "enableIPForwarding": true, 
+        "networkSecurityGroup": {
+          "id": "[variables('masterNSGID')]"
+        }
       }, 
       "type": "Microsoft.Network/networkInterfaces"
     },
@@ -167,8 +239,9 @@
         "name": "vmLoopNode"
       }, 
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', variables('masterStorageAccountName'))]", 
-        "[concat('Microsoft.Network/networkInterfaces/', variables('masterFqdnPrefix'), '-nic-master')]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'nic-', copyIndex())]", 
+        "[concat('Microsoft.Compute/availabilitySets/',variables('masterAvailabilitySet'))]", 
+        "[variables('masterStorageAccountName')]"
       ], 
       "location": "[variables('location')]", 
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]", 
@@ -177,18 +250,19 @@
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('masterAvailabilitySet'))]"
         }, 
         "hardwareProfile": {
-          "vmSize": "[variables('masterSize')]"
+          "vmSize": "[variables('masterVMSize')]"
         }, 
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('masterFqdnPrefix'),'-nic-master'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('masterVMNamePrefix'),'nic-', copyIndex()))]"
             }
           ]
         }, 
         "osProfile": {
           "adminUsername": "[variables('username')]", 
-          "computername": "[concat(variables('vmNamePrefix'), 'master')]", 
+          "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
+          {{GetKubernetesMasterCustomData}} 
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true", 
             "ssh": {
