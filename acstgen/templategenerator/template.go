@@ -2,11 +2,10 @@ package templategenerator
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
-	"hash/fnv"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"path"
 	"regexp"
@@ -18,6 +17,7 @@ import (
 
 const (
 	kubernetesMasterCustomDataYaml = "kubernetesmastercustomdata.yml"
+	kubernetesAgentCustomDataYaml  = "kubernetesagentcustomdata.yml"
 	kubeConfigJSON                 = "kubeconfig.json"
 )
 
@@ -73,7 +73,46 @@ func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (stri
 	var err error
 	var templ *template.Template
 
-	templateMap := template.FuncMap{
+	templ = template.New("acs template").Funcs(getTemplateFuncMap(acsCluster, partsDirectory))
+
+	var files []string
+	var baseFile string
+	if acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS184 ||
+		acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS ||
+		acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS173 {
+		files = append(commonTemplateFiles, dcosTemplateFiles...)
+		baseFile = dcosBaseFile
+	} else if acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Swarm {
+		files = append(commonTemplateFiles, swarmTemplateFiles...)
+		baseFile = swarmBaseFile
+	} else if acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
+		files = append(commonTemplateFiles, kubernetesTemplateFiles...)
+		baseFile = kubernetesBaseFile
+	} else {
+		return "", fmt.Errorf("orchestrator '%s' is unsupported", acsCluster.OrchestratorProfile.OrchestratorType)
+	}
+
+	for _, file := range files {
+		templateFile := path.Join(partsDirectory, file)
+		bytes, e := ioutil.ReadFile(templateFile)
+		if e != nil {
+			return "", fmt.Errorf("Error reading file %s: %s", templateFile, e.Error())
+		}
+		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
+			return "", err
+		}
+	}
+	var b bytes.Buffer
+	if err = templ.ExecuteTemplate(&b, baseFile, acsCluster); err != nil {
+		return "", err
+	}
+
+	return b.String(), nil
+}
+
+// getTemplateFuncMap returns all functions used in template generation
+func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map[string]interface{} {
+	return template.FuncMap{
 		"IsDCOS173": func() bool {
 			return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS173
 		},
@@ -112,7 +151,7 @@ func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (stri
 			return acsCluster.LinuxProfile.SSH.PublicKeys[0].KeyData
 		},
 		"GetUniqueNameSuffix": func() string {
-			return generateUniqueNameSuffix(acsCluster)
+			return acsCluster.OrchestratorProfile.ClusterID
 		},
 		"GetVNETAddressPrefixes": func() string {
 			return getVNETAddressPrefixes(acsCluster)
@@ -132,8 +171,18 @@ func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (stri
 		"GetSizeMap": func() string {
 			return GetSizeMap()
 		},
+		"Base64": func(s string) string {
+			return base64.URLEncoding.EncodeToString([]byte(s))
+		},
 		"GetKubernetesMasterCustomData": func() string {
 			str, e := getSingleLineForTemplate(kubernetesMasterCustomDataYaml, partsDirectory)
+			if e != nil {
+				return ""
+			}
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+		},
+		"GetKubernetesAgentCustomData": func() string {
+			str, e := getSingleLineForTemplate(kubernetesAgentCustomDataYaml, partsDirectory)
 			if e != nil {
 				return ""
 			}
@@ -162,49 +211,6 @@ func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (stri
 			return dict, nil
 		},
 	}
-	templ = template.New("acs template").Funcs(templateMap)
-
-	var files []string
-	var baseFile string
-	if isDCOS(acsCluster) {
-		files = append(commonTemplateFiles, dcosTemplateFiles...)
-		baseFile = dcosBaseFile
-	} else if isSwarm(acsCluster) {
-		files = append(commonTemplateFiles, swarmTemplateFiles...)
-		baseFile = swarmBaseFile
-	} else if isKubernetes(acsCluster) {
-		files = append(commonTemplateFiles, kubernetesTemplateFiles...)
-		baseFile = kubernetesBaseFile
-	} else {
-		return "", fmt.Errorf("orchestrator '%s' is unsupported", acsCluster.OrchestratorProfile.OrchestratorType)
-	}
-
-	for _, file := range files {
-		templateFile := path.Join(partsDirectory, file)
-		bytes, e := ioutil.ReadFile(templateFile)
-		if e != nil {
-			return "", fmt.Errorf("Error reading file %s: %s", templateFile, e.Error())
-		}
-		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
-			return "", err
-		}
-	}
-	var b bytes.Buffer
-	if err = templ.ExecuteTemplate(&b, baseFile, acsCluster); err != nil {
-		return "", err
-	}
-
-	return b.String(), nil
-}
-
-func generateUniqueNameSuffix(acsCluster *vlabs.AcsCluster) string {
-	uniqueNameSuffixSize := 8
-	// the name suffix uniquely identifies the cluster and is generated off a hash
-	// from the master dns name
-	h := fnv.New64a()
-	h.Write([]byte(acsCluster.MasterProfile.DNSPrefix))
-	rand.Seed(int64(h.Sum64()))
-	return fmt.Sprintf("%08d", rand.Uint32())[:uniqueNameSuffixSize]
 }
 
 func getPackageGUID(orchestratorType string, masterCount int) string {
@@ -429,20 +435,6 @@ func getAgentRolesFileContents(ports []int) string {
 	}
 	// private agents
 	return `{\"content\": \"\", \"path\": \"/etc/mesosphere/roles/slave\"},`
-}
-
-func isDCOS(acsCluster *vlabs.AcsCluster) bool {
-	return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS184 ||
-		acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS ||
-		acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS173
-}
-
-func isSwarm(acsCluster *vlabs.AcsCluster) bool {
-	return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Swarm
-}
-
-func isKubernetes(acsCluster *vlabs.AcsCluster) bool {
-	return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template

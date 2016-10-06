@@ -1,0 +1,178 @@
+#cloud-config
+
+# { { { param } } }
+
+runcmd:
+- /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://get.docker.com/ > /tmp/install-docker
+- /bin/bash -c "/bin/bash /tmp/install-docker"
+- systemctl restart docker
+- systemctl restart kubelet
+
+write_files:
+- path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Service]
+    MountFlags=shared
+
+- path: "/etc/systemd/system/docker.service.d/overlay.conf"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Service]
+    ExecStart=
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay
+
+- path: "/etc/kubernetes/azure.json"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    {
+        "tenantId": "{{{tenantID}}}",
+        "subscriptionId": "{{{subscriptionId}}}",
+        "aadClientId": "{{{servicePrincipalClientId}}}",
+        "aadClientSecret": "{{{servicePrincipalClientSecret}}}",
+        "resourceGroup": "{{{resourceGroup}}}",
+        "location": "{{{location}}}",
+        "subnetName": "{{{subnetName}}}",
+        "securityGroupName": "{{{nsgName}}}",
+        "vnetName": "{{{virtualNetworkName}}}",
+        "routeTableName": "{{{routeTableName}}}"
+    }
+
+- path: "/etc/kubernetes/certs/ca.crt"
+  permissions: "0644"
+  encoding: "base64"
+  owner: "root"
+  content: |
+    {{{caCertificate}}}
+
+- path: "/etc/kubernetes/certs/apiserver.crt"
+  permissions: "0644"
+  encoding: "base64"
+  owner: "root"
+  content: |
+    {{{apiserverCertificate}}}
+
+- path: "/etc/kubernetes/certs/apiserver.key"
+  permissions: "0644"
+  encoding: "base64"
+  owner: "root"
+  content: |
+    {{{apiserverPrivateKey}}}
+
+- path: "/etc/kubernetes/certs/client.crt"
+  permissions: "0644"
+  encoding: "base64"
+  owner: "root"
+  content: |
+    {{{clientCertificate}}}
+
+- path: "/etc/kubernetes/certs/client.key"
+  permissions: "0644"
+  encoding: "base64"
+  owner: "root"
+  content: |
+    {{{clientPrivateKey}}}
+
+- path: "/var/lib/kubelet/kubeconfig"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    apiVersion: v1
+    kind: Config
+    clusters:
+    - name: localcluster
+      cluster:
+        certificate-authority: /etc/kubernetes/certs/ca.crt
+        server: https://{{{masterPrivateIp}}}:443
+    users:
+    - name: client
+      user:
+        client-certificate: /etc/kubernetes/certs/client.crt
+        client-key: /etc/kubernetes/certs/client.key
+    contexts:
+    - context:
+        cluster: localcluster
+        user: client
+      name: localclustercontext
+    current-context: localclustercontext
+
+- path: /etc/kubernetes/manifests/node.yaml
+  permissions: "0644"
+  owner: "root"
+  content: |
+      apiVersion: "v1"
+      kind: "Pod"
+      metadata:
+        name: "k8s-node"
+        namespace: "kube-system"
+      spec:
+        hostNetwork: true
+        containers:
+          - name: "kube-proxy"
+            image: "{{{kubernetesHyperkubeSpec}}}"
+            command: 
+              - "/hyperkube"
+              - "proxy"
+              - "--kubeconfig=/var/lib/kubelet/kubeconfig"
+              - "--proxy-mode=iptables"
+              - "--v=2"
+            securityContext:
+              privileged: true
+            volumeMounts:
+              - name: "etc-kubernetes"
+                mountPath: "/etc/kubernetes"
+              - name: "var-lib-kubelet"
+                mountPath: "/var/lib/kubelet"
+        volumes: 
+          - name: "etc-kubernetes"
+            hostPath:
+              path: "/etc/kubernetes"
+          - name: "var-lib-kubelet"
+            hostPath:
+              path: "/var/lib/kubelet"
+
+- path: "/etc/systemd/system/kubelet.service"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=Kubelet
+    Requires=docker.service
+    After=docker.service
+    [Service]
+    Restart=always
+    ExecStartPre=/bin/mkdir -p /var/lib/kubelet
+    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
+    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
+    ExecStart=/usr/bin/docker run \
+      --net=host \
+      --pid=host \
+      --privileged \
+      --volume=/:/rootfs:ro \
+      --volume=/sys:/sys:ro \
+      --volume=/var/run:/var/run:rw \
+      --volume=/var/lib/docker/:/var/lib/docker:rw \
+      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \
+      --volume=/var/log/containers/:/var/log/containers:rw \
+      --volume=/etc/kubernetes/:/etc/kubernetes/:rw \
+        {{{kubernetesHyperkubeSpec}}} \
+          /hyperkube kubelet \
+            --api-servers="https://{{{masterPrivateIp}}}:443" \
+            --kubeconfig=/var/lib/kubelet/kubeconfig \
+            --address=0.0.0.0 \
+            --allow-privileged=true \
+            --enable-server \
+            --enable-debugging-handlers \
+            --config=/etc/kubernetes/manifests \
+            --cluster-dns={{{kubeDnsServiceIP}}} \
+            --cluster-domain=cluster.local \
+            --cloud-provider=azure \
+            --cloud-config=/etc/kubernetes/azure.json \
+            --hairpin-mode=promiscuous-bridge \
+            --network-plugin=kubenet \
+            --reconcile-cidr \
+            --v=2
+    ExecStop=/usr/bin/docker stop -t 2 kubelet

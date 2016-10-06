@@ -1,40 +1,33 @@
     "apiServerCertificate": {
-      "defaultValue": "{{.OrchestratorProfile.ApiServerCertificate}}", 
+      "defaultValue": "{{Base64 .OrchestratorProfile.ApiServerCertificate}}", 
       "metadata": {
         "description": "The AD Tenant Id"
       }, 
       "type": "string"
     }, 
     "apiServerPrivateKey": {
-      "defaultValue": "{{.OrchestratorProfile.ApiServerPrivateKey}}", 
+      "defaultValue": "{{Base64 .OrchestratorProfile.ApiServerPrivateKey}}", 
       "metadata": {
         "description": "User name for the Linux Virtual Machines (SSH or Password)."
       }, 
       "type": "securestring"
     }, 
     "caCertificate": {
-      "defaultValue": "{{.OrchestratorProfile.CaCertificate}}",  
+      "defaultValue": "{{Base64 .OrchestratorProfile.CaCertificate}}",  
       "metadata": {
         "description": "The certificate authority certificate"
       },  
       "type": "string"
     }, 
-    "caPrivateKey": {
-      "defaultValue": "{{.OrchestratorProfile.GetCAPrivateKey}}",  
-      "metadata": {
-        "description": "The certificate authority private key, this is only generated once and not used in this file, save this file for future updates"
-      },  
-      "type": "string"
-    }, 
     "clientCertificate": {
-      "defaultValue": "{{.OrchestratorProfile.ClientCertificate}}",  
+      "defaultValue": "{{Base64 .OrchestratorProfile.ClientCertificate}}",  
       "metadata": {
         "description": "The client certificate used to communicate with the master"
       }, 
       "type": "string"
     }, 
     "clientPrivateKey": {
-      "defaultValue": "{{.OrchestratorProfile.ClientPrivateKey}}", 
+      "defaultValue": "{{Base64 .OrchestratorProfile.ClientPrivateKey}}", 
       "metadata": {
         "description": "The client private key used to communicate with the master"
       },  

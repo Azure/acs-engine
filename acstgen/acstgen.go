@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 
 	"./api/vlabs"
@@ -77,6 +78,63 @@ func prettyPrintArmTemplate(template string) (string, error) {
 	return template, nil
 }
 
+func writeArtifacts(acsCluster *vlabs.AcsCluster, artifactsDir string) error {
+	if len(artifactsDir) == 0 {
+		artifactsDir = fmt.Sprintf("k8s-%s", acsCluster.OrchestratorProfile.ClusterID)
+	}
+
+	//b, err := json.Marshal(acsCluster)
+	b, err := json.MarshalIndent(acsCluster, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	if e := saveFile(artifactsDir, "apimodel.json", b); e != nil {
+		return e
+	}
+	if e := saveFileString(artifactsDir, "ca.key", acsCluster.OrchestratorProfile.GetCAPrivateKey()); e != nil {
+		return e
+	}
+	if e := saveFileString(artifactsDir, "ca.crt", acsCluster.OrchestratorProfile.CaCertificate); e != nil {
+		return e
+	}
+	if e := saveFileString(artifactsDir, "apiserver.key", acsCluster.OrchestratorProfile.ApiServerPrivateKey); e != nil {
+		return e
+	}
+	if e := saveFileString(artifactsDir, "apiserver.crt", acsCluster.OrchestratorProfile.ApiServerCertificate); e != nil {
+		return e
+	}
+	if e := saveFileString(artifactsDir, "client.key", acsCluster.OrchestratorProfile.ClientPrivateKey); e != nil {
+		return e
+	}
+	if e := saveFileString(artifactsDir, "client.crt", acsCluster.OrchestratorProfile.ClientCertificate); e != nil {
+		return e
+	}
+
+	return nil
+}
+
+func saveFileString(dir string, file string, data string) error {
+	return saveFile(dir, file, []byte(data))
+}
+
+func saveFile(dir string, file string, data []byte) error {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if e := os.Mkdir(dir, 0700); e != nil {
+			return fmt.Errorf("error creating directory '%s': %s", dir, e.Error())
+		}
+	}
+
+	path := path.Join(dir, file)
+	if err := ioutil.WriteFile(path, []byte(data), 0600); err != nil {
+		return err
+	}
+
+	fmt.Fprintf(os.Stderr, "wrote %s\n", path)
+
+	return nil
+}
+
 func usage(errs ...error) {
 	for _, err := range errs {
 		fmt.Fprintf(os.Stderr, "error: %s\n\n", err.Error())
@@ -90,6 +148,8 @@ func usage(errs ...error) {
 
 var templateDirectory = flag.String("templateDirectory", "./parts", "directory containing base template files")
 var noPrettyPrint = flag.Bool("noPrettyPrint", false, "do not pretty print output")
+var noArtifacts = flag.Bool("noArtifacts", false, "does not generate artifacts (api model, json, cert files)")
+var artifactsDir = flag.String("artifacts", "", "directory where artifacts will be written")
 
 func main() {
 	var acsCluster *vlabs.AcsCluster
@@ -124,7 +184,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = tgen.SetAcsClusterDefaults(acsCluster); err != nil {
+	certsGenerated := false
+	if certsGenerated, err = tgen.SetAcsClusterDefaults(acsCluster); err != nil {
 		fmt.Fprintf(os.Stderr, "error while setting defaults %s: %s", jsonFile, err.Error())
 		os.Exit(1)
 	}
@@ -132,6 +193,13 @@ func main() {
 	if template, err = tgen.GenerateTemplate(acsCluster, *templateDirectory); err != nil {
 		fmt.Fprintf(os.Stderr, "error generating template %s: %s", jsonFile, err.Error())
 		os.Exit(1)
+	}
+
+	if certsGenerated && !*noArtifacts {
+		if err = writeArtifacts(acsCluster, *artifactsDir); err != nil {
+			fmt.Fprintf(os.Stderr, "error writing artifacts %s", err.Error())
+			os.Exit(1)
+		}
 	}
 
 	if !*noPrettyPrint {

@@ -31,16 +31,6 @@ func (o *OrchestratorProfile) Validate() error {
 		return fmt.Errorf("Service principal and secret is not required for orchestrator %s", o.OrchestratorType)
 	}
 
-	if o.OrchestratorType == Kubernetes {
-		if len(o.ApiServerCertificate) > 0 || len(o.ApiServerPrivateKey) > 0 || len(o.CaCertificate) > 0 || len(o.ClientCertificate) > 0 || len(o.ClientPrivateKey) > 0 {
-			return fmt.Errorf("API, CA, and Client certs are required for orchestrator %s", o.OrchestratorType)
-		}
-	} else {
-		if len(o.ApiServerCertificate) > 0 || len(o.ApiServerPrivateKey) > 0 || len(o.CaCertificate) > 0 || len(o.ClientCertificate) > 0 || len(o.ClientPrivateKey) > 0 {
-			return fmt.Errorf("API, CA, and Client certs are not required for orchestrator %s", o.OrchestratorType)
-		}
-	}
-
 	return nil
 }
 

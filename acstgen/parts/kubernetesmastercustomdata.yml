@@ -1,6 +1,5 @@
 #cloud-config
 
-# [ [ [ var ] ] ]
 # { { { param } } }
 
 packages:

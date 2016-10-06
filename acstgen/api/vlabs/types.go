@@ -18,6 +18,7 @@ type OrchestratorProfile struct {
 	CaCertificate                string `json:"caCertificate,omitempty"`
 	ClientCertificate            string `json:"clientCertificate,omitempty"`
 	ClientPrivateKey             string `json:"clientPrivateKey,omitempty"`
+	ClusterID                    string `json:"clusterid,omitempty"`
 	// caPrivateKey is an internal field only set if generation required
 	caPrivateKey string
 }
