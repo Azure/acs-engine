@@ -38,7 +38,7 @@ template run the following two commands:
 
 ``` bash
 azure group create <RESOURCE_GROUP_NAME> <LOCATION>
-azure group deployment create <RESOURCE_GROUP_NAME> <DEPLOYMENT NAME> <TEMPLATE_FILE>
+azure group deployment create <RESOURCE_GROUP_NAME> <DEPLOYMENT NAME> -f <TEMPLATE_FILE>
 
 ```
 
