@@ -53,3 +53,11 @@ Run a Go container with the application source code mounted into the
 container. You can edit the code in your favorite editor on the client
 while building and running the container.
 
+## generate.sh
+
+Generate a template from a given configuration and store it in the
+```generated``` folder. For example, to generate a Swarm template use:
+
+``` bash
+./scripts/generate.sh swarm.json
+```
