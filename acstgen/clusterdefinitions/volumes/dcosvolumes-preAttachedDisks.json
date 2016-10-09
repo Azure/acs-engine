@@ -4,7 +4,7 @@
   },
   "masterProfile": {
     "count": 3,
-    "dnsPrefix": "mgmtanhowe0928g",
+    "dnsPrefix": "mgmtanhowe1009o",
     "vmSize": "Standard_D2_v2"
   },
   "agentPoolProfiles": [
@@ -19,7 +19,7 @@
       "name": "agent1public",
       "count": 3,
       "vmSize": "Standard_D2_v2",
-      "dnsPrefix": "appanhowe0928g",
+      "dnsPrefix": "appanhowe1009o",
       "StorageType": "Volumes",
       "diskSizesGB": [1],
       "ports": [

@@ -4,21 +4,27 @@
   },
   "masterProfile": {
     "count": 3,
-    "dnsPrefix": "mgmtanhowe0928d",
+    "dnsPrefix": "mgmtanhowe1009n",
     "vmSize": "Standard_D2_v2"
   },
   "agentPoolProfiles": [
     {
-      "name": "agtnodisks1",
-      "count": 1,
+      "name": "agent128",
+      "count": 3,
       "vmSize": "Standard_D2_v2",
       "StorageType": "Volumes"
     },
     {
-      "name": "agtnodisks2",
-      "count": 1,
+      "name": "agent1public",
+      "count": 3,
       "vmSize": "Standard_D2_v2",
-      "StorageType": "Volumes"
+      "dnsPrefix": "appanhowe1009n",
+      "StorageType": "Volumes",
+      "ports": [
+        80,
+        443,
+        8080
+      ]
     }
   ],
   "linuxProfile": {
