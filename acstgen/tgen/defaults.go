@@ -15,6 +15,8 @@ func SetAcsClusterDefaults(a *vlabs.AcsCluster) (bool, error) {
 
 	setAgentNetworkDefaults(a)
 
+	setStorageDefaults(a)
+
 	certsGenerated, e := setDefaultCerts(a)
 	if e != nil {
 		return false, e
@@ -50,6 +52,16 @@ func setAgentNetworkDefaults(a *vlabs.AcsCluster) {
 			}
 
 			subnetCounter++
+		}
+	}
+}
+
+// setStorageDefaults for agents
+func setStorageDefaults(a *vlabs.AcsCluster) {
+	for i := range a.AgentPoolProfiles {
+		profile := &a.AgentPoolProfiles[i]
+		if len(profile.StorageType) == 0 {
+			profile.StorageType = vlabs.StorageExternal
 		}
 	}
 }

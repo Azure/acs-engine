@@ -4,25 +4,23 @@
   },
   "masterProfile": {
     "count": 1,
-    "dnsPrefix": "anhowe1009d",
-		"vmSize": "Standard_D2_v2",
-    "vnetSubnetId": "/subscriptions/b52fce95-de5f-4b37-afca-db203a5d0b6a/resourceGroups/anhoweKubeVnet/providers/Microsoft.Network/virtualNetworks/KubernetesCustomVNET/subnets/KubernetesSubnet",
-    "firstConsecutiveStaticIP": "10.239.255.245" 
+    "dnsPrefix": "mgmtanhowe1004f",
+		"vmSize": "Standard_D2_v2"
   },
   "agentPoolProfiles": [
     {
-      "name": "agentpri",
-      "count": 2,
+      "name": "agentpool1",
+      "count": 3,
       "vmSize": "Standard_D2_v2",
-      "vnetSubnetId": "/subscriptions/b52fce95-de5f-4b37-afca-db203a5d0b6a/resourceGroups/anhoweKubeVnet/providers/Microsoft.Network/virtualNetworks/KubernetesCustomVNET/subnets/KubernetesSubnet",
-      "StorageType": "Volumes"
+      "StorageType": "Volumes",
+      "diskSizesGB": [128, 128, 128, 128]
     },
     {
-      "name": "agentpri2",
-      "count": 2,
+      "name": "agentpool2",
+      "count": 3,
       "vmSize": "Standard_D2_v2",
-      "vnetSubnetId": "/subscriptions/b52fce95-de5f-4b37-afca-db203a5d0b6a/resourceGroups/anhoweKubeVnet/providers/Microsoft.Network/virtualNetworks/KubernetesCustomVNET/subnets/KubernetesSubnet",
-      "StorageType": "Volumes"
+      "StorageType": "Volumes",
+      "diskSizesGB": [10, 10, 10, 10]
     }
   ],
   "linuxProfile": {

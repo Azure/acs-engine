@@ -8,7 +8,7 @@
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}
         {{template "dcosagentvars.t" .}}
-        {{if .IsStateful}}
+        {{if .IsVolumeBasedStorage}}
           "{{.Name}}DataAccountName": "[concat(variables('storageAccountBaseName'), 'data{{$index}}')]",
         {{end}}
         "{{.Name}}Index": {{$index}},
@@ -21,7 +21,7 @@
   },
   "resources": [
     {{range .AgentPoolProfiles}}
-      {{if .IsStateful}}
+      {{if .IsVolumeBasedStorage}}
         {{template "dcosagentresourcesdisks.t" .}},
       {{else}}
         {{template "dcosagentresources.t" .}},

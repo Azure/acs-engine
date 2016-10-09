@@ -59,7 +59,7 @@ type AgentPoolProfile struct {
 	VMSize       string `json:"vmSize"`
 	DNSPrefix    string `json:"dnsPrefix,omitempty"`
 	Ports        []int  `json:"ports,omitempty"`
-	IsStateful   bool   `json:"isStateful,omitempty"`
+	StorageType  string `json:"storageType,omitempty"`
 	DiskSizesGB  []int  `json:"diskSizesGB,omitempty"`
 	VnetSubnetID string `json:"vnetSubnetID,omitempty"`
 	// subnet is internal
@@ -109,6 +109,11 @@ func (m *MasterProfile) SetSubnet(subnet string) {
 // IsCustomVNET returns true if the customer brought their own VNET
 func (a *AgentPoolProfile) IsCustomVNET() bool {
 	return len(a.VnetSubnetID) > 0
+}
+
+// IsVolumeBasedStorage returns true if the customer specified disks
+func (a *AgentPoolProfile) IsVolumeBasedStorage() bool {
+	return a.StorageType == StorageVolumes
 }
 
 // HasDisks returns true if the customer specified disks

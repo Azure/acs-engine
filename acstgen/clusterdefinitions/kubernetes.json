@@ -12,13 +12,13 @@
       "name": "agentpool1",
       "count": 3,
       "vmSize": "Standard_D2_v2",
-      "isStateful": true
+      "StorageType": "Volumes"
     },
     {
       "name": "agentpool2",
       "count": 3,
       "vmSize": "Standard_D2_v2",
-      "isStateful": true
+      "StorageType": "Volumes"
     }
   ],
   "linuxProfile": {
@@ -32,7 +32,7 @@
     }
   },
   "servicePrincipalProfile": {
-    "servicePrincipalClientID": "REPLACE-WITH-ServicePrincipalClientID",
-    "servicePrincipalClientSecret": "REPLACE-WITH-myServicePrincipalClientSecret"
+    "servicePrincipalClientID": "[REPLACE-WITH-ServicePrincipalClientID",
+    "servicePrincipalClientSecret": "[REPLACE-WITH-myServicePrincipalClientSecret"
   }
 }

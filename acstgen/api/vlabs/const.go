@@ -21,4 +21,10 @@ const (
 	MaxPort = 65535
 	// MaxDisks specifies the maximum attached disks to add to the cluster
 	MaxDisks = 4
+	// StorageExternal equates to VMSS where attached disks are unsupported (Default)
+	StorageExternal = "External"
+	// StorageVolumes equates to AS where attached disks are supported
+	StorageVolumes = "Volumes"
+	// StorageHAVolumes are managed disks that provide fault domain coverage for volumes.
+	StorageHAVolumes = "HAVolumes"
 )

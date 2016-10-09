@@ -69,8 +69,8 @@ func (a *AgentPoolProfile) Validate() error {
 			return e
 		}
 	}
-	if len(a.DiskSizesGB) > 0 && !a.IsStateful {
-		return fmt.Errorf("Disks were specified on a non stateful cluster named '%s'.  Ensure you add '\"isStateful\": true' to the model", a.Name)
+	if len(a.DiskSizesGB) > 0 && (a.StorageType != StorageVolumes && a.StorageType != StorageHAVolumes) {
+		return fmt.Errorf("Storage Type %s does not support attached disks for cluster named '%s'.  Specify storage as either %s or %s", a.StorageType, a.Name, StorageVolumes, StorageHAVolumes)
 	}
 	if len(a.DiskSizesGB) > MaxDisks {
 		return fmt.Errorf("A maximum of %d disks may be specified.  %d disks were specified for cluster named '%s'", MaxDisks, len(a.DiskSizesGB), a.Name)
@@ -118,11 +118,21 @@ func (a *AcsCluster) Validate() error {
 		if e := agentPoolProfile.Validate(); e != nil {
 			return e
 		}
-		if a.OrchestratorProfile.OrchestratorType == Swarm && agentPoolProfile.IsStateful {
-			return errors.New("stateful deployments are not supported with Swarm, please let us know if you want this feature")
+		switch agentPoolProfile.StorageType {
+		case StorageVolumes:
+		case StorageHAVolumes:
+		case StorageExternal:
+		case "":
+		default:
+			{
+				return fmt.Errorf("unknown storage type '%s' for agent pool '%s'.  Specify one of %s, %s, or %s", agentPoolProfile.StorageType, agentPoolProfile.Name, StorageExternal, StorageVolumes, StorageHAVolumes)
+			}
 		}
-		if a.OrchestratorProfile.OrchestratorType == Kubernetes && !agentPoolProfile.IsStateful {
-			return errors.New("stateless (VMSS) deployments are not supported with Kubernetes, Kubernetes requires the ability to attach/detach disks.  To fix specify 'isStateful=true'")
+		if agentPoolProfile.StorageType == StorageHAVolumes {
+			return errors.New("HA volumes are currently unsupported")
+		}
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.StorageType == StorageExternal || len(agentPoolProfile.StorageType) == 0) {
+			return fmt.Errorf("External storage deployments (VMSS) are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"StorageType\":\"%s\"", StorageVolumes)
 		}
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(agentPoolProfile.DNSPrefix) > 0 {
 			return errors.New("DNSPrefix not support for agent pools in Kubernetes - Kubernetes marks its own clusters public")
