@@ -1,24 +1,11 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
-      "location": "[resourceGroup().location]", 
-      "name": "[variables('{{.Name}}NSGName')]", 
-      "properties": {
-        "securityRules": [
-            {{GetSecurityRules .Ports}}
-        ]
-      }, 
-      "type": "Microsoft.Network/networkSecurityGroups"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]", 
       "copy": {
         "count": "[variables('{{.Name}}Count')]", 
         "name": "loop"
       }, 
       "dependsOn": [
-{{if .IsCustomVNET}}
-      "[concat('Microsoft.Network/networkSecurityGroups/', variables('{{.Name}}NSGName'))]" 
-{{else}}
+{{if not .IsCustomVNET}}
       "[variables('vnetID')]"
 {{end}}
 {{if IsPublic .Ports}}
@@ -28,11 +15,6 @@
       "location": "[resourceGroup().location]", 
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex())]", 
       "properties": {
-{{if .IsCustomVNET}}                  
-	    "networkSecurityGroup": {
-		  "id": "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('{{.Name}}NSGName'))]"
-	    },
-{{end}}
         "ipConfigurations": [
           {
             "name": "ipConfigNode", 
@@ -58,13 +40,13 @@
       "apiVersion": "[variables('apiVersionStorage')]", 
       "copy": {
         "count": "[variables('{{.Name}}StorageAccountsCount')]", 
-        "name": "loop"
+        "name": "vmLoopNode"
       }, 
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ], 
       "location": "[resourceGroup().location]", 
-      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
+      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]", 
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
       }, 
@@ -107,7 +89,7 @@
         "publicIPAllocationMethod": "Dynamic"
       }, 
       "type": "Microsoft.Network/publicIPAddresses"
-    },
+    }, 
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
       "dependsOn": [
@@ -133,14 +115,14 @@
         ], 
         "inboundNatRules": [], 
         "loadBalancingRules": [
-            {{(GetLBRules .Name .Ports)}}
+          {{(GetLBRules .Name .Ports)}}
         ], 
         "probes": [
-            {{(GetProbes .Ports)}}
+          {{(GetProbes .Ports)}}
         ]
       }, 
       "type": "Microsoft.Network/loadBalancers"
-    },
+    }, 
 {{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
@@ -175,7 +157,7 @@
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]", 
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex())]", 
-          "customData": "[base64(concat({{if IsDCOS173}}{{template "dcoscustomdata173.t" dict "DCOSCustomDataPublicIPStr" GetDCOSCustomDataPublicIPStr "DCOSGUID" GetDCOSGUID "RolesString" (GetAgentRolesFileContents .Ports)}}{{else if IsDCOS184}}{{template "dcoscustomdata184.t" dict "DCOSCustomDataPublicIPStr" GetDCOSCustomDataPublicIPStr "DCOSGUID" GetDCOSGUID "RolesString" (GetAgentRolesFileContents .Ports)}}{{end}}))]", 
+          "customData": "[base64({{template "swarmagentcustomdata.t" .}})]", 
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true", 
               "ssh": {

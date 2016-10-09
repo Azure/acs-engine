@@ -3,7 +3,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ], 
-      "location": "[variables('storageLocation')]", 
+      "location": "[resourceGroup().location]", 
       "name": "[variables('masterStorageAccountName')]", 
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
@@ -15,7 +15,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ], 
-      "location": "[variables('storageLocation')]", 
+      "location": "[resourceGroup().location]", 
       "name": "[variables('masterStorageAccountExhibitorName')]", 
       "properties": {
         "accountType": "Standard_LRS"

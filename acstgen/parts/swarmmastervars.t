@@ -1,10 +1,14 @@
     "adminUsername": "[parameters('linuxAdminUsername')]",
-    "agentStorageAccountsCount": 5,
+    "maxVMsPerPool": 100,
+    "maxVMsPerStorageAccount": 20,
+    "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
+    "dataStorageAccountPrefixSeed": 97, 
+    "apiVersionDefault": "2016-03-30", 
+    "apiVersionStorage": "2015-06-15",
     "agentCustomScript": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/configure-swarm-cluster.sh ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1 &\" &')]",
     "agentRunCmd": "[concat('runcmd:\n -  [ /bin/bash, /opt/azure/containers/install-cluster.sh ]\n\n')]", 
     "agentRunCmdFile": "[concat(' -  content: |\n        #!/bin/bash\n        ',variables('agentCustomScript'),'\n    path: /opt/azure/containers/install-cluster.sh\n    permissions: \"0744\"\n')]",
     "clusterInstallParameters": "[concat(variables('masterCount'), ' ',variables('masterVMNamePrefix'), ' ',variables('masterFirstAddr'), ' ',variables('adminUsername'),' ',variables('postInstallScriptURI'),' ',variables('masterFirstAddrPrefix'))]", 
-    "computeApiVersion": "2016-03-30", 
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]", 
     "masterCount": {{.MasterProfile.Count}}, 
     "masterCustomScript": "[concat('/bin/bash -c \"/bin/bash /opt/azure/containers/configure-swarm-cluster.sh ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1\"')]", 
@@ -32,7 +36,6 @@
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]", 
     "masterVMSize": "[parameters('masterVMSize')]", 
     "nameSuffix": "{{GetUniqueNameSuffix}}", 
-    "networkApiVersion": "2016-03-30", 
     "orchestratorName": "swarm", 
     "osImageOffer": "UbuntuServer", 
     "osImagePublisher": "Canonical", 
@@ -44,6 +47,5 @@
     "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location))]", 
     "storageAccountPrefixes": [ "0", "6", "c", "i", "o", "u", "1", "7", "d", "j", "p", "v", "2", "8", "e", "k", "q", "w", "3", "9", "f", "l", "r", "x", "4", "a", "g", "m", "s", "y", "5", "b", "h", "n", "t", "z" ],
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]", 
-    "storageApiVersion": "2015-06-15", 
-    "vmsPerStorageAccount": 20
+    "vmsPerStorageAccount": 20 
  

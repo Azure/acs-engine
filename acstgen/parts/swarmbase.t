@@ -8,6 +8,9 @@
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}
         {{template "swarmagentvars.t" .}}
+        {{if .IsVolumeBasedStorage}}
+          "{{.Name}}DataAccountName": "[concat(variables('storageAccountBaseName'), 'data{{$index}}')]",
+        {{end}}
         "{{.Name}}Index": {{$index}},
         "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]",
     {{end}}
@@ -17,7 +20,13 @@
     {{GetSizeMap}}
   },
   "resources": [
-    {{range .AgentPoolProfiles}}{{template "swarmagentresources.t" .}},{{end}}
+    {{range .AgentPoolProfiles}}
+      {{if .IsVolumeBasedStorage}}
+        {{template "swarmagentresourcesdisks.t" .}},
+      {{else}}
+        {{template "swarmagentresources.t" .}},
+      {{end}}
+    {{end}}
     {{template "swarmmasterresources.t" .}}
   ],
   "outputs": {

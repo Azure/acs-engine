@@ -46,6 +46,7 @@ const (
 	swarmBaseFile             = "swarmbase.t"
 	swarmAgentCustomData      = "swarmagentcustomdata.t"
 	swarmAgentResources       = "swarmagentresources.t"
+	swarmAgentResourcesDisks  = "swarmagentresourcesdisks.t"
 	swarmAgentVars            = "swarmagentvars.t"
 	swarmMasterCustomData     = "swarmmastercustomdata.t"
 	swarmMasterResources      = "swarmmasterresources.t"
@@ -55,7 +56,7 @@ const (
 var commonTemplateFiles = []string{agentOutputs, agentParams, masterOutputs, masterParams}
 var dcosTemplateFiles = []string{dcosAgentResources, dcosAgentResourcesDisks, dcosAgentVars, dcosBaseFile, dcosCustomData173, dcosCustomData184, dcosMasterResources, dcosMasterVars}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResources, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
-var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentCustomData, swarmAgentResources, swarmAgentVars, swarmBaseFile, swarmMasterCustomData, swarmMasterResources, swarmMasterVars}
+var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentCustomData, swarmAgentResources, swarmAgentVars, swarmAgentResourcesDisks, swarmBaseFile, swarmMasterCustomData, swarmMasterResources, swarmMasterVars}
 
 // VerifyFiles verifies that the required template files exist
 func VerifyFiles(partsDirectory string) error {
