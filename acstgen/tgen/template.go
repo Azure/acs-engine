@@ -273,11 +273,12 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 			}
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
-		"GetKubernetesAgentCustomData": func() string {
+		"GetKubernetesAgentCustomData": func(profile *vlabs.AgentPoolProfile) string {
 			str, e := getSingleLineForTemplate(kubernetesAgentCustomDataYaml, partsDirectory)
 			if e != nil {
 				return ""
 			}
+			str = strings.Replace(str, "{{.Name}}", profile.Name, -1)
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesKubeConfig": func() string {

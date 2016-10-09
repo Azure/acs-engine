@@ -8,3 +8,11 @@
 {{end}}  
     "{{.Name}}VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'), '-')]", 
     "{{.Name}}VMSize": "[parameters('{{.Name}}VMSize')]",
+{{if .IsCustomVNET}}
+    "{{.Name}}VnetSubnetID": "[parameters('{{.Name}}VnetSubnetID')]",
+    "{{.Name}}SubnetName": "[parameters('{{.Name}}VnetSubnetID')]",
+    "{{.Name}}VnetParts": "[split(parameters('{{.Name}}VnetSubnetID'),'/subnets/')]",
+{{else}}
+    "{{.Name}}VnetSubnetID": "[variables('vnetSubnetID')]",
+    "{{.Name}}SubnetName": "[variables('subnetName')]",
+{{end}}

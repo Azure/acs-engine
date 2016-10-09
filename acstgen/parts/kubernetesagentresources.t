@@ -6,7 +6,7 @@
       }, 
       "dependsOn": [
 {{if .IsCustomVNET}}
-      "[concat('Microsoft.Network/networkSecurityGroups/', variables('masterNSGName'))]" 
+      "[variables('nsgID')]" 
 {{else}}
       "[variables('vnetID')]"
 {{end}}
@@ -16,7 +16,7 @@
       "properties": {
 {{if .IsCustomVNET}}                  
 	    "networkSecurityGroup": {
-		  "id": "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('masterNSGName'))]"
+		    "id": "[variables('nsgID')]"
 	    },
 {{end}}
         "ipConfigurations": [
@@ -25,7 +25,7 @@
             "properties": {
               "privateIPAllocationMethod": "Dynamic", 
               "subnet": {
-                "id": "[variables('subnetRef')]"
+                "id": "[variables('{{.Name}}VnetSubnetID')]"
              }
             }
           }
@@ -108,7 +108,7 @@
         "osProfile": {
           "adminUsername": "[variables('username')]", 
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex())]", 
-          {{GetKubernetesAgentCustomData}} 
+          {{GetKubernetesAgentCustomData .}} 
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true", 
               "ssh": {

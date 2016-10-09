@@ -141,12 +141,13 @@
         "name": "nicLoopNode"
       }, 
       "dependsOn": [
-{{if not .MasterProfile.IsCustomVNET}}     
+{{if .IsCustomVNET}}
+        "[variables('masterNSGID')]",
+{{else}}  
         "[variables('vnetID')]",
 {{end}} 
         "[variables('masterLbID')]", 
-        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]", 
-        "[variables('masterNSGID')]"
+        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
       ], 
       "location": "[resourceGroup().location]", 
       "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]", 
@@ -172,10 +173,12 @@
               }
             }
           }
-        ], 
-        "networkSecurityGroup": {
+        ]
+{{if .IsCustomVNET}} 
+        ,"networkSecurityGroup": {
           "id": "[variables('masterNSGID')]"
         }
+{{end}}
       }, 
       "type": "Microsoft.Network/networkInterfaces"
     }, 

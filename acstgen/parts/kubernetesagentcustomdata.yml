@@ -35,7 +35,7 @@ write_files:
         "aadClientSecret": "{{{servicePrincipalClientSecret}}}",
         "resourceGroup": "{{{resourceGroup}}}",
         "location": "{{{location}}}",
-        "subnetName": "{{{subnetName}}}",
+        "subnetName": "{{{{{.Name}}SubnetName}}}",
         "securityGroupName": "{{{nsgName}}}",
         "vnetName": "{{{virtualNetworkName}}}",
         "routeTableName": "{{{routeTableName}}}"

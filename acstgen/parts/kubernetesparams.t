@@ -50,11 +50,11 @@
       "metadata": {
         "description": "Client ID (used by cloudprovider)"
       }, 
-      "type": "string"
+      "type": "securestring"
     }, 
     "servicePrincipalClientSecret": {
       "metadata": {
         "description": "The Service Principal Client Secret."
       },
-      "type": "string"
+      "type": "securestring"
     }
