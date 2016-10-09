@@ -35,7 +35,7 @@
     "postInstallScriptURI": "disabled", 
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]", 
     "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]", 
-    "storageAccountBaseName": "[concat(uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location)))]", 
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location))]", 
     "storageAccountPrefixes": [
       "0", 
       "6", 

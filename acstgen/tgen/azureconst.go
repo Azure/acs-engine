@@ -1,4 +1,4 @@
-package templategenerator
+package tgen
 
 import "fmt"
 

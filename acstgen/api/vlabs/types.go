@@ -2,23 +2,41 @@ package vlabs
 
 // AcsCluster represents the ACS cluster definition
 type AcsCluster struct {
-	OrchestratorProfile OrchestratorProfile `json:"orchestratorProfile"`
-	MasterProfile       MasterProfile       `json:"masterProfile"`
-	AgentPoolProfiles   []AgentPoolProfile  `json:"agentPoolProfiles"`
-	LinuxProfile        LinuxProfile        `json:"linuxProfile"`
+	OrchestratorProfile     OrchestratorProfile     `json:"orchestratorProfile"`
+	MasterProfile           MasterProfile           `json:"masterProfile"`
+	AgentPoolProfiles       []AgentPoolProfile      `json:"agentPoolProfiles"`
+	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
+	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
+	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
 }
 
 // OrchestratorProfile represents the type of orchestrator
 type OrchestratorProfile struct {
-	OrchestratorType             string `json:"orchestratorType"`
-	ServicePrincipalClientID     string `json:"servicePrincipalClientID,omitempty"`
-	ServicePrincipalClientSecret string `json:"servicePrincipalClientSecret,omitempty"`
-	ApiServerCertificate         string `json:"apiServerCertificate,omitempty"`
-	ApiServerPrivateKey          string `json:"apiServerPrivateKey,omitempty"`
-	CaCertificate                string `json:"caCertificate,omitempty"`
-	ClientCertificate            string `json:"clientCertificate,omitempty"`
-	ClientPrivateKey             string `json:"clientPrivateKey,omitempty"`
-	ClusterID                    string `json:"clusterid,omitempty"`
+	OrchestratorType string `json:"orchestratorType"`
+}
+
+// ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
+type ServicePrincipalProfile struct {
+	ClientID string `json:"servicePrincipalClientID,omitempty"`
+	Secret   string `json:"servicePrincipalClientSecret,omitempty"`
+}
+
+// CertificateProfile represents the definition of the master cluster
+type CertificateProfile struct {
+	// CaCertificate is the certificate authority certificate.
+	CaCertificate string `json:"caCertificate,omitempty"`
+	// ApiServerCertificate is the rest api server certificate, and signed by the CA
+	APIServerCertificate string `json:"apiServerCertificate,omitempty"`
+	// ApiServerPrivateKey is the rest api server private key, and signed by the CA
+	APIServerPrivateKey string `json:"apiServerPrivateKey,omitempty"`
+	// ClientCertificate is the certificate used by the client kubelet services and signed by the CA
+	ClientCertificate string `json:"clientCertificate,omitempty"`
+	// ClientPrivateKey is the private key used by the client kubelet services and signed by the CA
+	ClientPrivateKey string `json:"clientPrivateKey,omitempty"`
+	// KubeConfigCertificate is the client certificate used for kubectl cli and signed by the CA
+	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty"`
+	// KubeConfigPrivateKey is the client private key used for kubectl cli and signed by the CA
+	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
 	// caPrivateKey is an internal field only set if generation required
 	caPrivateKey string
 }
@@ -64,13 +82,13 @@ type APIObject interface {
 }
 
 // GetCAPrivateKey returns the ca private key
-func (o *OrchestratorProfile) GetCAPrivateKey() string {
-	return o.caPrivateKey
+func (c *CertificateProfile) GetCAPrivateKey() string {
+	return c.caPrivateKey
 }
 
-// SetCAPrivateKey returns the ca private key
-func (o *OrchestratorProfile) SetCAPrivateKey(caPrivateKey string) {
-	o.caPrivateKey = caPrivateKey
+// SetCAPrivateKey sets the ca private key
+func (c *CertificateProfile) SetCAPrivateKey(caPrivateKey string) {
+	c.caPrivateKey = caPrivateKey
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET

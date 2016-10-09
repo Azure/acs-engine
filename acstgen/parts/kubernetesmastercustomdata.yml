@@ -8,7 +8,7 @@ packages:
  - traceroute
 
 runcmd:
-- /bin/bash -c "/bin/echo DAEMON_ARGS=--advertise-client-urls {{{singleQuote}}}http://127.0.0.1:2379,http://{{{masterPrivateIp}}}:2379{{{singleQuote}}} --listen-client-urls {{{singleQuote}}}http://0.0.0.0:2379,http://0.0.0.0:4001{{{singleQuote}}} | tee -a /etc/default/etcd"
+- /bin/bash -c "/bin/echo DAEMON_ARGS=--advertise-client-urls ""http://127.0.0.1:2379,http://{{{masterPrivateIp}}}:2379"" --listen-client-urls ""http://0.0.0.0:2379,http://0.0.0.0:4001"" | tee -a /etc/default/etcd"
 - /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://get.docker.com/ > /tmp/install-docker
 - /bin/bash -c "/bin/bash /tmp/install-docker"
 - /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://storage.googleapis.com/kubernetes-release/release/v1.3.8/bin/linux/amd64/kubectl > /usr/local/bin/kubectl
@@ -128,7 +128,7 @@ write_files:
             command: 
               - "/hyperkube"
               - "apiserver"
-              - "--admission-control=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,PersistentVolumeLabel,ResourceQuota"
+              - "--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
               - "--address=0.0.0.0"
               - "--allow-privileged"
               - "--insecure-port=8080"

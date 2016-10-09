@@ -1,0 +1,5 @@
+*.anthony.json
+deployVM0.ps1
+noparams.json
+output*
+acstgen.exe

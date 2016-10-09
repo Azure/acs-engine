@@ -1,11 +1,14 @@
-package templategenerator
+package tgen
 
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path"
 	"regexp"
@@ -69,7 +72,7 @@ func VerifyFiles(partsDirectory string) error {
 }
 
 // GenerateTemplate generates the template from the API Model
-func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (string, error) {
+func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (string, string, error) {
 	var err error
 	var templ *template.Template
 
@@ -89,25 +92,117 @@ func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (stri
 		files = append(commonTemplateFiles, kubernetesTemplateFiles...)
 		baseFile = kubernetesBaseFile
 	} else {
-		return "", fmt.Errorf("orchestrator '%s' is unsupported", acsCluster.OrchestratorProfile.OrchestratorType)
+		return "", "", fmt.Errorf("orchestrator '%s' is unsupported", acsCluster.OrchestratorProfile.OrchestratorType)
 	}
 
 	for _, file := range files {
 		templateFile := path.Join(partsDirectory, file)
 		bytes, e := ioutil.ReadFile(templateFile)
 		if e != nil {
-			return "", fmt.Errorf("Error reading file %s: %s", templateFile, e.Error())
+			return "", "", fmt.Errorf("Error reading file %s: %s", templateFile, e.Error())
 		}
 		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
-			return "", err
+			return "", "", err
 		}
 	}
 	var b bytes.Buffer
 	if err = templ.ExecuteTemplate(&b, baseFile, acsCluster); err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return b.String(), nil
+	var parametersMap *map[string]interface{}
+	if parametersMap, err = getParameters(acsCluster); err != nil {
+		return "", "", err
+	}
+	var parameterBytes []byte
+	if parameterBytes, err = json.Marshal(parametersMap); err != nil {
+		return "", "", err
+	}
+
+	return b.String(), string(parameterBytes), nil
+}
+
+// GenerateClusterID creates a unique 8 string cluster ID
+func GenerateClusterID(acsCluster *vlabs.AcsCluster) string {
+	uniqueNameSuffixSize := 8
+	// the name suffix uniquely identifies the cluster and is generated off a hash
+	// from the master dns name
+	h := fnv.New64a()
+	h.Write([]byte(acsCluster.MasterProfile.DNSPrefix))
+	rand.Seed(int64(h.Sum64()))
+	return fmt.Sprintf("%08d", rand.Uint32())[:uniqueNameSuffixSize]
+}
+
+// GenerateKubeConfig returns a JSON string representing the KubeConfig
+func GenerateKubeConfig(acsCluster *vlabs.AcsCluster, templateDirectory string, location string) (string, error) {
+	kubeTemplateFile := path.Join(templateDirectory, kubeConfigJSON)
+	if _, err := os.Stat(kubeTemplateFile); os.IsNotExist(err) {
+		return "", fmt.Errorf("file %s does not exist, did you specify the correct template directory?", kubeTemplateFile)
+	}
+	b, err := ioutil.ReadFile(kubeTemplateFile)
+	if err != nil {
+		return "", fmt.Errorf("error reading kube config template file %s: %s", kubeTemplateFile, err.Error())
+	}
+	kubeconfig := string(b)
+	// variable replacement
+	kubeconfig = strings.Replace(kubeconfig, "<<<variables('caCertificate')>>>", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.CaCertificate)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "<<<reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn>>>", FormatAzureProdFQDN(acsCluster.MasterProfile.DNSPrefix, location), -1)
+	kubeconfig = strings.Replace(kubeconfig, "{{{resourceGroup}}}", acsCluster.MasterProfile.DNSPrefix, -1)
+	kubeconfig = strings.Replace(kubeconfig, "<<<variables('kubeConfigCertificate')>>>", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigCertificate)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "<<<variables('kubeConfigPrivateKey')>>>", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigPrivateKey)), -1)
+
+	return kubeconfig, nil
+}
+
+func getParameters(acsCluster *vlabs.AcsCluster) (*map[string]interface{}, error) {
+	parametersMap := &map[string]interface{}{}
+
+	// Master Parameters
+	addValue(parametersMap, "linuxAdminUsername", acsCluster.LinuxProfile.AdminUsername)
+	addValue(parametersMap, "masterEndpointDNSNamePrefix", acsCluster.MasterProfile.DNSPrefix)
+	if acsCluster.MasterProfile.IsCustomVNET() {
+		addValue(parametersMap, "masterVnetSubnetID", acsCluster.MasterProfile.VnetSubnetID)
+	} else {
+		addValue(parametersMap, "masterSubnet", acsCluster.MasterProfile.GetSubnet())
+	}
+	addValue(parametersMap, "firstConsecutiveStaticIP", acsCluster.MasterProfile.FirstConsecutiveStaticIP)
+	addValue(parametersMap, "masterVMSize", acsCluster.MasterProfile.VMSize)
+	addValue(parametersMap, "sshRSAPublicKey", acsCluster.LinuxProfile.SSH.PublicKeys[0].KeyData)
+
+	// Kubernetes Parameters
+	if acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
+		addValue(parametersMap, "apiServerCertificate", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.APIServerCertificate)))
+		addValue(parametersMap, "apiServerPrivateKey", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.APIServerPrivateKey)))
+		addValue(parametersMap, "caCertificate", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.CaCertificate)))
+		addValue(parametersMap, "clientCertificate", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.ClientCertificate)))
+		addValue(parametersMap, "clientPrivateKey", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.ClientPrivateKey)))
+		addValue(parametersMap, "kubeConfigCertificate", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigCertificate)))
+		addValue(parametersMap, "kubeConfigPrivateKey", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigPrivateKey)))
+		addValue(parametersMap, "kubernetesHyperkubeSpec", KubernetesHyperkubeSpec)
+		addValue(parametersMap, "servicePrincipalClientId", acsCluster.ServicePrincipalProfile.ClientID)
+		addValue(parametersMap, "servicePrincipalClientSecret", acsCluster.ServicePrincipalProfile.Secret)
+	}
+
+	// Agent parameters
+	for _, agentProfile := range acsCluster.AgentPoolProfiles {
+		addValue(parametersMap, fmt.Sprintf("%sCount", agentProfile.Name), agentProfile.Count)
+		addValue(parametersMap, fmt.Sprintf("%sVMSize", agentProfile.Name), agentProfile.VMSize)
+		if agentProfile.IsCustomVNET() {
+			addValue(parametersMap, fmt.Sprintf("%sVnetSubnetID", agentProfile.Name), agentProfile.VnetSubnetID)
+		} else {
+			addValue(parametersMap, fmt.Sprintf("%sSubnet", agentProfile.Name), agentProfile.GetSubnet())
+		}
+		if len(agentProfile.Ports) > 0 {
+			addValue(parametersMap, fmt.Sprintf("%sEndpointDNSNamePrefix", agentProfile.Name), agentProfile.DNSPrefix)
+		}
+	}
+
+	return parametersMap, nil
+}
+
+func addValue(m *map[string]interface{}, k string, v interface{}) {
+	(*m)[k] = *(&map[string]interface{}{})
+	(*m)[k].(map[string]interface{})["Value"] = v
 }
 
 // getTemplateFuncMap returns all functions used in template generation
@@ -147,11 +242,8 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 		"GetDCOSGUID": func() string {
 			return getPackageGUID(acsCluster.OrchestratorProfile.OrchestratorType, acsCluster.MasterProfile.Count)
 		},
-		"GetLinuxProfileFirstSSHPublicKey": func() string {
-			return acsCluster.LinuxProfile.SSH.PublicKeys[0].KeyData
-		},
 		"GetUniqueNameSuffix": func() string {
-			return acsCluster.OrchestratorProfile.ClusterID
+			return GenerateClusterID(acsCluster)
 		},
 		"GetVNETAddressPrefixes": func() string {
 			return getVNETAddressPrefixes(acsCluster)
@@ -194,6 +286,14 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 				return ""
 			}
 			return str
+		},
+		"AnyAgentHasDisks": func() bool {
+			for _, agentProfile := range acsCluster.AgentPoolProfiles {
+				if agentProfile.HasDisks() {
+					return true
+				}
+			}
+			return false
 		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
@@ -447,6 +547,7 @@ func getSingleLineForTemplate(yamlFilename string, partsDirectory string) (strin
 	if err != nil {
 		return "", fmt.Errorf("error reading yaml file %s: %s", yamlFile, err.Error())
 	}
+	// template.JSEscapeString leaves undesirable chars that don't work with pretty print
 	yamlStr := string(b)
 	yamlStr = strings.Replace(yamlStr, "\\", "\\\\", -1)
 	yamlStr = strings.Replace(yamlStr, "\r\n", "\\n", -1)
@@ -454,10 +555,16 @@ func getSingleLineForTemplate(yamlFilename string, partsDirectory string) (strin
 	yamlStr = strings.Replace(yamlStr, "\"", "\\\"", -1)
 
 	// variable replacement
-	rVariable := regexp.MustCompile("{{{([^}]*)}}}")
+	rVariable, e1 := regexp.Compile("{{{([^}]*)}}}")
+	if e1 != nil {
+		return "", e1
+	}
 	yamlStr = rVariable.ReplaceAllString(yamlStr, "',variables('$1'),'")
 	// verbatim replacement
-	rVerbatim := regexp.MustCompile("<<<([^>]*)>>>")
+	rVerbatim, e2 := regexp.Compile("<<<([^>]*)>>>")
+	if e2 != nil {
+		return "", e2
+	}
 	yamlStr = rVerbatim.ReplaceAllString(yamlStr, "',$1,'")
 	return yamlStr, nil
 }

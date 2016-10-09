@@ -19,18 +19,6 @@ func (o *OrchestratorProfile) Validate() error {
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
 
-	if o.OrchestratorType == Kubernetes && len(o.ServicePrincipalClientID) == 0 {
-		return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", o.OrchestratorType)
-	}
-
-	if o.OrchestratorType == Kubernetes && len(o.ServicePrincipalClientSecret) == 0 {
-		return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", o.OrchestratorType)
-	}
-
-	if o.OrchestratorType != Kubernetes && (len(o.ServicePrincipalClientID) > 0 || len(o.ServicePrincipalClientSecret) > 0) {
-		return fmt.Errorf("Service principal and secret is not required for orchestrator %s", o.OrchestratorType)
-	}
-
 	return nil
 }
 
@@ -118,6 +106,14 @@ func (a *AcsCluster) Validate() error {
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
 		return e
 	}
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.ClientID) == 0 {
+		return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+	}
+
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.Secret) == 0 {
+		return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+	}
+
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
 		if e := agentPoolProfile.Validate(); e != nil {
 			return e
@@ -226,7 +222,7 @@ func validateVNET(a *AcsCluster) error {
 		}
 
 		masterFirstIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)
-		if masterFirstIP != nil {
+		if masterFirstIP == nil {
 			return fmt.Errorf("MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification) '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
 		}
 	}

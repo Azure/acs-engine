@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"./api/vlabs"
-	tgen "./templategenerator"
+	"./tgen"
 )
 
 // loadAcsCluster loads an ACS Cluster API Model from a JSON file
@@ -62,10 +62,13 @@ func prettyPrintJSON(content string) (string, error) {
 
 func prettyPrintArmTemplate(template string) (string, error) {
 	translateParams := [][]string{
-		{"parameters", "dparameters"},
-		{"variables", "evariables"},
-		{"resources", "fresources"},
-		{"outputs", "zoutputs"},
+		{"\"parameters\"", "\"dparameters\""},
+		{"\"variables\"", "\"evariables\""},
+		{"\"resources\"", "\"fresources\""},
+		{"\"outputs\"", "\"zoutputs\""},
+		// there is a bug in ARM where it doesn't correctly translate back '\u003e' (>)
+		{">", "GREATERTHAN"},
+		{"<", "LESSTHAN"},
 	}
 
 	template = translateJSON(template, translateParams, false)
@@ -78,12 +81,12 @@ func prettyPrintArmTemplate(template string) (string, error) {
 	return template, nil
 }
 
-func writeArtifacts(acsCluster *vlabs.AcsCluster, artifactsDir string) error {
+func writeArtifacts(acsCluster *vlabs.AcsCluster, template string, parameters, artifactsDir string, templateDirectory string, certsGenerated bool) error {
 	if len(artifactsDir) == 0 {
-		artifactsDir = fmt.Sprintf("k8s-%s", acsCluster.OrchestratorProfile.ClusterID)
+		artifactsDir = fmt.Sprintf("%s-%s", acsCluster.OrchestratorProfile.OrchestratorType, tgen.GenerateClusterID(acsCluster))
+		artifactsDir = path.Join("output", artifactsDir)
 	}
 
-	//b, err := json.Marshal(acsCluster)
 	b, err := json.MarshalIndent(acsCluster, "", "  ")
 	if err != nil {
 		return err
@@ -92,23 +95,53 @@ func writeArtifacts(acsCluster *vlabs.AcsCluster, artifactsDir string) error {
 	if e := saveFile(artifactsDir, "apimodel.json", b); e != nil {
 		return e
 	}
-	if e := saveFileString(artifactsDir, "ca.key", acsCluster.OrchestratorProfile.GetCAPrivateKey()); e != nil {
+
+	if e := saveFileString(artifactsDir, "azuredeploy.json", template); e != nil {
 		return e
 	}
-	if e := saveFileString(artifactsDir, "ca.crt", acsCluster.OrchestratorProfile.CaCertificate); e != nil {
+
+	if e := saveFileString(artifactsDir, "azuredeploy.parameters.json", parameters); e != nil {
 		return e
 	}
-	if e := saveFileString(artifactsDir, "apiserver.key", acsCluster.OrchestratorProfile.ApiServerPrivateKey); e != nil {
-		return e
-	}
-	if e := saveFileString(artifactsDir, "apiserver.crt", acsCluster.OrchestratorProfile.ApiServerCertificate); e != nil {
-		return e
-	}
-	if e := saveFileString(artifactsDir, "client.key", acsCluster.OrchestratorProfile.ClientPrivateKey); e != nil {
-		return e
-	}
-	if e := saveFileString(artifactsDir, "client.crt", acsCluster.OrchestratorProfile.ClientCertificate); e != nil {
-		return e
+
+	if certsGenerated {
+		if acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
+			directory := path.Join(artifactsDir, "kubeconfig")
+			for _, location := range tgen.AzureLocations {
+				b, gkcerr := tgen.GenerateKubeConfig(acsCluster, templateDirectory, location)
+				if gkcerr != nil {
+					return gkcerr
+				}
+				if e := saveFileString(directory, fmt.Sprintf("kubeconfig.%s.json", location), b); e != nil {
+					return e
+				}
+			}
+		}
+
+		if e := saveFileString(artifactsDir, "ca.key", acsCluster.CertificateProfile.GetCAPrivateKey()); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "ca.crt", acsCluster.CertificateProfile.CaCertificate); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "apiserver.key", acsCluster.CertificateProfile.APIServerPrivateKey); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "apiserver.crt", acsCluster.CertificateProfile.APIServerCertificate); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "client.key", acsCluster.CertificateProfile.ClientPrivateKey); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "client.crt", acsCluster.CertificateProfile.ClientCertificate); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "kubectlClient.key", acsCluster.CertificateProfile.KubeConfigPrivateKey); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "kubectlClient.crt", acsCluster.CertificateProfile.KubeConfigCertificate); e != nil {
+			return e
+		}
 	}
 
 	return nil
@@ -139,7 +172,7 @@ func usage(errs ...error) {
 	for _, err := range errs {
 		fmt.Fprintf(os.Stderr, "error: %s\n\n", err.Error())
 	}
-	fmt.Fprintf(os.Stderr, "usage: %s ClusterDefinitionFile\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "usage: %s [OPTIONS] ClusterDefinitionFile\n", os.Args[0])
 	fmt.Fprintf(os.Stderr, "       read the ClusterDefinitionFile and output an arm template")
 	fmt.Fprintf(os.Stderr, "\n")
 	fmt.Fprintf(os.Stderr, "options:\n")
@@ -148,12 +181,12 @@ func usage(errs ...error) {
 
 var templateDirectory = flag.String("templateDirectory", "./parts", "directory containing base template files")
 var noPrettyPrint = flag.Bool("noPrettyPrint", false, "do not pretty print output")
-var noArtifacts = flag.Bool("noArtifacts", false, "does not generate artifacts (api model, json, cert files)")
 var artifactsDir = flag.String("artifacts", "", "directory where artifacts will be written")
 
 func main() {
 	var acsCluster *vlabs.AcsCluster
 	var template string
+	var parameters string
 	var err error
 
 	flag.Parse()
@@ -190,16 +223,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	if template, err = tgen.GenerateTemplate(acsCluster, *templateDirectory); err != nil {
+	if template, parameters, err = tgen.GenerateTemplate(acsCluster, *templateDirectory); err != nil {
 		fmt.Fprintf(os.Stderr, "error generating template %s: %s", jsonFile, err.Error())
 		os.Exit(1)
-	}
-
-	if certsGenerated && !*noArtifacts {
-		if err = writeArtifacts(acsCluster, *artifactsDir); err != nil {
-			fmt.Fprintf(os.Stderr, "error writing artifacts %s", err.Error())
-			os.Exit(1)
-		}
 	}
 
 	if !*noPrettyPrint {
@@ -207,6 +233,14 @@ func main() {
 			fmt.Fprintf(os.Stderr, "error pretty printing template %s", err.Error())
 			os.Exit(1)
 		}
+		if parameters, err = prettyPrintArmTemplate(parameters); err != nil {
+			fmt.Fprintf(os.Stderr, "error pretty printing template %s", err.Error())
+			os.Exit(1)
+		}
 	}
-	fmt.Print(template)
+
+	if err = writeArtifacts(acsCluster, template, parameters, *artifactsDir, *templateDirectory, certsGenerated); err != nil {
+		fmt.Fprintf(os.Stderr, "error writing artifacts %s", err.Error())
+		os.Exit(1)
+	}
 }

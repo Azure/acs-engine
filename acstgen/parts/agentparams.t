@@ -101,7 +101,6 @@
         99, 
         100
       ], 
-      "defaultValue": {{.Count}}, 
       "metadata": {
         "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
       }, 
@@ -109,7 +108,6 @@
     },
     "{{.Name}}VMSize": {
       {{GetAgentAllowedSizes}}
-      "defaultValue": "{{.VMSize}}", 
       "metadata": {
         "description": "The size of the Virtual Machine."
       }, 
@@ -117,7 +115,6 @@
     },
 {{if .IsCustomVNET}}
     "{{.Name}}VnetSubnetID": {
-      "defaultValue": "{{.VnetSubnetID}}",
       "metadata": {
         "description": "Sets the vnet subnet of agent pool '{{.Name}}'."
       }, 
@@ -125,7 +122,6 @@
     }
 {{else}}
     "{{.Name}}Subnet": {
-      "defaultValue": "{{.GetSubnet}}",
       "metadata": {
         "description": "Sets the subnet of agent pool '{{.Name}}'."
       }, 
@@ -134,7 +130,6 @@
 {{end}}
 {{if IsPublic .Ports}}
   ,"{{.Name}}EndpointDNSNamePrefix": {
-      "defaultValue": "{{.DNSPrefix}}",
       "metadata": {
         "description": "Sets the Domain name label for the agent pool IP Address.  The concatenation of the domain name label and the regional DNS zone make up the fully qualified domain name associated with the public IP address."
       }, 

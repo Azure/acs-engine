@@ -1,4 +1,3 @@
-// util package comes from https://github.com/colemickens/azkube/blob/master/util/pki.go
 package util
 
 import (
@@ -11,6 +10,7 @@ import (
 	"fmt"
 	"math/big"
 	"net"
+	"os"
 	"time"
 )
 
@@ -24,7 +24,7 @@ type PkiKeyCertPair struct {
 	PrivateKeyPem  string
 }
 
-func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, clusterDomain string) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
+func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, clusterDomain string) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.default"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.default.svc"))
@@ -32,23 +32,59 @@ func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, cluste
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc.%s", clusterDomain))
-
+	start := time.Now()
 	caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, "", nil, nil)
 	if err != nil {
-		return nil, nil, nil, err
-	}
-	apiServerCertificate, apiServerPrivateKey, err := createCertificate("apiserver", caCertificate, caPrivateKey, true, masterFQDN, extraFQDNs, extraIPs)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	clientCertificate, clientPrivateKey, err := createCertificate("client", caCertificate, caPrivateKey, false, "", nil, nil)
-	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
+	var (
+		apiServerCertificate  *x509.Certificate
+		apiServerPrivateKey   *rsa.PrivateKey
+		clientCertificate     *x509.Certificate
+		clientPrivateKey      *rsa.PrivateKey
+		kubeConfigCertificate *x509.Certificate
+		kubeConfigPrivateKey  *rsa.PrivateKey
+	)
+	errors := make(chan error)
+
+	go func() {
+		var err error
+		apiServerCertificate, apiServerPrivateKey, err = createCertificate("apiserver", caCertificate, caPrivateKey, true, masterFQDN, extraFQDNs, extraIPs)
+		errors <- err
+	}()
+
+	go func() {
+		var err error
+		clientCertificate, clientPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, "", nil, nil)
+		errors <- err
+	}()
+
+	go func() {
+		var err error
+		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, "", nil, nil)
+		errors <- err
+	}()
+
+	e1 := <-errors
+	e2 := <-errors
+	e3 := <-errors
+	if e1 != nil {
+		return nil, nil, nil, nil, e1
+	}
+	if e2 != nil {
+		return nil, nil, nil, nil, e2
+	}
+	if e3 != nil {
+		return nil, nil, nil, nil, e2
+	}
+
+	fmt.Fprintf(os.Stderr, "cert creation took %s\n", time.Since(start))
 	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
-		&PkiKeyCertPair{CertificatePem: string(certificateToPem(clientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(clientPrivateKey))}, nil
+		&PkiKeyCertPair{CertificatePem: string(certificateToPem(clientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(clientPrivateKey))},
+		&PkiKeyCertPair{CertificatePem: string(certificateToPem(kubeConfigCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(kubeConfigPrivateKey))},
+		nil
 }
 
 func createCertificate(commonName string, caCertificate *x509.Certificate, caPrivateKey *rsa.PrivateKey, isServer bool, FQDN string, extraFQDNs []string, extraIPs []net.IP) (*x509.Certificate, *rsa.PrivateKey, error) {
@@ -72,7 +108,7 @@ func createCertificate(commonName string, caCertificate *x509.Certificate, caPri
 		template.IsCA = isCA
 	} else if isServer {
 		extraFQDNs = append(extraFQDNs, FQDN)
-		extraIPs = append(extraIPs, net.ParseIP("10.3.0.1"))
+		extraIPs = append(extraIPs, net.ParseIP("10.0.0.1"))
 
 		template.DNSNames = extraFQDNs
 		template.IPAddresses = extraIPs
