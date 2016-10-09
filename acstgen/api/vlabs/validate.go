@@ -201,9 +201,6 @@ func validateVNET(a *AcsCluster) error {
 		}
 	}
 	if isCustomVNET {
-		if a.OrchestratorProfile.OrchestratorType == Swarm {
-			return errors.New("bring your own VNET is not supported with Swarm, please let us know if you want this feature")
-		}
 		subscription, resourcegroup, vnetname, _, e := GetVNETSubnetIDComponents(a.MasterProfile.VnetSubnetID)
 		if e != nil {
 			return e

@@ -2,9 +2,13 @@
     "{{.Name}}Count": "[parameters('{{.Name}}Count')]", 
     "{{.Name}}VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'))]", 
     "{{.Name}}VMSize": "[parameters('{{.Name}}VMSize')]", 
+{{if .IsCustomVNET}}
+    "{{.Name}}VnetSubnetID": "[parameters('{{.Name}}VnetSubnetID')]",
+{{else}}
     "{{.Name}}Subnet": "[parameters('{{.Name}}Subnet')]",
     "{{.Name}}SubnetName": "[concat(variables('orchestratorName'), '-{{.Name}}subnet')]", 
-    "{{.Name}}SubnetRef": "[concat(variables('vnetID'),'/subnets/',variables('{{.Name}}SubnetName'))]", 
+    "{{.Name}}VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('{{.Name}}SubnetName'))]",
+{{end}}
 {{if IsPublic .Ports}}
     "{{.Name}}EndpointDNSNamePrefix": "[tolower(parameters('{{.Name}}EndpointDNSNamePrefix'))]",
     "{{.Name}}IPAddressName": "[concat(variables('orchestratorName'), '-agent-ip-', variables('{{.Name}}EndpointDNSNamePrefix'), '-', variables('nameSuffix'))]",

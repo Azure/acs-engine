@@ -9,7 +9,8 @@
         "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
       }, 
       "type": "Microsoft.Storage/storageAccounts"
-    }, 
+    },
+{{if not .MasterProfile.IsCustomVNET}}
     {
       "apiVersion": "[variables('networkApiVersion')]", 
       "location": "[resourceGroup().location]", 
@@ -25,7 +26,8 @@
         ]
       }, 
       "type": "Microsoft.Network/virtualNetworks"
-    }, 
+    },
+{{end}}
     {
       "apiVersion": "[variables('computeApiVersion')]", 
       "location": "[resourceGroup().location]", 
@@ -100,8 +102,10 @@
         "name": "nicLoopNode"
       }, 
       "dependsOn": [
-        "[variables('masterLbID')]", 
+{{if not .MasterProfile.IsCustomVNET}}
         "[variables('vnetID')]", 
+{{end}}
+        "[variables('masterLbID')]", 
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
       ], 
       "location": "[resourceGroup().location]", 
@@ -124,7 +128,7 @@
               "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(int(variables('masterFirstAddrOctet4'))))]", 
               "privateIPAllocationMethod": "Static", 
               "subnet": {
-                "id": "[variables('masterSubnetRef')]"
+                "id": "[variables('masterVnetSubnetID')]"
               }
             }
           }
