@@ -212,7 +212,7 @@ func getParameters(acsCluster *vlabs.AcsCluster) (*map[string]interface{}, error
 
 func addValue(m *map[string]interface{}, k string, v interface{}) {
 	(*m)[k] = *(&map[string]interface{}{})
-	(*m)[k].(map[string]interface{})["Value"] = v
+	(*m)[k].(map[string]interface{})["value"] = v
 }
 
 // getTemplateFuncMap returns all functions used in template generation
