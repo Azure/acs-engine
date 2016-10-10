@@ -137,6 +137,19 @@ func (a *AcsCluster) Validate() error {
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(agentPoolProfile.DNSPrefix) > 0 {
 			return errors.New("DNSPrefix not support for agent pools in Kubernetes - Kubernetes marks its own clusters public")
 		}
+		if agentPoolProfile.OSType == OSTypeWindows {
+			switch a.OrchestratorProfile.OrchestratorType {
+			case Swarm:
+			default:
+				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
+			}
+			if len(a.WindowsProfile.AdminUsername) == 0 {
+				return fmt.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
+			}
+			if len(a.WindowsProfile.AdminPassword) == 0 {
+				return fmt.Errorf("WindowsProfile.AdminPassword must not be empty since  agent pool '%s' specifies windows", agentPoolProfile.Name)
+			}
+		}
 	}
 	if e := a.LinuxProfile.Validate(); e != nil {
 		return e

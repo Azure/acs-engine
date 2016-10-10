@@ -30,6 +30,9 @@ func setMasterNetworkDefaults(a *vlabs.AcsCluster) {
 		if a.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
 			a.MasterProfile.SetSubnet(DefaultKubernetesMasterSubnet)
 			a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
+		} else if a.HasWindows() {
+			a.MasterProfile.SetSubnet(DefaultSwarmWindowsMasterSubnet)
+			a.MasterProfile.FirstConsecutiveStaticIP = DefaultSwarmWindowsFirstConsecutiveStaticIP
 		} else {
 			a.MasterProfile.SetSubnet(DefaultMasterSubnet)
 			a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveStaticIP

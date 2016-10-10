@@ -25,38 +25,41 @@ const (
 )
 
 const (
-	agentOutputs              = "agentoutputs.t"
-	agentParams               = "agentparams.t"
-	dcosAgentResources        = "dcosagentresources.t"
-	dcosAgentResourcesDisks   = "dcosagentresourcesdisks.t"
-	dcosAgentVars             = "dcosagentvars.t"
-	dcosBaseFile              = "dcosbase.t"
-	dcosCustomData173         = "dcoscustomdata173.t"
-	dcosCustomData184         = "dcoscustomdata184.t"
-	dcosMasterResources       = "dcosmasterresources.t"
-	dcosMasterVars            = "dcosmastervars.t"
-	kubernetesBaseFile        = "kubernetesbase.t"
-	kubernetesAgentResources  = "kubernetesagentresources.t"
-	kubernetesAgentVars       = "kubernetesagentvars.t"
-	kubernetesMasterResources = "kubernetesmasterresources.t"
-	kubernetesMasterVars      = "kubernetesmastervars.t"
-	kubernetesParams          = "kubernetesparams.t"
-	masterOutputs             = "masteroutputs.t"
-	masterParams              = "masterparams.t"
-	swarmBaseFile             = "swarmbase.t"
-	swarmAgentCustomData      = "swarmagentcustomdata.t"
-	swarmAgentResources       = "swarmagentresources.t"
-	swarmAgentResourcesDisks  = "swarmagentresourcesdisks.t"
-	swarmAgentVars            = "swarmagentvars.t"
-	swarmMasterCustomData     = "swarmmastercustomdata.t"
-	swarmMasterResources      = "swarmmasterresources.t"
-	swarmMasterVars           = "swarmmastervars.t"
+	agentOutputs                = "agentoutputs.t"
+	agentParams                 = "agentparams.t"
+	dcosAgentResources          = "dcosagentresources.t"
+	dcosAgentResourcesDisks     = "dcosagentresourcesdisks.t"
+	dcosAgentVars               = "dcosagentvars.t"
+	dcosBaseFile                = "dcosbase.t"
+	dcosCustomData173           = "dcoscustomdata173.t"
+	dcosCustomData184           = "dcoscustomdata184.t"
+	dcosMasterResources         = "dcosmasterresources.t"
+	dcosMasterVars              = "dcosmastervars.t"
+	kubernetesBaseFile          = "kubernetesbase.t"
+	kubernetesAgentResources    = "kubernetesagentresources.t"
+	kubernetesAgentVars         = "kubernetesagentvars.t"
+	kubernetesMasterResources   = "kubernetesmasterresources.t"
+	kubernetesMasterVars        = "kubernetesmastervars.t"
+	kubernetesParams            = "kubernetesparams.t"
+	masterOutputs               = "masteroutputs.t"
+	masterParams                = "masterparams.t"
+	swarmBaseFile               = "swarmbase.t"
+	swarmAgentCustomData        = "swarmagentcustomdata.t"
+	swarmAgentResources         = "swarmagentresources.t"
+	swarmAgentResourcesDisks    = "swarmagentresourcesdisks.t"
+	swarmAgentVars              = "swarmagentvars.t"
+	swarmMasterCustomData       = "swarmmastercustomdata.t"
+	swarmMasterResources        = "swarmmasterresources.t"
+	swarmMasterVars             = "swarmmastervars.t"
+	swarmWinAgentResources      = "swarmwinagentresources.t"
+	swarmWinAgentResourcesDisks = "swarmwinagentresourcesdisks.t"
+	windowsParams               = "windowsparams.t"
 )
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, masterOutputs, masterParams}
 var dcosTemplateFiles = []string{dcosAgentResources, dcosAgentResourcesDisks, dcosAgentVars, dcosBaseFile, dcosCustomData173, dcosCustomData184, dcosMasterResources, dcosMasterVars}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResources, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
-var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentCustomData, swarmAgentResources, swarmAgentVars, swarmAgentResourcesDisks, swarmBaseFile, swarmMasterCustomData, swarmMasterResources, swarmMasterVars}
+var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentCustomData, swarmAgentResources, swarmAgentVars, swarmAgentResourcesDisks, swarmBaseFile, swarmMasterCustomData, swarmMasterResources, swarmMasterVars, swarmWinAgentResources, swarmWinAgentResourcesDisks, windowsParams}
 
 // VerifyFiles verifies that the required template files exist
 func VerifyFiles(partsDirectory string) error {
@@ -196,6 +199,12 @@ func getParameters(acsCluster *vlabs.AcsCluster) (*map[string]interface{}, error
 		if len(agentProfile.Ports) > 0 {
 			addValue(parametersMap, fmt.Sprintf("%sEndpointDNSNamePrefix", agentProfile.Name), agentProfile.DNSPrefix)
 		}
+	}
+
+	// Windows parameters
+	if acsCluster.HasWindows() {
+		addValue(parametersMap, "windowsAdminUsername", acsCluster.WindowsProfile.AdminUsername)
+		addValue(parametersMap, "windowsAdminPassword", acsCluster.WindowsProfile.AdminPassword)
 	}
 
 	return parametersMap, nil

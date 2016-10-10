@@ -5,6 +5,7 @@ type AcsCluster struct {
 	OrchestratorProfile     OrchestratorProfile     `json:"orchestratorProfile"`
 	MasterProfile           MasterProfile           `json:"masterProfile"`
 	AgentPoolProfiles       []AgentPoolProfile      `json:"agentPoolProfiles"`
+	WindowsProfile          WindowsProfile          `json:"windowsProfile"`
 	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
 	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
@@ -58,6 +59,7 @@ type AgentPoolProfile struct {
 	Count        int    `json:"count"`
 	VMSize       string `json:"vmSize"`
 	DNSPrefix    string `json:"dnsPrefix,omitempty"`
+	OSType       string `json:"osType,omitempty"`
 	Ports        []int  `json:"ports,omitempty"`
 	StorageType  string `json:"storageType,omitempty"`
 	DiskSizesGB  []int  `json:"diskSizesGB,omitempty"`
@@ -76,9 +78,25 @@ type LinuxProfile struct {
 	} `json:"ssh"`
 }
 
+// WindowsProfile represents the windows parameters passed to the cluster
+type WindowsProfile struct {
+	AdminUsername string `json:"adminUsername"`
+	AdminPassword string `json:"adminPassword"`
+}
+
 // APIObject defines the required functionality of an api object
 type APIObject interface {
 	Validate() error
+}
+
+// HasWindows returns true if the cluster contains windows
+func (a *AcsCluster) HasWindows() bool {
+	for _, agentPoolProfile := range a.AgentPoolProfiles {
+		if agentPoolProfile.OSType == OSTypeWindows {
+			return true
+		}
+	}
+	return false
 }
 
 // GetCAPrivateKey returns the ca private key
@@ -109,6 +127,11 @@ func (m *MasterProfile) SetSubnet(subnet string) {
 // IsCustomVNET returns true if the customer brought their own VNET
 func (a *AgentPoolProfile) IsCustomVNET() bool {
 	return len(a.VnetSubnetID) > 0
+}
+
+// IsWindows returns true if the agent pool is windows
+func (a *AgentPoolProfile) IsWindows() bool {
+	return a.OSType == OSTypeWindows
 }
 
 // IsVolumeBasedStorage returns true if the customer specified disks

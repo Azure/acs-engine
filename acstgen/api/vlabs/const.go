@@ -27,4 +27,8 @@ const (
 	StorageVolumes = "Volumes"
 	// StorageHAVolumes are managed disks that provide fault domain coverage for volumes.
 	StorageHAVolumes = "HAVolumes"
+	// OSTypeWindows specifies the Windows OS
+	OSTypeWindows = "Windows"
+	// OSTypeLinux specifies the Linux OS
+	OSTypeLinux = "Linux"
 )

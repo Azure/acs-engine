@@ -7,6 +7,10 @@ const (
 	DefaultMasterSubnet = "172.16.0.0/24"
 	// DefaultFirstConsecutiveStaticIP specifies the static IP address on master 0 for DCOS or Swarm
 	DefaultFirstConsecutiveStaticIP = "172.16.0.5"
+	// DefaultSwarmWindowsMasterSubnet specifies the default master subnet for a Swarm Windows cluster
+	DefaultSwarmWindowsMasterSubnet = "192.168.255.0/24"
+	// DefaultSwarmWindowsFirstConsecutiveStaticIP specifies the static IP address on master 0 for a Swarm WIndows cluster
+	DefaultSwarmWindowsFirstConsecutiveStaticIP = "192.168.255.5"
 	// DefaultKubernetesMasterSubnet specifies the default kubernetes master subnet
 	DefaultKubernetesMasterSubnet = "10.240.0.0/16"
 	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
