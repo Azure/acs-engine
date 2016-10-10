@@ -2,6 +2,7 @@ package tgen
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -20,7 +21,9 @@ import (
 
 const (
 	kubernetesMasterCustomDataYaml = "kubernetesmastercustomdata.yml"
+	kubernetesMasterCustomScript   = "kubernetesmastercustomscript.sh"
 	kubernetesAgentCustomDataYaml  = "kubernetesagentcustomdata.yml"
+	kubernetesAgentCustomScript    = "kubernetesagentcustomscript.sh"
 	kubeConfigJSON                 = "kubeconfig.json"
 )
 
@@ -149,11 +152,11 @@ func GenerateKubeConfig(acsCluster *vlabs.AcsCluster, templateDirectory string, 
 	}
 	kubeconfig := string(b)
 	// variable replacement
-	kubeconfig = strings.Replace(kubeconfig, "<<<variables('caCertificate')>>>", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.CaCertificate)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "<<<variables('caCertificate')>>>", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.CaCertificate)), -1)
 	kubeconfig = strings.Replace(kubeconfig, "<<<reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn>>>", FormatAzureProdFQDN(acsCluster.MasterProfile.DNSPrefix, location), -1)
 	kubeconfig = strings.Replace(kubeconfig, "{{{resourceGroup}}}", acsCluster.MasterProfile.DNSPrefix, -1)
-	kubeconfig = strings.Replace(kubeconfig, "<<<variables('kubeConfigCertificate')>>>", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigCertificate)), -1)
-	kubeconfig = strings.Replace(kubeconfig, "<<<variables('kubeConfigPrivateKey')>>>", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigPrivateKey)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "<<<variables('kubeConfigCertificate')>>>", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigCertificate)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "<<<variables('kubeConfigPrivateKey')>>>", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigPrivateKey)), -1)
 
 	return kubeconfig, nil
 }
@@ -175,13 +178,13 @@ func getParameters(acsCluster *vlabs.AcsCluster) (*map[string]interface{}, error
 
 	// Kubernetes Parameters
 	if acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
-		addValue(parametersMap, "apiServerCertificate", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.APIServerCertificate)))
-		addValue(parametersMap, "apiServerPrivateKey", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.APIServerPrivateKey)))
-		addValue(parametersMap, "caCertificate", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.CaCertificate)))
-		addValue(parametersMap, "clientCertificate", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.ClientCertificate)))
-		addValue(parametersMap, "clientPrivateKey", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.ClientPrivateKey)))
-		addValue(parametersMap, "kubeConfigCertificate", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigCertificate)))
-		addValue(parametersMap, "kubeConfigPrivateKey", base64.URLEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigPrivateKey)))
+		addValue(parametersMap, "apiServerCertificate", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.APIServerCertificate)))
+		addValue(parametersMap, "apiServerPrivateKey", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.APIServerPrivateKey)))
+		addValue(parametersMap, "caCertificate", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.CaCertificate)))
+		addValue(parametersMap, "clientCertificate", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.ClientCertificate)))
+		addValue(parametersMap, "clientPrivateKey", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.ClientPrivateKey)))
+		addValue(parametersMap, "kubeConfigCertificate", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigCertificate)))
+		addValue(parametersMap, "kubeConfigPrivateKey", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigPrivateKey)))
 		addValue(parametersMap, "kubernetesHyperkubeSpec", KubernetesHyperkubeSpec)
 		addValue(parametersMap, "servicePrincipalClientId", acsCluster.ServicePrincipalProfile.ClientID)
 		addValue(parametersMap, "servicePrincipalClientSecret", acsCluster.ServicePrincipalProfile.Secret)
@@ -274,7 +277,10 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 			return GetSizeMap()
 		},
 		"Base64": func(s string) string {
-			return base64.URLEncoding.EncodeToString([]byte(s))
+			return base64.StdEncoding.EncodeToString([]byte(s))
+		},
+		"GetKubernetesMasterCustomScript": func() string {
+			return getMasterBase64CustomScript(acsCluster, kubernetesMasterCustomScript, partsDirectory)
 		},
 		"GetKubernetesMasterCustomData": func() string {
 			str, e := getSingleLineForTemplate(kubernetesMasterCustomDataYaml, partsDirectory)
@@ -282,6 +288,9 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 				return ""
 			}
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+		},
+		"GetKubernetesAgentCustomScript": func() string {
+			return getMasterBase64CustomScript(acsCluster, kubernetesAgentCustomScript, partsDirectory)
 		},
 		"GetKubernetesAgentCustomData": func(profile *vlabs.AgentPoolProfile) string {
 			str, e := getSingleLineForTemplate(kubernetesAgentCustomDataYaml, partsDirectory)
@@ -578,4 +587,29 @@ func getSingleLineForTemplate(yamlFilename string, partsDirectory string) (strin
 	}
 	yamlStr = rVerbatim.ReplaceAllString(yamlStr, "',$1,'")
 	return yamlStr, nil
+}
+
+// getMasterBase64CustomScript will return a base64 of the CSE
+func getMasterBase64CustomScript(a *vlabs.AcsCluster, csFilename string, partsDirectory string) string {
+	csFile := path.Join(partsDirectory, csFilename)
+	if _, err := os.Stat(csFile); os.IsNotExist(err) {
+		panic(err.Error())
+	}
+	b, err := ioutil.ReadFile(csFile)
+	if err != nil {
+		panic(err.Error())
+	}
+	// translate the parameters
+	csStr := string(b)
+	csStr = strings.Replace(csStr, "{{{apiServerPrivateKey}}}", base64.StdEncoding.EncodeToString([]byte(a.CertificateProfile.APIServerPrivateKey)), -1)
+	csStr = strings.Replace(csStr, "{{{clientPrivateKey}}}", base64.StdEncoding.EncodeToString([]byte(a.CertificateProfile.ClientPrivateKey)), -1)
+	csStr = strings.Replace(csStr, "{{{servicePrincipalClientId}}}", a.ServicePrincipalProfile.ClientID, -1)
+	csStr = strings.Replace(csStr, "{{{servicePrincipalClientSecret}}}", a.ServicePrincipalProfile.Secret, -1)
+
+	var gzipB bytes.Buffer
+	w := gzip.NewWriter(&gzipB)
+	w.Write([]byte(csStr))
+	w.Close()
+
+	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }

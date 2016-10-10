@@ -297,4 +297,27 @@
         }
       }, 
       "type": "Microsoft.Compute/virtualMachines"
+    },
+    {
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "copy": {
+        "count": "[variables('masterCount')]", 
+        "name": "vmLoopNode"
+      }, 
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]"
+      ],
+      "location": "[resourceGroup().location]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {},
+        "protectedSettings": {
+          "commandToExecute": "[concat('export TID=',variables('tenantID'),';export SID=',variables('subscriptionId'),';export RGP=',variables('resourceGroup'),';export LOC=',variables('location'),'export SUB=',variables('subnetName'),'export NSG=',variables('nsgName'),'export VNT=',variables('virtualNetworkName'),'export RTB=',variables('routeTableName'),';/bin/echo {{GetKubernetesMasterCustomScript}} | /usr/bin/base64 --decode | /bin/gunzip | /bin/bash')]"
+        }
+      }
     }

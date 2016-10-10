@@ -13,9 +13,6 @@ runcmd:
 - /bin/bash -c "/bin/bash /tmp/install-docker"
 - /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://storage.googleapis.com/kubernetes-release/release/v1.3.8/bin/linux/amd64/kubectl > /usr/local/bin/kubectl
 - chmod +x /usr/local/bin/kubectl
-- systemctl restart docker
-- systemctl restart etcd
-- systemctl restart kubelet
 
 write_files:
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
@@ -33,23 +30,6 @@ write_files:
     ExecStart=
     ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay
 
-- path: "/etc/kubernetes/azure.json"
-  permissions: "0644"
-  owner: "root"
-  content: |
-    {
-        "tenantId": "{{{tenantID}}}",
-        "subscriptionId": "{{{subscriptionId}}}",
-        "aadClientId": "{{{servicePrincipalClientId}}}",
-        "aadClientSecret": "{{{servicePrincipalClientSecret}}}",
-        "resourceGroup": "{{{resourceGroup}}}",
-        "location": "{{{location}}}",
-        "subnetName": "{{{subnetName}}}",
-        "securityGroupName": "{{{nsgName}}}",
-        "vnetName": "{{{virtualNetworkName}}}",
-        "routeTableName": "{{{routeTableName}}}"
-    }
-
 - path: "/etc/kubernetes/certs/ca.crt"
   permissions: "0644"
   encoding: "base64"
@@ -64,26 +44,12 @@ write_files:
   content: |
     {{{apiServerCertificate}}}
 
-- path: "/etc/kubernetes/certs/apiserver.key"
-  permissions: "0644"
-  encoding: "base64"
-  owner: "root"
-  content: |
-    {{{apiServerPrivateKey}}}
-
 - path: "/etc/kubernetes/certs/client.crt"
   permissions: "0644"
   encoding: "base64"
   owner: "root"
   content: |
     {{{clientCertificate}}}
-
-- path: "/etc/kubernetes/certs/client.key"
-  permissions: "0644"
-  encoding: "base64"
-  owner: "root"
-  content: |
-    {{{clientPrivateKey}}}
 
 - path: "/var/lib/kubelet/kubeconfig"
   permissions: "0644"
