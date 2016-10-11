@@ -19,6 +19,7 @@
     },
 {{else}}
     "masterSubnet": {
+      "defaultValue": "{{.MasterProfile.GetSubnet}}",
       "metadata": {
         "description": "Sets the subnet of the master node(s)."
       }, 
@@ -26,6 +27,7 @@
     },
 {{end}}
     "firstConsecutiveStaticIP": {
+      "defaultValue": "{{.MasterProfile.FirstConsecutiveStaticIP}}",
       "metadata": {
         "description": "Sets the static IP of the first master"
       }, 
@@ -43,4 +45,14 @@
         "description": "SSH public key used for auth to all Linux machines.  Not Required.  If not set, you must provide a password key."
       }, 
       "type": "string"
+    },
+    "nameSuffix": {
+      "defaultValue": "{{GetUniqueNameSuffix}}",
+      "metadata": {
+        "description": "A string hash of the master DNS name to uniquely identify the cluster."
+      },
+      "type": "string"
     }
+{{if  .GetClassicMode}}
+    ,{{template "classicparams.t" .}}
+{{end}}

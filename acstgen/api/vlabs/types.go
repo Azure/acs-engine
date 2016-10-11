@@ -9,6 +9,8 @@ type AcsCluster struct {
 	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
 	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
+	// classic mode is used to output parameters and outputs
+	classicMode bool
 }
 
 // OrchestratorProfile represents the type of orchestrator
@@ -87,6 +89,16 @@ type WindowsProfile struct {
 // APIObject defines the required functionality of an api object
 type APIObject interface {
 	Validate() error
+}
+
+// GetClassicMode gets the classic mode for deciding to output classic parameters
+func (a *AcsCluster) GetClassicMode() bool {
+	return a.classicMode
+}
+
+// SetClassicMode toggles classic parameters and outputs
+func (a *AcsCluster) SetClassicMode(isClassicMode bool) {
+	a.classicMode = isClassicMode
 }
 
 // HasWindows returns true if the cluster contains windows

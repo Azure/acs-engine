@@ -35,7 +35,7 @@
     "masterFirstAddrPrefix": "[concat(variables('masterFirstAddrOctets')[0],'.',variables('masterFirstAddrOctets')[1],'.',variables('masterFirstAddrOctets')[2],'.')]",
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]", 
     "masterVMSize": "[parameters('masterVMSize')]", 
-    "nameSuffix": "{{GetUniqueNameSuffix}}", 
+    "nameSuffix": "[parameters('nameSuffix')]", 
     "orchestratorName": "swarm", 
     "osImageOffer": "UbuntuServer", 
     "osImagePublisher": "Canonical", 

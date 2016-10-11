@@ -30,6 +30,7 @@ const (
 const (
 	agentOutputs                = "agentoutputs.t"
 	agentParams                 = "agentparams.t"
+	classicParams               = "classicparams.t"
 	dcosAgentResources          = "dcosagentresources.t"
 	dcosAgentResourcesDisks     = "dcosagentresourcesdisks.t"
 	dcosAgentVars               = "dcosagentvars.t"
@@ -59,7 +60,7 @@ const (
 	windowsParams               = "windowsparams.t"
 )
 
-var commonTemplateFiles = []string{agentOutputs, agentParams, masterOutputs, masterParams}
+var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams}
 var dcosTemplateFiles = []string{dcosAgentResources, dcosAgentResourcesDisks, dcosAgentVars, dcosBaseFile, dcosCustomData173, dcosCustomData184, dcosMasterResources, dcosMasterVars}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResources, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentCustomData, swarmAgentResources, swarmAgentVars, swarmAgentResourcesDisks, swarmBaseFile, swarmMasterCustomData, swarmMasterResources, swarmMasterVars, swarmWinAgentResources, swarmWinAgentResourcesDisks, windowsParams}
@@ -227,6 +228,9 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 		"IsDCOS184": func() bool {
 			return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS184 ||
 				acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS
+		},
+		"RequiresFakeAgentOutput": func() bool {
+			return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes
 		},
 		"IsPublic": func(ports []int) bool {
 			return len(ports) > 0

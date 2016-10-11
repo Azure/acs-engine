@@ -41,7 +41,7 @@
       "[concat(variables('masterVMNamePrefix'), 'nic-6')]"
     ], 
     "masterVMSize": "[parameters('masterVMSize')]", 
-    "nameSuffix": "{{GetUniqueNameSuffix}}", 
+    "nameSuffix": "[parameters('nameSuffix')]", 
     "oauthEnabled": "false", 
     "orchestratorName": "dcos", 
     "osImageOffer": "UbuntuServer", 

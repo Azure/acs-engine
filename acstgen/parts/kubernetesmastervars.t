@@ -23,7 +23,7 @@
     "masterAvailabilitySet": "master-availabilityset",
     "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),resourceGroup().location, variables('orchestratorName')))]",
     "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
-    "nameSuffix": "{{GetUniqueNameSuffix}}", 
+    "nameSuffix": "[parameters('nameSuffix')]", 
     "orchestratorName": "k8s",  
     "osImageOffer": "UbuntuServer", 
     "osImagePublisher": "Canonical", 

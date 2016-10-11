@@ -183,6 +183,7 @@ func usage(errs ...error) {
 var templateDirectory = flag.String("templateDirectory", "./parts", "directory containing base template files")
 var noPrettyPrint = flag.Bool("noPrettyPrint", false, "do not pretty print output")
 var artifactsDir = flag.String("artifacts", "", "directory where artifacts will be written")
+var classicMode = flag.Bool("classicMode", false, "enable classic parameters and outputs")
 
 func main() {
 	var acsCluster *vlabs.AcsCluster
@@ -222,6 +223,10 @@ func main() {
 	if certsGenerated, err = tgen.SetAcsClusterDefaults(acsCluster); err != nil {
 		fmt.Fprintf(os.Stderr, "error while setting defaults %s: %s", jsonFile, err.Error())
 		os.Exit(1)
+	}
+
+	if *classicMode {
+		acsCluster.SetClassicMode(true)
 	}
 
 	if template, parameters, err = tgen.GenerateTemplate(acsCluster, *templateDirectory); err != nil {
