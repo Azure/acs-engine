@@ -4,57 +4,25 @@
   },
   "masterProfile": {
     "count": 3,
-    "dnsPrefix": "mgmtanhowe0928g",
+    "dnsPrefix": "mgmtanhowe1009i",
     "vmSize": "Standard_D2_v2"
   },
   "agentPoolProfiles": [
     {
-      "name": "agtnodisks1",
-      "count": 1,
-      "vmSize": "Standard_D2_v2",
-      "isStateful": true
+      "name": "agentprivate",
+      "count": 3,
+      "vmSize": "Standard_D2_v2"
     },
     {
-      "name": "agent128",
+      "name": "agentpublic",
       "count": 3,
       "vmSize": "Standard_D2_v2",
-      "isStateful": true,
-      "diskSizesGB": [10, 10, 10, 10]
-    },
-    {
-      "name": "agent1public",
-      "count": 3,
-      "vmSize": "Standard_D2_v2",
-      "dnsPrefix": "appanhowe0928g",
-      "isStateful": true,
-      "diskSizesGB": [1],
+      "dnsPrefix": "appanhowe1009i",
       "ports": [
         80,
         443,
         8080
       ]
-    },
-    {
-      "name": "agtnodisks2",
-      "count": 1,
-      "vmSize": "Standard_D2_v2",
-      "isStateful": true
-    },
-    {
-      "name": "agtnodisks3",
-      "count": 1,
-      "vmSize": "Standard_D2_v2",
-      "isStateful": true
-    },
-    {
-      "name": "astateless1",
-      "count": 2,
-      "vmSize": "Standard_D2_v2"
-    },
-    {
-      "name": "astateless2",
-      "count": 2,
-      "vmSize": "Standard_D2_v2"
     }
   ],
   "linuxProfile": {

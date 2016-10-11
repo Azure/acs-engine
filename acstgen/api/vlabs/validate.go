@@ -3,8 +3,8 @@ package vlabs
 import (
 	"errors"
 	"fmt"
+	"net"
 	"regexp"
-	"strconv"
 )
 
 // Validate implements APIObject
@@ -14,9 +14,11 @@ func (o *OrchestratorProfile) Validate() error {
 	case DCOS184:
 	case DCOS173:
 	case Swarm:
+	case Kubernetes:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
+
 	return nil
 }
 
@@ -67,8 +69,8 @@ func (a *AgentPoolProfile) Validate() error {
 			return e
 		}
 	}
-	if len(a.DiskSizesGB) > 0 && !a.IsStateful {
-		return fmt.Errorf("Disks were specified on a non stateful cluster named '%s'.  Ensure you add '\"isStateful\": true' to the model", a.Name)
+	if len(a.DiskSizesGB) > 0 && (a.StorageType != StorageVolumes && a.StorageType != StorageHAVolumes) {
+		return fmt.Errorf("Storage Type %s does not support attached disks for cluster named '%s'.  Specify storage as either %s or %s", a.StorageType, a.Name, StorageVolumes, StorageHAVolumes)
 	}
 	if len(a.DiskSizesGB) > MaxDisks {
 		return fmt.Errorf("A maximum of %d disks may be specified.  %d disks were specified for cluster named '%s'", MaxDisks, len(a.DiskSizesGB), a.Name)
@@ -104,12 +106,49 @@ func (a *AcsCluster) Validate() error {
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
 		return e
 	}
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.ClientID) == 0 {
+		return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+	}
+
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.Secret) == 0 {
+		return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+	}
+
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
 		if e := agentPoolProfile.Validate(); e != nil {
 			return e
 		}
-		if a.OrchestratorProfile.OrchestratorType == Swarm && agentPoolProfile.IsStateful {
-			return errors.New("stateful deployments are not supported with Swarm, please let us know if you want this feature")
+		switch agentPoolProfile.StorageType {
+		case StorageVolumes:
+		case StorageHAVolumes:
+		case StorageExternal:
+		case "":
+		default:
+			{
+				return fmt.Errorf("unknown storage type '%s' for agent pool '%s'.  Specify one of %s, %s, or %s", agentPoolProfile.StorageType, agentPoolProfile.Name, StorageExternal, StorageVolumes, StorageHAVolumes)
+			}
+		}
+		if agentPoolProfile.StorageType == StorageHAVolumes {
+			return errors.New("HA volumes are currently unsupported")
+		}
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.StorageType == StorageExternal || len(agentPoolProfile.StorageType) == 0) {
+			return fmt.Errorf("External storage deployments (VMSS) are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"StorageType\":\"%s\"", StorageVolumes)
+		}
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(agentPoolProfile.DNSPrefix) > 0 {
+			return errors.New("DNSPrefix not support for agent pools in Kubernetes - Kubernetes marks its own clusters public")
+		}
+		if agentPoolProfile.OSType == OSTypeWindows {
+			switch a.OrchestratorProfile.OrchestratorType {
+			case Swarm:
+			default:
+				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
+			}
+			if len(a.WindowsProfile.AdminUsername) == 0 {
+				return fmt.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
+			}
+			if len(a.WindowsProfile.AdminPassword) == 0 {
+				return fmt.Errorf("WindowsProfile.AdminPassword must not be empty since  agent pool '%s' specifies windows", agentPoolProfile.Name)
+			}
 		}
 	}
 	if e := a.LinuxProfile.Validate(); e != nil {
@@ -126,36 +165,6 @@ func validateName(name string, label string) error {
 		return fmt.Errorf("%s must be a non-empty value", label)
 	}
 	return nil
-}
-
-func parseCIDR(cidr string) (octet1 int, octet2 int, octet3 int, octet4 int, subnet int, err error) {
-	// verify cidr format and a /24 subnet
-	// regular expression inspired by http://blog.markhatton.co.uk/2011/03/15/regular-expressions-for-ip-addresses-cidr-ranges-and-hostnames/
-	cidrRegex := `^((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\/((?:[0-9]|[1-2][0-9]|3[0-2]))$`
-	var re *regexp.Regexp
-	if re, err = regexp.Compile(cidrRegex); err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-	submatches := re.FindStringSubmatch(cidr)
-	if len(submatches) != 6 {
-		return 0, 0, 0, 0, 0, fmt.Errorf("address %s is not specified as valid cidr", cidr)
-	}
-	if octet1, err = strconv.Atoi(submatches[1]); err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-	if octet2, err = strconv.Atoi(submatches[2]); err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-	if octet3, err = strconv.Atoi(submatches[3]); err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-	if octet4, err = strconv.Atoi(submatches[4]); err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-	if subnet, err = strconv.Atoi(submatches[5]); err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-	return octet1, octet2, octet3, octet4, subnet, nil
 }
 
 func validatePoolName(poolName string) error {
@@ -183,33 +192,6 @@ func validateDNSName(dnsName string) error {
 		return fmt.Errorf("DNS name '%s' is invalid. The DNS name must contain between 3 and 15 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number", dnsName)
 	}
 	return nil
-}
-
-func parseIP(ipaddress string) (octet1 int, octet2 int, octet3 int, octet4 int, err error) {
-	// verify cidr format and a /24 subnet
-	// regular expression inspired by http://blog.markhatton.co.uk/2011/03/15/regular-expressions-for-ip-addresses-cidr-ranges-and-hostnames/
-	ipRegex := `^((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.((?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$`
-	var re *regexp.Regexp
-	if re, err = regexp.Compile(ipRegex); err != nil {
-		return 0, 0, 0, 0, err
-	}
-	submatches := re.FindStringSubmatch(ipaddress)
-	if len(submatches) != 5 {
-		return 0, 0, 0, 0, fmt.Errorf("address %s is not specified as a valid ip address", ipaddress)
-	}
-	if octet1, err = strconv.Atoi(submatches[1]); err != nil {
-		return 0, 0, 0, 0, err
-	}
-	if octet2, err = strconv.Atoi(submatches[2]); err != nil {
-		return 0, 0, 0, 0, err
-	}
-	if octet3, err = strconv.Atoi(submatches[3]); err != nil {
-		return 0, 0, 0, 0, err
-	}
-	if octet4, err = strconv.Atoi(submatches[4]); err != nil {
-		return 0, 0, 0, 0, err
-	}
-	return octet1, octet2, octet3, octet4, nil
 }
 
 func validateUniqueProfileNames(profiles []AgentPoolProfile) error {
@@ -242,9 +224,6 @@ func validateVNET(a *AcsCluster) error {
 		}
 	}
 	if isCustomVNET {
-		if a.OrchestratorProfile.OrchestratorType == Swarm {
-			return errors.New("bring your own VNET is not supported with Swarm, please let us know if you want this feature")
-		}
 		subscription, resourcegroup, vnetname, _, e := GetVNETSubnetIDComponents(a.MasterProfile.VnetSubnetID)
 		if e != nil {
 			return e
@@ -262,9 +241,9 @@ func validateVNET(a *AcsCluster) error {
 			}
 		}
 
-		// validate that the first master IP address has been set
-		if e = validateName(a.MasterProfile.FirstConsecutiveStaticIP, "MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification)"); e != nil {
-			return e
+		masterFirstIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)
+		if masterFirstIP == nil {
+			return fmt.Errorf("MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification) '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
 		}
 	}
 	return nil

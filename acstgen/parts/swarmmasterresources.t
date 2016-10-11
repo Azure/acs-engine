@@ -1,5 +1,5 @@
     {
-      "apiVersion": "[variables('storageApiVersion')]", 
+      "apiVersion": "[variables('apiVersionStorage')]", 
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ], 
@@ -9,9 +9,10 @@
         "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
       }, 
       "type": "Microsoft.Storage/storageAccounts"
-    }, 
+    },
+{{if not .MasterProfile.IsCustomVNET}}
     {
-      "apiVersion": "[variables('networkApiVersion')]", 
+      "apiVersion": "[variables('apiVersionDefault')]", 
       "location": "[resourceGroup().location]", 
       "name": "[variables('virtualNetworkName')]", 
       "properties": {
@@ -25,16 +26,17 @@
         ]
       }, 
       "type": "Microsoft.Network/virtualNetworks"
-    }, 
+    },
+{{end}}
     {
-      "apiVersion": "[variables('computeApiVersion')]", 
+      "apiVersion": "[variables('apiVersionDefault')]", 
       "location": "[resourceGroup().location]", 
       "name": "[variables('masterAvailabilitySet')]", 
       "properties": {}, 
       "type": "Microsoft.Compute/availabilitySets"
     }, 
     {
-      "apiVersion": "[variables('networkApiVersion')]", 
+      "apiVersion": "[variables('apiVersionDefault')]", 
       "location": "[resourceGroup().location]", 
       "name": "[variables('masterPublicIPAddressName')]", 
       "properties": {
@@ -46,7 +48,7 @@
       "type": "Microsoft.Network/publicIPAddresses"
     }, 
     {
-      "apiVersion": "[variables('networkApiVersion')]", 
+      "apiVersion": "[variables('apiVersionDefault')]", 
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ], 
@@ -72,7 +74,7 @@
       "type": "Microsoft.Network/loadBalancers"
     }, 
     {
-      "apiVersion": "[variables('networkApiVersion')]", 
+      "apiVersion": "[variables('apiVersionDefault')]", 
       "copy": {
         "count": "[variables('masterCount')]", 
         "name": "masterLbLoopNode"
@@ -94,14 +96,16 @@
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     }, 
     {
-      "apiVersion": "[variables('networkApiVersion')]", 
+      "apiVersion": "[variables('apiVersionDefault')]", 
       "copy": {
         "count": "[variables('masterCount')]", 
         "name": "nicLoopNode"
       }, 
       "dependsOn": [
-        "[variables('masterLbID')]", 
+{{if not .MasterProfile.IsCustomVNET}}
         "[variables('vnetID')]", 
+{{end}}
+        "[variables('masterLbID')]", 
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
       ], 
       "location": "[resourceGroup().location]", 
@@ -124,7 +128,7 @@
               "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(int(variables('masterFirstAddrOctet4'))))]", 
               "privateIPAllocationMethod": "Static", 
               "subnet": {
-                "id": "[variables('masterSubnetRef')]"
+                "id": "[variables('masterVnetSubnetID')]"
               }
             }
           }
@@ -133,7 +137,7 @@
       "type": "Microsoft.Network/networkInterfaces"
     }, 
     {
-      "apiVersion": "[variables('computeApiVersion')]", 
+      "apiVersion": "[variables('apiVersionDefault')]", 
       "copy": {
         "count": "[variables('masterCount')]", 
         "name": "vmLoopNode"
@@ -187,7 +191,7 @@
             "createOption": "FromImage", 
             "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'-osdisk')]", 
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('masterStorageAccountName')), variables('storageApiVersion')).primaryEndpoints.blob, 'vhds/', variables('masterVMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('masterStorageAccountName')), variables('apiVersionStorage')).primaryEndpoints.blob, 'vhds/', variables('masterVMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
             }
           }
         }
@@ -195,7 +199,7 @@
       "type": "Microsoft.Compute/virtualMachines"
     },
     {
-      "apiVersion": "[variables('computeApiVersion')]", 
+      "apiVersion": "[variables('apiVersionDefault')]", 
       "copy": {
         "count": "[variables('masterCount')]", 
         "name": "vmLoopNode"

@@ -1,56 +1,36 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
-      "location": "[resourceGroup().location]", 
-      "name": "[variables('{{.Name}}NSGName')]", 
-      "properties": {
-        "securityRules": [
-            {{GetSecurityRules .Ports}}
-        ]
-      }, 
-      "type": "Microsoft.Network/networkSecurityGroups"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]", 
       "copy": {
         "count": "[variables('{{.Name}}Count')]", 
         "name": "loop"
       }, 
       "dependsOn": [
 {{if .IsCustomVNET}}
-      "[concat('Microsoft.Network/networkSecurityGroups/', variables('{{.Name}}NSGName'))]" 
+      "[variables('nsgID')]" 
 {{else}}
       "[variables('vnetID')]"
 {{end}}
-{{if IsPublic .Ports}}
-	  ,"[variables('{{.Name}}LbID')]"
-{{end}}
       ], 
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]", 
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex())]", 
       "properties": {
 {{if .IsCustomVNET}}                  
 	    "networkSecurityGroup": {
-		  "id": "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('{{.Name}}NSGName'))]"
+		    "id": "[variables('nsgID')]"
 	    },
 {{end}}
         "ipConfigurations": [
           {
-            "name": "ipConfigNode", 
+            "name": "ipconfig1", 
             "properties": {
-{{if IsPublic .Ports}}
-              "loadBalancerBackendAddressPools": [
-		        {
-		      	  "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('{{.Name}}LbName'), '/backendAddressPools/',variables('{{.Name}}LbBackendPoolName'))]"
-		        }
-		      ], 
-{{end}}  
               "privateIPAllocationMethod": "Dynamic", 
               "subnet": {
                 "id": "[variables('{{.Name}}VnetSubnetID')]"
              }
             }
           }
-        ]
+        ],
+        "enableIPForwarding": true
       }, 
       "type": "Microsoft.Network/networkInterfaces"
     },
@@ -63,7 +43,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ], 
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
@@ -80,68 +60,21 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ], 
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]", 
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]", 
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
       }, 
       "type": "Microsoft.Storage/storageAccounts"
-    }, 
+    },
 {{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]",  
       "name": "[variables('{{.Name}}AvailabilitySet')]", 
       "properties": {}, 
       "type": "Microsoft.Compute/availabilitySets"
     },
-{{if IsPublic .Ports}}
-    {
-      "apiVersion": "[variables('apiVersionDefault')]", 
-      "location": "[resourceGroup().location]", 
-      "name": "[variables('{{.Name}}IPAddressName')]", 
-      "properties": {
-        "dnsSettings": {
-          "domainNameLabel": "[variables('{{.Name}}EndpointDNSNamePrefix')]"
-        }, 
-        "publicIPAllocationMethod": "Dynamic"
-      }, 
-      "type": "Microsoft.Network/publicIPAddresses"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]", 
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('{{.Name}}IPAddressName'))]"
-      ], 
-      "location": "[resourceGroup().location]", 
-      "name": "[variables('{{.Name}}LbName')]", 
-      "properties": {
-        "backendAddressPools": [
-          {
-            "name": "[variables('{{.Name}}LbBackendPoolName')]"
-          }
-        ], 
-        "frontendIPConfigurations": [
-          {
-            "name": "[variables('{{.Name}}LbIPConfigName')]", 
-            "properties": {
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('{{.Name}}IPAddressName'))]"
-              }
-            }
-          }
-        ], 
-        "inboundNatRules": [], 
-        "loadBalancingRules": [
-            {{(GetLBRules .Name .Ports)}}
-        ], 
-        "probes": [
-            {{(GetProbes .Ports)}}
-        ]
-      }, 
-      "type": "Microsoft.Network/loadBalancers"
-    },
-{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
       "copy": {
@@ -156,7 +89,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex())]", 
         "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
       ], 
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]", 
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex())]", 
       "properties": {
         "availabilitySet": {
@@ -173,9 +106,9 @@
           ]
         }, 
         "osProfile": {
-          "adminUsername": "[variables('adminUsername')]", 
+          "adminUsername": "[variables('username')]", 
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex())]", 
-          "customData": "[base64(concat({{if IsDCOS173}}{{template "dcoscustomdata173.t" dict "DCOSCustomDataPublicIPStr" GetDCOSCustomDataPublicIPStr "DCOSGUID" GetDCOSGUID "RolesString" (GetAgentRolesFileContents .Ports)}}{{else if IsDCOS184}}{{template "dcoscustomdata184.t" dict "DCOSCustomDataPublicIPStr" GetDCOSCustomDataPublicIPStr "DCOSGUID" GetDCOSGUID "RolesString" (GetAgentRolesFileContents .Ports)}}{{end}}))]", 
+          {{GetKubernetesAgentCustomData .}} 
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true", 
               "ssh": {
@@ -197,7 +130,7 @@
             "version": "[variables('osImageVersion')]"
           }, 
           "osDisk": {
-            "caching": "ReadOnly", 
+            "caching": "ReadWrite", 
             "createOption": "FromImage", 
             "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(),'-osdisk')]", 
             "vhd": {
@@ -207,4 +140,27 @@
         }
       }, 
       "type": "Microsoft.Compute/virtualMachines"
+    },
+    {
+      "apiVersion": "[variables('apiVersionDefault')]", 
+      "copy": {
+        "count": "[variables('{{.Name}}Count')]", 
+        "name": "vmLoopNode"
+      }, 
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex())]"
+      ],
+      "location": "[resourceGroup().location]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.5",
+        "autoUpgradeMinorVersion": true,
+        "settings": {},
+        "protectedSettings": {
+          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' {{GetAgentSecrets}} >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
+        }
+      }
     }

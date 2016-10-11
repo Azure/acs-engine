@@ -3,7 +3,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ], 
-      "location": "[variables('storageLocation')]", 
+      "location": "[resourceGroup().location]", 
       "name": "[variables('masterStorageAccountName')]", 
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
@@ -15,7 +15,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ], 
-      "location": "[variables('storageLocation')]", 
+      "location": "[resourceGroup().location]", 
       "name": "[variables('masterStorageAccountExhibitorName')]", 
       "properties": {
         "accountType": "Standard_LRS"
@@ -141,12 +141,13 @@
         "name": "nicLoopNode"
       }, 
       "dependsOn": [
-{{if not .MasterProfile.IsCustomVNET}}     
+{{if .MasterProfile.IsCustomVNET}}
+        "[variables('masterNSGID')]",
+{{else}}  
         "[variables('vnetID')]",
 {{end}} 
         "[variables('masterLbID')]", 
-        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]", 
-        "[variables('masterNSGID')]"
+        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
       ], 
       "location": "[resourceGroup().location]", 
       "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]", 
@@ -172,10 +173,12 @@
               }
             }
           }
-        ], 
-        "networkSecurityGroup": {
+        ]
+{{if .MasterProfile.IsCustomVNET}} 
+        ,"networkSecurityGroup": {
           "id": "[variables('masterNSGID')]"
         }
+{{end}}
       }, 
       "type": "Microsoft.Network/networkInterfaces"
     }, 

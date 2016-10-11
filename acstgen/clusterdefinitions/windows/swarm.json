@@ -1,26 +1,36 @@
 {
   "orchestratorProfile": {
-    "orchestratorType": "DCOS"
+    "orchestratorType": "Swarm"
   },
   "masterProfile": {
-    "count": 3,
-    "dnsPrefix": "mgmtanhowe0928d",
-    "vmSize": "Standard_D2_v2"
+    "count": 1,
+    "dnsPrefix": "mgmtanhowe1009d",
+		"vmSize": "Standard_D2_v2"
   },
   "agentPoolProfiles": [
     {
-      "name": "agtnodisks1",
-      "count": 1,
+      "name": "publicwin1",
+      "count": 3,
       "vmSize": "Standard_D2_v2",
-      "isStateful": true
+      "dnsPrefix": "appanhowe1009d",
+      "osType": "Windows",
+      "ports": [
+        80,
+        443,
+        8080
+      ]
     },
     {
-      "name": "agtnodisks2",
-      "count": 1,
+      "name": "privatewin",
+      "count": 3,
       "vmSize": "Standard_D2_v2",
-      "isStateful": true
+      "osType": "Windows"
     }
   ],
+  "windowsProfile": {
+    "adminUsername": "azureuser",
+    "adminPassword": "replacepassword1234$"
+  },
   "linuxProfile": {
     "adminUsername": "azureuser",
     "ssh": {
