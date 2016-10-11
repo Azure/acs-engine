@@ -154,7 +154,7 @@ func saveFileString(dir string, file string, data string) error {
 
 func saveFile(dir string, file string, data []byte) error {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		if e := os.Mkdir(dir, 0700); e != nil {
+		if e := os.MkdirAll(dir, 0700); e != nil {
 			return fmt.Errorf("error creating directory '%s': %s", dir, e.Error())
 		}
 	}
