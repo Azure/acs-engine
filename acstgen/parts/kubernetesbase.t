@@ -26,10 +26,6 @@
     {{template "kubernetesmasterresources.t" .}}
   ],
   "outputs": {
-    {{template "masteroutputs.t" .}},
-    "kubeConfig": {
-      "type": "string", 
-      "value": "[concat('{{GetKubernetesKubeConfig}}')]"
-    }
+    {{template "masteroutputs.t" .}}
   }
 }
