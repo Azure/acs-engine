@@ -1,6 +1,6 @@
 #cloud-config
 
-# { { { param } } }
+# { { { variable } } }
 
 runcmd:
 - /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://get.docker.com/ > /tmp/install-docker
