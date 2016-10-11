@@ -3,17 +3,30 @@
 ###########################################################
 # START SECRET DATA - ECHO DISABLED
 ###########################################################
+TID=$1
+SID=$2
+RGP=$3
+LOC=$4
+SUB=$5
+NSG=$6
+VNT=$7
+RTB=$8
+SVCPrincipalClientId=$9
+SVCPrincipalClientSecret=${10}
+CLIENTPRIVATEKEY=${11}
+SERVERPRIVATEKEY=${12}
+
 APISERVERKEY=/etc/kubernetes/certs/apiserver.key
 touch $APISERVERKEY
 chmod 0644 $APISERVERKEY
 chown root:root $APISERVERKEY
-echo {{{apiServerPrivateKey}}} | /usr/bin/base64 --decode > $APISERVERKEY
+echo $SERVERPRIVATEKEY | /usr/bin/base64 --decode > $APISERVERKEY
 
 CLIENTKEY=/etc/kubernetes/certs/client.key
 touch $CLIENTKEY
 chmod 0644 $CLIENTKEY
 chown root:root $CLIENTKEY
-echo {{{clientPrivateKey}}} | /usr/bin/base64 --decode > $CLIENTKEY 
+echo $CLIENTPRIVATEKEY | /usr/bin/base64 --decode > $CLIENTKEY 
 
 AZUREJSON=/etc/kubernetes/azure.json
 touch $AZUREJSON
@@ -23,8 +36,8 @@ AZURECONTENT=$(cat <<EOF
 {
     "tenantId": "$TID",
     "subscriptionId": "$SID",
-    "aadClientId": "{{{servicePrincipalClientId}}}",
-    "aadClientSecret": "{{{servicePrincipalClientSecret}}}",
+    "aadClientId": "$SVCPrincipalClientId",
+    "aadClientSecret": "$SVCPrincipalClientSecret",
     "resourceGroup": "$RGP",
     "location": "$LOC",
     "subnetName": "$SUB",

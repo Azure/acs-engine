@@ -154,13 +154,13 @@
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
-        "publisher": "Microsoft.Azure.Extensions",
-        "type": "CustomScript",
-        "typeHandlerVersion": "2.0",
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.5",
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
-          "commandToExecute": "[concat('export TID=',variables('tenantID'),';export SID=',variables('subscriptionId'),';export RGP=',variables('resourceGroup'),';export LOC=',variables('location'),'export SUB=',variables('subnetName'),'export NSG=',variables('nsgName'),'export VNT=',variables('virtualNetworkName'),'export RTB=',variables('routeTableName'),';/bin/echo {{GetKubernetesAgentCustomScript}} | /usr/bin/base64 --decode | /bin/gunzip | /bin/bash')]"
+          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' {{GetAgentSecrets}} >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
         }
       }
     }

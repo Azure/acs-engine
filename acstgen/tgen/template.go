@@ -280,24 +280,29 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 			return base64.StdEncoding.EncodeToString([]byte(s))
 		},
 		"GetKubernetesMasterCustomScript": func() string {
-			return getMasterBase64CustomScript(acsCluster, kubernetesMasterCustomScript, partsDirectory)
+			return getBase64CustomScript(acsCluster, kubernetesMasterCustomScript, partsDirectory)
 		},
 		"GetKubernetesMasterCustomData": func() string {
 			str, e := getSingleLineForTemplate(kubernetesMasterCustomDataYaml, partsDirectory)
 			if e != nil {
 				return ""
 			}
+			// add the master provisioning script
+			masterProvisionB64GzipStr := getBase64CustomScript(acsCluster, kubernetesMasterCustomScript, partsDirectory)
+			str = strings.Replace(str, "MASTER_PROVISION_B64_GZIP_STR", masterProvisionB64GzipStr, -1)
+
+			// return the custom data
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
-		},
-		"GetKubernetesAgentCustomScript": func() string {
-			return getMasterBase64CustomScript(acsCluster, kubernetesAgentCustomScript, partsDirectory)
 		},
 		"GetKubernetesAgentCustomData": func(profile *vlabs.AgentPoolProfile) string {
 			str, e := getSingleLineForTemplate(kubernetesAgentCustomDataYaml, partsDirectory)
 			if e != nil {
 				return ""
 			}
-			str = strings.Replace(str, "{{.Name}}", profile.Name, -1)
+			// add the agent provisioning script
+			agentProvisionB64GzipStr := getBase64CustomScript(acsCluster, kubernetesAgentCustomScript, partsDirectory)
+			str = strings.Replace(str, "AGENT_PROVISION_B64_GZIP_STR", agentProvisionB64GzipStr, -1)
+
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesKubeConfig": func() string {
@@ -306,6 +311,15 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 				return ""
 			}
 			return str
+		},
+		"GetMasterSecrets": func() string {
+			clientPrivateKey := base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.ClientPrivateKey))
+			serverPrivateKey := base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.APIServerPrivateKey))
+			return fmt.Sprintf("%s %s %s %s", acsCluster.ServicePrincipalProfile.ClientID, acsCluster.ServicePrincipalProfile.Secret, clientPrivateKey, serverPrivateKey)
+		},
+		"GetAgentSecrets": func() string {
+			clientPrivateKey := base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.ClientPrivateKey))
+			return fmt.Sprintf("%s %s %s", acsCluster.ServicePrincipalProfile.ClientID, acsCluster.ServicePrincipalProfile.Secret, clientPrivateKey)
 		},
 		"AnyAgentHasDisks": func() bool {
 			for _, agentProfile := range acsCluster.AgentPoolProfiles {
@@ -589,8 +603,8 @@ func getSingleLineForTemplate(yamlFilename string, partsDirectory string) (strin
 	return yamlStr, nil
 }
 
-// getMasterBase64CustomScript will return a base64 of the CSE
-func getMasterBase64CustomScript(a *vlabs.AcsCluster, csFilename string, partsDirectory string) string {
+// getBase64CustomScript will return a base64 of the CSE
+func getBase64CustomScript(a *vlabs.AcsCluster, csFilename string, partsDirectory string) string {
 	csFile := path.Join(partsDirectory, csFilename)
 	if _, err := os.Stat(csFile); os.IsNotExist(err) {
 		panic(err.Error())
@@ -601,10 +615,7 @@ func getMasterBase64CustomScript(a *vlabs.AcsCluster, csFilename string, partsDi
 	}
 	// translate the parameters
 	csStr := string(b)
-	csStr = strings.Replace(csStr, "{{{apiServerPrivateKey}}}", base64.StdEncoding.EncodeToString([]byte(a.CertificateProfile.APIServerPrivateKey)), -1)
-	csStr = strings.Replace(csStr, "{{{clientPrivateKey}}}", base64.StdEncoding.EncodeToString([]byte(a.CertificateProfile.ClientPrivateKey)), -1)
-	csStr = strings.Replace(csStr, "{{{servicePrincipalClientId}}}", a.ServicePrincipalProfile.ClientID, -1)
-	csStr = strings.Replace(csStr, "{{{servicePrincipalClientSecret}}}", a.ServicePrincipalProfile.Secret, -1)
+	csStr = strings.Replace(csStr, "\r\n", "\n", -1)
 
 	var gzipB bytes.Buffer
 	w := gzip.NewWriter(&gzipB)

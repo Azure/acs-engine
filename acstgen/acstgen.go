@@ -69,6 +69,7 @@ func prettyPrintArmTemplate(template string) (string, error) {
 		// there is a bug in ARM where it doesn't correctly translate back '\u003e' (>)
 		{">", "GREATERTHAN"},
 		{"<", "LESSTHAN"},
+		{"&", "AMPERSAND"},
 	}
 
 	template = translateJSON(template, translateParams, false)

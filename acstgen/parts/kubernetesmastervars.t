@@ -30,7 +30,7 @@
     "osImageSKU": "16.04.0-LTS", 
     "osImageVersion": "16.04.201606270",
     "resourceGroup": "[resourceGroup().name]", 
-    "routeTableName": "[concat(variables('masterVMNamePrefix'),'-routetable')]",
+    "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
     "routeTableID": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]",
     "sshNatPorts": [22,2201,2202,2203,2204],
     "sshKeyPath": "[concat('/home/',variables('username'),'/.ssh/authorized_keys')]", 

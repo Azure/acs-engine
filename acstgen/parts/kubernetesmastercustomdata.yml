@@ -279,3 +279,10 @@ write_files:
             --cloud-config=/etc/kubernetes/azure.json \
             --v=2
     ExecStop=/usr/bin/docker stop -t 2 kubelet
+
+- path: "/opt/azure/containers/provision.sh"
+  permissions: "0744"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_PROVISION_B64_GZIP_STR
