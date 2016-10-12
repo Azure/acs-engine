@@ -1,10 +1,10 @@
 {
   "orchestratorProfile": {
-    "orchestratorType": "DCOS"
+    "orchestratorType": "Swarm"
   },
   "masterProfile": {
     "count": 3,
-    "dnsPrefix": "mgmtanhowe1009n",
+    "dnsPrefix": "mgmtanhowe1009q",
     "vmSize": "Standard_D2_v2"
   },
   "agentPoolProfiles": [
@@ -12,14 +12,16 @@
       "name": "agent128",
       "count": 3,
       "vmSize": "Standard_D2_v2",
-      "StorageType": "Volumes"
+      "StorageProfile": "Volumes",
+      "diskSizesGB": [128, 128, 128, 128]
     },
     {
       "name": "agent1public",
       "count": 3,
       "vmSize": "Standard_D2_v2",
-      "dnsPrefix": "appanhowe1009n",
-      "StorageType": "Volumes",
+      "dnsPrefix": "appanhowe1009q",
+      "StorageProfile": "Volumes",
+      "diskSizesGB": [1],
       "ports": [
         80,
         443,

@@ -25,6 +25,10 @@ type PkiKeyCertPair struct {
 }
 
 func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, clusterDomain string) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
+	start := time.Now()
+	defer func(s time.Time) {
+		fmt.Fprintf(os.Stderr, "cert creation took %s\n", time.Since(s))
+	}(start)
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.default"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.default.svc"))
@@ -32,7 +36,7 @@ func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, cluste
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc.%s", clusterDomain))
-	start := time.Now()
+
 	caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, "", nil, nil)
 	if err != nil {
 		return nil, nil, nil, nil, err
@@ -79,7 +83,6 @@ func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, cluste
 		return nil, nil, nil, nil, e2
 	}
 
-	fmt.Fprintf(os.Stderr, "cert creation took %s\n", time.Since(start))
 	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(clientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(clientPrivateKey))},

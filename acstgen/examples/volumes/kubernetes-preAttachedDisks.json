@@ -1,30 +1,26 @@
 {
   "orchestratorProfile": {
-    "orchestratorType": "Swarm"
+    "orchestratorType": "Kubernetes"
   },
   "masterProfile": {
-    "count": 3,
-    "dnsPrefix": "mgmtanhowe1009p",
-    "vmSize": "Standard_D2_v2"
+    "count": 1,
+    "dnsPrefix": "mgmtanhowe1004f",
+		"vmSize": "Standard_D2_v2"
   },
   "agentPoolProfiles": [
     {
-      "name": "agent128",
+      "name": "agentpool1",
       "count": 3,
       "vmSize": "Standard_D2_v2",
-      "StorageType": "Volumes"
+      "StorageProfile": "Volumes",
+      "diskSizesGB": [128, 128, 128, 128]
     },
     {
-      "name": "agent1public",
+      "name": "agentpool2",
       "count": 3,
       "vmSize": "Standard_D2_v2",
-      "dnsPrefix": "appanhowe1009p",
-      "StorageType": "Volumes",
-      "ports": [
-        80,
-        443,
-        8080
-      ]
+      "StorageProfile": "Volumes",
+      "diskSizesGB": [10, 10, 10, 10]
     }
   ],
   "linuxProfile": {
@@ -36,5 +32,9 @@
         }
       ]
     }
+  },
+  "servicePrincipalProfile": {
+    "servicePrincipalClientID": "[REPLACE-WITH-ServicePrincipalClientID",
+    "servicePrincipalClientSecret": "[REPLACE-WITH-myServicePrincipalClientSecret"
   }
 }

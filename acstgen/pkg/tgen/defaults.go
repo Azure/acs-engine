@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net"
 
-	"./../api/vlabs"
-	"./../util"
+	"github.com/Azure/acs-labs/acstgen/pkg/api/vlabs"
+	"github.com/Azure/acs-labs/acstgen/pkg/util"
 )
 
 // SetAcsClusterDefaults for an AcsCluster, returns true if certs are generated
@@ -63,8 +63,8 @@ func setAgentNetworkDefaults(a *vlabs.AcsCluster) {
 func setStorageDefaults(a *vlabs.AcsCluster) {
 	for i := range a.AgentPoolProfiles {
 		profile := &a.AgentPoolProfiles[i]
-		if len(profile.StorageType) == 0 {
-			profile.StorageType = vlabs.StorageExternal
+		if len(profile.StorageProfile) == 0 {
+			profile.StorageProfile = vlabs.StorageExternal
 		}
 	}
 }

@@ -69,8 +69,8 @@ func (a *AgentPoolProfile) Validate() error {
 			return e
 		}
 	}
-	if len(a.DiskSizesGB) > 0 && (a.StorageType != StorageVolumes && a.StorageType != StorageHAVolumes) {
-		return fmt.Errorf("Storage Type %s does not support attached disks for cluster named '%s'.  Specify storage as either %s or %s", a.StorageType, a.Name, StorageVolumes, StorageHAVolumes)
+	if len(a.DiskSizesGB) > 0 && (a.StorageProfile != StorageVolumes && a.StorageProfile != StorageHAVolumes) {
+		return fmt.Errorf("Storage Type %s does not support attached disks for cluster named '%s'.  Specify storage as either %s or %s", a.StorageProfile, a.Name, StorageVolumes, StorageHAVolumes)
 	}
 	if len(a.DiskSizesGB) > MaxDisks {
 		return fmt.Errorf("A maximum of %d disks may be specified.  %d disks were specified for cluster named '%s'", MaxDisks, len(a.DiskSizesGB), a.Name)
@@ -118,21 +118,21 @@ func (a *AcsCluster) Validate() error {
 		if e := agentPoolProfile.Validate(); e != nil {
 			return e
 		}
-		switch agentPoolProfile.StorageType {
+		switch agentPoolProfile.StorageProfile {
 		case StorageVolumes:
 		case StorageHAVolumes:
 		case StorageExternal:
 		case "":
 		default:
 			{
-				return fmt.Errorf("unknown storage type '%s' for agent pool '%s'.  Specify one of %s, %s, or %s", agentPoolProfile.StorageType, agentPoolProfile.Name, StorageExternal, StorageVolumes, StorageHAVolumes)
+				return fmt.Errorf("unknown storage type '%s' for agent pool '%s'.  Specify one of %s, %s, or %s", agentPoolProfile.StorageProfile, agentPoolProfile.Name, StorageExternal, StorageVolumes, StorageHAVolumes)
 			}
 		}
-		if agentPoolProfile.StorageType == StorageHAVolumes {
+		if agentPoolProfile.StorageProfile == StorageHAVolumes {
 			return errors.New("HA volumes are currently unsupported")
 		}
-		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.StorageType == StorageExternal || len(agentPoolProfile.StorageType) == 0) {
-			return fmt.Errorf("External storage deployments (VMSS) are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"StorageType\":\"%s\"", StorageVolumes)
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.StorageProfile == StorageExternal || len(agentPoolProfile.StorageProfile) == 0) {
+			return fmt.Errorf("External storage deployments (VMSS) are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"StorageProfile\":\"%s\"", StorageVolumes)
 		}
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(agentPoolProfile.DNSPrefix) > 0 {
 			return errors.New("DNSPrefix not support for agent pools in Kubernetes - Kubernetes marks its own clusters public")

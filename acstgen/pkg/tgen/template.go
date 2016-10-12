@@ -16,7 +16,7 @@ import (
 	"strings"
 	"text/template"
 
-	"./../api/vlabs"
+	"github.com/Azure/acs-labs/acstgen/pkg/api/vlabs"
 )
 
 const (

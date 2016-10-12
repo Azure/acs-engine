@@ -8,9 +8,10 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
-	"./api/vlabs"
-	"./tgen"
+	"github.com/Azure/acs-labs/acstgen/pkg/api/vlabs"
+	"github.com/Azure/acs-labs/acstgen/pkg/tgen"
 )
 
 // loadAcsCluster loads an ACS Cluster API Model from a JSON file
@@ -85,7 +86,7 @@ func prettyPrintArmTemplate(template string) (string, error) {
 func writeArtifacts(acsCluster *vlabs.AcsCluster, template string, parameters, artifactsDir string, templateDirectory string, certsGenerated bool) error {
 	if len(artifactsDir) == 0 {
 		artifactsDir = fmt.Sprintf("%s-%s", acsCluster.OrchestratorProfile.OrchestratorType, tgen.GenerateClusterID(acsCluster))
-		artifactsDir = path.Join("output", artifactsDir)
+		artifactsDir = path.Join("_output", artifactsDir)
 	}
 
 	b, err := json.MarshalIndent(acsCluster, "", "  ")
@@ -186,6 +187,10 @@ var artifactsDir = flag.String("artifacts", "", "directory where artifacts will 
 var classicMode = flag.Bool("classicMode", false, "enable classic parameters and outputs")
 
 func main() {
+	start := time.Now()
+	defer func(s time.Time) {
+		fmt.Fprintf(os.Stderr, "acstgen took %s\n", time.Since(s))
+	}(start)
 	var acsCluster *vlabs.AcsCluster
 	var template string
 	var parameters string
