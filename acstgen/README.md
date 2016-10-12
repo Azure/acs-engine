@@ -4,8 +4,11 @@ Template generator builds a custom template based on user requirements.  Example
 
 # Building the Application
 
-You must first install Go (or use a Docker container, see below). Once you have an environment with Go installed you can uild the applicaton with ```go
-build```.
+To build the application:
+1. set $GOPATH (example c:\gopath)
+2. go get github.com/Azure/acs-labs/acstgen
+3. cd $GOPATH/github.com/Azure/acs-labs/acstgen/src
+4. go build to produce the acstgen binary
 
 # Generating a Template
 

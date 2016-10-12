@@ -1,26 +1,36 @@
 {
   "orchestratorProfile": {
-    "orchestratorType": "Kubernetes"
+    "orchestratorType": "DCOS184"
   },
   "masterProfile": {
-    "count": 1,
-    "dnsPrefix": "mgmtanhowe1004f",
-		"vmSize": "Standard_D2_v2"
+    "count": 3,
+    "dnsPrefix": "mgmtanhowe1011d",
+    "vmSize": "Standard_D2_v2"
   },
   "agentPoolProfiles": [
     {
-      "name": "agentpool1",
+      "name": "agentpri1",
       "count": 3,
-      "vmSize": "Standard_D2_v2",
-      "StorageType": "Volumes",
+      "vmSize": "Standard_D2_v2"
+    },
+    {
+      "name": "agentpri2",
+      "count": 3,
+      "vmSize": "Standard_D3_v2",
+      "StorageProfile": "Volumes",
       "diskSizesGB": [128, 128, 128, 128]
     },
     {
-      "name": "agentpool2",
+      "name": "agentpublic",
       "count": 3,
       "vmSize": "Standard_D2_v2",
-      "StorageType": "Volumes",
-      "diskSizesGB": [10, 10, 10, 10]
+      "dnsPrefix": "appanhowe1009h",
+      "ports": [
+        2000,
+        2001,
+        9091,
+        9092
+      ]
     }
   ],
   "linuxProfile": {
@@ -32,9 +42,5 @@
         }
       ]
     }
-  },
-  "servicePrincipalProfile": {
-    "servicePrincipalClientID": "[REPLACE-WITH-ServicePrincipalClientID",
-    "servicePrincipalClientSecret": "[REPLACE-WITH-myServicePrincipalClientSecret"
   }
 }

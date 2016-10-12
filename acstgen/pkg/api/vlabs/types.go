@@ -57,15 +57,15 @@ type MasterProfile struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name         string `json:"name"`
-	Count        int    `json:"count"`
-	VMSize       string `json:"vmSize"`
-	DNSPrefix    string `json:"dnsPrefix,omitempty"`
-	OSType       string `json:"osType,omitempty"`
-	Ports        []int  `json:"ports,omitempty"`
-	StorageType  string `json:"storageType,omitempty"`
-	DiskSizesGB  []int  `json:"diskSizesGB,omitempty"`
-	VnetSubnetID string `json:"vnetSubnetID,omitempty"`
+	Name           string `json:"name"`
+	Count          int    `json:"count"`
+	VMSize         string `json:"vmSize"`
+	DNSPrefix      string `json:"dnsPrefix,omitempty"`
+	OSType         string `json:"osType,omitempty"`
+	Ports          []int  `json:"ports,omitempty"`
+	StorageProfile string `json:"storageProfile,omitempty"`
+	DiskSizesGB    []int  `json:"diskSizesGB,omitempty"`
+	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
 	// subnet is internal
 	subnet string
 }
@@ -148,7 +148,7 @@ func (a *AgentPoolProfile) IsWindows() bool {
 
 // IsVolumeBasedStorage returns true if the customer specified disks
 func (a *AgentPoolProfile) IsVolumeBasedStorage() bool {
-	return a.StorageType == StorageVolumes
+	return a.StorageProfile == StorageVolumes
 }
 
 // HasDisks returns true if the customer specified disks
