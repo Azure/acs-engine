@@ -60,6 +60,16 @@ const (
 	windowsParams               = "windowsparams.t"
 )
 
+var kubernetesAddonYamls = map[string]string{
+	"MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR":             "kubernetesmasteraddons-heapster-deployment.yaml",
+	"MASTER_ADDON_HEAPSTER_SERVICE_B64_GZIP_STR":                "kubernetesmasteraddons-heapster-service.yaml",
+	"MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR":             "kubernetesmasteraddons-kube-dns-deployment.yaml",
+	"MASTER_ADDON_KUBE_DNS_SERVICE_B64_GZIP_STR":                "kubernetesmasteraddons-kube-dns-service.yaml",
+	"MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR":            "kubernetesmasteraddons-kube-proxy-daemonset.yaml",
+	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
+	"MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR":    "kubernetesmasteraddons-kubernetes-dashboard-service.yaml",
+}
+
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams}
 var dcosTemplateFiles = []string{dcosAgentResources, dcosAgentResourcesDisks, dcosAgentVars, dcosBaseFile, dcosCustomData173, dcosCustomData184, dcosMasterResources, dcosMasterVars}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResources, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
@@ -294,6 +304,11 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 			// add the master provisioning script
 			masterProvisionB64GzipStr := getBase64CustomScript(acsCluster, kubernetesMasterCustomScript, partsDirectory)
 			str = strings.Replace(str, "MASTER_PROVISION_B64_GZIP_STR", masterProvisionB64GzipStr, -1)
+
+			for placeholder, filename := range kubernetesAddonYamls {
+				addonTextContents := getBase64CustomScript(acsCluster, filename, partsDirectory)
+				str = strings.Replace(str, placeholder, addonTextContents, -1)
+			}
 
 			// return the custom data
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)

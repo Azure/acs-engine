@@ -200,43 +200,83 @@ write_files:
             hostPath:
               path: "/var/lib/kubelet"
 
-- path: /etc/kubernetes/manifests/kube-proxy.yaml
+- path: /etc/kubernetes/manifests/kube-addon-manager.yml
   permissions: "0644"
   owner: "root"
   content: |
-      apiVersion: "v1"
-      kind: "Pod"
-      metadata:
-        name: "kube-proxy"
-        namespace: "kube-system"
-        labels:
-          tier: control-plane
-          component: kube-proxy
-      spec:
-        hostNetwork: true
-        containers:
-          - name: "kube-proxy"
-            image: "{{{kubernetesHyperkubeSpec}}}"
-            command:
-              - "/hyperkube"
-              - "proxy"
-              - "--kubeconfig=/var/lib/kubelet/kubeconfig"
-              - "--proxy-mode=iptables"
-              - "--v=2"
-            securityContext:
-              privileged: true
-            volumeMounts:
-              - name: "etc-kubernetes"
-                mountPath: "/etc/kubernetes"
-              - name: "var-lib-kubelet"
-                mountPath: "/var/lib/kubelet"
-        volumes:
-          - name: "etc-kubernetes"
-            hostPath:
-              path: "/etc/kubernetes"
-          - name: "var-lib-kubelet"
-            hostPath:
-              path: "/var/lib/kubelet"
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: kube-addon-manager
+      namespace: kube-system
+      version: v1
+    spec:
+      hostNetwork: true
+      containers:
+      - name: kube-addon-manager
+        # TODO: consider if hardcoding this is the right thing to do...
+        image: gcr.io/google_containers/kube-addon-manager-amd64:v5.1
+        resources:
+          requests:
+            cpu: 5m
+            memory: 50Mi
+        volumeMounts:
+        - name: addons
+          mountPath: "/etc/kubernetes/addons"
+          readOnly: true
+      volumes:
+      - name: addons
+        hostPath:
+          path: "/etc/kubernetes/addons"
+
+- path: /etc/kubernetes/addons/kube-dns-service.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_KUBE_DNS_SERVICE_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/kube-dns-deployment.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/kube-proxy-daemonset.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/kubernetes-dashboard-service.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/kube-heapster-service.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_HEAPSTER_SERVICE_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/kube-heapster-deployment.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR
 
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
