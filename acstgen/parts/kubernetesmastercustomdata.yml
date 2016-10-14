@@ -290,6 +290,7 @@ write_files:
     [Service]
     Restart=always
     ExecStartPre=/bin/mkdir -p /var/lib/kubelet
+    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
     ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
     ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
     ExecStart=/usr/bin/docker run \

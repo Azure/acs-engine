@@ -19,7 +19,7 @@ spec:
         - "/hyperkube"
         - proxy
         - "--kubeconfig=/var/lib/kubelet/kubeconfig"
-        image: "gcr.io/google_containers/hyperkube-amd64:v1.4.1"
+        image: "<kubernetesHyperkubeSpec>"
         name: kube-proxy
         resources:
           requests:
