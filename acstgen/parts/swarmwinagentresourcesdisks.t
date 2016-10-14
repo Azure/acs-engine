@@ -155,7 +155,11 @@
 {{end}}
         "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex())]", 
         "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
-      ], 
+      ],
+      "tags":
+      {
+        "creationSource" : "[concat('acstgen-', variables('{{.Name}}VMNamePrefix'), copyIndex())]"
+      },
       "location": "[resourceGroup().location]", 
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex())]", 
       "properties": {
