@@ -3,51 +3,53 @@
 ###########################################################
 # START SECRET DATA - ECHO DISABLED
 ###########################################################
-TID=$1
-SID=$2
-RGP=$3
-LOC=$4
-SUB=$5
-NSG=$6
-VNT=$7
-RTB=$8
-SVCPrincipalClientId=$9
-SVCPrincipalClientSecret=${10}
-CLIENTPRIVATEKEY=${11}
-SERVERPRIVATEKEY=${12}
 
-APISERVERKEY=/etc/kubernetes/certs/apiserver.key
-touch $APISERVERKEY
-chmod 0644 $APISERVERKEY
-chown root:root $APISERVERKEY
-echo $SERVERPRIVATEKEY | /usr/bin/base64 --decode > $APISERVERKEY
+# Fields for `azure.json`
+TENANT_ID="${1}"
+SUBNETSCRIPTION_ID="${2}"
+RESOURCE_GROUP="${3}"
+LOCATION="${4}"
+SUBNET="${5}"
+NETWORK_SECURITY_GROUP="${6}"
+VIRTUAL_NETWORK="${7}"
+ROUTE_TABLE="${8}"
+SERVICE_PRINCIPAL_CLIENT_ID="${9}"
+SERVICE_PRINCIPAL_CLIENT_SECRET="${10}"
 
-CLIENTKEY=/etc/kubernetes/certs/client.key
-touch $CLIENTKEY
-chmod 0644 $CLIENTKEY
-chown root:root $CLIENTKEY
-echo $CLIENTPRIVATEKEY | /usr/bin/base64 --decode > $CLIENTKEY 
+# Extra secrets for Kubernetes biring-up
+KUBELET_PRIVATE_KEY="${11}"
+APISERVER_PRIVATE_KEY="${12}"
 
-AZUREJSON=/etc/kubernetes/azure.json
-touch $AZUREJSON
-chmod 0644 $AZUREJSON
-chown root:root $AZUREJSON
-AZURECONTENT=$(cat <<EOF
+APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
+touch "${APISERVER_PRIVATE_KEY_PATH}"
+chmod 0644 "${APISERVER_PRIVATE_KEY_PATH}"
+chown root:root "${APISERVER_PRIVATE_KEY_PATH}"
+echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
+
+KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
+touch "${KUBELET_PRIVATE_KEY_PATH}"
+chmod 0644 "${KUBELET_PRIVATE_KEY_PATH}"
+chown root:root "${KUBELET_PRIVATE_KEY_PATH}"
+echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
+
+AZURE_JSON_PATH="/etc/kubernetes/azure.json"
+touch "${AZURE_JSON_PATH}"
+chmod 0644 "${AZURE_JSON_PATH}"
+chown root:root "${AZURE_JSON_PATH}"
+cat << EOF > "${AZURE_JSON_PATH}"
 {
-    "tenantId": "$TID",
-    "subscriptionId": "$SID",
-    "aadClientId": "$SVCPrincipalClientId",
-    "aadClientSecret": "$SVCPrincipalClientSecret",
-    "resourceGroup": "$RGP",
-    "location": "$LOC",
-    "subnetName": "$SUB",
-    "securityGroupName": "$NSG",
-    "vnetName": "$VNT",
-    "routeTableName": "$RTB"
+    "tenantId": "${TENANT_ID}",
+    "subscriptionId": "${SUBNETSCRIPTION_ID}",
+    "aadClientId": "${SERVICE_PRINCIPAL_CLIENT_ID}",
+    "aadClientSecret": "${SERVICE_PRINCIPAL_CLIENT_SECRET}",
+    "resourceGroup": "${RESOURCE_GROUP}",
+    "location": "${LOCATION}",
+    "subnetName": "${SUBNET}",
+    "securityGroupName": "${NETWORK_SECURITY_GROUP}",
+    "vnetName": "${VIRTUAL_NETWORK}",
+    "routeTableName": "${ROUTE_TABLE}"
 }
 EOF
-)
-echo "$AZURECONTENT" > $AZUREJSON
 
 ###########################################################
 # END OF SECRET DATA
@@ -56,8 +58,7 @@ echo "$AZURECONTENT" > $AZUREJSON
 set -x
 
 # wait for kubectl to report successful cluster health
-ensurekubectl()
-{
+function ensureKubectl() {
     kubectlfound=1
     for i in {1..600}; do
         if [ -e /usr/local/bin/kubectl ]
@@ -76,14 +77,13 @@ ensurekubectl()
         fi
     fi
 }
-ensurekubectl
 
-/bin/systemctl restart etcd
+function ensureEtcd() {
+    systemctl restart etcd
+}
 
-# start all the services
-/bin/systemctl restart docker
-ensureDocker()
-{
+function ensureDocker() {
+    systemctl restart docker
     dockerStarted=1
     for i in {1..600}; do
         /usr/bin/docker ps 2>&1 | grep "daemon running"
@@ -104,12 +104,9 @@ ensureDocker()
         exit 1
     fi
 }
-ensureDocker
 
-/bin/systemctl restart kubelet
-#wait for kubernetes to start 
-ensureKubernetes()
-{
+function ensureKubernetes() {
+    systemctl restart kubelet
     kubernetesStarted=1
     for i in {1..600}; do
         if [ -e /usr/local/bin/kubectl ]
@@ -138,6 +135,10 @@ ensureKubernetes()
         exit 1
     fi
 }
+
+ensureKubectl
+ensureEtcd
+ensureDocker
 ensureKubernetes
 
 echo "Install complete successfully"

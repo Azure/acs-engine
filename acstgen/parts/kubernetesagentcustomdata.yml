@@ -66,41 +66,6 @@ write_files:
       name: localclustercontext
     current-context: localclustercontext
 
-- path: /etc/kubernetes/manifests/node.yaml
-  permissions: "0644"
-  owner: "root"
-  content: |
-      apiVersion: "v1"
-      kind: "Pod"
-      metadata:
-        name: "k8s-node"
-        namespace: "kube-system"
-      spec:
-        hostNetwork: true
-        containers:
-          - name: "kube-proxy"
-            image: "{{{kubernetesHyperkubeSpec}}}"
-            command: 
-              - "/hyperkube"
-              - "proxy"
-              - "--kubeconfig=/var/lib/kubelet/kubeconfig"
-              - "--proxy-mode=iptables"
-              - "--v=2"
-            securityContext:
-              privileged: true
-            volumeMounts:
-              - name: "etc-kubernetes"
-                mountPath: "/etc/kubernetes"
-              - name: "var-lib-kubelet"
-                mountPath: "/var/lib/kubelet"
-        volumes: 
-          - name: "etc-kubernetes"
-            hostPath:
-              path: "/etc/kubernetes"
-          - name: "var-lib-kubelet"
-            hostPath:
-              path: "/var/lib/kubelet"
-
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
   owner: "root"
