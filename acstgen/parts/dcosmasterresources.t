@@ -193,18 +193,16 @@
         "[concat('Microsoft.Compute/availabilitySets/',variables('masterAvailabilitySet'))]", 
         "[variables('masterStorageAccountName')]", 
         "[variables('masterStorageAccountExhibitorName')]"
-      ], 
+      ],
+      "tags":
+      {
+        "creationSource" : "[concat('acstgen-', variables('masterVMNamePrefix'), copyIndex())]"
+      },
       "location": "[resourceGroup().location]", 
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]", 
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('masterAvailabilitySet'))]"
-        }, 
-        "diagnosticsProfile": {
-          "bootDiagnostics": {
-            "enabled": "true", 
-            "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('masterStorageAccountName')), variables('apiVersionStorage')).primaryEndpoints.blob]"
-          }
         }, 
         "hardwareProfile": {
           "vmSize": "[variables('masterVMSize')]"

@@ -88,7 +88,11 @@
 {{if IsPublic .Ports}}
        ,"[concat('Microsoft.Network/loadBalancers/', variables('{{.Name}}LbName'))]"
 {{end}}
-      ], 
+      ],
+      "tags":
+      {
+        "creationSource" : "[concat('acstgen-', variables('{{.Name}}VMNamePrefix'), '-vmss')]"
+      },
       "location": "[resourceGroup().location]", 
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), '-vmss')]", 
       "properties": {

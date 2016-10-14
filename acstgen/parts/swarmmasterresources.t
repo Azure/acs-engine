@@ -146,7 +146,11 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'nic-', copyIndex())]", 
         "[concat('Microsoft.Compute/availabilitySets/',variables('masterAvailabilitySet'))]", 
         "[variables('masterStorageAccountName')]"
-      ], 
+      ],
+      "tags":
+      {
+        "creationSource" : "[concat('acstgen-', variables('masterVMNamePrefix'), copyIndex())]"
+      },
       "location": "[resourceGroup().location]", 
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]", 
       "properties": {

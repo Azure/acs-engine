@@ -89,7 +89,11 @@
 {{if IsPublic .Ports}} 
        ,"[variables('{{.Name}}LbID')]"
 {{end}} 
-      ], 
+      ],
+      "tags":
+      {
+        "creationSource" : "[concat('acstgen-', variables('{{.Name}}VMNamePrefix'), '-vmss')]"
+      },
       "location": "[resourceGroup().location]", 
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), '-vmss')]", 
       "properties": {
