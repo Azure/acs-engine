@@ -91,7 +91,7 @@
       ],
       "tags":
       {
-        "creationSource" : "[concat('acstgen-', variables('{{.Name}}LbName'))]"
+        "creationSource" : "[concat('acstgen-', variables('{{.Name}}VMNamePrefix'), '-vmss')]"
       },
       "location": "[resourceGroup().location]", 
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), '-vmss')]", 
