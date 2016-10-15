@@ -1,0 +1,49 @@
+{
+  "orchestratorProfile": {
+    "orchestratorType": "DCOS184"
+  },
+  "masterProfile": {
+    "count": 3,
+    "dnsPrefix": "esri113-master",
+    "vmSize": "Standard_D2_v2",
+    "firstConsecutiveStaticIP": "172.16.0.5"
+  },
+  "agentPoolProfiles": [
+    {
+      "name": "agentprivate",
+      "count": 3,
+      "vmSize": "Standard_D4_v2",
+      "storageType": "External"
+    },
+    {
+      "name": "agentpublic",
+      "count": 3,
+      "vmSize": "Standard_D4_v2",
+      "dnsPrefix": "esri113-public",
+      "ports": [
+        80,
+        443,
+        8080,
+        10000,
+        10001
+      ],
+      "storageType": "External"
+    }
+  ],
+  "windowsProfile": {
+    "adminUsername": "",
+    "adminPassword": ""
+  },
+  "linuxProfile": {
+    "adminUsername": "azureuser",
+    "ssh": {
+      "publicKeys": [
+        {
+          "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFNVAH/ncmS4SxBaO9pf5BQ+5J/xNuLlucfDvp5ZlX3PaFM8jjpdF4BSr4hwn6xDz0lUyqLZxVjmseJoQExYAJv+mBBYSkD1LAfnV2r+kAPFd9buyPSQoSo798n295T1Ct5v1i8h4bJxuUfqOcnwP0mVlFeHnBnhbdgfN6viS7pRCeytqp/wtSkfbEqjDebj6qhMswGeHuzc0RQnolBZbtZQApiKo1jSb1mQRv58oAoQNbKR7u1HME+j6lk9Bm1apdKJim8Ujc1Q/mrpV1FyFe/Z3AfOabyJB+f21Iq5V0SR+rtRhKM5wkl8DH+85z4r4AGBgKXNeL8XSVBG7ZOjZz azureuser@linuxvm"
+        }
+      ]
+    }
+  },
+  "servicePrincipalProfile": {},
+  "certificateProfile": {}
+}

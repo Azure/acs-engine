@@ -1,4 +1,4 @@
-package vlabs
+package api
 
 // SubscriptionState represents the state of the subscription
 type SubscriptionState int
@@ -40,6 +40,8 @@ type Properties struct {
 	AgentPoolProfiles       []AgentPoolProfile      `json:"agentPoolProfiles"`
 	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
 	WindowsProfile          WindowsProfile          `json:"windowsProfile"`
+	DiagnosticsProfile      DiagnosticsProfile      `json:"diagnosticsProfile"`
+	JumpboxProfile          JumpboxProfile          `json:"jumpboxProfile"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
 	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
 	// classic mode is used to output parameters and outputs
@@ -145,8 +147,40 @@ type AgentPoolProfile struct {
 	FQDN string `json:"fqdn,omitempty"`
 }
 
+// DiagnosticsProfile setting to enable/disable capturing
+// diagnostics for VMs hosting container cluster.
+type DiagnosticsProfile struct {
+	VMDiagnostics VMDiagnostics `json:"vmDiagnostics"`
+}
+
+// VMDiagnostics contains settings to on/off boot diagnostics collection
+// in RD Host
+type VMDiagnostics struct {
+	Enabled bool `json:"enabled"`
+
+	// Specifies storage account Uri where Boot Diagnostics (CRP &
+	// VMSS BootDiagostics) and VM Diagnostics logs (using Linux
+	// Diagnostics Extension) will be stored. Uri will be of standard
+	// blob domain. i.e. https://storageaccount.blob.core.windows.net/
+	// This field is readonly as ACS RP will create a storage account
+	// for the customer.
+	StorageURL neturl.URL `json:"storageUrl"`
+}
+
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
+
+// JumpboxProfile dscribes properties of the jumpbox setup
+// in the ACS container cluster.
+type JumpboxProfile struct {
+	OSType    string `json:"osType"`
+	DNSPrefix string `json:"dnsPrefix"`
+
+	// Jumpbox public endpoint/FQDN with port
+	// The format will be FQDN:2376
+	// Not used during PUT, returned as part of GET
+	FQDN string `json:"fqdn,omitempty"`
+}
 
 // OSType represents OS types of agents
 type OSType string
