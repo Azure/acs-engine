@@ -132,7 +132,13 @@ func (a *Properties) Validate() error {
 			}
 		}
 		if agentPoolProfile.StorageProfile == StorageHAVolumes {
-			return errors.New("HA volumes are currently unsupported")
+			switch a.OrchestratorProfile.OrchestratorType {
+			case DCOS:
+			case DCOS173:
+			case DCOS184:
+			default:
+				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
 		}
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.StorageProfile == StorageExternal || len(agentPoolProfile.StorageProfile) == 0) {
 			return fmt.Errorf("External storage deployments (VMSS) are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"StorageProfile\":\"%s\"", StorageVolumes)

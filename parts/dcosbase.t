@@ -21,7 +21,7 @@
   },
   "resources": [
     {{range .AgentPoolProfiles}}
-      {{if .IsVolumeBasedStorage}}
+      {{if or .IsVolumeBasedStorage .IsHAVolumeBasedStorage}}
         {{template "dcosagentresourcesdisks.t" .}},
       {{else}}
         {{template "dcosagentresources.t" .}},

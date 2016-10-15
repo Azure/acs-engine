@@ -194,9 +194,14 @@ func (a *AgentPoolProfile) IsWindows() bool {
 	return a.OSType == Windows
 }
 
-// IsVolumeBasedStorage returns true if the customer specified disks
+// IsVolumeBasedStorage returns true if the customer specified volumes
 func (a *AgentPoolProfile) IsVolumeBasedStorage() bool {
 	return a.StorageProfile == StorageVolumes
+}
+
+// IsHAVolumeBasedStorage returns true if the customer specified disks
+func (a *AgentPoolProfile) IsHAVolumeBasedStorage() bool {
+	return a.StorageProfile == StorageHAVolumes
 }
 
 // HasDisks returns true if the customer specified disks
