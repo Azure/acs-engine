@@ -10,28 +10,28 @@ type SubscriptionState int
 // Subscription represents the customer subscription
 type Subscription struct {
 	ID    string
-	state SubscriptionState
+	State SubscriptionState
 }
 
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
 type ResourcePurchasePlan struct {
-	Name          string `json:"name"`
-	Product       string `json:"product"`
-	PromotionCode string `json:"promotionCode"`
-	Publisher     string `json:"publisher"`
+	Name          string `json:"name,omitempty"`
+	Product       string `json:"product,omitempty"`
+	PromotionCode string `json:"promotionCode,omitempty"`
+	Publisher     string `json:"publisher,omitempty"`
 }
 
 // ContainerService complies with the ARM model of
 // resource definition in a JSON template.
 type ContainerService struct {
-	APIVersion string               `json:"apiversion"`
-	ID         string               `json:"id"`
-	Location   string               `json:"location"`
-	Name       string               `json:"name"`
-	Plan       ResourcePurchasePlan `json:"plan"`
-	Tags       map[string]string    `json:"tags"`
-	Type       string               `json:"type"`
+	APIVersion string               `json:"apiVersion"`
+	ID         string               `json:"id,omitempty"`
+	Location   string               `json:"location,omitempty"`
+	Name       string               `json:"name,omitempty"`
+	Plan       ResourcePurchasePlan `json:"plan,omitempty"`
+	Tags       map[string]string    `json:"tags,omitempty"`
+	Type       string               `json:"type,omitempty"`
 
 	Properties Properties `json:"properties"`
 }
@@ -136,7 +136,7 @@ type AgentPoolProfile struct {
 // JumpboxProfile dscribes properties of the jumpbox setup
 // in the ACS container cluster.
 type JumpboxProfile struct {
-	OSType    string `json:"osType"`
+	OSType    OSType `json:"osType"`
 	DNSPrefix string `json:"dnsPrefix"`
 
 	// Jumpbox public endpoint/FQDN with port

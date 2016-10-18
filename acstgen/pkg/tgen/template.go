@@ -16,7 +16,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Azure/acs-labs/acstgen/pkg/api/vlabs"
+	"github.com/Azure/acs-labs/acstgen/pkg/api"
 )
 
 const (
@@ -90,69 +90,64 @@ func VerifyFiles(partsDirectory string) error {
 }
 
 // GenerateTemplate generates the template from the API Model
-func GenerateTemplate(acsCluster *vlabs.AcsCluster, partsDirectory string) (string, string, error) {
+func GenerateTemplate(containerService *api.ContainerService, partsDirectory string) (string, string, bool, error) {
 	var err error
 	var templ *template.Template
+	certsGenerated := false
 
-	templ = template.New("acs template").Funcs(getTemplateFuncMap(acsCluster, partsDirectory))
+	properties := &containerService.Properties
 
-	var files []string
-	var baseFile string
-	if acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS184 ||
-		acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS ||
-		acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS173 {
-		files = append(commonTemplateFiles, dcosTemplateFiles...)
-		baseFile = dcosBaseFile
-	} else if acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Swarm {
-		files = append(commonTemplateFiles, swarmTemplateFiles...)
-		baseFile = swarmBaseFile
-	} else if acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
-		files = append(commonTemplateFiles, kubernetesTemplateFiles...)
-		baseFile = kubernetesBaseFile
-	} else {
-		return "", "", fmt.Errorf("orchestrator '%s' is unsupported", acsCluster.OrchestratorProfile.OrchestratorType)
+	if certsGenerated, err = SetPropertiesDefaults(properties); err != nil {
+		return "", "", certsGenerated, err
+	}
+
+	templ = template.New("acs template").Funcs(getTemplateFuncMap(properties, partsDirectory))
+
+	files, baseFile, e := prepareTemplateFiles(properties)
+	if e != nil {
+		return "", "", false, e
 	}
 
 	for _, file := range files {
 		templateFile := path.Join(partsDirectory, file)
 		bytes, e := ioutil.ReadFile(templateFile)
 		if e != nil {
-			return "", "", fmt.Errorf("Error reading file %s: %s", templateFile, e.Error())
+			return "", "", certsGenerated, fmt.Errorf("Error reading file %s: %s", templateFile, e.Error())
 		}
 		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
-			return "", "", err
+			return "", "", certsGenerated, err
 		}
 	}
 	var b bytes.Buffer
-	if err = templ.ExecuteTemplate(&b, baseFile, acsCluster); err != nil {
-		return "", "", err
+	if err = templ.ExecuteTemplate(&b, baseFile, properties); err != nil {
+		return "", "", certsGenerated, err
 	}
 
 	var parametersMap *map[string]interface{}
-	if parametersMap, err = getParameters(acsCluster); err != nil {
-		return "", "", err
+	if parametersMap, err = getParameters(properties); err != nil {
+		return "", "", certsGenerated, err
 	}
 	var parameterBytes []byte
 	if parameterBytes, err = json.Marshal(parametersMap); err != nil {
-		return "", "", err
+		return "", "", certsGenerated, err
 	}
 
-	return b.String(), string(parameterBytes), nil
+	return b.String(), string(parameterBytes), certsGenerated, nil
 }
 
 // GenerateClusterID creates a unique 8 string cluster ID
-func GenerateClusterID(acsCluster *vlabs.AcsCluster) string {
+func GenerateClusterID(properties *api.Properties) string {
 	uniqueNameSuffixSize := 8
 	// the name suffix uniquely identifies the cluster and is generated off a hash
 	// from the master dns name
 	h := fnv.New64a()
-	h.Write([]byte(acsCluster.MasterProfile.DNSPrefix))
+	h.Write([]byte(properties.MasterProfile.DNSPrefix))
 	rand.Seed(int64(h.Sum64()))
 	return fmt.Sprintf("%08d", rand.Uint32())[:uniqueNameSuffixSize]
 }
 
 // GenerateKubeConfig returns a JSON string representing the KubeConfig
-func GenerateKubeConfig(acsCluster *vlabs.AcsCluster, templateDirectory string, location string) (string, error) {
+func GenerateKubeConfig(properties *api.Properties, templateDirectory string, location string) (string, error) {
 	kubeTemplateFile := path.Join(templateDirectory, kubeConfigJSON)
 	if _, err := os.Stat(kubeTemplateFile); os.IsNotExist(err) {
 		return "", fmt.Errorf("file %s does not exist, did you specify the correct template directory?", kubeTemplateFile)
@@ -163,46 +158,67 @@ func GenerateKubeConfig(acsCluster *vlabs.AcsCluster, templateDirectory string, 
 	}
 	kubeconfig := string(b)
 	// variable replacement
-	kubeconfig = strings.Replace(kubeconfig, "<<<variables('caCertificate')>>>", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.CaCertificate)), -1)
-	kubeconfig = strings.Replace(kubeconfig, "<<<reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn>>>", FormatAzureProdFQDN(acsCluster.MasterProfile.DNSPrefix, location), -1)
-	kubeconfig = strings.Replace(kubeconfig, "{{{resourceGroup}}}", acsCluster.MasterProfile.DNSPrefix, -1)
-	kubeconfig = strings.Replace(kubeconfig, "<<<variables('kubeConfigCertificate')>>>", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigCertificate)), -1)
-	kubeconfig = strings.Replace(kubeconfig, "<<<variables('kubeConfigPrivateKey')>>>", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigPrivateKey)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "<<<variables('caCertificate')>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "<<<reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn>>>", FormatAzureProdFQDN(properties.MasterProfile.DNSPrefix, location), -1)
+	kubeconfig = strings.Replace(kubeconfig, "{{{resourceGroup}}}", properties.MasterProfile.DNSPrefix, -1)
+	kubeconfig = strings.Replace(kubeconfig, "<<<variables('kubeConfigCertificate')>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "<<<variables('kubeConfigPrivateKey')>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)), -1)
 
 	return kubeconfig, nil
 }
 
-func getParameters(acsCluster *vlabs.AcsCluster) (*map[string]interface{}, error) {
+func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
+	var files []string
+	var baseFile string
+	if properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
+		properties.OrchestratorProfile.OrchestratorType == api.DCOS ||
+		properties.OrchestratorProfile.OrchestratorType == api.DCOS173 {
+		files = append(commonTemplateFiles, dcosTemplateFiles...)
+		baseFile = dcosBaseFile
+	} else if properties.OrchestratorProfile.OrchestratorType == api.Swarm {
+		files = append(commonTemplateFiles, swarmTemplateFiles...)
+		baseFile = swarmBaseFile
+	} else if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+		files = append(commonTemplateFiles, kubernetesTemplateFiles...)
+		baseFile = kubernetesBaseFile
+	} else {
+		return nil, "", fmt.Errorf("orchestrator '%s' is unsupported", properties.OrchestratorProfile.OrchestratorType)
+	}
+
+	return files, baseFile, nil
+}
+
+func getParameters(properties *api.Properties) (*map[string]interface{}, error) {
 	parametersMap := &map[string]interface{}{}
 
 	// Master Parameters
-	addValue(parametersMap, "linuxAdminUsername", acsCluster.LinuxProfile.AdminUsername)
-	addValue(parametersMap, "masterEndpointDNSNamePrefix", acsCluster.MasterProfile.DNSPrefix)
-	if acsCluster.MasterProfile.IsCustomVNET() {
-		addValue(parametersMap, "masterVnetSubnetID", acsCluster.MasterProfile.VnetSubnetID)
+	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
+	addValue(parametersMap, "masterEndpointDNSNamePrefix", properties.MasterProfile.DNSPrefix)
+	if properties.MasterProfile.IsCustomVNET() {
+		addValue(parametersMap, "masterVnetSubnetID", properties.MasterProfile.VnetSubnetID)
 	} else {
-		addValue(parametersMap, "masterSubnet", acsCluster.MasterProfile.GetSubnet())
+		addValue(parametersMap, "masterSubnet", properties.MasterProfile.GetSubnet())
 	}
-	addValue(parametersMap, "firstConsecutiveStaticIP", acsCluster.MasterProfile.FirstConsecutiveStaticIP)
-	addValue(parametersMap, "masterVMSize", acsCluster.MasterProfile.VMSize)
-	addValue(parametersMap, "sshRSAPublicKey", acsCluster.LinuxProfile.SSH.PublicKeys[0].KeyData)
+	addValue(parametersMap, "firstConsecutiveStaticIP", properties.MasterProfile.FirstConsecutiveStaticIP)
+	addValue(parametersMap, "masterVMSize", properties.MasterProfile.VMSize)
+	addValue(parametersMap, "sshRSAPublicKey", properties.LinuxProfile.SSH.PublicKeys[0].KeyData)
 
 	// Kubernetes Parameters
-	if acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
-		addValue(parametersMap, "apiServerCertificate", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.APIServerCertificate)))
-		addValue(parametersMap, "apiServerPrivateKey", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.APIServerPrivateKey)))
-		addValue(parametersMap, "caCertificate", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.CaCertificate)))
-		addValue(parametersMap, "clientCertificate", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.ClientCertificate)))
-		addValue(parametersMap, "clientPrivateKey", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.ClientPrivateKey)))
-		addValue(parametersMap, "kubeConfigCertificate", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigCertificate)))
-		addValue(parametersMap, "kubeConfigPrivateKey", base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.KubeConfigPrivateKey)))
+	if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+		addValue(parametersMap, "apiServerCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.APIServerCertificate)))
+		addValue(parametersMap, "apiServerPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.APIServerPrivateKey)))
+		addValue(parametersMap, "caCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)))
+		addValue(parametersMap, "clientCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientCertificate)))
+		addValue(parametersMap, "clientPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientPrivateKey)))
+		addValue(parametersMap, "kubeConfigCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)))
+		addValue(parametersMap, "kubeConfigPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)))
 		addValue(parametersMap, "kubernetesHyperkubeSpec", KubernetesHyperkubeSpec)
-		addValue(parametersMap, "servicePrincipalClientId", acsCluster.ServicePrincipalProfile.ClientID)
-		addValue(parametersMap, "servicePrincipalClientSecret", acsCluster.ServicePrincipalProfile.Secret)
+		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
+		addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
 	}
 
 	// Agent parameters
-	for _, agentProfile := range acsCluster.AgentPoolProfiles {
+	for _, agentProfile := range properties.AgentPoolProfiles {
 		addValue(parametersMap, fmt.Sprintf("%sCount", agentProfile.Name), agentProfile.Count)
 		addValue(parametersMap, fmt.Sprintf("%sVMSize", agentProfile.Name), agentProfile.VMSize)
 		if agentProfile.IsCustomVNET() {
@@ -216,9 +232,9 @@ func getParameters(acsCluster *vlabs.AcsCluster) (*map[string]interface{}, error
 	}
 
 	// Windows parameters
-	if acsCluster.HasWindows() {
-		addValue(parametersMap, "windowsAdminUsername", acsCluster.WindowsProfile.AdminUsername)
-		addValue(parametersMap, "windowsAdminPassword", acsCluster.WindowsProfile.AdminPassword)
+	if properties.HasWindows() {
+		addValue(parametersMap, "windowsAdminUsername", properties.WindowsProfile.AdminUsername)
+		addValue(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword)
 	}
 
 	return parametersMap, nil
@@ -230,23 +246,23 @@ func addValue(m *map[string]interface{}, k string, v interface{}) {
 }
 
 // getTemplateFuncMap returns all functions used in template generation
-func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map[string]interface{} {
+func getTemplateFuncMap(properties *api.Properties, partsDirectory string) map[string]interface{} {
 	return template.FuncMap{
 		"IsDCOS173": func() bool {
-			return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS173
+			return properties.OrchestratorProfile.OrchestratorType == api.DCOS173
 		},
 		"IsDCOS184": func() bool {
-			return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS184 ||
-				acsCluster.OrchestratorProfile.OrchestratorType == vlabs.DCOS
+			return properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
+				properties.OrchestratorProfile.OrchestratorType == api.DCOS
 		},
 		"RequiresFakeAgentOutput": func() bool {
-			return acsCluster.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes
+			return properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
 		},
 		"IsPublic": func(ports []int) bool {
 			return len(ports) > 0
 		},
 		"GetVNETSubnetDependencies": func() string {
-			return getVNETSubnetDependencies(acsCluster)
+			return getVNETSubnetDependencies(properties)
 		},
 		"GetLBRules": func(name string, ports []int) string {
 			return getLBRules(name, ports)
@@ -264,21 +280,21 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 			return getAgentRolesFileContents(ports)
 		},
 		"GetDCOSCustomDataPublicIPStr": func() string {
-			return getDCOSCustomDataPublicIPStr(acsCluster.OrchestratorProfile.OrchestratorType, acsCluster.MasterProfile.Count)
+			return getDCOSCustomDataPublicIPStr(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count)
 		},
 		"GetDCOSGUID": func() string {
-			return getPackageGUID(acsCluster.OrchestratorProfile.OrchestratorType, acsCluster.MasterProfile.Count)
+			return getPackageGUID(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count)
 		},
 		"GetUniqueNameSuffix": func() string {
-			return GenerateClusterID(acsCluster)
+			return GenerateClusterID(properties)
 		},
 		"GetVNETAddressPrefixes": func() string {
-			return getVNETAddressPrefixes(acsCluster)
+			return getVNETAddressPrefixes(properties)
 		},
 		"GetVNETSubnets": func(addNSG bool) string {
-			return getVNETSubnets(acsCluster, addNSG)
+			return getVNETSubnets(properties, addNSG)
 		},
-		"GetDataDisks": func(profile *vlabs.AgentPoolProfile) string {
+		"GetDataDisks": func(profile *api.AgentPoolProfile) string {
 			return getDataDisks(profile)
 		},
 		"GetMasterAllowedSizes": func() string {
@@ -294,7 +310,7 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 			return base64.StdEncoding.EncodeToString([]byte(s))
 		},
 		"GetKubernetesMasterCustomScript": func() string {
-			return getBase64CustomScript(acsCluster, kubernetesMasterCustomScript, partsDirectory)
+			return getBase64CustomScript(properties, kubernetesMasterCustomScript, partsDirectory)
 		},
 		"GetKubernetesMasterCustomData": func() string {
 			str, e := getSingleLineForTemplate(kubernetesMasterCustomDataYaml, partsDirectory)
@@ -302,24 +318,24 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 				return ""
 			}
 			// add the master provisioning script
-			masterProvisionB64GzipStr := getBase64CustomScript(acsCluster, kubernetesMasterCustomScript, partsDirectory)
+			masterProvisionB64GzipStr := getBase64CustomScript(properties, kubernetesMasterCustomScript, partsDirectory)
 			str = strings.Replace(str, "MASTER_PROVISION_B64_GZIP_STR", masterProvisionB64GzipStr, -1)
 
 			for placeholder, filename := range kubernetesAddonYamls {
-				addonTextContents := getBase64CustomScript(acsCluster, filename, partsDirectory)
+				addonTextContents := getBase64CustomScript(properties, filename, partsDirectory)
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
 			}
 
 			// return the custom data
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
-		"GetKubernetesAgentCustomData": func(profile *vlabs.AgentPoolProfile) string {
+		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			str, e := getSingleLineForTemplate(kubernetesAgentCustomDataYaml, partsDirectory)
 			if e != nil {
 				return ""
 			}
 			// add the agent provisioning script
-			agentProvisionB64GzipStr := getBase64CustomScript(acsCluster, kubernetesAgentCustomScript, partsDirectory)
+			agentProvisionB64GzipStr := getBase64CustomScript(properties, kubernetesAgentCustomScript, partsDirectory)
 			str = strings.Replace(str, "AGENT_PROVISION_B64_GZIP_STR", agentProvisionB64GzipStr, -1)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
@@ -332,16 +348,16 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 			return str
 		},
 		"GetMasterSecrets": func() string {
-			clientPrivateKey := base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.ClientPrivateKey))
-			serverPrivateKey := base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.APIServerPrivateKey))
-			return fmt.Sprintf("%s %s %s %s", acsCluster.ServicePrincipalProfile.ClientID, acsCluster.ServicePrincipalProfile.Secret, clientPrivateKey, serverPrivateKey)
+			clientPrivateKey := base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientPrivateKey))
+			serverPrivateKey := base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.APIServerPrivateKey))
+			return fmt.Sprintf("%s %s %s %s", properties.ServicePrincipalProfile.ClientID, properties.ServicePrincipalProfile.Secret, clientPrivateKey, serverPrivateKey)
 		},
 		"GetAgentSecrets": func() string {
-			clientPrivateKey := base64.StdEncoding.EncodeToString([]byte(acsCluster.CertificateProfile.ClientPrivateKey))
-			return fmt.Sprintf("%s %s %s", acsCluster.ServicePrincipalProfile.ClientID, acsCluster.ServicePrincipalProfile.Secret, clientPrivateKey)
+			clientPrivateKey := base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientPrivateKey))
+			return fmt.Sprintf("%s %s %s", properties.ServicePrincipalProfile.ClientID, properties.ServicePrincipalProfile.Secret, clientPrivateKey)
 		},
 		"AnyAgentHasDisks": func() bool {
-			for _, agentProfile := range acsCluster.AgentPoolProfiles {
+			for _, agentProfile := range properties.AgentPoolProfiles {
 				if agentProfile.HasDisks() {
 					return true
 				}
@@ -366,8 +382,8 @@ func getTemplateFuncMap(acsCluster *vlabs.AcsCluster, partsDirectory string) map
 	}
 }
 
-func getPackageGUID(orchestratorType string, masterCount int) string {
-	if orchestratorType == vlabs.DCOS || orchestratorType == vlabs.DCOS184 {
+func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) string {
+	if orchestratorType == api.DCOS || orchestratorType == api.DCOS184 {
 		switch masterCount {
 		case 1:
 			return "5ac6a7d060584c58c704e1f625627a591ecbde4e"
@@ -376,7 +392,7 @@ func getPackageGUID(orchestratorType string, masterCount int) string {
 		case 5:
 			return "97947a91e2c024ed4f043bfcdad49da9418d3095"
 		}
-	} else if orchestratorType == vlabs.DCOS173 {
+	} else if orchestratorType == api.DCOS173 {
 		switch masterCount {
 		case 1:
 			return "6b604c1331c2b8b52bb23d1ea8a8d17e0f2b7428"
@@ -389,10 +405,10 @@ func getPackageGUID(orchestratorType string, masterCount int) string {
 	return ""
 }
 
-func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) string {
-	if orchestratorType == vlabs.DCOS ||
-		orchestratorType == vlabs.DCOS173 ||
-		orchestratorType == vlabs.DCOS184 {
+func getDCOSCustomDataPublicIPStr(orchestratorType api.OrchestratorType, masterCount int) string {
+	if orchestratorType == api.DCOS ||
+		orchestratorType == api.DCOS173 ||
+		orchestratorType == api.DCOS184 {
 		var buf bytes.Buffer
 		for i := 0; i < masterCount; i++ {
 			buf.WriteString(fmt.Sprintf("reference(variables('masterVMNic')[%d]).ipConfigurations[0].properties.privateIPAddress,", i))
@@ -405,13 +421,13 @@ func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) stri
 	return ""
 }
 
-func getVNETAddressPrefixes(acsCluster *vlabs.AcsCluster) string {
+func getVNETAddressPrefixes(properties *api.Properties) string {
 	visitedSubnets := make(map[string]bool)
 	var buf bytes.Buffer
 	buf.WriteString(`"[variables('masterSubnet')]"`)
-	visitedSubnets[acsCluster.MasterProfile.GetSubnet()] = true
-	for i := range acsCluster.AgentPoolProfiles {
-		profile := &acsCluster.AgentPoolProfiles[i]
+	visitedSubnets[properties.MasterProfile.GetSubnet()] = true
+	for i := range properties.AgentPoolProfiles {
+		profile := &properties.AgentPoolProfiles[i]
 		if _, ok := visitedSubnets[profile.GetSubnet()]; !ok {
 			buf.WriteString(fmt.Sprintf(",\n            \"[variables('%sSubnet')]\"", profile.Name))
 		}
@@ -419,10 +435,10 @@ func getVNETAddressPrefixes(acsCluster *vlabs.AcsCluster) string {
 	return buf.String()
 }
 
-func getVNETSubnetDependencies(acsCluster *vlabs.AcsCluster) string {
+func getVNETSubnetDependencies(properties *api.Properties) string {
 	agentString := `        "[concat('Microsoft.Network/networkSecurityGroups/', variables('%sNSGName'))]"`
 	var buf bytes.Buffer
-	for index, agentProfile := range acsCluster.AgentPoolProfiles {
+	for index, agentProfile := range properties.AgentPoolProfiles {
 		if index > 0 {
 			buf.WriteString(",\n")
 		}
@@ -431,7 +447,7 @@ func getVNETSubnetDependencies(acsCluster *vlabs.AcsCluster) string {
 	return buf.String()
 }
 
-func getVNETSubnets(acsCluster *vlabs.AcsCluster, addNSG bool) string {
+func getVNETSubnets(properties *api.Properties, addNSG bool) string {
 	masterString := `{
             "name": "[variables('masterSubnetName')]", 
             "properties": {
@@ -455,7 +471,7 @@ func getVNETSubnets(acsCluster *vlabs.AcsCluster, addNSG bool) string {
           }`
 	var buf bytes.Buffer
 	buf.WriteString(masterString)
-	for _, agentProfile := range acsCluster.AgentPoolProfiles {
+	for _, agentProfile := range properties.AgentPoolProfiles {
 		buf.WriteString(",\n")
 		if addNSG {
 			buf.WriteString(fmt.Sprintf(agentStringNSG, agentProfile.Name, agentProfile.Name, agentProfile.Name))
@@ -541,7 +557,7 @@ func getSecurityRule(port int, portIndex int) string {
           }`, port, port, port, BaseLBPriority+portIndex)
 }
 
-func getDataDisks(a *vlabs.AgentPoolProfile) string {
+func getDataDisks(a *api.AgentPoolProfile) string {
 	if !a.HasDisks() {
 		return ""
 	}
@@ -623,7 +639,7 @@ func getSingleLineForTemplate(yamlFilename string, partsDirectory string) (strin
 }
 
 // getBase64CustomScript will return a base64 of the CSE
-func getBase64CustomScript(a *vlabs.AcsCluster, csFilename string, partsDirectory string) string {
+func getBase64CustomScript(a *api.Properties, csFilename string, partsDirectory string) string {
 	csFile := path.Join(partsDirectory, csFilename)
 	if _, err := os.Stat(csFile); os.IsNotExist(err) {
 		panic(err.Error())

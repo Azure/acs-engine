@@ -1,12 +1,22 @@
 package api
 
+import (
+	neturl "net/url"
+)
+
+// TypeMeta describes an individual API model object
+type TypeMeta struct {
+	// APIVersion is on every object
+	APIVersion string `json:"apiVersion"`
+}
+
 // SubscriptionState represents the state of the subscription
 type SubscriptionState int
 
 // Subscription represents the customer subscription
 type Subscription struct {
-	Id    string
-	state SubscriptionState
+	ID    string
+	State SubscriptionState
 }
 
 // ResourcePurchasePlan defines resource plan as required by ARM
@@ -21,7 +31,7 @@ type ResourcePurchasePlan struct {
 // ContainerService complies with the ARM model of
 // resource definition in a JSON template.
 type ContainerService struct {
-	APIVersion string               `json:"apiversion"`
+	APIVersion string               `json:"apiVersion"`
 	ID         string               `json:"id"`
 	Location   string               `json:"location"`
 	Name       string               `json:"name"`
@@ -136,7 +146,7 @@ type AgentPoolProfile struct {
 	Count          int    `json:"count"`
 	VMSize         string `json:"vmSize"`
 	DNSPrefix      string `json:"dnsPrefix,omitempty"`
-	OSType         string `json:"osType,omitempty"`
+	OSType         OSType `json:"osType,omitempty"`
 	Ports          []int  `json:"ports,omitempty"`
 	StorageProfile string `json:"storageProfile,omitempty"`
 	DiskSizesGB    []int  `json:"diskSizesGB,omitempty"`
@@ -173,7 +183,7 @@ type OrchestratorType string
 // JumpboxProfile dscribes properties of the jumpbox setup
 // in the ACS container cluster.
 type JumpboxProfile struct {
-	OSType    string `json:"osType"`
+	OSType    OSType `json:"osType"`
 	DNSPrefix string `json:"dnsPrefix"`
 
 	// Jumpbox public endpoint/FQDN with port
@@ -186,19 +196,19 @@ type JumpboxProfile struct {
 type OSType string
 
 // GetClassicMode gets the classic mode for deciding to output classic parameters
-func (a *AcsCluster) GetClassicMode() bool {
+func (a *Properties) GetClassicMode() bool {
 	return a.classicMode
 }
 
 // SetClassicMode toggles classic parameters and outputs
-func (a *AcsCluster) SetClassicMode(isClassicMode bool) {
+func (a *Properties) SetClassicMode(isClassicMode bool) {
 	a.classicMode = isClassicMode
 }
 
 // HasWindows returns true if the cluster contains windows
-func (a *AcsCluster) HasWindows() bool {
+func (a *Properties) HasWindows() bool {
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
-		if agentPoolProfile.OSType == OSTypeWindows {
+		if agentPoolProfile.OSType == Windows {
 			return true
 		}
 	}
@@ -237,7 +247,7 @@ func (a *AgentPoolProfile) IsCustomVNET() bool {
 
 // IsWindows returns true if the agent pool is windows
 func (a *AgentPoolProfile) IsWindows() bool {
-	return a.OSType == OSTypeWindows
+	return a.OSType == Windows
 }
 
 // IsVolumeBasedStorage returns true if the customer specified disks

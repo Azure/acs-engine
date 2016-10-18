@@ -1,8 +1,12 @@
 package vlabs
 
+const (
+	// APIVersion is the version of this API
+	APIVersion = "vlabs"
+)
+
 // the orchestrators supported by vlabs
 const (
-	
 	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS184
 	DCOS = "DCOS"
 	// DCOS184 is the string constant for DCOS 1.8.4 orchestrator type

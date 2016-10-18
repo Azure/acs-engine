@@ -1,5 +1,10 @@
 package v20160330
 
+const (
+	// APIVersion is the version of this API
+	APIVersion = "2016-03-30"
+)
+
 // v20160330 supports orchestrators Mesos, Swarm, DCOS
 const (
 	Mesos OrchestratorType = "Mesos"
@@ -25,6 +30,14 @@ const (
 	Deleted
 	// Warned means the subscription has been warned
 	Warned
+)
+
+// validation values
+const (
+	// MinAgentCount are the minimum number of agents
+	MinAgentCount = 1
+	// MaxAgentCount are the maximum number of agents
+	MaxAgentCount = 100
 )
 
 // storage profiles

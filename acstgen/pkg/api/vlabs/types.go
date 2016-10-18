@@ -5,29 +5,29 @@ type SubscriptionState int
 
 // Subscription represents the customer subscription
 type Subscription struct {
-	Id    string
-	state SubscriptionState
+	ID    string
+	State SubscriptionState
 }
 
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
 type ResourcePurchasePlan struct {
-	Name          string `json:"name"`
-	Product       string `json:"product"`
-	PromotionCode string `json:"promotionCode"`
-	Publisher     string `json:"publisher"`
+	Name          string `json:"name,omitempty"`
+	Product       string `json:"product,omitempty"`
+	PromotionCode string `json:"promotionCode,omitempty"`
+	Publisher     string `json:"publisher,omitempty"`
 }
 
 // ContainerService complies with the ARM model of
 // resource definition in a JSON template.
 type ContainerService struct {
-	APIVersion string               `json:"apiversion"`
-	ID         string               `json:"id"`
-	Location   string               `json:"location"`
-	Name       string               `json:"name"`
-	Plan       ResourcePurchasePlan `json:"plan"`
-	Tags       map[string]string    `json:"tags"`
-	Type       string               `json:"type"`
+	APIVersion string               `json:"apiVersion"`
+	ID         string               `json:"id,omitempty"`
+	Location   string               `json:"location,omitempty"`
+	Name       string               `json:"name,omitempty"`
+	Plan       ResourcePurchasePlan `json:"plan,omitempty"`
+	Tags       map[string]string    `json:"tags,omitempty"`
+	Type       string               `json:"type,omitempty"`
 
 	Properties Properties `json:"properties"`
 }
@@ -39,7 +39,7 @@ type Properties struct {
 	MasterProfile           MasterProfile           `json:"masterProfile"`
 	AgentPoolProfiles       []AgentPoolProfile      `json:"agentPoolProfiles"`
 	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
-	WindowsProfile          WindowsProfile          `json:"windowsProfile"`
+	WindowsProfile          WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
 	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
 	// classic mode is used to output parameters and outputs
@@ -84,8 +84,8 @@ type LinuxProfile struct {
 
 // WindowsProfile represents the windows parameters passed to the cluster
 type WindowsProfile struct {
-	AdminUsername string `json:"adminUsername"`
-	AdminPassword string `json:"adminPassword"`
+	AdminUsername string `json:"adminUsername,omitempty"`
+	AdminPassword string `json:"adminPassword,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.
@@ -134,7 +134,7 @@ type AgentPoolProfile struct {
 	Count          int    `json:"count"`
 	VMSize         string `json:"vmSize"`
 	DNSPrefix      string `json:"dnsPrefix,omitempty"`
-	OSType         string `json:"osType,omitempty"`
+	OSType         OSType `json:"osType,omitempty"`
 	Ports          []int  `json:"ports,omitempty"`
 	StorageProfile string `json:"storageProfile,omitempty"`
 	DiskSizesGB    []int  `json:"diskSizesGB,omitempty"`
@@ -152,19 +152,19 @@ type OrchestratorType string
 type OSType string
 
 // GetClassicMode gets the classic mode for deciding to output classic parameters
-func (a *AcsCluster) GetClassicMode() bool {
+func (a *Properties) GetClassicMode() bool {
 	return a.classicMode
 }
 
 // SetClassicMode toggles classic parameters and outputs
-func (a *AcsCluster) SetClassicMode(isClassicMode bool) {
+func (a *Properties) SetClassicMode(isClassicMode bool) {
 	a.classicMode = isClassicMode
 }
 
 // HasWindows returns true if the cluster contains windows
-func (a *AcsCluster) HasWindows() bool {
+func (a *Properties) HasWindows() bool {
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
-		if agentPoolProfile.OSType == OSTypeWindows {
+		if agentPoolProfile.OSType == Windows {
 			return true
 		}
 	}
@@ -203,7 +203,7 @@ func (a *AgentPoolProfile) IsCustomVNET() bool {
 
 // IsWindows returns true if the agent pool is windows
 func (a *AgentPoolProfile) IsWindows() bool {
-	return a.OSType == OSTypeWindows
+	return a.OSType == Windows
 }
 
 // IsVolumeBasedStorage returns true if the customer specified disks

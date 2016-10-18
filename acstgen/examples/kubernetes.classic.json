@@ -1,32 +1,35 @@
 {
-  "orchestratorProfile": {
-    "orchestratorType": "Kubernetes"
-  },
-  "masterProfile": {
-    "count": 1,
-    "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2"
-  },
-  "agentPoolProfiles": [
-    {
-      "name": "agent",
-      "count": 3,
-      "vmSize": "Standard_D2_v2",
-      "StorageProfile": "Volumes"
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes"
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "",
+        "vmSize": "Standard_D2_v2"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agent",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "StorageProfile": "Volumes"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": ""
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "servicePrincipalClientID": "",
+      "servicePrincipalClientSecret": ""
     }
-  ],
-  "linuxProfile": {
-    "adminUsername": "azureuser",
-    "ssh": {
-      "publicKeys": [
-        {
-          "keyData": ""
-        }
-      ]
-    }
-  },
-  "servicePrincipalProfile": {
-    "servicePrincipalClientID": "",
-    "servicePrincipalClientSecret": ""
   }
 }

@@ -219,7 +219,7 @@ func validateUniquePorts(ports []int, name string) error {
 	return nil
 }
 
-func validateVNET(a *AcsCluster) error {
+func validateVNET(a *Properties) error {
 	isCustomVNET := a.MasterProfile.IsCustomVNET()
 	for _, agentPool := range a.AgentPoolProfiles {
 		if agentPool.IsCustomVNET() != isCustomVNET {

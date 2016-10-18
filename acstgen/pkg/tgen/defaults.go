@@ -4,20 +4,19 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/Azure/acs-labs/acstgen/pkg/api/vlabs"
-	"github.com/Azure/acs-labs/acstgen/pkg/util"
+	"github.com/Azure/acs-labs/acstgen/pkg/api"
 )
 
-// SetAcsClusterDefaults for an AcsCluster, returns true if certs are generated
-func SetAcsClusterDefaults(a *vlabs.AcsCluster) (bool, error) {
+// SetPropertiesDefaults for the container Properties, returns true if certs are generated
+func SetPropertiesDefaults(p *api.Properties) (bool, error) {
 
-	setMasterNetworkDefaults(a)
+	setMasterNetworkDefaults(p)
 
-	setAgentNetworkDefaults(a)
+	setAgentNetworkDefaults(p)
 
-	setStorageDefaults(a)
+	setStorageDefaults(p)
 
-	certsGenerated, e := setDefaultCerts(a)
+	certsGenerated, e := setDefaultCerts(p)
 	if e != nil {
 		return false, e
 	}
@@ -25,9 +24,9 @@ func SetAcsClusterDefaults(a *vlabs.AcsCluster) (bool, error) {
 }
 
 // SetMasterNetworkDefaults for masters
-func setMasterNetworkDefaults(a *vlabs.AcsCluster) {
+func setMasterNetworkDefaults(a *api.Properties) {
 	if !a.MasterProfile.IsCustomVNET() {
-		if a.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
+		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 			a.MasterProfile.SetSubnet(DefaultKubernetesMasterSubnet)
 			a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
 		} else if a.HasWindows() {
@@ -41,14 +40,14 @@ func setMasterNetworkDefaults(a *vlabs.AcsCluster) {
 }
 
 // SetAgentNetworkDefaults for agents
-func setAgentNetworkDefaults(a *vlabs.AcsCluster) {
+func setAgentNetworkDefaults(a *api.Properties) {
 	// configure the subnets if not in custom VNET
 	if !a.MasterProfile.IsCustomVNET() {
 		subnetCounter := 0
 		for i := range a.AgentPoolProfiles {
 			profile := &a.AgentPoolProfiles[i]
 
-			if a.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
+			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 				profile.SetSubnet(a.MasterProfile.GetSubnet())
 			} else {
 				profile.SetSubnet(fmt.Sprintf(DefaultAgentSubnetTemplate, subnetCounter))
@@ -60,16 +59,16 @@ func setAgentNetworkDefaults(a *vlabs.AcsCluster) {
 }
 
 // setStorageDefaults for agents
-func setStorageDefaults(a *vlabs.AcsCluster) {
+func setStorageDefaults(a *api.Properties) {
 	for i := range a.AgentPoolProfiles {
 		profile := &a.AgentPoolProfiles[i]
 		if len(profile.StorageProfile) == 0 {
-			profile.StorageProfile = vlabs.StorageExternal
+			profile.StorageProfile = api.StorageExternal
 		}
 	}
 }
 
-func setDefaultCerts(a *vlabs.AcsCluster) (bool, error) {
+func setDefaultCerts(a *api.Properties) (bool, error) {
 	if !certGenerationRequired(a) {
 		return false, nil
 	}
@@ -88,7 +87,7 @@ func setDefaultCerts(a *vlabs.AcsCluster) (bool, error) {
 		ips = append(ips, net.IP{firstMasterIP[12], firstMasterIP[13], firstMasterIP[14], firstMasterIP[15] + byte(i)})
 	}
 
-	caPair, apiServerPair, clientPair, kubeConfigPair, err := util.CreatePki(masterWildCardFQDN, masterExtraFQDNs, ips, DefaultKubernetesClusterDomain)
+	caPair, apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterWildCardFQDN, masterExtraFQDNs, ips, DefaultKubernetesClusterDomain)
 	if err != nil {
 		return false, err
 	}
@@ -105,7 +104,7 @@ func setDefaultCerts(a *vlabs.AcsCluster) (bool, error) {
 	return true, nil
 }
 
-func certGenerationRequired(a *vlabs.AcsCluster) bool {
+func certGenerationRequired(a *api.Properties) bool {
 	if len(a.CertificateProfile.APIServerCertificate) > 0 || len(a.CertificateProfile.APIServerPrivateKey) > 0 ||
 		len(a.CertificateProfile.CaCertificate) > 0 ||
 		len(a.CertificateProfile.ClientCertificate) > 0 || len(a.CertificateProfile.ClientPrivateKey) > 0 {
@@ -113,15 +112,15 @@ func certGenerationRequired(a *vlabs.AcsCluster) bool {
 	}
 
 	switch a.OrchestratorProfile.OrchestratorType {
-	case vlabs.DCOS:
+	case api.DCOS:
 		return false
-	case vlabs.DCOS184:
+	case api.DCOS184:
 		return false
-	case vlabs.DCOS173:
+	case api.DCOS173:
 		return false
-	case vlabs.Swarm:
+	case api.Swarm:
 		return false
-	case vlabs.Kubernetes:
+	case api.Kubernetes:
 		return true
 	default:
 		return false
