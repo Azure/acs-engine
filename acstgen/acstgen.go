@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"strings"
 	"time"
 
 	"github.com/Azure/acs-labs/acstgen/pkg/api"
@@ -15,99 +14,6 @@ import (
 	"github.com/Azure/acs-labs/acstgen/pkg/api/vlabs"
 	"github.com/Azure/acs-labs/acstgen/pkg/tgen"
 )
-
-// loadContainerService loads an ACS Cluster API Model from a JSON file
-func loadContainerService(jsonFile string) (*api.ContainerService, error) {
-	contents, e := ioutil.ReadFile(jsonFile)
-	if e != nil {
-		return nil, fmt.Errorf("error reading file %s: %s", jsonFile, e.Error())
-	}
-
-	m := &api.TypeMeta{}
-	if err := json.Unmarshal(contents, &m); err != nil {
-		return nil, err
-	}
-
-	apiContainerService := &api.ContainerService{}
-	switch m.APIVersion {
-	case v20160330.APIVersion:
-		containerService := &v20160330.ContainerService{}
-		if e := json.Unmarshal(contents, &containerService); e != nil {
-			return nil, fmt.Errorf("error unmarshalling file %s: %s", jsonFile, e.Error())
-		}
-
-		if e := containerService.Properties.Validate(); e != nil {
-			return nil, fmt.Errorf("error validating acs cluster from file %s: %s", jsonFile, e.Error())
-		}
-		api.ConvertV20160330ContainerService(containerService, apiContainerService)
-
-	case vlabs.APIVersion:
-		containerService := &vlabs.ContainerService{}
-		if e := json.Unmarshal(contents, &containerService); e != nil {
-			return nil, fmt.Errorf("error unmarshalling file %s: %s", jsonFile, e.Error())
-		}
-
-		if e := containerService.Properties.Validate(); e != nil {
-			return nil, fmt.Errorf("error validating acs cluster from file %s: %s", jsonFile, e.Error())
-		}
-		api.ConvertVLabsContainerService(containerService, apiContainerService)
-
-	default:
-		return nil, fmt.Errorf("unrecognized APIVersion '%s'", m.APIVersion)
-	}
-
-	return apiContainerService, nil
-}
-
-func translateJSON(content string, translateParams [][]string, reverseTranslate bool) string {
-	for _, tuple := range translateParams {
-		if len(tuple) != 2 {
-			panic("string tuples must be of size 2")
-		}
-		a := tuple[0]
-		b := tuple[1]
-		if reverseTranslate {
-			content = strings.Replace(content, b, a, -1)
-		} else {
-			content = strings.Replace(content, a, b, -1)
-		}
-	}
-	return content
-}
-
-func prettyPrintJSON(content string) (string, error) {
-	var data map[string]interface{}
-	if err := json.Unmarshal([]byte(content), &data); err != nil {
-		return "", err
-	}
-	prettyprint, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return "", err
-	}
-	return string(prettyprint), nil
-}
-
-func prettyPrintArmTemplate(template string) (string, error) {
-	translateParams := [][]string{
-		{"\"parameters\"", "\"dparameters\""},
-		{"\"variables\"", "\"evariables\""},
-		{"\"resources\"", "\"fresources\""},
-		{"\"outputs\"", "\"zoutputs\""},
-		// there is a bug in ARM where it doesn't correctly translate back '\u003e' (>)
-		{">", "GREATERTHAN"},
-		{"<", "LESSTHAN"},
-		{"&", "AMPERSAND"},
-	}
-
-	template = translateJSON(template, translateParams, false)
-	var err error
-	if template, err = prettyPrintJSON(template); err != nil {
-		return "", err
-	}
-	template = translateJSON(template, translateParams, true)
-
-	return template, nil
-}
 
 func writeArtifacts(containerService *api.ContainerService, template string, parameters, artifactsDir string, templateDirectory string, certsGenerated bool) error {
 	if len(artifactsDir) == 0 {
@@ -263,7 +169,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if containerService, err = loadContainerService(jsonFile); err != nil {
+	if containerService, err = tgen.LoadContainerServiceFromFile(jsonFile); err != nil {
 		fmt.Fprintf(os.Stderr, "error while loading %s: %s", jsonFile, err.Error())
 		os.Exit(1)
 	}
@@ -279,11 +185,11 @@ func main() {
 	}
 
 	if !*noPrettyPrint {
-		if template, err = prettyPrintArmTemplate(template); err != nil {
+		if template, err = tgen.PrettyPrintArmTemplate(template); err != nil {
 			fmt.Fprintf(os.Stderr, "error pretty printing template %s", err.Error())
 			os.Exit(1)
 		}
-		if parameters, err = prettyPrintArmTemplate(parameters); err != nil {
+		if parameters, err = tgen.PrettyPrintJSON(parameters); err != nil {
 			fmt.Fprintf(os.Stderr, "error pretty printing template %s", err.Error())
 			os.Exit(1)
 		}
