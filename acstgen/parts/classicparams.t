@@ -163,4 +163,11 @@
         "description": "This is the windows sku used by the windows"
       },
       "type": "string"
+    },
+    "kubernetesHyperkubeSpec": {
+      "defaultValue": "gcr.io/google_containers/hyperkube-amd64:v1.4.3",
+      "metadata": {
+        "description": "The container spec for hyperkube."
+      },
+      "type": "string"
     }

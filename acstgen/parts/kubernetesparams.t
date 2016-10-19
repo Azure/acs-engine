@@ -39,8 +39,9 @@
         "description": "The base 64 private key used by cli to communicate with the master"
       },  
       "type": "securestring"
-    }, 
+    },
     "kubernetesVersion": {
+      "defaultValue": "{{GetKubernetesVersion}}",
       "metadata": {
         "description": "The kubernetes version."
       }, 

@@ -446,6 +446,7 @@
       "type": "securestring"
     },
     "kubernetesVersion": {
+      "defaultValue": "v1.4.3",
       "metadata": {
         "description": "The kubernetes version."
       },
@@ -1048,7 +1049,7 @@
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
-          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ServicePrincipalClientID myServicePrincipalClientSecret Y2xpZW50UHJpdmF0ZUtleQ== >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
+          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
         },
         "publisher": "Microsoft.OSTCExtensions",
         "settings": {},
@@ -1189,7 +1190,7 @@
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
-          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ServicePrincipalClientID myServicePrincipalClientSecret Y2xpZW50UHJpdmF0ZUtleQ== >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
+          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
         },
         "publisher": "Microsoft.OSTCExtensions",
         "settings": {},
@@ -1476,7 +1477,7 @@
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
-          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ServicePrincipalClientID myServicePrincipalClientSecret Y2xpZW50UHJpdmF0ZUtleQ== YXBpU2VydmVyUHJpdmF0ZUtleQ== >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
+          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('apiServerPrivateKey'),' >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
         },
         "publisher": "Microsoft.OSTCExtensions",
         "settings": {},

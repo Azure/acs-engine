@@ -339,6 +339,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		"GetKubernetesMasterCustomScript": func() string {
 			return t.getBase64CustomScript(kubernetesMasterCustomScript)
 		},
+		"GetKubernetesVersion": func() string {
+			return KubernetesVersion
+		},
 		"GetKubernetesMasterCustomData": func() string {
 			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml)
 			if e != nil {
