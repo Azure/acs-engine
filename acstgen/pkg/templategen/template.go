@@ -374,15 +374,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			}
 			return str
 		},
-		"GetMasterSecrets": func() string {
-			clientPrivateKey := base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientPrivateKey))
-			serverPrivateKey := base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.APIServerPrivateKey))
-			return fmt.Sprintf("%s %s %s %s", properties.ServicePrincipalProfile.ClientID, properties.ServicePrincipalProfile.Secret, clientPrivateKey, serverPrivateKey)
-		},
-		"GetAgentSecrets": func() string {
-			clientPrivateKey := base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientPrivateKey))
-			return fmt.Sprintf("%s %s %s", properties.ServicePrincipalProfile.ClientID, properties.ServicePrincipalProfile.Secret, clientPrivateKey)
-		},
 		"AnyAgentHasDisks": func() bool {
 			for _, agentProfile := range properties.AgentPoolProfiles {
 				if agentProfile.HasDisks() {
