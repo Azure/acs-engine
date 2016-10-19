@@ -10,6 +10,7 @@
     "kubeConfigPrivateKey": "[parameters('kubeConfigPrivateKey')]",
     "kubernetesHyperkubePrefix": "gcr.io/google_containers/hyperkube-amd64",
     "kubernetesVersion": "[parameters('kubernetesVersion')]",
+    "kubectlVersion": "[parameters('kubernetesVersion')]",
     "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
     "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
     "username": "[parameters('linuxAdminUsername')]",
