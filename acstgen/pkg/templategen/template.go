@@ -235,7 +235,8 @@ func getParameters(properties *api.Properties) (map[string]interface{}, error) {
 		addValue(parametersMap, "clientPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientPrivateKey)))
 		addValue(parametersMap, "kubeConfigCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)))
 		addValue(parametersMap, "kubeConfigPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)))
-		addValue(parametersMap, "kubernetesVersion", KubernetesVersion)
+		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec)
+		addValue(parametersMap, "kubectlVersion", properties.OrchestratorProfile.KubernetesConfig.KubectlVersion)
 		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 		addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
 	}
@@ -338,9 +339,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		},
 		"GetKubernetesMasterCustomScript": func() string {
 			return t.getBase64CustomScript(kubernetesMasterCustomScript)
-		},
-		"GetKubernetesVersion": func() string {
-			return KubernetesVersion
 		},
 		"GetKubernetesMasterCustomData": func() string {
 			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml)
@@ -562,6 +560,8 @@ func getProbes(ports []int) string {
 }
 
 func getSecurityRule(port int, portIndex int) string {
+	// BaseLBPriority specifies the base lb priority.
+	BaseLBPriority := 200
 	return fmt.Sprintf(`          {
             "name": "Allow_%d", 
             "properties": {

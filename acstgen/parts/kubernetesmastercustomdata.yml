@@ -90,7 +90,7 @@ write_files:
         hostNetwork: true
         containers:
           - name: "kube-apiserver"
-            image: "{{{kubernetesHyperkubePrefix}}}:{{{kubernetesVersion}}}"
+            image: "{{{kubernetesHyperkubeSpec}}}"
             command: 
               - "/hyperkube"
               - "apiserver"
@@ -137,7 +137,7 @@ write_files:
         hostNetwork: true
         containers:
           - name: "kube-controller-manager"
-            image: "{{{kubernetesHyperkubePrefix}}}:{{{kubernetesVersion}}}"
+            image: "{{{kubernetesHyperkubeSpec}}}"
             command: 
               - "/hyperkube"
               - "controller-manager"
@@ -180,7 +180,7 @@ write_files:
         hostNetwork: true
         containers:
           - name: "kube-scheduler"
-            image: "{{{kubernetesHyperkubePrefix}}}:{{{kubernetesVersion}}}"
+            image: "{{{kubernetesHyperkubeSpec}}}"
             command:
               - "/hyperkube"
               - "scheduler"
@@ -290,7 +290,7 @@ write_files:
     [Service]
     Restart=always
     ExecStartPre=/bin/mkdir -p /var/lib/kubelet
-    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubePrefix}}}:{{{kubernetesVersion}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
+    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
     ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
     ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
     ExecStart=/usr/bin/docker run \
@@ -304,7 +304,7 @@ write_files:
       --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \
       --volume=/var/log/containers/:/var/log/containers:rw \
       --volume=/etc/kubernetes/:/etc/kubernetes:rw \
-        {{{kubernetesHyperkubePrefix}}}:{{{kubernetesVersion}}} \
+        {{{kubernetesHyperkubeSpec}}} \
           /hyperkube kubelet \
             --api-servers="https://{{{masterPrivateIp}}}:443" \
             --kubeconfig=/var/lib/kubelet/kubeconfig \

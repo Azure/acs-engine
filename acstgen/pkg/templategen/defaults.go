@@ -10,6 +10,8 @@ import (
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
 func SetPropertiesDefaults(p *api.Properties) (bool, error) {
 
+	setOrchestratorDefaults(p)
+
 	setMasterNetworkDefaults(p)
 
 	setAgentNetworkDefaults(p)
@@ -21,6 +23,14 @@ func SetPropertiesDefaults(p *api.Properties) (bool, error) {
 		return false, e
 	}
 	return certsGenerated, nil
+}
+
+// setOrchestratorDefaults for orchestrators
+func setOrchestratorDefaults(a *api.Properties) {
+	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+		a.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec = DefaultKubernetesHyperkubeSpec
+		a.OrchestratorProfile.KubernetesConfig.KubectlVersion = DefaultKubectlVersion
+	}
 }
 
 // SetMasterNetworkDefaults for masters
