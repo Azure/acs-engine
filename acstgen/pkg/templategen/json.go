@@ -1,4 +1,4 @@
-package tgen
+package templategen
 
 import (
 	"encoding/json"

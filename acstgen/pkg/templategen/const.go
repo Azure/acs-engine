@@ -1,4 +1,4 @@
-package tgen
+package templategen
 
 const (
 	// BaseLBPriority specifies the base lb priority.

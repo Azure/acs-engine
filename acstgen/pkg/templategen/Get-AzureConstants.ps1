@@ -99,7 +99,7 @@ Get-FileContents() {
         $Locations
     )
 	
-	$text = "package tgen"
+	$text = "package templategen"
 	$text += @"
 
 

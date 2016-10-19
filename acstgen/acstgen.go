@@ -12,7 +12,7 @@ import (
 	"github.com/Azure/acs-labs/acstgen/pkg/api"
 	"github.com/Azure/acs-labs/acstgen/pkg/api/v20160330"
 	"github.com/Azure/acs-labs/acstgen/pkg/api/vlabs"
-	"github.com/Azure/acs-labs/acstgen/pkg/tgen"
+	tgen "github.com/Azure/acs-labs/acstgen/pkg/templategen"
 )
 
 func writeArtifacts(containerService *api.ContainerService, template string, parameters, artifactsDir string, templateDirectory string, certsGenerated bool, parametersOnly bool) error {
