@@ -58,9 +58,6 @@ type Properties struct {
 	// TODO: Version this field so that newer versions don't
 	// allow jumpbox creation
 	JumpboxProfile JumpboxProfile `json:"jumpboxProfile"`
-
-	// classic mode is used to output parameters and outputs
-	classicMode bool
 }
 
 // LinuxProfile represents the Linux configuration passed to the cluster
@@ -170,16 +167,6 @@ type OrchestratorType string
 
 // OSType represents OS types of agents
 type OSType string
-
-// GetClassicMode gets the classic mode for deciding to output classic parameters
-func (a *Properties) GetClassicMode() bool {
-	return a.classicMode
-}
-
-// SetClassicMode toggles classic parameters and outputs
-func (a *Properties) SetClassicMode(isClassicMode bool) {
-	a.classicMode = isClassicMode
-}
 
 // HasWindows returns true if the cluster contains windows
 func (a *Properties) HasWindows() bool {

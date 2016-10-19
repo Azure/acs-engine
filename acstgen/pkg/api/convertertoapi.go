@@ -6,7 +6,7 @@ import (
 )
 
 ///////////////////////////////////////////////////////////
-// The converter exposes functions to convert the 3 top
+// The converter exposes functions to convert the 2 top
 // level resources:
 // 1. Subscription
 // 2. ContainerService
@@ -16,45 +16,53 @@ import (
 ///////////////////////////////////////////////////////////
 
 // ConvertV20160330Subscription converts a v20160330 Subscription to an unversioned Subscription
-func ConvertV20160330Subscription(v20160330 *v20160330.Subscription, api *Subscription) {
-	api.ID = v20160330.ID
-	api.State = SubscriptionState(v20160330.State)
+func ConvertV20160330Subscription(v20160330 *v20160330.Subscription) *Subscription {
+	s := &Subscription{}
+	s.ID = v20160330.ID
+	s.State = SubscriptionState(v20160330.State)
+	return s
 }
 
 // ConvertVLabsSubscription converts a vlabs Subscription to an unversioned Subscription
-func ConvertVLabsSubscription(vlabs *vlabs.Subscription, api *Subscription) {
-	api.ID = vlabs.ID
-	api.State = SubscriptionState(vlabs.State)
+func ConvertVLabsSubscription(vlabs *vlabs.Subscription) *Subscription {
+	s := &Subscription{}
+	s.ID = vlabs.ID
+	s.State = SubscriptionState(vlabs.State)
+	return s
 }
 
 // ConvertV20160330ContainerService converts a v20160330 ContainerService to an unversioned ContainerService
-func ConvertV20160330ContainerService(v20160330 *v20160330.ContainerService, api *ContainerService) {
-	api.APIVersion = v20160330.APIVersion
-	api.ID = v20160330.ID
-	api.Location = v20160330.Location
-	api.Name = v20160330.Name
-	convertV20160330ResourcePurchasePlan(&v20160330.Plan, &api.Plan)
-	api.Tags = *(&map[string]string{})
+func ConvertV20160330ContainerService(v20160330 *v20160330.ContainerService) *ContainerService {
+	c := &ContainerService{}
+	c.APIVersion = v20160330.APIVersion
+	c.ID = v20160330.ID
+	c.Location = v20160330.Location
+	c.Name = v20160330.Name
+	convertV20160330ResourcePurchasePlan(&v20160330.Plan, &c.Plan)
+	c.Tags = map[string]string{}
 	for k, v := range v20160330.Tags {
-		api.Tags[k] = v
+		c.Tags[k] = v
 	}
-	api.Type = v20160330.Type
-	convertV20160330Properties(&v20160330.Properties, &api.Properties)
+	c.Type = v20160330.Type
+	convertV20160330Properties(&v20160330.Properties, &c.Properties)
+	return c
 }
 
 // ConvertVLabsContainerService converts a vlabs ContainerService to an unversioned ContainerService
-func ConvertVLabsContainerService(vlabs *vlabs.ContainerService, api *ContainerService) {
-	api.APIVersion = vlabs.APIVersion
-	api.ID = vlabs.ID
-	api.Location = vlabs.Location
-	api.Name = vlabs.Name
-	convertVLabsResourcePurchasePlan(&vlabs.Plan, &api.Plan)
-	api.Tags = *(&map[string]string{})
+func ConvertVLabsContainerService(vlabs *vlabs.ContainerService) *ContainerService {
+	c := &ContainerService{}
+	c.APIVersion = vlabs.APIVersion
+	c.ID = vlabs.ID
+	c.Location = vlabs.Location
+	c.Name = vlabs.Name
+	convertVLabsResourcePurchasePlan(&vlabs.Plan, &c.Plan)
+	c.Tags = map[string]string{}
 	for k, v := range vlabs.Tags {
-		api.Tags[k] = v
+		c.Tags[k] = v
 	}
-	api.Type = vlabs.Type
-	convertVLabsProperties(&vlabs.Properties, &api.Properties)
+	c.Type = vlabs.Type
+	convertVLabsProperties(&vlabs.Properties, &c.Properties)
+	return c
 }
 
 // convertV20160330ResourcePurchasePlan converts a v20160330 ResourcePurchasePlan to an unversioned ResourcePurchasePlan
@@ -77,7 +85,7 @@ func convertV20160330Properties(v20160330 *v20160330.Properties, api *Properties
 	api.ProvisioningState = ProvisioningState(v20160330.ProvisioningState)
 	convertV20160330OrchestratorProfile(&v20160330.OrchestratorProfile, &api.OrchestratorProfile)
 	convertV20160330MasterProfile(&v20160330.MasterProfile, &api.MasterProfile)
-	api.AgentPoolProfiles = *(&[]AgentPoolProfile{})
+	api.AgentPoolProfiles = []AgentPoolProfile{}
 	for _, p := range v20160330.AgentPoolProfiles {
 		apiProfile := &AgentPoolProfile{}
 		convertV20160330AgentPoolProfile(&p, apiProfile)
@@ -87,14 +95,13 @@ func convertV20160330Properties(v20160330 *v20160330.Properties, api *Properties
 	convertV20160330WindowsProfile(&v20160330.WindowsProfile, &api.WindowsProfile)
 	convertV20160330DiagnosticsProfile(&v20160330.DiagnosticsProfile, &api.DiagnosticsProfile)
 	convertV20160330JumpboxProfile(&v20160330.JumpboxProfile, &api.JumpboxProfile)
-	api.SetClassicMode(v20160330.GetClassicMode())
 }
 
 func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
 	convertVLabsOrchestratorProfile(&vlabs.OrchestratorProfile, &api.OrchestratorProfile)
 	convertVLabsMasterProfile(&vlabs.MasterProfile, &api.MasterProfile)
-	api.AgentPoolProfiles = *(&[]AgentPoolProfile{})
+	api.AgentPoolProfiles = []AgentPoolProfile{}
 	for _, p := range vlabs.AgentPoolProfiles {
 		apiProfile := &AgentPoolProfile{}
 		convertVLabsAgentPoolProfile(&p, apiProfile)
@@ -104,14 +111,13 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 	convertVLabsWindowsProfile(&vlabs.WindowsProfile, &api.WindowsProfile)
 	convertVLabsServicePrincipalProfile(&vlabs.ServicePrincipalProfile, &api.ServicePrincipalProfile)
 	convertVLabsCertificateProfile(&vlabs.CertificateProfile, &api.CertificateProfile)
-	api.SetClassicMode(vlabs.GetClassicMode())
 }
 
 func convertV20160330LinuxProfile(v20160330 *v20160330.LinuxProfile, api *LinuxProfile) {
 	api.AdminUsername = v20160330.AdminUsername
-	api.SSH.PublicKeys = *(&[]struct {
+	api.SSH.PublicKeys = []struct {
 		KeyData string `json:"keyData"`
-	}{})
+	}{}
 	for _, d := range v20160330.SSH.PublicKeys {
 		api.SSH.PublicKeys = append(api.SSH.PublicKeys, d)
 	}
@@ -119,9 +125,9 @@ func convertV20160330LinuxProfile(v20160330 *v20160330.LinuxProfile, api *LinuxP
 
 func convertVLabsLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
 	api.AdminUsername = vlabs.AdminUsername
-	api.SSH.PublicKeys = *(&[]struct {
+	api.SSH.PublicKeys = []struct {
 		KeyData string `json:"keyData"`
-	}{})
+	}{}
 	for _, d := range vlabs.SSH.PublicKeys {
 		api.SSH.PublicKeys = append(api.SSH.PublicKeys, d)
 	}
@@ -149,7 +155,7 @@ func convertV20160330MasterProfile(v20160330 *v20160330.MasterProfile, api *Mast
 	api.Count = v20160330.Count
 	api.DNSPrefix = v20160330.DNSPrefix
 	api.FQDN = v20160330.FQDN
-	api.SetSubnet(v20160330.GetSubnet())
+	api.Subnet = v20160330.GetSubnet()
 }
 
 func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
@@ -158,7 +164,7 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.VMSize = vlabs.VMSize
 	api.VnetSubnetID = vlabs.VnetSubnetID
 	api.FirstConsecutiveStaticIP = vlabs.FirstConsecutiveStaticIP
-	api.SetSubnet(vlabs.GetSubnet())
+	api.Subnet = vlabs.GetSubnet()
 	api.FQDN = vlabs.FQDN
 }
 
@@ -169,7 +175,7 @@ func convertV20160330AgentPoolProfile(v20160330 *v20160330.AgentPoolProfile, api
 	api.DNSPrefix = v20160330.DNSPrefix
 	api.FQDN = v20160330.FQDN
 	api.OSType = OSType(v20160330.OSType)
-	api.SetSubnet(v20160330.GetSubnet())
+	api.Subnet = v20160330.GetSubnet()
 }
 
 func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolProfile) {
@@ -178,13 +184,13 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.VMSize = vlabs.VMSize
 	api.DNSPrefix = vlabs.DNSPrefix
 	api.OSType = OSType(vlabs.OSType)
-	api.Ports = *(&[]int{})
+	api.Ports = []int{}
 	api.Ports = append(api.Ports, vlabs.Ports...)
 	api.StorageProfile = vlabs.StorageProfile
-	api.DiskSizesGB = *(&[]int{})
+	api.DiskSizesGB = []int{}
 	api.DiskSizesGB = append(api.DiskSizesGB, vlabs.DiskSizesGB...)
 	api.VnetSubnetID = vlabs.VnetSubnetID
-	api.SetSubnet(vlabs.GetSubnet())
+	api.Subnet = vlabs.GetSubnet()
 	api.FQDN = vlabs.FQDN
 }
 

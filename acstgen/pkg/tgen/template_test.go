@@ -43,8 +43,13 @@ func TestExpected(t *testing.T) {
 		// 1. first time tests loaded containerService
 		// 2. second time tests generated containerService
 		// 3. third time tests the generated containerService from the generated containerService
+		templateGenerator, e3 := InitializeTemplateGenerator(false, "../../parts")
+		if e3 != nil {
+			t.Error(e3.Error())
+			continue
+		}
 		for i := 0; i < 3; i++ {
-			armTemplate, params, certsGenerated, err := GenerateTemplate(containerService, "../../parts")
+			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService)
 			if err != nil {
 				t.Error(err.Error())
 				continue

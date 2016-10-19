@@ -75,13 +75,12 @@ var dcosTemplateFiles = []string{dcosAgentResources, dcosAgentResourcesDisks, dc
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResources, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentCustomData, swarmAgentResources, swarmAgentVars, swarmAgentResourcesDisks, swarmBaseFile, swarmMasterCustomData, swarmMasterResources, swarmMasterVars, swarmWinAgentResources, swarmWinAgentResourcesDisks, windowsParams}
 
-// VerifyFiles verifies that the required template files exist
-func VerifyFiles(partsDirectory string) error {
+func (t *TemplateGenerator) verifyFiles() error {
 	allFiles := append(commonTemplateFiles, dcosTemplateFiles...)
 	allFiles = append(allFiles, kubernetesTemplateFiles...)
 	allFiles = append(allFiles, swarmTemplateFiles...)
 	for _, file := range allFiles {
-		templateFile := path.Join(partsDirectory, file)
+		templateFile := path.Join(t.PartsDirectory, file)
 		if _, err := os.Stat(templateFile); os.IsNotExist(err) {
 			return fmt.Errorf("template file %s does not exist, did you specify the correct template directory?", templateFile)
 		}
@@ -89,8 +88,28 @@ func VerifyFiles(partsDirectory string) error {
 	return nil
 }
 
+// TemplateGenerator represents the object that performs the template generation.
+type TemplateGenerator struct {
+	ClassicMode    bool
+	PartsDirectory string
+}
+
+// InitializeTemplateGenerator creates a new template generator object
+func InitializeTemplateGenerator(classicMode bool, partsDirectory string) (*TemplateGenerator, error) {
+	t := &TemplateGenerator{
+		ClassicMode:    classicMode,
+		PartsDirectory: partsDirectory,
+	}
+
+	if err := t.verifyFiles(); err != nil {
+		return nil, err
+	}
+
+	return t, nil
+}
+
 // GenerateTemplate generates the template from the API Model
-func GenerateTemplate(containerService *api.ContainerService, partsDirectory string) (string, string, bool, error) {
+func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService) (string, string, bool, error) {
 	var err error
 	var templ *template.Template
 	certsGenerated := false
@@ -101,7 +120,7 @@ func GenerateTemplate(containerService *api.ContainerService, partsDirectory str
 		return "", "", certsGenerated, err
 	}
 
-	templ = template.New("acs template").Funcs(getTemplateFuncMap(properties, partsDirectory))
+	templ = template.New("acs template").Funcs(t.getTemplateFuncMap(properties, t.PartsDirectory))
 
 	files, baseFile, e := prepareTemplateFiles(properties)
 	if e != nil {
@@ -109,7 +128,7 @@ func GenerateTemplate(containerService *api.ContainerService, partsDirectory str
 	}
 
 	for _, file := range files {
-		templateFile := path.Join(partsDirectory, file)
+		templateFile := path.Join(t.PartsDirectory, file)
 		bytes, e := ioutil.ReadFile(templateFile)
 		if e != nil {
 			return "", "", certsGenerated, fmt.Errorf("Error reading file %s: %s", templateFile, e.Error())
@@ -123,7 +142,7 @@ func GenerateTemplate(containerService *api.ContainerService, partsDirectory str
 		return "", "", certsGenerated, err
 	}
 
-	var parametersMap *map[string]interface{}
+	var parametersMap map[string]interface{}
 	if parametersMap, err = getParameters(properties); err != nil {
 		return "", "", certsGenerated, err
 	}
@@ -188,8 +207,8 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 	return files, baseFile, nil
 }
 
-func getParameters(properties *api.Properties) (*map[string]interface{}, error) {
-	parametersMap := &map[string]interface{}{}
+func getParameters(properties *api.Properties) (map[string]interface{}, error) {
+	parametersMap := map[string]interface{}{}
 
 	// Master Parameters
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
@@ -197,7 +216,7 @@ func getParameters(properties *api.Properties) (*map[string]interface{}, error) 
 	if properties.MasterProfile.IsCustomVNET() {
 		addValue(parametersMap, "masterVnetSubnetID", properties.MasterProfile.VnetSubnetID)
 	} else {
-		addValue(parametersMap, "masterSubnet", properties.MasterProfile.GetSubnet())
+		addValue(parametersMap, "masterSubnet", properties.MasterProfile.Subnet)
 	}
 	addValue(parametersMap, "firstConsecutiveStaticIP", properties.MasterProfile.FirstConsecutiveStaticIP)
 	addValue(parametersMap, "masterVMSize", properties.MasterProfile.VMSize)
@@ -224,7 +243,7 @@ func getParameters(properties *api.Properties) (*map[string]interface{}, error) 
 		if agentProfile.IsCustomVNET() {
 			addValue(parametersMap, fmt.Sprintf("%sVnetSubnetID", agentProfile.Name), agentProfile.VnetSubnetID)
 		} else {
-			addValue(parametersMap, fmt.Sprintf("%sSubnet", agentProfile.Name), agentProfile.GetSubnet())
+			addValue(parametersMap, fmt.Sprintf("%sSubnet", agentProfile.Name), agentProfile.Subnet)
 		}
 		if len(agentProfile.Ports) > 0 {
 			addValue(parametersMap, fmt.Sprintf("%sEndpointDNSNamePrefix", agentProfile.Name), agentProfile.DNSPrefix)
@@ -240,13 +259,14 @@ func getParameters(properties *api.Properties) (*map[string]interface{}, error) 
 	return parametersMap, nil
 }
 
-func addValue(m *map[string]interface{}, k string, v interface{}) {
-	(*m)[k] = *(&map[string]interface{}{})
-	(*m)[k].(map[string]interface{})["value"] = v
+func addValue(m map[string]interface{}, k string, v interface{}) {
+	m[k] = map[string]interface{}{
+		"value": v,
+	}
 }
 
 // getTemplateFuncMap returns all functions used in template generation
-func getTemplateFuncMap(properties *api.Properties, partsDirectory string) map[string]interface{} {
+func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties, partsDirectory string) map[string]interface{} {
 	return template.FuncMap{
 		"IsDCOS173": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.DCOS173
@@ -305,6 +325,9 @@ func getTemplateFuncMap(properties *api.Properties, partsDirectory string) map[s
 		},
 		"GetSizeMap": func() string {
 			return GetSizeMap()
+		},
+		"GetClassicMode": func() bool {
+			return t.ClassicMode
 		},
 		"Base64": func(s string) string {
 			return base64.StdEncoding.EncodeToString([]byte(s))
@@ -425,10 +448,10 @@ func getVNETAddressPrefixes(properties *api.Properties) string {
 	visitedSubnets := make(map[string]bool)
 	var buf bytes.Buffer
 	buf.WriteString(`"[variables('masterSubnet')]"`)
-	visitedSubnets[properties.MasterProfile.GetSubnet()] = true
+	visitedSubnets[properties.MasterProfile.Subnet] = true
 	for i := range properties.AgentPoolProfiles {
 		profile := &properties.AgentPoolProfiles[i]
-		if _, ok := visitedSubnets[profile.GetSubnet()]; !ok {
+		if _, ok := visitedSubnets[profile.Subnet]; !ok {
 			buf.WriteString(fmt.Sprintf(",\n            \"[variables('%sSubnet')]\"", profile.Name))
 		}
 	}

@@ -27,13 +27,13 @@ func SetPropertiesDefaults(p *api.Properties) (bool, error) {
 func setMasterNetworkDefaults(a *api.Properties) {
 	if !a.MasterProfile.IsCustomVNET() {
 		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-			a.MasterProfile.SetSubnet(DefaultKubernetesMasterSubnet)
+			a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
 			a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
 		} else if a.HasWindows() {
-			a.MasterProfile.SetSubnet(DefaultSwarmWindowsMasterSubnet)
+			a.MasterProfile.Subnet = DefaultSwarmWindowsMasterSubnet
 			a.MasterProfile.FirstConsecutiveStaticIP = DefaultSwarmWindowsFirstConsecutiveStaticIP
 		} else {
-			a.MasterProfile.SetSubnet(DefaultMasterSubnet)
+			a.MasterProfile.Subnet = DefaultMasterSubnet
 			a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveStaticIP
 		}
 	}
@@ -48,9 +48,9 @@ func setAgentNetworkDefaults(a *api.Properties) {
 			profile := &a.AgentPoolProfiles[i]
 
 			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-				profile.SetSubnet(a.MasterProfile.GetSubnet())
+				profile.Subnet = a.MasterProfile.Subnet
 			} else {
-				profile.SetSubnet(fmt.Sprintf(DefaultAgentSubnetTemplate, subnetCounter))
+				profile.Subnet = fmt.Sprintf(DefaultAgentSubnetTemplate, subnetCounter)
 			}
 
 			subnetCounter++

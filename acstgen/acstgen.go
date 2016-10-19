@@ -15,7 +15,7 @@ import (
 	"github.com/Azure/acs-labs/acstgen/pkg/tgen"
 )
 
-func writeArtifacts(containerService *api.ContainerService, template string, parameters, artifactsDir string, templateDirectory string, certsGenerated bool) error {
+func writeArtifacts(containerService *api.ContainerService, template string, parameters, artifactsDir string, templateDirectory string, certsGenerated bool, parametersOnly bool) error {
 	if len(artifactsDir) == 0 {
 		artifactsDir = fmt.Sprintf("%s-%s", containerService.Properties.OrchestratorProfile.OrchestratorType, tgen.GenerateClusterID(&containerService.Properties))
 		artifactsDir = path.Join("_output", artifactsDir)
@@ -24,31 +24,31 @@ func writeArtifacts(containerService *api.ContainerService, template string, par
 	// convert back the API object, and write it
 	var b []byte
 	var err error
-	switch containerService.APIVersion {
-	case v20160330.APIVersion:
-		v20160330ContainerService := &v20160330.ContainerService{}
-		api.ConvertContainerServiceToV20160330(containerService, v20160330ContainerService)
-		b, err = json.MarshalIndent(v20160330ContainerService, "", "  ")
+	if !parametersOnly {
+		switch containerService.APIVersion {
+		case v20160330.APIVersion:
+			v20160330ContainerService := api.ConvertContainerServiceToV20160330(containerService)
+			b, err = json.MarshalIndent(v20160330ContainerService, "", "  ")
 
-	case vlabs.APIVersion:
-		vlabsContainerService := &vlabs.ContainerService{}
-		api.ConvertContainerServiceToVLabs(containerService, vlabsContainerService)
-		b, err = json.MarshalIndent(vlabsContainerService, "", "  ")
+		case vlabs.APIVersion:
+			vlabsContainerService := api.ConvertContainerServiceToVLabs(containerService)
+			b, err = json.MarshalIndent(vlabsContainerService, "", "  ")
 
-	default:
-		return fmt.Errorf("invalid version %s for conversion back from unversioned object", containerService.APIVersion)
-	}
+		default:
+			return fmt.Errorf("invalid version %s for conversion back from unversioned object", containerService.APIVersion)
+		}
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return err
+		}
 
-	if e := saveFile(artifactsDir, "apimodel.json", b); e != nil {
-		return e
-	}
+		if e := saveFile(artifactsDir, "apimodel.json", b); e != nil {
+			return e
+		}
 
-	if e := saveFileString(artifactsDir, "azuredeploy.json", template); e != nil {
-		return e
+		if e := saveFileString(artifactsDir, "azuredeploy.json", template); e != nil {
+			return e
+		}
 	}
 
 	if e := saveFileString(artifactsDir, "azuredeploy.parameters.json", parameters); e != nil {
@@ -135,6 +135,7 @@ var templateDirectory = flag.String("templateDirectory", "./parts", "directory c
 var noPrettyPrint = flag.Bool("noPrettyPrint", false, "do not pretty print output")
 var artifactsDir = flag.String("artifacts", "", "directory where artifacts will be written")
 var classicMode = flag.Bool("classicMode", false, "enable classic parameters and outputs")
+var parametersOnly = flag.Bool("parametersOnly", false, "only output the parameters")
 
 func main() {
 	start := time.Now()
@@ -164,8 +165,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = tgen.VerifyFiles(*templateDirectory); err != nil {
-		fmt.Fprintf(os.Stderr, "verification failed: %s\n", err.Error())
+	templateGenerator, e := tgen.InitializeTemplateGenerator(*classicMode, *templateDirectory)
+	if e != nil {
+		fmt.Fprintf(os.Stderr, "generator initialization failed: %s\n", e.Error())
 		os.Exit(1)
 	}
 
@@ -174,12 +176,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	if *classicMode {
-		containerService.Properties.SetClassicMode(true)
-	}
-
 	certsGenerated := false
-	if template, parameters, certsGenerated, err = tgen.GenerateTemplate(containerService, *templateDirectory); err != nil {
+	if template, parameters, certsGenerated, err = templateGenerator.GenerateTemplate(containerService); err != nil {
 		fmt.Fprintf(os.Stderr, "error generating template %s: %s", jsonFile, err.Error())
 		os.Exit(1)
 	}
@@ -195,7 +193,7 @@ func main() {
 		}
 	}
 
-	if err = writeArtifacts(containerService, template, parameters, *artifactsDir, *templateDirectory, certsGenerated); err != nil {
+	if err = writeArtifacts(containerService, template, parameters, *artifactsDir, *templateDirectory, certsGenerated, *parametersOnly); err != nil {
 		fmt.Fprintf(os.Stderr, "error writing artifacts %s", err.Error())
 		os.Exit(1)
 	}

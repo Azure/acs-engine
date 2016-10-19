@@ -54,8 +54,8 @@ func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
 }
 
 // GetMasterAllowedSizes returns the master allowed sizes
-func GetMasterAllowedSizes() string{
-    return `      "allowedValues": [
+func GetMasterAllowedSizes() string {
+	return `      "allowedValues": [
         "Basic_A3",
         "Basic_A4",
         "Standard_A10",
@@ -119,7 +119,7 @@ func GetMasterAllowedSizes() string{
 
 // GetAgentAllowedSizes returns the agent allowed sizes
 func GetAgentAllowedSizes() string {
-    return `      "allowedValues": [
+	return `      "allowedValues": [
         "Basic_A2",
         "Basic_A3",
         "Basic_A4",
@@ -200,8 +200,8 @@ func GetAgentAllowedSizes() string {
 }
 
 // GetSizeMap returns the size / storage map
-func GetSizeMap() string{
-    return `    "vmSizesMap": {
+func GetSizeMap() string {
+	return `    "vmSizesMap": {
       "Basic_A2": {
         "storageAccountType": "Standard_LRS"
       },

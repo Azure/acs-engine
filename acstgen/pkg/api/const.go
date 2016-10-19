@@ -2,8 +2,8 @@ package api
 
 // the orchestrators supported by vlabs
 const (
-    // Mesos is the string constant for MESOS orchestrator type
-    Mesos OrchestratorType = "Mesos"
+	// Mesos is the string constant for MESOS orchestrator type
+	Mesos OrchestratorType = "Mesos"
 	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS184
 	DCOS OrchestratorType = "DCOS"
 	// DCOS184 is the string constant for DCOS 1.8.4 orchestrator type
@@ -16,7 +16,6 @@ const (
 	Kubernetes OrchestratorType = "Kubernetes"
 )
 
-// ACS supports orchestrators Mesos, Swarm, or DCOS.
 const (
 	Windows OSType = "Windows"
 	Linux   OSType = "Linux"
@@ -38,9 +37,9 @@ const (
 
 // validation values
 const (
-	// MinAgentCount are the minimum number of agents
+	// MinAgentCount are the minimum number of agents per agent pool
 	MinAgentCount = 1
-	// MaxAgentCount are the maximum number of agents
+	// MaxAgentCount are the maximum number of agents per agent pool
 	MaxAgentCount = 100
 	// MinPort specifies the minimum tcp port to open
 	MinPort = 1

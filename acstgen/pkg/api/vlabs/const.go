@@ -19,7 +19,6 @@ const (
 	Kubernetes = "Kubernetes"
 )
 
-// ACS supports orchestrators Mesos, Swarm, or DCOS.
 const (
 	Windows OSType = "Windows"
 	Linux   OSType = "Linux"
@@ -41,9 +40,9 @@ const (
 
 // validation values
 const (
-	// MinAgentCount are the minimum number of agents
+	// MinAgentCount are the minimum number of agents per agent pool
 	MinAgentCount = 1
-	// MaxAgentCount are the maximum number of agents
+	// MaxAgentCount are the maximum number of agents per agent pool
 	MaxAgentCount = 100
 	// MinPort specifies the minimum tcp port to open
 	MinPort = 1

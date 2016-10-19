@@ -21,7 +21,7 @@
     }
 {{else}}
     "{{.Name}}Subnet": {
-      "defaultValue": "{{.GetSubnet}}",
+      "defaultValue": "{{.Subnet}}",
       "metadata": {
         "description": "Sets the subnet of agent pool '{{.Name}}'."
       }, 

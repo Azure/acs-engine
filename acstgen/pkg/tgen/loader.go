@@ -26,7 +26,6 @@ func LoadContainerService(contents []byte) (*api.ContainerService, error) {
 		return nil, err
 	}
 
-	apiContainerService := &api.ContainerService{}
 	switch m.APIVersion {
 	case v20160330.APIVersion:
 		containerService := &v20160330.ContainerService{}
@@ -37,7 +36,7 @@ func LoadContainerService(contents []byte) (*api.ContainerService, error) {
 		if e := containerService.Properties.Validate(); e != nil {
 			return nil, e
 		}
-		api.ConvertV20160330ContainerService(containerService, apiContainerService)
+		return api.ConvertV20160330ContainerService(containerService), nil
 
 	case vlabs.APIVersion:
 		containerService := &vlabs.ContainerService{}
@@ -48,11 +47,9 @@ func LoadContainerService(contents []byte) (*api.ContainerService, error) {
 		if e := containerService.Properties.Validate(); e != nil {
 			return nil, e
 		}
-		api.ConvertVLabsContainerService(containerService, apiContainerService)
+		return api.ConvertVLabsContainerService(containerService), nil
 
 	default:
 		return nil, fmt.Errorf("unrecognized APIVersion '%s'", m.APIVersion)
 	}
-
-	return apiContainerService, nil
 }

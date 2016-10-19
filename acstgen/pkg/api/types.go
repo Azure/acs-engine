@@ -54,8 +54,6 @@ type Properties struct {
 	JumpboxProfile          JumpboxProfile          `json:"jumpboxProfile"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
 	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
-	// classic mode is used to output parameters and outputs
-	classicMode bool
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -131,8 +129,7 @@ type MasterProfile struct {
 	VMSize                   string `json:"vmSize"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	// subnet is internal
-	subnet string
+	Subnet                   string `json:"subnet"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -151,8 +148,7 @@ type AgentPoolProfile struct {
 	StorageProfile string `json:"storageProfile,omitempty"`
 	DiskSizesGB    []int  `json:"diskSizesGB,omitempty"`
 	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
-	// subnet is internal
-	subnet string
+	Subnet         string `json:"subnet"`
 
 	FQDN string `json:"fqdn,omitempty"`
 }
@@ -195,16 +191,6 @@ type JumpboxProfile struct {
 // OSType represents OS types of agents
 type OSType string
 
-// GetClassicMode gets the classic mode for deciding to output classic parameters
-func (a *Properties) GetClassicMode() bool {
-	return a.classicMode
-}
-
-// SetClassicMode toggles classic parameters and outputs
-func (a *Properties) SetClassicMode(isClassicMode bool) {
-	a.classicMode = isClassicMode
-}
-
 // HasWindows returns true if the cluster contains windows
 func (a *Properties) HasWindows() bool {
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
@@ -230,16 +216,6 @@ func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
 }
 
-// GetSubnet returns the read-only subnet for the master
-func (m *MasterProfile) GetSubnet() string {
-	return m.subnet
-}
-
-// SetSubnet sets the read-only subnet for the master
-func (m *MasterProfile) SetSubnet(subnet string) {
-	m.subnet = subnet
-}
-
 // IsCustomVNET returns true if the customer brought their own VNET
 func (a *AgentPoolProfile) IsCustomVNET() bool {
 	return len(a.VnetSubnetID) > 0
@@ -258,14 +234,4 @@ func (a *AgentPoolProfile) IsVolumeBasedStorage() bool {
 // HasDisks returns true if the customer specified disks
 func (a *AgentPoolProfile) HasDisks() bool {
 	return len(a.DiskSizesGB) > 0
-}
-
-// GetSubnet returns the read-only subnet for the agent pool
-func (a *AgentPoolProfile) GetSubnet() string {
-	return a.subnet
-}
-
-// SetSubnet sets the read-only subnet for the agent pool
-func (a *AgentPoolProfile) SetSubnet(subnet string) {
-	a.subnet = subnet
 }

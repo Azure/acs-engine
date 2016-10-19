@@ -12,7 +12,6 @@ const (
 	DCOS  OrchestratorType = "DCOS"
 )
 
-// ACS supports orchestrators Mesos, Swarm, or DCOS.
 const (
 	Windows OSType = "Windows"
 	Linux   OSType = "Linux"

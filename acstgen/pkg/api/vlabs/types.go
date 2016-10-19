@@ -42,8 +42,6 @@ type Properties struct {
 	WindowsProfile          WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
 	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
-	// classic mode is used to output parameters and outputs
-	classicMode bool
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -150,16 +148,6 @@ type OrchestratorType string
 
 // OSType represents OS types of agents
 type OSType string
-
-// GetClassicMode gets the classic mode for deciding to output classic parameters
-func (a *Properties) GetClassicMode() bool {
-	return a.classicMode
-}
-
-// SetClassicMode toggles classic parameters and outputs
-func (a *Properties) SetClassicMode(isClassicMode bool) {
-	a.classicMode = isClassicMode
-}
 
 // HasWindows returns true if the cluster contains windows
 func (a *Properties) HasWindows() bool {
