@@ -19,7 +19,7 @@
     },
 {{else}}
     "masterSubnet": {
-      "defaultValue": "{{.MasterProfile.GetSubnet}}",
+      "defaultValue": "{{.MasterProfile.Subnet}}",
       "metadata": {
         "description": "Sets the subnet of the master node(s)."
       }, 
@@ -53,6 +53,6 @@
       },
       "type": "string"
     }
-{{if  .GetClassicMode}}
+{{if  GetClassicMode}}
     ,{{template "classicparams.t" .}}
 {{end}}

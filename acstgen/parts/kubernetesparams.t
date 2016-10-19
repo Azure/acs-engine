@@ -39,10 +39,18 @@
         "description": "The base 64 private key used by cli to communicate with the master"
       },  
       "type": "securestring"
-    }, 
+    },
     "kubernetesHyperkubeSpec": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec}}",
       "metadata": {
         "description": "The container spec for hyperkube."
+      },
+      "type": "string"
+    },
+    "kubectlVersion": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubectlVersion}}",
+      "metadata": {
+        "description": "The kubernetes version."
       }, 
       "type": "string"
     }, 

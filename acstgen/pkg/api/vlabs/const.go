@@ -1,6 +1,12 @@
 package vlabs
 
 const (
+	// APIVersion is the version of this API
+	APIVersion = "vlabs"
+)
+
+// the orchestrators supported by vlabs
+const (
 	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS184
 	DCOS = "DCOS"
 	// DCOS184 is the string constant for DCOS 1.8.4 orchestrator type
@@ -11,9 +17,32 @@ const (
 	Swarm = "Swarm"
 	// Kubernetes is the string constant for the Kubernetes orchestrator type
 	Kubernetes = "Kubernetes"
-	// MinAgentCount are the minimum number of agents
+)
+
+const (
+	Windows OSType = "Windows"
+	Linux   OSType = "Linux"
+)
+
+// subscription states
+const (
+	// Registered means the subscription is entitled to use the namespace
+	Registered SubscriptionState = iota
+	// Unregistered means the subscription is not entitled to use the namespace
+	Unregistered
+	// Suspended means the subscription has been suspended from the system
+	Suspended
+	// Deleted means the subscription has been deleted
+	Deleted
+	// Warned means the subscription has been warned
+	Warned
+)
+
+// validation values
+const (
+	// MinAgentCount are the minimum number of agents per agent pool
 	MinAgentCount = 1
-	// MaxAgentCount are the maximum number of agents
+	// MaxAgentCount are the maximum number of agents per agent pool
 	MaxAgentCount = 100
 	// MinPort specifies the minimum tcp port to open
 	MinPort = 1
@@ -21,14 +50,14 @@ const (
 	MaxPort = 65535
 	// MaxDisks specifies the maximum attached disks to add to the cluster
 	MaxDisks = 4
+)
+
+// storage profiles
+const (
 	// StorageExternal equates to VMSS where attached disks are unsupported (Default)
 	StorageExternal = "External"
 	// StorageVolumes equates to AS where attached disks are supported
 	StorageVolumes = "Volumes"
 	// StorageHAVolumes are managed disks that provide fault domain coverage for volumes.
 	StorageHAVolumes = "HAVolumes"
-	// OSTypeWindows specifies the Windows OS
-	OSTypeWindows = "Windows"
-	// OSTypeLinux specifies the Linux OS
-	OSTypeLinux = "Linux"
 )

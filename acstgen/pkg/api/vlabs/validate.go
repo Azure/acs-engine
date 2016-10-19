@@ -96,7 +96,7 @@ func (l *LinuxProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *AcsCluster) Validate() error {
+func (a *Properties) Validate() error {
 	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
 	}
@@ -112,6 +112,9 @@ func (a *AcsCluster) Validate() error {
 
 	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.Secret) == 0 {
 		return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+	}
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes && a.MasterProfile.Count != 1 {
+		return fmt.Errorf("only 1 master may be specified with %s", a.OrchestratorProfile.OrchestratorType)
 	}
 
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
@@ -137,7 +140,7 @@ func (a *AcsCluster) Validate() error {
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(agentPoolProfile.DNSPrefix) > 0 {
 			return errors.New("DNSPrefix not support for agent pools in Kubernetes - Kubernetes marks its own clusters public")
 		}
-		if agentPoolProfile.OSType == OSTypeWindows {
+		if agentPoolProfile.OSType == Windows {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Swarm:
 			default:
@@ -216,7 +219,7 @@ func validateUniquePorts(ports []int, name string) error {
 	return nil
 }
 
-func validateVNET(a *AcsCluster) error {
+func validateVNET(a *Properties) error {
 	isCustomVNET := a.MasterProfile.IsCustomVNET()
 	for _, agentPool := range a.AgentPoolProfiles {
 		if agentPool.IsCustomVNET() != isCustomVNET {
