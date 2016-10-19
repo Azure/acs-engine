@@ -231,7 +231,7 @@ func getParameters(properties *api.Properties) (map[string]interface{}, error) {
 		addValue(parametersMap, "clientPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientPrivateKey)))
 		addValue(parametersMap, "kubeConfigCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)))
 		addValue(parametersMap, "kubeConfigPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)))
-		addValue(parametersMap, "kubernetesHyperkubeSpec", KubernetesHyperkubeSpec)
+		addValue(parametersMap, "kubernetesVersion", KubernetesVersion)
 		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 		addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
 	}

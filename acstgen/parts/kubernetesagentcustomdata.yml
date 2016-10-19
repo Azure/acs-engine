@@ -90,7 +90,7 @@ write_files:
       --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \
       --volume=/var/log/containers/:/var/log/containers:rw \
       --volume=/etc/kubernetes/:/etc/kubernetes/:rw \
-        {{{kubernetesHyperkubeSpec}}} \
+        {{{kubernetesHyperkubePrefix}}}:{{{kubernetesVersion}}} \
           /hyperkube kubelet \
             --api-servers="https://{{{masterPrivateIp}}}:443" \
             --kubeconfig=/var/lib/kubelet/kubeconfig \

@@ -40,9 +40,9 @@
       },  
       "type": "securestring"
     }, 
-    "kubernetesHyperkubeSpec": {
+    "kubernetesVersion": {
       "metadata": {
-        "description": "The container spec for hyperkube."
+        "description": "The kubernetes version."
       }, 
       "type": "string"
     }, 

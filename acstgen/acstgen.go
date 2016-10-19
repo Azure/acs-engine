@@ -171,7 +171,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if containerService, err = tgen.LoadContainerServiceFromFile(jsonFile); err != nil {
+	if containerService, err = api.LoadContainerServiceFromFile(jsonFile); err != nil {
 		fmt.Fprintf(os.Stderr, "error while loading %s: %s", jsonFile, err.Error())
 		os.Exit(1)
 	}

@@ -11,7 +11,7 @@ runcmd:
 - /bin/bash -c "/bin/echo DAEMON_ARGS=--advertise-client-urls ""http://127.0.0.1:2379,http://{{{masterPrivateIp}}}:2379"" --listen-client-urls ""http://0.0.0.0:2379,http://0.0.0.0:4001"" | tee -a /etc/default/etcd"
 - /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://get.docker.com/ > /tmp/install-docker
 - /bin/bash -c "/bin/bash /tmp/install-docker"
-- /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://storage.googleapis.com/kubernetes-release/release/v1.4.1/bin/linux/amd64/kubectl > /usr/local/bin/kubectl
+- /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://storage.googleapis.com/kubernetes-release/release/{{{kubernetesVersion}}}/bin/linux/amd64/kubectl > /usr/local/bin/kubectl
 - chmod +x /usr/local/bin/kubectl
 
 write_files:
@@ -90,7 +90,7 @@ write_files:
         hostNetwork: true
         containers:
           - name: "kube-apiserver"
-            image: "{{{kubernetesHyperkubeSpec}}}"
+            image: "{{{kubernetesHyperkubePrefix}}}:{{{kubernetesVersion}}}"
             command: 
               - "/hyperkube"
               - "apiserver"
@@ -137,7 +137,7 @@ write_files:
         hostNetwork: true
         containers:
           - name: "kube-controller-manager"
-            image: "{{{kubernetesHyperkubeSpec}}}"
+            image: "{{{kubernetesHyperkubePrefix}}}:{{{kubernetesVersion}}}"
             command: 
               - "/hyperkube"
               - "controller-manager"
@@ -180,7 +180,7 @@ write_files:
         hostNetwork: true
         containers:
           - name: "kube-scheduler"
-            image: "{{{kubernetesHyperkubeSpec}}}"
+            image: "{{{kubernetesHyperkubePrefix}}}:{{{kubernetesVersion}}}"
             command:
               - "/hyperkube"
               - "scheduler"
@@ -290,7 +290,7 @@ write_files:
     [Service]
     Restart=always
     ExecStartPre=/bin/mkdir -p /var/lib/kubelet
-    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
+    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubePrefix}}}:{{{kubernetesVersion}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
     ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
     ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
     ExecStart=/usr/bin/docker run \
@@ -304,7 +304,7 @@ write_files:
       --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \
       --volume=/var/log/containers/:/var/log/containers:rw \
       --volume=/etc/kubernetes/:/etc/kubernetes:rw \
-        {{{kubernetesHyperkubeSpec}}} \
+        {{{kubernetesHyperkubePrefix}}}:{{{kubernetesVersion}}} \
           /hyperkube kubelet \
             --api-servers="https://{{{masterPrivateIp}}}:443" \
             --kubeconfig=/var/lib/kubelet/kubeconfig \

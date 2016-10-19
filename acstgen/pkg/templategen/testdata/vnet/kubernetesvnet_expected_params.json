@@ -41,8 +41,8 @@
   "kubeConfigPrivateKey": {
     "value": "a3ViZUNvbmZpZ1ByaXZhdGVLZXk="
   },
-  "kubernetesHyperkubeSpec": {
-    "value": "gcr.io/google_containers/hyperkube-amd64:v1.4.1"
+  "kubernetesVersion": {
+    "value": "v1.4.3"
   },
   "linuxAdminUsername": {
     "value": "azureuser"

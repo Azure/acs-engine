@@ -19,7 +19,7 @@ const (
 	DefaultAgentSubnetTemplate = "10.%d.0.0/24"
 	// DefaultKubernetesClusterDomain is the dns suffix used in the cluster (used as a SAN in the PKI generation)
 	DefaultKubernetesClusterDomain = "cluster.local"
-	// KubernetesHyperkubeSpec is the hyperkube version used for Kubernetes setup
+	// KubernetesVersion is the version used for Kubernetes setup
 	// The latest stable version can be found here: https://storage.googleapis.com/kubernetes-release/release/stable.txt
-	KubernetesHyperkubeSpec = "gcr.io/google_containers/hyperkube-amd64:v1.4.1"
+	KubernetesVersion = "v1.4.3"
 )

@@ -1,0 +1,158 @@
+{
+  "agentpool10Count": {
+    "value": 100
+  },
+  "agentpool10Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool10VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool11Count": {
+    "value": 100
+  },
+  "agentpool11Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool11VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool12Count": {
+    "value": 100
+  },
+  "agentpool12Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool12VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool1Count": {
+    "value": 3
+  },
+  "agentpool1Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool1VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool2Count": {
+    "value": 3
+  },
+  "agentpool2Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool2VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool3Count": {
+    "value": 100
+  },
+  "agentpool3Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool3VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool4Count": {
+    "value": 100
+  },
+  "agentpool4Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool4VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool5Count": {
+    "value": 100
+  },
+  "agentpool5Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool5VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool6Count": {
+    "value": 100
+  },
+  "agentpool6Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool6VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool7Count": {
+    "value": 100
+  },
+  "agentpool7Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool7VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool8Count": {
+    "value": 100
+  },
+  "agentpool8Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool8VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool9Count": {
+    "value": 100
+  },
+  "agentpool9Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool9VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "apiServerCertificate": {
+    "value": "YXBpU2VydmVyQ2VydGlmaWNhdGU="
+  },
+  "apiServerPrivateKey": {
+    "value": "YXBpU2VydmVyUHJpdmF0ZUtleQ=="
+  },
+  "caCertificate": {
+    "value": "Y2FDZXJ0aWZpY2F0ZQ=="
+  },
+  "clientCertificate": {
+    "value": "Y2xpZW50Q2VydGlmaWNhdGU="
+  },
+  "clientPrivateKey": {
+    "value": "Y2xpZW50UHJpdmF0ZUtleQ=="
+  },
+  "firstConsecutiveStaticIP": {
+    "value": "10.240.255.5"
+  },
+  "kubeConfigCertificate": {
+    "value": "a3ViZUNvbmZpZ0NlcnRpZmljYXRl"
+  },
+  "kubeConfigPrivateKey": {
+    "value": "a3ViZUNvbmZpZ1ByaXZhdGVLZXk="
+  },
+  "kubernetesVersion": {
+    "value": "v1.4.3"
+  },
+  "linuxAdminUsername": {
+    "value": "azureuser"
+  },
+  "masterEndpointDNSNamePrefix": {
+    "value": "masterdns1"
+  },
+  "masterSubnet": {
+    "value": "10.240.0.0/16"
+  },
+  "masterVMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "servicePrincipalClientId": {
+    "value": "ServicePrincipalClientID"
+  },
+  "servicePrincipalClientSecret": {
+    "value": "myServicePrincipalClientSecret"
+  },
+  "sshRSAPublicKey": {
+    "value": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+  }
+}

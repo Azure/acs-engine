@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Azure/acs-labs/acstgen/pkg/api"
 )
 
 const (
@@ -23,7 +25,7 @@ func TestExpected(t *testing.T) {
 	}
 
 	for _, tuple := range *apiModelTestFiles {
-		containerService, err := LoadContainerServiceFromFile(tuple.APIModelFilename)
+		containerService, err := api.LoadContainerServiceFromFile(tuple.APIModelFilename)
 		if err != nil {
 			t.Error(err.Error())
 			continue
@@ -71,7 +73,7 @@ func TestExpected(t *testing.T) {
 			}
 
 			if !bytes.Equal(expectedJson, []byte(ppArmTemplate)) {
-				diffstr, differr := tuple.WriteArmTemplateErrFilename(expectedJson)
+				diffstr, differr := tuple.WriteArmTemplateErrFilename([]byte(ppArmTemplate))
 				if differr != nil {
 					diffstr += differr.Error()
 				}
@@ -79,7 +81,7 @@ func TestExpected(t *testing.T) {
 			}
 
 			if !bytes.Equal(expectedParams, []byte(ppParams)) {
-				diffstr, differr := tuple.WriteArmTemplateParamsErrFilename(expectedParams)
+				diffstr, differr := tuple.WriteArmTemplateParamsErrFilename([]byte(ppParams))
 				if differr != nil {
 					diffstr += differr.Error()
 				}
