@@ -24,6 +24,15 @@ func TestExpected(t *testing.T) {
 		return
 	}
 
+	var fileloader *ACSTGenFileLoader
+	var e error
+	partsDir := "../../parts"
+	fileloader, e = InitializeACSTGenFileLoader(partsDir)
+	if e != nil {
+		t.Error(fmt.Errorf("encountered error while loading files from directory %s: %s", partsDir, e.Error()))
+		return
+	}
+
 	for _, tuple := range *apiModelTestFiles {
 		containerService, err := api.LoadContainerServiceFromFile(tuple.APIModelFilename)
 		if err != nil {
@@ -45,7 +54,7 @@ func TestExpected(t *testing.T) {
 		// 1. first time tests loaded containerService
 		// 2. second time tests generated containerService
 		// 3. third time tests the generated containerService from the generated containerService
-		templateGenerator, e3 := InitializeTemplateGenerator(false, "../../parts")
+		templateGenerator, e3 := InitializeTemplateGenerator(false, fileloader)
 		if e3 != nil {
 			t.Error(e3.Error())
 			continue

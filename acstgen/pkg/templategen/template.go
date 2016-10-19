@@ -80,9 +80,8 @@ func (t *TemplateGenerator) verifyFiles() error {
 	allFiles = append(allFiles, kubernetesTemplateFiles...)
 	allFiles = append(allFiles, swarmTemplateFiles...)
 	for _, file := range allFiles {
-		templateFile := path.Join(t.PartsDirectory, file)
-		if _, err := os.Stat(templateFile); os.IsNotExist(err) {
-			return fmt.Errorf("template file %s does not exist, did you specify the correct template directory?", templateFile)
+		if _, err := t.AssetLoader.Asset(file); err != nil {
+			return fmt.Errorf("template file %s does not exist", file)
 		}
 	}
 	return nil
@@ -90,15 +89,21 @@ func (t *TemplateGenerator) verifyFiles() error {
 
 // TemplateGenerator represents the object that performs the template generation.
 type TemplateGenerator struct {
-	ClassicMode    bool
-	PartsDirectory string
+	ClassicMode bool
+	AssetLoader AssetLoader
+}
+
+// AssetLoader represents an object that will return the bytes for a file name.  The template generator
+// will use its own loader, but https://github.com/jteeuwen/go-bindata loader can also be used.
+type AssetLoader interface {
+	Asset(string) ([]byte, error)
 }
 
 // InitializeTemplateGenerator creates a new template generator object
-func InitializeTemplateGenerator(classicMode bool, partsDirectory string) (*TemplateGenerator, error) {
+func InitializeTemplateGenerator(classicMode bool, assetLoader AssetLoader) (*TemplateGenerator, error) {
 	t := &TemplateGenerator{
-		ClassicMode:    classicMode,
-		PartsDirectory: partsDirectory,
+		ClassicMode: classicMode,
+		AssetLoader: assetLoader,
 	}
 
 	if err := t.verifyFiles(); err != nil {
@@ -120,7 +125,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 		return "", "", certsGenerated, err
 	}
 
-	templ = template.New("acs template").Funcs(t.getTemplateFuncMap(properties, t.PartsDirectory))
+	templ = template.New("acs template").Funcs(t.getTemplateFuncMap(properties))
 
 	files, baseFile, e := prepareTemplateFiles(properties)
 	if e != nil {
@@ -128,10 +133,9 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	}
 
 	for _, file := range files {
-		templateFile := path.Join(t.PartsDirectory, file)
-		bytes, e := ioutil.ReadFile(templateFile)
+		bytes, e := t.AssetLoader.Asset(file)
 		if e != nil {
-			return "", "", certsGenerated, fmt.Errorf("Error reading file %s: %s", templateFile, e.Error())
+			return "", "", certsGenerated, fmt.Errorf("Error reading file %s", file, e.Error())
 		}
 		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
 			return "", "", certsGenerated, err
@@ -266,7 +270,7 @@ func addValue(m map[string]interface{}, k string, v interface{}) {
 }
 
 // getTemplateFuncMap returns all functions used in template generation
-func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties, partsDirectory string) map[string]interface{} {
+func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[string]interface{} {
 	return template.FuncMap{
 		"IsDCOS173": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.DCOS173
@@ -333,19 +337,19 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties, parts
 			return base64.StdEncoding.EncodeToString([]byte(s))
 		},
 		"GetKubernetesMasterCustomScript": func() string {
-			return getBase64CustomScript(properties, kubernetesMasterCustomScript, partsDirectory)
+			return t.getBase64CustomScript(kubernetesMasterCustomScript)
 		},
 		"GetKubernetesMasterCustomData": func() string {
-			str, e := getSingleLineForTemplate(kubernetesMasterCustomDataYaml, partsDirectory)
+			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml)
 			if e != nil {
 				return ""
 			}
 			// add the master provisioning script
-			masterProvisionB64GzipStr := getBase64CustomScript(properties, kubernetesMasterCustomScript, partsDirectory)
+			masterProvisionB64GzipStr := t.getBase64CustomScript(kubernetesMasterCustomScript)
 			str = strings.Replace(str, "MASTER_PROVISION_B64_GZIP_STR", masterProvisionB64GzipStr, -1)
 
 			for placeholder, filename := range kubernetesAddonYamls {
-				addonTextContents := getBase64CustomScript(properties, filename, partsDirectory)
+				addonTextContents := t.getBase64CustomScript(filename)
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
 			}
 
@@ -353,18 +357,18 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties, parts
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			str, e := getSingleLineForTemplate(kubernetesAgentCustomDataYaml, partsDirectory)
+			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml)
 			if e != nil {
 				return ""
 			}
 			// add the agent provisioning script
-			agentProvisionB64GzipStr := getBase64CustomScript(properties, kubernetesAgentCustomScript, partsDirectory)
+			agentProvisionB64GzipStr := t.getBase64CustomScript(kubernetesAgentCustomScript)
 			str = strings.Replace(str, "AGENT_PROVISION_B64_GZIP_STR", agentProvisionB64GzipStr, -1)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesKubeConfig": func() string {
-			str, e := getSingleLineForTemplate(kubeConfigJSON, partsDirectory)
+			str, e := t.getSingleLineForTemplate(kubeConfigJSON)
 			if e != nil {
 				return ""
 			}
@@ -630,14 +634,10 @@ func getAgentRolesFileContents(ports []int) string {
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineForTemplate(yamlFilename string, partsDirectory string) (string, error) {
-	yamlFile := path.Join(partsDirectory, yamlFilename)
-	if _, err := os.Stat(yamlFile); os.IsNotExist(err) {
-		return "", fmt.Errorf("yaml file %s does not exist, did you specify the correct template directory?", yamlFile)
-	}
-	b, err := ioutil.ReadFile(yamlFile)
+func (t *TemplateGenerator) getSingleLineForTemplate(yamlFilename string) (string, error) {
+	b, err := t.AssetLoader.Asset(yamlFilename)
 	if err != nil {
-		return "", fmt.Errorf("error reading yaml file %s: %s", yamlFile, err.Error())
+		return "", fmt.Errorf("yaml file %s does not exist", yamlFilename)
 	}
 	// template.JSEscapeString leaves undesirable chars that don't work with pretty print
 	yamlStr := string(b)
@@ -662,13 +662,10 @@ func getSingleLineForTemplate(yamlFilename string, partsDirectory string) (strin
 }
 
 // getBase64CustomScript will return a base64 of the CSE
-func getBase64CustomScript(a *api.Properties, csFilename string, partsDirectory string) string {
-	csFile := path.Join(partsDirectory, csFilename)
-	if _, err := os.Stat(csFile); os.IsNotExist(err) {
-		panic(err.Error())
-	}
-	b, err := ioutil.ReadFile(csFile)
+func (t *TemplateGenerator) getBase64CustomScript(csFilename string) string {
+	b, err := t.AssetLoader.Asset(csFilename)
 	if err != nil {
+		// this should never happen and this is a bug
 		panic(err.Error())
 	}
 	// translate the parameters

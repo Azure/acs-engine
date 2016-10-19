@@ -146,6 +146,7 @@ func main() {
 	var template string
 	var parameters string
 	var err error
+	var fileloader *tgen.ACSTGenFileLoader
 
 	flag.Parse()
 
@@ -161,11 +162,17 @@ func main() {
 	}
 
 	if _, err = os.Stat(*templateDirectory); os.IsNotExist(err) {
-		usage(fmt.Errorf("base templates directory %s does not exist", jsonFile))
+		usage(fmt.Errorf("base templates directory %s does not exist", *templateDirectory))
 		os.Exit(1)
 	}
 
-	templateGenerator, e := tgen.InitializeTemplateGenerator(*classicMode, *templateDirectory)
+	fileloader, err = tgen.InitializeACSTGenFileLoader(*templateDirectory)
+	if err != nil {
+		usage(fmt.Errorf("encountered error while loading files from directory %s: %s", *templateDirectory, err.Error()))
+		os.Exit(1)
+	}
+
+	templateGenerator, e := tgen.InitializeTemplateGenerator(*classicMode, fileloader)
 	if e != nil {
 		fmt.Fprintf(os.Stderr, "generator initialization failed: %s\n", e.Error())
 		os.Exit(1)
