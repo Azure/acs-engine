@@ -2,4 +2,6 @@
 deployVM0.ps1
 noparams.json
 output*
-acstgen.exe
+acsengine.exe
+_output/
+.vscode
