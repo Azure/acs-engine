@@ -286,7 +286,7 @@ write_files:
     Description=Kubelet
     Requires=docker.service
     After=docker.service
-    
+
     [Service]
     Restart=always
     ExecStartPre=/bin/mkdir -p /var/lib/kubelet
@@ -297,13 +297,14 @@ write_files:
       --net=host \
       --pid=host \
       --privileged \
-      --volume=/:/rootfs:ro \
+      --volume=/dev:/dev \
       --volume=/sys:/sys:ro \
       --volume=/var/run:/var/run:rw \
       --volume=/var/lib/docker/:/var/lib/docker:rw \
       --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \
-      --volume=/var/log/containers/:/var/log/containers:rw \
-      --volume=/etc/kubernetes/:/etc/kubernetes:rw \
+      --volume=/var/log:/var/log:rw \
+      --volume=/etc/kubernetes/:/etc/kubernetes:ro \
+      --volume=/srv/kubernetes/:/srv/kubernetes:ro \
         {{{kubernetesHyperkubeSpec}}} \
           /hyperkube kubelet \
             --api-servers="https://{{{masterPrivateIp}}}:443" \
