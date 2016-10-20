@@ -146,7 +146,6 @@ func main() {
 	var template string
 	var parameters string
 	var err error
-	var fileloader *acsengine.ACSEngineFileLoader
 
 	flag.Parse()
 
@@ -166,13 +165,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fileloader, err = acsengine.InitializeACSEngineFileLoader(*templateDirectory)
-	if err != nil {
-		usage(fmt.Errorf("encountered error while loading files from directory %s: %s", *templateDirectory, err.Error()))
-		os.Exit(1)
-	}
-
-	templateGenerator, e := acsengine.InitializeTemplateGenerator(*classicMode, fileloader)
+	templateGenerator, e := acsengine.InitializeTemplateGenerator(*classicMode)
 	if e != nil {
 		fmt.Fprintf(os.Stderr, "generator initialization failed: %s\n", e.Error())
 		os.Exit(1)

@@ -80,7 +80,7 @@ func (t *TemplateGenerator) verifyFiles() error {
 	allFiles = append(allFiles, kubernetesTemplateFiles...)
 	allFiles = append(allFiles, swarmTemplateFiles...)
 	for _, file := range allFiles {
-		if _, err := t.AssetLoader.Asset(file); err != nil {
+		if _, err := Asset(file); err != nil {
 			return fmt.Errorf("template file %s does not exist", file)
 		}
 	}
@@ -90,20 +90,12 @@ func (t *TemplateGenerator) verifyFiles() error {
 // TemplateGenerator represents the object that performs the template generation.
 type TemplateGenerator struct {
 	ClassicMode bool
-	AssetLoader AssetLoader
-}
-
-// AssetLoader represents an object that will return the bytes for a file name.  The template generator
-// will use its own loader, but https://github.com/jteeuwen/go-bindata loader can also be used.
-type AssetLoader interface {
-	Asset(string) ([]byte, error)
 }
 
 // InitializeTemplateGenerator creates a new template generator object
-func InitializeTemplateGenerator(classicMode bool, assetLoader AssetLoader) (*TemplateGenerator, error) {
+func InitializeTemplateGenerator(classicMode bool) (*TemplateGenerator, error) {
 	t := &TemplateGenerator{
 		ClassicMode: classicMode,
-		AssetLoader: assetLoader,
 	}
 
 	if err := t.verifyFiles(); err != nil {
@@ -133,9 +125,9 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	}
 
 	for _, file := range files {
-		bytes, e := t.AssetLoader.Asset(file)
+		bytes, e := Asset(file)
 		if e != nil {
-			return "", "", certsGenerated, fmt.Errorf("Error reading file %s", file, e.Error())
+			return "", "", certsGenerated, fmt.Errorf("Error reading file %s, Error: %s", file, e.Error())
 		}
 		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
 			return "", "", certsGenerated, err
@@ -629,7 +621,7 @@ func getAgentRolesFileContents(ports []int) string {
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
 func (t *TemplateGenerator) getSingleLineForTemplate(yamlFilename string) (string, error) {
-	b, err := t.AssetLoader.Asset(yamlFilename)
+	b, err := Asset(yamlFilename)
 	if err != nil {
 		return "", fmt.Errorf("yaml file %s does not exist", yamlFilename)
 	}
@@ -657,7 +649,7 @@ func (t *TemplateGenerator) getSingleLineForTemplate(yamlFilename string) (strin
 
 // getBase64CustomScript will return a base64 of the CSE
 func (t *TemplateGenerator) getBase64CustomScript(csFilename string) string {
-	b, err := t.AssetLoader.Asset(csFilename)
+	b, err := Asset(csFilename)
 	if err != nil {
 		// this should never happen and this is a bug
 		panic(err.Error())
