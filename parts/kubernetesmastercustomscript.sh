@@ -155,38 +155,25 @@ function writeKubeConfig() {
     set +x
 
     echo "
-{
-    \"apiVersion\": \"v1\",
-    \"clusters\": [
-        {
-            \"cluster\": {
-                \"certificate-authority-data\": \"$CA_CERTIFICATE\",
-                \"server\": \"https://$MASTER_FQDN.$LOCATION.cloudapp.azure.com\"  
-            },
-            \"name\": \"$MASTER_FQDN\"
-        }
-    ],
-    \"contexts\": [
-        {
-            \"context\": {
-                \"cluster\": \"$MASTER_FQDN\",
-                \"user\": \"$MASTER_FQDN-admin\"
-            },
-            \"name\": \"$MASTER_FQDN\"
-        }
-    ],
-    \"current-context\": \"$MASTER_FQDN\",
-    \"kind\": \"Config\",
-    \"users\": [
-        {
-            \"name\": \"$MASTER_FQDN-admin\",
-            \"user\": {
-                \"client-certificate-data\": \"$KUBECONFIG_CERTIFICATE\",
-                \"client-key-data\": \"$KUBECONFIG_KEY\"
-            }
-        }
-    ]
-}
+---
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: \"$CA_CERTIFICATE\"
+    server: https://$MASTER_FQDN.$LOCATION.cloudapp.azure.com
+  name: \"$MASTER_FQDN\"
+contexts:
+- context:
+    cluster: \"$MASTER_FQDN\"
+    user: \"$MASTER_FQDN-admin\"
+  name: \"$MASTER_FQDN\"
+current-context: \"$MASTER_FQDN\"
+kind: Config
+users:
+- name: \"$MASTER_FQDN-admin\"
+  user:
+    client-certificate-data: \"$KUBECONFIG_CERTIFICATE\"
+    client-key-data: \"$KUBECONFIG_KEY\"
 " > $KUBECONFIGFILE
     # renable logging after secrets
     set -x
