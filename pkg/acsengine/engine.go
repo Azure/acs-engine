@@ -323,12 +323,21 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			return getDataDisks(profile)
 		},
 		"GetMasterAllowedSizes": func() string {
+			if t.ClassicMode {
+				return GetClassicAllowedSizes()
+			}
 			return GetMasterAllowedSizes()
 		},
 		"GetAgentAllowedSizes": func() string {
+			if t.ClassicMode {
+				return GetClassicAllowedSizes()
+			}
 			return GetAgentAllowedSizes()
 		},
 		"GetSizeMap": func() string {
+			if t.ClassicMode {
+				return GetClassicSizeMap()
+			}
 			return GetSizeMap()
 		},
 		"GetClassicMode": func() bool {

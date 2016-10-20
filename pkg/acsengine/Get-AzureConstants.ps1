@@ -31,6 +31,7 @@ Get-AllSizes() {
 				$sizeMap.Add($size.Name, $size)
 			}	
 		}
+		#Write-Host "Break for debugging"
 		#break
 	}
 	return $sizeMap
@@ -50,12 +51,11 @@ Get-MasterMap() {
 
 	$masterMap = @{}
 	ForEach ($k in ($SizeMap.Keys | Sort-Object)) {
-		#Write-Output $location.Location
 		$size = $SizeMap[$k]
 		if ($size.NumberOfCores -ge $MINIMUM_CORES -and 
 			$size.ResourceDiskSizeInMB -ge $MASTERS_EPHEMERAL_DISK_MIN) {
 			$masterMap.Add($size.Name, $size)
-		}	
+		}
 	}
 	return $masterMap
 }
@@ -95,6 +95,8 @@ Get-FileContents() {
         $MasterMap,
 		[System.Collections.Hashtable]
         $AgentMap,
+		[System.Collections.Hashtable]
+        $SizeMap,
 		[System.Collections.ArrayList]
         $Locations
     )
@@ -231,6 +233,62 @@ func GetSizeMap() string{
     }	
 ``
 }
+
+// GetAgentAllowedSizes returns the agent allowed sizes
+func GetClassicAllowedSizes() string {
+    return ``      "allowedValues": [
+
+"@
+	$first = $TRUE
+	ForEach ($k in ($SizeMap.Keys | Sort-Object)) {
+		if ($first -eq $TRUE) 
+		{
+			$first = $FALSE
+		}
+		else
+		{
+			$text += ",`r`n"
+		}
+		$text += '        "' + $SizeMap.Item($k).Name + '"'
+	}
+	$text += @"
+
+     ],
+``
+}
+
+// GetSizeMap returns the size / storage map
+func GetClassicSizeMap() string{
+    return ``    "vmSizesMap": {
+
+"@
+
+	$first = $TRUE
+	ForEach ($k in ($SizeMap.Keys | Sort-Object)) {
+		$size = $SizeMap.Item($k)
+		if ($first -eq $TRUE) 
+		{
+			$first = $FALSE
+		}
+		else
+		{
+			$text += ",`r`n"
+		}
+		$text += '      "' + $size.Name + '": {' + "`r`n"
+		if ($size.Name.Contains("GS") -Or $size.Name.Contains("DS")) {
+			$text += '        "storageAccountType": "Premium_LRS"' + "`r`n"
+		}
+		else
+		{
+			$text += '        "storageAccountType": "Standard_LRS"' + "`r`n"
+		}
+		$text += '      }'
+	}
+	$text += @"
+
+    }	
+``
+}
 "@
 	return $text
 }
@@ -241,7 +299,7 @@ try
 	$masterMap = Get-MasterMap -SizeMap $allSizes
 	$agentMap = Get-AgentMap -SizeMap $allSizes
 	$locations = Get-Locations
-	$text = Get-FileContents -MasterMap $masterMap -AgentMap $agentMap -Locations $locations
+	$text = Get-FileContents -MasterMap $masterMap -AgentMap $agentMap -SizeMap $allSizes -Locations $locations
 	$text | Out-File $OutFile
 	(Get-Content $OutFile) -replace "`0", "" | Set-Content $OutFile
 }
