@@ -16,9 +16,14 @@ ROUTE_TABLE="${8}"
 SERVICE_PRINCIPAL_CLIENT_ID="${9}"
 SERVICE_PRINCIPAL_CLIENT_SECRET="${10}"
 
-# Extra secrets for Kubernetes biring-up
+# Extra secrets for Kubernetes bring-up
 KUBELET_PRIVATE_KEY="${11}"
 APISERVER_PRIVATE_KEY="${12}"
+CA_CERTIFICATE="${13}"
+MASTER_FQDN="${14}"
+KUBECONFIG_CERTIFICATE="${15}"
+KUBECONFIG_KEY="${16}"
+ADMINUSER="${17}"
 
 APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
 touch "${APISERVER_PRIVATE_KEY_PATH}"
@@ -136,9 +141,61 @@ function ensureKubernetes() {
     fi
 }
 
+function writeKubeConfig() {
+    KUBECONFIGDIR=/home/$ADMINUSER/.kube
+    KUBECONFIGFILE=$KUBECONFIGDIR/config
+    mkdir -p $KUBECONFIGDIR
+    touch $KUBECONFIGFILE
+    chown $ADMINUSER:$ADMINUSER $KUBECONFIGDIR
+    chown $ADMINUSER:$ADMINUSER $KUBECONFIGFILE
+    chmod 700 $KUBECONFIGDIR
+    chmod 600 $KUBECONFIGFILE
+
+    # stop logging while output secrets
+    set +x
+
+    echo "
+{
+    \"apiVersion\": \"v1\",
+    \"clusters\": [
+        {
+            \"cluster\": {
+                \"certificate-authority-data\": \"$CA_CERTIFICATE\",
+                \"server\": \"https://$MASTER_FQDN.$LOCATION.cloudapp.azure.com\"  
+            },
+            \"name\": \"$MASTER_FQDN\"
+        }
+    ],
+    \"contexts\": [
+        {
+            \"context\": {
+                \"cluster\": \"$MASTER_FQDN\",
+                \"user\": \"$MASTER_FQDN-admin\"
+            },
+            \"name\": \"$MASTER_FQDN\"
+        }
+    ],
+    \"current-context\": \"$MASTER_FQDN\",
+    \"kind\": \"Config\",
+    \"users\": [
+        {
+            \"name\": \"$MASTER_FQDN-admin\",
+            \"user\": {
+                \"client-certificate-data\": \"$KUBECONFIG_CERTIFICATE\",
+                \"client-key-data\": \"$KUBECONFIG_KEY\"
+            }
+        }
+    ]
+}
+" > $KUBECONFIGFILE
+    # renable logging after secrets
+    set -x
+}
+
 ensureKubectl
 ensureEtcd
 ensureDocker
 ensureKubernetes
+writeKubeConfig
 
 echo "Install complete successfully"
