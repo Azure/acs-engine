@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Azure/acs-labs/pkg/api"
+	"github.com/Azure/acsengine/pkg/api"
 )
 
 const (
