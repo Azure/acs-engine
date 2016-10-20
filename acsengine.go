@@ -15,7 +15,7 @@ import (
 	"github.com/Azure/acsengine/pkg/api/vlabs"
 )
 
-func writeArtifacts(containerService *api.ContainerService, template string, parameters, artifactsDir string, templateDirectory string, certsGenerated bool, parametersOnly bool) error {
+func writeArtifacts(containerService *api.ContainerService, template string, parameters, artifactsDir string, certsGenerated bool, parametersOnly bool) error {
 	if len(artifactsDir) == 0 {
 		artifactsDir = fmt.Sprintf("%s-%s", containerService.Properties.OrchestratorProfile.OrchestratorType, acsengine.GenerateClusterID(&containerService.Properties))
 		artifactsDir = path.Join("_output", artifactsDir)
@@ -60,7 +60,7 @@ func writeArtifacts(containerService *api.ContainerService, template string, par
 		if properties.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
 			directory := path.Join(artifactsDir, "kubeconfig")
 			for _, location := range acsengine.AzureLocations {
-				b, gkcerr := acsengine.GenerateKubeConfig(properties, templateDirectory, location)
+				b, gkcerr := acsengine.GenerateKubeConfig(properties, location)
 				if gkcerr != nil {
 					return gkcerr
 				}
@@ -131,7 +131,6 @@ func usage(errs ...error) {
 	flag.PrintDefaults()
 }
 
-var templateDirectory = flag.String("templateDirectory", "./parts", "directory containing base template files")
 var noPrettyPrint = flag.Bool("noPrettyPrint", false, "do not pretty print output")
 var artifactsDir = flag.String("artifacts", "", "directory where artifacts will be written")
 var classicMode = flag.Bool("classicMode", false, "enable classic parameters and outputs")
@@ -157,11 +156,6 @@ func main() {
 	jsonFile := flag.Arg(0)
 	if _, err = os.Stat(jsonFile); os.IsNotExist(err) {
 		usage(fmt.Errorf("file %s does not exist", jsonFile))
-		os.Exit(1)
-	}
-
-	if _, err = os.Stat(*templateDirectory); os.IsNotExist(err) {
-		usage(fmt.Errorf("base templates directory %s does not exist", *templateDirectory))
 		os.Exit(1)
 	}
 
@@ -193,7 +187,7 @@ func main() {
 		}
 	}
 
-	if err = writeArtifacts(containerService, template, parameters, *artifactsDir, *templateDirectory, certsGenerated, *parametersOnly); err != nil {
+	if err = writeArtifacts(containerService, template, parameters, *artifactsDir, certsGenerated, *parametersOnly); err != nil {
 		fmt.Fprintf(os.Stderr, "error writing artifacts %s", err.Error())
 		os.Exit(1)
 	}

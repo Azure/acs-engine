@@ -8,10 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
-	"io/ioutil"
 	"math/rand"
-	"os"
-	"path"
 	"regexp"
 	"strings"
 	"text/template"
@@ -162,14 +159,10 @@ func GenerateClusterID(properties *api.Properties) string {
 }
 
 // GenerateKubeConfig returns a JSON string representing the KubeConfig
-func GenerateKubeConfig(properties *api.Properties, templateDirectory string, location string) (string, error) {
-	kubeTemplateFile := path.Join(templateDirectory, kubeConfigJSON)
-	if _, err := os.Stat(kubeTemplateFile); os.IsNotExist(err) {
-		return "", fmt.Errorf("file %s does not exist, did you specify the correct template directory?", kubeTemplateFile)
-	}
-	b, err := ioutil.ReadFile(kubeTemplateFile)
+func GenerateKubeConfig(properties *api.Properties, location string) (string, error) {
+	b, err := Asset(kubeConfigJSON)
 	if err != nil {
-		return "", fmt.Errorf("error reading kube config template file %s: %s", kubeTemplateFile, err.Error())
+		return "", fmt.Errorf("error reading kube config template file %s: %s", kubeConfigJSON, err.Error())
 	}
 	kubeconfig := string(b)
 	// variable replacement
