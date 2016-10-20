@@ -6,8 +6,8 @@ Template generator builds a custom template based on user requirements.  Example
 
 To build the application:
 1. set $GOPATH (example c:\gopath)
-2. go get github.com/Azure/acs-labs/acsengine
-3. cd $GOPATH/github.com/Azure/acs-labs/src
+2. go get github.com/Azure/acsengine/acsengine
+3. cd $GOPATH/github.com/Azure/acsengine/src
 4. go build to produce the acsengine binary
 
 # Generating a Template

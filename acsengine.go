@@ -9,10 +9,10 @@ import (
 	"path"
 	"time"
 
-	"github.com/Azure/acs-labs/pkg/acsengine"
-	"github.com/Azure/acs-labs/pkg/api"
-	"github.com/Azure/acs-labs/pkg/api/v20160330"
-	"github.com/Azure/acs-labs/pkg/api/vlabs"
+	"github.com/Azure/acsengine/pkg/acsengine"
+	"github.com/Azure/acsengine/pkg/api"
+	"github.com/Azure/acsengine/pkg/api/v20160330"
+	"github.com/Azure/acsengine/pkg/api/vlabs"
 )
 
 func writeArtifacts(containerService *api.ContainerService, template string, parameters, artifactsDir string, templateDirectory string, certsGenerated bool, parametersOnly bool) error {

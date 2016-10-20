@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/Azure/acs-labs/pkg/api/v20160330"
-	"github.com/Azure/acs-labs/pkg/api/vlabs"
+	"github.com/Azure/acsengine/pkg/api/v20160330"
+	"github.com/Azure/acsengine/pkg/api/vlabs"
 )
 
 ///////////////////////////////////////////////////////////
