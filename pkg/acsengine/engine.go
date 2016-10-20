@@ -8,10 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
-	"io/ioutil"
 	"math/rand"
-	"os"
-	"path"
 	"regexp"
 	"strings"
 	"text/template"
@@ -80,7 +77,7 @@ func (t *TemplateGenerator) verifyFiles() error {
 	allFiles = append(allFiles, kubernetesTemplateFiles...)
 	allFiles = append(allFiles, swarmTemplateFiles...)
 	for _, file := range allFiles {
-		if _, err := t.AssetLoader.Asset(file); err != nil {
+		if _, err := Asset(file); err != nil {
 			return fmt.Errorf("template file %s does not exist", file)
 		}
 	}
@@ -90,20 +87,12 @@ func (t *TemplateGenerator) verifyFiles() error {
 // TemplateGenerator represents the object that performs the template generation.
 type TemplateGenerator struct {
 	ClassicMode bool
-	AssetLoader AssetLoader
-}
-
-// AssetLoader represents an object that will return the bytes for a file name.  The template generator
-// will use its own loader, but https://github.com/jteeuwen/go-bindata loader can also be used.
-type AssetLoader interface {
-	Asset(string) ([]byte, error)
 }
 
 // InitializeTemplateGenerator creates a new template generator object
-func InitializeTemplateGenerator(classicMode bool, assetLoader AssetLoader) (*TemplateGenerator, error) {
+func InitializeTemplateGenerator(classicMode bool) (*TemplateGenerator, error) {
 	t := &TemplateGenerator{
 		ClassicMode: classicMode,
-		AssetLoader: assetLoader,
 	}
 
 	if err := t.verifyFiles(); err != nil {
@@ -133,9 +122,9 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	}
 
 	for _, file := range files {
-		bytes, e := t.AssetLoader.Asset(file)
+		bytes, e := Asset(file)
 		if e != nil {
-			return "", "", certsGenerated, fmt.Errorf("Error reading file %s", file, e.Error())
+			return "", "", certsGenerated, fmt.Errorf("Error reading file %s, Error: %s", file, e.Error())
 		}
 		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
 			return "", "", certsGenerated, err
@@ -170,14 +159,10 @@ func GenerateClusterID(properties *api.Properties) string {
 }
 
 // GenerateKubeConfig returns a JSON string representing the KubeConfig
-func GenerateKubeConfig(properties *api.Properties, templateDirectory string, location string) (string, error) {
-	kubeTemplateFile := path.Join(templateDirectory, kubeConfigJSON)
-	if _, err := os.Stat(kubeTemplateFile); os.IsNotExist(err) {
-		return "", fmt.Errorf("file %s does not exist, did you specify the correct template directory?", kubeTemplateFile)
-	}
-	b, err := ioutil.ReadFile(kubeTemplateFile)
+func GenerateKubeConfig(properties *api.Properties, location string) (string, error) {
+	b, err := Asset(kubeConfigJSON)
 	if err != nil {
-		return "", fmt.Errorf("error reading kube config template file %s: %s", kubeTemplateFile, err.Error())
+		return "", fmt.Errorf("error reading kube config template file %s: %s", kubeConfigJSON, err.Error())
 	}
 	kubeconfig := string(b)
 	// variable replacement
@@ -638,7 +623,7 @@ func getAgentRolesFileContents(ports []int) string {
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
 func (t *TemplateGenerator) getSingleLineForTemplate(yamlFilename string) (string, error) {
-	b, err := t.AssetLoader.Asset(yamlFilename)
+	b, err := Asset(yamlFilename)
 	if err != nil {
 		return "", fmt.Errorf("yaml file %s does not exist", yamlFilename)
 	}
@@ -666,7 +651,7 @@ func (t *TemplateGenerator) getSingleLineForTemplate(yamlFilename string) (strin
 
 // getBase64CustomScript will return a base64 of the CSE
 func (t *TemplateGenerator) getBase64CustomScript(csFilename string) string {
-	b, err := t.AssetLoader.Asset(csFilename)
+	b, err := Asset(csFilename)
 	if err != nil {
 		// this should never happen and this is a bug
 		panic(err.Error())
