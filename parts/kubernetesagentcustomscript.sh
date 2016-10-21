@@ -12,9 +12,10 @@ SUB=$5
 NSG=$6
 VNT=$7
 RTB=$8
-SVCPrincipalClientId=$9
-SVCPrincipalClientSecret=${10}
-CLIENTPRIVATEKEY=${11}
+RTB=$9
+SVCPrincipalClientId=${10}
+SVCPrincipalClientSecret=${11}
+CLIENTPRIVATEKEY=${12}
 
 CLIENTKEY=/etc/kubernetes/certs/client.key
 touch $CLIENTKEY
@@ -37,7 +38,8 @@ AZURECONTENT=$(cat <<EOF
     "subnetName": "$SUB",
     "securityGroupName": "$NSG",
     "vnetName": "$VNT",
-    "routeTableName": "$RTB"
+    "routeTableName": "$RTB",
+    "primaryAvailabilitySetName": "${PAS}"
 }
 EOF
 )
