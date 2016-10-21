@@ -13,7 +13,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Azure/acsengine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api"
 )
 
 const (

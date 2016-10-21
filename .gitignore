@@ -2,7 +2,8 @@
 deployVM0.ps1
 noparams.json
 output*
-acsengine.exe
-acsengine
+acs-engine.exe
+acs-engine
 _output/
 .vscode
+templates.go

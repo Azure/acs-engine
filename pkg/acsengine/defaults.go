@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/Azure/acsengine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api"
 )
 
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
