@@ -74,12 +74,11 @@ function prepare_cluster_definition() {
 
 function generate_template() {
 	# Generate template
-	./acsengine -artifacts "${OUTPUT}" "${FINAL_CLUSTER_DEFINITION}"
+	./acs-engine -artifacts "${OUTPUT}" "${FINAL_CLUSTER_DEFINITION}"
 
 	# Fill in custom hyperkube spec, if it was set
 	if [[ ! -z "${CUSTOM_HYPERKUBE_SPEC:-}" ]]; then
-		sed -i "s|gcr.io/google_containers/hyperkube-amd64:v1.4.0|${CUSTOM_HYPERKUBE_SPEC}|g" \
-			"${OUTPUT}/azuredeploy.parameters.json"
+		jqi "${OUTPUT}/azuredeploy.parameters.json" ".kubernetesHyperkubeSpec.value = \"${CUSTOM_HYPERKUBE_SPEC}\""
 	fi
 }
 
