@@ -24,15 +24,6 @@ func TestExpected(t *testing.T) {
 		return
 	}
 
-	var fileloader *ACSEngineFileLoader
-	var e error
-	partsDir := "../../parts"
-	fileloader, e = InitializeACSEngineFileLoader(partsDir)
-	if e != nil {
-		t.Error(fmt.Errorf("encountered error while loading files from directory %s: %s", partsDir, e.Error()))
-		return
-	}
-
 	for _, tuple := range *apiModelTestFiles {
 		containerService, err := api.LoadContainerServiceFromFile(tuple.APIModelFilename)
 		if err != nil {
@@ -44,17 +35,20 @@ func TestExpected(t *testing.T) {
 			t.Error(e1.Error())
 			continue
 		}
+
 		expectedParams, e2 := ioutil.ReadFile(tuple.GetExpectedArmTemplateParamsFilename())
 		if e2 != nil {
 			t.Error(e2.Error())
 			continue
 		}
+		expectedJsonStr := strings.Replace(string(expectedJson), "\r", "", -1)
+		expectedParamsStr := strings.Replace(string(expectedParams), "\r", "", -1)
 
 		// test the output container service 3 times:
 		// 1. first time tests loaded containerService
 		// 2. second time tests generated containerService
 		// 3. third time tests the generated containerService from the generated containerService
-		templateGenerator, e3 := InitializeTemplateGenerator(false, fileloader)
+		templateGenerator, e3 := InitializeTemplateGenerator(false)
 		if e3 != nil {
 			t.Error(e3.Error())
 			continue
@@ -81,7 +75,7 @@ func TestExpected(t *testing.T) {
 				t.Errorf("cert generation unexpected for %s", containerService.Properties.OrchestratorProfile.OrchestratorType)
 			}
 
-			if !bytes.Equal(expectedJson, []byte(ppArmTemplate)) {
+			if !bytes.Equal([]byte(expectedJsonStr), []byte(ppArmTemplate)) {
 				diffstr, differr := tuple.WriteArmTemplateErrFilename([]byte(ppArmTemplate))
 				if differr != nil {
 					diffstr += differr.Error()
@@ -89,7 +83,7 @@ func TestExpected(t *testing.T) {
 				t.Errorf("generated output different from expected for model %s: '%s'", tuple.GetExpectedArmTemplateFilename(), diffstr)
 			}
 
-			if !bytes.Equal(expectedParams, []byte(ppParams)) {
+			if !bytes.Equal([]byte(expectedParamsStr), []byte(ppParams)) {
 				diffstr, differr := tuple.WriteArmTemplateParamsErrFilename([]byte(ppParams))
 				if differr != nil {
 					diffstr += differr.Error()
