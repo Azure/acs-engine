@@ -122,14 +122,14 @@ func validatePoolName(poolName string) error {
 }
 
 func validateDNSName(dnsName string) error {
-	dnsNameRegex := `^([a-z][a-z0-9-]{1,13}[a-z0-9])$`
+	dnsNameRegex := `^([a-z][a-z0-9-]{1,45}[a-z0-9])$`
 	re, err := regexp.Compile(dnsNameRegex)
 	if err != nil {
 		return err
 	}
 	submatches := re.FindStringSubmatch(dnsName)
 	if len(submatches) != 2 {
-		return fmt.Errorf("DNS name '%s' is invalid. The DNS name must contain between 3 and 15 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number", dnsName)
+		return fmt.Errorf("DNS name '%s' is invalid. The DNS name must contain between 3 and 45 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number. (length was %d)", dnsName, len(dnsName))
 	}
 	return nil
 }
