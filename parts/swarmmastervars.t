@@ -5,6 +5,9 @@
     "dataStorageAccountPrefixSeed": 97, 
     "apiVersionDefault": "2016-03-30", 
     "apiVersionStorage": "2015-06-15",
+{{if .HasManagedDisks}}
+    "apiManagedDisksVersion": "2016-04-30-preview",
+{{end}}
     "agentCustomScript": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/configure-swarm-cluster.sh ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1 &\" &')]",
     "agentRunCmd": "[concat('runcmd:\n -  [ /bin/bash, /opt/azure/containers/install-cluster.sh ]\n\n')]", 
     "agentRunCmdFile": "[concat(' -  content: |\n        #!/bin/bash\n        ',variables('agentCustomScript'),'\n    path: /opt/azure/containers/install-cluster.sh\n    permissions: \"0744\"\n')]",

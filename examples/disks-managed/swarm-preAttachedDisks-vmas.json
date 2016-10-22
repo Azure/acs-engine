@@ -2,21 +2,36 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "DCOS"
+      "orchestratorType": "Swarm"
     },
     "masterProfile": {
       "count": 1,
-      "dnsPrefix": "mgmtanhowe1015f",
+      "dnsPrefix": "mgmtanhowe1022c",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
-        "name": "agent128",
+        "name": "agentpool1",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "AvailabilityProfile": "VirtualMachineScaleSets",
-        "storageProfile": "ManagedDisks"
-      }
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "ManagedDisks",
+        "diskSizesGB": [128, 128, 128, 128]
+      },
+      {
+          "name": "agentpool2",
+          "count": 3,
+          "dnsPrefix": "appanhowe1022c",
+          "vmSize": "Standard_D2_v2",
+          "availabilityProfile": "AvailabilitySet",
+          "storageProfile": "ManagedDisks",
+          "diskSizesGB": [128, 128, 128, 128],
+          "ports": [
+            80,
+            443,
+            8080
+          ]
+        }
     ],
     "linuxProfile": {
       "adminUsername": "azureuser",
