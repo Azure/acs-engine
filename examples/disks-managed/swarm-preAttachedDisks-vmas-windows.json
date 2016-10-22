@@ -6,7 +6,7 @@
     },
     "masterProfile": {
       "count": 1,
-      "dnsPrefix": "mgmtanhowe1022a",
+      "dnsPrefix": "mgmtanhowe1022e",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
@@ -15,15 +15,19 @@
         "count": 3,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet",
-        "storageProfile": "ManagedDisks"
+        "storageProfile": "ManagedDisks",
+        "diskSizesGB": [128, 128, 128, 128],
+        "osType": "Windows"
       },
       {
           "name": "agentpool2",
           "count": 3,
+          "dnsPrefix": "appanhowe1022e",
           "vmSize": "Standard_D2_v2",
           "availabilityProfile": "AvailabilitySet",
           "storageProfile": "ManagedDisks",
-          "dnsPrefix": "appanhowe1022a",
+          "diskSizesGB": [128, 128, 128, 128],
+          "osType": "Windows",
           "ports": [
             80,
             443,
