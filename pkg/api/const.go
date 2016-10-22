@@ -49,12 +49,18 @@ const (
 	MaxDisks = 4
 )
 
+// Availability profiles
+const (
+	// AvailabilitySet means that the vms are in an availability set
+	AvailabilitySet = "AvailabilitySet"
+	// VirtualMachineScaleSets means that the vms are in a virtual machine scaleset
+	VirtualMachineScaleSets = "VirtualMachineScaleSets"
+)
+
 // storage profiles
 const (
-	// StorageExternal equates to VMSS where attached disks are unsupported (Default)
-	StorageExternal = "External"
-	// StorageVolumes equates to AS where attached disks are supported
-	StorageVolumes = "Volumes"
-	// StorageHAVolumes are managed disks that provide fault domain coverage for volumes.
-	StorageHAVolumes = "HAVolumes"
+	// StorageAccount means that the nodes use raw storage accounts for their os and attached volumes
+	StorageAccount = "StorageAccount"
+	// ManagedDisks means that the nodes use managed disks for their os and attached volumes
+	ManagedDisks = "ManagedDisks"
 )

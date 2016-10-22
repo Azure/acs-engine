@@ -2,35 +2,39 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "DCOS"
+      "orchestratorType": "Swarm"
     },
     "masterProfile": {
-      "count": 3,
+      "count": 1,
       "dnsPrefix": "masterdns1",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
-        "name": "agent128",
+        "name": "publicwin1",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes",
-        "diskSizesGB": [128, 128, 128, 128]
-      },
-      {
-        "name": "agent1public",
-        "count": 3,
-        "vmSize": "Standard_D2_v2",
-        "dnsPrefix": "agent1public",
-        "StorageProfile": "Volumes",
-        "diskSizesGB": [1],
+        "dnsPrefix": "publicwin1",
+        "osType": "Windows",
+        "availabilityProfile": "AvailabilitySet",
         "ports": [
           80,
           443,
           8080
         ]
+      },
+      {
+        "name": "privatewin",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet",
+        "osType": "Windows"
       }
     ],
+    "windowsProfile": {
+      "adminUsername": "azureuser",
+      "adminPassword": "replacepassword1234$"
+    },
     "linuxProfile": {
       "adminUsername": "azureuser",
       "ssh": {

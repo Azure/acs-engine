@@ -14,73 +14,73 @@
         "name": "agentpri0",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
         "name": "agentpri1",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
         "name": "agentpri2",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
         "name": "agentpri3",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
         "name": "agentpri4",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
         "name": "agentpri5",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
         "name": "agentpri6",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
         "name": "agentpri7",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
         "name": "agentpri8",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
         "name": "agentpri9",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
         "name": "agentpri10",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
         "name": "agentpublic1",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes",
+        "availabilityProfile": "AvailabilitySet",
         "dnsPrefix": "agentpublic1",
         "ports": [
           80,

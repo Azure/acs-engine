@@ -14,14 +14,16 @@
         "name": "agentpool1",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "StorageAccount",
         "diskSizesGB": [128, 128, 128, 128]
       },
       {
         "name": "agentpool2",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "StorageAccount",
         "diskSizesGB": [10, 10, 10, 10]
       }
     ],

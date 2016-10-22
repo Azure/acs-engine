@@ -54,7 +54,7 @@
       }, 
       "type": "Microsoft.Network/networkInterfaces"
     },
-{{if .IsHAVolumeBasedStorage}}
+{{if .IsManagedDisks}}
     {
       "apiVersion": "[variables('apiManagedDisksVersion')]", 
       "location": "[resourceGroup().location]", 
@@ -66,7 +66,7 @@
       },
       "type": "Microsoft.Compute/availabilitySets"
     },
-{{else if .IsVolumeBasedStorage}}
+{{else if .IsStorageAccount}}
     {
       "apiVersion": "[variables('apiVersionStorage')]", 
       "copy": {
@@ -157,7 +157,7 @@
     },
 {{end}}
     {
-{{if .IsHAVolumeBasedStorage}}
+{{if .IsManagedDisks}}
       "apiVersion": "[variables('apiManagedDisksVersion')]",
 {{else}} 
       "apiVersion": "[variables('apiVersionDefault')]",
@@ -167,11 +167,11 @@
         "name": "vmLoopNode"
       }, 
       "dependsOn": [
-{{if .IsVolumeBasedStorage}}
+{{if .IsStorageAccount}}
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
-{{if .HasDisks}}
+  {{if .HasDisks}}
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
-{{end}}
+  {{end}}
 {{end}}
         "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex())]", 
         "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
@@ -220,7 +220,7 @@
             "sku": "[variables('osImageSKU')]", 
             "version": "[variables('osImageVersion')]"
           }
-{{if .IsVolumeBasedStorage}}
+{{if .IsStorageAccount}}
           ,"osDisk": {
             "caching": "ReadOnly", 
             "createOption": "FromImage", 

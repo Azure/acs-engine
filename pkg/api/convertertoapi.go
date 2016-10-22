@@ -186,6 +186,7 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.OSType = OSType(vlabs.OSType)
 	api.Ports = []int{}
 	api.Ports = append(api.Ports, vlabs.Ports...)
+	api.AvailabilityProfile = vlabs.AvailabilityProfile
 	api.StorageProfile = vlabs.StorageProfile
 	api.DiskSizesGB = []int{}
 	api.DiskSizesGB = append(api.DiskSizesGB, vlabs.DiskSizesGB...)

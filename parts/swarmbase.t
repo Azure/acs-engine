@@ -11,7 +11,7 @@
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}
         {{template "swarmagentvars.t" .}}
-        {{if .IsVolumeBasedStorage}}
+        {{if and .HasDisks .IsStorageAccount}}
           "{{.Name}}DataAccountName": "[concat(variables('storageAccountBaseName'), 'data{{$index}}')]",
         {{end}}
         "{{.Name}}Index": {{$index}},
@@ -39,16 +39,16 @@
   "resources": [
     {{range .AgentPoolProfiles}}
       {{if .IsWindows}}
-        {{if .IsVolumeBasedStorage}}
-          {{template "swarmwinagentresourcesdisks.t" .}},
+        {{if .IsAvailabilitySets}}
+          {{template "swarmwinagentresourcesvmas.t" .}},
         {{else}}
-          {{template "swarmwinagentresources.t" .}},
+          {{template "swarmwinagentresourcesvmss.t" .}},
         {{end}}
       {{else}}
-        {{if .IsVolumeBasedStorage}}
-          {{template "swarmagentresourcesdisks.t" .}},
+        {{if .IsAvailabilitySets}}
+          {{template "swarmagentresourcesvmas.t" .}},
         {{else}}
-          {{template "swarmagentresources.t" .}},
+          {{template "swarmagentresourcesvmss.t" .}},
         {{end}}
       {{end}}      
     {{end}}

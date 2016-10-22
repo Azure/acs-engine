@@ -73,7 +73,10 @@ func setStorageDefaults(a *api.Properties) {
 	for i := range a.AgentPoolProfiles {
 		profile := &a.AgentPoolProfiles[i]
 		if len(profile.StorageProfile) == 0 {
-			profile.StorageProfile = api.StorageExternal
+			profile.StorageProfile = api.StorageAccount
+		}
+		if len(profile.AvailabilityProfile) == 0 {
+			profile.AvailabilityProfile = api.ManagedDisks
 		}
 	}
 }

@@ -511,7 +511,6 @@
     "agentprivateAccountName": "[concat(variables('storageAccountBaseName'), 'agnt0')]",
     "agentprivateAvailabilitySet": "[concat('agentprivate-availabilitySet-', variables('nameSuffix'))]",
     "agentprivateCount": "[parameters('agentprivateCount')]",
-    "agentprivateDataAccountName": "[concat(variables('storageAccountBaseName'), 'data0')]",
     "agentprivateIndex": 0,
     "agentprivateNSGID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('agentprivateNSGName'))]",
     "agentprivateNSGName": "[concat(variables('orchestratorName'), '-agentprivate-nsg-', variables('nameSuffix'))]",

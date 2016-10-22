@@ -2,85 +2,85 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "DCOS"
+      "orchestratorType": "Swarm"
     },
     "masterProfile": {
       "count": 3,
-      "dnsPrefix": "mgmtanhowe1009n",
+      "dnsPrefix": "masterdns1",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
-        "name": "agentprivate0",
+        "name": "agentpri0",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentprivate1",
+        "name": "agentpri1",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentprivate2",
+        "name": "agentpri2",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentprivate3",
+        "name": "agentpri3",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentprivate4",
+        "name": "agentpri4",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentprivate5",
+        "name": "agentpri5",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentprivate6",
+        "name": "agentpri6",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentprivate7",
+        "name": "agentpri7",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentprivate8",
+        "name": "agentpri8",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentprivate9",
+        "name": "agentpri9",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentprivate10",
+        "name": "agentpri10",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentprivate11",
+        "name": "agentpri11",
         "count": 100,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       }
     ],
     "linuxProfile": {

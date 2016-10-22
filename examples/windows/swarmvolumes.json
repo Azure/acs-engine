@@ -16,7 +16,7 @@
         "vmSize": "Standard_D2_v2",
         "dnsPrefix": "appanhowe1009e",
         "osType": "Windows",
-        "StorageProfile": "Volumes",
+        "availabilityProfile": "AvailabilitySet",
         "ports": [
           80,
           443,
@@ -27,7 +27,7 @@
         "name": "privatewin",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes",
+        "availabilityProfile": "AvailabilitySet",
         "osType": "Windows"
       }
     ],

@@ -25,36 +25,36 @@ const (
 )
 
 const (
-	agentOutputs                = "agentoutputs.t"
-	agentParams                 = "agentparams.t"
-	classicParams               = "classicparams.t"
-	dcosAgentResources          = "dcosagentresources.t"
-	dcosAgentResourcesDisks     = "dcosagentresourcesdisks.t"
-	dcosAgentVars               = "dcosagentvars.t"
-	dcosBaseFile                = "dcosbase.t"
-	dcosCustomData173           = "dcoscustomdata173.t"
-	dcosCustomData184           = "dcoscustomdata184.t"
-	dcosMasterResources         = "dcosmasterresources.t"
-	dcosMasterVars              = "dcosmastervars.t"
-	kubernetesBaseFile          = "kubernetesbase.t"
-	kubernetesAgentResources    = "kubernetesagentresources.t"
-	kubernetesAgentVars         = "kubernetesagentvars.t"
-	kubernetesMasterResources   = "kubernetesmasterresources.t"
-	kubernetesMasterVars        = "kubernetesmastervars.t"
-	kubernetesParams            = "kubernetesparams.t"
-	masterOutputs               = "masteroutputs.t"
-	masterParams                = "masterparams.t"
-	swarmBaseFile               = "swarmbase.t"
-	swarmAgentCustomData        = "swarmagentcustomdata.t"
-	swarmAgentResources         = "swarmagentresources.t"
-	swarmAgentResourcesDisks    = "swarmagentresourcesdisks.t"
-	swarmAgentVars              = "swarmagentvars.t"
-	swarmMasterCustomData       = "swarmmastercustomdata.t"
-	swarmMasterResources        = "swarmmasterresources.t"
-	swarmMasterVars             = "swarmmastervars.t"
-	swarmWinAgentResources      = "swarmwinagentresources.t"
-	swarmWinAgentResourcesDisks = "swarmwinagentresourcesdisks.t"
-	windowsParams               = "windowsparams.t"
+	agentOutputs                 = "agentoutputs.t"
+	agentParams                  = "agentparams.t"
+	classicParams                = "classicparams.t"
+	dcosAgentResourcesVMAS       = "dcosagentresourcesvmas.t"
+	dcosAgentResourcesVMSS       = "dcosagentresourcesvmss.t"
+	dcosAgentVars                = "dcosagentvars.t"
+	dcosBaseFile                 = "dcosbase.t"
+	dcosCustomData173            = "dcoscustomdata173.t"
+	dcosCustomData184            = "dcoscustomdata184.t"
+	dcosMasterResources          = "dcosmasterresources.t"
+	dcosMasterVars               = "dcosmastervars.t"
+	kubernetesBaseFile           = "kubernetesbase.t"
+	kubernetesAgentResourcesVMAS = "kubernetesagentresourcesvmas.t"
+	kubernetesAgentVars          = "kubernetesagentvars.t"
+	kubernetesMasterResources    = "kubernetesmasterresources.t"
+	kubernetesMasterVars         = "kubernetesmastervars.t"
+	kubernetesParams             = "kubernetesparams.t"
+	masterOutputs                = "masteroutputs.t"
+	masterParams                 = "masterparams.t"
+	swarmBaseFile                = "swarmbase.t"
+	swarmAgentCustomData         = "swarmagentcustomdata.t"
+	swarmAgentResourcesVMAS      = "swarmagentresourcesvmas.t"
+	swarmAgentResourcesVMSS      = "swarmagentresourcesvmss.t"
+	swarmAgentVars               = "swarmagentvars.t"
+	swarmMasterCustomData        = "swarmmastercustomdata.t"
+	swarmMasterResources         = "swarmmasterresources.t"
+	swarmMasterVars              = "swarmmastervars.t"
+	swarmWinAgentResourcesVMAS   = "swarmwinagentresourcesvmas.t"
+	swarmWinAgentResourcesVMSS   = "swarmwinagentresourcesvmss.t"
+	windowsParams                = "windowsparams.t"
 )
 
 var kubernetesAddonYamls = map[string]string{
@@ -68,9 +68,9 @@ var kubernetesAddonYamls = map[string]string{
 }
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams}
-var dcosTemplateFiles = []string{dcosAgentResources, dcosAgentResourcesDisks, dcosAgentVars, dcosBaseFile, dcosCustomData173, dcosCustomData184, dcosMasterResources, dcosMasterVars}
-var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResources, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
-var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentCustomData, swarmAgentResources, swarmAgentVars, swarmAgentResourcesDisks, swarmBaseFile, swarmMasterCustomData, swarmMasterResources, swarmMasterVars, swarmWinAgentResources, swarmWinAgentResourcesDisks, windowsParams}
+var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosCustomData173, dcosCustomData184, dcosMasterResources, dcosMasterVars}
+var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
+var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentCustomData, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmBaseFile, swarmMasterCustomData, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS, windowsParams}
 
 func (t *TemplateGenerator) verifyFiles() error {
 	allFiles := append(commonTemplateFiles, dcosTemplateFiles...)
@@ -587,7 +587,7 @@ func getDataDisks(a *api.AgentPoolProfile) string {
                 "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('%sDataAccountName'),'.blob.core.windows.net/vhds/',variables('%sVMNamePrefix'),copyIndex(), '--datadisk%d.vhd')]"
               }
             }`
-	haDataDisks := `            {
+	managedDataDisks := `            {
               "diskSizeGB": "%d",
               "lun": %d,
               "createOption": "Empty"
@@ -596,10 +596,10 @@ func getDataDisks(a *api.AgentPoolProfile) string {
 		if i > 0 {
 			buf.WriteString(",\n")
 		}
-		if a.StorageProfile == vlabs.StorageVolumes {
+		if a.StorageProfile == api.StorageAccount {
 			buf.WriteString(fmt.Sprintf(dataDisks, diskSize, i, a.Name, i, a.Name, a.Name, a.Name, a.Name, i))
-		} else if a.StorageProfile == vlabs.StorageHAVolumes {
-			buf.WriteString(fmt.Sprintf(haDataDisks, diskSize, i))
+		} else if a.StorageProfile == api.ManagedDisks {
+			buf.WriteString(fmt.Sprintf(managedDataDisks, diskSize, i))
 		}
 	}
 	buf.WriteString("\n          ],")

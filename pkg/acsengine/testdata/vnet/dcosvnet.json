@@ -16,7 +16,7 @@
         "name": "agentprivate",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes",
+        "availabilityProfile": "AvailabilitySet",
         "vnetSubnetId": "/subscriptions/SUBSCRIPTION/resourceGroups/ExampleRG/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/ExampleAgentSubnet"
       },
       {

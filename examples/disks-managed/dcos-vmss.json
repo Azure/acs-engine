@@ -4,17 +4,16 @@
   },
   "masterProfile": {
     "count": 1,
-    "dnsPrefix": "mgmtanhowe1015g",
+    "dnsPrefix": "mgmtanhowe1015f",
     "vmSize": "Standard_D2_v2"
   },
   "agentPoolProfiles": [
     {
       "name": "agent128",
-      "count": 10,
+      "count": 3,
       "vmSize": "Standard_D2_v2",
-      "availabilityProfile": "AvailabilitySet",
-      "storageProfile": "ManagedDisks",
-      "diskSizesGB": [128, 128, 128, 128]
+      "AvailabilityProfile": "VirtualMachineScaleSets",
+      "storageProfile": "ManagedDisks"
     }
   ],
   "linuxProfile": {

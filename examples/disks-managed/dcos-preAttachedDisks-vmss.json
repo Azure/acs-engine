@@ -12,7 +12,7 @@
       "name": "agent128",
       "count": 10,
       "vmSize": "Standard_D2_v2",
-      "availabilityProfile": "AvailabilitySet",
+      "AvailabilityProfile": "VirtualMachineScaleSets",
       "storageProfile": "ManagedDisks",
       "diskSizesGB": [128, 128, 128, 128]
     }

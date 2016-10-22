@@ -147,16 +147,17 @@ type MasterProfile struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name           string `json:"name"`
-	Count          int    `json:"count"`
-	VMSize         string `json:"vmSize"`
-	DNSPrefix      string `json:"dnsPrefix,omitempty"`
-	OSType         OSType `json:"osType,omitempty"`
-	Ports          []int  `json:"ports,omitempty"`
-	StorageProfile string `json:"storageProfile,omitempty"`
-	DiskSizesGB    []int  `json:"diskSizesGB,omitempty"`
-	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
-	Subnet         string `json:"subnet"`
+	Name                string `json:"name"`
+	Count               int    `json:"count"`
+	VMSize              string `json:"vmSize"`
+	DNSPrefix           string `json:"dnsPrefix,omitempty"`
+	OSType              OSType `json:"osType,omitempty"`
+	Ports               []int  `json:"ports,omitempty"`
+	AvailabilityProfile string `json:"availabilityProfile"`
+	StorageProfile      string `json:"storageProfile,omitempty"`
+	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
+	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
+	Subnet              string `json:"subnet"`
 
 	FQDN string `json:"fqdn,omitempty"`
 }
@@ -209,6 +210,16 @@ func (a *Properties) HasWindows() bool {
 	return false
 }
 
+// HasManagedDisks returns true if the cluster contains Managed Disks
+func (a *Properties) HasManagedDisks() bool {
+	for _, agentPoolProfile := range a.AgentPoolProfiles {
+		if agentPoolProfile.StorageProfile == ManagedDisks {
+			return true
+		}
+	}
+	return false
+}
+
 // GetCAPrivateKey returns the ca private key
 func (c *CertificateProfile) GetCAPrivateKey() string {
 	return c.caPrivateKey
@@ -234,9 +245,19 @@ func (a *AgentPoolProfile) IsWindows() bool {
 	return a.OSType == Windows
 }
 
-// IsVolumeBasedStorage returns true if the customer specified disks
-func (a *AgentPoolProfile) IsVolumeBasedStorage() bool {
-	return a.StorageProfile == StorageVolumes
+// IsAvailabilitySets returns true if the customer specified disks
+func (a *AgentPoolProfile) IsAvailabilitySets() bool {
+	return a.AvailabilityProfile == AvailabilitySet
+}
+
+// IsManagedDisks returns true if the customer specified disks
+func (a *AgentPoolProfile) IsManagedDisks() bool {
+	return a.StorageProfile == ManagedDisks
+}
+
+// IsStorageAccount returns true if the customer specified storage account
+func (a *AgentPoolProfile) IsStorageAccount() bool {
+	return a.StorageProfile == StorageAccount
 }
 
 // HasDisks returns true if the customer specified disks

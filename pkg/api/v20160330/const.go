@@ -38,13 +38,3 @@ const (
 	// MaxAgentCount are the maximum number of agents
 	MaxAgentCount = 100
 )
-
-// storage profiles
-const (
-	// StorageExternal equates to VMSS where attached disks are unsupported (Default)
-	StorageExternal = "External"
-	// StorageVolumes equates to AS where attached disks are supported
-	StorageVolumes = "Volumes"
-	// StorageHAVolumes are managed disks that provide fault domain coverage for volumes.
-	StorageHAVolumes = "HAVolumes"
-)
