@@ -1,4 +1,4 @@
-{{if .IsStorageAccount}} 
+{{if .IsStorageAccount}}
     {
       "apiVersion": "[variables('apiVersionStorage')]", 
       "copy": {

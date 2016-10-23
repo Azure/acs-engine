@@ -1242,6 +1242,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('publicwin1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('publicwin1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('publicwin1AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('publicwin1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('publicwin1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('publicwin1AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('publicwin1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('publicwin1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('publicwin1AccountName'))]",
@@ -1360,6 +1361,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('privatewinStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('privatewinStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('privatewinAccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('privatewinStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('privatewinStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('privatewinAccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('privatewinStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('privatewinStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('privatewinAccountName'))]",
