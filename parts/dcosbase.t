@@ -11,7 +11,7 @@
         {{if .IsStorageAccount}}
           "{{.Name}}StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),{{$index}})]",
           "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]",
-          {{if and .HasDisks .IsStorageAccount}}
+          {{if .HasDisks}}
             "{{.Name}}DataAccountName": "[concat(variables('storageAccountBaseName'), 'data{{$index}}')]",
           {{end}}
         {{end}}
