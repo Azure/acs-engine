@@ -6,7 +6,7 @@
     },
     "masterProfile": {
       "count": 1,
-      "dnsPrefix": "mgmtanhowe1015f",
+      "dnsPrefix": "mgmtanhowe1023b",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [

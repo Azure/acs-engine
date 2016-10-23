@@ -511,23 +511,17 @@
   },
   "variables": {
     "adminUsername": "[parameters('linuxAdminUsername')]",
-    "agent128AccountName": "[concat(variables('storageAccountBaseName'), 'agnt0')]",
     "agent128AvailabilitySet": "[concat('agent128-availabilitySet-', variables('nameSuffix'))]",
     "agent128Count": "[parameters('agent128Count')]",
-    "agent128DataAccountName": "[concat(variables('storageAccountBaseName'), 'data0')]",
     "agent128NSGID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('agent128NSGName'))]",
     "agent128NSGName": "[concat(variables('orchestratorName'), '-agent128-nsg-', variables('nameSuffix'))]",
-    "agent128StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),0)]",
-    "agent128StorageAccountsCount": "[add(div(variables('agent128Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agent128Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agent128Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agent128Subnet": "[parameters('agent128Subnet')]",
     "agent128SubnetName": "[concat(variables('orchestratorName'), '-agent128Subnet')]",
     "agent128VMNamePrefix": "[concat(variables('orchestratorName'), '-agent128-', variables('nameSuffix'))]",
     "agent128VMSize": "[parameters('agent128VMSize')]",
     "agent128VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agent128SubnetName'))]",
-    "agent1publicAccountName": "[concat(variables('storageAccountBaseName'), 'agnt1')]",
     "agent1publicAvailabilitySet": "[concat('agent1public-availabilitySet-', variables('nameSuffix'))]",
     "agent1publicCount": "[parameters('agent1publicCount')]",
-    "agent1publicDataAccountName": "[concat(variables('storageAccountBaseName'), 'data1')]",
     "agent1publicEndpointDNSNamePrefix": "[tolower(parameters('agent1publicEndpointDNSNamePrefix'))]",
     "agent1publicIPAddressName": "[concat(variables('orchestratorName'), '-agent-ip-', variables('agent1publicEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]",
     "agent1publicLbBackendPoolName": "[concat(variables('orchestratorName'), '-agent1public-', variables('nameSuffix'))]",
@@ -537,13 +531,12 @@
     "agent1publicLbName": "[concat(variables('orchestratorName'), '-agent1public-', variables('nameSuffix'))]",
     "agent1publicNSGID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('agent1publicNSGName'))]",
     "agent1publicNSGName": "[concat(variables('orchestratorName'), '-agent1public-nsg-', variables('nameSuffix'))]",
-    "agent1publicStorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),1)]",
-    "agent1publicStorageAccountsCount": "[add(div(variables('agent1publicCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agent1publicCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agent1publicCount'), variables('maxVMsPerStorageAccount')),1)))]",
     "agent1publicSubnet": "[parameters('agent1publicSubnet')]",
     "agent1publicSubnetName": "[concat(variables('orchestratorName'), '-agent1publicSubnet')]",
     "agent1publicVMNamePrefix": "[concat(variables('orchestratorName'), '-agent1public-', variables('nameSuffix'))]",
     "agent1publicVMSize": "[parameters('agent1publicVMSize')]",
     "agent1publicVnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agent1publicSubnetName'))]",
+    "apiManagedDisksVersion": "2016-04-30-preview",
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
     "dataStorageAccountPrefixSeed": 97,
@@ -897,53 +890,23 @@
       "type": "Microsoft.Network/networkInterfaces"
     },
     {
-      "apiVersion": "[variables('apiVersionStorage')]",
-      "copy": {
-        "count": "[variables('agent128StorageAccountsCount')]",
-        "name": "loop"
-      },
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-      ],
-      "location": "[resourceGroup().location]",
-      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agent128StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agent128StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agent128AccountName'))]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('agent128VMSize')].storageAccountType]"
-      },
-      "type": "Microsoft.Storage/storageAccounts"
-    },
-    {
-      "apiVersion": "[variables('apiVersionStorage')]",
-      "copy": {
-        "count": "[variables('agent128StorageAccountsCount')]",
-        "name": "datadiskLoop"
-      },
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-      ],
-      "location": "[resourceGroup().location]",
-      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('agent128StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('agent128StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agent128DataAccountName'))]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('agent128VMSize')].storageAccountType]"
-      },
-      "type": "Microsoft.Storage/storageAccounts"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiManagedDisksVersion')]",
       "location": "[resourceGroup().location]",
       "name": "[variables('agent128AvailabilitySet')]",
-      "properties": {},
+      "properties": {
+        "managed": "true",
+        "platformFaultDomainCount": "2",
+        "platformUpdateDomainCount": "2"
+      },
       "type": "Microsoft.Compute/availabilitySets"
     },
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiManagedDisksVersion')]",
       "copy": {
         "count": "[variables('agent128Count')]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agent128AccountName'))]",
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('agent128DataAccountName'))]",
         "[concat('Microsoft.Network/networkInterfaces/', variables('agent128VMNamePrefix'), 'nic-', copyIndex())]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agent128AvailabilitySet'))]"
       ],
@@ -984,38 +947,22 @@
             {
               "createOption": "Empty",
               "diskSizeGB": "128",
-              "lun": 0,
-              "name": "[concat(variables('agent128VMNamePrefix'), copyIndex(),'-datadisk0')]",
-              "vhd": {
-                "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('agent128DataAccountName'),'.blob.core.windows.net/vhds/',variables('agent128VMNamePrefix'),copyIndex(), '--datadisk0.vhd')]"
-              }
+              "lun": 0
             },
             {
               "createOption": "Empty",
               "diskSizeGB": "128",
-              "lun": 1,
-              "name": "[concat(variables('agent128VMNamePrefix'), copyIndex(),'-datadisk1')]",
-              "vhd": {
-                "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('agent128DataAccountName'),'.blob.core.windows.net/vhds/',variables('agent128VMNamePrefix'),copyIndex(), '--datadisk1.vhd')]"
-              }
+              "lun": 1
             },
             {
               "createOption": "Empty",
               "diskSizeGB": "128",
-              "lun": 2,
-              "name": "[concat(variables('agent128VMNamePrefix'), copyIndex(),'-datadisk2')]",
-              "vhd": {
-                "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('agent128DataAccountName'),'.blob.core.windows.net/vhds/',variables('agent128VMNamePrefix'),copyIndex(), '--datadisk2.vhd')]"
-              }
+              "lun": 2
             },
             {
               "createOption": "Empty",
               "diskSizeGB": "128",
-              "lun": 3,
-              "name": "[concat(variables('agent128VMNamePrefix'), copyIndex(),'-datadisk3')]",
-              "vhd": {
-                "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('agent128DataAccountName'),'.blob.core.windows.net/vhds/',variables('agent128VMNamePrefix'),copyIndex(), '--datadisk3.vhd')]"
-              }
+              "lun": 3
             }
           ],
           "imageReference": {
@@ -1023,14 +970,6 @@
             "publisher": "[variables('osImagePublisher')]",
             "sku": "[variables('osImageSKU')]",
             "version": "[variables('osImageVersion')]"
-          },
-          "osDisk": {
-            "caching": "ReadOnly",
-            "createOption": "FromImage",
-            "name": "[concat(variables('agent128VMNamePrefix'), copyIndex(),'-osdisk')]",
-            "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent128StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agent128AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agent128VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
-            }
           }
         }
       },
@@ -1124,42 +1063,14 @@
       "type": "Microsoft.Network/networkInterfaces"
     },
     {
-      "apiVersion": "[variables('apiVersionStorage')]",
-      "copy": {
-        "count": "[variables('agent1publicStorageAccountsCount')]",
-        "name": "loop"
-      },
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-      ],
-      "location": "[resourceGroup().location]",
-      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agent1publicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agent1publicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agent1publicAccountName'))]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('agent1publicVMSize')].storageAccountType]"
-      },
-      "type": "Microsoft.Storage/storageAccounts"
-    },
-    {
-      "apiVersion": "[variables('apiVersionStorage')]",
-      "copy": {
-        "count": "[variables('agent1publicStorageAccountsCount')]",
-        "name": "datadiskLoop"
-      },
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-      ],
-      "location": "[resourceGroup().location]",
-      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('agent1publicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('agent1publicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agent1publicDataAccountName'))]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('agent1publicVMSize')].storageAccountType]"
-      },
-      "type": "Microsoft.Storage/storageAccounts"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiManagedDisksVersion')]",
       "location": "[resourceGroup().location]",
       "name": "[variables('agent1publicAvailabilitySet')]",
-      "properties": {},
+      "properties": {
+        "managed": "true",
+        "platformFaultDomainCount": "2",
+        "platformUpdateDomainCount": "2"
+      },
       "type": "Microsoft.Compute/availabilitySets"
     },
     {
@@ -1293,14 +1204,12 @@
       "type": "Microsoft.Network/loadBalancers"
     },
     {
-      "apiVersion": "[variables('apiVersionDefault')]",
+      "apiVersion": "[variables('apiManagedDisksVersion')]",
       "copy": {
         "count": "[variables('agent1publicCount')]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent1publicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent1publicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agent1publicAccountName'))]",
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent1publicStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent1publicStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('agent1publicDataAccountName'))]",
         "[concat('Microsoft.Network/networkInterfaces/', variables('agent1publicVMNamePrefix'), 'nic-', copyIndex())]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agent1publicAvailabilitySet'))]"
       ],
@@ -1341,11 +1250,7 @@
             {
               "createOption": "Empty",
               "diskSizeGB": "1",
-              "lun": 0,
-              "name": "[concat(variables('agent1publicVMNamePrefix'), copyIndex(),'-datadisk0')]",
-              "vhd": {
-                "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent1publicStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent1publicStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('agent1publicDataAccountName'),'.blob.core.windows.net/vhds/',variables('agent1publicVMNamePrefix'),copyIndex(), '--datadisk0.vhd')]"
-              }
+              "lun": 0
             }
           ],
           "imageReference": {
@@ -1353,14 +1258,6 @@
             "publisher": "[variables('osImagePublisher')]",
             "sku": "[variables('osImageSKU')]",
             "version": "[variables('osImageVersion')]"
-          },
-          "osDisk": {
-            "caching": "ReadOnly",
-            "createOption": "FromImage",
-            "name": "[concat(variables('agent1publicVMNamePrefix'), copyIndex(),'-osdisk')]",
-            "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent1publicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agent1publicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agent1publicAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agent1publicVMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
-            }
           }
         }
       },
