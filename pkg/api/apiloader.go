@@ -52,27 +52,3 @@ func LoadContainerService(contents []byte) (*ContainerService, error) {
 		return nil, fmt.Errorf("unrecognized APIVersion '%s'", m.APIVersion)
 	}
 }
-
-// LoadContainerServiceFromAPI load an ACS Cluster API Model, validate it, and return the unversioned representation
-func LoadContainerServiceFromAPI(api interface{}) (*ContainerService, error) {
-	m, found := api.(*TypeMeta)
-	if !found {
-		return nil, fmt.Errorf("no APIVersion field")
-	}
-	switch m.APIVersion {
-	case v20160330.APIVersion:
-		if e := api.(*v20160330.ContainerService).Properties.Validate(); e != nil {
-			return nil, e
-		}
-		return ConvertV20160330ContainerService(api.(*v20160330.ContainerService)), nil
-
-	case vlabs.APIVersion:
-		if e := api.(*vlabs.ContainerService).Properties.Validate(); e != nil {
-			return nil, e
-		}
-		return ConvertVLabsContainerService(api.(*vlabs.ContainerService)), nil
-
-	default:
-		return nil, fmt.Errorf("unrecognized APIVersion '%s'", m.APIVersion)
-	}
-}
