@@ -536,9 +536,9 @@
     "agent1publicVMNamePrefix": "[concat(variables('orchestratorName'), '-agent1public-', variables('nameSuffix'))]",
     "agent1publicVMSize": "[parameters('agent1publicVMSize')]",
     "agent1publicVnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agent1publicSubnetName'))]",
-    "apiManagedDisksVersion": "2016-04-30-preview",
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
+    "apiVersionStorageManagedDisks": "2016-04-30-preview",
     "dataStorageAccountPrefixSeed": 97,
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]",
     "masterCount": 3,
@@ -864,7 +864,7 @@
       "type": "Microsoft.Network/networkSecurityGroups"
     },
     {
-      "apiVersion": "[variables('apiManagedDisksVersion')]",
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "dependsOn": [
         "[variables('vnetID')]"
       ],
@@ -1140,7 +1140,7 @@
       "type": "Microsoft.Network/loadBalancers"
     },
     {
-      "apiVersion": "[variables('apiManagedDisksVersion')]",
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "dependsOn": [
         "[variables('vnetID')]",
         "[concat('Microsoft.Network/loadBalancers/', variables('agent1publicLbName'))]"

@@ -536,9 +536,9 @@
     "agent1publicVMNamePrefix": "[concat(variables('orchestratorName'), '-agent1public-', variables('nameSuffix'))]",
     "agent1publicVMSize": "[parameters('agent1publicVMSize')]",
     "agent1publicVnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agent1publicSubnetName'))]",
-    "apiManagedDisksVersion": "2016-04-30-preview",
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
+    "apiVersionStorageManagedDisks": "2016-04-30-preview",
     "dataStorageAccountPrefixSeed": 97,
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]",
     "masterCount": 3,
@@ -890,7 +890,7 @@
       "type": "Microsoft.Network/networkInterfaces"
     },
     {
-      "apiVersion": "[variables('apiManagedDisksVersion')]",
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "location": "[resourceGroup().location]",
       "name": "[variables('agent128AvailabilitySet')]",
       "properties": {
@@ -901,7 +901,7 @@
       "type": "Microsoft.Compute/availabilitySets"
     },
     {
-      "apiVersion": "[variables('apiManagedDisksVersion')]",
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "copy": {
         "count": "[variables('agent128Count')]",
         "name": "vmLoopNode"
@@ -1063,7 +1063,7 @@
       "type": "Microsoft.Network/networkInterfaces"
     },
     {
-      "apiVersion": "[variables('apiManagedDisksVersion')]",
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "location": "[resourceGroup().location]",
       "name": "[variables('agent1publicAvailabilitySet')]",
       "properties": {
@@ -1204,7 +1204,7 @@
       "type": "Microsoft.Network/loadBalancers"
     },
     {
-      "apiVersion": "[variables('apiManagedDisksVersion')]",
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "copy": {
         "count": "[variables('agent1publicCount')]",
         "name": "vmLoopNode"

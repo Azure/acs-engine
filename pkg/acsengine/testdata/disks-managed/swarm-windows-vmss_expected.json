@@ -555,9 +555,9 @@
     "agentWindowsPublisher": "MicrosoftWindowsServer",
     "agentWindowsSku": "2016-Datacenter-with-Containers",
     "agentWindowsVersion": "latest",
-    "apiManagedDisksVersion": "2016-04-30-preview",
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
+    "apiVersionStorageManagedDisks": "2016-04-30-preview",
     "clusterInstallParameters": "[concat(variables('masterCount'), ' ',variables('masterVMNamePrefix'), ' ',variables('masterFirstAddrOctet4'), ' ',variables('adminUsername'),' ',variables('postInstallScriptURI'),' ',variables('masterFirstAddrPrefix'))]",
     "dataStorageAccountPrefixSeed": 97,
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]",
@@ -870,7 +870,7 @@
   },
   "resources": [
     {
-      "apiVersion": "[variables('apiManagedDisksVersion')]",
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[variables('vnetID')]"
@@ -1093,7 +1093,7 @@
       "type": "Microsoft.Network/loadBalancers"
     },
     {
-      "apiVersion": "[variables('apiManagedDisksVersion')]",
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[variables('vnetID')]",
