@@ -609,16 +609,16 @@ func getSecurityRules(ports []int) string {
 }
 
 func getMasterRolesFileContents() string {
-	return `{\"content\": \"\", \"path\": \"/etc/mesosphere/roles/master\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/azure_master\"},`
+	return `master\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/azure_master`
 }
 
 func getAgentRolesFileContents(ports []int) string {
 	if len(ports) > 0 {
 		// public agents
-		return `{\"content\": \"\", \"path\": \"/etc/mesosphere/roles/slave_public\"},`
+		return `slave_public`
 	}
 	// private agents
-	return `{\"content\": \"\", \"path\": \"/etc/mesosphere/roles/slave\"},`
+	return `slave`
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
