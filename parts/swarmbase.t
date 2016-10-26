@@ -18,6 +18,7 @@
             "{{.Name}}DataAccountName": "[concat(variables('storageAccountBaseName'), 'data{{$index}}')]",
           {{end}}
         {{end}}
+        "{{.Name}}Index": $index,
     {{end}}
 
     {{template "swarmmastervars.t" .}},
