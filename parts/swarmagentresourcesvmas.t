@@ -38,7 +38,7 @@
     },
 {{if .IsManagedDisks}}
     {
-      "apiVersion": "[variables('apiManagedDisksVersion')]", 
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]", 
       "location": "[resourceGroup().location]", 
       "name": "[variables('{{.Name}}AvailabilitySet')]", 
       "properties": { 
@@ -140,7 +140,7 @@
 {{end}}
     {
 {{if .IsManagedDisks}}
-    "apiVersion": "[variables('apiManagedDisksVersion')]",
+    "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
 {{else}}
     "apiVersion": "[variables('apiVersionDefault')]",
 {{end}}

@@ -79,7 +79,7 @@
 {{end}}
     {
 {{if .IsManagedDisks}}
-      "apiVersion": "[variables('apiManagedDisksVersion')]",
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
 {{else}} 
       "apiVersion": "[variables('apiVersionDefault')]",
 {{end}} 
