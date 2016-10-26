@@ -1,7 +1,8 @@
 .NOTPARALLEL:
 
 build:
-	go generate -v
+	go get .
+	go generate -v ./...
 	go build -v
 
 test:
@@ -16,7 +17,6 @@ lint:
 
 ci: validate-generated build test lint
 
-dev:
-	docker build -t acs-engine .
-	docker run -it -v `pwd`:/acs-engine -w /acs-engine acs-engine /bin/bash
+devenv:
+	./scripts/devenv.sh
 

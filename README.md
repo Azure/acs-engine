@@ -1,84 +1,115 @@
-# ACSEngine - Template generator
+# Azure Container Service ARM Template Generator
 
-Template generator builds a custom template based on user requirements.  Examples exist under clusterdefinitions folder.
+## Overview
 
-# Building the Application
+`acs-engine` is a tool that produces ARM (Azure Resource Manager) templates for deploying various container orchestrators into Azure.
+The input to the tool is a cluster definition. The cluster definition is very similar to (in many cases the same as) the ARM template
+syntax used to deploy an Azure Container Service cluster.
 
-To build the application:
+## Development (Docker)
 
-1. set $GOPATH (example c:\gopath)
-    (under Windows `SET GOPATH=c:\gopath`)
-2. `go get gopkg.in/yaml.v2`
-3. `go get github.com/ghodss/yaml` 
-4. `cd $GOPATH/github.com/Azure/acs-engine`
-5. `go build` to produce the acsengine binary
+The easiest way to get started developing on `acs-engine` is to use Docker.
+If you already have Docker or "Docker for {Windows,Mac}" then you can get started
+without needing to install anything extra.
 
-# Developer Instructions
+* Windows (PowerShell): `.\scripts\devenv.ps1`
+* Linux (bash): `.\scripts\devenv.sh`
 
-If you want to develop and submit changes, follow these additional steps:
+This setup mounts the `acs-engine` source directory as a volume into the Docker container.
+This means that you can edit your source code normally in your favorite editor on your
+machine, while still being able to compile and test inside of the Docker container (the
+same environment used in our Continuous Integration system).
 
-1. Add $GOPATH\bin to your path
-   (under Windows `SET PATH=%PATH%;%GOPATH%\bin`)
-2. `go get -u github.com/jteeuwen/go-bindata`
+[Here's a quick demo video showing the dev/build/test cycle with this setup.](https://www.youtube.com/watch?v=lc6UZmqxQMs)
 
-Then everytime you adjust content in parts directory:
+## Development (Native)
 
-1. `cd $GOPATH/github.com/Azure/acs-engine/pkg/acsengine`
-2. `go generate` to generate source files needed
-3. `cd $GOPATH/github.com/Azure/acs-engine`
-4. `go build` to produce the acsengine binary 
+### Requirements
+- PowerShell (Windows)
+- `bash` + `make` (Linux)
+- `git`
+- `go` (with a properly configured GOPATH)
 
-# Generating a Template
+### Building (Linux)
 
-Once build run the generator with the command ```./acsengine
-CLUSTER_DEFINITION_FILE``` where ```CLUSTER_DEFINITION_FILE``` is the
-path to the cluster definition you want to use. The application
-outputs therequired ARM template. This can be piped to a file for
-later use (see below).
-
-There are some example definition files in the folder `clusterdefinitions`.
-
-# Using a Template
-
-Generated templates can be deployed using the Azure CLI or Powershell. 
-
-## Deploying with Powershell
-
-To deploy an ACS instance using Powershell and your generated template
-run the following two commands:
-
-``` Powershell
-New-AzureRmResourceGroup -Name <RESOURCE_GROUP_NAME> -Location <LOCATION> -Force
-New-AzureRmResourceGroupDeployment -Name <DEPLOYMENT_NAME> -ResourceGroupName <RESOURCE_GROUP_NAME> RGName  -TemplateFile <TEMPLATE_FILE>
+```shell
+make build
 ```
 
-## Deploying with Azure CLI
+### Building (Windows, PowerShell)
 
-To deploy an ACS instance using the Azure CLI and your generated
-template run the following two commands:
-
-``` bash
-azure group create <RESOURCE_GROUP_NAME> <LOCATION>
-azure group deployment create <RESOURCE_GROUP_NAME> <DEPLOYMENT NAME> -f <TEMPLATE_FILE>
-
+```shell
+cd ${env:GOPATH}/github.com/Azure/acs-engine
+go get .
+go build .
 ```
 
-# Using a Docker container
 
-The ```scripts``` directory contains helper scripts that will assist
-with the using a Docker container to work with the appication.
+## Contributing
 
-## dev.sh
+Please follow these instructions before submitting a PR:
 
-Run a Go container with the application source code mounted into the
-container. You can edit the code in your favorite editor on the client
-while building and running the container.
+1. Execute `make ci` to run the checkin validation tests.
 
-## generate.sh
+2. Manually test deployments if you are making modifications to the templates.
+   For example, if you have to change the expected resulting templates then you
+   should deploy the relevant example cluster definitions to ensure you're not
+   introducing any sort of regression.
 
-Generate a template from a given configuration and store it in the
-```generated``` folder. For example, to generate a Swarm template use:
+## Usage (Template Generation)
 
-``` bash
-./scripts/generate.sh swarm.json
+Usage is best demonstrated with an example:
+
+```shell
+$ vim examples/kubernetes.classic.json
+
+# insert your preferred, unique DNS prefix
+# insert your SSH public key
+
+$ ./acs-engine examples/kubernetes.classic.json
 ```
+
+This produces a new directory inside `_output/` that contains an ARM template
+for deploying Kubernetes into Azure. (In the case of Kubernetes, some additional
+needed assets are generated and placed in the output directory.)
+
+## Usage (Deployment)
+
+Generated templates can be deployed using
+[the Azure CLI](https://github.com/Azure/azure-cli) or
+[Powershell](https://github.com/Azure/azure-powershell).
+
+### Deploying with Azure CLI
+
+```bash
+$ az login
+
+$ az account set --name "<SUBSCRIPTION NAME OR ID>"
+
+$ az group create \
+    --name="<RESOURCE_GROUP_NAME>" \
+    --location="<LOCATION>"
+
+$ az group deployment create \
+    --name="<DEPLOYMENT NAME>" \
+    --resource-group="<RESOURCE_GROUP_NAME>" \
+    --template-file="./_output/<INSTANCE>/azuredeploy.json"
+```
+
+### Deploying with Powershell
+
+```powershell
+Add-AzureRmAccount
+
+Select-AzureRmSubscription -SubscriptionID <SUBSCRIPTION_ID>
+
+New-AzureRmResourceGroup `
+    -Name <RESOURCE_GROUP_NAME> `
+    -Location <LOCATION>
+
+New-AzureRmResourceGroupDeployment `
+    -Name <DEPLOYMENT_NAME> `
+    -ResourceGroupName <RESOURCE_GROUP_NAME> `
+    -TemplateFile _output\<INSTANCE>\azuredeploy.json
+```
+
