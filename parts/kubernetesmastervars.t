@@ -73,7 +73,15 @@
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]",
     "subscriptionId": "[subscription().subscriptionId]",
     "tenantId": "[subscription().tenantId]"
-
+{{if .HasWindows}}
+    ,"windowsAdminUsername": "[parameters('windowsAdminUsername')]",
+    "windowsAdminPassword": "[parameters('windowsAdminPassword')]",
+    "agentWindowsPublisher": "MicrosoftWindowsServer",
+    "agentWindowsOffer": "WindowsServer",
+    "agentWindowsSku": "2016-Datacenter-with-Containers",
+    "agentWindowsVersion": "latest",
+    "agentWindowsBackendPort": 3389
+{{end}}
 
     
  
