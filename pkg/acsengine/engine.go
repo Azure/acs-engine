@@ -298,13 +298,19 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			return getDataDisks(profile)
 		},
 		"GetDCOSMasterCustomData": func() string {
-			return getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, DCOSMaster)
+			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, DCOSMaster)
+
+			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
-		"GetAgentMasterCustomData": func(ports []int) string {
+		"GetDCOSAgentCustomData": func(ports []int) string {
+			str := ""
 			if len(ports) > 0 {
-				return getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, DCOSPublicAgent)
+				str = getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, DCOSPublicAgent)
+			} else {
+				str = getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, DCOSPrivateAgent)
 			}
-			return getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, DCOSPrivateAgent)
+
+			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetMasterAllowedSizes": func() string {
 			if t.ClassicMode {
