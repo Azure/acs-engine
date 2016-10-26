@@ -4,7 +4,10 @@
     "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
     "dataStorageAccountPrefixSeed": 97, 
     "apiVersionDefault": "2016-03-30", 
-    "apiVersionStorage": "2015-06-15", 
+    "apiVersionStorage": "2015-06-15",
+{{if .HasManagedDisks}}
+    "apiVersionStorageManagedDisks": "2016-04-30-preview",
+{{end}}
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]", 
     "masterCount": {{.MasterProfile.Count}}, 
     "masterEndpointDNSNamePrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",

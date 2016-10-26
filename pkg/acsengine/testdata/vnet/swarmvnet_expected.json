@@ -514,8 +514,7 @@
     "agentRunCmdFile": "[concat(' -  content: |\n        #!/bin/bash\n        ',variables('agentCustomScript'),'\n    path: /opt/azure/containers/install-cluster.sh\n    permissions: \"0744\"\n')]",
     "agentprivateAccountName": "[concat(variables('storageAccountBaseName'), 'agnt0')]",
     "agentprivateCount": "[parameters('agentprivateCount')]",
-    "agentprivateIndex": 0,
-    "agentprivateStorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentprivateIndex'))]",
+    "agentprivateStorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),0)]",
     "agentprivateStorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentprivateVMNamePrefix": "[concat(variables('orchestratorName'), '-agentprivate-', variables('nameSuffix'))]",
     "agentprivateVMSize": "[parameters('agentprivateVMSize')]",
@@ -524,13 +523,12 @@
     "agentpublicCount": "[parameters('agentpublicCount')]",
     "agentpublicEndpointDNSNamePrefix": "[tolower(parameters('agentpublicEndpointDNSNamePrefix'))]",
     "agentpublicIPAddressName": "[concat(variables('orchestratorName'), '-agent-ip-', variables('agentpublicEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]",
-    "agentpublicIndex": 1,
     "agentpublicLbBackendPoolName": "[concat(variables('orchestratorName'), '-agentpublic-', variables('nameSuffix'))]",
     "agentpublicLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('agentpublicLbName'))]",
     "agentpublicLbIPConfigID": "[concat(variables('agentpublicLbID'),'/frontendIPConfigurations/', variables('agentpublicLbIPConfigName'))]",
     "agentpublicLbIPConfigName": "[concat(variables('orchestratorName'), '-agentpublic-', variables('nameSuffix'))]",
     "agentpublicLbName": "[concat(variables('orchestratorName'), '-agentpublic-', variables('nameSuffix'))]",
-    "agentpublicStorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpublicIndex'))]",
+    "agentpublicStorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),1)]",
     "agentpublicStorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpublicVMNamePrefix": "[concat(variables('orchestratorName'), '-agentpublic-', variables('nameSuffix'))]",
     "agentpublicVMSize": "[parameters('agentpublicVMSize')]",
@@ -857,6 +855,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentprivateStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentprivateStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentprivateAccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentprivateStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentprivateStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentprivateAccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentprivateStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentprivateStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentprivateAccountName'))]",
@@ -1087,6 +1086,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpublicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpublicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpublicAccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpublicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpublicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpublicAccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpublicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpublicStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpublicAccountName'))]",

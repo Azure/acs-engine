@@ -128,15 +128,16 @@ type MasterProfile struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name           string `json:"name"`
-	Count          int    `json:"count"`
-	VMSize         string `json:"vmSize"`
-	DNSPrefix      string `json:"dnsPrefix,omitempty"`
-	OSType         OSType `json:"osType,omitempty"`
-	Ports          []int  `json:"ports,omitempty"`
-	StorageProfile string `json:"storageProfile,omitempty"`
-	DiskSizesGB    []int  `json:"diskSizesGB,omitempty"`
-	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
+	Name                string `json:"name"`
+	Count               int    `json:"count"`
+	VMSize              string `json:"vmSize"`
+	DNSPrefix           string `json:"dnsPrefix,omitempty"`
+	OSType              OSType `json:"osType,omitempty"`
+	Ports               []int  `json:"ports,omitempty"`
+	AvailabilityProfile string `json:"availabilityProfile"`
+	StorageProfile      string `json:"storageProfile"`
+	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
+	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 	// subnet is internal
 	subnet string
 
@@ -194,9 +195,19 @@ func (a *AgentPoolProfile) IsWindows() bool {
 	return a.OSType == Windows
 }
 
-// IsVolumeBasedStorage returns true if the customer specified disks
-func (a *AgentPoolProfile) IsVolumeBasedStorage() bool {
-	return a.StorageProfile == StorageVolumes
+// IsAvailabilitySets returns true if the customer specified disks
+func (a *AgentPoolProfile) IsAvailabilitySets() bool {
+	return a.AvailabilityProfile == AvailabilitySet
+}
+
+// IsManagedDisks returns true if the customer specified managed disks
+func (a *AgentPoolProfile) IsManagedDisks() bool {
+	return a.StorageProfile == ManagedDisks
+}
+
+// IsStorageAccount returns true if the customer specified storage account
+func (a *AgentPoolProfile) IsStorageAccount() bool {
+	return a.StorageProfile == StorageAccount
 }
 
 // HasDisks returns true if the customer specified disks

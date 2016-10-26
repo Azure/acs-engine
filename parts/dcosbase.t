@@ -8,11 +8,13 @@
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}
         {{template "dcosagentvars.t" .}}
-        {{if .IsVolumeBasedStorage}}
-          "{{.Name}}DataAccountName": "[concat(variables('storageAccountBaseName'), 'data{{$index}}')]",
+        {{if .IsStorageAccount}}
+          "{{.Name}}StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),{{$index}})]",
+          "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]",
+          {{if .HasDisks}}
+            "{{.Name}}DataAccountName": "[concat(variables('storageAccountBaseName'), 'data{{$index}}')]",
+          {{end}}
         {{end}}
-        "{{.Name}}Index": {{$index}},
-        "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]", 
     {{end}}
     
     {{template "dcosmastervars.t" .}},
@@ -21,10 +23,10 @@
   },
   "resources": [
     {{range .AgentPoolProfiles}}
-      {{if .IsVolumeBasedStorage}}
-        {{template "dcosagentresourcesdisks.t" .}},
+      {{if .IsAvailabilitySets}}
+        {{template "dcosagentresourcesvmas.t" .}},
       {{else}}
-        {{template "dcosagentresources.t" .}},
+        {{template "dcosagentresourcesvmss.t" .}},
       {{end}}
     {{end}}
     {{template "dcosmasterresources.t" .}}

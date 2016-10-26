@@ -14,7 +14,7 @@
         "name": "agent",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "StorageProfile": "Volumes"
+        "availabilityProfile": "AvailabilitySet"
       }
     ],
     "linuxProfile": {

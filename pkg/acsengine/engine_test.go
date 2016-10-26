@@ -56,18 +56,18 @@ func TestExpected(t *testing.T) {
 		for i := 0; i < 3; i++ {
 			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService)
 			if err != nil {
-				t.Error(err.Error())
+				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 				continue
 			}
 			ppArmTemplate, e1 := PrettyPrintArmTemplate(armTemplate)
 			if e1 != nil {
-				t.Error(e1.Error())
+				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e1.Error()))
 				continue
 			}
 
 			ppParams, e2 := PrettyPrintJSON(params)
 			if e2 != nil {
-				t.Error(e2.Error())
+				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e2.Error()))
 				continue
 			}
 

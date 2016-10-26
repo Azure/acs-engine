@@ -519,13 +519,12 @@
     "agentpool1Count": "[parameters('agentpool1Count')]",
     "agentpool1EndpointDNSNamePrefix": "[tolower(parameters('agentpool1EndpointDNSNamePrefix'))]",
     "agentpool1IPAddressName": "[concat(variables('orchestratorName'), '-agent-ip-', variables('agentpool1EndpointDNSNamePrefix'), '-', variables('nameSuffix'))]",
-    "agentpool1Index": 0,
     "agentpool1LbBackendPoolName": "[concat(variables('orchestratorName'), '-agentpool1-', variables('nameSuffix'))]",
     "agentpool1LbID": "[resourceId('Microsoft.Network/loadBalancers',variables('agentpool1LbName'))]",
     "agentpool1LbIPConfigID": "[concat(variables('agentpool1LbID'),'/frontendIPConfigurations/', variables('agentpool1LbIPConfigName'))]",
     "agentpool1LbIPConfigName": "[concat(variables('orchestratorName'), '-agentpool1-', variables('nameSuffix'))]",
     "agentpool1LbName": "[concat(variables('orchestratorName'), '-agentpool1-', variables('nameSuffix'))]",
-    "agentpool1StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool1Index'))]",
+    "agentpool1StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),0)]",
     "agentpool1StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpool1Subnet": "[parameters('agentpool1Subnet')]",
     "agentpool1SubnetName": "[concat(variables('orchestratorName'), '-agentpool1subnet')]",
@@ -534,8 +533,7 @@
     "agentpool1VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentpool1SubnetName'))]",
     "agentpool2AccountName": "[concat(variables('storageAccountBaseName'), 'agnt1')]",
     "agentpool2Count": "[parameters('agentpool2Count')]",
-    "agentpool2Index": 1,
-    "agentpool2StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool2Index'))]",
+    "agentpool2StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),1)]",
     "agentpool2StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpool2Subnet": "[parameters('agentpool2Subnet')]",
     "agentpool2SubnetName": "[concat(variables('orchestratorName'), '-agentpool2subnet')]",
@@ -998,6 +996,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName'))]",
@@ -1105,6 +1104,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool2AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool2AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool2AccountName'))]",

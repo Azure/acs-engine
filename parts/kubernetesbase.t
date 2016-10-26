@@ -21,7 +21,7 @@
   },
   "resources": [
     {{range .AgentPoolProfiles}}
-      {{template "kubernetesagentresources.t" .}},
+      {{template "kubernetesagentresourcesvmas.t" .}},
     {{end}}
     {{template "kubernetesmasterresources.t" .}}
   ],

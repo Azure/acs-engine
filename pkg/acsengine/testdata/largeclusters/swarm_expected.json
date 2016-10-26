@@ -2497,8 +2497,7 @@
     "agentRunCmdFile": "[concat(' -  content: |\n        #!/bin/bash\n        ',variables('agentCustomScript'),'\n    path: /opt/azure/containers/install-cluster.sh\n    permissions: \"0744\"\n')]",
     "agentpri0AccountName": "[concat(variables('storageAccountBaseName'), 'agnt0')]",
     "agentpri0Count": "[parameters('agentpri0Count')]",
-    "agentpri0Index": 0,
-    "agentpri0StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpri0Index'))]",
+    "agentpri0StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),0)]",
     "agentpri0StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpri0Subnet": "[parameters('agentpri0Subnet')]",
     "agentpri0SubnetName": "[concat(variables('orchestratorName'), '-agentpri0subnet')]",
@@ -2507,8 +2506,7 @@
     "agentpri0VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentpri0SubnetName'))]",
     "agentpri10AccountName": "[concat(variables('storageAccountBaseName'), 'agnt10')]",
     "agentpri10Count": "[parameters('agentpri10Count')]",
-    "agentpri10Index": 10,
-    "agentpri10StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpri10Index'))]",
+    "agentpri10StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),10)]",
     "agentpri10StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpri10Subnet": "[parameters('agentpri10Subnet')]",
     "agentpri10SubnetName": "[concat(variables('orchestratorName'), '-agentpri10subnet')]",
@@ -2517,8 +2515,7 @@
     "agentpri10VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentpri10SubnetName'))]",
     "agentpri1AccountName": "[concat(variables('storageAccountBaseName'), 'agnt1')]",
     "agentpri1Count": "[parameters('agentpri1Count')]",
-    "agentpri1Index": 1,
-    "agentpri1StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpri1Index'))]",
+    "agentpri1StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),1)]",
     "agentpri1StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpri1Subnet": "[parameters('agentpri1Subnet')]",
     "agentpri1SubnetName": "[concat(variables('orchestratorName'), '-agentpri1subnet')]",
@@ -2527,8 +2524,7 @@
     "agentpri1VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentpri1SubnetName'))]",
     "agentpri2AccountName": "[concat(variables('storageAccountBaseName'), 'agnt2')]",
     "agentpri2Count": "[parameters('agentpri2Count')]",
-    "agentpri2Index": 2,
-    "agentpri2StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpri2Index'))]",
+    "agentpri2StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),2)]",
     "agentpri2StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpri2Subnet": "[parameters('agentpri2Subnet')]",
     "agentpri2SubnetName": "[concat(variables('orchestratorName'), '-agentpri2subnet')]",
@@ -2537,8 +2533,7 @@
     "agentpri2VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentpri2SubnetName'))]",
     "agentpri3AccountName": "[concat(variables('storageAccountBaseName'), 'agnt3')]",
     "agentpri3Count": "[parameters('agentpri3Count')]",
-    "agentpri3Index": 3,
-    "agentpri3StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpri3Index'))]",
+    "agentpri3StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),3)]",
     "agentpri3StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpri3Subnet": "[parameters('agentpri3Subnet')]",
     "agentpri3SubnetName": "[concat(variables('orchestratorName'), '-agentpri3subnet')]",
@@ -2547,8 +2542,7 @@
     "agentpri3VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentpri3SubnetName'))]",
     "agentpri4AccountName": "[concat(variables('storageAccountBaseName'), 'agnt4')]",
     "agentpri4Count": "[parameters('agentpri4Count')]",
-    "agentpri4Index": 4,
-    "agentpri4StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpri4Index'))]",
+    "agentpri4StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),4)]",
     "agentpri4StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpri4Subnet": "[parameters('agentpri4Subnet')]",
     "agentpri4SubnetName": "[concat(variables('orchestratorName'), '-agentpri4subnet')]",
@@ -2557,8 +2551,7 @@
     "agentpri4VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentpri4SubnetName'))]",
     "agentpri5AccountName": "[concat(variables('storageAccountBaseName'), 'agnt5')]",
     "agentpri5Count": "[parameters('agentpri5Count')]",
-    "agentpri5Index": 5,
-    "agentpri5StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpri5Index'))]",
+    "agentpri5StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),5)]",
     "agentpri5StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpri5Subnet": "[parameters('agentpri5Subnet')]",
     "agentpri5SubnetName": "[concat(variables('orchestratorName'), '-agentpri5subnet')]",
@@ -2567,8 +2560,7 @@
     "agentpri5VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentpri5SubnetName'))]",
     "agentpri6AccountName": "[concat(variables('storageAccountBaseName'), 'agnt6')]",
     "agentpri6Count": "[parameters('agentpri6Count')]",
-    "agentpri6Index": 6,
-    "agentpri6StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpri6Index'))]",
+    "agentpri6StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),6)]",
     "agentpri6StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpri6Subnet": "[parameters('agentpri6Subnet')]",
     "agentpri6SubnetName": "[concat(variables('orchestratorName'), '-agentpri6subnet')]",
@@ -2577,8 +2569,7 @@
     "agentpri6VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentpri6SubnetName'))]",
     "agentpri7AccountName": "[concat(variables('storageAccountBaseName'), 'agnt7')]",
     "agentpri7Count": "[parameters('agentpri7Count')]",
-    "agentpri7Index": 7,
-    "agentpri7StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpri7Index'))]",
+    "agentpri7StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),7)]",
     "agentpri7StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpri7Subnet": "[parameters('agentpri7Subnet')]",
     "agentpri7SubnetName": "[concat(variables('orchestratorName'), '-agentpri7subnet')]",
@@ -2587,8 +2578,7 @@
     "agentpri7VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentpri7SubnetName'))]",
     "agentpri8AccountName": "[concat(variables('storageAccountBaseName'), 'agnt8')]",
     "agentpri8Count": "[parameters('agentpri8Count')]",
-    "agentpri8Index": 8,
-    "agentpri8StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpri8Index'))]",
+    "agentpri8StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),8)]",
     "agentpri8StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpri8Subnet": "[parameters('agentpri8Subnet')]",
     "agentpri8SubnetName": "[concat(variables('orchestratorName'), '-agentpri8subnet')]",
@@ -2597,8 +2587,7 @@
     "agentpri8VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentpri8SubnetName'))]",
     "agentpri9AccountName": "[concat(variables('storageAccountBaseName'), 'agnt9')]",
     "agentpri9Count": "[parameters('agentpri9Count')]",
-    "agentpri9Index": 9,
-    "agentpri9StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpri9Index'))]",
+    "agentpri9StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),9)]",
     "agentpri9StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpri9Subnet": "[parameters('agentpri9Subnet')]",
     "agentpri9SubnetName": "[concat(variables('orchestratorName'), '-agentpri9subnet')]",
@@ -2609,13 +2598,12 @@
     "agentpublic1Count": "[parameters('agentpublic1Count')]",
     "agentpublic1EndpointDNSNamePrefix": "[tolower(parameters('agentpublic1EndpointDNSNamePrefix'))]",
     "agentpublic1IPAddressName": "[concat(variables('orchestratorName'), '-agent-ip-', variables('agentpublic1EndpointDNSNamePrefix'), '-', variables('nameSuffix'))]",
-    "agentpublic1Index": 11,
     "agentpublic1LbBackendPoolName": "[concat(variables('orchestratorName'), '-agentpublic1-', variables('nameSuffix'))]",
     "agentpublic1LbID": "[resourceId('Microsoft.Network/loadBalancers',variables('agentpublic1LbName'))]",
     "agentpublic1LbIPConfigID": "[concat(variables('agentpublic1LbID'),'/frontendIPConfigurations/', variables('agentpublic1LbIPConfigName'))]",
     "agentpublic1LbIPConfigName": "[concat(variables('orchestratorName'), '-agentpublic1-', variables('nameSuffix'))]",
     "agentpublic1LbName": "[concat(variables('orchestratorName'), '-agentpublic1-', variables('nameSuffix'))]",
-    "agentpublic1StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpublic1Index'))]",
+    "agentpublic1StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),11)]",
     "agentpublic1StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpublic1Subnet": "[parameters('agentpublic1Subnet')]",
     "agentpublic1SubnetName": "[concat(variables('orchestratorName'), '-agentpublic1subnet')]",
@@ -2948,6 +2936,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri0AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri0AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri0AccountName'))]",
@@ -3049,6 +3038,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri1AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri1AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri1AccountName'))]",
@@ -3150,6 +3140,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName'))]",
@@ -3251,6 +3242,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri3AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri3AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri3AccountName'))]",
@@ -3352,6 +3344,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri4AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri4AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri4AccountName'))]",
@@ -3453,6 +3446,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri5AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri5AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri5AccountName'))]",
@@ -3554,6 +3548,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri6AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri6AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri6AccountName'))]",
@@ -3655,6 +3650,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri7AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri7AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri7AccountName'))]",
@@ -3756,6 +3752,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri8AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri8AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri8AccountName'))]",
@@ -3857,6 +3854,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri9AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri9AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri9AccountName'))]",
@@ -3958,6 +3956,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri10AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri10AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri10AccountName'))]",
@@ -4189,6 +4188,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(0,variables('agentpublic1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('agentpublic1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpublic1AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(1,variables('agentpublic1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('agentpublic1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpublic1AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(2,variables('agentpublic1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('agentpublic1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpublic1AccountName'))]",

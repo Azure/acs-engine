@@ -69,8 +69,11 @@ func (a *AgentPoolProfile) Validate() error {
 			return e
 		}
 	}
-	if len(a.DiskSizesGB) > 0 && (a.StorageProfile != StorageVolumes && a.StorageProfile != StorageHAVolumes) {
-		return fmt.Errorf("Storage Type %s does not support attached disks for cluster named '%s'.  Specify storage as either %s or %s", a.StorageProfile, a.Name, StorageVolumes, StorageHAVolumes)
+	if len(a.DiskSizesGB) > 0 && len(a.StorageProfile) == 0 {
+		return fmt.Errorf("property 'StorageProfile' must be set with either '%s' or '%s' when attaching disks", StorageAccount, ManagedDisks)
+	}
+	if len(a.DiskSizesGB) > 0 && a.StorageProfile == StorageAccount && a.AvailabilityProfile == VirtualMachineScaleSets {
+		return fmt.Errorf("VirtualMachineScaleSets does not support storage account attached disks.  Instead specify 'StorageAccount': '%s'", ManagedDisks)
 	}
 	if len(a.DiskSizesGB) > MaxDisks {
 		return fmt.Errorf("A maximum of %d disks may be specified.  %d disks were specified for cluster named '%s'", MaxDisks, len(a.DiskSizesGB), a.Name)
@@ -121,21 +124,36 @@ func (a *Properties) Validate() error {
 		if e := agentPoolProfile.Validate(); e != nil {
 			return e
 		}
-		switch agentPoolProfile.StorageProfile {
-		case StorageVolumes:
-		case StorageHAVolumes:
-		case StorageExternal:
+		switch agentPoolProfile.AvailabilityProfile {
+		case AvailabilitySet:
+		case VirtualMachineScaleSets:
 		case "":
 		default:
 			{
-				return fmt.Errorf("unknown storage type '%s' for agent pool '%s'.  Specify one of %s, %s, or %s", agentPoolProfile.StorageProfile, agentPoolProfile.Name, StorageExternal, StorageVolumes, StorageHAVolumes)
+				return fmt.Errorf("unknown availability profile type '%s' for agent pool '%s'.  Specify either %s, or %s", agentPoolProfile.AvailabilityProfile, agentPoolProfile.Name, AvailabilitySet, VirtualMachineScaleSets)
 			}
 		}
-		if agentPoolProfile.StorageProfile == StorageHAVolumes {
-			return errors.New("HA volumes are currently unsupported")
+		switch agentPoolProfile.StorageProfile {
+		case StorageAccount:
+		case ManagedDisks:
+		case "":
+		default:
+			{
+				return fmt.Errorf("unknown storage type '%s' for agent pool '%s'.  Specify either %s, or %s", agentPoolProfile.StorageProfile, agentPoolProfile.Name, StorageAccount, ManagedDisks)
+			}
 		}
-		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.StorageProfile == StorageExternal || len(agentPoolProfile.StorageProfile) == 0) {
-			return fmt.Errorf("External storage deployments (VMSS) are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"StorageProfile\":\"%s\"", StorageVolumes)
+		if agentPoolProfile.StorageProfile == ManagedDisks {
+			switch a.OrchestratorProfile.OrchestratorType {
+			case DCOS:
+			case DCOS173:
+			case DCOS184:
+			case Swarm:
+			default:
+				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+		}
+		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
+			return fmt.Errorf("VirtualMachineScaleSets are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"AvailabilityProfile\":\"%s\"", AvailabilitySet)
 		}
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(agentPoolProfile.DNSPrefix) > 0 {
 			return errors.New("DNSPrefix not support for agent pools in Kubernetes - Kubernetes marks its own clusters public")
