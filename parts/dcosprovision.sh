@@ -7,6 +7,7 @@ mkdir $MESOSDIR
 . /etc/mesosphere/setup-flags/bootstrap-id
 
 curl -fLsSv --retry 20 -Y 100000 -y 60 -o $MESOSDIR/bootstrap.tar.xz https://dcosio.azureedge.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz &
+curl -fLsSv --retry 20 -Y 100000 -y 60 -o $MESOSDIR/bootstrap.tar.xz https://az837203.vo.msecnd.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz &
 curl -fLsSv --retry 20 -Y 100000 -y 60 -o $MESOSDIR/d.deb https://az837203.vo.msecnd.net/dcos-deps/docker-engine_1.11.2-0~xenial_amd64.deb &
 curl -fLsSv --retry 20 -Y 100000 -y 60 -o $MESOSDIR/1.deb https://az837203.vo.msecnd.net/dcos-deps/libipset3_6.29-1_amd64.deb &
 curl -fLsSv --retry 20 -Y 100000 -y 60 -o $MESOSDIR/2.deb https://az837203.vo.msecnd.net/dcos-deps/ipset_6.29-1_amd64.deb &
