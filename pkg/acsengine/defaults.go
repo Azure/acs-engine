@@ -31,6 +31,9 @@ func setOrchestratorDefaults(a *api.Properties) {
 		a.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec = DefaultKubernetesHyperkubeSpec
 		a.OrchestratorProfile.KubernetesConfig.KubectlVersion = DefaultKubectlVersion
 	}
+	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
+		a.OrchestratorProfile.OrchestratorType = api.DCOS184
+	}
 }
 
 // SetMasterNetworkDefaults for masters

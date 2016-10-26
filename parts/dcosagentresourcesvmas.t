@@ -199,7 +199,7 @@
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]", 
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex())]", 
-          "customData": "[base64(concat({{if IsDCOS173}}{{template "dcoscustomdata173.t" dict "DCOSCustomDataPublicIPStr" GetDCOSCustomDataPublicIPStr "DCOSGUID" GetDCOSGUID "RolesString" (GetAgentRolesFileContents .Ports)}}{{else if IsDCOS184}}{{template "dcoscustomdata184.t" dict "DCOSCustomDataPublicIPStr" GetDCOSCustomDataPublicIPStr "DCOSGUID" GetDCOSGUID "RolesString" (GetAgentRolesFileContents .Ports)}}{{end}}))]", 
+          "customData": "[base64(concat('#cloud-config\n\n', '{{GetAgentMasterCustomData .Ports}}'))]", 
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true", 
               "ssh": {

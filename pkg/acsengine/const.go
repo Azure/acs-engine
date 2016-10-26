@@ -24,3 +24,12 @@ const (
 	// The latest stable version can be found here: https://storage.googleapis.com/kubernetes-release/release/stable.txt
 	DefaultKubectlVersion = "v1.4.4"
 )
+
+const (
+	// Master represents the master node type
+	DCOSMaster DCOSNodeType = "DCOSMaster"
+	// PrivateAgent represents the private agent node type
+	DCOSPrivateAgent DCOSNodeType = "DCOSPrivateAgent"
+	// PublicAgent represents the public agent node type
+	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
+)
