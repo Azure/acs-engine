@@ -217,7 +217,7 @@
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]", 
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]", 
-          "customData": "[base64(concat('#cloud-config\n\n', '{{GetDCOSMasterCustomData}}'))]",
+          {{GetDCOSMasterCustomData}}
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true", 
             "ssh": {

@@ -199,7 +199,7 @@
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]", 
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex())]", 
-          "customData": "[base64(concat('#cloud-config\n\n', '{{GetAgentMasterCustomData .Ports}}'))]", 
+          {{GetDCOSAgentCustomData .}} 
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true", 
               "ssh": {
