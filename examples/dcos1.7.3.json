@@ -6,7 +6,7 @@
     },
     "masterProfile": {
       "count": 1,
-      "dnsPrefix": "mgmtanhowe1009g",
+      "dnsPrefix": "mgmtanhowe1026b",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
@@ -19,7 +19,7 @@
         "name": "agentpool2",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "dnsPrefix": "appanhowe1009g",
+        "dnsPrefix": "appanhowe1026b",
         "ports": [
           80,
           443,

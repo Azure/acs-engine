@@ -217,7 +217,7 @@
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]", 
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]", 
-          "customData": "[base64(concat({{if IsDCOS173}}{{template "dcoscustomdata173.t" dict "DCOSCustomDataPublicIPStr" GetDCOSCustomDataPublicIPStr "DCOSGUID" GetDCOSGUID "RolesString" GetMasterRolesFileContents}}{{else if IsDCOS184}}{{template "dcoscustomdata184.t" dict "DCOSCustomDataPublicIPStr" GetDCOSCustomDataPublicIPStr "DCOSGUID" GetDCOSGUID "RolesString" GetMasterRolesFileContents}}{{end}}))]",
+          "customData": "[base64(concat('#cloud-config\n\n', '{{GetDCOSMasterCustomData}}'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true", 
             "ssh": {

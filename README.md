@@ -8,8 +8,25 @@ To build the application:
 
 1. set $GOPATH (example c:\gopath)
     (under Windows `SET GOPATH=c:\gopath`)
-2. `cd $GOPATH/github.com/Azure/acs-engine`
-3. `go build` to produce the acsengine binary
+2. `go get gopkg.in/yaml.v2`
+3. `go get github.com/ghodss/yaml` 
+4. `cd $GOPATH/github.com/Azure/acs-engine`
+5. `go build` to produce the acsengine binary
+
+# Developer Instructions
+
+If you want to develop and submit changes, follow these additional steps:
+
+1. Add $GOPATH\bin to your path
+   (under Windows `SET PATH=%PATH%;%GOPATH%\bin`)
+2. `go get -u github.com/jteeuwen/go-bindata`
+
+Then everytime you adjust content in parts directory:
+
+1. `cd $GOPATH/github.com/Azure/acs-engine/pkg/acsengine`
+2. `go generate` to generate source files needed
+3. `cd $GOPATH/github.com/Azure/acs-engine`
+4. `go build` to produce the acsengine binary 
 
 # Generating a Template
 

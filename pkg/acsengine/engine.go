@@ -14,6 +14,7 @@ import (
 	"text/template"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/ghodss/yaml"
 )
 
 const (
@@ -25,6 +26,12 @@ const (
 )
 
 const (
+	dcosCustomData173 = "dcoscustomdata173.t"
+	dcosCustomData184 = "dcoscustomdata184.t"
+	dcosProvision     = "dcosprovision.sh"
+)
+
+const (
 	agentOutputs                 = "agentoutputs.t"
 	agentParams                  = "agentparams.t"
 	classicParams                = "classicparams.t"
@@ -32,8 +39,6 @@ const (
 	dcosAgentResourcesVMSS       = "dcosagentresourcesvmss.t"
 	dcosAgentVars                = "dcosagentvars.t"
 	dcosBaseFile                 = "dcosbase.t"
-	dcosCustomData173            = "dcoscustomdata173.t"
-	dcosCustomData184            = "dcoscustomdata184.t"
 	dcosMasterResources          = "dcosmasterresources.t"
 	dcosMasterVars               = "dcosmastervars.t"
 	kubernetesBaseFile           = "kubernetesbase.t"
@@ -68,7 +73,7 @@ var kubernetesAddonYamls = map[string]string{
 }
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams}
-var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosCustomData173, dcosCustomData184, dcosMasterResources, dcosMasterVars}
+var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentCustomData, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmBaseFile, swarmMasterCustomData, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS, windowsParams}
 
@@ -134,7 +139,6 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	if err = templ.ExecuteTemplate(&b, baseFile, properties); err != nil {
 		return "", "", certsGenerated, err
 	}
-
 	var parametersMap map[string]interface{}
 	if parametersMap, err = getParameters(properties); err != nil {
 		return "", "", certsGenerated, err
@@ -179,7 +183,6 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 	var files []string
 	var baseFile string
 	if properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
-		properties.OrchestratorProfile.OrchestratorType == api.DCOS ||
 		properties.OrchestratorProfile.OrchestratorType == api.DCOS173 {
 		files = append(commonTemplateFiles, dcosTemplateFiles...)
 		baseFile = dcosBaseFile
@@ -262,8 +265,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			return properties.OrchestratorProfile.OrchestratorType == api.DCOS173
 		},
 		"IsDCOS184": func() bool {
-			return properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
-				properties.OrchestratorProfile.OrchestratorType == api.DCOS
+			return properties.OrchestratorProfile.OrchestratorType == api.DCOS184
 		},
 		"RequiresFakeAgentOutput": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
@@ -283,18 +285,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		"GetSecurityRules": func(ports []int) string {
 			return getSecurityRules(ports)
 		},
-		"GetMasterRolesFileContents": func() string {
-			return getMasterRolesFileContents()
-		},
-		"GetAgentRolesFileContents": func(ports []int) string {
-			return getAgentRolesFileContents(ports)
-		},
-		"GetDCOSCustomDataPublicIPStr": func() string {
-			return getDCOSCustomDataPublicIPStr(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count)
-		},
-		"GetDCOSGUID": func() string {
-			return getPackageGUID(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count)
-		},
 		"GetUniqueNameSuffix": func() string {
 			return GenerateClusterID(properties)
 		},
@@ -306,6 +296,15 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		},
 		"GetDataDisks": func(profile *api.AgentPoolProfile) string {
 			return getDataDisks(profile)
+		},
+		"GetDCOSMasterCustomData": func() string {
+			return getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, DCOSMaster)
+		},
+		"GetAgentMasterCustomData": func(ports []int) string {
+			if len(ports) > 0 {
+				return getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, DCOSPublicAgent)
+			}
+			return getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, DCOSPrivateAgent)
 		},
 		"GetMasterAllowedSizes": func() string {
 			if t.ClassicMode {
@@ -332,19 +331,19 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			return base64.StdEncoding.EncodeToString([]byte(s))
 		},
 		"GetKubernetesMasterCustomScript": func() string {
-			return t.getBase64CustomScript(kubernetesMasterCustomScript)
+			return getBase64CustomScript(kubernetesMasterCustomScript)
 		},
 		"GetKubernetesMasterCustomData": func() string {
-			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml)
+			str, e := getSingleLineForTemplate(kubernetesMasterCustomDataYaml)
 			if e != nil {
 				return ""
 			}
 			// add the master provisioning script
-			masterProvisionB64GzipStr := t.getBase64CustomScript(kubernetesMasterCustomScript)
+			masterProvisionB64GzipStr := getBase64CustomScript(kubernetesMasterCustomScript)
 			str = strings.Replace(str, "MASTER_PROVISION_B64_GZIP_STR", masterProvisionB64GzipStr, -1)
 
 			for placeholder, filename := range kubernetesAddonYamls {
-				addonTextContents := t.getBase64CustomScript(filename)
+				addonTextContents := getBase64CustomScript(filename)
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
 			}
 
@@ -352,18 +351,18 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml)
+			str, e := getSingleLineForTemplate(kubernetesAgentCustomDataYaml)
 			if e != nil {
 				return ""
 			}
 			// add the agent provisioning script
-			agentProvisionB64GzipStr := t.getBase64CustomScript(kubernetesAgentCustomScript)
+			agentProvisionB64GzipStr := getBase64CustomScript(kubernetesAgentCustomScript)
 			str = strings.Replace(str, "AGENT_PROVISION_B64_GZIP_STR", agentProvisionB64GzipStr, -1)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesKubeConfig": func() string {
-			str, e := t.getSingleLineForTemplate(kubeConfigJSON)
+			str, e := getSingleLineForTemplate(kubeConfigJSON)
 			if e != nil {
 				return ""
 			}
@@ -396,7 +395,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 }
 
 func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) string {
-	if orchestratorType == api.DCOS || orchestratorType == api.DCOS184 {
+	if orchestratorType == api.DCOS184 {
 		switch masterCount {
 		case 1:
 			return "5ac6a7d060584c58c704e1f625627a591ecbde4e"
@@ -419,8 +418,7 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 }
 
 func getDCOSCustomDataPublicIPStr(orchestratorType api.OrchestratorType, masterCount int) string {
-	if orchestratorType == api.DCOS ||
-		orchestratorType == api.DCOS173 ||
+	if orchestratorType == api.DCOS173 ||
 		orchestratorType == api.DCOS184 {
 		var buf bytes.Buffer
 		for i := 0; i < masterCount; i++ {
@@ -617,21 +615,33 @@ func getSecurityRules(ports []int) string {
 	return buf.String()
 }
 
-func getMasterRolesFileContents() string {
-	return `{\"content\": \"\", \"path\": \"/etc/mesosphere/roles/master\"}, {\"content\": \"\", \"path\": \"/etc/mesosphere/roles/azure_master\"},`
+func getRolesFileContents(dcosNodeType DCOSNodeType) string {
+	if dcosNodeType == DCOSMaster {
+		return getMasterRolesFileContents()
+	} else if dcosNodeType == DCOSPrivateAgent {
+		return getAgentRolesFileContents(false)
+	} else if dcosNodeType == DCOSPublicAgent {
+		return getAgentRolesFileContents(true)
+	}
+	return "{}"
 }
 
-func getAgentRolesFileContents(ports []int) string {
-	if len(ports) > 0 {
+func getMasterRolesFileContents() string {
+	return `touch /etc/mesosphere/roles/master
+touch /etc/mesosphere/roles/azure_master`
+}
+
+func getAgentRolesFileContents(isPublic bool) string {
+	if isPublic {
 		// public agents
-		return `{\"content\": \"\", \"path\": \"/etc/mesosphere/roles/slave_public\"},`
+		return "touch /etc/mesosphere/roles/slave_public"
 	}
 	// private agents
-	return `{\"content\": \"\", \"path\": \"/etc/mesosphere/roles/slave\"},`
+	return "touch /etc/mesosphere/roles/slave"
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func (t *TemplateGenerator) getSingleLineForTemplate(yamlFilename string) (string, error) {
+func getSingleLineForTemplate(yamlFilename string) (string, error) {
 	b, err := Asset(yamlFilename)
 	if err != nil {
 		return "", fmt.Errorf("yaml file %s does not exist", yamlFilename)
@@ -659,11 +669,11 @@ func (t *TemplateGenerator) getSingleLineForTemplate(yamlFilename string) (strin
 }
 
 // getBase64CustomScript will return a base64 of the CSE
-func (t *TemplateGenerator) getBase64CustomScript(csFilename string) string {
+func getBase64CustomScript(csFilename string) string {
 	b, err := Asset(csFilename)
 	if err != nil {
 		// this should never happen and this is a bug
-		panic(err.Error())
+		panic(fmt.Sprintf("BUG: %s", err.Error()))
 	}
 	// translate the parameters
 	csStr := string(b)
@@ -675,4 +685,69 @@ func (t *TemplateGenerator) getBase64CustomScript(csFilename string) string {
 	w.Close()
 
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
+}
+
+// getSingleLineForTemplate returns the file as a single line for embedding in an arm template
+func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCount int, dcosNodeType DCOSNodeType) string {
+	yamlFilename := ""
+	switch orchestratorType {
+	case api.DCOS184:
+		yamlFilename = dcosCustomData184
+	case api.DCOS173:
+		yamlFilename = dcosCustomData173
+	default:
+		// it is a bug to get here
+		panic(fmt.Sprintf("BUG: invalid orchestrator %s", orchestratorType))
+	}
+
+	b, err := Asset(yamlFilename)
+	if err != nil {
+		panic(fmt.Sprintf("BUG: %s", err.Error()))
+	}
+
+	// add the provision script
+	bp, err2 := Asset(dcosProvision)
+	if err2 != nil {
+		panic(fmt.Sprintf("BUG: %s", err2.Error()))
+	}
+
+	provisionScript := string(bp)
+	if strings.Contains(provisionScript, "'") {
+		panic(fmt.Sprintf("BUG: %s may not contain character '", dcosProvision))
+	}
+	roleFileContents := getRolesFileContents(dcosNodeType)
+	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+	provisionScript = strings.Replace(provisionScript, "\r\n", "\n", -1)
+	provisionScript = strings.Replace(provisionScript, "\n", "\n\n    ", -1)
+
+	yamlStr := string(b)
+	yamlStr = strings.Replace(yamlStr, "PROVISION_STR", provisionScript, -1)
+
+	// convert to json
+	jsonBytes, err4 := yaml.YAMLToJSON([]byte(yamlStr))
+	if err4 != nil {
+		panic(fmt.Sprintf("BUG: %s", err4.Error()))
+	}
+	yamlStr = string(jsonBytes)
+
+	// convert to one line
+	yamlStr = strings.Replace(yamlStr, "\\", "\\\\", -1)
+	yamlStr = strings.Replace(yamlStr, "\r\n", "\\n", -1)
+	yamlStr = strings.Replace(yamlStr, "\n", "\\n", -1)
+	yamlStr = strings.Replace(yamlStr, "\"", "\\\"", -1)
+
+	// variable replacement
+	rVariable, e1 := regexp.Compile("{{{([^}]*)}}}")
+	if e1 != nil {
+		panic(fmt.Sprintf("BUG: %s", e1.Error()))
+	}
+	yamlStr = rVariable.ReplaceAllString(yamlStr, "',variables('$1'),'")
+
+	// replace the internal values
+	guid := getPackageGUID(orchestratorType, masterCount)
+	yamlStr = strings.Replace(yamlStr, "DCOSGUID", guid, -1)
+	publicIPStr := getDCOSCustomDataPublicIPStr(orchestratorType, masterCount)
+	yamlStr = strings.Replace(yamlStr, "DCOSCUSTOMDATAPUBLICIPSTR", publicIPStr, -1)
+
+	return yamlStr
 }
