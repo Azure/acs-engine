@@ -1,2 +1,4 @@
-./acsengine
-./acsengine.exe
+acs-engine
+acs-engine.exe
+_output/
+.git/
