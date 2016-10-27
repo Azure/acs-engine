@@ -298,17 +298,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			return getDataDisks(profile)
 		},
 		"GetDCOSMasterCustomData": func() string {
-			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, DCOSMaster)
+			masterProvisionScript := getDCOSMasterProvisionScript()
+			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, masterProvisionScript)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
-		"GetDCOSAgentCustomData": func(ports []int) string {
-			str := ""
-			if len(ports) > 0 {
-				str = getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, DCOSPublicAgent)
-			} else {
-				str = getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, DCOSPrivateAgent)
-			}
+		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
+			agentProvisionScript := getDCOSAgentProvisionScript(profile)
+			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, agentProvisionScript)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -621,31 +618,6 @@ func getSecurityRules(ports []int) string {
 	return buf.String()
 }
 
-func getRolesFileContents(dcosNodeType DCOSNodeType) string {
-	if dcosNodeType == DCOSMaster {
-		return getMasterRolesFileContents()
-	} else if dcosNodeType == DCOSPrivateAgent {
-		return getAgentRolesFileContents(false)
-	} else if dcosNodeType == DCOSPublicAgent {
-		return getAgentRolesFileContents(true)
-	}
-	return "{}"
-}
-
-func getMasterRolesFileContents() string {
-	return `touch /etc/mesosphere/roles/master
-touch /etc/mesosphere/roles/azure_master`
-}
-
-func getAgentRolesFileContents(isPublic bool) string {
-	if isPublic {
-		// public agents
-		return "touch /etc/mesosphere/roles/slave_public"
-	}
-	// private agents
-	return "touch /etc/mesosphere/roles/slave"
-}
-
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
 func getSingleLineForTemplate(yamlFilename string) (string, error) {
 	b, err := Asset(yamlFilename)
@@ -693,8 +665,54 @@ func getBase64CustomScript(csFilename string) string {
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }
 
+func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
+	// add the provision script
+	bp, err1 := Asset(dcosProvision)
+	if err1 != nil {
+		panic(fmt.Sprintf("BUG: %s", err1.Error()))
+	}
+
+	provisionScript := string(bp)
+	if strings.Contains(provisionScript, "'") {
+		panic(fmt.Sprintf("BUG: %s may not contain character '", dcosProvision))
+	}
+
+	// the embedded roleFileContents
+	roleFileContents := ""
+	if len(profile.Ports) > 0 {
+		// public agents
+		roleFileContents = "touch /etc/mesosphere/roles/slave_public"
+	} else {
+		roleFileContents = "touch /etc/mesosphere/roles/slave"
+	}
+
+	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+
+	return provisionScript
+}
+
+func getDCOSMasterProvisionScript() string {
+	// add the provision script
+	bp, err1 := Asset(dcosProvision)
+	if err1 != nil {
+		panic(fmt.Sprintf("BUG: %s", err1.Error()))
+	}
+
+	provisionScript := string(bp)
+	if strings.Contains(provisionScript, "'") {
+		panic(fmt.Sprintf("BUG: %s may not contain character '", dcosProvision))
+	}
+
+	// the embedded roleFileContents
+	roleFileContents := `touch /etc/mesosphere/roles/master
+touch /etc/mesosphere/roles/azure_master`
+	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+
+	return provisionScript
+}
+
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCount int, dcosNodeType DCOSNodeType) string {
+func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCount int, provisionContent string) string {
 	yamlFilename := ""
 	switch orchestratorType {
 	case api.DCOS184:
@@ -711,23 +729,12 @@ func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCo
 		panic(fmt.Sprintf("BUG: %s", err.Error()))
 	}
 
-	// add the provision script
-	bp, err2 := Asset(dcosProvision)
-	if err2 != nil {
-		panic(fmt.Sprintf("BUG: %s", err2.Error()))
-	}
-
-	provisionScript := string(bp)
-	if strings.Contains(provisionScript, "'") {
-		panic(fmt.Sprintf("BUG: %s may not contain character '", dcosProvision))
-	}
-	roleFileContents := getRolesFileContents(dcosNodeType)
-	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
-	provisionScript = strings.Replace(provisionScript, "\r\n", "\n", -1)
-	provisionScript = strings.Replace(provisionScript, "\n", "\n\n    ", -1)
+	// transform the provision script content
+	provisionContent = strings.Replace(provisionContent, "\r\n", "\n", -1)
+	provisionContent = strings.Replace(provisionContent, "\n", "\n\n    ", -1)
 
 	yamlStr := string(b)
-	yamlStr = strings.Replace(yamlStr, "PROVISION_STR", provisionScript, -1)
+	yamlStr = strings.Replace(yamlStr, "PROVISION_STR", provisionContent, -1)
 
 	// convert to json
 	jsonBytes, err4 := yaml.YAMLToJSON([]byte(yamlStr))
