@@ -298,13 +298,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			return getDataDisks(profile)
 		},
 		"GetDCOSMasterCustomData": func() string {
-			masterProvisionScript := getMasterProvisionScript()
+			masterProvisionScript := getDCOSMasterProvisionScript()
 			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, masterProvisionScript)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			agentProvisionScript := getAgentProvisionScript(profile)
+			agentProvisionScript := getDCOSAgentProvisionScript(profile)
 			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, agentProvisionScript)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
@@ -665,7 +665,7 @@ func getBase64CustomScript(csFilename string) string {
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }
 
-func getAgentProvisionScript(profile *api.AgentPoolProfile) string {
+func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 	// add the provision script
 	bp, err1 := Asset(dcosProvision)
 	if err1 != nil {
@@ -691,7 +691,7 @@ func getAgentProvisionScript(profile *api.AgentPoolProfile) string {
 	return provisionScript
 }
 
-func getMasterProvisionScript() string {
+func getDCOSMasterProvisionScript() string {
 	// add the provision script
 	bp, err1 := Asset(dcosProvision)
 	if err1 != nil {
