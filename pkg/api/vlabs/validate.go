@@ -69,11 +69,16 @@ func (a *AgentPoolProfile) Validate() error {
 			return e
 		}
 	}
-	if len(a.DiskSizesGB) > 0 && len(a.StorageProfile) == 0 {
-		return fmt.Errorf("property 'StorageProfile' must be set with either '%s' or '%s' when attaching disks", StorageAccount, ManagedDisks)
-	}
-	if len(a.DiskSizesGB) > 0 && a.StorageProfile == StorageAccount && a.AvailabilityProfile == VirtualMachineScaleSets {
-		return fmt.Errorf("VirtualMachineScaleSets does not support storage account attached disks.  Instead specify 'StorageAccount': '%s'", ManagedDisks)
+	if len(a.DiskSizesGB) > 0 {
+		if len(a.StorageProfile) == 0 {
+			return fmt.Errorf("property 'StorageProfile' must be set to either '%s' or '%s' when attaching disks", StorageAccount, ManagedDisks)
+		}
+		if len(a.AvailabilityProfile) == 0 {
+			return fmt.Errorf("property 'AvailabilityProfile' must be set to either '%s' or '%s' when attaching disks", VirtualMachineScaleSets, AvailabilitySet)
+		}
+		if a.StorageProfile == StorageAccount && (a.AvailabilityProfile == VirtualMachineScaleSets) {
+			return fmt.Errorf("VirtualMachineScaleSets does not support storage account attached disks.  Instead specify 'StorageAccount': '%s' or specify AvailabilityProfile '%s'", ManagedDisks, AvailabilitySet)
+		}
 	}
 	if len(a.DiskSizesGB) > MaxDisks {
 		return fmt.Errorf("A maximum of %d disks may be specified.  %d disks were specified for cluster named '%s'", MaxDisks, len(a.DiskSizesGB), a.Name)
