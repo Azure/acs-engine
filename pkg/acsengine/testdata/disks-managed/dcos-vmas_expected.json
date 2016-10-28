@@ -895,8 +895,8 @@
       "name": "[variables('agent128AvailabilitySet')]",
       "properties": {
         "managed": "true",
-        "platformFaultDomainCount": "2",
-        "platformUpdateDomainCount": "2"
+        "platformFaultDomainCount": "3",
+        "platformUpdateDomainCount": "3"
       },
       "type": "Microsoft.Compute/availabilitySets"
     },
@@ -1068,8 +1068,8 @@
       "name": "[variables('agent1publicAvailabilitySet')]",
       "properties": {
         "managed": "true",
-        "platformFaultDomainCount": "2",
-        "platformUpdateDomainCount": "2"
+        "platformFaultDomainCount": "3",
+        "platformUpdateDomainCount": "3"
       },
       "type": "Microsoft.Compute/availabilitySets"
     },

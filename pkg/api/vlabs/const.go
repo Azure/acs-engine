@@ -50,6 +50,10 @@ const (
 	MaxPort = 65535
 	// MaxDisks specifies the maximum attached disks to add to the cluster
 	MaxDisks = 4
+	// MinDiskSizeGB specifies the minimum attached disk size
+	MinDiskSizeGB = 1
+	// MaxDiskSizeGB specifies the maximum attached disk size
+	MaxDiskSizeGB = 1024
 )
 
 // Availability profiles

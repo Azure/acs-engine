@@ -1,10 +1,32 @@
-# Azure Container Service ARM Template Generator
+# Microsoft Azure Container Service Engine - Builds Docker Enabled Clusters
 
 ## Overview
 
-`acs-engine` is a tool that produces ARM (Azure Resource Manager) templates for deploying various container orchestrators into Azure.
-The input to the tool is a cluster definition. The cluster definition is very similar to (in many cases the same as) the ARM template
-syntax used to deploy an Azure Container Service cluster.
+The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DCOS, Kubernetes, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
+
+The cluster definition file enables the following customizations to your Docker enabled cluster:
+* choice of DCOS, Kubernetes, or Swarm orchestrators
+* multiple agent pools where each agent pool can specify:
+ * standard or premium VM Sizes,
+ * node count, 
+ * Virtual Machine ScaleSets or Availability Sets,
+ * Storage Account Disks or Managed Disks (under private preview),
+ * and Linux or Microsoft Windows.
+* Docker cluster sizes of 1200
+* Custom VNET
+
+## User guides
+
+* [ACS Engine](docs/acsengine.md) - shows you how to build and use the ACS engine to generate custom Docker enabled container clusters
+* [Cluster Definition](docs/clusterdefinition.md) - describes the components of the cluster definition file
+* [DCOS Walkthrough](docs/dcos.md) - shows how to create a DCOS enabled Docker cluster on Azure
+* [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Kubernetes enabled Docker cluster on Azure
+* [Swarm Walkthrough](docs/swarm.md) - shows how to create a Swarm enabled Docker cluster on Azure
+* [Custom VNET](examples/vnet) - shows how to use a custom VNET 
+* [Attached Disks](examples/disks-storageaccount) - shows how to attach up to 4 disks per node
+* [Managed Disks](examples/disks-managed) (under private preview) - shows how to use managed disks 
+* [Large Clusters](examples/largeclusters) - shows how to create cluster sizes of up to 1200 nodes
+* [Windows Clusters](examples/windows) - shows how to create windows or mixed Microsoft Windows and Linux Docker clusters on Microsoft Azure
 
 ## Development (Docker)
 
@@ -73,7 +95,7 @@ This produces a new directory inside `_output/` that contains an ARM template
 for deploying Kubernetes into Azure. (In the case of Kubernetes, some additional
 needed assets are generated and placed in the output directory.)
 
-## Usage (Deployment)
+## Deployment Usage
 
 Generated templates can be deployed using
 [the Azure CLI](https://github.com/Azure/azure-cli) or

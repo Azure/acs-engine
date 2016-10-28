@@ -15,12 +15,6 @@
         "count": 3,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool2",
-        "count": 3,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
       }
     ],
     "linuxProfile": {
