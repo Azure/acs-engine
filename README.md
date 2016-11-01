@@ -76,10 +76,29 @@ needed assets are generated and placed in the output directory.)
 ## Usage (Deployment)
 
 Generated templates can be deployed using
-[the Azure CLI](https://github.com/Azure/azure-cli) or
+[the Azure CLI 1.0](https://github.com/Azure/azure-xplat-cli),
+[the Azure CLI 2.0](https://github.com/Azure/azure-cli) or
 [Powershell](https://github.com/Azure/azure-powershell).
 
-### Deploying with Azure CLI
+### Deploying with Azure CLI 1.0
+
+```bash
+$ azure login
+
+$ azure account set --name "<SUBSCRIPTION NAME OR ID>"
+
+$ azure group create \
+    --name="<RESOURCE_GROUP_NAME>" \
+    --location="<LOCATION>"
+
+$ azure group deployment create \
+    --name="<DEPLOYMENT NAME>" \
+    --resource-group="<RESOURCE_GROUP_NAME>" \
+    --template-file="./_output/<INSTANCE>/azuredeploy.json" \
+    --parameters-file="./_output/<INSTANCE>azuredeploy.parameters.json"
+```
+
+### Deploying with Azure CLI 2.0
 
 ```bash
 $ az login
@@ -90,10 +109,11 @@ $ az group create \
     --name="<RESOURCE_GROUP_NAME>" \
     --location="<LOCATION>"
 
-$ az group deployment create \
+$ az resource group deployment create \
     --name="<DEPLOYMENT NAME>" \
     --resource-group="<RESOURCE_GROUP_NAME>" \
-    --template-file="./_output/<INSTANCE>/azuredeploy.json"
+    --template-file-path="./_output/<INSTANCE>/azuredeploy.json" \
+    --parameters-file-path="./_output/<INSTANCE>azuredeploy.parameters.json"
 ```
 
 ### Deploying with Powershell
@@ -110,6 +130,7 @@ New-AzureRmResourceGroup `
 New-AzureRmResourceGroupDeployment `
     -Name <DEPLOYMENT_NAME> `
     -ResourceGroupName <RESOURCE_GROUP_NAME> `
-    -TemplateFile _output\<INSTANCE>\azuredeploy.json
+    -TemplateFile _output\<INSTANCE>\azuredeploy.json `
+    -TemplateParameterFile _output\<INSTANCE>\azuredeploy.parameters.json
 ```
 
