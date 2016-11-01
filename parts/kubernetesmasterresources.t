@@ -57,6 +57,20 @@
       "properties": {
         "securityRules": [
           {
+            "name": "allow_rdp", 
+            "properties": {
+              "access": "Allow", 
+              "description": "Allow RDP traffic to master", 
+              "destinationAddressPrefix": "*", 
+              "destinationPortRange": "3389-3389", 
+              "direction": "Inbound", 
+              "priority": 102, 
+              "protocol": "Tcp", 
+              "sourceAddressPrefix": "*", 
+              "sourcePortRange": "*"
+            }
+          }, 
+          {
             "name": "allow_ssh", 
             "properties": {
               "access": "Allow", 
@@ -92,7 +106,27 @@
       "apiVersion": "[variables('apiVersionDefault')]", 
       "location": "[variables('location')]", 
       "name": "[variables('routeTableName')]", 
-      "type": "Microsoft.Network/routeTables"
+      "type": "Microsoft.Network/routeTables",
+      "properties": {
+          "routes": [
+              {
+                  "name": "RouteToWin01",
+                  "properties": {
+                      "addressPrefix": "10.244.230.0/24",
+                      "nextHopType": "VirtualAppliance",
+                      "nextHopIpAddress": "10.240.245.5"
+                  }
+              },
+              {
+                  "name": "RouteToWin02",
+                  "properties": {
+                      "addressPrefix": "10.244.231.0/24",
+                      "nextHopType": "VirtualAppliance",
+                      "nextHopIpAddress": "10.240.244.6"
+                  }
+              }
+          ]
+      }
     }, 
     {
       "apiVersion": "[variables('apiVersionDefault')]", 

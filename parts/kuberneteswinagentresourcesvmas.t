@@ -5,14 +5,15 @@
         "name": "loop"
       }, 
       "dependsOn": [
+      "[concat(variables('{{.Name}}LbID'), '/inboundNatRules/RDP-', variables('{{.Name}}VMNamePrefix'), copyIndex())]"  
 {{if .IsCustomVNET}}
-      "[variables('nsgID')]" 
+      ,"[variables('nsgID')]" 
 {{else}}
-      "[variables('vnetID')]"
+      ,"[variables('vnetID')]"
 {{end}}
       ], 
       "location": "[variables('location')]", 
-      "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex())]", 
+      "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nicp-', copyIndex())]", 
       "properties": {
 {{if .IsCustomVNET}}                  
 	    "networkSecurityGroup": {
@@ -23,15 +24,58 @@
           {
             "name": "ipconfig1", 
             "properties": {
-              "privateIPAllocationMethod": "Dynamic", 
+              "privateIPAddress": "[concat('10.240.245.', copyindex(5))]",
+              "privateIPAllocationMethod": "Static", 
               "subnet": {
                 "id": "[variables('{{.Name}}VnetSubnetID')]"
               },
-              "loadBalancerInboundNatPools": [
+              "loadBalancerBackendAddressPools": [
                 {
-                "id": "[concat(variables('{{.Name}}LbID'), '/inboundNatPools/', 'RDP-', variables('{{.Name}}VMNamePrefix'))]"
+                  "id": "[concat(variables('{{.Name}}LbID'), '/backendAddressPools/pool-',variables('{{.Name}}LbName'))]"
+                }
+              ], 
+              "loadBalancerInboundNatRules": [
+                {
+                  "id": "[concat(variables('{{.Name}}LbID'),'/inboundNatRules/RDP-',variables('{{.Name}}VMNamePrefix'),copyIndex())]"
                 }
               ]
+            }
+          }
+        ],
+        "enableIPForwarding": true
+      }, 
+      "type": "Microsoft.Network/networkInterfaces"
+    },
+    {
+      "apiVersion": "[variables('apiVersionDefault')]", 
+      "copy": {
+        "count": "[variables('{{.Name}}Count')]", 
+        "name": "loop"
+      }, 
+      "dependsOn": [
+{{if .IsCustomVNET}}
+      "[variables('nsgID')]" 
+{{else}}
+      "[variables('vnetID')]"
+{{end}}
+      ], 
+      "location": "[variables('location')]", 
+      "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nics-', copyIndex())]", 
+      "properties": {
+{{if .IsCustomVNET}}                  
+	    "networkSecurityGroup": {
+		    "id": "[variables('nsgID')]"
+	    },
+{{end}}
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1", 
+            "properties": {
+              "privateIPAddress": "[concat('10.240.246.', copyindex(5))]",
+              "privateIPAllocationMethod": "Static", 
+              "subnet": {
+                "id": "[variables('{{.Name}}VnetSubnetID')]"
+              }
             }
           }
         ],
@@ -45,7 +89,7 @@
       "name": "[variables('{{.Name}}IPAddressName')]", 
       "properties": {
         "dnsSettings": {
-          "domainNameLabel": "[uniqueString(variables('masterFqdnPrefix'))]"
+          "domainNameLabel": "[concat('rdp',uniqueString(variables('masterFqdnPrefix')))]"
         }, 
         "publicIPAllocationMethod": "Dynamic"
       }, 
@@ -61,7 +105,7 @@
       "properties": {
         "backendAddressPools": [
           {
-            "name": "[variables('{{.Name}}LbBackendPoolName')]"
+            "name": "[concat('pool-',variables('{{.Name}}LbName'))]"
           }
         ], 
         "frontendIPConfigurations": [
@@ -73,24 +117,32 @@
               }
             }
           }
-        ],
-        "inboundNatPools": [
-          {
-            "name": "[concat('RDP-', variables('{{.Name}}VMNamePrefix'))]",
-            "properties": {
-              "frontendIPConfiguration": {
-                "id": "[variables('{{.Name}}LbIPConfigID')]"
-              },
-              "protocol": "tcp",
-              "frontendPortRangeStart": "[variables('{{.Name}}WindowsRDPNatRangeStart')]",
-              "frontendPortRangeEnd": "[variables('{{.Name}}WindowsRDPEndRangeStop')]",
-              "backendPort": "[variables('agentWindowsBackendPort')]"
-            }
-          }
         ]
       }, 
       "type": "Microsoft.Network/loadBalancers"
-    }, 
+    },
+    {
+      "apiVersion": "[variables('apiVersionDefault')]", 
+      "copy": {
+        "count": "[variables('{{.Name}}Count')]",
+        "name": "loop"
+      }, 
+      "dependsOn": [
+        "[variables('{{.Name}}LbID')]"
+      ], 
+      "location": "[resourceGroup().location]", 
+      "name": "[concat(variables('{{.Name}}LbName'), '/', 'RDP-', variables('{{.Name}}VMNamePrefix'), copyIndex())]", 
+      "properties": {
+        "backendPort": "[variables('agentWindowsBackendPort')]", 
+        "enableFloatingIP": false, 
+        "frontendIPConfiguration": {
+          "id": "[variables('{{.Name}}LbIPConfigID')]"
+        }, 
+        "frontendPort": "[copyIndex(variables('agentWindowsBackendPort'))]", 
+        "protocol": "tcp"
+      }, 
+      "type": "Microsoft.Network/loadBalancers/inboundNatRules"
+    },
     {
       "apiVersion": "[variables('apiVersionStorage')]", 
       "copy": {
@@ -143,7 +195,8 @@
 {{if .HasDisks}}
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
 {{end}}
-        "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex())]", 
+        "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nicp-', copyIndex())]", 
+        "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nics-', copyIndex())]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
       ], 
       "tags":
@@ -162,7 +215,16 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex()))]"
+              "properties": {
+                                "primary": true
+                            },
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('{{.Name}}VMNamePrefix'), 'nicp-', copyIndex()))]"
+            },
+            {
+              "properties": {
+                                "primary": false
+                            },
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('{{.Name}}VMNamePrefix'), 'nics-', copyIndex()))]"
             }
           ]
         }, 
