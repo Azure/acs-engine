@@ -14,7 +14,7 @@ const (
 	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultAgentSubnetTemplate specifies a default agent subnet
-	DefaultAgentSubnetTemplate = "10.%d.0.0/24"
+	DefaultAgentSubnetTemplate = "10.%d.0.0/16"
 	// DefaultKubernetesClusterDomain is the dns suffix used in the cluster (used as a SAN in the PKI generation)
 	DefaultKubernetesClusterDomain = "cluster.local"
 	// DefaultKubernetesHyperkubeSpec is the default version used for Kubernetes setup

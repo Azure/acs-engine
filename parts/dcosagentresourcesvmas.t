@@ -60,8 +60,8 @@
       "location": "[resourceGroup().location]", 
       "name": "[variables('{{.Name}}AvailabilitySet')]", 
       "properties": { 
-        "platformFaultDomainCount": "2", 
-        "platformUpdateDomainCount": "2",
+        "platformFaultDomainCount": "3", 
+        "platformUpdateDomainCount": "3",
         "managed": "true"
       },
       "type": "Microsoft.Compute/availabilitySets"

@@ -6,7 +6,7 @@
     },
     "masterProfile": {
       "count": 3,
-      "dnsPrefix": "mgmtanhowe1009f",
+      "dnsPrefix": "",
       "vmSize": "Standard_D2_v2",
       "vnetSubnetId": "/subscriptions/b52fce95-de5f-4b37-afca-db203a5d0b6a/resourceGroups/anhoweExampleRG/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/ExampleMasterSubnet",
       "firstConsecutiveStaticIP": "10.100.0.5" 
@@ -23,7 +23,7 @@
         "name": "agentpublic",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "dnsPrefix": "appanhowe1009f",
+        "dnsPrefix": "",
         "vnetSubnetId": "/subscriptions/b52fce95-de5f-4b37-afca-db203a5d0b6a/resourceGroups/anhoweExampleRG/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/ExampleAgentSubnet",
         "ports": [
           80,
@@ -37,7 +37,7 @@
       "ssh": {
         "publicKeys": [
           {
-            "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8fhkh3jpHUQsrUIezFB5k4Rq9giJM8G1Cr0u2IRMiqG++nat5hbOr3gODpTA0h11q9bzb6nJtK7NtDzIHx+w3YNIVpcTGLiUEsfUbY53IHg7Nl/p3/gkST3g0R6BSL7Hg45SfyvpH7kwY30MoVHG/6P3go4SKlYoHXlgaaNr3fMwUTIeE9ofvyS3fcr6xxlsoB6luKuEs50h0NGsE4QEnbfSY4Yd/C1ucc3mEw+QFXBIsENHfHfZYrLNHm2L8MXYVmAH8k//5sFs4Migln9GiUgEQUT6uOjowsZyXBbXwfT11og+syPkAq4eqjiC76r0w6faVihdBYVoc/UcyupgH azureuser@linuxvm"
+            "keyData": ""
           }
         ]
       }

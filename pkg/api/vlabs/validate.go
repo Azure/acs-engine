@@ -80,6 +80,11 @@ func (a *AgentPoolProfile) Validate() error {
 			return fmt.Errorf("VirtualMachineScaleSets does not support storage account attached disks.  Instead specify 'StorageAccount': '%s' or specify AvailabilityProfile '%s'", ManagedDisks, AvailabilitySet)
 		}
 	}
+	for _, s := range a.DiskSizesGB {
+		if s < MinDiskSizeGB || s > MaxDiskSizeGB {
+			return fmt.Errorf("Invalid disk size %d specified for cluster cluster named '%s'.  The range of valid values are [%d, %d]", s, a.Name, MinDiskSizeGB, MaxDiskSizeGB)
+		}
+	}
 	if len(a.DiskSizesGB) > MaxDisks {
 		return fmt.Errorf("A maximum of %d disks may be specified.  %d disks were specified for cluster named '%s'", MaxDisks, len(a.DiskSizesGB), a.Name)
 	}
