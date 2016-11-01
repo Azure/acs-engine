@@ -95,11 +95,11 @@ $ azure group deployment create \
     --name="<DEPLOYMENT NAME>" \
     --resource-group="<RESOURCE_GROUP_NAME>" \
     --template-file="./_output/<INSTANCE>/azuredeploy.json" \
-    --parameters-file="./_output/<INSTANCE>azuredeploy.parameters.json"
+    --parameters-file="./_output/<INSTANCE>/azuredeploy.parameters.json"
 ```
 
 ### Deploying with Azure CLI 2.0
-
+NOTE: Azure CLI 2.0 is still in preview, so changes may occur. Please reference [the Azure CLI 2.0 GitHub Repo](https://github.com/Azure/azure-cli) for updated commands
 ```bash
 $ az login
 
@@ -113,7 +113,7 @@ $ az resource group deployment create \
     --name="<DEPLOYMENT NAME>" \
     --resource-group="<RESOURCE_GROUP_NAME>" \
     --template-file-path="./_output/<INSTANCE>/azuredeploy.json" \
-    --parameters-file-path="./_output/<INSTANCE>azuredeploy.parameters.json"
+    --parameters-file-path="./_output/<INSTANCE>/azuredeploy.parameters.json"
 ```
 
 ### Deploying with Powershell
