@@ -82,18 +82,19 @@ Generated templates can be deployed using
 ### Deploying with Azure CLI
 
 ```bash
-$ az login
+$ azure login
 
-$ az account set --name "<SUBSCRIPTION NAME OR ID>"
+$ azure account set --name "<SUBSCRIPTION NAME OR ID>"
 
-$ az group create \
+$ azure group create \
     --name="<RESOURCE_GROUP_NAME>" \
     --location="<LOCATION>"
 
-$ az group deployment create \
+$ azure group deployment create \
     --name="<DEPLOYMENT NAME>" \
     --resource-group="<RESOURCE_GROUP_NAME>" \
-    --template-file="./_output/<INSTANCE>/azuredeploy.json"
+    --template-file="./_output/<INSTANCE>/azuredeploy.json" \
+    --parameters-file="./_output/<INSTANCE>azuredeploy.parameters.json"
 ```
 
 ### Deploying with Powershell
@@ -110,6 +111,7 @@ New-AzureRmResourceGroup `
 New-AzureRmResourceGroupDeployment `
     -Name <DEPLOYMENT_NAME> `
     -ResourceGroupName <RESOURCE_GROUP_NAME> `
-    -TemplateFile _output\<INSTANCE>\azuredeploy.json
+    -TemplateFile _output\<INSTANCE>\azuredeploy.json `
+    -TemplateParameterFile _output\<INSTANCE>\azuredeploy.parameters.json
 ```
 
