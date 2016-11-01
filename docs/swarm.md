@@ -2,7 +2,7 @@
 
 ## Deployment
 
-Here are the steps to deploy a simple DCOS cluster:
+Here are the steps to deploy a simple Swarm cluster:
 
 1. [install acs-engine](acsengine.md#downloading-and-building-acs-engine)
 2. [generate your ssh key](ssh.md#ssh-key-generation)
