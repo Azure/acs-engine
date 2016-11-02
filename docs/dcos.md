@@ -119,6 +119,10 @@ This walk through is inspired by the wonderful digital ocean tutorial: https://w
 
 Here are recommended links to learn more about DC/OS:
 
+1. [Azure DC/OS documentation](https://azure.microsoft.com/en-us/documentation/services/container-service/)
+
+## DC/OS Community Documentation
+
 1. [DC/OS Overview](https://dcos.io/docs/1.8/overview/) - provides overview of DC/OS, Architecture, Features, and Concepts.
 
 2. [DC/OS Tutorials](https://docs.mesosphere.com/1.8/usage/tutorials/) - provides various tutorials for DC/OS. 
