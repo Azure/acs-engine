@@ -2,10 +2,10 @@
 
 ## Overview
 
-The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DCOS, Kubernetes, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
+The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DC/OS, Kubernetes, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
 
 The cluster definition file enables the following customizations to your Docker enabled cluster:
-* choice of DCOS, Kubernetes, or Swarm orchestrators
+* choice of DC/OS, Kubernetes, or Swarm orchestrators
 * multiple agent pools where each agent pool can specify:
  * standard or premium VM Sizes,
  * node count, 
@@ -18,7 +18,7 @@ The cluster definition file enables the following customizations to your Docker 
 
 * [ACS Engine](docs/acsengine.md) - shows you how to build and use the ACS engine to generate custom Docker enabled container clusters
 * [Cluster Definition](docs/clusterdefinition.md) - describes the components of the cluster definition file
-* [DCOS Walkthrough](docs/dcos.md) - shows how to create a DCOS enabled Docker cluster on Azure
+* [DC/OS Walkthrough](docs/dcos.md) - shows how to create a DC/OS enabled Docker cluster on Azure
 * [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Kubernetes enabled Docker cluster on Azure
 * [Swarm Walkthrough](docs/swarm.md) - shows how to create a Swarm enabled Docker cluster on Azure
 * [Custom VNET](examples/vnet) - shows how to use a custom VNET 

@@ -8,7 +8,7 @@ This cluster definition examples demonstrate how to create a customized Docker E
 
 * [ACS Engine](acsengine.md) - shows you how to build and use the ACS engine to generate custom Docker enabled container clusters
 * [Cluster Definition](clusterdefinition.md) - describes the components of the cluster definition file
-* [DCOS Walkthrough](dcos.md) - shows how to create a DCOS enabled Docker cluster on Azure
+* [DC/OS Walkthrough](dcos.md) - shows how to create a DC/OS enabled Docker cluster on Azure
 * [Kubernetes Walkthrough](kubernetes.md) - shows how to create a Kubernetes enabled Docker cluster on Azure
 * [Swarm Walkthrough](swarm.md) - shows how to create a Swarm enabled Docker cluster on Azure
 * [Custom VNET](../examples/vnet) - shows how to use a custom VNET 
