@@ -34,7 +34,6 @@ func ConvertVLabsSubscription(vlabs *vlabs.Subscription) *Subscription {
 // ConvertV20160330ContainerService converts a v20160330 ContainerService to an unversioned ContainerService
 func ConvertV20160330ContainerService(v20160330 *v20160330.ContainerService) *ContainerService {
 	c := &ContainerService{}
-	c.APIVersion = v20160330.APIVersion
 	c.ID = v20160330.ID
 	c.Location = v20160330.Location
 	c.Name = v20160330.Name
@@ -51,7 +50,6 @@ func ConvertV20160330ContainerService(v20160330 *v20160330.ContainerService) *Co
 // ConvertVLabsContainerService converts a vlabs ContainerService to an unversioned ContainerService
 func ConvertVLabsContainerService(vlabs *vlabs.ContainerService) *ContainerService {
 	c := &ContainerService{}
-	c.APIVersion = vlabs.APIVersion
 	c.ID = vlabs.ID
 	c.Location = vlabs.Location
 	c.Name = vlabs.Name

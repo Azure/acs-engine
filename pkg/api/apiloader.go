@@ -10,22 +10,30 @@ import (
 )
 
 // LoadContainerServiceFromFile loads an ACS Cluster API Model from a JSON file
-func LoadContainerServiceFromFile(jsonFile string) (*ContainerService, error) {
+func LoadContainerServiceFromFile(jsonFile string) (*ContainerService, string, error) {
 	contents, e := ioutil.ReadFile(jsonFile)
 	if e != nil {
-		return nil, fmt.Errorf("error reading file %s: %s", jsonFile, e.Error())
+		return nil, "", fmt.Errorf("error reading file %s: %s", jsonFile, e.Error())
 	}
 	return DeserializeContainerService(contents)
 }
 
 // DeserializeContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
-func DeserializeContainerService(contents []byte) (*ContainerService, error) {
+func DeserializeContainerService(contents []byte) (*ContainerService, string, error) {
 	m := &TypeMeta{}
 	if err := json.Unmarshal(contents, &m); err != nil {
-		return nil, err
+		return nil, "", err
 	}
+	version := m.APIVersion
 
-	switch m.APIVersion {
+	service, err := LoadContainerService(contents, version)
+
+	return service, version, err
+}
+
+// LoadContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
+func LoadContainerService(contents []byte, version string) (*ContainerService, error) {
+	switch version {
 	case v20160330.APIVersion:
 		containerService := &v20160330.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
@@ -49,16 +57,19 @@ func DeserializeContainerService(contents []byte) (*ContainerService, error) {
 		return ConvertVLabsContainerService(containerService), nil
 
 	default:
-		return nil, fmt.Errorf("unrecognized APIVersion '%s'", m.APIVersion)
+		return nil, fmt.Errorf("unrecognized APIVersion '%s'", version)
 	}
 }
 
 // SerializeContainerService takes an unversioned container service and returns the bytes
-func SerializeContainerService(containerService *ContainerService) ([]byte, error) {
-	switch containerService.APIVersion {
+func SerializeContainerService(containerService *ContainerService, version string) ([]byte, error) {
+	switch version {
 	case v20160330.APIVersion:
 		v20160330ContainerService := ConvertContainerServiceToV20160330(containerService)
-		b, err := json.MarshalIndent(v20160330ContainerService, "", "  ")
+		armContainerService := &V20160330ARMContainerService{}
+		armContainerService.ContainerService = v20160330ContainerService
+		armContainerService.APIVersion = version
+		b, err := json.MarshalIndent(armContainerService, "", "  ")
 		if err != nil {
 			return nil, err
 		}
@@ -66,13 +77,16 @@ func SerializeContainerService(containerService *ContainerService) ([]byte, erro
 
 	case vlabs.APIVersion:
 		vlabsContainerService := ConvertContainerServiceToVLabs(containerService)
-		b, err := json.MarshalIndent(vlabsContainerService, "", "  ")
+		armContainerService := &VlabsARMContainerService{}
+		armContainerService.ContainerService = vlabsContainerService
+		armContainerService.APIVersion = version
+		b, err := json.MarshalIndent(armContainerService, "", "  ")
 		if err != nil {
 			return nil, err
 		}
 		return b, nil
 
 	default:
-		return nil, fmt.Errorf("invalid version %s for conversion back from unversioned object", containerService.APIVersion)
+		return nil, fmt.Errorf("invalid version %s for conversion back from unversioned object", version)
 	}
 }

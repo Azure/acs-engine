@@ -25,7 +25,7 @@ func TestExpected(t *testing.T) {
 	}
 
 	for _, tuple := range *apiModelTestFiles {
-		containerService, err := api.LoadContainerServiceFromFile(tuple.APIModelFilename)
+		containerService, version, err := api.LoadContainerServiceFromFile(tuple.APIModelFilename)
 		if err != nil {
 			t.Error(err.Error())
 			continue
@@ -91,11 +91,11 @@ func TestExpected(t *testing.T) {
 				t.Errorf("generated parameters different from expected for model %s: '%s'", tuple.GetExpectedArmTemplateParamsFilename(), diffstr)
 			}
 
-			b, err := api.SerializeContainerService(containerService)
+			b, err := api.SerializeContainerService(containerService, version)
 			if err != nil {
 				t.Error(err)
 			}
-			containerService, err = api.DeserializeContainerService(b)
+			containerService, version, err = api.DeserializeContainerService(b)
 			if err != nil {
 				t.Error(err)
 			}
