@@ -11,7 +11,6 @@ The cluster definition file enables the following customizations to your Docker 
  * node count, 
  * Virtual Machine ScaleSets or Availability Sets,
  * Storage Account Disks or Managed Disks (under private preview),
- * and Linux or Microsoft Windows.
 * Docker cluster sizes of 1200
 * Custom VNET
 
@@ -26,7 +25,6 @@ The cluster definition file enables the following customizations to your Docker 
 * [Attached Disks](examples/disks-storageaccount) - shows how to attach up to 4 disks per node
 * [Managed Disks](examples/disks-managed) (under private preview) - shows how to use managed disks 
 * [Large Clusters](examples/largeclusters) - shows how to create cluster sizes of up to 1200 nodes
-* [Windows Clusters](examples/windows) - shows how to create windows or mixed Microsoft Windows and Linux Docker clusters on Microsoft Azure
 
 ## Development (Docker)
 

@@ -15,4 +15,3 @@ This cluster definition examples demonstrate how to create a customized Docker E
 * [Attached Disks](../examples/disks-storageaccount) - shows how to attach up to 4 disks per node
 * [Managed Disks](../examples/disks-managed) (under private preview) - shows how to use managed disks 
 * [Large Clusters](../examples/largeclusters) - shows how to create cluster sizes of up to 1200 nodes
-* [Windows Clusters](../examples/windows) - shows how to create windows or mixed Microsoft Windows and Linux Docker clusters on Microsoft Azure
