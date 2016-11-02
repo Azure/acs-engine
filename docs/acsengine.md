@@ -68,7 +68,7 @@ Here is an example of how to generate a new deployment.  This example assumes yo
 1. Before starting ensure you have generated a valid [SSH Public/Private key pair](SSHKeyManagement.md).
 2. edit [examples/dcos.json](../examples/dcos.json) and fill in the blanks.
 3. run `acs-engine examples/dcos.json` to generate the templates in the _output/DCOS184-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
-4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment
+4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [deployment usage](../README.md#deployment-usage).
 
 # Deploying templates
 
