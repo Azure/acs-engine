@@ -13,7 +13,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
-func writeArtifacts(containerService *api.ContainerService, template string, parameters, artifactsDir string, certsGenerated bool, parametersOnly bool) error {
+func writeArtifacts(containerService *api.ContainerService, apiVersion, template, parameters, artifactsDir string, certsGenerated bool, parametersOnly bool) error {
 	if len(artifactsDir) == 0 {
 		artifactsDir = fmt.Sprintf("%s-%s", containerService.Properties.OrchestratorProfile.OrchestratorType, acsengine.GenerateClusterID(&containerService.Properties))
 		artifactsDir = path.Join("_output", artifactsDir)
@@ -23,7 +23,7 @@ func writeArtifacts(containerService *api.ContainerService, template string, par
 	var b []byte
 	var err error
 	if !parametersOnly {
-		b, err = api.SerializeContainerService(containerService)
+		b, err = api.SerializeContainerService(containerService, apiVersion)
 
 		if err != nil {
 			return err
@@ -131,6 +131,7 @@ func main() {
 	var containerService *api.ContainerService
 	var template string
 	var parameters string
+	var apiVersion string
 	var err error
 
 	flag.Parse()
@@ -152,7 +153,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if containerService, err = api.LoadContainerServiceFromFile(jsonFile); err != nil {
+	if containerService, apiVersion, err = api.LoadContainerServiceFromFile(jsonFile); err != nil {
 		fmt.Fprintf(os.Stderr, "error while loading %s: %s", jsonFile, err.Error())
 		os.Exit(1)
 	}
@@ -174,7 +175,7 @@ func main() {
 		}
 	}
 
-	if err = writeArtifacts(containerService, template, parameters, *artifactsDir, certsGenerated, *parametersOnly); err != nil {
+	if err = writeArtifacts(containerService, apiVersion, template, parameters, *artifactsDir, certsGenerated, *parametersOnly); err != nil {
 		fmt.Fprintf(os.Stderr, "error writing artifacts %s", err.Error())
 		os.Exit(1)
 	}

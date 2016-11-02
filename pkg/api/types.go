@@ -2,6 +2,9 @@ package api
 
 import (
 	neturl "net/url"
+
+	"github.com/Azure/acs-engine/pkg/api/v20160330"
+	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
 // TypeMeta describes an individual API model object
@@ -31,13 +34,12 @@ type ResourcePurchasePlan struct {
 // ContainerService complies with the ARM model of
 // resource definition in a JSON template.
 type ContainerService struct {
-	APIVersion string               `json:"apiVersion"`
-	ID         string               `json:"id"`
-	Location   string               `json:"location"`
-	Name       string               `json:"name"`
-	Plan       ResourcePurchasePlan `json:"plan"`
-	Tags       map[string]string    `json:"tags"`
-	Type       string               `json:"type"`
+	ID       string               `json:"id"`
+	Location string               `json:"location"`
+	Name     string               `json:"name"`
+	Plan     ResourcePurchasePlan `json:"plan"`
+	Tags     map[string]string    `json:"tags"`
+	Type     string               `json:"type"`
 
 	Properties Properties `json:"properties"`
 }
@@ -199,6 +201,22 @@ type JumpboxProfile struct {
 
 // OSType represents OS types of agents
 type OSType string
+
+// VlabsARMContainerService is the type we read and write from file
+// needed because the json that is sent to ARM and acs-engine
+// is different from the json that the ACS RP Api gets from ARM
+type VlabsARMContainerService struct {
+	TypeMeta
+	*vlabs.ContainerService
+}
+
+// V20160330ARMContainerService is the type we read and write from file
+// needed because the json that is sent to ARM and acs-engine
+// is different from the json that the ACS RP Api gets from ARM
+type V20160330ARMContainerService struct {
+	TypeMeta
+	*v20160330.ContainerService
+}
 
 // HasWindows returns true if the cluster contains windows
 func (a *Properties) HasWindows() bool {
