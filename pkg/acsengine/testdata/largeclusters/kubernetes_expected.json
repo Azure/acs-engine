@@ -106,7 +106,7 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -304,7 +304,7 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -502,7 +502,7 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -700,7 +700,7 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -898,7 +898,7 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -1096,7 +1096,7 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -1294,7 +1294,7 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -1492,7 +1492,7 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -1690,7 +1690,7 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -1888,7 +1888,7 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -2086,7 +2086,7 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -2284,7 +2284,7 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },

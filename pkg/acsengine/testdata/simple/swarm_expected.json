@@ -106,7 +106,7 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -117,7 +117,7 @@
       "type": "string"
     },
     "agentpool1Subnet": {
-      "defaultValue": "10.0.0.0/24",
+      "defaultValue": "10.0.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpool1'."
       },
@@ -310,12 +310,12 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
     "agentpool2Subnet": {
-      "defaultValue": "10.1.0.0/24",
+      "defaultValue": "10.1.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpool2'."
       },

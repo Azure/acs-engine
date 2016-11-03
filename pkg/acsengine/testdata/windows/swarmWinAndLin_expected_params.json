@@ -18,7 +18,7 @@
     "value": 3
   },
   "privatelinuxSubnet": {
-    "value": "10.2.0.0/24"
+    "value": "10.2.0.0/16"
   },
   "privatelinuxVMSize": {
     "value": "Standard_D2_v2"
@@ -27,7 +27,7 @@
     "value": 3
   },
   "privatewinSubnet": {
-    "value": "10.1.0.0/24"
+    "value": "10.1.0.0/16"
   },
   "privatewinVMSize": {
     "value": "Standard_D2_v2"
@@ -39,7 +39,7 @@
     "value": "publicwin1"
   },
   "publicwin1Subnet": {
-    "value": "10.0.0.0/24"
+    "value": "10.0.0.0/16"
   },
   "publicwin1VMSize": {
     "value": "Standard_D2_v2"
