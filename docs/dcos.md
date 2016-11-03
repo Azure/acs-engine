@@ -2,7 +2,7 @@
 
 ## Deployment
 
-Here are the steps to deploy a simple DCOS cluster:
+Here are the steps to deploy a simple DC/OS cluster:
 
 1. [install acs-engine](acsengine.md#downloading-and-building-acs-engine)
 2. [generate your ssh key](ssh.md#ssh-key-generation)
@@ -118,6 +118,10 @@ This walk through is inspired by the wonderful digital ocean tutorial: https://w
 # Learning More
 
 Here are recommended links to learn more about DC/OS:
+
+1. [Azure DC/OS documentation](https://azure.microsoft.com/en-us/documentation/services/container-service/)
+
+## DC/OS Community Documentation
 
 1. [DC/OS Overview](https://dcos.io/docs/1.8/overview/) - provides overview of DC/OS, Architecture, Features, and Concepts.
 
