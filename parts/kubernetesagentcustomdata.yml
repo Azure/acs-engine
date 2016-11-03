@@ -111,6 +111,9 @@ write_files:
             --v=2
     ExecStop=/usr/bin/docker stop -t 2 kubelet
 
+    [Install]
+    WantedBy=multi-user.target
+
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
   encoding: gzip
