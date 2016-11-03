@@ -106,12 +106,12 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
     "agentpri0Subnet": {
-      "defaultValue": "10.0.0.0/24",
+      "defaultValue": "10.0.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpri0'."
       },
@@ -304,12 +304,12 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
     "agentpri10Subnet": {
-      "defaultValue": "10.10.0.0/24",
+      "defaultValue": "10.10.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpri10'."
       },
@@ -502,12 +502,12 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
     "agentpri11Subnet": {
-      "defaultValue": "10.11.0.0/24",
+      "defaultValue": "10.11.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpri11'."
       },
@@ -700,12 +700,12 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
     "agentpri1Subnet": {
-      "defaultValue": "10.1.0.0/24",
+      "defaultValue": "10.1.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpri1'."
       },
@@ -898,12 +898,12 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
     "agentpri2Subnet": {
-      "defaultValue": "10.2.0.0/24",
+      "defaultValue": "10.2.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpri2'."
       },
@@ -1096,12 +1096,12 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
     "agentpri3Subnet": {
-      "defaultValue": "10.3.0.0/24",
+      "defaultValue": "10.3.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpri3'."
       },
@@ -1294,12 +1294,12 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
     "agentpri4Subnet": {
-      "defaultValue": "10.4.0.0/24",
+      "defaultValue": "10.4.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpri4'."
       },
@@ -1492,12 +1492,12 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
     "agentpri5Subnet": {
-      "defaultValue": "10.5.0.0/24",
+      "defaultValue": "10.5.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpri5'."
       },
@@ -1690,12 +1690,12 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
     "agentpri6Subnet": {
-      "defaultValue": "10.6.0.0/24",
+      "defaultValue": "10.6.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpri6'."
       },
@@ -1888,12 +1888,12 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
     "agentpri7Subnet": {
-      "defaultValue": "10.7.0.0/24",
+      "defaultValue": "10.7.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpri7'."
       },
@@ -2086,12 +2086,12 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
     "agentpri8Subnet": {
-      "defaultValue": "10.8.0.0/24",
+      "defaultValue": "10.8.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpri8'."
       },
@@ -2284,12 +2284,12 @@
         100
       ],
       "metadata": {
-        "description": "The number of Mesos agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
     "agentpri9Subnet": {
-      "defaultValue": "10.9.0.0/24",
+      "defaultValue": "10.9.0.0/16",
       "metadata": {
         "description": "Sets the subnet of agent pool 'agentpri9'."
       },

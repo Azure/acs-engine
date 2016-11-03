@@ -3,7 +3,7 @@
     "value": 100
   },
   "agentpri0Subnet": {
-    "value": "10.0.0.0/24"
+    "value": "10.0.0.0/16"
   },
   "agentpri0VMSize": {
     "value": "Standard_D2_v2"
@@ -12,7 +12,7 @@
     "value": 100
   },
   "agentpri10Subnet": {
-    "value": "10.10.0.0/24"
+    "value": "10.10.0.0/16"
   },
   "agentpri10VMSize": {
     "value": "Standard_D2_v2"
@@ -21,7 +21,7 @@
     "value": 100
   },
   "agentpri11Subnet": {
-    "value": "10.11.0.0/24"
+    "value": "10.11.0.0/16"
   },
   "agentpri11VMSize": {
     "value": "Standard_D2_v2"
@@ -30,7 +30,7 @@
     "value": 100
   },
   "agentpri1Subnet": {
-    "value": "10.1.0.0/24"
+    "value": "10.1.0.0/16"
   },
   "agentpri1VMSize": {
     "value": "Standard_D2_v2"
@@ -39,7 +39,7 @@
     "value": 100
   },
   "agentpri2Subnet": {
-    "value": "10.2.0.0/24"
+    "value": "10.2.0.0/16"
   },
   "agentpri2VMSize": {
     "value": "Standard_D2_v2"
@@ -48,7 +48,7 @@
     "value": 100
   },
   "agentpri3Subnet": {
-    "value": "10.3.0.0/24"
+    "value": "10.3.0.0/16"
   },
   "agentpri3VMSize": {
     "value": "Standard_D2_v2"
@@ -57,7 +57,7 @@
     "value": 100
   },
   "agentpri4Subnet": {
-    "value": "10.4.0.0/24"
+    "value": "10.4.0.0/16"
   },
   "agentpri4VMSize": {
     "value": "Standard_D2_v2"
@@ -66,7 +66,7 @@
     "value": 100
   },
   "agentpri5Subnet": {
-    "value": "10.5.0.0/24"
+    "value": "10.5.0.0/16"
   },
   "agentpri5VMSize": {
     "value": "Standard_D2_v2"
@@ -75,7 +75,7 @@
     "value": 100
   },
   "agentpri6Subnet": {
-    "value": "10.6.0.0/24"
+    "value": "10.6.0.0/16"
   },
   "agentpri6VMSize": {
     "value": "Standard_D2_v2"
@@ -84,7 +84,7 @@
     "value": 100
   },
   "agentpri7Subnet": {
-    "value": "10.7.0.0/24"
+    "value": "10.7.0.0/16"
   },
   "agentpri7VMSize": {
     "value": "Standard_D2_v2"
@@ -93,7 +93,7 @@
     "value": 100
   },
   "agentpri8Subnet": {
-    "value": "10.8.0.0/24"
+    "value": "10.8.0.0/16"
   },
   "agentpri8VMSize": {
     "value": "Standard_D2_v2"
@@ -102,7 +102,7 @@
     "value": 100
   },
   "agentpri9Subnet": {
-    "value": "10.9.0.0/24"
+    "value": "10.9.0.0/16"
   },
   "agentpri9VMSize": {
     "value": "Standard_D2_v2"

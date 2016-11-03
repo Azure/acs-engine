@@ -3,7 +3,7 @@
     "value": 3
   },
   "agentprivateSubnet": {
-    "value": "10.0.0.0/24"
+    "value": "10.0.0.0/16"
   },
   "agentprivateVMSize": {
     "value": "Standard_D2_v2"
@@ -15,7 +15,7 @@
     "value": "agentpublic1"
   },
   "agentpublicSubnet": {
-    "value": "10.1.0.0/24"
+    "value": "10.1.0.0/16"
   },
   "agentpublicVMSize": {
     "value": "Standard_D2_v2"
