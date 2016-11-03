@@ -16,9 +16,9 @@ ROUTE_TABLE="${8}"
 PRIMARY_AVAILABILITY_SET="${9}"
 SERVICE_PRINCIPAL_CLIENT_ID="${10}"
 SERVICE_PRINCIPAL_CLIENT_SECRET="${11}"
-
-# Extra secrets for Kubernetes bring-up
 KUBELET_PRIVATE_KEY="${12}"
+
+# Master only secrets
 APISERVER_PRIVATE_KEY="${13}"
 CA_CERTIFICATE="${14}"
 MASTER_FQDN="${15}"
@@ -26,11 +26,18 @@ KUBECONFIG_CERTIFICATE="${16}"
 KUBECONFIG_KEY="${17}"
 ADMINUSER="${18}"
 
-APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
-touch "${APISERVER_PRIVATE_KEY_PATH}"
-chmod 0644 "${APISERVER_PRIVATE_KEY_PATH}"
-chown root:root "${APISERVER_PRIVATE_KEY_PATH}"
-echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
+# If APISERVER_PRIVATE_KEY is empty, then we are not on the master
+if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
+    echo "APISERVER_PRIVATE_KEY is non-empty, assuming master node"
+
+    APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
+    touch "${APISERVER_PRIVATE_KEY_PATH}"
+    chmod 0644 "${APISERVER_PRIVATE_KEY_PATH}"
+    chown root:root "${APISERVER_PRIVATE_KEY_PATH}"
+    echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
+else
+    echo "APISERVER_PRIVATE_KEY is empty, assuming worker node"
+fi
 
 KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
 touch "${KUBELET_PRIVATE_KEY_PATH}"
@@ -86,10 +93,12 @@ function ensureKubectl() {
 }
 
 function ensureEtcd() {
+    systemctl enable etcd
     systemctl restart etcd
 }
 
 function ensureDocker() {
+    systemctl enable docker
     systemctl restart docker
     dockerStarted=1
     for i in {1..600}; do
@@ -112,8 +121,12 @@ function ensureDocker() {
     fi
 }
 
-function ensureKubernetes() {
+function ensureKubelet() {
+    systemctl enable kubelet
     systemctl restart kubelet
+}
+
+function ensureApiserver() {
     kubernetesStarted=1
     for i in {1..600}; do
         if [ -e /usr/local/bin/kubectl ]
@@ -153,9 +166,8 @@ function writeKubeConfig() {
     chmod 700 $KUBECONFIGDIR
     chmod 600 $KUBECONFIGFILE
 
-    # stop logging while output secrets
+    # disable logging after secret output
     set +x
-
     echo "
 ---
 apiVersion: v1
@@ -181,10 +193,16 @@ users:
     set -x
 }
 
-ensureKubectl
-ensureEtcd
 ensureDocker
-ensureKubernetes
-writeKubeConfig
+ensureKubelet
 
+if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
+    writeKubeConfig
+    ensureKubectl
+    ensureEtcd
+    ensureApiserver
+fi
+
+# If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 echo "Install complete successfully"
+

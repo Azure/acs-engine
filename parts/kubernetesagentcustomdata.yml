@@ -116,4 +116,4 @@ write_files:
   encoding: gzip
   owner: "root"
   content: !!binary |
-    AGENT_PROVISION_B64_GZIP_STR
+    MASTER_PROVISION_B64_GZIP_STR

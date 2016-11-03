@@ -21,7 +21,6 @@ const (
 	kubernetesMasterCustomDataYaml = "kubernetesmastercustomdata.yml"
 	kubernetesMasterCustomScript   = "kubernetesmastercustomscript.sh"
 	kubernetesAgentCustomDataYaml  = "kubernetesagentcustomdata.yml"
-	kubernetesAgentCustomScript    = "kubernetesagentcustomscript.sh"
 	kubeConfigJSON                 = "kubeconfig.json"
 )
 
@@ -358,9 +357,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			if e != nil {
 				return ""
 			}
-			// add the agent provisioning script
-			agentProvisionB64GzipStr := getBase64CustomScript(kubernetesAgentCustomScript)
-			str = strings.Replace(str, "AGENT_PROVISION_B64_GZIP_STR", agentProvisionB64GzipStr, -1)
+			// add the master provisioning script
+			masterProvisionB64GzipStr := getBase64CustomScript(kubernetesMasterCustomScript)
+			str = strings.Replace(str, "MASTER_PROVISION_B64_GZIP_STR", masterProvisionB64GzipStr, -1)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
