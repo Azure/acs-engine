@@ -102,9 +102,7 @@ function ensureDocker() {
     systemctl restart docker
     dockerStarted=1
     for i in {1..600}; do
-        /usr/bin/docker ps 2>&1 | grep "daemon running"
-        if [ "$?" = "0" ]
-        then
+        if ! /usr/bin/docker info; then
             echo "status $?"
             /bin/systemctl restart docker
         else
