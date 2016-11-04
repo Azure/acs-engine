@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -25,18 +23,7 @@ func writeArtifacts(containerService *api.ContainerService, template string, par
 	var b []byte
 	var err error
 	if !parametersOnly {
-		switch containerService.APIVersion {
-		case v20160330.APIVersion:
-			v20160330ContainerService := api.ConvertContainerServiceToV20160330(containerService)
-			b, err = json.MarshalIndent(v20160330ContainerService, "", "  ")
-
-		case vlabs.APIVersion:
-			vlabsContainerService := api.ConvertContainerServiceToVLabs(containerService)
-			b, err = json.MarshalIndent(vlabsContainerService, "", "  ")
-
-		default:
-			return fmt.Errorf("invalid version %s for conversion back from unversioned object", containerService.APIVersion)
-		}
+		b, err = api.SerializeContainerService(containerService)
 
 		if err != nil {
 			return err

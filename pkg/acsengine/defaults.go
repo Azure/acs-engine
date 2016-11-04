@@ -79,7 +79,7 @@ func setStorageDefaults(a *api.Properties) {
 			profile.StorageProfile = api.StorageAccount
 		}
 		if len(profile.AvailabilityProfile) == 0 {
-			profile.AvailabilityProfile = api.ManagedDisks
+			profile.AvailabilityProfile = api.VirtualMachineScaleSets
 		}
 	}
 }

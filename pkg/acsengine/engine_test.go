@@ -90,6 +90,15 @@ func TestExpected(t *testing.T) {
 				}
 				t.Errorf("generated parameters different from expected for model %s: '%s'", tuple.GetExpectedArmTemplateParamsFilename(), diffstr)
 			}
+
+			b, err := api.SerializeContainerService(containerService)
+			if err != nil {
+				t.Error(err)
+			}
+			containerService, err = api.DeserializeContainerService(b)
+			if err != nil {
+				t.Error(err)
+			}
 		}
 	}
 }
