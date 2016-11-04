@@ -96,13 +96,13 @@ needed assets are generated and placed in the output directory.)
 ## Deployment Usage
 
 Generated templates can be deployed using
-[the Azure CLI 1.0 (v0.10 only)](https://github.com/Azure/azure-xplat-cli),
+[the Azure xplat CLI (v0.10 only)](https://github.com/Azure/azure-xplat-cli/releases/tag/v0.10.0-May2016),
 [the Azure CLI 2.0](https://github.com/Azure/azure-cli) or
 [Powershell](https://github.com/Azure/azure-powershell).
 
-### Deploying with Azure CLI 1.0
+### Deploying with Azure XPlat CLI
 
-**NOTE:** DCOS deployments will fail with CLI version > 10.0.  **Use either Azure cli 0.10.0 or 0.9.20** with the below.  Eta for Azure cli fix is Dec 2016.
+**NOTE:** DCOS deployments will fail with Azure xplat CLI version > 10.0.  Use [Azure xplat cli 0.10.0](https://github.com/Azure/azure-xplat-cli/releases/tag/v0.10.0-May2016).  Eta for Azure cli fix is Dec 2016.
 
 ```bash
 $ azure login
