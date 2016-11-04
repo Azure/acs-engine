@@ -2,7 +2,6 @@ package acsengine
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,8 +10,6 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/api/v20160330"
-	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
 const (
@@ -94,31 +91,13 @@ func TestExpected(t *testing.T) {
 				t.Errorf("generated parameters different from expected for model %s: '%s'", tuple.GetExpectedArmTemplateParamsFilename(), diffstr)
 			}
 
-			switch containerService.APIVersion {
-			case v20160330.APIVersion:
-				v20160330ContainerService := api.ConvertContainerServiceToV20160330(containerService)
-				b, err := json.MarshalIndent(v20160330ContainerService, "", "  ")
-				if err != nil {
-					t.Error(err)
-				}
-				containerService, err = api.LoadContainerService(b)
-				if err != nil {
-					t.Error(err)
-				}
-
-			case vlabs.APIVersion:
-				vlabsContainerService := api.ConvertContainerServiceToVLabs(containerService)
-				b, err := json.MarshalIndent(vlabsContainerService, "", "  ")
-				if err != nil {
-					t.Error(err)
-				}
-				containerService, err = api.LoadContainerService(b)
-				if err != nil {
-					t.Error(err)
-				}
-
-			default:
-				t.Errorf("invalid version %s for conversion back from unversioned object", containerService.APIVersion)
+			b, err := api.SerializeContainerService(containerService)
+			if err != nil {
+				t.Error(err)
+			}
+			containerService, err = api.DeserializeContainerService(b)
+			if err != nil {
+				t.Error(err)
 			}
 		}
 	}
