@@ -45,6 +45,7 @@
               }
             }
           }
+          {{GetKubernetesSubnets}}
         ]
       }, 
       "type": "Microsoft.Network/virtualNetworks"
@@ -106,27 +107,7 @@
       "apiVersion": "[variables('apiVersionDefault')]", 
       "location": "[variables('location')]", 
       "name": "[variables('routeTableName')]", 
-      "type": "Microsoft.Network/routeTables",
-      "properties": {
-          "routes": [
-              {
-                  "name": "RouteToWin01",
-                  "properties": {
-                      "addressPrefix": "10.244.230.0/24",
-                      "nextHopType": "VirtualAppliance",
-                      "nextHopIpAddress": "10.240.245.5"
-                  }
-              },
-              {
-                  "name": "RouteToWin02",
-                  "properties": {
-                      "addressPrefix": "10.244.231.0/24",
-                      "nextHopType": "VirtualAppliance",
-                      "nextHopIpAddress": "10.240.244.6"
-                  }
-              }
-          ]
-      }
+      "type": "Microsoft.Network/routeTables"
     }, 
     {
       "apiVersion": "[variables('apiVersionDefault')]", 

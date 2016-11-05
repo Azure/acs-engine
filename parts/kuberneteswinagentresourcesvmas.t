@@ -71,10 +71,10 @@
           {
             "name": "ipconfig1", 
             "properties": {
-              "privateIPAddress": "[concat('10.240.246.', copyindex(5))]",
+              "privateIPAddress": "[concat('10.244.', copyindex({{GetKubernetesPodStartIndex}}), '.254')]",
               "privateIPAllocationMethod": "Static", 
               "subnet": {
-                "id": "[variables('{{.Name}}VnetSubnetID')]"
+                "id": "[concat(variables('vnetID'),'/subnets/podCIDR',copyindex({{GetKubernetesPodStartIndex}}))]"
               }
             }
           }

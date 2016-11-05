@@ -370,6 +370,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			}
 			return str
 		},
+		"GetKubernetesSubnets": func() string {
+			return getKubernetesSubnets(properties)
+		},
+		"GetKubernetesPodStartIndex": func() string {
+			return fmt.Sprintf("%d", getKubernetesPodStartIndex(properties))
+		},
 		"AnyAgentHasDisks": func() bool {
 			for _, agentProfile := range properties.AgentPoolProfiles {
 				if agentProfile.HasDisks() {
@@ -676,4 +682,44 @@ func (t *TemplateGenerator) getBase64CustomScript(csFilename string) string {
 	w.Close()
 
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
+}
+
+func getKubernetesSubnets(properties *api.Properties) string {
+	subnetString := `{
+            "name": "podCIDR%d", 
+            "properties": {
+              "addressPrefix": "10.244.%d.0/24", 
+              "networkSecurityGroup": {
+                "id": "[variables('nsgID')]"
+              }, 
+              "routeTable": {
+                "id": "[variables('routeTableID')]"
+              }
+            }
+          }`
+	var buf bytes.Buffer
+
+	cidrIndex := getKubernetesPodStartIndex(properties)
+	for _, agentProfile := range properties.AgentPoolProfiles {
+		if agentProfile.OSType == api.Windows {
+			for i := 0; i < agentProfile.Count; i++ {
+				buf.WriteString(",\n")
+				buf.WriteString(fmt.Sprintf(subnetString, cidrIndex, cidrIndex))
+				cidrIndex++
+			}
+		}
+	}
+	return buf.String()
+}
+
+func getKubernetesPodStartIndex(properties *api.Properties) int {
+	nodeCount := 0
+	nodeCount += properties.MasterProfile.Count
+	for _, agentProfile := range properties.AgentPoolProfiles {
+		if agentProfile.OSType != api.Windows {
+			nodeCount += agentProfile.Count
+		}
+	}
+
+	return nodeCount + 1
 }
