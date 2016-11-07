@@ -1,15 +1,41 @@
-# Microsoft Azure Container Service Engine - Creating a Service Principal
+# Microsoft Azure Container Service Engine
 
-# Overview
+## Service Principals
 
-Orchestrators such as Kubernetes require a service principal to dynamically adjust Azure resources.  This guide shows you how to create a service principal.
+### Overview
 
-# Service Principal Creation
+Service Accounts in Azure are tied to Active Directory Service Principals. You can read more about
+Service Principals and AD Applications: ["Application and service principal objects in Azure Active Directory"](https://azure.microsoft.com/en-us/documentation/articles/active-directory-application-objects/).
 
-Here is how to create a service principal for your cluster:
+Kubernetes uses a Service Principal to talk to Azure APIs to dynamically manage
+resources such as
+[User Defined Routes](https://azure.microsoft.com/en-us/documentation/articles/virtual-networks-udr-overview/)
+and [L4 Load Balancers](https://azure.microsoft.com/en-us/documentation/articles/load-balancer-overview/).
 
-1. Install the [Microsoft Azure CLI 2.0](https://github.com/azure/azure-cli) for your dev environment.
-2. open up a command prompt
-3. `az login` to login
-4. If you have more than one subscription ID, execute `az account set -n SUBSCRIPTIONID` to select the correct subscription ID
-5.  `az ad sp create-for-rbac --role contributor --scopes /subscriptions/SUBSCRIPTIONID` replacing SUBSCRIPTIONID with your subscription ID to create your client id and secret.  Copy and paste the result in a secure location.  `client_id` maps directly to servicePrincipalProfile.servicePrincipalClientID, and `client_secret` maps directly to servicePrincipalClientSecret.  Note that, you can further scope to resource group if you would like to target a specific resource group, eg scope of `/subscriptions/SUBSCRIPTIONID/resourcegroups/mygroup`
+### Creating a Service Principal
+
+
+There are several ways to create a Service Principal in Azure Active Directory:
+
+* **With the [Azure CLI](https://github.com/Azure/azure-cli)**
+   
+   ```shell
+   az login
+   az account set --name="${SUBSCRIPTION_ID}"
+   az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
+   ```
+   
+   This will output your `client_id` and `client_secret` (`password`).
+
+
+* **With the legacy [Azure XPlat CLI](https://github.com/Azure/azure-xplat-cli)**
+
+   Instructions: ["Use Azure CLI to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal-cli/)
+
+* **With [PowerShell](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal-cli/)**
+
+   Instructions: ["Use Azure PowerShell to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal-cli/)
+
+* **With the [Legacy Portal](https://azure.microsoft.com/en-us/documentation/articles/resource-group-create-service-principal-portal/)**
+
+   Instructions: ["Use portal to create Active Directory application and service principal that can access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-create-service-principal-portal/)
