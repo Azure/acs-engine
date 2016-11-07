@@ -33,7 +33,7 @@ If you already have Docker or "Docker for {Windows,Mac}" then you can get starte
 without needing to install anything extra.
 
 * Windows (PowerShell): `.\scripts\devenv.ps1`
-* Linux (bash): `.\scripts\devenv.sh`
+* Linux (bash): `./scripts/devenv.sh`
 
 This setup mounts the `acs-engine` source directory as a volume into the Docker container.
 This means that you can edit your source code normally in your favorite editor on your
