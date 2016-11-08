@@ -26,6 +26,9 @@ The cluster definition file enables the following customizations to your Docker 
 * [Managed Disks](examples/disks-managed) (under private preview) - shows how to use managed disks 
 * [Large Clusters](examples/largeclusters) - shows how to create cluster sizes of up to 1200 nodes
 
+## Video walkthroughs
+* [K8S deployment demo video](https://youtu.be/e04npMaRzlE) - walks you through using the acs engine to create a custom Kubernetes ARM template and deploy it on Azure using the Azure CLI
+
 ## Development (Docker)
 
 The easiest way to get started developing on `acs-engine` is to use Docker.
