@@ -25,8 +25,14 @@ There are several ways to create a Service Principal in Azure Active Directory:
    az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
    ```
    
-   This will output your `client_id` and `client_secret` (`password`).
+This will output your `client_id`, `client_secret` (password), `sp_name`, and `tenant`.  The `sp_name` or `client_id` may be used for the `servicePrincipalProfile.servicePrincipalClientId` and the `client_secret` is used for `servicePrincipalProfile.servicePrincipalClientSecret`.
 
+Confirm your service principal by opening a new shell and run the following commands substituting in `sp_name`, `client_secret`, and `tenant`:
+
+   ```shell
+   az login --service-principal -u SPNAME -p CLIENTSECRET --tenant TENANT
+   az vm list-sizes --location westus
+   ```
 
 * **With the legacy [Azure XPlat CLI](https://github.com/Azure/azure-xplat-cli)**
 
