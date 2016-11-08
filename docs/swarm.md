@@ -16,7 +16,7 @@ Once your Swarm cluster has been deployed you will have a resource group contain
 
 1. a set of 1,3, or 5 masters in a master availability set.  Each master's SSH can be accessed via the public dns address at ports 2200..2204
 
-2. a set of agents in a VM scale set (VMSS).  The agent VMs can be accessed through a master.  See [agent forwarding](SSHKeyManagement.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
+2. a set of agents in a VM scale set (VMSS).  The agent VMs can be accessed through a master.  See [agent forwarding](ssh.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
 
 The following image shows the architecture of a container service cluster with 3 masters, and 3 agents:
 
@@ -43,7 +43,7 @@ After completing this walkthrough you will know how to:
 
     ![Image of docker scaling](images/findingoutputs.png)
 
- 3. SSH to port 2200 of the master FQDN. See [agent forwarding](SSHKeyManagement.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
+ 3. SSH to port 2200 of the master FQDN. See [agent forwarding](ssh.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
 
  4. Set the DOCKER_HOST environment variable to `:2375`: e.g. ```export DOCKER_HOST=:2375```
 

@@ -17,7 +17,7 @@ Once your Kubernetes cluster has been created you will have a resource group con
 
 1. 1 master accessible by SSH on port 22 or kubectl on port 443
 
-2. a set of nodes in an availability set.  The nodes can be accessed through a master.  See [agent forwarding](SSHKeyManagement.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
+2. a set of nodes in an availability set.  The nodes can be accessed through a master.  See [agent forwarding](ssh.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
 
 The following image shows the architecture of a container service cluster with 1 master, and 2 agents:
 
@@ -88,7 +88,7 @@ After completing this walkthrough you will know how to:
   * [Linux](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/bin/linux/amd64/kubectl)
 
 9. The Kubernetes master contains the kube config file for remote access under the home directory ~/.kube/config.  Download this file to your machine, set the KUBECONFIG environment variable, and run kubectl to verify you can connect to cluster:
-  * Windows to use pscp from [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html).  Ensure you have your certificate exposed through [pageant](SSHKeyManagement.md#key-management-and-agent-forwarding-with-windows-pageant):
+  * Windows to use pscp from [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html).  Ensure you have your certificate exposed through [pageant](ssh.md#key-management-and-agent-forwarding-with-windows-pageant):
   ```
   # MASTERFQDN is obtained in step1
   pscp azureuser@MASTERFQDN:.kube/config .

@@ -16,7 +16,7 @@ Once your DC/OS cluster has deployed you will have a resource group containing:
 
 1. a set of 1,3, or 5 masters in a master specific availability set.  Each master's SSH can be accessed via the public dns address at ports 2200..2204
 
-2. a set of public agents in an Virtual Machine Scale Set (VMSS).  The agent VMs can be accessed through a master.  See [agent forwarding](SSHKeyManagement.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
+2. a set of public agents in an Virtual Machine Scale Set (VMSS).  The agent VMs can be accessed through a master.  See [agent forwarding](ssh.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
 
 3. a set of private agents in an Virtual Machine Scale Set (VMSS).
 
@@ -54,7 +54,7 @@ This walk through is inspired by the wonderful digital ocean tutorial: https://w
      5. now you can copy the output FQDNs and sample SSH commands
      ![Image of docker scaling](images/findingoutputs.png)
 
- 2. Create an [SSH tunnel to port 80](SSHKeyManagement.md#create-port-80-tunnel-to-the-master) on the master FQDN.
+ 2. Create an [SSH tunnel to port 80](ssh.md#create-port-80-tunnel-to-the-master) on the master FQDN.
 
  3. browse to the DC/OS UI <http://localhost/>.  This displays the main DC/OS dashboard:
 
