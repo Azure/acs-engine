@@ -266,6 +266,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			return properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
 				properties.OrchestratorProfile.OrchestratorType == api.DCOS
 		},
+		"CreateSecondNic": func() bool {
+			return false
+		},
 		"RequiresFakeAgentOutput": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
 		},

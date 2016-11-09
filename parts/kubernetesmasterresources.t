@@ -45,7 +45,6 @@
               }
             }
           }
-          {{GetKubernetesSubnets}}
         ]
       }, 
       "type": "Microsoft.Network/virtualNetworks"

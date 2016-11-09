@@ -40,21 +40,15 @@ param(
 
     [parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
-    $AzureHostname,
-
-    [parameter(Mandatory=$true)]
-    [ValidateNotNullOrEmpty()]
-    $SecondaryNICIP,
-
-    [parameter(Mandatory=$true)]
-    [ValidateNotNullOrEmpty()]
-    $PODCIDRSubnet
+    $AzureHostname
 )
 
 $global:DockerServiceName = "Docker"
 $global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
-$global:KubeBinariesSASURL = "https://acsengine.blob.core.windows.net/windows/k.zip?st=2016-11-04T15%3A36%3A00Z&se=2020-10-05T15%3A36%3A00Z&sp=rl&sv=2015-12-11&sr=b&sig=I46lfcEGqKm5tlj1tisjeb4vlijB%2FD1qqBRDsHXA658%3D"
+$global:KubeBinariesSASURL = "https://acsengine.blob.core.windows.net/windows/k.zip?st=2016-11-08T02%3A27%3A00Z&se=2020-11-09T02%3A27%3A00Z&sp=rl&sv=2015-12-11&sr=b&sig=8vloXDY9rG1XCGf4gqreBbI%2Bj1IWkxWiDZQSZM5S9mY%3D"
+$global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
+$global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
 
 filter Timestamp {"$(Get-Date -Format o): $_"}
 
@@ -122,27 +116,112 @@ New-InfraContainer()
 function
 Write-KubeletStartFile
 {
-    $kubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
+    $argList = @("--hostname-override=$AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""","--api-servers=https://${MasterIP}:443","--kubeconfig=c:\k\config")
+    $process = Start-Process -FilePath c:\k\kubelet.exe -PassThru -ArgumentList $argList
+
+    $podCidrDiscovered=$false
+    $podCIDR=""
+    # run kubelet until podCidr is discovered
+    while (-not $podCidrDiscovered)
+    {
+        $podCIDR=c:\k\kubectl.exe --kubeconfig=c:\k\config get nodes/$AzureHostname -o custom-columns=podCidr:.spec.podCIDR --no-headers
+
+        if ($podCIDR.length -gt 0)
+        {
+            Write-Log "'$podCIDR' found"
+            $podCidrDiscovered=$true
+        }
+        else
+        {
+            Write-Log "sleeping for 10 seconds..."
+            Start-Sleep -sec 10    
+        }
+    }
+
+    # stop the kubelet process now that we have our CIDR
+    $process | Stop-Process
 
     $kubeConfig = @"
-docker network rm podnetwork
-docker network create -d transparent --gateway $SecondaryNICIP --subnet $PODCIDRSubnet podnetwork
+`$netResult=docker network ls | findstr podnetwork
+if (`$netResult.length -eq 0)
+{
+    New-ContainerNetwork -Name podnetwork -Mode L2Bridge -SubnetPrefix $podCIDR -GatewayAddress 10.240.0.1
+    Restart-Service $global:DockerServiceName
+}
 SET CONTAINER_NETWORK=podnetwork
-.\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image="kubletwin/pause" --resolv-conf="" --api-servers=https://${MasterIP}:443 --kubeconfig=c:\k\config
+c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --api-servers=https://${MasterIP}:443 --kubeconfig=c:\k\config
+"@
+    $kubeConfig | Out-File -encoding ASCII -filepath $global:KubeletStartFile
+
+    $kubeProxyStartStr = @"
+`$nodeIP=""
+`$aliasName="vEthernet (HNSTransparent)"
+while (`$true)
+{
+    try
+    {
+        `$nodeNic=Get-NetIPaddress -InterfaceAlias `$aliasName -AddressFamily IPv4
+        `$nodeIP=`$nodeNic.IPAddress
+        break
+    }
+    catch
+    {
+        Write-Output "sleeping for 10s since `$aliasName is not defined"
+        Start-Sleep -sec 10
+    }
+}
+
+`$env:INTERFACE_TO_ADD_SERVICE_IP=`$aliasName
+c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --master=${MasterIP}:8080 --bind-address=`$nodeIP --kubeconfig=c:\k\config
 "@
 
-    $kubeConfig | Out-File -encoding ASCII -filepath "$kubeletStartFile"
+    $kubeProxyStartStr | Out-File -encoding ASCII -filepath $global:KubeProxyStartFile
+}
+
+function
+New-NSSMService
+{
+    # setup kubelet
+    c:\k\nssm install Kubelet C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+    c:\k\nssm set Kubelet AppDirectory $global:KubeDir
+    c:\k\nssm set Kubelet AppParameters $global:KubeletStartFile
+    c:\k\nssm set Kubelet DisplayName Kubelet
+    c:\k\nssm set Kubelet Description Kubelet
+    c:\k\nssm set Kubelet Start SERVICE_AUTO_START
+    c:\k\nssm set Kubelet ObjectName LocalSystem
+    c:\k\nssm set Kubelet Type SERVICE_WIN32_OWN_PROCESS
+    c:\k\nssm set Kubelet AppThrottle 1500
+    c:\k\nssm set Kubelet AppStdout C:\k\kubelet.log
+    c:\k\nssm set Kubelet AppStderr C:\k\kubelet.err.log
+    c:\k\nssm set Kubelet AppStdoutCreationDisposition 4
+    c:\k\nssm set Kubelet AppStderrCreationDisposition 4
+    c:\k\nssm set Kubelet AppRotateFiles 1
+    c:\k\nssm set Kubelet AppRotateOnline 1
+    c:\k\nssm set Kubelet AppRotateSeconds 86400
+    c:\k\nssm set Kubelet AppRotateBytes 1048576
+    
+    # setup kubeproxy
+    #c:\k\nssm install Kubeproxy C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+    #c:\k\nssm set Kubeproxy AppDirectory $global:KubeDir
+    #c:\k\nssm set Kubeproxy AppParameters $global:KubeProxyStartFile
+    #c:\k\nssm set Kubeproxy DisplayName Kubeproxy
+    #c:\k\nssm set Kubeproxy DependOnService Kubelet
+    #c:\k\nssm set Kubeproxy Description Kubeproxy
+    #c:\k\nssm set Kubeproxy Start SERVICE_AUTO_START
+    #c:\k\nssm set Kubeproxy ObjectName LocalSystem
+    #c:\k\nssm set Kubeproxy Type SERVICE_WIN32_OWN_PROCESS
+    #c:\k\nssm set Kubeproxy AppThrottle 1500
+    #c:\k\nssm set Kubeproxy AppStdout C:\k\kubeproxy.log
+    #c:\k\nssm set Kubeproxy AppStderr C:\k\kubeproxy.err.log
+    #c:\k\nssm set Kubeproxy AppRotateFiles 1
+    #c:\k\nssm set Kubeproxy AppRotateOnline 1
+    #c:\k\nssm set Kubeproxy AppRotateSeconds 86400
+    #c:\k\nssm set Kubeproxy AppRotateBytes 1048576
 }
 
 try
 {
     Write-Log "Provisioning $global:DockerServiceName... with IP $MasterIP"
-
-    Write-Log "Enable RRAS"
-    New-Item -ItemType directory -Path $global:KubeDir
-
-    #Write-Log "Enable and start RRAS"
-    #Set-Service -Name $global:RRASServiceName -StartupType automatic -Status Running
 
     Write-Log "download kubelet binaries and unzip"
     Get-KubeBinaries
@@ -154,9 +233,16 @@ try
     New-InfraContainer
 
     Write-Log "write kubelet startfile"
-    Write-KubeletStartFile
+    Write-KubeletStartFile 
+
+    Write-Log "install the NSSM service"
+    New-NSSMService
+
+    Write-Log "Install hyperv to expose vfpext"
+    dism /Online /Enable-Feature /FeatureName:Microsoft-Hyper-V /All /NoRestart
     
     Write-Log "Setup Complete"
+    Restart-Computer -Force
 }
 catch
 {

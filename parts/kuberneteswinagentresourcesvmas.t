@@ -46,6 +46,7 @@
       }, 
       "type": "Microsoft.Network/networkInterfaces"
     },
+{{if CreateSecondNic}}
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
       "copy": {
@@ -83,6 +84,7 @@
       }, 
       "type": "Microsoft.Network/networkInterfaces"
     },
+{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
       "location": "[resourceGroup().location]", 
@@ -195,8 +197,10 @@
 {{if .HasDisks}}
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
 {{end}}
-        "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nicp-', copyIndex())]", 
+        "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nicp-', copyIndex())]",
+{{if CreateSecondNic}} 
         "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nics-', copyIndex())]",
+{{end}}
         "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
       ], 
       "tags":
@@ -219,13 +223,15 @@
                                 "primary": true
                             },
               "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('{{.Name}}VMNamePrefix'), 'nicp-', copyIndex()))]"
-            },
-            {
+            }
+{{if CreateSecondNic}}
+            ,{
               "properties": {
                                 "primary": false
                             },
               "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('{{.Name}}VMNamePrefix'), 'nics-', copyIndex()))]"
             }
+{{end}}
           ]
         }, 
         "osProfile": {
