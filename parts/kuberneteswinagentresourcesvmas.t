@@ -236,6 +236,7 @@
         }, 
         "osProfile": {
           "computername": "[concat(substring(variables('nameSuffix'), 0, 5), 'acs', copyIndex(), add(900,variables('{{.Name}}Index')))]",
+          {{GetKubernetesWindowsAgentCustomData}}
           "adminUsername": "[variables('windowsAdminUsername')]",
           "adminPassword": "[variables('windowsAdminPassword')]"
         }, 
@@ -258,4 +259,27 @@
         }
       }, 
       "type": "Microsoft.Compute/virtualMachines"
+    }, 
+    {
+      "apiVersion": "[variables('apiVersionDefault')]", 
+      "copy": {
+        "count": "[variables('{{.Name}}Count')]", 
+        "name": "vmLoopNode"
+      }, 
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex())]"
+      ], 
+      "location": "[resourceGroup().location]", 
+      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(), '/cse')]", 
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.8",
+        "autoUpgradeMinorVersion": true,
+        "protectedSettings": {
+          "commandToExecute": "[variables('windowsCustomScript')]"
+        }
+      }, 
+      "type": "Microsoft.Compute/virtualMachines/extensions"
     }
+    

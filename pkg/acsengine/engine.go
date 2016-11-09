@@ -17,11 +17,12 @@ import (
 )
 
 const (
-	kubernetesMasterCustomDataYaml = "kubernetesmastercustomdata.yml"
-	kubernetesMasterCustomScript   = "kubernetesmastercustomscript.sh"
-	kubernetesAgentCustomDataYaml  = "kubernetesagentcustomdata.yml"
-	kubernetesAgentCustomScript    = "kubernetesagentcustomscript.sh"
-	kubeConfigJSON                 = "kubeconfig.json"
+	kubernetesMasterCustomDataYaml      = "kubernetesmastercustomdata.yml"
+	kubernetesMasterCustomScript        = "kubernetesmastercustomscript.sh"
+	kubernetesAgentCustomDataYaml       = "kubernetesagentcustomdata.yml"
+	kubernetesAgentCustomScript         = "kubernetesagentcustomscript.sh"
+	kubeConfigJSON                      = "kubeconfig.json"
+	kubernetesWindowsAgentCustomDataPS1 = "kuberneteswindowssetup.ps1"
 )
 
 const (
@@ -355,7 +356,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			// return the custom data
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
-		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
+		"GetKubernetesAgentCustomData": func() string {
 			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml)
 			if e != nil {
 				return ""
@@ -365,6 +366,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			str = strings.Replace(str, "AGENT_PROVISION_B64_GZIP_STR", agentProvisionB64GzipStr, -1)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+		},
+		"GetKubernetesWindowsAgentCustomData": func() string {
+			b64GzipStr := t.getBase64CustomScript(kubernetesWindowsAgentCustomDataPS1)
+			return fmt.Sprintf("\"customData\": \"%s\",", b64GzipStr)
 		},
 		"GetKubernetesKubeConfig": func() string {
 			str, e := t.getSingleLineForTemplate(kubeConfigJSON)
