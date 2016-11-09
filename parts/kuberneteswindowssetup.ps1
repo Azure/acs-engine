@@ -18,21 +18,21 @@ param(
     [ValidateNotNullOrEmpty()]
     $MasterIP = "10.240.255.5",
 
-    [parameter(Mandatory=$true)]
+    [parameter()]
     [ValidateNotNullOrEmpty()]
-    $CACertificate,
+    $CACertificate = "<<<caCertificate>>>",
 
     [parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
-    $MasterFQDN,
+    $MasterFQDNPrefix,
 
     [parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
     $Location,
 
-    [parameter(Mandatory=$true)]
+    [parameter()]
     [ValidateNotNullOrEmpty()]
-    $AgentCertificate,
+    $AgentCertificate = "<<<clientCertificate>>>",
 
     [parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
@@ -87,17 +87,17 @@ apiVersion: v1
 clusters:
 - cluster:
     certificate-authority-data: "$CACertificate"
-    server: https://$MasterFQDN.$Location.cloudapp.azure.com
-  name: "$MasterFQDN"
+    server: https://$MasterFQDNPrefix.$Location.cloudapp.azure.com
+  name: "$MasterFQDNPrefix"
 contexts:
 - context:
-    cluster: "$MasterFQDN"
-    user: "$MasterFQDN-admin"
-  name: "$MasterFQDN"
-current-context: "$MasterFQDN"
+    cluster: "$MasterFQDNPrefix"
+    user: "$MasterFQDNPrefix-admin"
+  name: "$MasterFQDNPrefix"
+current-context: "$MasterFQDNPrefix"
 kind: Config
 users:
-- name: "$MasterFQDN-admin"
+- name: "$MasterFQDNPrefix-admin"
   user:
     client-certificate-data: "$AgentCertificate"
     client-key-data: "$AgentKey"
@@ -221,28 +221,33 @@ New-NSSMService
 
 try
 {
-    Write-Log "Provisioning $global:DockerServiceName... with IP $MasterIP"
+    if ($true) {
+        Write-Log "Provisioning $global:DockerServiceName... with IP $MasterIP"
 
-    Write-Log "download kubelet binaries and unzip"
-    Get-KubeBinaries
+        Write-Log "download kubelet binaries and unzip"
+        Get-KubeBinaries
 
-    Write-Log "Write kube config"
-    Write-KubeConfig
+        Write-Log "Write kube config"
+        Write-KubeConfig
 
-    Write-Log "Create the Pause Container kubletwin/pause"
-    New-InfraContainer
+        Write-Log "Create the Pause Container kubletwin/pause"
+        New-InfraContainer
 
-    Write-Log "write kubelet startfile"
-    Write-KubeletStartFile 
+        Write-Log "write kubelet startfile"
+        Write-KubeletStartFile 
 
-    Write-Log "install the NSSM service"
-    New-NSSMService
+        Write-Log "install the NSSM service"
+        New-NSSMService
 
-    Write-Log "Install hyperv to expose vfpext"
-    dism /Online /Enable-Feature /FeatureName:Microsoft-Hyper-V /All /NoRestart
-    
-    Write-Log "Setup Complete"
-    Restart-Computer -Force
+        Write-Log "Install hyperv to expose vfpext"
+        dism /Online /Enable-Feature /FeatureName:Microsoft-Hyper-V /All /NoRestart
+        
+        Write-Log "Setup Complete"
+        Restart-Computer -Force
+    }
+    else {
+        Write-Log "kuberneteswindowssetup.ps1 -MasterIP $MasterIP -MasterFQDNPrefix $MasterFQDNPrefix -Location $Location -CACertificate $CACertificate -AgentCertificate $AgentCertificate -AgentKey $AgentKey -AzureHostname $AzureHostname"
+    }
 }
 catch
 {

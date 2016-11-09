@@ -337,7 +337,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			return base64.StdEncoding.EncodeToString([]byte(s))
 		},
 		"GetKubernetesMasterCustomScript": func() string {
-			return t.getBase64CustomScript(kubernetesMasterCustomScript)
+			return getBase64CustomScript(kubernetesMasterCustomScript)
 		},
 		"GetKubernetesMasterCustomData": func() string {
 			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml)
@@ -345,11 +345,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 				return ""
 			}
 			// add the master provisioning script
-			masterProvisionB64GzipStr := t.getBase64CustomScript(kubernetesMasterCustomScript)
+			masterProvisionB64GzipStr := getBase64CustomScript(kubernetesMasterCustomScript)
 			str = strings.Replace(str, "MASTER_PROVISION_B64_GZIP_STR", masterProvisionB64GzipStr, -1)
 
 			for placeholder, filename := range kubernetesAddonYamls {
-				addonTextContents := t.getBase64CustomScript(filename)
+				addonTextContents := getBase64CustomScript(filename)
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
 			}
 
@@ -362,13 +362,21 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 				return ""
 			}
 			// add the agent provisioning script
-			agentProvisionB64GzipStr := t.getBase64CustomScript(kubernetesAgentCustomScript)
+			agentProvisionB64GzipStr := getBase64CustomScript(kubernetesAgentCustomScript)
 			str = strings.Replace(str, "AGENT_PROVISION_B64_GZIP_STR", agentProvisionB64GzipStr, -1)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesWindowsAgentCustomData": func() string {
-			b64GzipStr := t.getBase64CustomScript(kubernetesWindowsAgentCustomDataPS1)
+			b, err := Asset(kubernetesWindowsAgentCustomDataPS1)
+			if err != nil {
+				// this should never happen and this is a bug
+				panic(err.Error())
+			}
+			str := string(b)
+			str = strings.Replace(str, "<<<caCertificate>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
+			str = strings.Replace(str, "<<<clientCertificate>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientCertificate)), -1)
+			b64GzipStr := getBase64CustomScriptFromStr(str)
 			return fmt.Sprintf("\"customData\": \"%s\",", b64GzipStr)
 		},
 		"GetKubernetesKubeConfig": func() string {
@@ -674,21 +682,23 @@ func (t *TemplateGenerator) getSingleLineForTemplate(yamlFilename string) (strin
 }
 
 // getBase64CustomScript will return a base64 of the CSE
-func (t *TemplateGenerator) getBase64CustomScript(csFilename string) string {
+func getBase64CustomScript(csFilename string) string {
 	b, err := Asset(csFilename)
 	if err != nil {
 		// this should never happen and this is a bug
 		panic(err.Error())
 	}
-	// translate the parameters
 	csStr := string(b)
 	csStr = strings.Replace(csStr, "\r\n", "\n", -1)
+	return getBase64CustomScriptFromStr(csStr)
+}
 
+// getBase64CustomScript will return a base64 of the CSE
+func getBase64CustomScriptFromStr(str string) string {
 	var gzipB bytes.Buffer
 	w := gzip.NewWriter(&gzipB)
-	w.Write([]byte(csStr))
+	w.Write([]byte(str))
 	w.Close()
-
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }
 
