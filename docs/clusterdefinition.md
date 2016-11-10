@@ -114,4 +114,4 @@ For apiVersion "2016-03-30", a cluster may have only 1 agent pool profiles.
 |Name|Required|Description|
 |---|---|---|
 |adminUsername|yes|describes the username to be used on all linux clusters|
-|ssh.publicKeys.keyData|yes|The public SSH key used for authenticating access to all Linux nodes in the cluster.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation).|
+|ssh.publicKeys[0].keyData|yes|The public SSH key used for authenticating access to all Linux nodes in the cluster.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation).|
