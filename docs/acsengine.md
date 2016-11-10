@@ -63,11 +63,11 @@ As a rule of thumb you should always work with the `apimodel.json` when modifyin
 
 # Generating a template
 
-Here is an example of how to generate a new deployment.  This example assumes you are using [examples/dcos.json](../examples/dcos.json).
+Here is an example of how to generate a new deployment.  This example assumes you are using [examples/kubernetes.json](../examples/kubernetes.json).
 
 1. Before starting ensure you have generated a valid [SSH Public/Private key pair](ssh.md#ssh-key-generation).
-2. edit [examples/dcos.json](../examples/dcos.json) and fill in the blanks.
-3. run `acs-engine examples/dcos.json` to generate the templates in the _output/DCOS184-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
+2. edit [examples/kubernetes.json](../examples/dcos.json) and fill in the blanks.
+3. run `acs-engine examples/kubernetes.json` to generate the templates in the _output/Kubernetes-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
 4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [deployment usage](../README.md#deployment-usage).
 
 # Deploying templates
