@@ -4,7 +4,7 @@ The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource 
 
 # Downloading and Building ACS Engine
 
-As mentioned in the README, the simpliest way to run ACS Engine is via a Docker container (instructions in the [README](README.md).
+As mentioned in the README, the simpliest way to run ACS Engine is via a Docker container (instructions in the README).
 
 That said, ACS Engine can also be built and run natively on Windows, OS X, and Linux. Instructions below: 
 
