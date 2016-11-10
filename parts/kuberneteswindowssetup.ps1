@@ -165,7 +165,8 @@ while (`$true)
     try
     {
         `$nodeNic=Get-NetIPaddress -InterfaceAlias `$aliasName -AddressFamily IPv4
-        `$nodeIP=`$nodeNic.IPAddress[0]
+        #bind to the docker IP address
+        `$nodeIP=`$nodeNic.IPAddress | Where-Object {`$_.StartsWith("172.")} | Select-Object -First 1
         break
     }
     catch
