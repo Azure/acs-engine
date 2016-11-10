@@ -20,6 +20,10 @@ param(
 
     [parameter()]
     [ValidateNotNullOrEmpty()]
+    $KubeDnsServiceIp = "10.0.0.10",
+
+    [parameter()]
+    [ValidateNotNullOrEmpty()]
     $CACertificate = "<<<caCertificate>>>",
 
     [parameter(Mandatory=$true)]
@@ -148,20 +152,20 @@ if (`$netResult.length -eq 0)
     New-ContainerNetwork -Name podnetwork -Mode L2Bridge -SubnetPrefix $podCIDR -GatewayAddress 10.240.0.1
     Restart-Service $global:DockerServiceName
 }
-SET CONTAINER_NETWORK=podnetwork
-c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --api-servers=https://${MasterIP}:443 --kubeconfig=c:\k\config
+`$env:CONTAINER_NETWORK="podnetwork"
+c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://${MasterIP}:443 --cluster-dns=$KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2
 "@
     $kubeConfig | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
     $kubeProxyStartStr = @"
 `$nodeIP=""
-`$aliasName="vEthernet (HNSTransparent)"
+`$aliasName="vEthernet (HNS Internal NIC)"
 while (`$true)
 {
     try
     {
         `$nodeNic=Get-NetIPaddress -InterfaceAlias `$aliasName -AddressFamily IPv4
-        `$nodeIP=`$nodeNic.IPAddress
+        `$nodeIP=`$nodeNic.IPAddress[0]
         break
     }
     catch
@@ -201,22 +205,22 @@ New-NSSMService
     c:\k\nssm set Kubelet AppRotateBytes 1048576
     
     # setup kubeproxy
-    #c:\k\nssm install Kubeproxy C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
-    #c:\k\nssm set Kubeproxy AppDirectory $global:KubeDir
-    #c:\k\nssm set Kubeproxy AppParameters $global:KubeProxyStartFile
-    #c:\k\nssm set Kubeproxy DisplayName Kubeproxy
-    #c:\k\nssm set Kubeproxy DependOnService Kubelet
-    #c:\k\nssm set Kubeproxy Description Kubeproxy
-    #c:\k\nssm set Kubeproxy Start SERVICE_AUTO_START
-    #c:\k\nssm set Kubeproxy ObjectName LocalSystem
-    #c:\k\nssm set Kubeproxy Type SERVICE_WIN32_OWN_PROCESS
-    #c:\k\nssm set Kubeproxy AppThrottle 1500
-    #c:\k\nssm set Kubeproxy AppStdout C:\k\kubeproxy.log
-    #c:\k\nssm set Kubeproxy AppStderr C:\k\kubeproxy.err.log
-    #c:\k\nssm set Kubeproxy AppRotateFiles 1
-    #c:\k\nssm set Kubeproxy AppRotateOnline 1
-    #c:\k\nssm set Kubeproxy AppRotateSeconds 86400
-    #c:\k\nssm set Kubeproxy AppRotateBytes 1048576
+    c:\k\nssm install Kubeproxy C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+    c:\k\nssm set Kubeproxy AppDirectory $global:KubeDir
+    c:\k\nssm set Kubeproxy AppParameters $global:KubeProxyStartFile
+    c:\k\nssm set Kubeproxy DisplayName Kubeproxy
+    c:\k\nssm set Kubeproxy DependOnService Kubelet
+    c:\k\nssm set Kubeproxy Description Kubeproxy
+    c:\k\nssm set Kubeproxy Start SERVICE_AUTO_START
+    c:\k\nssm set Kubeproxy ObjectName LocalSystem
+    c:\k\nssm set Kubeproxy Type SERVICE_WIN32_OWN_PROCESS
+    c:\k\nssm set Kubeproxy AppThrottle 1500
+    c:\k\nssm set Kubeproxy AppStdout C:\k\kubeproxy.log
+    c:\k\nssm set Kubeproxy AppStderr C:\k\kubeproxy.err.log
+    c:\k\nssm set Kubeproxy AppRotateFiles 1
+    c:\k\nssm set Kubeproxy AppRotateOnline 1
+    c:\k\nssm set Kubeproxy AppRotateSeconds 86400
+    c:\k\nssm set Kubeproxy AppRotateBytes 1048576
 }
 
 try
@@ -239,14 +243,19 @@ try
         Write-Log "install the NSSM service"
         New-NSSMService
 
+        Write-Log "Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)"
+        netsh advfirewall set allprofiles state off
+
         Write-Log "Install hyperv to expose vfpext"
         dism /Online /Enable-Feature /FeatureName:Microsoft-Hyper-V /All /NoRestart
         
         Write-Log "Setup Complete"
         Restart-Computer -Force
     }
-    else {
-        Write-Log "kuberneteswindowssetup.ps1 -MasterIP $MasterIP -MasterFQDNPrefix $MasterFQDNPrefix -Location $Location -CACertificate $CACertificate -AgentCertificate $AgentCertificate -AgentKey $AgentKey -AzureHostname $AzureHostname"
+    else 
+    {
+        # keep for debugging purposes
+        Write-Log "kuberneteswindowssetup.ps1 -MasterIP $MasterIP -KubeDnsServiceIp $KubeDnsServiceIp -MasterFQDNPrefix $MasterFQDNPrefix -Location $Location -CACertificate $CACertificate -AgentCertificate $AgentCertificate -AgentKey $AgentKey -AzureHostname $AzureHostname"
     }
 }
 catch
