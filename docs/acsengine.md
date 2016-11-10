@@ -36,7 +36,7 @@ Build Steps:
 ## OS X
 
 Requirements:
-- Go for OS X. Download and install [Go for OS X](https://golang.org/dl/)
+- Go for OS X. Download and install [here](https://golang.org/dl/)
 
 Build Steps: 
 
@@ -58,9 +58,10 @@ Build Steps:
 ## Linux
 
 Requirements:
-- Go for Linux. Download and install [Go for Linux](https://golang.org/dl/)
+- Go for Linux
+  - Download the appropriate archive for your system [here](https://golang.org/dl/)
+  - sudo tar -C /usr/local -xzf go$VERSION.$OS-$ARCH.tar.gz (replace with your downloaded archive)
 - `git`
-- https://github.com/Azure/acs-engine#development-docker
 
 Build Steps: 
 
