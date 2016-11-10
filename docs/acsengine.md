@@ -4,16 +4,16 @@ The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource 
 
 # Downloading and Building ACS Engine
 
-As mentioned in the README, the simpliest way to run ACS Engine is via a Docker container (insrtuctions in the README). 
+As mentioned in the README, the simpliest way to run ACS Engine is via a Docker container (instructions in the [README](README.md).
 
-That said, ACS Engine can also be built and run natively on Windows OS X, and Linux. Instructions below: 
+That said, ACS Engine can also be built and run natively on Windows, OS X, and Linux. Instructions below: 
 
 ## Windows
 
 Requirements:
-- Powershell 
 - Git for Windows. Download and install [here](https://git-scm.com/download/win)
 - Go for Windows. Download and install [here](https://golang.org/dl/), accept all defaults.
+- Powershell 
 
 Build Steps: 
  
@@ -41,11 +41,11 @@ Requirements:
 Build Steps: 
 
 1. Open a command prompt to setup your gopath:
-  1. `mkdir $HOME/go`
+  1. `mkdir $HOME/gopath`
   2. edit `$HOME/.sh_profile` and add the following line to setup your go path
   ```
   export PATH=$PATH:/usr/local/go/bin
-  export GOPATH=$HOME/go
+  export GOPATH=$HOME/gopath
   ```
   3. `source $HOME/.sh_profile`
 2. Build acs-engine:
@@ -66,11 +66,11 @@ Requirements:
 Build Steps: 
 
 1. Setup Go path:
-  1. `mkdir $HOME/go`
+  1. `mkdir $HOME/gopath`
   2. edit `$HOME/.profile` and add the following line to setup your go path
   ```
   export PATH=$PATH:/usr/local/go/bin
-  export GOPATH=$HOME/go
+  export GOPATH=$HOME/gopath
   ```
   3. `source $HOME/.profile`
 2. Build acs-engine:
