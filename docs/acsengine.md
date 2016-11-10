@@ -2,11 +2,23 @@
 
 The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DCOS, Kubernetes, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
 
-# Downloading and Building ACS Engine
+## Development in Docker
 
-As mentioned in the README, the simpliest way to run ACS Engine is via a Docker container (instructions in the README).
+The easiest way to get started developing on `acs-engine` is to use Docker. If you already have Docker or "Docker for {Windows,Mac}" then you can get started without needing to install anything extra.
 
-That said, ACS Engine can also be built and run natively on Windows, OS X, and Linux. Instructions below: 
+* Windows (PowerShell): `.\scripts\devenv.ps1`
+* Linux (bash): `./scripts/devenv.sh`
+
+This setup mounts the `acs-engine` source directory as a volume into the Docker container.
+This means that you can edit your source code normally in your favorite editor on your
+machine, while still being able to compile and test inside of the Docker container (the
+same environment used in our Continuous Integration system).
+
+[Here's a quick demo video showing the dev/build/test cycle with this setup.](https://www.youtube.com/watch?v=lc6UZmqxQMs)
+
+# Downloading and Building ACS Engine Locally 
+
+ACS Engine can also be built and run natively on Windows, OS X, and Linux. Instructions below: 
 
 ## Windows
 
