@@ -44,25 +44,7 @@ same environment used in our Continuous Integration system).
 
 ## Development (Native)
 
-### Requirements
-- PowerShell (Windows)
-- `bash` + `make` (Linux)
-- `git`
-- `go` (with a properly configured GOPATH)
-
-### Building (Linux)
-
-```shell
-make build
-```
-
-### Building (Windows, PowerShell)
-
-```shell
-cd ${env:GOPATH}/github.com/Azure/acs-engine
-go get .
-go build .
-```
+Follow the steps in the User Guide: [ACS Engine](docs/acsengine.md)
 
 
 ## Contributing

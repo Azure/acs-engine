@@ -4,11 +4,16 @@ The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource 
 
 # Downloading and Building ACS Engine
 
-Here are the instructions for downloading and building the ACS Engine for Windows, OS X, and Linux.
+As mentioned in the README, the simpliest way to run ACS Engine is via a Docker container (insrtuctions in the README). 
+
+That said, ACS Engine can also be built and run natively on Windows OS X, and Linux. Instructions below: 
 
 ## Windows
 
-Here is how to download and building ACS Engine:
+Requirements:
+- Powershell 
+
+Build Steps: 
 
 1. Download and install [git for windows](https://git-scm.com/download/win)
 2. Download and install [Go for Windows](https://golang.org/dl/), accept all defaults.
@@ -30,6 +35,11 @@ Here is how to download and building ACS Engine:
 
 ## OS X
 
+Requirements:
+
+
+Build Steps: 
+
 1. Download and install [Go for OS X](https://golang.org/dl/)
 2. Open a command prompt to setup your gopath:
   1. `mkdir $HOME/go`
@@ -48,7 +58,16 @@ Here is how to download and building ACS Engine:
 
 ## Linux
 
-For Linux, ensure Docker is installed, and follow the developer instructions at https://github.com/Azure/acs-engine#development-docker to build and use the ACS Engine.
+Requirements:
+- `bash` + `make` (Linux)
+- `git`
+- `go` (with a properly configured GOPATH)
+- Docker 
+- https://github.com/Azure/acs-engine#development-docker
+
+Build Steps: 
+
+
 
 # Template Generation
 
