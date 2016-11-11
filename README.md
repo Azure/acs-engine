@@ -26,45 +26,6 @@ The cluster definition file enables the following customizations to your Docker 
 * [Managed Disks](examples/disks-managed) (under private preview) - shows how to use managed disks 
 * [Large Clusters](examples/largeclusters) - shows how to create cluster sizes of up to 1200 nodes
 
-## Development (Docker)
-
-The easiest way to get started developing on `acs-engine` is to use Docker.
-If you already have Docker or "Docker for {Windows,Mac}" then you can get started
-without needing to install anything extra.
-
-* Windows (PowerShell): `.\scripts\devenv.ps1`
-* Linux (bash): `./scripts/devenv.sh`
-
-This setup mounts the `acs-engine` source directory as a volume into the Docker container.
-This means that you can edit your source code normally in your favorite editor on your
-machine, while still being able to compile and test inside of the Docker container (the
-same environment used in our Continuous Integration system).
-
-[Here's a quick demo video showing the dev/build/test cycle with this setup.](https://www.youtube.com/watch?v=lc6UZmqxQMs)
-
-## Development (Native)
-
-### Requirements
-- PowerShell (Windows)
-- `bash` + `make` (Linux)
-- `git`
-- `go` (with a properly configured GOPATH)
-
-### Building (Linux)
-
-```shell
-make build
-```
-
-### Building (Windows, PowerShell)
-
-```shell
-cd ${env:GOPATH}/github.com/Azure/acs-engine
-go get .
-go build .
-```
-
-
 ## Contributing
 
 Please follow these instructions before submitting a PR:
