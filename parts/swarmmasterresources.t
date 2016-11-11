@@ -170,7 +170,7 @@
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]", 
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]", 
-          "customData": "[base64({{template "swarmmastercustomdata.t" .}})]",
+          {{GetMasterSwarmCustomData}}
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true", 
             "ssh": {

@@ -31,6 +31,11 @@ const (
 )
 
 const (
+	swarmProvision        = "configure-swarm-cluster.sh"
+	swarmWindowsProvision = "Install-ContainerHost-And-Join-Swarm.ps1"
+)
+
+const (
 	agentOutputs                 = "agentoutputs.t"
 	agentParams                  = "agentparams.t"
 	classicParams                = "classicparams.t"
@@ -49,11 +54,9 @@ const (
 	masterOutputs                = "masteroutputs.t"
 	masterParams                 = "masterparams.t"
 	swarmBaseFile                = "swarmbase.t"
-	swarmAgentCustomData         = "swarmagentcustomdata.t"
 	swarmAgentResourcesVMAS      = "swarmagentresourcesvmas.t"
 	swarmAgentResourcesVMSS      = "swarmagentresourcesvmss.t"
 	swarmAgentVars               = "swarmagentvars.t"
-	swarmMasterCustomData        = "swarmmastercustomdata.t"
 	swarmMasterResources         = "swarmmasterresources.t"
 	swarmMasterVars              = "swarmmastervars.t"
 	swarmWinAgentResourcesVMAS   = "swarmwinagentresourcesvmas.t"
@@ -74,7 +77,7 @@ var kubernetesAddonYamls = map[string]string{
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams}
 var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
-var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentCustomData, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmBaseFile, swarmMasterCustomData, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS, windowsParams}
+var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS, windowsParams}
 
 func (t *TemplateGenerator) verifyFiles() error {
 	allFiles := append(commonTemplateFiles, dcosTemplateFiles...)
@@ -363,6 +366,22 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
+		"GetMasterSwarmCustomData": func() string {
+			files := []string{swarmProvision}
+			str := buildYamlFileWithWriteFiles(files)
+			str = escapeSingleLine(str)
+			return fmt.Sprintf("\"customData\": \"[base64('%s')]\",", str)
+		},
+		"GetAgentSwarmCustomData": func() string {
+			files := []string{swarmProvision}
+			str := buildYamlFileWithWriteFiles(files)
+			str = escapeSingleLine(str)
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('agentRunCmdFile'),variables('agentRunCmd')))]\",", str)
+		},
+		"GetWinAgentSwarmCustomData": func() string {
+			str := getBase64CustomScript(swarmWindowsProvision)
+			return fmt.Sprintf("\"customData\": \"%s\"", str)
+		},
 		"GetKubernetesKubeConfig": func() string {
 			str, e := getSingleLineForTemplate(kubeConfigJSON)
 			if e != nil {
@@ -623,12 +642,8 @@ func getSingleLineForTemplate(yamlFilename string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("yaml file %s does not exist", yamlFilename)
 	}
-	// template.JSEscapeString leaves undesirable chars that don't work with pretty print
-	yamlStr := string(b)
-	yamlStr = strings.Replace(yamlStr, "\\", "\\\\", -1)
-	yamlStr = strings.Replace(yamlStr, "\r\n", "\\n", -1)
-	yamlStr = strings.Replace(yamlStr, "\n", "\\n", -1)
-	yamlStr = strings.Replace(yamlStr, "\"", "\\\"", -1)
+
+	yamlStr := escapeSingleLine(string(b))
 
 	// variable replacement
 	rVariable, e1 := regexp.Compile("{{{([^}]*)}}}")
@@ -643,6 +658,15 @@ func getSingleLineForTemplate(yamlFilename string) (string, error) {
 	}
 	yamlStr = rVerbatim.ReplaceAllString(yamlStr, "',$1,'")
 	return yamlStr, nil
+}
+
+func escapeSingleLine(escapedStr string) string {
+	// template.JSEscapeString leaves undesirable chars that don't work with pretty print
+	escapedStr = strings.Replace(escapedStr, "\\", "\\\\", -1)
+	escapedStr = strings.Replace(escapedStr, "\r\n", "\\n", -1)
+	escapedStr = strings.Replace(escapedStr, "\n", "\\n", -1)
+	escapedStr = strings.Replace(escapedStr, "\"", "\\\"", -1)
+	return escapedStr
 }
 
 // getBase64CustomScript will return a base64 of the CSE
@@ -762,4 +786,25 @@ func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCo
 	yamlStr = strings.Replace(yamlStr, "DCOSCUSTOMDATAPUBLICIPSTR", publicIPStr, -1)
 
 	return yamlStr
+}
+
+func buildYamlFileWithWriteFiles(files []string) string {
+	clusterYamlFile := `#cloud-config
+
+write_files:
+%s
+`
+	writeFileBlock := ` -  encoding: gzip
+    content: !!binary |
+        %s
+    path: /opt/azure/containers/%s
+    permissions: "0744"
+`
+
+	filelines := ""
+	for _, file := range files {
+		b64GzipString := getBase64CustomScript(file)
+		filelines = filelines + fmt.Sprintf(writeFileBlock, b64GzipString, file)
+	}
+	return fmt.Sprintf(clusterYamlFile, filelines)
 }
