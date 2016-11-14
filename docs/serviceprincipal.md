@@ -21,7 +21,7 @@ There are several ways to create a Service Principal in Azure Active Directory:
    
    ```shell
    az login
-   az account set --name="${SUBSCRIPTION_ID}"
+   az account set --subscription="${SUBSCRIPTION_ID}"
    az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
    ```
    
