@@ -1,0 +1,19 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "5b+vY5xJ8+O9P++XpsAp3ce5+gE=",
+			"path": "github.com/ghodss/yaml",
+			"revision": "bea76d6a4713e18b7f5321a2b020738552def3ea",
+			"revisionTime": "2016-10-20T00:50:02Z"
+		},
+		{
+			"checksumSHA1": "12GqsW8PiRPnezDDy0v4brZrndM=",
+			"path": "gopkg.in/yaml.v2",
+			"revision": "a5b47d31c556af34a302ce5d659e6fea44d90de0",
+			"revisionTime": "2016-09-28T15:37:09Z"
+		}
+	],
+	"rootPath": "github.com/Azure/acs-engine"
+}
