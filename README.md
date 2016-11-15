@@ -57,13 +57,13 @@ needed assets are generated and placed in the output directory.)
 ## Deployment Usage
 
 Generated templates can be deployed using
-[the Azure XPlat CLI (v0.10 only)](https://github.com/Azure/azure-xplat-cli/releases/tag/v0.10.0-May2016),
+[the Azure XPlat CLI (v0.10**.0** only)](https://github.com/Azure/azure-xplat-cli/releases/tag/v0.10.0-May2016),
 [the Azure CLI 2.0](https://github.com/Azure/azure-cli) or
 [Powershell](https://github.com/Azure/azure-powershell).
 
 ### Deploying with Azure XPlat CLI
 
-**NOTE:** DCOS deployments will fail with Azure XPlat CLI version > 10.0.  Use [Azure XPlat CLI 0.10.0](https://github.com/Azure/azure-xplat-cli/releases/tag/v0.10.0-May2016).  The fix for the Azure XPlat CLI fix is estimated to be Dec 2016.
+**NOTE:** Some deployments will fail if certain versions of the Azure XPlat CLI are used. It's recommended that you use [Azure XPlat CLI 0.10**.0**](https://github.com/Azure/azure-xplat-cli/releases/tag/v0.10.0-May2016) until a new point release of `0.10.x` is available with the fix.
 
 ```bash
 $ azure login
@@ -82,7 +82,8 @@ $ azure group deployment create \
 ```
 
 ### Deploying with Azure CLI 2.0
-NOTE: Azure CLI 2.0 is still in preview, so changes may occur. Please reference [the Azure CLI 2.0 GitHub Repo](https://github.com/Azure/azure-cli) for updated commands
+**NOTE:** Azure CLI 2.0 is still in preview, so changes may occur.
+Please reference [the Azure CLI 2.0 GitHub Repo](https://github.com/Azure/azure-cli) for updated commands.
 ```bash
 $ az login
 
