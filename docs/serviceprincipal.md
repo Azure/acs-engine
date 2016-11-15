@@ -18,13 +18,13 @@ and [L4 Load Balancers](https://azure.microsoft.com/en-us/documentation/articles
 There are several ways to create a Service Principal in Azure Active Directory:
 
 * **With the [Azure CLI](https://github.com/Azure/azure-cli)**
-   
+
    ```shell
    az login
-   az account set --name="${SUBSCRIPTION_ID}"
+   az account set --subscription="${SUBSCRIPTION_ID}"
    az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
    ```
-   
+
 This will output your `client_id`, `client_secret` (password), `sp_name`, and `tenant`.  The `sp_name` or `client_id` may be used for the `servicePrincipalProfile.servicePrincipalClientId` and the `client_secret` is used for `servicePrincipalProfile.servicePrincipalClientSecret`.
 
 Confirm your service principal by opening a new shell and run the following commands substituting in `sp_name`, `client_secret`, and `tenant`:
