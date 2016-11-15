@@ -68,7 +68,7 @@ Generated templates can be deployed using
 ```bash
 $ azure login
 
-$ azure account set --name "<SUBSCRIPTION NAME OR ID>"
+$ azure account set "<SUBSCRIPTION NAME OR ID>"
 
 $ azure group create \
     --name="<RESOURCE_GROUP_NAME>" \
