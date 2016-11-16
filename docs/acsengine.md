@@ -54,7 +54,7 @@ Build Steps:
 
 1. Open a command prompt to setup your gopath:
   1. `mkdir $HOME/gopath`
-  2. edit `$HOME/.sh_profile` and add the following line to setup your go path
+  2. edit `$HOME/.bash_profile` and add the following line to setup your go path
   ```
   export PATH=$PATH:/usr/local/go/bin
   export GOPATH=$HOME/gopath
