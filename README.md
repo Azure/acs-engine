@@ -70,6 +70,8 @@ $ azure login
 
 $ azure account set "<SUBSCRIPTION NAME OR ID>"
 
+$ azure config mode arm
+
 $ azure group create \
     --name="<RESOURCE_GROUP_NAME>" \
     --location="<LOCATION>"
