@@ -91,15 +91,15 @@ $ az login
 
 $ az account set --name "<SUBSCRIPTION NAME OR ID>"
 
-$ az group create \
-    --name="<RESOURCE_GROUP_NAME>" \
-    --location="<LOCATION>"
+$ az resource group create \
+    --name "<RESOURCE_GROUP_NAME>" \
+    --location "<LOCATION>"
 
 $ az resource group deployment create \
-    --name="<DEPLOYMENT NAME>" \
-    --resource-group="<RESOURCE_GROUP_NAME>" \
-    --template-file-path="./_output/<INSTANCE>/azuredeploy.json" \
-    --parameters-file-path="./_output/<INSTANCE>/azuredeploy.parameters.json"
+    --name "<DEPLOYMENT NAME>" \
+    --resource-group "<RESOURCE_GROUP_NAME>" \
+    --template-file "./_output/<INSTANCE>/azuredeploy.json" \
+    --parameters "@./_output/<INSTANCE>/azuredeploy.parameters.json"
 ```
 
 ### Deploying with Powershell
