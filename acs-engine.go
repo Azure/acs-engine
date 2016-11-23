@@ -122,6 +122,7 @@ var noPrettyPrint = flag.Bool("noPrettyPrint", false, "do not pretty print outpu
 var artifactsDir = flag.String("artifacts", "", "directory where artifacts will be written")
 var classicMode = flag.Bool("classicMode", false, "enable classic parameters and outputs")
 var parametersOnly = flag.Bool("parametersOnly", false, "only output the parameters")
+var environment = flag.String("environment")
 
 func main() {
 	start := time.Now()
