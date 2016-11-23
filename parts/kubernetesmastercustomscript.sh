@@ -17,14 +17,15 @@ PRIMARY_AVAILABILITY_SET="${9}"
 SERVICE_PRINCIPAL_CLIENT_ID="${10}"
 SERVICE_PRINCIPAL_CLIENT_SECRET="${11}"
 KUBELET_PRIVATE_KEY="${12}"
+TARGET_ENVIRONMENT="${13}"
 
 # Master only secrets
-APISERVER_PRIVATE_KEY="${13}"
-CA_CERTIFICATE="${14}"
-MASTER_FQDN="${15}"
-KUBECONFIG_CERTIFICATE="${16}"
-KUBECONFIG_KEY="${17}"
-ADMINUSER="${18}"
+APISERVER_PRIVATE_KEY="${14}"
+CA_CERTIFICATE="${15}"
+MASTER_FQDN="${16}"
+KUBECONFIG_CERTIFICATE="${17}"
+KUBECONFIG_KEY="${18}"
+ADMINUSER="${19}"
 
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
@@ -51,6 +52,7 @@ chmod 0644 "${AZURE_JSON_PATH}"
 chown root:root "${AZURE_JSON_PATH}"
 cat << EOF > "${AZURE_JSON_PATH}"
 {
+    "cloud":"${TARGET_ENVIRONMENT}",
     "tenantId": "${TENANT_ID}",
     "subscriptionId": "${SUBNETSCRIPTION_ID}",
     "aadClientId": "${SERVICE_PRINCIPAL_CLIENT_ID}",
@@ -165,6 +167,11 @@ function writeKubeConfig() {
     chmod 700 $KUBECONFIGDIR
     chmod 600 $KUBECONFIGFILE
 
+    FQDNSuffix="cloudapp.azure.com"
+    if [ "$TARGET_ENVIRONMENT" = "AzureChinaCloud" ]
+    then
+        FQDNSuffix="cloudapp.chinacloudapi.cn"
+    fi
     # disable logging after secret output
     set +x
     echo "
@@ -173,7 +180,7 @@ apiVersion: v1
 clusters:
 - cluster:
     certificate-authority-data: \"$CA_CERTIFICATE\"
-    server: https://$MASTER_FQDN.$LOCATION.cloudapp.azure.com
+    server: https://$MASTER_FQDN.$LOCATION.$FQDNSuffix
   name: \"$MASTER_FQDN\"
 contexts:
 - context:

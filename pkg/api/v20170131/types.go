@@ -28,16 +28,16 @@ type ContainerService struct {
 
 // Properties represents the ACS cluster definition
 type Properties struct {
-	ProvisioningState   ProvisioningState   `json:"provisioningState"`
-	OrchestratorProfile OrchestratorProfile `json:"orchestratorProfile"`
-	MasterProfile       MasterProfile       `json:"masterProfile"`
-	AgentPoolProfiles   []AgentPoolProfile  `json:"agentPoolProfiles"`
-	LinuxProfile        LinuxProfile        `json:"linuxProfile"`
-	WindowsProfile      WindowsProfile      `json:"windowsProfile"`
-	DiagnosticsProfile DiagnosticsProfile `json:"diagnosticsProfile"`
-	JumpboxProfile JumpboxProfile `json:"jumpboxProfile"`
+	ProvisioningState       ProvisioningState       `json:"provisioningState"`
+	OrchestratorProfile     OrchestratorProfile     `json:"orchestratorProfile"`
+	MasterProfile           MasterProfile           `json:"masterProfile"`
+	AgentPoolProfiles       []AgentPoolProfile      `json:"agentPoolProfiles"`
+	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
+	WindowsProfile          WindowsProfile          `json:"windowsProfile"`
+	DiagnosticsProfile      DiagnosticsProfile      `json:"diagnosticsProfile"`
+	JumpboxProfile          JumpboxProfile          `json:"jumpboxProfile"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
-	CustomProfile CustomProfile `json:"customProfile"`
+	CustomProfile           CustomProfile           `json:"customProfile"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -45,7 +45,6 @@ type ServicePrincipalProfile struct {
 	ClientID string `json:"clientId,omitempty"`
 	Secret   string `json:"secret,omitempty"`
 }
-
 
 // CustomProfile specifies custom properties that are used for
 // cluster instantiation.  Should not be used by most users.
@@ -66,8 +65,8 @@ type LinuxProfile struct {
 
 // WindowsProfile represents the Windows configuration passed to the cluster
 type WindowsProfile struct {
-	AdminUsername string            `json:"adminUsername,omitempty"`
-	AdminPassword string            `json:"adminPassword,omitempty"`
+	AdminUsername string `json:"adminUsername,omitempty"`
+	AdminPassword string `json:"adminPassword,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.
@@ -92,6 +91,31 @@ const (
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
 	OrchestratorType OrchestratorType `json:"orchestratorType"`
+	KubernetesConfig KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	DCOSConfig       DCOSConfig       `json:"dcosConfig,omitempty"`
+}
+
+type DCOSConfig struct {
+	DCOS173_BootstrapDownloadURL string
+	DCOS184_BootstrapDownloadURL string
+	DCOS187_BootstrapDownloadURL string
+}
+
+// KubernetesConfig contains the Kubernetes config structure, containing
+// Kubernetes specific configuration
+type KubernetesConfig struct {
+	KubernetesHyperkubeSpec         string `json:"kubernetesHyperkubeSpec,omitempty"`
+	KubectlVersion                  string `json:"kubectlVersion,omitempty"`
+	KubernetesHeapsterSpec          string `json:"kubernetesHeapsterSpec,omitempty"`
+	KubernetesAddonResizerSpec      string `json:"kubernetesAddonResizerSpec,omitempty"`
+	KubernetesKubeDNSSpec           string `json:"kubernetesKubeDNSSpec,omitempty"`
+	KubernetesExecHealthzSpec       string `json:"kubernetesExecHealthzSpec,omitempty"`
+	KubernetesDashboardSpec         string `json:"kubernetesDashboardSpec,omitempty"`
+	KubernetesAddonManagerSpec      string `json:"kubernetesAddonManagerSpec,omitempty"`
+	KubernetesDNSMasqSpec           string `json:"kubernetesDNSMasqSpec,omitempty"`
+	KubernetesPodInfraContainerSpec string `json:"kubernetesPodInfraContainerSpec,omitempty"`
+	KubectlDownloadURL              string `json:"kubectlDownloadURL,omitempty"`
+	DockerInstallScriptURL          string `json:"dockerInstallScriptURL,omitempty"`
 }
 
 // MasterProfile represents the definition of master cluster
@@ -122,8 +146,8 @@ type AgentPoolProfile struct {
 	// Set as nullable to support backward compat because
 	// this property was added later.
 	// If the value is null or not set, it defaulted to Linux.
-	OSType    OSType `json:"osType,omitempty"`
-	
+	OSType OSType `json:"osType,omitempty"`
+
 	// subnet is internal
 	subnet string
 }

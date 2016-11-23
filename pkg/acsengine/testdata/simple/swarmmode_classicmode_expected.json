@@ -480,6 +480,13 @@
       },
       "type": "string"
     },
+    "targetEnvironment": {
+      "defaultValue": "AzureCloud",
+      "metadata": {
+        "description": "The azure deploy environment. eg. AzureCloud, AzureChinaCloud, AzureUSGovernment, AzureGermanCloud"
+      },
+      "type": "string"
+    },
     "vmsPerStorageAccount": {
       "defaultValue": 5,
       "metadata": {

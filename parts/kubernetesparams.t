@@ -47,6 +47,76 @@
       },
       "type": "string"
     },
+    "kubernetesAddonManagerSpec": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubernetesAddonManagerSpec}}",
+      "metadata": {
+        "description": "The container spec for hyperkube."
+      },
+      "type": "string"
+    },
+    "kubernetesAddonResizerSpec": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubernetesAddonResizerSpec}}",
+      "metadata": {
+        "description": "The container spec for addon-resizer."
+      },
+      "type": "string"
+    },
+    "kubernetesDashboardSpec": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubernetesDashboardSpec}}",
+      "metadata": {
+        "description": "The container spec for kubernetes-dashboard-amd64."
+      },
+      "type": "string"
+    },
+    "kubernetesExecHealthzSpec": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubernetesExecHealthzSpec}}",
+      "metadata": {
+        "description": "The container spec for exechealthz-amd64."
+      },
+      "type": "string"
+    },
+    "kubernetesHeapsterSpec": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubernetesHeapsterSpec}}",
+      "metadata": {
+        "description": "The container spec for heapster."
+      },
+      "type": "string"
+    },
+    "kubernetesPodInfraContainerSpec": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubernetesPodInfraContainerSpec}}",
+      "metadata": {
+        "description": "The container spec for pod infra."
+      },
+      "type": "string"
+    },
+    "kubernetesKubeDNSSpec": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubernetesKubeDNSSpec}}",
+      "metadata": {
+        "description": "The container spec for kubedns-amd64."
+      },
+      "type": "string"
+    },
+    "kubernetesDNSMasqSpec": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubernetesDNSMasqSpec}}",
+      "metadata": {
+        "description": "The container spec for kube-dnsmasq-amd64."
+      },
+      "type": "string"
+    },
+    "kubectlDownloadURL": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubectlDownloadURL}}",
+      "metadata": {
+        "description": "This is the download URL of kubectl"
+      },
+      "type": "string"
+    },
+    "dockerInstallScriptURL": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.DockerInstallScriptURL}}",
+      "metadata": {
+        "description": "This is the download URL of docker installer script"
+      },
+      "type": "string"
+    },
     "kubectlVersion": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubectlVersion}}",
       "metadata": {

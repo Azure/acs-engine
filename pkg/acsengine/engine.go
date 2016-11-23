@@ -48,6 +48,7 @@ const (
 	dcosAgentResourcesVMSS       = "dcosagentresourcesvmss.t"
 	dcosAgentVars                = "dcosagentvars.t"
 	dcosBaseFile                 = "dcosbase.t"
+	dcosParams                   = "dcosparams.t"
 	dcosMasterResources          = "dcosmasterresources.t"
 	dcosMasterVars               = "dcosmastervars.t"
 	kubernetesBaseFile           = "kubernetesbase.t"
@@ -71,6 +72,13 @@ const (
 	windowsParams                = "windowsparams.t"
 )
 
+var kubernetesManifestYamls = map[string]string{
+	"MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR":          "kubernetesmaster-kube-scheduler.yaml",
+	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetesmaster-kube-controller-manager.yaml",
+	"MASTER_KUBERNETES_APISERVER_B64_GZIP_STR":          "kubernetesmaster-kube-apiserver.yaml",
+	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":      "kubernetesmaster-kube-addon-manager.yaml",
+}
+
 var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR":             "kubernetesmasteraddons-heapster-deployment.yaml",
 	"MASTER_ADDON_HEAPSTER_SERVICE_B64_GZIP_STR":                "kubernetesmasteraddons-heapster-service.yaml",
@@ -82,7 +90,7 @@ var kubernetesAddonYamls = map[string]string{
 }
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams, windowsParams}
-var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars}
+var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars, dcosParams}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
@@ -177,7 +185,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 
 	properties := &containerService.Properties
 
-	if certsGenerated, err = SetPropertiesDefaults(properties); err != nil {
+	if certsGenerated, err = SetPropertiesDefaults(properties, ParseLocation(containerService.Location)); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
@@ -216,7 +224,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	templateRaw = b.String()
 
 	var parametersMap map[string]interface{}
-	if parametersMap, err = getParameters(properties, t.ClassicMode); err != nil {
+	if parametersMap, err = getParameters(properties, t.ClassicMode, containerService.Location); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 	var parameterBytes []byte
@@ -280,10 +288,11 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 	return files, baseFile, nil
 }
 
-func getParameters(properties *api.Properties, isClassicMode bool) (map[string]interface{}, error) {
+func getParameters(properties *api.Properties, isClassicMode bool, location string) (map[string]interface{}, error) {
 	parametersMap := map[string]interface{}{}
 
 	// Master Parameters
+	addValue(parametersMap, "targetEnvironment", location)
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
 	addValue(parametersMap, "masterEndpointDNSNamePrefix", properties.MasterProfile.DNSPrefix)
 	if properties.MasterProfile.IsCustomVNET() {
@@ -315,8 +324,33 @@ func getParameters(properties *api.Properties, isClassicMode bool) (map[string]i
 		addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubectlVersion", properties.OrchestratorProfile.KubernetesConfig.KubectlVersion)
+		addValue(parametersMap, "kubernetesAddonManagerSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesAddonManagerSpec)
+		addValue(parametersMap, "kubernetesAddonResizerSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesAddonResizerSpec)
+		addValue(parametersMap, "kubernetesDashboardSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesDashboardSpec)
+		addValue(parametersMap, "kubernetesDNSMasqSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesDNSMasqSpec)
+		addValue(parametersMap, "kubernetesExecHealthzSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesExecHealthzSpec)
+		addValue(parametersMap, "kubernetesHeapsterSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesHeapsterSpec)
+		addValue(parametersMap, "kubernetesKubeDNSSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesKubeDNSSpec)
+		addValue(parametersMap, "kubernetesPodInfraContainerSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesPodInfraContainerSpec)
 		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 		addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
+		addValue(parametersMap, "dockerInstallScriptURL", properties.OrchestratorProfile.KubernetesConfig.DockerInstallScriptURL)
+		addValue(parametersMap, "kubectlDownloadURL", properties.OrchestratorProfile.KubernetesConfig.KubectlDownloadURL)
+	}
+
+	if strings.HasPrefix(string(properties.OrchestratorProfile.OrchestratorType), string(api.DCOS)) {
+		dcosBootstrapURL := properties.OrchestratorProfile.DCOSConfig.DCOS187_BootstrapDownloadURL
+		switch properties.OrchestratorProfile.OrchestratorType {
+		case api.DCOS:
+			dcosBootstrapURL = properties.OrchestratorProfile.DCOSConfig.DCOS187_BootstrapDownloadURL
+		case api.DCOS173:
+			dcosBootstrapURL = properties.OrchestratorProfile.DCOSConfig.DCOS173_BootstrapDownloadURL
+		case api.DCOS184:
+			dcosBootstrapURL = properties.OrchestratorProfile.DCOSConfig.DCOS184_BootstrapDownloadURL
+		case api.DCOS187:
+			dcosBootstrapURL = properties.OrchestratorProfile.DCOSConfig.DCOS187_BootstrapDownloadURL
+		}
+		addValue(parametersMap, "dcosBootstrapURL", dcosBootstrapURL)
 	}
 
 	// Agent parameters
@@ -470,6 +504,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			str, e := getSingleLineForTemplate(kubernetesMasterCustomDataYaml)
 			if e != nil {
 				return ""
+			}
+
+			for placeholder, filename := range kubernetesManifestYamls {
+				manifestTextContents := getBase64CustomScript(filename)
+				str = strings.Replace(str, placeholder, manifestTextContents, -1)
 			}
 
 			for placeholder, filename := range kubernetesAddonYamls {

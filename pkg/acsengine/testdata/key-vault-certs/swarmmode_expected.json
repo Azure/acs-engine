@@ -546,6 +546,13 @@
         "description": "SSH public key used for auth to all Linux machines.  Not Required.  If not set, you must provide a password key."
       },
       "type": "string"
+    },
+    "targetEnvironment": {
+      "defaultValue": "AzureCloud",
+      "metadata": {
+        "description": "The azure deploy environment. eg. AzureCloud, AzureChinaCloud, AzureUSGovernment, AzureGermanCloud"
+      },
+      "type": "string"
     }
   },
   "variables": {

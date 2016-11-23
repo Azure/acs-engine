@@ -11,7 +11,7 @@ runcmd:
 - apt-get update
 - apt-get install -y docker-engine
 - systemctl restart docker
-- /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://storage.googleapis.com/kubernetes-release/release/{{{kubectlVersion}}}/bin/linux/amd64/kubectl > /usr/local/bin/kubectl
+- /usr/bin/curl -sSL --retry 12 --retry-delay 10 {{{kubectlDownloadURL}}} > /usr/local/bin/kubectl
 - chmod +x /usr/local/bin/kubectl
 - mkdir -p /etc/kubernetes/manifests
 
@@ -114,6 +114,7 @@ write_files:
           /hyperkube kubelet \
             --api-servers="https://{{{masterPrivateIp}}}:443" \
             --kubeconfig=/var/lib/kubelet/kubeconfig \
+            --pod-infra-container-image="{{{kubernetesPodInfraContainerSpec}}}" \
             --address=0.0.0.0 \
             --allow-privileged=true \
             --enable-server \

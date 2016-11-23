@@ -24,3 +24,36 @@ type V20160330ContainerService struct {
 	api.TypeMeta
 	*v20160330.ContainerService
 }
+
+//DCOSSpecConfig is the configurations of DCOS
+type DCOSSpecConfig struct {
+	DCOS173_BootstrapDownloadURL string
+	DCOS184_BootstrapDownloadURL string
+	DCOS187_BootstrapDownloadURL string
+}
+
+//DockerSpecConfig is default docker install script URL.
+type DockerSpecConfig struct {
+	DefaultDockerInstallScriptURL string
+}
+
+//KubernetesSpecConfig is the kubernetes container images used.
+type KubernetesSpecConfig struct {
+	DefaultKubernetesHyperkubeSpec         string
+	DefaultKubernetesDashboardSpec         string
+	DefaultKubernetesExechealthzSpec       string
+	DefaultKubernetesAddonResizerSpec      string
+	DefaultKubernetesHeapsterSpec          string
+	DefaultKubernetesDNSSpec               string
+	DefaultKubernetesAddonManagerSpec      string
+	DefaultKubernetesDNSMasqSpec           string
+	DefaultKubernetesPodInfraContainerSpec string
+	DefaultKubectlDownloadURL              string
+}
+
+//AzureEnvironmentSpecConfig is the overall configuration differences in different cloud environments.
+type AzureEnvironmentSpecConfig struct {
+	DockerSpecConfig     DockerSpecConfig
+	KubernetesSpecConfig KubernetesSpecConfig
+	DCOSSpecConfig       DCOSSpecConfig
+}

@@ -27,3 +27,4 @@
     "{{.Name}}LbIPConfigName": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'))]", 
     "{{.Name}}LbName": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'))]",
 {{end}}
+    "dcosBootstrapURL": "[parameters('dcosBootstrapURL')]", 

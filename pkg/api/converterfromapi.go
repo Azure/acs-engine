@@ -219,14 +219,24 @@ func convertOrchestratorProfileToV20160930(api *OrchestratorProfile, o *v2016093
 	} else {
 		o.OrchestratorType = v20160930.OrchestratorType(api.OrchestratorType)
 	}
+
+	o.DCOSConfig.DCOS173_BootstrapDownloadURL = api.DCOSConfig.DCOS173_BootstrapDownloadURL
+	o.DCOSConfig.DCOS184_BootstrapDownloadURL = api.DCOSConfig.DCOS184_BootstrapDownloadURL
+	o.DCOSConfig.DCOS187_BootstrapDownloadURL = api.DCOSConfig.DCOS187_BootstrapDownloadURL
 }
 
 func convertOrchestratorProfileToV20160330(api *OrchestratorProfile, o *v20160330.OrchestratorProfile) {
 	o.OrchestratorType = v20160330.OrchestratorType(api.OrchestratorType)
+	o.DCOSConfig.DCOS173_BootstrapDownloadURL = api.DCOSConfig.DCOS173_BootstrapDownloadURL
+	o.DCOSConfig.DCOS184_BootstrapDownloadURL = api.DCOSConfig.DCOS184_BootstrapDownloadURL
+	o.DCOSConfig.DCOS187_BootstrapDownloadURL = api.DCOSConfig.DCOS187_BootstrapDownloadURL
 }
 
 func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.OrchestratorProfile) {
 	o.OrchestratorType = vlabs.OrchestratorType(api.OrchestratorType)
+	o.DCOSConfig.DCOS173_BootstrapDownloadURL = api.DCOSConfig.DCOS173_BootstrapDownloadURL
+	o.DCOSConfig.DCOS184_BootstrapDownloadURL = api.DCOSConfig.DCOS184_BootstrapDownloadURL
+	o.DCOSConfig.DCOS187_BootstrapDownloadURL = api.DCOSConfig.DCOS187_BootstrapDownloadURL
 }
 
 func convertMasterProfileToV20160930(api *MasterProfile, v20160930 *v20160930.MasterProfile) {

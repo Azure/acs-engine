@@ -98,6 +98,31 @@ const (
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
 	OrchestratorType OrchestratorType `json:"orchestratorType"`
+	KubernetesConfig KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	DCOSConfig       DCOSConfig       `json:"dcosConfig,omitempty"`
+}
+
+type DCOSConfig struct {
+	DCOS173_BootstrapDownloadURL string
+	DCOS184_BootstrapDownloadURL string
+	DCOS187_BootstrapDownloadURL string
+}
+
+// KubernetesConfig contains the Kubernetes config structure, containing
+// Kubernetes specific configuration
+type KubernetesConfig struct {
+	KubernetesHyperkubeSpec         string `json:"kubernetesHyperkubeSpec,omitempty"`
+	KubectlVersion                  string `json:"kubectlVersion,omitempty"`
+	KubernetesHeapsterSpec          string `json:"kubernetesHeapsterSpec,omitempty"`
+	KubernetesAddonResizerSpec      string `json:"kubernetesAddonResizerSpec,omitempty"`
+	KubernetesKubeDNSSpec           string `json:"kubernetesKubeDNSSpec,omitempty"`
+	KubernetesExecHealthzSpec       string `json:"kubernetesExecHealthzSpec,omitempty"`
+	KubernetesDashboardSpec         string `json:"kubernetesDashboardSpec,omitempty"`
+	KubernetesAddonManagerSpec      string `json:"kubernetesAddonManagerSpec,omitempty"`
+	KubernetesDNSMasqSpec           string `json:"kubernetesDNSMasqSpec,omitempty"`
+	KubernetesPodInfraContainerSpec string `json:"kubernetesPodInfraContainerSpec,omitempty"`
+	KubectlDownloadURL              string `json:"kubectlDownloadURL,omitempty"`
+	DockerInstallScriptURL          string `json:"dockerInstallScriptURL,omitempty"`
 }
 
 // MasterProfile represents the definition of master cluster

@@ -17,9 +17,6 @@ const (
 	DefaultAgentSubnetTemplate = "10.%d.0.0/16"
 	// DefaultKubernetesClusterDomain is the dns suffix used in the cluster (used as a SAN in the PKI generation)
 	DefaultKubernetesClusterDomain = "cluster.local"
-	// DefaultKubernetesHyperkubeSpec is the default version used for Kubernetes setup
-	// The latest stable version can be found here: https://storage.googleapis.com/kubernetes-release/release/stable.txt
-	DefaultKubernetesHyperkubeSpec = "gcr.io/google_containers/hyperkube-amd64:v1.5.1"
 	// DefaultKubectlVersion is the version used for kubectl
 	// The latest stable version can be found here: https://storage.googleapis.com/kubernetes-release/release/stable.txt
 	DefaultKubectlVersion = "v1.5.1"
@@ -33,3 +30,24 @@ const (
 	// PublicAgent represents the public agent node type
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
+
+const (
+	AzureCloud int = iota
+	AzureChinaCloud
+	AzureUSGovernment
+	AzureGermanCloud
+)
+
+//ParseLocation translate the string "AzureCloud/AzureChinaCloud/AzureUSGovernment/AzureGermanCloud" to enum
+func ParseLocation(location string) int {
+	switch location {
+	case "AzureChinaCloud":
+		return AzureChinaCloud
+	case "AzureUSGovernment":
+		return AzureUSGovernment
+	case "AzureGermanCloud":
+		return AzureGermanCloud
+	default:
+		return AzureCloud
+	}
+}
