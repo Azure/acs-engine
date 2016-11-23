@@ -46,6 +46,8 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
           name: MY_POD_NAMESPACE
+      nodeSelector:
+        beta.kubernetes.io/os: linux
     metadata:
       labels:
         k8s-app: heapster

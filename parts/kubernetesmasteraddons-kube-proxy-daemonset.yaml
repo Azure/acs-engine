@@ -47,3 +47,5 @@ spec:
       - hostPath:
           path: "/etc/kubernetes"
         name: etc-kubernetes
+      nodeSelector:
+        beta.kubernetes.io/os: linux

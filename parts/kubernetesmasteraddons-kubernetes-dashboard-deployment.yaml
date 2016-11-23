@@ -31,3 +31,5 @@ spec:
         ports:
         - containerPort: 9090
           protocol: TCP
+      nodeSelector:
+        beta.kubernetes.io/os: linux
