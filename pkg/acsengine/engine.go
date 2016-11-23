@@ -205,6 +205,7 @@ func getParameters(properties *api.Properties) (map[string]interface{}, error) {
 	parametersMap := map[string]interface{}{}
 
 	// Master Parameters
+	addValue(parametersMap, "targetEnvironment", properties.Environment)
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
 	addValue(parametersMap, "masterEndpointDNSNamePrefix", properties.MasterProfile.DNSPrefix)
 	if properties.MasterProfile.IsCustomVNET() {
