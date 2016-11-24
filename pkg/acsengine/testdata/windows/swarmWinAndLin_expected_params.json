@@ -47,6 +47,9 @@
   "sshRSAPublicKey": {
     "value": "ssh-rsa PUBLICKEY azureuser@linuxvm"
   },
+  "targetEnvironment": {
+    "value": ""
+  },
   "windowsAdminPassword": {
     "value": "replacepassword1234$"
   },
