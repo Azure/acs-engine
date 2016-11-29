@@ -27,6 +27,7 @@ const (
 const (
 	dcosCustomData173 = "dcoscustomdata173.t"
 	dcosCustomData184 = "dcoscustomdata184.t"
+	dcosCustomData187 = "dcoscustomdata187.t"
 	dcosProvision     = "dcosprovision.sh"
 )
 
@@ -184,7 +185,8 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
 	var files []string
 	var baseFile string
-	if properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
+	if properties.OrchestratorProfile.OrchestratorType == api.DCOS187 ||
+		properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
 		properties.OrchestratorProfile.OrchestratorType == api.DCOS173 {
 		files = append(commonTemplateFiles, dcosTemplateFiles...)
 		baseFile = dcosBaseFile
@@ -268,6 +270,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		},
 		"IsDCOS184": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.DCOS184
+		},
+		"IsDCOS187": func() bool {
+			return properties.OrchestratorProfile.OrchestratorType == api.DCOS187
 		},
 		"RequiresFakeAgentOutput": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
@@ -416,7 +421,16 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 }
 
 func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) string {
-	if orchestratorType == api.DCOS184 {
+	if orchestratorType == api.DCOS187 {
+		switch masterCount {
+		case 1:
+			return "556978041b6ed059cc0f474501083e35ea5645b8"
+		case 3:
+			return "1eb387eda0403c7fd6f1dacf66e530be74c3c3de"
+		case 5:
+			return "2e38627207dc70f46296b9649f9ee2a43500ec15"
+		}
+	} else if orchestratorType == api.DCOS184 {
 		switch masterCount {
 		case 1:
 			return "5ac6a7d060584c58c704e1f625627a591ecbde4e"
@@ -440,7 +454,8 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 
 func getDCOSCustomDataPublicIPStr(orchestratorType api.OrchestratorType, masterCount int) string {
 	if orchestratorType == api.DCOS173 ||
-		orchestratorType == api.DCOS184 {
+		orchestratorType == api.DCOS184 ||
+		orchestratorType == api.DCOS187 {
 		var buf bytes.Buffer
 		for i := 0; i < masterCount; i++ {
 			buf.WriteString(fmt.Sprintf("reference(variables('masterVMNic')[%d]).ipConfigurations[0].properties.privateIPAddress,", i))
@@ -481,21 +496,21 @@ func getVNETSubnetDependencies(properties *api.Properties) string {
 
 func getVNETSubnets(properties *api.Properties, addNSG bool) string {
 	masterString := `{
-            "name": "[variables('masterSubnetName')]", 
+            "name": "[variables('masterSubnetName')]",
             "properties": {
               "addressPrefix": "[variables('masterSubnet')]"
             }
           }`
 	agentString := `          {
-            "name": "[variables('%sSubnetName')]", 
+            "name": "[variables('%sSubnetName')]",
             "properties": {
               "addressPrefix": "[variables('%sSubnet')]"
             }
           }`
 	agentStringNSG := `          {
-            "name": "[variables('%sSubnetName')]", 
+            "name": "[variables('%sSubnetName')]",
             "properties": {
-              "addressPrefix": "[variables('%sSubnet')]", 
+              "addressPrefix": "[variables('%sSubnet')]",
               "networkSecurityGroup": {
                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('%sNSGName'))]"
               }
@@ -517,22 +532,22 @@ func getVNETSubnets(properties *api.Properties, addNSG bool) string {
 
 func getLBRule(name string, port int) string {
 	return fmt.Sprintf(`	          {
-            "name": "LBRule%d", 
+            "name": "LBRule%d",
             "properties": {
               "backendAddressPool": {
                 "id": "[concat(variables('%sLbID'), '/backendAddressPools/', variables('%sLbBackendPoolName'))]"
-              }, 
-              "backendPort": %d, 
-              "enableFloatingIP": false, 
+              },
+              "backendPort": %d,
+              "enableFloatingIP": false,
               "frontendIPConfiguration": {
                 "id": "[variables('%sLbIPConfigID')]"
-              }, 
-              "frontendPort": %d, 
-              "idleTimeoutInMinutes": 5, 
-              "loadDistribution": "Default", 
+              },
+              "frontendPort": %d,
+              "idleTimeoutInMinutes": 5,
+              "loadDistribution": "Default",
               "probe": {
                 "id": "[concat(variables('%sLbID'),'/probes/tcp%dProbe')]"
-              }, 
+              },
               "protocol": "tcp"
             }
           }`, port, name, name, port, name, port, name, port)
@@ -551,11 +566,11 @@ func getLBRules(name string, ports []int) string {
 
 func getProbe(port int) string {
 	return fmt.Sprintf(`          {
-            "name": "tcp%dProbe", 
+            "name": "tcp%dProbe",
             "properties": {
-              "intervalInSeconds": "5", 
-              "numberOfProbes": "2", 
-              "port": %d, 
+              "intervalInSeconds": "5",
+              "numberOfProbes": "2",
+              "port": %d,
               "protocol": "tcp"
             }
           }`, port, port)
@@ -576,16 +591,16 @@ func getSecurityRule(port int, portIndex int) string {
 	// BaseLBPriority specifies the base lb priority.
 	BaseLBPriority := 200
 	return fmt.Sprintf(`          {
-            "name": "Allow_%d", 
+            "name": "Allow_%d",
             "properties": {
-              "access": "Allow", 
-              "description": "Allow traffic from the Internet to port %d", 
-              "destinationAddressPrefix": "*", 
-              "destinationPortRange": "%d", 
-              "direction": "Inbound", 
-              "priority": %d, 
-              "protocol": "*", 
-              "sourceAddressPrefix": "Internet", 
+              "access": "Allow",
+              "description": "Allow traffic from the Internet to port %d",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "%d",
+              "direction": "Inbound",
+              "priority": %d,
+              "protocol": "*",
+              "sourceAddressPrefix": "Internet",
               "sourcePortRange": "*"
             }
           }`, port, port, port, BaseLBPriority+portIndex)
@@ -598,10 +613,10 @@ func getDataDisks(a *api.AgentPoolProfile) string {
 	var buf bytes.Buffer
 	buf.WriteString("\"dataDisks\": [\n")
 	dataDisks := `            {
-              "createOption": "Empty", 
-              "diskSizeGB": "%d", 
-              "lun": %d, 
-              "name": "[concat(variables('%sVMNamePrefix'), copyIndex(),'-datadisk%d')]", 
+              "createOption": "Empty",
+              "diskSizeGB": "%d",
+              "lun": %d,
+              "name": "[concat(variables('%sVMNamePrefix'), copyIndex(),'-datadisk%d')]",
               "vhd": {
                 "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('%sDataAccountName'),'.blob.core.windows.net/vhds/',variables('%sVMNamePrefix'),copyIndex(), '--datadisk%d.vhd')]"
               }
@@ -738,6 +753,8 @@ touch /etc/mesosphere/roles/azure_master`
 func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCount int, provisionContent string) string {
 	yamlFilename := ""
 	switch orchestratorType {
+	case api.DCOS187:
+		yamlFilename = dcosCustomData187
 	case api.DCOS184:
 		yamlFilename = dcosCustomData184
 	case api.DCOS173:
