@@ -11,6 +11,7 @@ import (
 func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case DCOS:
+	case DCOS187:
 	case DCOS184:
 	case DCOS173:
 	case Swarm:
@@ -157,6 +158,7 @@ func (a *Properties) Validate() error {
 			case DCOS:
 			case DCOS173:
 			case DCOS184:
+			case DCOS187:
 			case Swarm:
 			default:
 				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)

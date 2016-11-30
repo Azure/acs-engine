@@ -100,17 +100,11 @@ runcmd:
   - start
   - dcos-setup.service
 write_files:
-- content: 'https://dcosio.azureedge.net/dcos/testing
+- content: 'https://dcosio.azureedge.net/dcos/stable
 
     '
   owner: root
   path: /etc/mesosphere/setup-flags/repository-url
-  permissions: '0644'
-- content: 'BOOTSTRAP_ID=5b4aa43610c57ee1d60b4aa0751a1fb75824c083
-
-    '
-  owner: root
-  path: /etc/mesosphere/setup-flags/bootstrap-id
   permissions: '0644'
 - content: '["dcos-config--setup_DCOSGUID", "dcos-metadata--setup_DCOSGUID"]
 
@@ -293,16 +287,13 @@ write_files:
 
     [Service]
 
-    EnvironmentFile=/etc/mesosphere/setup-flags/bootstrap-id
-
     Type=oneshot
 
     StandardOutput=journal+console
 
     StandardError=journal+console
 
-    ExecStartPre=/usr/bin/curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60
-    -o /var/lib/mesos/dl/bootstrap.tar.xz https://dcosio.azureedge.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz
+    ExecStartPre=/usr/bin/curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 -o /var/lib/mesos/dl/bootstrap.tar.xz https://dcosio.azureedge.net/dcos/stable/bootstrap/e73ba2b1cd17795e4dcb3d6647d11a29b9c35084.bootstrap.tar.xz
 
     ExecStartPre=/usr/bin/mkdir -p /opt/mesosphere
 
