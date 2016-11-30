@@ -294,7 +294,6 @@ write_files:
     ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
     ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
     ExecStart=/usr/bin/docker run \
-      --name=kubelet
       --net=host \
       --pid=host \
       --privileged \
