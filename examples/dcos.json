@@ -1,6 +1,7 @@
 {
   "apiVersion": "vlabs",
   "properties": {
+    "environment": "",
     "orchestratorProfile": {
       "orchestratorType": "DCOS"
     },

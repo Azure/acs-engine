@@ -47,6 +47,8 @@ type Properties struct {
 
 	LinuxProfile LinuxProfile `json:"linuxProfile"`
 
+	Environment Environment `json:"environment"`
+
 	WindowsProfile WindowsProfile `json:"windowsProfile"`
 
 	// TODO: This field is versioned to "2016-03-30"
@@ -58,6 +60,8 @@ type Properties struct {
 	// allow jumpbox creation
 	JumpboxProfile JumpboxProfile `json:"jumpboxProfile"`
 }
+
+type Environment string
 
 // LinuxProfile represents the Linux configuration passed to the cluster
 type LinuxProfile struct {

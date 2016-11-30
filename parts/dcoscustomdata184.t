@@ -106,6 +106,12 @@ write_files:
   owner: root
   path: /etc/mesosphere/setup-flags/repository-url
   permissions: '0644'
+- content: 'DCOS_ENVIRONMENT={{{targetEnvironment}}}
+
+    '
+  owner: root
+  path: /etc/mesosphere/setup-flags/dcos-deploy-environment
+  permissions: '0644'
 - content: 'BOOTSTRAP_ID=5b4aa43610c57ee1d60b4aa0751a1fb75824c083
 
     '

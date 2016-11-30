@@ -1,4 +1,5 @@
     "adminUsername": "[parameters('linuxAdminUsername')]",
+    "targetEnvironment": "[parameters('targetEnvironment')]",
     "maxVMsPerPool": 100,
     "maxVMsPerStorageAccount": 20,
     "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
