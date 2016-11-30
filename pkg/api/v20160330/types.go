@@ -4,15 +4,6 @@ import (
 	neturl "net/url"
 )
 
-// SubscriptionState represents the state of the subscription
-type SubscriptionState int
-
-// Subscription represents the customer subscription
-type Subscription struct {
-	ID    string
-	State SubscriptionState
-}
-
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
 type ResourcePurchasePlan struct {

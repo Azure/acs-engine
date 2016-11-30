@@ -6,30 +6,12 @@ import (
 )
 
 ///////////////////////////////////////////////////////////
-// The converter exposes functions to convert the 2 top
-// level resources:
-// 1. Subscription
-// 2. ContainerService
+// The converter exposes functions to convert the top level
+// ContainerService resource
 //
 // All other functions are internal helper functions used
 // for converting.
 ///////////////////////////////////////////////////////////
-
-// ConvertSubscriptionToV20160330 converts a v20160330 Subscription to an unversioned Subscription
-func ConvertSubscriptionToV20160330(api *Subscription) *v20160330.Subscription {
-	s := &v20160330.Subscription{}
-	s.ID = api.ID
-	s.State = v20160330.SubscriptionState(api.State)
-	return s
-}
-
-// ConvertSubscriptionToVLabs converts a vlabs Subscription to an unversioned Subscription
-func ConvertSubscriptionToVLabs(api *Subscription) *vlabs.Subscription {
-	s := &vlabs.Subscription{}
-	s.ID = api.ID
-	s.State = vlabs.SubscriptionState(api.State)
-	return s
-}
 
 // ConvertContainerServiceToV20160330 converts a v20160330 ContainerService to an unversioned ContainerService
 func ConvertContainerServiceToV20160330(api *ContainerService) *v20160330.ContainerService {
