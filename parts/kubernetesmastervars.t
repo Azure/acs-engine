@@ -73,6 +73,27 @@
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]",
     "subscriptionId": "[subscription().subscriptionId]",
     "tenantId": "[subscription().tenantId]"
+{{if .LinuxProfile.HasSecrets}}
+    , "linuxProfileSecrets" :
+      [
+          {{range  $vIndex, $vault := .LinuxProfile.Secrets}}
+            {{if $vIndex}} , {{end}}
+              {
+                "sourceVault":{
+                  "id":"[parameters('linuxKeyVaultID{{$vIndex}}')]"
+                },
+                "vaultCertificates":[
+                {{range $cIndex, $cert := $vault.VaultCertificates}}
+                  {{if $cIndex}} , {{end}}
+                  {
+                    "certificateUrl" :"[parameters('linuxKeyVaultID{{$vIndex}}CertificateURL{{$cIndex}}')]"
+                  }
+                {{end}}
+                ]
+              }
+        {{end}}
+      ] 
+{{end}}
 
 
     
