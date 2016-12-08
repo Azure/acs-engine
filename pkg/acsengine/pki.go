@@ -24,7 +24,7 @@ type PkiKeyCertPair struct {
 	PrivateKeyPem  string
 }
 
-func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, clusterDomain string) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
+func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
 	start := time.Now()
 	defer func(s time.Time) {
 		fmt.Fprintf(os.Stderr, "cert creation took %s\n", time.Since(s))
@@ -37,7 +37,7 @@ func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, cluste
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc.%s", clusterDomain))
 
-	caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, "", nil, nil)
+	caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, nil, nil)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -54,19 +54,19 @@ func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, cluste
 
 	go func() {
 		var err error
-		apiServerCertificate, apiServerPrivateKey, err = createCertificate("apiserver", caCertificate, caPrivateKey, true, masterFQDN, extraFQDNs, extraIPs)
+		apiServerCertificate, apiServerPrivateKey, err = createCertificate("apiserver", caCertificate, caPrivateKey, true, extraFQDNs, extraIPs)
 		errors <- err
 	}()
 
 	go func() {
 		var err error
-		clientCertificate, clientPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, "", nil, nil)
+		clientCertificate, clientPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil)
 		errors <- err
 	}()
 
 	go func() {
 		var err error
-		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, "", nil, nil)
+		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil)
 		errors <- err
 	}()
 
@@ -90,7 +90,7 @@ func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, cluste
 		nil
 }
 
-func createCertificate(commonName string, caCertificate *x509.Certificate, caPrivateKey *rsa.PrivateKey, isServer bool, FQDN string, extraFQDNs []string, extraIPs []net.IP) (*x509.Certificate, *rsa.PrivateKey, error) {
+func createCertificate(commonName string, caCertificate *x509.Certificate, caPrivateKey *rsa.PrivateKey, isServer bool, extraFQDNs []string, extraIPs []net.IP) (*x509.Certificate, *rsa.PrivateKey, error) {
 	var err error
 
 	isCA := (caCertificate == nil)
@@ -110,7 +110,6 @@ func createCertificate(commonName string, caCertificate *x509.Certificate, caPri
 		template.KeyUsage |= x509.KeyUsageCertSign
 		template.IsCA = isCA
 	} else if isServer {
-		extraFQDNs = append(extraFQDNs, FQDN)
 		extraIPs = append(extraIPs, net.ParseIP("10.0.0.1"))
 
 		template.DNSNames = extraFQDNs
