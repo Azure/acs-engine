@@ -337,6 +337,8 @@ write_files:
     '
   path: /etc/systemd/system/dcos-setup.service
   permissions: '0644'
+- path: /var/lib/dcos/mesos-slave-common
+  content: 'ATTRIBUTES_STR'
 - content: ''
   path: /etc/mesosphere/roles/azure
 - content: 'PROVISION_STR'

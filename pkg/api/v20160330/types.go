@@ -126,7 +126,8 @@ type AgentPoolProfile struct {
 	FQDN      string `json:"fqdn,omitempty"`
 	OSType    OSType `json:"osType"` // TODO: This field is versioned to "2016-03-30"
 	// subnet is internal
-	subnet string
+	subnet     string
+	Attributes map[string]string `json:"attributes,omitempty"`
 }
 
 // JumpboxProfile dscribes properties of the jumpbox setup

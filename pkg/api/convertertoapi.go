@@ -174,6 +174,10 @@ func convertV20160330AgentPoolProfile(v20160330 *v20160330.AgentPoolProfile, api
 	api.FQDN = v20160330.FQDN
 	api.OSType = OSType(v20160330.OSType)
 	api.Subnet = v20160330.GetSubnet()
+	api.Attributes = map[string]string{}
+	for k, v := range v20160330.Attributes {
+		api.Attributes[k] = v
+	}
 }
 
 func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolProfile) {
@@ -191,6 +195,10 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.VnetSubnetID = vlabs.VnetSubnetID
 	api.Subnet = vlabs.GetSubnet()
 	api.FQDN = vlabs.FQDN
+	api.Attributes = map[string]string{}
+	for k, v := range vlabs.Attributes {
+		api.Attributes[k] = v
+	}
 }
 
 func convertV20160330DiagnosticsProfile(v20160330 *v20160330.DiagnosticsProfile, api *DiagnosticsProfile) {
