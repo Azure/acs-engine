@@ -8,6 +8,27 @@
 {{if .HasManagedDisks}}
     "apiVersionStorageManagedDisks": "2016-04-30-preview",
 {{end}}
+{{if .LinuxProfile.HasSecrets}}
+    "linuxProfileSecrets" :
+      [
+          {{range  $vIndex, $vault := .LinuxProfile.Secrets}}
+            {{if $vIndex}} , {{end}}
+              {
+                "sourceVault":{
+                  "id":"[parameters('linuxKeyVaultID{{$vIndex}}')]"
+                },
+                "vaultCertificates":[
+                {{range $cIndex, $cert := $vault.VaultCertificates}}
+                  {{if $cIndex}} , {{end}}
+                  {
+                    "certificateUrl" :"[parameters('linuxKeyVaultID{{$vIndex}}CertificateURL{{$cIndex}}')]"
+                  }
+                {{end}}
+                ]
+              }
+        {{end}}
+      ], 
+{{end}}
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]", 
     "masterCount": {{.MasterProfile.Count}}, 
     "masterEndpointDNSNamePrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
