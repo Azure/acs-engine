@@ -1,13 +1,13 @@
 {
   "apiVersion": "vlabs",
   "properties": {
-    "environment": "AzureChinaCloud",
+    "environment": "",
     "orchestratorProfile": {
       "orchestratorType": "DCOS"
     },
     "masterProfile": {
       "count": 1,
-      "dnsPrefix": "test1",
+      "dnsPrefix": "",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
@@ -20,7 +20,7 @@
         "name": "agentpublic",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "dnsPrefix": "testw",
+        "dnsPrefix": "",
         "ports": [
           80,
           443,
@@ -33,7 +33,7 @@
       "ssh": {
         "publicKeys": [
           {
-            "keyData": "xxx"
+            "keyData": ""
           }
         ]
       }
