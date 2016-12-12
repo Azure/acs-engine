@@ -51,7 +51,7 @@ type Properties struct {
 	MasterProfile           MasterProfile           `json:"masterProfile"`
 	AgentPoolProfiles       []AgentPoolProfile      `json:"agentPoolProfiles"`
 	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
-	Environment				Environment				`json:"environment"`
+	Environment             Environment             `json:"environment"`
 	WindowsProfile          WindowsProfile          `json:"windowsProfile"`
 	DiagnosticsProfile      DiagnosticsProfile      `json:"diagnosticsProfile"`
 	JumpboxProfile          JumpboxProfile          `json:"jumpboxProfile"`
@@ -95,12 +95,14 @@ type LinuxProfile struct {
 			KeyData string `json:"keyData"`
 		} `json:"publicKeys"`
 	} `json:"ssh"`
+	Secrets []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
 // WindowsProfile represents the windows parameters passed to the cluster
 type WindowsProfile struct {
-	AdminUsername string `json:"adminUsername"`
-	AdminPassword string `json:"adminPassword"`
+	AdminUsername string            `json:"adminUsername"`
+	AdminPassword string            `json:"adminPassword"`
+	Secrets       []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.
@@ -202,6 +204,29 @@ type JumpboxProfile struct {
 	FQDN string `json:"fqdn,omitempty"`
 }
 
+// KeyVaultSecrets specifies certificates to install on the pool
+// of machines from a given key vault
+// the key vault specified must have been granted read permissions to CRP
+type KeyVaultSecrets struct {
+	SourceVault       KeyVaultID            `json:"sourceVault,omitempty"`
+	VaultCertificates []KeyVaultCertificate `json:"vaultCertificates,omitempty"`
+}
+
+// KeyVaultID specifies a key vault
+type KeyVaultID struct {
+	ID string `json:"id,omitempty"`
+}
+
+// KeyVaultCertificate specifies a certificate to install
+// On Linux, the certificate file is placed under the /var/lib/waagent directory
+// with the file name <UppercaseThumbprint>.crt for the X509 certificate file
+// and <UppercaseThumbprint>.prv for the private key. Both of these files are .pem formatted.
+// On windows the certificate will be saved in the specified store.
+type KeyVaultCertificate struct {
+	CertificateURL   string `json:"certificateUrl,omitempty"`
+	CertificateStore string `json:"certificateStore,omitempty"`
+}
+
 // OSType represents OS types of agents
 type OSType string
 
@@ -284,4 +309,14 @@ func (a *AgentPoolProfile) IsStorageAccount() bool {
 // HasDisks returns true if the customer specified disks
 func (a *AgentPoolProfile) HasDisks() bool {
 	return len(a.DiskSizesGB) > 0
+}
+
+// HasSecrets returns true if the customer specified secrets to install
+func (w *WindowsProfile) HasSecrets() bool {
+	return len(w.Secrets) > 0
+}
+
+// HasSecrets returns true if the customer specified secrets to install
+func (l *LinuxProfile) HasSecrets() bool {
+	return len(l.Secrets) > 0
 }

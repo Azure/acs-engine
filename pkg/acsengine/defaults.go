@@ -32,7 +32,7 @@ func setOrchestratorDefaults(a *api.Properties) {
 		a.OrchestratorProfile.KubernetesConfig.KubectlVersion = DefaultKubectlVersion
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
-		a.OrchestratorProfile.OrchestratorType = api.DCOS184
+		a.OrchestratorProfile.OrchestratorType = api.DCOS187
 	}
 }
 
@@ -89,7 +89,6 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		return false, nil
 	}
 
-	masterWildCardFQDN := FormatAzureProdFQDN(a.MasterProfile.DNSPrefix, "*")
 	masterExtraFQDNs := FormatAzureProdFQDNs(a.MasterProfile.DNSPrefix)
 	firstMasterIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)
 
@@ -103,7 +102,7 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		ips = append(ips, net.IP{firstMasterIP[12], firstMasterIP[13], firstMasterIP[14], firstMasterIP[15] + byte(i)})
 	}
 
-	caPair, apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterWildCardFQDN, masterExtraFQDNs, ips, DefaultKubernetesClusterDomain)
+	caPair, apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain)
 	if err != nil {
 		return false, err
 	}

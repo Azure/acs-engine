@@ -121,13 +121,19 @@ func convertLinuxProfileToV20160330(api *LinuxProfile, v20160330 *v20160330.Linu
 	}
 }
 
-func convertLinuxProfileToVLabs(api *LinuxProfile, vlabs *vlabs.LinuxProfile) {
-	vlabs.AdminUsername = api.AdminUsername
-	vlabs.SSH.PublicKeys = []struct {
+func convertLinuxProfileToVLabs(api *LinuxProfile, vlabsProfile *vlabs.LinuxProfile) {
+	vlabsProfile.AdminUsername = api.AdminUsername
+	vlabsProfile.SSH.PublicKeys = []struct {
 		KeyData string `json:"keyData"`
 	}{}
 	for _, d := range api.SSH.PublicKeys {
-		vlabs.SSH.PublicKeys = append(vlabs.SSH.PublicKeys, d)
+		vlabsProfile.SSH.PublicKeys = append(vlabsProfile.SSH.PublicKeys, d)
+	}
+	vlabsProfile.Secrets = []vlabs.KeyVaultSecrets{}
+	for _, s := range api.Secrets {
+		secret := &vlabs.KeyVaultSecrets{}
+		convertKeyVaultSecretsToVlabs(&s, secret)
+		vlabsProfile.Secrets = append(vlabsProfile.Secrets, *secret)
 	}
 }
 
@@ -136,9 +142,15 @@ func convertWindowsProfileToV20160330(api *WindowsProfile, v20160330 *v20160330.
 	v20160330.AdminPassword = api.AdminPassword
 }
 
-func convertWindowsProfileToVLabs(api *WindowsProfile, vlabs *vlabs.WindowsProfile) {
-	vlabs.AdminUsername = api.AdminUsername
-	vlabs.AdminPassword = api.AdminPassword
+func convertWindowsProfileToVLabs(api *WindowsProfile, vlabsProfile *vlabs.WindowsProfile) {
+	vlabsProfile.AdminUsername = api.AdminUsername
+	vlabsProfile.AdminPassword = api.AdminPassword
+	vlabsProfile.Secrets = []vlabs.KeyVaultSecrets{}
+	for _, s := range api.Secrets {
+		secret := &vlabs.KeyVaultSecrets{}
+		convertKeyVaultSecretsToVlabs(&s, secret)
+		vlabsProfile.Secrets = append(vlabsProfile.Secrets, *secret)
+	}
 }
 
 func convertOrchestratorProfileToV20160330(api *OrchestratorProfile, o *v20160330.OrchestratorProfile) {
@@ -156,14 +168,25 @@ func convertMasterProfileToV20160330(api *MasterProfile, v20160330 *v20160330.Ma
 	v20160330.SetSubnet(api.Subnet)
 }
 
-func convertMasterProfileToVLabs(api *MasterProfile, vlabs *vlabs.MasterProfile) {
-	vlabs.Count = api.Count
-	vlabs.DNSPrefix = api.DNSPrefix
-	vlabs.VMSize = api.VMSize
-	vlabs.VnetSubnetID = api.VnetSubnetID
-	vlabs.FirstConsecutiveStaticIP = api.FirstConsecutiveStaticIP
-	vlabs.SetSubnet(api.Subnet)
-	vlabs.FQDN = api.FQDN
+func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterProfile) {
+	vlabsProfile.Count = api.Count
+	vlabsProfile.DNSPrefix = api.DNSPrefix
+	vlabsProfile.VMSize = api.VMSize
+	vlabsProfile.VnetSubnetID = api.VnetSubnetID
+	vlabsProfile.FirstConsecutiveStaticIP = api.FirstConsecutiveStaticIP
+	vlabsProfile.SetSubnet(api.Subnet)
+	vlabsProfile.FQDN = api.FQDN
+}
+
+func convertKeyVaultSecretsToVlabs(api *KeyVaultSecrets, vlabsSecrets *vlabs.KeyVaultSecrets) {
+	vlabsSecrets.SourceVault = vlabs.KeyVaultID{ID: api.SourceVault.ID}
+	vlabsSecrets.VaultCertificates = []vlabs.KeyVaultCertificate{}
+	for _, c := range api.VaultCertificates {
+		cert := vlabs.KeyVaultCertificate{}
+		cert.CertificateStore = c.CertificateStore
+		cert.CertificateURL = c.CertificateURL
+		vlabsSecrets.VaultCertificates = append(vlabsSecrets.VaultCertificates, cert)
+	}
 }
 
 func convertAgentPoolProfileToV20160330(api *AgentPoolProfile, p *v20160330.AgentPoolProfile) {

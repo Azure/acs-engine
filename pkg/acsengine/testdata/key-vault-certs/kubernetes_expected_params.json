@@ -50,6 +50,12 @@
   "linuxAdminUsername": {
     "value": "azureuser"
   },
+  "linuxKeyVaultID0": {
+    "value": "vaultId"
+  },
+  "linuxKeyVaultID0CertificateURL0": {
+    "value": "http://url1"
+  },
   "masterEndpointDNSNamePrefix": {
     "value": "masterdns1"
   },
