@@ -176,6 +176,9 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	vlabsProfile.FirstConsecutiveStaticIP = api.FirstConsecutiveStaticIP
 	vlabsProfile.SetSubnet(api.Subnet)
 	vlabsProfile.FQDN = api.FQDN
+	if api.IsClassicProfile() {
+		vlabsProfile.ClassicProfile = vlabs.ClassicAgentPoolProfileType(api.ClassicProfile)
+	}
 }
 
 func convertKeyVaultSecretsToVlabs(api *KeyVaultSecrets, vlabsSecrets *vlabs.KeyVaultSecrets) {
@@ -214,6 +217,9 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	p.VnetSubnetID = api.VnetSubnetID
 	p.SetSubnet(api.Subnet)
 	p.FQDN = api.FQDN
+	if api.IsClassicProfile() {
+		p.ClassicProfile = vlabs.ClassicAgentPoolProfileType(api.ClassicProfile)
+	}
 }
 
 func convertDiagnosticsProfileToV20160330(api *DiagnosticsProfile, v20160330 *v20160330.DiagnosticsProfile) {

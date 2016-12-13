@@ -35,6 +35,8 @@
       {{else}}
         {{if .IsAvailabilitySets}}
           {{template "swarmagentresourcesvmas.t" .}},
+        {{else if .IsClassicProfile}}
+          {{template "swarmagentresourcesclassic.t" .}},
         {{else}}
           {{template "swarmagentresourcesvmss.t" .}},
         {{end}}

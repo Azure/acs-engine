@@ -136,12 +136,13 @@ type KubernetesConfig struct {
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int    `json:"count"`
-	DNSPrefix                string `json:"dnsPrefix"`
-	VMSize                   string `json:"vmSize"`
-	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
-	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	Subnet                   string `json:"subnet"`
+	Count                    int                         `json:"count"`
+	DNSPrefix                string                      `json:"dnsPrefix"`
+	VMSize                   string                      `json:"vmSize"`
+	VnetSubnetID             string                      `json:"vnetSubnetID,omitempty"`
+	FirstConsecutiveStaticIP string                      `json:"firstConsecutiveStaticIP,omitempty"`
+	Subnet                   string                      `json:"subnet"`
+	ClassicProfile           ClassicAgentPoolProfileType `json:"classicProfile,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -149,19 +150,23 @@ type MasterProfile struct {
 	FQDN string `json:"fqdn,omitempty"`
 }
 
+// ClassicAgentPoolProfileType represents types of classic profiles
+type ClassicAgentPoolProfileType string
+
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                string `json:"name"`
-	Count               int    `json:"count"`
-	VMSize              string `json:"vmSize"`
-	DNSPrefix           string `json:"dnsPrefix,omitempty"`
-	OSType              OSType `json:"osType,omitempty"`
-	Ports               []int  `json:"ports,omitempty"`
-	AvailabilityProfile string `json:"availabilityProfile"`
-	StorageProfile      string `json:"storageProfile,omitempty"`
-	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
-	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
-	Subnet              string `json:"subnet"`
+	Name                string                      `json:"name"`
+	Count               int                         `json:"count"`
+	VMSize              string                      `json:"vmSize"`
+	DNSPrefix           string                      `json:"dnsPrefix,omitempty"`
+	OSType              OSType                      `json:"osType,omitempty"`
+	Ports               []int                       `json:"ports,omitempty"`
+	AvailabilityProfile string                      `json:"availabilityProfile"`
+	StorageProfile      string                      `json:"storageProfile,omitempty"`
+	DiskSizesGB         []int                       `json:"diskSizesGB,omitempty"`
+	VnetSubnetID        string                      `json:"vnetSubnetID,omitempty"`
+	Subnet              string                      `json:"subnet"`
+	ClassicProfile      ClassicAgentPoolProfileType `json:"classicProfile,omitempty"`
 
 	FQDN string `json:"fqdn,omitempty"`
 }
@@ -244,8 +249,8 @@ type V20160330ARMContainerService struct {
 }
 
 // HasWindows returns true if the cluster contains windows
-func (a *Properties) HasWindows() bool {
-	for _, agentPoolProfile := range a.AgentPoolProfiles {
+func (p *Properties) HasWindows() bool {
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.OSType == Windows {
 			return true
 		}
@@ -254,8 +259,8 @@ func (a *Properties) HasWindows() bool {
 }
 
 // HasManagedDisks returns true if the cluster contains Managed Disks
-func (a *Properties) HasManagedDisks() bool {
-	for _, agentPoolProfile := range a.AgentPoolProfiles {
+func (p *Properties) HasManagedDisks() bool {
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			return true
 		}
@@ -278,6 +283,11 @@ func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
 }
 
+// IsClassicProfile returns true if this is a classic profile
+func (m *MasterProfile) IsClassicProfile() bool {
+	return m.ClassicProfile != NotClassic
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (a *AgentPoolProfile) IsCustomVNET() bool {
 	return len(a.VnetSubnetID) > 0
@@ -296,6 +306,11 @@ func (a *AgentPoolProfile) IsAvailabilitySets() bool {
 // IsManagedDisks returns true if the customer specified disks
 func (a *AgentPoolProfile) IsManagedDisks() bool {
 	return a.StorageProfile == ManagedDisks
+}
+
+// IsClassicProfile returns true if this is a classic profile
+func (a *AgentPoolProfile) IsClassicProfile() bool {
+	return a.ClassicProfile != NotClassic
 }
 
 // IsStorageAccount returns true if the customer specified storage account
