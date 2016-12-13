@@ -177,6 +177,7 @@ func (a *Properties) Validate() error {
 				return fmt.Errorf("unknown storage type '%s' for agent pool '%s'.  Specify either %s, or %s", agentPoolProfile.StorageProfile, agentPoolProfile.Name, StorageAccount, ManagedDisks)
 			}
 		}
+		/* this switch statement is left to protect newly added orchestrators until they support Managed Disks*/
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
@@ -184,6 +185,7 @@ func (a *Properties) Validate() error {
 			case DCOS184:
 			case DCOS187:
 			case Swarm:
+			case Kubernetes:
 			default:
 				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
