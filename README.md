@@ -85,17 +85,19 @@ $ azure group deployment create \
 
 ### Deploying with Azure CLI 2.0
 **NOTE:** Azure CLI 2.0 is still in preview, so changes may occur.
-Please reference [the Azure CLI 2.0 GitHub Repo](https://github.com/Azure/azure-cli) for updated commands.
+Please reference [the Azure CLI 2.0 GitHub Repo](https://github.com/Azure/azure-cli) for updated commands and please
+ensure that your installation is up to date with the latest release. (Releases occur weekly!)
+
 ```bash
 $ az login
 
 $ az account set --name "<SUBSCRIPTION NAME OR ID>"
 
-$ az resource group create \
+$ az group create \
     --name "<RESOURCE_GROUP_NAME>" \
     --location "<LOCATION>"
 
-$ az resource group deployment create \
+$ az group deployment create \
     --name "<DEPLOYMENT NAME>" \
     --resource-group "<RESOURCE_GROUP_NAME>" \
     --template-file "./_output/<INSTANCE>/azuredeploy.json" \
