@@ -1,0 +1,68 @@
+{
+  "apiVersion": "vlabs",
+  "plan": {},
+  "properties": {
+    "provisioningState": "",
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes"
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "masterdns1",
+      "vmSize": "Standard_D2_v2",
+      "firstConsecutiveStaticIP": "10.240.255.5"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "StorageAccount",
+        "diskSizesGB": [
+          128,
+          128,
+          128,
+          128
+        ]
+      },
+      {
+        "name": "agentpool2",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "StorageAccount",
+        "diskSizesGB": [
+          10,
+          10,
+          10,
+          10
+        ]
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+          }
+        ]
+      }
+    },
+    "windowsProfile": {},
+    "servicePrincipalProfile": {
+      "servicePrincipalClientID": "ServicePrincipalClientID",
+      "servicePrincipalClientSecret": "myServicePrincipalClientSecret"
+    },
+    "certificateProfile": {
+      "caCertificate": "caCertificate",
+      "apiServerCertificate": "apiServerCertificate",
+      "apiServerPrivateKey": "apiServerPrivateKey",
+      "clientCertificate": "clientCertificate",
+      "clientPrivateKey": "clientPrivateKey",
+      "kubeConfigCertificate": "kubeConfigCertificate",
+      "kubeConfigPrivateKey": "kubeConfigPrivateKey"
+    }
+  }
+}
