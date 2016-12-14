@@ -83,9 +83,9 @@ After completing this walkthrough you will know how to:
   ![Image of browsing to nginx](images/kubernetes-nginx4.png)  
 
 8. The next step in this walkthrough is to show you how to remotely manage your Kubernetes cluster.  First download Kubectl to your machine and put it in your path:
-  * [Windows Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/bin/windows/amd64/kubectl.exe)
-  * [OSX Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/bin/darwin/amd64/kubectl)
-  * [Linux](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/bin/linux/amd64/kubectl)
+  * [Windows Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.5.1/bin/windows/amd64/kubectl.exe)
+  * [OSX Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.5.1/bin/darwin/amd64/kubectl)
+  * [Linux](https://storage.googleapis.com/kubernetes-release/release/v1.5.1/bin/linux/amd64/kubectl)
 
 9. The Kubernetes master contains the kube config file for remote access under the home directory ~/.kube/config.  Download this file to your machine, set the KUBECONFIG environment variable, and run kubectl to verify you can connect to cluster:
   * Windows to use pscp from [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html).  Ensure you have your certificate exposed through [pageant](ssh.md#key-management-and-agent-forwarding-with-windows-pageant):
