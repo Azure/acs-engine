@@ -1,4 +1,25 @@
 {
+  "KubernetesAddonManagerSpec": {
+    "value": "gcr.io/google_containers/kube-addon-manager-amd64:v5.1"
+  },
+  "KubernetesAddonResizerSpec": {
+    "value": "gcr.io/google_containers/addon-resizer:1.6"
+  },
+  "KubernetesDNSMasqSpec": {
+    "value": "gcr.io/google_containers/kube-dnsmasq-amd64:1.3"
+  },
+  "KubernetesDashboardSpec": {
+    "value": "gcr.io/google_containers/kubernetes-dashboard-amd64:v1.5.0"
+  },
+  "KubernetesExecHealthzSpec": {
+    "value": "gcr.io/google_containers/exechealthz-amd64:1.2"
+  },
+  "KubernetesHeapsterSpec": {
+    "value": "gcr.io/google_containers/heapster:v1.2.0"
+  },
+  "KubernetesKubeDNSSpec": {
+    "value": "gcr.io/google_containers/kubedns-amd64:1.7"
+  },
   "agentpri2Count": {
     "value": 2
   },
@@ -32,6 +53,9 @@
   "clientPrivateKey": {
     "value": "Y2xpZW50UHJpdmF0ZUtleQ=="
   },
+  "dockerInstallScriptURL": {
+    "value": "https://get.docker.com/"
+  },
   "firstConsecutiveStaticIP": {
     "value": "10.239.255.245"
   },
@@ -41,11 +65,17 @@
   "kubeConfigPrivateKey": {
     "value": "a3ViZUNvbmZpZ1ByaXZhdGVLZXk="
   },
+  "kubectlDownloadURL": {
+    "value": "https://storage.googleapis.com/kubernetes-release/release/v1.4.6/bin/linux/amd64/kubectl"
+  },
   "kubectlVersion": {
     "value": "v1.4.6"
   },
   "kubernetesHyperkubeSpec": {
     "value": "gcr.io/google_containers/hyperkube-amd64:v1.4.6"
+  },
+  "kubernetesPodInfraContainerSpec": {
+    "value": "gcr.io/google_containers/pause-amd64:3.0"
   },
   "linuxAdminUsername": {
     "value": "azureuser"
