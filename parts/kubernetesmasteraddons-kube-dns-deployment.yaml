@@ -26,7 +26,7 @@ spec:
       - args:
         - "--domain=cluster.local."
         - "--dns-port=10053"
-        image: gcr.io/google_containers/kubedns-amd64:1.7
+        image: {{{kubernetesKubeDNSSpec}}}
         livenessProbe:
           failureThreshold: 5
           httpGet:
@@ -62,7 +62,7 @@ spec:
         - "--no-resolv"
         - "--server=127.0.0.1#10053"
         - "--log-facility=-"
-        image: gcr.io/google_containers/kube-dnsmasq-amd64:1.3
+        image: {{{kubernetesDNSMasqSpec}}}
         name: dnsmasq
         ports:
         - containerPort: 53
@@ -78,7 +78,7 @@ spec:
         - "--url=/healthz-kubedns"
         - "--port=8080"
         - "--quiet"
-        image: gcr.io/google_containers/exechealthz-amd64:1.2
+        image: {{{kubernetesExecHealthzSpec}}}
         livenessProbe:
           failureThreshold: 5
           httpGet:

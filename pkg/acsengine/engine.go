@@ -236,8 +236,18 @@ func getParameters(properties *api.Properties) (map[string]interface{}, error) {
 		addValue(parametersMap, "kubeConfigPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)))
 		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubectlVersion", properties.OrchestratorProfile.KubernetesConfig.KubectlVersion)
+		addValue(parametersMap, "KubernetesAddonManagerSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesAddonManagerSpec)
+		addValue(parametersMap, "KubernetesAddonResizerSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesAddonResizerSpec)
+		addValue(parametersMap, "KubernetesDashboardSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesDashboardSpec)
+		addValue(parametersMap, "KubernetesDNSMasqSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesDNSMasqSpec)
+		addValue(parametersMap, "KubernetesExecHealthzSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesExecHealthzSpec)
+		addValue(parametersMap, "KubernetesHeapsterSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesHeapsterSpec)
+		addValue(parametersMap, "KubernetesKubeDNSSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesKubeDNSSpec)
+		addValue(parametersMap, "kubernetesPodInfraContainerSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesPodInfraContainerSpec)
 		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 		addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
+		addValue(parametersMap, "dockerInstallScriptURL", properties.OrchestratorProfile.KubernetesConfig.DockerInstallScriptURL)
+		addValue(parametersMap, "kubectlDownloadURL", properties.OrchestratorProfile.KubernetesConfig.KubectlDownloadURL)
 	}
 
 	// Agent parameters

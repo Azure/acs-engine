@@ -9,9 +9,9 @@ packages:
 
 runcmd:
 - /bin/bash -c "/bin/echo DAEMON_ARGS=--advertise-client-urls ""http://127.0.0.1:2379,http://{{{masterPrivateIp}}}:2379"" --listen-client-urls ""http://0.0.0.0:2379,http://0.0.0.0:4001"" | tee -a /etc/default/etcd"
-- /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://get.docker.com/ > /tmp/install-docker
+- /usr/bin/curl -sSL --retry 12 --retry-delay 10 {{{dockerInstallScriptURL}}} > /tmp/install-docker
 - /bin/bash -c "/bin/bash /tmp/install-docker"
-- /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://storage.googleapis.com/kubernetes-release/release/{{{kubectlVersion}}}/bin/linux/amd64/kubectl > /usr/local/bin/kubectl
+- /usr/bin/curl -sSL --retry 12 --retry-delay 10 {{{kubectlDownloadURL}}} > /usr/local/bin/kubectl
 - chmod +x /usr/local/bin/kubectl
 
 write_files:
@@ -215,7 +215,7 @@ write_files:
       containers:
       - name: kube-addon-manager
         # TODO: consider if hardcoding this is the right thing to do...
-        image: gcr.io/google_containers/kube-addon-manager-amd64:v5.1
+        image: {{{kubernetesAddonManagerSpec}}}
         resources:
           requests:
             cpu: 5m
@@ -309,6 +309,7 @@ write_files:
           /hyperkube kubelet \
             --api-servers="https://{{{masterPrivateIp}}}:443" \
             --kubeconfig=/var/lib/kubelet/kubeconfig \
+            --pod-infra-container-image="{{{kubernetesPodInfraContainerSpec}}}" \
             --address=0.0.0.0 \
             --allow-privileged=true \
             --enable-server \

@@ -3,7 +3,7 @@
 # { { { variable } } }
 
 runcmd:
-- /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://get.docker.com/ > /tmp/install-docker
+- /usr/bin/curl -sSL --retry 12 --retry-delay 10 {{{dockerInstallScriptURL}}} > /tmp/install-docker
 - /bin/bash -c "/bin/bash /tmp/install-docker"
 
 write_files:
@@ -96,6 +96,7 @@ write_files:
           /hyperkube kubelet \
             --api-servers="https://{{{masterPrivateIp}}}:443" \
             --kubeconfig=/var/lib/kubelet/kubeconfig \
+            --pod-infra-container-image="{{{kubernetesPodInfraContainerSpec}}}" \
             --address=0.0.0.0 \
             --allow-privileged=true \
             --enable-server \

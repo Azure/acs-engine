@@ -1,7 +1,7 @@
 {
   "apiVersion": "vlabs",
   "properties": {
-    "environment": "",
+    "environment": "AzurePublicCloud",
     "orchestratorProfile": {
       "orchestratorType": "DCOS"
     },
