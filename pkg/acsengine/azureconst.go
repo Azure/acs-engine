@@ -8,7 +8,7 @@ const (
 	// AzureProdFQDNFormat specifies the format for a prod dns name
 	AzurePublicProdFQDNFormat = "%s.%s.cloudapp.azure.com"
 	//AzureChinaProdFQDNFormat specify the endpoint of Azure China Cloud
-	AzureChinaProdFQDNFormat = "%s.%s.cloudapp.chinacloudapi.com"
+	AzureChinaProdFQDNFormat = "%s.%s.cloudapp.chinacloudapi.cn"
 )
 
 // AzureLocations provides all azure regions in prod.

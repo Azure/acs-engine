@@ -65,6 +65,13 @@ const (
 	windowsParams                = "windowsparams.t"
 )
 
+var kubernetesManifestYamls = map[string]string{
+	"MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR":          "kubernetesmaster-kube-scheduler.yaml",
+	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetesmaster-kube-controller-manager.yaml",
+	"MASTER_KUBERNETES_APISERVER_B64_GZIP_STR":          "kubernetesmaster-kube-apiserver.yaml",
+	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":      "kubernetesmaster-kube-addon-manager.yaml",
+}
+
 var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR":             "kubernetesmasteraddons-heapster-deployment.yaml",
 	"MASTER_ADDON_HEAPSTER_SERVICE_B64_GZIP_STR":                "kubernetesmasteraddons-heapster-service.yaml",
@@ -375,6 +382,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			// add the master provisioning script
 			masterProvisionB64GzipStr := getBase64CustomScript(kubernetesMasterCustomScript)
 			str = strings.Replace(str, "MASTER_PROVISION_B64_GZIP_STR", masterProvisionB64GzipStr, -1)
+
+			for placeholder, filename := range kubernetesManifestYamls {
+				manifestTextContents := getBase64CustomScript(filename)
+				str = strings.Replace(str, placeholder, manifestTextContents, -1)
+			}
 
 			for placeholder, filename := range kubernetesAddonYamls {
 				addonTextContents := getBase64CustomScript(filename)

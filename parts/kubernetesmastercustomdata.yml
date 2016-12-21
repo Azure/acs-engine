@@ -76,158 +76,31 @@ write_files:
 
 - path: /etc/kubernetes/manifests/kube-apiserver.yaml
   permissions: "0644"
+  encoding: gzip
   owner: "root"
-  content: |
-      apiVersion: "v1"
-      kind: "Pod"
-      metadata:
-        name: "kube-apiserver"
-        namespace: "kube-system"
-        labels:
-          tier: control-plane
-          component: kube-apiserver
-      spec:
-        hostNetwork: true
-        containers:
-          - name: "kube-apiserver"
-            image: "{{{kubernetesHyperkubeSpec}}}"
-            command: 
-              - "/hyperkube"
-              - "apiserver"
-              - "--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
-              - "--address=0.0.0.0"
-              - "--allow-privileged"
-              - "--insecure-port=8080"
-              - "--secure-port=443"
-              - "--cloud-provider=azure"
-              - "--cloud-config=/etc/kubernetes/azure.json"
-              - "--service-cluster-ip-range={{{kubeServiceCidr}}}"
-              - "--etcd-servers=http://127.0.0.1:4001"
-              - "--tls-cert-file=/etc/kubernetes/certs/apiserver.crt"
-              - "--tls-private-key-file=/etc/kubernetes/certs/apiserver.key"
-              - "--client-ca-file=/etc/kubernetes/certs/ca.crt"
-              - "--service-account-key-file=/etc/kubernetes/certs/apiserver.key"
-              - "--v=4"
-            volumeMounts:
-              - name: "etc-kubernetes"
-                mountPath: "/etc/kubernetes"
-              - name: "var-lib-kubelet"
-                mountPath: "/var/lib/kubelet"
-        volumes:
-          - name: "etc-kubernetes"
-            hostPath:
-              path: "/etc/kubernetes"
-          - name: "var-lib-kubelet"
-            hostPath:
-              path: "/var/lib/kubelet"
+  content: !!binary |
+    MASTER_KUBERNETES_APISERVER_B64_GZIP_STR
 
 - path: /etc/kubernetes/manifests/kube-controller-manager.yaml
   permissions: "0644"
+  encoding: gzip
   owner: "root"
-  content: |
-      apiVersion: "v1"
-      kind: "Pod"
-      metadata:
-        name: "kube-controller-manager"
-        namespace: "kube-system"
-        labels:
-          tier: control-plane
-          component: kube-controller-manager
-      spec:
-        hostNetwork: true
-        containers:
-          - name: "kube-controller-manager"
-            image: "{{{kubernetesHyperkubeSpec}}}"
-            command: 
-              - "/hyperkube"
-              - "controller-manager"
-              - "--master=127.0.0.1:8080"
-              - "--kubeconfig=/var/lib/kubelet/kubeconfig"
-              - "--allocate-node-cidrs=true"
-              - "--cluster-cidr=10.244.0.0/16"
-              - "--cluster-name={{{masterFqdnPrefix}}}"
-              - "--cloud-provider=azure"
-              - "--cloud-config=/etc/kubernetes/azure.json"
-              - "--root-ca-file=/etc/kubernetes/certs/ca.crt"
-              - "--service-account-private-key-file=/etc/kubernetes/certs/apiserver.key"
-              - "--v=2"
-            volumeMounts: 
-              - name: "etc-kubernetes"
-                mountPath: "/etc/kubernetes"
-              - name: "var-lib-kubelet"
-                mountPath: "/var/lib/kubelet"
-        volumes:
-          - name: "etc-kubernetes"
-            hostPath:
-              path: "/etc/kubernetes"
-          - name: "var-lib-kubelet"
-            hostPath:
-              path: "/var/lib/kubelet"
+  content: !!binary |
+    MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR
 
 - path: /etc/kubernetes/manifests/kube-scheduler.yaml
   permissions: "0644"
+  encoding: gzip
   owner: "root"
-  content: |
-      apiVersion: "v1"
-      kind: "Pod"
-      metadata:
-        name: "kube-scheduler"
-        namespace: "kube-system"
-        labels:
-          tier: control-plane
-          component: kube-scheduler
-      spec:
-        hostNetwork: true
-        containers:
-          - name: "kube-scheduler"
-            image: "{{{kubernetesHyperkubeSpec}}}"
-            command:
-              - "/hyperkube"
-              - "scheduler"
-              - "--master=127.0.0.1:8080"
-              - "--kubeconfig=/var/lib/kubelet/kubeconfig"
-              - "--v=2"
-            volumeMounts:
-              - name: "etc-kubernetes"
-                mountPath: "/etc/kubernetes"
-              - name: "var-lib-kubelet"
-                mountPath: "/var/lib/kubelet"
-        volumes:
-          - name: "etc-kubernetes"
-            hostPath:
-              path: "/etc/kubernetes"
-          - name: "var-lib-kubelet"
-            hostPath:
-              path: "/var/lib/kubelet"
+  content: !!binary |
+    MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR
 
-- path: /etc/kubernetes/manifests/kube-addon-manager.yml
+- path: /etc/kubernetes/manifests/kube-addon-manager.yaml
   permissions: "0644"
+  encoding: gzip
   owner: "root"
-  content: |
-    apiVersion: v1
-    kind: Pod
-    metadata:
-      name: kube-addon-manager
-      namespace: kube-system
-      version: v1
-    spec:
-      hostNetwork: true
-      containers:
-      - name: kube-addon-manager
-        # TODO: consider if hardcoding this is the right thing to do...
-        image: {{{kubernetesAddonManagerSpec}}}
-        resources:
-          requests:
-            cpu: 5m
-            memory: 50Mi
-        volumeMounts:
-        - name: addons
-          mountPath: "/etc/kubernetes/addons"
-          readOnly: true
-      volumes:
-      - name: addons
-        hostPath:
-          path: "/etc/kubernetes/addons"
+  content: !!binary |
+    MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR
 
 - path: /etc/kubernetes/addons/kube-dns-service.yaml
   permissions: "0644"
@@ -290,7 +163,15 @@ write_files:
     [Service]
     Restart=always
     ExecStartPre=/bin/mkdir -p /var/lib/kubelet
+    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
+    ExecStartPre=/bin/sed -i "s|<kubernetesAddonManagerSpec>|{{{kubernetesAddonManagerSpec}}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
+    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<kubeServiceCidr>|{{{kubeServiceCidr}}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<masterFqdnPrefix>|{{{masterFqdnPrefix}}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
     ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
+    ExecStartPre=/bin/sed -i "s|<kubernetesKubeDNSSpec>|{{{kubernetesKubeDNSSpec}}}|g; s|<kubernetesDNSMasqSpec>|{{{kubernetesDNSMasqSpec}}}|g; s|<kubernetesExecHealthzSpec>|{{{kubernetesExecHealthzSpec}}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
+    ExecStartPre=/bin/sed -i "s|<kubernetesHeapsterSpec>|{{{kubernetesHeapsterSpec}}}|g; s|<kubernetesAddonResizerSpec>|{{{kubernetesAddonResizerSpec}}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
+    ExecStartPre=/bin/sed -i "s|<kubernetesDashboardSpec>|{{{kubernetesDashboardSpec}}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
     ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
     ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
     ExecStart=/usr/bin/docker run \

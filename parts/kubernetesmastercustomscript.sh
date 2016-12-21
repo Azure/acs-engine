@@ -166,6 +166,11 @@ function writeKubeConfig() {
     chmod 700 $KUBECONFIGDIR
     chmod 600 $KUBECONFIGFILE
 
+    FQDNSuffix="cloudapp.azure.com"
+    if [ "$TARGET_ENVIRONMENT" = "AzureChinaCloud" ]
+    then
+        FQDNSuffix="cloudapp.chinacloudapi.cn"
+    fi
     # disable logging after secret output
     set +x
     echo "
@@ -174,7 +179,7 @@ apiVersion: v1
 clusters:
 - cluster:
     certificate-authority-data: \"$CA_CERTIFICATE\"
-    server: https://$MASTER_FQDN.$LOCATION.cloudapp.azure.com
+    server: https://$MASTER_FQDN.$LOCATION.$FQDNSuffix
   name: \"$MASTER_FQDN\"
 contexts:
 - context:
