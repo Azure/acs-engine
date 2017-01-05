@@ -97,6 +97,7 @@ func convertV20160330Properties(v20160330 *v20160330.Properties, api *Properties
 
 func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
+	api.Environment = Environment(vlabs.Environment)
 	convertVLabsOrchestratorProfile(&vlabs.OrchestratorProfile, &api.OrchestratorProfile)
 	convertVLabsMasterProfile(&vlabs.MasterProfile, &api.MasterProfile)
 	api.AgentPoolProfiles = []AgentPoolProfile{}
