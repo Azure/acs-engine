@@ -81,6 +81,7 @@ func convertVLabsResourcePurchasePlan(vlabs *vlabs.ResourcePurchasePlan, api *Re
 
 func convertV20160330Properties(v20160330 *v20160330.Properties, api *Properties) {
 	api.ProvisioningState = ProvisioningState(v20160330.ProvisioningState)
+	api.Environment = Environment(v20160330.Environment)
 	convertV20160330OrchestratorProfile(&v20160330.OrchestratorProfile, &api.OrchestratorProfile)
 	convertV20160330MasterProfile(&v20160330.MasterProfile, &api.MasterProfile)
 	api.AgentPoolProfiles = []AgentPoolProfile{}
@@ -97,6 +98,7 @@ func convertV20160330Properties(v20160330 *v20160330.Properties, api *Properties
 
 func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
+	api.Environment = Environment(vlabs.Environment)
 	convertVLabsOrchestratorProfile(&vlabs.OrchestratorProfile, &api.OrchestratorProfile)
 	convertVLabsMasterProfile(&vlabs.MasterProfile, &api.MasterProfile)
 	api.AgentPoolProfiles = []AgentPoolProfile{}

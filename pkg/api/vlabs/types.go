@@ -38,6 +38,7 @@ type Properties struct {
 	MasterProfile           MasterProfile           `json:"masterProfile"`
 	AgentPoolProfiles       []AgentPoolProfile      `json:"agentPoolProfiles"`
 	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
+	Environment				Environment				`json:"environment"`
 	WindowsProfile          WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
 	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
@@ -173,6 +174,8 @@ type OrchestratorType string
 
 // OSType represents OS types of agents
 type OSType string
+
+type Environment string
 
 // HasWindows returns true if the cluster contains windows
 func (a *Properties) HasWindows() bool {

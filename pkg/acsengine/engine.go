@@ -65,6 +65,13 @@ const (
 	windowsParams                = "windowsparams.t"
 )
 
+var kubernetesManifestYamls = map[string]string{
+	"MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR":          "kubernetesmaster-kube-scheduler.yaml",
+	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetesmaster-kube-controller-manager.yaml",
+	"MASTER_KUBERNETES_APISERVER_B64_GZIP_STR":          "kubernetesmaster-kube-apiserver.yaml",
+	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":      "kubernetesmaster-kube-addon-manager.yaml",
+}
+
 var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR":             "kubernetesmasteraddons-heapster-deployment.yaml",
 	"MASTER_ADDON_HEAPSTER_SERVICE_B64_GZIP_STR":                "kubernetesmasteraddons-heapster-service.yaml",
@@ -207,6 +214,7 @@ func getParameters(properties *api.Properties) (map[string]interface{}, error) {
 	parametersMap := map[string]interface{}{}
 
 	// Master Parameters
+	addValue(parametersMap, "targetEnvironment", properties.Environment)
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
 	addValue(parametersMap, "masterEndpointDNSNamePrefix", properties.MasterProfile.DNSPrefix)
 	if properties.MasterProfile.IsCustomVNET() {
@@ -235,8 +243,18 @@ func getParameters(properties *api.Properties) (map[string]interface{}, error) {
 		addValue(parametersMap, "kubeConfigPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)))
 		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubectlVersion", properties.OrchestratorProfile.KubernetesConfig.KubectlVersion)
+		addValue(parametersMap, "KubernetesAddonManagerSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesAddonManagerSpec)
+		addValue(parametersMap, "KubernetesAddonResizerSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesAddonResizerSpec)
+		addValue(parametersMap, "KubernetesDashboardSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesDashboardSpec)
+		addValue(parametersMap, "KubernetesDNSMasqSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesDNSMasqSpec)
+		addValue(parametersMap, "KubernetesExecHealthzSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesExecHealthzSpec)
+		addValue(parametersMap, "KubernetesHeapsterSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesHeapsterSpec)
+		addValue(parametersMap, "KubernetesKubeDNSSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesKubeDNSSpec)
+		addValue(parametersMap, "kubernetesPodInfraContainerSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesPodInfraContainerSpec)
 		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 		addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
+		addValue(parametersMap, "dockerInstallScriptURL", properties.OrchestratorProfile.KubernetesConfig.DockerInstallScriptURL)
+		addValue(parametersMap, "kubectlDownloadURL", properties.OrchestratorProfile.KubernetesConfig.KubectlDownloadURL)
 	}
 
 	// Agent parameters
@@ -364,6 +382,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			// add the master provisioning script
 			masterProvisionB64GzipStr := getBase64CustomScript(kubernetesMasterCustomScript)
 			str = strings.Replace(str, "MASTER_PROVISION_B64_GZIP_STR", masterProvisionB64GzipStr, -1)
+
+			for placeholder, filename := range kubernetesManifestYamls {
+				manifestTextContents := getBase64CustomScript(filename)
+				str = strings.Replace(str, placeholder, manifestTextContents, -1)
+			}
 
 			for placeholder, filename := range kubernetesAddonYamls {
 				addonTextContents := getBase64CustomScript(filename)

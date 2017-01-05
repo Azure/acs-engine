@@ -25,11 +25,34 @@ func SetPropertiesDefaults(p *api.Properties) (bool, error) {
 	return certsGenerated, nil
 }
 
+//DefaultCloudSpecConfigFromEnvironment returns the kubenernetes container images url configurations based on the deploy target environment
+//for example: if the target is the public azure, then the default container image url should be gcr.io/google_container/...
+//if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
+func DefaultCloudSpecConfigFromEnvironment(environment api.Environment) AzureEnvironmentSpecConfig {
+	kubeSpecConfig := AzurePublicCloud
+	if environment == "AzureChinaCloud" {
+		kubeSpecConfig = AzureChinaCloud
+	}
+
+	return kubeSpecConfig
+}
+
 // setOrchestratorDefaults for orchestrators
 func setOrchestratorDefaults(a *api.Properties) {
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-		a.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec = DefaultKubernetesHyperkubeSpec
+		cloudSpecConfig := DefaultCloudSpecConfigFromEnvironment(a.Environment)
+		a.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesHyperkubeSpec
 		a.OrchestratorProfile.KubernetesConfig.KubectlVersion = DefaultKubectlVersion
+		a.OrchestratorProfile.KubernetesConfig.KubernetesAddonManagerSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesAddonManagerSpec
+		a.OrchestratorProfile.KubernetesConfig.KubernetesAddonResizerSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesAddonResizerSpec
+		a.OrchestratorProfile.KubernetesConfig.KubernetesDashboardSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesDashboardSpec
+		a.OrchestratorProfile.KubernetesConfig.KubernetesExecHealthzSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesExechealthzSpec
+		a.OrchestratorProfile.KubernetesConfig.KubernetesHeapsterSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesHeapsterSpec
+		a.OrchestratorProfile.KubernetesConfig.KubernetesKubeDNSSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesDNSSpec
+		a.OrchestratorProfile.KubernetesConfig.KubernetesDNSMasqSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesDNSMasqSpec
+		a.OrchestratorProfile.KubernetesConfig.KubernetesPodInfraContainerSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesPodInfraContainerSpec
+		a.OrchestratorProfile.KubernetesConfig.DockerInstallScriptURL = cloudSpecConfig.DockerSpecConfig.DefaultDockerInstallScriptURL
+		a.OrchestratorProfile.KubernetesConfig.KubectlDownloadURL = cloudSpecConfig.KubernetesSpecConfig.DefaultKubectlDownloadURL
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
 		a.OrchestratorProfile.OrchestratorType = api.DCOS187

@@ -730,6 +730,13 @@
       },
       "type": "string"
     },
+    "targetEnvironment": {
+      "defaultValue": "AzurePublicCloud",
+      "metadata": {
+        "description": "The azure deploy environment. eg. AzurePublicCloud, AzureChinaCloud, AzureGermanCloud, AzureUSGovermentCloud"
+      },
+      "type": "string"
+    },
     "windowsAdminPassword": {
       "metadata": {
         "description": "Password for the Windows Swarm Agent Virtual Machines."

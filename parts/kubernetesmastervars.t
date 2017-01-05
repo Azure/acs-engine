@@ -10,6 +10,16 @@
     "kubeConfigPrivateKey": "[parameters('kubeConfigPrivateKey')]",
     "kubernetesHyperkubeSpec": "[parameters('kubernetesHyperkubeSpec')]",
     "kubectlVersion": "[parameters('kubectlVersion')]",
+    "kubernetesAddonManagerSpec": "[parameters('kubernetesAddonManagerSpec')]",
+    "kubernetesAddonResizerSpec": "[parameters('kubernetesAddonResizerSpec')]",
+    "kubernetesDashboardSpec": "[parameters('kubernetesDashboardSpec')]",
+    "kubernetesExecHealthzSpec": "[parameters('kubernetesExecHealthzSpec')]",
+    "kubernetesHeapsterSpec": "[parameters('kubernetesHeapsterSpec')]",
+    "kubernetesPodInfraContainerSpec": "[parameters('kubernetesPodInfraContainerSpec')]",
+    "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
+    "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
+    "kubectlDownloadURL": "[parameters('kubectlDownloadURL')]",
+    "dockerInstallScriptURL": "[parameters('dockerInstallScriptURL')]",
     "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
     "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
     "username": "[parameters('linuxAdminUsername')]",
@@ -72,7 +82,8 @@
     "masterFirstAddrPrefix": "[concat(variables('masterFirstAddrOctets')[0],'.',variables('masterFirstAddrOctets')[1],'.',variables('masterFirstAddrOctets')[2],'.')]",
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]",
     "subscriptionId": "[subscription().subscriptionId]",
-    "tenantId": "[subscription().tenantId]"
+    "tenantId": "[subscription().tenantId]",
+    "targetEnvironment": "[parameters('targetEnvironment')]"
 {{if .LinuxProfile.HasSecrets}}
     , "linuxProfileSecrets" :
       [

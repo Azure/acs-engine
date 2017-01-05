@@ -51,12 +51,15 @@ type Properties struct {
 	MasterProfile           MasterProfile           `json:"masterProfile"`
 	AgentPoolProfiles       []AgentPoolProfile      `json:"agentPoolProfiles"`
 	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
+	Environment             Environment             `json:"environment"`
 	WindowsProfile          WindowsProfile          `json:"windowsProfile"`
 	DiagnosticsProfile      DiagnosticsProfile      `json:"diagnosticsProfile"`
 	JumpboxProfile          JumpboxProfile          `json:"jumpboxProfile"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
 	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
 }
+
+type Environment string
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
 type ServicePrincipalProfile struct {
@@ -130,8 +133,18 @@ type OrchestratorProfile struct {
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
-	KubernetesHyperkubeSpec string `json:"kubernetesHyperkubeSpec,omitempty"`
-	KubectlVersion          string `json:"kubectlVersion,omitempty"`
+	KubernetesHyperkubeSpec         string `json:"kubernetesHyperkubeSpec,omitempty"`
+	KubectlVersion                  string `json:"kubectlVersion,omitempty"`
+	KubernetesHeapsterSpec          string `json:"kubernetesHeapsterSpec,omitempty"`
+	KubernetesAddonResizerSpec      string `json:"kubernetesAddonResizerSpec,omitempty"`
+	KubernetesKubeDNSSpec           string `json:"kubernetesKubeDNSSpec,omitempty"`
+	KubernetesExecHealthzSpec       string `json:"kubernetesExecHealthzSpec,omitempty"`
+	KubernetesDashboardSpec         string `json:"kubernetesDashboardSpec,omitempty"`
+	KubernetesAddonManagerSpec      string `json:"kubernetesAddonManagerSpec,omitempty"`
+	KubernetesDNSMasqSpec           string `json:"kubernetesDNSMasqSpec,omitempty"`
+	KubernetesPodInfraContainerSpec string `json:"kubernetesPodInfraContainerSpec,omitempty"`
+	KubectlDownloadURL              string `json:"kubectlDownloadURL,omitempty"`
+	DockerInstallScriptURL          string `json:"dockerInstallScriptURL,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
