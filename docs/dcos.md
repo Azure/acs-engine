@@ -70,7 +70,7 @@ This walk through is inspired by the wonderful digital ocean tutorial: https://w
    3. start a long running service
     1. click "Deploy Service"
     2. type "myfirstapp" for the id
-    3. type `/bin/bash -c "for i in {1..5}; do echo MyFirstApp $i; sleep 1; done"` for the command
+    3. type `/bin/bash -c 'for i in {1..5}; do echo MyFirstApp $i; sleep 1; done'` for the command
     4. scroll to bottom and click Deploy
 
     ![Image of Deploy New Service dialog](images/deployfirstapp.png)
