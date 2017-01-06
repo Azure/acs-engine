@@ -1,17 +1,8 @@
-package v20160330
+package v20160930
 
 import (
 	neturl "net/url"
 )
-
-// SubscriptionState represents the state of the subscription
-type SubscriptionState int
-
-// Subscription represents the customer subscription
-type Subscription struct {
-	ID    string
-	State SubscriptionState
-}
 
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
@@ -35,27 +26,31 @@ type ContainerService struct {
 	Properties Properties `json:"properties"`
 }
 
-// Properties is currently incomplete. More fields will be added later.
+// Properties represents the ACS cluster definition
 type Properties struct {
 	ProvisioningState   ProvisioningState   `json:"provisioningState"`
 	OrchestratorProfile OrchestratorProfile `json:"orchestratorProfile"`
-
-	MasterProfile MasterProfile `json:"masterProfile"`
-
-	AgentPoolProfiles []AgentPoolProfile `json:"agentPoolProfiles"`
-
-	LinuxProfile LinuxProfile `json:"linuxProfile"`
-
-	WindowsProfile WindowsProfile `json:"windowsProfile"`
-
-	// TODO: This field is versioned to "2016-03-30"
+	MasterProfile       MasterProfile       `json:"masterProfile"`
+	AgentPoolProfiles   []AgentPoolProfile  `json:"agentPoolProfiles"`
+	LinuxProfile        LinuxProfile        `json:"linuxProfile"`
+	WindowsProfile      WindowsProfile      `json:"windowsProfile"`
 	DiagnosticsProfile DiagnosticsProfile `json:"diagnosticsProfile"`
-
-	// JumpboxProfile has made it into the new ACS RP stack for
-	// backward compability.
-	// TODO: Version this field so that newer versions don't
-	// allow jumpbox creation
 	JumpboxProfile JumpboxProfile `json:"jumpboxProfile"`
+	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
+	CustomProfile CustomProfile `json:"customProfile"`
+}
+
+// ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
+type ServicePrincipalProfile struct {
+	ClientID string `json:"clientId,omitempty"`
+	Secret   string `json:"secret,omitempty"`
+}
+
+
+// CustomProfile specifies custom properties that are used for
+// cluster instantiation.  Should not be used by most users.
+type CustomProfile struct {
+	Orchestrator string `json:"orchestrator,omitempty"`
 }
 
 // LinuxProfile represents the Linux configuration passed to the cluster
@@ -71,9 +66,8 @@ type LinuxProfile struct {
 
 // WindowsProfile represents the Windows configuration passed to the cluster
 type WindowsProfile struct {
-	AdminUsername string `json:"adminUsername"`
-
-	AdminPassword string `json:"adminPassword"`
+	AdminUsername string            `json:"adminUsername,omitempty"`
+	AdminPassword string            `json:"adminPassword,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.
@@ -123,7 +117,13 @@ type AgentPoolProfile struct {
 	VMSize    string `json:"vmSize"`
 	DNSPrefix string `json:"dnsPrefix"`
 	FQDN      string `json:"fqdn,omitempty"`
-	OSType    OSType `json:"osType"` // TODO: This field is versioned to "2016-03-30"
+
+	// OSType is the operating system type for agents
+	// Set as nullable to support backward compat because
+	// this property was added later.
+	// If the value is null or not set, it defaulted to Linux.
+	OSType    OSType `json:"osType,omitempty"`
+	
 	// subnet is internal
 	subnet string
 }
@@ -131,7 +131,7 @@ type AgentPoolProfile struct {
 // JumpboxProfile dscribes properties of the jumpbox setup
 // in the ACS container cluster.
 type JumpboxProfile struct {
-	OSType    OSType `json:"osType"`
+	OSType    OSType `json:"osType,omitempty"`
 	DNSPrefix string `json:"dnsPrefix"`
 
 	// Jumpbox public endpoint/FQDN with port
