@@ -73,3 +73,11 @@ const (
 	// ManagedDisks means that the nodes use managed disks for their os and attached volumes
 	ManagedDisks = "ManagedDisks"
 )
+
+// ClassicAgentPoolProfileType profiles
+const (
+	SwarmPublic ClassicAgentPoolProfileType = "SwarmPublic"
+	DCOSPublic  ClassicAgentPoolProfileType = "DCOSPublic"
+	DCOSPrivate ClassicAgentPoolProfileType = "DCOSPrivate"
+	NotClassic  ClassicAgentPoolProfileType = ""
+)

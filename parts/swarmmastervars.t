@@ -43,8 +43,13 @@
     "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]", 
     "masterLbIPConfigName": "[concat(variables('orchestratorName'), '-master-lbFrontEnd-', variables('nameSuffix'))]", 
     "masterLbName": "[concat(variables('orchestratorName'), '-master-lb-', variables('nameSuffix'))]", 
-    "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]", 
-    "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), '0')]", 
+    "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]",
+{{if .MasterProfile.IsClassicProfile}}
+    "storageAccountBaseClassicName": "[concat(uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location)), variables('orchestratorName'))]",
+    "masterStorageAccountName": "[concat(variables('storageAccountBaseClassicName'), '0')]",
+{{else}}
+    "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), '0')]",
+{{end}} 
 {{if .MasterProfile.IsCustomVNET}}
     "masterVnetSubnetID": "[parameters('masterVnetSubnetID')]",
 {{else}}
@@ -67,8 +72,8 @@
     "osImageVersion": "latest", 
     "postInstallScriptURI": "disabled", 
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]", 
-    "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]", 
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location))]", 
+    "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location))]",
     "storageAccountPrefixes": [ "0", "6", "c", "i", "o", "u", "1", "7", "d", "j", "p", "v", "2", "8", "e", "k", "q", "w", "3", "9", "f", "l", "r", "x", "4", "a", "g", "m", "s", "y", "5", "b", "h", "n", "t", "z" ],
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]", 
     "vmsPerStorageAccount": 20

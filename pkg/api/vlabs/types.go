@@ -113,11 +113,13 @@ type OrchestratorProfile struct {
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int    `json:"count"`
-	DNSPrefix                string `json:"dnsPrefix"`
-	VMSize                   string `json:"vmSize"`
-	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
-	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
+	Count                    int                         `json:"count"`
+	DNSPrefix                string                      `json:"dnsPrefix"`
+	VMSize                   string                      `json:"vmSize"`
+	VnetSubnetID             string                      `json:"vnetSubnetID,omitempty"`
+	FirstConsecutiveStaticIP string                      `json:"firstConsecutiveStaticIP,omitempty"`
+	ClassicProfile           ClassicAgentPoolProfileType `json:"classicProfile,omitempty"`
+
 	// subnet is internal
 	subnet string
 
@@ -127,18 +129,23 @@ type MasterProfile struct {
 	FQDN string `json:"fqdn,omitempty"`
 }
 
+// ClassicAgentPoolProfileType represents types of classic profiles
+type ClassicAgentPoolProfileType string
+
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                string `json:"name"`
-	Count               int    `json:"count"`
-	VMSize              string `json:"vmSize"`
-	DNSPrefix           string `json:"dnsPrefix,omitempty"`
-	OSType              OSType `json:"osType,omitempty"`
-	Ports               []int  `json:"ports,omitempty"`
-	AvailabilityProfile string `json:"availabilityProfile"`
-	StorageProfile      string `json:"storageProfile"`
-	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
-	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
+	Name                string                      `json:"name"`
+	Count               int                         `json:"count"`
+	VMSize              string                      `json:"vmSize"`
+	DNSPrefix           string                      `json:"dnsPrefix,omitempty"`
+	OSType              OSType                      `json:"osType,omitempty"`
+	Ports               []int                       `json:"ports,omitempty"`
+	AvailabilityProfile string                      `json:"availabilityProfile"`
+	StorageProfile      string                      `json:"storageProfile"`
+	DiskSizesGB         []int                       `json:"diskSizesGB,omitempty"`
+	VnetSubnetID        string                      `json:"vnetSubnetID,omitempty"`
+	ClassicProfile      ClassicAgentPoolProfileType `json:"classicProfile,omitempty"`
+
 	// subnet is internal
 	subnet string
 
@@ -175,8 +182,8 @@ type OrchestratorType string
 type OSType string
 
 // HasWindows returns true if the cluster contains windows
-func (a *Properties) HasWindows() bool {
-	for _, agentPoolProfile := range a.AgentPoolProfiles {
+func (p *Properties) HasWindows() bool {
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.OSType == Windows {
 			return true
 		}
