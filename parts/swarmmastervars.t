@@ -44,7 +44,7 @@
     "masterLbIPConfigName": "[concat(variables('orchestratorName'), '-master-lbFrontEnd-', variables('nameSuffix'))]", 
     "masterLbName": "[concat(variables('orchestratorName'), '-master-lb-', variables('nameSuffix'))]", 
     "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]",
-{{if .MasterProfile.IsClassicProfile}}
+{{if .MasterProfile.IsClassicStorageAccount}}
     "storageAccountBaseClassicName": "[concat(uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location)), variables('orchestratorName'))]",
     "masterStorageAccountName": "[concat(variables('storageAccountBaseClassicName'), '0')]",
 {{else}}

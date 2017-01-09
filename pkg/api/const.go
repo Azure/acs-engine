@@ -61,16 +61,11 @@ const (
 
 // storage profiles
 const (
+	// StorageAccountClassic means that we follow the older versions (09-30-2016, 03-30-2016)
+	// storage account naming conventions
+	StorageAccountClassic = "StorageAccountClassic"
 	// StorageAccount means that the nodes use raw storage accounts for their os and attached volumes
 	StorageAccount = "StorageAccount"
 	// ManagedDisks means that the nodes use managed disks for their os and attached volumes
 	ManagedDisks = "ManagedDisks"
-)
-
-// ClassicAgentPoolProfileType profiles
-const (
-	SwarmPublic ClassicAgentPoolProfileType = "SwarmPublic"
-	DCOSPublic  ClassicAgentPoolProfileType = "DCOSPublic"
-	DCOSPrivate ClassicAgentPoolProfileType = "DCOSPrivate"
-	NotClassic  ClassicAgentPoolProfileType = ""
 )
