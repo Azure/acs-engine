@@ -91,7 +91,7 @@ ensure that your installation is up to date with the latest release. (Releases o
 ```bash
 $ az login
 
-$ az account set --name "<SUBSCRIPTION NAME OR ID>"
+$ az account set --subscription "<SUBSCRIPTION NAME OR ID>"
 
 $ az group create \
     --name "<RESOURCE_GROUP_NAME>" \
