@@ -45,9 +45,10 @@
 {{end}}
 {{if .MasterProfile.IsCustomVNET}}
     "vnetSubnetID": "[parameters('masterVnetSubnetID')]",
-    "subnetName": "[parameters('masterVnetSubnetID')]",
-    "vnetParts": "[split(parameters('masterVnetSubnetID'),'/subnets/')]",
-    "virtualNetworkName": "[variables('vnetParts')[0]]",
+    "subnetNameResourceSegmentIndex": 10,
+    "subnetName": "[split(parameters('masterVnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
+    "vnetNameResourceSegmentIndex": 8,
+    "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
 {{else}}
     "subnet": "[parameters('masterSubnet')]",
     "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
