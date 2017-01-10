@@ -215,7 +215,7 @@ write_files:
       containers:
       - name: kube-addon-manager
         # TODO: consider if hardcoding this is the right thing to do...
-        image: gcr.io/google_containers/kube-addon-manager-amd64:v5.1
+        image: gcr.io/google_containers/kube-addon-manager-amd64:v6
         resources:
           requests:
             cpu: 5m
