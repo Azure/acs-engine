@@ -136,13 +136,13 @@ type KubernetesConfig struct {
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int                         `json:"count"`
-	DNSPrefix                string                      `json:"dnsPrefix"`
-	VMSize                   string                      `json:"vmSize"`
-	VnetSubnetID             string                      `json:"vnetSubnetID,omitempty"`
-	FirstConsecutiveStaticIP string                      `json:"firstConsecutiveStaticIP,omitempty"`
-	Subnet                   string                      `json:"subnet"`
-	ClassicProfile           ClassicAgentPoolProfileType `json:"classicProfile,omitempty"`
+	Count                    int    `json:"count"`
+	DNSPrefix                string `json:"dnsPrefix"`
+	VMSize                   string `json:"vmSize"`
+	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
+	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
+	Subnet                   string `json:"subnet"`
+	StorageProfile           string `json:"storageProfile,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -150,23 +150,19 @@ type MasterProfile struct {
 	FQDN string `json:"fqdn,omitempty"`
 }
 
-// ClassicAgentPoolProfileType represents types of classic profiles
-type ClassicAgentPoolProfileType string
-
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                string                      `json:"name"`
-	Count               int                         `json:"count"`
-	VMSize              string                      `json:"vmSize"`
-	DNSPrefix           string                      `json:"dnsPrefix,omitempty"`
-	OSType              OSType                      `json:"osType,omitempty"`
-	Ports               []int                       `json:"ports,omitempty"`
-	AvailabilityProfile string                      `json:"availabilityProfile"`
-	StorageProfile      string                      `json:"storageProfile,omitempty"`
-	DiskSizesGB         []int                       `json:"diskSizesGB,omitempty"`
-	VnetSubnetID        string                      `json:"vnetSubnetID,omitempty"`
-	Subnet              string                      `json:"subnet"`
-	ClassicProfile      ClassicAgentPoolProfileType `json:"classicProfile,omitempty"`
+	Name                string `json:"name"`
+	Count               int    `json:"count"`
+	VMSize              string `json:"vmSize"`
+	DNSPrefix           string `json:"dnsPrefix,omitempty"`
+	OSType              OSType `json:"osType,omitempty"`
+	Ports               []int  `json:"ports,omitempty"`
+	AvailabilityProfile string `json:"availabilityProfile"`
+	StorageProfile      string `json:"storageProfile,omitempty"`
+	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
+	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
+	Subnet              string `json:"subnet"`
 
 	FQDN string `json:"fqdn,omitempty"`
 }
@@ -283,9 +279,10 @@ func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
 }
 
-// IsClassicProfile returns true if this is a classic profile
-func (m *MasterProfile) IsClassicProfile() bool {
-	return m.ClassicProfile != NotClassic
+// IsClassicStorageAccount returns true if the storage account
+// follows the older naming convention
+func (m *MasterProfile) IsClassicStorageAccount() bool {
+	return m.StorageProfile == StorageAccountClassic
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
@@ -308,14 +305,15 @@ func (a *AgentPoolProfile) IsManagedDisks() bool {
 	return a.StorageProfile == ManagedDisks
 }
 
-// IsClassicProfile returns true if this is a classic profile
-func (a *AgentPoolProfile) IsClassicProfile() bool {
-	return a.ClassicProfile != NotClassic
+// IsClassicStorageAccount returns true if the storage account
+// follows the older naming convention
+func (a *AgentPoolProfile) IsClassicStorageAccount() bool {
+	return a.StorageProfile == StorageAccountClassic
 }
 
 // IsStorageAccount returns true if the customer specified storage account
 func (a *AgentPoolProfile) IsStorageAccount() bool {
-	return a.StorageProfile == StorageAccount
+	return a.StorageProfile == StorageAccountClassic || a.StorageProfile == StorageAccount
 }
 
 // HasDisks returns true if the customer specified disks
