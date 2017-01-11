@@ -3,8 +3,8 @@
 .PHONY: build test validate-generated lint ci devenv
 
 build:
-	go get .
 	go generate -v ./...
+	go get .
 	go build -v
 
 test:
