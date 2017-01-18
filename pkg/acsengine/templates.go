@@ -446,7 +446,7 @@ func kubernetesagentcustomdataYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesagentcustomdata.yml", size: 3998, mode: os.FileMode(420), modTime: time.Unix(1484861839, 0)}
+	info := bindataFileInfo{name: "kubernetesagentcustomdata.yml", size: 3998, mode: os.FileMode(420), modTime: time.Unix(1485204142, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -666,7 +666,7 @@ func kubernetesmastercustomdataYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmastercustomdata.yml", size: 10693, mode: os.FileMode(420), modTime: time.Unix(1484861834, 0)}
+	info := bindataFileInfo{name: "kubernetesmastercustomdata.yml", size: 10693, mode: os.FileMode(420), modTime: time.Unix(1485204142, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -726,7 +726,7 @@ func kubernetesmastervarsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmastervars.t", size: 6001, mode: os.FileMode(420), modTime: time.Unix(1484861849, 0)}
+	info := bindataFileInfo{name: "kubernetesmastervars.t", size: 6001, mode: os.FileMode(420), modTime: time.Unix(1485204142, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

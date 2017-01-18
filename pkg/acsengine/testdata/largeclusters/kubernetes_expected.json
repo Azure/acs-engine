@@ -2428,14 +2428,14 @@
       "type": "securestring"
     },
     "kubectlVersion": {
-      "defaultValue": "v1.5.1",
+      "defaultValue": "v1.5.2",
       "metadata": {
         "description": "The kubernetes version."
       },
       "type": "string"
     },
     "kubernetesHyperkubeSpec": {
-      "defaultValue": "gcr.io/google_containers/hyperkube-amd64:v1.5.1",
+      "defaultValue": "gcr.io/google_containers/hyperkube-amd64:v1.5.2",
       "metadata": {
         "description": "The container spec for hyperkube."
       },
