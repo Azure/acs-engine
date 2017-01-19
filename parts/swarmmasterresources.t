@@ -170,7 +170,11 @@
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
-          {{GetMasterSwarmCustomData}}
+          {{if .OrchestratorProfile.IsSwarmMode}}
+            {{GetMasterSwarmModeCustomData}}
+          {{else}}
+            {{GetMasterSwarmCustomData}}
+          {{end}}
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
             "ssh": {

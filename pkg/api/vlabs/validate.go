@@ -17,6 +17,7 @@ func (o *OrchestratorProfile) Validate() error {
 	case DCOS173:
 	case Swarm:
 	case Kubernetes:
+	case DockerCE:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}

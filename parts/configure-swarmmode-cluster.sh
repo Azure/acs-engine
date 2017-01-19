@@ -1,13 +1,22 @@
 #!/bin/bash
 
+###########################################################
+# Configure Swarm Mode One Box
+#
+# This installs the following components
+# - Docker
+# - Docker Compose
+# - Swarm Mode masters
+# - Swarm Mode agents
+###########################################################
+
 set -x
 
-echo "starting swarm cluster configuration"
+echo "starting Swarm Mode cluster configuration"
 date
 ps ax
 
-SWARM_VERSION="swarm:1.1.0"
-DOCKER_COMPOSE_VERSION="1.6.2"
+DOCKER_COMPOSE_VERSION="1.9.0"
 #############
 # Parameters
 #############
@@ -124,29 +133,6 @@ if isagent ; then
   echo "this node is an agent"
 fi
 
-consulstr()
-{
-  consulargs=""
-  for i in `seq 0 $((MASTERCOUNT-1))` ;
-  do
-    MASTEROCTET=`expr $MASTERFIRSTADDR + $i`
-    IPADDR="${BASESUBNET}${MASTEROCTET}"
-
-    if [ "$VMNUMBER" -eq "0" ]
-    then
-      consulargs="${consulargs}-bootstrap-expect $MASTERCOUNT "
-    fi
-    if [ "$VMNUMBER" -eq "$i" ]
-    then
-      consulargs="${consulargs}-advertise $IPADDR "
-    else
-      consulargs="${consulargs}-retry-join $IPADDR "
-    fi
-  done
-  echo $consulargs
-}
-
-consulargs=$(consulstr)
 MASTER0IPADDR="${BASESUBNET}${MASTERFIRSTADDR}"
 
 ######################
@@ -159,7 +145,7 @@ echo "$HOSTADDR $VMNAME" | sudo tee -a /etc/hosts
 # Install Docker
 ################
 
-echo "Installing and configuring docker"
+echo "Installing and configuring Docker"
 
 installDocker()
 {
@@ -175,15 +161,28 @@ installDocker()
   done
 }
 time installDocker
-sudo usermod -aG docker $AZUREUSER
-if isagent ; then
-  # Start Docker and listen on :2375 (no auth, but in vnet)
-  echo 'DOCKER_OPTS="-H unix:///var/run/docker.sock -H 0.0.0.0:2375 --cluster-store=consul://'$MASTER0IPADDR:8500 --cluster-advertise=$HOSTADDR:2375'"' | sudo tee -a /etc/default/docker
-fi
 
-echo "Installing docker compose"
+sudo usermod -aG docker $AZUREUSER
+
+echo "Updating Docker daemon options"
+
+updateDockerDaemonOptions()
+{
+    sudo mkdir -p /etc/systemd/system/docker.service.d
+    # Start Docker and listen on :2375 (no auth, but in vnet) and
+    # also have it bind to the unix socket at /var/run/docker.sock
+    sudo bash -c 'echo "[Service]
+    ExecStart=
+    ExecStart=/usr/bin/docker daemon -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
+  " > /etc/systemd/system/docker.service.d/override.conf'
+}
+time updateDockerDaemonOptions
+
+echo "Installing Docker Compose"
 installDockerCompose()
 {
+  # sudo -i
+
   for i in {1..10}; do
     wget --tries 4 --retry-connrefused --waitretry=15 -qO- https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
     if [ $? -eq 0 ]
@@ -198,6 +197,7 @@ installDockerCompose()
 time installDockerCompose
 chmod +x /usr/local/bin/docker-compose
 
+sudo systemctl daemon-reload
 sudo service docker restart
 
 ensureDocker()
@@ -228,42 +228,58 @@ ensureDocker
 ##############################################
 
 if ismaster ; then
-  mkdir -p /data/consul
-  echo "consul:
-  image: \"progrium/consul\"
-  command: -server -node $VMNAME $consulargs
-  ports:
-    - \"8500:8500\"
-    - \"8300:8300\"
-    - \"8301:8301\"
-    - \"8301:8301/udp\"
-    - \"8302:8302\"
-    - \"8302:8302/udp\"
-    - \"8400:8400\"
-  volumes:
-    - \"/data/consul:/data\"
-  restart: \"always\"
-swarm:
-  image: \"$SWARM_VERSION\"
-  command: manage --replication --advertise $HOSTADDR:2375 --discovery-opt kv.path=docker/nodes consul://$MASTER0IPADDR:8500
-  ports:
-    - \"2375:2375\"
-  links:
-    - \"consul\"
-  volumes:
-    - \"/etc/docker:/etc/docker\"
-  restart: \"always\"
-" > /opt/azure/containers/docker-compose.yml
-
-  pushd /opt/azure/containers/
-  docker-compose up -d
-  popd
-  echo "completed starting docker swarm on the master"
+    if [ "$HOSTADDR" = "$MASTER0IPADDR" ]; then
+          echo "Creating a new Swarm on first master"
+          docker swarm init --advertise-addr $(hostname -i):2377 --listen-addr $(hostname -i):2377
+    else
+        echo "Secondary master attempting to join an existing Swarm"
+        swarmmodetoken=""
+        swarmmodetokenAcquired=1
+        for i in {1..120}; do
+            swarmmodetoken=$(docker -H $MASTER0IPADDR:2375 swarm join-token -q manager)
+            if [ $? -eq 0 ]; then
+                swarmmodetokenAcquired=0
+                break
+            fi
+            sleep 5
+        done
+        if [ $swarmmodetokenAcquired -ne 0 ]
+        then
+            echo "Secondary master couldn't connect to Swarm, aborting install"
+            exit 2
+        fi
+        docker swarm join --token $swarmmodetoken $MASTER0IPADDR:2377
+    fi
 fi
 
 if ismaster ; then
   echo "Having ssh listen to port 2222 as well as 22"
   sudo sed  -i "s/^Port 22$/Port 22\nPort 2222/1" /etc/ssh/sshd_config
+fi
+
+if ismaster ; then
+  echo "Setting availability of master node: '$VMNAME' to pause"
+  docker node update --availability pause $VMNAME
+fi
+
+if isagent ; then
+    echo "Agent attempting to join an existing Swarm"
+    swarmmodetoken=""
+    swarmmodetokenAcquired=1
+    for i in {1..120}; do
+        swarmmodetoken=$(docker -H $MASTER0IPADDR:2375 swarm join-token -q worker)
+        if [ $? -eq 0 ]; then
+            swarmmodetokenAcquired=0
+            break
+        fi
+        sleep 5
+    done
+    if [ $swarmmodetokenAcquired -ne 0 ]
+    then
+        echo "Agent couldn't join Swarm, aborting install"
+        exit 2
+    fi
+    docker swarm join --token $swarmmodetoken $MASTER0IPADDR:2377
 fi
 
 if [ $POSTINSTALLSCRIPTURI != "disabled" ]
@@ -275,7 +291,7 @@ fi
 echo "processes at end of script"
 ps ax
 date
-echo "completed Swarm cluster configuration"
+echo "completed Swarm Mode cluster configuration"
 
 echo "restart system to install any remaining software"
 if isagent ; then

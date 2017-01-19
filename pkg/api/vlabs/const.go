@@ -19,6 +19,8 @@ const (
 	Swarm = "Swarm"
 	// Kubernetes is the string constant for the Kubernetes orchestrator type
 	Kubernetes = "Kubernetes"
+	// DockerCE is the string constant for the Swarm Mode orchestrator type
+	DockerCE = "DockerCE"
 )
 
 const (

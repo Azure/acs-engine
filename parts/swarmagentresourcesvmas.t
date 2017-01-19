@@ -181,7 +181,10 @@
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex())]",
-          {{GetAgentSwarmCustomData}}
+            {{GetAgentSwarmModeCustomData}} 
+{{else}}
+            {{GetAgentSwarmCustomData}} 
+{{end}}
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true",
               "ssh": {
