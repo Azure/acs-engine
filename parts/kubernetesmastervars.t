@@ -72,7 +72,8 @@
     "masterFirstAddrPrefix": "[concat(variables('masterFirstAddrOctets')[0],'.',variables('masterFirstAddrOctets')[1],'.',variables('masterFirstAddrOctets')[2],'.')]",
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]",
     "subscriptionId": "[subscription().subscriptionId]",
-    "tenantId": "[subscription().tenantId]"
+    "tenantId": "[subscription().tenantId]",
+    "dockerEngineVersion": "1.12.6-0~ubuntu-xenial"
 {{if .LinuxProfile.HasSecrets}}
     , "linuxProfileSecrets" :
       [
