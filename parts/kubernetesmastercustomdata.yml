@@ -8,9 +8,15 @@ packages:
  - traceroute
 
 runcmd:
-- /bin/bash -c "/bin/echo DAEMON_ARGS=--advertise-client-urls ""http://127.0.0.1:2379,http://{{{masterPrivateIp}}}:2379"" --listen-client-urls ""http://0.0.0.0:2379,http://0.0.0.0:4001"" | tee -a /etc/default/etcd"
-- /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://get.docker.com/ > /tmp/install-docker
-- /bin/bash -c "/bin/bash /tmp/install-docker"
+- /bin/echo DAEMON_ARGS=--advertise-client-urls "http://127.0.0.1:2379,http://{{{masterPrivateIp}}}:2379" --listen-client-urls "http://0.0.0.0:2379,http://0.0.0.0:4001" | tee -a /etc/default/etcd
+- apt-get update
+- apt-get install -y apt-transport-https ca-certificates
+- apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+- echo "deb https://apt.dockerproject.org/repo ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+- apt-get update
+- apt-get install -y docker-engine={{{dockerEngineVersion}}}
+- apt-mark hold docker-engine
+- systemctl restart docker
 - /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://storage.googleapis.com/kubernetes-release/release/{{{kubectlVersion}}}/bin/linux/amd64/kubectl > /usr/local/bin/kubectl
 - chmod +x /usr/local/bin/kubectl
 
