@@ -166,17 +166,17 @@ func main() {
 
 	if !*noPrettyPrint {
 		if template, err = acsengine.PrettyPrintArmTemplate(template); err != nil {
-			fmt.Fprintf(os.Stderr, "error pretty printing template %s", err.Error())
+			fmt.Fprintf(os.Stderr, "error pretty printing template: %s \n", err.Error())
 			os.Exit(1)
 		}
 		if parameters, err = acsengine.PrettyPrintJSON(parameters); err != nil {
-			fmt.Fprintf(os.Stderr, "error pretty printing template parameters %s", err.Error())
+			fmt.Fprintf(os.Stderr, "error pretty printing template parameters: %s \n", err.Error())
 			os.Exit(1)
 		}
 	}
 
 	if err = writeArtifacts(containerService, apiVersion, template, parameters, *artifactsDir, certsGenerated, *parametersOnly); err != nil {
-		fmt.Fprintf(os.Stderr, "error writing artifacts %s", err.Error())
+		fmt.Fprintf(os.Stderr, "error writing artifacts: %s \n", err.Error())
 		os.Exit(1)
 	}
 }
