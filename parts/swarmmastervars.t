@@ -10,10 +10,8 @@
 {{end}}
 {{if .OrchestratorProfile.IsSwarmMode}}
     "configureClusterScriptFile": "configure-swarmmode-cluster.sh",
-    "isSwarmMode": true,
 {{else}}
     "configureClusterScriptFile": "configure-swarm-cluster.sh",
-    "isSwarmMode": false,
 {{end}}
     "agentCustomScript": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/',variables('configureClusterScriptFile'), ' ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1 &\" &')]",
     "agentRunCmd": "[concat('runcmd:\n -  [ /bin/bash, /opt/azure/containers/install-cluster.sh ]\n\n')]", 

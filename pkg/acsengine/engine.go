@@ -296,6 +296,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		"RequiresFakeAgentOutput": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
 		},
+		"IsSwarmMode": func() bool {
+			return properties.OrchestratorProfile.IsSwarmMode()
+		},
 		"IsPublic": func(ports []int) bool {
 			return len(ports) > 0
 		},

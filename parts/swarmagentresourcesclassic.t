@@ -127,7 +127,7 @@
           "osProfile": {
             "adminUsername": "[variables('adminUsername')]", 
             "computerNamePrefix": "[variables('{{.Name}}VMNamePrefix')]", 
-{{if "[variables('isSwarmMode')]"}}
+{{if IsSwarmMode}}
             {{GetAgentSwarmModeCustomData}} 
 {{else}}
             {{GetAgentSwarmCustomData}} 
