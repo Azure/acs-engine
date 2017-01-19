@@ -73,7 +73,7 @@
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]",
     "subscriptionId": "[subscription().subscriptionId]",
     "tenantId": "[subscription().tenantId]",
-    "dockerEngineVersion": "1.12.6-0~ubuntu-xenial"
+    "dockerEngineVersion": "1.12.*"
 {{if .LinuxProfile.HasSecrets}}
     , "linuxProfileSecrets" :
       [
