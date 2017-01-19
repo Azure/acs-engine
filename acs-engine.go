@@ -170,7 +170,7 @@ func main() {
 			os.Exit(1)
 		}
 		if parameters, err = acsengine.PrettyPrintJSON(parameters); err != nil {
-			fmt.Fprintf(os.Stderr, "error pretty printing template %s", err.Error())
+			fmt.Fprintf(os.Stderr, "error pretty printing template parameters %s", err.Error())
 			os.Exit(1)
 		}
 	}
