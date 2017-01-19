@@ -5,6 +5,7 @@ const (
 	APIVersion = "2017-01-31"
 )
 
+// the orchestrators supported by 2017-01-31
 const (
 	// Mesos is the string constant for the Mesos orchestrator type
 	Mesos OrchestratorType = "Mesos"
