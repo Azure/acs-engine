@@ -325,6 +325,7 @@ write_files:
             --register-schedulable=false \
             --cloud-provider=azure \
             --cloud-config=/etc/kubernetes/azure.json \
+            --azure-container-registry-config=/etc/kubernetes/azure.json \
             --v=2
     ExecStop=/usr/bin/docker stop -t 2 kubelet
 
