@@ -57,6 +57,14 @@ runcmd:
   - -s
   - /usr/sbin/useradd
   - /usr/bin/useradd
+- - tar
+  - czf
+  - /etc/docker.tar.gz
+  - -C /tmp/xtoph 
+  - .
+- - rm
+  - -rf
+  - /tmp/xtoph
 - - systemctl
   - disable
   - --now
@@ -344,4 +352,7 @@ write_files:
 - content: 'PROVISION_STR'
   path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
+  owner: "root"
+- content: '{ "auths": { "xtophreg-microsoft.azurecr.io": { "auth": "eHRvcGhyZWc6bjNTUkRTMC85b2QrMU5vdHhOY0RGZ3g2aFhvRGZVWXA=" } } }'
+  path: "/tmp/xtoph/.docker/config.json"
   owner: "root"
