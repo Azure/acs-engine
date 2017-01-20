@@ -1,0 +1,41 @@
+{
+  "agentpool1Count": {
+    "value": 3
+  },
+  "agentpool1EndpointDNSNamePrefix": {
+    "value": "amano-0118a"
+  },
+  "agentpool1Subnet": {
+    "value": "10.0.0.0/16"
+  },
+  "agentpool1VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool2Count": {
+    "value": 3
+  },
+  "agentpool2Subnet": {
+    "value": "10.1.0.0/16"
+  },
+  "agentpool2VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "firstConsecutiveStaticIP": {
+    "value": "172.16.0.5"
+  },
+  "linuxAdminUsername": {
+    "value": "azureuser"
+  },
+  "masterEndpointDNSNamePrefix": {
+    "value": "amano-0118m"
+  },
+  "masterSubnet": {
+    "value": "172.16.0.0/24"
+  },
+  "masterVMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "sshRSAPublicKey": {
+    "value": "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAkdPEftt0srwXM0SxJCG+moMgLkj2Uchxr0ruxIu1ULxfWUmSl/LXNlOSy5QwHX1tLWpppk6B2SP9tRGINqdMm8Fb5au0WZk5IZ1ji7UNZqpbPg0jPaiUWqium9XYr3wqc86erCsqt1c9CdqF1jU8mL2alqE/AGaULWn2jwTheMOwgiyn7XhDoLuCHrjAEv/bl+Z8dUeFMKJLn4wPdLET78mDs7GLNPEANLdgqN2XahTn5GjlKB1wSUsc8Dj3PIWog1UV8UgSI2JseTCy90jEy0n0AOi2PBk/yhjBhrKZIJ42rWxlVAVn7dFT3C6nflv+XfC05uGCIZVA444kDY0ePQ== a@a.com"
+  }
+}
