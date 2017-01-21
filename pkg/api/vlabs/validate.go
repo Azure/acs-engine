@@ -164,8 +164,12 @@ func (a *Properties) Validate() error {
 
 	if a.MasterProfile.StorageProfile == StorageAccountClassic {
 		switch a.OrchestratorProfile.OrchestratorType {
-		case Kubernetes:
-		case DockerCE:
+		case DCOS:
+		case DCOS173:
+		case DCOS184:
+		case DCOS187:
+		case Swarm:
+		default:
 			return fmt.Errorf("StorageAccountClassic is not supported in MasterProfile for Orchestrator %s \n", a.OrchestratorProfile.OrchestratorType)
 		}
 	}
@@ -190,6 +194,7 @@ func (a *Properties) Validate() error {
 			case DCOS184:
 			case DCOS187:
 			case Swarm:
+			case DockerCE:
 			default:
 				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
@@ -197,8 +202,12 @@ func (a *Properties) Validate() error {
 
 		if agentPoolProfile.StorageProfile == StorageAccountClassic {
 			switch a.OrchestratorProfile.OrchestratorType {
-			case Kubernetes:
-			case DockerCE:
+			case DCOS:
+			case DCOS173:
+			case DCOS184:
+			case DCOS187:
+			case Swarm:
+			default:
 				return fmt.Errorf("StorageAccountClassic is not supported in agentPoolProfile for Orchestrator %s \n", a.OrchestratorProfile.OrchestratorType)
 			}
 		}
