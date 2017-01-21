@@ -50,6 +50,9 @@
   "linuxAdminUsername": {
     "value": "azureuser"
   },
+  "masterCount": {
+    "value": 1
+  },
   "masterEndpointDNSNamePrefix": {
     "value": "masterdns1"
   },

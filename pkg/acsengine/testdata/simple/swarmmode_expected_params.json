@@ -26,6 +26,9 @@
   "linuxAdminUsername": {
     "value": "azureuser"
   },
+  "masterCount": {
+    "value": 3
+  },
   "masterEndpointDNSNamePrefix": {
     "value": "amano-0118m"
   },
