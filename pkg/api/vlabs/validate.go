@@ -162,6 +162,14 @@ func (a *Properties) Validate() error {
 		return fmt.Errorf("only 1 master may be specified with %s", a.OrchestratorProfile.OrchestratorType)
 	}
 
+	if a.MasterProfile.StorageProfile == StorageAccountClassic {
+		switch a.OrchestratorProfile.OrchestratorType {
+		case Kubernetes:
+		case DockerCE:
+			return fmt.Errorf("StorageAccountClassic is not supported in MasterProfile for Orchestrator %s \n", a.OrchestratorProfile.OrchestratorType)
+		}
+	}
+
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
 		if e := agentPoolProfile.Validate(); e != nil {
 			return e
@@ -186,6 +194,15 @@ func (a *Properties) Validate() error {
 				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
 		}
+
+		if agentPoolProfile.StorageProfile == StorageAccountClassic {
+			switch a.OrchestratorProfile.OrchestratorType {
+			case Kubernetes:
+			case DockerCE:
+				return fmt.Errorf("StorageAccountClassic is not supported in agentPoolProfile for Orchestrator %s \n", a.OrchestratorProfile.OrchestratorType)
+			}
+		}
+
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
 			return fmt.Errorf("VirtualMachineScaleSets are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"AvailabilityProfile\":\"%s\"", AvailabilitySet)
 		}
