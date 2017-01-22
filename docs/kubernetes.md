@@ -26,7 +26,7 @@ The following image shows the architecture of a container service cluster with 1
 In the image above, you can see the following parts:
 
 1. **Master Components** - The master runs the Kubernetes scheduler, api server, and controller manager.  Port 443 is exposed for remote management with the kubectl cli.
-2. **Nodes** - the Kubernetes nodes run in an availability set.  Azure load balancers are dynamically added to the cluster depending on exposed services. 
+2. **Nodes** - the Kubernetes nodes run in an availability set.  Azure load balancers are dynamically added to the cluster depending on exposed services.
 3. **Common Components** - All VMs run a kubelet, Docker, and a Proxy.
 4. **Networking** - All VMs are assigned an ip address in the 10.240.0.0/16 network.  Each VM is assigned a /24 subnet for their pod CIDR enabling IP per pod.  The proxy running on each VM implements the service network 10.0.0.0/16.
 
@@ -38,7 +38,7 @@ After completing this walkthrough you will know how to:
  * access Kubernetes cluster via SSH,
  * deploy a simple Docker application and expose to the world,
  * the location of the Kube config file and how to access the Kubernetes cluster remotely,
- * use `kubectl exec` to run commands in a container, 
+ * use `kubectl exec` to run commands in a container,
  * and finally access the Kubernetes dashboard.
 
 1. After successfully deploying the template write down the master FQDNs (Fully Qualified Domain Name).
@@ -91,7 +91,7 @@ After completing this walkthrough you will know how to:
   * Windows to use pscp from [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html).  Ensure you have your certificate exposed through [pageant](ssh.md#key-management-and-agent-forwarding-with-windows-pageant):
   ```
   # MASTERFQDN is obtained in step1
-  pscp azureuser@MASTERFQDN:.kube/config .
+  pscp -P 22 azureuser@MASTERFQDN:.kube/config .
   SET KUBECONFIG=%CD%\config
   kubectl get nodes
   ```
