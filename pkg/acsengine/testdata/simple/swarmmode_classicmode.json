@@ -9,8 +9,7 @@
     "masterProfile": {
       "count": 3,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2",
-      "firstConsecutiveStaticIP": "172.16.0.5"
+      "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
@@ -22,16 +21,7 @@
           80,
           443,
           8080
-        ],
-        "availabilityProfile": "VirtualMachineScaleSets",
-        "storageProfile": "StorageAccount"
-      },
-      {
-        "name": "agentpool2",
-        "count": 3,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "VirtualMachineScaleSets",
-        "storageProfile": "StorageAccount"
+        ]
       }
     ],
     "linuxProfile": {
@@ -39,13 +29,10 @@
       "ssh": {
         "publicKeys": [
           {
-            "keyData": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+              "keyData": "ssh-rsa PUBLICKEY azureuser@linuxvm"
           }
         ]
       }
-    },
-    "windowsProfile": {},
-    "servicePrincipalProfile": {},
-    "certificateProfile": {}
+    }
   }
 }
