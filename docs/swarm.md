@@ -43,16 +43,16 @@ After completing this walkthrough you will know how to:
 
     ![Image of docker scaling](images/findingoutputs.png)
 
- 3. SSH to port 2200 of the master FQDN. See [agent forwarding](ssh.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
+ 2. SSH to port 2200 of the master FQDN. See [agent forwarding](ssh.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
 
- 4. Set the DOCKER_HOST environment variable to `:2375`: e.g. ```export DOCKER_HOST=:2375```
+ 3. Set the DOCKER_HOST environment variable to `:2375`: e.g. ```export DOCKER_HOST=:2375```
 
- 5. Type `docker info` to see the status of the agent nodes.
+ 4. Type `docker info` to see the status of the agent nodes.
  ![Image of docker info](images/dockerinfo.png)
 
- 6. Type `docker run -it hello-world` to see the hello-world test app run on one of the agents (the '-it' switches ensure output is displayed on your client)
+ 5. Type `docker run -it hello-world` to see the hello-world test app run on one of the agents (the '-it' switches ensure output is displayed on your client)
 
- 7. Now let's create a simple web app and expose to the world.  Start by using your favorite linux file editor to create a file named `docker-compose.yml` with the following contents:
+ 6. Now let's create a simple web app and expose to the world.  Start by using your favorite linux file editor to create a file named `docker-compose.yml` with the following contents:
  ```
  web:
    image: "yeasy/simple-web"
@@ -60,17 +60,17 @@ After completing this walkthrough you will know how to:
      - "80:80"
    restart: "always"
  ```
- 8. type `docker-compose up -d` to create the simple web server.  This will take a few minutes to pull the image
+ 7. type `docker-compose up -d` to create the simple web server.  This will take a few minutes to pull the image
 
- 9. once completed, type `docker ps` to see the running image.
+ 8. once completed, type `docker ps` to see the running image.
 
  ![Image of docker ps](images/dockerps.png)
 
- 10. in your web browser hit the AGENTFQDN endpoint (**not the master FQDN**) you recorded in step #1 and you should see the following page, with a counter that increases on each refresh.
+ 9. in your web browser hit the AGENTFQDN endpoint (**not the master FQDN**) you recorded in step #1 and you should see the following page, with a counter that increases on each refresh.
 
  ![Image of the web page](images/swarmbrowser.png)
 
- 11. You can now scale the web application.  For example, if you have 3 agents, you can type `docker-compose scale web=**3**`, and this will scale to the rest of your agents.  Note that in this example you can only scale up to the number of agents that you have since each container requires port 80, so if you deployed a single agent, you won't be able to scale up.  The Azure load balancer will automatically pick up the new containers.
+ 10. You can now scale the web application.  For example, if you have 3 agents, you can type `docker-compose scale web=**3**`, and this will scale to the rest of your agents.  Note that in this example you can only scale up to the number of agents that you have since each container requires port 80, so if you deployed a single agent, you won't be able to scale up.  The Azure load balancer will automatically pick up the new containers.
 
  ![Image of docker scaling](images/dockercomposescale.png)
 
