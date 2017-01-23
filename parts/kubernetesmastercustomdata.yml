@@ -97,23 +97,7 @@ write_files:
         containers:
           - name: "kube-apiserver"
             image: "{{{kubernetesHyperkubeSpec}}}"
-            command: 
-              - "/hyperkube"
-              - "apiserver"
-              - "--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
-              - "--address=0.0.0.0"
-              - "--allow-privileged"
-              - "--insecure-port=8080"
-              - "--secure-port=443"
-              - "--cloud-provider=azure"
-              - "--cloud-config=/etc/kubernetes/azure.json"
-              - "--service-cluster-ip-range={{{kubeServiceCidr}}}"
-              - "--etcd-servers=http://127.0.0.1:4001"
-              - "--tls-cert-file=/etc/kubernetes/certs/apiserver.crt"
-              - "--tls-private-key-file=/etc/kubernetes/certs/apiserver.key"
-              - "--client-ca-file=/etc/kubernetes/certs/ca.crt"
-              - "--service-account-key-file=/etc/kubernetes/certs/apiserver.key"
-              - "--v=4"
+            command: [ "/hyperkube", "apiserver", "--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota", "--address=0.0.0.0", "--allow-privileged", "--insecure-port=8080", "--secure-port=443", "--cloud-provider=azure", "--cloud-config=/etc/kubernetes/azure.json", "--service-cluster-ip-range={{{kubeServiceCidr}}}", "--etcd-servers=http://127.0.0.1:4001", "--tls-cert-file=/etc/kubernetes/certs/apiserver.crt", "--tls-private-key-file=/etc/kubernetes/certs/apiserver.key", "--client-ca-file=/etc/kubernetes/certs/ca.crt", "--service-account-key-file=/etc/kubernetes/certs/apiserver.key", "--v=4" ]
             volumeMounts:
               - name: "etc-kubernetes"
                 mountPath: "/etc/kubernetes"
