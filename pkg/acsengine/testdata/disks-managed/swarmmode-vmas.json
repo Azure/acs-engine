@@ -1,8 +1,6 @@
 {
   "apiVersion": "vlabs",
-  "plan": {},
   "properties": {
-    "provisioningState": "",
     "orchestratorProfile": {
       "orchestratorType": "DockerCE"
     },
@@ -13,10 +11,21 @@
     },
     "agentPoolProfiles": [
       {
-        "name": "agentpool1",
+        "name": "agent128",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "dnsPrefix": "agentdns1",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "ManagedDisks",
+        "diskSizesGB": [128, 128, 128, 128]
+      },
+      {
+        "name": "agent1public",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "dnsPrefix": "agent1public",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "ManagedDisks",
+        "diskSizesGB": [1],
         "ports": [
           80,
           443,
@@ -29,7 +38,7 @@
       "ssh": {
         "publicKeys": [
           {
-              "keyData": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+            "keyData": "ssh-rsa PUBLICKEY azureuser@linuxvm"
           }
         ]
       }

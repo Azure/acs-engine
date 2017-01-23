@@ -3,7 +3,7 @@
     "value": 3
   },
   "agentpool1EndpointDNSNamePrefix": {
-    "value": ""
+    "value": "agentdns1"
   },
   "agentpool1Subnet": {
     "value": "10.0.0.0/16"
@@ -21,7 +21,7 @@
     "value": 3
   },
   "masterEndpointDNSNamePrefix": {
-    "value": ""
+    "value": "masterdns1"
   },
   "masterSubnet": {
     "value": "172.16.0.0/24"

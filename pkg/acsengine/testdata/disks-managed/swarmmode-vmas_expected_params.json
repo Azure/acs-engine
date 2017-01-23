@@ -1,23 +1,23 @@
 {
-  "agentpool1Count": {
+  "agent128Count": {
     "value": 3
   },
-  "agentpool1EndpointDNSNamePrefix": {
-    "value": "agentdns1"
-  },
-  "agentpool1Subnet": {
+  "agent128Subnet": {
     "value": "10.0.0.0/16"
   },
-  "agentpool1VMSize": {
+  "agent128VMSize": {
     "value": "Standard_D2_v2"
   },
-  "agentpool2Count": {
+  "agent1publicCount": {
     "value": 3
   },
-  "agentpool2Subnet": {
+  "agent1publicEndpointDNSNamePrefix": {
+    "value": "agent1public"
+  },
+  "agent1publicSubnet": {
     "value": "10.1.0.0/16"
   },
-  "agentpool2VMSize": {
+  "agent1publicVMSize": {
     "value": "Standard_D2_v2"
   },
   "firstConsecutiveStaticIP": {
