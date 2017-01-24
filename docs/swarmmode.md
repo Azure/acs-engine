@@ -12,7 +12,7 @@ Here are the steps to deploy a simple DockerCE cluster:
 
 ## Walkthrough
 
-Once your Swarm Mode cluster has been deployed you will have a resource group containing:
+Once your DockerCE/Swarm Mode cluster has been deployed you will have a resource group containing:
 
 1. a set of 1,3, or 5 masters in a master availability set.  Each master's SSH can be accessed via the public dns address at ports 2200..2204. First master's SSH can also be accessed via public dns address on port 22.
 
@@ -24,7 +24,7 @@ The following image shows the architecture of a container service cluster with 3
 
  All VMs are in the same VNET where the masters are on private subnet 172.16.0.0/24 and the agents are on the private subnet, 10.0.0.0/16, and fully accessible to each other.
 
-## Create your First Two Swarm Mode Docker services: hello-world, and Docker web app
+## Create your First Two DockerCE/Swarm Mode Docker services: hello-world, and Docker web app
 
 After completing this walkthrough you will know how to:
  * display information from Swarm Mode,
