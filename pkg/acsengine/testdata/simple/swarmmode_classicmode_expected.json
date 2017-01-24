@@ -139,15 +139,22 @@
         "Basic_A4",
         "Standard_A0",
         "Standard_A1",
+        "Standard_A1_v2",
         "Standard_A10",
         "Standard_A11",
         "Standard_A2",
+        "Standard_A2_v2",
+        "Standard_A2m_v2",
         "Standard_A3",
         "Standard_A4",
+        "Standard_A4_v2",
+        "Standard_A4m_v2",
         "Standard_A5",
         "Standard_A6",
         "Standard_A7",
         "Standard_A8",
+        "Standard_A8_v2",
+        "Standard_A8m_v2",
         "Standard_A9",
         "Standard_D1",
         "Standard_D1_v2",
@@ -213,6 +220,7 @@
         "Standard_H8m",
         "Standard_NC12",
         "Standard_NC24",
+        "Standard_NC24r",
         "Standard_NC6",
         "Standard_NV12",
         "Standard_NV24",
@@ -344,15 +352,22 @@
         "Basic_A4",
         "Standard_A0",
         "Standard_A1",
+        "Standard_A1_v2",
         "Standard_A10",
         "Standard_A11",
         "Standard_A2",
+        "Standard_A2_v2",
+        "Standard_A2m_v2",
         "Standard_A3",
         "Standard_A4",
+        "Standard_A4_v2",
+        "Standard_A4m_v2",
         "Standard_A5",
         "Standard_A6",
         "Standard_A7",
         "Standard_A8",
+        "Standard_A8_v2",
+        "Standard_A8m_v2",
         "Standard_A9",
         "Standard_D1",
         "Standard_D1_v2",
@@ -418,6 +433,7 @@
         "Standard_H8m",
         "Standard_NC12",
         "Standard_NC24",
+        "Standard_NC24r",
         "Standard_NC6",
         "Standard_NV12",
         "Standard_NV24",
@@ -673,13 +689,28 @@
       "Standard_A11": {
         "storageAccountType": "Standard_LRS"
       },
+      "Standard_A1_v2": {
+        "storageAccountType": "Standard_LRS"
+      },
       "Standard_A2": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A2_v2": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A2m_v2": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A3": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A4": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A4_v2": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A4m_v2": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A5": {
@@ -692,6 +723,12 @@
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A8": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A8_v2": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A8m_v2": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A9": {
@@ -887,6 +924,9 @@
         "storageAccountType": "Standard_LRS"
       },
       "Standard_NC24": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_NC24r": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_NC6": {
