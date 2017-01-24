@@ -71,5 +71,3 @@ Here are recommended links to learn more about Swarm Mode, Docker, and Docker Co
 1. [Docker](https://docs.docker.com/) - learn more through Docker documentation.
 
 2. [Docker Swarm Mode](https://docs.docker.com/engine/swarm/) - learn more about Docker Swarm Mode.
-
-3. [Docker Compose](https://docs.docker.com/compose/overview/) - Learn more about Docker Compose.
