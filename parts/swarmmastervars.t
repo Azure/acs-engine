@@ -74,6 +74,39 @@
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]", 
     "masterVMSize": "[parameters('masterVMSize')]", 
     "nameSuffix": "[parameters('nameSuffix')]", 
+    "masterSshInboundNatRuleIdPrefix": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'))]",
+    "masterSshPort22InboundNatRuleNamePrefix": "[concat(variables('masterLbName'),'/SSHPort22-',variables('masterVMNamePrefix'))]",
+    "masterSshPort22InboundNatRuleIdPrefix": "[concat(variables('masterLbID'),'/inboundNatRules/SSHPort22-',variables('masterVMNamePrefix'))]",
+     "masterLbInboundNatRules":[
+      [
+        {
+          "id": "[concat(variables('masterSshInboundNatRuleIdPrefix'),'0')]"
+        },
+        {
+          "id": "[concat(variables('masterSshPort22InboundNatRuleIdPrefix'),'0')]"
+        }
+      ],
+      [
+        {
+          "id": "[concat(variables('masterSshInboundNatRuleIdPrefix'),'1')]"
+        }
+      ],
+      [
+        {
+          "id": "[concat(variables('masterSshInboundNatRuleIdPrefix'),'2')]"
+        }
+      ],
+      [
+        {
+          "id": "[concat(variables('masterSshInboundNatRuleIdPrefix'),'3')]"
+        }
+      ],
+      [
+        {
+          "id": "[concat(variables('masterSshInboundNatRuleIdPrefix'),'4')]"
+        }
+      ]
+    ],
     "orchestratorName": "swarm", 
     "osImageOffer": "UbuntuServer", 
     "osImagePublisher": "Canonical", 

@@ -11,7 +11,7 @@ This cluster definition examples demonstrate how to create a customized Docker E
 * [DC/OS Walkthrough](../docs/dcos.md) - shows how to create a DC/OS enabled Docker cluster on Azure
 * [Kubernetes Walkthrough](../docs/kubernetes.md) - shows how to create a Kubernetes enabled Docker cluster on Azure
 * [Swarm Walkthrough](../docs/swarm.md) - shows how to create a Swarm enabled Docker cluster on Azure
-* [Swarm Mode Walkthrough](../docs/swarmmode.md) - shows how to create a Swarm Mode enabled Docker cluster on Azure
+* [DockerCE Walkthrough](../docs/swarmmode.md) - shows how to create a DockerCE cluster on Azure
 * [Custom VNET](vnet) - shows how to use a custom VNET 
 * [Attached Disks](disks-storageaccount) - shows how to attach up to 4 disks per node
 * [Managed Disks](disks-managed) (under private preview) - shows how to use managed disks 

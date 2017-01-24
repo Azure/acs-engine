@@ -45,25 +45,6 @@ echo "AZUREUSER: $AZUREUSER"
 
 ensureAzureNetwork()
 {
-  # ensure the host name is resolvable
-  hostResolveHealthy=1
-  for i in {1..120}; do
-    host $VMNAME
-    if [ $? -eq 0 ]
-    then
-      # hostname has been found continue
-      hostResolveHealthy=0
-      echo "the host name resolves"
-      break
-    fi
-    sleep 1
-  done
-  if [ $hostResolveHealthy -ne 0 ]
-  then
-    echo "host name does not resolve, aborting install"
-    exit 1
-  fi
-
   # ensure the network works
   networkHealthy=1
   for i in {1..12}; do
