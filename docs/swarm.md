@@ -14,7 +14,7 @@ Here are the steps to deploy a simple Swarm cluster:
 
 Once your Swarm cluster has been deployed you will have a resource group containing:
 
-1. a set of 1,3, or 5 masters in a master availability set.  Each master's SSH can be accessed via the public dns address at ports 2200..2204
+1. a set of 1,3, or 5 masters in a master availability set.  Each master's SSH can be accessed via the public dns address at ports 2200..2204. First master's SSH can also be accessed via public dns address on port 22.
 
 2. a set of agents in a VM scale set (VMSS).  The agent VMs can be accessed through a master.  See [agent forwarding](ssh.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
 
