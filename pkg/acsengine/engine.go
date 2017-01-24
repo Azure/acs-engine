@@ -146,7 +146,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 		return "", "", certsGenerated, err
 	}
 	var parametersMap map[string]interface{}
-	if parametersMap, err = getParameters(properties); err != nil {
+	if parametersMap, err = getParameters(properties, t.ClassicMode); err != nil {
 		return "", "", certsGenerated, err
 	}
 	var parameterBytes []byte
@@ -209,7 +209,7 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 	return files, baseFile, nil
 }
 
-func getParameters(properties *api.Properties) (map[string]interface{}, error) {
+func getParameters(properties *api.Properties, isClassicMode bool) (map[string]interface{}, error) {
 	parametersMap := map[string]interface{}{}
 
 	// Master Parameters
@@ -222,7 +222,9 @@ func getParameters(properties *api.Properties) (map[string]interface{}, error) {
 	}
 	addValue(parametersMap, "firstConsecutiveStaticIP", properties.MasterProfile.FirstConsecutiveStaticIP)
 	addValue(parametersMap, "masterVMSize", properties.MasterProfile.VMSize)
-	addValue(parametersMap, "masterCount", properties.MasterProfile.Count)
+	if isClassicMode {
+		addValue(parametersMap, "masterCount", properties.MasterProfile.Count)
+	}
 	addValue(parametersMap, "sshRSAPublicKey", properties.LinuxProfile.SSH.PublicKeys[0].KeyData)
 	for i, s := range properties.LinuxProfile.Secrets {
 		addValue(parametersMap, fmt.Sprintf("linuxKeyVaultID%d", i), s.SourceVault.ID)

@@ -32,9 +32,6 @@
   "linuxKeyVaultID0CertificateURL0": {
     "value": "http://url1"
   },
-  "masterCount": {
-    "value": 3
-  },
   "masterEndpointDNSNamePrefix": {
     "value": "masterdns1"
   },

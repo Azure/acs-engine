@@ -947,7 +947,7 @@ func swarmmastervarsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmmastervars.t", size: 8173, mode: os.FileMode(493), modTime: time.Unix(1485216022, 0)}
+	info := bindataFileInfo{name: "swarmmastervars.t", size: 8173, mode: os.FileMode(493), modTime: time.Unix(1485220745, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
