@@ -2,7 +2,7 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "Swarm"
+      "orchestratorType": "DockerCE"
     },
     "masterProfile": {
       "count": 1,
@@ -14,14 +14,14 @@
         "name": "agentpool1",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet",
+        "availabilityProfile": "VirtualMachineScaleSets",
         "storageProfile": "ManagedDisks"
       },
       {
           "name": "agentpool2",
           "count": 3,
           "vmSize": "Standard_D2_v2",
-          "availabilityProfile": "AvailabilitySet",
+          "availabilityProfile": "VirtualMachineScaleSets",
           "storageProfile": "ManagedDisks",
           "dnsPrefix": "",
           "ports": [
