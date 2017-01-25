@@ -107,6 +107,9 @@ const (
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
 	OrchestratorType OrchestratorType `json:"orchestratorType"`
+	Registry 		string `json:"registry,omitempty"`
+	RegistryUser 		string `json:"registryUser,omitempty"`
+	RegistryPass 		string `json:"registryPassword,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster

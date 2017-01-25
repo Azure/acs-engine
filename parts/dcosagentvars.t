@@ -27,3 +27,10 @@
     "{{.Name}}LbIPConfigName": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'))]", 
     "{{.Name}}LbName": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'))]",
 {{end}}
+{{if HasPrivateRegistry}}
+    "registry" : "[tolower(parameters('registry'))]",
+    "registryKey" : "[parameters('registryKey')]",
+{{else}}
+    "registry" : "",
+    "registryKey" : "",
+{{end}}

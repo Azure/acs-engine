@@ -246,6 +246,11 @@ func getParameters(properties *api.Properties) (map[string]interface{}, error) {
 
 	}
 
+	if( len (properties.OrchestratorProfile.Registry) > 0 ) {
+		addValue(parametersMap, "registry", properties.OrchestratorProfile.Registry)
+		addValue(parametersMap, "registryKey", base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s",properties.OrchestratorProfile.RegistryUser, properties.OrchestratorProfile.RegistryPass))))
+	}	
+
 	// Windows parameters
 	if properties.HasWindows() {
 		addValue(parametersMap, "windowsAdminUsername", properties.WindowsProfile.AdminUsername)
@@ -269,6 +274,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		},
 		"IsDCOS184": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.DCOS184
+		},
+		"HasPrivateRegistry": func() bool {
+			return len(properties.OrchestratorProfile.Registry) > 0 
 		},
 		"RequiresFakeAgentOutput": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
@@ -301,13 +309,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			return getDataDisks(profile)
 		},
 		"GetDCOSMasterCustomData": func() string {
-			masterProvisionScript := getDCOSMasterProvisionScript()
+			masterProvisionScript := getDCOSMasterProvisionScript(properties.OrchestratorProfile)
 			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, masterProvisionScript, "")
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			agentProvisionScript := getDCOSAgentProvisionScript(profile)
+			agentProvisionScript := getDCOSAgentProvisionScript(profile, properties.OrchestratorProfile)
 			attributeContents := getDCOSAgentAttributes(profile)
 			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, agentProvisionScript, attributeContents)
 
@@ -702,7 +710,7 @@ func getBase64CustomScript(csFilename string) string {
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }
 
-func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
+func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile api.OrchestratorProfile) string {
 	// add the provision script
 	bp, err1 := Asset(dcosProvision)
 	if err1 != nil {
@@ -722,13 +730,24 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 	} else {
 		roleFileContents = "touch /etc/mesosphere/roles/slave"
 	}
-
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
 
-	return provisionScript
+	var b bytes.Buffer
+	b.WriteString( provisionScript )
+	b.WriteString( "\n")
+	
+	if(len(orchProfile.Registry)>0) {
+		b.WriteString( "mkdir -p /tmp/xtoph/.docker\n")
+		b.WriteString( fmt.Sprintf( `echo { \"auths\" : { \"%s\" : { \"auth\" : \"%s\" }}} >> /tmp/xtoph/.docker/config.json`, orchProfile.Registry, base64.StdEncoding.EncodeToString([]byte( fmt.Sprintf("%s:%s", orchProfile.RegistryUser, orchProfile.RegistryPass  ) ) ) )) 
+		b.WriteString("\n")
+		b.WriteString( "tar czf /etc/docker.tar.gz -C /tmp/xtoph .docker" )
+		b.WriteString("\n")		
+	}
+
+	return b.String()
 }
 
-func getDCOSMasterProvisionScript() string {
+func getDCOSMasterProvisionScript(orchProfile api.OrchestratorProfile) string {
 	// add the provision script
 	bp, err1 := Asset(dcosProvision)
 	if err1 != nil {
@@ -746,6 +765,7 @@ touch /etc/mesosphere/roles/azure_master`
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
 
 	return provisionScript
+
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template

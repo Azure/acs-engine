@@ -57,14 +57,6 @@ runcmd:
   - -s
   - /usr/sbin/useradd
   - /usr/bin/useradd
-- - tar
-  - czf
-  - /etc/docker.tar.gz
-  - -C /tmp/xtoph 
-  - .
-- - rm
-  - -rf
-  - /tmp/xtoph
 - - systemctl
   - disable
   - --now
@@ -73,6 +65,12 @@ runcmd:
   - mask
   - --now
   - lxc-net.service
+- - tar
+  - czf 
+  - /etc/mocker.tgz
+  - -C
+  - /tmp/xtoph
+  - .mocker
 - /opt/azure/containers/provision.sh
 - - cp
   - -p
@@ -353,6 +351,6 @@ write_files:
   path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
   owner: "root"
-- content: '{ "auths": { "xtophreg-microsoft.azurecr.io": { "auth": "eHRvcGhyZWc6bjNTUkRTMC85b2QrMU5vdHhOY0RGZ3g2aFhvRGZVWXA=" } } }'
-  path: "/tmp/xtoph/.docker/config.json"
+- content: '{ "auths": { "{{{registry}}}": { "auth" : "{{{registryKey}}}" } } }'
+  path: "/tmp/xtoph/.mocker/config.json"
   owner: "root"

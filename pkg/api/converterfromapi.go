@@ -147,6 +147,9 @@ func convertOrchestratorProfileToV20160330(api *OrchestratorProfile, o *v2016033
 
 func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.OrchestratorProfile) {
 	o.OrchestratorType = vlabs.OrchestratorType(api.OrchestratorType)
+	o.RegistryUser = api.RegistryUser
+	o.RegistryPass = api.RegistryPass
+	o.Registry = api.Registry
 }
 
 func convertMasterProfileToV20160330(api *MasterProfile, v20160330 *v20160330.MasterProfile) {

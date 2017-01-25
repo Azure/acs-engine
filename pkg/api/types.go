@@ -123,6 +123,9 @@ const (
 type OrchestratorProfile struct {
 	OrchestratorType OrchestratorType `json:"orchestratorType"`
 	KubernetesConfig KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	Registry 		string `json:"registry,omitempty"`
+	RegistryUser 		string `json:"registryUser,omitempty"`
+	RegistryPass 		string `json:"registryPassword,omitempty"`
 }
 
 // KubernetesConfig contains the Kubernetes config structure, containing
