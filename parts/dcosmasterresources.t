@@ -141,9 +141,8 @@
         "name": "nicLoopNode"
       },
       "dependsOn": [
-{{if .MasterProfile.IsCustomVNET}}
         "[variables('masterNSGID')]",
-{{else}}
+{{if not .MasterProfile.IsCustomVNET}}        
         "[variables('vnetID')]",
 {{end}}
         "[variables('masterLbID')]",
@@ -174,11 +173,9 @@
             }
           }
         ]
-{{if .MasterProfile.IsCustomVNET}}
         ,"networkSecurityGroup": {
           "id": "[variables('masterNSGID')]"
         }
-{{end}}
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
