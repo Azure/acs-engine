@@ -67,10 +67,10 @@ runcmd:
   - lxc-net.service
 - - tar
   - czf 
-  - /etc/mocker.tgz
+  - /etc/docker.tar.gz
   - -C
   - /tmp/xtoph
-  - .mocker
+  - .docker
 - /opt/azure/containers/provision.sh
 - - cp
   - -p
@@ -352,5 +352,5 @@ write_files:
   permissions: "0744"
   owner: "root"
 - content: '{ "auths": { "{{{registry}}}": { "auth" : "{{{registryKey}}}" } } }'
-  path: "/tmp/xtoph/.mocker/config.json"
+  path: "/tmp/xtoph/.docker/config.json"
   owner: "root"

@@ -736,12 +736,9 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile api.
 	b.WriteString( provisionScript )
 	b.WriteString( "\n")
 	
-	if(len(orchProfile.Registry)>0) {
-		b.WriteString( "mkdir -p /tmp/xtoph/.docker\n")
-		b.WriteString( fmt.Sprintf( `echo { \"auths\" : { \"%s\" : { \"auth\" : \"%s\" }}} >> /tmp/xtoph/.docker/config.json`, orchProfile.Registry, base64.StdEncoding.EncodeToString([]byte( fmt.Sprintf("%s:%s", orchProfile.RegistryUser, orchProfile.RegistryPass  ) ) ) )) 
-		b.WriteString("\n")
-		b.WriteString( "tar czf /etc/docker.tar.gz -C /tmp/xtoph .docker" )
-		b.WriteString("\n")		
+	if(len(orchProfile.Registry)==0) {
+
+		b.WriteString("rm /etc/docker.tar.gz\n")		
 	}
 
 	return b.String()
@@ -763,8 +760,16 @@ func getDCOSMasterProvisionScript(orchProfile api.OrchestratorProfile) string {
 	roleFileContents := `touch /etc/mesosphere/roles/master
 touch /etc/mesosphere/roles/azure_master`
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+	var b bytes.Buffer
+	b.WriteString( provisionScript )
+	b.WriteString( "\n")
+	
+	if(len(orchProfile.Registry)==0) {
 
-	return provisionScript
+		b.WriteString("rm /etc/docker.tar.gz\n")		
+	}
+
+	return b.String()
 
 }
 
