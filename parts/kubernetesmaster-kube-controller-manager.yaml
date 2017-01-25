@@ -17,7 +17,7 @@ spec:
         - "--master=127.0.0.1:8080"
         - "--kubeconfig=/var/lib/kubelet/kubeconfig"
         - "--allocate-node-cidrs=<allocateNodeCidrs>"
-        - "--cluster-cidr=10.244.0.0/16"
+        - "--cluster-cidr=<kubeClusterCidr>"
         - "--cluster-name=<masterFqdnPrefix>"
         - "--cloud-provider=azure"
         - "--cloud-config=/etc/kubernetes/azure.json"
