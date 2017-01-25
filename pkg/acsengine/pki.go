@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"math/big"
 	"net"
@@ -24,7 +25,7 @@ type PkiKeyCertPair struct {
 	PrivateKeyPem  string
 }
 
-func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
+func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caCertificateRaw string, caPrivateKeyRaw string) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
 	start := time.Now()
 	defer func(s time.Time) {
 		fmt.Fprintf(os.Stderr, "cert creation took %s\n", time.Since(s))
@@ -37,9 +38,24 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string) (*P
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc.%s", clusterDomain))
 
-	caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, nil, nil)
-	if err != nil {
-		return nil, nil, nil, nil, err
+	var caCertificate *x509.Certificate
+	var caPrivateKey *rsa.PrivateKey
+	if len(caCertificateRaw) != 0 && len(caPrivateKeyRaw) != 0 {
+		var err error
+		caCertificate, err = pemToCertificate(caCertificateRaw)
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+		caPrivateKey, err = pemToKey(caPrivateKeyRaw)
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+	} else {
+		var err error
+		caCertificate, caPrivateKey, err = createCertificate("ca", nil, nil, false, nil, nil)
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
 	}
 
 	var (
@@ -170,4 +186,20 @@ func privateKeyToPem(privateKey *rsa.PrivateKey) []byte {
 	pem.Encode(&pemBuffer, pemBlock)
 
 	return pemBuffer.Bytes()
+}
+
+func pemToCertificate(raw string) (*x509.Certificate, error) {
+	cpb, _ := pem.Decode([]byte(raw))
+	if cpb == nil {
+		return nil, errors.New("The raw pem is not a valid PEM formatted block.")
+	}
+	return x509.ParseCertificate(cpb.Bytes)
+}
+
+func pemToKey(raw string) (*rsa.PrivateKey, error) {
+	kpb, _ := pem.Decode([]byte(raw))
+	if kpb == nil {
+		return nil, errors.New("The raw pem is not a valid PEM formatted block.")
+	}
+	return x509.ParsePKCS1PrivateKey(kpb.Bytes)
 }

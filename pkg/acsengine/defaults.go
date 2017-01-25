@@ -102,15 +102,17 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		ips = append(ips, net.IP{firstMasterIP[12], firstMasterIP[13], firstMasterIP[14], firstMasterIP[15] + byte(i)})
 	}
 
-	caPair, apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain)
+	caPair, apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, a.CertificateProfile.CaCertificate, a.CertificateProfile.GetCAPrivateKey())
 	if err != nil {
 		return false, err
 	}
 
 	a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
 	a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
-	a.CertificateProfile.CaCertificate = caPair.CertificatePem
-	a.CertificateProfile.SetCAPrivateKey(caPair.PrivateKeyPem)
+	if len(a.CertificateProfile.CaCertificate) == 0 || len(a.CertificateProfile.GetCAPrivateKey()) == 0 {
+		a.CertificateProfile.CaCertificate = caPair.CertificatePem
+		a.CertificateProfile.SetCAPrivateKey(caPair.PrivateKeyPem)
+	}
 	a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
 	a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
 	a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
@@ -121,7 +123,6 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 
 func certGenerationRequired(a *api.Properties) bool {
 	if len(a.CertificateProfile.APIServerCertificate) > 0 || len(a.CertificateProfile.APIServerPrivateKey) > 0 ||
-		len(a.CertificateProfile.CaCertificate) > 0 ||
 		len(a.CertificateProfile.ClientCertificate) > 0 || len(a.CertificateProfile.ClientPrivateKey) > 0 {
 		return false
 	}
