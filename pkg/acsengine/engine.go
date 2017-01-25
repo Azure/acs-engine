@@ -320,6 +320,10 @@ func getParameters(properties *api.Properties, isClassicMode bool) (map[string]i
 		addValue(parametersMap, "kubectlVersion", properties.OrchestratorProfile.KubernetesConfig.KubectlVersion)
 		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 		addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
+
+		addValue(parametersMap, "kubeDnsServiceIp", properties.KubeNetworkConfig.KubeDnsServiceIp)
+		addValue(parametersMap, "kubeServiceCidr", properties.KubeNetworkConfig.KubeServiceCidr)
+		addValue(parametersMap, "kubeClusterCidr", properties.KubeNetworkConfig.KubeClusterCidr)
 	}
 
 	// Agent parameters
@@ -1019,12 +1023,12 @@ write_files:
 
 func getKubernetesSubnets(properties *api.Properties) string {
 	subnetString := `{
-            "name": "podCIDR%d", 
+            "name": "podCIDR%d",
             "properties": {
-              "addressPrefix": "10.244.%d.0/24", 
+              "addressPrefix": "10.244.%d.0/24",
               "networkSecurityGroup": {
                 "id": "[variables('nsgID')]"
-              }, 
+              },
               "routeTable": {
                 "id": "[variables('routeTableID')]"
               }

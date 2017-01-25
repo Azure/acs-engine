@@ -107,7 +107,7 @@ write_files:
         containers:
           - name: "kube-apiserver"
             image: "{{{kubernetesHyperkubeSpec}}}"
-            command: 
+            command:
               - "/hyperkube"
               - "apiserver"
               - "--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
@@ -157,13 +157,13 @@ write_files:
         containers:
           - name: "kube-controller-manager"
             image: "{{{kubernetesHyperkubeSpec}}}"
-            command: 
+            command:
               - "/hyperkube"
               - "controller-manager"
               - "--master=127.0.0.1:8080"
               - "--kubeconfig=/var/lib/kubelet/kubeconfig"
               - "--allocate-node-cidrs=true"
-              - "--cluster-cidr=10.244.0.0/16"
+              - "--cluster-cidr={{{kubeClusterCidr}}}"
               - "--cluster-name={{{masterFqdnPrefix}}}"
               - "--cloud-provider=azure"
               - "--cloud-config=/etc/kubernetes/azure.json"
@@ -171,7 +171,7 @@ write_files:
               - "--service-account-private-key-file=/etc/kubernetes/certs/apiserver.key"
               - "--leader-elect=true"
               - "--v=2"
-            volumeMounts: 
+            volumeMounts:
               - name: "etc-kubernetes"
                 mountPath: "/etc/kubernetes"
               - name: "var-lib-kubelet"
@@ -323,6 +323,8 @@ write_files:
     # This IPTable rule then redirects ILB traffic to port 443 in the prerouting chain
     ExecStartPre=/bin/bash -c "iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443"
     ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
+    ExecStartPre=/bin/sed -i "s|<kubeClusterCidr>|{{{kubeClusterCidr}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
+    ExecStartPre=/bin/sed -i "s|<kubeDnsServiceIp>|{{{kubeDnsServiceIp}}}|g" "/etc/kubernetes/addons/kube-dns-service.yaml"
     ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
     ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
     ExecStart=/usr/bin/docker run \

@@ -20,8 +20,8 @@
 {{if  GetClassicMode}}
     "masterCount": "[parameters('masterCount')]",
 {{else}}
-    "masterCount": {{.MasterProfile.Count}}, 
-{{end}}    
+    "masterCount": {{.MasterProfile.Count}},
+{{end}}
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
     "location": "[resourceGroup().location]", 
@@ -44,6 +44,9 @@
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]",
     "vmsPerStorageAccount": 20,
     "provisionScript": "{{GetKubernetesB64Provision}}",
+    "kubeDnsServiceIp": "[parameters('kubeDnsServiceIp')]",
+    "kubeServiceCidr": "[parameters('kubeServiceCidr')]",
+    "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
 {{if AnyAgentHasDisks}}
     "dataStorageAccountPrefixSeed": 97,
 {{end}}
@@ -61,12 +64,10 @@
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "vnetCidr": "10.0.0.0/8",
 {{end}}
-    "kubeDnsServiceIp": "10.0.0.10", 
-    "kubeServiceCidr": "10.0.0.0/16",
 {{if HasLinuxAgents}}
-    "registerSchedulable": "false",
+"registerSchedulable": "false",
 {{else}}
-    "registerSchedulable": "true",
+"registerSchedulable": "true",
 {{end}}
     "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
@@ -116,7 +117,7 @@
       "[concat('http://', variables('masterPrivateIpAddrs')[1], ':', variables('masterEtcdClientPort'))]",
       "[concat('http://', variables('masterPrivateIpAddrs')[2], ':', variables('masterEtcdClientPort'))]",
       "[concat('http://', variables('masterPrivateIpAddrs')[3], ':', variables('masterEtcdClientPort'))]",
-      "[concat('http://', variables('masterPrivateIpAddrs')[4], ':', variables('masterEtcdClientPort'))]"    
+      "[concat('http://', variables('masterPrivateIpAddrs')[4], ':', variables('masterEtcdClientPort'))]"
     ],
     "masterEtcdClusterStates": [
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0])]",
