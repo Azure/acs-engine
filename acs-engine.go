@@ -108,46 +108,6 @@ func saveFile(dir string, file string, data []byte) error {
 	return nil
 }
 
-// injectCACertificateAndKey reads the ca cert and key files if they exist and inserts them into the container service model
-func injectCACertificateAndKey(containerService *api.ContainerService, caCertificatePath string, caKeyPath string) {
-	// confirm the caCerficate file exists
-	var err error
-	if len(caCertificatePath) > 0 {
-		if _, err = os.Stat(caCertificatePath); os.IsNotExist(err) {
-			usage(fmt.Errorf("caCertificatePath file %s does not exist", caCertificatePath))
-			os.Exit(1)
-		}
-		if len(caKeyPath) == 0 {
-			usage(errors.New("caKeyPath must be specified when providing caCertificatePath"))
-			os.Exit(1)
-		}
-		var caCertificateBytes []byte
-		if caCertificateBytes, err = ioutil.ReadFile(caCertificatePath); err != nil {
-			usage(err)
-			os.Exit(1)
-		}
-		containerService.Properties.CertificateProfile.CaCertificate = string(caCertificateBytes)
-	}
-
-	// confirm the caKey file exists
-	if len(caKeyPath) > 0 {
-		if _, err = os.Stat(caKeyPath); os.IsNotExist(err) {
-			usage(fmt.Errorf("caKeyPath file %s does not exist", caKeyPath))
-			os.Exit(1)
-		}
-		if len(caCertificatePath) == 0 {
-			usage(errors.New("caCertificatePath must be specified when providing caKeyPath"))
-			os.Exit(1)
-		}
-		var caKeyBytes []byte
-		if caKeyBytes, err = ioutil.ReadFile(caKeyPath); err != nil {
-			usage(err)
-			os.Exit(1)
-		}
-		containerService.Properties.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
-	}
-}
-
 func usage(errs ...error) {
 	for _, err := range errs {
 		fmt.Fprintf(os.Stderr, "error: %s\n\n", err.Error())
@@ -163,6 +123,9 @@ var noPrettyPrint = flag.Bool("noPrettyPrint", false, "do not pretty print outpu
 var artifactsDir = flag.String("artifacts", "", "directory where artifacts will be written")
 var classicMode = flag.Bool("classicMode", false, "enable classic parameters and outputs")
 var parametersOnly = flag.Bool("parametersOnly", false, "only output the parameters")
+
+// acs-engine takes the caKey and caCert as args, since the caKey is stored separately
+// from the api model since this cannot be easily revoked like the server and client key
 var caCertificatePath = flag.String("caCertificatePath", "", "the path to the CA Certificate file")
 var caKeyPath = flag.String("caKeyPath", "", "the path to the CA key file")
 
@@ -172,6 +135,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "acsengine took %s\n", time.Since(s))
 	}(start)
 	var containerService *api.ContainerService
+	var caCertificateBytes []byte
+	var caKeyBytes []byte
 	var template string
 	var parameters string
 	var apiVersion string
@@ -190,6 +155,22 @@ func main() {
 		os.Exit(1)
 	}
 
+	if (len(*caCertificatePath) > 0 && len(*caKeyPath) == 0) ||
+		(len(*caCertificatePath) == 0 && len(*caKeyPath) > 0) {
+		usage(errors.New("caKeyPath and caCertificatePath must be specified together"))
+		os.Exit(1)
+	}
+	if len(*caCertificatePath) > 0 {
+		if caCertificateBytes, err = ioutil.ReadFile(*caCertificatePath); err != nil {
+			usage(err)
+			os.Exit(1)
+		}
+		if caKeyBytes, err = ioutil.ReadFile(*caKeyPath); err != nil {
+			usage(err)
+			os.Exit(1)
+		}
+	}
+
 	templateGenerator, e := acsengine.InitializeTemplateGenerator(*classicMode)
 	if e != nil {
 		fmt.Fprintf(os.Stderr, "generator initialization failed: %s\n", e.Error())
@@ -201,7 +182,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	injectCACertificateAndKey(containerService, *caCertificatePath, *caKeyPath)
+	if len(caKeyBytes) != 0 {
+		// the caKey is not in the api model, and should be stored separately from the model
+		// we put these in the model after model is deserialized
+		containerService.Properties.CertificateProfile.CaCertificate = string(caCertificateBytes)
+		containerService.Properties.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
+	}
 
 	certsGenerated := false
 	if template, parameters, certsGenerated, err = templateGenerator.GenerateTemplate(containerService); err != nil {

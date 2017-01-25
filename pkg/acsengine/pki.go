@@ -25,7 +25,7 @@ type PkiKeyCertPair struct {
 	PrivateKeyPem  string
 }
 
-func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caCertificateRaw string, caPrivateKeyRaw string) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
+func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
 	start := time.Now()
 	defer func(s time.Time) {
 		fmt.Fprintf(os.Stderr, "cert creation took %s\n", time.Since(s))
@@ -38,27 +38,9 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caC
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc.%s", clusterDomain))
 
-	var caCertificate *x509.Certificate
-	var caPrivateKey *rsa.PrivateKey
-	if len(caCertificateRaw) != 0 && len(caPrivateKeyRaw) != 0 {
-		var err error
-		caCertificate, err = pemToCertificate(caCertificateRaw)
-		if err != nil {
-			return nil, nil, nil, nil, err
-		}
-		caPrivateKey, err = pemToKey(caPrivateKeyRaw)
-		if err != nil {
-			return nil, nil, nil, nil, err
-		}
-	} else {
-		var err error
-		caCertificate, caPrivateKey, err = createCertificate("ca", nil, nil, false, nil, nil)
-		if err != nil {
-			return nil, nil, nil, nil, err
-		}
-	}
-
 	var (
+		caCertificate         *x509.Certificate
+		caPrivateKey          *rsa.PrivateKey
 		apiServerCertificate  *x509.Certificate
 		apiServerPrivateKey   *rsa.PrivateKey
 		clientCertificate     *x509.Certificate
@@ -67,6 +49,16 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caC
 		kubeConfigPrivateKey  *rsa.PrivateKey
 	)
 	errors := make(chan error)
+
+	var err error
+	caCertificate, err = pemToCertificate(caPair.CertificatePem)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	caPrivateKey, err = pemToKey(caPair.PrivateKeyPem)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
 	go func() {
 		var err error
@@ -90,17 +82,16 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caC
 	e2 := <-errors
 	e3 := <-errors
 	if e1 != nil {
-		return nil, nil, nil, nil, e1
+		return nil, nil, nil, e1
 	}
 	if e2 != nil {
-		return nil, nil, nil, nil, e2
+		return nil, nil, nil, e2
 	}
 	if e3 != nil {
-		return nil, nil, nil, nil, e2
+		return nil, nil, nil, e2
 	}
 
-	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))},
-		&PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
+	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(clientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(clientPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(kubeConfigCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(kubeConfigPrivateKey))},
 		nil
