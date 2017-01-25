@@ -60,6 +60,7 @@ After completing this walkthrough you will know how to:
 
  ![Image of the web page](images/swarmbrowser.png)
 
+ 8. You can now scale the service.  You can type `docker service scale fe=5`, and this will scale up the service to the desired number of replicas.  
 
  ![Image of service scaling](images/dockerservicescale.png)
 
