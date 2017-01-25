@@ -1485,6 +1485,7 @@
         "name": "nicLoopNode"
       },
       "dependsOn": [
+        "[variables('masterNSGID')]",
         "[variables('vnetID')]",
         "[variables('masterLbID')]",
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
@@ -1513,7 +1514,10 @@
               }
             }
           }
-        ]
+        ],
+        "networkSecurityGroup": {
+          "id": "[variables('masterNSGID')]"
+        }
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
