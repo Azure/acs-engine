@@ -43,7 +43,7 @@ After completing this walkthrough you will know how to:
 
     ![Image of docker scaling](images/findingoutputs.png)
 
- 2. SSH to port 2200 of the master FQDN. See [agent forwarding](ssh.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
+ 2. SSH to port 2200 of the master FQDN (or first master's SSH can also be accessed via public dns address on port 22.). See [agent forwarding](ssh.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
 
  3. Type `docker node ls` to view the list of nodes (and their status) in the Swarm.
  ![Image of docker node ls](images/dockernodels.png)
@@ -60,7 +60,6 @@ After completing this walkthrough you will know how to:
 
  ![Image of the web page](images/swarmbrowser.png)
 
- 8. You can now scale the service.  You can type `docker service scale fe=5`, and this will scale to the rest of your agents.  Note that in this example you can only scale up to the number of agents that you have since each container requires port 80, so if you deployed a single agent, you won't be able to scale up.  The Azure load balancer will automatically pick up the new containers.
 
  ![Image of service scaling](images/dockerservicescale.png)
 
