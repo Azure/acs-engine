@@ -2,3 +2,4 @@ acs-engine.exe
 acs-engine
 _output/
 .vscode
+.DS_Store
