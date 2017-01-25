@@ -97,6 +97,24 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
+      "dependsOn": [
+        "[variables('masterLbID')]"
+      ],
+      "location": "[resourceGroup().location]",
+      "name": "[concat(variables('masterSshPort22InboundNatRuleNamePrefix'), '0')]",
+      "properties": {
+        "backendPort": 2222,
+        "enableFloatingIP": false,
+        "frontendIPConfiguration": {
+          "id": "[variables('masterLbIPConfigID')]"
+        },
+        "frontendPort": "22",
+        "protocol": "tcp"
+      },
+      "type": "Microsoft.Network/loadBalancers/inboundNatRules"
+    },
+    {
+      "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
         "count": "[variables('masterCount')]",
         "name": "nicLoopNode"
@@ -106,7 +124,8 @@
         "[variables('vnetID')]",
 {{end}}
         "[variables('masterLbID')]",
-        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
+        "[concat(variables('masterSshPort22InboundNatRuleIdPrefix'),'0')]",
+        "[concat(variables('masterSshInboundNatRuleIdPrefix'),copyIndex())]"        
       ],
       "location": "[resourceGroup().location]",
       "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
@@ -120,11 +139,7 @@
                   "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
               ],
-              "loadBalancerInboundNatRules": [
-                {
-                  "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
-                }
-              ],
+              "loadBalancerInboundNatRules": "[variables('masterLbInboundNatRules')[copyIndex()]]",
               "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(int(variables('masterFirstAddrOctet4'))))]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
@@ -170,7 +185,11 @@
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
-          {{GetMasterSwarmCustomData}}
+          {{if .OrchestratorProfile.IsSwarmMode}}
+            {{GetMasterSwarmModeCustomData}}
+          {{else}}
+            {{GetMasterSwarmCustomData}}
+          {{end}}
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
             "ssh": {

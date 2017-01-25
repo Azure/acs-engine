@@ -127,7 +127,11 @@
           "osProfile": {
             "adminUsername": "[variables('adminUsername')]", 
             "computerNamePrefix": "[variables('{{.Name}}VMNamePrefix')]", 
+{{if IsSwarmMode}}
+            {{GetAgentSwarmModeCustomData}} 
+{{else}}
             {{GetAgentSwarmCustomData}} 
+{{end}}
             "linuxConfiguration": {
               "disablePasswordAuthentication": "true", 
               "ssh": {

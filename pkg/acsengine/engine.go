@@ -34,6 +34,7 @@ const (
 const (
 	swarmProvision        = "configure-swarm-cluster.sh"
 	swarmWindowsProvision = "Install-ContainerHost-And-Join-Swarm.ps1"
+	swarmModeProvision    = "configure-swarmmode-cluster.sh"
 )
 
 const (
@@ -80,6 +81,7 @@ var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, mas
 var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS, windowsParams}
+var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 
 func (t *TemplateGenerator) verifyFiles() error {
 	allFiles := append(commonTemplateFiles, dcosTemplateFiles...)
@@ -144,7 +146,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 		return "", "", certsGenerated, err
 	}
 	var parametersMap map[string]interface{}
-	if parametersMap, err = getParameters(properties); err != nil {
+	if parametersMap, err = getParameters(properties, t.ClassicMode); err != nil {
 		return "", "", certsGenerated, err
 	}
 	var parameterBytes []byte
@@ -197,6 +199,9 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 	} else if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		files = append(commonTemplateFiles, kubernetesTemplateFiles...)
 		baseFile = kubernetesBaseFile
+	} else if properties.OrchestratorProfile.OrchestratorType == api.DockerCE {
+		files = append(commonTemplateFiles, swarmModeTemplateFiles...)
+		baseFile = swarmBaseFile
 	} else {
 		return nil, "", fmt.Errorf("orchestrator '%s' is unsupported", properties.OrchestratorProfile.OrchestratorType)
 	}
@@ -204,7 +209,7 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 	return files, baseFile, nil
 }
 
-func getParameters(properties *api.Properties) (map[string]interface{}, error) {
+func getParameters(properties *api.Properties, isClassicMode bool) (map[string]interface{}, error) {
 	parametersMap := map[string]interface{}{}
 
 	// Master Parameters
@@ -217,6 +222,9 @@ func getParameters(properties *api.Properties) (map[string]interface{}, error) {
 	}
 	addValue(parametersMap, "firstConsecutiveStaticIP", properties.MasterProfile.FirstConsecutiveStaticIP)
 	addValue(parametersMap, "masterVMSize", properties.MasterProfile.VMSize)
+	if isClassicMode {
+		addValue(parametersMap, "masterCount", properties.MasterProfile.Count)
+	}
 	addValue(parametersMap, "sshRSAPublicKey", properties.LinuxProfile.SSH.PublicKeys[0].KeyData)
 	for i, s := range properties.LinuxProfile.Secrets {
 		addValue(parametersMap, fmt.Sprintf("linuxKeyVaultID%d", i), s.SourceVault.ID)
@@ -290,6 +298,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		},
 		"RequiresFakeAgentOutput": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
+		},
+		"IsSwarmMode": func() bool {
+			return properties.OrchestratorProfile.IsSwarmMode()
 		},
 		"IsPublic": func(ports []int) bool {
 			return len(ports) > 0
@@ -407,6 +418,18 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 				return ""
 			}
 			return str
+		},
+		"GetMasterSwarmModeCustomData": func() string {
+			files := []string{swarmModeProvision}
+			str := buildYamlFileWithWriteFiles(files)
+			str = escapeSingleLine(str)
+			return fmt.Sprintf("\"customData\": \"[base64('%s')]\",", str)
+		},
+		"GetAgentSwarmModeCustomData": func() string {
+			files := []string{swarmModeProvision}
+			str := buildYamlFileWithWriteFiles(files)
+			str = escapeSingleLine(str)
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('agentRunCmdFile'),variables('agentRunCmd')))]\",", str)
 		},
 		"AnyAgentHasDisks": func() bool {
 			for _, agentProfile := range properties.AgentPoolProfiles {

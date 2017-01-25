@@ -44,11 +44,16 @@ func TestExpected(t *testing.T) {
 		expectedJsonStr := strings.Replace(string(expectedJson), "\r", "", -1)
 		expectedParamsStr := strings.Replace(string(expectedParams), "\r", "", -1)
 
+		isClassicMode := false
+		if strings.Contains(tuple.GetExpectedArmTemplateFilename(), "_classicmode_expected") {
+			isClassicMode = true
+		}
+
 		// test the output container service 3 times:
 		// 1. first time tests loaded containerService
 		// 2. second time tests generated containerService
 		// 3. third time tests the generated containerService from the generated containerService
-		templateGenerator, e3 := InitializeTemplateGenerator(false)
+		templateGenerator, e3 := InitializeTemplateGenerator(isClassicMode)
 		if e3 != nil {
 			t.Error(e3.Error())
 			continue

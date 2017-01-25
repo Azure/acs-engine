@@ -330,3 +330,8 @@ func (w *WindowsProfile) HasSecrets() bool {
 func (l *LinuxProfile) HasSecrets() bool {
 	return len(l.Secrets) > 0
 }
+
+// IsSwarmMode returns true if this template is for Swarm Mode orchestrator
+func (o *OrchestratorProfile) IsSwarmMode() bool {
+	return o.OrchestratorType == DockerCE
+}
