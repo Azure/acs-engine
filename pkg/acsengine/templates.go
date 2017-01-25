@@ -207,7 +207,7 @@ func configureSwarmClusterSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "configure-swarm-cluster.sh", size: 6503, mode: os.FileMode(493), modTime: time.Unix(1485290981, 0)}
+	info := bindataFileInfo{name: "configure-swarm-cluster.sh", size: 6503, mode: os.FileMode(493), modTime: time.Unix(1485291495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -227,7 +227,7 @@ func configureSwarmmodeClusterSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "configure-swarmmode-cluster.sh", size: 6900, mode: os.FileMode(493), modTime: time.Unix(1485290981, 0)}
+	info := bindataFileInfo{name: "configure-swarmmode-cluster.sh", size: 6900, mode: os.FileMode(493), modTime: time.Unix(1485291495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -787,7 +787,7 @@ func masteroutputsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "masteroutputs.t", size: 492, mode: os.FileMode(493), modTime: time.Unix(1485290981, 0)}
+	info := bindataFileInfo{name: "masteroutputs.t", size: 492, mode: os.FileMode(493), modTime: time.Unix(1485291495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -827,7 +827,7 @@ func swarmagentresourcesclassicT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmagentresourcesclassic.t", size: 8748, mode: os.FileMode(493), modTime: time.Unix(1485290981, 0)}
+	info := bindataFileInfo{name: "swarmagentresourcesclassic.t", size: 8748, mode: os.FileMode(493), modTime: time.Unix(1485291495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -847,7 +847,7 @@ func swarmagentresourcesvmasT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmagentresourcesvmas.t", size: 9999, mode: os.FileMode(493), modTime: time.Unix(1485290981, 0)}
+	info := bindataFileInfo{name: "swarmagentresourcesvmas.t", size: 9999, mode: os.FileMode(493), modTime: time.Unix(1485291495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -867,7 +867,7 @@ func swarmagentresourcesvmssT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmagentresourcesvmss.t", size: 9753, mode: os.FileMode(493), modTime: time.Unix(1485290981, 0)}
+	info := bindataFileInfo{name: "swarmagentresourcesvmss.t", size: 9753, mode: os.FileMode(493), modTime: time.Unix(1485291495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -927,7 +927,7 @@ func swarmmasterresourcesT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmmasterresources.t", size: 8901, mode: os.FileMode(493), modTime: time.Unix(1485290981, 0)}
+	info := bindataFileInfo{name: "swarmmasterresources.t", size: 8901, mode: os.FileMode(493), modTime: time.Unix(1485291495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -947,7 +947,7 @@ func swarmmastervarsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmmastervars.t", size: 9294, mode: os.FileMode(493), modTime: time.Unix(1485290981, 0)}
+	info := bindataFileInfo{name: "swarmmastervars.t", size: 9294, mode: os.FileMode(493), modTime: time.Unix(1485291495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
