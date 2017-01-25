@@ -19,6 +19,7 @@ runcmd:
 - systemctl restart docker
 - /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://storage.googleapis.com/kubernetes-release/release/{{{kubectlVersion}}}/bin/linux/amd64/kubectl > /usr/local/bin/kubectl
 - chmod +x /usr/local/bin/kubectl
+- mkdir -p /etc/kubernetes/manifests
 
 write_files:
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
