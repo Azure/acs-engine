@@ -301,6 +301,9 @@ write_files:
 
     StandardError=journal+console
 
+    ExecStartPre=/usr/bin/curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60
+    -o /var/lib/mesos/dl/bootstrap.tar.xz https://dcosio.azureedge.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz
+
     ExecStartPre=/usr/bin/mkdir -p /opt/mesosphere
 
     ExecStart=/usr/bin/tar -axf /var/lib/mesos/dl/bootstrap.tar.xz -C /opt/mesosphere
@@ -337,8 +340,6 @@ write_files:
     '
   path: /etc/systemd/system/dcos-setup.service
   permissions: '0644'
-- path: /var/lib/dcos/mesos-slave-common
-  content: 'ATTRIBUTES_STR'
 - content: ''
   path: /etc/mesosphere/roles/azure
 - content: 'PROVISION_STR'

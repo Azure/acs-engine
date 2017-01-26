@@ -25,31 +25,12 @@ There are several ways to create a Service Principal in Azure Active Directory:
    az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
    ```
 
-You can set `SUBSCRIPTION_ID` like this:
+This will output your `appId`, `password`, `name`, and `tenant`.  The `name` or `appId` may be used for the `servicePrincipalProfile.servicePrincipalClientId` and the `password` is used for `servicePrincipalProfile.servicePrincipalClientSecret`.
 
-```
-SUBSCRIPTION_ID=$(az account list --query "[?name == 'subscription name'].[id]" --out tsv)
-```
-
-With CLI output format set to JSON, the output will look something like this:
-
-```
-{
-  "appId": "<i>some GUID</i>",
-  "name": "http://azure-cli-2016-<i>more characters</i>",
-  "password": "<i>password GUID</i>",
-  "tenant": "<i>tenant GUID</i>"
-}
-
-```
-
-The `appId` output maps to the `client_id`, and `password` maps to `client_secret` in normal OAuth terms. The `name` is simply a more human readable identifier for the Active Directory Application created, and the `tenant` field contains the GUID for the tenant that the new Service Principal belongs to.
-The `appId` or name values may be used for the `servicePrincipalProfile.servicePrincipalClientId`. Similarly, the `password` value should be used for `servicePrincipalProfile.servicePrincipalClientSecret`.
-
-Confirm your service principal by opening a new shell and run the following commands substituting in `name`, `client_secret`, and `tenant`:
+Confirm your service principal by opening a new shell and run the following commands substituting in `name`, `password`, and `tenant`:
 
    ```shell
-   az login --service-principal -u NAME -p CLIENTSECRET --tenant TENANT
+   az login --service-principal -u NAME -p PASSWORD --tenant TENANT
    az vm list-sizes --location westus
    ```
 
@@ -57,9 +38,9 @@ Confirm your service principal by opening a new shell and run the following comm
 
    Instructions: ["Use Azure CLI to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal-cli/)
 
-* **With [PowerShell](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal-cli/)**
+* **With [PowerShell](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal/)**
 
-   Instructions: ["Use Azure PowerShell to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal-cli/)
+   Instructions: ["Use Azure PowerShell to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal/)
 
 * **With the [Legacy Portal](https://azure.microsoft.com/en-us/documentation/articles/resource-group-create-service-principal-portal/)**
 
