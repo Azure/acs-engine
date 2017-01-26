@@ -92,12 +92,14 @@ type LinuxProfile struct {
 			KeyData string `json:"keyData"`
 		} `json:"publicKeys"`
 	} `json:"ssh"`
+	Secrets []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
 // WindowsProfile represents the windows parameters passed to the cluster
 type WindowsProfile struct {
-	AdminUsername string `json:"adminUsername"`
-	AdminPassword string `json:"adminPassword"`
+	AdminUsername string            `json:"adminUsername"`
+	AdminPassword string            `json:"adminPassword"`
+	Secrets       []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.
@@ -140,6 +142,7 @@ type MasterProfile struct {
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string `json:"subnet"`
+	StorageProfile           string `json:"storageProfile,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -199,6 +202,29 @@ type JumpboxProfile struct {
 	FQDN string `json:"fqdn,omitempty"`
 }
 
+// KeyVaultSecrets specifies certificates to install on the pool
+// of machines from a given key vault
+// the key vault specified must have been granted read permissions to CRP
+type KeyVaultSecrets struct {
+	SourceVault       KeyVaultID            `json:"sourceVault,omitempty"`
+	VaultCertificates []KeyVaultCertificate `json:"vaultCertificates,omitempty"`
+}
+
+// KeyVaultID specifies a key vault
+type KeyVaultID struct {
+	ID string `json:"id,omitempty"`
+}
+
+// KeyVaultCertificate specifies a certificate to install
+// On Linux, the certificate file is placed under the /var/lib/waagent directory
+// with the file name <UppercaseThumbprint>.crt for the X509 certificate file
+// and <UppercaseThumbprint>.prv for the private key. Both of these files are .pem formatted.
+// On windows the certificate will be saved in the specified store.
+type KeyVaultCertificate struct {
+	CertificateURL   string `json:"certificateUrl,omitempty"`
+	CertificateStore string `json:"certificateStore,omitempty"`
+}
+
 // OSType represents OS types of agents
 type OSType string
 
@@ -219,8 +245,8 @@ type V20160330ARMContainerService struct {
 }
 
 // HasWindows returns true if the cluster contains windows
-func (a *Properties) HasWindows() bool {
-	for _, agentPoolProfile := range a.AgentPoolProfiles {
+func (p *Properties) HasWindows() bool {
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.OSType == Windows {
 			return true
 		}
@@ -229,8 +255,8 @@ func (a *Properties) HasWindows() bool {
 }
 
 // HasManagedDisks returns true if the cluster contains Managed Disks
-func (a *Properties) HasManagedDisks() bool {
-	for _, agentPoolProfile := range a.AgentPoolProfiles {
+func (p *Properties) HasManagedDisks() bool {
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			return true
 		}
@@ -253,6 +279,12 @@ func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
 }
 
+// IsClassicStorageAccount returns true if the storage account
+// follows the older naming convention
+func (m *MasterProfile) IsClassicStorageAccount() bool {
+	return m.StorageProfile == StorageAccountClassic
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (a *AgentPoolProfile) IsCustomVNET() bool {
 	return len(a.VnetSubnetID) > 0
@@ -273,12 +305,33 @@ func (a *AgentPoolProfile) IsManagedDisks() bool {
 	return a.StorageProfile == ManagedDisks
 }
 
+// IsClassicStorageAccount returns true if the storage account
+// follows the older naming convention
+func (a *AgentPoolProfile) IsClassicStorageAccount() bool {
+	return a.StorageProfile == StorageAccountClassic
+}
+
 // IsStorageAccount returns true if the customer specified storage account
 func (a *AgentPoolProfile) IsStorageAccount() bool {
-	return a.StorageProfile == StorageAccount
+	return a.StorageProfile == StorageAccountClassic || a.StorageProfile == StorageAccount
 }
 
 // HasDisks returns true if the customer specified disks
 func (a *AgentPoolProfile) HasDisks() bool {
 	return len(a.DiskSizesGB) > 0
+}
+
+// HasSecrets returns true if the customer specified secrets to install
+func (w *WindowsProfile) HasSecrets() bool {
+	return len(w.Secrets) > 0
+}
+
+// HasSecrets returns true if the customer specified secrets to install
+func (l *LinuxProfile) HasSecrets() bool {
+	return len(l.Secrets) > 0
+}
+
+// IsSwarmMode returns true if this template is for Swarm Mode orchestrator
+func (o *OrchestratorProfile) IsSwarmMode() bool {
+	return o.OrchestratorType == DockerCE
 }

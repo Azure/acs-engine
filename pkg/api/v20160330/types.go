@@ -37,8 +37,7 @@ type ContainerService struct {
 
 // Properties is currently incomplete. More fields will be added later.
 type Properties struct {
-	ProvisioningState ProvisioningState `json:"provisioningState"`
-
+	ProvisioningState   ProvisioningState   `json:"provisioningState"`
 	OrchestratorProfile OrchestratorProfile `json:"orchestratorProfile"`
 
 	MasterProfile MasterProfile `json:"masterProfile"`

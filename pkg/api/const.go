@@ -4,8 +4,10 @@ package api
 const (
 	// Mesos is the string constant for MESOS orchestrator type
 	Mesos OrchestratorType = "Mesos"
-	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS184
+	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS187
 	DCOS OrchestratorType = "DCOS"
+	// DCOS187 is the string constant for DCOS 1.8.7 orchestrator type
+	DCOS187 OrchestratorType = "DCOS187"
 	// DCOS184 is the string constant for DCOS 1.8.4 orchestrator type
 	DCOS184 OrchestratorType = "DCOS184"
 	// DCOS173 is the string constant for DCOS 1.7.3 orchestrator type
@@ -14,6 +16,8 @@ const (
 	Swarm OrchestratorType = "Swarm"
 	// Kubernetes is the string constant for the Kubernetes orchestrator type
 	Kubernetes OrchestratorType = "Kubernetes"
+	// DockerCE is the string constant for the Swarm Mode orchestrator type
+	DockerCE OrchestratorType = "DockerCE"
 )
 
 const (
@@ -59,6 +63,9 @@ const (
 
 // storage profiles
 const (
+	// StorageAccountClassic means that we follow the older versions (09-30-2016, 03-30-2016)
+	// storage account naming conventions
+	StorageAccountClassic = "StorageAccountClassic"
 	// StorageAccount means that the nodes use raw storage accounts for their os and attached volumes
 	StorageAccount = "StorageAccount"
 	// ManagedDisks means that the nodes use managed disks for their os and attached volumes

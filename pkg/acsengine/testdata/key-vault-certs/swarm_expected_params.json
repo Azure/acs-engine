@@ -1,0 +1,83 @@
+{
+  "agentpool1Count": {
+    "value": 3
+  },
+  "agentpool1EndpointDNSNamePrefix": {
+    "value": "agentdns1"
+  },
+  "agentpool1Subnet": {
+    "value": "10.0.0.0/16"
+  },
+  "agentpool1VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool2Count": {
+    "value": 3
+  },
+  "agentpool2Subnet": {
+    "value": "10.1.0.0/16"
+  },
+  "agentpool2VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpoolwCount": {
+    "value": 3
+  },
+  "agentpoolwSubnet": {
+    "value": "10.2.0.0/16"
+  },
+  "agentpoolwVMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "firstConsecutiveStaticIP": {
+    "value": "192.168.255.5"
+  },
+  "linuxAdminUsername": {
+    "value": "azureuser"
+  },
+  "linuxKeyVaultID0": {
+    "value": "vaultId"
+  },
+  "linuxKeyVaultID0CertificateURL0": {
+    "value": "http://url2"
+  },
+  "linuxKeyVaultID1": {
+    "value": "vaultId2"
+  },
+  "linuxKeyVaultID1CertificateURL0": {
+    "value": "http://url1"
+  },
+  "masterEndpointDNSNamePrefix": {
+    "value": "masterdns1"
+  },
+  "masterSubnet": {
+    "value": "192.168.255.0/24"
+  },
+  "masterVMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "sshRSAPublicKey": {
+    "value": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+  },
+  "windowsAdminPassword": {
+    "value": "replacepassword1234$"
+  },
+  "windowsAdminUsername": {
+    "value": "azureuser"
+  },
+  "windowsKeyVaultID0": {
+    "value": "vaultId"
+  },
+  "windowsKeyVaultID0CertificateStore0": {
+    "value": "store"
+  },
+  "windowsKeyVaultID0CertificateStore1": {
+    "value": "store"
+  },
+  "windowsKeyVaultID0CertificateURL0": {
+    "value": "http://url3"
+  },
+  "windowsKeyVaultID0CertificateURL1": {
+    "value": "http://url4"
+  }
+}

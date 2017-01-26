@@ -22,14 +22,18 @@ function jqi() {
 }
 
 function deploy() {
+        cluster_type=${ORCHESTRATOR:-"kubernetes"}
 	# Check pre-requisites
 	[[ ! -z "${INSTANCE_NAME:-}" ]] || (echo "Must specify INSTANCE_NAME" && exit -1)
 	[[ ! -z "${LOCATION:-}" ]] || (echo "Must specify LOCATION" && exit -1)
 	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
-	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_ID" && exit -1)
-	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_SECRET" && exit -1)
-	which kubectl || (echo "kubectl must be on PATH" && exit -1)
-	which az || (echo "az must be on PATH" && exit -1)
+        which az || (echo "az must be on PATH" && exit -1)
+
+	if [[ "${cluster_type}" == "kubernetes" ]]; then
+            [[ ! -z "${SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_ID" && exit -1)
+	    [[ ! -z "${SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_SECRET" && exit -1)
+	    which kubectl || (echo "kubectl must be on PATH" && exit -1)
+	fi
 	
 	# Set output directory
 	export OUTPUT="$(pwd)/_output/${INSTANCE_NAME}"
@@ -48,8 +52,10 @@ function deploy() {
 	cp "${CLUSTER_DEFINITION}" "${FINAL_CLUSTER_DEFINITION}"
 	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.masterProfile.dnsPrefix = \"${INSTANCE_NAME}\""
 	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.linuxProfile.ssh.publicKeys[0].keyData = \"${SSH_KEY_DATA}\"" t "${FINAL_CLUSTER_DEFINITION}" 
-	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientID = \"${SERVICE_PRINCIPAL_CLIENT_ID}\""
-	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret = \"${SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+        if [[ "${cluster_type}" == "kubernetes" ]]; then
+	    jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientID = \"${SERVICE_PRINCIPAL_CLIENT_ID}\""
+	    jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret = \"${SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+        fi
 
 	# Generate template
 	"${DIR}/../acs-engine" -artifacts "${OUTPUT}" "${FINAL_CLUSTER_DEFINITION}"

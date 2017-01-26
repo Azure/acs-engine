@@ -56,3 +56,49 @@
 {{if  GetClassicMode}}
     ,{{template "classicparams.t" .}}
 {{end}}
+{{if .LinuxProfile.HasSecrets}}
+  {{range  $vIndex, $vault := .LinuxProfile.Secrets}}
+    ,
+    "linuxKeyVaultID{{$vIndex}}": {
+      "metadata": {
+        "description": "KeyVaultId{{$vIndex}} to install certificates from on linux machines."
+      }, 
+      "type": "string"
+    }
+    {{range $cIndex, $cert := $vault.VaultCertificates}}
+      , 
+      "linuxKeyVaultID{{$vIndex}}CertificateURL{{$cIndex}}": {
+        "metadata": {
+          "description": "CertificateURL{{$cIndex}} to install from KeyVaultId{{$vIndex}} on linux machines."
+        }, 
+        "type": "string"
+      }
+    {{end}}
+  {{end}}
+{{end}}
+{{if .HasWindows}}{{if .WindowsProfile.HasSecrets}}
+  {{range  $vIndex, $vault := .WindowsProfile.Secrets}}
+    ,
+    "windowsKeyVaultID{{$vIndex}}": {
+      "metadata": {
+        "description": "KeyVaultId{{$vIndex}} to install certificates from on windows machines."
+      }, 
+      "type": "string"
+    }
+    {{range $cIndex, $cert := $vault.VaultCertificates}}
+      , 
+      "windowsKeyVaultID{{$vIndex}}CertificateURL{{$cIndex}}": {
+        "metadata": {
+          "description": "Url to retrieve Certificate{{$cIndex}} from KeyVaultId{{$vIndex}} to install on windows machines."
+        }, 
+        "type": "string"
+      }, 
+      "windowsKeyVaultID{{$vIndex}}CertificateStore{{$cIndex}}": {
+        "metadata": {
+          "description": "CertificateStore to install Certificate{{$cIndex}} from KeyVaultId{{$vIndex}} on windows machines."
+        }, 
+        "type": "string"
+      }
+    {{end}}
+  {{end}}
+{{end}} {{end}}

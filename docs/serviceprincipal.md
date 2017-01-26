@@ -18,23 +18,29 @@ and [L4 Load Balancers](https://azure.microsoft.com/en-us/documentation/articles
 There are several ways to create a Service Principal in Azure Active Directory:
 
 * **With the [Azure CLI](https://github.com/Azure/azure-cli)**
-   
+
    ```shell
    az login
-   az account set --name="${SUBSCRIPTION_ID}"
+   az account set --subscription="${SUBSCRIPTION_ID}"
    az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
    ```
-   
-   This will output your `client_id` and `client_secret` (`password`).
 
+This will output your `appId`, `password`, `name`, and `tenant`.  The `name` or `appId` may be used for the `servicePrincipalProfile.servicePrincipalClientId` and the `password` is used for `servicePrincipalProfile.servicePrincipalClientSecret`.
+
+Confirm your service principal by opening a new shell and run the following commands substituting in `name`, `password`, and `tenant`:
+
+   ```shell
+   az login --service-principal -u NAME -p PASSWORD --tenant TENANT
+   az vm list-sizes --location westus
+   ```
 
 * **With the legacy [Azure XPlat CLI](https://github.com/Azure/azure-xplat-cli)**
 
    Instructions: ["Use Azure CLI to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal-cli/)
 
-* **With [PowerShell](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal-cli/)**
+* **With [PowerShell](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal/)**
 
-   Instructions: ["Use Azure PowerShell to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal-cli/)
+   Instructions: ["Use Azure PowerShell to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal/)
 
 * **With the [Legacy Portal](https://azure.microsoft.com/en-us/documentation/articles/resource-group-create-service-principal-portal/)**
 

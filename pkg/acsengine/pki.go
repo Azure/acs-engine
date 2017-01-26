@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"math/big"
 	"net"
@@ -24,7 +25,7 @@ type PkiKeyCertPair struct {
 	PrivateKeyPem  string
 }
 
-func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, clusterDomain string) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
+func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
 	start := time.Now()
 	defer func(s time.Time) {
 		fmt.Fprintf(os.Stderr, "cert creation took %s\n", time.Since(s))
@@ -37,12 +38,9 @@ func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, cluste
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc.%s", clusterDomain))
 
-	caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, "", nil, nil)
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
-
 	var (
+		caCertificate         *x509.Certificate
+		caPrivateKey          *rsa.PrivateKey
 		apiServerCertificate  *x509.Certificate
 		apiServerPrivateKey   *rsa.PrivateKey
 		clientCertificate     *x509.Certificate
@@ -52,21 +50,31 @@ func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, cluste
 	)
 	errors := make(chan error)
 
+	var err error
+	caCertificate, err = pemToCertificate(caPair.CertificatePem)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	caPrivateKey, err = pemToKey(caPair.PrivateKeyPem)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
 	go func() {
 		var err error
-		apiServerCertificate, apiServerPrivateKey, err = createCertificate("apiserver", caCertificate, caPrivateKey, true, masterFQDN, extraFQDNs, extraIPs)
+		apiServerCertificate, apiServerPrivateKey, err = createCertificate("apiserver", caCertificate, caPrivateKey, true, extraFQDNs, extraIPs)
 		errors <- err
 	}()
 
 	go func() {
 		var err error
-		clientCertificate, clientPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, "", nil, nil)
+		clientCertificate, clientPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil)
 		errors <- err
 	}()
 
 	go func() {
 		var err error
-		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, "", nil, nil)
+		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil)
 		errors <- err
 	}()
 
@@ -74,23 +82,22 @@ func CreatePki(masterFQDN string, extraFQDNs []string, extraIPs []net.IP, cluste
 	e2 := <-errors
 	e3 := <-errors
 	if e1 != nil {
-		return nil, nil, nil, nil, e1
+		return nil, nil, nil, e1
 	}
 	if e2 != nil {
-		return nil, nil, nil, nil, e2
+		return nil, nil, nil, e2
 	}
 	if e3 != nil {
-		return nil, nil, nil, nil, e2
+		return nil, nil, nil, e2
 	}
 
-	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))},
-		&PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
+	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(clientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(clientPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(kubeConfigCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(kubeConfigPrivateKey))},
 		nil
 }
 
-func createCertificate(commonName string, caCertificate *x509.Certificate, caPrivateKey *rsa.PrivateKey, isServer bool, FQDN string, extraFQDNs []string, extraIPs []net.IP) (*x509.Certificate, *rsa.PrivateKey, error) {
+func createCertificate(commonName string, caCertificate *x509.Certificate, caPrivateKey *rsa.PrivateKey, isServer bool, extraFQDNs []string, extraIPs []net.IP) (*x509.Certificate, *rsa.PrivateKey, error) {
 	var err error
 
 	isCA := (caCertificate == nil)
@@ -110,7 +117,6 @@ func createCertificate(commonName string, caCertificate *x509.Certificate, caPri
 		template.KeyUsage |= x509.KeyUsageCertSign
 		template.IsCA = isCA
 	} else if isServer {
-		extraFQDNs = append(extraFQDNs, FQDN)
 		extraIPs = append(extraIPs, net.ParseIP("10.0.0.1"))
 
 		template.DNSNames = extraFQDNs
@@ -171,4 +177,20 @@ func privateKeyToPem(privateKey *rsa.PrivateKey) []byte {
 	pem.Encode(&pemBuffer, pemBlock)
 
 	return pemBuffer.Bytes()
+}
+
+func pemToCertificate(raw string) (*x509.Certificate, error) {
+	cpb, _ := pem.Decode([]byte(raw))
+	if cpb == nil {
+		return nil, errors.New("The raw pem is not a valid PEM formatted block.")
+	}
+	return x509.ParseCertificate(cpb.Bytes)
+}
+
+func pemToKey(raw string) (*rsa.PrivateKey, error) {
+	kpb, _ := pem.Decode([]byte(raw))
+	if kpb == nil {
+		return nil, errors.New("The raw pem is not a valid PEM formatted block.")
+	}
+	return x509.ParsePKCS1PrivateKey(kpb.Bytes)
 }

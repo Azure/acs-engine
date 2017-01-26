@@ -72,7 +72,29 @@
     "masterFirstAddrPrefix": "[concat(variables('masterFirstAddrOctets')[0],'.',variables('masterFirstAddrOctets')[1],'.',variables('masterFirstAddrOctets')[2],'.')]",
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]",
     "subscriptionId": "[subscription().subscriptionId]",
-    "tenantId": "[subscription().tenantId]"
+    "tenantId": "[subscription().tenantId]",
+    "dockerEngineVersion": "1.12.*"
+{{if .LinuxProfile.HasSecrets}}
+    , "linuxProfileSecrets" :
+      [
+          {{range  $vIndex, $vault := .LinuxProfile.Secrets}}
+            {{if $vIndex}} , {{end}}
+              {
+                "sourceVault":{
+                  "id":"[parameters('linuxKeyVaultID{{$vIndex}}')]"
+                },
+                "vaultCertificates":[
+                {{range $cIndex, $cert := $vault.VaultCertificates}}
+                  {{if $cIndex}} , {{end}}
+                  {
+                    "certificateUrl" :"[parameters('linuxKeyVaultID{{$vIndex}}CertificateURL{{$cIndex}}')]"
+                  }
+                {{end}}
+                ]
+              }
+        {{end}}
+      ] 
+{{end}}
 
 
     

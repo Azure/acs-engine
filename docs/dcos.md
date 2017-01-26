@@ -16,7 +16,7 @@ Once your DC/OS cluster has deployed you will have a resource group containing:
 
 1. a set of 1,3, or 5 masters in a master specific availability set.  Each master's SSH can be accessed via the public dns address at ports 2200..2204
 
-2. a set of public agents in an Virtual Machine Scale Set (VMSS).  The agent VMs can be accessed through a master.  See [agent forwarding](SSHKeyManagement.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
+2. a set of public agents in an Virtual Machine Scale Set (VMSS).  The agent VMs can be accessed through a master.  See [agent forwarding](ssh.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
 
 3. a set of private agents in an Virtual Machine Scale Set (VMSS).
 
@@ -45,7 +45,7 @@ This walk through is inspired by the wonderful digital ocean tutorial: https://w
 
 
  1. After successfully deploying the template write down the two output master and agent FQDNs (Fully Qualified Domain Name).
-   1. If using Powershell or CLI, the output parameters are in the OutputsString section named 'agentpublcFQDN' and 'masterFQDN'
+   1. If using Powershell or CLI, the output parameters are in the OutputsString section named 'agentFQDN' and 'masterFQDN'
    2. If using Portal, to get the output you need to:
      1. navigate to "resource group"
      2. click on the resource group you just created
@@ -54,7 +54,7 @@ This walk through is inspired by the wonderful digital ocean tutorial: https://w
      5. now you can copy the output FQDNs and sample SSH commands
      ![Image of docker scaling](images/findingoutputs.png)
 
- 2. Create an [SSH tunnel to port 80](SSHKeyManagement.md#create-port-80-tunnel-to-the-master) on the master FQDN.
+ 2. Create an [SSH tunnel to port 80](ssh.md#create-port-80-tunnel-to-the-master) on the master FQDN.
 
  3. browse to the DC/OS UI <http://localhost/>.  This displays the main DC/OS dashboard:
 
@@ -70,7 +70,7 @@ This walk through is inspired by the wonderful digital ocean tutorial: https://w
    3. start a long running service
     1. click "Deploy Service"
     2. type "myfirstapp" for the id
-    3. type `/bin/bash -c "for i in {1..5}; do echo MyFirstApp $i; sleep 1; done"` for the command
+    3. type `/bin/bash -c 'for i in {1..5}; do echo MyFirstApp $i; sleep 1; done'` for the command
     4. scroll to bottom and click Deploy
 
     ![Image of Deploy New Service dialog](images/deployfirstapp.png)
@@ -109,12 +109,12 @@ This walk through is inspired by the wonderful digital ocean tutorial: https://w
 
   13. Next on left, click "Optional" and set role type "slave_public".  This ensures the Docker web app is running on the public agent.
 
-  ![Image of docker web app](images/dcos-simpleweb4.png) 
+  ![Image of docker web app](images/dcos-simpleweb4.png)
 
   14. Finally click deploy and watch the web app deploy.  Once it goes to running state, open the FQDN retrieved in step 1 during deployment, and you will see the web app.
 
   ![Image of web app](images/simpleweb.png)
-  
+
 # Learning More
 
 Here are recommended links to learn more about DC/OS:
@@ -125,4 +125,4 @@ Here are recommended links to learn more about DC/OS:
 
 1. [DC/OS Overview](https://dcos.io/docs/1.8/overview/) - provides overview of DC/OS, Architecture, Features, and Concepts.
 
-2. [DC/OS Tutorials](https://docs.mesosphere.com/1.8/usage/tutorials/) - provides various tutorials for DC/OS. 
+2. [DC/OS Tutorials](https://docs.mesosphere.com/1.8/usage/tutorials/) - provides various tutorials for DC/OS.

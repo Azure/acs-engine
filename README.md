@@ -21,49 +21,11 @@ The cluster definition file enables the following customizations to your Docker 
 * [DC/OS Walkthrough](docs/dcos.md) - shows how to create a DC/OS enabled Docker cluster on Azure
 * [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Kubernetes enabled Docker cluster on Azure
 * [Swarm Walkthrough](docs/swarm.md) - shows how to create a Swarm enabled Docker cluster on Azure
+* [DockerCE Walkthrough](docs/swarmmode.md) - shows how to create a DockerCE cluster on Azure
 * [Custom VNET](examples/vnet) - shows how to use a custom VNET 
 * [Attached Disks](examples/disks-storageaccount) - shows how to attach up to 4 disks per node
 * [Managed Disks](examples/disks-managed) (under private preview) - shows how to use managed disks 
 * [Large Clusters](examples/largeclusters) - shows how to create cluster sizes of up to 1200 nodes
-
-## Development (Docker)
-
-The easiest way to get started developing on `acs-engine` is to use Docker.
-If you already have Docker or "Docker for {Windows,Mac}" then you can get started
-without needing to install anything extra.
-
-* Windows (PowerShell): `.\scripts\devenv.ps1`
-* Linux (bash): `./scripts/devenv.sh`
-
-This setup mounts the `acs-engine` source directory as a volume into the Docker container.
-This means that you can edit your source code normally in your favorite editor on your
-machine, while still being able to compile and test inside of the Docker container (the
-same environment used in our Continuous Integration system).
-
-[Here's a quick demo video showing the dev/build/test cycle with this setup.](https://www.youtube.com/watch?v=lc6UZmqxQMs)
-
-## Development (Native)
-
-### Requirements
-- PowerShell (Windows)
-- `bash` + `make` (Linux)
-- `git`
-- `go` (with a properly configured GOPATH)
-
-### Building (Linux)
-
-```shell
-make build
-```
-
-### Building (Windows, PowerShell)
-
-```shell
-cd ${env:GOPATH}/github.com/Azure/acs-engine
-go get .
-go build .
-```
-
 
 ## Contributing
 
@@ -96,18 +58,20 @@ needed assets are generated and placed in the output directory.)
 ## Deployment Usage
 
 Generated templates can be deployed using
-[the Azure XPlat CLI (v0.10 only)](https://github.com/Azure/azure-xplat-cli/releases/tag/v0.10.0-May2016),
+[the Azure XPlat CLI (v0.10**.0** only)](https://github.com/Azure/azure-xplat-cli/releases/tag/v0.10.0-May2016),
 [the Azure CLI 2.0](https://github.com/Azure/azure-cli) or
 [Powershell](https://github.com/Azure/azure-powershell).
 
 ### Deploying with Azure XPlat CLI
 
-**NOTE:** DCOS deployments will fail with Azure XPlat CLI version > 10.0.  Use [Azure XPlat CLI 0.10.0](https://github.com/Azure/azure-xplat-cli/releases/tag/v0.10.0-May2016).  The fix for the Azure XPlat CLI fix is estimated to be Dec 2016.
+**NOTE:** Some deployments will fail if certain versions of the Azure XPlat CLI are used. It's recommended that you use [Azure XPlat CLI 0.10**.0**](https://github.com/Azure/azure-xplat-cli/releases/tag/v0.10.0-May2016) until a new point release of `0.10.x` is available with the fix.
 
 ```bash
 $ azure login
 
-$ azure account set --name "<SUBSCRIPTION NAME OR ID>"
+$ azure account set "<SUBSCRIPTION NAME OR ID>"
+
+$ azure config mode arm
 
 $ azure group create \
     --name="<RESOURCE_GROUP_NAME>" \
@@ -121,21 +85,24 @@ $ azure group deployment create \
 ```
 
 ### Deploying with Azure CLI 2.0
-NOTE: Azure CLI 2.0 is still in preview, so changes may occur. Please reference [the Azure CLI 2.0 GitHub Repo](https://github.com/Azure/azure-cli) for updated commands
+**NOTE:** Azure CLI 2.0 is still in preview, so changes may occur.
+Please reference [the Azure CLI 2.0 GitHub Repo](https://github.com/Azure/azure-cli) for updated commands and please
+ensure that your installation is up to date with the latest release. (Releases occur weekly!)
+
 ```bash
 $ az login
 
-$ az account set --name "<SUBSCRIPTION NAME OR ID>"
+$ az account set --subscription "<SUBSCRIPTION NAME OR ID>"
 
 $ az group create \
-    --name="<RESOURCE_GROUP_NAME>" \
-    --location="<LOCATION>"
+    --name "<RESOURCE_GROUP_NAME>" \
+    --location "<LOCATION>"
 
-$ az resource group deployment create \
-    --name="<DEPLOYMENT NAME>" \
-    --resource-group="<RESOURCE_GROUP_NAME>" \
-    --template-file-path="./_output/<INSTANCE>/azuredeploy.json" \
-    --parameters-file-path="./_output/<INSTANCE>/azuredeploy.parameters.json"
+$ az group deployment create \
+    --name "<DEPLOYMENT NAME>" \
+    --resource-group "<RESOURCE_GROUP_NAME>" \
+    --template-file "./_output/<INSTANCE>/azuredeploy.json" \
+    --parameters "@./_output/<INSTANCE>/azuredeploy.parameters.json"
 ```
 
 ### Deploying with Powershell
@@ -156,3 +123,6 @@ New-AzureRmResourceGroupDeployment `
     -TemplateParameterFile _output\<INSTANCE>\azuredeploy.parameters.json
 ```
 
+## Code of conduct
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.

@@ -25,7 +25,6 @@ func DeserializeContainerService(contents []byte) (*ContainerService, string, er
 		return nil, "", err
 	}
 	version := m.APIVersion
-
 	service, err := LoadContainerService(contents, version)
 
 	return service, version, err

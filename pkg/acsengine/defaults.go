@@ -32,7 +32,7 @@ func setOrchestratorDefaults(a *api.Properties) {
 		a.OrchestratorProfile.KubernetesConfig.KubectlVersion = DefaultKubectlVersion
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
-		a.OrchestratorProfile.OrchestratorType = api.DCOS184
+		a.OrchestratorProfile.OrchestratorType = api.DCOS187
 	}
 }
 
@@ -89,7 +89,6 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		return false, nil
 	}
 
-	masterWildCardFQDN := FormatAzureProdFQDN(a.MasterProfile.DNSPrefix, "*")
 	masterExtraFQDNs := FormatAzureProdFQDNs(a.MasterProfile.DNSPrefix)
 	firstMasterIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)
 
@@ -103,15 +102,27 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		ips = append(ips, net.IP{firstMasterIP[12], firstMasterIP[13], firstMasterIP[14], firstMasterIP[15] + byte(i)})
 	}
 
-	caPair, apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterWildCardFQDN, masterExtraFQDNs, ips, DefaultKubernetesClusterDomain)
+	// use the specified Certificate Authority pair, or generate a new pair
+	var caPair *PkiKeyCertPair
+	if len(a.CertificateProfile.CaCertificate) != 0 && len(a.CertificateProfile.GetCAPrivateKey()) != 0 {
+		caPair = &PkiKeyCertPair{CertificatePem: a.CertificateProfile.CaCertificate, PrivateKeyPem: a.CertificateProfile.GetCAPrivateKey()}
+	} else {
+		caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, nil, nil)
+		if err != nil {
+			return false, err
+		}
+		caPair = &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))}
+		a.CertificateProfile.CaCertificate = caPair.CertificatePem
+		a.CertificateProfile.SetCAPrivateKey(caPair.PrivateKeyPem)
+	}
+
+	apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
 	if err != nil {
 		return false, err
 	}
 
 	a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
 	a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
-	a.CertificateProfile.CaCertificate = caPair.CertificatePem
-	a.CertificateProfile.SetCAPrivateKey(caPair.PrivateKeyPem)
 	a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
 	a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
 	a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
@@ -122,7 +133,6 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 
 func certGenerationRequired(a *api.Properties) bool {
 	if len(a.CertificateProfile.APIServerCertificate) > 0 || len(a.CertificateProfile.APIServerPrivateKey) > 0 ||
-		len(a.CertificateProfile.CaCertificate) > 0 ||
 		len(a.CertificateProfile.ClientCertificate) > 0 || len(a.CertificateProfile.ClientPrivateKey) > 0 {
 		return false
 	}

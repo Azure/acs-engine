@@ -67,7 +67,7 @@ runcmd:
   - lxc-net.service
 - - mkdir
   - -p
-  - /var/lib/dcos
+  - /var/lib/dcos  
 - /opt/azure/containers/provision.sh
 - - cp
   - -p
@@ -304,6 +304,9 @@ write_files:
 
     StandardError=journal+console
 
+    ExecStartPre=/usr/bin/curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60
+    -o /var/lib/mesos/dl/bootstrap.tar.xz https://dcosio.azureedge.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz
+
     ExecStartPre=/usr/bin/mkdir -p /opt/mesosphere
 
     ExecStart=/usr/bin/tar -axf /var/lib/mesos/dl/bootstrap.tar.xz -C /opt/mesosphere
@@ -346,3 +349,4 @@ write_files:
   path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
   owner: "root"
+>>>>>>> master

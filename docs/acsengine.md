@@ -2,22 +2,39 @@
 
 The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DCOS, Kubernetes, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
 
-# Downloading and Building ACS Engine
+# Development in Docker
 
-Here are the instructions for downloading and building the ACS Engine for Windows, OS X, and Linux.
+The easiest way to get started developing on `acs-engine` is to use Docker. If you already have Docker or "Docker for {Windows,Mac}" then you can get started without needing to install anything extra.
+
+* Windows (PowerShell): `.\scripts\devenv.ps1`
+* Linux (bash): `./scripts/devenv.sh`
+
+This setup mounts the `acs-engine` source directory as a volume into the Docker container.
+This means that you can edit your source code normally in your favorite editor on your
+machine, while still being able to compile and test inside of the Docker container (the
+same environment used in our Continuous Integration system).
+
+[Here's a quick demo video showing the dev/build/test cycle with this setup.](https://www.youtube.com/watch?v=lc6UZmqxQMs)
+
+# Downloading and Building ACS Engine Locally 
+
+ACS Engine can also be built and run natively on Windows, OS X, and Linux. Instructions below: 
 
 ## Windows
 
-Here is how to download and building ACS Engine:
+Requirements:
+- Git for Windows. Download and install [here](https://git-scm.com/download/win)
+- Go for Windows. Download and install [here](https://golang.org/dl/), accept all defaults.
+- Powershell 
 
-1. Download and install [git for windows](https://git-scm.com/download/win)
-2. Download and install [Go for Windows](https://golang.org/dl/), accept all defaults.
-3. Setup your go workspace.  This example assumes you are using `c:\gopath` as your workspace:
+Build Steps: 
+ 
+1. Setup your go workspace.  This example assumes you are using `c:\gopath` as your workspace:
   1. Windows key-R to open the run prompt
   2. `rundll32 sysdm.cpl,EditEnvironmentVariables` to open the system variables
   3. add `c:\go\bin` to your PATH variables
   4. click "new" and add new environment variable GOPATH and set to `c:\gopath`
-4. Build acs-engine:
+2. Build acs-engine:
   1. Windows key-R to open the run prompt
   2. `cmd` to open command prompt
   3. mkdir %GOPATH%
@@ -26,29 +43,55 @@ Here is how to download and building ACS Engine:
   6. type `go get all` to get the supporting components
   7. `cd %GOPATH%\src\github.com\Azure\acs-engine`
   8. `go build` to build the project
-  9. `acs-engine` to see the command line parameters
+3. `acs-engine` to see the command line parameters
 
 ## OS X
 
-1. Download and install [Go for OS X](https://golang.org/dl/)
-2. Open a command prompt to setup your gopath:
-  1. `mkdir $HOME/go`
+Requirements:
+- Go for OS X. Download and install [here](https://golang.org/dl/)
+
+Build Steps: 
+
+1. Open a command prompt to setup your gopath:
+  1. `mkdir $HOME/gopath`
+  2. edit `$HOME/.bash_profile` and add the following line to setup your go path
+  ```
+  export PATH=$PATH:/usr/local/go/bin
+  export GOPATH=$HOME/gopath
+  ```
+  3. `source $HOME/.sh_profile`
+2. Build acs-engine:
+  1. type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
+  2. type `go get all` to get the supporting components
+  3. `cd $GOPATH/src/github.com/Azure/acs-engine`
+  4. `go build` to build the project
+3. `./acs-engine` to see the command line parameters
+
+## Linux
+
+Requirements:
+- Go for Linux
+  - Download the appropriate archive for your system [here](https://golang.org/dl/)
+  - sudo tar -C /usr/local -xzf go$VERSION.$OS-$ARCH.tar.gz (replace with your downloaded archive)
+- `git`
+
+Build Steps: 
+
+1. Setup Go path:
+  1. `mkdir $HOME/gopath`
   2. edit `$HOME/.profile` and add the following line to setup your go path
   ```
   export PATH=$PATH:/usr/local/go/bin
   export GOPATH=$HOME/gopath
   ```
   3. `source $HOME/.profile`
-3. Build acs-engine:
+2. Build acs-engine:
   1. type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
   2. type `go get all` to get the supporting components
   3. `cd $GOPATH/src/github.com/Azure/acs-engine`
   4. `go build` to build the project
-  5. `acs-engine` to see the command line parameters
+3. `./acs-engine` to see the command line parameters
 
-## Linux
-
-For Linux, ensure Docker is installed, and follow the developer instructions at https://github.com/Azure/acs-engine#development-docker to build and use the ACS Engine.
 
 # Template Generation
 
@@ -63,11 +106,11 @@ As a rule of thumb you should always work with the `apimodel.json` when modifyin
 
 # Generating a template
 
-Here is an example of how to generate a new deployment.  This example assumes you are using [examples/dcos.json](../examples/dcos.json).
+Here is an example of how to generate a new deployment.  This example assumes you are using [examples/kubernetes.json](../examples/kubernetes.json).
 
 1. Before starting ensure you have generated a valid [SSH Public/Private key pair](ssh.md#ssh-key-generation).
-2. edit [examples/dcos.json](../examples/dcos.json) and fill in the blanks.
-3. run `acs-engine examples/dcos.json` to generate the templates in the _output/DCOS184-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
+2. edit [examples/kubernetes.json](../examples/kubernetes.json) and fill in the blanks.
+3. run `acs-engine examples/kubernetes.json` to generate the templates in the _output/Kubernetes-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
 4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [deployment usage](../README.md#deployment-usage).
 
 # Deploying templates

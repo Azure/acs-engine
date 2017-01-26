@@ -3,8 +3,9 @@
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn]"
     }
 {{if  GetClassicMode}}
+    ,
     {{if RequiresFakeAgentOutput}}
-    ,"agentFQDN": {
+    "agentFQDN": {
       "type": "string",
       "value": ""
     },
