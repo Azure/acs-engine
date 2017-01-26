@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -123,12 +124,19 @@ var artifactsDir = flag.String("artifacts", "", "directory where artifacts will 
 var classicMode = flag.Bool("classicMode", false, "enable classic parameters and outputs")
 var parametersOnly = flag.Bool("parametersOnly", false, "only output the parameters")
 
+// acs-engine takes the caKey and caCert as args, since the caKey is stored separately
+// from the api model since this cannot be easily revoked like the server and client key
+var caCertificatePath = flag.String("caCertificatePath", "", "the path to the CA Certificate file")
+var caKeyPath = flag.String("caKeyPath", "", "the path to the CA key file")
+
 func main() {
 	start := time.Now()
 	defer func(s time.Time) {
 		fmt.Fprintf(os.Stderr, "acsengine took %s\n", time.Since(s))
 	}(start)
 	var containerService *api.ContainerService
+	var caCertificateBytes []byte
+	var caKeyBytes []byte
 	var template string
 	var parameters string
 	var apiVersion string
@@ -147,6 +155,22 @@ func main() {
 		os.Exit(1)
 	}
 
+	if (len(*caCertificatePath) > 0 && len(*caKeyPath) == 0) ||
+		(len(*caCertificatePath) == 0 && len(*caKeyPath) > 0) {
+		usage(errors.New("caKeyPath and caCertificatePath must be specified together"))
+		os.Exit(1)
+	}
+	if len(*caCertificatePath) > 0 {
+		if caCertificateBytes, err = ioutil.ReadFile(*caCertificatePath); err != nil {
+			usage(err)
+			os.Exit(1)
+		}
+		if caKeyBytes, err = ioutil.ReadFile(*caKeyPath); err != nil {
+			usage(err)
+			os.Exit(1)
+		}
+	}
+
 	templateGenerator, e := acsengine.InitializeTemplateGenerator(*classicMode)
 	if e != nil {
 		fmt.Fprintf(os.Stderr, "generator initialization failed: %s\n", e.Error())
@@ -156,6 +180,13 @@ func main() {
 	if containerService, apiVersion, err = api.LoadContainerServiceFromFile(jsonFile); err != nil {
 		fmt.Fprintf(os.Stderr, "error while loading %s: %s", jsonFile, err.Error())
 		os.Exit(1)
+	}
+
+	if len(caKeyBytes) != 0 {
+		// the caKey is not in the api model, and should be stored separately from the model
+		// we put these in the model after model is deserialized
+		containerService.Properties.CertificateProfile.CaCertificate = string(caCertificateBytes)
+		containerService.Properties.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
 	}
 
 	certsGenerated := false
