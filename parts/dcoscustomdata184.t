@@ -349,4 +349,4 @@ write_files:
   path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
   owner: "root"
->>>>>>> master
+
