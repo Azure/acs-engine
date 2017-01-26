@@ -140,8 +140,7 @@ type AgentPoolProfile struct {
 	// subnet is internal
 	subnet string
 
-	FQDN       string            `json:"fqdn,omitempty"`
-	Attributes map[string]string `json:"attributes,omitempty"`
+	FQDN string `json:"fqdn,omitempty"`
 }
 
 // OrchestratorType defines orchestrators supported by ACS
