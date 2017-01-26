@@ -161,8 +161,7 @@ type AgentPoolProfile struct {
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 	Subnet              string `json:"subnet"`
 
-	FQDN       string            `json:"fqdn,omitempty"`
-	Attributes map[string]string `json:"attributes,omitempty"`
+	FQDN string `json:"fqdn,omitempty"`
 }
 
 // DiagnosticsProfile setting to enable/disable capturing
