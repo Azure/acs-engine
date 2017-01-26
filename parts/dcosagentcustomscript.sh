@@ -7,10 +7,10 @@ update_attribute()
     if [ ! -a /etc/mesosphere/roles/master ];
     then
         echo adding FD / UD attributes
-        meta=$( curl http://169.254.169.254/metadata/v1/InstanceInfo )
+        meta=$( curl --silent --fail  http://169.254.169.254/metadata/v1/InstanceInfo )
         # parsing with bash to avoid jq install. This might break when the metadata service changes
-        ud="UD"$( echo $meta | cut -d\" -f 8)
-        fd="FD"$( echo $meta | cut -d\" -f 12)
+        ud=$(echo $meta | sed "s/^.*\"UD\": *\"\([0-9]*\)\".*$/\1/")
+        fd=$(echo $meta | sed "s/^.*\"FD\": *\"\([0-9]*\)\".*$/\1/")
 
         if [ -a /var/lib/dcos/mesos-slave-common ];
         then
@@ -18,8 +18,6 @@ update_attribute()
             sed -e "s/;*$/;UD:"$ud";FD:"$fd"/" -i /var/lib/dcos/mesos-slave-common
         else
             echo new attributes
-            # mkdir just in case. Didnt seem to exist reliably when the script is running
-            mkdir -p  /var/lib/dcos
             echo "MESOS_ATTRIBUTES=UD:$ud;FD:$fd" >> /var/lib/dcos/mesos-slave-common
         fi
     fi
