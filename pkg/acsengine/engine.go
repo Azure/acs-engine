@@ -150,15 +150,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	// and ensures the panic is returned as an error
 	defer func() {
 		if r := recover(); r != nil {
-			// find out exactly what the error was and set err
-			switch x := r.(type) {
-			case string:
-				err = errors.New(x)
-			case error:
-				err = x
-			default:
-				err = errors.New("Unknown panic")
-			}
+			err = fmt.Errorf("%v", r)
 			// invalidate the template and the parameters
 			templateRaw = ""
 			parametersRaw = ""
