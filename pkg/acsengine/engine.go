@@ -114,15 +114,19 @@ func InitializeTemplateGenerator(classicMode bool) (*TemplateGenerator, error) {
 }
 
 // GenerateTemplate generates the template from the API Model
-func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService) (string, string, bool, error) {
-	var err error
+func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
+	// named return values are used in order to set err in case of a panic
+	templateRaw = ""
+	parametersRaw = ""
+	certsGenerated = false
+	err = nil
+
 	var templ *template.Template
-	certsGenerated := false
 
 	properties := &containerService.Properties
 
 	if certsGenerated, err = SetPropertiesDefaults(properties); err != nil {
-		return "", "", certsGenerated, err
+		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
 	templ = template.New("acs template").Funcs(t.getTemplateFuncMap(properties))
@@ -135,26 +139,41 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	for _, file := range files {
 		bytes, e := Asset(file)
 		if e != nil {
-			return "", "", certsGenerated, fmt.Errorf("Error reading file %s, Error: %s", file, e.Error())
+			err = fmt.Errorf("Error reading file %s, Error: %s", file, e.Error())
+			return templateRaw, parametersRaw, certsGenerated, err
 		}
 		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
-			return "", "", certsGenerated, err
+			return templateRaw, parametersRaw, certsGenerated, err
 		}
 	}
+	// template generation may have panics in the called functions.  This catches those panics
+	// and ensures the panic is returned as an error
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+			// invalidate the template and the parameters
+			templateRaw = ""
+			parametersRaw = ""
+		}
+	}()
+
 	var b bytes.Buffer
 	if err = templ.ExecuteTemplate(&b, baseFile, properties); err != nil {
-		return "", "", certsGenerated, err
+		return templateRaw, parametersRaw, certsGenerated, err
 	}
+	templateRaw = b.String()
+
 	var parametersMap map[string]interface{}
 	if parametersMap, err = getParameters(properties, t.ClassicMode); err != nil {
-		return "", "", certsGenerated, err
+		return templateRaw, parametersRaw, certsGenerated, err
 	}
 	var parameterBytes []byte
 	if parameterBytes, err = json.Marshal(parametersMap); err != nil {
-		return "", "", certsGenerated, err
+		return templateRaw, parametersRaw, certsGenerated, err
 	}
+	parametersRaw = string(parameterBytes)
 
-	return b.String(), string(parameterBytes), certsGenerated, nil
+	return templateRaw, parametersRaw, certsGenerated, err
 }
 
 // GenerateClusterID creates a unique 8 string cluster ID
