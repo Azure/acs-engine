@@ -243,7 +243,6 @@ func getParameters(properties *api.Properties) (map[string]interface{}, error) {
 		if len(agentProfile.Ports) > 0 {
 			addValue(parametersMap, fmt.Sprintf("%sEndpointDNSNamePrefix", agentProfile.Name), agentProfile.DNSPrefix)
 		}
-
 	}
 
 	// Windows parameters
@@ -302,7 +301,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		},
 		"GetDCOSMasterCustomData": func() string {
 			masterProvisionScript := getDCOSMasterProvisionScript()
-			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, masterProvisionScript, "")
+			masterAttributeContents := getDCOSMasterAttributes()
+			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, masterProvisionScript, masterAttributeContents)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -415,6 +415,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			return dict, nil
 		},
 	}
+}
+
+func getDCOSMasterAttributes() string {
+	// return empty string for DCOS since no attribtutes needed on master
+	return ""
 }
 
 func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) string {
