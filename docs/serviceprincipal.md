@@ -35,10 +35,10 @@ With CLI output format set to JSON, the output will look something like this:
 
 ```
 {
-  "appId": "<i>some GUID</i>",
-  "name": "http://azure-cli-2016-<i>more characters</i>",
-  "password": "<i>password GUID</i>",
-  "tenant": "<i>tenant GUID</i>"
+  "appId": "some GUID",
+  "name": "http://azure-cli-2016-more characters",
+  "password": "password GUID",
+  "tenant": "tenant GUID"
 }
 
 ```
