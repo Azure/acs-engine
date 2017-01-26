@@ -324,7 +324,7 @@ func dcoscustomdata184T() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcoscustomdata184.t", size: 7376, mode: os.FileMode(438), modTime: time.Unix(1481050620, 0)}
+	info := bindataFileInfo{name: "dcoscustomdata184.t", size: 7376, mode: os.FileMode(438), modTime: time.Unix(1485445592, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -344,7 +344,7 @@ func dcosmasterresourcesT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcosmasterresources.t", size: 9716, mode: os.FileMode(438), modTime: time.Unix(1481050620, 0)}
+	info := bindataFileInfo{name: "dcosmasterresources.t", size: 9716, mode: os.FileMode(438), modTime: time.Unix(1485445543, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
