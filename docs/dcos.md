@@ -45,7 +45,7 @@ This walk through is inspired by the wonderful digital ocean tutorial: https://w
 
 
  1. After successfully deploying the template write down the two output master and agent FQDNs (Fully Qualified Domain Name).
-   1. If using Powershell or CLI, the output parameters are in the OutputsString section named 'agentpublcFQDN' and 'masterFQDN'
+   1. If using Powershell or CLI, the output parameters are in the OutputsString section named 'agentFQDN' and 'masterFQDN'
    2. If using Portal, to get the output you need to:
      1. navigate to "resource group"
      2. click on the resource group you just created
@@ -70,7 +70,7 @@ This walk through is inspired by the wonderful digital ocean tutorial: https://w
    3. start a long running service
     1. click "Deploy Service"
     2. type "myfirstapp" for the id
-    3. type `/bin/bash -c "for i in {1..5}; do echo MyFirstApp $i; sleep 1; done"` for the command
+    3. type `/bin/bash -c 'for i in {1..5}; do echo MyFirstApp $i; sleep 1; done'` for the command
     4. scroll to bottom and click Deploy
 
     ![Image of Deploy New Service dialog](images/deployfirstapp.png)
@@ -109,12 +109,12 @@ This walk through is inspired by the wonderful digital ocean tutorial: https://w
 
   13. Next on left, click "Optional" and set role type "slave_public".  This ensures the Docker web app is running on the public agent.
 
-  ![Image of docker web app](images/dcos-simpleweb4.png) 
+  ![Image of docker web app](images/dcos-simpleweb4.png)
 
   14. Finally click deploy and watch the web app deploy.  Once it goes to running state, open the FQDN retrieved in step 1 during deployment, and you will see the web app.
 
   ![Image of web app](images/simpleweb.png)
-  
+
 # Learning More
 
 Here are recommended links to learn more about DC/OS:
@@ -125,4 +125,4 @@ Here are recommended links to learn more about DC/OS:
 
 1. [DC/OS Overview](https://dcos.io/docs/1.8/overview/) - provides overview of DC/OS, Architecture, Features, and Concepts.
 
-2. [DC/OS Tutorials](https://docs.mesosphere.com/1.8/usage/tutorials/) - provides various tutorials for DC/OS. 
+2. [DC/OS Tutorials](https://docs.mesosphere.com/1.8/usage/tutorials/) - provides various tutorials for DC/OS.

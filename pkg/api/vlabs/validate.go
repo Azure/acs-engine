@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"regexp"
 )
 
@@ -11,10 +12,12 @@ import (
 func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case DCOS:
+	case DCOS187:
 	case DCOS184:
 	case DCOS173:
 	case Swarm:
 	case Kubernetes:
+	case DockerCE:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
@@ -34,6 +37,9 @@ func (m *MasterProfile) Validate() error {
 		return e
 	}
 	if e := validateName(m.VMSize, "MasterProfile.VMSize"); e != nil {
+		return e
+	}
+	if e := validateStorageProfile(m.StorageProfile); e != nil {
 		return e
 	}
 	return nil
@@ -91,6 +97,29 @@ func (a *AgentPoolProfile) Validate() error {
 	if len(a.Ports) == 0 && len(a.DNSPrefix) > 0 {
 		return fmt.Errorf("AgentPoolProfile.Ports must be non empty when AgentPoolProfile.DNSPrefix is specified")
 	}
+	if e := validateStorageProfile(a.StorageProfile); e != nil {
+		return e
+	}
+	return nil
+}
+
+func validateKeyVaultSecrets(secrets []KeyVaultSecrets, requireCertificateStore bool) error {
+	for _, s := range secrets {
+		if len(s.VaultCertificates) == 0 {
+			return fmt.Errorf("Invalid KeyVaultSecrets must have no empty VaultCertificates")
+		}
+		if s.SourceVault.ID == "" {
+			return fmt.Errorf("KeyVaultSecrets must have a SourceVault.ID")
+		}
+		for _, c := range s.VaultCertificates {
+			if _, e := url.Parse(c.CertificateURL); e != nil {
+				return fmt.Errorf("Certificate url was invalid. recieved error %s", e)
+			}
+			if e := validateName(c.CertificateStore, "KeyVaultCertificate.CertificateStore"); requireCertificateStore && e != nil {
+				return fmt.Errorf("%s for certificates in a WindowsProfile", e)
+			}
+		}
+	}
 	return nil
 }
 
@@ -103,6 +132,9 @@ func (l *LinuxProfile) Validate() error {
 		return errors.New("LinuxProfile.PublicKeys requires only 1 SSH Key")
 	}
 	if e := validateName(l.SSH.PublicKeys[0].KeyData, "LinuxProfile.PublicKeys.KeyData"); e != nil {
+		return e
+	}
+	if e := validateKeyVaultSecrets(l.Secrets, false); e != nil {
 		return e
 	}
 	return nil
@@ -130,6 +162,18 @@ func (a *Properties) Validate() error {
 		return fmt.Errorf("only 1 master may be specified with %s", a.OrchestratorProfile.OrchestratorType)
 	}
 
+	if a.MasterProfile.StorageProfile == StorageAccountClassic {
+		switch a.OrchestratorProfile.OrchestratorType {
+		case DCOS:
+		case DCOS173:
+		case DCOS184:
+		case DCOS187:
+		case Swarm:
+		default:
+			return fmt.Errorf("StorageAccountClassic is not supported in MasterProfile for Orchestrator %s \n", a.OrchestratorProfile.OrchestratorType)
+		}
+	}
+
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
 		if e := agentPoolProfile.Validate(); e != nil {
 			return e
@@ -143,25 +187,31 @@ func (a *Properties) Validate() error {
 				return fmt.Errorf("unknown availability profile type '%s' for agent pool '%s'.  Specify either %s, or %s", agentPoolProfile.AvailabilityProfile, agentPoolProfile.Name, AvailabilitySet, VirtualMachineScaleSets)
 			}
 		}
-		switch agentPoolProfile.StorageProfile {
-		case StorageAccount:
-		case ManagedDisks:
-		case "":
-		default:
-			{
-				return fmt.Errorf("unknown storage type '%s' for agent pool '%s'.  Specify either %s, or %s", agentPoolProfile.StorageProfile, agentPoolProfile.Name, StorageAccount, ManagedDisks)
-			}
-		}
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
 			case DCOS173:
 			case DCOS184:
+			case DCOS187:
 			case Swarm:
+			case DockerCE:
 			default:
 				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
 		}
+
+		if agentPoolProfile.StorageProfile == StorageAccountClassic {
+			switch a.OrchestratorProfile.OrchestratorType {
+			case DCOS:
+			case DCOS173:
+			case DCOS184:
+			case DCOS187:
+			case Swarm:
+			default:
+				return fmt.Errorf("StorageAccountClassic is not supported in agentPoolProfile for Orchestrator %s \n", a.OrchestratorProfile.OrchestratorType)
+			}
+		}
+
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
 			return fmt.Errorf("VirtualMachineScaleSets are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"AvailabilityProfile\":\"%s\"", AvailabilitySet)
 		}
@@ -179,6 +229,9 @@ func (a *Properties) Validate() error {
 			}
 			if len(a.WindowsProfile.AdminPassword) == 0 {
 				return fmt.Errorf("WindowsProfile.AdminPassword must not be empty since  agent pool '%s' specifies windows", agentPoolProfile.Name)
+			}
+			if e := validateKeyVaultSecrets(a.WindowsProfile.Secrets, true); e != nil {
+				return e
 			}
 		}
 	}
@@ -231,6 +284,20 @@ func validateUniqueProfileNames(profiles []AgentPoolProfile) error {
 			return fmt.Errorf("profile name '%s' already exists, profile names must be unique across pools", profile.Name)
 		}
 		profileNames[profile.Name] = true
+	}
+	return nil
+}
+
+func validateStorageProfile(storageProfile string) error {
+	switch storageProfile {
+	case StorageAccountClassic:
+	case StorageAccount:
+	case ManagedDisks:
+	case "":
+	default:
+		{
+			return fmt.Errorf("Unknown storage type '%s' for agent pool. Specify either %s, %s or %s", storageProfile, StorageAccountClassic, StorageAccount, ManagedDisks)
+		}
 	}
 	return nil
 }
