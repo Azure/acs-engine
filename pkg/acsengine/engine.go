@@ -83,6 +83,37 @@ var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResour
 var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS, windowsParams}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 
+/**
+ ServicePrincipalClientSecret could be either a plain text, or a reference to a secret in a keyvault.
+ The latter has the following syntax in the api model file:
+
+ "servicePrincipalClientSecret": "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>"
+
+ This will generate a reference block in the parameters file:
+
+ "reference": {
+   "keyVault": {
+     "id": "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>"
+   },
+   "secretName": "<NAME>"
+}
+**/
+
+type KeyVaultID struct {
+	ID string `json:"id"`
+}
+
+type KeyVaultRef struct {
+	KeyVault   KeyVaultID `json:"keyVault"`
+	SecretName string     `json:"secretName"`
+}
+
+var keyvaultSecretPath_re *regexp.Regexp
+
+func init() {
+	keyvaultSecretPath_re = regexp.MustCompile(`^(/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/\S+)/secrets/(\S+)$`)
+}
+
 func (t *TemplateGenerator) verifyFiles() error {
 	allFiles := append(commonTemplateFiles, dcosTemplateFiles...)
 	allFiles = append(allFiles, kubernetesTemplateFiles...)
@@ -245,7 +276,7 @@ func getParameters(properties *api.Properties, isClassicMode bool) (map[string]i
 		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubectlVersion", properties.OrchestratorProfile.KubernetesConfig.KubectlVersion)
 		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
-		addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
+		addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
 	}
 
 	// Agent parameters
@@ -281,6 +312,27 @@ func getParameters(properties *api.Properties, isClassicMode bool) (map[string]i
 func addValue(m map[string]interface{}, k string, v interface{}) {
 	m[k] = map[string]interface{}{
 		"value": v,
+	}
+}
+
+func addSecret(m map[string]interface{}, k string, v interface{}) {
+	str, ok := v.(string)
+	if !ok {
+		addValue(m, k, v)
+		return
+	}
+	parts := keyvaultSecretPath_re.FindStringSubmatch(str)
+	if parts == nil || len(parts) != 3 {
+		addValue(m, k, v)
+		return
+	}
+	m[k] = map[string]interface{}{
+		"reference": &KeyVaultRef{
+			KeyVault: KeyVaultID{
+				ID: parts[1],
+			},
+			SecretName: parts[2],
+		},
 	}
 }
 
