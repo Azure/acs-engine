@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 bootcmd:
 - bash -c "if [ ! -f /var/lib/sdb-gpt ];then echo DCOS-5890;parted -s /dev/sdb mklabel
   gpt;touch /var/lib/sdb-gpt;fi"

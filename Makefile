@@ -1,8 +1,10 @@
 .NOTPARALLEL:
 
+.PHONY: build test validate-generated lint ci devenv
+
 build:
-	go get .
 	go generate -v ./...
+	go get .
 	go build -v
 
 test:
@@ -19,4 +21,3 @@ ci: validate-generated build test lint
 
 devenv:
 	./scripts/devenv.sh
-

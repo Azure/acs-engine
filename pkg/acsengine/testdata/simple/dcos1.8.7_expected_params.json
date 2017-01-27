@@ -1,0 +1,41 @@
+{
+  "agentprivateCount": {
+    "value": 3
+  },
+  "agentprivateSubnet": {
+    "value": "10.0.0.0/16"
+  },
+  "agentprivateVMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpublicCount": {
+    "value": 3
+  },
+  "agentpublicEndpointDNSNamePrefix": {
+    "value": "agentpublic1"
+  },
+  "agentpublicSubnet": {
+    "value": "10.1.0.0/16"
+  },
+  "agentpublicVMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "firstConsecutiveStaticIP": {
+    "value": "172.16.0.5"
+  },
+  "linuxAdminUsername": {
+    "value": "azureuser"
+  },
+  "masterEndpointDNSNamePrefix": {
+    "value": "masterdns1"
+  },
+  "masterSubnet": {
+    "value": "172.16.0.0/24"
+  },
+  "masterVMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "sshRSAPublicKey": {
+    "value": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+  }
+}

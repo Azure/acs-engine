@@ -2,7 +2,7 @@
 
 ##Cluster Defintions for apiVersion "vlabs"
 
-Here are the cluster definitions for apiVersion "vlabs" 
+Here are the cluster definitions for apiVersion "vlabs"
 
 ### apiVersion
 
@@ -22,6 +22,7 @@ Here are the valid values for the orchestrator types:
 1. `DCOS` - this represents the [DC/OS orchestrator](dcos.md).  [Older versions of DCOS173 and DCOS184 may be specified](../examples/dcos-versions).
 2. `Kubernetes` - this represents the [Kubernetes orchestrator](kubernetes.md).
 3. `Swarm` - this represents the [Swarm orchestrator](swarm.md).
+4. `DockerCE` - this represents the [DockerCE/Swarm Mode orchestrator](swarmmode.md).
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.
@@ -57,6 +58,26 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 |---|---|---|
 |adminUsername|yes|describes the username to be used on all linux clusters|
 |ssh.publicKeys.keyData|yes|The public SSH key used for authenticating access to all Linux nodes in the cluster.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation).|
+|secrets|no|specifies an array of key vaults to pull secrets from and what secrets to pull from each|
+
+#### secrets
+`secrets` details which certificates to install on the masters and nodes in the cluster.
+
+A cluster can have a list of key vaults to install certs from.
+
+On linux boxes the certs are saved on under the directory "/var/lib/waagent/". 2 files are saved per certificate:
+
+1. `{thumbprint}.crt` : this is the full cert chain saved in PEM format
+2. `{thumbprint}.prv` : this is the private key saved in PEM format
+
+|Name|Required|Description|
+|---|---|---|
+|sourceVault.id|yes|the azure resource manager id of the key vault to pull secrets from|
+|vaultCertificates.certificateUrl|yes|key vault url to this cert including the version|
+format for `sourceVault.id`, can be obtained in cli, or found in the portal: /subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.KeyVault/vaults/{keyvaultname}
+
+format for `vaultCertificates.certificateUrl`, can be obtained in cli, or found in the portal:
+https://{keyvaultname}.vault.azure.net:443/secrets/{secretName}/{version}
 
 ### servicePrincipalProfile
 
@@ -69,7 +90,7 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 
 ##Cluster Defintions for apiVersion "2016-03-30"
 
-Here are the cluster definitions for apiVersion "2016-03-30".  This matches the api version of the Azure Container Service Engine. 
+Here are the cluster definitions for apiVersion "2016-03-30".  This matches the api version of the Azure Container Service Engine.
 
 ### apiVersion
 
@@ -88,6 +109,8 @@ Here are the valid values for the orchestrator types:
 
 1. `DCOS` - this represents the [DC/OS orchestrator](dcos.md).
 2. `Swarm` - this represents the [Swarm orchestrator](swarm.md).
+3. `Kubernetes` - this represents the [Kubernetes orchestrator](kubernetes.md).
+4. `DockerCE` - this represents the [DockerCE/Swarm Mode orchestrator](swarmmode.md).
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.

@@ -27,12 +27,14 @@ const (
 const (
 	dcosCustomData173 = "dcoscustomdata173.t"
 	dcosCustomData184 = "dcoscustomdata184.t"
+	dcosCustomData187 = "dcoscustomdata187.t"
 	dcosProvision     = "dcosprovision.sh"
 )
 
 const (
 	swarmProvision        = "configure-swarm-cluster.sh"
 	swarmWindowsProvision = "Install-ContainerHost-And-Join-Swarm.ps1"
+	swarmModeProvision    = "configure-swarmmode-cluster.sh"
 )
 
 const (
@@ -56,6 +58,7 @@ const (
 	swarmBaseFile                = "swarmbase.t"
 	swarmAgentResourcesVMAS      = "swarmagentresourcesvmas.t"
 	swarmAgentResourcesVMSS      = "swarmagentresourcesvmss.t"
+	swarmAgentResourcesClassic   = "swarmagentresourcesclassic.t"
 	swarmAgentVars               = "swarmagentvars.t"
 	swarmMasterResources         = "swarmmasterresources.t"
 	swarmMasterVars              = "swarmmastervars.t"
@@ -77,7 +80,8 @@ var kubernetesAddonYamls = map[string]string{
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams}
 var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
-var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS, windowsParams}
+var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS, windowsParams}
+var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 
 func (t *TemplateGenerator) verifyFiles() error {
 	allFiles := append(commonTemplateFiles, dcosTemplateFiles...)
@@ -110,15 +114,19 @@ func InitializeTemplateGenerator(classicMode bool) (*TemplateGenerator, error) {
 }
 
 // GenerateTemplate generates the template from the API Model
-func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService) (string, string, bool, error) {
-	var err error
+func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
+	// named return values are used in order to set err in case of a panic
+	templateRaw = ""
+	parametersRaw = ""
+	certsGenerated = false
+	err = nil
+
 	var templ *template.Template
-	certsGenerated := false
 
 	properties := &containerService.Properties
 
 	if certsGenerated, err = SetPropertiesDefaults(properties); err != nil {
-		return "", "", certsGenerated, err
+		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
 	templ = template.New("acs template").Funcs(t.getTemplateFuncMap(properties))
@@ -131,26 +139,41 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	for _, file := range files {
 		bytes, e := Asset(file)
 		if e != nil {
-			return "", "", certsGenerated, fmt.Errorf("Error reading file %s, Error: %s", file, e.Error())
+			err = fmt.Errorf("Error reading file %s, Error: %s", file, e.Error())
+			return templateRaw, parametersRaw, certsGenerated, err
 		}
 		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
-			return "", "", certsGenerated, err
+			return templateRaw, parametersRaw, certsGenerated, err
 		}
 	}
+	// template generation may have panics in the called functions.  This catches those panics
+	// and ensures the panic is returned as an error
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+			// invalidate the template and the parameters
+			templateRaw = ""
+			parametersRaw = ""
+		}
+	}()
+
 	var b bytes.Buffer
 	if err = templ.ExecuteTemplate(&b, baseFile, properties); err != nil {
-		return "", "", certsGenerated, err
+		return templateRaw, parametersRaw, certsGenerated, err
 	}
+	templateRaw = b.String()
+
 	var parametersMap map[string]interface{}
-	if parametersMap, err = getParameters(properties); err != nil {
-		return "", "", certsGenerated, err
+	if parametersMap, err = getParameters(properties, t.ClassicMode); err != nil {
+		return templateRaw, parametersRaw, certsGenerated, err
 	}
 	var parameterBytes []byte
 	if parameterBytes, err = json.Marshal(parametersMap); err != nil {
-		return "", "", certsGenerated, err
+		return templateRaw, parametersRaw, certsGenerated, err
 	}
+	parametersRaw = string(parameterBytes)
 
-	return b.String(), string(parameterBytes), certsGenerated, nil
+	return templateRaw, parametersRaw, certsGenerated, err
 }
 
 // GenerateClusterID creates a unique 8 string cluster ID
@@ -184,7 +207,8 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
 	var files []string
 	var baseFile string
-	if properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
+	if properties.OrchestratorProfile.OrchestratorType == api.DCOS187 ||
+		properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
 		properties.OrchestratorProfile.OrchestratorType == api.DCOS173 {
 		files = append(commonTemplateFiles, dcosTemplateFiles...)
 		baseFile = dcosBaseFile
@@ -194,6 +218,9 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 	} else if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		files = append(commonTemplateFiles, kubernetesTemplateFiles...)
 		baseFile = kubernetesBaseFile
+	} else if properties.OrchestratorProfile.OrchestratorType == api.DockerCE {
+		files = append(commonTemplateFiles, swarmModeTemplateFiles...)
+		baseFile = swarmBaseFile
 	} else {
 		return nil, "", fmt.Errorf("orchestrator '%s' is unsupported", properties.OrchestratorProfile.OrchestratorType)
 	}
@@ -201,7 +228,7 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 	return files, baseFile, nil
 }
 
-func getParameters(properties *api.Properties) (map[string]interface{}, error) {
+func getParameters(properties *api.Properties, isClassicMode bool) (map[string]interface{}, error) {
 	parametersMap := map[string]interface{}{}
 
 	// Master Parameters
@@ -214,7 +241,16 @@ func getParameters(properties *api.Properties) (map[string]interface{}, error) {
 	}
 	addValue(parametersMap, "firstConsecutiveStaticIP", properties.MasterProfile.FirstConsecutiveStaticIP)
 	addValue(parametersMap, "masterVMSize", properties.MasterProfile.VMSize)
+	if isClassicMode {
+		addValue(parametersMap, "masterCount", properties.MasterProfile.Count)
+	}
 	addValue(parametersMap, "sshRSAPublicKey", properties.LinuxProfile.SSH.PublicKeys[0].KeyData)
+	for i, s := range properties.LinuxProfile.Secrets {
+		addValue(parametersMap, fmt.Sprintf("linuxKeyVaultID%d", i), s.SourceVault.ID)
+		for j, c := range s.VaultCertificates {
+			addValue(parametersMap, fmt.Sprintf("linuxKeyVaultID%dCertificateURL%d", i, j), c.CertificateURL)
+		}
+	}
 
 	// Kubernetes Parameters
 	if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
@@ -249,6 +285,13 @@ func getParameters(properties *api.Properties) (map[string]interface{}, error) {
 	if properties.HasWindows() {
 		addValue(parametersMap, "windowsAdminUsername", properties.WindowsProfile.AdminUsername)
 		addValue(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword)
+		for i, s := range properties.WindowsProfile.Secrets {
+			addValue(parametersMap, fmt.Sprintf("windowsKeyVaultID%d", i), s.SourceVault.ID)
+			for j, c := range s.VaultCertificates {
+				addValue(parametersMap, fmt.Sprintf("windowsKeyVaultID%dCertificateURL%d", i, j), c.CertificateURL)
+				addValue(parametersMap, fmt.Sprintf("windowsKeyVaultID%dCertificateStore%d", i, j), c.CertificateStore)
+			}
+		}
 	}
 
 	return parametersMap, nil
@@ -269,8 +312,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		"IsDCOS184": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.DCOS184
 		},
+		"IsDCOS187": func() bool {
+			return properties.OrchestratorProfile.OrchestratorType == api.DCOS187
+		},
 		"RequiresFakeAgentOutput": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
+		},
+		"IsSwarmMode": func() bool {
+			return properties.OrchestratorProfile.IsSwarmMode()
 		},
 		"IsPublic": func(ports []int) bool {
 			return len(ports) > 0
@@ -391,6 +440,18 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			}
 			return str
 		},
+		"GetMasterSwarmModeCustomData": func() string {
+			files := []string{swarmModeProvision}
+			str := buildYamlFileWithWriteFiles(files)
+			str = escapeSingleLine(str)
+			return fmt.Sprintf("\"customData\": \"[base64('%s')]\",", str)
+		},
+		"GetAgentSwarmModeCustomData": func() string {
+			files := []string{swarmModeProvision}
+			str := buildYamlFileWithWriteFiles(files)
+			str = escapeSingleLine(str)
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('agentRunCmdFile'),variables('agentRunCmd')))]\",", str)
+		},
 		"AnyAgentHasDisks": func() bool {
 			for _, agentProfile := range properties.AgentPoolProfiles {
 				if agentProfile.HasDisks() {
@@ -398,6 +459,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 				}
 			}
 			return false
+		},
+		"HasLinuxSecrets": func() bool {
+			return properties.LinuxProfile.HasSecrets()
+		},
+		"HasWindowsSecrets": func() bool {
+			return properties.WindowsProfile.HasSecrets()
 		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
@@ -423,7 +490,16 @@ func getDCOSMasterAttributes() string {
 }
 
 func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) string {
-	if orchestratorType == api.DCOS184 {
+	if orchestratorType == api.DCOS187 {
+		switch masterCount {
+		case 1:
+			return "556978041b6ed059cc0f474501083e35ea5645b8"
+		case 3:
+			return "1eb387eda0403c7fd6f1dacf66e530be74c3c3de"
+		case 5:
+			return "2e38627207dc70f46296b9649f9ee2a43500ec15"
+		}
+	} else if orchestratorType == api.DCOS184 {
 		switch masterCount {
 		case 1:
 			return "5ac6a7d060584c58c704e1f625627a591ecbde4e"
@@ -447,7 +523,8 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 
 func getDCOSCustomDataPublicIPStr(orchestratorType api.OrchestratorType, masterCount int) string {
 	if orchestratorType == api.DCOS173 ||
-		orchestratorType == api.DCOS184 {
+		orchestratorType == api.DCOS184 ||
+		orchestratorType == api.DCOS187 {
 		var buf bytes.Buffer
 		for i := 0; i < masterCount; i++ {
 			buf.WriteString(fmt.Sprintf("reference(variables('masterVMNic')[%d]).ipConfigurations[0].properties.privateIPAddress,", i))
@@ -500,21 +577,21 @@ func getVNETSubnetDependencies(properties *api.Properties) string {
 
 func getVNETSubnets(properties *api.Properties, addNSG bool) string {
 	masterString := `{
-            "name": "[variables('masterSubnetName')]", 
+            "name": "[variables('masterSubnetName')]",
             "properties": {
               "addressPrefix": "[variables('masterSubnet')]"
             }
           }`
 	agentString := `          {
-            "name": "[variables('%sSubnetName')]", 
+            "name": "[variables('%sSubnetName')]",
             "properties": {
               "addressPrefix": "[variables('%sSubnet')]"
             }
           }`
 	agentStringNSG := `          {
-            "name": "[variables('%sSubnetName')]", 
+            "name": "[variables('%sSubnetName')]",
             "properties": {
-              "addressPrefix": "[variables('%sSubnet')]", 
+              "addressPrefix": "[variables('%sSubnet')]",
               "networkSecurityGroup": {
                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('%sNSGName'))]"
               }
@@ -536,22 +613,22 @@ func getVNETSubnets(properties *api.Properties, addNSG bool) string {
 
 func getLBRule(name string, port int) string {
 	return fmt.Sprintf(`	          {
-            "name": "LBRule%d", 
+            "name": "LBRule%d",
             "properties": {
               "backendAddressPool": {
                 "id": "[concat(variables('%sLbID'), '/backendAddressPools/', variables('%sLbBackendPoolName'))]"
-              }, 
-              "backendPort": %d, 
-              "enableFloatingIP": false, 
+              },
+              "backendPort": %d,
+              "enableFloatingIP": false,
               "frontendIPConfiguration": {
                 "id": "[variables('%sLbIPConfigID')]"
-              }, 
-              "frontendPort": %d, 
-              "idleTimeoutInMinutes": 5, 
-              "loadDistribution": "Default", 
+              },
+              "frontendPort": %d,
+              "idleTimeoutInMinutes": 5,
+              "loadDistribution": "Default",
               "probe": {
                 "id": "[concat(variables('%sLbID'),'/probes/tcp%dProbe')]"
-              }, 
+              },
               "protocol": "tcp"
             }
           }`, port, name, name, port, name, port, name, port)
@@ -570,11 +647,11 @@ func getLBRules(name string, ports []int) string {
 
 func getProbe(port int) string {
 	return fmt.Sprintf(`          {
-            "name": "tcp%dProbe", 
+            "name": "tcp%dProbe",
             "properties": {
-              "intervalInSeconds": "5", 
-              "numberOfProbes": "2", 
-              "port": %d, 
+              "intervalInSeconds": "5",
+              "numberOfProbes": "2",
+              "port": %d,
               "protocol": "tcp"
             }
           }`, port, port)
@@ -595,16 +672,16 @@ func getSecurityRule(port int, portIndex int) string {
 	// BaseLBPriority specifies the base lb priority.
 	BaseLBPriority := 200
 	return fmt.Sprintf(`          {
-            "name": "Allow_%d", 
+            "name": "Allow_%d",
             "properties": {
-              "access": "Allow", 
-              "description": "Allow traffic from the Internet to port %d", 
-              "destinationAddressPrefix": "*", 
-              "destinationPortRange": "%d", 
-              "direction": "Inbound", 
-              "priority": %d, 
-              "protocol": "*", 
-              "sourceAddressPrefix": "Internet", 
+              "access": "Allow",
+              "description": "Allow traffic from the Internet to port %d",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "%d",
+              "direction": "Inbound",
+              "priority": %d,
+              "protocol": "*",
+              "sourceAddressPrefix": "Internet",
               "sourcePortRange": "*"
             }
           }`, port, port, port, BaseLBPriority+portIndex)
@@ -617,10 +694,10 @@ func getDataDisks(a *api.AgentPoolProfile) string {
 	var buf bytes.Buffer
 	buf.WriteString("\"dataDisks\": [\n")
 	dataDisks := `            {
-              "createOption": "Empty", 
-              "diskSizeGB": "%d", 
-              "lun": %d, 
-              "name": "[concat(variables('%sVMNamePrefix'), copyIndex(),'-datadisk%d')]", 
+              "createOption": "Empty",
+              "diskSizeGB": "%d",
+              "lun": %d,
+              "name": "[concat(variables('%sVMNamePrefix'), copyIndex(),'-datadisk%d')]",
               "vhd": {
                 "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('%sDataAccountName'),'.blob.core.windows.net/vhds/',variables('%sVMNamePrefix'),copyIndex(), '--datadisk%d.vhd')]"
               }
@@ -757,6 +834,8 @@ touch /etc/mesosphere/roles/azure_master`
 func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCount int, provisionContent string, attributeContents string) string {
 	yamlFilename := ""
 	switch orchestratorType {
+	case api.DCOS187:
+		yamlFilename = dcosCustomData187
 	case api.DCOS184:
 		yamlFilename = dcosCustomData184
 	case api.DCOS173:

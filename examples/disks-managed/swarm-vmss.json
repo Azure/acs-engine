@@ -31,10 +31,6 @@
           ]
         }
     ],
-    "windowsProfile": {
-      "adminUsername": "azureuser",
-      "adminPassword": "replacepassword1234$"
-    },
     "linuxProfile": {
       "adminUsername": "azureuser",
       "ssh": {

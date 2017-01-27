@@ -32,7 +32,7 @@ Pageant enables agent forwarding.  This means that you can SSH from any of the m
 
   ![Image of Putty SSH](images/putty-agentforwarding.png)
 
- 8. Click "Open" to connect to the master.  Now ssh directly to an agent, and you will connect automatically.
+ 8. Click "Open" to connect to the master.  Now ssh directly to an agent, and you will connect automatically. For DC/OS, you can find the hostname of agent from Dashboard on the Nodes page.
 
 # Create Port 80 tunnel to the Master
 

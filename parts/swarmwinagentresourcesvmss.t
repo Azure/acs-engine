@@ -147,6 +147,10 @@
             "adminUsername": "[variables('windowsAdminUsername')]",
             "adminPassword": "[variables('windowsAdminPassword')]",
             {{GetWinAgentSwarmCustomData}}
+            {{if HasWindowsSecrets}}
+              ,
+              "secrets": "[variables('windowsProfileSecrets')]"
+            {{end}}
           }, 
           "storageProfile": {
             "imageReference": {

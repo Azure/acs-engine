@@ -275,7 +275,7 @@ fi
 echo "processes at end of script"
 ps ax
 date
-echo "completed mesos cluster configuration"
+echo "completed Swarm cluster configuration"
 
 echo "restart system to install any remaining software"
 if isagent ; then

@@ -127,8 +127,7 @@ func validateDNSName(dnsName string) error {
 	if err != nil {
 		return err
 	}
-	submatches := re.FindStringSubmatch(dnsName)
-	if len(submatches) != 2 {
+	if !re.MatchString(dnsName) {
 		return fmt.Errorf("DNS name '%s' is invalid. The DNS name must contain between 3 and 45 characters.  The name can contain only letters, numbers, and hyphens.  The name must start with a letter and must end with a letter or a number. (length was %d)", dnsName, len(dnsName))
 	}
 	return nil
