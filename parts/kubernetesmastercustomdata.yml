@@ -37,6 +37,14 @@ write_files:
     ExecStart=
     ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay
 
+- path: "/etc/docker/daemon.json"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    {
+      "live-restore": true
+    }
+
 - path: "/etc/kubernetes/certs/ca.crt"
   permissions: "0644"
   encoding: "base64"
