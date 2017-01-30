@@ -1,0 +1,61 @@
+#!/usr/bin/env groovy
+
+// Build Parameters
+// 'orchestrator_type' -> 'kubernetes' | 'mesos' | 'swarm
+// 'cluster_definiton' -> 'kubernetes.classic.json'
+// 'instance_name' -> 'acs-k8s-mutlias'
+
+node {
+  timestamps {
+  wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
+  withCredentials([
+    [$class: 'UsernamePasswordMultiBinding', credentialsId: 'E2E_SERVICE_PRINCIPAL',
+      usernameVariable: 'SERVICE_PRINCIPAL_CLIENT_ID',
+      passwordVariable: 'SERVICE_PRINCIPAL_CLIENT_SECRET']
+  ]) {
+    env.GOPATH="${WORKSPACE}"
+    def clone_dir = "${env.GOPATH}/src/github.com/Azure/acs-engine"
+    env.HOME=clone_dir
+
+    // TODO: parameterize these out
+    env.SUBSCRIPTION_ID = "c1089427-83d3-4286-9f35-5af546a6eb67"
+    env.TENANT_ID = "72f988bf-86f1-41af-91ab-2d7cd011db47"
+
+    dir(clone_dir) {
+      def img = null;
+
+      stage('Prepare') {
+        deleteDir()
+        checkout scm
+        img = docker.build('acs-engine', '--pull .')
+      }
+
+      img.inside() {
+        sh("printf '%x' \$(date '+%s') > DEPLOY_VERSION")
+        env.LOCATION = "eastus"
+        env.DEPLOY_VERSION = readFile('DEPLOY_VERSION').trim()
+        archiveArtifacts(artifacts: 'DEPLOY_VERSION', fingerprint: true)
+
+        // Build and Test
+        stage('Build & Test') {
+          sh('make ci')
+        }
+
+        // Deploy and validate templates
+        stage('Validate Template Deployments') {
+          env.INSTANCE_NAME = "acsengine-dcos-${env.DEPLOY_VERSION}"
+          env.CLUSTER_DEFINITION = "${clone_dir}/examples/dcos-versions/dcos1.8.4.json"
+          sh('./test/deploy.sh')
+          sh("ls ${clone_dir}")
+          sh("ls ${clone_dir}/_output/")
+          sh("ls ${clone_dir}/_output/${INSTANCE_NAME}")
+
+          archiveArtifacts(artifacts: "_output/${INSTANCE_NAME}/*", fingerprint: true)
+          // archive artifacts?
+        }
+      }
+    }
+  }
+  }
+  }
+}
