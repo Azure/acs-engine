@@ -83,6 +83,54 @@ var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResour
 var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS, windowsParams}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 
+/**
+ The following parameters could be either a plain text, or referenced to a secret in a keyvault:
+ - apiServerCertificate
+ - apiServerPrivateKey
+ - caCertificate
+ - clientCertificate
+ - clientPrivateKey
+ - kubeConfigCertificate
+ - kubeConfigPrivateKey
+ - servicePrincipalClientSecret
+
+ To refer to a keyvault secret, the value of the parameter in the api model file should be formatted as:
+
+ "<PARAMETER>": "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
+ where:
+   <SUB_ID> is the subscription ID of the keyvault
+   <RG_NAME> is the resource group of the keyvault
+   <KV_NAME> is the name of the keyvault
+   <NAME> is the name of the secret.
+   <VERSION> (optional) is the version of the secret (default: the latest version)
+
+ This will generate a reference block in the parameters file:
+
+ "reference": {
+   "keyVault": {
+     "id": "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>"
+   },
+   "secretName": "<NAME>"
+   "secretVersion": "<VERSION>"
+}
+**/
+
+type KeyVaultID struct {
+	ID string `json:"id"`
+}
+
+type KeyVaultRef struct {
+	KeyVault      KeyVaultID `json:"keyVault"`
+	SecretName    string     `json:"secretName"`
+	SecretVersion string     `json:"secretVersion,omitempty"`
+}
+
+var keyvaultSecretPath_re *regexp.Regexp
+
+func init() {
+	keyvaultSecretPath_re = regexp.MustCompile(`^(/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/\S+)/secrets/([^/\s]+)(/(\S+))?$`)
+}
+
 func (t *TemplateGenerator) verifyFiles() error {
 	allFiles := append(commonTemplateFiles, dcosTemplateFiles...)
 	allFiles = append(allFiles, kubernetesTemplateFiles...)
@@ -254,17 +302,17 @@ func getParameters(properties *api.Properties, isClassicMode bool) (map[string]i
 
 	// Kubernetes Parameters
 	if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-		addValue(parametersMap, "apiServerCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.APIServerCertificate)))
-		addValue(parametersMap, "apiServerPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.APIServerPrivateKey)))
-		addValue(parametersMap, "caCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)))
-		addValue(parametersMap, "clientCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientCertificate)))
-		addValue(parametersMap, "clientPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientPrivateKey)))
-		addValue(parametersMap, "kubeConfigCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)))
-		addValue(parametersMap, "kubeConfigPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)))
+		addSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
+		addSecret(parametersMap, "apiServerPrivateKey", properties.CertificateProfile.APIServerPrivateKey, true)
+		addSecret(parametersMap, "caCertificate", properties.CertificateProfile.CaCertificate, true)
+		addSecret(parametersMap, "clientCertificate", properties.CertificateProfile.ClientCertificate, true)
+		addSecret(parametersMap, "clientPrivateKey", properties.CertificateProfile.ClientPrivateKey, true)
+		addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
+		addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubectlVersion", properties.OrchestratorProfile.KubernetesConfig.KubectlVersion)
 		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
-		addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
+		addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
 	}
 
 	// Agent parameters
@@ -300,6 +348,33 @@ func getParameters(properties *api.Properties, isClassicMode bool) (map[string]i
 func addValue(m map[string]interface{}, k string, v interface{}) {
 	m[k] = map[string]interface{}{
 		"value": v,
+	}
+}
+
+func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
+	str, ok := v.(string)
+	if !ok {
+		addValue(m, k, v)
+		return
+	}
+	parts := keyvaultSecretPath_re.FindStringSubmatch(str)
+	if parts == nil || len(parts) != 5 {
+		if encode {
+			addValue(m, k, base64.StdEncoding.EncodeToString([]byte(str)))
+		} else {
+			addValue(m, k, str)
+		}
+		return
+	}
+
+	m[k] = map[string]interface{}{
+		"reference": &KeyVaultRef{
+			KeyVault: KeyVaultID{
+				ID: parts[1],
+			},
+			SecretName:    parts[2],
+			SecretVersion: parts[4],
+		},
 	}
 }
 
