@@ -25,9 +25,9 @@ There are several ways to create a Service Principal in Azure Active Directory:
    az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
    ```
 
-This will output your `appId`, `password`, `name`, and `tenant`.  The `name` or `appId` may be used for the `servicePrincipalProfile.servicePrincipalClientId` and the `password` is used for `servicePrincipalProfile.servicePrincipalClientSecret`.
+   This will output your `appId`, `password`, `name`, and `tenant`.  The `name` or `appId` may be used for the `servicePrincipalProfile.servicePrincipalClientId` and the `password` is used for `servicePrincipalProfile.servicePrincipalClientSecret`.
 
-Confirm your service principal by opening a new shell and run the following commands substituting in `name`, `password`, and `tenant`:
+   Confirm your service principal by opening a new shell and run the following commands substituting in `name`, `password`, and `tenant`:
 
    ```shell
    az login --service-principal -u NAME -p PASSWORD --tenant TENANT
@@ -38,10 +38,10 @@ Confirm your service principal by opening a new shell and run the following comm
 
    Instructions: ["Use Azure CLI to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal-cli/)
 
-* **With [PowerShell](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal/)**
+* **With [PowerShell](https://github.com/Azure/azure-powershell)**
 
    Instructions: ["Use Azure PowerShell to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal/)
 
-* **With the [Legacy Portal](https://azure.microsoft.com/en-us/documentation/articles/resource-group-create-service-principal-portal/)**
+* **With the [Portal](https://portal.azure.com)**
 
    Instructions: ["Use portal to create Active Directory application and service principal that can access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-create-service-principal-portal/)
