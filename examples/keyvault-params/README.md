@@ -19,10 +19,10 @@ To refer to a keyvault secret, the value of the parameter in the api model file 
 
 	"<PARAMETER>": "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
 where: 
-**SUB_ID** is the subscription ID of the keyvault 
-**RG_NAME** is the resource group of the keyvault 
-**KV_NAME** is the name of the keyvault 
-**NAME** is the name of the secret. 
-**VERSION** (optional) is the version of the secret (default: the latest version) 
+- **SUB_ID** is the subscription ID of the keyvault
+- **RG_NAME** is the resource group of the keyvault
+- **KV_NAME** is the name of the keyvault
+- **NAME** is the name of the secret in the keyvault
+- **VERSION** (optional) is the version of the secret (default: the latest version)
 
 The example **kubernetes.json** shows you how to refer deployment parameter to a secret in a keyvault.
