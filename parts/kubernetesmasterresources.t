@@ -56,6 +56,22 @@
       "name": "[variables('nsgName')]",
       "properties": {
         "securityRules": [
+{{if .HasWindows}}
+          {
+            "name": "allow_rdp", 
+            "properties": {
+              "access": "Allow", 
+              "description": "Allow RDP traffic to master", 
+              "destinationAddressPrefix": "*", 
+              "destinationPortRange": "3389-3389", 
+              "direction": "Inbound", 
+              "priority": 102, 
+              "protocol": "Tcp", 
+              "sourceAddressPrefix": "*", 
+              "sourcePortRange": "*"
+            }
+          },
+{{end}}       
           {
             "name": "allow_ssh",
             "properties": {
