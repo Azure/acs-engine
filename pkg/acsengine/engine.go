@@ -514,10 +514,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 				// this should never happen and this is a bug
 				panic(err.Error())
 			}
-			str := string(b)
-			str = strings.Replace(str, "<<<caCertificate>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
-			str = strings.Replace(str, "<<<clientCertificate>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientCertificate)), -1)
-			b64GzipStr := getBase64CustomScriptFromStr(str)
+			b64GzipStr := getBase64CustomScriptFromStr(string(b))
 			return fmt.Sprintf("\"customData\": \"%s\",", b64GzipStr)
 		},
 		"GetKubernetesKubeConfig": func() string {

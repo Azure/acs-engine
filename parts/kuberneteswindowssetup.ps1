@@ -9,15 +9,15 @@
 param(
     [string]
     [ValidateNotNullOrEmpty()]
-    $MasterIP = "10.240.255.5",
+    $MasterIP,
 
     [parameter()]
     [ValidateNotNullOrEmpty()]
-    $KubeDnsServiceIp = "10.0.0.10",
+    $KubeDnsServiceIp,
 
     [parameter()]
     [ValidateNotNullOrEmpty()]
-    $CACertificate = "<<<caCertificate>>>",
+    $CACertificate,
 
     [parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
@@ -29,7 +29,7 @@ param(
 
     [parameter()]
     [ValidateNotNullOrEmpty()]
-    $AgentCertificate = "<<<clientCertificate>>>",
+    $AgentCertificate,
 
     [parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
