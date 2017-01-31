@@ -116,7 +116,6 @@ write_files:
             --cloud-config=/etc/kubernetes/azure.json \
             --hairpin-mode=promiscuous-bridge \
             --network-plugin=kubenet \
-            --reconcile-cidr \
             --v=2
     ExecStop=/usr/bin/docker stop -t 2 kubelet
 

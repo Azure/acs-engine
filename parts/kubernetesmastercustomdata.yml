@@ -114,6 +114,7 @@ write_files:
               - "--tls-private-key-file=/etc/kubernetes/certs/apiserver.key"
               - "--client-ca-file=/etc/kubernetes/certs/ca.crt"
               - "--service-account-key-file=/etc/kubernetes/certs/apiserver.key"
+              - "--storage-backend=etcd2"
               - "--v=4"
             volumeMounts:
               - name: "etc-kubernetes"
@@ -222,7 +223,7 @@ write_files:
       containers:
       - name: kube-addon-manager
         # TODO: consider if hardcoding this is the right thing to do...
-        image: gcr.io/google_containers/kube-addon-manager-amd64:v6
+        image: gcr.io/google_containers/kube-addon-manager-amd64:v6.2
         resources:
           requests:
             cpu: 5m
