@@ -15,10 +15,6 @@ param(
     [ValidateNotNullOrEmpty()]
     $KubeDnsServiceIp,
 
-    [parameter()]
-    [ValidateNotNullOrEmpty()]
-    $CACertificate,
-
     [parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
     $MasterFQDNPrefix,
@@ -26,10 +22,6 @@ param(
     [parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
     $Location,
-
-    [parameter()]
-    [ValidateNotNullOrEmpty()]
-    $AgentCertificate,
 
     [parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
@@ -40,10 +32,12 @@ param(
     $AzureHostname
 )
 
+$global:CACertificate = "<<<caCertificate>>>"
+$global:AgentCertificate = "<<<clientCertificate>>>"
 $global:DockerServiceName = "Docker"
 $global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
-$global:KubeBinariesSASURL = "https://acsengine.blob.core.windows.net/v1-5-1/k.zip?st=2017-01-30T15%3A47%3A00Z&se=2020-01-31T15%3A47%3A00Z&sp=rl&sv=2015-12-11&sr=b&sig=C9ho0Vl%2F1ute7d2mAs%2BiVM43%2BQfhEITk%2Fg2oZv5r66Y%3D"
+$global:KubeBinariesSASURL = "https://acsengine.blob.core.windows.net/v1-5-1/k.zip"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
 
@@ -85,7 +79,7 @@ Write-KubeConfig()
 apiVersion: v1
 clusters:
 - cluster:
-    certificate-authority-data: "$CACertificate"
+    certificate-authority-data: "$global:CACertificate"
     server: https://$MasterFQDNPrefix.$Location.cloudapp.azure.com
   name: "$MasterFQDNPrefix"
 contexts:
@@ -98,7 +92,7 @@ kind: Config
 users:
 - name: "$MasterFQDNPrefix-admin"
   user:
-    client-certificate-data: "$AgentCertificate"
+    client-certificate-data: "$global:AgentCertificate"
     client-key-data: "$AgentKey"
 "@
 
@@ -121,6 +115,7 @@ Get-PodCIDR
     $podCidrDiscovered=$false
     $podCIDR=""
     # run kubelet until podCidr is discovered
+    Write-Host "waiting to discover pod CIDR"
     while (-not $podCidrDiscovered)
     {
         $podCIDR=c:\k\kubectl.exe --kubeconfig=c:\k\config get nodes/$AzureHostname -o custom-columns=podCidr:.spec.podCIDR --no-headers
@@ -131,6 +126,7 @@ Get-PodCIDR
         }
         else
         {
+            Write-Host "Sleeping for 10s, and then waiting to discover pod CIDR"
             Start-Sleep -sec 10    
         }
     }
@@ -290,7 +286,7 @@ try
     else 
     {
         # keep for debugging purposes
-        Write-Log ".\CustomDataSetupScript.ps1 -MasterIP $MasterIP -KubeDnsServiceIp $KubeDnsServiceIp -MasterFQDNPrefix $MasterFQDNPrefix -Location $Location -CACertificate $CACertificate -AgentCertificate $AgentCertificate -AgentKey $AgentKey -AzureHostname $AzureHostname"
+        Write-Log ".\CustomDataSetupScript.ps1 -MasterIP $MasterIP -KubeDnsServiceIp $KubeDnsServiceIp -MasterFQDNPrefix $MasterFQDNPrefix -Location $Location -AgentKey $AgentKey -AzureHostname $AzureHostname"
     }
 }
 catch
