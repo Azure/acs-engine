@@ -11,7 +11,13 @@
     },
     "agentPoolProfiles": [
       {
-        "name": "agentpool1",
+        "name": "linuxpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet"
+      },
+      {
+        "name": "windowspool2",
         "count": 3,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet",
