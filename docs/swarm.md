@@ -54,11 +54,11 @@ After completing this walkthrough you will know how to:
 
  6. Now let's create a simple web app and expose to the world.  Start by using your favorite linux file editor to create a file named `docker-compose.yml` with the following contents:
  ```
- web:
-   image: "yeasy/simple-web"
-   ports:
-     - "80:80"
-   restart: "always"
+    web:
+      image: "yeasy/simple-web"
+      ports:
+        - "80:80"
+      restart: "always"
  ```
  7. type `docker-compose up -d` to create the simple web server.  This will take a few minutes to pull the image
 
