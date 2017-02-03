@@ -469,9 +469,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			if e != nil {
 				return ""
 			}
-			// add the master provisioning script
-			masterProvisionB64GzipStr := getBase64CustomScript(kubernetesMasterCustomScript)
-			str = strings.Replace(str, "MASTER_PROVISION_B64_GZIP_STR", masterProvisionB64GzipStr, -1)
 
 			for placeholder, filename := range kubernetesAddonYamls {
 				addonTextContents := getBase64CustomScript(filename)
@@ -486,11 +483,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			if e != nil {
 				return ""
 			}
-			// add the master provisioning script
-			masterProvisionB64GzipStr := getBase64CustomScript(kubernetesMasterCustomScript)
-			str = strings.Replace(str, "MASTER_PROVISION_B64_GZIP_STR", masterProvisionB64GzipStr, -1)
-
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+		},
+		"GetKubernetesB64Provision": func() string {
+			return getBase64CustomScript(kubernetesMasterCustomScript)
 		},
 		"GetMasterSwarmCustomData": func() string {
 			files := []string{swarmProvision}
