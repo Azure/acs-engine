@@ -17,12 +17,15 @@
     .SYNOPSIS
         Installs the prerequisites for creating Windows containers
         Opens TCP ports (80,443,2375,8080) in Windows Firewall.
+        Connects Docker to a Swarm Mode master.
 
     .DESCRIPTION
         Installs the prerequisites for creating Windows containers
         Opens TCP ports (80,443,2375,8080) in Windows Firewall.
+        Connects Docker to a Swarm Mode master.
 
     .PARAMETER SwarmMasterIP
+        IP Address of Docker Swarm Mode Master
 
     .EXAMPLE
         .\Join-SwarmMode-cluster.ps1 -SwarmMasterIP 192.168.255.5
