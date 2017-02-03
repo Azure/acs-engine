@@ -191,9 +191,11 @@ users:
     set -x
 }
 
+# master and node
 ensureDocker
 ensureKubelet
 
+# master only 
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     writeKubeConfig
     ensureKubectl

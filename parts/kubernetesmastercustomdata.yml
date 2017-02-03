@@ -346,4 +346,4 @@ write_files:
   encoding: gzip
   owner: "root"
   content: !!binary |
-    MASTER_PROVISION_B64_GZIP_STR
+    {{{provisionScript}}}
