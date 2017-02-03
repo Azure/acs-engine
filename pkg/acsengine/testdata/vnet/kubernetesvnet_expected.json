@@ -705,11 +705,12 @@
       "z"
     ],
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]",
-    "subnetName": "[parameters('masterVnetSubnetID')]",
+    "subnetName": "[split(parameters('masterVnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
+    "subnetNameResourceSegmentIndex": 10,
     "subscriptionId": "[subscription().subscriptionId]",
     "tenantId": "[subscription().tenantId]",
     "username": "[parameters('linuxAdminUsername')]",
-    "virtualNetworkName": "[variables('vnetParts')[0]]",
+    "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
     "vmSizesMap": {
       "Basic_A2": {
         "storageAccountType": "Standard_LRS"
@@ -959,7 +960,7 @@
       }
     },
     "vmsPerStorageAccount": 20,
-    "vnetParts": "[split(parameters('masterVnetSubnetID'),'/subnets/')]",
+    "vnetNameResourceSegmentIndex": 8,
     "vnetSubnetID": "[parameters('masterVnetSubnetID')]"
   },
   "resources": [
