@@ -122,10 +122,10 @@ function Install-DockerBinaries()
     do {
         try
         {
-            Write-Log "Downloading Docker binaries...."
+            Write-Log "Downloading and installing Docker binaries...."
             Invoke-WebRequest -Uri $global:DockerBinariesURL -OutFile $zipfile
             $success = $true;
-            Write-Log "Successfully downloaded Docker binaries. Number of entries: $currentRetry";
+            Write-Log "Successfully downloaded Docker binaries. Number of retries: $currentRetry";
         }
         catch [System.Exception]
         {
