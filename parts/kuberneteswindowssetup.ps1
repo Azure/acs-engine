@@ -147,26 +147,7 @@ c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=
     $kubeConfig | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
     $kubeProxyStartStr = @"
-`$nodeIP=""
-`$aliasName="vEthernet (HNS Internal NIC)"
-while (`$true)
-{
-    try
-    {
-        `$nodeNic=Get-NetIPaddress -InterfaceAlias `$aliasName -AddressFamily IPv4
-        #bind to the docker IP address
-        `$nodeIP=`$nodeNic.IPAddress | Where-Object {`$_.StartsWith("172.")} | Select-Object -First 1
-        break
-    }
-    catch
-    {
-        Write-Output "sleeping for 10s since `$aliasName is not defined"
-        Start-Sleep -sec 10
-    }
-}
-
-`$env:INTERFACE_TO_ADD_SERVICE_IP=`$aliasName
-c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --master=${MasterIP}:8080 --bind-address=`$nodeIP --kubeconfig=c:\k\config
+c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --master=${MasterIP}:8080 --kubeconfig=c:\k\config
 "@
 
     $kubeProxyStartStr | Out-File -encoding ASCII -filepath $global:KubeProxyStartFile
@@ -192,7 +173,7 @@ Set-DockerNetwork($podCIDR)
     net start docker 
 
     # create new transparent network
-    docker network create --driver=transparent --subnet=$podCIDR --gateway=$podGW transparentNet
+    docker network create --driver=transparent -o com.docker.network.windowsshim.dnssuffix=cluster.local --subnet=$podCIDR --gateway=$podGW transparentNet
 
     # create host vnic for gateway ip to forward the traffic and kubeproxy to listen over VIP
     Add-VMNetworkAdapter -ManagementOS -Name forwarder -SwitchName "Layered Ethernet 3"
@@ -228,27 +209,34 @@ New-NSSMService
     net start Kubelet
     
     # setup kubeproxy
-    # disabled by default since kube-proxy is still experimental, adding
-    # service logic and describing dependency on kubelet
-    if ($false) {
-        c:\k\nssm install Kubeproxy C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
-        c:\k\nssm set Kubeproxy AppDirectory $global:KubeDir
-        c:\k\nssm set Kubeproxy AppParameters $global:KubeProxyStartFile
-        c:\k\nssm set Kubeproxy DisplayName Kubeproxy
-        c:\k\nssm set Kubeproxy DependOnService Kubelet
-        c:\k\nssm set Kubeproxy Description Kubeproxy
-        c:\k\nssm set Kubeproxy Start SERVICE_AUTO_START
-        c:\k\nssm set Kubeproxy ObjectName LocalSystem
-        c:\k\nssm set Kubeproxy Type SERVICE_WIN32_OWN_PROCESS
-        c:\k\nssm set Kubeproxy AppThrottle 1500
-        c:\k\nssm set Kubeproxy AppStdout C:\k\kubeproxy.log
-        c:\k\nssm set Kubeproxy AppStderr C:\k\kubeproxy.err.log
-        c:\k\nssm set Kubeproxy AppRotateFiles 1
-        c:\k\nssm set Kubeproxy AppRotateOnline 1
-        c:\k\nssm set Kubeproxy AppRotateSeconds 86400
-        c:\k\nssm set Kubeproxy AppRotateBytes 1048576
-        net start Kubeproxy
-    }
+    c:\k\nssm install Kubeproxy C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+    c:\k\nssm set Kubeproxy AppDirectory $global:KubeDir
+    c:\k\nssm set Kubeproxy AppParameters $global:KubeProxyStartFile
+    c:\k\nssm set Kubeproxy DisplayName Kubeproxy
+    c:\k\nssm set Kubeproxy DependOnService Kubelet
+    c:\k\nssm set Kubeproxy Description Kubeproxy
+    c:\k\nssm set Kubeproxy Start SERVICE_AUTO_START
+    c:\k\nssm set Kubeproxy ObjectName LocalSystem
+    c:\k\nssm set Kubeproxy Type SERVICE_WIN32_OWN_PROCESS
+    c:\k\nssm set Kubeproxy AppThrottle 1500
+    c:\k\nssm set Kubeproxy AppStdout C:\k\kubeproxy.log
+    c:\k\nssm set Kubeproxy AppStderr C:\k\kubeproxy.err.log
+    c:\k\nssm set Kubeproxy AppRotateFiles 1
+    c:\k\nssm set Kubeproxy AppRotateOnline 1
+    c:\k\nssm set Kubeproxy AppRotateSeconds 86400
+    c:\k\nssm set Kubeproxy AppRotateBytes 1048576
+    net start Kubeproxy
+}
+
+function
+Set-Explorer
+{
+    # setup explorer so that it is usable
+    New-Item -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer'
+    New-Item -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\BrowserEmulation'
+    New-ItemProperty -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\BrowserEmulation' -Name IntranetCompatibilityMode -Value 0 -Type DWord
+    New-Item -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main'
+    New-ItemProperty -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main' -Name 'Start Page' -Type String -Value http://bing.com
 }
 
 try
@@ -280,7 +268,10 @@ try
 
         Write-Log "install the NSSM service"
         New-NSSMService
-        
+
+        Write-Log "Set Internet Explorer"
+        Set-Explorer
+
         Write-Log "Setup Complete"
     }
     else 
