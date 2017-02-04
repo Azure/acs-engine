@@ -43,6 +43,7 @@ param(
 $global:DockerServiceName = "Docker"
 $global:DockerBinariesURL = "https://acsengine.blob.core.windows.net/swarmm/docker.zip"
 $global:DockerExePath = "C:\Program Files\Docker"
+$global:IsNewDockerVersion = $false
 
 filter Timestamp {"$(Get-Date -Format o): $_"}
 
@@ -107,6 +108,12 @@ function Expand-ZIPFile($file, $destination)
 
 function Install-DockerBinaries()
 {
+    if( $global:IsNewDockerVersion)
+    {
+        Write-Log "Skipping installation of new Docker binaries because latest is already installed."
+        return
+    }
+
     $currentRetry = 0;
     $success = $false;
 
@@ -259,9 +266,45 @@ function Join-Swarm()
     Invoke-Expression -Command:$joinSwarmCommand
 }
 
+function Confirm-DockerVersion()
+{
+   $dockerServerVersionCmd = "docker version --format '{{.Server.Version}}'"
+   Write-Log "Running command: $dockerServerVersionCmd"
+   $dockerServerVersion = Invoke-Expression -Command:$dockerServerVersionCmd
+
+   $dockerClientVersionCmd = "docker version --format '{{.Client.Version}}'"
+   Write-Log "Running command: $dockerClientVersionCmd"
+   $dockerClientVersion = Invoke-Expression -Command:$dockerClientVersionCmd
+
+   Write-Log "Docker Server version: $dockerServerVersion, Docker Client verison: $dockerClientVersion"
+   
+   $serverVersionData = $dockerServerVersion.Split(".")
+   $isNewServerVersion = $false;
+   if(($serverVersionData[0] -ge 1) -and ($serverVersionData[1] -ge 13)){
+       $isNewServerVersion = $true;
+       Write-Log "Setting isNewServerVersion to $isNewServerVersion"
+   }
+
+   $clientVersionData = $dockerClientVersion.Split(".")
+   $isNewClientVersion = $false;
+   if(($clientVersionData[0] -ge 1) -and ($clientVersionData[1] -ge 13)){
+       $isNewClientVersion = $true;
+       Write-Log "Setting  isNewClientVersion to $isNewClientVersion"   
+   }
+
+   if($isNewServerVersion -and $isNewClientVersion)
+   {
+       $global:IsNewDockerVersion = $true;
+       Write-Log "Setting IsNewDockerVersion to $global:IsNewDockerVersion"
+   }
+}
+
 try
 {
     Write-Log "Provisioning $global:DockerServiceName... with Swarm IP $SwarmMasterIP"
+
+    Write-Log "Checking Docker version"
+    Confirm-DockerVersion
 
     Write-Log "Stop Docker"
     Stop-Docker

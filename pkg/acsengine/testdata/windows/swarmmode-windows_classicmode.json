@@ -16,6 +16,7 @@
         "name": "agent",
         "count": 3,
         "vmSize": "Standard_D2_v2",
+        "osType": "Windows",
         "dnsPrefix": "agentdns1",
         "ports": [
           80,
@@ -33,6 +34,10 @@
           }
         ]
       }
+    },
+    "windowsProfile": {
+      "adminUsername": "azureuser",
+      "adminPassword": "replacepassword1234$"
     }
   }
 }

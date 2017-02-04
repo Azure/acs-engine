@@ -35,7 +35,9 @@ const (
 const (
 	swarmProvision        = "configure-swarm-cluster.sh"
 	swarmWindowsProvision = "Install-ContainerHost-And-Join-Swarm.ps1"
-	swarmModeProvision    = "configure-swarmmode-cluster.sh"
+
+	swarmModeProvision        = "configure-swarmmode-cluster.sh"
+	swarmModeWindowsProvision = "Join-SwarmMode-cluster.ps1"
 )
 
 const (
@@ -502,6 +504,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		},
 		"GetWinAgentSwarmCustomData": func() string {
 			str := getBase64CustomScript(swarmWindowsProvision)
+			return fmt.Sprintf("\"customData\": \"%s\"", str)
+		},
+		"GetWinAgentSwarmModeCustomData": func() string {
+			str := getBase64CustomScript(swarmModeWindowsProvision)
 			return fmt.Sprintf("\"customData\": \"%s\"", str)
 		},
 		"GetKubernetesWindowsAgentCustomData": func() string {
