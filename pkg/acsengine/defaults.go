@@ -73,6 +73,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
+		a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
 		a.OrchestratorProfile.OrchestratorType = api.DCOS188
