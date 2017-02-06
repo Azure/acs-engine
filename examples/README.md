@@ -2,7 +2,7 @@
 
 ## Overview
 
-This cluster definition examples demonstrate how to create a customized Docker Enabled Cluster on Microsoft Azure.
+These cluster definition examples demonstrate how to create a customized Docker Enabled Cluster on Microsoft Azure.
 
 ## Walkthroughs
 
@@ -16,4 +16,4 @@ This cluster definition examples demonstrate how to create a customized Docker E
 * [Attached Disks](disks-storageaccount) - shows how to attach up to 4 disks per node
 * [Managed Disks](disks-managed) (under private preview) - shows how to use managed disks 
 * [Large Clusters](largeclusters) - shows how to create cluster sizes of up to 1200 nodes
-* [Windows Clusters](windows) - shows how to create windows or mixed Microsoft Windows and Linux Docker clusters on Microsoft Azure
+* [Windows Clusters](windows) - shows how to create mixed Microsoft Windows and Linux Docker clusters on Microsoft Azure
