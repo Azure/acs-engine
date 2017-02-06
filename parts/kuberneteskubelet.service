@@ -14,7 +14,6 @@ ExecStart=/usr/bin/docker run \
   --net=host \
   --pid=host \
   --privileged \
-  --rm=true \
   --volume=/dev:/dev \
   --volume=/sys:/sys:ro \
   --volume=/var/run:/var/run:rw \
@@ -22,7 +21,7 @@ ExecStart=/usr/bin/docker run \
   --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \
   --volume=/var/log:/var/log:rw \
   --volume=/etc/kubernetes/:/etc/kubernetes:ro \
-  --volume=/srv/kubernetes/:/srv/kubernetes:ro${DOCKER_OPTS} \
+  --volume=/srv/kubernetes/:/srv/kubernetes:ro $DOCKER_OPTS \
     ${KUBELET_IMAGE} \
       /hyperkube kubelet \
         --api-servers="${KUBELET_API_SERVERS}" \
