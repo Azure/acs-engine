@@ -221,6 +221,7 @@ func (a *Properties) Validate() error {
 		if agentPoolProfile.OSType == Windows {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Swarm:
+			case DockerCE:
 			case Kubernetes:
 				// there is currently only support for one agent pool to have windows
 				count := 0

@@ -9,3 +9,4 @@ The examples show you how to configure up to 4 attached disks.  The disks can ra
 1. **dcos.json** - deploying and using [DC/OS](../../docs/dcos.md)
 2. **kubernetes.json** - deploying and using [Kubernetes](../../docs/kubernetes.md)
 3. **swarm.json** - deploying and using [Swarm](../../docs/swarm.md)
+4. **swarmmode.json** - deploying and using [Swarm Mode/DockerCE](../../docs/swarmmode.md)

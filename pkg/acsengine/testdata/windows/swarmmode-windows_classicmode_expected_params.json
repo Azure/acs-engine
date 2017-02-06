@@ -12,7 +12,7 @@
     "value": "Standard_D2_v2"
   },
   "firstConsecutiveStaticIP": {
-    "value": "172.16.0.5"
+    "value": "192.168.255.5"
   },
   "linuxAdminUsername": {
     "value": "azureuser"
@@ -24,12 +24,18 @@
     "value": "master"
   },
   "masterSubnet": {
-    "value": "172.16.0.0/24"
+    "value": "192.168.255.0/24"
   },
   "masterVMSize": {
     "value": "Standard_D2_v2"
   },
   "sshRSAPublicKey": {
     "value": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+  },
+  "windowsAdminPassword": {
+    "value": "replacepassword1234$"
+  },
+  "windowsAdminUsername": {
+    "value": "azureuser"
   }
 }
