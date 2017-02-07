@@ -59,46 +59,46 @@ After completing this walkthrough you will know how to:
 
 4. Start your first Docker image by editing a file named `simpleweb.yaml` filling in the contents below, and then apply by typing `kubectl apply -f simpleweb.yaml`.  This will start a windows simple web application and expose to the world.
 
-   ```
-apiVersion: v1
-kind: Service
-metadata:
-  name: win-webserver
-  labels:
-    app: win-webserver
-spec:
-  ports:
-    # the port that this service should serve on
-  - port: 80
-    targetPort: 80
-  selector:
-    app: win-webserver
-  type: LoadBalancer
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  labels:
-    app: win-webserver
-  name: win-webserver
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: win-webserver
-      name: win-webserver
-    spec:
-      containers:
-      - name: windowswebserver
-        image: microsoft/windowsservercore
-        command:
-        - powershell.exe
-        - -command
-        - "<#code used from https://gist.github.com/wagnerandrade/5424431#> ; $$ip = (Get-NetIPAddress | where {$$_.IPAddress -Like '*.*.*.*'})[0].IPAddress ; $$url = 'http://'+$$ip+':80/' ; $$listener = New-Object System.Net.HttpListener ; $$listener.Prefixes.Add($$url) ; $$listener.Start() ; $$callerCounts = @{} ; Write-Host('Listening at {0}...' -f $$url) ; while ($$listener.IsListening) { ;$$context = $$listener.GetContext() ;$$requestUrl = $$context.Request.Url ;$$clientIP = $$context.Request.RemoteEndPoint.Address ;$$response = $$context.Response ;Write-Host '' ;Write-Host('> {0}' -f $$requestUrl) ;  ;$$count = 1 ;$$k=$$callerCounts.Get_Item($$clientIP) ;if ($$k -ne $$null) { $$count += $$k } ;$$callerCounts.Set_Item($$clientIP, $$count) ;$$header='<html><body><H1>Windows Container Web Server</H1>' ;$$callerCountsString='' ;$$callerCounts.Keys | % { $$callerCountsString+='<p>IP {0} callerCount {1} ' -f $$_,$$callerCounts.Item($$_) } ;$$footer='</body></html>' ;$$content='{0}{1}{2}' -f $$header,$$callerCountsString,$$footer ;Write-Output $$content ;$$buffer = [System.Text.Encoding]::UTF8.GetBytes($$content) ;$$response.ContentLength64 = $$buffer.Length ;$$response.OutputStream.Write($$buffer, 0, $$buffer.Length) ;$$response.Close() ;$$responseStatus = $$response.StatusCode ;Write-Host('< {0}' -f $$responseStatus)  } ; "
-      nodeSelector:
-        beta.kubernetes.io/os: windows
-   ```
+  ```yaml
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: win-webserver
+    labels:
+      app: win-webserver
+  spec:
+    ports:
+      # the port that this service should serve on
+    - port: 80
+      targetPort: 80
+    selector:
+      app: win-webserver
+    type: LoadBalancer
+  ---
+  apiVersion: extensions/v1beta1
+  kind: Deployment
+  metadata:
+    labels:
+      app: win-webserver
+    name: win-webserver
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          app: win-webserver
+        name: win-webserver
+      spec:
+        containers:
+        - name: windowswebserver
+          image: microsoft/windowsservercore
+          command:
+          - powershell.exe
+          - -command
+          - "<#code used from https://gist.github.com/wagnerandrade/5424431#> ; $$ip = (Get-NetIPAddress | where {$$_.IPAddress -Like '*.*.*.*'})[0].IPAddress ; $$url = 'http://'+$$ip+':80/' ; $$listener = New-Object System.Net.HttpListener ; $$listener.Prefixes.Add($$url) ; $$listener.Start() ; $$callerCounts = @{} ; Write-Host('Listening at {0}...' -f $$url) ; while ($$listener.IsListening) { ;$$context = $$listener.GetContext() ;$$requestUrl = $$context.Request.Url ;$$clientIP = $$context.Request.RemoteEndPoint.Address ;$$response = $$context.Response ;Write-Host '' ;Write-Host('> {0}' -f $$requestUrl) ;  ;$$count = 1 ;$$k=$$callerCounts.Get_Item($$clientIP) ;if ($$k -ne $$null) { $$count += $$k } ;$$callerCounts.Set_Item($$clientIP, $$count) ;$$header='<html><body><H1>Windows Container Web Server</H1>' ;$$callerCountsString='' ;$$callerCounts.Keys | % { $$callerCountsString+='<p>IP {0} callerCount {1} ' -f $$_,$$callerCounts.Item($$_) } ;$$footer='</body></html>' ;$$content='{0}{1}{2}' -f $$header,$$callerCountsString,$$footer ;Write-Output $$content ;$$buffer = [System.Text.Encoding]::UTF8.GetBytes($$content) ;$$response.ContentLength64 = $$buffer.Length ;$$response.OutputStream.Write($$buffer, 0, $$buffer.Length) ;$$response.Close() ;$$responseStatus = $$response.StatusCode ;Write-Host('< {0}' -f $$responseStatus)  } ; "
+        nodeSelector:
+          beta.kubernetes.io/os: windows
+  ```
 
 5. Type `watch kubectl get pods` to watch the deployment of the service that takes about 30 seconds.  Once running, type `kubectl get svc` and curl the 10.x address to see the output, eg. `curl 10.244.1.4`
 
@@ -106,85 +106,85 @@ spec:
 
 7. The next step in this walkthrough is to deploy a hybrid Linux / Windows app.  This application uses a Windows ASP.Net WebAPI front end, and a linux redis database as the backend.  The ASP.Net WebAPI looks up the redis database via the fqdn redis-master.default.svc.cluster.local.  To run this app, paste the contents below into a file named `hybrid.yaml` and type `kubectl apply -f hybrid.yaml`.  This will take about 10 minutes to pull down the images.
 
-   ```
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis-master
-  labels:
-    app: redis
-    tier: backend
-    role: master
-spec:
-  ports:
-    # the port that this service should serve on
-  - port: 6379
-    targetPort: 6379
-  selector:
-    app: redis
-    tier: backend
-    role: master
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: redis-master
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: redis
-        role: master
-        tier: backend
-    spec:
-      containers:
-      - name: master
-        image: redis
-        resources:
-          requests:
-            cpu: 100m
-            memory: 100Mi
-        ports:
-        - containerPort: 6379
-      nodeSelector:
-        beta.kubernetes.io/os: linux
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: aspnet-webapi-todo
-  labels:
-    app: aspnet-webapi-todo
-    tier: frontend
-spec:
-  ports:
-    # the port that this service should serve on
-  - port: 80
-    targetPort: 80
-  selector:
-    app: aspnet-webapi-todo
-    tier: frontend
-  type: LoadBalancer
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: aspnet-webapi-todo
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: aspnet-webapi-todo
-        tier: frontend
-    spec:
-      containers:
-      - name: aspnet-webapi-todo
-        image: anhowe/aspnet-web-api-todo2:latest
-      nodeSelector:
-        beta.kubernetes.io/os: windows
-   ```
+  ```yaml
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: redis-master
+    labels:
+      app: redis
+      tier: backend
+      role: master
+  spec:
+    ports:
+      # the port that this service should serve on
+    - port: 6379
+      targetPort: 6379
+    selector:
+      app: redis
+      tier: backend
+      role: master
+  ---
+  apiVersion: extensions/v1beta1
+  kind: Deployment
+  metadata:
+    name: redis-master
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          app: redis
+          role: master
+          tier: backend
+      spec:
+        containers:
+        - name: master
+          image: redis
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          ports:
+          - containerPort: 6379
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+  ---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: aspnet-webapi-todo
+    labels:
+      app: aspnet-webapi-todo
+      tier: frontend
+  spec:
+    ports:
+      # the port that this service should serve on
+    - port: 80
+      targetPort: 80
+    selector:
+      app: aspnet-webapi-todo
+      tier: frontend
+    type: LoadBalancer
+  ---
+  apiVersion: extensions/v1beta1
+  kind: Deployment
+  metadata:
+    name: aspnet-webapi-todo
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          app: aspnet-webapi-todo
+          tier: frontend
+      spec:
+        containers:
+        - name: aspnet-webapi-todo
+          image: anhowe/aspnet-web-api-todo2:latest
+        nodeSelector:
+          beta.kubernetes.io/os: windows
+  ```
 
 8. Type `watch kubectl get pods` to watch the deployment of the service that takes about 10 minutes.  Once running, type `kubectl get svc` and for the app names `aspnet-webapi-todo` copy the external address and open in your webbrowser.  As shown in the following image, the traffic flows from your webbrowser to the ASP.Net WebAPI frontend and then to the hybrid container.
 
