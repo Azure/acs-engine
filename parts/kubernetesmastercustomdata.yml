@@ -8,7 +8,7 @@ packages:
  - traceroute
 
 runcmd:
-- /bin/echo DAEMON_ARGS=--advertise-client-urls "http://127.0.0.1:2379,http://{{{masterPrivateIp}}}:2379" --listen-client-urls "http://0.0.0.0:2379,http://0.0.0.0:4001" | tee -a /etc/default/etcd
+- /bin/echo DAEMON_ARGS=--name "<<<variables('masterVMNames')[copyIndex()]>>>" --initial-advertise-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --listen-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --advertise-client-urls "<<<variables('masterEtcdClientURLs')[copyIndex()]>>>" --listen-client-urls "<<<concat(variables('masterEtcdClientURLs')[copyIndex()], ',http://127.0.0.1:', variables('masterEtcdClientPort'))>>>" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "<<<variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]>>>" --initial-cluster-state "new" | tee -a /etc/default/etcd
 - apt-get update
 - apt-get install -y apt-transport-https ca-certificates
 - apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
@@ -117,7 +117,7 @@ write_files:
               - "--cloud-provider=azure"
               - "--cloud-config=/etc/kubernetes/azure.json"
               - "--service-cluster-ip-range={{{kubeServiceCidr}}}"
-              - "--etcd-servers=http://127.0.0.1:4001"
+              - "--etcd-servers=http://127.0.0.1:{{{masterEtcdClientPort}}}"
               - "--tls-cert-file=/etc/kubernetes/certs/apiserver.crt"
               - "--tls-private-key-file=/etc/kubernetes/certs/apiserver.key"
               - "--client-ca-file=/etc/kubernetes/certs/ca.crt"
@@ -166,6 +166,7 @@ write_files:
               - "--cloud-config=/etc/kubernetes/azure.json"
               - "--root-ca-file=/etc/kubernetes/certs/ca.crt"
               - "--service-account-private-key-file=/etc/kubernetes/certs/apiserver.key"
+              - "--leader-elect=true"             
               - "--v=2"
             volumeMounts: 
               - name: "etc-kubernetes"
@@ -202,6 +203,7 @@ write_files:
               - "scheduler"
               - "--master=127.0.0.1:8080"
               - "--kubeconfig=/var/lib/kubelet/kubeconfig"
+              - "--leader-elect=true"
               - "--v=2"
             volumeMounts:
               - name: "etc-kubernetes"

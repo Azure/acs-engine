@@ -73,6 +73,41 @@
     "masterFirstAddrOctet4": "[variables('masterFirstAddrOctets')[3]]",
     "masterFirstAddrPrefix": "[concat(variables('masterFirstAddrOctets')[0],'.',variables('masterFirstAddrOctets')[1],'.',variables('masterFirstAddrOctets')[2],'.')]",
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]",
+    "masterVMNames": [
+      "[concat(variables('masterVMNamePrefix'), '0')]",
+      "[concat(variables('masterVMNamePrefix'), '1')]",
+      "[concat(variables('masterVMNamePrefix'), '2')]",
+      "[concat(variables('masterVMNamePrefix'), '3')]",
+      "[concat(variables('masterVMNamePrefix'), '4')]"
+    ],
+    "masterPrivateIpAddrs": [
+      "[concat(variables('masterFirstAddrPrefix'), add(0, int(variables('masterFirstAddrOctet4'))))]",
+      "[concat(variables('masterFirstAddrPrefix'), add(1, int(variables('masterFirstAddrOctet4'))))]",
+      "[concat(variables('masterFirstAddrPrefix'), add(2, int(variables('masterFirstAddrOctet4'))))]",
+      "[concat(variables('masterFirstAddrPrefix'), add(3, int(variables('masterFirstAddrOctet4'))))]",
+      "[concat(variables('masterFirstAddrPrefix'), add(4, int(variables('masterFirstAddrOctet4'))))]"
+    ],
+    "masterEtcdServerPort": 2380,
+    "masterEtcdClientPort": 2379,
+    "masterEtcdPeerURLs":[
+      "[concat('http://', variables('masterPrivateIpAddrs')[0], ':', variables('masterEtcdServerPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[1], ':', variables('masterEtcdServerPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[2], ':', variables('masterEtcdServerPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[3], ':', variables('masterEtcdServerPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[4], ':', variables('masterEtcdServerPort'))]"
+    ],
+    "masterEtcdClientURLs":[
+      "[concat('http://', variables('masterPrivateIpAddrs')[0], ':', variables('masterEtcdClientPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[1], ':', variables('masterEtcdClientPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[2], ':', variables('masterEtcdClientPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[3], ':', variables('masterEtcdClientPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[4], ':', variables('masterEtcdClientPort'))]"    
+    ],
+    "masterEtcdClusterStates": [
+      "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0])]",
+      "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdPeerURLs')[2])]",
+      "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdPeerURLs')[2], ',', variables('masterVMNames')[3], '=', variables('masterEtcdPeerURLs')[3], ',', variables('masterVMNames')[4], '=', variables('masterEtcdPeerURLs')[4])]"
+    ],
     "subscriptionId": "[subscription().subscriptionId]",
     "tenantId": "[subscription().tenantId]",
     "dockerEngineVersion": "1.12.*"
