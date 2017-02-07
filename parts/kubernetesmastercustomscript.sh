@@ -108,7 +108,7 @@ function configNetworkPolicy() {
         # on masters
         ADDONS="calico-configmap.yaml calico-daemonset.yaml"
         ADDONS_PATH=/etc/kubernetes/addons
-        CALICO_URL="https://github.com/simonswine/calico/raw/master/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager"
+        CALICO_URL="https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager"
         if [[ "${NETWORK_POLICY}" = "calico" ]]; then
             # download calico yamls
             for addon in ${ADDONS}; do
