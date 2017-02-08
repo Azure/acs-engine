@@ -89,13 +89,13 @@ uksouth ukwest"
               // Clean up
               try {
                 sh('./test/step.sh cleanup')
-                sh("rm -rf ${clone_dir}/_output")
-                sh("rm -rf ${clone_dir}/.azure")
               }
               catch(exc) {
                 println "Exception ${exc}"
               }
             }
+            sh("rm -rf ${clone_dir}/_output")
+            sh("rm -rf ${clone_dir}/.azure")
           }
         }
       }
