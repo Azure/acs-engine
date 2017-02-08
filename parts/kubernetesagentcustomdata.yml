@@ -98,6 +98,7 @@ write_files:
     ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
     ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
     ExecStart=/usr/bin/docker run \
+      --name=kubelet \
       --net=host \
       --pid=host \
       --privileged \
@@ -125,7 +126,8 @@ write_files:
             --hairpin-mode=promiscuous-bridge \
             --network-plugin=kubenet \
             --v=2
-    ExecStop=/usr/bin/docker stop -t 2 kubelet
+    ExecStop=/usr/bin/docker stop -t 10 kubelet
+    ExecStopPost=/usr/bin/docker rm -f kubelet
 
     [Install]
     WantedBy=multi-user.target
