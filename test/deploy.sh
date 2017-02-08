@@ -15,13 +15,6 @@ set -u
 set -o pipefail
 
 ROOT="${DIR}/.."
-source "${ROOT}/test/common.sh"
-
-function cleanup {
-	if [[ "${CLEANUP:-}" == "y" ]]; then
-		az group delete --no-wait --name "${INSTANCE_NAME}" || true
-	fi
-}
 
 # Usage:
 #
@@ -40,9 +33,8 @@ function cleanup {
 #
 # Prow:
 #   export PULL_NUMBER=...
-#   export VALIDATE=true
+#   export VALIDATE=<script path>
 #   export CLUSTER_DEFIITION=examples/kubernetes.json
-#   export CLUSTER_TYPE=kubernetes
 #   ./scripts/deploy.sh
 
 # Load any user set environment
@@ -69,16 +61,25 @@ else
 	export INSTANCE_NAME="${INSTANCE_NAME:-${INSTANCE_NAME_DEFAULT}}"
 fi
 
+# Set extra parameters
+export OUTPUT="${ROOT}/_output/${INSTANCE_NAME}"
+export RESOURCE_GROUP="${INSTANCE_NAME}"
+export DEPLOYMENT_NAME="${INSTANCE_NAME}"
+
+source "${ROOT}/test/common.sh"
+
 make -C "${ROOT}"
+generate_template
+set_azure_account
 trap cleanup EXIT
-deploy
+deploy_template
 
 if [[ -z "${VALIDATE:-}" ]]; then
 	exit 0
 fi
 
-export SSH_KEY="${ROOT}/_output/${INSTANCE_NAME}/id_rsa"
-export KUBECONFIG="${ROOT}/_output/${INSTANCE_NAME}/kubeconfig/kubeconfig.${LOCATION}.json"
+export SSH_KEY="${OUTPUT}/id_rsa"
+export KUBECONFIG="${OUTPUT}/kubeconfig/kubeconfig.${LOCATION}.json"
 
 "${ROOT}/${VALIDATE}"
 

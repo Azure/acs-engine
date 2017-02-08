@@ -18,20 +18,15 @@ ROOT="${DIR}/.."
 # see: https://github.com/stedolan/jq/issues/105 & https://github.com/stedolan/jq/wiki/FAQ#general-questions
 function jqi() { filename="${1}"; jqexpr="${2}"; jq "${jqexpr}" "${filename}" > "${filename}.tmp" && mv "${filename}.tmp" "${filename}"; }
 
-function deploy() {
+function generate_template() {
 	# Check pre-requisites
 	[[ ! -z "${INSTANCE_NAME:-}" ]] || (echo "Must specify INSTANCE_NAME" && exit -1)
-	[[ ! -z "${LOCATION:-}" ]] || (echo "Must specify LOCATION" && exit -1)
 	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
-	[[ ! -z "${SUBSCRIPTION_ID:-}" ]] || (echo "Must specify SUBSCRIPTION_ID" && exit -1)
-	[[ ! -z "${TENANT_ID:-}" ]] || (echo "Must specify TENANT_ID" && exit -1)
-	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_ID" && exit -1)
-	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_SECRET" && exit -1)
-	which kubectl || (echo "kubectl must be on PATH" && exit -1)
-	which az || (echo "az must be on PATH" && exit -1)
+	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || [[ ! -z "${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_ID" && exit -1)
+	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || [[ ! -z "${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_SECRET" && exit -1)
+	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
 	
 	# Set output directory
-	export OUTPUT="${ROOT}/_output/${INSTANCE_NAME}"
 	mkdir -p "${OUTPUT}"
 
 	# Set custom dir so we don't clobber global 'az' config
@@ -64,6 +59,16 @@ function deploy() {
 		# TODO: plumb hyperkube into the apimodel
 		jqi "${OUTPUT}/azuredeploy.parameters.json" ".kubernetesHyperkubeSpec.value = \"${CUSTOM_HYPERKUBE_SPEC}\""
 	fi
+}
+
+function set_azure_account() {
+	# Check pre-requisites
+	[[ ! -z "${SUBSCRIPTION_ID:-}" ]] || (echo "Must specify SUBSCRIPTION_ID" && exit -1)
+	[[ ! -z "${TENANT_ID:-}" ]] || (echo "Must specify TENANT_ID" && exit -1)
+	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_ID" && exit -1)
+	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_SECRET" && exit -1)
+	which kubectl || (echo "kubectl must be on PATH" && exit -1)
+	which az || (echo "az must be on PATH" && exit -1)
 
 	# Login to Azure-Cli
 	az login --service-principal \
@@ -72,20 +77,31 @@ function deploy() {
 		--tenant "${TENANT_ID}" &>/dev/null
 
 	az account set --subscription "${SUBSCRIPTION_ID}"
+}
+
+function deploy_template() {
+	# Check pre-requisites
+	[[ ! -z "${DEPLOYMENT_NAME:-}" ]] || (echo "Must specify DEPLOYMENT_NAME" && exit -1)
+	[[ ! -z "${LOCATION:-}" ]] || (echo "Must specify LOCATION" && exit -1)
+	[[ ! -z "${RESOURCE_GROUP:-}" ]] || (echo "Must specify RESOURCE_GROUP" && exit -1)
+	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
+
+	which kubectl || (echo "kubectl must be on PATH" && exit -1)
+	which az || (echo "az must be on PATH" && exit -1)
 
 	# Deploy the template
-	az group create --name="${INSTANCE_NAME}" --location="${LOCATION}"
+	az group create --name="${RESOURCE_GROUP}" --location="${LOCATION}"
 
 	sleep 3 # TODO: investigate why this is needed (eventual consistency in ARM)
 	az group deployment create \
-		--name "${INSTANCE_NAME}" \
-		--resource-group "${INSTANCE_NAME}" \
+		--name "${DEPLOYMENT_NAME}" \
+		--resource-group "${RESOURCE_GROUP}" \
 		--template-file "${OUTPUT}/azuredeploy.json" \
 		--parameters "@${OUTPUT}/azuredeploy.parameters.json"
-
-	echo "${INSTANCE_NAME} files -> ${OUTPUT}"
 }
 
 function cleanup() {
-	az group delete --no-wait --name="${INSTANCE_NAME}" || true
+	if [[ "${CLEANUP:-}" == "y" ]]; then
+		az group delete --no-wait --name="${RESOURCE_GROUP}" --force || true
+	fi
 }
