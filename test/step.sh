@@ -30,9 +30,9 @@ deploy_template)
   deploy_template
 ;;
 
-verify)
+validate)
+  export SSH_KEY="${OUTPUT}/id_rsa"
   if [ ${ORCHESTRATOR} = "kubernetes" ]; then
-    export SSH_KEY="${OUTPUT}/id_rsa"
     export KUBECONFIG="${OUTPUT}/kubeconfig/kubeconfig.${LOCATION}.json"
   fi
   "${ROOT}/test/cluster-tests/${ORCHESTRATOR}/test.sh"

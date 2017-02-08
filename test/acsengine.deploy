@@ -75,8 +75,8 @@ uksouth ukwest"
               // Verify deployment
               if(ok) {
                 try {
-                  stage("${env.LOCATION} verify") {
-                    sh('./test/step.sh verify')
+                  stage("${env.LOCATION} validate") {
+                    sh('./test/step.sh validate')
                   }
                 }
                 catch(exc) {
