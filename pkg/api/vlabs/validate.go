@@ -146,6 +146,9 @@ func (a *Properties) Validate() error {
 	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
 	}
+	if e := a.ValidateNetworkPolicy(); e != nil {
+		return e
+	}
 	if e := a.MasterProfile.Validate(); e != nil {
 		return e
 	}
@@ -268,6 +271,24 @@ func (a *Properties) Validate() error {
 	if e := validateVNET(a); e != nil {
 		return e
 	}
+	return nil
+}
+
+func (a *Properties) ValidateNetworkPolicy() error {
+
+	if a.OrchestratorProfile.OrchestratorType != Kubernetes {
+		return nil
+	}
+
+	networkPolicy := a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
+	if networkPolicy != "" && networkPolicy != "none" && networkPolicy != "calico" {
+		return fmt.Errorf("unknown networkPolicy '%s' specified", networkPolicy)
+	}
+
+	if networkPolicy == "calico" && a.HasWindows() {
+		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
+	}
+
 	return nil
 }
 
