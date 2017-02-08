@@ -1,0 +1,71 @@
+{
+  "agentpool1Count": {
+    "value": 3
+  },
+  "agentpool1Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool1VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "agentpool2Count": {
+    "value": 3
+  },
+  "agentpool2Subnet": {
+    "value": "10.240.0.0/16"
+  },
+  "agentpool2VMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "apiServerCertificate": {
+    "value": "YXBpU2VydmVyQ2VydGlmaWNhdGU="
+  },
+  "apiServerPrivateKey": {
+    "value": "YXBpU2VydmVyUHJpdmF0ZUtleQ=="
+  },
+  "caCertificate": {
+    "value": "Y2FDZXJ0aWZpY2F0ZQ=="
+  },
+  "clientCertificate": {
+    "value": "Y2xpZW50Q2VydGlmaWNhdGU="
+  },
+  "clientPrivateKey": {
+    "value": "Y2xpZW50UHJpdmF0ZUtleQ=="
+  },
+  "firstConsecutiveStaticIP": {
+    "value": "10.240.255.5"
+  },
+  "kubeConfigCertificate": {
+    "value": "a3ViZUNvbmZpZ0NlcnRpZmljYXRl"
+  },
+  "kubeConfigPrivateKey": {
+    "value": "a3ViZUNvbmZpZ1ByaXZhdGVLZXk="
+  },
+  "kubectlVersion": {
+    "value": "v1.5.1"
+  },
+  "kubernetesHyperkubeSpec": {
+    "value": "gcr.io/google_containers/hyperkube-amd64:v1.5.1"
+  },
+  "linuxAdminUsername": {
+    "value": "azureuser"
+  },
+  "masterEndpointDNSNamePrefix": {
+    "value": "masterdns1"
+  },
+  "masterSubnet": {
+    "value": "10.240.0.0/16"
+  },
+  "masterVMSize": {
+    "value": "Standard_D2_v2"
+  },
+  "servicePrincipalClientId": {
+    "value": "ServicePrincipalClientID"
+  },
+  "servicePrincipalClientSecret": {
+    "value": "myServicePrincipalClientSecret"
+  },
+  "sshRSAPublicKey": {
+    "value": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+  }
+}
