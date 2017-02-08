@@ -16,11 +16,6 @@ set -o pipefail
 
 ROOT="${DIR}/.."
 
-# Load any user set environment
-if [[ -f "${ROOT}/test/user.env" ]]; then
-	source "${ROOT}/test/user.env"
-fi
-
 # Set output directory
 export OUTPUT="${ROOT}/_output/${INSTANCE_NAME}"
 
@@ -32,17 +27,19 @@ generate_template)
 ;;
 
 deploy_template)
-#  trap cleanup EXIT
   deploy_template
 ;;
 
 verify)
-  export SSH_KEY="${OUTPUT}/id_rsa"
-  export KUBECONFIG="${OUTPUT}/kubeconfig/kubeconfig.${LOCATION}.json"
+  if [ ${ORCHESTRATOR} = "kubernetes" ]; then
+    export SSH_KEY="${OUTPUT}/id_rsa"
+    export KUBECONFIG="${OUTPUT}/kubeconfig/kubeconfig.${LOCATION}.json"
+  fi
   "${ROOT}/test/cluster-tests/${ORCHESTRATOR}/test.sh"
 ;;
 
 cleanup)
+  export CLEANUP="y"
   cleanup
 ;;
 esac

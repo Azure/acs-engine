@@ -16,12 +16,6 @@ set -o pipefail
 
 ROOT="${DIR}/.."
 
-function cleanup {
-	if [[ "${CLEANUP:-}" == "y" ]]; then
-		az group delete --no-wait --name "${INSTANCE_NAME}" || true
-	fi
-}
-
 # Usage:
 #
 # Manual user usage (Specific name):
@@ -41,7 +35,6 @@ function cleanup {
 #   export PULL_NUMBER=...
 #   export VALIDATE=<script path>
 #   export CLUSTER_DEFIITION=examples/kubernetes.json
-#   export CLUSTER_TYPE=kubernetes
 #   ./scripts/deploy.sh
 
 # Load any user set environment

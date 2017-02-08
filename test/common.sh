@@ -22,8 +22,9 @@ function generate_template() {
 	# Check pre-requisites
 	[[ ! -z "${INSTANCE_NAME:-}" ]] || (echo "Must specify INSTANCE_NAME" && exit -1)
 	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
-#	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_ID" && exit -1)
-#	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_SECRET" && exit -1)
+	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || [[ ! -z "${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_ID" && exit -1)
+	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || [[ ! -z "${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_SECRET" && exit -1)
+	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
 	
 	# Set output directory
 	mkdir -p "${OUTPUT}"
@@ -83,6 +84,8 @@ function deploy_template() {
 	[[ ! -z "${DEPLOYMENT_NAME:-}" ]] || (echo "Must specify DEPLOYMENT_NAME" && exit -1)
 	[[ ! -z "${LOCATION:-}" ]] || (echo "Must specify LOCATION" && exit -1)
 	[[ ! -z "${RESOURCE_GROUP:-}" ]] || (echo "Must specify RESOURCE_GROUP" && exit -1)
+	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
+
 	which kubectl || (echo "kubectl must be on PATH" && exit -1)
 	which az || (echo "az must be on PATH" && exit -1)
 
@@ -98,6 +101,7 @@ function deploy_template() {
 }
 
 function cleanup() {
-	echo "Cleanup"
-	az group delete --no-wait --name="${RESOURCE_GROUP}" --force || true
+	if [[ "${CLEANUP:-}" == "y" ]]; then
+		az group delete --no-wait --name="${RESOURCE_GROUP}" --force || true
+	fi
 }
