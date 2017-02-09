@@ -24,6 +24,12 @@ ENV PATH "${PATH}:${GOPATH}/bin"
 RUN go get -u github.com/golang/lint/golint
 RUN go get -u github.com/jteeuwen/go-bindata/...
 
+RUN git clone https://github.com/akesterson/cmdarg.git
+RUN git clone https://github.com/akesterson/shunit.git
+
+RUN cd cmdarg; make install
+RUN cd shunit; make install
+
 # Used by some CI jobs
 ADD ./test/bootstrap/checkout-pr.sh /tmp/checkout-pr.sh
 
