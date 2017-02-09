@@ -23,6 +23,29 @@ type Subscription struct {
 	State SubscriptionState
 }
 
+// OperationStatus represents the operation status
+// And it should be written as the response body
+// for operation status query
+type OperationStatus struct {
+	ID                 string                `json:"id,omitempty"`
+	Name               string                `json:"name,omitempty"`
+	Status             string                `json:"status,omitempty"`
+	StartTime          string                `json:"startTime,omitempty"`          // “startTime”: “<DateLiteral per ISO8601>”
+	EndTime            string                `json:"endTime,omitempty"`            // “endTime”: “<DateLiteral per ISO8601>”
+	PercentageComplete float64               `json:"percentageComplete,omitempty"` // “percentComplete”: <double between 0 and 100>
+	Properties         map[string]string     `json:"properties,omitempty"`         // Only return on succeeded case
+	Error              ContainerServiceError `json:"error,omitempty"`
+	SubscriptionID     string                `json:"subscriptionid,omitempty"`
+	Location           string                `json:"location,omitempty"`
+}
+
+// ContainerServiceError conform the OData v4 error format
+type ContainerServiceError struct {
+	Code    string                 `json:"code,omitempty"`
+	Message string                 `json:"message,omitempty"`
+	Details *ContainerServiceError `json:"details,omitempty"`
+}
+
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
 type ResourcePurchasePlan struct {
