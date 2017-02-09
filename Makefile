@@ -3,6 +3,7 @@
 .PHONY: build test validate-generated lint ci devenv
 
 build:
+	go get github.com/jteeuwen/go-bindata/...
 	go generate -v ./...
 	go get .
 	go build -v
