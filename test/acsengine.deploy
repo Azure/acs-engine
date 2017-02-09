@@ -25,30 +25,26 @@ uksouth ukwest"
         }
         def locations = locations_str.tokenize('[ \t\n]+')
 
-
-
         dir(clone_dir) {
           def img = null
 
-          stage('Prepare') {
+          stage('Init') {
             deleteDir()
-            //docker.image("ubuntu").inside() {
-            //  sh("rm -rf ${WORKSPACE}")
-            //}
             checkout scm
             img = docker.build('ds-acs-engine', '--pull .')
           }
 
           img.inside("-u root:root") {
-            sh("az login --service-principal -u ${SPN_USER} -p ${SPN_PASSWORD} --tenant ${TENANT_ID}")
-            sh("az account set --subscription ${SUBSCRIPTION_ID}")
-
-            // Build and Test
-            stage('Build') {
+            def junit_dir = "_junit"
+            stage('Setup') {
+              // Set up Azure
+              sh("az login --service-principal -u ${SPN_USER} -p ${SPN_PASSWORD} --tenant ${TENANT_ID}")
+              sh("az account set --subscription ${SUBSCRIPTION_ID}")
+              // Create report directory
+              sh("mkdir ${junit_dir}")
+              // Build and test acs-engine
               sh('make ci')
-            }
-
-            stage('Create templates') {
+              // Create template
               sh("printf 'acs-test%x' \$(date '+%s') > INSTANCE_NAME")
               env.INSTANCE_NAME = readFile('INSTANCE_NAME').trim()
               env.CLUSTER_DEFINITION="examples/${ORCHESTRATOR}.json"
@@ -65,37 +61,54 @@ uksouth ukwest"
               // Deploy
               try {
                 stage("${env.LOCATION} deploy") {
-                  sh('./test/step.sh deploy_template')
+                  def test = "deploy-${env.LOCATION}"
+                  sh("mkdir -p ${junit_dir}/${test}")
+                  sh("cp ./test/shunit/deploy_template.sh ${junit_dir}/${test}/t.sh")
+                  sh("cd ${junit_dir}; shunit.sh -t ${test} > ${test}/junit.xml")
+                  sh("grep 'failures=\"0\"' ${junit_dir}/${test}/junit.xml")
                 }
               }
               catch(exc) {
-                println "Exception ${exc}"
+                echo "Exception ${exc}"
                 ok = false
               }
               // Verify deployment
-              if(ok) {
-                try {
-                  stage("${env.LOCATION} validate") {
-                    sh('./test/step.sh validate')
+              try {
+                stage("${env.LOCATION} validate") {
+                  if(ok) {
+                    def test = "validate-${env.LOCATION}"
+                    sh("mkdir -p ${junit_dir}/${test}")
+                    sh("cp ./test/shunit/validate_deployment.sh ${junit_dir}/${test}/t.sh")
+                    sh("cd ${junit_dir}; shunit.sh -t ${test} > ${test}/junit.xml")
+                    sh("grep 'failures=\"0\"' ${junit_dir}/${test}/junit.xml")
+                  }
+                  else {
+                    echo "Skipped verification for ${env.RESOURCE_GROUP}"
                   }
                 }
-                catch(exc) {
-                  echo "Exception ${exc}"
-                }
               }
-              else {
-                echo "Skipped verification for ${env.RESOURCE_GROUP}"
+              catch(exc) {
+                echo "Exception ${exc}"
               }
               // Clean up
               try {
                 sh('./test/step.sh cleanup')
               }
               catch(exc) {
-                println "Exception ${exc}"
+                echo "Exception ${exc}"
               }
+            } // for (i = 0; i <locations...
+            // Generate reports
+            try {
+              junit("${junit_dir}/**/junit.xml")
             }
+            catch(exc) {
+              echo "Exception ${exc}"
+            }
+            // Final clean up
             sh("rm -rf ${clone_dir}/_output")
             sh("rm -rf ${clone_dir}/.azure")
+            sh("rm -rf ${junit_dir}")
           }
         }
       }
