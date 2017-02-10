@@ -158,9 +158,6 @@ func (a *Properties) Validate() error {
 	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.Secret) == 0 {
 		return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 	}
-	if a.OrchestratorProfile.OrchestratorType == Kubernetes && a.MasterProfile.Count != 1 {
-		return fmt.Errorf("only 1 master may be specified with %s", a.OrchestratorProfile.OrchestratorType)
-	}
 
 	if a.MasterProfile.StorageProfile == StorageAccountClassic {
 		switch a.OrchestratorProfile.OrchestratorType {
@@ -221,6 +218,18 @@ func (a *Properties) Validate() error {
 		if agentPoolProfile.OSType == Windows {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Swarm:
+			case DockerCE:
+			case Kubernetes:
+				// there is currently only support for one agent pool to have windows
+				count := 0
+				for _, ap := range a.AgentPoolProfiles {
+					if a.OrchestratorProfile.OrchestratorType == Kubernetes && ap.OSType == Windows {
+						count++
+					}
+				}
+				if count > 1 {
+					return fmt.Errorf("A maximum of one Windows agent pool is allowed for %s, but %d were specified", Kubernetes, count)
+				}
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}

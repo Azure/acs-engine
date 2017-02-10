@@ -56,6 +56,22 @@
       "name": "[variables('nsgName')]",
       "properties": {
         "securityRules": [
+{{if .HasWindows}}
+          {
+            "name": "allow_rdp", 
+            "properties": {
+              "access": "Allow", 
+              "description": "Allow RDP traffic to master", 
+              "destinationAddressPrefix": "*", 
+              "destinationPortRange": "3389-3389", 
+              "direction": "Inbound", 
+              "priority": 102, 
+              "protocol": "Tcp", 
+              "sourceAddressPrefix": "*", 
+              "sourcePortRange": "*"
+            }
+          },
+{{end}}       
           {
             "name": "allow_ssh",
             "properties": {
@@ -155,6 +171,67 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
+      "dependsOn": [
+{{if .MasterProfile.IsCustomVNET}}
+        "[variables('nsgID')]"
+{{else}}
+        "[variables('vnetID')]"
+{{end}}
+      ],
+      "location": "[variables('location')]",
+      "name": "[variables('masterInternalLbName')]",
+      "properties": {
+        "backendAddressPools": [
+          {
+            "name": "[variables('masterLbBackendPoolName')]"
+          }
+        ],
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('masterInternalLbIPConfigName')]",
+            "properties": {
+              "privateIPAddress": "[variables('masterInternalLbIp')]",
+              "privateIPAllocationMethod": "Static",
+              "subnet": {
+                "id": "[variables('vnetSubnetID')]"
+              }
+            }
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "InternalLBRuleHTTPS",
+            "properties": {
+              "backendAddressPool": {
+                "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
+              },
+              "backendPort": 4443,
+              "enableFloatingIP": false,
+              "frontendIPConfiguration": {
+                "id": "[variables('masterInternalLbIPConfigID')]"
+              },
+              "frontendPort": 443,
+              "idleTimeoutInMinutes": 5,
+              "protocol": "tcp"
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "tcpHTTPSProbe",
+            "properties": {
+              "intervalInSeconds": "5",
+              "numberOfProbes": "2",
+              "port": 4443,
+              "protocol": "tcp"
+            }
+          }
+        ]
+      },
+      "type": "Microsoft.Network/loadBalancers"
+    },
+    {
+      "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "name": "[variables('masterPublicIPAddressName')]",
       "properties": {
@@ -200,7 +277,7 @@
         "[variables('vnetID')]",
 {{end}}
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]",
-        "[variables('nsgID')]"
+        "[variables('masterInternalLbName')]"
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
@@ -212,6 +289,9 @@
               "loadBalancerBackendAddressPools": [
                 {
                   "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
+                },
+                {
+                   "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
               ],
               "loadBalancerInboundNatRules": [

@@ -107,12 +107,13 @@
         }
       ]
     ],
-    "orchestratorName": "swarm", 
     "osImageOffer": "UbuntuServer", 
     "osImagePublisher": "Canonical", 
 {{if .OrchestratorProfile.IsSwarmMode}}
+    "orchestratorName": "swarmm", 
     "osImageSKU": "16.04.0-LTS", 
 {{else}}
+    "orchestratorName": "swarm", 
     "osImageSKU": "14.04.4-LTS", 
 {{end}}
     "osImageVersion": "latest", 

@@ -1,8 +1,8 @@
 FROM buildpack-deps:xenial
 
-ENV GO_VERSION 1.7.3
-ENV KUBECTL_VERSION 1.4.4
-ENV AZURE_CLI_VERSION 0.1.0b8
+ENV GO_VERSION 1.7.4
+ENV KUBECTL_VERSION 1.5.2
+ENV AZURE_CLI_VERSION 0.1.1b3
 
 RUN apt-get update \
     && apt-get -y upgrade \
@@ -24,3 +24,14 @@ ENV PATH "${PATH}:${GOPATH}/bin"
 RUN go get -u github.com/golang/lint/golint
 RUN go get -u github.com/ghodss/yaml
 RUN go get -u github.com/jteeuwen/go-bindata/...
+
+RUN git clone https://github.com/akesterson/cmdarg.git
+RUN git clone https://github.com/akesterson/shunit.git
+
+RUN cd cmdarg; make install
+RUN cd shunit; make install
+
+# Used by some CI jobs
+ADD ./test/bootstrap/checkout-pr.sh /tmp/checkout-pr.sh
+
+WORKDIR /gopath/src/github.com/Azure/acs-engine

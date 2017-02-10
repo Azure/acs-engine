@@ -3,6 +3,9 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     {{range .AgentPoolProfiles}}{{template "agentparams.t" .}},{{end}}
+    {{if .HasWindows}}
+      {{template "windowsparams.t"}},
+    {{end}}
     {{template "masterparams.t" .}},
     {{template "kubernetesparams.t" .}}
   },
@@ -21,11 +24,23 @@
   },
   "resources": [
     {{range .AgentPoolProfiles}}
-      {{template "kubernetesagentresourcesvmas.t" .}},
+      {{if .IsWindows}}
+        {{template "kuberneteswinagentresourcesvmas.t" .}},
+      {{else}}
+        {{template "kubernetesagentresourcesvmas.t" .}},
+      {{end}}
     {{end}}
     {{template "kubernetesmasterresources.t" .}}
   ],
   "outputs": {
     {{template "masteroutputs.t" .}}
+    {{range .AgentPoolProfiles}}
+      {{if .IsWindows}}
+        ,"rdpNatFQDN": {
+          "type": "string", 
+          "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('{{.Name}}IPAddressName'))).dnsSettings.fqdn]"
+        }
+      {{end}}
+    {{end}}
   }
 }
