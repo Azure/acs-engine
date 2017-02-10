@@ -28,8 +28,6 @@ uksouth ukwest"
 
         dir(clone_dir) {
           def img = null
-          def sendReport = false
-
           stage('Init') {
             deleteDir()
             checkout scm
@@ -57,7 +55,7 @@ uksouth ukwest"
 
             for (i = 0; i <locations.size(); i++) {
               env.LOCATION = locations[i]
-              env.RESOURCE_GROUP = "test-acs-${ORCHESTRATOR}-${env.LOCATION}"
+              env.RESOURCE_GROUP = "test-acs-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
               env.DEPLOYMENT_NAME = "${env.RESOURCE_GROUP}"
               def ok = true
               // Deploy
@@ -73,7 +71,6 @@ uksouth ukwest"
               catch(exc) {
                 echo "Exception ${exc}"
                 ok = false
-                sendReport = true
               }
               // Verify deployment
               try {
@@ -92,7 +89,6 @@ uksouth ukwest"
               }
               catch(exc) {
                 echo "Exception ${exc}"
-                sendReport = true
               }
               // Clean up
               try {
@@ -105,11 +101,14 @@ uksouth ukwest"
             // Generate reports
             try {
               junit("${junit_dir}/**/junit.xml")
-              if(sendReport && (sendTo != "")) {
-                emailext(
-                  to: "${sendTo}",
-                  subject: "[ACS Engine Jenkins Failure] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                  body: "${env.BUILD_URL}testReport")
+              if(currentBuild.result == "UNSTABLE") {
+                currentBuild.result = "FAILURE"
+                if(sendTo != "") {
+                  emailext(
+                    to: "${sendTo}",
+                    subject: "[ACS Engine Jenkins Failure] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                    body: "${env.BUILD_URL}testReport")
+                }
               }
             }
             catch(exc) {
