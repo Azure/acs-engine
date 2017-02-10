@@ -167,7 +167,7 @@ type AgentPoolProfile struct {
 	Subnet              string `json:"subnet"`
 
 	FQDN       string            `json:"fqdn,omitempty"`
-	Attributes map[string]string `json:"attributes,omitempty"`
+	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
 }
 
 // DiagnosticsProfile setting to enable/disable capturing

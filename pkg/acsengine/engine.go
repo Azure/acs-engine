@@ -430,14 +430,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		},
 		"GetDCOSMasterCustomData": func() string {
 			masterProvisionScript := getDCOSMasterProvisionScript()
-			masterAttributeContents := getDCOSMasterAttributes()
+			masterAttributeContents := getDCOSMasterCustomNodeLabels()
 			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, masterProvisionScript, masterAttributeContents)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			agentProvisionScript := getDCOSAgentProvisionScript(profile)
-			attributeContents := getDCOSAgentAttributes(profile)
+			attributeContents := getDCOSAgentCustomNodeLabels(profile)
 			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, agentProvisionScript, attributeContents)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
@@ -585,7 +585,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 	}
 }
 
-func getDCOSMasterAttributes() string {
+func getDCOSMasterCustomNodeLabels() string {
 	// return empty string for DCOS since no attribtutes needed on master
 	return ""
 }
@@ -638,12 +638,12 @@ func getDCOSCustomDataPublicIPStr(orchestratorType api.OrchestratorType, masterC
 	return ""
 }
 
-func getDCOSAgentAttributes(profile *api.AgentPoolProfile) string {
+func getDCOSAgentCustomNodeLabels(profile *api.AgentPoolProfile) string {
 	var buf bytes.Buffer
 	buf.WriteString("")
-	if len(profile.Attributes) > 0 {
+	if len(profile.CustomNodeLabels) > 0 {
 		buf.WriteString("MESOS_ATTRIBUTES=")
-		for k, v := range profile.Attributes {
+		for k, v := range profile.CustomNodeLabels {
 			buf.WriteString(fmt.Sprintf("%s:%s;", k, v))
 		}
 	}

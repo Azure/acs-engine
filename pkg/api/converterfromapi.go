@@ -300,9 +300,9 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	p.VnetSubnetID = api.VnetSubnetID
 	p.SetSubnet(api.Subnet)
 	p.FQDN = api.FQDN
-	p.Attributes = map[string]string{}
-	for k, v := range api.Attributes {
-		p.Attributes[k] = v
+	p.CustomNodeLabels = map[string]string{}
+	for k, v := range api.CustomNodeLabels {
+		p.CustomNodeLabels[k] = v
 	}
 }
 

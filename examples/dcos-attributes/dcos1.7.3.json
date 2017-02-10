@@ -14,7 +14,7 @@
         "name": "agentprivate",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "attributes" : {
+        "customNodeLabels" : {
           "foo" : "bar",
           "att1" : "value1"
         } 

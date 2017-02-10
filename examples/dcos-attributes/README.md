@@ -13,7 +13,7 @@ The definition below adds 2 attributes `"foo"` and `"att1"` to all nodes in the 
         "name": "agentprivate",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "attributes" : {
+        "customNodeLabels" : {
           "foo" : "bar",
           "att1" : "value1"
         } 

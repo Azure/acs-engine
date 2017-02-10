@@ -209,14 +209,14 @@ func (a *Properties) Validate() error {
 			}
 		}
 
-		if len(agentPoolProfile.Attributes) > 0 {
+		if len(agentPoolProfile.CustomNodeLabels) > 0 {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
 			case DCOS173:
 			case DCOS184:
 			case DCOS187:
 			default:
-				return fmt.Errorf("Agent Type attributes are only supported for DCOS.")
+				return fmt.Errorf("Agent Type Custom Node Labels are only supported for DCOS.")
 			}
 		}
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
