@@ -44,12 +44,30 @@ type Properties struct {
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
+// The 'Secret' parameter could be either a plain text, or referenced to a secret in a keyvault.
+// In the latter case, the format of the parameter's value should be
+// "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
+// where:
+//    <SUB_ID> is the subscription ID of the keyvault
+//    <RG_NAME> is the resource group of the keyvault
+//    <KV_NAME> is the name of the keyvault
+//    <NAME> is the name of the secret.
+//    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
 	ClientID string `json:"servicePrincipalClientID,omitempty"`
 	Secret   string `json:"servicePrincipalClientSecret,omitempty"`
 }
 
 // CertificateProfile represents the definition of the master cluster
+// The JSON parameters could be either a plain text, or referenced to a secret in a keyvault.
+// In the latter case, the format of the parameter's value should be
+// "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
+// where:
+//    <SUB_ID> is the subscription ID of the keyvault
+//    <RG_NAME> is the resource group of the keyvault
+//    <KV_NAME> is the name of the keyvault
+//    <NAME> is the name of the secret
+//    <VERSION> (optional) is the version of the secret (default: the latest version)
 type CertificateProfile struct {
 	// CaCertificate is the certificate authority certificate.
 	CaCertificate string `json:"caCertificate,omitempty"`

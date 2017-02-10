@@ -1,0 +1,45 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "DCOS184"
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "xtophmaster",
+      "vmSize": "Standard_D2_v2"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "xtentprivate",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "attributes" : {
+          "bla" : "foo",
+          "att1" : "value1"
+        } 
+      },
+      {
+        "name": "agentpublic",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "dnsPrefix": "xtophagent",
+        "ports": [
+          80,
+          443,
+          8080
+        ]
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCuxXmfo3ut0echPNekpU9pt32uxTQwex90LQr529BHHa5oCbgByqaZOQCEmuWlsHXJWp+pTlwutsxgLua9Q5iH6JEiKKiJjUsZ6a5bxHakmJdRS0LVwP+mxnf1ifXl0wRqLcS1Qi4SConfsufrges4hMM2KTN2YoAaQ2B4+vHpDJR9LuxJ9zhQnQRLQcAUdaFUmEHBhjLSpIzlEodL8DDHegEXGt/2RAlUxjhRLboDeUUk4VvIToejnxv/3m9yt7qkFGOFGsoJhpT7GUMhDm01rVEZHNZr86dC/gsz8eW+fc+wcUO4tV+2qeCR7dlLEMdChDe09zsId+Btg60yNb+R cschittk@csc-carbon"
+          }
+        ]
+      }
+    }
+  }
+}

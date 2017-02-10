@@ -90,7 +90,7 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 	}
 
 	masterExtraFQDNs := FormatAzureProdFQDNs(a.MasterProfile.DNSPrefix)
-	firstMasterIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)
+	firstMasterIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP).To4()
 
 	if firstMasterIP == nil {
 		return false, fmt.Errorf("MasterProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
@@ -98,8 +98,10 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 
 	ips := []net.IP{firstMasterIP}
 
-	for i := 1; i < a.MasterProfile.Count; i++ {
-		ips = append(ips, net.IP{firstMasterIP[12], firstMasterIP[13], firstMasterIP[14], firstMasterIP[15] + byte(i)})
+	// Include the Internal load balancer as well
+	for i := 1; i < (a.MasterProfile.Count + 1); i++ {
+		ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(i)}
+		ips = append(ips, ip)
 	}
 
 	// use the specified Certificate Authority pair, or generate a new pair

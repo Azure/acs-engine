@@ -18,10 +18,11 @@ import (
 )
 
 const (
-	kubernetesMasterCustomDataYaml = "kubernetesmastercustomdata.yml"
-	kubernetesMasterCustomScript   = "kubernetesmastercustomscript.sh"
-	kubernetesAgentCustomDataYaml  = "kubernetesagentcustomdata.yml"
-	kubeConfigJSON                 = "kubeconfig.json"
+	kubernetesMasterCustomDataYaml      = "kubernetesmastercustomdata.yml"
+	kubernetesMasterCustomScript        = "kubernetesmastercustomscript.sh"
+	kubernetesAgentCustomDataYaml       = "kubernetesagentcustomdata.yml"
+	kubeConfigJSON                      = "kubeconfig.json"
+	kubernetesWindowsAgentCustomDataPS1 = "kuberneteswindowssetup.ps1"
 )
 
 const (
@@ -34,7 +35,9 @@ const (
 const (
 	swarmProvision        = "configure-swarm-cluster.sh"
 	swarmWindowsProvision = "Install-ContainerHost-And-Join-Swarm.ps1"
-	swarmModeProvision    = "configure-swarmmode-cluster.sh"
+
+	swarmModeProvision        = "configure-swarmmode-cluster.sh"
+	swarmModeWindowsProvision = "Join-SwarmMode-cluster.ps1"
 )
 
 const (
@@ -53,6 +56,7 @@ const (
 	kubernetesMasterResources    = "kubernetesmasterresources.t"
 	kubernetesMasterVars         = "kubernetesmastervars.t"
 	kubernetesParams             = "kubernetesparams.t"
+	kubernetesWinAgentVars       = "kuberneteswinagentresourcesvmas.t"
 	masterOutputs                = "masteroutputs.t"
 	masterParams                 = "masterparams.t"
 	swarmBaseFile                = "swarmbase.t"
@@ -75,13 +79,62 @@ var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR":            "kubernetesmasteraddons-kube-proxy-daemonset.yaml",
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR":    "kubernetesmasteraddons-kubernetes-dashboard-service.yaml",
+	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
 }
 
-var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams}
+var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars}
-var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams}
-var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS, windowsParams}
+var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
+var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
+
+/**
+ The following parameters could be either a plain text, or referenced to a secret in a keyvault:
+ - apiServerCertificate
+ - apiServerPrivateKey
+ - caCertificate
+ - clientCertificate
+ - clientPrivateKey
+ - kubeConfigCertificate
+ - kubeConfigPrivateKey
+ - servicePrincipalClientSecret
+
+ To refer to a keyvault secret, the value of the parameter in the api model file should be formatted as:
+
+ "<PARAMETER>": "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
+ where:
+   <SUB_ID> is the subscription ID of the keyvault
+   <RG_NAME> is the resource group of the keyvault
+   <KV_NAME> is the name of the keyvault
+   <NAME> is the name of the secret.
+   <VERSION> (optional) is the version of the secret (default: the latest version)
+
+ This will generate a reference block in the parameters file:
+
+ "reference": {
+   "keyVault": {
+     "id": "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>"
+   },
+   "secretName": "<NAME>"
+   "secretVersion": "<VERSION>"
+}
+**/
+
+type KeyVaultID struct {
+	ID string `json:"id"`
+}
+
+type KeyVaultRef struct {
+	KeyVault      KeyVaultID `json:"keyVault"`
+	SecretName    string     `json:"secretName"`
+	SecretVersion string     `json:"secretVersion,omitempty"`
+}
+
+var keyvaultSecretPath_re *regexp.Regexp
+
+func init() {
+	keyvaultSecretPath_re = regexp.MustCompile(`^(/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/\S+)/secrets/([^/\s]+)(/(\S+))?$`)
+}
 
 func (t *TemplateGenerator) verifyFiles() error {
 	allFiles := append(commonTemplateFiles, dcosTemplateFiles...)
@@ -254,17 +307,17 @@ func getParameters(properties *api.Properties, isClassicMode bool) (map[string]i
 
 	// Kubernetes Parameters
 	if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-		addValue(parametersMap, "apiServerCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.APIServerCertificate)))
-		addValue(parametersMap, "apiServerPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.APIServerPrivateKey)))
-		addValue(parametersMap, "caCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)))
-		addValue(parametersMap, "clientCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientCertificate)))
-		addValue(parametersMap, "clientPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientPrivateKey)))
-		addValue(parametersMap, "kubeConfigCertificate", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)))
-		addValue(parametersMap, "kubeConfigPrivateKey", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)))
+		addSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
+		addSecret(parametersMap, "apiServerPrivateKey", properties.CertificateProfile.APIServerPrivateKey, true)
+		addSecret(parametersMap, "caCertificate", properties.CertificateProfile.CaCertificate, true)
+		addSecret(parametersMap, "clientCertificate", properties.CertificateProfile.ClientCertificate, true)
+		addSecret(parametersMap, "clientPrivateKey", properties.CertificateProfile.ClientPrivateKey, true)
+		addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
+		addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubectlVersion", properties.OrchestratorProfile.KubernetesConfig.KubectlVersion)
 		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
-		addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
+		addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
 	}
 
 	// Agent parameters
@@ -300,6 +353,33 @@ func getParameters(properties *api.Properties, isClassicMode bool) (map[string]i
 func addValue(m map[string]interface{}, k string, v interface{}) {
 	m[k] = map[string]interface{}{
 		"value": v,
+	}
+}
+
+func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
+	str, ok := v.(string)
+	if !ok {
+		addValue(m, k, v)
+		return
+	}
+	parts := keyvaultSecretPath_re.FindStringSubmatch(str)
+	if parts == nil || len(parts) != 5 {
+		if encode {
+			addValue(m, k, base64.StdEncoding.EncodeToString([]byte(str)))
+		} else {
+			addValue(m, k, str)
+		}
+		return
+	}
+
+	m[k] = map[string]interface{}{
+		"reference": &KeyVaultRef{
+			KeyVault: KeyVaultID{
+				ID: parts[1],
+			},
+			SecretName:    parts[2],
+			SecretVersion: parts[4],
+		},
 	}
 }
 
@@ -394,9 +474,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			if e != nil {
 				return ""
 			}
-			// add the master provisioning script
-			masterProvisionB64GzipStr := getBase64CustomScript(kubernetesMasterCustomScript)
-			str = strings.Replace(str, "MASTER_PROVISION_B64_GZIP_STR", masterProvisionB64GzipStr, -1)
 
 			for placeholder, filename := range kubernetesAddonYamls {
 				addonTextContents := getBase64CustomScript(filename)
@@ -406,16 +483,15 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			// return the custom data
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
-		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
+		"GetKubernetesAgentCustomData": func() string {
 			str, e := getSingleLineForTemplate(kubernetesAgentCustomDataYaml)
 			if e != nil {
 				return ""
 			}
-			// add the master provisioning script
-			masterProvisionB64GzipStr := getBase64CustomScript(kubernetesMasterCustomScript)
-			str = strings.Replace(str, "MASTER_PROVISION_B64_GZIP_STR", masterProvisionB64GzipStr, -1)
-
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+		},
+		"GetKubernetesB64Provision": func() string {
+			return getBase64CustomScript(kubernetesMasterCustomScript)
 		},
 		"GetMasterSwarmCustomData": func() string {
 			files := []string{swarmProvision}
@@ -432,6 +508,25 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		"GetWinAgentSwarmCustomData": func() string {
 			str := getBase64CustomScript(swarmWindowsProvision)
 			return fmt.Sprintf("\"customData\": \"%s\"", str)
+		},
+		"GetWinAgentSwarmModeCustomData": func() string {
+			str := getBase64CustomScript(swarmModeWindowsProvision)
+			return fmt.Sprintf("\"customData\": \"%s\"", str)
+		},
+		"GetKubernetesWindowsAgentCustomData": func() string {
+			b, err := Asset(kubernetesWindowsAgentCustomDataPS1)
+			if err != nil {
+				// this should never happen and this is a bug
+				panic(err.Error())
+			}
+
+			// the windows command line has a length limit, requiring the
+			// setting of the certificates within the script itself.
+			str := string(b)
+			str = strings.Replace(str, "<<<caCertificate>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
+			str = strings.Replace(str, "<<<clientCertificate>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientCertificate)), -1)
+			b64GzipStr := getBase64CustomScriptFromStr(str)
+			return fmt.Sprintf("\"customData\": \"%s\",", b64GzipStr)
 		},
 		"GetKubernetesKubeConfig": func() string {
 			str, e := getSingleLineForTemplate(kubeConfigJSON)
@@ -451,6 +546,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			str := buildYamlFileWithWriteFiles(files)
 			str = escapeSingleLine(str)
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('agentRunCmdFile'),variables('agentRunCmd')))]\",", str)
+		},
+		"GetKubernetesSubnets": func() string {
+			return getKubernetesSubnets(properties)
+		},
+		"GetKubernetesPodStartIndex": func() string {
+			return fmt.Sprintf("%d", getKubernetesPodStartIndex(properties))
 		},
 		"AnyAgentHasDisks": func() bool {
 			for _, agentProfile := range properties.AgentPoolProfiles {
@@ -775,12 +876,15 @@ func getBase64CustomScript(csFilename string) string {
 	// translate the parameters
 	csStr := string(b)
 	csStr = strings.Replace(csStr, "\r\n", "\n", -1)
+	return getBase64CustomScriptFromStr(csStr)
+}
 
+// getBase64CustomScript will return a base64 of the CSE
+func getBase64CustomScriptFromStr(str string) string {
 	var gzipB bytes.Buffer
 	w := gzip.NewWriter(&gzipB)
-	w.Write([]byte(csStr))
+	w.Write([]byte(str))
 	w.Close()
-
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }
 
@@ -907,4 +1011,44 @@ write_files:
 		filelines = filelines + fmt.Sprintf(writeFileBlock, b64GzipString, file)
 	}
 	return fmt.Sprintf(clusterYamlFile, filelines)
+}
+
+func getKubernetesSubnets(properties *api.Properties) string {
+	subnetString := `{
+            "name": "podCIDR%d", 
+            "properties": {
+              "addressPrefix": "10.244.%d.0/24", 
+              "networkSecurityGroup": {
+                "id": "[variables('nsgID')]"
+              }, 
+              "routeTable": {
+                "id": "[variables('routeTableID')]"
+              }
+            }
+          }`
+	var buf bytes.Buffer
+
+	cidrIndex := getKubernetesPodStartIndex(properties)
+	for _, agentProfile := range properties.AgentPoolProfiles {
+		if agentProfile.OSType == api.Windows {
+			for i := 0; i < agentProfile.Count; i++ {
+				buf.WriteString(",\n")
+				buf.WriteString(fmt.Sprintf(subnetString, cidrIndex, cidrIndex))
+				cidrIndex++
+			}
+		}
+	}
+	return buf.String()
+}
+
+func getKubernetesPodStartIndex(properties *api.Properties) int {
+	nodeCount := 0
+	nodeCount += properties.MasterProfile.Count
+	for _, agentProfile := range properties.AgentPoolProfiles {
+		if agentProfile.OSType != api.Windows {
+			nodeCount += agentProfile.Count
+		}
+	}
+
+	return nodeCount + 1
 }

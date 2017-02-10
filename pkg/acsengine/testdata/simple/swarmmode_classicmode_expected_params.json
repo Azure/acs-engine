@@ -1,14 +1,14 @@
 {
-  "agentpool1Count": {
+  "agentCount": {
     "value": 3
   },
-  "agentpool1EndpointDNSNamePrefix": {
+  "agentEndpointDNSNamePrefix": {
     "value": "agentdns1"
   },
-  "agentpool1Subnet": {
+  "agentSubnet": {
     "value": "10.0.0.0/16"
   },
-  "agentpool1VMSize": {
+  "agentVMSize": {
     "value": "Standard_D2_v2"
   },
   "firstConsecutiveStaticIP": {
@@ -21,7 +21,7 @@
     "value": 3
   },
   "masterEndpointDNSNamePrefix": {
-    "value": "masterdns1"
+    "value": "master"
   },
   "masterSubnet": {
     "value": "172.16.0.0/24"

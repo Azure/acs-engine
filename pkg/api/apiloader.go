@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
+	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -33,12 +34,21 @@ func DeserializeContainerService(contents []byte) (*ContainerService, string, er
 // LoadContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
 func LoadContainerService(contents []byte, version string) (*ContainerService, error) {
 	switch version {
+	case v20160930.APIVersion:
+		containerService := &v20160930.ContainerService{}
+		if e := json.Unmarshal(contents, &containerService); e != nil {
+			return nil, e
+		}
+		if e := containerService.Properties.Validate(); e != nil {
+			return nil, e
+		}
+		return ConvertV20160930ContainerService(containerService), nil
+
 	case v20160330.APIVersion:
 		containerService := &v20160330.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
-
 		if e := containerService.Properties.Validate(); e != nil {
 			return nil, e
 		}
@@ -49,7 +59,6 @@ func LoadContainerService(contents []byte, version string) (*ContainerService, e
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
-
 		if e := containerService.Properties.Validate(); e != nil {
 			return nil, e
 		}
@@ -63,6 +72,17 @@ func LoadContainerService(contents []byte, version string) (*ContainerService, e
 // SerializeContainerService takes an unversioned container service and returns the bytes
 func SerializeContainerService(containerService *ContainerService, version string) ([]byte, error) {
 	switch version {
+	case v20160930.APIVersion:
+		v20160930ContainerService := ConvertContainerServiceToV20160930(containerService)
+		armContainerService := &V20160930ARMContainerService{}
+		armContainerService.ContainerService = v20160930ContainerService
+		armContainerService.APIVersion = version
+		b, err := json.MarshalIndent(armContainerService, "", "  ")
+		if err != nil {
+			return nil, err
+		}
+		return b, nil
+
 	case v20160330.APIVersion:
 		v20160330ContainerService := ConvertContainerServiceToV20160330(containerService)
 		armContainerService := &V20160330ARMContainerService{}
