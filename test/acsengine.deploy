@@ -10,7 +10,8 @@ node {
         env.HOME=clone_dir
         env.ORCHESTRATOR = "${ORCHESTRATOR}"
         String locations_str = "${LOCATIONS}"
-        
+        String sendTo = "${SEND_TO}"
+
         if(locations_str.equals("all")) {
           locations_str = "\
 australiaeast australiasoutheast \
@@ -27,6 +28,7 @@ uksouth ukwest"
 
         dir(clone_dir) {
           def img = null
+          def sendReport = false
 
           stage('Init') {
             deleteDir()
@@ -71,6 +73,7 @@ uksouth ukwest"
               catch(exc) {
                 echo "Exception ${exc}"
                 ok = false
+                sendReport = true
               }
               // Verify deployment
               try {
@@ -89,6 +92,7 @@ uksouth ukwest"
               }
               catch(exc) {
                 echo "Exception ${exc}"
+                sendReport = true
               }
               // Clean up
               try {
@@ -101,6 +105,12 @@ uksouth ukwest"
             // Generate reports
             try {
               junit("${junit_dir}/**/junit.xml")
+              if(sendReport && (sendTo != "")) {
+                emailext(
+                  to: "${sendTo}",
+                  subject: "[ACS Engine Jenkins Failure] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                  body: "${env.BUILD_URL}testReport")
+              }
             }
             catch(exc) {
               echo "Exception ${exc}"
