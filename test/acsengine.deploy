@@ -10,7 +10,7 @@ node {
         env.HOME=clone_dir
         env.ORCHESTRATOR = "${ORCHESTRATOR}"
         String locations_str = "${LOCATIONS}"
-        String sendTo = "${SEND_TO}"
+        String sendTo = "${SEND_TO}".trim()
 
         if(locations_str.equals("all")) {
           locations_str = "\
