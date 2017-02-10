@@ -2,7 +2,7 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "agentpri2Count": {
+    "agentpool1Count": {
       "allowedValues": [
         1,
         2,
@@ -105,13 +105,20 @@
         99,
         100
       ],
-      "defaultValue": 2,
+      "defaultValue": 3,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
       "type": "int"
     },
-    "agentpri2VMSize": {
+    "agentpool1Subnet": {
+      "defaultValue": "10.240.0.0/16",
+      "metadata": {
+        "description": "Sets the subnet of agent pool 'agentpool1'."
+      },
+      "type": "string"
+    },
+    "agentpool1VMSize": {
       "allowedValues": [
         "Basic_A2",
         "Basic_A3",
@@ -199,218 +206,6 @@
       "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
-      },
-      "type": "string"
-    },
-    "agentpri2VnetSubnetID": {
-      "metadata": {
-        "description": "Sets the vnet subnet of agent pool 'agentpri2'."
-      },
-      "type": "string"
-    },
-    "agentpriCount": {
-      "allowedValues": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
-        23,
-        24,
-        25,
-        26,
-        27,
-        28,
-        29,
-        30,
-        31,
-        32,
-        33,
-        34,
-        35,
-        36,
-        37,
-        38,
-        39,
-        40,
-        41,
-        42,
-        43,
-        44,
-        45,
-        46,
-        47,
-        48,
-        49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        59,
-        60,
-        61,
-        62,
-        63,
-        64,
-        65,
-        66,
-        67,
-        68,
-        69,
-        70,
-        71,
-        72,
-        73,
-        74,
-        75,
-        76,
-        77,
-        78,
-        79,
-        80,
-        81,
-        82,
-        83,
-        84,
-        85,
-        86,
-        87,
-        88,
-        89,
-        90,
-        91,
-        92,
-        93,
-        94,
-        95,
-        96,
-        97,
-        98,
-        99,
-        100
-      ],
-      "defaultValue": 2,
-      "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
-      },
-      "type": "int"
-    },
-    "agentpriVMSize": {
-      "allowedValues": [
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
-        "Standard_A10",
-        "Standard_A11",
-        "Standard_A2",
-        "Standard_A2_v2",
-        "Standard_A2m_v2",
-        "Standard_A3",
-        "Standard_A4",
-        "Standard_A4_v2",
-        "Standard_A4m_v2",
-        "Standard_A5",
-        "Standard_A6",
-        "Standard_A7",
-        "Standard_A8",
-        "Standard_A8_v2",
-        "Standard_A8m_v2",
-        "Standard_A9",
-        "Standard_D11",
-        "Standard_D11_v2",
-        "Standard_D12",
-        "Standard_D12_v2",
-        "Standard_D13",
-        "Standard_D13_v2",
-        "Standard_D14",
-        "Standard_D14_v2",
-        "Standard_D15_v2",
-        "Standard_D2",
-        "Standard_D2_v2",
-        "Standard_D3",
-        "Standard_D3_v2",
-        "Standard_D4",
-        "Standard_D4_v2",
-        "Standard_D5_v2",
-        "Standard_DS11",
-        "Standard_DS11_v2",
-        "Standard_DS12",
-        "Standard_DS12_v2",
-        "Standard_DS13",
-        "Standard_DS13_v2",
-        "Standard_DS14",
-        "Standard_DS14_v2",
-        "Standard_DS15_v2",
-        "Standard_DS2",
-        "Standard_DS2_v2",
-        "Standard_DS3",
-        "Standard_DS3_v2",
-        "Standard_DS4",
-        "Standard_DS4_v2",
-        "Standard_DS5_v2",
-        "Standard_F16",
-        "Standard_F16s",
-        "Standard_F2",
-        "Standard_F2s",
-        "Standard_F4",
-        "Standard_F4s",
-        "Standard_F8",
-        "Standard_F8s",
-        "Standard_G1",
-        "Standard_G2",
-        "Standard_G3",
-        "Standard_G4",
-        "Standard_G5",
-        "Standard_GS1",
-        "Standard_GS2",
-        "Standard_GS3",
-        "Standard_GS4",
-        "Standard_GS5",
-        "Standard_H16",
-        "Standard_H16m",
-        "Standard_H16mr",
-        "Standard_H16r",
-        "Standard_H8",
-        "Standard_H8m",
-        "Standard_NC12",
-        "Standard_NC24",
-        "Standard_NC24r",
-        "Standard_NC6",
-        "Standard_NV12",
-        "Standard_NV24",
-        "Standard_NV6"
-      ],
-      "defaultValue": "Standard_D2_v2",
-      "metadata": {
-        "description": "The size of the Virtual Machine."
-      },
-      "type": "string"
-    },
-    "agentpriVnetSubnetID": {
-      "metadata": {
-        "description": "Sets the vnet subnet of agent pool 'agentpri'."
       },
       "type": "string"
     },
@@ -445,7 +240,7 @@
       "type": "securestring"
     },
     "firstConsecutiveStaticIP": {
-      "defaultValue": "10.239.255.245",
+      "defaultValue": "10.240.255.5",
       "metadata": {
         "description": "Sets the static IP of the first master"
       },
@@ -483,9 +278,223 @@
       },
       "type": "string"
     },
+    "linuxpool1Count": {
+      "allowedValues": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "defaultValue": 2,
+      "metadata": {
+        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "linuxpool1Subnet": {
+      "defaultValue": "10.240.0.0/16",
+      "metadata": {
+        "description": "Sets the subnet of agent pool 'linuxpool1'."
+      },
+      "type": "string"
+    },
+    "linuxpool1VMSize": {
+      "allowedValues": [
+        "Basic_A2",
+        "Basic_A3",
+        "Basic_A4",
+        "Standard_A10",
+        "Standard_A11",
+        "Standard_A2",
+        "Standard_A2_v2",
+        "Standard_A2m_v2",
+        "Standard_A3",
+        "Standard_A4",
+        "Standard_A4_v2",
+        "Standard_A4m_v2",
+        "Standard_A5",
+        "Standard_A6",
+        "Standard_A7",
+        "Standard_A8",
+        "Standard_A8_v2",
+        "Standard_A8m_v2",
+        "Standard_A9",
+        "Standard_D11",
+        "Standard_D11_v2",
+        "Standard_D12",
+        "Standard_D12_v2",
+        "Standard_D13",
+        "Standard_D13_v2",
+        "Standard_D14",
+        "Standard_D14_v2",
+        "Standard_D15_v2",
+        "Standard_D2",
+        "Standard_D2_v2",
+        "Standard_D3",
+        "Standard_D3_v2",
+        "Standard_D4",
+        "Standard_D4_v2",
+        "Standard_D5_v2",
+        "Standard_DS11",
+        "Standard_DS11_v2",
+        "Standard_DS12",
+        "Standard_DS12_v2",
+        "Standard_DS13",
+        "Standard_DS13_v2",
+        "Standard_DS14",
+        "Standard_DS14_v2",
+        "Standard_DS15_v2",
+        "Standard_DS2",
+        "Standard_DS2_v2",
+        "Standard_DS3",
+        "Standard_DS3_v2",
+        "Standard_DS4",
+        "Standard_DS4_v2",
+        "Standard_DS5_v2",
+        "Standard_F16",
+        "Standard_F16s",
+        "Standard_F2",
+        "Standard_F2s",
+        "Standard_F4",
+        "Standard_F4s",
+        "Standard_F8",
+        "Standard_F8s",
+        "Standard_G1",
+        "Standard_G2",
+        "Standard_G3",
+        "Standard_G4",
+        "Standard_G5",
+        "Standard_GS1",
+        "Standard_GS2",
+        "Standard_GS3",
+        "Standard_GS4",
+        "Standard_GS5",
+        "Standard_H16",
+        "Standard_H16m",
+        "Standard_H16mr",
+        "Standard_H16r",
+        "Standard_H8",
+        "Standard_H8m",
+        "Standard_NC12",
+        "Standard_NC24",
+        "Standard_NC24r",
+        "Standard_NC6",
+        "Standard_NV12",
+        "Standard_NV24",
+        "Standard_NV6"
+      ],
+      "defaultValue": "Standard_D2_v2",
+      "metadata": {
+        "description": "The size of the Virtual Machine."
+      },
+      "type": "string"
+    },
     "masterEndpointDNSNamePrefix": {
       "metadata": {
         "description": "Sets the Domain name label for the master IP Address.  The concatenation of the domain name label and the regional DNS zone make up the fully qualified domain name associated with the public IP address."
+      },
+      "type": "string"
+    },
+    "masterSubnet": {
+      "defaultValue": "10.240.0.0/16",
+      "metadata": {
+        "description": "Sets the subnet of the master node(s)."
       },
       "type": "string"
     },
@@ -555,12 +564,6 @@
       },
       "type": "string"
     },
-    "masterVnetSubnetID": {
-      "metadata": {
-        "description": "Sets the vnet subnet of the master."
-      },
-      "type": "string"
-    },
     "nameSuffix": {
       "defaultValue": "31559618",
       "metadata": {
@@ -585,31 +588,35 @@
         "description": "SSH public key used for auth to all Linux machines.  Not Required.  If not set, you must provide a password key."
       },
       "type": "string"
+    },
+    "windowsAdminPassword": {
+      "metadata": {
+        "description": "Password for the Windows Swarm Agent Virtual Machines."
+      },
+      "type": "securestring"
+    },
+    "windowsAdminUsername": {
+      "metadata": {
+        "description": "User name for the Windows Swarm Agent Virtual Machines (Password Only Supported)."
+      },
+      "type": "string"
     }
   },
   "variables": {
-    "agentpri2AccountName": "[concat(variables('storageAccountBaseName'), 'agnt1')]",
-    "agentpri2AvailabilitySet": "[concat('agentpri2-availabilitySet-', variables('nameSuffix'))]",
-    "agentpri2Count": "[parameters('agentpri2Count')]",
-    "agentpri2Index": 1,
-    "agentpri2StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpri2Index'))]",
-    "agentpri2StorageAccountsCount": "[add(div(variables('agentpri2Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpri2Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpri2Count'), variables('maxVMsPerStorageAccount')),1)))]",
-    "agentpri2SubnetName": "[parameters('agentpri2VnetSubnetID')]",
-    "agentpri2VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpri2-', variables('nameSuffix'), '-')]",
-    "agentpri2VMSize": "[parameters('agentpri2VMSize')]",
-    "agentpri2VnetParts": "[split(parameters('agentpri2VnetSubnetID'),'/subnets/')]",
-    "agentpri2VnetSubnetID": "[parameters('agentpri2VnetSubnetID')]",
-    "agentpriAccountName": "[concat(variables('storageAccountBaseName'), 'agnt0')]",
-    "agentpriAvailabilitySet": "[concat('agentpri-availabilitySet-', variables('nameSuffix'))]",
-    "agentpriCount": "[parameters('agentpriCount')]",
-    "agentpriIndex": 0,
-    "agentpriStorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpriIndex'))]",
-    "agentpriStorageAccountsCount": "[add(div(variables('agentpriCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpriCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpriCount'), variables('maxVMsPerStorageAccount')),1)))]",
-    "agentpriSubnetName": "[parameters('agentpriVnetSubnetID')]",
-    "agentpriVMNamePrefix": "[concat(variables('orchestratorName'), '-agentpri-', variables('nameSuffix'), '-')]",
-    "agentpriVMSize": "[parameters('agentpriVMSize')]",
-    "agentpriVnetParts": "[split(parameters('agentpriVnetSubnetID'),'/subnets/')]",
-    "agentpriVnetSubnetID": "[parameters('agentpriVnetSubnetID')]",
+    "agentWindowsOffer": "WindowsServer",
+    "agentWindowsPublisher": "MicrosoftWindowsServer",
+    "agentWindowsSku": "2016-Datacenter-with-Containers",
+    "agentWindowsVersion": "2016.0.20170127",
+    "agentpool1AccountName": "[concat(variables('storageAccountBaseName'), 'agnt1')]",
+    "agentpool1AvailabilitySet": "[concat('agentpool1-availabilitySet-', variables('nameSuffix'))]",
+    "agentpool1Count": "[parameters('agentpool1Count')]",
+    "agentpool1Index": 1,
+    "agentpool1StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool1Index'))]",
+    "agentpool1StorageAccountsCount": "[add(div(variables('agentpool1Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool1Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool1Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "agentpool1SubnetName": "[variables('subnetName')]",
+    "agentpool1VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpool1-', variables('nameSuffix'), '-')]",
+    "agentpool1VMSize": "[parameters('agentpool1VMSize')]",
+    "agentpool1VnetSubnetID": "[variables('vnetSubnetID')]",
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
     "apiServerPrivateKey": "[parameters('apiServerPrivateKey')]",
     "apiVersionDefault": "2016-03-30",
@@ -624,6 +631,16 @@
     "kubeServiceCidr": "10.0.0.0/16",
     "kubectlVersion": "[parameters('kubectlVersion')]",
     "kubernetesHyperkubeSpec": "[parameters('kubernetesHyperkubeSpec')]",
+    "linuxpool1AccountName": "[concat(variables('storageAccountBaseName'), 'agnt0')]",
+    "linuxpool1AvailabilitySet": "[concat('linuxpool1-availabilitySet-', variables('nameSuffix'))]",
+    "linuxpool1Count": "[parameters('linuxpool1Count')]",
+    "linuxpool1Index": 0,
+    "linuxpool1StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('linuxpool1Index'))]",
+    "linuxpool1StorageAccountsCount": "[add(div(variables('linuxpool1Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('linuxpool1Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('linuxpool1Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "linuxpool1SubnetName": "[variables('subnetName')]",
+    "linuxpool1VMNamePrefix": "[concat(variables('orchestratorName'), '-linuxpool1-', variables('nameSuffix'), '-')]",
+    "linuxpool1VMSize": "[parameters('linuxpool1VMSize')]",
+    "linuxpool1VnetSubnetID": "[variables('vnetSubnetID')]",
     "location": "[resourceGroup().location]",
     "masterAvailabilitySet": "master-availabilityset",
     "masterCount": 1,
@@ -694,7 +711,7 @@
     "osImagePublisher": "Canonical",
     "osImageSKU": "16.04.0-LTS",
     "osImageVersion": "16.04.201606270",
-    "primaryAvailablitySetName": "[concat('agentpri-availabilitySet-',variables('nameSuffix'))]",
+    "primaryAvailablitySetName": "[concat('linuxpool1-availabilitySet-',variables('nameSuffix'))]",
     "provisionScript": "H4sIAAAJbogA/9RYX3PjthF/x6fYo/XQTkNTbi9OqouT4Un0hbVOcinKnWvuRoFIyEJNARwAtK1c9N07AP+IFCmfc+5L9eCRgd/+9g8WuwudvHKWlDlLLNcInXz9B53ALHSDEGbeMPBCGLmhCzZ4w5+nMPJn7tuxN3oRPzqBS0qSWMKKC/gV/5YJcvofydmvKPQm7iRc+KMLq/f5bGeh2fztxAtnw8C/Dv3ppNj5685CgTebzoOht3gXTOfXevVvOwuNp0NXA/X/ryt5/d+3OwtNvPBf0+BqMfOG88APP+xlz3cWuvGDcO6OFwVKL3+nFU3nobcItd966fudha4D/70bfFi4N64/dt/6Y801y/X8XWv1ght/6C2uA38y9K/d8WI49r29Y/2nMHnYDU5H4Gr+1ht7ocbduKG3uPI+mD0dA3QC77FURABnyRYkiQRRErnXvmb3gpaQDtHQXQy9IPQv/aEbGpfOdKTeu7PQCxaX/xyZ4J19W+geTieX/ruWyHlzu1SgA+aO3vuT+cwLzMr3uZ3+CjrNAiqBbFK1/QbUmjB4IIAFAcYVcKaXYGM8RHQFv/wCr8D+Daze506unQWfPr0xPAgAgERrDtZRtYwzu1CNpcw2lN0WyoDxmFjIkHSKL67d8OcLyyEqcu6yJRGMKCKdiAglHZxSScQ9Ead3ZGsZEsWzaH3UbsO2y5HResNj6J+/fv1MOH9gIDhXA/3nWTJ5WI7H8HdYYknOX4NtxyTiMYEfv8hLEkmeE/PDeD9wcVfFe0VRV7o/GewooYSpPNJVlI+R7CzUjO+TwFZkn0CXMe2AHI/oE3zI/fc88Bb/mE0nR9zfl82a4wdSLX+79tsJ1AZhBT/8AN70skiFFuKzOXxLEYaZ8mNroGFVNd9Z3+T7MlvKSNBUUc5KVLvEV3CM46E53wp7vLC2hWamHH5BMK+2lbAgkmciIu8Ez9JctNloKmTCI6zdyEFl36l7yoia4A2pe7nfJlEmqNoaPXtUd4OqpO4blAf9au8DzxQJ8TIhe2ytiVW4VNANFlv3HtMEL2lC1XZW5z/W5XYW2iFvevnSKcObjGB6WR8zXjZWSKLAftTN5gFTZYYLfV8ilYDiIEjKhQKZRRGRcpUlECWZKfZrghO1RquMRfpAgTCZCXKVi/7pz5DndkG14hmLL87MktZAgTL4fHZ6et7v795AzM2O/uiGBTYBJ5PC0dmSmPmsNOlTBaz6VflpqOo3tpaC4LtqZUWrrzIhJIXcrpizvBgbE3p1OrAZgX6hvKHYYF9VBmtTYx7p4vyEpXnZK11iXEAhE9PY9HDKpMJJUgt7UrTEiuKRqsLumksrinbo8Eg8FcXVecitVGSj1UrFUyAqis262IAtVuDcY+EkdKnLZuzEZIWzRB0ICiIVFiqXbasbGVc6FBKmL1fh6hHO2mb+daaXybNT51XrGChb8TfHjkAqrDIJvZ+awTXyTxpnKMrm3eQs9Mrc8CZx06eX52iD73iSNgwrc8wYuDevllCdWaQvdkLU8XO9ywFHDrbcbRO75dzXqBl5u/6Dp/+VheOIRFHobJ1BDbzRZPV+suACrL5Vo+6kh8aNzx3rTo9u5/stTDNVDtKllZaHNyKV8DvcCpJCNXL/H7n3/OLdUPOly1Gz/Q9fkAdBlbkfQ85W9LbK4/1Db+QHF86ab4jTq555zqnWeQC89MfeRa8h6ESG1QA3dzEVYKfQhNQeS70mV+21s9c82H/tInomvEavZ+Xv+v1uMr153tw0omb7BGIqTflI+O2tftrglR4u8jc58EylWVFSiIK/PNYeS8i2bYRTekOEpJwN4P4MFVdWDpBdXt9BbgYRiq5ohBWxcabWXE+RdowVHsBHq9d83H+0Co36agxgrVQqB47Tq731T3vl6HoaJTyLcZqe5k+LiG8QAMMbYphrMh8tFHGmyKPK7cu/F/YVxrZF9G4m21s2jjeUGcAxZZkQhCm7VNRG3FEWDyDPWqSVGMO66GrajDGF0dTw12JbRbT7N5DCn0Lwjmw7Ba68Dx8tZMGPnel2AqLoOF0pI6tksR/1JT0pf5vALDbvZVSfUlCjt9XQ5oehr/nx5KAW5Plan4xrK145fB00QvOi/x/89pPfE7+YJSO+SROiyMFQif4bAAD//wRolREBFQAA",
     "registerSchedulable": "false",
     "resourceGroup": "[resourceGroup().name]",
@@ -702,6 +719,7 @@
     "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
     "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
     "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
+    "singleQuote": "'",
     "sshKeyPath": "[concat('/home/',variables('username'),'/.ssh/authorized_keys')]",
     "sshNatPorts": [
       22,
@@ -751,12 +769,12 @@
       "z"
     ],
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]",
-    "subnetName": "[split(parameters('masterVnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
-    "subnetNameResourceSegmentIndex": 10,
+    "subnet": "[parameters('masterSubnet')]",
+    "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
     "subscriptionId": "[subscription().subscriptionId]",
     "tenantId": "[subscription().tenantId]",
     "username": "[parameters('linuxAdminUsername')]",
-    "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
+    "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "vmSizesMap": {
       "Basic_A2": {
         "storageAccountType": "Standard_LRS"
@@ -1006,21 +1024,25 @@
       }
     },
     "vmsPerStorageAccount": 20,
-    "vnetNameResourceSegmentIndex": 8,
-    "vnetSubnetID": "[parameters('masterVnetSubnetID')]"
+    "vnetCidr": "10.0.0.0/8",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+    "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
+    "windowsAdminPassword": "[parameters('windowsAdminPassword')]",
+    "windowsAdminUsername": "[parameters('windowsAdminUsername')]",
+    "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; $inputStream = New-Object System.IO.FileStream $inputFile, ([IO.FileMode]::Open), ([IO.FileAccess]::Read), ([IO.FileShare]::Read) ; $sr = New-Object System.IO.StreamReader(New-Object System.IO.Compression.GZipStream($inputStream, [System.IO.Compression.CompressionMode]::Decompress)) ; $sr.ReadToEnd() | Out-File($outputFile) ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
   },
   "resources": [
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('agentpriCount')]",
+        "count": "[variables('linuxpool1Count')]",
         "name": "loop"
       },
       "dependsOn": [
-        "[variables('nsgID')]"
+        "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpriVMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('linuxpool1VMNamePrefix'), 'nic-', copyIndex())]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -1029,70 +1051,67 @@
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
-                "id": "[variables('agentpriVnetSubnetID')]"
+                "id": "[variables('linuxpool1VnetSubnetID')]"
               }
             }
           }
-        ],
-        "networkSecurityGroup": {
-          "id": "[variables('nsgID')]"
-        }
+        ]
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
     {
       "apiVersion": "[variables('apiVersionStorage')]",
       "copy": {
-        "count": "[variables('agentpriStorageAccountsCount')]",
+        "count": "[variables('linuxpool1StorageAccountsCount')]",
         "name": "loop"
       },
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpriStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpriStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpriAccountName'))]",
+      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('linuxpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('linuxpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('linuxpool1AccountName'))]",
       "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('agentpriVMSize')].storageAccountType]"
+        "accountType": "[variables('vmSizesMap')[variables('linuxpool1VMSize')].storageAccountType]"
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
-      "name": "[variables('agentpriAvailabilitySet')]",
+      "name": "[variables('linuxpool1AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('agentpriCount')]",
+        "count": "[variables('linuxpool1Count')]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpriStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpriStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpriAccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpriVMNamePrefix'), 'nic-', copyIndex())]",
-        "[concat('Microsoft.Compute/availabilitySets/', variables('agentpriAvailabilitySet'))]"
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('linuxpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('linuxpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('linuxpool1AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('linuxpool1VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('linuxpool1AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpriVMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('linuxpool1VMNamePrefix'), copyIndex())]",
       "properties": {
         "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpriAvailabilitySet'))]"
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('linuxpool1AvailabilitySet'))]"
         },
         "hardwareProfile": {
-          "vmSize": "[variables('agentpriVMSize')]"
+          "vmSize": "[variables('linuxpool1VMSize')]"
         },
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpriVMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('linuxpool1VMNamePrefix'), 'nic-', copyIndex()))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpriVMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('linuxpool1VMNamePrefix'), copyIndex())]",
           "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D\n- echo \"deb https://apt.dockerproject.org/repo ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://storage.googleapis.com/kubernetes-release/release/',variables('kubectlVersion'),'/bin/linux/amd64/kubectl > /usr/local/bin/kubectl\n- chmod +x /usr/local/bin/kubectl\n- mkdir -p /etc/kubernetes/manifests\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -1116,29 +1135,29 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpriVMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('linuxpool1VMNamePrefix'), copyIndex(),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpriStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpriStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpriAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpriVMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('linuxpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('linuxpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('linuxpool1AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('linuxpool1VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpriVMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('linuxpool1VMNamePrefix'), copyIndex())]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('agentpriCount')]",
+        "count": "[variables('linuxpool1Count')]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpriVMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('linuxpool1VMNamePrefix'), copyIndex())]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpriVMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('linuxpool1VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
@@ -1154,141 +1173,131 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('agentpri2Count')]",
+        "count": "[variables('agentpool1Count')]",
         "name": "loop"
       },
       "dependsOn": [
-        "[variables('nsgID')]"
+        "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpri2VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpool1VMNamePrefix'), 'nicp-', copyIndex())]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
           {
             "name": "ipconfig1",
             "properties": {
-              "privateIPAllocationMethod": "Dynamic",
+              "privateIPAddress": "[concat('10.240.245.', copyindex(5))]",
+              "privateIPAllocationMethod": "Static",
               "subnet": {
-                "id": "[variables('agentpri2VnetSubnetID')]"
+                "id": "[variables('agentpool1VnetSubnetID')]"
               }
             }
           }
-        ],
-        "networkSecurityGroup": {
-          "id": "[variables('nsgID')]"
-        }
+        ]
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
     {
       "apiVersion": "[variables('apiVersionStorage')]",
       "copy": {
-        "count": "[variables('agentpri2StorageAccountsCount')]",
+        "count": "[variables('agentpool1StorageAccountsCount')]",
         "name": "loop"
       },
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName'))]",
+      "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName'))]",
       "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('agentpri2VMSize')].storageAccountType]"
+        "accountType": "[variables('vmSizesMap')[variables('agentpool1VMSize')].storageAccountType]"
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
-      "name": "[variables('agentpri2AvailabilitySet')]",
+      "name": "[variables('agentpool1AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('agentpri2Count')]",
+        "count": "[variables('agentpool1Count')]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri2VMNamePrefix'), 'nic-', copyIndex())]",
-        "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri2AvailabilitySet'))]"
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool1VMNamePrefix'), 'nicp-', copyIndex())]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool1AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpri2VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex())]",
       "properties": {
         "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpri2AvailabilitySet'))]"
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool1AvailabilitySet'))]"
         },
         "hardwareProfile": {
-          "vmSize": "[variables('agentpri2VMSize')]"
+          "vmSize": "[variables('agentpool1VMSize')]"
         },
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri2VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool1VMNamePrefix'), 'nicp-', copyIndex()))]",
+              "properties": {
+                "primary": true
+              }
             }
           ]
         },
         "osProfile": {
-          "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpri2VMNamePrefix'), copyIndex())]",
-          "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D\n- echo \"deb https://apt.dockerproject.org/repo ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://storage.googleapis.com/kubernetes-release/release/',variables('kubectlVersion'),'/bin/linux/amd64/kubectl > /usr/local/bin/kubectl\n- chmod +x /usr/local/bin/kubectl\n- mkdir -p /etc/kubernetes/manifests\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
-          "linuxConfiguration": {
-            "disablePasswordAuthentication": "true",
-            "ssh": {
-              "publicKeys": [
-                {
-                  "keyData": "[parameters('sshRSAPublicKey')]",
-                  "path": "[variables('sshKeyPath')]"
-                }
-              ]
-            }
-          }
+          "adminPassword": "[variables('windowsAdminPassword')]",
+          "adminUsername": "[variables('windowsAdminUsername')]",
+          "computername": "[concat(substring(variables('nameSuffix'), 0, 5), 'acs', copyIndex(), add(900,variables('agentpool1Index')))]",
+          "customData": "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"
         },
         "storageProfile": {
           "imageReference": {
-            "offer": "[variables('osImageOffer')]",
-            "publisher": "[variables('osImagePublisher')]",
-            "sku": "[variables('osImageSKU')]",
-            "version": "[variables('osImageVersion')]"
+            "offer": "[variables('agentWindowsOffer')]",
+            "publisher": "[variables('agentWindowsPublisher')]",
+            "sku": "[variables('agentWindowsSku')]",
+            "version": "[variables('agentWindowsVersion')]"
           },
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpri2VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri2VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool1VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpri2VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool1VMNamePrefix'), copyIndex())]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('agentpri2Count')]",
+        "count": "[variables('agentpool1Count')]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpri2VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool1VMNamePrefix'), copyIndex())]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri2VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(), '/cse')]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
-          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailablitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
+          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -command \"', '$arguments = ', variables('singleQuote'),'-MasterIP ',variables('masterInternalLbIp'),' -KubeDnsServiceIp ',variables('kubeDnsServiceIp'),' -MasterFQDNPrefix ',variables('masterFqdnPrefix'),' -Location ',variables('location'),' -AgentKey ',variables('clientPrivateKey'),' -AzureHostname ',variables('agentpool1VMNamePrefix'),copyIndex(),variables('singleQuote'), ' ; ', variables('windowsCustomScriptSuffix'), '\" > %SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.log 2>&1')]"
         },
-        "publisher": "Microsoft.OSTCExtensions",
-        "settings": {},
-        "type": "CustomScriptForLinux",
-        "typeHandlerVersion": "1.5"
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.8"
       },
       "type": "Microsoft.Compute/virtualMachines/extensions"
     },
@@ -1313,10 +1322,55 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]",
+        "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
+      ],
+      "location": "[variables('location')]",
+      "name": "[variables('virtualNetworkName')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetCidr')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('subnet')]",
+              "networkSecurityGroup": {
+                "id": "[variables('nsgID')]"
+              },
+              "routeTable": {
+                "id": "[variables('routeTableID')]"
+              }
+            }
+          }
+        ]
+      },
+      "type": "Microsoft.Network/virtualNetworks"
+    },
+    {
+      "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "name": "[variables('nsgName')]",
       "properties": {
         "securityRules": [
+          {
+            "name": "allow_rdp",
+            "properties": {
+              "access": "Allow",
+              "description": "Allow RDP traffic to master",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "3389-3389",
+              "direction": "Inbound",
+              "priority": 102,
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
+            }
+          },
           {
             "name": "allow_ssh",
             "properties": {
@@ -1417,7 +1471,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
-        "[variables('nsgID')]"
+        "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
       "name": "[variables('masterInternalLbName')]",
@@ -1512,7 +1566,7 @@
         "name": "nicLoopNode"
       },
       "dependsOn": [
-        "[variables('nsgID')]",
+        "[variables('vnetID')]",
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]",
         "[variables('masterInternalLbName')]"
       ],
@@ -1544,10 +1598,7 @@
               }
             }
           }
-        ],
-        "networkSecurityGroup": {
-          "id": "[variables('nsgID')]"
-        }
+        ]
       },
       "type": "Microsoft.Network/networkInterfaces"
     },

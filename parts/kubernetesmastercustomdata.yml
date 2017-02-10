@@ -348,7 +348,7 @@ write_files:
             --config=/etc/kubernetes/manifests \
             --cluster-dns={{{kubeDnsServiceIP}}} \
             --cluster-domain=cluster.local \
-            --register-schedulable=false \
+            --register-schedulable={{{registerSchedulable}}} \
             --cloud-provider=azure \
             --cloud-config=/etc/kubernetes/azure.json \
             --v=2

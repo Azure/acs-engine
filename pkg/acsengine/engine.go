@@ -562,6 +562,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			}
 			return false
 		},
+		"HasLinuxAgents": func() bool {
+			for _, agentProfile := range properties.AgentPoolProfiles {
+				if agentProfile.IsLinux() {
+					return true
+				}
+			}
+			return false
+		},
 		"HasLinuxSecrets": func() bool {
 			return properties.LinuxProfile.HasSecrets()
 		},

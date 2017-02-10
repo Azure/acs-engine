@@ -17,7 +17,9 @@ Once your Kubernetes cluster has been created you will have a resource group con
 
 1. 1 master accessible by SSH on port 22 or kubectl on port 443
 
-2. a set of windows and linux nodes.  The linux nodes can be accessed through a master, and the windows nodes can be accessed through the RDP fqdn described in the template output section.
+2. a set of windows and linux nodes.  The windows nodes can be accessed through an RDP SSH tunnel via the master node.  To do this, follow these [instructions](ssh.md#create-port-80-tunnel-to-the-master), replacing port 80 with 3389.  Since your windows machine is already using port 3389, it is recommended to use 3390 to Windows Node 0, 10.240.245.5, 3391 to Windows Node 1, 10.240.245.6, and so on as shown in the following image:
+
+![Image of Windows RDP tunnels](images/rdptunnels.png)
 
 The following image shows the architecture of a container service cluster with 1 master, and 2 agents:
 
@@ -27,7 +29,7 @@ In the image above, you can see the following parts:
 
 1. **Master Components** - The master runs the Kubernetes scheduler, api server, and controller manager.  Port 443 is exposed for remote management with the kubectl cli.
 2. **Linux Nodes** - the Kubernetes nodes run in an availability set.  Azure load balancers are dynamically added to the cluster depending on exposed services.
-3. **Windows Nodes** - the Kubernetes windows nodes run in an availability set. RDP access is available via the RDP fqdn on the template output.  Port 3389 goes to node 0, port 3390 to node 1, and so on.
+3. **Windows Nodes** - the Kubernetes windows nodes run in an availability set.
 3. **Common Components** - All VMs run a kubelet, Docker, and a Proxy.
 4. **Networking** - All VMs are assigned an ip address in the 10.240.0.0/16 network.  Each VM is assigned a /24 subnet for their pod CIDR enabling IP per pod.  The proxy running on each VM implements the service network 10.0.0.0/16.
 

@@ -34,13 +34,5 @@
   ],
   "outputs": {
     {{template "masteroutputs.t" .}}
-    {{range .AgentPoolProfiles}}
-      {{if .IsWindows}}
-        ,"rdpNatFQDN": {
-          "type": "string", 
-          "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('{{.Name}}IPAddressName'))).dnsSettings.fqdn]"
-        }
-      {{end}}
-    {{end}}
   }
 }

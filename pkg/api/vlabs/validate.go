@@ -275,7 +275,7 @@ func validatePoolName(poolName string) error {
 }
 
 func validateDNSName(dnsName string) error {
-	dnsNameRegex := `^[a-z][a-z0-9-]{3,45}[a-z0-9]$`
+	dnsNameRegex := `^[a-z][a-z0-9-]{1,43}[a-z0-9]$`
 	re, err := regexp.Compile(dnsNameRegex)
 	if err != nil {
 		return err

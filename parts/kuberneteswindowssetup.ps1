@@ -80,7 +80,7 @@ apiVersion: v1
 clusters:
 - cluster:
     certificate-authority-data: "$global:CACertificate"
-    server: https://$MasterFQDNPrefix.$Location.cloudapp.azure.com
+    server: https://${MasterIP}:443
   name: "$MasterFQDNPrefix"
 contexts:
 - context:
@@ -147,7 +147,8 @@ c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=
     $kubeConfig | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
     $kubeProxyStartStr = @"
-c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --master=${MasterIP}:8080 --kubeconfig=c:\k\config
+`$env:INTERFACE_TO_ADD_SERVICE_IP="vEthernet (forwarder)"
+c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
 "@
 
     $kubeProxyStartStr | Out-File -encoding ASCII -filepath $global:KubeProxyStartFile

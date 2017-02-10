@@ -191,6 +191,11 @@ func (a *AgentPoolProfile) IsWindows() bool {
 	return a.OSType == Windows
 }
 
+// IsLinux returns true if the agent pool is linux
+func (a *AgentPoolProfile) IsLinux() bool {
+	return a.OSType == Linux
+}
+
 // GetSubnet returns the read-only subnet for the agent pool
 func (a *AgentPoolProfile) GetSubnet() string {
 	return a.subnet
