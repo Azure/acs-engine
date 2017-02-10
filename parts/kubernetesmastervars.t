@@ -17,7 +17,11 @@
     "masterPrivateIp": "[parameters('firstConsecutiveStaticIP')]",
     "masterVMSize": "[parameters('masterVMSize')]",
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
-    "masterCount": {{.MasterProfile.Count}},   
+{{if  GetClassicMode}}
+    "masterCount": "[parameters('masterCount')]",
+{{else}}
+    "masterCount": {{.MasterProfile.Count}}, 
+{{end}}    
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
     "location": "[resourceGroup().location]", 
@@ -67,6 +71,11 @@
     "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]", 
     "masterLbIPConfigName": "[concat(variables('orchestratorName'), '-master-lbFrontEnd-', variables('nameSuffix'))]",
     "masterLbName": "[concat(variables('orchestratorName'), '-master-lb-', variables('nameSuffix'))]",
+    "masterInternalLbName": "[concat(variables('orchestratorName'), '-master-internal-lb-', variables('nameSuffix'))]",
+    "masterInternalLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterInternalLbName'))]",
+    "masterInternalLbIPConfigName": "[concat(variables('orchestratorName'), '-master-internal-lbFrontEnd-', variables('nameSuffix'))]",
+    "masterInternalLbIPConfigID": "[concat(variables('masterInternalLbID'),'/frontendIPConfigurations/', variables('masterInternalLbIPConfigName'))]",
+    "masterInternalLbIp": "[concat(variables('masterFirstAddrPrefix'), add(variables('masterCount'), int(variables('masterFirstAddrOctet4'))))]",
     "masterLbBackendPoolName": "[concat(variables('orchestratorName'), '-master-pool-', variables('nameSuffix'))]",
     "masterFirstAddrComment": "these MasterFirstAddrComment are used to place multiple masters consecutively in the address space",
     "masterFirstAddrOctets": "[split(parameters('firstConsecutiveStaticIP'),'.')]",

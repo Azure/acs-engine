@@ -158,9 +158,6 @@ func (a *Properties) Validate() error {
 	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.Secret) == 0 {
 		return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 	}
-	if a.OrchestratorProfile.OrchestratorType == Kubernetes && a.MasterProfile.Count != 1 {
-		return fmt.Errorf("only 1 master may be specified with %s", a.OrchestratorProfile.OrchestratorType)
-	}
 
 	if a.MasterProfile.StorageProfile == StorageAccountClassic {
 		switch a.OrchestratorProfile.OrchestratorType {

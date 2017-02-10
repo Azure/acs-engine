@@ -76,7 +76,7 @@ write_files:
     - name: localcluster
       cluster:
         certificate-authority: /etc/kubernetes/certs/ca.crt
-        server: https://{{{masterPrivateIp}}}:443
+        server: <<<concat('https://', variables('masterPrivateIpAddrs')[copyIndex()], ':443')>>>
     users:
     - name: client
       user:
@@ -118,6 +118,8 @@ write_files:
               - "--cloud-config=/etc/kubernetes/azure.json"
               - "--service-cluster-ip-range={{{kubeServiceCidr}}}"
               - "--etcd-servers=http://127.0.0.1:{{{masterEtcdClientPort}}}"
+              - "--etcd-quorum-read=true"
+              - "--apiserver-count={{{masterCount}}}"
               - "--tls-cert-file=/etc/kubernetes/certs/apiserver.crt"
               - "--tls-private-key-file=/etc/kubernetes/certs/apiserver.key"
               - "--client-ca-file=/etc/kubernetes/certs/ca.crt"
@@ -166,7 +168,7 @@ write_files:
               - "--cloud-config=/etc/kubernetes/azure.json"
               - "--root-ca-file=/etc/kubernetes/certs/ca.crt"
               - "--service-account-private-key-file=/etc/kubernetes/certs/apiserver.key"
-              - "--leader-elect=true"             
+              - "--leader-elect=true"
               - "--v=2"
             volumeMounts: 
               - name: "etc-kubernetes"
@@ -315,6 +317,10 @@ write_files:
     [Service]
     Restart=always
     ExecStartPre=/bin/mkdir -p /var/lib/kubelet
+    # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
+    # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
+    # This IPTable rule then redirects ILB traffic to port 443 in the prerouting chain
+    ExecStartPre=/bin/bash -c "iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443"
     ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
     ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
     ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
@@ -333,7 +339,7 @@ write_files:
       --volume=/srv/kubernetes/:/srv/kubernetes:ro \
         {{{kubernetesHyperkubeSpec}}} \
           /hyperkube kubelet \
-            --api-servers="https://{{{masterPrivateIp}}}:443" \
+            --api-servers="<<<concat('https://', variables('masterPrivateIpAddrs')[copyIndex()], ':443')>>>" \
             --kubeconfig=/var/lib/kubelet/kubeconfig \
             --address=0.0.0.0 \
             --allow-privileged=true \
