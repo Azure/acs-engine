@@ -209,6 +209,16 @@ func (a *Properties) Validate() error {
 			}
 		}
 
+		if len(agentPoolProfile.Attributes) > 0 {
+			switch a.OrchestratorProfile.OrchestratorType {
+			case DCOS:
+			case DCOS173:
+			case DCOS184:
+			case DCOS187:
+			default:
+				return fmt.Errorf("Agent Type attributes are only supported for DCOS.")
+			}
+		}
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
 			return fmt.Errorf("VirtualMachineScaleSets are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"AvailabilityProfile\":\"%s\"", AvailabilitySet)
 		}
