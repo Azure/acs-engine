@@ -119,7 +119,7 @@ write_files:
             --allow-privileged=true \
             --enable-server \
             --enable-debugging-handlers \
-            --config=/etc/kubernetes/manifests \
+            --pod-manifest-path=/etc/kubernetes/manifests \
             --cluster-dns={{{kubeDnsServiceIP}}} \
             --cluster-domain=cluster.local \
             --cloud-provider=azure \
