@@ -87,6 +87,7 @@ var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR":            "kubernetesmasteraddons-kube-proxy-daemonset.yaml",
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR":    "kubernetesmasteraddons-kubernetes-dashboard-service.yaml",
+	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
 }
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams, windowsParams}
@@ -185,7 +186,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 
 	properties := &containerService.Properties
 
-	if certsGenerated, err = SetPropertiesDefaults(properties, ParseLocation(containerService.Location)); err != nil {
+	if certsGenerated, err = SetPropertiesDefaults(properties, containerService.Location); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
@@ -288,6 +289,21 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 	return files, baseFile, nil
 }
 
+//GetCloudSpecConfig returns the kubenernetes container images url configurations based on the deploy target environment
+//for example: if the target is the public azure, then the default container image url should be gcr.io/google_container/...
+//if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
+func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
+	cloudSpecConfig := AzureCloudSpec
+	switch location {
+	case "AzureChinaCloud":
+		cloudSpecConfig = AzureChinaCloudSpec
+	default:
+		cloudSpecConfig = AzureCloudSpec
+	}
+
+	return cloudSpecConfig
+}
+
 func getParameters(properties *api.Properties, isClassicMode bool, location string) (map[string]interface{}, error) {
 	parametersMap := map[string]interface{}{}
 
@@ -313,6 +329,7 @@ func getParameters(properties *api.Properties, isClassicMode bool, location stri
 		}
 	}
 
+	cloudSpecConfig := GetCloudSpecConfig(location)
 	// Kubernetes Parameters
 	if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		addSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
@@ -324,31 +341,31 @@ func getParameters(properties *api.Properties, isClassicMode bool, location stri
 		addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubectlVersion", properties.OrchestratorProfile.KubernetesConfig.KubectlVersion)
-		addValue(parametersMap, "kubernetesAddonManagerSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesAddonManagerSpec)
-		addValue(parametersMap, "kubernetesAddonResizerSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesAddonResizerSpec)
-		addValue(parametersMap, "kubernetesDashboardSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesDashboardSpec)
-		addValue(parametersMap, "kubernetesDNSMasqSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesDNSMasqSpec)
-		addValue(parametersMap, "kubernetesExecHealthzSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesExecHealthzSpec)
-		addValue(parametersMap, "kubernetesHeapsterSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesHeapsterSpec)
-		addValue(parametersMap, "kubernetesKubeDNSSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesKubeDNSSpec)
-		addValue(parametersMap, "kubernetesPodInfraContainerSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesPodInfraContainerSpec)
+		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesAddonManagerSpec)
+		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesAddonResizerSpec)
+		addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesDashboardSpec)
+		addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesDNSMasqSpec)
+		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesExechealthzSpec)
+		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesHeapsterSpec)
+		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesDNSSpec)
+		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesPodInfraContainerSpec)
 		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 		addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
-		addValue(parametersMap, "dockerInstallScriptURL", properties.OrchestratorProfile.KubernetesConfig.DockerInstallScriptURL)
-		addValue(parametersMap, "kubectlDownloadURL", properties.OrchestratorProfile.KubernetesConfig.KubectlDownloadURL)
+		addValue(parametersMap, "dockerInstallScriptURL", cloudSpecConfig.DockerSpecConfig.DefaultDockerInstallScriptURL)
+		addValue(parametersMap, "kubectlDownloadURL", cloudSpecConfig.KubernetesSpecConfig.DefaultKubectlDownloadURL)
 	}
 
 	if strings.HasPrefix(string(properties.OrchestratorProfile.OrchestratorType), string(api.DCOS)) {
-		dcosBootstrapURL := properties.OrchestratorProfile.DCOSConfig.DCOS187_BootstrapDownloadURL
+		dcosBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOS187_BootstrapDownloadURL
 		switch properties.OrchestratorProfile.OrchestratorType {
 		case api.DCOS:
-			dcosBootstrapURL = properties.OrchestratorProfile.DCOSConfig.DCOS187_BootstrapDownloadURL
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS187_BootstrapDownloadURL
 		case api.DCOS173:
-			dcosBootstrapURL = properties.OrchestratorProfile.DCOSConfig.DCOS173_BootstrapDownloadURL
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS173_BootstrapDownloadURL
 		case api.DCOS184:
-			dcosBootstrapURL = properties.OrchestratorProfile.DCOSConfig.DCOS184_BootstrapDownloadURL
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS184_BootstrapDownloadURL
 		case api.DCOS187:
-			dcosBootstrapURL = properties.OrchestratorProfile.DCOSConfig.DCOS187_BootstrapDownloadURL
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS187_BootstrapDownloadURL
 		}
 		addValue(parametersMap, "dcosBootstrapURL", dcosBootstrapURL)
 	}

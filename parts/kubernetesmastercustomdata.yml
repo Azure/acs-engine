@@ -76,7 +76,7 @@ write_files:
     - name: localcluster
       cluster:
         certificate-authority: /etc/kubernetes/certs/ca.crt
-        server: https://{{{masterPrivateIp}}}:443
+        server: <<<concat('https://', variables('masterPrivateIpAddrs')[copyIndex()], ':443')>>>
     users:
     - name: client
       user:
@@ -166,6 +166,13 @@ write_files:
   content: !!binary |
     MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR
 
+- path: /etc/kubernetes/addons/default-storage-class.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR
+
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
   owner: "root"
@@ -183,6 +190,10 @@ write_files:
     ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<kubeServiceCidr>|{{{kubeServiceCidr}}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<masterFqdnPrefix>|{{{masterFqdnPrefix}}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
+    # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
+    # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
+    # This IPTable rule then redirects ILB traffic to port 443 in the prerouting chain
+    ExecStartPre=/bin/bash -c "iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443"
     ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
     ExecStartPre=/bin/sed -i "s|<kubernetesKubeDNSSpec>|{{{kubernetesKubeDNSSpec}}}|g; s|<kubernetesDNSMasqSpec>|{{{kubernetesDNSMasqSpec}}}|g; s|<kubernetesExecHealthzSpec>|{{{kubernetesExecHealthzSpec}}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
     ExecStartPre=/bin/sed -i "s|<kubernetesHeapsterSpec>|{{{kubernetesHeapsterSpec}}}|g; s|<kubernetesAddonResizerSpec>|{{{kubernetesAddonResizerSpec}}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
@@ -204,7 +215,7 @@ write_files:
       --volume=/srv/kubernetes/:/srv/kubernetes:ro \
         {{{kubernetesHyperkubeSpec}}} \
           /hyperkube kubelet \
-            --api-servers="https://{{{masterPrivateIp}}}:443" \
+            --api-servers="<<<concat('https://', variables('masterPrivateIpAddrs')[copyIndex()], ':443')>>>" \
             --kubeconfig=/var/lib/kubelet/kubeconfig \
             --pod-infra-container-image="{{{kubernetesPodInfraContainerSpec}}}" \
             --address=0.0.0.0 \

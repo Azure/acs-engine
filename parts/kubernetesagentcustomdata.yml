@@ -70,7 +70,7 @@ write_files:
     - name: localcluster
       cluster:
         certificate-authority: /etc/kubernetes/certs/ca.crt
-        server: https://{{{masterPrivateIp}}}:443
+        server: https://{{{masterInternalLbIp}}}:443
     users:
     - name: client
       user:
@@ -112,7 +112,7 @@ write_files:
       --volume=/srv/kubernetes/:/srv/kubernetes/:ro \
         {{{kubernetesHyperkubeSpec}}} \
           /hyperkube kubelet \
-            --api-servers="https://{{{masterPrivateIp}}}:443" \
+            --api-servers="https://{{{masterInternalLbIp}}}:443" \
             --kubeconfig=/var/lib/kubelet/kubeconfig \
             --pod-infra-container-image="{{{kubernetesPodInfraContainerSpec}}}" \
             --address=0.0.0.0 \

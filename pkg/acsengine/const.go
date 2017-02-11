@@ -30,24 +30,3 @@ const (
 	// PublicAgent represents the public agent node type
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
-
-const (
-	AzureCloud int = iota
-	AzureChinaCloud
-	AzureUSGovernment
-	AzureGermanCloud
-)
-
-//ParseLocation translate the string "AzureCloud/AzureChinaCloud/AzureUSGovernment/AzureGermanCloud" to enum
-func ParseLocation(location string) int {
-	switch location {
-	case "AzureChinaCloud":
-		return AzureChinaCloud
-	case "AzureUSGovernment":
-		return AzureUSGovernment
-	case "AzureGermanCloud":
-		return AzureGermanCloud
-	default:
-		return AzureCloud
-	}
-}

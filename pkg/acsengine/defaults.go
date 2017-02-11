@@ -62,14 +62,14 @@ var (
 	}
 
 	//Set the AzureUSGovernment and AzureGermanCloud the same as the AzureCloud
-	AzureUSGovernmentSpec = AzureCloud
-	AzureGermanCloudSpec  = AzureCloud
+	AzureUSGovernmentSpec = AzureCloudSpec
+	AzureGermanCloudSpec  = AzureCloudSpec
 )
 
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
-func SetPropertiesDefaults(properties *api.Properties, locationCode int) (bool, error) {
+func SetPropertiesDefaults(properties *api.Properties, location string) (bool, error) {
 
-	setOrchestratorDefaults(properties, locationCode)
+	setOrchestratorDefaults(properties, location)
 
 	setMasterNetworkDefaults(properties)
 
@@ -84,43 +84,14 @@ func SetPropertiesDefaults(properties *api.Properties, locationCode int) (bool, 
 	return certsGenerated, nil
 }
 
-//GetKubeCloudSpecConfig returns the kubenernetes container images url configurations based on the deploy target environment
-//for example: if the target is the public azure, then the default container image url should be gcr.io/google_container/...
-//if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
-func GetKubeCloudSpecConfig(locationCode int) AzureEnvironmentSpecConfig {
-	kubeSpecConfig := AzureCloudSpec
-	switch locationCode {
-	case AzureChinaCloud:
-		kubeSpecConfig = AzureChinaCloudSpec
-	default:
-		kubeSpecConfig = AzureCloudSpec
-	}
-
-	return kubeSpecConfig
-}
-
 // setOrchestratorDefaults for orchestrators
-func setOrchestratorDefaults(a *api.Properties, locationCode int) {
-	cloudSpecConfig := GetKubeCloudSpecConfig(locationCode)
+func setOrchestratorDefaults(a *api.Properties, location string) {
+	cloudSpecConfig := GetCloudSpecConfig(location)
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		a.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesHyperkubeSpec
 		a.OrchestratorProfile.KubernetesConfig.KubectlVersion = DefaultKubectlVersion
-		a.OrchestratorProfile.KubernetesConfig.KubernetesAddonManagerSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesAddonManagerSpec
-		a.OrchestratorProfile.KubernetesConfig.KubernetesAddonResizerSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesAddonResizerSpec
-		a.OrchestratorProfile.KubernetesConfig.KubernetesDashboardSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesDashboardSpec
-		a.OrchestratorProfile.KubernetesConfig.KubernetesExecHealthzSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesExechealthzSpec
-		a.OrchestratorProfile.KubernetesConfig.KubernetesHeapsterSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesHeapsterSpec
-		a.OrchestratorProfile.KubernetesConfig.KubernetesKubeDNSSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesDNSSpec
-		a.OrchestratorProfile.KubernetesConfig.KubernetesDNSMasqSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesDNSMasqSpec
-		a.OrchestratorProfile.KubernetesConfig.KubernetesPodInfraContainerSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesPodInfraContainerSpec
-		a.OrchestratorProfile.KubernetesConfig.DockerInstallScriptURL = cloudSpecConfig.DockerSpecConfig.DefaultDockerInstallScriptURL
-		a.OrchestratorProfile.KubernetesConfig.KubectlDownloadURL = cloudSpecConfig.KubernetesSpecConfig.DefaultKubectlDownloadURL
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
-		a.OrchestratorProfile.DCOSConfig.DCOS173_BootstrapDownloadURL = cloudSpecConfig.DCOSSpecConfig.DCOS173_BootstrapDownloadURL
-		a.OrchestratorProfile.DCOSConfig.DCOS184_BootstrapDownloadURL = cloudSpecConfig.DCOSSpecConfig.DCOS184_BootstrapDownloadURL
-		a.OrchestratorProfile.DCOSConfig.DCOS187_BootstrapDownloadURL = cloudSpecConfig.DCOSSpecConfig.DCOS187_BootstrapDownloadURL
-
 		a.OrchestratorProfile.OrchestratorType = api.DCOS187
 	}
 }
@@ -179,7 +150,7 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 	}
 
 	masterExtraFQDNs := FormatAzureProdFQDNs(a.MasterProfile.DNSPrefix)
-	firstMasterIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)
+	firstMasterIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP).To4()
 
 	if firstMasterIP == nil {
 		return false, fmt.Errorf("MasterProfile.FirstConsecutiveStaticIP '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
@@ -187,8 +158,10 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 
 	ips := []net.IP{firstMasterIP}
 
-	for i := 1; i < a.MasterProfile.Count; i++ {
-		ips = append(ips, net.IP{firstMasterIP[12], firstMasterIP[13], firstMasterIP[14], firstMasterIP[15] + byte(i)})
+	// Include the Internal load balancer as well
+	for i := 1; i < (a.MasterProfile.Count + 1); i++ {
+		ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(i)}
+		ips = append(ips, ip)
 	}
 
 	// use the specified Certificate Authority pair, or generate a new pair

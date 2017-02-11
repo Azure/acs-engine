@@ -4,7 +4,6 @@ MESOSDIR=/var/lib/mesos/dl
 mkdir $MESOSDIR
 
 # load the env vars
-. /etc/mesosphere/setup-flags/bootstrap-id
 . /etc/mesosphere/setup-flags/dcos-deploy-environment
 
 # default dc/os component download address (Azure CDN)

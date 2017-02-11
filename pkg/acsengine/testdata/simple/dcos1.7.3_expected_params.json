@@ -21,7 +21,7 @@
     "value": "Standard_D2_v2"
   },
   "dcosBootstrapURL": {
-    "value": ""
+    "value": "https://az837203.vo.msecnd.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz"
   },
   "firstConsecutiveStaticIP": {
     "value": "172.16.0.5"
