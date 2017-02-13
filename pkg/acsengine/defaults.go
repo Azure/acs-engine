@@ -98,8 +98,11 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 
 	ips := []net.IP{firstMasterIP}
 
+	// Add the Internal Loadbalancer IP which is always at at a known offset from the firstMasterIP
+	ips = append(ips, net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(DefaultInternalLbStaticIPOffset)})
+
 	// Include the Internal load balancer as well
-	for i := 1; i < (a.MasterProfile.Count + 1); i++ {
+	for i := 1; i < a.MasterProfile.Count; i++ {
 		ip := net.IP{firstMasterIP[0], firstMasterIP[1], firstMasterIP[2], firstMasterIP[3] + byte(i)}
 		ips = append(ips, ip)
 	}
