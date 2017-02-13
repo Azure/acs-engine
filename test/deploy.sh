@@ -68,7 +68,7 @@ export DEPLOYMENT_NAME="${INSTANCE_NAME}"
 
 source "${ROOT}/test/common.sh"
 
-make -C "${ROOT}"
+make -C "${ROOT}" ci
 generate_template
 set_azure_account
 trap cleanup EXIT
