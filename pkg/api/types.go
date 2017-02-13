@@ -340,5 +340,5 @@ func (l *LinuxProfile) HasSecrets() bool {
 
 // IsSwarmMode returns true if this template is for Swarm Mode orchestrator
 func (o *OrchestratorProfile) IsSwarmMode() bool {
-	return o.OrchestratorType == DockerCE
+	return o.OrchestratorType == SwarmMode
 }

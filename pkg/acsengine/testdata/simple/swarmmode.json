@@ -4,7 +4,7 @@
   "properties": {
     "provisioningState": "",
     "orchestratorProfile": {
-      "orchestratorType": "DockerCE"
+      "orchestratorType": "SwarmMode"
     },
     "masterProfile": {
       "count": 3,

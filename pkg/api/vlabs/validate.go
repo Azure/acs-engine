@@ -17,7 +17,7 @@ func (o *OrchestratorProfile) Validate() error {
 	case DCOS173:
 	case Swarm:
 	case Kubernetes:
-	case DockerCE:
+	case SwarmMode:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
@@ -191,7 +191,7 @@ func (a *Properties) Validate() error {
 			case DCOS184:
 			case DCOS187:
 			case Swarm:
-			case DockerCE:
+			case SwarmMode:
 			default:
 				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
@@ -218,7 +218,7 @@ func (a *Properties) Validate() error {
 		if agentPoolProfile.OSType == Windows {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Swarm:
-			case DockerCE:
+			case SwarmMode:
 			case Kubernetes:
 				// there is currently only support for one agent pool to have windows
 				count := 0

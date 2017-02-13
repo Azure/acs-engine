@@ -271,7 +271,7 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 	} else if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		files = append(commonTemplateFiles, kubernetesTemplateFiles...)
 		baseFile = kubernetesBaseFile
-	} else if properties.OrchestratorProfile.OrchestratorType == api.DockerCE {
+	} else if properties.OrchestratorProfile.OrchestratorType == api.SwarmMode {
 		files = append(commonTemplateFiles, swarmModeTemplateFiles...)
 		baseFile = swarmBaseFile
 	} else {
