@@ -115,6 +115,7 @@ write_files:
             --kubeconfig=/var/lib/kubelet/kubeconfig \
             --address=0.0.0.0 \
             --allow-privileged=true \
+            --experimental-nvidia-gpus {{{experimentalGpuFlag}}} \
             --enable-server \
             --enable-debugging-handlers \
             --config=/etc/kubernetes/manifests \

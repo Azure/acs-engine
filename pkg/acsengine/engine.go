@@ -564,6 +564,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		"HasWindowsSecrets": func() bool {
 			return properties.WindowsProfile.HasSecrets()
 		},
+		"ExperimentalGpuFlag": func() int {
+			//Only test a single profile, since all agents should be the same size
+			isGpuVM := strings.HasPrefix(properties.AgentPoolProfiles[0].VMSize, "Standard_N")
+			if isGpuVM {
+				return 1
+			}
+			return 0
+		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
 			if len(values)%2 != 0 {
