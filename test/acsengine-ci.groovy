@@ -8,8 +8,6 @@ node {
         env.GOPATH="${WORKSPACE}"
         def clone_dir = "${env.GOPATH}/src/github.com/Azure/acs-engine"
         env.HOME=clone_dir
-        String sendTo = "${SEND_TO}".trim()
-
         def success = true
 
         dir(clone_dir) {
@@ -26,6 +24,7 @@ node {
             success = false
           }
           img.inside("-u root:root") {
+            String error = ""
             try {
               stage('Test') {
                 if(success) {
@@ -47,28 +46,34 @@ node {
                   env.RESOURCE_GROUP = "test-acs-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
                   env.DEPLOYMENT_NAME = "${env.RESOURCE_GROUP}"
 
-                  sh('./test/deploy.sh')
+                  sh('./test/deploy.sh 2> stderr.txt')
                 }
               }
             }
             catch(exc) {
               echo "Exception ${exc}"
               success = false
+              error = readFile('stderr.txt').trim()
             }
             // Final clean up
             sh("rm -rf ${clone_dir}/_output")
             sh("rm -rf ${clone_dir}/.azure")
             if(!success) {
               currentBuild.result = "FAILURE"
-              String to = emailextrecipients([[$class: 'CulpritsRecipientProvider']])
-              if(sendTo != "") {
-                to = "${sendTo};${to}"
+              String to = "${SEND_TO}".trim()
+              if(error != "") {
+                if(to != "") {
+                  to += ";"
+                }
+                to += emailextrecipients([[$class: 'CulpritsRecipientProvider']])
               }
-              if(to != null && to != "") {
+              if(to != "") {
+                gitCommit = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
                 emailext(
                   to: to,
                   subject: "[ACS Engine is BROKEN] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                  body: "${env.BUILD_URL}")
+                  body: "Commit: ${gitCommit}\n\nTrace:\n${error}"
+                )
               }
             }
           }
