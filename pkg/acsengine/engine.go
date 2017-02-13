@@ -480,8 +480,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			// return the custom data
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
-		"GetKubernetesAgentCustomData": func() string {
-			str, e := getSingleLineForTemplate(kubernetesAgentCustomDataYaml)
+		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
+			str, e := getSingleLineKubernetesAgentCustomData(kubernetesAgentCustomDataYaml, profile.Name)
 			if e != nil {
 				return ""
 			}
@@ -563,14 +563,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		},
 		"HasWindowsSecrets": func() bool {
 			return properties.WindowsProfile.HasSecrets()
-		},
-		"ExperimentalGpuFlag": func() int {
-			//Only test a single profile, since all agents should be the same size
-			isGpuVM := strings.HasPrefix(properties.AgentPoolProfiles[0].VMSize, "Standard_N")
-			if isGpuVM {
-				return 1
-			}
-			return 0
 		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
@@ -842,6 +834,15 @@ func getSingleLineForTemplate(yamlFilename string) (string, error) {
 		return "", e2
 	}
 	yamlStr = rVerbatim.ReplaceAllString(yamlStr, "',$1,'")
+	return yamlStr, nil
+}
+
+func getSingleLineKubernetesAgentCustomData(yamlFilename string, vmName string) (string, error) {
+	yamlStr, err := getSingleLineForTemplate(yamlFilename)
+	if err != nil {
+		return "", err
+	}
+	yamlStr = strings.Replace(yamlStr, "[[VMName]]", vmName, -1)
 	return yamlStr, nil
 }
 
