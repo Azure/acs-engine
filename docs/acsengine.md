@@ -14,6 +14,32 @@ This means that you can edit your source code normally in your favorite editor o
 machine, while still being able to compile and test inside of the Docker container (the
 same environment used in our Continuous Integration system).
 
+When the execution of `devenv.{ps1,sh}` completes, you should find the console logged into the container. As a final step, in order to get the `acs-engine` tool ready, you should build the sources with:
+
+```
+make build
+```
+
+When the build process completes, verify that `acs-engine` is available, invoking the command without parameters. 
+You should see something like this:
+
+```
+# acs-engine
+Usage of acs-engine:
+  -artifacts string
+    	directory where artifacts will be written
+  -caCertificatePath string
+    	the path to the CA Certificate file
+  -caKeyPath string
+    	the path to the CA key file
+  -classicMode
+    	enable classic parameters and outputs
+  -noPrettyPrint
+    	do not pretty print output
+  -parametersOnly
+    	only output the parameters
+```
+
 [Here's a quick demo video showing the dev/build/test cycle with this setup.](https://www.youtube.com/watch?v=lc6UZmqxQMs)
 
 # Downloading and Building ACS Engine Locally 

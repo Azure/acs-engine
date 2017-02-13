@@ -93,7 +93,8 @@ function ensureKubectl() {
 }
 
 function ensureEtcd() {
-    systemctl enable etcd
+    systemctl stop etcd
+    rm -rf /var/lib/etcd/default
     systemctl restart etcd
 }
 
@@ -191,9 +192,11 @@ users:
     set -x
 }
 
+# master and node
 ensureDocker
 ensureKubelet
 
+# master only 
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     writeKubeConfig
     ensureKubectl

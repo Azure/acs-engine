@@ -4,6 +4,7 @@ import (
 	neturl "net/url"
 
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
+	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -56,6 +57,7 @@ type Properties struct {
 	JumpboxProfile          JumpboxProfile          `json:"jumpboxProfile"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
 	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
+	CustomProfile           CustomProfile           `json:"customProfile"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -228,6 +230,12 @@ type KeyVaultCertificate struct {
 // OSType represents OS types of agents
 type OSType string
 
+// CustomProfile specifies custom properties that are used for
+// cluster instantiation.  Should not be used by most users.
+type CustomProfile struct {
+	Orchestrator string `json:"orchestrator,omitempty"`
+}
+
 // VlabsARMContainerService is the type we read and write from file
 // needed because the json that is sent to ARM and acs-engine
 // is different from the json that the ACS RP Api gets from ARM
@@ -242,6 +250,14 @@ type VlabsARMContainerService struct {
 type V20160330ARMContainerService struct {
 	TypeMeta
 	*v20160330.ContainerService
+}
+
+// V20160930ARMContainerService is the type we read and write from file
+// needed because the json that is sent to ARM and acs-engine
+// is different from the json that the ACS RP Api gets from ARM
+type V20160930ARMContainerService struct {
+	TypeMeta
+	*v20160930.ContainerService
 }
 
 // HasWindows returns true if the cluster contains windows
