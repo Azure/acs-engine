@@ -13,7 +13,7 @@
     "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
     "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
     "username": "[parameters('linuxAdminUsername')]",
-    "masterFqdnPrefix": "[parameters('masterEndpointDNSNamePrefix')]",
+    "masterFqdnPrefix": "[toLower(parameters('masterEndpointDNSNamePrefix'))]",
     "masterPrivateIp": "[parameters('firstConsecutiveStaticIP')]",
     "masterVMSize": "[parameters('masterVMSize')]",
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
@@ -62,7 +62,12 @@
     "vnetCidr": "10.0.0.0/8",
 {{end}}
     "kubeDnsServiceIp": "10.0.0.10", 
-    "kubeServiceCidr": "10.0.0.0/16", 
+    "kubeServiceCidr": "10.0.0.0/16",
+{{if HasLinuxAgents}}
+    "registerSchedulable": "false",
+{{else}}
+    "registerSchedulable": "true",
+{{end}}
     "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
     "primaryAvailablitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',variables('nameSuffix'))]",
@@ -148,10 +153,9 @@
     "agentWindowsPublisher": "MicrosoftWindowsServer",
     "agentWindowsOffer": "WindowsServer",
     "agentWindowsSku": "2016-Datacenter-with-Containers",
-    "agentWindowsVersion": "latest",
+    "agentWindowsVersion": "2016.0.20170127",
     "singleQuote": "'",
-    "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; $inputStream = New-Object System.IO.FileStream $inputFile, ([IO.FileMode]::Open), ([IO.FileAccess]::Read), ([IO.FileShare]::Read) ; $sr = New-Object System.IO.StreamReader(New-Object System.IO.Compression.GZipStream($inputStream, [System.IO.Compression.CompressionMode]::Decompress)) ; $sr.ReadToEnd() | Out-File($outputFile) ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; ",
-    "agentWindowsBackendPort": 3389
+    "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; $inputStream = New-Object System.IO.FileStream $inputFile, ([IO.FileMode]::Open), ([IO.FileAccess]::Read), ([IO.FileShare]::Read) ; $sr = New-Object System.IO.StreamReader(New-Object System.IO.Compression.GZipStream($inputStream, [System.IO.Compression.CompressionMode]::Decompress)) ; $sr.ReadToEnd() | Out-File($outputFile) ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
 {{end}}
 
     

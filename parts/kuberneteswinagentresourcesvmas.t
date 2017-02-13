@@ -5,11 +5,10 @@
         "name": "loop"
       }, 
       "dependsOn": [
-      "[concat(variables('{{.Name}}LbID'), '/inboundNatRules/RDP-', variables('{{.Name}}VMNamePrefix'), copyIndex())]"  
 {{if .IsCustomVNET}}
-      ,"[variables('nsgID')]" 
+      "[variables('nsgID')]" 
 {{else}}
-      ,"[variables('vnetID')]"
+      "[variables('vnetID')]"
 {{end}}
       ], 
       "location": "[variables('location')]", 
@@ -28,83 +27,13 @@
               "privateIPAllocationMethod": "Static", 
               "subnet": {
                 "id": "[variables('{{.Name}}VnetSubnetID')]"
-              },
-              "loadBalancerBackendAddressPools": [
-                {
-                  "id": "[concat(variables('{{.Name}}LbID'), '/backendAddressPools/pool-',variables('{{.Name}}LbName'))]"
-                }
-              ], 
-              "loadBalancerInboundNatRules": [
-                {
-                  "id": "[concat(variables('{{.Name}}LbID'),'/inboundNatRules/RDP-',variables('{{.Name}}VMNamePrefix'),copyIndex())]"
-                }
-              ]
+              }
             }
           }
         ],
         "enableIPForwarding": true
       }, 
       "type": "Microsoft.Network/networkInterfaces"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]", 
-      "location": "[resourceGroup().location]", 
-      "name": "[variables('{{.Name}}IPAddressName')]", 
-      "properties": {
-        "dnsSettings": {
-          "domainNameLabel": "[concat('rdp',uniqueString(variables('masterFqdnPrefix')))]"
-        }, 
-        "publicIPAllocationMethod": "Dynamic"
-      }, 
-      "type": "Microsoft.Network/publicIPAddresses"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]", 
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('{{.Name}}IPAddressName'))]"
-      ], 
-      "location": "[resourceGroup().location]", 
-      "name": "[variables('{{.Name}}LbName')]", 
-      "properties": {
-        "backendAddressPools": [
-          {
-            "name": "[concat('pool-',variables('{{.Name}}LbName'))]"
-          }
-        ], 
-        "frontendIPConfigurations": [
-          {
-            "name": "[variables('{{.Name}}LbIPConfigName')]", 
-            "properties": {
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('{{.Name}}IPAddressName'))]"
-              }
-            }
-          }
-        ]
-      }, 
-      "type": "Microsoft.Network/loadBalancers"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]", 
-      "copy": {
-        "count": "[variables('{{.Name}}Count')]",
-        "name": "loop"
-      }, 
-      "dependsOn": [
-        "[variables('{{.Name}}LbID')]"
-      ], 
-      "location": "[resourceGroup().location]", 
-      "name": "[concat(variables('{{.Name}}LbName'), '/', 'RDP-', variables('{{.Name}}VMNamePrefix'), copyIndex())]", 
-      "properties": {
-        "backendPort": "[variables('agentWindowsBackendPort')]", 
-        "enableFloatingIP": false, 
-        "frontendIPConfiguration": {
-          "id": "[variables('{{.Name}}LbIPConfigID')]"
-        }, 
-        "frontendPort": "[copyIndex(variables('agentWindowsBackendPort'))]", 
-        "protocol": "tcp"
-      }, 
-      "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
     {
       "apiVersion": "[variables('apiVersionStorage')]", 
@@ -196,7 +125,7 @@
             "publisher": "[variables('agentWindowsPublisher')]",
             "offer": "[variables('agentWindowsOffer')]",
             "sku": "[variables('agentWindowsSku')]",
-            "version": "latest"
+            "version": "[variables('agentWindowsVersion')]"
           }, 
           "osDisk": {
             "caching": "ReadWrite", 

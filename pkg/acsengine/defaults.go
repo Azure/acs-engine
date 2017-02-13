@@ -69,6 +69,13 @@ func setAgentNetworkDefaults(a *api.Properties) {
 			subnetCounter++
 		}
 	}
+	// set default OSType to Linux
+	for i := range a.AgentPoolProfiles {
+		profile := &a.AgentPoolProfiles[i]
+		if profile.OSType == "" {
+			profile.OSType = api.Linux
+		}
+	}
 }
 
 // setStorageDefaults for agents
