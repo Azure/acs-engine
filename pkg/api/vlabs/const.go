@@ -23,23 +23,10 @@ const (
 	DockerCE = "DockerCE"
 )
 
+// the OSTypes supported by vlabs
 const (
 	Windows OSType = "Windows"
 	Linux   OSType = "Linux"
-)
-
-// subscription states
-const (
-	// Registered means the subscription is entitled to use the namespace
-	Registered SubscriptionState = iota
-	// Unregistered means the subscription is not entitled to use the namespace
-	Unregistered
-	// Suspended means the subscription has been suspended from the system
-	Suspended
-	// Deleted means the subscription has been deleted
-	Deleted
-	// Warned means the subscription has been warned
-	Warned
 )
 
 // validation values
