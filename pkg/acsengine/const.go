@@ -30,3 +30,21 @@ const (
 	// PublicAgent represents the public agent node type
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
+
+const (
+	KubernetesHyperkubeImageName         = "hyperkube-amd64:v1.5.1"
+	KubernetesDashboardImageName         = "kubernetes-dashboard-amd64:v1.5.1"
+	KubernetesExechealthzImageName       = "exechealthz-amd64:1.2"
+	KubernetesAddonResizerImageName      = "addon-resizer:1.6"
+	KubernetesHeapsterImageName          = "heapster:v1.2.0"
+	KubernetesDNSImageName               = "kubedns-amd64:1.7"
+	KubernetesAddonManagerImageName      = "kube-addon-manager-amd64:v5.1"
+	KubernetesDNSMasqImageName           = "kube-dnsmasq-amd64:1.3"
+	KubernetesPodInfraContainerImageName = "pause-amd64:3.0"
+)
+
+const (
+	DefaultKubectlDownloadURL               = "https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/kubectl"
+	AzureChinaCloudKubectlDownloadURL       = "https://acsengine.blob.core.chinacloudapi.cn/kubernetes/kubectl/%s/kubectl"
+	AzureChinaCloudDCOSBootstrapDownloadURL = "https://acsengine.blob.core.chinacloudapi.cn/dcos/%s.bootstrap.tar.xz"
+)

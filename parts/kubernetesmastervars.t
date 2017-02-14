@@ -19,7 +19,6 @@
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
     "kubectlDownloadURL": "[parameters('kubectlDownloadURL')]",
-    "dockerInstallScriptURL": "[parameters('dockerInstallScriptURL')]",
     "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
     "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
     "username": "[parameters('linuxAdminUsername')]",

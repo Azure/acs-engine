@@ -32,28 +32,14 @@ type DCOSSpecConfig struct {
 	DCOS187_BootstrapDownloadURL string
 }
 
-//DockerSpecConfig is default docker install script URL.
-type DockerSpecConfig struct {
-	DefaultDockerInstallScriptURL string
-}
-
 //KubernetesSpecConfig is the kubernetes container images used.
 type KubernetesSpecConfig struct {
-	DefaultKubernetesHyperkubeSpec         string
-	DefaultKubernetesDashboardSpec         string
-	DefaultKubernetesExechealthzSpec       string
-	DefaultKubernetesAddonResizerSpec      string
-	DefaultKubernetesHeapsterSpec          string
-	DefaultKubernetesDNSSpec               string
-	DefaultKubernetesAddonManagerSpec      string
-	DefaultKubernetesDNSMasqSpec           string
-	DefaultKubernetesPodInfraContainerSpec string
-	DefaultKubectlDownloadURL              string
+	KubernetesImageBase string
+	KubectlDownloadURL  string
 }
 
 //AzureEnvironmentSpecConfig is the overall configuration differences in different cloud environments.
 type AzureEnvironmentSpecConfig struct {
-	DockerSpecConfig     DockerSpecConfig
 	KubernetesSpecConfig KubernetesSpecConfig
 	DCOSSpecConfig       DCOSSpecConfig
 }

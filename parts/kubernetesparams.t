@@ -41,7 +41,7 @@
       "type": "securestring"
     },
     "kubernetesHyperkubeSpec": {
-      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec}}",
+      "defaultValue": "",
       "metadata": {
         "description": "The container spec for hyperkube."
       },
@@ -107,13 +107,6 @@
       "defaultValue": "",
       "metadata": {
         "description": "This is the download URL of kubectl"
-      },
-      "type": "string"
-    },
-    "dockerInstallScriptURL": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "This is the download URL of docker installer script"
       },
       "type": "string"
     },

@@ -132,8 +132,8 @@ type OrchestratorProfile struct {
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
-	KubernetesHyperkubeSpec string `json:"kubernetesHyperkubeSpec,omitempty"`
-	KubectlVersion          string `json:"kubectlVersion,omitempty"`
+	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
+	KubectlVersion      string `json:"kubectlVersion,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster

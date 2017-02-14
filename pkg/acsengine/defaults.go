@@ -10,22 +10,10 @@ import (
 var (
 	//AzureCloudSpec is the default configurations for global azure.
 	AzureCloudSpec = AzureEnvironmentSpecConfig{
-		//DockerConfigAzurePublicCloud specify the default script location of docker installer script
-		DockerSpecConfig: DockerSpecConfig{
-			DefaultDockerInstallScriptURL: "https://get.docker.com/",
-		},
 		//KubeConfigAzurePublicCloud is the default kubernetes container image url.
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			DefaultKubernetesHyperkubeSpec:         "gcr.io/google_containers/hyperkube-amd64:v1.5.1",
-			DefaultKubernetesDashboardSpec:         "gcr.io/google_containers/kubernetes-dashboard-amd64:v1.5.1",
-			DefaultKubernetesExechealthzSpec:       "gcr.io/google_containers/exechealthz-amd64:1.2",
-			DefaultKubernetesAddonResizerSpec:      "gcr.io/google_containers/addon-resizer:1.6",
-			DefaultKubernetesHeapsterSpec:          "gcr.io/google_containers/heapster:v1.2.0",
-			DefaultKubernetesDNSSpec:               "gcr.io/google_containers/kubedns-amd64:1.7",
-			DefaultKubernetesAddonManagerSpec:      "gcr.io/google_containers/kube-addon-manager-amd64:v5.1",
-			DefaultKubernetesDNSMasqSpec:           "gcr.io/google_containers/kube-dnsmasq-amd64:1.3",
-			DefaultKubernetesPodInfraContainerSpec: "gcr.io/google_containers/pause-amd64:3.0",
-			DefaultKubectlDownloadURL:              "https://storage.googleapis.com/kubernetes-release/release/" + DefaultKubectlVersion + "/bin/linux/amd64/kubectl",
+			KubernetesImageBase: "gcr.io/google_containers/",
+			KubectlDownloadURL:  fmt.Sprintf(DefaultKubectlDownloadURL, string(DefaultKubectlVersion)),
 		},
 
 		DCOSSpecConfig: DCOSSpecConfig{
@@ -37,33 +25,22 @@ var (
 
 	//AzureChinaCloudSpec is the configurations for Azure China (Mooncake)
 	AzureChinaCloudSpec = AzureEnvironmentSpecConfig{
-		//DockerConfigAzureChinaCloud specify the docker install script download URL in China.
-		DockerSpecConfig: DockerSpecConfig{
-			DefaultDockerInstallScriptURL: "https://acsengine.blob.core.chinacloudapi.cn/docker/install-docker",
-		},
 		//KubeConfigAzureChinaCloud - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			DefaultKubernetesHyperkubeSpec:         "mirror.azure.cn:5000/google_containers/hyperkube-amd64:v1.5.1",
-			DefaultKubernetesDashboardSpec:         "mirror.azure.cn:5000/google_containers/kubernetes-dashboard-amd64:v1.5.1",
-			DefaultKubernetesExechealthzSpec:       "mirror.azure.cn:5000/google_containers/exechealthz-amd64:1.2",
-			DefaultKubernetesAddonResizerSpec:      "mirror.azure.cn:5000/google_containers/addon-resizer:1.6",
-			DefaultKubernetesHeapsterSpec:          "mirror.azure.cn:5000/google_containers/heapster:v1.2.0",
-			DefaultKubernetesDNSSpec:               "mirror.azure.cn:5000/google_containers/kubedns-amd64:1.7",
-			DefaultKubernetesAddonManagerSpec:      "mirror.azure.cn:5000/google_containers/kube-addon-manager-amd64:v5.1",
-			DefaultKubernetesDNSMasqSpec:           "mirror.azure.cn:5000/google_containers/kube-dnsmasq-amd64:1.3",
-			DefaultKubernetesPodInfraContainerSpec: "mirror.azure.cn:5000/google_containers/pause-amd64:3.0",
-			DefaultKubectlDownloadURL:              "https://acsengine.blob.core.chinacloudapi.cn/kubernetes/kubectl/" + DefaultKubectlVersion + "/kubectl",
+			KubernetesImageBase: "mirror.azure.cn:5000/google_containers/",
+			KubectlDownloadURL:  fmt.Sprintf(AzureChinaCloudKubectlDownloadURL, string(DefaultKubectlVersion)),
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
-			DCOS173_BootstrapDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/dcos/df308b6fc3bd91e1277baa5a3db928ae70964722.bootstrap.tar.xz",
-			DCOS184_BootstrapDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/dcos/5b4aa43610c57ee1d60b4aa0751a1fb75824c083.bootstrap.tar.xz",
-			DCOS187_BootstrapDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/dcos/e73ba2b1cd17795e4dcb3d6647d11a29b9c35084.bootstrap.tar.xz",
+			DCOS173_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
+			DCOS184_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
+			DCOS187_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
 		},
 	}
 
-	//Set the AzureUSGovernment and AzureGermanCloud the same as the AzureCloud
+	//AzureUSGovernmentSpec is the same with global azure
 	AzureUSGovernmentSpec = AzureCloudSpec
-	AzureGermanCloudSpec  = AzureCloudSpec
+	//AzureGermanCloudSpec is the same with global azure
+	AzureGermanCloudSpec = AzureCloudSpec
 )
 
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
@@ -88,7 +65,7 @@ func SetPropertiesDefaults(properties *api.Properties, location string) (bool, e
 func setOrchestratorDefaults(a *api.Properties, location string) {
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-		a.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec = cloudSpecConfig.KubernetesSpecConfig.DefaultKubernetesHyperkubeSpec
+		a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
 		a.OrchestratorProfile.KubernetesConfig.KubectlVersion = DefaultKubectlVersion
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
