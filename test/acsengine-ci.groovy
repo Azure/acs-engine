@@ -24,7 +24,7 @@ node {
             success = false
           }
           img.inside("-u root:root") {
-            String error = ""
+            String errorMsg = ""
             try {
               stage('Test') {
                 if(success) {
@@ -46,14 +46,14 @@ node {
                   env.RESOURCE_GROUP = "test-acs-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
                   env.DEPLOYMENT_NAME = "${env.RESOURCE_GROUP}"
 
-                  sh('./test/deploy.sh 2> stderr.txt')
+                  sh('./test/deploy.sh')
                 }
               }
             }
             catch(exc) {
               echo "Exception ${exc}"
               success = false
-              error = readFile('stderr.txt').trim()
+              errorMsg = "Please run the command \"make ci\" for verification"
             }
             // Final clean up
             sh("rm -rf ${clone_dir}/_output")
@@ -61,7 +61,7 @@ node {
             if(!success) {
               currentBuild.result = "FAILURE"
               String to = "${SEND_TO}".trim()
-              if(error != "") {
+              if(errorMsg != "") {
                 if(to != "") {
                   to += ";"
                 }
@@ -72,7 +72,7 @@ node {
                 emailext(
                   to: to,
                   subject: "[ACS Engine is BROKEN] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                  body: "Commit: ${gitCommit}\n\nTrace:\n${error}"
+                  body: "Commit: ${gitCommit}\n\n${errorMsg}"
                 )
               }
             }
