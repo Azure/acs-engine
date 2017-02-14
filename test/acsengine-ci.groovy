@@ -45,6 +45,7 @@ node {
                   env.LOCATION = "${LOCATION}"
                   env.RESOURCE_GROUP = "test-acs-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
                   env.DEPLOYMENT_NAME = "${env.RESOURCE_GROUP}"
+                  env.CLEANUP = "y"
 
                   sh('./test/deploy.sh')
                 }
