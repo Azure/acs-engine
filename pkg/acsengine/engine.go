@@ -515,19 +515,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			return fmt.Sprintf("\"customData\": \"%s\"", str)
 		},
 		"GetKubernetesWindowsAgentCustomData": func() string {
-			b, err := Asset(kubernetesWindowsAgentCustomDataPS1)
-			if err != nil {
-				// this should never happen and this is a bug
-				panic(err.Error())
+			str, e := getSingleLineForTemplate(kubernetesWindowsAgentCustomDataPS1)
+			if e != nil {
+				return ""
 			}
-
-			// the windows command line has a length limit, requiring the
-			// setting of the certificates within the script itself.
-			str := string(b)
-			str = strings.Replace(str, "<<<caCertificate>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
-			str = strings.Replace(str, "<<<clientCertificate>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.ClientCertificate)), -1)
-			b64GzipStr := getBase64CustomScriptFromStr(str)
-			return fmt.Sprintf("\"customData\": \"%s\",", b64GzipStr)
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesKubeConfig": func() string {
 			str, e := getSingleLineForTemplate(kubeConfigJSON)
@@ -826,27 +818,27 @@ func getSecurityRules(ports []int) string {
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineForTemplate(yamlFilename string) (string, error) {
-	b, err := Asset(yamlFilename)
+func getSingleLineForTemplate(textFilename string) (string, error) {
+	b, err := Asset(textFilename)
 	if err != nil {
-		return "", fmt.Errorf("yaml file %s does not exist", yamlFilename)
+		return "", fmt.Errorf("yaml file %s does not exist", textFilename)
 	}
 
-	yamlStr := escapeSingleLine(string(b))
+	textStr := escapeSingleLine(string(b))
 
 	// variable replacement
 	rVariable, e1 := regexp.Compile("{{{([^}]*)}}}")
 	if e1 != nil {
 		return "", e1
 	}
-	yamlStr = rVariable.ReplaceAllString(yamlStr, "',variables('$1'),'")
+	textStr = rVariable.ReplaceAllString(textStr, "',variables('$1'),'")
 	// verbatim replacement
 	rVerbatim, e2 := regexp.Compile("<<<([^>]*)>>>")
 	if e2 != nil {
 		return "", e2
 	}
-	yamlStr = rVerbatim.ReplaceAllString(yamlStr, "',$1,'")
-	return yamlStr, nil
+	textStr = rVerbatim.ReplaceAllString(textStr, "',$1,'")
+	return textStr, nil
 }
 
 func escapeSingleLine(escapedStr string) string {
