@@ -42,8 +42,8 @@ After completing this walkthrough you will know how to:
  * deploy a simple Windows Docker application and expose to the world,
  * and deploy a hybrid Windows / Linux Docker application.
  
-1. After successfully deploying the template write down the master FQDNs (Fully Qualified Domain Name) and the rdp FQDN.
-   1. If using Powershell or CLI, the output parameter is in the OutputsString section named 'masterFQDN', and 'rdpNatFQDN'
+1. After successfully deploying the template write down the master FQDN (Fully Qualified Domain Name).
+   1. If using Powershell or CLI, the output parameter is in the OutputsString section named 'masterFQDN'
    2. If using Portal, to get the output you need to:
      1. navigate to "resource group"
      2. click on the resource group you just created

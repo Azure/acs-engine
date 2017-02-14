@@ -351,6 +351,8 @@ write_files:
             --register-schedulable={{{registerSchedulable}}} \
             --cloud-provider=azure \
             --cloud-config=/etc/kubernetes/azure.json \
+            --hairpin-mode=promiscuous-bridge \
+            --network-plugin=kubenet \
             --v=2
     ExecStop=/usr/bin/docker stop -t 10 kubelet
     ExecStopPost=/usr/bin/docker rm -f kubelet
