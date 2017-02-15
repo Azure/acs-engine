@@ -635,7 +635,8 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 func getDCOSCustomDataPublicIPStr(orchestratorType api.OrchestratorType, masterCount int) string {
 	if orchestratorType == api.DCOS173 ||
 		orchestratorType == api.DCOS184 ||
-		orchestratorType == api.DCOS187 {
+		orchestratorType == api.DCOS187 ||
+		orchestratorType == api.DCOS188 {
 		var buf bytes.Buffer
 		for i := 0; i < masterCount; i++ {
 			buf.WriteString(fmt.Sprintf("reference(variables('masterVMNic')[%d]).ipConfigurations[0].properties.privateIPAddress,", i))
