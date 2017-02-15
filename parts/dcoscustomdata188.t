@@ -293,7 +293,7 @@ write_files:
 
     StandardError=journal+console
 
-    ExecStartPre=/usr/bin/curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 -o /var/lib/mesos/dl/bootstrap.tar.xz https://dcosio.azureedge.net/dcos/stable/bootstrap/e73ba2b1cd17795e4dcb3d6647d11a29b9c35084.bootstrap.tar.xz
+    ExecStartPre=/usr/bin/curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 -o /var/lib/mesos/dl/bootstrap.tar.xz https://dcosio.azureedge.net/dcos/stable/bootstrap/5df43052907c021eeb5de145419a3da1898c58a5.bootstrap.tar.xz
 
     ExecStartPre=/usr/bin/mkdir -p /opt/mesosphere
 
