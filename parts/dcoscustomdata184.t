@@ -65,6 +65,9 @@ runcmd:
   - mask
   - --now
   - lxc-net.service
+- - mkdir
+  - -p
+  - /var/lib/dcos  
 - /opt/azure/containers/provision.sh
 - - cp
   - -p
@@ -346,3 +349,4 @@ write_files:
   path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
   owner: "root"
+
