@@ -23,9 +23,6 @@
   "clientPrivateKey": {
     "value": "Y2xpZW50UHJpdmF0ZUtleQ=="
   },
-  "dockerInstallScriptURL": {
-    "value": "https://get.docker.com/"
-  },
   "firstConsecutiveStaticIP": {
     "value": "10.240.255.5"
   },

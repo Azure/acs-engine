@@ -440,13 +440,6 @@
       },
       "type": "securestring"
     },
-    "dockerInstallScriptURL": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "This is the download URL of docker installer script"
-      },
-      "type": "string"
-    },
     "firstConsecutiveStaticIP": {
       "defaultValue": "10.239.255.245",
       "metadata": {
@@ -523,7 +516,7 @@
       "type": "string"
     },
     "kubernetesHyperkubeSpec": {
-      "defaultValue": "gcr.io/google_containers/hyperkube-amd64:v1.5.1",
+      "defaultValue": "",
       "metadata": {
         "description": "The container spec for hyperkube."
       },
@@ -691,7 +684,6 @@
     "clientCertificate": "[parameters('clientCertificate')]",
     "clientPrivateKey": "[parameters('clientPrivateKey')]",
     "dockerEngineVersion": "1.12.*",
-    "dockerInstallScriptURL": "[parameters('dockerInstallScriptURL')]",
     "kubeConfigCertificate": "[parameters('kubeConfigCertificate')]",
     "kubeConfigPrivateKey": "[parameters('kubeConfigPrivateKey')]",
     "kubeDnsServiceIp": "10.0.0.10",
