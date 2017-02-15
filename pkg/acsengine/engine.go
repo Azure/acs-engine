@@ -29,6 +29,7 @@ const (
 	dcosCustomData173 = "dcoscustomdata173.t"
 	dcosCustomData184 = "dcoscustomdata184.t"
 	dcosCustomData187 = "dcoscustomdata187.t"
+	dcosCustomData188 = "dcoscustomdata188.t"
 	dcosProvision     = "dcosprovision.sh"
 )
 
@@ -260,7 +261,8 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
 	var files []string
 	var baseFile string
-	if properties.OrchestratorProfile.OrchestratorType == api.DCOS187 ||
+	if properties.OrchestratorProfile.OrchestratorType == api.DCOS188 ||
+		properties.OrchestratorProfile.OrchestratorType == api.DCOS187 ||
 		properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
 		properties.OrchestratorProfile.OrchestratorType == api.DCOS173 {
 		files = append(commonTemplateFiles, dcosTemplateFiles...)
@@ -394,6 +396,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		},
 		"IsDCOS187": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.DCOS187
+		},
+		"IsDCOS188": func() bool {
+			return properties.OrchestratorProfile.OrchestratorType == api.DCOS188
 		},
 		"RequiresFakeAgentOutput": func() bool {
 			return properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
@@ -587,7 +592,16 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 }
 
 func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) string {
-	if orchestratorType == api.DCOS187 {
+	if orchestratorType == api.DCOS188 {
+		switch masterCount {
+		case 1:
+			return "441385ce2f5942df7e29075c12fb38fa5e92cbba"
+		case 3:
+			return "b1cd359287504efb780257bd12cc3a63704e42d4"
+		case 5:
+			return "d9b61156dfcc9383e014851529738aa550ef57d9"
+		}
+	} else if orchestratorType == api.DCOS187 {
 		switch masterCount {
 		case 1:
 			return "556978041b6ed059cc0f474501083e35ea5645b8"
@@ -922,6 +936,8 @@ touch /etc/mesosphere/roles/azure_master`
 func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCount int, provisionContent string) string {
 	yamlFilename := ""
 	switch orchestratorType {
+	case api.DCOS188:
+		yamlFilename = dcosCustomData188
 	case api.DCOS187:
 		yamlFilename = dcosCustomData187
 	case api.DCOS184:
