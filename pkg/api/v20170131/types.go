@@ -28,16 +28,16 @@ type ContainerService struct {
 
 // Properties represents the ACS cluster definition
 type Properties struct {
-	ProvisioningState   ProvisioningState   `json:"provisioningState"`
-	OrchestratorProfile OrchestratorProfile `json:"orchestratorProfile"`
-	MasterProfile       MasterProfile       `json:"masterProfile"`
-	AgentPoolProfiles   []AgentPoolProfile  `json:"agentPoolProfiles"`
-	LinuxProfile        LinuxProfile        `json:"linuxProfile"`
-	WindowsProfile      WindowsProfile      `json:"windowsProfile"`
-	DiagnosticsProfile DiagnosticsProfile `json:"diagnosticsProfile"`
-	JumpboxProfile JumpboxProfile `json:"jumpboxProfile"`
+	ProvisioningState       ProvisioningState       `json:"provisioningState"`
+	OrchestratorProfile     OrchestratorProfile     `json:"orchestratorProfile"`
+	MasterProfile           MasterProfile           `json:"masterProfile"`
+	AgentPoolProfiles       []AgentPoolProfile      `json:"agentPoolProfiles"`
+	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
+	WindowsProfile          WindowsProfile          `json:"windowsProfile"`
+	DiagnosticsProfile      DiagnosticsProfile      `json:"diagnosticsProfile"`
+	JumpboxProfile          JumpboxProfile          `json:"jumpboxProfile"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
-	CustomProfile CustomProfile `json:"customProfile"`
+	CustomProfile           CustomProfile           `json:"customProfile"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -45,7 +45,6 @@ type ServicePrincipalProfile struct {
 	ClientID string `json:"clientId,omitempty"`
 	Secret   string `json:"secret,omitempty"`
 }
-
 
 // CustomProfile specifies custom properties that are used for
 // cluster instantiation.  Should not be used by most users.
@@ -66,8 +65,8 @@ type LinuxProfile struct {
 
 // WindowsProfile represents the Windows configuration passed to the cluster
 type WindowsProfile struct {
-	AdminUsername string            `json:"adminUsername,omitempty"`
-	AdminPassword string            `json:"adminPassword,omitempty"`
+	AdminUsername string `json:"adminUsername,omitempty"`
+	AdminPassword string `json:"adminPassword,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.
@@ -122,8 +121,8 @@ type AgentPoolProfile struct {
 	// Set as nullable to support backward compat because
 	// this property was added later.
 	// If the value is null or not set, it defaulted to Linux.
-	OSType    OSType `json:"osType,omitempty"`
-	
+	OSType OSType `json:"osType,omitempty"`
+
 	// subnet is internal
 	subnet string
 }
@@ -204,9 +203,4 @@ func (a *AgentPoolProfile) GetSubnet() string {
 // SetSubnet sets the read-only subnet for the agent pool
 func (a *AgentPoolProfile) SetSubnet(subnet string) {
 	a.subnet = subnet
-}
-
-// IsSwarmMode returns true if this template is for Swarm Mode orchestrator
-func (o *OrchestratorProfile) IsSwarmMode() bool {
-	return o.OrchestratorType == SwarmMode
 }
