@@ -132,10 +132,10 @@
     "value": "a3ViZUNvbmZpZ1ByaXZhdGVLZXk="
   },
   "kubectlDownloadURL": {
-    "value": "https://storage.googleapis.com/kubernetes-release/release/v1.5.1/bin/linux/amd64/kubectl"
+    "value": "https://storage.googleapis.com/kubernetes-release/release/v1.5.3/bin/linux/amd64/kubectl"
   },
   "kubectlVersion": {
-    "value": "v1.5.1"
+    "value": "v1.5.3"
   },
   "kubernetesAddonManagerSpec": {
     "value": "gcr.io/google_containers/kube-addon-manager-amd64:v5.1"

@@ -37,7 +37,7 @@ $global:AgentCertificate = "{{{clientCertificate}}}"
 $global:DockerServiceName = "Docker"
 $global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
-$global:KubeBinariesSASURL = "https://acsengine.blob.core.windows.net/v1-5-1/k.zip"
+$global:KubeBinariesSASURL = "https://acsengine.blob.core.windows.net/wink8s/v1.5.3.zip"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
 

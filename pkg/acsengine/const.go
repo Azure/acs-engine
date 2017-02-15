@@ -19,7 +19,7 @@ const (
 	DefaultKubernetesClusterDomain = "cluster.local"
 	// DefaultKubectlVersion is the version used for kubectl
 	// The latest stable version can be found here: https://storage.googleapis.com/kubernetes-release/release/stable.txt
-	DefaultKubectlVersion = "v1.5.1"
+	DefaultKubectlVersion = "v1.5.3"
 	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP
 	// address relative to the first consecutive Kubernetes static IP
 	DefaultInternalLbStaticIPOffset = 10

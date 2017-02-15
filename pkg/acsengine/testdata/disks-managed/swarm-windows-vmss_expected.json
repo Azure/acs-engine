@@ -550,6 +550,7 @@
   "variables": {
     "adminUsername": "[parameters('linuxAdminUsername')]",
     "agent128Count": "[parameters('agent128Count')]",
+    "agent128Index": 0,
     "agent128StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agent128Subnet": "[parameters('agent128Subnet')]",
     "agent128SubnetName": "[concat(variables('orchestratorName'), '-agent128subnet')]",
@@ -559,6 +560,7 @@
     "agent1publicCount": "[parameters('agent1publicCount')]",
     "agent1publicEndpointDNSNamePrefix": "[tolower(parameters('agent1publicEndpointDNSNamePrefix'))]",
     "agent1publicIPAddressName": "[concat(variables('orchestratorName'), '-agent-ip-', variables('agent1publicEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]",
+    "agent1publicIndex": 1,
     "agent1publicLbBackendPoolName": "[concat(variables('orchestratorName'), '-agent1public-', variables('nameSuffix'))]",
     "agent1publicLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('agent1publicLbName'))]",
     "agent1publicLbIPConfigID": "[concat(variables('agent1publicLbID'),'/frontendIPConfigurations/', variables('agent1publicLbIPConfigName'))]",
