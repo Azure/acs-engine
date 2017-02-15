@@ -1,5 +1,7 @@
 # Microsoft Azure Container Service Engine - Kubernetes Walkthrough
 
+* [Kubernetes Windows Walkthrough](kubernetes.windows.md) - shows how to create a Kubernetes on Windows.
+
 ## Deployment
 
 Here are the steps to deploy a simple Kubernetes cluster:
