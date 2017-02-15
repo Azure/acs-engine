@@ -872,7 +872,7 @@ func kuberneteswindowssetupPs1() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kuberneteswindowssetup.ps1", size: 9871, mode: os.FileMode(420), modTime: time.Unix(1487271649, 0)}
+	info := bindataFileInfo{name: "kuberneteswindowssetup.ps1", size: 9871, mode: os.FileMode(420), modTime: time.Unix(1487273768, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
