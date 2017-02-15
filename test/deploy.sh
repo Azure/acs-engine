@@ -68,7 +68,7 @@ export DEPLOYMENT_NAME="${INSTANCE_NAME}"
 
 source "${ROOT}/test/common.sh"
 
-make -C "${ROOT}"
+make -C "${ROOT}" ci
 generate_template
 set_azure_account
 trap cleanup EXIT
@@ -84,7 +84,3 @@ export KUBECONFIG="${OUTPUT}/kubeconfig/kubeconfig.${LOCATION}.json"
 "${ROOT}/${VALIDATE}"
 
 echo "post-test..."
-
-# TODO: this shouldn't be necessary but this trap doesn't seem to fire
-# so... manually call it (of course, this only works in the happy path)
-cleanup

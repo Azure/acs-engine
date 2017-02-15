@@ -14,15 +14,6 @@ type TypeMeta struct {
 	APIVersion string `json:"apiVersion"`
 }
 
-// SubscriptionState represents the state of the subscription
-type SubscriptionState int
-
-// Subscription represents the customer subscription
-type Subscription struct {
-	ID    string
-	State SubscriptionState
-}
-
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
 type ResourcePurchasePlan struct {
@@ -311,6 +302,11 @@ func (a *AgentPoolProfile) IsWindows() bool {
 	return a.OSType == Windows
 }
 
+// IsLinux returns true if the agent pool is linux
+func (a *AgentPoolProfile) IsLinux() bool {
+	return a.OSType == Linux
+}
+
 // IsAvailabilitySets returns true if the customer specified disks
 func (a *AgentPoolProfile) IsAvailabilitySets() bool {
 	return a.AvailabilityProfile == AvailabilitySet
@@ -349,5 +345,5 @@ func (l *LinuxProfile) HasSecrets() bool {
 
 // IsSwarmMode returns true if this template is for Swarm Mode orchestrator
 func (o *OrchestratorProfile) IsSwarmMode() bool {
-	return o.OrchestratorType == DockerCE
+	return o.OrchestratorType == SwarmMode
 }

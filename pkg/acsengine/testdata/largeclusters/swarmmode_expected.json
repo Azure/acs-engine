@@ -105,6 +105,7 @@
         99,
         100
       ],
+      "defaultValue": 100,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -202,6 +203,7 @@
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
@@ -310,6 +312,7 @@
         99,
         100
       ],
+      "defaultValue": 100,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -407,6 +410,7 @@
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
@@ -515,6 +519,7 @@
         99,
         100
       ],
+      "defaultValue": 100,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -612,6 +617,7 @@
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
@@ -720,6 +726,7 @@
         99,
         100
       ],
+      "defaultValue": 100,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -817,6 +824,7 @@
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
@@ -925,6 +933,7 @@
         99,
         100
       ],
+      "defaultValue": 100,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -1022,6 +1031,7 @@
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
@@ -1130,6 +1140,7 @@
         99,
         100
       ],
+      "defaultValue": 100,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -1227,6 +1238,7 @@
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
@@ -1335,6 +1347,7 @@
         99,
         100
       ],
+      "defaultValue": 100,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -1432,6 +1445,7 @@
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
@@ -1540,6 +1554,7 @@
         99,
         100
       ],
+      "defaultValue": 100,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -1637,6 +1652,7 @@
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
@@ -1745,6 +1761,7 @@
         99,
         100
       ],
+      "defaultValue": 100,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -1842,6 +1859,7 @@
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
@@ -1950,6 +1968,7 @@
         99,
         100
       ],
+      "defaultValue": 100,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -2047,6 +2066,7 @@
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
@@ -2155,6 +2175,7 @@
         99,
         100
       ],
+      "defaultValue": 100,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -2252,6 +2273,7 @@
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
@@ -2360,6 +2382,7 @@
         99,
         100
       ],
+      "defaultValue": 100,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -2463,6 +2486,7 @@
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },

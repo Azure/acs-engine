@@ -32,8 +32,8 @@ param(
     $AzureHostname
 )
 
-$global:CACertificate = "<<<caCertificate>>>"
-$global:AgentCertificate = "<<<clientCertificate>>>"
+$global:CACertificate = "{{{caCertificate}}}"
+$global:AgentCertificate = "{{{clientCertificate}}}"
 $global:DockerServiceName = "Docker"
 $global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
@@ -80,7 +80,7 @@ apiVersion: v1
 clusters:
 - cluster:
     certificate-authority-data: "$global:CACertificate"
-    server: https://$MasterFQDNPrefix.$Location.cloudapp.azure.com
+    server: https://${MasterIP}:443
   name: "$MasterFQDNPrefix"
 contexts:
 - context:
@@ -138,7 +138,7 @@ Get-PodCIDR
 }
 
 function
-Write-KubeletStartFile($podCIDR)
+Write-KubernetesStartFiles($podCIDR)
 {
     $kubeConfig = @"
 `$env:CONTAINER_NETWORK="transparentNet"
@@ -147,7 +147,8 @@ c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=
     $kubeConfig | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
     $kubeProxyStartStr = @"
-c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --master=${MasterIP}:8080 --kubeconfig=c:\k\config
+`$env:INTERFACE_TO_ADD_SERVICE_IP="vEthernet (forwarder)"
+c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
 "@
 
     $kubeProxyStartStr | Out-File -encoding ASCII -filepath $global:KubeProxyStartFile
@@ -156,7 +157,7 @@ c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostn
 function
 Set-DockerNetwork($podCIDR)
 {
-    $podGW=$podCIDR.substring(0,$podCIDR.lastIndexOf('.')) + ".1"
+    $podGW=$podCIDR.substring(0,$podCIDR.lastIndexOf(".")) + ".1"
 
     # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
     netsh advfirewall set allprofiles state off
@@ -232,11 +233,11 @@ function
 Set-Explorer
 {
     # setup explorer so that it is usable
-    New-Item -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer'
-    New-Item -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\BrowserEmulation'
-    New-ItemProperty -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\BrowserEmulation' -Name IntranetCompatibilityMode -Value 0 -Type DWord
-    New-Item -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main'
-    New-ItemProperty -Path HKLM:'\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main' -Name 'Start Page' -Type String -Value http://bing.com
+    New-Item -Path HKLM:"\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer"
+    New-Item -Path HKLM:"\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\BrowserEmulation"
+    New-ItemProperty -Path HKLM:"\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\BrowserEmulation" -Name IntranetCompatibilityMode -Value 0 -Type DWord
+    New-Item -Path HKLM:"\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main"
+    New-ItemProperty -Path HKLM:"\\SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main" -Name "Start Page" -Type String -Value http://bing.com
 }
 
 try
@@ -261,7 +262,7 @@ try
         $podCIDR = Get-PodCIDR
 
         Write-Log "write kubelet startfile with pod CIDR of $podCIDR"
-        Write-KubeletStartFile $podCIDR
+        Write-KubernetesStartFiles $podCIDR
 
         Write-Log "setup docker network with pod CIDR of $podCIDR"
         Set-DockerNetwork $podCIDR
