@@ -1,0 +1,45 @@
+[Unit]
+Description=Kubelet
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+EnvironmentFile=/etc/default/kubelet
+ExecStartPre=/bin/bash /opt/azure/containers/kubelet.sh
+ExecStartPre=/bin/mkdir -p /var/lib/kubelet
+ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
+ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
+ExecStart=/usr/bin/docker run \
+  --net=host \
+  --pid=host \
+  --privileged \
+  --rm=true \
+  --volume=/dev:/dev \
+  --volume=/sys:/sys:ro \
+  --volume=/var/run:/var/run:rw \
+  --volume=/var/lib/docker/:/var/lib/docker:rw \
+  --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \
+  --volume=/var/log:/var/log:rw \
+  --volume=/etc/kubernetes/:/etc/kubernetes:ro \
+  --volume=/srv/kubernetes/:/srv/kubernetes:ro${DOCKER_OPTS} \
+    ${KUBELET_IMAGE} \
+      /hyperkube kubelet \
+        --api-servers="${KUBELET_API_SERVERS}" \
+        --kubeconfig=/var/lib/kubelet/kubeconfig \
+        --pod-infra-container-image="${KUBELET_POD_INFRA_CONTAINER_IMAGE}" \
+        --address=0.0.0.0 \
+        --allow-privileged=true \
+        --enable-server \
+        --enable-debugging-handlers \
+        --config=/etc/kubernetes/manifests \
+        --cluster-dns=${KUBELET_CLUSTER_DNS} \
+        --cluster-domain=cluster.local \
+        --register-schedulable=${KUBELET_REGISTER_SCHEDULABLE} \
+        --node-labels=${KUBELET_NODE_LABELS} \
+        --cloud-provider=azure \
+        --cloud-config=/etc/kubernetes/azure.json \
+        --azure-container-registry-config=/etc/kubernetes/azure.json \
+        --hairpin-mode=promiscuous-bridge \
+        --network-plugin=${KUBELET_NETWORK_PLUGIN} \
+        --v=2
