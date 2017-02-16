@@ -99,56 +99,33 @@ write_files:
     ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
     ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl
 
-- path: "/etc/systemd/system/kubelet.service"
+- path: "/etc/default/kubelet"
   permissions: "0644"
   owner: "root"
   content: |
-    [Unit]
-    Description=Kubelet
-    Requires=docker.service
-    After=docker.service
+    KUBELET_CLUSTER_DNS={{{kubeDnsServiceIP}}}
+    KUBELET_API_SERVERS=https://{{{masterInternalLbIp}}}:443
+    KUBELET_IMAGE={{{kubernetesHyperkubeSpec}}}
+    KUBELET_NETWORK_PLUGIN=kubenet
+    DOCKER_OPTS=
+    CUSTOM_CMD=/bin/true
+    KUBELET_REGISTER_SCHEDULABLE=true
+    KUBELET_NODE_LABELS=role=agent
+    KUBELET_POD_INFRA_CONTAINER_IMAGE={{{kubernetesPodInfraContainerSpec}}}
 
-    [Service]
-    Restart=always
-    ExecStartPre=/bin/mkdir -p /var/lib/kubelet
-    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
-    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
-    ExecStart=/usr/bin/docker run \
-      --name=kubelet \
-      --net=host \
-      --pid=host \
-      --privileged \
-      --volume=/dev:/dev \
-      --volume=/sys:/sys:ro \
-      --volume=/var/run:/var/run:rw \
-      --volume=/var/lib/docker/:/var/lib/docker:rw \
-      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \
-      --volume=/var/log:/var/log:rw \
-      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \
-      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \
-        {{{kubernetesHyperkubeSpec}}} \
-          /hyperkube kubelet \
-            --api-servers="https://{{{masterInternalLbIp}}}:443" \
-            --kubeconfig=/var/lib/kubelet/kubeconfig \
-            --pod-infra-container-image="{{{kubernetesPodInfraContainerSpec}}}" \
-            --address=0.0.0.0 \
-            --allow-privileged=true \
-            --enable-server \
-            --enable-debugging-handlers \
-            --config=/etc/kubernetes/manifests \
-            --cluster-dns={{{kubeDnsServiceIP}}} \
-            --cluster-domain=cluster.local \
-            --cloud-provider=azure \
-            --cloud-config=/etc/kubernetes/azure.json \
-            --azure-container-registry-config=/etc/kubernetes/azure.json \
-            --hairpin-mode=promiscuous-bridge \
-            --network-plugin=kubenet \
-            --v=2
-    ExecStop=/usr/bin/docker stop -t 10 kubelet
-    ExecStopPost=/usr/bin/docker rm -f kubelet
+- path: "/etc/systemd/system/kubelet.service"
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    KUBELET_SERVICE_B64_GZIP_STR
 
-    [Install]
-    WantedBy=multi-user.target
+- path: "/opt/azure/containers/kubelet.sh"
+  permissions: "0755"
+  owner: "root"
+  content: |
+    #!/bin/bash
+    exit 0
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"

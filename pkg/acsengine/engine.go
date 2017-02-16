@@ -59,6 +59,7 @@ const (
 	kubernetesMasterVars         = "kubernetesmastervars.t"
 	kubernetesParams             = "kubernetesparams.t"
 	kubernetesWinAgentVars       = "kuberneteswinagentresourcesvmas.t"
+	kubernetesKubeletService     = "kuberneteskubelet.service"
 	masterOutputs                = "masteroutputs.t"
 	masterParams                 = "masterparams.t"
 	swarmBaseFile                = "swarmbase.t"
@@ -85,6 +86,11 @@ var kubernetesManifestYamls = map[string]string{
 	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetesmaster-kube-controller-manager.yaml",
 	"MASTER_KUBERNETES_APISERVER_B64_GZIP_STR":          "kubernetesmaster-kube-apiserver.yaml",
 	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":      "kubernetesmaster-kube-addon-manager.yaml",
+}
+
+var kubernetesAritfacts = map[string]string{
+	"MASTER_PROVISION_B64_GZIP_STR": kubernetesMasterCustomScript,
+	"KUBELET_SERVICE_B64_GZIP_STR":  kubernetesKubeletService,
 }
 
 var kubernetesAddonYamls = map[string]string{
@@ -562,6 +568,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 				str = strings.Replace(str, placeholder, manifestTextContents, -1)
 			}
 
+			// add artifacts and addons
+			for placeholder, filename := range kubernetesAritfacts {
+				addonTextContents := getBase64CustomScript(filename)
+				str = strings.Replace(str, placeholder, addonTextContents, -1)
+			}
+
 			for placeholder, filename := range kubernetesAddonYamls {
 				addonTextContents := getBase64CustomScript(filename)
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
@@ -575,6 +587,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			if e != nil {
 				return ""
 			}
+
+			// add artifcats
+			for placeholder, filename := range kubernetesAritfacts {
+				addonTextContents := getBase64CustomScript(filename)
+				str = strings.Replace(str, placeholder, addonTextContents, -1)
+			}
+
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesB64Provision": func() string {
