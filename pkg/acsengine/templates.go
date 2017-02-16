@@ -412,7 +412,7 @@ func dcoscustomdata188T() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcoscustomdata188.t", size: 7658, mode: os.FileMode(420), modTime: time.Unix(1487201737, 0)}
+	info := bindataFileInfo{name: "dcoscustomdata188.t", size: 7658, mode: os.FileMode(420), modTime: time.Unix(1487274984, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -512,7 +512,7 @@ func kubernetesagentcustomdataYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesagentcustomdata.yml", size: 4273, mode: os.FileMode(420), modTime: time.Unix(1487271649, 0)}
+	info := bindataFileInfo{name: "kubernetesagentcustomdata.yml", size: 4273, mode: os.FileMode(420), modTime: time.Unix(1487274984, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -552,7 +552,7 @@ func kubernetesagentvarsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesagentvars.t", size: 1267, mode: os.FileMode(420), modTime: time.Unix(1487271649, 0)}
+	info := bindataFileInfo{name: "kubernetesagentvars.t", size: 1267, mode: os.FileMode(420), modTime: time.Unix(1487274984, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -752,7 +752,7 @@ func kubernetesmastercustomdataYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmastercustomdata.yml", size: 12484, mode: os.FileMode(420), modTime: time.Unix(1487271649, 0)}
+	info := bindataFileInfo{name: "kubernetesmastercustomdata.yml", size: 12484, mode: os.FileMode(420), modTime: time.Unix(1487274984, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -852,7 +852,7 @@ func kuberneteswinagentresourcesvmasT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kuberneteswinagentresourcesvmas.t", size: 8594, mode: os.FileMode(420), modTime: time.Unix(1487271649, 0)}
+	info := bindataFileInfo{name: "kuberneteswinagentresourcesvmas.t", size: 8594, mode: os.FileMode(420), modTime: time.Unix(1487274984, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -872,7 +872,7 @@ func kuberneteswindowssetupPs1() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kuberneteswindowssetup.ps1", size: 9871, mode: os.FileMode(420), modTime: time.Unix(1487273768, 0)}
+	info := bindataFileInfo{name: "kuberneteswindowssetup.ps1", size: 9871, mode: os.FileMode(420), modTime: time.Unix(1487274105, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
