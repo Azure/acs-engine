@@ -26,10 +26,6 @@ function generate_template() {
 	# Set output directory
 	mkdir -p "${OUTPUT}"
 
-	# Set custom dir so we don't clobber global 'az' config
-	AZURE_CONFIG_DIR="$(mktemp -d)"
-	trap 'rm -rf ${AZURE_CONFIG_DIR}' EXIT
-
 	# Prep SSH Key
 	ssh-keygen -b 2048 -t rsa -f "${OUTPUT}/id_rsa" -q -N ""
 	ssh-keygen -y -f "${OUTPUT}/id_rsa" > "${OUTPUT}/id_rsa.pub"
@@ -66,6 +62,10 @@ function set_azure_account() {
 	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_SECRET" && exit -1)
 	which kubectl || (echo "kubectl must be on PATH" && exit -1)
 	which az || (echo "az must be on PATH" && exit -1)
+
+	# Set custom dir so we don't clobber global 'az' config
+	AZURE_CONFIG_DIR="$(mktemp -d)"
+	trap 'rm -rf ${AZURE_CONFIG_DIR}' EXIT
 
 	# Login to Azure-Cli
 	az login --service-principal \
