@@ -18,7 +18,7 @@
         "storageProfile": "ManagedDisks"
       },
       {
-          "name": "agentpool2",
+          "name": "agentpublic",
           "count": 3,
           "vmSize": "Standard_D2_v2",
           "availabilityProfile": "AvailabilitySet",
