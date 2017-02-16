@@ -4,8 +4,10 @@ package api
 const (
 	// Mesos is the string constant for MESOS orchestrator type
 	Mesos OrchestratorType = "Mesos"
-	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS187
+	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS188
 	DCOS OrchestratorType = "DCOS"
+	// DCOS187 is the string constant for DCOS 1.8.8 orchestrator type
+	DCOS188 OrchestratorType = "DCOS188"
 	// DCOS187 is the string constant for DCOS 1.8.7 orchestrator type
 	DCOS187 OrchestratorType = "DCOS187"
 	// DCOS184 is the string constant for DCOS 1.8.4 orchestrator type

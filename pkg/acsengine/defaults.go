@@ -69,7 +69,7 @@ func setOrchestratorDefaults(a *api.Properties, location string) {
 		a.OrchestratorProfile.KubernetesConfig.KubectlVersion = DefaultKubectlVersion
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
-		a.OrchestratorProfile.OrchestratorType = api.DCOS187
+		a.OrchestratorProfile.OrchestratorType = api.DCOS188
 	}
 }
 
