@@ -16,7 +16,7 @@ node {
             stage('Init') {
               deleteDir()
               checkout scm
-              img = docker.build('acs-engine-ci-test', '--pull .')
+              img = docker.build('acs-engine-test', '--pull .')
             }
           }
           catch(exc) {
