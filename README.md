@@ -2,10 +2,10 @@
 
 ## Overview
 
-The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DC/OS, Kubernetes, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
+The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DC/OS, Kubernetes, Swarm Mode, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
 
 The cluster definition file enables the following customizations to your Docker enabled cluster:
-* choice of DC/OS, Kubernetes, or Swarm orchestrators
+* choice of DC/OS, Kubernetes, Swarm Mode, or Swarm orchestrators
 * multiple agent pools where each agent pool can specify:
  * standard or premium VM Sizes,
  * node count, 

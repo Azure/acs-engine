@@ -220,16 +220,6 @@ func (a *Properties) Validate() error {
 			case Swarm:
 			case SwarmMode:
 			case Kubernetes:
-				// there is currently only support for one agent pool to have windows
-				count := 0
-				for _, ap := range a.AgentPoolProfiles {
-					if a.OrchestratorProfile.OrchestratorType == Kubernetes && ap.OSType == Windows {
-						count++
-					}
-				}
-				if count > 1 {
-					return fmt.Errorf("A maximum of one Windows agent pool is allowed for %s, but %d were specified", Kubernetes, count)
-				}
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
