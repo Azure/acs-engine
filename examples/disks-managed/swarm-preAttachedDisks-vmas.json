@@ -19,7 +19,7 @@
         "diskSizesGB": [128, 128, 128, 128]
       },
       {
-          "name": "agentpool2",
+          "name": "agentpublic",
           "count": 3,
           "dnsPrefix": "",
           "vmSize": "Standard_D2_v2",

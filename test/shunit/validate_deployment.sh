@@ -11,5 +11,7 @@ function shunittest_validate_deployment {
     export KUBECONFIG="${OUTPUT}/kubeconfig/kubeconfig.${LOCATION}.json"
   fi
 
-  "${HOME}/test/cluster-tests/${ORCHESTRATOR}/test.sh"
+  script="${HOME}/test/cluster-tests/${ORCHESTRATOR}/test.sh"
+  [ -x "$script" ] || echo "$script: No such file or directory"; exit 2
+  "$script"
 }
