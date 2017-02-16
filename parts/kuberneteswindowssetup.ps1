@@ -37,7 +37,7 @@ $global:AgentCertificate = "{{{clientCertificate}}}"
 $global:DockerServiceName = "Docker"
 $global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
-$global:KubeBinariesSASURL = "https://acsengine.blob.core.windows.net/v1-5-1/k.zip"
+$global:KubeBinariesSASURL = "https://acsengine.blob.core.windows.net/wink8s/v1.5.3int.zip"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
 
@@ -138,10 +138,21 @@ Get-PodCIDR
 }
 
 function
+Get-PodGateway($podCIDR)
+{
+    return $podCIDR.substring(0,$podCIDR.lastIndexOf(".")) + ".1"
+}
+
+function
 Write-KubernetesStartFiles($podCIDR)
 {
+    $podGW=Get-PodGateway($podCIDR)
+
     $kubeConfig = @"
 `$env:CONTAINER_NETWORK="transparentNet"
+`$env:NAT_NETWORK="nat"
+`$env:POD_GW="$podGW"
+`$env:VIP_CIDR="10.0.0.0/8"
 c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://${MasterIP}:443 --cluster-dns=$KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2
 "@
     $kubeConfig | Out-File -encoding ASCII -filepath $global:KubeletStartFile
@@ -157,21 +168,10 @@ c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostn
 function
 Set-DockerNetwork($podCIDR)
 {
-    $podGW=$podCIDR.substring(0,$podCIDR.lastIndexOf(".")) + ".1"
+    $podGW=Get-PodGateway($podCIDR)
 
     # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
     netsh advfirewall set allprofiles state off
-
-    # configure docker network
-    net stop docker
-    Get-ContainerNetwork | Remove-ContainerNetwork -Force
-    
-    # set the docker service to start without a network
-    $registryPath = "HKLM:\SYSTEM\CurrentControlSet\Services\Docker"
-    $registryProperty = "ImagePath"
-    $registryValue = "C:\Program Files\Docker\dockerd.exe --run-service -b none"
-    New-ItemProperty -Path $registryPath -Name $registryProperty -Value $registryValue -PropertyType ExpandString -Force
-    net start docker 
 
     # create new transparent network
     docker network create --driver=transparent -o com.docker.network.windowsshim.dnssuffix=cluster.local --subnet=$podCIDR --gateway=$podGW transparentNet
@@ -183,7 +183,6 @@ Set-DockerNetwork($podCIDR)
     netsh interface ipv4 add address "vEthernet (forwarder)" $podGW 255.255.255.0
     netsh interface ipv4 set interface "vEthernet (forwarder)" for=en
     netsh interface ipv4 set interface "vEthernet (HNSTransparent)" for=en
-    netsh advfirewall set allprofiles state off
 }
 
 function
