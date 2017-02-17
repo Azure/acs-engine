@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/v20160930"
 )
 
 const (
@@ -30,6 +31,10 @@ func TestExpected(t *testing.T) {
 			t.Errorf("Loading file %s got error: %s", tuple.APIModelFilename, err.Error())
 			continue
 		}
+		if version == v20160930.APIVersion {
+			// v20160930 need certificate profile to match expected template
+			addV20160930CertificateProfile(&containerService.Properties.CertificateProfile)
+		}
 		expectedJson, e1 := ioutil.ReadFile(tuple.GetExpectedArmTemplateFilename())
 		if e1 != nil {
 			t.Error(e1.Error())
@@ -44,11 +49,16 @@ func TestExpected(t *testing.T) {
 		expectedJsonStr := strings.Replace(string(expectedJson), "\r", "", -1)
 		expectedParamsStr := strings.Replace(string(expectedParams), "\r", "", -1)
 
+		isClassicMode := false
+		if strings.Contains(tuple.GetExpectedArmTemplateFilename(), "_classicmode_expected") {
+			isClassicMode = true
+		}
+
 		// test the output container service 3 times:
 		// 1. first time tests loaded containerService
 		// 2. second time tests generated containerService
 		// 3. third time tests the generated containerService from the generated containerService
-		templateGenerator, e3 := InitializeTemplateGenerator(false)
+		templateGenerator, e3 := InitializeTemplateGenerator(isClassicMode)
 		if e3 != nil {
 			t.Error(e3.Error())
 			continue
@@ -99,6 +109,10 @@ func TestExpected(t *testing.T) {
 			containerService, version, err = api.DeserializeContainerService(b)
 			if err != nil {
 				t.Error(err)
+			}
+			if version == v20160930.APIVersion {
+				// v20160930 need certificate profile to match expected template
+				addV20160930CertificateProfile(&containerService.Properties.CertificateProfile)
 			}
 		}
 	}
@@ -154,7 +168,8 @@ func IterateTestFilesDirectory(directory string, APIModelTestFiles *[]APIModelTe
 				return e
 			}
 		} else {
-			if !strings.Contains(file.Name(), "_expected") {
+			// Skip files like .DS_Store
+			if !strings.Contains(file.Name(), "_expected") && !strings.HasPrefix(file.Name(), ".") {
 				tuple := &APIModelTestFile{}
 				tuple.APIModelFilename = filepath.Join(directory, file.Name())
 				if _, ferr := os.Stat(tuple.GetExpectedArmTemplateFilename()); os.IsNotExist(ferr) {
@@ -168,4 +183,16 @@ func IterateTestFilesDirectory(directory string, APIModelTestFiles *[]APIModelTe
 		}
 	}
 	return nil
+}
+
+// addV20160930CertificateProfile add certificate artifacts for test purpose
+func addV20160930CertificateProfile(api *api.CertificateProfile) {
+	api.CaCertificate = "caCertificate"
+	api.APIServerCertificate = "apiServerCertificate"
+	api.APIServerPrivateKey = "apiServerPrivateKey"
+	api.ClientCertificate = "clientCertificate"
+	api.ClientPrivateKey = "clientPrivateKey"
+	api.KubeConfigCertificate = "kubeConfigCertificate"
+	api.KubeConfigPrivateKey = "kubeConfigPrivateKey"
+	api.SetCAPrivateKey("")
 }

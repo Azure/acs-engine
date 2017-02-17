@@ -10,6 +10,7 @@ The examples show you how to configure installing a cert from keyvault. These ce
 2. **kubernetes.json** - deploying and using [Kubernetes](../../docs/kubernetes.md)
 3. **swarm.json** - deploying and using [Swarm](../../docs/swarm.md)
 4. **swarm-windows.json** - deploying and using [Swarm](../../docs/swarm.md)
+5. **swarmmode.json** - deploying and using [Swarm Mode](../../docs/swarmmode.md)
 
 On windows machines certificates will be installed under the machine in the specified store.
 On linux machines the certificates will be installed in the folder /var/lib/waagent/. There will be two files

@@ -1,14 +1,5 @@
 package vlabs
 
-// SubscriptionState represents the state of the subscription
-type SubscriptionState int
-
-// Subscription represents the customer subscription
-type Subscription struct {
-	ID    string
-	State SubscriptionState
-}
-
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
 type ResourcePurchasePlan struct {
@@ -44,12 +35,30 @@ type Properties struct {
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
+// The 'Secret' parameter could be either a plain text, or referenced to a secret in a keyvault.
+// In the latter case, the format of the parameter's value should be
+// "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
+// where:
+//    <SUB_ID> is the subscription ID of the keyvault
+//    <RG_NAME> is the resource group of the keyvault
+//    <KV_NAME> is the name of the keyvault
+//    <NAME> is the name of the secret.
+//    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
 	ClientID string `json:"servicePrincipalClientID,omitempty"`
 	Secret   string `json:"servicePrincipalClientSecret,omitempty"`
 }
 
 // CertificateProfile represents the definition of the master cluster
+// The JSON parameters could be either a plain text, or referenced to a secret in a keyvault.
+// In the latter case, the format of the parameter's value should be
+// "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
+// where:
+//    <SUB_ID> is the subscription ID of the keyvault
+//    <RG_NAME> is the resource group of the keyvault
+//    <KV_NAME> is the name of the keyvault
+//    <NAME> is the name of the secret
+//    <VERSION> (optional) is the version of the secret (default: the latest version)
 type CertificateProfile struct {
 	// CaCertificate is the certificate authority certificate.
 	CaCertificate string `json:"caCertificate,omitempty"`
@@ -118,6 +127,8 @@ type MasterProfile struct {
 	VMSize                   string `json:"vmSize"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
+	StorageProfile           string `json:"storageProfile,omitempty"`
+
 	// subnet is internal
 	subnet string
 
@@ -126,6 +137,9 @@ type MasterProfile struct {
 	// Not used during PUT, returned as part of GET
 	FQDN string `json:"fqdn,omitempty"`
 }
+
+// ClassicAgentPoolProfileType represents types of classic profiles
+type ClassicAgentPoolProfileType string
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
@@ -139,6 +153,7 @@ type AgentPoolProfile struct {
 	StorageProfile      string `json:"storageProfile"`
 	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
+
 	// subnet is internal
 	subnet string
 
@@ -175,8 +190,8 @@ type OrchestratorType string
 type OSType string
 
 // HasWindows returns true if the cluster contains windows
-func (a *Properties) HasWindows() bool {
-	for _, agentPoolProfile := range a.AgentPoolProfiles {
+func (p *Properties) HasWindows() bool {
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.OSType == Windows {
 			return true
 		}
@@ -219,6 +234,11 @@ func (a *AgentPoolProfile) IsWindows() bool {
 	return a.OSType == Windows
 }
 
+// IsLinux returns true if the agent pool is linux
+func (a *AgentPoolProfile) IsLinux() bool {
+	return a.OSType == Linux
+}
+
 // IsAvailabilitySets returns true if the customer specified disks
 func (a *AgentPoolProfile) IsAvailabilitySets() bool {
 	return a.AvailabilityProfile == AvailabilitySet
@@ -231,7 +251,7 @@ func (a *AgentPoolProfile) IsManagedDisks() bool {
 
 // IsStorageAccount returns true if the customer specified storage account
 func (a *AgentPoolProfile) IsStorageAccount() bool {
-	return a.StorageProfile == StorageAccount
+	return a.StorageProfile == StorageAccountClassic || a.StorageProfile == StorageAccount
 }
 
 // HasDisks returns true if the customer specified disks
@@ -247,4 +267,9 @@ func (a *AgentPoolProfile) GetSubnet() string {
 // SetSubnet sets the read-only subnet for the agent pool
 func (a *AgentPoolProfile) SetSubnet(subnet string) {
 	a.subnet = subnet
+}
+
+// IsSwarmMode returns true if this template is for Swarm Mode orchestrator
+func (o *OrchestratorProfile) IsSwarmMode() bool {
+	return o.OrchestratorType == SwarmMode
 }

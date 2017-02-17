@@ -13,18 +13,22 @@
     "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
     "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
     "username": "[parameters('linuxAdminUsername')]",
-    "masterFqdnPrefix": "[parameters('masterEndpointDNSNamePrefix')]",
+    "masterFqdnPrefix": "[toLower(parameters('masterEndpointDNSNamePrefix'))]",
     "masterPrivateIp": "[parameters('firstConsecutiveStaticIP')]",
     "masterVMSize": "[parameters('masterVMSize')]",
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
-    "masterCount": {{.MasterProfile.Count}},   
+{{if  GetClassicMode}}
+    "masterCount": "[parameters('masterCount')]",
+{{else}}
+    "masterCount": {{.MasterProfile.Count}}, 
+{{end}}    
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
 {{if .HasManagedDisks}}
     "apiVersionStorageManagedDisks": "2016-04-30-preview",
 {{end}}
     "location": "[resourceGroup().location]", 
-    "masterAvailabilitySet": "master-availabilityset",
+    "masterAvailabilitySet": "[concat('master-availabilityset-', variables('nameSuffix'))]",
     "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),resourceGroup().location, variables('orchestratorName')))]",
     "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
     "nameSuffix": "[parameters('nameSuffix')]", 
@@ -42,14 +46,16 @@
     "storageAccountPrefixes": [ "0", "6", "c", "i", "o", "u", "1", "7", "d", "j", "p", "v", "2", "8", "e", "k", "q", "w", "3", "9", "f", "l", "r", "x", "4", "a", "g", "m", "s", "y", "5", "b", "h", "n", "t", "z" ], 
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]",
     "vmsPerStorageAccount": 20,
+    "provisionScript": "{{GetKubernetesB64Provision}}",
 {{if AnyAgentHasDisks}}
     "dataStorageAccountPrefixSeed": 97,
 {{end}}
 {{if .MasterProfile.IsCustomVNET}}
     "vnetSubnetID": "[parameters('masterVnetSubnetID')]",
-    "subnetName": "[parameters('masterVnetSubnetID')]",
-    "vnetParts": "[split(parameters('masterVnetSubnetID'),'/subnets/')]",
-    "virtualNetworkName": "[variables('vnetParts')[0]]",
+    "subnetNameResourceSegmentIndex": 10,
+    "subnetName": "[split(parameters('masterVnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
+    "vnetNameResourceSegmentIndex": 8,
+    "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
 {{else}}
     "subnet": "[parameters('masterSubnet')]",
     "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
@@ -59,7 +65,12 @@
     "vnetCidr": "10.0.0.0/8",
 {{end}}
     "kubeDnsServiceIp": "10.0.0.10", 
-    "kubeServiceCidr": "10.0.0.0/16", 
+    "kubeServiceCidr": "10.0.0.0/16",
+{{if HasLinuxAgents}}
+    "registerSchedulable": "false",
+{{else}}
+    "registerSchedulable": "true",
+{{end}}
     "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
     "primaryAvailablitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',variables('nameSuffix'))]",
@@ -68,14 +79,56 @@
     "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]", 
     "masterLbIPConfigName": "[concat(variables('orchestratorName'), '-master-lbFrontEnd-', variables('nameSuffix'))]",
     "masterLbName": "[concat(variables('orchestratorName'), '-master-lb-', variables('nameSuffix'))]",
+    "masterInternalLbName": "[concat(variables('orchestratorName'), '-master-internal-lb-', variables('nameSuffix'))]",
+    "masterInternalLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterInternalLbName'))]",
+    "masterInternalLbIPConfigName": "[concat(variables('orchestratorName'), '-master-internal-lbFrontEnd-', variables('nameSuffix'))]",
+    "masterInternalLbIPConfigID": "[concat(variables('masterInternalLbID'),'/frontendIPConfigurations/', variables('masterInternalLbIPConfigName'))]",
+    "masterInternalLbIPOffset": {{GetDefaultInternalLbStaticIPOffset}},
+    "masterInternalLbIp": "[concat(variables('masterFirstAddrPrefix'), add(variables('masterInternalLbIPOffset'), int(variables('masterFirstAddrOctet4'))))]",
     "masterLbBackendPoolName": "[concat(variables('orchestratorName'), '-master-pool-', variables('nameSuffix'))]",
     "masterFirstAddrComment": "these MasterFirstAddrComment are used to place multiple masters consecutively in the address space",
     "masterFirstAddrOctets": "[split(parameters('firstConsecutiveStaticIP'),'.')]",
     "masterFirstAddrOctet4": "[variables('masterFirstAddrOctets')[3]]",
     "masterFirstAddrPrefix": "[concat(variables('masterFirstAddrOctets')[0],'.',variables('masterFirstAddrOctets')[1],'.',variables('masterFirstAddrOctets')[2],'.')]",
     "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]",
+    "masterVMNames": [
+      "[concat(variables('masterVMNamePrefix'), '0')]",
+      "[concat(variables('masterVMNamePrefix'), '1')]",
+      "[concat(variables('masterVMNamePrefix'), '2')]",
+      "[concat(variables('masterVMNamePrefix'), '3')]",
+      "[concat(variables('masterVMNamePrefix'), '4')]"
+    ],
+    "masterPrivateIpAddrs": [
+      "[concat(variables('masterFirstAddrPrefix'), add(0, int(variables('masterFirstAddrOctet4'))))]",
+      "[concat(variables('masterFirstAddrPrefix'), add(1, int(variables('masterFirstAddrOctet4'))))]",
+      "[concat(variables('masterFirstAddrPrefix'), add(2, int(variables('masterFirstAddrOctet4'))))]",
+      "[concat(variables('masterFirstAddrPrefix'), add(3, int(variables('masterFirstAddrOctet4'))))]",
+      "[concat(variables('masterFirstAddrPrefix'), add(4, int(variables('masterFirstAddrOctet4'))))]"
+    ],
+    "masterEtcdServerPort": 2380,
+    "masterEtcdClientPort": 2379,
+    "masterEtcdPeerURLs":[
+      "[concat('http://', variables('masterPrivateIpAddrs')[0], ':', variables('masterEtcdServerPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[1], ':', variables('masterEtcdServerPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[2], ':', variables('masterEtcdServerPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[3], ':', variables('masterEtcdServerPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[4], ':', variables('masterEtcdServerPort'))]"
+    ],
+    "masterEtcdClientURLs":[
+      "[concat('http://', variables('masterPrivateIpAddrs')[0], ':', variables('masterEtcdClientPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[1], ':', variables('masterEtcdClientPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[2], ':', variables('masterEtcdClientPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[3], ':', variables('masterEtcdClientPort'))]",
+      "[concat('http://', variables('masterPrivateIpAddrs')[4], ':', variables('masterEtcdClientPort'))]"    
+    ],
+    "masterEtcdClusterStates": [
+      "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0])]",
+      "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdPeerURLs')[2])]",
+      "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdPeerURLs')[2], ',', variables('masterVMNames')[3], '=', variables('masterEtcdPeerURLs')[3], ',', variables('masterVMNames')[4], '=', variables('masterEtcdPeerURLs')[4])]"
+    ],
     "subscriptionId": "[subscription().subscriptionId]",
-    "tenantId": "[subscription().tenantId]"
+    "tenantId": "[subscription().tenantId]",
+    "dockerEngineVersion": "1.12.*"
 {{if .LinuxProfile.HasSecrets}}
     , "linuxProfileSecrets" :
       [
@@ -97,7 +150,16 @@
         {{end}}
       ] 
 {{end}}
-
+{{if .HasWindows}}
+    ,"windowsAdminUsername": "[parameters('windowsAdminUsername')]",
+    "windowsAdminPassword": "[parameters('windowsAdminPassword')]",
+    "agentWindowsPublisher": "MicrosoftWindowsServer",
+    "agentWindowsOffer": "WindowsServer",
+    "agentWindowsSku": "2016-Datacenter-with-Containers",
+    "agentWindowsVersion": "2016.0.20170127",
+    "singleQuote": "'",
+    "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Copy-Item $inputFile $outputFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
+{{end}}
 
     
  

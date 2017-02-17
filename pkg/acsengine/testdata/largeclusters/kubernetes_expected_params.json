@@ -132,10 +132,10 @@
     "value": "a3ViZUNvbmZpZ1ByaXZhdGVLZXk="
   },
   "kubectlVersion": {
-    "value": "v1.4.6"
+    "value": "v1.5.3"
   },
   "kubernetesHyperkubeSpec": {
-    "value": "gcr.io/google_containers/hyperkube-amd64:v1.4.6"
+    "value": "gcr.io/google_containers/hyperkube-amd64:v1.5.3"
   },
   "linuxAdminUsername": {
     "value": "azureuser"

@@ -105,6 +105,7 @@
         99,
         100
       ],
+      "defaultValue": 3,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -125,12 +126,18 @@
         "Standard_A10",
         "Standard_A11",
         "Standard_A2",
+        "Standard_A2_v2",
+        "Standard_A2m_v2",
         "Standard_A3",
         "Standard_A4",
+        "Standard_A4_v2",
+        "Standard_A4m_v2",
         "Standard_A5",
         "Standard_A6",
         "Standard_A7",
         "Standard_A8",
+        "Standard_A8_v2",
+        "Standard_A8m_v2",
         "Standard_A9",
         "Standard_D11",
         "Standard_D11_v2",
@@ -190,11 +197,13 @@
         "Standard_H8m",
         "Standard_NC12",
         "Standard_NC24",
+        "Standard_NC24r",
         "Standard_NC6",
         "Standard_NV12",
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
@@ -303,6 +312,7 @@
         99,
         100
       ],
+      "defaultValue": 3,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
       },
@@ -329,12 +339,18 @@
         "Standard_A10",
         "Standard_A11",
         "Standard_A2",
+        "Standard_A2_v2",
+        "Standard_A2m_v2",
         "Standard_A3",
         "Standard_A4",
+        "Standard_A4_v2",
+        "Standard_A4m_v2",
         "Standard_A5",
         "Standard_A6",
         "Standard_A7",
         "Standard_A8",
+        "Standard_A8_v2",
+        "Standard_A8m_v2",
         "Standard_A9",
         "Standard_D11",
         "Standard_D11_v2",
@@ -394,11 +410,13 @@
         "Standard_H8m",
         "Standard_NC12",
         "Standard_NC24",
+        "Standard_NC24r",
         "Standard_NC6",
         "Standard_NV12",
         "Standard_NV24",
         "Standard_NV6"
       ],
+      "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the Virtual Machine."
       },
@@ -485,6 +503,7 @@
         "Standard_H8m",
         "Standard_NC12",
         "Standard_NC24",
+        "Standard_NC24r",
         "Standard_NC6",
         "Standard_NV12",
         "Standard_NV24",
@@ -646,10 +665,22 @@
       "Standard_A2": {
         "storageAccountType": "Standard_LRS"
       },
+      "Standard_A2_v2": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A2m_v2": {
+        "storageAccountType": "Standard_LRS"
+      },
       "Standard_A3": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A4": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A4_v2": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A4m_v2": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A5": {
@@ -662,6 +693,12 @@
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A8": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A8_v2": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A8m_v2": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A9": {
@@ -767,25 +804,25 @@
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F16s": {
-        "storageAccountType": "Standard_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_F2": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F2s": {
-        "storageAccountType": "Standard_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_F4": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F4s": {
-        "storageAccountType": "Standard_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_F8": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F8s": {
-        "storageAccountType": "Standard_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_G1": {
         "storageAccountType": "Standard_LRS"
@@ -839,6 +876,9 @@
         "storageAccountType": "Standard_LRS"
       },
       "Standard_NC24": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_NC24r": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_NC6": {
@@ -1423,6 +1463,7 @@
         "name": "nicLoopNode"
       },
       "dependsOn": [
+        "[variables('masterNSGID')]",
         "[variables('vnetID')]",
         "[variables('masterLbID')]",
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
@@ -1451,7 +1492,10 @@
               }
             }
           }
-        ]
+        ],
+        "networkSecurityGroup": {
+          "id": "[variables('masterNSGID')]"
+        }
       },
       "type": "Microsoft.Network/networkInterfaces"
     },

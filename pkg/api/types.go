@@ -4,6 +4,7 @@ import (
 	neturl "net/url"
 
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
+	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -11,15 +12,6 @@ import (
 type TypeMeta struct {
 	// APIVersion is on every object
 	APIVersion string `json:"apiVersion"`
-}
-
-// SubscriptionState represents the state of the subscription
-type SubscriptionState int
-
-// Subscription represents the customer subscription
-type Subscription struct {
-	ID    string
-	State SubscriptionState
 }
 
 // ResourcePurchasePlan defines resource plan as required by ARM
@@ -56,6 +48,7 @@ type Properties struct {
 	JumpboxProfile          JumpboxProfile          `json:"jumpboxProfile"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
 	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
+	CustomProfile           CustomProfile           `json:"customProfile"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -142,6 +135,7 @@ type MasterProfile struct {
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string `json:"subnet"`
+	StorageProfile           string `json:"storageProfile,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -227,6 +221,12 @@ type KeyVaultCertificate struct {
 // OSType represents OS types of agents
 type OSType string
 
+// CustomProfile specifies custom properties that are used for
+// cluster instantiation.  Should not be used by most users.
+type CustomProfile struct {
+	Orchestrator string `json:"orchestrator,omitempty"`
+}
+
 // VlabsARMContainerService is the type we read and write from file
 // needed because the json that is sent to ARM and acs-engine
 // is different from the json that the ACS RP Api gets from ARM
@@ -243,9 +243,17 @@ type V20160330ARMContainerService struct {
 	*v20160330.ContainerService
 }
 
+// V20160930ARMContainerService is the type we read and write from file
+// needed because the json that is sent to ARM and acs-engine
+// is different from the json that the ACS RP Api gets from ARM
+type V20160930ARMContainerService struct {
+	TypeMeta
+	*v20160930.ContainerService
+}
+
 // HasWindows returns true if the cluster contains windows
-func (a *Properties) HasWindows() bool {
-	for _, agentPoolProfile := range a.AgentPoolProfiles {
+func (p *Properties) HasWindows() bool {
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.OSType == Windows {
 			return true
 		}
@@ -254,8 +262,8 @@ func (a *Properties) HasWindows() bool {
 }
 
 // HasManagedDisks returns true if the cluster contains Managed Disks
-func (a *Properties) HasManagedDisks() bool {
-	for _, agentPoolProfile := range a.AgentPoolProfiles {
+func (p *Properties) HasManagedDisks() bool {
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			return true
 		}
@@ -278,6 +286,12 @@ func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
 }
 
+// IsClassicStorageAccount returns true if the storage account
+// follows the older naming convention
+func (m *MasterProfile) IsClassicStorageAccount() bool {
+	return m.StorageProfile == StorageAccountClassic
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (a *AgentPoolProfile) IsCustomVNET() bool {
 	return len(a.VnetSubnetID) > 0
@@ -286,6 +300,11 @@ func (a *AgentPoolProfile) IsCustomVNET() bool {
 // IsWindows returns true if the agent pool is windows
 func (a *AgentPoolProfile) IsWindows() bool {
 	return a.OSType == Windows
+}
+
+// IsLinux returns true if the agent pool is linux
+func (a *AgentPoolProfile) IsLinux() bool {
+	return a.OSType == Linux
 }
 
 // IsAvailabilitySets returns true if the customer specified disks
@@ -298,9 +317,15 @@ func (a *AgentPoolProfile) IsManagedDisks() bool {
 	return a.StorageProfile == ManagedDisks
 }
 
+// IsClassicStorageAccount returns true if the storage account
+// follows the older naming convention
+func (a *AgentPoolProfile) IsClassicStorageAccount() bool {
+	return a.StorageProfile == StorageAccountClassic
+}
+
 // IsStorageAccount returns true if the customer specified storage account
 func (a *AgentPoolProfile) IsStorageAccount() bool {
-	return a.StorageProfile == StorageAccount
+	return a.StorageProfile == StorageAccountClassic || a.StorageProfile == StorageAccount
 }
 
 // HasDisks returns true if the customer specified disks
@@ -316,4 +341,9 @@ func (w *WindowsProfile) HasSecrets() bool {
 // HasSecrets returns true if the customer specified secrets to install
 func (l *LinuxProfile) HasSecrets() bool {
 	return len(l.Secrets) > 0
+}
+
+// IsSwarmMode returns true if this template is for Swarm Mode orchestrator
+func (o *OrchestratorProfile) IsSwarmMode() bool {
+	return o.OrchestratorType == SwarmMode
 }

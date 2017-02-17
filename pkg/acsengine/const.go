@@ -19,10 +19,13 @@ const (
 	DefaultKubernetesClusterDomain = "cluster.local"
 	// DefaultKubernetesHyperkubeSpec is the default version used for Kubernetes setup
 	// The latest stable version can be found here: https://storage.googleapis.com/kubernetes-release/release/stable.txt
-	DefaultKubernetesHyperkubeSpec = "gcr.io/google_containers/hyperkube-amd64:v1.4.6"
+	DefaultKubernetesHyperkubeSpec = "gcr.io/google_containers/hyperkube-amd64:v1.5.3"
 	// DefaultKubectlVersion is the version used for kubectl
 	// The latest stable version can be found here: https://storage.googleapis.com/kubernetes-release/release/stable.txt
-	DefaultKubectlVersion = "v1.4.6"
+	DefaultKubectlVersion = "v1.5.3"
+	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP
+	// address relative to the first consecutive Kubernetes static IP
+	DefaultInternalLbStaticIPOffset = 10
 )
 
 const (

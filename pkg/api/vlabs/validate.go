@@ -12,11 +12,13 @@ import (
 func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case DCOS:
+	case DCOS188:
 	case DCOS187:
 	case DCOS184:
 	case DCOS173:
 	case Swarm:
 	case Kubernetes:
+	case SwarmMode:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
@@ -36,6 +38,9 @@ func (m *MasterProfile) Validate() error {
 		return e
 	}
 	if e := validateName(m.VMSize, "MasterProfile.VMSize"); e != nil {
+		return e
+	}
+	if e := validateStorageProfile(m.StorageProfile); e != nil {
 		return e
 	}
 	return nil
@@ -92,6 +97,9 @@ func (a *AgentPoolProfile) Validate() error {
 	}
 	if len(a.Ports) == 0 && len(a.DNSPrefix) > 0 {
 		return fmt.Errorf("AgentPoolProfile.Ports must be non empty when AgentPoolProfile.DNSPrefix is specified")
+	}
+	if e := validateStorageProfile(a.StorageProfile); e != nil {
+		return e
 	}
 	return nil
 }
@@ -151,8 +159,18 @@ func (a *Properties) Validate() error {
 	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.Secret) == 0 {
 		return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 	}
-	if a.OrchestratorProfile.OrchestratorType == Kubernetes && a.MasterProfile.Count != 1 {
-		return fmt.Errorf("only 1 master may be specified with %s", a.OrchestratorProfile.OrchestratorType)
+
+	if a.MasterProfile.StorageProfile == StorageAccountClassic {
+		switch a.OrchestratorProfile.OrchestratorType {
+		case DCOS:
+		case DCOS173:
+		case DCOS184:
+		case DCOS187:
+		case DCOS188:
+		case Swarm:
+		default:
+			return fmt.Errorf("StorageAccountClassic is not supported in MasterProfile for Orchestrator %s \n", a.OrchestratorProfile.OrchestratorType)
+		}
 	}
 
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
@@ -178,18 +196,35 @@ func (a *Properties) Validate() error {
 			}
 		}
 		/* this switch statement is left to protect newly added orchestrators until they support Managed Disks*/
+
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
 			case DCOS173:
 			case DCOS184:
 			case DCOS187:
+			case DCOS188:
 			case Swarm:
 			case Kubernetes:
+			case SwarmMode:
 			default:
 				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
 		}
+
+		if agentPoolProfile.StorageProfile == StorageAccountClassic {
+			switch a.OrchestratorProfile.OrchestratorType {
+			case DCOS:
+			case DCOS173:
+			case DCOS184:
+			case DCOS187:
+			case DCOS188:
+			case Swarm:
+			default:
+				return fmt.Errorf("StorageAccountClassic is not supported in agentPoolProfile for Orchestrator %s \n", a.OrchestratorProfile.OrchestratorType)
+			}
+		}
+
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
 			return fmt.Errorf("VirtualMachineScaleSets are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"AvailabilityProfile\":\"%s\"", AvailabilitySet)
 		}
@@ -199,6 +234,8 @@ func (a *Properties) Validate() error {
 		if agentPoolProfile.OSType == Windows {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Swarm:
+			case SwarmMode:
+			case Kubernetes:
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
@@ -244,7 +281,7 @@ func validatePoolName(poolName string) error {
 }
 
 func validateDNSName(dnsName string) error {
-	dnsNameRegex := `^[a-z][a-z0-9-]{3,45}[a-z0-9]$`
+	dnsNameRegex := `^[a-z][a-z0-9-]{1,43}[a-z0-9]$`
 	re, err := regexp.Compile(dnsNameRegex)
 	if err != nil {
 		return err
@@ -262,6 +299,20 @@ func validateUniqueProfileNames(profiles []AgentPoolProfile) error {
 			return fmt.Errorf("profile name '%s' already exists, profile names must be unique across pools", profile.Name)
 		}
 		profileNames[profile.Name] = true
+	}
+	return nil
+}
+
+func validateStorageProfile(storageProfile string) error {
+	switch storageProfile {
+	case StorageAccountClassic:
+	case StorageAccount:
+	case ManagedDisks:
+	case "":
+	default:
+		{
+			return fmt.Errorf("Unknown storage type '%s' for agent pool. Specify either %s, %s or %s", storageProfile, StorageAccountClassic, StorageAccount, ManagedDisks)
+		}
 	}
 	return nil
 }

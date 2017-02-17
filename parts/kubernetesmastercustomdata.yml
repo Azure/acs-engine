@@ -8,11 +8,19 @@ packages:
  - traceroute
 
 runcmd:
-- /bin/bash -c "/bin/echo DAEMON_ARGS=--advertise-client-urls ""http://127.0.0.1:2379,http://{{{masterPrivateIp}}}:2379"" --listen-client-urls ""http://0.0.0.0:2379,http://0.0.0.0:4001"" | tee -a /etc/default/etcd"
-- /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://get.docker.com/ > /tmp/install-docker
-- /bin/bash -c "/bin/bash /tmp/install-docker"
+- /bin/echo DAEMON_ARGS=--name "<<<variables('masterVMNames')[copyIndex()]>>>" --initial-advertise-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --listen-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --advertise-client-urls "<<<variables('masterEtcdClientURLs')[copyIndex()]>>>" --listen-client-urls "<<<concat(variables('masterEtcdClientURLs')[copyIndex()], ',http://127.0.0.1:', variables('masterEtcdClientPort'))>>>" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "<<<variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]>>>" --initial-cluster-state "new" | tee -a /etc/default/etcd
+- apt-get update
+- apt-get install -y apt-transport-https ca-certificates
+- apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+- echo "deb https://apt.dockerproject.org/repo ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+- "echo \"Package: docker-engine\nPin: version {{{dockerEngineVersion}}}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
+- apt-get update
+- apt-get install -y docker-engine
+- systemctl restart docker
 - /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://storage.googleapis.com/kubernetes-release/release/{{{kubectlVersion}}}/bin/linux/amd64/kubectl > /usr/local/bin/kubectl
 - chmod +x /usr/local/bin/kubectl
+- mkdir -p /etc/kubernetes/manifests
+- usermod -aG docker {{{username}}}
 
 write_files:
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
@@ -29,6 +37,14 @@ write_files:
     [Service]
     ExecStart=
     ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay
+
+- path: "/etc/docker/daemon.json"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    {
+      "live-restore": true
+    }
 
 - path: "/etc/kubernetes/certs/ca.crt"
   permissions: "0644"
@@ -61,7 +77,7 @@ write_files:
     - name: localcluster
       cluster:
         certificate-authority: /etc/kubernetes/certs/ca.crt
-        server: https://{{{masterPrivateIp}}}:443
+        server: <<<concat('https://', variables('masterPrivateIpAddrs')[copyIndex()], ':443')>>>
     users:
     - name: client
       user:
@@ -102,11 +118,14 @@ write_files:
               - "--cloud-provider=azure"
               - "--cloud-config=/etc/kubernetes/azure.json"
               - "--service-cluster-ip-range={{{kubeServiceCidr}}}"
-              - "--etcd-servers=http://127.0.0.1:4001"
+              - "--etcd-servers=http://127.0.0.1:{{{masterEtcdClientPort}}}"
+              - "--etcd-quorum-read=true"
+              - "--apiserver-count={{{masterCount}}}"
               - "--tls-cert-file=/etc/kubernetes/certs/apiserver.crt"
               - "--tls-private-key-file=/etc/kubernetes/certs/apiserver.key"
               - "--client-ca-file=/etc/kubernetes/certs/ca.crt"
               - "--service-account-key-file=/etc/kubernetes/certs/apiserver.key"
+              - "--storage-backend=etcd2"
               - "--v=4"
             volumeMounts:
               - name: "etc-kubernetes"
@@ -150,6 +169,7 @@ write_files:
               - "--cloud-config=/etc/kubernetes/azure.json"
               - "--root-ca-file=/etc/kubernetes/certs/ca.crt"
               - "--service-account-private-key-file=/etc/kubernetes/certs/apiserver.key"
+              - "--leader-elect=true"
               - "--v=2"
             volumeMounts: 
               - name: "etc-kubernetes"
@@ -186,6 +206,7 @@ write_files:
               - "scheduler"
               - "--master=127.0.0.1:8080"
               - "--kubeconfig=/var/lib/kubelet/kubeconfig"
+              - "--leader-elect=true"
               - "--v=2"
             volumeMounts:
               - name: "etc-kubernetes"
@@ -215,7 +236,7 @@ write_files:
       containers:
       - name: kube-addon-manager
         # TODO: consider if hardcoding this is the right thing to do...
-        image: gcr.io/google_containers/kube-addon-manager-amd64:v5.1
+        image: gcr.io/google_containers/kube-addon-manager-amd64:v6.2
         resources:
           requests:
             cpu: 5m
@@ -278,6 +299,13 @@ write_files:
   content: !!binary |
     MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR
 
+- path: /etc/kubernetes/addons/default-storage-class.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR
+
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
   owner: "root"
@@ -290,10 +318,15 @@ write_files:
     [Service]
     Restart=always
     ExecStartPre=/bin/mkdir -p /var/lib/kubelet
+    # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
+    # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
+    # This IPTable rule then redirects ILB traffic to port 443 in the prerouting chain
+    ExecStartPre=/bin/bash -c "iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443"
     ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
     ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
     ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
     ExecStart=/usr/bin/docker run \
+      --name=kubelet \
       --net=host \
       --pid=host \
       --privileged \
@@ -307,7 +340,7 @@ write_files:
       --volume=/srv/kubernetes/:/srv/kubernetes:ro \
         {{{kubernetesHyperkubeSpec}}} \
           /hyperkube kubelet \
-            --api-servers="https://{{{masterPrivateIp}}}:443" \
+            --api-servers="<<<concat('https://', variables('masterPrivateIpAddrs')[copyIndex()], ':443')>>>" \
             --kubeconfig=/var/lib/kubelet/kubeconfig \
             --address=0.0.0.0 \
             --allow-privileged=true \
@@ -316,11 +349,15 @@ write_files:
             --config=/etc/kubernetes/manifests \
             --cluster-dns={{{kubeDnsServiceIP}}} \
             --cluster-domain=cluster.local \
-            --register-schedulable=false \
+            --register-schedulable={{{registerSchedulable}}} \
             --cloud-provider=azure \
             --cloud-config=/etc/kubernetes/azure.json \
+            --hairpin-mode=promiscuous-bridge \
+            --network-plugin=kubenet \
+            --azure-container-registry-config=/etc/kubernetes/azure.json \
             --v=2
-    ExecStop=/usr/bin/docker stop -t 2 kubelet
+    ExecStop=/usr/bin/docker stop -t 10 kubelet
+    ExecStopPost=/usr/bin/docker rm -f kubelet
 
     [Install]
     WantedBy=multi-user.target
@@ -330,4 +367,4 @@ write_files:
   encoding: gzip
   owner: "root"
   content: !!binary |
-    MASTER_PROVISION_B64_GZIP_STR
+    {{{provisionScript}}}

@@ -200,11 +200,15 @@
           "computername": "[concat(substring(variables('nameSuffix'), 0, 5), 'acs', copyIndex(), add(900,variables('{{.Name}}Index')))]",
           "adminUsername": "[variables('windowsAdminUsername')]",
           "adminPassword": "[variables('windowsAdminPassword')]",
-          {{GetWinAgentSwarmCustomData}}
-            {{if HasWindowsSecrets}}
+          {{if IsSwarmMode}}
+            {{GetWinAgentSwarmModeCustomData}}           
+          {{else}}
+            {{GetWinAgentSwarmCustomData}}
+          {{end}}
+          {{if HasWindowsSecrets}}
               ,
               "secrets": "[variables('windowsProfileSecrets')]"
-            {{end}}
+          {{end}}
         }, 
         "storageProfile": {
           {{GetDataDisks .}}

@@ -4,15 +4,6 @@ import (
 	neturl "net/url"
 )
 
-// SubscriptionState represents the state of the subscription
-type SubscriptionState int
-
-// Subscription represents the customer subscription
-type Subscription struct {
-	ID    string
-	State SubscriptionState
-}
-
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
 type ResourcePurchasePlan struct {
@@ -37,8 +28,7 @@ type ContainerService struct {
 
 // Properties is currently incomplete. More fields will be added later.
 type Properties struct {
-	ProvisioningState ProvisioningState `json:"provisioningState"`
-
+	ProvisioningState   ProvisioningState   `json:"provisioningState"`
 	OrchestratorProfile OrchestratorProfile `json:"orchestratorProfile"`
 
 	MasterProfile MasterProfile `json:"masterProfile"`
@@ -190,6 +180,11 @@ func (m *MasterProfile) SetSubnet(subnet string) {
 // IsWindows returns true if the agent pool is windows
 func (a *AgentPoolProfile) IsWindows() bool {
 	return a.OSType == Windows
+}
+
+// IsLinux returns true if the agent pool is linux
+func (a *AgentPoolProfile) IsLinux() bool {
+	return a.OSType == Linux
 }
 
 // GetSubnet returns the read-only subnet for the agent pool

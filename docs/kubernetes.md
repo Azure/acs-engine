@@ -1,5 +1,7 @@
 # Microsoft Azure Container Service Engine - Kubernetes Walkthrough
 
+* [Kubernetes Windows Walkthrough](kubernetes.windows.md) - shows how to create a Kubernetes on Windows.
+
 ## Deployment
 
 Here are the steps to deploy a simple Kubernetes cluster:
@@ -10,6 +12,35 @@ Here are the steps to deploy a simple Kubernetes cluster:
 4. edit the [Kubernetes example](../examples/kubernetes.json) and fill in the blank strings
 5. [generate the template](acsengine.md#generating-a-template)
 6. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../README.md#deployment-usage)
+7. Temporary workaround when deploying a cluster in a custom VNET with Kubernetes 1.5.3:
+    1. After a cluster has been created in step 6 get id of the route table resource from Microsoft.Network provider in your resource group. 
+       The route table resource id is of the format:
+       `/subscriptions/SUBSCRIPTIONID/resourceGroups/RESOURCEGROUPNAME/providers/Microsoft.Network/routeTables/ROUTETABLENAME`
+    2. Update properties of all subnets in the newly created VNET that are used by Kubernetes cluster to refer to the route table resource by appending the following to subnet properties:
+        ```shell
+        "routeTable": {
+                "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/<RouteTableResourceName>"
+              }
+        ```
+
+        E.g.:
+        ```shell
+        "subnets": [
+            {
+              "name": "subnetname",
+              "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/virtualNetworks/<VirtualNetworkName>/subnets/<SubnetName>",
+              "properties": {
+                "provisioningState": "Succeeded",
+                "addressPrefix": "10.240.0.0/16",
+                "routeTable": {
+                  "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/<RouteTableResourceName>"
+                }
+              ....
+              }
+              ....
+            }
+        ]
+        ```
 
 ## Walkthrough
 
@@ -26,7 +57,7 @@ The following image shows the architecture of a container service cluster with 1
 In the image above, you can see the following parts:
 
 1. **Master Components** - The master runs the Kubernetes scheduler, api server, and controller manager.  Port 443 is exposed for remote management with the kubectl cli.
-2. **Nodes** - the Kubernetes nodes run in an availability set.  Azure load balancers are dynamically added to the cluster depending on exposed services. 
+2. **Nodes** - the Kubernetes nodes run in an availability set.  Azure load balancers are dynamically added to the cluster depending on exposed services.
 3. **Common Components** - All VMs run a kubelet, Docker, and a Proxy.
 4. **Networking** - All VMs are assigned an ip address in the 10.240.0.0/16 network.  Each VM is assigned a /24 subnet for their pod CIDR enabling IP per pod.  The proxy running on each VM implements the service network 10.0.0.0/16.
 
@@ -38,7 +69,7 @@ After completing this walkthrough you will know how to:
  * access Kubernetes cluster via SSH,
  * deploy a simple Docker application and expose to the world,
  * the location of the Kube config file and how to access the Kubernetes cluster remotely,
- * use `kubectl exec` to run commands in a container, 
+ * use `kubectl exec` to run commands in a container,
  * and finally access the Kubernetes dashboard.
 
 1. After successfully deploying the template write down the master FQDNs (Fully Qualified Domain Name).
@@ -83,15 +114,15 @@ After completing this walkthrough you will know how to:
   ![Image of browsing to nginx](images/kubernetes-nginx4.png)  
 
 8. The next step in this walkthrough is to show you how to remotely manage your Kubernetes cluster.  First download Kubectl to your machine and put it in your path:
-  * [Windows Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/bin/windows/amd64/kubectl.exe)
-  * [OSX Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/bin/darwin/amd64/kubectl)
-  * [Linux](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/bin/linux/amd64/kubectl)
+  * [Windows Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.5.3/bin/windows/amd64/kubectl.exe)
+  * [OSX Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.5.3/bin/darwin/amd64/kubectl)
+  * [Linux](https://storage.googleapis.com/kubernetes-release/release/v1.5.3/bin/linux/amd64/kubectl)
 
 9. The Kubernetes master contains the kube config file for remote access under the home directory ~/.kube/config.  Download this file to your machine, set the KUBECONFIG environment variable, and run kubectl to verify you can connect to cluster:
   * Windows to use pscp from [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html).  Ensure you have your certificate exposed through [pageant](ssh.md#key-management-and-agent-forwarding-with-windows-pageant):
   ```
   # MASTERFQDN is obtained in step1
-  pscp azureuser@MASTERFQDN:.kube/config .
+  pscp -P 22 azureuser@MASTERFQDN:.kube/config .
   SET KUBECONFIG=%CD%\config
   kubectl get nodes
   ```
