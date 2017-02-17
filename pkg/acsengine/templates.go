@@ -852,7 +852,7 @@ func kuberneteswinagentresourcesvmasT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kuberneteswinagentresourcesvmas.t", size: 8516, mode: os.FileMode(493), modTime: time.Unix(1487287608, 0)}
+	info := bindataFileInfo{name: "kuberneteswinagentresourcesvmas.t", size: 8516, mode: os.FileMode(493), modTime: time.Unix(1487298198, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
