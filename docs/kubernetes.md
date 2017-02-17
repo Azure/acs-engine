@@ -15,9 +15,9 @@ Here are the steps to deploy a simple Kubernetes cluster:
 7. Temporary workaround when deploying a cluster in a custom VNET with Kubernetes 1.5.3:
     1. After a cluster has been created in step 6 get id of the route table resource from Microsoft.Network provider in your resource group. 
        The route table resource id is of the format:
-       ```shell
+        ```shell
        /subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/<RouteTableResourceName>
-       ```
+        ```
     2. Update properties of all subnets in the newly created VNET that are used by Kubernetes cluster to refer to the route table resource by appending the following to subnet properties:
         ```shell
         "routeTable": {
