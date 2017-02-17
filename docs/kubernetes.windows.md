@@ -14,7 +14,7 @@ Here are the steps to deploy a simple Kubernetes cluster with Windows:
     1. After a cluster has been created in step 6 get id of the route table resource from Microsoft.Network provider in your resource group. 
        The route table resource id is of the format:
        ```shell
-       /subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/<RouteTableResourceName>
+        /subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/<RouteTableResourceName>
        ```
     2. Update properties of all subnets in the newly created VNET that are used by Kubernetes cluster to refer to the route table resource by appending the following to subnet properties:
         ```shell
