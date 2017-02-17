@@ -293,17 +293,24 @@
     },
     "masterVMSize": {
       "allowedValues": [
+        "Basic_A2",
         "Basic_A3",
         "Basic_A4",
         "Standard_A10",
         "Standard_A11",
         "Standard_A2",
+        "Standard_A2_v2",
+        "Standard_A2m_v2",
         "Standard_A3",
         "Standard_A4",
+        "Standard_A4_v2",
+        "Standard_A4m_v2",
         "Standard_A5",
         "Standard_A6",
         "Standard_A7",
         "Standard_A8",
+        "Standard_A8_v2",
+        "Standard_A8m_v2",
         "Standard_A9",
         "Standard_D11",
         "Standard_D11_v2",
@@ -321,19 +328,36 @@
         "Standard_D4",
         "Standard_D4_v2",
         "Standard_D5_v2",
+        "Standard_DS11",
+        "Standard_DS11_v2",
+        "Standard_DS12",
+        "Standard_DS12_v2",
         "Standard_DS13",
         "Standard_DS13_v2",
         "Standard_DS14",
         "Standard_DS14_v2",
         "Standard_DS15_v2",
+        "Standard_DS2",
+        "Standard_DS2_v2",
+        "Standard_DS3",
+        "Standard_DS3_v2",
+        "Standard_DS4",
+        "Standard_DS4_v2",
         "Standard_DS5_v2",
         "Standard_F16",
+        "Standard_F16s",
+        "Standard_F2",
+        "Standard_F2s",
+        "Standard_F4",
+        "Standard_F4s",
         "Standard_F8",
+        "Standard_F8s",
         "Standard_G1",
         "Standard_G2",
         "Standard_G3",
         "Standard_G4",
         "Standard_G5",
+        "Standard_GS1",
         "Standard_GS2",
         "Standard_GS3",
         "Standard_GS4",
@@ -716,25 +740,25 @@
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F16s": {
-        "storageAccountType": "Standard_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_F2": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F2s": {
-        "storageAccountType": "Standard_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_F4": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F4s": {
-        "storageAccountType": "Standard_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_F8": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F8s": {
-        "storageAccountType": "Standard_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_G1": {
         "storageAccountType": "Standard_LRS"
