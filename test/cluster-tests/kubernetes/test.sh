@@ -22,6 +22,7 @@ trap teardown EXIT
 
 function teardown {
   kubectl get all --all-namespaces
+  kubectl get nodes
   kubectl delete namespaces ${namespace}
 }
 
@@ -32,8 +33,8 @@ function teardown {
 if [[ "${TEST_ACR}" == "y" ]]; then
 	ACR_NAME="${INSTANCE_NAME//[-._]/}1"
 	ACR_REGISTRY="${ACR_NAME}-microsoft.azurecr.io" # fix this for non-ms tenant users
-	if ! az acr show --resource-group "${INSTANCE_NAME}" --name "${ACR_NAME}" ; then
-		az acr create --location "${LOCATION}" --resource-group "${INSTANCE_NAME}" --name "${ACR_NAME}" &
+	if ! az acr show --resource-group "${RESOURCE_GROUP}" --name "${ACR_NAME}" ; then
+		az acr create --location "${LOCATION}" --resource-group "${RESOURCE_GROUP}" --name "${ACR_NAME}" &
 	fi
 fi
 

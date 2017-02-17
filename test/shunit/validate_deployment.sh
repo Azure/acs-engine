@@ -5,16 +5,16 @@ function shunittest_validate_deployment {
 
   export OUTPUT="${HOME}/_output/${INSTANCE_NAME}"
   export SSH_KEY="${OUTPUT}/id_rsa"
-  if [ ${ORCHESTRATOR} = "kubernetes" ]; then
+  if [[ "${ORCHESTRATOR}" == "kubernetes" ]]; then
     export KUBECONFIG="${OUTPUT}/kubeconfig/kubeconfig.${LOCATION}.json"
   fi
 
   script="${HOME}/test/cluster-tests/${ORCHESTRATOR}/test.sh"
 
-  if [ -x "$script" ]; then
-    $script
+  if [ -x "${script}" ]; then
+    "${script}"
   else
-    echo "$script: not an executable or no such file"
+    echo "${script}: not an executable or no such file"
     exit 1
   fi
 }
