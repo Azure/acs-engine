@@ -54,11 +54,12 @@ node {
             catch(exc) {
               echo "Exception ${exc}"
               success = false
-              errorMsg = "Please run the command \"make ci\" for verification"
+              errorMsg = "Please run \"make ci\" for verification"
             }
             // Final clean up
             sh("rm -rf ${clone_dir}/_output")
             sh("rm -rf ${clone_dir}/.azure")
+            sh("rm -rf ${clone_dir}/.kube")
             if(!success) {
               currentBuild.result = "FAILURE"
               String to = "${SEND_TO}".trim()
@@ -69,11 +70,17 @@ node {
                 to += emailextrecipients([[$class: 'CulpritsRecipientProvider']])
               }
               if(to != "") {
+                def url = "${env.BUILD_URL}\n\n"
+                for(String addr : to.tokenize('[ \t\n;,]+')) {
+                  if(!addr.endsWith("@microsoft.com")) {
+                    url = ""
+                  }
+                }
                 gitCommit = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
                 emailext(
                   to: to,
                   subject: "[ACS Engine is BROKEN] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                  body: "Commit: ${gitCommit}\n\n${errorMsg}"
+                  body: "Commit: ${gitCommit}\n\n${url}${errorMsg}"
                 )
               }
             }

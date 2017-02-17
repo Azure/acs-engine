@@ -103,6 +103,7 @@ node {
             // Final clean up
             sh("rm -rf ${clone_dir}/_output")
             sh("rm -rf ${clone_dir}/.azure")
+            sh("rm -rf ${clone_dir}/.kube")
             sh("rm -rf ${junit_dir}")
           }
         }
