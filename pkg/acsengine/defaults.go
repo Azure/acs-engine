@@ -17,9 +17,10 @@ var (
 		},
 
 		DCOSSpecConfig: DCOSSpecConfig{
-			DCOS173_BootstrapDownloadURL: "https://az837203.vo.msecnd.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz",
-			DCOS184_BootstrapDownloadURL: "https://dcosio.azureedge.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz",
-			DCOS187_BootstrapDownloadURL: "https://dcosio.azureedge.net/dcos/stable/bootstrap/e73ba2b1cd17795e4dcb3d6647d11a29b9c35084.bootstrap.tar.xz",
+			DCOS173_BootstrapDownloadURL: fmt.Sprintf(MsecndDCOSBootstrapDownloadURL, "testing", "df308b6fc3bd91e1277baa5a3db928ae70964722"),
+			DCOS184_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "testing", "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
+			DCOS187_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
+			DCOS188_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "5df43052907c021eeb5de145419a3da1898c58a5"),
 		},
 	}
 

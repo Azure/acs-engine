@@ -30,6 +30,7 @@ type DCOSSpecConfig struct {
 	DCOS173_BootstrapDownloadURL string
 	DCOS184_BootstrapDownloadURL string
 	DCOS187_BootstrapDownloadURL string
+	DCOS188_BootstrapDownloadURL string
 }
 
 //KubernetesSpecConfig is the kubernetes container images used.

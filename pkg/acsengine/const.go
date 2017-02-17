@@ -47,7 +47,14 @@ const (
 )
 
 const (
-	DefaultKubectlDownloadURL               = "https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/kubectl"
-	AzureChinaCloudKubectlDownloadURL       = "https://acsengine.blob.core.chinacloudapi.cn/kubernetes/kubectl/%s/kubectl"
+	//DefaultKubectlDownloadURL is the default download url from google.
+	DefaultKubectlDownloadURL = "https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/kubectl"
+	//MsecndDCOSBootstrapDownloadURL Azure CDN to download DCOS1.7.3
+	MsecndDCOSBootstrapDownloadURL = "https://az837203.vo.msecnd.net/dcos/%s/bootstrap/%s.bootstrap.tar.xz"
+	//AzureEdgeDCOSBootstrapDownloadURL is the azure edge CDN download url
+	AzureEdgeDCOSBootstrapDownloadURL = "https://dcosio.azureedge.net/dcos/%s/bootstrap/%s.bootstrap.tar.xz"
+	//AzureChinaCloudKubectlDownloadURL is the China specific kubectl download url
+	AzureChinaCloudKubectlDownloadURL = "https://acsengine.blob.core.chinacloudapi.cn/kubernetes/kubectl/%s/kubectl"
+	//AzureChinaCloudDCOSBootstrapDownloadURL is the China specific DCOS package download url.
 	AzureChinaCloudDCOSBootstrapDownloadURL = "https://acsengine.blob.core.chinacloudapi.cn/dcos/%s.bootstrap.tar.xz"
 )

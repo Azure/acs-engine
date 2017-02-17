@@ -11,6 +11,11 @@ EXPECTED_NODE_COUNT="${EXPECTED_NODE_COUNT:-4}"
 EXPECTED_DNS="${EXPECTED_DNS:-2}"
 EXPECTED_DASHBOARD="${EXPECTED_DASHBOARD:-1}"
 
+TEST_ACR="n"
+if [[ "${LOCATION}" == "westus" ]] || [[ "${LOCATION}" == "eastus" ]] || [[ "${LOCATION}" == "southcentralus" ]]; then
+	TEST_ACR="y"
+fi
+
 namespace="namespace-${RANDOM}"
 echo "Running test in namespace: ${namespace}"
 trap teardown EXIT
@@ -22,6 +27,15 @@ function teardown {
 
 # TODO: cleanup the loops more
 # TODO: the wc|awk business can just be kubectl with an output format and wc -l
+
+###### Deploy ACR
+if [[ "${TEST_ACR}" == "y" ]]; then
+	ACR_NAME="${INSTANCE_NAME//[-._]/}1"
+	ACR_REGISTRY="${ACR_NAME}-microsoft.azurecr.io" # fix this for non-ms tenant users
+	if ! az acr show --resource-group "${INSTANCE_NAME}" --name "${ACR_NAME}" ; then
+		az acr create --location "${LOCATION}" --resource-group "${INSTANCE_NAME}" --name "${ACR_NAME}" &
+	fi
+fi
 
 ###### Check node count
 wait=5
@@ -39,7 +53,7 @@ fi
 wait=5
 count=12
 while (( $count > 0 )); do
-  creating_count=$(kubectl get nodes --no-headers | grep 'ContainerCreating' | wc | awk '{print $1}')
+  creating_count=$(kubectl get nodes --no-headers | grep 'CreatingContainer' | wc | awk '{print $1}')
   if (( ${creating_count} == 0 )); then break; fi
   sleep 5; count=$((count-1))
 done
@@ -88,7 +102,21 @@ fi
 echo "Testing deployments"
 kubectl create namespace ${namespace}
 
-kubectl run --image=nginx nginx --namespace=${namespace}
+NGINX="docker.io/library/nginx:latest"
+IMAGE="${NGINX}" # default to the library image unless we're in TEST_ACR mode
+if [[ "${TEST_ACR}" == "y" ]]; then
+	# force it to pull from ACR
+	IMAGE="${ACR_REGISTRY}/test/nginx:latest"
+	# wait for acr
+	wait
+	# TODO: how to do this without polluting user home dir?
+	docker login --username="${SERVICE_PRINCIPAL_CLIENT_ID}" --password="${SERVICE_PRINCIPAL_CLIENT_SECRET}" "${ACR_REGISTRY}"
+	docker pull "${NGINX}"
+	docker tag "${NGINX}" "${IMAGE}"
+	docker push "${IMAGE}"
+fi
+
+kubectl run --image="${IMAGE}" nginx --namespace=${namespace}
 wait=5
 count=12
 while (( $count > 0 )); do
