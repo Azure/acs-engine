@@ -10,21 +10,25 @@ Here are the steps to deploy a simple Kubernetes cluster with Windows:
 4. edit the [Kubernetes windows example](../examples/windows/kubernetes.json) and fill in the blank strings
 5. [generate the template](acsengine.md#generating-a-template)
 6. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../README.md#deployment-usage)
-7. Temporary workaround when deploying a cluster in a custom VNET for Kubernetes 1.5.3:
-    a. After a cluster has been created in step 6 get id of the route table resource from Microsoft.Network provider in your resource group. 
-       The route table resource id is of the format:
+7. Temporary workaround when deploying a cluster in a custom VNET with Kubernetes 1.5.3:
+    1. After a cluster has been created in step 6 get id of the route table resource from Microsoft.Network provider in your resource group. 
+       The route table resource id is of the format: 
+       ```shell
        /subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/<RouteTableResourceName>
-    b. Update properties of all subnets in the newly created VNET that are used by Kubernetes cluster to refer to the route table resource by appending the following to subnet properties:
+       ```
+    2. Update properties of all subnets in the newly created VNET that are used by Kubernetes cluster to refer to the route table resource by appending the following to subnet properties:
+        ```shell
         "routeTable": {
                 "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/<RouteTableResourceName>"
               }
+        ```
 
         E.g.:
+        ```shell
         "subnets": [
             {
               "name": "subnetname",
               "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/virtualNetworks/<VirtualNetworkName>/subnets/<SubnetName>",
-              "etag": "W/\"a19b11fc-8bfc-4c46-b79f-0c8b4a7c5499\"",
               "properties": {
                 "provisioningState": "Succeeded",
                 "addressPrefix": "10.240.0.0/16",
@@ -35,6 +39,8 @@ Here are the steps to deploy a simple Kubernetes cluster with Windows:
               }
               ....
             }
+        ]
+        ```
 
 ## Walkthrough
 
