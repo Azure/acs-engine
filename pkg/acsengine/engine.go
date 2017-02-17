@@ -448,14 +448,19 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		"GetMasterAllowedSizes": func() string {
 			if t.ClassicMode {
 				return GetClassicAllowedSizes()
+			} else if properties.OrchestratorProfile.OrchestratorType == api.DCOS188 ||
+				properties.OrchestratorProfile.OrchestratorType == api.DCOS187 ||
+				properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
+				properties.OrchestratorProfile.OrchestratorType == api.DCOS173 {
+				return GetDCOSMasterAllowedSizes()
 			}
-			return GetMasterAllowedSizes()
+			return GetMasterAgentAllowedSizes()
 		},
 		"GetAgentAllowedSizes": func() string {
 			if t.ClassicMode {
 				return GetClassicAllowedSizes()
 			}
-			return GetAgentAllowedSizes()
+			return GetMasterAgentAllowedSizes()
 		},
 		"GetSizeMap": func() string {
 			if t.ClassicMode {
