@@ -29,7 +29,15 @@ param(
 
     [parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
-    $AzureHostname
+    $AzureHostname,
+
+    [parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    $AADClientId,
+
+    [parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    $AADClientSecret
 )
 
 $global:CACertificate = "{{{caCertificate}}}"
@@ -40,6 +48,17 @@ $global:KubeDir = "c:\k"
 $global:KubeBinariesSASURL = "https://acsengine.blob.core.windows.net/wink8s/v1.5.3int.zip"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
+$global:NatNetworkName="nat"
+$global:TransparentNetworkName="transparentNet"
+
+$global:TenantId = "{{{tenantID}}}"
+$global:SubscriptionId = "{{{subscriptionId}}}"
+$global:ResourceGroup = "{{{resourceGroup}}}"
+$global:SubnetName = "{{{subnetName}}}"
+$global:SecurityGroupName = "{{{nsgName}}}"
+$global:VNetName = "{{{virtualNetworkName}}}"
+$global:RouteTableName = "{{{routeTableName}}}"
+$global:PrimaryAvailabilitySetName = "{{{primaryAvailablitySetName}}}"
 
 filter Timestamp {"$(Get-Date -Format o): $_"}
 
@@ -67,6 +86,30 @@ Get-KubeBinaries()
     $zipfile = "c:\k.zip"
     Invoke-WebRequest -Uri $global:KubeBinariesSASURL -OutFile $zipfile
     Expand-ZIPFile -File $zipfile -Destination C:\
+}
+
+function
+Write-AzureConfig()
+{
+    $azureConfigFile = $global:KubeDir + "\azure.json"
+
+    $azureConfig = @"
+{
+    "tenantId": "$global:TenantId",
+    "subscriptionId": "$global:SubscriptionId",
+    "aadClientId": "$AADClientId",
+    "aadClientSecret": "$AADClientSecret",
+    "resourceGroup": "$global:ResourceGroup",
+    "location": "$Location",
+    "subnetName": "$global:SubnetName",
+    "securityGroupName": "$global:SecurityGroupName",
+    "vnetName": "$global:VNetName",
+    "routeTableName": "$global:RouteTableName",
+    "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName"
+}
+"@
+
+    $azureConfig | Out-File -encoding ASCII -filepath "$azureConfigFile"    
 }
 
 function
@@ -149,11 +192,11 @@ Write-KubernetesStartFiles($podCIDR)
     $podGW=Get-PodGateway($podCIDR)
 
     $kubeConfig = @"
-`$env:CONTAINER_NETWORK="transparentNet"
-`$env:NAT_NETWORK="nat"
+`$env:CONTAINER_NETWORK="$global:TransparentNetworkName"
+`$env:NAT_NETWORK="$global:NatNetworkName"
 `$env:POD_GW="$podGW"
 `$env:VIP_CIDR="10.0.0.0/8"
-c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://${MasterIP}:443 --cluster-dns=$KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2
+c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://${MasterIP}:443 --cluster-dns=$KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json
 "@
     $kubeConfig | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
@@ -174,7 +217,7 @@ Set-DockerNetwork($podCIDR)
     netsh advfirewall set allprofiles state off
 
     # create new transparent network
-    docker network create --driver=transparent -o com.docker.network.windowsshim.dnssuffix=cluster.local --subnet=$podCIDR --gateway=$podGW transparentNet
+    docker network create --driver=transparent --subnet=$podCIDR --gateway=$podGW $global:TransparentNetworkName
 
     # create host vnic for gateway ip to forward the traffic and kubeproxy to listen over VIP
     Add-VMNetworkAdapter -ManagementOS -Name forwarder -SwitchName "Layered Ethernet 3"
@@ -277,7 +320,7 @@ try
     else 
     {
         # keep for debugging purposes
-        Write-Log ".\CustomDataSetupScript.ps1 -MasterIP $MasterIP -KubeDnsServiceIp $KubeDnsServiceIp -MasterFQDNPrefix $MasterFQDNPrefix -Location $Location -AgentKey $AgentKey -AzureHostname $AzureHostname"
+        Write-Log ".\CustomDataSetupScript.ps1 -MasterIP $MasterIP -KubeDnsServiceIp $KubeDnsServiceIp -MasterFQDNPrefix $MasterFQDNPrefix -Location $Location -AgentKey $AgentKey -AzureHostname $AzureHostname -AADClientId $AADClientId -AADClientSecret $AADClientSecret"
     }
 }
 catch

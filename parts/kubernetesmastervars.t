@@ -25,7 +25,7 @@
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
     "location": "[resourceGroup().location]", 
-    "masterAvailabilitySet": "master-availabilityset",
+    "masterAvailabilitySet": "[concat('master-availabilityset-', variables('nameSuffix'))]",
     "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),resourceGroup().location, variables('orchestratorName')))]",
     "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
     "nameSuffix": "[parameters('nameSuffix')]", 

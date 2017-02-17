@@ -674,7 +674,7 @@
       }
     ],
     "location": "[resourceGroup().location]",
-    "masterAvailabilitySet": "master-availabilityset",
+    "masterAvailabilitySet": "[concat('master-availabilityset-', variables('nameSuffix'))]",
     "masterCount": 1,
     "masterEtcdClientPort": 2379,
     "masterEtcdClientURLs": [
