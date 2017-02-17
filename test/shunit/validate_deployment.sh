@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-source "${HOME}/test/common.sh"
-
 function shunittest_validate_deployment {
-  set -eu -o pipefail
+  set -eux -o pipefail
 
   export OUTPUT="${HOME}/_output/${INSTANCE_NAME}"
   export SSH_KEY="${OUTPUT}/id_rsa"
@@ -12,6 +10,11 @@ function shunittest_validate_deployment {
   fi
 
   script="${HOME}/test/cluster-tests/${ORCHESTRATOR}/test.sh"
-  [ -x "$script" ] || echo "$script: No such file or directory"; exit 2
-  "$script"
+
+  if [ -x "$script" ]; then
+    $script
+  else
+    echo "$script: not an executable or no such file"
+    exit 1
+  fi
 }
