@@ -28,7 +28,6 @@ Here are the steps to deploy a simple Kubernetes cluster:
             {
               "name": "subnetname",
               "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/virtualNetworks/<VirtualNetworkName>/subnets/<SubnetName>",
-              "etag": "W/\"a19b11fc-8bfc-4c46-b79f-0c8b4a7c5499\"",
               "properties": {
                 "provisioningState": "Succeeded",
                 "addressPrefix": "10.240.0.0/16",
