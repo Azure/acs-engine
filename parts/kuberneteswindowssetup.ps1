@@ -196,7 +196,7 @@ Write-KubernetesStartFiles($podCIDR)
 `$env:NAT_NETWORK="$global:NatNetworkName"
 `$env:POD_GW="$podGW"
 `$env:VIP_CIDR="10.0.0.0/8"
-c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://${MasterIP}:443 --cluster-dns=$KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json
+c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://${MasterIP}:443 --cluster-dns=$KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --cloud-provider=azure --cloud-config=c:\k\azure.json --azure-container-registry-config=c:\k\azure.json
 "@
     $kubeConfig | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
@@ -293,6 +293,9 @@ try
 
         Write-Log "download kubelet binaries and unzip"
         Get-KubeBinaries
+
+        Write-Log "Write azure config"
+        Write-AzureConfig
 
         Write-Log "Write kube config"
         Write-KubeConfig
