@@ -21,13 +21,12 @@
 {{end}}
         "ipConfigurations": [
           {
-            "name": "ipconfig1", 
+            "name": "ipconfig1",
             "properties": {
-              "privateIPAddress": "[concat('10.240.245.', copyindex(5))]",
-              "privateIPAllocationMethod": "Static", 
+              "privateIPAllocationMethod": "Dynamic",
               "subnet": {
                 "id": "[variables('{{.Name}}VnetSubnetID')]"
-              }
+             }
             }
           }
         ],

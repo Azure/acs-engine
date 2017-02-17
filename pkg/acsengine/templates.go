@@ -132,7 +132,7 @@ func installContainerhostAndJoinSwarmPs1() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "Install-ContainerHost-And-Join-Swarm.ps1", size: 6132, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "Install-ContainerHost-And-Join-Swarm.ps1", size: 6132, mode: os.FileMode(493), modTime: time.Unix(1484330403, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -152,7 +152,7 @@ func joinSwarmmodeClusterPs1() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "Join-SwarmMode-cluster.ps1", size: 10868, mode: os.FileMode(436), modTime: time.Unix(1486680368, 0)}
+	info := bindataFileInfo{name: "Join-SwarmMode-cluster.ps1", size: 10868, mode: os.FileMode(493), modTime: time.Unix(1486412800, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -172,7 +172,7 @@ func agentoutputsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "agentoutputs.t", size: 212, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "agentoutputs.t", size: 212, mode: os.FileMode(493), modTime: time.Unix(1478024473, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -192,7 +192,7 @@ func agentparamsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "agentparams.t", size: 1493, mode: os.FileMode(436), modTime: time.Unix(1487034120, 0)}
+	info := bindataFileInfo{name: "agentparams.t", size: 1493, mode: os.FileMode(493), modTime: time.Unix(1487121066, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -212,7 +212,7 @@ func classicparamsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "classicparams.t", size: 5128, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "classicparams.t", size: 5128, mode: os.FileMode(493), modTime: time.Unix(1478024473, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -232,7 +232,7 @@ func configureSwarmClusterSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "configure-swarm-cluster.sh", size: 6503, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "configure-swarm-cluster.sh", size: 6503, mode: os.FileMode(493), modTime: time.Unix(1485311335, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -252,7 +252,7 @@ func configureSwarmmodeClusterSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "configure-swarmmode-cluster.sh", size: 6900, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "configure-swarmmode-cluster.sh", size: 6900, mode: os.FileMode(493), modTime: time.Unix(1485311335, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -272,7 +272,7 @@ func dcosagentresourcesvmasT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcosagentresourcesvmas.t", size: 10285, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "dcosagentresourcesvmas.t", size: 10285, mode: os.FileMode(493), modTime: time.Unix(1484330403, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -292,7 +292,7 @@ func dcosagentresourcesvmssT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcosagentresourcesvmss.t", size: 10402, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "dcosagentresourcesvmss.t", size: 10402, mode: os.FileMode(493), modTime: time.Unix(1484330403, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -312,7 +312,7 @@ func dcosagentvarsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcosagentvars.t", size: 2228, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "dcosagentvars.t", size: 2228, mode: os.FileMode(493), modTime: time.Unix(1478024473, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -332,7 +332,7 @@ func dcosbaseT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcosbase.t", size: 1262, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "dcosbase.t", size: 1262, mode: os.FileMode(493), modTime: time.Unix(1478024473, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -352,7 +352,7 @@ func dcoscustomdata173T() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcoscustomdata173.t", size: 7704, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "dcoscustomdata173.t", size: 7704, mode: os.FileMode(493), modTime: time.Unix(1484330403, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -372,7 +372,7 @@ func dcoscustomdata184T() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcoscustomdata184.t", size: 7868, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "dcoscustomdata184.t", size: 7868, mode: os.FileMode(493), modTime: time.Unix(1484330403, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -392,7 +392,7 @@ func dcoscustomdata187T() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcoscustomdata187.t", size: 7658, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "dcoscustomdata187.t", size: 7658, mode: os.FileMode(493), modTime: time.Unix(1484330403, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -412,7 +412,7 @@ func dcoscustomdata188T() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcoscustomdata188.t", size: 7658, mode: os.FileMode(436), modTime: time.Unix(1487266411, 0)}
+	info := bindataFileInfo{name: "dcoscustomdata188.t", size: 7658, mode: os.FileMode(493), modTime: time.Unix(1487275567, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -432,7 +432,7 @@ func dcosmasterresourcesT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcosmasterresources.t", size: 9693, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "dcosmasterresources.t", size: 9693, mode: os.FileMode(493), modTime: time.Unix(1485313272, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -452,7 +452,7 @@ func dcosmastervarsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcosmastervars.t", size: 4936, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "dcosmastervars.t", size: 4936, mode: os.FileMode(493), modTime: time.Unix(1484330403, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -472,7 +472,7 @@ func dcosprovisionSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "dcosprovision.sh", size: 932, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "dcosprovision.sh", size: 932, mode: os.FileMode(493), modTime: time.Unix(1484330403, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -492,7 +492,7 @@ func kubeconfigJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubeconfig.json", size: 983, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "kubeconfig.json", size: 983, mode: os.FileMode(493), modTime: time.Unix(1478024473, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -512,7 +512,7 @@ func kubernetesagentcustomdataYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesagentcustomdata.yml", size: 4273, mode: os.FileMode(436), modTime: time.Unix(1487277248, 0)}
+	info := bindataFileInfo{name: "kubernetesagentcustomdata.yml", size: 4273, mode: os.FileMode(493), modTime: time.Unix(1487275567, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -532,7 +532,7 @@ func kubernetesagentresourcesvmasT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesagentresourcesvmas.t", size: 8592, mode: os.FileMode(436), modTime: time.Unix(1486153317, 0)}
+	info := bindataFileInfo{name: "kubernetesagentresourcesvmas.t", size: 8592, mode: os.FileMode(493), modTime: time.Unix(1486149485, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -552,7 +552,7 @@ func kubernetesagentvarsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesagentvars.t", size: 1267, mode: os.FileMode(436), modTime: time.Unix(1487261710, 0)}
+	info := bindataFileInfo{name: "kubernetesagentvars.t", size: 1267, mode: os.FileMode(493), modTime: time.Unix(1487275567, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -572,7 +572,7 @@ func kubernetesbaseT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesbase.t", size: 1199, mode: os.FileMode(436), modTime: time.Unix(1487034120, 0)}
+	info := bindataFileInfo{name: "kubernetesbase.t", size: 1199, mode: os.FileMode(493), modTime: time.Unix(1487121066, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -592,7 +592,7 @@ func kubernetesmasteraddonsDefaultStorageClassYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmasteraddons-default-storage-class.yaml", size: 250, mode: os.FileMode(436), modTime: time.Unix(1486760605, 0)}
+	info := bindataFileInfo{name: "kubernetesmasteraddons-default-storage-class.yaml", size: 250, mode: os.FileMode(493), modTime: time.Unix(1486749552, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -612,7 +612,7 @@ func kubernetesmasteraddonsHeapsterDeploymentYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmasteraddons-heapster-deployment.yaml", size: 1786, mode: os.FileMode(436), modTime: time.Unix(1486680368, 0)}
+	info := bindataFileInfo{name: "kubernetesmasteraddons-heapster-deployment.yaml", size: 1786, mode: os.FileMode(493), modTime: time.Unix(1486412803, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -632,7 +632,7 @@ func kubernetesmasteraddonsHeapsterServiceYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmasteraddons-heapster-service.yaml", size: 249, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "kubernetesmasteraddons-heapster-service.yaml", size: 249, mode: os.FileMode(493), modTime: time.Unix(1478024473, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -652,7 +652,7 @@ func kubernetesmasteraddonsKubeDnsDeploymentYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmasteraddons-kube-dns-deployment.yaml", size: 2808, mode: os.FileMode(436), modTime: time.Unix(1486153317, 0)}
+	info := bindataFileInfo{name: "kubernetesmasteraddons-kube-dns-deployment.yaml", size: 2808, mode: os.FileMode(493), modTime: time.Unix(1486149485, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -672,7 +672,7 @@ func kubernetesmasteraddonsKubeDnsServiceYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmasteraddons-kube-dns-service.yaml", size: 353, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "kubernetesmasteraddons-kube-dns-service.yaml", size: 353, mode: os.FileMode(493), modTime: time.Unix(1478024473, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -692,7 +692,7 @@ func kubernetesmasteraddonsKubeProxyDaemonsetYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmasteraddons-kube-proxy-daemonset.yaml", size: 1278, mode: os.FileMode(436), modTime: time.Unix(1486153317, 0)}
+	info := bindataFileInfo{name: "kubernetesmasteraddons-kube-proxy-daemonset.yaml", size: 1278, mode: os.FileMode(493), modTime: time.Unix(1486149485, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -712,7 +712,7 @@ func kubernetesmasteraddonsKubernetesDashboardDeploymentYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml", size: 842, mode: os.FileMode(436), modTime: time.Unix(1486153317, 0)}
+	info := bindataFileInfo{name: "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml", size: 842, mode: os.FileMode(493), modTime: time.Unix(1486166826, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -732,7 +732,7 @@ func kubernetesmasteraddonsKubernetesDashboardServiceYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmasteraddons-kubernetes-dashboard-service.yaml", size: 291, mode: os.FileMode(436), modTime: time.Unix(1486153317, 0)}
+	info := bindataFileInfo{name: "kubernetesmasteraddons-kubernetes-dashboard-service.yaml", size: 291, mode: os.FileMode(493), modTime: time.Unix(1486166826, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -752,7 +752,7 @@ func kubernetesmastercustomdataYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmastercustomdata.yml", size: 12484, mode: os.FileMode(436), modTime: time.Unix(1487277248, 0)}
+	info := bindataFileInfo{name: "kubernetesmastercustomdata.yml", size: 12484, mode: os.FileMode(493), modTime: time.Unix(1487275567, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -772,7 +772,7 @@ func kubernetesmastercustomscriptSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmastercustomscript.sh", size: 5377, mode: os.FileMode(436), modTime: time.Unix(1486680368, 0)}
+	info := bindataFileInfo{name: "kubernetesmastercustomscript.sh", size: 5377, mode: os.FileMode(493), modTime: time.Unix(1486623678, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -792,7 +792,7 @@ func kubernetesmasterresourcesT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmasterresources.t", size: 14725, mode: os.FileMode(436), modTime: time.Unix(1486760605, 0)}
+	info := bindataFileInfo{name: "kubernetesmasterresources.t", size: 14725, mode: os.FileMode(493), modTime: time.Unix(1486749552, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -812,7 +812,7 @@ func kubernetesmastervarsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesmastervars.t", size: 10629, mode: os.FileMode(436), modTime: time.Unix(1487187088, 0)}
+	info := bindataFileInfo{name: "kubernetesmastervars.t", size: 10629, mode: os.FileMode(493), modTime: time.Unix(1487121066, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -832,12 +832,12 @@ func kubernetesparamsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kubernetesparams.t", size: 2013, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "kubernetesparams.t", size: 2013, mode: os.FileMode(493), modTime: time.Unix(1478024473, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
 
-var _kuberneteswinagentresourcesvmasT = []byte("\x1f\x8b\x08\x00\x00\x09\x6e\x88\x00\xff\xec\x59\x6b\x6f\xdb\x36\x17\xfe\xdc\x02\xfd\x0f\x84\xf0\xf6\x55\x0c\x28\xca\x52\xac\xc0\x90\x61\x05\x8a\x5c\x5a\xa3\x75\xe2\x56\x69\x8a\x21\xf1\x07\x5a\x3c\xb6\x09\x4b\xa4\x46\x52\x76\x5c\xc3\xff\x7d\xa0\x2e\x36\xa9\x8b\xeb\x2c\x59\x9b\x6e\x33\x10\x04\xb6\xce\x8d\x0f\xcf\x39\x7c\x78\x84\x10\x42\xcb\x67\x4f\x51\xf6\x71\x70\x42\xaf\x40\x48\xca\x99\x73\x84\x9c\xeb\x19\x16\x14\x0f\x23\x90\x7b\xee\xe6\xc9\x09\x8c\x70\x1a\x29\xb7\x33\x70\x3c\xb4\xd6\x0c\x79\xb2\x70\x8e\x36\xa6\xb2\x9f\x52\xa6\xaa\x76\x96\x4b\xff\x1c\xc7\xb0\x5a\x1d\xeb\xa7\xb6\x11\x84\x1c\x86\x63\xd0\x2a\x11\xe7\x89\x53\xfe\xbe\x32\xfc\x10\x48\x80\x11\x79\xa1\x03\xbc\x7e\xf6\x74\xb9\xa4\x23\xe4\x77\xe5\x71\x2a\x15\x8f\xaf\xce\x4f\x2f\x57\xab\xb5\xac\xe9\x97\xc9\x71\xf7\x44\xbb\x43\x5a\x09\x22\x09\x2d\x82\x33\x06\x2a\x97\xcc\x04\x19\xd9\xc8\x0d\x8c\x38\x22\x1e\x62\xd5\x80\x53\xf9\x7b\x05\x9e\x72\x5d\xd7\x21\x67\x21\x56\x7b\x4d\x88\x5c\xf5\xf4\xff\xbe\x80\x11\xbd\x75\x3b\x1e\x72\x19\x0d\x93\x7d\xd7\x43\x1a\xdb\x2e\x23\x70\xbb\xd7\xb1\xad\x26\x82\x27\x20\x14\x05\x99\x43\xdf\x84\x06\xaa\x7d\x9e\x3d\x7d\x92\xc7\x04\x6a\xce\xc5\x34\x80\x30\x15\x54\x2d\xde\x08\x9e\x26\xb9\x9d\x27\xb9\x00\x25\xd5\xd5\xad\x51\x2c\x6c\xac\xbc\x1a\x48\x5a\x2f\x39\xe6\x6c\x44\xc7\xa9\xc8\xa0\x90\xf9\x56\x6d\x02\x58\x9a\x5f\x0c\x70\x68\x12\x66\x7a\x87\x56\x4e\x34\xae\xd4\x5e\x91\x93\x08\x3a\xc3\x0a\xba\xfd\xd7\x84\x08\x90\xd2\x84\xda\x3d\xfc\xc9\x7f\xf1\xb3\xfe\x7b\xe9\x17\x60\xd2\x0c\xcc\x97\x19\x9a\x5b\x6c\x45\xe5\x66\xf6\x40\x4d\x78\x06\x46\xa0\xb0\xa2\x61\x2d\x3e\x84\x1c\x99\x0e\x19\xa8\xa6\xe8\x1a\x91\xdc\xec\x3a\x03\x15\x64\xba\x25\xb2\xb6\xee\xca\xfe\xc1\xfa\x6a\x7c\x19\x18\x0b\x71\x80\x69\x2f\xdd\xfe\x19\x17\x73\x2c\x08\x65\x63\xe7\x08\x29\x91\x42\x53\x45\xa9\x45\x92\xa1\xdf\xa3\xa1\xe0\x92\x8f\x94\x7f\x9e\x27\xc6\x41\x91\x20\x5d\xa6\x40\x8c\x70\x08\xb2\x08\x6e\x55\xf8\xba\x5b\xdf\x08\x14\x17\x78\x0c\xf7\xed\x1b\x85\x99\xd7\x61\x26\x26\x1f\xa6\x8d\xac\x15\xd7\x49\x53\x47\x23\x49\x87\x11\x0d\xd7\x29\x06\xf2\xc0\xf5\x90\x11\x61\x8c\xa5\x02\xd1\xb7\xa5\x74\xcc\x6e\xc7\xd8\xd6\x3b\xf7\x90\x5d\x5a\x88\xb4\x30\xc9\x3b\x08\x48\xb7\x73\x1d\x73\xb2\x87\x09\xd9\x33\x3a\x88\xf7\x75\x50\x2f\x46\x23\x09\xca\xed\x58\xb2\xcd\x3e\x0a\xf8\x3b\x83\xaf\x8b\xba\x9d\x6b\x42\x67\xdf\x21\x9c\xb5\xd9\x42\x78\xbd\x27\x5e\x6b\x23\x5d\xe7\x03\xce\x55\x2e\x8b\x1a\xb1\x0e\x8a\x38\xa0\x5f\x40\xf6\x70\xe2\x76\x9a\x2b\xbb\xa7\x05\xdc\xce\xc0\xb7\x83\xd5\xc6\x06\x8d\x59\x59\x2f\xc5\x02\x89\x03\xdb\x82\x59\x88\x79\xcf\x7f\x8b\xe5\x09\x95\x53\x59\xf6\xe1\xc7\x5f\x9a\x04\x2b\x4c\xa8\x9c\xbe\xff\xf1\x4b\x74\xa7\x63\xfe\x0e\x35\x6a\x68\x69\x94\x82\x06\xcd\x00\x80\x54\x2a\xe2\xfb\x17\xf3\xa3\x8a\x7b\x6d\xf6\x04\x2b\x5c\xab\xfc\x76\x0e\xf5\x43\x95\xbe\xc1\xbc\x1e\x82\xc4\xef\x96\xed\x0d\xe9\xde\xd8\x6d\x67\x98\x46\x78\x48\x23\xaa\x16\x01\x54\x5d\xd9\xb0\x6f\x47\xe2\x98\xc7\x49\xaa\xe0\x00\xdb\x16\xef\x47\x47\xbe\xc9\x35\x66\x16\xeb\xf6\x76\xce\x09\xdc\xb7\xc5\xb5\x64\xc3\x81\xbb\x53\xad\x96\x3d\x46\xd7\x6c\xcb\xe1\x1b\xe3\xdb\xab\x9e\xec\x83\xb0\xcb\xf0\x91\x34\x99\xc7\x1a\xf8\x36\x6e\xd1\x7c\x32\xff\xbd\x1b\xfc\xcd\xb1\xba\x43\xa3\x7f\xc8\x7c\xf8\x87\xac\x73\xfb\x21\xd5\x74\xb7\xde\xc2\x7e\x6a\xd7\xb5\x0a\xfb\xb9\xf3\xa0\x61\xbb\xdb\xb6\xae\xdc\xe6\xb5\x76\x1e\xb4\x50\x2e\x85\xc7\xd2\x39\x2a\xbf\x5a\x9d\x58\x40\x76\x0c\x05\x3c\x15\x21\x38\xc8\xbc\xe4\xe3\x50\x02\x1b\x53\x06\xfb\x3b\x2e\xda\x5e\xeb\xa6\x3b\x7f\xcb\x09\xcf\xce\x83\x9d\x0d\x29\xb1\x41\xac\x8e\x1b\xca\x41\x83\x00\x99\x61\xd4\x25\xbb\xec\x98\xdb\xdc\xd1\xb6\xec\x97\x75\x8c\x21\xe4\x4c\xb0\x20\x73\x2c\xa0\x2f\xf8\x88\x46\x50\x0b\x2b\x27\x4c\xed\x33\x90\x92\x2e\xb5\x3a\x28\x72\xbb\xcd\x7e\x7d\x52\x51\x19\x39\xd5\x86\x4e\x5f\x9d\x29\xd5\x3f\x4e\x22\x68\x8c\xc5\xa2\x32\x4b\x69\xfe\xac\xea\x83\xa5\xad\x7b\xd3\x5a\xc4\xae\x77\xdf\x91\x61\x6d\xa8\x64\xcd\x90\x06\x6d\x90\x73\xd9\x86\x76\x98\xe7\x91\x78\x80\x94\xb7\xc6\x82\xcb\x37\xa0\xde\xa5\x43\x10\x0c\x14\xc8\xcf\x94\x11\x3e\x97\xaf\xc7\xc0\x54\x3e\xd0\xd4\x4d\x72\x65\x05\xef\x60\x12\x53\xf6\x49\x1a\xb1\x18\x41\xcc\x0b\x0b\xa6\x8c\x5b\xf5\x9a\x9b\xe8\x63\x29\xe7\x5c\xd4\xc6\x74\xa6\x89\x52\x66\x5b\x9e\x16\xbd\xbf\x05\xb9\x6c\x85\x7a\x15\x19\x23\x40\x7e\x65\x31\x34\xc6\x63\xf8\x08\x23\x10\xc0\xc2\x9a\xb2\x4e\x40\x7d\x73\x95\x13\x10\x35\x5a\xab\x41\x2a\x00\xeb\x97\x42\xb5\xa5\xea\x4d\x1d\x8d\xb6\x6b\x5f\x68\x81\x26\x4d\x39\x4d\xb7\xe9\x05\xd3\xb4\x49\x6b\xd6\x42\xc3\x0d\xcd\x82\x8f\x57\x67\x9f\x2b\x7b\xc6\xea\xf0\x8c\x46\x35\x80\x12\xe2\x70\x92\x4f\x38\x9d\x8f\x80\xc9\x67\x41\x15\xd4\x07\xc8\xd9\xd9\x01\x17\x49\xd9\xd1\xcf\x04\x8f\xbb\x1a\xef\xba\xe8\x3d\xd3\xda\x73\xf7\xb9\x24\x54\x4e\xab\xb7\x82\x1c\x90\x09\x69\x9c\x60\xa7\x82\x9a\x3e\x45\x99\x05\x7b\xff\x5d\x05\x7e\xec\xab\x80\xb7\x7d\xe2\xd6\xf1\x8b\x53\xe5\x94\x91\x84\x53\xa6\xa4\x3f\x8c\xf8\xd0\x73\xf3\x1c\xda\x95\xc2\x99\x80\xa0\x32\x01\xfd\xd9\x84\xd4\x5f\x29\xb4\xbd\x41\x58\xed\x36\x96\x28\x49\xc4\x8c\x0a\x95\xe2\xa8\x97\x55\x9f\xf1\x6a\x00\xfd\x0b\x2e\xe3\x2d\x18\xfc\x85\xcd\xda\x65\xec\x58\x12\x86\xec\x05\xdd\x5e\xc7\x2f\x1f\x3e\x24\xfd\xf4\x90\x7b\x10\xca\xea\x04\xb8\x95\x86\x5a\x07\x51\x0d\x17\xeb\xe6\x50\x66\x50\x7e\x84\x07\xa1\xa0\x89\x3a\xbd\x55\xc0\xb2\x8c\xa8\x4a\xbe\xc5\x8c\x44\x20\x8c\x84\x39\xf4\x7f\xb1\xa4\x70\xaa\xf8\xa7\x64\x2c\x30\x81\x1e\x65\xdc\x10\xd5\xa4\xcc\x94\x4c\x04\x57\x10\x2a\x20\x01\x28\x45\xd9\xb8\x46\xf3\x34\x91\x89\x31\x23\x97\xfc\xf4\x16\x42\x1d\xb8\x79\xa3\x48\xf8\x1c\x84\x9c\x40\x14\xf9\x70\x0b\x68\x3f\x97\xa1\x9c\xf5\x79\x44\xc3\x05\xfa\xc4\x04\x48\x25\xa8\xf6\x80\xf6\x0b\x53\xe8\xc6\x71\x3d\xe4\xfe\x0f\x8b\x71\x1a\x03\x53\x12\xfd\x86\xec\xac\x90\x94\x8d\x23\xf8\x90\x72\x05\xae\x3e\x2b\x7a\xd9\x4c\xba\xdb\x47\xae\x57\x9b\x54\x67\x2c\x90\xe1\xe8\xfd\xb0\x9b\x68\x61\xb4\xaf\xe9\xd1\x09\x93\x01\x88\x19\x0d\xa1\x9b\xd8\x5a\xd3\xca\xd3\x5c\x27\xf7\x70\xf6\xe1\xe4\x3c\xdf\xfa\x26\x4f\x67\x7f\x10\xb6\x4e\x0c\x17\xed\xbf\x2f\x72\xcc\x96\xdd\x5c\x7d\xb4\x4c\xc6\xcc\xde\xc1\xc2\x96\x09\x23\x0a\xba\x53\x66\x2f\x51\xdf\xc1\xa2\x90\xfd\x92\x0a\x78\xcb\xa5\xd2\x79\x8a\x9a\x2f\x1c\x95\xf4\x6c\xe9\xf1\x36\x7e\xc8\x45\xbf\x56\x00\x2e\x28\x9b\x99\x6f\x41\x3a\x2a\x09\xf2\x8d\x83\x5e\xa1\xe7\xc1\xef\xc1\xe5\x69\xef\xe4\x63\xf7\xea\xf4\xf9\xcd\x4d\x16\x9c\xa6\x65\x37\x37\x1b\xa2\x19\x80\x4a\x93\x5c\xdd\x8f\xf8\x18\xbd\x78\xf5\xff\xc3\x0a\xf3\xbb\x57\xc3\x3c\x80\xb2\x08\xd6\xbd\x33\xff\xf7\x67\x00\x00\x00\xff\xff\xea\x0d\x7b\x16\x92\x21\x00\x00")
+var _kuberneteswinagentresourcesvmasT = []byte("\x1f\x8b\x08\x00\x00\x09\x6e\x88\x00\xff\xec\x59\x5b\x6f\x1a\x39\x14\x7e\x6e\xa5\xfe\x07\x6b\xb4\xdd\x09\xd2\x00\xea\x3e\xad\xb2\xda\x4a\x51\x48\x5a\xd4\x92\xd0\x4e\x9a\x6a\x95\xf0\x60\xc6\x07\xb0\x98\xb1\x67\x6d\x0f\x84\x22\xfe\xfb\xca\x73\x01\x7b\x2e\x94\x6c\xb2\x6d\xba\xbb\xbc\xa0\x81\x73\xf3\xe7\x73\x8e\x3f\x9f\x41\x08\xa1\xf5\x8b\xe7\x28\xfd\x38\x38\xa6\xd7\x20\x24\xe5\xcc\x39\x46\xce\xcd\x02\x0b\x8a\xc7\x21\xc8\x23\x77\xf7\x4f\x0f\x26\x38\x09\x95\xdb\x1a\x39\x1e\xda\x6a\x06\x3c\x5e\x39\xc7\x3b\x53\xe9\x4f\x09\x53\x65\x3b\xeb\x75\xe7\x02\x47\xb0\xd9\x9c\xea\x7f\x6d\x23\x08\x39\x0c\x47\xa0\x55\x42\xce\x63\xa7\xf8\x7d\x63\xf8\x21\x10\x03\x23\xf2\x52\x07\x78\xf3\xe2\xf9\x7a\x4d\x27\xa8\xd3\x97\xa7\x89\x54\x3c\xba\xbe\x38\xbb\xda\x6c\xb6\xb2\xa6\x5f\x26\xa7\xfd\x9e\x76\x87\xb4\x12\x84\x12\x1a\x04\x17\x0c\x54\x26\x99\x0a\x32\xb2\x93\x1b\x19\x71\x84\x3c\xc0\xaa\x06\xa7\xe2\xf7\x12\x3c\xc5\xba\x6e\x02\xce\x02\xac\x8e\xea\x10\xb9\x1e\xe8\xef\xa1\x80\x09\xbd\x73\x5b\x1e\x72\x19\x0d\xe2\xb6\xeb\x21\x8d\x6d\x9f\x11\xb8\x3b\x6a\xd9\x56\x63\xc1\x63\x10\x8a\x82\xcc\xa0\xaf\x43\x03\x55\x3e\x2f\x9e\x3f\xcb\x62\x02\xb5\xe4\x62\xee\x43\x90\x08\xaa\x56\x6f\x04\x4f\xe2\xcc\xce\xb3\x4c\x80\x92\xf2\xea\xb6\x28\xe6\x36\x36\x5e\x05\x24\xad\x17\x9f\x72\x36\xa1\xd3\x44\xa4\x50\xc8\x6c\xab\x76\x01\xac\xcd\x07\x03\x1c\x1a\x07\xa9\xde\x2b\xc7\x2b\x49\x94\x17\x6a\x2f\xc8\x89\x05\x5d\x60\x05\xfd\xe1\x49\x58\xe0\x3f\x00\x35\xe3\x69\xfc\xbd\x15\xc3\x11\x0d\xca\x36\x11\x72\x64\x32\x66\xa0\xea\x2c\xd6\x2e\x7e\xb7\x51\x0c\x94\x9f\xea\x16\x60\x58\xaa\x1b\xfb\xd9\x7a\x34\x1e\x46\x46\x40\x0e\x30\xed\xa4\x3f\x3c\xe7\x62\x89\x05\xa1\x6c\xea\x1c\x23\x25\x12\xa8\xab\x01\xb5\x8a\x53\xbc\x06\x34\x10\x5c\xf2\x89\xea\x5c\x64\x5b\xd9\xcd\xb7\xb4\xcf\x14\x88\x09\x0e\x40\xe6\xb1\x6d\x72\x5f\xf7\xab\x74\x5f\x71\x81\xa7\xf0\xd0\x4a\xcf\xcd\x9c\x04\xa9\x98\x7c\x9c\xc2\xdf\x2a\x16\x15\xe5\x56\xd1\x88\x93\x71\x48\x83\xfe\xf0\x84\x10\x01\x52\x82\xec\xba\x1e\x32\x22\x8c\xb0\x54\x20\x86\xb6\x94\x8e\xd9\x6d\x19\xbb\x7a\xef\xaa\x3f\xa4\xe8\xa5\x85\x49\x56\xf3\x20\xdd\xd6\x4d\xc4\xc9\x11\x26\xe4\xc8\xa8\x79\xef\xeb\xa0\x5e\x4e\x26\x12\x94\xdb\xb2\x64\xeb\x7d\xe4\xf0\xb7\x46\x5f\x17\x75\x5b\x37\x84\x2e\xbe\x43\x38\x5b\xb3\xb9\xf0\x76\x4f\xbc\xc6\xd6\xb7\xcd\x07\x9c\xa9\x5c\xe5\x35\x62\xb5\xf6\xc8\xa7\x5f\x40\x0e\x70\xec\xb6\xea\x0b\x7b\xa0\x05\xdc\xd6\xa8\x63\x07\xab\x8d\x8d\x6a\xb3\xb2\x5a\x8a\x39\x12\x5d\xdb\x82\x59\x88\x59\x97\x7e\x8b\x65\x8f\xca\xb9\x2c\x3a\xe7\xd3\x2f\x4d\x82\x15\x26\x54\xce\xdf\xff\xf8\x25\x7a\xd0\xc1\x7c\x8f\x1a\x35\xb4\x34\x4a\x7e\x8d\xa6\x0f\x40\x4a\x15\xf1\xfd\x8b\xf9\x49\xc5\xbd\x35\xdb\xc3\x0a\x57\x2a\xbf\x99\xf5\xfc\x50\xa5\x6f\x70\xa5\xc7\xa0\xdd\x87\x65\x7b\x4d\xba\xd7\x76\xdb\x05\xa6\x21\x1e\xd3\x90\xaa\x95\x0f\x65\x57\x36\xec\xfb\x91\x38\xe5\x51\x9c\x28\xe8\x62\xdb\xe2\xc3\xe8\xc8\x37\xb9\x78\x2c\x22\xdd\xde\x2e\x38\x81\x87\xb6\xb8\x86\x6c\xe8\xba\x07\xd5\x6a\xd1\x63\x74\xcd\x36\x1c\xbe\x11\xbe\xbb\x1e\xc8\x21\x08\xbb\x0c\x9f\x48\x93\x79\xaa\x81\xef\xe3\x16\xf5\x27\xf3\x3f\xbb\xc1\xdf\x1c\xab\x7b\x34\xfa\xc7\xcc\x87\x7f\xc9\x3a\xf7\x1f\x52\x75\xb7\xe1\x3d\xec\xa7\x72\x5d\x2b\xb1\x9f\x7b\x8f\x06\xf6\xbb\x6d\xea\xca\x4d\x5e\x2b\xe7\x41\x03\xe5\x52\x78\x2a\x9d\xe3\xe2\xd1\xea\xc4\x02\xd2\x63\xc8\xe7\x89\x08\xc0\x41\x06\xd1\x72\x71\x20\x81\x4d\x29\x83\xf6\x81\x8b\xb6\xd7\xba\xeb\xce\xdf\x72\x26\x73\xf0\x28\x66\x47\x4a\x6c\x10\xcb\xd3\x86\x62\xce\x20\x40\xa6\x18\xf5\xc9\x21\x3b\xe6\xd6\x77\xb4\x3d\xfb\x65\x1d\x63\x08\x39\x33\x2c\xc8\x12\x0b\x18\x0a\x3e\xa1\x21\x54\xc2\xca\x08\x53\xf3\x08\xa4\xa0\x4b\x8d\x0e\xf2\xdc\x6e\xb2\x5f\x9d\x54\x94\x86\x44\x95\x31\xd1\x57\xc7\x40\xd5\x8f\x13\x0b\x1a\x61\xb1\x2a\xcd\x52\xea\x3f\x9b\xea\x80\x68\xef\xde\x34\x16\xb1\xeb\x3d\x74\xc8\x57\x99\x29\x59\x33\xa4\x51\x13\xe4\x5c\x36\xa1\x1d\x64\x79\x24\x1e\x21\xe5\xad\x41\xde\xfa\x0d\xa8\x77\xc9\x18\x04\x03\x05\xf2\x33\x65\x84\x2f\xe5\xc9\x14\x98\xca\x46\x90\xba\x49\x6e\xac\xe0\x1d\x4c\x22\xca\x3e\x49\x23\x16\x23\x88\x65\x6e\xc1\x94\x71\xcb\x5e\x33\x13\x43\x2c\xe5\x92\x8b\xca\x94\xce\x34\x51\xc8\xec\xcb\xd3\xbc\xf7\x37\x20\x97\xae\x50\xaf\x22\x65\x04\xa8\x53\x5a\x0c\x8d\xf0\x14\x3e\xc2\x04\x04\xb0\xa0\xa2\xac\x13\x50\xdf\x5c\xe5\x0c\x44\x85\xd6\x6a\x90\x72\xc0\x86\x85\x50\x65\xa9\x7a\x53\x27\x93\xfd\xda\x97\x5a\xa0\x4e\x53\xce\x93\x7d\x7a\xfe\x3c\xa9\xd3\x5a\x34\xd0\x70\x43\x33\xe7\xe3\xe5\xd1\xa7\x85\x6b\x9a\x8e\x1a\xb4\x1a\x50\x02\x1c\xcc\xb2\x09\xa7\xf3\x11\x30\xf9\x2c\xa8\x02\xc7\x56\x2e\xce\x0e\xb8\x8c\x8b\x8e\x7e\x2e\x78\xd4\xd7\x78\x57\x45\x1f\x98\xd6\x9e\xdb\xe6\x92\x50\x39\x2f\xdf\x0a\x32\x40\x66\xa4\x76\xe8\x9c\x08\x6a\xfa\x14\x45\x16\x1c\xfd\x7f\x15\xf8\xb1\xaf\x02\xde\xfe\x89\x5b\xab\x93\x9f\x2a\x67\x8c\xc4\x9c\x32\x25\x3b\xe3\x90\x8f\x3d\x37\xcb\xa1\x43\x29\x9c\x09\x08\x2a\x12\xb0\xb3\x98\x91\xea\x1b\x85\xa6\x37\x08\x9b\xc3\xc6\x12\x05\x89\x58\x50\xa1\x12\x1c\x0e\xd2\xea\x33\x5e\x0d\xa0\xff\xc0\x65\xbc\x01\x83\xbf\xb1\x59\x87\x8c\x1d\x0b\xc2\x90\xbe\x52\x3b\x6a\x75\x8a\x3f\x1f\x93\x7e\x7a\xc8\xed\x06\xb2\x3c\x01\x6e\xa4\xa1\xd6\x41\x54\xc1\xc5\xba\x39\x14\x19\x94\x1d\xe1\x7e\x20\x68\xac\xce\xee\x14\xb0\x34\x23\xca\x92\x6f\x31\x23\x21\x08\x23\x61\x5e\x75\x7e\xb5\xa4\x70\xa2\xf8\xa7\x78\x2a\x30\x81\x01\x65\xdc\x10\xd5\xa4\xcc\x94\x8c\x05\x57\x10\x28\x20\x3e\x28\x45\xd9\xb4\x42\xf3\x34\x91\x89\x30\x23\x57\xfc\xec\x0e\x02\x1d\xb8\x79\xa3\x88\xf9\x12\x84\x9c\x41\x18\x76\xe0\x0e\x50\x3b\x93\xa1\x9c\x0d\x79\x48\x83\x15\xfa\xc4\x04\x48\x25\xa8\xf6\x80\xda\xb9\x29\x74\xeb\xb8\x1e\x72\x7f\xc2\x62\x9a\x44\xc0\x94\x44\xbf\x23\x3b\x2b\x24\x65\xd3\x10\x3e\x24\x5c\x81\xab\xcf\x8a\x41\x3a\x93\xee\x0f\x91\xeb\x55\x26\xd5\x29\x0b\x64\x38\x7c\x3f\xee\xc7\x5a\x18\xb5\x35\x3d\xea\x31\xe9\x83\x58\xd0\x00\xfa\xb1\xad\x35\x2f\xfd\x9b\xe9\x64\x1e\xce\x3f\xf4\x2e\xb2\xad\xaf\xf3\x74\xfe\x27\x61\xdb\xc4\x70\x51\xfb\x7d\x9e\x63\xb6\xec\xee\xea\xa3\x65\x52\x66\xf6\x0e\x56\xb6\x4c\x10\x52\xd0\x9d\x32\x7d\x87\xfa\x0e\x56\xb9\xec\x97\x44\xc0\x5b\x2e\x95\xce\x53\x54\x7f\xe1\x28\xa5\x67\x43\x8f\xb7\xf1\x43\x2e\xfa\xad\x04\x70\x4e\xd9\xcc\x7c\xf3\x93\x49\x41\x90\x6f\x1d\xf4\x1a\xbd\xf4\xff\xf0\xaf\xce\x06\xbd\x8f\xfd\xeb\xb3\x97\xb7\xb7\x69\x70\x9a\x96\xdd\xde\xee\x88\xa6\x0f\x2a\x89\x33\xf5\x4e\xc8\xa7\xe8\x97\xd7\x3f\xbf\x2a\x31\xbf\x07\x35\xcc\x2e\x14\x45\xb0\xed\x9d\xd9\xd7\x5f\x01\x00\x00\xff\xff\xa1\x05\x4a\x5d\x44\x21\x00\x00")
 
 func kuberneteswinagentresourcesvmasTBytes() ([]byte, error) {
 	return bindataRead(
@@ -852,7 +852,7 @@ func kuberneteswinagentresourcesvmasT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kuberneteswinagentresourcesvmas.t", size: 8594, mode: os.FileMode(436), modTime: time.Unix(1487261710, 0)}
+	info := bindataFileInfo{name: "kuberneteswinagentresourcesvmas.t", size: 8516, mode: os.FileMode(493), modTime: time.Unix(1487298198, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -872,7 +872,7 @@ func kuberneteswindowssetupPs1() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kuberneteswindowssetup.ps1", size: 9511, mode: os.FileMode(436), modTime: time.Unix(1487277248, 0)}
+	info := bindataFileInfo{name: "kuberneteswindowssetup.ps1", size: 9511, mode: os.FileMode(493), modTime: time.Unix(1487275567, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -892,7 +892,7 @@ func masteroutputsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "masteroutputs.t", size: 492, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "masteroutputs.t", size: 492, mode: os.FileMode(493), modTime: time.Unix(1485311335, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -912,7 +912,7 @@ func masterparamsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "masterparams.t", size: 3359, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "masterparams.t", size: 3359, mode: os.FileMode(493), modTime: time.Unix(1484330403, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -932,7 +932,7 @@ func swarmagentresourcesclassicT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmagentresourcesclassic.t", size: 8748, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "swarmagentresourcesclassic.t", size: 8748, mode: os.FileMode(493), modTime: time.Unix(1485311335, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -952,7 +952,7 @@ func swarmagentresourcesvmasT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmagentresourcesvmas.t", size: 9999, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "swarmagentresourcesvmas.t", size: 9999, mode: os.FileMode(493), modTime: time.Unix(1485311335, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -972,7 +972,7 @@ func swarmagentresourcesvmssT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmagentresourcesvmss.t", size: 9753, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "swarmagentresourcesvmss.t", size: 9753, mode: os.FileMode(493), modTime: time.Unix(1485311335, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -992,7 +992,7 @@ func swarmagentvarsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmagentvars.t", size: 2255, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "swarmagentvars.t", size: 2255, mode: os.FileMode(493), modTime: time.Unix(1478024473, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -1012,7 +1012,7 @@ func swarmbaseT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmbase.t", size: 1727, mode: os.FileMode(436), modTime: time.Unix(1487187088, 0)}
+	info := bindataFileInfo{name: "swarmbase.t", size: 1727, mode: os.FileMode(493), modTime: time.Unix(1487184254, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -1032,7 +1032,7 @@ func swarmmasterresourcesT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmmasterresources.t", size: 8901, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "swarmmasterresources.t", size: 8901, mode: os.FileMode(493), modTime: time.Unix(1485311335, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -1052,7 +1052,7 @@ func swarmmastervarsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmmastervars.t", size: 9329, mode: os.FileMode(436), modTime: time.Unix(1486153317, 0)}
+	info := bindataFileInfo{name: "swarmmastervars.t", size: 9329, mode: os.FileMode(493), modTime: time.Unix(1486149485, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -1072,7 +1072,7 @@ func swarmwinagentresourcesvmasT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmwinagentresourcesvmas.t", size: 11471, mode: os.FileMode(436), modTime: time.Unix(1486680368, 0)}
+	info := bindataFileInfo{name: "swarmwinagentresourcesvmas.t", size: 11471, mode: os.FileMode(493), modTime: time.Unix(1486412800, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -1092,7 +1092,7 @@ func swarmwinagentresourcesvmssT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "swarmwinagentresourcesvmss.t", size: 11011, mode: os.FileMode(436), modTime: time.Unix(1486680368, 0)}
+	info := bindataFileInfo{name: "swarmwinagentresourcesvmss.t", size: 11011, mode: os.FileMode(493), modTime: time.Unix(1486412800, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -1112,7 +1112,7 @@ func windowsparamsT() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "windowsparams.t", size: 369, mode: os.FileMode(436), modTime: time.Unix(1485387433, 0)}
+	info := bindataFileInfo{name: "windowsparams.t", size: 369, mode: os.FileMode(493), modTime: time.Unix(1478024473, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
