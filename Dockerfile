@@ -22,6 +22,7 @@ RUN curl "https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_V
 ENV GOPATH /gopath
 ENV PATH "${PATH}:${GOPATH}/bin"
 RUN go get -u github.com/golang/lint/golint
+RUN go get -u github.com/ghodss/yaml
 RUN go get -u github.com/jteeuwen/go-bindata/...
 
 RUN git clone https://github.com/akesterson/cmdarg.git
