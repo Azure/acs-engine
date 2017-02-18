@@ -161,7 +161,7 @@ Get-PodCIDR
     Write-Host "waiting to discover pod CIDR"
     while (-not $podCidrDiscovered)
     {
-        $podCIDR=c:\k\kubectl.exe --kubeconfig=c:\k\config get nodes/$AzureHostname -o custom-columns=podCidr:.spec.podCIDR --no-headers
+        $podCIDR=c:\k\kubectl.exe --kubeconfig=c:\k\config get nodes/$($AzureHostname.ToLower()) -o custom-columns=podCidr:.spec.podCIDR --no-headers
 
         if ($podCIDR.length -gt 0)
         {
