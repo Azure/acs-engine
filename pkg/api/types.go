@@ -48,6 +48,7 @@ type Properties struct {
 	JumpboxProfile          JumpboxProfile          `json:"jumpboxProfile"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
 	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
+	KubeNetworkConfig       KubeNetworkConfig       `json:"kubeNetworkConfig"`
 	CustomProfile           CustomProfile           `json:"customProfile"`
 }
 
@@ -158,6 +159,12 @@ type AgentPoolProfile struct {
 	Subnet              string `json:"subnet"`
 
 	FQDN string `json:"fqdn,omitempty"`
+}
+
+type KubeNetworkConfig struct {
+	KubeDnsServiceIp string `json:"kubeDnsServiceIp"`
+	KubeServiceCidr  string `json:"kubeServiceCidr"`
+	KubeClusterCidr  string `json:"kubeClusterCidr"`
 }
 
 // DiagnosticsProfile setting to enable/disable capturing

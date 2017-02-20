@@ -126,6 +126,7 @@ func convertPropertiesToVLabs(api *Properties, vlabsProps *vlabs.Properties) {
 	vlabsProps.ProvisioningState = vlabs.ProvisioningState(api.ProvisioningState)
 	convertOrchestratorProfileToVLabs(&api.OrchestratorProfile, &vlabsProps.OrchestratorProfile)
 	convertMasterProfileToVLabs(&api.MasterProfile, &vlabsProps.MasterProfile)
+	convertKubeNetworkConfigToVLabs(&api.KubeNetworkConfig, &vlabsProps.KubeNetworkConfig)
 	vlabsProps.AgentPoolProfiles = []vlabs.AgentPoolProfile{}
 	for _, apiProfile := range api.AgentPoolProfiles {
 		vlabsProfile := &vlabs.AgentPoolProfile{}
@@ -234,6 +235,12 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	vlabsProfile.SetSubnet(api.Subnet)
 	vlabsProfile.FQDN = api.FQDN
 	vlabsProfile.StorageProfile = api.StorageProfile
+}
+
+func convertKubeNetworkConfigToVLabs(api *KubeNetworkConfig, vlabsProfile *vlabs.KubeNetworkConfig) {
+	vlabsProfile.KubeDnsServiceIp = api.KubeDnsServiceIp
+	vlabsProfile.KubeServiceCidr = api.KubeServiceCidr
+	vlabsProfile.KubeClusterCidr = api.KubeClusterCidr
 }
 
 func convertKeyVaultSecretsToVlabs(api *KeyVaultSecrets, vlabsSecrets *vlabs.KeyVaultSecrets) {

@@ -134,6 +134,7 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 	convertVLabsWindowsProfile(&vlabs.WindowsProfile, &api.WindowsProfile)
 	convertVLabsServicePrincipalProfile(&vlabs.ServicePrincipalProfile, &api.ServicePrincipalProfile)
 	convertVLabsCertificateProfile(&vlabs.CertificateProfile, &api.CertificateProfile)
+	convertVLabsKubeNetworkConfig(&vlabs.KubeNetworkConfig, &api.KubeNetworkConfig)
 }
 
 func convertV20160930LinuxProfile(v20160930 *v20160930.LinuxProfile, api *LinuxProfile) {
@@ -230,6 +231,11 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.Subnet = vlabs.GetSubnet()
 	api.FQDN = vlabs.FQDN
 	api.StorageProfile = vlabs.StorageProfile
+}
+func convertVLabsKubeNetworkConfig(vlabs *vlabs.KubeNetworkConfig, api *KubeNetworkConfig) {
+	api.KubeClusterCidr = vlabs.KubeClusterCidr
+	api.KubeDnsServiceIp = vlabs.KubeDnsServiceIp
+	api.KubeServiceCidr = vlabs.KubeServiceCidr
 }
 
 func convertV20160930AgentPoolProfile(v20160930 *v20160930.AgentPoolProfile, api *AgentPoolProfile) {
