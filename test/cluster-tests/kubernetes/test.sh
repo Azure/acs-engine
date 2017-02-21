@@ -38,16 +38,20 @@ if [[ "${TEST_ACR}" == "y" ]]; then
 fi
 
 ###### Check node count
-wait=5
-count=12
-while (( $count > 0 )); do
-  node_count=$(kubectl get nodes --no-headers | wc | awk '{print $1}')
-  if (( ${node_count} == ${EXPECTED_NODE_COUNT} )); then break; fi
-  sleep 5; count=$((count-1))
-done
-if (( $node_count != ${EXPECTED_NODE_COUNT} )); then
-  echo "gave up waiting for apiserver / node counts"; exit -1
-fi
+function check_node_count() {
+  wait=5
+  count=12
+  while (( $count > 0 )); do
+    node_count=$(kubectl get nodes --no-headers | grep -v NotReady | grep Ready | wc | awk '{print $1}')
+    if (( ${node_count} == ${EXPECTED_NODE_COUNT} )); then break; fi
+    sleep 5; count=$((count-1))
+  done
+  if (( $node_count != ${EXPECTED_NODE_COUNT} )); then
+    echo "gave up waiting for apiserver / node counts"; exit -1
+  fi
+}
+
+check_node_count
 
 ###### Wait for no more container creating
 wait=5
@@ -159,4 +163,5 @@ if [[ "${success}" != "y" ]]; then
   exit -1
 fi
 
+check_node_count
 
