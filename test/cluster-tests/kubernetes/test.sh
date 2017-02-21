@@ -11,10 +11,8 @@ EXPECTED_NODE_COUNT="${EXPECTED_NODE_COUNT:-4}"
 EXPECTED_DNS="${EXPECTED_DNS:-2}"
 EXPECTED_DASHBOARD="${EXPECTED_DASHBOARD:-1}"
 
-TEST_ACR="n"
-if [[ "${LOCATION}" == "westus" ]] || [[ "${LOCATION}" == "eastus" ]] || [[ "${LOCATION}" == "southcentralus" ]]; then
-	TEST_ACR="y"
-fi
+# set TEST_ACR to "y" for ACR testing
+TEST_ACR="${TEST_ACR:-n}"
 
 namespace="namespace-${RANDOM}"
 echo "Running test in namespace: ${namespace}"
@@ -23,6 +21,7 @@ trap teardown EXIT
 function teardown {
   kubectl get all --all-namespaces
   kubectl get nodes
+  kubectl get namespaces
   kubectl delete namespaces ${namespace}
 }
 
