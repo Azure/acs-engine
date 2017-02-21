@@ -15,6 +15,7 @@ validate-generated:
 	./scripts/validate-generated.sh
 
 lint:
+	go get -u github.com/golang/lint/golint
 	# TODO: fix lint errors, enable linting
 	# golint -set_exit_status
 
