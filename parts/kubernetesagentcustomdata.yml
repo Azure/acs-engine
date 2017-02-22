@@ -113,13 +113,13 @@ write_files:
       --volume=/srv/kubernetes/:/srv/kubernetes/:ro \
         {{{kubernetesHyperkubeSpec}}} \
           /hyperkube kubelet \
-            --api-servers="https://{{{masterInternalLbIp}}}:443" \
             --kubeconfig=/var/lib/kubelet/kubeconfig \
+            --require-kubeconfig \
             --address=0.0.0.0 \
             --allow-privileged=true \
             --enable-server \
             --enable-debugging-handlers \
-            --config=/etc/kubernetes/manifests \
+            --pod-manifest-path=/etc/kubernetes/manifests \
             --cluster-dns={{{kubeDnsServiceIP}}} \
             --cluster-domain=cluster.local \
             --cloud-provider=azure \

@@ -160,7 +160,6 @@ write_files:
             command: 
               - "/hyperkube"
               - "controller-manager"
-              - "--master=127.0.0.1:8080"
               - "--kubeconfig=/var/lib/kubelet/kubeconfig"
               - "--allocate-node-cidrs=true"
               - "--cluster-cidr=10.244.0.0/16"
@@ -204,7 +203,6 @@ write_files:
             command:
               - "/hyperkube"
               - "scheduler"
-              - "--master=127.0.0.1:8080"
               - "--kubeconfig=/var/lib/kubelet/kubeconfig"
               - "--leader-elect=true"
               - "--v=2"
@@ -340,13 +338,13 @@ write_files:
       --volume=/srv/kubernetes/:/srv/kubernetes:ro \
         {{{kubernetesHyperkubeSpec}}} \
           /hyperkube kubelet \
-            --api-servers="<<<concat('https://', variables('masterPrivateIpAddrs')[copyIndex()], ':443')>>>" \
             --kubeconfig=/var/lib/kubelet/kubeconfig \
+            --require-kubeconfig \
             --address=0.0.0.0 \
             --allow-privileged=true \
             --enable-server \
             --enable-debugging-handlers \
-            --config=/etc/kubernetes/manifests \
+            --pod-manifest-path=/etc/kubernetes/manifests \
             --cluster-dns={{{kubeDnsServiceIP}}} \
             --cluster-domain=cluster.local \
             --register-schedulable={{{registerSchedulable}}} \
