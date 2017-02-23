@@ -111,9 +111,9 @@ port=$(kubectl get svc --namespace=kube-system | grep dashboard | awk '{print $4
 # get internal IPs of the nodes
 ips=$(kubectl get nodes --all-namespaces -o yaml | grep -B 1 InternalIP | grep address | awk '{print $3}')
 
-while read -r ip; do
-  ssh -i "${OUTPUT}/id_rsa" -o "ConnectTimeout 3" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" "azureuser@${master}" "curl http://${ip}:${port}"
-done <<< "$ips"
+for ip in $ips; do
+  ssh -i "${OUTPUT}/id_rsa" -o "ConnectTimeout 60" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" "azureuser@${master}" "curl http://${ip}:${port}"
+done
 
 ###### Testing an nginx deployment
 echo "Testing deployments"
@@ -152,10 +152,10 @@ kubectl expose deployments/nginx --type=LoadBalancer --namespace=${namespace} --
 wait=5
 count=60
 external_ip=""
-while true; do
+while (( $count > 0 )); do
 	external_ip=$(kubectl get svc --namespace ${namespace} nginx --template="{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}")
 	[[ ! -z "${external_ip}" ]] && break
-	sleep 10
+	sleep 10; count=$((count-1))
 done
 if [[ -z "${external_ip}" ]]; then
   echo "gave up waiting for loadbalancer to get an ingress ip"
