@@ -2,17 +2,17 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "DCOS173"
+      "orchestratorType": "DCOS188"
     },
     "masterProfile": {
-      "count": 1,
+      "count": 3,
       "dnsPrefix": "",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
         "name": "agentprivate",
-        "count": 5,
+        "count": 3,
         "vmSize": "Standard_D2_v2"
       },
       {

@@ -44,7 +44,7 @@ node {
                   env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${SERVICE_PRINCIPAL_CLIENT_SECRET}"
 
                   env.LOCATION = "${LOCATION}"
-                  env.RESOURCE_GROUP = "test-acs-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
+                  env.RESOURCE_GROUP = "test-acs-ci-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
                   env.DEPLOYMENT_NAME = "${env.RESOURCE_GROUP}"
                   env.CLEANUP = "y"
 
