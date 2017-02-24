@@ -11,10 +11,8 @@ EXPECTED_NODE_COUNT="${EXPECTED_NODE_COUNT:-4}"
 EXPECTED_DNS="${EXPECTED_DNS:-2}"
 EXPECTED_DASHBOARD="${EXPECTED_DASHBOARD:-1}"
 
-TEST_ACR="n"
-if [[ "${LOCATION}" == "westus" ]] || [[ "${LOCATION}" == "eastus" ]] || [[ "${LOCATION}" == "southcentralus" ]]; then
-	TEST_ACR="y"
-fi
+# set TEST_ACR to "y" for ACR testing
+TEST_ACR="${TEST_ACR:-n}"
 
 namespace="namespace-${RANDOM}"
 echo "Running test in namespace: ${namespace}"
@@ -22,6 +20,8 @@ trap teardown EXIT
 
 function teardown {
   kubectl get all --all-namespaces
+  kubectl get nodes
+  kubectl get namespaces
   kubectl delete namespaces ${namespace}
 }
 
@@ -32,22 +32,26 @@ function teardown {
 if [[ "${TEST_ACR}" == "y" ]]; then
 	ACR_NAME="${INSTANCE_NAME//[-._]/}1"
 	ACR_REGISTRY="${ACR_NAME}-microsoft.azurecr.io" # fix this for non-ms tenant users
-	if ! az acr show --resource-group "${INSTANCE_NAME}" --name "${ACR_NAME}" ; then
-		az acr create --location "${LOCATION}" --resource-group "${INSTANCE_NAME}" --name "${ACR_NAME}" &
+	if ! az acr show --resource-group "${RESOURCE_GROUP}" --name "${ACR_NAME}" ; then
+		az acr create --location "${LOCATION}" --resource-group "${RESOURCE_GROUP}" --name "${ACR_NAME}" &
 	fi
 fi
 
 ###### Check node count
-wait=5
-count=12
-while (( $count > 0 )); do
-  node_count=$(kubectl get nodes --no-headers | wc | awk '{print $1}')
-  if (( ${node_count} == ${EXPECTED_NODE_COUNT} )); then break; fi
-  sleep 5; count=$((count-1))
-done
-if (( $node_count != ${EXPECTED_NODE_COUNT} )); then
-  echo "gave up waiting for apiserver / node counts"; exit -1
-fi
+function check_node_count() {
+  wait=5
+  count=12
+  while (( $count > 0 )); do
+    node_count=$(kubectl get nodes --no-headers | grep -v NotReady | grep Ready | wc | awk '{print $1}')
+    if (( ${node_count} == ${EXPECTED_NODE_COUNT} )); then break; fi
+    sleep 5; count=$((count-1))
+  done
+  if (( $node_count != ${EXPECTED_NODE_COUNT} )); then
+    echo "gave up waiting for apiserver / node counts"; exit -1
+  fi
+}
+
+check_node_count
 
 ###### Wait for no more container creating
 wait=5
@@ -159,4 +163,5 @@ if [[ "${success}" != "y" ]]; then
   exit -1
 fi
 
+check_node_count
 

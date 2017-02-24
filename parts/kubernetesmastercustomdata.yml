@@ -17,9 +17,8 @@ runcmd:
 - apt-get update
 - apt-get install -y docker-engine
 - systemctl restart docker
-- /usr/bin/curl -sSL --retry 12 --retry-delay 10 {{{kubectlDownloadURL}}} > /usr/local/bin/kubectl
-- chmod +x /usr/local/bin/kubectl
 - mkdir -p /etc/kubernetes/manifests
+- usermod -aG docker {{{username}}}
 
 write_files:
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
@@ -173,6 +172,24 @@ write_files:
   content: !!binary |
     MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR
 
+- path: "/etc/systemd/system/kubectl-extract.service"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=Kubectl extraction
+    Requires=docker.service
+    After=docker.service
+    ConditionPathExists=!/usr/local/bin/kubectl
+
+    [Service]
+    Type=oneshot
+    ExecStartPre=/bin/mkdir -p /tmp/kubectldir
+    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{{kubernetesHyperkubeSpec}}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
+    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
+    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl
+
+
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
   owner: "root"
@@ -185,15 +202,14 @@ write_files:
     [Service]
     Restart=always
     ExecStartPre=/bin/mkdir -p /var/lib/kubelet
-    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
-    ExecStartPre=/bin/sed -i "s|<kubernetesAddonManagerSpec>|{{{kubernetesAddonManagerSpec}}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
-    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<kubeServiceCidr>|{{{kubeServiceCidr}}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<masterFqdnPrefix>|{{{masterFqdnPrefix}}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
-    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
     # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
     # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
     # This IPTable rule then redirects ILB traffic to port 443 in the prerouting chain
     ExecStartPre=/bin/bash -c "iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443"
+    ExecStartPre=/bin/sed -i "s|<kubernetesAddonManagerSpec>|{{{kubernetesAddonManagerSpec}}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
+    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<kubeServiceCidr>|{{{kubeServiceCidr}}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<masterFqdnPrefix>|{{{masterFqdnPrefix}}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+    ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
     ExecStartPre=/bin/sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
     ExecStartPre=/bin/sed -i "s|<kubernetesKubeDNSSpec>|{{{kubernetesKubeDNSSpec}}}|g; s|<kubernetesDNSMasqSpec>|{{{kubernetesDNSMasqSpec}}}|g; s|<kubernetesExecHealthzSpec>|{{{kubernetesExecHealthzSpec}}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
     ExecStartPre=/bin/sed -i "s|<kubernetesHeapsterSpec>|{{{kubernetesHeapsterSpec}}}|g; s|<kubernetesAddonResizerSpec>|{{{kubernetesAddonResizerSpec}}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"

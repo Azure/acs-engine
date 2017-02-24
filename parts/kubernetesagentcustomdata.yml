@@ -11,9 +11,8 @@ runcmd:
 - apt-get update
 - apt-get install -y docker-engine
 - systemctl restart docker
-- /usr/bin/curl -sSL --retry 12 --retry-delay 10 {{{kubectlDownloadURL}}} > /usr/local/bin/kubectl
-- chmod +x /usr/local/bin/kubectl
 - mkdir -p /etc/kubernetes/manifests
+- usermod -aG docker {{{username}}}
 
 write_files:
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
@@ -82,6 +81,23 @@ write_files:
         user: client
       name: localclustercontext
     current-context: localclustercontext
+
+- path: "/etc/systemd/system/kubectl-extract.service"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=Kubectl extraction
+    Requires=docker.service
+    After=docker.service
+    ConditionPathExists=!/usr/local/bin/kubectl
+
+    [Service]
+    Type=oneshot
+    ExecStartPre=/bin/mkdir -p /tmp/kubectldir
+    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{{kubernetesHyperkubeSpec}}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
+    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
+    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl
 
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"

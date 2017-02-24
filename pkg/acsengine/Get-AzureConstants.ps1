@@ -37,13 +37,13 @@ Get-AllSizes() {
 	return $sizeMap
 }
 
-#  1. Agents >= 2 cores
-#  2. Masters >= 2 cores and ephemeral disk >= 100 GB
+#  1. Masters and Agents >= 2 cores
+#  2. DCOS Masters >= 2 cores and ephemeral disk >= 100 GB
 $MINIMUM_CORES = 2
-$MASTERS_EPHEMERAL_DISK_MIN = 102400
+$DCOS_MASTERS_EPHEMERAL_DISK_MIN = 102400
 
 function 
-Get-MasterMap() {
+Get-DcosMasterMap() {
 	param(
         [System.Collections.Hashtable]
         $SizeMap
@@ -53,7 +53,7 @@ Get-MasterMap() {
 	ForEach ($k in ($SizeMap.Keys | Sort-Object)) {
 		$size = $SizeMap[$k]
 		if ($size.NumberOfCores -ge $MINIMUM_CORES -and 
-			$size.ResourceDiskSizeInMB -ge $MASTERS_EPHEMERAL_DISK_MIN) {
+			$size.ResourceDiskSizeInMB -ge $DCOS_MASTERS_EPHEMERAL_DISK_MIN) {
 			$masterMap.Add($size.Name, $size)
 		}
 	}
@@ -61,7 +61,7 @@ Get-MasterMap() {
 }
 
 function 
-Get-AgentMap() {
+Get-MasterAgentMap() {
 	param(
         [System.Collections.Hashtable]
         $SizeMap
@@ -85,16 +85,32 @@ Get-Locations() {
 	ForEach ($location in $locations) {
 		$locationList += $location.Location
 	}
+	#hard code Azure China Cloud location
+	$locationList += "chinanorth"
+	$locationList += "chinaeast"
 	return $locationList
+}
+
+function 
+Get-StorageAccountType($sizeName) {
+	$capability = $sizeName.Split("_")[1]
+	if ($capability.Contains("S") -Or $capability.Contains("s"))
+	{
+		return "Premium_LRS"
+	}
+	else
+	{
+		return "Standard_LRS"
+	}
 }
 
 function
 Get-FileContents() {
 	param(
 		[System.Collections.Hashtable]
-        $MasterMap,
+        $DCOSMasterMap,
 		[System.Collections.Hashtable]
-        $AgentMap,
+        $MasterAgentMap,
 		[System.Collections.Hashtable]
         $SizeMap,
 		[System.Collections.ArrayList]
@@ -111,7 +127,9 @@ import "fmt"
 
 const (
 	// AzureProdFQDNFormat specifies the format for a prod dns name
-	AzureProdFQDNFormat = "%s.%s.cloudapp.azure.com"
+	AzurePublicProdFQDNFormat = "%s.%s.cloudapp.azure.com"
+	//AzureChinaProdFQDNFormat specify the endpoint of Azure China Cloud
+	AzureChinaProdFQDNFormat = "%s.%s.cloudapp.chinacloudapi.cn"
 )
 
 // AzureLocations provides all azure regions in prod.
@@ -137,16 +155,20 @@ func FormatAzureProdFQDNs(fqdnPrefix string) []string {
 
 // FormatAzureProdFQDN constructs an Azure prod fqdn
 func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
-	return fmt.Sprintf(AzureProdFQDNFormat, fqdnPrefix, location)
+	FQDNFormat := AzurePublicProdFQDNFormat
+	if location == "chinaeast" || location == "chinanorth" {
+		FQDNFormat = AzureChinaProdFQDNFormat
+	}
+	return fmt.Sprintf(FQDNFormat, fqdnPrefix, location)
 }
 
-// GetMasterAllowedSizes returns the master allowed sizes
-func GetMasterAllowedSizes() string{
+// GetDCOSMasterAllowedSizes returns the master allowed sizes
+func GetDCOSMasterAllowedSizes() string{
     return ``      "allowedValues": [
 
 "@
     $first = $TRUE
-	ForEach ($k in ($MasterMap.Keys | Sort-Object)) {
+	ForEach ($k in ($DCOSMasterMap.Keys | Sort-Object)) {
 		if ($first -eq $TRUE) 
 		{
 			$first = $FALSE
@@ -155,7 +177,7 @@ func GetMasterAllowedSizes() string{
 		{
 			$text += ",`r`n"
 		}
-		$text += '        "' + $MasterMap.Item($k).Name + '"'
+		$text += '        "' + $DCOSMasterMap.Item($k).Name + '"'
 	}
 	$text += @"
 
@@ -163,13 +185,13 @@ func GetMasterAllowedSizes() string{
 ``
 }
 
-// GetAgentAllowedSizes returns the agent allowed sizes
-func GetAgentAllowedSizes() string {
+// GetMasterAgentAllowedSizes returns the agent allowed sizes
+func GetMasterAgentAllowedSizes() string {
     return ``      "allowedValues": [
 
 "@
 	$first = $TRUE
-	ForEach ($k in ($AgentMap.Keys | Sort-Object)) {
+	ForEach ($k in ($MasterAgentMap.Keys | Sort-Object)) {
 		if ($first -eq $TRUE) 
 		{
 			$first = $FALSE
@@ -178,7 +200,7 @@ func GetAgentAllowedSizes() string {
 		{
 			$text += ",`r`n"
 		}
-		$text += '        "' + $AgentMap.Item($k).Name + '"'
+		$text += '        "' + $MasterAgentMap.Item($k).Name + '"'
 	}
 	$text += @"
 
@@ -194,14 +216,14 @@ func GetSizeMap() string{
 
 	# merge the maps
 	$mergedMap = @{}
-	ForEach ($k in $AgentMap.Keys) {
-		$size = $AgentMap.Item($k)
+	ForEach ($k in $MasterAgentMap.Keys) {
+		$size = $MasterAgentMap.Item($k)
 		if (!$mergedMap.ContainsKey($k)) {
 			$mergedMap.Add($size.Name, $size)
 		}
 	}
-	ForEach ($k in $MasterMap.Keys) {
-		$size = $MasterMap.Item($k)
+	ForEach ($k in $DCOSMasterMap.Keys) {
+		$size = $DCOSMasterMap.Item($k)
 		if (!$mergedMap.ContainsKey($k)) {
 			$mergedMap.Add($size.Name, $size)
 		}
@@ -219,13 +241,8 @@ func GetSizeMap() string{
 			$text += ",`r`n"
 		}
 		$text += '      "' + $size.Name + '": {' + "`r`n"
-		if ($size.Name.Contains("GS") -Or $size.Name.Contains("DS")) {
-			$text += '        "storageAccountType": "Premium_LRS"' + "`r`n"
-		}
-		else
-		{
-			$text += '        "storageAccountType": "Standard_LRS"' + "`r`n"
-		}
+		$storageAccountType = Get-StorageAccountType($size.Name)
+		$text += '        "storageAccountType": "' + $storageAccountType + '"' + "`r`n"
 		$text += '      }'
 	}
 	$text += @"
@@ -234,7 +251,7 @@ func GetSizeMap() string{
 ``
 }
 
-// GetAgentAllowedSizes returns the agent allowed sizes
+// GetClassicAllowedSizes returns the classic allowed sizes
 func GetClassicAllowedSizes() string {
     return ``      "allowedValues": [
 
@@ -257,7 +274,7 @@ func GetClassicAllowedSizes() string {
 ``
 }
 
-// GetSizeMap returns the size / storage map
+// GetClassicSizeMap returns the size / storage map
 func GetClassicSizeMap() string{
     return ``    "vmSizesMap": {
 
@@ -275,13 +292,8 @@ func GetClassicSizeMap() string{
 			$text += ",`r`n"
 		}
 		$text += '      "' + $size.Name + '": {' + "`r`n"
-		if ($size.Name.Contains("GS") -Or $size.Name.Contains("DS")) {
-			$text += '        "storageAccountType": "Premium_LRS"' + "`r`n"
-		}
-		else
-		{
-			$text += '        "storageAccountType": "Standard_LRS"' + "`r`n"
-		}
+		$storageAccountType = Get-StorageAccountType($size.Name)
+		$text += '        "storageAccountType": "' + $storageAccountType + '"' + "`r`n"
 		$text += '      }'
 	}
 	$text += @"
@@ -296,10 +308,10 @@ func GetClassicSizeMap() string{
 try
 {
 	$allSizes = Get-AllSizes
-	$masterMap = Get-MasterMap -SizeMap $allSizes
-	$agentMap = Get-AgentMap -SizeMap $allSizes
+	$dcosMasterMap = Get-DCOSMasterMap -SizeMap $allSizes
+	$masterAgentMap = Get-MasterAgentMap -SizeMap $allSizes
 	$locations = Get-Locations
-	$text = Get-FileContents -MasterMap $masterMap -AgentMap $agentMap -SizeMap $allSizes -Locations $locations
+	$text = Get-FileContents -DCOSMasterMap $dcosMasterMap -MasterAgentMap $masterAgentMap -SizeMap $allSizes -Locations $locations
 	$text | Out-File $OutFile
 	(Get-Content $OutFile) -replace "`0", "" | Set-Content $OutFile
 }

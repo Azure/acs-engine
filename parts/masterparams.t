@@ -56,7 +56,7 @@
     "targetEnvironment": {
       "defaultValue": "AzureCloud",
       "metadata": {
-        "description": "The azure deploy environment. eg. AzureCloud, AzureChinaCloud, AzureUSGovernment, AzureGermanCloud"
+        "description": "The azure deploy environment. Currently support: AzureCloud, AzureChinaCloud"
       },
       "type": "string"
     }

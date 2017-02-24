@@ -13,7 +13,6 @@ var (
 		//KubeConfigAzurePublicCloud is the default kubernetes container image url.
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase: "gcr.io/google_containers/",
-			KubectlDownloadURL:  fmt.Sprintf(DefaultKubectlDownloadURL, string(DefaultKubectlVersion)),
 		},
 
 		DCOSSpecConfig: DCOSSpecConfig{
@@ -29,7 +28,6 @@ var (
 		//KubeConfigAzureChinaCloud - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase: "mirror.azure.cn:5000/google_containers/",
-			KubectlDownloadURL:  fmt.Sprintf(AzureChinaCloudKubectlDownloadURL, string(DefaultKubectlVersion)),
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
 			DCOS173_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
@@ -37,17 +35,13 @@ var (
 			DCOS187_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
 		},
 	}
-
-	//AzureUSGovernmentSpec is the same with global azure
-	AzureUSGovernmentSpec = AzureCloudSpec
-	//AzureGermanCloudSpec is the same with global azure
-	AzureGermanCloudSpec = AzureCloudSpec
 )
 
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
-func SetPropertiesDefaults(properties *api.Properties, location string) (bool, error) {
+func SetPropertiesDefaults(cs *api.ContainerService) (bool, error) {
+	properties := &cs.Properties
 
-	setOrchestratorDefaults(properties, location)
+	setOrchestratorDefaults(cs)
 
 	setMasterNetworkDefaults(properties)
 
@@ -63,11 +57,13 @@ func SetPropertiesDefaults(properties *api.Properties, location string) (bool, e
 }
 
 // setOrchestratorDefaults for orchestrators
-func setOrchestratorDefaults(a *api.Properties, location string) {
+func setOrchestratorDefaults(cs *api.ContainerService) {
+	location := cs.Location
+	a := &cs.Properties
+
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
-		a.OrchestratorProfile.KubernetesConfig.KubectlVersion = DefaultKubectlVersion
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
 		a.OrchestratorProfile.OrchestratorType = api.DCOS188

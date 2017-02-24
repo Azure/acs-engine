@@ -537,7 +537,7 @@
     "targetEnvironment": {
       "defaultValue": "AzureCloud",
       "metadata": {
-        "description": "The azure deploy environment. eg. AzureCloud, AzureChinaCloud, AzureUSGovernment, AzureGermanCloud"
+        "description": "The azure deploy environment. Currently support: AzureCloud, AzureChinaCloud"
       },
       "type": "string"
     }
@@ -824,25 +824,25 @@
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F16s": {
-        "storageAccountType": "Standard_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_F2": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F2s": {
-        "storageAccountType": "Standard_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_F4": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F4s": {
-        "storageAccountType": "Standard_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_F8": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F8s": {
-        "storageAccountType": "Standard_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_G1": {
         "storageAccountType": "Standard_LRS"

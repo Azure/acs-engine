@@ -187,7 +187,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 
 	properties := &containerService.Properties
 
-	if certsGenerated, err = SetPropertiesDefaults(properties, containerService.Location); err != nil {
+	if certsGenerated, err = SetPropertiesDefaults(containerService); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
@@ -226,7 +226,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	templateRaw = b.String()
 
 	var parametersMap map[string]interface{}
-	if parametersMap, err = getParameters(properties, t.ClassicMode, containerService.Location); err != nil {
+	if parametersMap, err = getParameters(containerService, t.ClassicMode); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 	var parameterBytes []byte
@@ -297,16 +297,18 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
 	cloudSpecConfig := AzureCloudSpec
 	switch location {
+	case "AzureCloud":
+		cloudSpecConfig = AzureCloudSpec
 	case "AzureChinaCloud":
 		cloudSpecConfig = AzureChinaCloudSpec
-	default:
-		cloudSpecConfig = AzureCloudSpec
 	}
 
 	return cloudSpecConfig
 }
 
-func getParameters(properties *api.Properties, isClassicMode bool, location string) (map[string]interface{}, error) {
+func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]interface{}, error) {
+	properties := &cs.Properties
+	location := cs.Location
 	parametersMap := map[string]interface{}{}
 
 	// Master Parameters
@@ -342,7 +344,6 @@ func getParameters(properties *api.Properties, isClassicMode bool, location stri
 		addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
 		addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase+KubernetesHyperkubeImageName)
-		addValue(parametersMap, "kubectlVersion", properties.OrchestratorProfile.KubernetesConfig.KubectlVersion)
 		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubernetesAddonManagerImageName)
 		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubernetesAddonResizerImageName)
 		addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubernetesDashboardImageName)
@@ -353,7 +354,6 @@ func getParameters(properties *api.Properties, isClassicMode bool, location stri
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubernetesPodInfraContainerImageName)
 		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 		addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
-		addValue(parametersMap, "kubectlDownloadURL", cloudSpecConfig.KubernetesSpecConfig.KubectlDownloadURL)
 	}
 
 	if strings.HasPrefix(string(properties.OrchestratorProfile.OrchestratorType), string(api.DCOS)) {
@@ -497,14 +497,19 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		"GetMasterAllowedSizes": func() string {
 			if t.ClassicMode {
 				return GetClassicAllowedSizes()
+			} else if properties.OrchestratorProfile.OrchestratorType == api.DCOS188 ||
+				properties.OrchestratorProfile.OrchestratorType == api.DCOS187 ||
+				properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
+				properties.OrchestratorProfile.OrchestratorType == api.DCOS173 {
+				return GetDCOSMasterAllowedSizes()
 			}
-			return GetMasterAllowedSizes()
+			return GetMasterAgentAllowedSizes()
 		},
 		"GetAgentAllowedSizes": func() string {
 			if t.ClassicMode {
 				return GetClassicAllowedSizes()
 			}
-			return GetAgentAllowedSizes()
+			return GetMasterAgentAllowedSizes()
 		},
 		"GetSizeMap": func() string {
 			if t.ClassicMode {

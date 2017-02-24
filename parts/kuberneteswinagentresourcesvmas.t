@@ -21,13 +21,12 @@
 {{end}}
         "ipConfigurations": [
           {
-            "name": "ipconfig1", 
+            "name": "ipconfig1",
             "properties": {
-              "privateIPAddress": "[concat('10.240.245.', copyindex(5))]",
-              "privateIPAllocationMethod": "Static", 
+              "privateIPAllocationMethod": "Dynamic",
               "subnet": {
                 "id": "[variables('{{.Name}}VnetSubnetID')]"
-              }
+             }
             }
           }
         ],
@@ -156,7 +155,7 @@
         "typeHandlerVersion": "1.8",
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
-          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -command \"', '$arguments = ', variables('singleQuote'),'-MasterIP ',variables('masterInternalLbIp'),' -KubeDnsServiceIp ',variables('kubeDnsServiceIp'),' -MasterFQDNPrefix ',variables('masterFqdnPrefix'),' -Location ',variables('location'),' -AgentKey ',variables('clientPrivateKey'),' -AzureHostname ',variables('{{.Name}}VMNamePrefix'),copyIndex(),variables('singleQuote'), ' ; ', variables('windowsCustomScriptSuffix'), '\" > %SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.log 2>&1')]"
+          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -command \"', '$arguments = ', variables('singleQuote'),'-MasterIP ',variables('masterInternalLbIp'),' -KubeDnsServiceIp ',variables('kubeDnsServiceIp'),' -MasterFQDNPrefix ',variables('masterFqdnPrefix'),' -Location ',variables('location'),' -AgentKey ',variables('clientPrivateKey'),' -AzureHostname ',variables('{{.Name}}VMNamePrefix'),copyIndex(),' -AADClientId ',variables('servicePrincipalClientId'),' -AADClientSecret ',variables('servicePrincipalClientSecret'),variables('singleQuote'), ' ; ', variables('windowsCustomScriptSuffix'), '\" > %SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.log 2>&1')]"
         }
       }, 
       "type": "Microsoft.Compute/virtualMachines/extensions"

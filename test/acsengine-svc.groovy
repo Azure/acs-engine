@@ -6,6 +6,7 @@ node {
     timestamps {
       wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
         env.GOPATH="${WORKSPACE}"
+        env.PATH="${env.PATH}:${env.GOPATH}/bin"
         def clone_dir = "${env.GOPATH}/src/github.com/Azure/acs-engine"
         env.HOME=clone_dir
         env.ORCHESTRATOR = "${ORCHESTRATOR}"

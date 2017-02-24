@@ -17,9 +17,6 @@ const (
 	DefaultAgentSubnetTemplate = "10.%d.0.0/16"
 	// DefaultKubernetesClusterDomain is the dns suffix used in the cluster (used as a SAN in the PKI generation)
 	DefaultKubernetesClusterDomain = "cluster.local"
-	// DefaultKubectlVersion is the version used for kubectl
-	// The latest stable version can be found here: https://storage.googleapis.com/kubernetes-release/release/stable.txt
-	DefaultKubectlVersion = "v1.5.3"
 	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP
 	// address relative to the first consecutive Kubernetes static IP
 	DefaultInternalLbStaticIPOffset = 10
@@ -35,26 +32,22 @@ const (
 )
 
 const (
-	KubernetesHyperkubeImageName         = "hyperkube-amd64:v1.5.1"
+	KubernetesHyperkubeImageName         = "hyperkube-amd64:v1.5.3"
 	KubernetesDashboardImageName         = "kubernetes-dashboard-amd64:v1.5.1"
 	KubernetesExechealthzImageName       = "exechealthz-amd64:1.2"
 	KubernetesAddonResizerImageName      = "addon-resizer:1.6"
 	KubernetesHeapsterImageName          = "heapster:v1.2.0"
 	KubernetesDNSImageName               = "kubedns-amd64:1.7"
-	KubernetesAddonManagerImageName      = "kube-addon-manager-amd64:v5.1"
+	KubernetesAddonManagerImageName      = "kube-addon-manager-amd64:v6.2"
 	KubernetesDNSMasqImageName           = "kube-dnsmasq-amd64:1.3"
 	KubernetesPodInfraContainerImageName = "pause-amd64:3.0"
 )
 
 const (
-	//DefaultKubectlDownloadURL is the default download url from google.
-	DefaultKubectlDownloadURL = "https://storage.googleapis.com/kubernetes-release/release/%s/bin/linux/amd64/kubectl"
 	//MsecndDCOSBootstrapDownloadURL Azure CDN to download DCOS1.7.3
 	MsecndDCOSBootstrapDownloadURL = "https://az837203.vo.msecnd.net/dcos/%s/bootstrap/%s.bootstrap.tar.xz"
 	//AzureEdgeDCOSBootstrapDownloadURL is the azure edge CDN download url
 	AzureEdgeDCOSBootstrapDownloadURL = "https://dcosio.azureedge.net/dcos/%s/bootstrap/%s.bootstrap.tar.xz"
-	//AzureChinaCloudKubectlDownloadURL is the China specific kubectl download url
-	AzureChinaCloudKubectlDownloadURL = "https://acsengine.blob.core.chinacloudapi.cn/kubernetes/kubectl/%s/kubectl"
 	//AzureChinaCloudDCOSBootstrapDownloadURL is the China specific DCOS package download url.
 	AzureChinaCloudDCOSBootstrapDownloadURL = "https://acsengine.blob.core.chinacloudapi.cn/dcos/%s.bootstrap.tar.xz"
 )

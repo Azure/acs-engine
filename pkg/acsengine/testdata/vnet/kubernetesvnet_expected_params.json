@@ -41,14 +41,8 @@
   "kubeConfigPrivateKey": {
     "value": "a3ViZUNvbmZpZ1ByaXZhdGVLZXk="
   },
-  "kubectlDownloadURL": {
-    "value": "https://storage.googleapis.com/kubernetes-release/release/v1.5.3/bin/linux/amd64/kubectl"
-  },
-  "kubectlVersion": {
-    "value": "v1.5.3"
-  },
   "kubernetesAddonManagerSpec": {
-    "value": "gcr.io/google_containers/kube-addon-manager-amd64:v5.1"
+    "value": "gcr.io/google_containers/kube-addon-manager-amd64:v6.2"
   },
   "kubernetesAddonResizerSpec": {
     "value": "gcr.io/google_containers/addon-resizer:1.6"
@@ -66,7 +60,7 @@
     "value": "gcr.io/google_containers/heapster:v1.2.0"
   },
   "kubernetesHyperkubeSpec": {
-    "value": "gcr.io/google_containers/hyperkube-amd64:v1.5.1"
+    "value": "gcr.io/google_containers/hyperkube-amd64:v1.5.3"
   },
   "kubernetesKubeDNSSpec": {
     "value": "gcr.io/google_containers/kubedns-amd64:1.7"

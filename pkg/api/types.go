@@ -124,7 +124,6 @@ type OrchestratorProfile struct {
 // Kubernetes specific configuration
 type KubernetesConfig struct {
 	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
-	KubectlVersion      string `json:"kubectlVersion,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster

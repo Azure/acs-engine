@@ -103,13 +103,6 @@
       },
       "type": "string"
     },
-    "kubectlDownloadURL": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "This is the download URL of kubectl"
-      },
-      "type": "string"
-    },
     "kubectlVersion": {
       "defaultValue": "",
       "metadata": {
