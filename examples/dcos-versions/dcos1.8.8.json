@@ -2,7 +2,7 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "DCOS"
+      "orchestratorType": "DCOS188"
     },
     "masterProfile": {
       "count": 3,
@@ -11,21 +11,15 @@
     },
     "agentPoolProfiles": [
       {
-        "name": "agent128",
+        "name": "agentprivate",
         "count": 3,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet",
-        "storageProfile": "StorageAccount",
-        "diskSizesGB": [128, 128, 128, 128]
+        "vmSize": "Standard_D2_v2"
       },
       {
         "name": "agentpublic",
         "count": 3,
         "vmSize": "Standard_D2_v2",
         "dnsPrefix": "",
-        "availabilityProfile": "AvailabilitySet",
-        "storageProfile": "StorageAccount",
-        "diskSizesGB": [1],
         "ports": [
           80,
           443,

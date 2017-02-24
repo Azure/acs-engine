@@ -99,6 +99,6 @@ function deploy_template() {
 
 function cleanup() {
 	if [[ "${CLEANUP:-}" == "y" ]]; then
-		az group delete --no-wait --name="${RESOURCE_GROUP}" --force || true
+		az group delete --no-wait --name="${RESOURCE_GROUP}" --yes || true
 	fi
 }
