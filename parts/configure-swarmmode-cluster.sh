@@ -131,7 +131,17 @@ echo "Installing and configuring Docker"
 installDocker()
 {
   for i in {1..10}; do
-    wget --tries 4 --retry-connrefused --waitretry=15 -qO- https://get.docker.com | sh
+    echo "Adding Docker’s public key for CS packages..."
+    curl -s 'https://sks-keyservers.net/pks/lookup?op=get&search=0xee6d536cf7dc86e2d7d56f59a178ac6c6238f52e' | sudo apt-key add --import
+    echo "Installing the HTTPS helper for apt..."
+    sudo apt-get update && sudo apt-get install apt-transport-https
+    echo "Installing additional kernel modules to add AUFS support..."
+    sudo apt-get install -y linux-image-extra-$(uname -r) linux-image-extra-virtual
+    echo "Adding the repository for the new version..."
+    echo "deb https://packages.docker.com/1.13/apt/repo ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+    echo "Installing commercially supported Docker Engine and its dependencies..."
+    sudo apt-get update && sudo apt-get install -y docker-engine
+    sudo docker info
     if [ $? -eq 0 ]
     then
       # hostname has been found continue
@@ -154,7 +164,7 @@ updateDockerDaemonOptions()
     # also have it bind to the unix socket at /var/run/docker.sock
     sudo bash -c 'echo "[Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
+    ExecStart=/usr/bin/docker daemon -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock -H fd:// --experimental=true --metrics-addr=0.0.0.0:4999
   " > /etc/systemd/system/docker.service.d/override.conf'
 }
 time updateDockerDaemonOptions
