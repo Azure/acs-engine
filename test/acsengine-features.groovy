@@ -34,13 +34,13 @@ node {
                 env.TENANT_ID="${TENANT_ID}"
                 env.SUBSCRIPTION_ID="${SUBSCRIPTION_ID}"
                 env.LOCATION = "${LOCATION}"
-                env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${SERVICE_PRINCIPAL_CLIENT_ID}"
-                env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${SERVICE_PRINCIPAL_CLIENT_SECRET}"
+                env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}"
+                env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}"
 
                 sh("printf 'acs-features-test%x' \$(date '+%s') > INSTANCE_NAME_PREFIX")
                 prefix = readFile('INSTANCE_NAME_PREFIX').trim()
                 // Create report directory
-                sh("mkdir ${junit_dir}")
+                sh("mkdir -p ${junit_dir}")
                 // Build and test acs-engine
                 sh('make ci')
               }

@@ -44,6 +44,21 @@ function generate_template() {
 	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientID = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
 	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
 
+	secrets=$(jq 'getpath(["properties","linuxProfile","secrets"])' ${FINAL_CLUSTER_DEFINITION})
+	if [[ "${secrets}" != "null" ]]; then
+		[[ ! -z "${CERT_KEYVAULT_ID:-}" ]] || (echo "Must specify CERT_KEYVAULT_ID" && exit -1)
+		[[ ! -z "${CERT_SECRET_URL:-}" ]] || (echo "Must specify CERT_SECRET_URL" && exit -1)
+		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.linuxProfile.secrets[0].sourceVault.id = \"${CERT_KEYVAULT_ID}\""
+		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.linuxProfile.secrets[0].vaultCertificates[0].certificateUrl = \"${CERT_SECRET_URL}\""
+	fi
+	secrets=$(jq 'getpath(["properties","windowsProfile","secrets"])' ${FINAL_CLUSTER_DEFINITION})
+	if [[ "${secrets}" != "null" ]]; then
+		[[ ! -z "${CERT_KEYVAULT_ID:-}" ]] || (echo "Must specify CERT_KEYVAULT_ID" && exit -1)
+		[[ ! -z "${CERT_SECRET_URL:-}" ]] || (echo "Must specify CERT_SECRET_URL" && exit -1)
+		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.windowsProfile.secrets[0].sourceVault.id = \"${CERT_KEYVAULT_ID}\""
+		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.windowsProfile.secrets[0].vaultCertificates[0].certificateUrl = \"${CERT_SECRET_URL}\""
+		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.windowsProfile.secrets[0].vaultCertificates[0].certificateStore = \"My\""
+	fi
 	# Generate template
 	"${DIR}/../acs-engine" -artifacts "${OUTPUT}" "${FINAL_CLUSTER_DEFINITION}"
 
