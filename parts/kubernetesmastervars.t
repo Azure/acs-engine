@@ -125,7 +125,7 @@
     ],
     "subscriptionId": "[subscription().subscriptionId]",
     "tenantId": "[subscription().tenantId]",
-    "dockerEngineVersion": "1.12.*"
+    "dockerEngineVersion": "1.13.*"
 {{if .LinuxProfile.HasSecrets}}
     , "linuxProfileSecrets" :
       [

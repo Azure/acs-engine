@@ -648,7 +648,7 @@
     "caCertificate": "[parameters('caCertificate')]",
     "clientCertificate": "[parameters('clientCertificate')]",
     "clientPrivateKey": "[parameters('clientPrivateKey')]",
-    "dockerEngineVersion": "1.12.*",
+    "dockerEngineVersion": "1.13.*",
     "kubeConfigCertificate": "[parameters('kubeConfigCertificate')]",
     "kubeConfigPrivateKey": "[parameters('kubeConfigPrivateKey')]",
     "kubeDnsServiceIp": "10.0.0.10",
