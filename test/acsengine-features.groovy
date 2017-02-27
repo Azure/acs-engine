@@ -40,7 +40,7 @@ node {
                 sh("printf 'acs-features-test%x' \$(date '+%s') > INSTANCE_NAME_PREFIX")
                 prefix = readFile('INSTANCE_NAME_PREFIX').trim()
                 // Create report directory
-                sh("mkdir ${junit_dir}")
+                sh("mkdir -p ${junit_dir}")
                 // Build and test acs-engine
                 sh('make ci')
               }
