@@ -30,7 +30,10 @@ write_files:
   content: |
     [Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay
+    ExecStartPre=-/usr/bin/iptables -t nat -F
+    ExecStartPre=-/usr/bin/ip link set docker0 down
+    ExecStartPre=-/usr/bin/ip link delete docker0
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --iptables=false --ip-masq=false
 
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
