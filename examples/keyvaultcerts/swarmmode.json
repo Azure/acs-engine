@@ -41,7 +41,19 @@
             "keyData": ""
           }
         ]
-      }
+      },
+      "secrets":[
+        {
+          "sourceVault":{
+            "id":""
+          },
+          "vaultCertificates":[
+            {
+              "certificateUrl" :""
+            }
+          ]
+        }
+	    ]
     }
   }
 }

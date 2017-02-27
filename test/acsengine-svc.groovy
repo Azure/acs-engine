@@ -50,8 +50,8 @@ uksouth ukwest"
                 sh("printf 'acs-test%x' \$(date '+%s') > INSTANCE_NAME")
                 env.INSTANCE_NAME = readFile('INSTANCE_NAME').trim()
                 env.CLUSTER_DEFINITION="examples/${ORCHESTRATOR}.json"
-                env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${SERVICE_PRINCIPAL_CLIENT_ID}"
-                env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${SERVICE_PRINCIPAL_CLIENT_SECRET}"
+                env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}"
+                env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}"
                 sh('./test/step.sh generate_template')
               }
 
