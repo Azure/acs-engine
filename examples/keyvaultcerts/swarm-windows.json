@@ -56,7 +56,7 @@
           "vaultCertificates":[
             {
               "certificateUrl" :"",
-              "certificateStore" :"",
+              "certificateStore" :""
             }
           ]
         }
