@@ -52,7 +52,6 @@
       "adminUsername": "azureuser",
       "adminPassword": "replacepassword1234$"
     },
-    "servicePrincipalProfile": {},
     "certificateProfile": {}
   }
 }
