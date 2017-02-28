@@ -346,3 +346,5 @@ write_files:
   path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
   owner: "root"
+- path: /var/lib/dcos/mesos-slave-common
+  content: 'ATTRIBUTES_STR'

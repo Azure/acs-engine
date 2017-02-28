@@ -435,13 +435,15 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		},
 		"GetDCOSMasterCustomData": func() string {
 			masterProvisionScript := getDCOSMasterProvisionScript()
-			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, masterProvisionScript)
+			masterAttributeContents := getDCOSMasterCustomNodeLabels()
+			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, masterProvisionScript, masterAttributeContents)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			agentProvisionScript := getDCOSAgentProvisionScript(profile)
-			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, agentProvisionScript)
+			attributeContents := getDCOSAgentCustomNodeLabels(profile)
+			str := getSingleLineDCOSCustomData(properties.OrchestratorProfile.OrchestratorType, properties.MasterProfile.Count, agentProvisionScript, attributeContents)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -596,6 +598,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 	}
 }
 
+func getDCOSMasterCustomNodeLabels() string {
+	// return empty string for DCOS since no attribtutes needed on master
+	return ""
+}
+
 func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) string {
 	if orchestratorType == api.DCOS188 {
 		switch masterCount {
@@ -652,6 +659,18 @@ func getDCOSCustomDataPublicIPStr(orchestratorType api.OrchestratorType, masterC
 		return buf.String()
 	}
 	return ""
+}
+
+func getDCOSAgentCustomNodeLabels(profile *api.AgentPoolProfile) string {
+	var buf bytes.Buffer
+	buf.WriteString("")
+	if len(profile.CustomNodeLabels) > 0 {
+		buf.WriteString("MESOS_ATTRIBUTES=")
+		for k, v := range profile.CustomNodeLabels {
+			buf.WriteString(fmt.Sprintf("%s:%s;", k, v))
+		}
+	}
+	return buf.String()
 }
 
 func getVNETAddressPrefixes(properties *api.Properties) string {
@@ -939,7 +958,7 @@ touch /etc/mesosphere/roles/azure_master`
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCount int, provisionContent string) string {
+func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCount int, provisionContent string, attributeContents string) string {
 	yamlFilename := ""
 	switch orchestratorType {
 	case api.DCOS188:
@@ -966,6 +985,8 @@ func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCo
 
 	yamlStr := string(b)
 	yamlStr = strings.Replace(yamlStr, "PROVISION_STR", provisionContent, -1)
+
+	yamlStr = strings.Replace(yamlStr, "ATTRIBUTES_STR", attributeContents, -1)
 
 	// convert to json
 	jsonBytes, err4 := yaml.YAMLToJSON([]byte(yamlStr))
