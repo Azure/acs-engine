@@ -357,16 +357,18 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	}
 
 	if strings.HasPrefix(string(properties.OrchestratorProfile.OrchestratorType), string(api.DCOS)) {
-		dcosBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOS187_BootstrapDownloadURL
+		dcosBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOS188_BootstrapDownloadURL
 		switch properties.OrchestratorProfile.OrchestratorType {
 		case api.DCOS:
-			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS187_BootstrapDownloadURL
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188_BootstrapDownloadURL
 		case api.DCOS173:
 			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS173_BootstrapDownloadURL
 		case api.DCOS184:
 			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS184_BootstrapDownloadURL
 		case api.DCOS187:
 			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS187_BootstrapDownloadURL
+		case api.DCOS188:
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188_BootstrapDownloadURL
 		}
 		addValue(parametersMap, "dcosBootstrapURL", dcosBootstrapURL)
 	}
