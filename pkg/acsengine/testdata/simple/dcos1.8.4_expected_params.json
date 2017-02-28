@@ -20,6 +20,9 @@
   "agentpublicVMSize": {
     "value": "Standard_D2_v2"
   },
+  "dcosBootstrapURL": {
+    "value": "https://dcosio.azureedge.net/dcos/testing/bootstrap/5b4aa43610c57ee1d60b4aa0751a1fb75824c083.bootstrap.tar.xz"
+  },
   "firstConsecutiveStaticIP": {
     "value": "172.16.0.5"
   },
@@ -37,5 +40,8 @@
   },
   "sshRSAPublicKey": {
     "value": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+  },
+  "targetEnvironment": {
+    "value": ""
   }
 }

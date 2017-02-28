@@ -11,8 +11,6 @@ runcmd:
 - apt-get update
 - apt-get install -y docker-engine
 - systemctl restart docker
-- /usr/bin/curl -sSL --retry 12 --retry-delay 10 https://storage.googleapis.com/kubernetes-release/release/{{{kubectlVersion}}}/bin/linux/amd64/kubectl > /usr/local/bin/kubectl
-- chmod +x /usr/local/bin/kubectl
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{{username}}}
 
@@ -84,6 +82,23 @@ write_files:
       name: localclustercontext
     current-context: localclustercontext
 
+- path: "/etc/systemd/system/kubectl-extract.service"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=Kubectl extraction
+    Requires=docker.service
+    After=docker.service
+    ConditionPathExists=!/usr/local/bin/kubectl
+
+    [Service]
+    Type=oneshot
+    ExecStartPre=/bin/mkdir -p /tmp/kubectldir
+    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{{kubernetesHyperkubeSpec}}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
+    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
+    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl
+
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
   owner: "root"
@@ -115,6 +130,7 @@ write_files:
           /hyperkube kubelet \
             --api-servers="https://{{{masterInternalLbIp}}}:443" \
             --kubeconfig=/var/lib/kubelet/kubeconfig \
+            --pod-infra-container-image="{{{kubernetesPodInfraContainerSpec}}}" \
             --address=0.0.0.0 \
             --allow-privileged=true \
             --enable-server \

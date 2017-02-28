@@ -41,14 +41,70 @@
       "type": "securestring"
     },
     "kubernetesHyperkubeSpec": {
-      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec}}",
+      "defaultValue": "",
       "metadata": {
         "description": "The container spec for hyperkube."
       },
       "type": "string"
     },
+    "kubernetesAddonManagerSpec": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The container spec for hyperkube."
+      },
+      "type": "string"
+    },
+    "kubernetesAddonResizerSpec": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The container spec for addon-resizer."
+      },
+      "type": "string"
+    },
+    "kubernetesDashboardSpec": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The container spec for kubernetes-dashboard-amd64."
+      },
+      "type": "string"
+    },
+    "kubernetesExecHealthzSpec": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The container spec for exechealthz-amd64."
+      },
+      "type": "string"
+    },
+    "kubernetesHeapsterSpec": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The container spec for heapster."
+      },
+      "type": "string"
+    },
+    "kubernetesPodInfraContainerSpec": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The container spec for pod infra."
+      },
+      "type": "string"
+    },
+    "kubernetesKubeDNSSpec": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The container spec for kubedns-amd64."
+      },
+      "type": "string"
+    },
+    "kubernetesDNSMasqSpec": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The container spec for kube-dnsmasq-amd64."
+      },
+      "type": "string"
+    },
     "kubectlVersion": {
-      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.KubectlVersion}}",
+      "defaultValue": "",
       "metadata": {
         "description": "The kubernetes version."
       }, 

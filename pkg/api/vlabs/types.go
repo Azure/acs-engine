@@ -118,6 +118,13 @@ const (
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
 	OrchestratorType OrchestratorType `json:"orchestratorType"`
+	KubernetesConfig KubernetesConfig `json:"kubernetesConfig,omitempty"`
+}
+
+// KubernetesConfig contains the Kubernetes config structure, containing
+// Kubernetes specific configuration
+type KubernetesConfig struct {
+	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster

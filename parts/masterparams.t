@@ -52,6 +52,13 @@
         "description": "A string hash of the master DNS name to uniquely identify the cluster."
       },
       "type": "string"
+    },
+    "targetEnvironment": {
+      "defaultValue": "AzureCloud",
+      "metadata": {
+        "description": "The azure deploy environment. Currently support: AzureCloud, AzureChinaCloud"
+      },
+      "type": "string"
     }
 {{if  GetClassicMode}}
     ,{{template "classicparams.t" .}}

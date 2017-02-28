@@ -85,6 +85,9 @@ Get-Locations() {
 	ForEach ($location in $locations) {
 		$locationList += $location.Location
 	}
+	#hard code Azure China Cloud location
+	$locationList += "chinanorth"
+	$locationList += "chinaeast"
 	return $locationList
 }
 
@@ -124,7 +127,9 @@ import "fmt"
 
 const (
 	// AzureProdFQDNFormat specifies the format for a prod dns name
-	AzureProdFQDNFormat = "%s.%s.cloudapp.azure.com"
+	AzurePublicProdFQDNFormat = "%s.%s.cloudapp.azure.com"
+	//AzureChinaProdFQDNFormat specify the endpoint of Azure China Cloud
+	AzureChinaProdFQDNFormat = "%s.%s.cloudapp.chinacloudapi.cn"
 )
 
 // AzureLocations provides all azure regions in prod.
@@ -150,7 +155,11 @@ func FormatAzureProdFQDNs(fqdnPrefix string) []string {
 
 // FormatAzureProdFQDN constructs an Azure prod fqdn
 func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
-	return fmt.Sprintf(AzureProdFQDNFormat, fqdnPrefix, location)
+	FQDNFormat := AzurePublicProdFQDNFormat
+	if location == "chinaeast" || location == "chinanorth" {
+		FQDNFormat = AzureChinaProdFQDNFormat
+	}
+	return fmt.Sprintf(FQDNFormat, fqdnPrefix, location)
 }
 
 // GetDCOSMasterAllowedSizes returns the master allowed sizes
