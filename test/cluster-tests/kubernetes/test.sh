@@ -44,7 +44,6 @@ fi
 
 ###### Check node count
 function check_node_count() {
-  wait=5
   count=12
   while (( $count > 0 )); do
     node_count=$(kubectl get nodes --no-headers | grep -v NotReady | grep Ready | wc | awk '{print $1}')
@@ -59,7 +58,6 @@ function check_node_count() {
 check_node_count
 
 ###### Wait for no more container creating
-wait=5
 count=12
 while (( $count > 0 )); do
   creating_count=$(kubectl get nodes --no-headers | grep 'CreatingContainer' | wc | awk '{print $1}')
@@ -72,7 +70,6 @@ fi
 
 
 ###### Check for Kube-DNS
-wait=5
 count=12
 while (( $count > 0 )); do
   running=$(kubectl get pods --namespace=kube-system | grep kube-dns | grep Running | wc | awk '{print $1}')
@@ -84,7 +81,6 @@ if (( ${running} != ${EXPECTED_DNS} )); then
 fi
 
 ###### Check for Kube-Dashboard
-wait=5
 count=12
 while (( $count > 0 )); do
   running=$(kubectl get pods --namespace=kube-system | grep kubernetes-dashboard | grep Running | wc | awk '{print $1}')
@@ -96,7 +92,6 @@ if (( ${running} != ${EXPECTED_DASHBOARD} )); then
 fi
 
 ###### Check for Kube-Proxys
-wait=5
 count=12
 while (( $count > 0 )); do
   nonrunning=$(kubectl get pods --namespace=kube-system | grep kube-proxy | grep -v Running | wc | awk '{print $1}')
@@ -112,7 +107,20 @@ port=$(kubectl get svc --namespace=kube-system | grep dashboard | awk '{print $4
 ips=$(kubectl get nodes --all-namespaces -o yaml | grep -B 1 InternalIP | grep address | awk '{print $3}')
 
 for ip in $ips; do
-  ssh -i "${OUTPUT}/id_rsa" -o "ConnectTimeout 60" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" "azureuser@${master}" "curl http://${ip}:${port}"
+  count=5
+  success="n"
+  while (( $count > 0 )); do
+    ret=$(ssh -i "${OUTPUT}/id_rsa" -o "ConnectTimeout 10" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" "azureuser@${master}" "curl http://${ip}:${port}" || echo "curl_error")
+    if [[ ! $ret =~ .*curl_error.* ]]; then
+      success="y"
+      break
+    fi
+    sleep 4; count=$((count-1))
+  done
+  if [[ "${success}" == "n" ]]; then
+    echo $ret
+    exit -1
+  fi
 done
 
 ###### Testing an nginx deployment
@@ -134,7 +142,6 @@ if [[ "${TEST_ACR}" == "y" ]]; then
 fi
 
 kubectl run --image="${IMAGE}" nginx --namespace=${namespace} --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
-wait=5
 count=12
 while (( $count > 0 )); do
   running=$(kubectl get pods --namespace=${namespace} | grep nginx | grep Running | wc | awk '{print $1}')
@@ -149,7 +156,6 @@ fi
 
 kubectl expose deployments/nginx --type=LoadBalancer --namespace=${namespace} --port=80
 
-wait=5
 count=60
 external_ip=""
 while (( $count > 0 )); do
@@ -177,4 +183,3 @@ if [[ "${success}" != "y" ]]; then
 fi
 
 check_node_count
-
