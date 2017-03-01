@@ -133,6 +133,7 @@
     "subscriptionId": "[subscription().subscriptionId]",
     "tenantId": "[subscription().tenantId]",
     "targetEnvironment": "[parameters('targetEnvironment')]",
+    "dockerEngineDownloadRepo": "[parameters('dockerEngineDownloadRepo')]",
     "dockerEngineVersion": "1.12.*"
 {{if .LinuxProfile.HasSecrets}}
     , "linuxProfileSecrets" :

@@ -103,13 +103,13 @@
       },
       "type": "string"
     },
-    "kubectlVersion": {
-      "defaultValue": "",
+    "dockerEngineDownloadRepo": {
+      "defaultValue": "https://apt.dockerproject.org/repo",
       "metadata": {
-        "description": "The kubernetes version."
-      }, 
+        "description": "The docker engine download url for kubernetes."
+      },
       "type": "string"
-    }, 
+    },
     "servicePrincipalClientId": {
       "metadata": {
         "description": "Client ID (used by cloudprovider)"

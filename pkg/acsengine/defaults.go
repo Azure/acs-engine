@@ -10,7 +10,11 @@ import (
 var (
 	//AzureCloudSpec is the default configurations for global azure.
 	AzureCloudSpec = AzureEnvironmentSpecConfig{
-		//KubeConfigAzurePublicCloud is the default kubernetes container image url.
+		//DockerSpecConfig specify the docker engine download repo
+		DockerSpecConfig: DockerSpecConfig{
+			DockerEngineRepo: "https://apt.dockerproject.org/repo",
+		},
+		//KubernetesSpecConfig is the default kubernetes container image url.
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase: "gcr.io/google_containers/",
 		},
@@ -25,7 +29,11 @@ var (
 
 	//AzureChinaCloudSpec is the configurations for Azure China (Mooncake)
 	AzureChinaCloudSpec = AzureEnvironmentSpecConfig{
-		//KubeConfigAzureChinaCloud - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
+		//DockerSpecConfig specify the docker engine download repo
+		DockerSpecConfig: DockerSpecConfig{
+			DockerEngineRepo: "https://mirror.azure.cn/docker-engine/apt/repo/",
+		},
+		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase: "mirror.azure.cn:5000/google_containers/",
 		},
