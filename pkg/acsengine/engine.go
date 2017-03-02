@@ -74,8 +74,10 @@ const (
 )
 
 const (
-	azureCloudPublic = "AzurePublicCloud"
-	azureCloudChina  = "AzureChinaCloud"
+	azurePublicCloud       = "AzurePublicCloud"
+	azureChinaCloud        = "AzureChinaCloud"
+	azureGermanCloud       = "AzureGermanCloud"
+	azureUSGovernmentCloud = "AzureUSGovernmentCloud"
 )
 
 var kubernetesManifestYamls = map[string]string{
@@ -301,25 +303,25 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 //if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
 func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
 	switch GetCloudTargetEnv(location) {
-	case azureCloudChina:
+	case azureChinaCloud:
 		return AzureChinaCloudSpec
+	//TODO - add cloud specs for germany and usgov
 	default:
 		return AzureCloudSpec
 	}
 }
 
 func GetCloudTargetEnv(location string) string {
-	switch strings.ToLower(location) {
-	case "chinaeast":
-		fallthrough
-	case "china east":
-		fallthrough
-	case "chinanorth":
-		fallthrough
-	case "china north":
-		return azureCloudChina
+	loc := strings.ToLower(strings.Join(strings.Fields(location), ""))
+	switch {
+	case loc == "chinaeast" || loc == "chinanorth":
+		return azureChinaCloud
+	case loc == "germanynortheast" || loc == "germanycentral":
+		return azureGermanCloud
+	case strings.HasPrefix(loc, "usgov") || strings.HasPrefix(loc, "usdod"):
+		return azureUSGovernmentCloud
 	default:
-		return azureCloudPublic
+		return azurePublicCloud
 	}
 }
 
