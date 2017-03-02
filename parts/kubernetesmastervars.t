@@ -30,7 +30,7 @@
     "masterCount": {{.MasterProfile.Count}}, 
 {{end}}    
     "apiVersionDefault": "2016-03-30",
-    "apiVersionStorage": "2015-06-15",
+    "apiVersionStorage": "2016-01-01",
     "location": "[resourceGroup().location]", 
     "masterAvailabilitySet": "[concat('master-availabilityset-', variables('nameSuffix'))]",
     "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),resourceGroup().location, variables('orchestratorName')))]",

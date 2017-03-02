@@ -12,9 +12,10 @@
       ],
       "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
+      "sku": {
+        "name": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
       },
+      "kind": "Storage",
       "type": "Microsoft.Storage/storageAccounts"
     },
 {{if not .MasterProfile.IsCustomVNET}}

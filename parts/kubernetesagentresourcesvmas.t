@@ -45,9 +45,10 @@
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
-      "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
+      "sku": {
+        "name": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
       },
+      "kind": "Storage",
       "type": "Microsoft.Storage/storageAccounts"
     },
 {{if .HasDisks}}
@@ -62,8 +63,19 @@
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
+      "sku": {
+        "name": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
+      },
+      "kind": "Storage",
       "properties": {
-        "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "services": {
+            "blob": {
+              "enabled": true
+            }
+          }
+        }
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
