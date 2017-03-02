@@ -7,18 +7,58 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 )
 
+var (
+	//AzureCloudSpec is the default configurations for global azure.
+	AzureCloudSpec = AzureEnvironmentSpecConfig{
+		//DockerSpecConfig specify the docker engine download repo
+		DockerSpecConfig: DockerSpecConfig{
+			DockerEngineRepo: "https://apt.dockerproject.org/repo",
+		},
+		//KubernetesSpecConfig is the default kubernetes container image url.
+		KubernetesSpecConfig: KubernetesSpecConfig{
+			KubernetesImageBase: "gcr.io/google_containers/",
+		},
+
+		DCOSSpecConfig: DCOSSpecConfig{
+			DCOS173_BootstrapDownloadURL: fmt.Sprintf(MsecndDCOSBootstrapDownloadURL, "testing", "df308b6fc3bd91e1277baa5a3db928ae70964722"),
+			DCOS184_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "testing", "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
+			DCOS187_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
+			DCOS188_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "5df43052907c021eeb5de145419a3da1898c58a5"),
+		},
+	}
+
+	//AzureChinaCloudSpec is the configurations for Azure China (Mooncake)
+	AzureChinaCloudSpec = AzureEnvironmentSpecConfig{
+		//DockerSpecConfig specify the docker engine download repo
+		DockerSpecConfig: DockerSpecConfig{
+			DockerEngineRepo: "https://mirror.azure.cn/docker-engine/apt/repo/",
+		},
+		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
+		KubernetesSpecConfig: KubernetesSpecConfig{
+			KubernetesImageBase: "mirror.azure.cn:5000/google_containers/",
+		},
+		DCOSSpecConfig: DCOSSpecConfig{
+			DCOS173_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
+			DCOS184_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
+			DCOS187_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
+			DCOS188_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),
+		},
+	}
+)
+
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
-func SetPropertiesDefaults(p *api.Properties) (bool, error) {
+func SetPropertiesDefaults(cs *api.ContainerService) (bool, error) {
+	properties := &cs.Properties
 
-	setOrchestratorDefaults(p)
+	setOrchestratorDefaults(cs)
 
-	setMasterNetworkDefaults(p)
+	setMasterNetworkDefaults(properties)
 
-	setAgentNetworkDefaults(p)
+	setAgentNetworkDefaults(properties)
 
-	setStorageDefaults(p)
+	setStorageDefaults(properties)
 
-	certsGenerated, e := setDefaultCerts(p)
+	certsGenerated, e := setDefaultCerts(properties)
 	if e != nil {
 		return false, e
 	}
@@ -26,10 +66,13 @@ func SetPropertiesDefaults(p *api.Properties) (bool, error) {
 }
 
 // setOrchestratorDefaults for orchestrators
-func setOrchestratorDefaults(a *api.Properties) {
+func setOrchestratorDefaults(cs *api.ContainerService) {
+	location := cs.Location
+	a := &cs.Properties
+
+	cloudSpecConfig := GetCloudSpecConfig(location)
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-		a.OrchestratorProfile.KubernetesConfig.KubernetesHyperkubeSpec = DefaultKubernetesHyperkubeSpec
-		a.OrchestratorProfile.KubernetesConfig.KubectlVersion = DefaultKubectlVersion
+		a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
 		a.OrchestratorProfile.OrchestratorType = api.DCOS188

@@ -6,7 +6,9 @@ import "fmt"
 
 const (
 	// AzureProdFQDNFormat specifies the format for a prod dns name
-	AzureProdFQDNFormat = "%s.%s.cloudapp.azure.com"
+	AzurePublicProdFQDNFormat = "%s.%s.cloudapp.azure.com"
+	//AzureChinaProdFQDNFormat specify the endpoint of Azure China Cloud
+	AzureChinaProdFQDNFormat = "%s.%s.cloudapp.chinacloudapi.cn"
 )
 
 // AzureLocations provides all azure regions in prod.
@@ -39,6 +41,8 @@ var AzureLocations = []string{
 	"westindia",
 	"westus",
 	"westus2",
+	"chinaeast",
+	"chinanorth",
 }
 
 // FormatAzureProdFQDNs constructs all possible Azure prod fqdn
@@ -52,12 +56,16 @@ func FormatAzureProdFQDNs(fqdnPrefix string) []string {
 
 // FormatAzureProdFQDN constructs an Azure prod fqdn
 func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
-	return fmt.Sprintf(AzureProdFQDNFormat, fqdnPrefix, location)
+	FQDNFormat := AzurePublicProdFQDNFormat
+	if location == "chinaeast" || location == "chinanorth" {
+		FQDNFormat = AzureChinaProdFQDNFormat
+	}
+	return fmt.Sprintf(FQDNFormat, fqdnPrefix, location)
 }
 
 // GetDCOSMasterAllowedSizes returns the master allowed sizes
-func GetDCOSMasterAllowedSizes() string{
-    return `      "allowedValues": [
+func GetDCOSMasterAllowedSizes() string {
+	return `      "allowedValues": [
         "Basic_A3",
         "Basic_A4",
         "Standard_A10",
@@ -122,7 +130,7 @@ func GetDCOSMasterAllowedSizes() string{
 
 // GetMasterAgentAllowedSizes returns the agent allowed sizes
 func GetMasterAgentAllowedSizes() string {
-    return `      "allowedValues": [
+	return `      "allowedValues": [
         "Basic_A2",
         "Basic_A3",
         "Basic_A4",
@@ -210,8 +218,8 @@ func GetMasterAgentAllowedSizes() string {
 }
 
 // GetSizeMap returns the size / storage map
-func GetSizeMap() string{
-    return `    "vmSizesMap": {
+func GetSizeMap() string {
+	return `    "vmSizesMap": {
       "Basic_A2": {
         "storageAccountType": "Standard_LRS"
       },
@@ -464,7 +472,7 @@ func GetSizeMap() string{
 
 // GetClassicAllowedSizes returns the classic allowed sizes
 func GetClassicAllowedSizes() string {
-    return `      "allowedValues": [
+	return `      "allowedValues": [
         "Basic_A0",
         "Basic_A1",
         "Basic_A2",
@@ -563,8 +571,8 @@ func GetClassicAllowedSizes() string {
 }
 
 // GetClassicSizeMap returns the size / storage map
-func GetClassicSizeMap() string{
-    return `    "vmSizesMap": {
+func GetClassicSizeMap() string {
+	return `    "vmSizesMap": {
       "Basic_A0": {
         "storageAccountType": "Standard_LRS"
       },

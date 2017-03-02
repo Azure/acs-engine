@@ -1,8 +1,8 @@
 FROM buildpack-deps:xenial
 
-ENV GO_VERSION 1.7.4
-ENV KUBECTL_VERSION 1.5.2
-ENV AZURE_CLI_VERSION 0.1.1b3
+ENV GO_VERSION 1.8
+ENV KUBECTL_VERSION 1.5.3
+ENV AZURE_CLI_VERSION 0.1.2rc1
 
 RUN apt-get update \
     && apt-get -y upgrade \
@@ -21,14 +21,11 @@ RUN curl "https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_V
 
 ENV GOPATH /gopath
 ENV PATH "${PATH}:${GOPATH}/bin"
-RUN go get -u github.com/golang/lint/golint
-RUN go get -u github.com/jteeuwen/go-bindata/...
 
-RUN git clone https://github.com/akesterson/cmdarg.git
-RUN git clone https://github.com/akesterson/shunit.git
-
-RUN cd cmdarg; make install
-RUN cd shunit; make install
+RUN git clone https://github.com/akesterson/cmdarg.git /tmp/cmdarg \
+    && cd /tmp/cmdarg && make install && rm -rf /tmp/cmdarg
+RUN git clone https://github.com/akesterson/shunit.git /tmp/shunit \
+    && cd /tmp/shunit && make install && rm -rf /tmp/shunit
 
 # Used by some CI jobs
 ADD ./test/bootstrap/checkout-pr.sh /tmp/checkout-pr.sh

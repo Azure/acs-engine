@@ -9,7 +9,14 @@
     "kubeConfigCertificate": "[parameters('kubeConfigCertificate')]",
     "kubeConfigPrivateKey": "[parameters('kubeConfigPrivateKey')]",
     "kubernetesHyperkubeSpec": "[parameters('kubernetesHyperkubeSpec')]",
-    "kubectlVersion": "[parameters('kubectlVersion')]",
+    "kubernetesAddonManagerSpec": "[parameters('kubernetesAddonManagerSpec')]",
+    "kubernetesAddonResizerSpec": "[parameters('kubernetesAddonResizerSpec')]",
+    "kubernetesDashboardSpec": "[parameters('kubernetesDashboardSpec')]",
+    "kubernetesExecHealthzSpec": "[parameters('kubernetesExecHealthzSpec')]",
+    "kubernetesHeapsterSpec": "[parameters('kubernetesHeapsterSpec')]",
+    "kubernetesPodInfraContainerSpec": "[parameters('kubernetesPodInfraContainerSpec')]",
+    "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
+    "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
     "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
     "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
     "username": "[parameters('linuxAdminUsername')]",
@@ -125,6 +132,8 @@
     ],
     "subscriptionId": "[subscription().subscriptionId]",
     "tenantId": "[subscription().tenantId]",
+    "targetEnvironment": "[parameters('targetEnvironment')]",
+    "dockerEngineDownloadRepo": "[parameters('dockerEngineDownloadRepo')]",
     "dockerEngineVersion": "1.12.*"
 {{if .LinuxProfile.HasSecrets}}
     , "linuxProfileSecrets" :

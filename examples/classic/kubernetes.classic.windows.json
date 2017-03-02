@@ -20,7 +20,7 @@
     ],
     "windowsProfile": {
       "adminUsername": "azureuser",
-      "adminPassword": ""
+      "adminPassword": "replacepassword1234$"
     },
     "linuxProfile": {
       "adminUsername": "azureuser",

@@ -6,6 +6,7 @@ node {
     timestamps {
       wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
         env.GOPATH="${WORKSPACE}"
+        env.PATH="${env.PATH}:${env.GOPATH}/bin"
         def clone_dir = "${env.GOPATH}/src/github.com/Azure/acs-engine"
         env.HOME=clone_dir
         def success = true
@@ -33,19 +34,24 @@ node {
                   env.SERVICE_PRINCIPAL_CLIENT_SECRET="${SPN_PASSWORD}"
                   env.TENANT_ID="${TENANT_ID}"
                   env.SUBSCRIPTION_ID="${SUBSCRIPTION_ID}"
-                  
-                  sh("printf 'acs-ci-test%x' \$(date '+%s') > INSTANCE_NAME")
-                  env.INSTANCE_NAME = readFile('INSTANCE_NAME').trim()
-                  env.INSTANCE_NAME_PREFIX = "acs-ci"
+                  env.LOCATION = "${LOCATION}"
+                  env.CLEANUP = "y"
+
+                  env.INSTANCE_NAME = "test-acs-ci-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
+                  env.INSTANCE_NAME_PREFIX = "test-acs-ci"
                   env.ORCHESTRATOR = "${ORCHESTRATOR}"
                   env.CLUSTER_DEFINITION="examples/${ORCHESTRATOR}.json"
-                  env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${SERVICE_PRINCIPAL_CLIENT_ID}"
-                  env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${SERVICE_PRINCIPAL_CLIENT_SECRET}"
+                  env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}"
+                  env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}"
 
-                  env.LOCATION = "${LOCATION}"
-                  env.RESOURCE_GROUP = "test-acs-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
-                  env.DEPLOYMENT_NAME = "${env.RESOURCE_GROUP}"
-                  env.CLEANUP = "y"
+                  script="test/cluster-tests/${ORCHESTRATOR}/test.sh"
+                  def exists = fileExists script
+
+                  if (exists) {
+                    env.VALIDATE = script
+                  } else {
+                    echo 'Skip validation'
+                  }
 
                   sh('./test/deploy.sh')
                 }
@@ -54,11 +60,12 @@ node {
             catch(exc) {
               echo "Exception ${exc}"
               success = false
-              errorMsg = "Please run the command \"make ci\" for verification"
+              errorMsg = "Please run \"make ci\" for verification"
             }
             // Final clean up
             sh("rm -rf ${clone_dir}/_output")
             sh("rm -rf ${clone_dir}/.azure")
+            sh("rm -rf ${clone_dir}/.kube")
             if(!success) {
               currentBuild.result = "FAILURE"
               String to = "${SEND_TO}".trim()
@@ -69,11 +76,17 @@ node {
                 to += emailextrecipients([[$class: 'CulpritsRecipientProvider']])
               }
               if(to != "") {
+                def url = "${env.BUILD_URL}\n\n"
+                for(String addr : to.tokenize('[ \t\n;,]+')) {
+                  if(!addr.endsWith("@microsoft.com")) {
+                    url = ""
+                  }
+                }
                 gitCommit = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
                 emailext(
                   to: to,
                   subject: "[ACS Engine is BROKEN] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                  body: "Commit: ${gitCommit}\n\n${errorMsg}"
+                  body: "Commit: ${gitCommit}\n\n${url}${errorMsg}"
                 )
               }
             }

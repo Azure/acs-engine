@@ -1,4 +1,5 @@
     "adminUsername": "[parameters('linuxAdminUsername')]",
+    "targetEnvironment": "[parameters('targetEnvironment')]",
     "maxVMsPerPool": 100,
     "maxVMsPerStorageAccount": 20,
     "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
@@ -77,4 +78,5 @@
     "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location, variables('orchestratorName')))]", 
     "storageAccountPrefixes": [ "0", "6", "c", "i", "o", "u", "1", "7", "d", "j", "p", "v", "2", "8", "e", "k", "q", "w", "3", "9", "f", "l", "r", "x", "4", "a", "g", "m", "s", "y", "5", "b", "h", "n", "t", "z" ], 
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]", 
-    "storageAccountType": "Standard_LRS"
+    "storageAccountType": "Standard_LRS",
+    "dcosBootstrapURL": "[parameters('dcosBootstrapURL')]"

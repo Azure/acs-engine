@@ -59,6 +59,9 @@
   "sshRSAPublicKey": {
     "value": "ssh-rsa PUBLICKEY azureuser@linuxvm"
   },
+  "targetEnvironment": {
+    "value": "AzurePublicCloud"
+  },
   "windowsAdminPassword": {
     "value": "replacepassword1234$"
   },

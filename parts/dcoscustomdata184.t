@@ -106,6 +106,12 @@ write_files:
   owner: root
   path: /etc/mesosphere/setup-flags/repository-url
   permissions: '0644'
+- content: 'DCOS_ENVIRONMENT={{{targetEnvironment}}}
+
+    '
+  owner: root
+  path: /etc/mesosphere/setup-flags/dcos-deploy-environment
+  permissions: '0644'
 - content: 'BOOTSTRAP_ID=5b4aa43610c57ee1d60b4aa0751a1fb75824c083
 
     '
@@ -302,7 +308,7 @@ write_files:
     StandardError=journal+console
 
     ExecStartPre=/usr/bin/curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60
-    -o /var/lib/mesos/dl/bootstrap.tar.xz https://dcosio.azureedge.net/dcos/testing/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz
+    -o /var/lib/mesos/dl/bootstrap.tar.xz {{{dcosBootstrapURL}}}
 
     ExecStartPre=/usr/bin/mkdir -p /opt/mesosphere
 
