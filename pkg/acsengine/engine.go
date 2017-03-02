@@ -73,6 +73,11 @@ const (
 	windowsParams                = "windowsparams.t"
 )
 
+const (
+	azureCloudPublic = "AzurePublicCloud"
+	azureCloudChina  = "AzureChinaCloud"
+)
+
 var kubernetesManifestYamls = map[string]string{
 	"MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR":          "kubernetesmaster-kube-scheduler.yaml",
 	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetesmaster-kube-controller-manager.yaml",
@@ -295,10 +300,8 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 //for example: if the target is the public azure, then the default container image url should be gcr.io/google_container/...
 //if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
 func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
-	switch location {
-	case "chinaeast":
-		fallthrough
-	case "chinanorth":
+	switch GetCloudTargetEnv(location) {
+	case azureCloudChina:
 		return AzureChinaCloudSpec
 	default:
 		return AzureCloudSpec
@@ -306,13 +309,17 @@ func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
 }
 
 func GetCloudTargetEnv(location string) string {
-	switch location {
+	switch strings.ToLower(location) {
 	case "chinaeast":
 		fallthrough
+	case "china east":
+		fallthrough
 	case "chinanorth":
-		return "AzureChinaCloud"
+		fallthrough
+	case "china north":
+		return azureCloudChina
 	default:
-		return "AzurePublicCloud"
+		return azureCloudPublic
 	}
 }
 
