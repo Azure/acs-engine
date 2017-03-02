@@ -44,6 +44,15 @@ node {
                   env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}"
                   env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}"
 
+                  script="test/cluster-tests/${ORCHESTRATOR}/test.sh"
+                  def exists = fileExists script
+
+                  if (exists) {
+                    env.VALIDATE = script
+                  } else {
+                    echo 'Skip validation'
+                  }
+
                   sh('./test/deploy.sh')
                 }
               }

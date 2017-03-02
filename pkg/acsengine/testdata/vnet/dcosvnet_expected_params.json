@@ -42,6 +42,6 @@
     "value": "ssh-rsa PUBLICKEY azureuser@linuxvm"
   },
   "targetEnvironment": {
-    "value": ""
+    "value": "AzurePublicCloud"
   }
 }

@@ -295,15 +295,25 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 //for example: if the target is the public azure, then the default container image url should be gcr.io/google_container/...
 //if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
 func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
-	cloudSpecConfig := AzureCloudSpec
 	switch location {
-	case "AzureCloud":
-		cloudSpecConfig = AzureCloudSpec
-	case "AzureChinaCloud":
-		cloudSpecConfig = AzureChinaCloudSpec
+	case "chinaeast":
+		fallthrough
+	case "chinanorth":
+		return AzureChinaCloudSpec
+	default:
+		return AzureCloudSpec
 	}
+}
 
-	return cloudSpecConfig
+func GetCloudTargetEnv(location string) string {
+	switch location {
+	case "chinaeast":
+		fallthrough
+	case "chinanorth":
+		return "AzureChinaCloud"
+	default:
+		return "AzurePublicCloud"
+	}
 }
 
 func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]interface{}, error) {
@@ -312,7 +322,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	parametersMap := map[string]interface{}{}
 
 	// Master Parameters
-	addValue(parametersMap, "targetEnvironment", location)
+	addValue(parametersMap, "targetEnvironment", GetCloudTargetEnv(location))
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
 	addValue(parametersMap, "masterEndpointDNSNamePrefix", properties.MasterProfile.DNSPrefix)
 	if properties.MasterProfile.IsCustomVNET() {
