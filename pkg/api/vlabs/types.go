@@ -165,6 +165,7 @@ type AgentPoolProfile struct {
 	subnet string
 
 	FQDN string `json:"fqdn,omitempty"`
+	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
 }
 
 // KeyVaultSecrets specifies certificates to install on the pool
