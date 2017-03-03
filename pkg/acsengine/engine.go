@@ -74,6 +74,13 @@ const (
 	windowsParams                = "windowsparams.t"
 )
 
+const (
+	azurePublicCloud       = "AzurePublicCloud"
+	azureChinaCloud        = "AzureChinaCloud"
+	azureGermanCloud       = "AzureGermanCloud"
+	azureUSGovernmentCloud = "AzureUSGovernmentCloud"
+)
+
 var kubernetesManifestYamls = map[string]string{
 	"MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR":          "kubernetesmaster-kube-scheduler.yaml",
 	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetesmaster-kube-controller-manager.yaml",
@@ -297,15 +304,27 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 //for example: if the target is the public azure, then the default container image url should be gcr.io/google_container/...
 //if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
 func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
-	cloudSpecConfig := AzureCloudSpec
-	switch location {
-	case "AzureCloud":
-		cloudSpecConfig = AzureCloudSpec
-	case "AzureChinaCloud":
-		cloudSpecConfig = AzureChinaCloudSpec
+	switch GetCloudTargetEnv(location) {
+	case azureChinaCloud:
+		return AzureChinaCloudSpec
+	//TODO - add cloud specs for germany and usgov
+	default:
+		return AzureCloudSpec
 	}
+}
 
-	return cloudSpecConfig
+func GetCloudTargetEnv(location string) string {
+	loc := strings.ToLower(strings.Join(strings.Fields(location), ""))
+	switch {
+	case loc == "chinaeast" || loc == "chinanorth":
+		return azureChinaCloud
+	case loc == "germanynortheast" || loc == "germanycentral":
+		return azureGermanCloud
+	case strings.HasPrefix(loc, "usgov") || strings.HasPrefix(loc, "usdod"):
+		return azureUSGovernmentCloud
+	default:
+		return azurePublicCloud
+	}
 }
 
 func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]interface{}, error) {
@@ -314,7 +333,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	parametersMap := map[string]interface{}{}
 
 	// Master Parameters
-	addValue(parametersMap, "targetEnvironment", location)
+	addValue(parametersMap, "targetEnvironment", GetCloudTargetEnv(location))
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
 	addValue(parametersMap, "masterEndpointDNSNamePrefix", properties.MasterProfile.DNSPrefix)
 	if properties.MasterProfile.IsCustomVNET() {
@@ -345,6 +364,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addSecret(parametersMap, "clientPrivateKey", properties.CertificateProfile.ClientPrivateKey, true)
 		addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
 		addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
+		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase+KubernetesHyperkubeImageName)
 		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubernetesAddonManagerImageName)
 		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubernetesAddonResizerImageName)
@@ -359,10 +379,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	}
 
 	if strings.HasPrefix(string(properties.OrchestratorProfile.OrchestratorType), string(api.DCOS)) {
-		dcosBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOS187_BootstrapDownloadURL
+		dcosBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOS188_BootstrapDownloadURL
 		switch properties.OrchestratorProfile.OrchestratorType {
 		case api.DCOS:
-			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS187_BootstrapDownloadURL
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188_BootstrapDownloadURL
 		case api.DCOS173:
 			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS173_BootstrapDownloadURL
 		case api.DCOS184:

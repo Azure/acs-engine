@@ -127,6 +127,11 @@ function ensureKubelet() {
     systemctl restart kubelet
 }
 
+function extractKubectl(){
+    systemctl enable kubectl-extract
+    systemctl restart kubectl-extract
+}
+
 function ensureApiserver() {
     kubernetesStarted=1
     for i in {1..600}; do
@@ -202,6 +207,7 @@ users:
 # master and node
 ensureDocker
 ensureKubelet
+extractKubectl
 
 # master only 
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then

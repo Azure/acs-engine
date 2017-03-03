@@ -10,7 +10,11 @@ import (
 var (
 	//AzureCloudSpec is the default configurations for global azure.
 	AzureCloudSpec = AzureEnvironmentSpecConfig{
-		//KubeConfigAzurePublicCloud is the default kubernetes container image url.
+		//DockerSpecConfig specify the docker engine download repo
+		DockerSpecConfig: DockerSpecConfig{
+			DockerEngineRepo: "https://apt.dockerproject.org/repo",
+		},
+		//KubernetesSpecConfig is the default kubernetes container image url.
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase: "gcr.io/google_containers/",
 		},
@@ -26,7 +30,11 @@ var (
 
 	//AzureChinaCloudSpec is the configurations for Azure China (Mooncake)
 	AzureChinaCloudSpec = AzureEnvironmentSpecConfig{
-		//KubeConfigAzureChinaCloud - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
+		//DockerSpecConfig specify the docker engine download repo
+		DockerSpecConfig: DockerSpecConfig{
+			DockerEngineRepo: "https://mirror.azure.cn/docker-engine/apt/repo/",
+		},
+		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase: "mirror.azure.cn:5000/google_containers/",
 		},
@@ -34,6 +42,7 @@ var (
 			DCOS173_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
 			DCOS184_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
 			DCOS187_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
+			DCOS188_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),
 		},
 	}
 )

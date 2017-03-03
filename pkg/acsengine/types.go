@@ -25,6 +25,11 @@ type V20160330ContainerService struct {
 	*v20160330.ContainerService
 }
 
+//DockerSpecConfig is the configurations of docker
+type DockerSpecConfig struct {
+	DockerEngineRepo string
+}
+
 //DCOSSpecConfig is the configurations of DCOS
 type DCOSSpecConfig struct {
 	DCOS173_BootstrapDownloadURL string
@@ -41,6 +46,7 @@ type KubernetesSpecConfig struct {
 
 //AzureEnvironmentSpecConfig is the overall configuration differences in different cloud environments.
 type AzureEnvironmentSpecConfig struct {
+	DockerSpecConfig     DockerSpecConfig
 	KubernetesSpecConfig KubernetesSpecConfig
 	DCOSSpecConfig       DCOSSpecConfig
 }

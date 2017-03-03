@@ -32,6 +32,9 @@
   "clientPrivateKey": {
     "value": "Y2xpZW50UHJpdmF0ZUtleQ=="
   },
+  "dockerEngineDownloadRepo": {
+    "value": "https://apt.dockerproject.org/repo"
+  },
   "firstConsecutiveStaticIP": {
     "value": "10.240.255.5"
   },
@@ -96,6 +99,6 @@
     "value": "ssh-rsa PUBLICKEY azureuser@linuxvm"
   },
   "targetEnvironment": {
-    "value": ""
+    "value": "AzurePublicCloud"
   }
 }

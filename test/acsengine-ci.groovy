@@ -34,19 +34,24 @@ node {
                   env.SERVICE_PRINCIPAL_CLIENT_SECRET="${SPN_PASSWORD}"
                   env.TENANT_ID="${TENANT_ID}"
                   env.SUBSCRIPTION_ID="${SUBSCRIPTION_ID}"
-                  
-                  sh("printf 'acs-ci-test%x' \$(date '+%s') > INSTANCE_NAME")
-                  env.INSTANCE_NAME = readFile('INSTANCE_NAME').trim()
-                  env.INSTANCE_NAME_PREFIX = "acs-ci"
+                  env.LOCATION = "${LOCATION}"
+                  env.CLEANUP = "y"
+
+                  env.INSTANCE_NAME = "test-acs-ci-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
+                  env.INSTANCE_NAME_PREFIX = "test-acs-ci"
                   env.ORCHESTRATOR = "${ORCHESTRATOR}"
                   env.CLUSTER_DEFINITION="examples/${ORCHESTRATOR}.json"
                   env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}"
                   env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}"
 
-                  env.LOCATION = "${LOCATION}"
-                  env.RESOURCE_GROUP = "test-acs-ci-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
-                  env.DEPLOYMENT_NAME = "${env.RESOURCE_GROUP}"
-                  env.CLEANUP = "y"
+                  script="test/cluster-tests/${ORCHESTRATOR}/test.sh"
+                  def exists = fileExists script
+
+                  if (exists) {
+                    env.VALIDATE = script
+                  } else {
+                    echo 'Skip validation'
+                  }
 
                   sh('./test/deploy.sh')
                 }
