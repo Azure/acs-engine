@@ -10,6 +10,7 @@ node {
         def clone_dir = "${env.GOPATH}/src/github.com/Azure/acs-engine"
         env.HOME=clone_dir
         String sendTo = "${SEND_TO}".trim()
+        Integer timeoutInMinutes = STAGE_TIMEOUT.toInteger()
 
         dir(clone_dir) {
           def img = null
@@ -58,6 +59,7 @@ node {
                   if("${env.ORCHESTRATOR}".startsWith("dcos")) {
                     env.ORCHESTRATOR = "dcos"
                   }
+                  env.LOGFILE = pwd()+"/${junit_dir}/${name}.log"
                   // Generate and deploy template, validate deployments
                   try {
                     stage(name) {
@@ -70,7 +72,9 @@ node {
                         def test = "${name}.${script}"
                         sh("mkdir -p ${junit_dir}/${test}")
                         sh("cp ./test/shunit/${script} ${junit_dir}/${test}/t.sh")
-                        sh("cd ${junit_dir}; shunit.sh -t ${test} > ${test}/junit.xml")
+                        timeout(time: timeoutInMinutes, unit: 'MINUTES') {
+                          sh("cd ${junit_dir}; shunit.sh -t ${test} > ${test}/junit.xml")
+                        }
                         sh("grep 'failures=\"0\"' ${junit_dir}/${test}/junit.xml")
                       }
                     }
@@ -90,7 +94,8 @@ node {
               // Generate reports
               try {
                 junit("${junit_dir}/**/junit.xml")
-                if(currentBuild.result == "UNSTABLE") {
+                archiveArtifacts(allowEmptyArchive: true, artifacts: "${junit_dir}/**/*.log")
+                if(currentBuild.result != "SUCCESS") {
                   currentBuild.result = "FAILURE"
                   if(sendTo != "") {
                     emailext(
