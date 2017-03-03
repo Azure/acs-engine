@@ -112,7 +112,7 @@ uksouth ukwest"
               try {
                 junit("${junit_dir}/**/junit.xml")
                 archiveArtifacts(allowEmptyArchive: true, artifacts: "${junit_dir}/**/*.log")
-                if(currentBuild.result != "SUCCESS") {
+                if(currentBuild.result == "UNSTABLE") {
                   currentBuild.result = "FAILURE"
                   if(sendTo != "") {
                     emailext(
