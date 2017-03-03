@@ -121,6 +121,7 @@ var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, sw
  - kubeConfigCertificate
  - kubeConfigPrivateKey
  - servicePrincipalClientSecret
+ - windowsAdminPassword
 
  To refer to a keyvault secret, the value of the parameter in the api model file should be formatted as:
 
@@ -420,7 +421,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	// Windows parameters
 	if properties.HasWindows() {
 		addValue(parametersMap, "windowsAdminUsername", properties.WindowsProfile.AdminUsername)
-		addValue(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword)
+		addSecret(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword, false)
 		if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 			KubernetesVersion := properties.OrchestratorProfile.OrchestratorVersion
 			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+KubeImages[KubernetesVersion]["windowszip"])
