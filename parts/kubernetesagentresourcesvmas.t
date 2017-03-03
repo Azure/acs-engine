@@ -34,7 +34,21 @@
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
-{{if .IsStorageAccount}}
+{{if .IsManagedDisks}} 
+   {
+      "location": "[variables('location')]",
+      "name": "[variables('{{.Name}}AvailabilitySet')]",
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
+      "properties":
+        {
+            "platformFaultDomainCount": "3",
+            "platformUpdateDomainCount": "3",
+		        "managed" : "true"
+        },
+  
+      "type": "Microsoft.Compute/availabilitySets"
+    },
+{{else if .IsStorageAccount}}
     {
       "apiVersion": "[variables('apiVersionStorage')]",
       "copy": {
@@ -51,8 +65,7 @@
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
-
-{{if .HasDisks}}
+    {{if .HasDisks}}
     {
       "apiVersion": "[variables('apiVersionStorage')]",
       "copy": {
@@ -69,27 +82,16 @@
       },
       "type": "Microsoft.Storage/storageAccounts"
     },
-{{end}}
-{{end}}
+    {{end}}
     {
       "location": "[variables('location')]",
       "name": "[variables('{{.Name}}AvailabilitySet')]",
-      
-      {{if .IsManagedDisks}}
-      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-      "properties":
-        {
-            "platformFaultDomainCount": "3",
-            "platformUpdateDomainCount": "3",
-		        "managed" : "true"
-        },
-      {{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
       "properties": {},
-      {{end}}
       "type": "Microsoft.Compute/availabilitySets"
     },
-    {
+{{end}} 
+  {
     {{if .IsManagedDisks}}
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
     {{else}}
@@ -103,9 +105,9 @@
 {{if .IsStorageAccount}}
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
 
-{{if .HasDisks}}
+  {{if .HasDisks}}
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
-{{end}}
+  {{end}}
 {{end}}
         "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex())]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
