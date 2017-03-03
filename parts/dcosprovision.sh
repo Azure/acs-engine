@@ -31,6 +31,9 @@ curl -fLsSv --retry 20 -Y 100000 -y 60 -o $MESOSDIR/3.deb $UNZIP_DOWNLOAD_URL &
 curl -fLsSv --retry 20 -Y 100000 -y 60 -o $MESOSDIR/4.deb $LIBLTDL_DOWNLOAD_URL &
 wait
 
+sed -i "s/^Port 22$/Port 22\nPort 2222/1" /etc/ssh/sshd_config
+service ssh restart
+
 for i in {1..300}; do
     dpkg -i $MESOSDIR/{1,2,3,4}.deb
     if [ "$?" = "0" ]

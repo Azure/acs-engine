@@ -271,7 +271,7 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 	var files []string
 	var baseFile string
 	if properties.OrchestratorProfile.OrchestratorType == api.DCOS188 ||
-	  properties.OrchestratorProfile.OrchestratorType == api.DCOS190 ||
+		properties.OrchestratorProfile.OrchestratorType == api.DCOS190 ||
 		properties.OrchestratorProfile.OrchestratorType == api.DCOS187 ||
 		properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
 		properties.OrchestratorProfile.OrchestratorType == api.DCOS173 {
@@ -369,6 +369,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS184_BootstrapDownloadURL
 		case api.DCOS187:
 			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS187_BootstrapDownloadURL
+		case api.DCOS188:
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188_BootstrapDownloadURL
+		case api.DCOS190:
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190_BootstrapDownloadURL
 		}
 		addValue(parametersMap, "dcosBootstrapURL", dcosBootstrapURL)
 	}
@@ -503,7 +507,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			if t.ClassicMode {
 				return GetClassicAllowedSizes()
 			} else if properties.OrchestratorProfile.OrchestratorType == api.DCOS190 ||
-			  properties.OrchestratorProfile.OrchestratorType == api.DCOS188 ||
+				properties.OrchestratorProfile.OrchestratorType == api.DCOS188 ||
 				properties.OrchestratorProfile.OrchestratorType == api.DCOS187 ||
 				properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
 				properties.OrchestratorProfile.OrchestratorType == api.DCOS173 {
@@ -657,14 +661,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 }
 
 func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) string {
-	if OrchestratorType == api.DCOS190 {
+	if orchestratorType == api.DCOS190 {
 		switch masterCount {
 		case 1:
-			return "9ec227f903ef766796e2ded5b8a30333d4b75a9a"
+			return "184a00ac1c03d69224966ea84859b1a752779571"
 		case 3:
-			return "9efcfe7234eff538a97cfb03c0eb94b27a442401"
+			return "e086b496175152c4aa7c5ec52954933d785c8a4a"
 		case 5:
-			return "6cbdd2b83ae63fb7d660dba19fd8e4492005b172"
+			return "082a0a039f562c8d4ab324de2da9647debbc7b2c"
 		}
 	} else if orchestratorType == api.DCOS188 {
 		switch masterCount {
@@ -710,8 +714,8 @@ func getDCOSCustomDataPublicIPStr(orchestratorType api.OrchestratorType, masterC
 	if orchestratorType == api.DCOS173 ||
 		orchestratorType == api.DCOS184 ||
 		orchestratorType == api.DCOS187 ||
-		orchestratorType == api.DCOS188 || 
-		OrchestratorType == api.DCOS190 {
+		orchestratorType == api.DCOS188 ||
+		orchestratorType == api.DCOS190 {
 		var buf bytes.Buffer
 		for i := 0; i < masterCount; i++ {
 			buf.WriteString(fmt.Sprintf("reference(variables('masterVMNic')[%d]).ipConfigurations[0].properties.privateIPAddress,", i))
