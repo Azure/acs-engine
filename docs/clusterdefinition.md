@@ -10,12 +10,21 @@ Here are the cluster definitions for apiVersion "vlabs"
 |---|---|---|
 |apiVersion|yes|The version of the template.  For "vlabs" the value is "vlabs".|
 
+### location
+`location` describe the deployment target of the cluster. Current available: 
+```    
+ "australiaeast", "australiasoutheast", "brazilsouth", "canadacentral", "canadaeast", "centralindia", "centralus", "eastasia", "eastus", "eastus2", "japaneast", "japanwest", "koreacentral", "koreasouth", "northcentralus", "northeurope", "southcentralus", "southeastasia", "southindia", "uksouth", "ukwest", "westcentralus", "westeurope", "westindia", "westus", "westus2", "chinaeast", "chinanorth"
+```
+
+This value can be ignored by default if the deployment is go to public azure. However, if the deployment is go to non public azure such `azure china`, the correct value must be specified. ACS engine will based on this value to determine the download URLs of the required installation binaries such Docker, DC/OS, Kubernetes Docker images. Because different location may have different policy such as China Great Firewall which blocks Azure CDN and GCR.
+
 ### orchestratorProfile
 `orchestratorProfile` describes the orchestrator settings.
 
 |Name|Required|Description|
 |---|---|---|
 |orchestratorType|yes|This specifies the orchestrator type for the cluster.|
+|KubernetesConfig.KubernetesImageBase|no|This specifies the base Docker registry URL to download the Kubernetes Docker images.|
 
 Here are the valid values for the orchestrator types:
 
@@ -23,6 +32,8 @@ Here are the valid values for the orchestrator types:
 2. `Kubernetes` - this represents the [Kubernetes orchestrator](kubernetes.md).
 3. `Swarm` - this represents the [Swarm orchestrator](swarm.md).
 4. `Swarm Mode` - this represents the [Swarm Mode orchestrator](swarmmode.md).
+
+For `KubernetesConfig.KubernetesImageBase` the default value is GCR (gcr.io/google_containers/), ACS engine will use this base URL and the default Kubernetes Docker image name to concat the full URL of the Docker image URL such as `gcr.io/google_containers/hyperkube-amd64:v1.5.3`. In some the location GCR may be blocked or unstable to access, by specifying this value can redirect to custom Docker image download URL.
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.
