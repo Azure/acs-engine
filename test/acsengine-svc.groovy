@@ -12,6 +12,7 @@ node {
         env.ORCHESTRATOR = "${ORCHESTRATOR}"
         String locations_str = "${LOCATIONS}"
         String sendTo = "${SEND_TO}".trim()
+        Integer timeoutInMinutes = STAGE_TIMEOUT.toInteger()
 
         if(locations_str.equals("all")) {
           locations_str = "\
@@ -52,13 +53,16 @@ uksouth ukwest"
                 env.CLUSTER_DEFINITION="examples/${ORCHESTRATOR}.json"
                 env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}"
                 env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}"
-                sh('./test/step.sh generate_template')
+                timeout(time: timeoutInMinutes, unit: 'MINUTES') {
+                  sh('./test/step.sh generate_template')
+                }
               }
 
               for (i = 0; i <locations.size(); i++) {
                 env.LOCATION = locations[i]
                 env.RESOURCE_GROUP = "test-acs-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
                 env.DEPLOYMENT_NAME = "${env.RESOURCE_GROUP}"
+                env.LOGFILE = pwd()+"/${junit_dir}/${ORCHESTRATOR}.${env.LOCATION}.log"
                 def ok = true
                 // Deploy
                 try {
@@ -66,7 +70,9 @@ uksouth ukwest"
                     def test = "deploy-${env.LOCATION}"
                     sh("mkdir -p ${junit_dir}/${test}")
                     sh("cp ./test/shunit/deploy_template.sh ${junit_dir}/${test}/t.sh")
-                    sh("cd ${junit_dir}; shunit.sh -t ${test} > ${test}/junit.xml")
+                    timeout(time: timeoutInMinutes, unit: 'MINUTES') {
+                      sh("cd ${junit_dir}; shunit.sh -t ${test} > ${test}/junit.xml")
+                    }
                     sh("grep 'failures=\"0\"' ${junit_dir}/${test}/junit.xml")
                   }
                 }
@@ -81,7 +87,9 @@ uksouth ukwest"
                       def test = "validate-${env.LOCATION}"
                       sh("mkdir -p ${junit_dir}/${test}")
                       sh("cp ./test/shunit/validate_deployment.sh ${junit_dir}/${test}/t.sh")
-                      sh("cd ${junit_dir}; shunit.sh -t ${test} > ${test}/junit.xml")
+                      timeout(time: timeoutInMinutes, unit: 'MINUTES') {
+                        sh("cd ${junit_dir}; shunit.sh -t ${test} > ${test}/junit.xml")
+                      }
                       sh("grep 'failures=\"0\"' ${junit_dir}/${test}/junit.xml")
                     }
                     else {
@@ -103,6 +111,7 @@ uksouth ukwest"
               // Generate reports
               try {
                 junit("${junit_dir}/**/junit.xml")
+                archiveArtifacts(allowEmptyArchive: true, artifacts: "${junit_dir}/**/*.log")
                 if(currentBuild.result == "UNSTABLE") {
                   currentBuild.result = "FAILURE"
                   if(sendTo != "") {

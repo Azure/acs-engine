@@ -2,4 +2,4 @@
 
 ## Overview
 
-ACS-Engine enables you to create customized Docker enabled cluster on Microsoft Azure with managed disks.  Managed Disks are under private preview.  Contact [chagarw](https://github.com/chagarw/MDPP) for information on how to sign up.
+ACS-Engine enables you to create customized Docker enabled cluster on Microsoft Azure with [managed disks](https://docs.microsoft.com/en-us/azure/storage/storage-managed-disks-overview).  
