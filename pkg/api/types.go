@@ -347,3 +347,8 @@ func (l *LinuxProfile) HasSecrets() bool {
 func (o *OrchestratorProfile) IsSwarmMode() bool {
 	return o.OrchestratorType == SwarmMode
 }
+
+// IsKubernetes returns true if this template is for Kubernetes orchestrator
+func (o *OrchestratorProfile) IsKubernetes() bool {
+	return o.OrchestratorType == Kubernetes
+}
