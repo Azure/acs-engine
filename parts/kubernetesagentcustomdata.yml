@@ -10,7 +10,6 @@ runcmd:
 - "echo \"Package: docker-engine\nPin: version {{{dockerEngineVersion}}}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
 - apt-get update
 - apt-get install -y docker-engine
-- systemctl restart docker
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{{username}}}
 
