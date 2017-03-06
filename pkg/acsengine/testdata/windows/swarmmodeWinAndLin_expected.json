@@ -230,7 +230,7 @@
       ],
       "defaultValue": 3,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -437,7 +437,7 @@
       ],
       "defaultValue": 3,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
       },
       "type": "int"
     },
@@ -644,7 +644,7 @@
       ],
       "defaultValue": 3,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
       },
       "type": "int"
     },

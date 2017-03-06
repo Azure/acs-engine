@@ -477,6 +477,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		"IsSwarmMode": func() bool {
 			return properties.OrchestratorProfile.IsSwarmMode()
 		},
+		"IsKubernetes": func() bool {
+			return properties.OrchestratorProfile.IsKubernetes()
+		},
 		"IsPublic": func(ports []int) bool {
 			return len(ports) > 0
 		},

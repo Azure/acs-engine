@@ -107,7 +107,117 @@
       ],
       "defaultValue": 100,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpool10Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
       },
       "type": "int"
     },
@@ -314,7 +424,117 @@
       ],
       "defaultValue": 100,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpool11Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
       },
       "type": "int"
     },
@@ -521,7 +741,117 @@
       ],
       "defaultValue": 100,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpool12Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
       },
       "type": "int"
     },
@@ -728,7 +1058,117 @@
       ],
       "defaultValue": 3,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpool1Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
       },
       "type": "int"
     },
@@ -935,7 +1375,117 @@
       ],
       "defaultValue": 3,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpool2Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
       },
       "type": "int"
     },
@@ -1142,7 +1692,117 @@
       ],
       "defaultValue": 100,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpool3Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
       },
       "type": "int"
     },
@@ -1349,7 +2009,117 @@
       ],
       "defaultValue": 100,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpool4Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
       },
       "type": "int"
     },
@@ -1556,7 +2326,117 @@
       ],
       "defaultValue": 100,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpool5Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
       },
       "type": "int"
     },
@@ -1763,7 +2643,117 @@
       ],
       "defaultValue": 100,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpool6Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
       },
       "type": "int"
     },
@@ -1970,7 +2960,117 @@
       ],
       "defaultValue": 100,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpool7Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
       },
       "type": "int"
     },
@@ -2177,7 +3277,117 @@
       ],
       "defaultValue": 100,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpool8Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
       },
       "type": "int"
     },
@@ -2384,7 +3594,117 @@
       ],
       "defaultValue": 100,
       "metadata": {
-        "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+        "description": "The number of agents for the cluster to provision  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpool9Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
       },
       "type": "int"
     },
@@ -2752,9 +4072,11 @@
     "agentpool10AvailabilitySet": "[concat('agentpool10-availabilitySet-', variables('nameSuffix'))]",
     "agentpool10Count": "[parameters('agentpool10Count')]",
     "agentpool10Index": 9,
+    "agentpool10Offset": "[parameters('agentpool10Offset')]",
     "agentpool10StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool10Index'))]",
-    "agentpool10StorageAccountsCount": "[add(div(variables('agentpool10Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool10Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool10Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "agentpool10StorageAccountsCount": "[add(div(variables('agentpool10TotalCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool10TotalCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool10TotalCount'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool10SubnetName": "[variables('subnetName')]",
+    "agentpool10TotalCount": "[add(parameters('agentpool10Count'), parameters('agentpool10Offset'))]",
     "agentpool10VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpool10-', variables('nameSuffix'), '-')]",
     "agentpool10VMSize": "[parameters('agentpool10VMSize')]",
     "agentpool10VnetSubnetID": "[variables('vnetSubnetID')]",
@@ -2762,9 +4084,11 @@
     "agentpool11AvailabilitySet": "[concat('agentpool11-availabilitySet-', variables('nameSuffix'))]",
     "agentpool11Count": "[parameters('agentpool11Count')]",
     "agentpool11Index": 10,
+    "agentpool11Offset": "[parameters('agentpool11Offset')]",
     "agentpool11StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool11Index'))]",
-    "agentpool11StorageAccountsCount": "[add(div(variables('agentpool11Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool11Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool11Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "agentpool11StorageAccountsCount": "[add(div(variables('agentpool11TotalCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool11TotalCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool11TotalCount'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool11SubnetName": "[variables('subnetName')]",
+    "agentpool11TotalCount": "[add(parameters('agentpool11Count'), parameters('agentpool11Offset'))]",
     "agentpool11VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpool11-', variables('nameSuffix'), '-')]",
     "agentpool11VMSize": "[parameters('agentpool11VMSize')]",
     "agentpool11VnetSubnetID": "[variables('vnetSubnetID')]",
@@ -2772,9 +4096,11 @@
     "agentpool12AvailabilitySet": "[concat('agentpool12-availabilitySet-', variables('nameSuffix'))]",
     "agentpool12Count": "[parameters('agentpool12Count')]",
     "agentpool12Index": 11,
+    "agentpool12Offset": "[parameters('agentpool12Offset')]",
     "agentpool12StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool12Index'))]",
-    "agentpool12StorageAccountsCount": "[add(div(variables('agentpool12Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool12Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool12Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "agentpool12StorageAccountsCount": "[add(div(variables('agentpool12TotalCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool12TotalCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool12TotalCount'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool12SubnetName": "[variables('subnetName')]",
+    "agentpool12TotalCount": "[add(parameters('agentpool12Count'), parameters('agentpool12Offset'))]",
     "agentpool12VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpool12-', variables('nameSuffix'), '-')]",
     "agentpool12VMSize": "[parameters('agentpool12VMSize')]",
     "agentpool12VnetSubnetID": "[variables('vnetSubnetID')]",
@@ -2782,9 +4108,11 @@
     "agentpool1AvailabilitySet": "[concat('agentpool1-availabilitySet-', variables('nameSuffix'))]",
     "agentpool1Count": "[parameters('agentpool1Count')]",
     "agentpool1Index": 0,
+    "agentpool1Offset": "[parameters('agentpool1Offset')]",
     "agentpool1StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool1Index'))]",
-    "agentpool1StorageAccountsCount": "[add(div(variables('agentpool1Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool1Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool1Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "agentpool1StorageAccountsCount": "[add(div(variables('agentpool1TotalCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool1TotalCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool1TotalCount'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool1SubnetName": "[variables('subnetName')]",
+    "agentpool1TotalCount": "[add(parameters('agentpool1Count'), parameters('agentpool1Offset'))]",
     "agentpool1VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpool1-', variables('nameSuffix'), '-')]",
     "agentpool1VMSize": "[parameters('agentpool1VMSize')]",
     "agentpool1VnetSubnetID": "[variables('vnetSubnetID')]",
@@ -2792,9 +4120,11 @@
     "agentpool2AvailabilitySet": "[concat('agentpool2-availabilitySet-', variables('nameSuffix'))]",
     "agentpool2Count": "[parameters('agentpool2Count')]",
     "agentpool2Index": 1,
+    "agentpool2Offset": "[parameters('agentpool2Offset')]",
     "agentpool2StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool2Index'))]",
-    "agentpool2StorageAccountsCount": "[add(div(variables('agentpool2Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool2Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool2Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "agentpool2StorageAccountsCount": "[add(div(variables('agentpool2TotalCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool2TotalCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool2TotalCount'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool2SubnetName": "[variables('subnetName')]",
+    "agentpool2TotalCount": "[add(parameters('agentpool2Count'), parameters('agentpool2Offset'))]",
     "agentpool2VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpool2-', variables('nameSuffix'), '-')]",
     "agentpool2VMSize": "[parameters('agentpool2VMSize')]",
     "agentpool2VnetSubnetID": "[variables('vnetSubnetID')]",
@@ -2802,9 +4132,11 @@
     "agentpool3AvailabilitySet": "[concat('agentpool3-availabilitySet-', variables('nameSuffix'))]",
     "agentpool3Count": "[parameters('agentpool3Count')]",
     "agentpool3Index": 2,
+    "agentpool3Offset": "[parameters('agentpool3Offset')]",
     "agentpool3StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool3Index'))]",
-    "agentpool3StorageAccountsCount": "[add(div(variables('agentpool3Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool3Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool3Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "agentpool3StorageAccountsCount": "[add(div(variables('agentpool3TotalCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool3TotalCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool3TotalCount'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool3SubnetName": "[variables('subnetName')]",
+    "agentpool3TotalCount": "[add(parameters('agentpool3Count'), parameters('agentpool3Offset'))]",
     "agentpool3VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpool3-', variables('nameSuffix'), '-')]",
     "agentpool3VMSize": "[parameters('agentpool3VMSize')]",
     "agentpool3VnetSubnetID": "[variables('vnetSubnetID')]",
@@ -2812,9 +4144,11 @@
     "agentpool4AvailabilitySet": "[concat('agentpool4-availabilitySet-', variables('nameSuffix'))]",
     "agentpool4Count": "[parameters('agentpool4Count')]",
     "agentpool4Index": 3,
+    "agentpool4Offset": "[parameters('agentpool4Offset')]",
     "agentpool4StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool4Index'))]",
-    "agentpool4StorageAccountsCount": "[add(div(variables('agentpool4Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool4Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool4Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "agentpool4StorageAccountsCount": "[add(div(variables('agentpool4TotalCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool4TotalCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool4TotalCount'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool4SubnetName": "[variables('subnetName')]",
+    "agentpool4TotalCount": "[add(parameters('agentpool4Count'), parameters('agentpool4Offset'))]",
     "agentpool4VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpool4-', variables('nameSuffix'), '-')]",
     "agentpool4VMSize": "[parameters('agentpool4VMSize')]",
     "agentpool4VnetSubnetID": "[variables('vnetSubnetID')]",
@@ -2822,9 +4156,11 @@
     "agentpool5AvailabilitySet": "[concat('agentpool5-availabilitySet-', variables('nameSuffix'))]",
     "agentpool5Count": "[parameters('agentpool5Count')]",
     "agentpool5Index": 4,
+    "agentpool5Offset": "[parameters('agentpool5Offset')]",
     "agentpool5StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool5Index'))]",
-    "agentpool5StorageAccountsCount": "[add(div(variables('agentpool5Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool5Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool5Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "agentpool5StorageAccountsCount": "[add(div(variables('agentpool5TotalCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool5TotalCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool5TotalCount'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool5SubnetName": "[variables('subnetName')]",
+    "agentpool5TotalCount": "[add(parameters('agentpool5Count'), parameters('agentpool5Offset'))]",
     "agentpool5VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpool5-', variables('nameSuffix'), '-')]",
     "agentpool5VMSize": "[parameters('agentpool5VMSize')]",
     "agentpool5VnetSubnetID": "[variables('vnetSubnetID')]",
@@ -2832,9 +4168,11 @@
     "agentpool6AvailabilitySet": "[concat('agentpool6-availabilitySet-', variables('nameSuffix'))]",
     "agentpool6Count": "[parameters('agentpool6Count')]",
     "agentpool6Index": 5,
+    "agentpool6Offset": "[parameters('agentpool6Offset')]",
     "agentpool6StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool6Index'))]",
-    "agentpool6StorageAccountsCount": "[add(div(variables('agentpool6Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool6Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool6Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "agentpool6StorageAccountsCount": "[add(div(variables('agentpool6TotalCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool6TotalCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool6TotalCount'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool6SubnetName": "[variables('subnetName')]",
+    "agentpool6TotalCount": "[add(parameters('agentpool6Count'), parameters('agentpool6Offset'))]",
     "agentpool6VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpool6-', variables('nameSuffix'), '-')]",
     "agentpool6VMSize": "[parameters('agentpool6VMSize')]",
     "agentpool6VnetSubnetID": "[variables('vnetSubnetID')]",
@@ -2842,9 +4180,11 @@
     "agentpool7AvailabilitySet": "[concat('agentpool7-availabilitySet-', variables('nameSuffix'))]",
     "agentpool7Count": "[parameters('agentpool7Count')]",
     "agentpool7Index": 6,
+    "agentpool7Offset": "[parameters('agentpool7Offset')]",
     "agentpool7StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool7Index'))]",
-    "agentpool7StorageAccountsCount": "[add(div(variables('agentpool7Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool7Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool7Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "agentpool7StorageAccountsCount": "[add(div(variables('agentpool7TotalCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool7TotalCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool7TotalCount'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool7SubnetName": "[variables('subnetName')]",
+    "agentpool7TotalCount": "[add(parameters('agentpool7Count'), parameters('agentpool7Offset'))]",
     "agentpool7VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpool7-', variables('nameSuffix'), '-')]",
     "agentpool7VMSize": "[parameters('agentpool7VMSize')]",
     "agentpool7VnetSubnetID": "[variables('vnetSubnetID')]",
@@ -2852,9 +4192,11 @@
     "agentpool8AvailabilitySet": "[concat('agentpool8-availabilitySet-', variables('nameSuffix'))]",
     "agentpool8Count": "[parameters('agentpool8Count')]",
     "agentpool8Index": 7,
+    "agentpool8Offset": "[parameters('agentpool8Offset')]",
     "agentpool8StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool8Index'))]",
-    "agentpool8StorageAccountsCount": "[add(div(variables('agentpool8Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool8Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool8Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "agentpool8StorageAccountsCount": "[add(div(variables('agentpool8TotalCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool8TotalCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool8TotalCount'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool8SubnetName": "[variables('subnetName')]",
+    "agentpool8TotalCount": "[add(parameters('agentpool8Count'), parameters('agentpool8Offset'))]",
     "agentpool8VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpool8-', variables('nameSuffix'), '-')]",
     "agentpool8VMSize": "[parameters('agentpool8VMSize')]",
     "agentpool8VnetSubnetID": "[variables('vnetSubnetID')]",
@@ -2862,9 +4204,11 @@
     "agentpool9AvailabilitySet": "[concat('agentpool9-availabilitySet-', variables('nameSuffix'))]",
     "agentpool9Count": "[parameters('agentpool9Count')]",
     "agentpool9Index": 8,
+    "agentpool9Offset": "[parameters('agentpool9Offset')]",
     "agentpool9StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool9Index'))]",
-    "agentpool9StorageAccountsCount": "[add(div(variables('agentpool9Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool9Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool9Count'), variables('maxVMsPerStorageAccount')),1)))]",
+    "agentpool9StorageAccountsCount": "[add(div(variables('agentpool9TotalCount'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool9TotalCount'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool9TotalCount'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool9SubnetName": "[variables('subnetName')]",
+    "agentpool9TotalCount": "[add(parameters('agentpool9Count'), parameters('agentpool9Offset'))]",
     "agentpool9VMNamePrefix": "[concat(variables('orchestratorName'), '-agentpool9-', variables('nameSuffix'), '-')]",
     "agentpool9VMSize": "[parameters('agentpool9VMSize')]",
     "agentpool9VnetSubnetID": "[variables('vnetSubnetID')]",
@@ -3288,7 +4632,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool1VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpool1VMNamePrefix'), 'nic-', copyIndex(variables('agentpool1Offset')))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -3335,12 +4679,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool1VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool1Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool1Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool1VMNamePrefix'), 'nic-', copyIndex(variables('agentpool1Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool1AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool1AvailabilitySet'))]"
@@ -3351,13 +4695,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool1VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool1VMNamePrefix'), 'nic-', copyIndex(variables('agentpool1Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpool1VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- curl --retry 5 -fsSL https://apt.dockerproject.org/gpg | apt-key add -\n- echo \"deb ',variables('dockerEngineDownloadRepo'),' ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- mkdir -p /etc/kubernetes/manifests\n- usermod -aG docker ',variables('username'),'\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubectl-extract.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubectl extraction\n    Requires=docker.service\n    After=docker.service\n    ConditionPathExists=!/usr/local/bin/kubectl\n\n    [Service]\n    Type=oneshot\n    ExecStartPre=/bin/mkdir -p /tmp/kubectldir\n    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir ',variables('kubernetesHyperkubeSpec'),' /bin/bash -c \"cp /hyperkube /opt/kubectldir/\"\n    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl\n    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --pod-infra-container-image=\"',variables('kubernetesPodInfraContainerSpec'),'\" \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --azure-container-registry-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -3381,15 +4725,15 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool1VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool1Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool1Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool1VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -3400,10 +4744,10 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool1VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')),'/cse', copyIndex(variables('agentpool1Offset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
@@ -3426,7 +4770,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool2VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpool2VMNamePrefix'), 'nic-', copyIndex(variables('agentpool2Offset')))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -3473,12 +4817,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool2AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool2VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool2Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool2Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool2AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool2VMNamePrefix'), 'nic-', copyIndex(variables('agentpool2Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool2AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool2VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool2VMNamePrefix'), copyIndex(variables('agentpool2Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool2AvailabilitySet'))]"
@@ -3489,13 +4833,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool2VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool2VMNamePrefix'), 'nic-', copyIndex(variables('agentpool2Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpool2VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpool2VMNamePrefix'), copyIndex(variables('agentpool2Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- curl --retry 5 -fsSL https://apt.dockerproject.org/gpg | apt-key add -\n- echo \"deb ',variables('dockerEngineDownloadRepo'),' ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- mkdir -p /etc/kubernetes/manifests\n- usermod -aG docker ',variables('username'),'\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubectl-extract.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubectl extraction\n    Requires=docker.service\n    After=docker.service\n    ConditionPathExists=!/usr/local/bin/kubectl\n\n    [Service]\n    Type=oneshot\n    ExecStartPre=/bin/mkdir -p /tmp/kubectldir\n    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir ',variables('kubernetesHyperkubeSpec'),' /bin/bash -c \"cp /hyperkube /opt/kubectldir/\"\n    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl\n    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --pod-infra-container-image=\"',variables('kubernetesPodInfraContainerSpec'),'\" \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --azure-container-registry-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -3519,15 +4863,15 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpool2VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool2VMNamePrefix'), copyIndex(variables('agentpool2Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool2AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool2VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool2Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool2Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool2AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool2VMNamePrefix'), copyIndex(variables('agentpool2Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool2VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool2VMNamePrefix'), copyIndex(variables('agentpool2Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -3538,10 +4882,10 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool2VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool2VMNamePrefix'), copyIndex(variables('agentpool2Offset')))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpool2VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('agentpool2VMNamePrefix'), copyIndex(variables('agentpool2Offset')),'/cse', copyIndex(variables('agentpool2Offset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
@@ -3564,7 +4908,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool3VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpool3VMNamePrefix'), 'nic-', copyIndex(variables('agentpool3Offset')))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -3611,12 +4955,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool3AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool3VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool3Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool3Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool3AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool3VMNamePrefix'), 'nic-', copyIndex(variables('agentpool3Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool3AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool3VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool3VMNamePrefix'), copyIndex(variables('agentpool3Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool3AvailabilitySet'))]"
@@ -3627,13 +4971,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool3VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool3VMNamePrefix'), 'nic-', copyIndex(variables('agentpool3Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpool3VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpool3VMNamePrefix'), copyIndex(variables('agentpool3Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- curl --retry 5 -fsSL https://apt.dockerproject.org/gpg | apt-key add -\n- echo \"deb ',variables('dockerEngineDownloadRepo'),' ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- mkdir -p /etc/kubernetes/manifests\n- usermod -aG docker ',variables('username'),'\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubectl-extract.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubectl extraction\n    Requires=docker.service\n    After=docker.service\n    ConditionPathExists=!/usr/local/bin/kubectl\n\n    [Service]\n    Type=oneshot\n    ExecStartPre=/bin/mkdir -p /tmp/kubectldir\n    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir ',variables('kubernetesHyperkubeSpec'),' /bin/bash -c \"cp /hyperkube /opt/kubectldir/\"\n    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl\n    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --pod-infra-container-image=\"',variables('kubernetesPodInfraContainerSpec'),'\" \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --azure-container-registry-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -3657,15 +5001,15 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpool3VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool3VMNamePrefix'), copyIndex(variables('agentpool3Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool3AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool3VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool3Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool3Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool3AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool3VMNamePrefix'), copyIndex(variables('agentpool3Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool3VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool3VMNamePrefix'), copyIndex(variables('agentpool3Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -3676,10 +5020,10 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool3VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool3VMNamePrefix'), copyIndex(variables('agentpool3Offset')))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpool3VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('agentpool3VMNamePrefix'), copyIndex(variables('agentpool3Offset')),'/cse', copyIndex(variables('agentpool3Offset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
@@ -3702,7 +5046,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool4VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpool4VMNamePrefix'), 'nic-', copyIndex(variables('agentpool4Offset')))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -3749,12 +5093,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool4AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool4VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool4Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool4Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool4AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool4VMNamePrefix'), 'nic-', copyIndex(variables('agentpool4Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool4AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool4VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool4VMNamePrefix'), copyIndex(variables('agentpool4Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool4AvailabilitySet'))]"
@@ -3765,13 +5109,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool4VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool4VMNamePrefix'), 'nic-', copyIndex(variables('agentpool4Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpool4VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpool4VMNamePrefix'), copyIndex(variables('agentpool4Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- curl --retry 5 -fsSL https://apt.dockerproject.org/gpg | apt-key add -\n- echo \"deb ',variables('dockerEngineDownloadRepo'),' ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- mkdir -p /etc/kubernetes/manifests\n- usermod -aG docker ',variables('username'),'\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubectl-extract.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubectl extraction\n    Requires=docker.service\n    After=docker.service\n    ConditionPathExists=!/usr/local/bin/kubectl\n\n    [Service]\n    Type=oneshot\n    ExecStartPre=/bin/mkdir -p /tmp/kubectldir\n    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir ',variables('kubernetesHyperkubeSpec'),' /bin/bash -c \"cp /hyperkube /opt/kubectldir/\"\n    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl\n    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --pod-infra-container-image=\"',variables('kubernetesPodInfraContainerSpec'),'\" \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --azure-container-registry-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -3795,15 +5139,15 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpool4VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool4VMNamePrefix'), copyIndex(variables('agentpool4Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool4AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool4VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool4Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool4Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool4AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool4VMNamePrefix'), copyIndex(variables('agentpool4Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool4VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool4VMNamePrefix'), copyIndex(variables('agentpool4Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -3814,10 +5158,10 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool4VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool4VMNamePrefix'), copyIndex(variables('agentpool4Offset')))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpool4VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('agentpool4VMNamePrefix'), copyIndex(variables('agentpool4Offset')),'/cse', copyIndex(variables('agentpool4Offset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
@@ -3840,7 +5184,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool5VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpool5VMNamePrefix'), 'nic-', copyIndex(variables('agentpool5Offset')))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -3887,12 +5231,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool5AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool5VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool5Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool5Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool5AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool5VMNamePrefix'), 'nic-', copyIndex(variables('agentpool5Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool5AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool5VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool5VMNamePrefix'), copyIndex(variables('agentpool5Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool5AvailabilitySet'))]"
@@ -3903,13 +5247,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool5VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool5VMNamePrefix'), 'nic-', copyIndex(variables('agentpool5Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpool5VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpool5VMNamePrefix'), copyIndex(variables('agentpool5Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- curl --retry 5 -fsSL https://apt.dockerproject.org/gpg | apt-key add -\n- echo \"deb ',variables('dockerEngineDownloadRepo'),' ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- mkdir -p /etc/kubernetes/manifests\n- usermod -aG docker ',variables('username'),'\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubectl-extract.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubectl extraction\n    Requires=docker.service\n    After=docker.service\n    ConditionPathExists=!/usr/local/bin/kubectl\n\n    [Service]\n    Type=oneshot\n    ExecStartPre=/bin/mkdir -p /tmp/kubectldir\n    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir ',variables('kubernetesHyperkubeSpec'),' /bin/bash -c \"cp /hyperkube /opt/kubectldir/\"\n    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl\n    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --pod-infra-container-image=\"',variables('kubernetesPodInfraContainerSpec'),'\" \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --azure-container-registry-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -3933,15 +5277,15 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpool5VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool5VMNamePrefix'), copyIndex(variables('agentpool5Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool5AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool5VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool5Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool5Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool5AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool5VMNamePrefix'), copyIndex(variables('agentpool5Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool5VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool5VMNamePrefix'), copyIndex(variables('agentpool5Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -3952,10 +5296,10 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool5VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool5VMNamePrefix'), copyIndex(variables('agentpool5Offset')))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpool5VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('agentpool5VMNamePrefix'), copyIndex(variables('agentpool5Offset')),'/cse', copyIndex(variables('agentpool5Offset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
@@ -3978,7 +5322,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool6VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpool6VMNamePrefix'), 'nic-', copyIndex(variables('agentpool6Offset')))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -4025,12 +5369,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool6AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool6VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool6Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool6Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool6AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool6VMNamePrefix'), 'nic-', copyIndex(variables('agentpool6Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool6AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool6VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool6VMNamePrefix'), copyIndex(variables('agentpool6Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool6AvailabilitySet'))]"
@@ -4041,13 +5385,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool6VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool6VMNamePrefix'), 'nic-', copyIndex(variables('agentpool6Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpool6VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpool6VMNamePrefix'), copyIndex(variables('agentpool6Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- curl --retry 5 -fsSL https://apt.dockerproject.org/gpg | apt-key add -\n- echo \"deb ',variables('dockerEngineDownloadRepo'),' ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- mkdir -p /etc/kubernetes/manifests\n- usermod -aG docker ',variables('username'),'\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubectl-extract.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubectl extraction\n    Requires=docker.service\n    After=docker.service\n    ConditionPathExists=!/usr/local/bin/kubectl\n\n    [Service]\n    Type=oneshot\n    ExecStartPre=/bin/mkdir -p /tmp/kubectldir\n    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir ',variables('kubernetesHyperkubeSpec'),' /bin/bash -c \"cp /hyperkube /opt/kubectldir/\"\n    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl\n    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --pod-infra-container-image=\"',variables('kubernetesPodInfraContainerSpec'),'\" \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --azure-container-registry-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -4071,15 +5415,15 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpool6VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool6VMNamePrefix'), copyIndex(variables('agentpool6Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool6AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool6VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool6Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool6Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool6AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool6VMNamePrefix'), copyIndex(variables('agentpool6Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool6VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool6VMNamePrefix'), copyIndex(variables('agentpool6Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -4090,10 +5434,10 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool6VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool6VMNamePrefix'), copyIndex(variables('agentpool6Offset')))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpool6VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('agentpool6VMNamePrefix'), copyIndex(variables('agentpool6Offset')),'/cse', copyIndex(variables('agentpool6Offset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
@@ -4116,7 +5460,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool7VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpool7VMNamePrefix'), 'nic-', copyIndex(variables('agentpool7Offset')))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -4163,12 +5507,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool7AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool7VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool7Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool7Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool7AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool7VMNamePrefix'), 'nic-', copyIndex(variables('agentpool7Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool7AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool7VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool7VMNamePrefix'), copyIndex(variables('agentpool7Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool7AvailabilitySet'))]"
@@ -4179,13 +5523,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool7VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool7VMNamePrefix'), 'nic-', copyIndex(variables('agentpool7Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpool7VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpool7VMNamePrefix'), copyIndex(variables('agentpool7Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- curl --retry 5 -fsSL https://apt.dockerproject.org/gpg | apt-key add -\n- echo \"deb ',variables('dockerEngineDownloadRepo'),' ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- mkdir -p /etc/kubernetes/manifests\n- usermod -aG docker ',variables('username'),'\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubectl-extract.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubectl extraction\n    Requires=docker.service\n    After=docker.service\n    ConditionPathExists=!/usr/local/bin/kubectl\n\n    [Service]\n    Type=oneshot\n    ExecStartPre=/bin/mkdir -p /tmp/kubectldir\n    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir ',variables('kubernetesHyperkubeSpec'),' /bin/bash -c \"cp /hyperkube /opt/kubectldir/\"\n    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl\n    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --pod-infra-container-image=\"',variables('kubernetesPodInfraContainerSpec'),'\" \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --azure-container-registry-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -4209,15 +5553,15 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpool7VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool7VMNamePrefix'), copyIndex(variables('agentpool7Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool7AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool7VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool7Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool7Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool7AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool7VMNamePrefix'), copyIndex(variables('agentpool7Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool7VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool7VMNamePrefix'), copyIndex(variables('agentpool7Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -4228,10 +5572,10 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool7VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool7VMNamePrefix'), copyIndex(variables('agentpool7Offset')))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpool7VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('agentpool7VMNamePrefix'), copyIndex(variables('agentpool7Offset')),'/cse', copyIndex(variables('agentpool7Offset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
@@ -4254,7 +5598,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool8VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpool8VMNamePrefix'), 'nic-', copyIndex(variables('agentpool8Offset')))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -4301,12 +5645,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool8AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool8VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool8Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool8Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool8AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool8VMNamePrefix'), 'nic-', copyIndex(variables('agentpool8Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool8AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool8VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool8VMNamePrefix'), copyIndex(variables('agentpool8Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool8AvailabilitySet'))]"
@@ -4317,13 +5661,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool8VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool8VMNamePrefix'), 'nic-', copyIndex(variables('agentpool8Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpool8VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpool8VMNamePrefix'), copyIndex(variables('agentpool8Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- curl --retry 5 -fsSL https://apt.dockerproject.org/gpg | apt-key add -\n- echo \"deb ',variables('dockerEngineDownloadRepo'),' ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- mkdir -p /etc/kubernetes/manifests\n- usermod -aG docker ',variables('username'),'\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubectl-extract.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubectl extraction\n    Requires=docker.service\n    After=docker.service\n    ConditionPathExists=!/usr/local/bin/kubectl\n\n    [Service]\n    Type=oneshot\n    ExecStartPre=/bin/mkdir -p /tmp/kubectldir\n    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir ',variables('kubernetesHyperkubeSpec'),' /bin/bash -c \"cp /hyperkube /opt/kubectldir/\"\n    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl\n    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --pod-infra-container-image=\"',variables('kubernetesPodInfraContainerSpec'),'\" \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --azure-container-registry-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -4347,15 +5691,15 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpool8VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool8VMNamePrefix'), copyIndex(variables('agentpool8Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool8AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool8VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool8Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool8Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool8AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool8VMNamePrefix'), copyIndex(variables('agentpool8Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool8VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool8VMNamePrefix'), copyIndex(variables('agentpool8Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -4366,10 +5710,10 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool8VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool8VMNamePrefix'), copyIndex(variables('agentpool8Offset')))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpool8VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('agentpool8VMNamePrefix'), copyIndex(variables('agentpool8Offset')),'/cse', copyIndex(variables('agentpool8Offset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
@@ -4392,7 +5736,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool9VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpool9VMNamePrefix'), 'nic-', copyIndex(variables('agentpool9Offset')))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -4439,12 +5783,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool9AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool9VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool9Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool9Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool9AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool9VMNamePrefix'), 'nic-', copyIndex(variables('agentpool9Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool9AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool9VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool9VMNamePrefix'), copyIndex(variables('agentpool9Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool9AvailabilitySet'))]"
@@ -4455,13 +5799,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool9VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool9VMNamePrefix'), 'nic-', copyIndex(variables('agentpool9Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpool9VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpool9VMNamePrefix'), copyIndex(variables('agentpool9Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- curl --retry 5 -fsSL https://apt.dockerproject.org/gpg | apt-key add -\n- echo \"deb ',variables('dockerEngineDownloadRepo'),' ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- mkdir -p /etc/kubernetes/manifests\n- usermod -aG docker ',variables('username'),'\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubectl-extract.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubectl extraction\n    Requires=docker.service\n    After=docker.service\n    ConditionPathExists=!/usr/local/bin/kubectl\n\n    [Service]\n    Type=oneshot\n    ExecStartPre=/bin/mkdir -p /tmp/kubectldir\n    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir ',variables('kubernetesHyperkubeSpec'),' /bin/bash -c \"cp /hyperkube /opt/kubectldir/\"\n    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl\n    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --pod-infra-container-image=\"',variables('kubernetesPodInfraContainerSpec'),'\" \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --azure-container-registry-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -4485,15 +5829,15 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpool9VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool9VMNamePrefix'), copyIndex(variables('agentpool9Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool9AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool9VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool9Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool9Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool9AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool9VMNamePrefix'), copyIndex(variables('agentpool9Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool9VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool9VMNamePrefix'), copyIndex(variables('agentpool9Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -4504,10 +5848,10 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool9VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool9VMNamePrefix'), copyIndex(variables('agentpool9Offset')))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpool9VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('agentpool9VMNamePrefix'), copyIndex(variables('agentpool9Offset')),'/cse', copyIndex(variables('agentpool9Offset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
@@ -4530,7 +5874,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool10VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpool10VMNamePrefix'), 'nic-', copyIndex(variables('agentpool10Offset')))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -4577,12 +5921,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool10AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool10VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool10Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool10Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool10AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool10VMNamePrefix'), 'nic-', copyIndex(variables('agentpool10Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool10AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool10VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool10VMNamePrefix'), copyIndex(variables('agentpool10Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool10AvailabilitySet'))]"
@@ -4593,13 +5937,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool10VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool10VMNamePrefix'), 'nic-', copyIndex(variables('agentpool10Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpool10VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpool10VMNamePrefix'), copyIndex(variables('agentpool10Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- curl --retry 5 -fsSL https://apt.dockerproject.org/gpg | apt-key add -\n- echo \"deb ',variables('dockerEngineDownloadRepo'),' ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- mkdir -p /etc/kubernetes/manifests\n- usermod -aG docker ',variables('username'),'\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubectl-extract.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubectl extraction\n    Requires=docker.service\n    After=docker.service\n    ConditionPathExists=!/usr/local/bin/kubectl\n\n    [Service]\n    Type=oneshot\n    ExecStartPre=/bin/mkdir -p /tmp/kubectldir\n    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir ',variables('kubernetesHyperkubeSpec'),' /bin/bash -c \"cp /hyperkube /opt/kubectldir/\"\n    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl\n    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --pod-infra-container-image=\"',variables('kubernetesPodInfraContainerSpec'),'\" \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --azure-container-registry-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -4623,15 +5967,15 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpool10VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool10VMNamePrefix'), copyIndex(variables('agentpool10Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool10AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool10VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool10Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool10Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool10AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool10VMNamePrefix'), copyIndex(variables('agentpool10Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool10VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool10VMNamePrefix'), copyIndex(variables('agentpool10Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -4642,10 +5986,10 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool10VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool10VMNamePrefix'), copyIndex(variables('agentpool10Offset')))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpool10VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('agentpool10VMNamePrefix'), copyIndex(variables('agentpool10Offset')),'/cse', copyIndex(variables('agentpool10Offset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
@@ -4668,7 +6012,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool11VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpool11VMNamePrefix'), 'nic-', copyIndex(variables('agentpool11Offset')))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -4715,12 +6059,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool11AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool11VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool11Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool11Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool11AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool11VMNamePrefix'), 'nic-', copyIndex(variables('agentpool11Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool11AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool11VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool11VMNamePrefix'), copyIndex(variables('agentpool11Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool11AvailabilitySet'))]"
@@ -4731,13 +6075,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool11VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool11VMNamePrefix'), 'nic-', copyIndex(variables('agentpool11Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpool11VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpool11VMNamePrefix'), copyIndex(variables('agentpool11Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- curl --retry 5 -fsSL https://apt.dockerproject.org/gpg | apt-key add -\n- echo \"deb ',variables('dockerEngineDownloadRepo'),' ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- mkdir -p /etc/kubernetes/manifests\n- usermod -aG docker ',variables('username'),'\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubectl-extract.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubectl extraction\n    Requires=docker.service\n    After=docker.service\n    ConditionPathExists=!/usr/local/bin/kubectl\n\n    [Service]\n    Type=oneshot\n    ExecStartPre=/bin/mkdir -p /tmp/kubectldir\n    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir ',variables('kubernetesHyperkubeSpec'),' /bin/bash -c \"cp /hyperkube /opt/kubectldir/\"\n    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl\n    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --pod-infra-container-image=\"',variables('kubernetesPodInfraContainerSpec'),'\" \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --azure-container-registry-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -4761,15 +6105,15 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpool11VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool11VMNamePrefix'), copyIndex(variables('agentpool11Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool11AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool11VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool11Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool11Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool11AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool11VMNamePrefix'), copyIndex(variables('agentpool11Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool11VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool11VMNamePrefix'), copyIndex(variables('agentpool11Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -4780,10 +6124,10 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool11VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool11VMNamePrefix'), copyIndex(variables('agentpool11Offset')))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpool11VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('agentpool11VMNamePrefix'), copyIndex(variables('agentpool11Offset')),'/cse', copyIndex(variables('agentpool11Offset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
@@ -4806,7 +6150,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool12VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpool12VMNamePrefix'), 'nic-', copyIndex(variables('agentpool12Offset')))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -4853,12 +6197,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool12StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool12StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool12AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool12VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool12Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool12StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool12Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool12StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool12AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool12VMNamePrefix'), 'nic-', copyIndex(variables('agentpool12Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool12AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool12VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool12VMNamePrefix'), copyIndex(variables('agentpool12Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool12AvailabilitySet'))]"
@@ -4869,13 +6213,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool12VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool12VMNamePrefix'), 'nic-', copyIndex(variables('agentpool12Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('agentpool12VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpool12VMNamePrefix'), copyIndex(variables('agentpool12Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\n# { { { variable } } }\n\nruncmd:\n- apt-get update\n- apt-get install -y apt-transport-https ca-certificates\n- curl --retry 5 -fsSL https://apt.dockerproject.org/gpg | apt-key add -\n- echo \"deb ',variables('dockerEngineDownloadRepo'),' ubuntu-xenial main\" | sudo tee /etc/apt/sources.list.d/docker.list\n- \"echo \\\"Package: docker-engine\\nPin: version ',variables('dockerEngineVersion'),'\\nPin-Priority: 550\\n\\\" > /etc/apt/preferences.d/docker.pref\"\n- apt-get update\n- apt-get install -y docker-engine\n- systemctl restart docker\n- mkdir -p /etc/kubernetes/manifests\n- usermod -aG docker ',variables('username'),'\n\nwrite_files:\n- path: \"/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    MountFlags=shared\n\n- path: \"/etc/systemd/system/docker.service.d/overlay.conf\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Service]\n    ExecStart=\n    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay\n\n- path: \"/etc/docker/daemon.json\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    {\n      \"live-restore\": true\n    }\n\n- path: \"/etc/kubernetes/certs/ca.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('caCertificate'),'\n\n- path: \"/etc/kubernetes/certs/apiserver.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('apiserverCertificate'),'\n\n- path: \"/etc/kubernetes/certs/client.crt\"\n  permissions: \"0644\"\n  encoding: \"base64\"\n  owner: \"root\"\n  content: |\n    ',variables('clientCertificate'),'\n\n- path: \"/var/lib/kubelet/kubeconfig\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    apiVersion: v1\n    kind: Config\n    clusters:\n    - name: localcluster\n      cluster:\n        certificate-authority: /etc/kubernetes/certs/ca.crt\n        server: https://',variables('masterInternalLbIp'),':443\n    users:\n    - name: client\n      user:\n        client-certificate: /etc/kubernetes/certs/client.crt\n        client-key: /etc/kubernetes/certs/client.key\n    contexts:\n    - context:\n        cluster: localcluster\n        user: client\n      name: localclustercontext\n    current-context: localclustercontext\n\n- path: \"/etc/systemd/system/kubectl-extract.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubectl extraction\n    Requires=docker.service\n    After=docker.service\n    ConditionPathExists=!/usr/local/bin/kubectl\n\n    [Service]\n    Type=oneshot\n    ExecStartPre=/bin/mkdir -p /tmp/kubectldir\n    ExecStart=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir ',variables('kubernetesHyperkubeSpec'),' /bin/bash -c \"cp /hyperkube /opt/kubectldir/\"\n    ExecStartPost=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl\n    ExecStartPost=/bin/chmod a+x /usr/local/bin/kubectl\n\n- path: \"/etc/systemd/system/kubelet.service\"\n  permissions: \"0644\"\n  owner: \"root\"\n  content: |\n    [Unit]\n    Description=Kubelet\n    Requires=docker.service\n    After=docker.service\n\n    [Service]\n    Restart=always\n    ExecStartPre=/bin/mkdir -p /var/lib/kubelet\n    ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet\n    ExecStartPre=/bin/mount --make-shared /var/lib/kubelet\n    ExecStart=/usr/bin/docker run \\\n      --name=kubelet \\\n      --net=host \\\n      --pid=host \\\n      --privileged \\\n      --volume=/dev:/dev \\\n      --volume=/sys:/sys:ro \\\n      --volume=/var/run:/var/run:rw \\\n      --volume=/var/lib/docker/:/var/lib/docker:rw \\\n      --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \\\n      --volume=/var/log:/var/log:rw \\\n      --volume=/etc/kubernetes/:/etc/kubernetes/:ro \\\n      --volume=/srv/kubernetes/:/srv/kubernetes/:ro \\\n        ',variables('kubernetesHyperkubeSpec'),' \\\n          /hyperkube kubelet \\\n            --api-servers=\"https://',variables('masterInternalLbIp'),':443\" \\\n            --kubeconfig=/var/lib/kubelet/kubeconfig \\\n            --pod-infra-container-image=\"',variables('kubernetesPodInfraContainerSpec'),'\" \\\n            --address=0.0.0.0 \\\n            --allow-privileged=true \\\n            --enable-server \\\n            --enable-debugging-handlers \\\n            --config=/etc/kubernetes/manifests \\\n            --cluster-dns=',variables('kubeDnsServiceIP'),' \\\n            --cluster-domain=cluster.local \\\n            --cloud-provider=azure \\\n            --cloud-config=/etc/kubernetes/azure.json \\\n            --azure-container-registry-config=/etc/kubernetes/azure.json \\\n            --hairpin-mode=promiscuous-bridge \\\n            --network-plugin=kubenet \\\n            --v=2\n    ExecStop=/usr/bin/docker stop -t 10 kubelet\n    ExecStopPost=/usr/bin/docker rm -f kubelet\n\n    [Install]\n    WantedBy=multi-user.target\n\n- path: \"/opt/azure/containers/provision.sh\"\n  permissions: \"0744\"\n  encoding: gzip\n  owner: \"root\"\n  content: !!binary |\n    ',variables('provisionScript'),'\n'))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -4899,15 +6243,15 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpool12VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool12VMNamePrefix'), copyIndex(variables('agentpool12Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool12StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool12StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool12AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool12VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool12Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool12StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool12Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool12StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool12AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool12VMNamePrefix'), copyIndex(variables('agentpool12Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool12VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool12VMNamePrefix'), copyIndex(variables('agentpool12Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -4918,10 +6262,10 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool12VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool12VMNamePrefix'), copyIndex(variables('agentpool12Offset')))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpool12VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('agentpool12VMNamePrefix'), copyIndex(variables('agentpool12Offset')),'/cse', copyIndex(variables('agentpool12Offset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
@@ -5311,6 +6655,22 @@
     }
   ],
   "outputs": {
+    "agentStorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentStorageAccountsCount')]"
+    },
+    "agentStorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentStorageAccountOffset')]"
+    },
+    "agentStorageAccountPrefixes": {
+      "type": "array",
+      "value": "[variables('storageAccountPrefixes')]"
+    },
+    "agentStorageAccountSuffix": {
+      "type": "string",
+      "value": "[variables('storageAccountBaseName')]"
+    },
     "masterFQDN": {
       "type": "string",
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn]"
