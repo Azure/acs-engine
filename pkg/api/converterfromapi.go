@@ -282,6 +282,10 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	p.VnetSubnetID = api.VnetSubnetID
 	p.SetSubnet(api.Subnet)
 	p.FQDN = api.FQDN
+	p.CustomNodeLabels = map[string]string{}
+	for k, v := range api.CustomNodeLabels {
+		p.CustomNodeLabels[k] = v
+	}
 }
 
 func convertDiagnosticsProfileToV20160930(api *DiagnosticsProfile, v20160930 *v20160930.DiagnosticsProfile) {
