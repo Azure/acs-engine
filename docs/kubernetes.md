@@ -148,6 +148,8 @@ After completing this walkthrough you will know how to:
 
 ## Troubleshooting
 
+Scaling your cluster up or down requires different parameters and template than the create. More details here [Scale up](../examples/scale-up/README.md)
+
 If your cluster is not reachable, you can run the following command to check for common failures.
 
 ### Misconfigured Service Principal
