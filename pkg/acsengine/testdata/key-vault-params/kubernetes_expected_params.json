@@ -105,5 +105,16 @@
   },
   "targetEnvironment": {
     "value": "AzurePublicCloud"
+  },
+  "windowsAdminPassword": {
+    "reference": {
+      "keyVault": {
+        "id": "/subscriptions/my-sub/resourceGroups/my-rg/providers/Microsoft.KeyVault/vaults/my-kv"
+      },
+      "secretName": "adminPassword"
+    }
+  },
+  "windowsAdminUsername": {
+    "value": "azureuser"
   }
 }
