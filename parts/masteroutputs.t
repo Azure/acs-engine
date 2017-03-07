@@ -28,13 +28,5 @@
     "agentStorageAccountPrefixes": {
       "type": "array",
       "value": "[variables('storageAccountPrefixes')]"
-    },
-    "agentStorageAccountOffset": {
-      "type": "int",
-      "value": "[variables('agentStorageAccountOffset')]"
-    },
-    "agentStorageAccountCount": {
-      "type": "int",
-      "value": "[variables('agentStorageAccountsCount')]"
     }
 {{end}}
