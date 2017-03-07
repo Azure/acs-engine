@@ -28,13 +28,13 @@ write_files:
     [Service]
     MountFlags=shared
 
-- path: "/etc/systemd/system/docker.service.d/overlay.conf"
+- path: "/etc/systemd/system/docker.service.d/exec_start.conf"
   permissions: "0644"
   owner: "root"
   content: |
     [Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --log-driver=journald
 
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
