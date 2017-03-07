@@ -118,6 +118,26 @@ func (m *TestManager) Run() error {
 	return nil
 }
 
+func isValidEnv() bool {
+	valid := true
+	envVars := []string{
+		"SERVICE_PRINCIPAL_CLIENT_ID",
+		"SERVICE_PRINCIPAL_CLIENT_SECRET",
+		"TENANT_ID",
+		"SUBSCRIPTION_ID",
+		"CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID",
+		"CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET",
+		"STAGE_TIMEOUT_MIN"}
+
+	for _, envVar := range envVars {
+		if os.Getenv(envVar) == "" {
+			fmt.Printf("Must specify environment variable %s\n", envVar)
+			valid = false
+		}
+	}
+	return valid
+}
+
 func getOrchestrator(fname string) (string, error) {
 	data, err := ioutil.ReadFile(fname)
 	if err != nil {
@@ -190,6 +210,10 @@ func main_internal() error {
 
 	testManager := TestManager{}
 
+	// validate environment
+	if !isValidEnv() {
+		return fmt.Errorf("environment is not set")
+	}
 	// get test configuration
 	if configFile == "" {
 		return fmt.Errorf("test configuration is not provided")

@@ -36,7 +36,7 @@ func getTestConfig(fname string) (*TestConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	config := new(TestConfig)
+	config := &TestConfig{}
 	if err = config.Read(data); err != nil {
 		return nil, err
 	}
