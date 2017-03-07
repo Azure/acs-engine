@@ -16,21 +16,26 @@ set -o pipefail
 
 ROOT="${DIR}/.."
 
-# Set output directory
-export OUTPUT="${ROOT}/_output/${INSTANCE_NAME}"
-
 source "${ROOT}/test/common.sh"
 
 case $1 in
+
+set_azure_account)
+  set_azure_account
+;;
+
 generate_template)
+  export OUTPUT="${ROOT}/_output/${INSTANCE_NAME}"
   generate_template
 ;;
 
 deploy_template)
+  export OUTPUT="${ROOT}/_output/${INSTANCE_NAME}"
   deploy_template
 ;;
 
 validate)
+  export OUTPUT="${ROOT}/_output/${INSTANCE_NAME}"
   export SSH_KEY="${OUTPUT}/id_rsa"
   if [ ${ORCHESTRATOR} = "kubernetes" ]; then
     export KUBECONFIG="${OUTPUT}/kubeconfig/kubeconfig.${LOCATION}.json"
