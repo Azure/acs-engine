@@ -9,6 +9,7 @@ build: prereqs
 	go generate -v ./...
 	go get .
 	go build -v
+	cd test/acs-engine-test; go build -v
 
 test: prereqs
 	go test -v ./...
