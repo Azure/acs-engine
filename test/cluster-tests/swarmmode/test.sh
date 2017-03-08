@@ -36,8 +36,8 @@ wait=5
 count=12
 success="n"
 while (( $count > 0 )); do
-  curl --fail "http://${INSTANCE_NAME}0.${LOCATION}.cloudapp.azure.com:80/"
-  if [[ $? == 0 ]]; then
+  ret=$(curl --fail "http://${INSTANCE_NAME}0.${LOCATION}.cloudapp.azure.com:80/" || echo "curl_error")
+  if [[ ! $ret =~ .*curl_error.* ]]; then
     success="y"
     break
   fi
