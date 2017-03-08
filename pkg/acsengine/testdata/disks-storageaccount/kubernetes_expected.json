@@ -212,12 +212,11 @@
         96,
         97,
         98,
-        99,
-        100
+        99
       ],
       "defaultValue": 0,
       "metadata": {
-        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
       },
       "type": "int"
     },
@@ -529,12 +528,11 @@
         96,
         97,
         98,
-        99,
-        100
+        99
       ],
       "defaultValue": 0,
       "metadata": {
-        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 100"
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
       },
       "type": "int"
     },
@@ -2096,14 +2094,6 @@
     }
   ],
   "outputs": {
-    "agentStorageAccountCount": {
-      "type": "int",
-      "value": "[variables('agentStorageAccountsCount')]"
-    },
-    "agentStorageAccountOffset": {
-      "type": "int",
-      "value": "[variables('agentStorageAccountOffset')]"
-    },
     "agentStorageAccountPrefixes": {
       "type": "array",
       "value": "[variables('storageAccountPrefixes')]"

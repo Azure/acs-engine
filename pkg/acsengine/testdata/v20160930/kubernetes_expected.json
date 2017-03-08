@@ -1763,14 +1763,6 @@
     }
   ],
   "outputs": {
-    "agentStorageAccountCount": {
-      "type": "int",
-      "value": "[variables('agentStorageAccountsCount')]"
-    },
-    "agentStorageAccountOffset": {
-      "type": "int",
-      "value": "[variables('agentStorageAccountOffset')]"
-    },
     "agentStorageAccountPrefixes": {
       "type": "array",
       "value": "[variables('storageAccountPrefixes')]"

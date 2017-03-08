@@ -13,12 +13,11 @@ example: I originally deployed 5 vms in an agent pool. I want to scale up to 10.
 in incremental mode.
 
 Note: the Offset parameter has a default value and is not normally set.
-
-Example template **kubernetes_tempalte.json** 
-Orignal Parameters **kubernetes_orignal_params.json** 
-Scale up parameters **kubernetes_scale_up_params.json** 
-Show the reuse of a template with that was created with 6 nodes and scaled up to 15
+Shows the reuse of a template with that was created with 6 nodes and scaled up to 15
+- Example template **kubernetes_tempalte.json** 
+- Orignal Parameters **kubernetes_orignal_params.json** 
+- Scale up parameters **kubernetes_scale_up_params.json** 
 
 To scale down a availability set agent pool the proper way to do it is to first list vms you want to delete and save 
-their osdisk locations then delete the vms. Then delete the network interfaces and osdisks(not to do this you might 
-need to get the access keys to the storage accounts).
+their osdisk locations then delete the vms. Then delete the network interfaces and osdisks(note to do this you will 
+need to get the access keys to the storage accounts, which you can fetch from SRP).
