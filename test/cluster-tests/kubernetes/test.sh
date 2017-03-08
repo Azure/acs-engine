@@ -189,12 +189,12 @@ log "Checking Service"
 count=5
 success="n"
 while (( $count > 0 )); do
-	ret=$(curl -f --max-time 60 "http://${external_ip}" | grep 'Welcome to nginx!')
-  if [[ ! -z "${ret}" ]]; then
+  ret=$(curl -f --max-time 60 "http://${external_ip}" | grep 'Welcome to nginx!' || echo "curl_error")
+  if [[ $ret =~ .*'Welcome to nginx!'.* ]]; then
     success="y"
     break
 	fi
-  sleep 1; count=$((count-1))
+  sleep 5; count=$((count-1))
 done
 if [[ "${success}" != "y" ]]; then
   log "failed to get expected response from nginx through the loadbalancer"
