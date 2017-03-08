@@ -1965,6 +1965,22 @@
       "type": "string",
       "value": "[variables('storageAccountBaseName')]"
     },
+    "agentpri2StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri2StorageAccountsCount')]"
+    },
+    "agentpri2StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri2StorageAccountOffset')]"
+    },
+    "agentpriStorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpriStorageAccountsCount')]"
+    },
+    "agentpriStorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpriStorageAccountOffset')]"
+    },
     "masterFQDN": {
       "type": "string",
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn]"

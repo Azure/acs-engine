@@ -1864,13 +1864,37 @@
     }
   ],
   "outputs": {
+    "agentStorageAccountPrefixes": {
+      "type": "array",
+      "value": "[variables('storageAccountPrefixes')]"
+    },
+    "agentStorageAccountSuffix": {
+      "type": "string",
+      "value": "[variables('storageAccountBaseName')]"
+    },
     "masterFQDN": {
       "type": "string",
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn]"
     },
+    "privatewinStorageAccountCount": {
+      "type": "int",
+      "value": "[variables('privatewinStorageAccountsCount')]"
+    },
+    "privatewinStorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('privatewinStorageAccountOffset')]"
+    },
     "publicwin1FQDN": {
       "type": "string",
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('publicwin1IPAddressName'))).dnsSettings.fqdn]"
+    },
+    "publicwin1StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('publicwin1StorageAccountsCount')]"
+    },
+    "publicwin1StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('publicwin1StorageAccountOffset')]"
     }
   }
 }

@@ -2015,6 +2015,22 @@
       "type": "string",
       "value": "[variables('storageAccountBaseName')]"
     },
+    "agentpool1StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpool1StorageAccountsCount')]"
+    },
+    "agentpool1StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpool1StorageAccountOffset')]"
+    },
+    "linuxpool1StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('linuxpool1StorageAccountsCount')]"
+    },
+    "linuxpool1StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('linuxpool1StorageAccountOffset')]"
+    },
     "masterFQDN": {
       "type": "string",
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn]"

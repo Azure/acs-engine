@@ -4,7 +4,7 @@
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('{{.Name}}IPAddressName'))).dnsSettings.fqdn]"
   },
 {{end}}
-{{if IsKubernetes}}
+{{if .IsAvailabilitySets}}
     "{{.Name}}StorageAccountOffset": {
       "type": "int",
       "value": "[variables('{{.Name}}StorageAccountOffset')]"

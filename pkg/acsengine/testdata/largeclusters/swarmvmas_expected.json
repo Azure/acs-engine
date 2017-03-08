@@ -6138,6 +6138,110 @@
     }
   ],
   "outputs": {
+    "agentStorageAccountPrefixes": {
+      "type": "array",
+      "value": "[variables('storageAccountPrefixes')]"
+    },
+    "agentStorageAccountSuffix": {
+      "type": "string",
+      "value": "[variables('storageAccountBaseName')]"
+    },
+    "agentpri0StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri0StorageAccountsCount')]"
+    },
+    "agentpri0StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri0StorageAccountOffset')]"
+    },
+    "agentpri10StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri10StorageAccountsCount')]"
+    },
+    "agentpri10StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri10StorageAccountOffset')]"
+    },
+    "agentpri11StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri11StorageAccountsCount')]"
+    },
+    "agentpri11StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri11StorageAccountOffset')]"
+    },
+    "agentpri1StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri1StorageAccountsCount')]"
+    },
+    "agentpri1StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri1StorageAccountOffset')]"
+    },
+    "agentpri2StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri2StorageAccountsCount')]"
+    },
+    "agentpri2StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri2StorageAccountOffset')]"
+    },
+    "agentpri3StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri3StorageAccountsCount')]"
+    },
+    "agentpri3StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri3StorageAccountOffset')]"
+    },
+    "agentpri4StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri4StorageAccountsCount')]"
+    },
+    "agentpri4StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri4StorageAccountOffset')]"
+    },
+    "agentpri5StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri5StorageAccountsCount')]"
+    },
+    "agentpri5StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri5StorageAccountOffset')]"
+    },
+    "agentpri6StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri6StorageAccountsCount')]"
+    },
+    "agentpri6StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri6StorageAccountOffset')]"
+    },
+    "agentpri7StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri7StorageAccountsCount')]"
+    },
+    "agentpri7StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri7StorageAccountOffset')]"
+    },
+    "agentpri8StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri8StorageAccountsCount')]"
+    },
+    "agentpri8StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri8StorageAccountOffset')]"
+    },
+    "agentpri9StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri9StorageAccountsCount')]"
+    },
+    "agentpri9StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri9StorageAccountOffset')]"
+    },
     "masterFQDN": {
       "type": "string",
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn]"

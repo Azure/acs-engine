@@ -1674,6 +1674,22 @@
     }
   ],
   "outputs": {
+    "agentStorageAccountPrefixes": {
+      "type": "array",
+      "value": "[variables('storageAccountPrefixes')]"
+    },
+    "agentStorageAccountSuffix": {
+      "type": "string",
+      "value": "[variables('storageAccountBaseName')]"
+    },
+    "agentprivateStorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentprivateStorageAccountsCount')]"
+    },
+    "agentprivateStorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentprivateStorageAccountOffset')]"
+    },
     "agentpublicFQDN": {
       "type": "string",
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('agentpublicIPAddressName'))).dnsSettings.fqdn]"

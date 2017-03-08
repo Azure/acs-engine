@@ -645,6 +645,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			}
 			return false
 		},
+		"AnyAgentUsesAvailablilitySets": func() bool {
+			for _, agentProfile := range properties.AgentPoolProfiles {
+				if agentProfile.IsAvailabilitySets() {
+					return true
+				}
+			}
+			return false
+		},
 		"HasLinuxAgents": func() bool {
 			for _, agentProfile := range properties.AgentPoolProfiles {
 				if agentProfile.IsLinux() {
@@ -1065,7 +1073,6 @@ func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCo
 	yamlStr := string(b)
 	yamlStr = strings.Replace(yamlStr, "PROVISION_STR", provisionContent, -1)
 	yamlStr = strings.Replace(yamlStr, "ATTRIBUTES_STR", attributeContents, -1)
-
 
 	// convert to json
 	jsonBytes, err4 := yaml.YAMLToJSON([]byte(yamlStr))

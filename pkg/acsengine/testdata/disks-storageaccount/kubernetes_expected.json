@@ -2102,6 +2102,22 @@
       "type": "string",
       "value": "[variables('storageAccountBaseName')]"
     },
+    "agentpool1StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpool1StorageAccountsCount')]"
+    },
+    "agentpool1StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpool1StorageAccountOffset')]"
+    },
+    "agentpool2StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpool2StorageAccountsCount')]"
+    },
+    "agentpool2StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpool2StorageAccountOffset')]"
+    },
     "masterFQDN": {
       "type": "string",
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn]"

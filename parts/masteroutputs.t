@@ -19,7 +19,7 @@
       "value": ""
     }
 {{end}}
-{{if IsKubernetes}}
+{{if AnyAgentUsesAvailablilitySets}}
     ,
     "agentStorageAccountSuffix": {
       "type": "string",

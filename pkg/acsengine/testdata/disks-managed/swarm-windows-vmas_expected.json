@@ -1846,9 +1846,33 @@
     }
   ],
   "outputs": {
+    "agent128StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agent128StorageAccountsCount')]"
+    },
+    "agent128StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agent128StorageAccountOffset')]"
+    },
     "agent1publicFQDN": {
       "type": "string",
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('agent1publicIPAddressName'))).dnsSettings.fqdn]"
+    },
+    "agent1publicStorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agent1publicStorageAccountsCount')]"
+    },
+    "agent1publicStorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agent1publicStorageAccountOffset')]"
+    },
+    "agentStorageAccountPrefixes": {
+      "type": "array",
+      "value": "[variables('storageAccountPrefixes')]"
+    },
+    "agentStorageAccountSuffix": {
+      "type": "string",
+      "value": "[variables('storageAccountBaseName')]"
     },
     "masterFQDN": {
       "type": "string",
