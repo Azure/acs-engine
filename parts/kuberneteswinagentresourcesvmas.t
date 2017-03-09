@@ -147,8 +147,8 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
       ], 
-      "location": "[resourceGroup().location]", 
-      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/cse')]", 
+      "location": "[variables('location')]",
+      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/cse')]",
       "properties": {
         "publisher": "Microsoft.Compute",
         "type": "CustomScriptExtension",

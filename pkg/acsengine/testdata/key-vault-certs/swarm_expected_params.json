@@ -47,6 +47,9 @@
   "linuxKeyVaultID1CertificateURL0": {
     "value": "http://url1"
   },
+  "location": {
+    "value": ""
+  },
   "masterEndpointDNSNamePrefix": {
     "value": "masterdns1"
   },

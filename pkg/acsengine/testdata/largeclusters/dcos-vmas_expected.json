@@ -3820,6 +3820,13 @@
       },
       "type": "string"
     },
+    "location": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Sets the location for all resources in the cluster"
+      },
+      "type": "string"
+    },
     "masterEndpointDNSNamePrefix": {
       "metadata": {
         "description": "Sets the Domain name label for the master IP Address.  The concatenation of the domain name label and the regional DNS zone make up the fully qualified domain name associated with the public IP address."
@@ -4089,6 +4096,11 @@
     "apiVersionStorage": "2015-06-15",
     "dataStorageAccountPrefixSeed": 97,
     "dcosBootstrapURL": "[parameters('dcosBootstrapURL')]",
+    "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
+    "locations": [
+      "[resourceGroup().location]",
+      "[parameters('location')]"
+    ],
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]",
     "masterCount": 3,
     "masterEndpointDNSNamePrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
@@ -4131,7 +4143,7 @@
     "osImageVersion": "16.04.201606270",
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]",
     "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location, variables('orchestratorName')))]",
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),variables('location'),variables('orchestratorName')))]",
     "storageAccountPrefixes": [
       "0",
       "6",
@@ -4427,7 +4439,7 @@
   "resources": [
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri0NSGName')]",
       "properties": {
         "securityRules": []
@@ -4443,7 +4455,7 @@
       "dependsOn": [
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri0VMNamePrefix'), 'nic-', copyIndex(variables('agentpri0Offset')))]",
       "properties": {
         "ipConfigurations": [
@@ -4469,7 +4481,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri0AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri0VMSize')].storageAccountType]"
@@ -4478,7 +4490,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri0AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -4494,7 +4506,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri0VMNamePrefix'), 'nic-', copyIndex(variables('agentpri0Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri0AvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri0VMNamePrefix'), copyIndex(variables('agentpri0Offset')))]",
       "properties": {
         "availabilitySet": {
@@ -4550,7 +4562,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri1NSGName')]",
       "properties": {
         "securityRules": []
@@ -4566,7 +4578,7 @@
       "dependsOn": [
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri1VMNamePrefix'), 'nic-', copyIndex(variables('agentpri1Offset')))]",
       "properties": {
         "ipConfigurations": [
@@ -4592,7 +4604,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri1AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri1VMSize')].storageAccountType]"
@@ -4601,7 +4613,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri1AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -4617,7 +4629,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri1VMNamePrefix'), 'nic-', copyIndex(variables('agentpri1Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri1AvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri1VMNamePrefix'), copyIndex(variables('agentpri1Offset')))]",
       "properties": {
         "availabilitySet": {
@@ -4673,7 +4685,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri2NSGName')]",
       "properties": {
         "securityRules": []
@@ -4689,7 +4701,7 @@
       "dependsOn": [
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri2VMNamePrefix'), 'nic-', copyIndex(variables('agentpri2Offset')))]",
       "properties": {
         "ipConfigurations": [
@@ -4715,7 +4727,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri2VMSize')].storageAccountType]"
@@ -4724,7 +4736,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri2AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -4740,7 +4752,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri2VMNamePrefix'), 'nic-', copyIndex(variables('agentpri2Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri2AvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri2VMNamePrefix'), copyIndex(variables('agentpri2Offset')))]",
       "properties": {
         "availabilitySet": {
@@ -4796,7 +4808,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri3NSGName')]",
       "properties": {
         "securityRules": []
@@ -4812,7 +4824,7 @@
       "dependsOn": [
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri3VMNamePrefix'), 'nic-', copyIndex(variables('agentpri3Offset')))]",
       "properties": {
         "ipConfigurations": [
@@ -4838,7 +4850,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri3AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri3VMSize')].storageAccountType]"
@@ -4847,7 +4859,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri3AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -4863,7 +4875,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri3VMNamePrefix'), 'nic-', copyIndex(variables('agentpri3Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri3AvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri3VMNamePrefix'), copyIndex(variables('agentpri3Offset')))]",
       "properties": {
         "availabilitySet": {
@@ -4919,7 +4931,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri4NSGName')]",
       "properties": {
         "securityRules": []
@@ -4935,7 +4947,7 @@
       "dependsOn": [
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri4VMNamePrefix'), 'nic-', copyIndex(variables('agentpri4Offset')))]",
       "properties": {
         "ipConfigurations": [
@@ -4961,7 +4973,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri4AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri4VMSize')].storageAccountType]"
@@ -4970,7 +4982,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri4AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -4986,7 +4998,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri4VMNamePrefix'), 'nic-', copyIndex(variables('agentpri4Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri4AvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri4VMNamePrefix'), copyIndex(variables('agentpri4Offset')))]",
       "properties": {
         "availabilitySet": {
@@ -5042,7 +5054,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri5NSGName')]",
       "properties": {
         "securityRules": []
@@ -5058,7 +5070,7 @@
       "dependsOn": [
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri5VMNamePrefix'), 'nic-', copyIndex(variables('agentpri5Offset')))]",
       "properties": {
         "ipConfigurations": [
@@ -5084,7 +5096,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri5AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri5VMSize')].storageAccountType]"
@@ -5093,7 +5105,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri5AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -5109,7 +5121,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri5VMNamePrefix'), 'nic-', copyIndex(variables('agentpri5Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri5AvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri5VMNamePrefix'), copyIndex(variables('agentpri5Offset')))]",
       "properties": {
         "availabilitySet": {
@@ -5165,7 +5177,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri6NSGName')]",
       "properties": {
         "securityRules": []
@@ -5181,7 +5193,7 @@
       "dependsOn": [
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri6VMNamePrefix'), 'nic-', copyIndex(variables('agentpri6Offset')))]",
       "properties": {
         "ipConfigurations": [
@@ -5207,7 +5219,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri6AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri6VMSize')].storageAccountType]"
@@ -5216,7 +5228,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri6AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -5232,7 +5244,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri6VMNamePrefix'), 'nic-', copyIndex(variables('agentpri6Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri6AvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri6VMNamePrefix'), copyIndex(variables('agentpri6Offset')))]",
       "properties": {
         "availabilitySet": {
@@ -5288,7 +5300,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri7NSGName')]",
       "properties": {
         "securityRules": []
@@ -5304,7 +5316,7 @@
       "dependsOn": [
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri7VMNamePrefix'), 'nic-', copyIndex(variables('agentpri7Offset')))]",
       "properties": {
         "ipConfigurations": [
@@ -5330,7 +5342,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri7AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri7VMSize')].storageAccountType]"
@@ -5339,7 +5351,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri7AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -5355,7 +5367,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri7VMNamePrefix'), 'nic-', copyIndex(variables('agentpri7Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri7AvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri7VMNamePrefix'), copyIndex(variables('agentpri7Offset')))]",
       "properties": {
         "availabilitySet": {
@@ -5411,7 +5423,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri8NSGName')]",
       "properties": {
         "securityRules": []
@@ -5427,7 +5439,7 @@
       "dependsOn": [
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri8VMNamePrefix'), 'nic-', copyIndex(variables('agentpri8Offset')))]",
       "properties": {
         "ipConfigurations": [
@@ -5453,7 +5465,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri8AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri8VMSize')].storageAccountType]"
@@ -5462,7 +5474,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri8AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -5478,7 +5490,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri8VMNamePrefix'), 'nic-', copyIndex(variables('agentpri8Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri8AvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri8VMNamePrefix'), copyIndex(variables('agentpri8Offset')))]",
       "properties": {
         "availabilitySet": {
@@ -5534,7 +5546,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri9NSGName')]",
       "properties": {
         "securityRules": []
@@ -5550,7 +5562,7 @@
       "dependsOn": [
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri9VMNamePrefix'), 'nic-', copyIndex(variables('agentpri9Offset')))]",
       "properties": {
         "ipConfigurations": [
@@ -5576,7 +5588,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri9AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri9VMSize')].storageAccountType]"
@@ -5585,7 +5597,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri9AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -5601,7 +5613,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri9VMNamePrefix'), 'nic-', copyIndex(variables('agentpri9Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri9AvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri9VMNamePrefix'), copyIndex(variables('agentpri9Offset')))]",
       "properties": {
         "availabilitySet": {
@@ -5657,7 +5669,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri10NSGName')]",
       "properties": {
         "securityRules": []
@@ -5673,7 +5685,7 @@
       "dependsOn": [
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri10VMNamePrefix'), 'nic-', copyIndex(variables('agentpri10Offset')))]",
       "properties": {
         "ipConfigurations": [
@@ -5699,7 +5711,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri10AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri10VMSize')].storageAccountType]"
@@ -5708,7 +5720,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri10AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -5724,7 +5736,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri10VMNamePrefix'), 'nic-', copyIndex(variables('agentpri10Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri10AvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri10VMNamePrefix'), copyIndex(variables('agentpri10Offset')))]",
       "properties": {
         "availabilitySet": {
@@ -5780,7 +5792,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpublic1NSGName')]",
       "properties": {
         "securityRules": [
@@ -5840,7 +5852,7 @@
         "[variables('vnetID')]",
         "[variables('agentpublic1LbID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpublic1VMNamePrefix'), 'nic-', copyIndex(variables('agentpublic1Offset')))]",
       "properties": {
         "ipConfigurations": [
@@ -5871,7 +5883,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpublic1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpublic1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpublic1AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpublic1VMSize')].storageAccountType]"
@@ -5880,14 +5892,14 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpublic1AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpublic1IPAddressName')]",
       "properties": {
         "dnsSettings": {
@@ -5902,7 +5914,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('agentpublic1IPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpublic1LbName')]",
       "properties": {
         "backendAddressPools": [
@@ -6026,7 +6038,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('agentpublic1VMNamePrefix'), 'nic-', copyIndex(variables('agentpublic1Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpublic1AvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpublic1VMNamePrefix'), copyIndex(variables('agentpublic1Offset')))]",
       "properties": {
         "availabilitySet": {
@@ -6085,7 +6097,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
@@ -6097,7 +6109,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountExhibitorName')]",
       "properties": {
         "accountType": "Standard_LRS"
@@ -6120,7 +6132,7 @@
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('agentpri10NSGName'))]",
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('agentpublic1NSGName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('virtualNetworkName')]",
       "properties": {
         "addressSpace": {
@@ -6261,14 +6273,14 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterAvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterPublicIPAddressName')]",
       "properties": {
         "dnsSettings": {
@@ -6283,7 +6295,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterLbName')]",
       "properties": {
         "backendAddressPools": [
@@ -6313,7 +6325,7 @@
       "dependsOn": [
         "[variables('masterLbID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterLbName'), '/', 'SSH-', variables('masterVMNamePrefix'), copyIndex())]",
       "properties": {
         "backendPort": 22,
@@ -6328,7 +6340,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterNSGName')]",
       "properties": {
         "securityRules": [
@@ -6362,7 +6374,7 @@
         "[variables('masterLbID')]",
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
       "properties": {
         "ipConfigurations": [
@@ -6405,7 +6417,7 @@
         "[variables('masterStorageAccountName')]",
         "[variables('masterStorageAccountExhibitorName')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
       "properties": {
         "availabilitySet": {
@@ -6464,7 +6476,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), sub(variables('masterCount'), 1))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), sub(variables('masterCount'), 1), '/waitforleader')]",
       "properties": {
         "autoUpgradeMinorVersion": true,

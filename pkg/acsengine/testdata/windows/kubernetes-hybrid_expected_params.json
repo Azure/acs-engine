@@ -74,6 +74,9 @@
   "linuxpool1VMSize": {
     "value": "Standard_D2_v2"
   },
+  "location": {
+    "value": ""
+  },
   "masterEndpointDNSNamePrefix": {
     "value": "masterdns1"
   },
