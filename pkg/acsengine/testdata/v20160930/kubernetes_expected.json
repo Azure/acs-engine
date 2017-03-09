@@ -807,7 +807,7 @@
       2204
     ],
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),resourceGroup().location))]",
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),variables('location')))]",
     "storageAccountPrefixes": [
       "0",
       "6",
@@ -1232,7 +1232,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool1VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -1370,7 +1370,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool2VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool2VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -1745,7 +1745,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,

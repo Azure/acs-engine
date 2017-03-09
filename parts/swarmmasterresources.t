@@ -3,7 +3,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
@@ -13,7 +13,7 @@
 {{if not .MasterProfile.IsCustomVNET}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('virtualNetworkName')]",
       "properties": {
         "addressSpace": {
@@ -30,14 +30,14 @@
 {{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterAvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterPublicIPAddressName')]",
       "properties": {
         "dnsSettings": {
@@ -52,7 +52,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterLbName')]",
       "properties": {
         "backendAddressPools": [
@@ -82,7 +82,7 @@
       "dependsOn": [
         "[variables('masterLbID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterLbName'), '/', 'SSH-', variables('masterVMNamePrefix'), copyIndex())]",
       "properties": {
         "backendPort": 22,
@@ -100,7 +100,7 @@
       "dependsOn": [
         "[variables('masterLbID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterSshPort22InboundNatRuleNamePrefix'), '0')]",
       "properties": {
         "backendPort": 2222,
@@ -127,7 +127,7 @@
         "[concat(variables('masterSshPort22InboundNatRuleIdPrefix'),'0')]",
         "[concat(variables('masterSshInboundNatRuleIdPrefix'),copyIndex())]"        
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
       "properties": {
         "ipConfigurations": [
@@ -166,7 +166,7 @@
       {
         "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]"
       },
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
       "properties": {
         "availabilitySet": {
@@ -234,7 +234,7 @@
       "dependsOn": [
           "[concat('Microsoft.Compute/virtualMachines/', concat(variables('masterVMNamePrefix'), copyIndex()))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(), '/configuremaster')]",
       "properties": {
         "publisher": "Microsoft.OSTCExtensions",

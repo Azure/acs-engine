@@ -12,7 +12,7 @@
 	  ,"[variables('{{.Name}}LbID')]"
 {{end}}
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex())]",
       "properties": {
         "ipConfigurations": [
@@ -39,7 +39,7 @@
 {{if .IsManagedDisks}}
     {
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('{{.Name}}AvailabilitySet')]",
       "properties": {
         "platformFaultDomainCount": "3",
@@ -58,7 +58,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
@@ -75,7 +75,7 @@
           "dependsOn": [
             "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
           ],
-          "location": "[resourceGroup().location]",
+          "location": "[variables('location')]",
           "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
           "properties": {
             "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
@@ -85,7 +85,7 @@
     {{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('{{.Name}}AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -94,7 +94,7 @@
 {{if IsPublic .Ports}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('{{.Name}}IPAddressName')]",
       "properties": {
         "dnsSettings": {
@@ -109,7 +109,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('{{.Name}}IPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('{{.Name}}LbName')]",
       "properties": {
         "backendAddressPools": [
@@ -162,7 +162,7 @@
       {
         "creationSource" : "[concat('acsengine-', variables('{{.Name}}VMNamePrefix'), copyIndex())]"
       },
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex())]",
       "properties": {
         "availabilitySet": {

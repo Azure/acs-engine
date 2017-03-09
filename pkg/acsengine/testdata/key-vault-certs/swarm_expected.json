@@ -907,6 +907,7 @@
         ]
       }
     ],
+    "location": "[resourceGroup().location]",
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]",
     "masterCount": 1,
     "masterCustomScript": "[concat('/bin/bash -c \"/bin/bash /opt/azure/containers/',variables('configureClusterScriptFile'), ' ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1\"')]",
@@ -1645,7 +1646,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpoolwStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpoolwStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpoolwAccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpoolwVMSize')].storageAccountType]"
@@ -1663,7 +1664,7 @@
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefixes')[mod(add(4,variables('agentpoolwStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('agentpoolwStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpoolwAccountName'))]",
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpoolwVMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {

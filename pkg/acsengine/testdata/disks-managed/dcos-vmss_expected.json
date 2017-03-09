@@ -574,6 +574,7 @@
     "apiVersionStorageManagedDisks": "2016-04-30-preview",
     "dataStorageAccountPrefixSeed": 97,
     "dcosBootstrapURL": "[parameters('dcosBootstrapURL')]",
+    "location": "[resourceGroup().location]",
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]",
     "masterCount": 3,
     "masterEndpointDNSNamePrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
@@ -912,7 +913,7 @@
   "resources": [
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agent128NSGName')]",
       "properties": {
         "securityRules": []
@@ -924,7 +925,7 @@
       "dependsOn": [
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agent128VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
@@ -1015,7 +1016,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agent1publicNSGName')]",
       "properties": {
         "securityRules": [
@@ -1067,7 +1068,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agent1publicIPAddressName')]",
       "properties": {
         "dnsSettings": {
@@ -1082,7 +1083,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('agent1publicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agent1publicLbName')]",
       "properties": {
         "backendAddressPools": [
@@ -1201,7 +1202,7 @@
         "[variables('vnetID')]",
         "[concat('Microsoft.Network/loadBalancers/', variables('agent1publicLbName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agent1publicVMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {

@@ -395,7 +395,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {

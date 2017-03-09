@@ -577,7 +577,7 @@
     "apiVersionStorage": "2015-06-15",
     "dataStorageAccountPrefixSeed": 97,
     "dcosBootstrapURL": "[parameters('dcosBootstrapURL')]",
-    "location": "[resourceGroup().location]",
+    "location": "eastus",
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]",
     "masterCount": 3,
     "masterEndpointDNSNamePrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",

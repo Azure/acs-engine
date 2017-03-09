@@ -147,7 +147,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex())]"
       ], 
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]", 
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(), '/cse')]", 
       "properties": {
         "publisher": "Microsoft.Compute",

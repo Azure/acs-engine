@@ -2977,7 +2977,7 @@
       2204
     ],
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),resourceGroup().location))]",
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),variables('location')))]",
     "storageAccountPrefixes": [
       "0",
       "6",
@@ -3402,7 +3402,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool1VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -3540,7 +3540,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool2VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool2VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -3678,7 +3678,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool3VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool3VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -3816,7 +3816,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool4VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool4VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -3954,7 +3954,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool5VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool5VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -4092,7 +4092,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool6VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool6VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -4230,7 +4230,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool7VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool7VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -4368,7 +4368,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool8VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool8VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -4506,7 +4506,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool9VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool9VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -4644,7 +4644,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool10VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool10VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -4782,7 +4782,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool11VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool11VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -4920,7 +4920,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool12VMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool12VMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -5295,7 +5295,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
