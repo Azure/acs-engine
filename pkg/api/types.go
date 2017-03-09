@@ -2,6 +2,7 @@ package api
 
 import (
 	neturl "net/url"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
@@ -331,6 +332,16 @@ func (a *AgentPoolProfile) IsStorageAccount() bool {
 // HasDisks returns true if the customer specified disks
 func (a *AgentPoolProfile) HasDisks() bool {
 	return len(a.DiskSizesGB) > 0
+}
+
+//GetGPUCount returns 1 if the VMSize of the agent profile is one of the GPU capabable Sku (NC* & NV*) otherwise 0
+func (a *AgentPoolProfile) GetGPUCount() int {
+	//only support 0 or 1 for now, multi-GPU will be available in k8s 1.6 but 
+	//the flag will change anyway so no need for a more complex rule so far
+	if strings.HasPrefix(a.VMSize, "Standard_N") == true {
+		return 1
+	}
+	return 0
 }
 
 // HasSecrets returns true if the customer specified secrets to install

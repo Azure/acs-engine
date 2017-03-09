@@ -1,3 +1,4 @@
+    "{{.Name}}experimentalGpuFlag": {{.GetGPUCount}},    
     "{{.Name}}StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('{{.Name}}Index'))]",
     "{{.Name}}Count": "[parameters('{{.Name}}Count')]",
     "{{.Name}}AvailabilitySet": "[concat('{{.Name}}-availabilitySet-', variables('nameSuffix'))]",

@@ -133,6 +133,7 @@ write_files:
             --pod-infra-container-image="{{{kubernetesPodInfraContainerSpec}}}" \
             --address=0.0.0.0 \
             --allow-privileged=true \
+            --experimental-nvidia-gpus {{{[[VMName]]experimentalGpuFlag}}} \
             --enable-server \
             --enable-debugging-handlers \
             --config=/etc/kubernetes/manifests \

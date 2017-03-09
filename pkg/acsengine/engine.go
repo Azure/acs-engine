@@ -572,8 +572,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 			// return the custom data
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
-		"GetKubernetesAgentCustomData": func() string {
-			str, e := getSingleLineForTemplate(kubernetesAgentCustomDataYaml)
+		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
+			str, e := getSingleLineKubernetesAgentCustomData(kubernetesAgentCustomDataYaml, profile.Name)
 			if e != nil {
 				return ""
 			}
@@ -954,6 +954,15 @@ func getSingleLineForTemplate(textFilename string) (string, error) {
 	}
 	textStr = rVerbatim.ReplaceAllString(textStr, "',$1,'")
 	return textStr, nil
+}
+
+func getSingleLineKubernetesAgentCustomData(yamlFilename string, vmName string) (string, error) {
+	yamlStr, err := getSingleLineForTemplate(yamlFilename)
+	if err != nil {
+		return "", err
+	}
+	yamlStr = strings.Replace(yamlStr, "[[VMName]]", vmName, -1)
+	return yamlStr, nil
 }
 
 func escapeSingleLine(escapedStr string) string {
