@@ -13,6 +13,7 @@ node {
         String locations_str = "${LOCATIONS}"
         String sendTo = "${SEND_TO}".trim()
         Integer timeoutInMinutes = STAGE_TIMEOUT.toInteger()
+        def autoclean="${AUTOCLEAN}"
 
         if(locations_str.equals("all")) {
           locations_str = "\
@@ -63,6 +64,7 @@ uksouth ukwest"
                 env.RESOURCE_GROUP = "test-acs-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
                 env.DEPLOYMENT_NAME = "${env.RESOURCE_GROUP}"
                 env.LOGFILE = pwd()+"/${junit_dir}/${ORCHESTRATOR}.${env.LOCATION}.log"
+                env.CLEANUP = "y"
                 def ok = true
                 // Deploy
                 try {
@@ -77,7 +79,8 @@ uksouth ukwest"
                   }
                 }
                 catch(exc) {
-                  echo "Exception ${exc}"
+                  env.CLEANUP = autoclean
+                  echo "Exception in [deploy ${ORCHESTRATOR}/${env.LOCATION}] : ${exc}"
                   ok = false
                 }
                 // Verify deployment
@@ -98,7 +101,8 @@ uksouth ukwest"
                   }
                 }
                 catch(exc) {
-                  echo "Exception ${exc}"
+                  env.CLEANUP = autoclean
+                  echo "Exception in [validate ${ORCHESTRATOR}/${env.LOCATION}] : ${exc}"
                 }
                 // Clean up
                 try {
