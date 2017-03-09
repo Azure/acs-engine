@@ -1,6 +1,7 @@
 # Microsoft Azure Container Service Engine - Kubernetes Walkthrough
 
 * [Kubernetes Windows Walkthrough](kubernetes.windows.md) - shows how to create a Kubernetes cluster on Windows.
+* [Kubernetes with GPU support Walkthrough](kubernetes.gpu.md) - shows how to create a Kubernetes cluster with GPU support.
 
 ## Deployment
 

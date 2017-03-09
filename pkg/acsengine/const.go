@@ -32,7 +32,7 @@ const (
 )
 
 const (
-	KubernetesHyperkubeImageName         = "hyperkube-amd64:v1.5.3"
+	KubernetesHyperkubeImageName         = "hyperkube-amd64:v1.6.0-beta.1"
 	KubernetesDashboardImageName         = "kubernetes-dashboard-amd64:v1.5.1"
 	KubernetesExechealthzImageName       = "exechealthz-amd64:1.2"
 	KubernetesAddonResizerImageName      = "addon-resizer:1.6"
