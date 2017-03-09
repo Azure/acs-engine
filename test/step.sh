@@ -44,7 +44,7 @@ validate)
 ;;
 
 cleanup)
-  export CLEANUP="y"
+  export CLEANUP="${CLEANUP:-y}"
   cleanup
 ;;
 esac

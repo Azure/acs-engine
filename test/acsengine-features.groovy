@@ -11,6 +11,7 @@ node {
         env.HOME=clone_dir
         String sendTo = "${SEND_TO}".trim()
         Integer timeoutInMinutes = STAGE_TIMEOUT.toInteger()
+        def autoclean="${AUTOCLEAN}"
 
         dir(clone_dir) {
           def img = null
@@ -65,6 +66,7 @@ node {
                     env.ORCHESTRATOR = "dcos"
                   }
                   env.LOGFILE = pwd()+"/${junit_dir}/${name}.log"
+                  env.CLEANUP = "y"
                   // Generate and deploy template, validate deployments
                   try {
                     stage(name) {
@@ -85,7 +87,8 @@ node {
                     }
                   }
                   catch(exc) {
-                    echo "Exception ${exc}"
+                    env.CLEANUP = autoclean
+                    echo "Exception in [${name}] : ${exc}"
                   }
                   // Clean up
                   try {
