@@ -154,4 +154,3 @@ runcmd:
 - systemctl restart docker
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
-

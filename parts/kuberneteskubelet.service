@@ -45,6 +45,7 @@ ExecStart=/usr/bin/docker run \
         --azure-container-registry-config=/etc/kubernetes/azure.json \
         --hairpin-mode=promiscuous-bridge \
         --network-plugin=${KUBELET_NETWORK_PLUGIN} \
+        --feature-gates=Accelerators=true \
         --v=2
 
 [Install]
