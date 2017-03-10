@@ -11,6 +11,7 @@ node {
         env.HOME=clone_dir
         String sendTo = "${SEND_TO}".trim()
         Integer timeoutInMinutes = STAGE_TIMEOUT.toInteger()
+        def autoclean="${AUTOCLEAN}"
 
         dir(clone_dir) {
           def img = null
@@ -34,7 +35,6 @@ node {
                 env.SERVICE_PRINCIPAL_CLIENT_SECRET="${SPN_PASSWORD}"
                 env.TENANT_ID="${TENANT_ID}"
                 env.SUBSCRIPTION_ID="${SUBSCRIPTION_ID}"
-                env.LOCATION = "${LOCATION}"
                 env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}"
                 env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}"
 
@@ -45,10 +45,16 @@ node {
                 // Build and test acs-engine
                 sh('make ci')
               }
-              def subdirs = "${SCENARIOS}".tokenize('[ \t\n]+')
-              for (i = 0; i < subdirs.size(); i++) {
-                def subdir = subdirs[i]
+              def pairs = "${SCENARIOS_LOCATIONS}".tokenize('|')
+              for(i = 0; i < pairs.size(); i++) {
+                def pair = pairs[i].tokenize('[ \t\n]+')
+                if(pair.size() != 2) {
+                  echo "Skipping '"+pairs[i]+"'"
+                  continue
+                }
+                def subdir = pair[0]
                 def names = sh(returnStdout: true, script: "cd examples; ls ${subdir}/*.json").split("\\r?\\n")
+                env.LOCATION = pair[1]
                 for(j = 0; j< names.size(); j++) {
                   def name = names[j].trim()
                   env.CLUSTER_DEFINITION = pwd()+"/examples/${name}"
@@ -60,6 +66,7 @@ node {
                     env.ORCHESTRATOR = "dcos"
                   }
                   env.LOGFILE = pwd()+"/${junit_dir}/${name}.log"
+                  env.CLEANUP = "y"
                   // Generate and deploy template, validate deployments
                   try {
                     stage(name) {
@@ -80,7 +87,8 @@ node {
                     }
                   }
                   catch(exc) {
-                    echo "Exception ${exc}"
+                    env.CLEANUP = autoclean
+                    echo "Exception in [${name}] : ${exc}"
                   }
                   // Clean up
                   try {

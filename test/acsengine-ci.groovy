@@ -40,7 +40,7 @@ node {
                   env.SUBSCRIPTION_ID="${SUBSCRIPTION_ID}"
                   env.LOCATION = "${LOCATION}"
                   env.LOGFILE = "${log_dir}/${LOCATION}.log"
-                  env.CLEANUP = "y"
+                  env.CLEANUP = "${CLEANUP}"
 
                   env.INSTANCE_NAME = "test-acs-ci-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
                   env.INSTANCE_NAME_PREFIX = "test-acs-ci"

@@ -30,7 +30,7 @@ const (
 	dcosCustomData184 = "dcoscustomdata184.t"
 	dcosCustomData187 = "dcoscustomdata187.t"
 	dcosCustomData188 = "dcoscustomdata188.t"
-	dcosProvision 	  = "dcosprovision.sh"
+	dcosProvision     = "dcosprovision.sh"
 	dcosAgentScript   = "dcosagentcustomscript.sh"
 )
 
@@ -1025,7 +1025,7 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 		buf.WriteString(agentScript)
 		roleFileContents = buf.String()
 	} else {
-		panic(fmt.Sprintf("BUG3: %s", err2.Error()))
+		panic(fmt.Sprintf("BUG: %s", err2.Error()))
 	}
 
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
@@ -1082,7 +1082,6 @@ func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCo
 	yamlStr := string(b)
 	yamlStr = strings.Replace(yamlStr, "PROVISION_STR", provisionContent, -1)
 	yamlStr = strings.Replace(yamlStr, "ATTRIBUTES_STR", attributeContents, -1)
-
 
 	// convert to json
 	jsonBytes, err4 := yaml.YAMLToJSON([]byte(yamlStr))

@@ -164,7 +164,7 @@ type AgentPoolProfile struct {
 	// subnet is internal
 	subnet string
 
-	FQDN string `json:"fqdn,omitempty"`
+	FQDN             string            `json:"fqdn,omitempty"`
 	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
 }
 
