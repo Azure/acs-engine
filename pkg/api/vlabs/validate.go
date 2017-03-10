@@ -188,6 +188,7 @@ func (a *Properties) Validate() error {
 		}
 		switch agentPoolProfile.StorageProfile {
 		case StorageAccount:
+		case StorageAccountClassic:
 		case ManagedDisks:
 		case "":
 		default:
