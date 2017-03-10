@@ -104,7 +104,7 @@ function ensureDocker() {
     systemctl enable docker
     systemctl restart docker
     dockerStarted=1
-    for i in {1..600}; do
+    for i in {1..900}; do
         if ! /usr/bin/docker info; then
             echo "status $?"
             /bin/systemctl restart docker
