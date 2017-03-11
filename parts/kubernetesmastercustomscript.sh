@@ -130,6 +130,23 @@ function ensureKubelet() {
 function extractKubectl(){
     systemctl enable kubectl-extract
     systemctl restart kubectl-extract
+    kubectlExtracted=1
+    for i in {1..600}; do
+        if [ -f "/usr/local/bin/kubectl" ]; then
+            echo "kubectl extracted."
+            kubectlExtracted=0
+            break
+        else
+            /bin/systemctl restart kubectl-extract
+        fi
+        sleep 1
+    done
+
+    # kubectl extraction failure will not cause overall installation failure. 
+    if [ $kubectlExtracted -ne 0 ]
+    then
+        echo "kubectl doesn't extracted correctly."
+    fi
 }
 
 function ensureApiserver() {
