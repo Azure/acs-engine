@@ -111,6 +111,115 @@
       },
       "type": "int"
     },
+    "agentpool1Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
+      },
+      "type": "int"
+    },
     "agentpool1Subnet": {
       "defaultValue": "10.240.0.0/16",
       "metadata": {
@@ -491,6 +600,7 @@
     "agentpool1AvailabilitySet": "[concat('agentpool1-availabilitySet-', variables('nameSuffix'))]",
     "agentpool1Count": "[parameters('agentpool1Count')]",
     "agentpool1Index": 0,
+    "agentpool1Offset": "[parameters('agentpool1Offset')]",
     "agentpool1StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool1Index'))]",
     "agentpool1StorageAccountsCount": "[add(div(variables('agentpool1Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool1Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool1Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool1SubnetName": "[variables('subnetName')]",
@@ -914,14 +1024,14 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('agentpool1Count')]",
+        "count": "[sub(variables('agentpool1Count'), variables('agentpool1Offset'))]",
         "name": "loop"
       },
       "dependsOn": [
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool1VMNamePrefix'), 'nicp-', copyIndex())]",
+      "name": "[concat(variables('agentpool1VMNamePrefix'), 'nicp-', copyIndex(variables('agentpool1Offset'))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -964,16 +1074,16 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('agentpool1Count')]",
+        "count": "[sub(variables('agentpool1Count'), variables('agentpool1Offset'))]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool1VMNamePrefix'), 'nicp-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool1Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool1Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpool1VMNamePrefix'), 'nicp-', copyIndex(variables('agentpool1Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpool1AvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpool1AvailabilitySet'))]"
@@ -984,7 +1094,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool1VMNamePrefix'), 'nicp-', copyIndex()))]",
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpool1VMNamePrefix'), 'nicp-', copyIndex(variables('agentpool1Offset'))))]",
               "properties": {
                 "primary": true
               }
@@ -994,7 +1104,7 @@
         "osProfile": {
           "adminPassword": "[variables('windowsAdminPassword')]",
           "adminUsername": "[variables('windowsAdminUsername')]",
-          "computername": "[concat(variables('agentpool1VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]",
           "customData": "[base64(concat('<#\n    .SYNOPSIS\n        Provisions VM as a Kubernetes agent.\n\n    .DESCRIPTION\n        Provisions VM as a Kubernetes agent.\n#>\n[CmdletBinding(DefaultParameterSetName=\"Standard\")]\nparam(\n    [string]\n    [ValidateNotNullOrEmpty()]\n    $MasterIP,\n\n    [parameter()]\n    [ValidateNotNullOrEmpty()]\n    $KubeDnsServiceIp,\n\n    [parameter(Mandatory=$true)]\n    [ValidateNotNullOrEmpty()]\n    $MasterFQDNPrefix,\n\n    [parameter(Mandatory=$true)]\n    [ValidateNotNullOrEmpty()]\n    $Location,\n\n    [parameter(Mandatory=$true)]\n    [ValidateNotNullOrEmpty()]\n    $AgentKey,\n\n    [parameter(Mandatory=$true)]\n    [ValidateNotNullOrEmpty()]\n    $AzureHostname,\n\n    [parameter(Mandatory=$true)]\n    [ValidateNotNullOrEmpty()]\n    $AADClientId,\n\n    [parameter(Mandatory=$true)]\n    [ValidateNotNullOrEmpty()]\n    $AADClientSecret\n)\n\n$global:CACertificate = \"',variables('caCertificate'),'\"\n$global:AgentCertificate = \"',variables('clientCertificate'),'\"\n$global:DockerServiceName = \"Docker\"\n$global:RRASServiceName = \"RemoteAccess\"\n$global:KubeDir = \"c:\\k\"\n$global:KubeBinariesSASURL = \"https://acsengine.blob.core.windows.net/wink8s/v1.5.3int.zip\"\n$global:KubeletStartFile = $global:KubeDir + \"\\kubeletstart.ps1\"\n$global:KubeProxyStartFile = $global:KubeDir + \"\\kubeproxystart.ps1\"\n$global:NatNetworkName=\"nat\"\n$global:TransparentNetworkName=\"transparentNet\"\n\n$global:TenantId = \"',variables('tenantID'),'\"\n$global:SubscriptionId = \"',variables('subscriptionId'),'\"\n$global:ResourceGroup = \"',variables('resourceGroup'),'\"\n$global:SubnetName = \"',variables('subnetName'),'\"\n$global:SecurityGroupName = \"',variables('nsgName'),'\"\n$global:VNetName = \"',variables('virtualNetworkName'),'\"\n$global:RouteTableName = \"',variables('routeTableName'),'\"\n$global:PrimaryAvailabilitySetName = \"',variables('primaryAvailablitySetName'),'\"\n\nfilter Timestamp {\"$(Get-Date -Format o): $_\"}\n\nfunction\nWrite-Log($message)\n{\n    $msg = $message | Timestamp\n    Write-Output $msg\n}\n\nfunction\nExpand-ZIPFile($file, $destination)\n{\n    $shell = new-object -com shell.application\n    $zip = $shell.NameSpace($file)\n    foreach($item in $zip.items())\n    {\n        $shell.Namespace($destination).copyhere($item)\n    }\n}\n\nfunction\nGet-KubeBinaries()\n{\n    $zipfile = \"c:\\k.zip\"\n    Invoke-WebRequest -Uri $global:KubeBinariesSASURL -OutFile $zipfile\n    Expand-ZIPFile -File $zipfile -Destination C:\\\n}\n\nfunction\nWrite-AzureConfig()\n{\n    $azureConfigFile = $global:KubeDir + \"\\azure.json\"\n\n    $azureConfig = @\"\n{\n    \"tenantId\": \"$global:TenantId\",\n    \"subscriptionId\": \"$global:SubscriptionId\",\n    \"aadClientId\": \"$AADClientId\",\n    \"aadClientSecret\": \"$AADClientSecret\",\n    \"resourceGroup\": \"$global:ResourceGroup\",\n    \"location\": \"$Location\",\n    \"subnetName\": \"$global:SubnetName\",\n    \"securityGroupName\": \"$global:SecurityGroupName\",\n    \"vnetName\": \"$global:VNetName\",\n    \"routeTableName\": \"$global:RouteTableName\",\n    \"primaryAvailabilitySetName\": \"$global:PrimaryAvailabilitySetName\"\n}\n\"@\n\n    $azureConfig | Out-File -encoding ASCII -filepath \"$azureConfigFile\"    \n}\n\nfunction\nWrite-KubeConfig()\n{\n    $kubeConfigFile = $global:KubeDir + \"\\config\"\n\n    $kubeConfig = @\"\n---\napiVersion: v1\nclusters:\n- cluster:\n    certificate-authority-data: \"$global:CACertificate\"\n    server: https://${MasterIP}:443\n  name: \"$MasterFQDNPrefix\"\ncontexts:\n- context:\n    cluster: \"$MasterFQDNPrefix\"\n    user: \"$MasterFQDNPrefix-admin\"\n  name: \"$MasterFQDNPrefix\"\ncurrent-context: \"$MasterFQDNPrefix\"\nkind: Config\nusers:\n- name: \"$MasterFQDNPrefix-admin\"\n  user:\n    client-certificate-data: \"$global:AgentCertificate\"\n    client-key-data: \"$AgentKey\"\n\"@\n\n    $kubeConfig | Out-File -encoding ASCII -filepath \"$kubeConfigFile\"    \n}\n\nfunction\nNew-InfraContainer()\n{\n    cd $global:KubeDir\n    docker build -t kubletwin/pause . \n}\n\nfunction\nGet-PodCIDR\n{\n    $argList = @(\"--hostname-override=$AzureHostname\",\"--pod-infra-container-image=kubletwin/pause\",\"--resolv-conf=\"\"\"\"\",\"--api-servers=https://${MasterIP}:443\",\"--kubeconfig=c:\\k\\config\")\n    $process = Start-Process -FilePath c:\\k\\kubelet.exe -PassThru -ArgumentList $argList\n\n    $podCidrDiscovered=$false\n    $podCIDR=\"\"\n    # run kubelet until podCidr is discovered\n    Write-Host \"waiting to discover pod CIDR\"\n    while (-not $podCidrDiscovered)\n    {\n        $podCIDR=c:\\k\\kubectl.exe --kubeconfig=c:\\k\\config get nodes/$($AzureHostname.ToLower()) -o custom-columns=podCidr:.spec.podCIDR --no-headers\n\n        if ($podCIDR.length -gt 0)\n        {\n            $podCidrDiscovered=$true\n        }\n        else\n        {\n            Write-Host \"Sleeping for 10s, and then waiting to discover pod CIDR\"\n            Start-Sleep -sec 10    \n        }\n    }\n    \n    # stop the kubelet process now that we have our CIDR, discard the process output\n    $process | Stop-Process | Out-Null\n    \n    return $podCIDR\n}\n\nfunction\nGet-PodGateway($podCIDR)\n{\n    return $podCIDR.substring(0,$podCIDR.lastIndexOf(\".\")) + \".1\"\n}\n\nfunction\nWrite-KubernetesStartFiles($podCIDR)\n{\n    $podGW=Get-PodGateway($podCIDR)\n\n    $kubeConfig = @\"\n`$env:CONTAINER_NETWORK=\"$global:TransparentNetworkName\"\n`$env:NAT_NETWORK=\"$global:NatNetworkName\"\n`$env:POD_GW=\"$podGW\"\n`$env:VIP_CIDR=\"10.0.0.0/8\"\nc:\\k\\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf=\"\" --allow-privileged=true --enable-debugging-handlers --api-servers=https://${MasterIP}:443 --cluster-dns=$KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\\k\\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\\k\\azure.json\n\"@\n    $kubeConfig | Out-File -encoding ASCII -filepath $global:KubeletStartFile\n\n    $kubeProxyStartStr = @\"\n`$env:INTERFACE_TO_ADD_SERVICE_IP=\"vEthernet (forwarder)\"\nc:\\k\\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --kubeconfig=c:\\k\\config\n\"@\n\n    $kubeProxyStartStr | Out-File -encoding ASCII -filepath $global:KubeProxyStartFile\n}\n\nfunction\nSet-DockerNetwork($podCIDR)\n{\n    $podGW=Get-PodGateway($podCIDR)\n\n    # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)\n    netsh advfirewall set allprofiles state off\n\n    # create new transparent network\n    docker network create --driver=transparent --subnet=$podCIDR --gateway=$podGW $global:TransparentNetworkName\n\n    # create host vnic for gateway ip to forward the traffic and kubeproxy to listen over VIP\n    Add-VMNetworkAdapter -ManagementOS -Name forwarder -SwitchName \"Layered Ethernet 3\"\n\n    # Assign gateway IP to new adapter and enable forwarding on host adapters:\n    netsh interface ipv4 add address \"vEthernet (forwarder)\" $podGW 255.255.255.0\n    netsh interface ipv4 set interface \"vEthernet (forwarder)\" for=en\n    netsh interface ipv4 set interface \"vEthernet (HNSTransparent)\" for=en\n}\n\nfunction\nNew-NSSMService\n{\n    # setup kubelet\n    c:\\k\\nssm install Kubelet C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\n    c:\\k\\nssm set Kubelet AppDirectory $global:KubeDir\n    c:\\k\\nssm set Kubelet AppParameters $global:KubeletStartFile\n    c:\\k\\nssm set Kubelet DisplayName Kubelet\n    c:\\k\\nssm set Kubelet Description Kubelet\n    c:\\k\\nssm set Kubelet Start SERVICE_AUTO_START\n    c:\\k\\nssm set Kubelet ObjectName LocalSystem\n    c:\\k\\nssm set Kubelet Type SERVICE_WIN32_OWN_PROCESS\n    c:\\k\\nssm set Kubelet AppThrottle 1500\n    c:\\k\\nssm set Kubelet AppStdout C:\\k\\kubelet.log\n    c:\\k\\nssm set Kubelet AppStderr C:\\k\\kubelet.err.log\n    c:\\k\\nssm set Kubelet AppStdoutCreationDisposition 4\n    c:\\k\\nssm set Kubelet AppStderrCreationDisposition 4\n    c:\\k\\nssm set Kubelet AppRotateFiles 1\n    c:\\k\\nssm set Kubelet AppRotateOnline 1\n    c:\\k\\nssm set Kubelet AppRotateSeconds 86400\n    c:\\k\\nssm set Kubelet AppRotateBytes 1048576\n    net start Kubelet\n    \n    # setup kubeproxy\n    c:\\k\\nssm install Kubeproxy C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\n    c:\\k\\nssm set Kubeproxy AppDirectory $global:KubeDir\n    c:\\k\\nssm set Kubeproxy AppParameters $global:KubeProxyStartFile\n    c:\\k\\nssm set Kubeproxy DisplayName Kubeproxy\n    c:\\k\\nssm set Kubeproxy DependOnService Kubelet\n    c:\\k\\nssm set Kubeproxy Description Kubeproxy\n    c:\\k\\nssm set Kubeproxy Start SERVICE_AUTO_START\n    c:\\k\\nssm set Kubeproxy ObjectName LocalSystem\n    c:\\k\\nssm set Kubeproxy Type SERVICE_WIN32_OWN_PROCESS\n    c:\\k\\nssm set Kubeproxy AppThrottle 1500\n    c:\\k\\nssm set Kubeproxy AppStdout C:\\k\\kubeproxy.log\n    c:\\k\\nssm set Kubeproxy AppStderr C:\\k\\kubeproxy.err.log\n    c:\\k\\nssm set Kubeproxy AppRotateFiles 1\n    c:\\k\\nssm set Kubeproxy AppRotateOnline 1\n    c:\\k\\nssm set Kubeproxy AppRotateSeconds 86400\n    c:\\k\\nssm set Kubeproxy AppRotateBytes 1048576\n    net start Kubeproxy\n}\n\nfunction\nSet-Explorer\n{\n    # setup explorer so that it is usable\n    New-Item -Path HKLM:\"\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Internet Explorer\"\n    New-Item -Path HKLM:\"\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Internet Explorer\\\\BrowserEmulation\"\n    New-ItemProperty -Path HKLM:\"\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Internet Explorer\\\\BrowserEmulation\" -Name IntranetCompatibilityMode -Value 0 -Type DWord\n    New-Item -Path HKLM:\"\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Internet Explorer\\\\Main\"\n    New-ItemProperty -Path HKLM:\"\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Internet Explorer\\\\Main\" -Name \"Start Page\" -Type String -Value http://bing.com\n}\n\ntry\n{\n    # Set to false for debugging.  This will output the start script to\n    # c:\\AzureData\\CustomDataSetupScript.log, and then you can RDP \n    # to the windows machine, and run the script manually to watch\n    # the output.\n    if ($true) {\n        Write-Log \"Provisioning $global:DockerServiceName... with IP $MasterIP\"\n\n        Write-Log \"download kubelet binaries and unzip\"\n        Get-KubeBinaries\n\n        Write-Log \"Write azure config\"\n        Write-AzureConfig\n\n        Write-Log \"Write kube config\"\n        Write-KubeConfig\n\n        Write-Log \"Create the Pause Container kubletwin/pause\"\n        New-InfraContainer\n\n        Write-Log \"Get the POD CIDR\"\n        $podCIDR = Get-PodCIDR\n\n        Write-Log \"write kubelet startfile with pod CIDR of $podCIDR\"\n        Write-KubernetesStartFiles $podCIDR\n\n        Write-Log \"setup docker network with pod CIDR of $podCIDR\"\n        Set-DockerNetwork $podCIDR\n\n        Write-Log \"install the NSSM service\"\n        New-NSSMService\n\n        Write-Log \"Set Internet Explorer\"\n        Set-Explorer\n\n        Write-Log \"Setup Complete\"\n    }\n    else \n    {\n        # keep for debugging purposes\n        Write-Log \".\\CustomDataSetupScript.ps1 -MasterIP $MasterIP -KubeDnsServiceIp $KubeDnsServiceIp -MasterFQDNPrefix $MasterFQDNPrefix -Location $Location -AgentKey $AgentKey -AzureHostname $AzureHostname -AADClientId $AADClientId -AADClientSecret $AADClientSecret\"\n    }\n}\ncatch\n{\n    Write-Error $_\n}\n'))]"
         },
         "storageProfile": {
@@ -1007,33 +1117,33 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool1VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpool1Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpool1Offset')),variables('maxVMsPerStorageAccount')),variables('agentpool1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpool1AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool1VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('agentpool1Count')]",
+        "count": "[sub(variables('agentpool1Count'), variables('agentpool1Offset'))]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool1VMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(), '/cse')]",
+      "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')), '/cse')]",
       "properties": {
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
-          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -command \"', '$arguments = ', variables('singleQuote'),'-MasterIP ',variables('masterInternalLbIp'),' -KubeDnsServiceIp ',variables('kubeDnsServiceIp'),' -MasterFQDNPrefix ',variables('masterFqdnPrefix'),' -Location ',variables('location'),' -AgentKey ',variables('clientPrivateKey'),' -AzureHostname ',variables('agentpool1VMNamePrefix'),copyIndex(),' -AADClientId ',variables('servicePrincipalClientId'),' -AADClientSecret ',variables('servicePrincipalClientSecret'),variables('singleQuote'), ' ; ', variables('windowsCustomScriptSuffix'), '\" > %SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.log 2>&1')]"
+          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -command \"', '$arguments = ', variables('singleQuote'),'-MasterIP ',variables('masterInternalLbIp'),' -KubeDnsServiceIp ',variables('kubeDnsServiceIp'),' -MasterFQDNPrefix ',variables('masterFqdnPrefix'),' -Location ',variables('location'),' -AgentKey ',variables('clientPrivateKey'),' -AzureHostname ',variables('agentpool1VMNamePrefix'),copyIndex(variables('agentpool1Offset')),' -AADClientId ',variables('servicePrincipalClientId'),' -AADClientSecret ',variables('servicePrincipalClientSecret'),variables('singleQuote'), ' ; ', variables('windowsCustomScriptSuffix'), '\" > %SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.log 2>&1')]"
         },
         "publisher": "Microsoft.Compute",
         "type": "CustomScriptExtension",
@@ -1432,6 +1542,22 @@
     }
   ],
   "outputs": {
+    "agentStorageAccountPrefixes": {
+      "type": "array",
+      "value": "[variables('storageAccountPrefixes')]"
+    },
+    "agentStorageAccountSuffix": {
+      "type": "string",
+      "value": "[variables('storageAccountBaseName')]"
+    },
+    "agentpool1StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpool1StorageAccountsCount')]"
+    },
+    "agentpool1StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpool1StorageAccountOffset')]"
+    },
     "masterFQDN": {
       "type": "string",
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn]"

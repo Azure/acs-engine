@@ -477,6 +477,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		"IsSwarmMode": func() bool {
 			return properties.OrchestratorProfile.IsSwarmMode()
 		},
+		"IsKubernetes": func() bool {
+			return properties.OrchestratorProfile.IsKubernetes()
+		},
 		"IsPublic": func(ports []int) bool {
 			return len(ports) > 0
 		},
@@ -637,6 +640,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		"AnyAgentHasDisks": func() bool {
 			for _, agentProfile := range properties.AgentPoolProfiles {
 				if agentProfile.HasDisks() {
+					return true
+				}
+			}
+			return false
+		},
+		"AnyAgentUsesAvailablilitySets": func() bool {
+			for _, agentProfile := range properties.AgentPoolProfiles {
+				if agentProfile.IsAvailabilitySets() {
 					return true
 				}
 			}
