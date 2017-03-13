@@ -196,3 +196,54 @@ func addV20160930CertificateProfile(api *api.CertificateProfile) {
 	api.KubeConfigPrivateKey = "kubeConfigPrivateKey"
 	api.SetCAPrivateKey("")
 }
+
+const testRootURL string = "https://raw.githubusercontent.com/RobBagby/acs-engine/rob-master/pkg/acsengine/extension-testdata/"
+
+func TestGetLinkedTemplateTextForURL_NoSupportedOrchestratorFile_Throws(t *testing.T) {
+	_, err := getLinkedTemplateTextForURL(testRootURL, "Kubernetes", "OrchestratorDoesNotExist", "v1")
+
+	if err == nil {
+		t.Error("getLinkedTemplateText should throw if no supported-orchestrators.json file exists")
+	}
+
+	if strings.Contains(err.Error(), "supported-orchestrators.json") != true {
+		t.Error("error should contain supported-orchestrators.json")
+	}
+}
+
+func TestGetLinkedTemplateTextForURL_PoorlyFormattedSupportedOrchestratorFile_Throws(t *testing.T) {
+	_, err := getLinkedTemplateTextForURL(testRootURL, "Kubernetes", "bad-orchestratorfile", "v1")
+
+	if strings.Contains(err.Error(), "Unable to parse supported-orchestrators.json") != true {
+		t.Error("error should contain Unable to parse supported-orchestrators.json.")
+	}
+}
+
+func TestGetLinkedTemplateTextForURL_OrchestratorNotInList_Throws(t *testing.T) {
+	_, err := getLinkedTemplateTextForURL(testRootURL, "Swarm", "kub-extension", "v1")
+
+	if strings.Contains(err.Error(), "not in list of supported orchestrators") != true {
+		t.Error("error should contain not in list of supported orchestrators.")
+	}
+}
+
+func TestGetLinkedTemplateTextForURL_TemplateLinkDoesntExist_Throws(t *testing.T) {
+	_, err := getLinkedTemplateTextForURL(testRootURL, "Kubernetes", "no-template-link", "v1")
+
+	if strings.Contains(err.Error(), "Unable to GET extension resource") != true {
+		t.Error("error should contain Unable to GET extension resource.")
+	}
+}
+
+func TestGetLinkedTemplateTextForURL_GoodOrchestratorLinkExists_ReturnsCorrectString(t *testing.T) {
+	expectedString := "{\"name\": \"kub-extension\"}"
+
+	actualString, err := getLinkedTemplateTextForURL(testRootURL, "Kubernetes", "kub-extension", "v1")
+	if err != nil {
+		t.Errorf("Did not return template. Error: %s", err.Error())
+	}
+
+	if actualString != expectedString {
+		t.Errorf("Actual extension link: %s did not match expected: %s.", actualString, expectedString)
+	}
+}
