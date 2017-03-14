@@ -40,7 +40,7 @@ node {
 
                 // First check to see if var exists in context, then check for true-ness
                 // In Groovy, null and empty strings are false...
-                if(getBinding().hasVariable("myparameter") && CUSTOM_HYPERKUBE_SPEC) {
+                if(getBinding().hasVariable("CUSTOM_HYPERKUBE_SPEC") && CUSTOM_HYPERKUBE_SPEC) {
                     env.CUSTOM_HYPERKUBE_SPEC="${CUSTOM_HYPERKUBE_SPEC}"
                 }
 
