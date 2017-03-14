@@ -37,7 +37,10 @@ node {
                 env.SUBSCRIPTION_ID="${SUBSCRIPTION_ID}"
                 env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}"
                 env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}"
-                if(CUSTOM_HYPERKUBE_SPEC) {
+
+                // First check to see if var exists in context, then check for true-ness
+                // In Groovy, null and empty strings are false...
+                if(getBinding().hasVariable("myparameter") && CUSTOM_HYPERKUBE_SPEC) {
                     env.CUSTOM_HYPERKUBE_SPEC="${CUSTOM_HYPERKUBE_SPEC}"
                 }
 
