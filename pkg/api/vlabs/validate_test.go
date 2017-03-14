@@ -27,7 +27,7 @@ func TestProperties_ValidateNetworkPolicy(t *testing.T) {
 
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "calico"
 	p.AgentPoolProfiles = []AgentPoolProfile{
-		AgentPoolProfile{
+		{
 			OSType: Windows,
 		},
 	}
