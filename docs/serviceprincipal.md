@@ -42,6 +42,25 @@ There are several ways to create a Service Principal in Azure Active Directory:
 
    Instructions: ["Use Azure PowerShell to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal/)
 
+   To get you started quickly, the following are simplified instructions for creating a single-tenant AD application and a service principal with password authentication. Please read the full instructions above for proper RBAC setup of your application. Display name and URI are a friendly arbitrary name and address for your application.
+
+   ```powershell
+   PS> Login-AzureRmAccount -SubscriptionId $subscriptionId
+   PS> $app = New-AzureRmADApplication -DisplayName $name -IdentifierUris $uri -Password $passwd
+   PS> New-AzureRmADServicePrincipal -ApplicationId $app.ApplicationId
+   PS> New-AzureRmRoleAssignment -RoleDefinitionName Contributor -ServicePrincipalName $app.ApplicationId
+   ```
+
+   The first command outputs your `tenantId`, used below. The `$app.ApplicationId` is used for the `servicePrincipalProfile.servicePrincipalClientId` and the `$passwd` is used for `servicePrincipalProfile.servicePrincipalClientSecret`.
+
+   Confirm your service principal by opening a new PowerShell session and running the following commands. Enter `$app.ApplicationId` for username.
+
+   ```powershell
+   PS> $creds = Get-Credential
+   PS> Login-AzureRmAccount -ServicePrincipal -TenantId $tenantId -Credential $creds
+   PS> Get-AzureRmVMSize -Location westus
+   ```
+
 * **With the [Portal](https://portal.azure.com)**
 
    Instructions: ["Use portal to create Active Directory application and service principal that can access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-create-service-principal-portal/)
