@@ -15,6 +15,7 @@ set -e
 set -x
 
 remote_exec="ssh -i "${SSH_KEY}" -o StrictHostKeyChecking=no azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com -p2200"
+agentFQDN="dcos-agent-ip-${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"
 remote_cp="scp -i "${SSH_KEY}" -P 2200 -o StrictHostKeyChecking=no"
 
 function teardown {
@@ -27,9 +28,12 @@ ${remote_exec} ./dcos config set core.dcos_url http://localhost:80
 
 ${remote_cp} "${DIR}/marathon.json" azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com:marathon.json
 
-trap teardown EXIT
-
+# feed agentFQDN to marathon.json
+${remote_exec} sed -i "s/{agentFQDN}/${agentFQDN}/g" marathon.json
 ${remote_exec} ./dcos marathon app add marathon.json
+
+# only need to teardown if app added successfully
+trap teardown EXIT
 
 count=0
 while [[ ${count} -lt 25 ]]; do
@@ -42,10 +46,24 @@ while [[ ${count} -lt 25 ]]; do
   sleep ${count}
 done
 
-if [[ "${running}" == "3" ]]; then
-  echo "Deployment succeeded"
-else
-  echo "Deployment failed"
+if [[ "${running}" != "3" ]]; then
+  echo "Validation failed"
   ${remote_exec} ./dcos marathon app show /web
   exit 1
 fi
+
+# install marathon-lb
+${remote_exec} ./dcos package install marathon-lb --yes
+
+# curl simpleweb through external haproxy
+echo "Checking Service"
+count=5
+success="n"
+while (( $count > 0 )); do
+  [[ $(curl -sI --max-time 60 "http://${agentFQDN}" |head -n1 |cut -d$' ' -f2) -eq "200" ]] && echo "Successfully hitting simpleweb through external haproxy http://${agentFQDN}" && break
+  if [[ "${count}" -le 0 ]]; then
+    echo "failed to get expected response from nginx through the loadbalancer"
+    exit 1
+  fi
+  sleep 5; count=$((count-1))
+done
