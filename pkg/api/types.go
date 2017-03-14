@@ -66,6 +66,14 @@ type CertificateProfile struct {
 	APIServerCertificate string `json:"apiServerCertificate,omitempty"`
 	// ApiServerPrivateKey is the rest api server private key, and signed by the CA
 	APIServerPrivateKey string `json:"apiServerPrivateKey,omitempty"`
+	// EtcdCertificate is the rest api server certificate, and signed by the CA
+	EtcdCertificate string `json:"etcdCertificate,omitempty"`
+	// EtcdPrivateKey is the rest api server private key, and signed by the CA
+	EtcdPrivateKey string `json:"etcdPrivateKey,omitempty"`
+	// EtcdClientCertificate is the rest api server certificate, and signed by the CA
+	EtcdClientCertificate string `json:"etcdClientCertificate,omitempty"`
+	// EtcdClientPrivateKey is the rest api server private key, and signed by the CA
+	EtcdClientPrivateKey string `json:"etcdClientPrivateKey,omitempty"`
 	// ClientCertificate is the certificate used by the client kubelet services and signed by the CA
 	ClientCertificate string `json:"clientCertificate,omitempty"`
 	// ClientPrivateKey is the private key used by the client kubelet services and signed by the CA

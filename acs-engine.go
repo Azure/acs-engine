@@ -77,6 +77,20 @@ func writeArtifacts(containerService *api.ContainerService, apiVersion, template
 		if e := saveFileString(artifactsDir, "apiserver.crt", properties.CertificateProfile.APIServerCertificate); e != nil {
 			return e
 		}
+
+		if e := saveFileString(artifactsDir, "etcd.key", properties.CertificateProfile.EtcdPrivateKey); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "etcd.crt", properties.CertificateProfile.EtcdCertificate); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "etcdclient.key", properties.CertificateProfile.EtcdClientPrivateKey); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "etcdclient.crt", properties.CertificateProfile.EtcdClientCertificate); e != nil {
+			return e
+		}
+
 		if e := saveFileString(artifactsDir, "client.key", properties.CertificateProfile.ClientPrivateKey); e != nil {
 			return e
 		}
