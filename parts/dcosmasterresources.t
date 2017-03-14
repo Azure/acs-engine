@@ -110,26 +110,67 @@
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
+{{if IsDCOS190}}    
+    {
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "copy": {
+        "count": "[variables('masterCount')]",
+        "name": "masterLbLoopNode"
+      },
+      "dependsOn": [
+        "[variables('masterLbID')]"
+      ],
+      "location": "[resourceGroup().location]",
+
+      "name": "[concat(variables('masterLbName'), '/', 'SSHPort22-', variables('masterVMNamePrefix'), copyIndex())]",
+      "properties": {
+        "backendPort": 2222,
+        "enableFloatingIP": false,
+        "frontendIPConfiguration": {
+          "id": "[variables('masterLbIPConfigID')]"
+        },
+        "frontendPort": "22",
+        "protocol": "tcp"
+      },
+      "type": "Microsoft.Network/loadBalancers/inboundNatRules"
+    },
+{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[resourceGroup().location]",
       "name": "[variables('masterNSGName')]",
       "properties": {
         "securityRules": [
-          {
-            "name": "ssh",
-            "properties": {
-              "access": "Allow",
-              "description": "Allow SSH",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "22",
-              "direction": "Inbound",
-              "priority": 200,
-              "protocol": "Tcp",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*"
+{{if IsDCOS190}} 
+            {
+                "properties": {
+                    "priority": 201,
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "destinationPortRange": "2222",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "protocol": "Tcp",
+                    "description": "Allow SSH",
+                    "sourceAddressPrefix": "*"
+                },
+                "name": "sshPort22"
+            },
+{{end}}
+            {
+                "properties": {
+                    "priority": 200,
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "destinationPortRange": "22",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "protocol": "Tcp",
+                    "description": "Allow SSH",
+                    "sourceAddressPrefix": "*"
+                },
+                "name": "ssh"
             }
-          }
         ]
       },
       "type": "Microsoft.Network/networkSecurityGroups"
@@ -146,6 +187,9 @@
         "[variables('vnetID')]",
 {{end}}
         "[variables('masterLbID')]",
+{{if IsDCOS190}}
+        "[concat(variables('masterLbID'),'/inboundNatRules/SSHPort22-',variables('masterVMNamePrefix'),copyIndex())]",
+{{end}}
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
       ],
       "location": "[resourceGroup().location]",
@@ -162,6 +206,9 @@
               ],
               "loadBalancerInboundNatRules": [
                 {
+{{if IsDCOS190}}
+                  "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSHPort22-',variables('masterVMNamePrefix'),copyIndex())]",                  
+{{end}}
                   "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
                 }
               ],

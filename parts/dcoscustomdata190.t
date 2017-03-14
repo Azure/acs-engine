@@ -71,6 +71,8 @@ runcmd:
   - mask
   - --now
   - lxc-net.service
+- sed -i "s/^Port 22$/Port 22\nPort 2222/1" /etc/ssh/sshd_config
+- service ssh restart 
 - /opt/azure/containers/provision.sh
 - - cp
   - -p
