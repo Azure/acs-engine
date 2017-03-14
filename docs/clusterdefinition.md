@@ -24,6 +24,15 @@ Here are the valid values for the orchestrator types:
 3. `Swarm` - this represents the [Swarm orchestrator](swarm.md).
 4. `Swarm Mode` - this represents the [Swarm Mode orchestrator](swarmmode.md).
 
+### kubernetesConfig
+
+`kubernetesConfig` describes Kubernetes specific configuration.
+
+|Name|Required|Description|
+|---|---|---|
+|kubernetesImageBase|no|This specifies the image of kubernetes to use for the cluster.|
+|networkPolicy|no|Specifies the network policy tool for the cluster. Default is `none`, which won't enforce network policy. This can be set to `calico` for clusters with Linux agents only.|
+
 ### masterProfile
 `masterProfile` describes the settings for master configuration.
 
