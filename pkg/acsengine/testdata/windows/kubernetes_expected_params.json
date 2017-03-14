@@ -1,8 +1,5 @@
 {
   "agentpool1Count": {
-    "value": 10
-  },
-  "agentpool1Offset": {
     "value": 3
   },
   "agentpool1Subnet": {
@@ -11,32 +8,20 @@
   "agentpool1VMSize": {
     "value": "Standard_D2_v2"
   },
-  "agentpool2Count": {
-    "value": 5
-  },
-  "agentpool2Offset": {
-    "value": 3
-  },
-  "agentpool2Subnet": {
-    "value": "10.240.0.0/16"
-  },
-  "agentpool2VMSize": {
-    "value": "Standard_D2_v2"
-  },
   "apiServerCertificate": {
-    "value": ""
+    "value": "YXBpU2VydmVyQ2VydGlmaWNhdGU="
   },
   "apiServerPrivateKey": {
-    "value": ""
+    "value": "YXBpU2VydmVyUHJpdmF0ZUtleQ=="
   },
   "caCertificate": {
-    "value": ""
+    "value": "Y2FDZXJ0aWZpY2F0ZQ=="
   },
   "clientCertificate": {
-    "value": ""
+    "value": "Y2xpZW50Q2VydGlmaWNhdGU="
   },
   "clientPrivateKey": {
-    "value": "="
+    "value": "Y2xpZW50UHJpdmF0ZUtleQ=="
   },
   "dockerEngineDownloadRepo": {
     "value": "https://apt.dockerproject.org/repo"
@@ -57,10 +42,10 @@
     "value": "10.240.255.5"
   },
   "kubeConfigCertificate": {
-    "value": ""
+    "value": "a3ViZUNvbmZpZ0NlcnRpZmljYXRl"
   },
   "kubeConfigPrivateKey": {
-    "value": ""
+    "value": "a3ViZUNvbmZpZ1ByaXZhdGVLZXk="
   },
   "kubernetesAddonManagerSpec": {
     "value": "gcr.io/google_containers/kube-addon-manager-amd64:v6.2"
@@ -92,8 +77,11 @@
   "linuxAdminUsername": {
     "value": "azureuser"
   },
-  "masterEndpointDNSNamePrefix": {
+  "location": {
     "value": ""
+  },
+  "masterEndpointDNSNamePrefix": {
+    "value": "masterdns1"
   },
   "masterSubnet": {
     "value": "10.240.0.0/16"
@@ -101,16 +89,25 @@
   "masterVMSize": {
     "value": "Standard_D2_v2"
   },
+  "networkPolicy": {
+    "value": "none"
+  },
   "servicePrincipalClientId": {
-    "value": ""
+    "value": "ServicePrincipalClientID"
   },
   "servicePrincipalClientSecret": {
-    "value": ""
+    "value": "myServicePrincipalClientSecret"
   },
   "sshRSAPublicKey": {
-    "value": ""
+    "value": "ssh-rsa PUBLICKEY azureuser@linuxvm"
   },
   "targetEnvironment": {
     "value": "AzurePublicCloud"
+  },
+  "windowsAdminPassword": {
+    "value": "replacepassword1234$"
+  },
+  "windowsAdminUsername": {
+    "value": "azureuser"
   }
 }

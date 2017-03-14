@@ -10,6 +10,30 @@
       }, 
       "type": "securestring"
     }, 
+    "etcdCertificate": {
+      "metadata": {
+        "description": "The base 64 server certificate used on the master"
+      }, 
+      "type": "string"
+    }, 
+    "etcdPrivateKey": {
+      "metadata": {
+        "description": "The base 64 server private key used on the master."
+      }, 
+      "type": "securestring"
+    }, 
+    "etcdClientCertificate": {
+      "metadata": {
+        "description": "The base 64 server certificate used on the master"
+      }, 
+      "type": "string"
+    }, 
+    "etcdClientPrivateKey": {
+      "metadata": {
+        "description": "The base 64 server private key used on the master."
+      }, 
+      "type": "securestring"
+    }, 
     "caCertificate": {
       "metadata": {
         "description": "The base 64 certificate authority certificate"
