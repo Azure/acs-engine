@@ -205,10 +205,12 @@
                 }
               ],
               "loadBalancerInboundNatRules": [
-                {
 {{if IsDCOS190}}
-                  "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSHPort22-',variables('masterVMNamePrefix'),copyIndex())]",                  
+                {
+                  "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSHPort22-',variables('masterVMNamePrefix'),copyIndex())]"                 
+                },
 {{end}}
+                {
                   "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
                 }
               ],
