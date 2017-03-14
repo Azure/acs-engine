@@ -38,6 +38,12 @@ node {
                 env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}"
                 env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}"
 
+                // First check to see if var exists in context, then check for true-ness
+                // In Groovy, null and empty strings are false...
+                if(getBinding().hasVariable("CUSTOM_HYPERKUBE_SPEC") && CUSTOM_HYPERKUBE_SPEC) {
+                    env.CUSTOM_HYPERKUBE_SPEC="${CUSTOM_HYPERKUBE_SPEC}"
+                }
+
                 sh("printf 'acs-features-test%x' \$(date '+%s') > INSTANCE_NAME_PREFIX")
                 prefix = readFile('INSTANCE_NAME_PREFIX').trim()
                 // Create report directory
