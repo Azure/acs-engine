@@ -124,6 +124,7 @@ type OrchestratorProfile struct {
 // Kubernetes specific configuration
 type KubernetesConfig struct {
 	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
+	NetworkPolicy       string `json:"networkPolicy,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -156,7 +157,8 @@ type AgentPoolProfile struct {
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 	Subnet              string `json:"subnet"`
 
-	FQDN string `json:"fqdn,omitempty"`
+	FQDN             string            `json:"fqdn,omitempty"`
+	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
 }
 
 // DiagnosticsProfile setting to enable/disable capturing
@@ -345,4 +347,9 @@ func (l *LinuxProfile) HasSecrets() bool {
 // IsSwarmMode returns true if this template is for Swarm Mode orchestrator
 func (o *OrchestratorProfile) IsSwarmMode() bool {
 	return o.OrchestratorType == SwarmMode
+}
+
+// IsKubernetes returns true if this template is for Kubernetes orchestrator
+func (o *OrchestratorProfile) IsKubernetes() bool {
+	return o.OrchestratorType == Kubernetes
 }

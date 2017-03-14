@@ -110,6 +110,17 @@
       },
       "type": "string"
     },
+    "networkPolicy": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.NetworkPolicy}}",
+      "metadata": {
+        "description": "The network policy enforcement to use (none|calico)"
+      },
+      "allowedValues": [
+        "none",
+        "calico"
+      ],
+      "type": "string"
+    },
     "servicePrincipalClientId": {
       "metadata": {
         "description": "Client ID (used by cloudprovider)"

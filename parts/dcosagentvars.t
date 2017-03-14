@@ -8,6 +8,7 @@
     "{{.Name}}StorageAccountsCount": "[add(div(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),1)))]",
     {{end}}
     "{{.Name}}AvailabilitySet": "[concat('{{.Name}}-availabilitySet-', variables('nameSuffix'))]",
+    "{{.Name}}Offset": "[parameters('{{.Name}}Offset')]",
 {{else}}
     "{{.Name}}StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
 {{end}}

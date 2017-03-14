@@ -10,6 +10,7 @@ node {
         def clone_dir = "${env.GOPATH}/src/github.com/Azure/acs-engine"
         env.HOME=clone_dir
         def success = true
+        Integer timeoutInMinutes = TEST_TIMEOUT.toInteger()
 
         dir(clone_dir) {
           def img = null
@@ -26,16 +27,20 @@ node {
           }
           img.inside("-u root:root") {
             String errorMsg = ""
+            def log_dir = pwd()+"/_logs"
             try {
               stage('Test') {
                 if(success) {
+                  // Create log directory
+                  sh("mkdir -p ${log_dir}")
                   // Create template, deploy and test
                   env.SERVICE_PRINCIPAL_CLIENT_ID="${SPN_USER}"
                   env.SERVICE_PRINCIPAL_CLIENT_SECRET="${SPN_PASSWORD}"
                   env.TENANT_ID="${TENANT_ID}"
                   env.SUBSCRIPTION_ID="${SUBSCRIPTION_ID}"
                   env.LOCATION = "${LOCATION}"
-                  env.CLEANUP = "y"
+                  env.LOGFILE = "${log_dir}/${LOCATION}.log"
+                  env.CLEANUP = "${CLEANUP}"
 
                   env.INSTANCE_NAME = "test-acs-ci-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
                   env.INSTANCE_NAME_PREFIX = "test-acs-ci"
@@ -52,8 +57,9 @@ node {
                   } else {
                     echo 'Skip validation'
                   }
-
-                  sh('./test/deploy.sh')
+                  timeout(time: timeoutInMinutes, unit: 'MINUTES') {
+                    sh('./test/deploy.sh')
+                  }
                 }
               }
             }
@@ -62,10 +68,15 @@ node {
               success = false
               errorMsg = "Please run \"make ci\" for verification"
             }
+
+            archiveArtifacts(allowEmptyArchive: true, artifacts: "${log_dir}/**/*.log")
+
             // Final clean up
+            sh("rm -rf ${log_dir}")
             sh("rm -rf ${clone_dir}/_output")
             sh("rm -rf ${clone_dir}/.azure")
             sh("rm -rf ${clone_dir}/.kube")
+
             if(!success) {
               currentBuild.result = "FAILURE"
               String to = "${SEND_TO}".trim()

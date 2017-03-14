@@ -19,8 +19,20 @@ EXPECTED_DASHBOARD="${EXPECTED_DASHBOARD:-1}"
 # set TEST_ACR to "y" for ACR testing
 TEST_ACR="${TEST_ACR:-n}"
 
+function log {
+    local message="$1"
+    local caller="$(caller 0)"
+	  now=$(date +"%D %T %Z")
+
+	if [[ ! -z "${LOGFILE:-}" ]]; then
+		echo "[${now}] [${caller}] ${message}" | tee -a ${LOGFILE}
+	else
+		echo "[${now}] [${caller}] ${message}"
+    fi
+}
+
 namespace="namespace-${RANDOM}"
-echo "Running test in namespace: ${namespace}"
+log "Running test in namespace: ${namespace}"
 trap teardown EXIT
 
 function teardown {
@@ -44,6 +56,7 @@ fi
 
 ###### Check node count
 function check_node_count() {
+  log "Checking node count"
   count=12
   while (( $count > 0 )); do
     node_count=$(kubectl get nodes --no-headers | grep -v NotReady | grep Ready | wc | awk '{print $1}')
@@ -51,13 +64,14 @@ function check_node_count() {
     sleep 5; count=$((count-1))
   done
   if (( $node_count != ${EXPECTED_NODE_COUNT} )); then
-    echo "gave up waiting for apiserver / node counts"; exit -1
+    log "gave up waiting for apiserver / node counts"; exit -1
   fi
 }
 
 check_node_count
 
 ###### Wait for no more container creating
+log "Checking containers being created"
 count=12
 while (( $count > 0 )); do
   creating_count=$(kubectl get nodes --no-headers | grep 'CreatingContainer' | wc | awk '{print $1}')
@@ -65,11 +79,12 @@ while (( $count > 0 )); do
   sleep 5; count=$((count-1))
 done
 if (( ${creating_count} != 0 )); then
-  echo "gave up waiting for creation to finish"; exit -1
+  log "gave up waiting for creation to finish"; exit -1
 fi
 
 
 ###### Check for Kube-DNS
+log "Checking Kube-DNS"
 count=12
 while (( $count > 0 )); do
   running=$(kubectl get pods --namespace=kube-system | grep kube-dns | grep Running | wc | awk '{print $1}')
@@ -77,10 +92,11 @@ while (( $count > 0 )); do
   sleep 5; count=$((count-1))
 done
 if (( ${running} != ${EXPECTED_DNS} )); then
-  echo "gave up waiting for kube-dns"; exit -1
+  log "gave up waiting for kube-dns"; exit -1
 fi
 
 ###### Check for Kube-Dashboard
+log "Checking Kube-Dashboard"
 count=12
 while (( $count > 0 )); do
   running=$(kubectl get pods --namespace=kube-system | grep kubernetes-dashboard | grep Running | wc | awk '{print $1}')
@@ -88,10 +104,11 @@ while (( $count > 0 )); do
   sleep 5; count=$((count-1))
 done
 if (( ${running} != ${EXPECTED_DASHBOARD} )); then
-  echo "gave up waiting for kubernetes-dashboard"; exit -1
+  log "gave up waiting for kubernetes-dashboard"; exit -1
 fi
 
 ###### Check for Kube-Proxys
+log "Checking Kube-Proxys"
 count=12
 while (( $count > 0 )); do
   nonrunning=$(kubectl get pods --namespace=kube-system | grep kube-proxy | grep -v Running | wc | awk '{print $1}')
@@ -110,7 +127,7 @@ for ip in $ips; do
   count=5
   success="n"
   while (( $count > 0 )); do
-    ret=$(ssh -i "${OUTPUT}/id_rsa" -o "ConnectTimeout 10" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" "azureuser@${master}" "curl http://${ip}:${port}" || echo "curl_error")
+    ret=$(ssh -i "${OUTPUT}/id_rsa" -o "ConnectTimeout 10" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" "azureuser@${master}" "curl --max-time 60 http://${ip}:${port}" || echo "curl_error")
     if [[ ! $ret =~ .*curl_error.* ]]; then
       success="y"
       break
@@ -118,13 +135,12 @@ for ip in $ips; do
     sleep 4; count=$((count-1))
   done
   if [[ "${success}" == "n" ]]; then
-    echo $ret
-    exit -1
+    log $ret; exit -1
   fi
 done
 
 ###### Testing an nginx deployment
-echo "Testing deployments"
+log "Testing deployments"
 kubectl create namespace ${namespace}
 
 NGINX="docker.io/library/nginx:latest"
@@ -149,13 +165,14 @@ while (( $count > 0 )); do
   sleep 5; count=$((count-1))
 done
 if (( ${running} != 1 )); then
-  echo "gave up waiting for deployment"
+  log "gave up waiting for deployment"
   kubectl get all --namespace=${namespace}
   exit -1
 fi
 
 kubectl expose deployments/nginx --type=LoadBalancer --namespace=${namespace} --port=80
 
+log "Checking Service External IP"
 count=60
 external_ip=""
 while (( $count > 0 )); do
@@ -164,21 +181,23 @@ while (( $count > 0 )); do
 	sleep 10; count=$((count-1))
 done
 if [[ -z "${external_ip}" ]]; then
-  echo "gave up waiting for loadbalancer to get an ingress ip"
+  log "gave up waiting for loadbalancer to get an ingress ip"
   exit -1
 fi
 
+log "Checking Service"
 count=5
 success="n"
 while (( $count > 0 )); do
-	curl -f "http://${external_ip}" | grep 'Welcome to nginx!'
-	if [[ $? == 0 ]]; then
-		success="y"
-		break;
+  ret=$(curl -f --max-time 60 "http://${external_ip}" | grep 'Welcome to nginx!' || echo "curl_error")
+  if [[ $ret =~ .*'Welcome to nginx!'.* ]]; then
+    success="y"
+    break
 	fi
+  sleep 5; count=$((count-1))
 done
 if [[ "${success}" != "y" ]]; then
-  echo "failed to get expected response from nginx through the loadbalancer"
+  log "failed to get expected response from nginx through the loadbalancer"
   exit -1
 fi
 

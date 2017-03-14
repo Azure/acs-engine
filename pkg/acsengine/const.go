@@ -20,6 +20,8 @@ const (
 	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP
 	// address relative to the first consecutive Kubernetes static IP
 	DefaultInternalLbStaticIPOffset = 10
+	// DefaultNetworkPolicy is disabling network policy enforcement (valid values: ['calico']
+	DefaultNetworkPolicy = "none"
 )
 
 const (

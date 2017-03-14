@@ -111,6 +111,115 @@
       },
       "type": "int"
     },
+    "agentpri0Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
+      },
+      "type": "int"
+    },
     "agentpri0Subnet": {
       "defaultValue": "10.0.0.0/16",
       "metadata": {
@@ -315,6 +424,115 @@
       "defaultValue": 1,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpri10Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
       },
       "type": "int"
     },
@@ -525,6 +743,115 @@
       },
       "type": "int"
     },
+    "agentpri11Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
+      },
+      "type": "int"
+    },
     "agentpri11Subnet": {
       "defaultValue": "10.11.0.0/16",
       "metadata": {
@@ -729,6 +1056,115 @@
       "defaultValue": 1,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpri1Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
       },
       "type": "int"
     },
@@ -939,6 +1375,115 @@
       },
       "type": "int"
     },
+    "agentpri2Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
+      },
+      "type": "int"
+    },
     "agentpri2Subnet": {
       "defaultValue": "10.2.0.0/16",
       "metadata": {
@@ -1143,6 +1688,115 @@
       "defaultValue": 1,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpri3Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
       },
       "type": "int"
     },
@@ -1353,6 +2007,115 @@
       },
       "type": "int"
     },
+    "agentpri4Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
+      },
+      "type": "int"
+    },
     "agentpri4Subnet": {
       "defaultValue": "10.4.0.0/16",
       "metadata": {
@@ -1557,6 +2320,115 @@
       "defaultValue": 1,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpri5Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
       },
       "type": "int"
     },
@@ -1767,6 +2639,115 @@
       },
       "type": "int"
     },
+    "agentpri6Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
+      },
+      "type": "int"
+    },
     "agentpri6Subnet": {
       "defaultValue": "10.6.0.0/16",
       "metadata": {
@@ -1971,6 +2952,115 @@
       "defaultValue": 1,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpri7Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
       },
       "type": "int"
     },
@@ -2181,6 +3271,115 @@
       },
       "type": "int"
     },
+    "agentpri8Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
+      },
+      "type": "int"
+    },
     "agentpri8Subnet": {
       "defaultValue": "10.8.0.0/16",
       "metadata": {
@@ -2385,6 +3584,115 @@
       "defaultValue": 1,
       "metadata": {
         "description": "The number of agents for the cluster.  This value can be from 1 to 100"
+      },
+      "type": "int"
+    },
+    "agentpri9Offset": {
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The offset into the agent pool where to start creating agents.  This value can be from 0 to 99, but must be less than agentCount"
       },
       "type": "int"
     },
@@ -2633,6 +3941,7 @@
     "agentpri0AvailabilitySet": "[concat('agentpri0-availabilitySet-', variables('nameSuffix'))]",
     "agentpri0Count": "[parameters('agentpri0Count')]",
     "agentpri0Index": 0,
+    "agentpri0Offset": "[parameters('agentpri0Offset')]",
     "agentpri0StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),0)]",
     "agentpri0StorageAccountsCount": "[add(div(variables('agentpri0Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpri0Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpri0Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpri0Subnet": "[parameters('agentpri0Subnet')]",
@@ -2644,6 +3953,7 @@
     "agentpri10AvailabilitySet": "[concat('agentpri10-availabilitySet-', variables('nameSuffix'))]",
     "agentpri10Count": "[parameters('agentpri10Count')]",
     "agentpri10Index": 10,
+    "agentpri10Offset": "[parameters('agentpri10Offset')]",
     "agentpri10StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),10)]",
     "agentpri10StorageAccountsCount": "[add(div(variables('agentpri10Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpri10Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpri10Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpri10Subnet": "[parameters('agentpri10Subnet')]",
@@ -2655,6 +3965,7 @@
     "agentpri11AvailabilitySet": "[concat('agentpri11-availabilitySet-', variables('nameSuffix'))]",
     "agentpri11Count": "[parameters('agentpri11Count')]",
     "agentpri11Index": 11,
+    "agentpri11Offset": "[parameters('agentpri11Offset')]",
     "agentpri11StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),11)]",
     "agentpri11StorageAccountsCount": "[add(div(variables('agentpri11Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpri11Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpri11Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpri11Subnet": "[parameters('agentpri11Subnet')]",
@@ -2666,6 +3977,7 @@
     "agentpri1AvailabilitySet": "[concat('agentpri1-availabilitySet-', variables('nameSuffix'))]",
     "agentpri1Count": "[parameters('agentpri1Count')]",
     "agentpri1Index": 1,
+    "agentpri1Offset": "[parameters('agentpri1Offset')]",
     "agentpri1StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),1)]",
     "agentpri1StorageAccountsCount": "[add(div(variables('agentpri1Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpri1Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpri1Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpri1Subnet": "[parameters('agentpri1Subnet')]",
@@ -2677,6 +3989,7 @@
     "agentpri2AvailabilitySet": "[concat('agentpri2-availabilitySet-', variables('nameSuffix'))]",
     "agentpri2Count": "[parameters('agentpri2Count')]",
     "agentpri2Index": 2,
+    "agentpri2Offset": "[parameters('agentpri2Offset')]",
     "agentpri2StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),2)]",
     "agentpri2StorageAccountsCount": "[add(div(variables('agentpri2Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpri2Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpri2Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpri2Subnet": "[parameters('agentpri2Subnet')]",
@@ -2688,6 +4001,7 @@
     "agentpri3AvailabilitySet": "[concat('agentpri3-availabilitySet-', variables('nameSuffix'))]",
     "agentpri3Count": "[parameters('agentpri3Count')]",
     "agentpri3Index": 3,
+    "agentpri3Offset": "[parameters('agentpri3Offset')]",
     "agentpri3StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),3)]",
     "agentpri3StorageAccountsCount": "[add(div(variables('agentpri3Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpri3Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpri3Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpri3Subnet": "[parameters('agentpri3Subnet')]",
@@ -2699,6 +4013,7 @@
     "agentpri4AvailabilitySet": "[concat('agentpri4-availabilitySet-', variables('nameSuffix'))]",
     "agentpri4Count": "[parameters('agentpri4Count')]",
     "agentpri4Index": 4,
+    "agentpri4Offset": "[parameters('agentpri4Offset')]",
     "agentpri4StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),4)]",
     "agentpri4StorageAccountsCount": "[add(div(variables('agentpri4Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpri4Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpri4Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpri4Subnet": "[parameters('agentpri4Subnet')]",
@@ -2710,6 +4025,7 @@
     "agentpri5AvailabilitySet": "[concat('agentpri5-availabilitySet-', variables('nameSuffix'))]",
     "agentpri5Count": "[parameters('agentpri5Count')]",
     "agentpri5Index": 5,
+    "agentpri5Offset": "[parameters('agentpri5Offset')]",
     "agentpri5StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),5)]",
     "agentpri5StorageAccountsCount": "[add(div(variables('agentpri5Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpri5Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpri5Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpri5Subnet": "[parameters('agentpri5Subnet')]",
@@ -2721,6 +4037,7 @@
     "agentpri6AvailabilitySet": "[concat('agentpri6-availabilitySet-', variables('nameSuffix'))]",
     "agentpri6Count": "[parameters('agentpri6Count')]",
     "agentpri6Index": 6,
+    "agentpri6Offset": "[parameters('agentpri6Offset')]",
     "agentpri6StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),6)]",
     "agentpri6StorageAccountsCount": "[add(div(variables('agentpri6Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpri6Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpri6Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpri6Subnet": "[parameters('agentpri6Subnet')]",
@@ -2732,6 +4049,7 @@
     "agentpri7AvailabilitySet": "[concat('agentpri7-availabilitySet-', variables('nameSuffix'))]",
     "agentpri7Count": "[parameters('agentpri7Count')]",
     "agentpri7Index": 7,
+    "agentpri7Offset": "[parameters('agentpri7Offset')]",
     "agentpri7StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),7)]",
     "agentpri7StorageAccountsCount": "[add(div(variables('agentpri7Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpri7Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpri7Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpri7Subnet": "[parameters('agentpri7Subnet')]",
@@ -2743,6 +4061,7 @@
     "agentpri8AvailabilitySet": "[concat('agentpri8-availabilitySet-', variables('nameSuffix'))]",
     "agentpri8Count": "[parameters('agentpri8Count')]",
     "agentpri8Index": 8,
+    "agentpri8Offset": "[parameters('agentpri8Offset')]",
     "agentpri8StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),8)]",
     "agentpri8StorageAccountsCount": "[add(div(variables('agentpri8Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpri8Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpri8Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpri8Subnet": "[parameters('agentpri8Subnet')]",
@@ -2754,6 +4073,7 @@
     "agentpri9AvailabilitySet": "[concat('agentpri9-availabilitySet-', variables('nameSuffix'))]",
     "agentpri9Count": "[parameters('agentpri9Count')]",
     "agentpri9Index": 9,
+    "agentpri9Offset": "[parameters('agentpri9Offset')]",
     "agentpri9StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),9)]",
     "agentpri9StorageAccountsCount": "[add(div(variables('agentpri9Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpri9Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpri9Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpri9Subnet": "[parameters('agentpri9Subnet')]",
@@ -3133,7 +4453,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri0VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpri0VMNamePrefix'), 'nic-', copyIndex(variables('agentpri0Offset')))]",
       "properties": {
         "ipConfigurations": [
           {
@@ -3179,12 +4499,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri0AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri0VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri0Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri0Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri0AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri0VMNamePrefix'), 'nic-', copyIndex(variables('agentpri0Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri0AvailabilitySet'))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri0VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpri0VMNamePrefix'), copyIndex(variables('agentpri0Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpri0AvailabilitySet'))]"
@@ -3195,13 +4515,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri0VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri0VMNamePrefix'), 'nic-', copyIndex(variables('agentpri0Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
-          "computername": "[concat(variables('agentpri0VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpri0VMNamePrefix'), copyIndex(variables('agentpri0Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        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\n    path: /opt/azure/containers/configure-swarmmode-cluster.sh\n    permissions: \"0744\"\n\n',variables('agentRunCmdFile'),variables('agentRunCmd')))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -3225,15 +4545,15 @@
           "osDisk": {
             "caching": "ReadOnly",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpri0VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpri0VMNamePrefix'), copyIndex(variables('agentpri0Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri0AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri0VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri0Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri0Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri0AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri0VMNamePrefix'), copyIndex(variables('agentpri0Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpri0VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpri0VMNamePrefix'), copyIndex(variables('agentpri0Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -3247,7 +4567,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri1VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpri1VMNamePrefix'), 'nic-', copyIndex(variables('agentpri1Offset')))]",
       "properties": {
         "ipConfigurations": [
           {
@@ -3293,12 +4613,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri1AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri1VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri1Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri1Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri1AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri1VMNamePrefix'), 'nic-', copyIndex(variables('agentpri1Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri1AvailabilitySet'))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri1VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpri1VMNamePrefix'), copyIndex(variables('agentpri1Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpri1AvailabilitySet'))]"
@@ -3309,13 +4629,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri1VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri1VMNamePrefix'), 'nic-', copyIndex(variables('agentpri1Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
-          "computername": "[concat(variables('agentpri1VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpri1VMNamePrefix'), copyIndex(variables('agentpri1Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        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\n    path: /opt/azure/containers/configure-swarmmode-cluster.sh\n    permissions: \"0744\"\n\n',variables('agentRunCmdFile'),variables('agentRunCmd')))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -3339,15 +4659,15 @@
           "osDisk": {
             "caching": "ReadOnly",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpri1VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpri1VMNamePrefix'), copyIndex(variables('agentpri1Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri1AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri1VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri1Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri1Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri1AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri1VMNamePrefix'), copyIndex(variables('agentpri1Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpri1VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpri1VMNamePrefix'), copyIndex(variables('agentpri1Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -3361,7 +4681,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri2VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpri2VMNamePrefix'), 'nic-', copyIndex(variables('agentpri2Offset')))]",
       "properties": {
         "ipConfigurations": [
           {
@@ -3407,12 +4727,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri2VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri2Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri2Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri2VMNamePrefix'), 'nic-', copyIndex(variables('agentpri2Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri2AvailabilitySet'))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri2VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpri2VMNamePrefix'), copyIndex(variables('agentpri2Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpri2AvailabilitySet'))]"
@@ -3423,13 +4743,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri2VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri2VMNamePrefix'), 'nic-', copyIndex(variables('agentpri2Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
-          "computername": "[concat(variables('agentpri2VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpri2VMNamePrefix'), copyIndex(variables('agentpri2Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        H4sIAAAAAAAA/8xZe3PbNhL/H59iS2tqOw1FSWkuU2eUG8dWzp6rLY9ld24uTmOIXFk4U4ACgH7U1Xe/wYsPWUrcNpmpMglJcIH97S5+i11m47tkzHgypmpKyMaf/5EN2BN8wq4KiTC6pXIGRyJDGHKEt+KOGIGzKVPAuNI0zxXoKcJE5Lm4ZfwKUjGbC45cK7IBMeyL9Bpl7Rb2jIBCO1Rbf0aVRqmWh+mVW+ovGEQUaojvCMF0KiBSmkptkNa0pHlhtEPqLaeaCR6RjGokcwX0jpD94d6/B6cf94ZHJ8PR4OMvg9PR4fC4H3XbP7U7EVn24QmVdIbOoiaao93R2eB0b3h+fNZvPXQXfuDkdPDu8D/91kMvjLw7PB2d7e7vn/ZbDy8WZPe/56eD89HAPP64ICfD0dnh8ehs9+efR3unhydn56eH/dbDywV5uzsajM7fHg/M+v9YkF+OjnePBv3LqVCa0xlempHzo7eD0/6ldUnLScDvoDCDTZW0n73/tRP/9OFi6729/HCx/ayVXHSTTTPXI10z92KrnL39zE8Pc30EjmyoYU8UXO9Aq+aQqClxInHC7koRp3hJ5h2TSsNulslSrnRcEL2ZGbt3AtgwHNzgXtjb5xDss4NNjZVjd6BVPYTXZYB2oFXeRyvJaEk2mwkO7wqems22cosTglwVEnd/KyQeo74V8nprmzwQgA1wryz7uHsF5h9FIDwfIM319L7fJQATIYEB4/DQbbe7vcVryAQBALi9MuwYJhneJLzIc5hqPd9JTDK5aqdiZoXYBN5D658Q4yfowAc7pqfI7Y0BE/YWTKmCMSKHiSh4ZgilGS/QCy4B6/hh57+6JUzB1AlFXmYskV7b+wmzF5UjzqFr1sgENxocyqYOiDl6yCXgleq40EHlc6Bj4XKET3KR94LLD+5hDtStdsc09IjH1YiL8YoRTCkHiUrkN/ik6HSq8JSOjdnfPRLfIhAp5ebZO886PcskKvXnY7RYQSpyMPSp9rLm8EtCmHLnEnjaWcuiZj6Cfh+iKlk0TZSoC8nB+BdzhfWxbsDDJlDqeR2mBt9Yj2RoPEP9IRmRCTPQ7NlYAXu8RkPVsvpOQ71d6/PauTuMnXbngc7hifVa1Hqo8uGi9bCUhxers6BLhCG2CvOJocD+8WidsE+0rRCtMqGb46fIBGhEiCkkqNPEBFI91ks24NBtmLI2WaPGi5ktRh2BbG1gnt3MiBC/99yzD0WTzJ3lVBtryVDBjxDHErW8j1PBucRJYQ7QOL6lTNvxfvclxJ+GsU3IaidJrlC3M6vI5GVj8vSrpgRnta/SvGGYgSrSFJWaFHn+9GS8IJrNEBruIcTGqFAoZyKDmP4LnDm14zL4/nyeUV15GjKK5rQUc3tWRoQURgDd2337cuje+SCA2xCz64xJiOduS6h7pXGW+WvinalQ3rAU2xlx7hqZAjEoNpHPmdLIQXDY6b149RK2uABa6OlzGBfaBPqGo942on4FmisBU2oSloYx4xloYQ+EgrM7UGZlDVRDckNlIgteIhHpdYXdlPIQp7DpXPJ+5HC6AA/uMLVA+0uPSaGk7QSyhufiA9CpOdc7bfvHWRIfWEg7SbIGSgRvnuS6RNyglCzDtqHJZoj/2iit4FizPYia1PKjZfFjHRQz8i3pxvS0GBuqeWuT1IFIJOZIFaokE7c8FzRLWqu7Az8x9hPjy8KdLOqyvJ1dGg+bmOUipXktcmHWN+B4U8G34Hpo8tKpofoPd18w0WUGt7dSnftNG0s03vUv3VYLKUOi7eNChdxIwLUajOowoapjLG4ztrYCe1FtIqs7LMEn4qtGowmjszIPPyq/6ojmCmL6Rwvkhtb1ZVkFoFaRRc0aKiT21ef1uh/ZKA9Ts22YBlnkqEJMwZzNcynMTsQ/2vqT1dVUWbmF0iGCflnH+Somgg+v62GsXLEn0Z1GFDje+g8HgsPE9p6hKKtm+egoK2cNjGOa3aDUTGFsKlhobdUKzW2TjV9BHLuTZq2Ei06o4yp8I0wFz6i891iAao2zuYWsBfxPMG7KN7xjqvryUQG2OGciQy2ukfejdW92008Fk5hZwrjf+sZlzeKtLe+c+ACa7ncnkvOZQRzbCRB/ghnl9ArldmPdJQ4+itxnDeg8EqzYU5rGmnZYNr0kVYx5FQYHZrWyGsPc7xHQNUFMRZFnfFMbsnBMtQmljdy63qdcL3Q7jwxpbEy7LWLv5iXwK2LzKuQW23ysb1kO6I1BptQ0FE5awFxIDb1erwdUwS3mubn2ega3z+4ZQMwgUsmvJ062lfibC34SZifdyJcjamr+Zh99t/cFTCPUjr83lOV0zHKm70FMgqdNi7MDm76b2LSAaWGKkNJltgty5Ywhc30dKxpakQrJUkcVoOza4acTdDU5P0vMz5PyKxDStMx1Pn6Zi0/iYZODtW1b517JuydzrgGmHoSSYNb/X6RWjVYe21+jk98p76G16lsufNeHKGOKjnPMIvhAGhs6VJ6MXz23Pco1S68NajGZwNx+dvJNrkolm2tjRfn/A6apiBrVca/z5PJ4NdjfgYtpMa/pePPGtTe5uErob4XExH9kj8dCaKUlnccGqMfZzsUV9N5834Xv3QcGZ2dZBph2CXlmSBssch/m7Td6J2yqyRw1Zk/4tO+nhJLDlZ6Gi8FvlN+DxBll3GYzMdG3VJq2ZAW31bTQJiIQm0RxS/wRvQHGfdCFGeOFRrN60OcSz6Og1BcKnvh/AAAA//+L8+RX2RkAAA==\n    path: /opt/azure/containers/configure-swarmmode-cluster.sh\n    permissions: \"0744\"\n\n',variables('agentRunCmdFile'),variables('agentRunCmd')))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -3453,15 +4773,15 @@
           "osDisk": {
             "caching": "ReadOnly",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpri2VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpri2VMNamePrefix'), copyIndex(variables('agentpri2Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri2VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri2Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri2Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri2VMNamePrefix'), copyIndex(variables('agentpri2Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpri2VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpri2VMNamePrefix'), copyIndex(variables('agentpri2Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -3475,7 +4795,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri3VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpri3VMNamePrefix'), 'nic-', copyIndex(variables('agentpri3Offset')))]",
       "properties": {
         "ipConfigurations": [
           {
@@ -3521,12 +4841,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri3AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri3VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri3Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri3Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri3AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri3VMNamePrefix'), 'nic-', copyIndex(variables('agentpri3Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri3AvailabilitySet'))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri3VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpri3VMNamePrefix'), copyIndex(variables('agentpri3Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpri3AvailabilitySet'))]"
@@ -3537,13 +4857,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri3VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri3VMNamePrefix'), 'nic-', copyIndex(variables('agentpri3Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
-          "computername": "[concat(variables('agentpri3VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpri3VMNamePrefix'), copyIndex(variables('agentpri3Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        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\n    path: /opt/azure/containers/configure-swarmmode-cluster.sh\n    permissions: \"0744\"\n\n',variables('agentRunCmdFile'),variables('agentRunCmd')))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -3567,15 +4887,15 @@
           "osDisk": {
             "caching": "ReadOnly",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpri3VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpri3VMNamePrefix'), copyIndex(variables('agentpri3Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri3AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri3VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri3Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri3Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri3AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri3VMNamePrefix'), copyIndex(variables('agentpri3Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpri3VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpri3VMNamePrefix'), copyIndex(variables('agentpri3Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -3589,7 +4909,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri4VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpri4VMNamePrefix'), 'nic-', copyIndex(variables('agentpri4Offset')))]",
       "properties": {
         "ipConfigurations": [
           {
@@ -3635,12 +4955,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri4AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri4VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri4Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri4Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri4AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri4VMNamePrefix'), 'nic-', copyIndex(variables('agentpri4Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri4AvailabilitySet'))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri4VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpri4VMNamePrefix'), copyIndex(variables('agentpri4Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpri4AvailabilitySet'))]"
@@ -3651,13 +4971,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri4VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri4VMNamePrefix'), 'nic-', copyIndex(variables('agentpri4Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
-          "computername": "[concat(variables('agentpri4VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpri4VMNamePrefix'), copyIndex(variables('agentpri4Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        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\n    path: /opt/azure/containers/configure-swarmmode-cluster.sh\n    permissions: \"0744\"\n\n',variables('agentRunCmdFile'),variables('agentRunCmd')))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -3681,15 +5001,15 @@
           "osDisk": {
             "caching": "ReadOnly",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpri4VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpri4VMNamePrefix'), copyIndex(variables('agentpri4Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri4AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri4VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri4Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri4Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri4AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri4VMNamePrefix'), copyIndex(variables('agentpri4Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpri4VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpri4VMNamePrefix'), copyIndex(variables('agentpri4Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -3703,7 +5023,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri5VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpri5VMNamePrefix'), 'nic-', copyIndex(variables('agentpri5Offset')))]",
       "properties": {
         "ipConfigurations": [
           {
@@ -3749,12 +5069,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri5AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri5VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri5Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri5Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri5AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri5VMNamePrefix'), 'nic-', copyIndex(variables('agentpri5Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri5AvailabilitySet'))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri5VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpri5VMNamePrefix'), copyIndex(variables('agentpri5Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpri5AvailabilitySet'))]"
@@ -3765,13 +5085,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri5VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri5VMNamePrefix'), 'nic-', copyIndex(variables('agentpri5Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
-          "computername": "[concat(variables('agentpri5VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpri5VMNamePrefix'), copyIndex(variables('agentpri5Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        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\n    path: /opt/azure/containers/configure-swarmmode-cluster.sh\n    permissions: \"0744\"\n\n',variables('agentRunCmdFile'),variables('agentRunCmd')))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -3795,15 +5115,15 @@
           "osDisk": {
             "caching": "ReadOnly",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpri5VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpri5VMNamePrefix'), copyIndex(variables('agentpri5Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri5AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri5VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri5Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri5Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri5AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri5VMNamePrefix'), copyIndex(variables('agentpri5Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpri5VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpri5VMNamePrefix'), copyIndex(variables('agentpri5Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -3817,7 +5137,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri6VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpri6VMNamePrefix'), 'nic-', copyIndex(variables('agentpri6Offset')))]",
       "properties": {
         "ipConfigurations": [
           {
@@ -3863,12 +5183,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri6AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri6VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri6Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri6Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri6AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri6VMNamePrefix'), 'nic-', copyIndex(variables('agentpri6Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri6AvailabilitySet'))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri6VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpri6VMNamePrefix'), copyIndex(variables('agentpri6Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpri6AvailabilitySet'))]"
@@ -3879,13 +5199,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri6VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri6VMNamePrefix'), 'nic-', copyIndex(variables('agentpri6Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
-          "computername": "[concat(variables('agentpri6VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpri6VMNamePrefix'), copyIndex(variables('agentpri6Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        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\n    path: /opt/azure/containers/configure-swarmmode-cluster.sh\n    permissions: \"0744\"\n\n',variables('agentRunCmdFile'),variables('agentRunCmd')))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -3909,15 +5229,15 @@
           "osDisk": {
             "caching": "ReadOnly",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpri6VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpri6VMNamePrefix'), copyIndex(variables('agentpri6Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri6AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri6VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri6Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri6Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri6AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri6VMNamePrefix'), copyIndex(variables('agentpri6Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpri6VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpri6VMNamePrefix'), copyIndex(variables('agentpri6Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -3931,7 +5251,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri7VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpri7VMNamePrefix'), 'nic-', copyIndex(variables('agentpri7Offset')))]",
       "properties": {
         "ipConfigurations": [
           {
@@ -3977,12 +5297,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri7AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri7VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri7Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri7Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri7AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri7VMNamePrefix'), 'nic-', copyIndex(variables('agentpri7Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri7AvailabilitySet'))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri7VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpri7VMNamePrefix'), copyIndex(variables('agentpri7Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpri7AvailabilitySet'))]"
@@ -3993,13 +5313,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri7VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri7VMNamePrefix'), 'nic-', copyIndex(variables('agentpri7Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
-          "computername": "[concat(variables('agentpri7VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpri7VMNamePrefix'), copyIndex(variables('agentpri7Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        H4sIAAAAAAAA/8xZe3PbNhL/H59iS2tqOw1FSWkuU2eUG8dWzp6rLY9ld24uTmOIXFk4U4ACgH7U1Xe/wYsPWUrcNpmpMglJcIH97S5+i11m47tkzHgypmpKyMaf/5EN2BN8wq4KiTC6pXIGRyJDGHKEt+KOGIGzKVPAuNI0zxXoKcJE5Lm4ZfwKUjGbC45cK7IBMeyL9Bpl7Rb2jIBCO1Rbf0aVRqmWh+mVW+ovGEQUaojvCMF0KiBSmkptkNa0pHlhtEPqLaeaCR6RjGokcwX0jpD94d6/B6cf94ZHJ8PR4OMvg9PR4fC4H3XbP7U7EVn24QmVdIbOoiaao93R2eB0b3h+fNZvPXQXfuDkdPDu8D/91kMvjLw7PB2d7e7vn/ZbDy8WZPe/56eD89HAPP64ICfD0dnh8ehs9+efR3unhydn56eH/dbDywV5uzsajM7fHg/M+v9YkF+OjnePBv3LqVCa0xlempHzo7eD0/6ldUnLScDvoDCDTZW0n73/tRP/9OFi6729/HCx/ayVXHSTTTPXI10z92KrnL39zE8Pc30EjmyoYU8UXO9Aq+aQqClxInHC7koRp3hJ5h2TSsNulslSrnRcEL2ZGbt3AtgwHNzgXtjb5xDss4NNjZVjd6BVPYTXZYB2oFXeRyvJaEk2mwkO7wqems22cosTglwVEnd/KyQeo74V8nprmzwQgA1wryz7uHsF5h9FIDwfIM319L7fJQATIYEB4/DQbbe7vcVryAQBALi9MuwYJhneJLzIc5hqPd9JTDK5aqdiZoXYBN5D658Q4yfowAc7pqfI7Y0BE/YWTKmCMSKHiSh4ZgilGS/QCy4B6/hh57+6JUzB1AlFXmYskV7b+wmzF5UjzqFr1sgENxocyqYOiDl6yCXgleq40EHlc6Bj4XKET3KR94LLD+5hDtStdsc09IjH1YiL8YoRTCkHiUrkN/ik6HSq8JSOjdnfPRLfIhAp5ebZO886PcskKvXnY7RYQSpyMPSp9rLm8EtCmHLnEnjaWcuiZj6Cfh+iKlk0TZSoC8nB+BdzhfWxbsDDJlDqeR2mBt9Yj2RoPEP9IRmRCTPQ7NlYAXu8RkPVsvpOQ71d6/PauTuMnXbngc7hifVa1Hqo8uGi9bCUhxers6BLhCG2CvOJocD+8WidsE+0rRCtMqGb46fIBGhEiCkkqNPEBFI91ks24NBtmLI2WaPGi5ktRh2BbG1gnt3MiBC/99yzD0WTzJ3lVBtryVDBjxDHErW8j1PBucRJYQ7QOL6lTNvxfvclxJ+GsU3IaidJrlC3M6vI5GVj8vSrpgRnta/SvGGYgSrSFJWaFHn+9GS8IJrNEBruIcTGqFAoZyKDmP4LnDm14zL4/nyeUV15GjKK5rQUc3tWRoQURgDd2337cuje+SCA2xCz64xJiOduS6h7pXGW+WvinalQ3rAU2xlx7hqZAjEoNpHPmdLIQXDY6b149RK2uABa6OlzGBfaBPqGo942on4FmisBU2oSloYx4xloYQ+EgrM7UGZlDVRDckNlIgteIhHpdYXdlPIQp7DpXPJ+5HC6AA/uMLVA+0uPSaGk7QSyhufiA9CpOdc7bfvHWRIfWEg7SbIGSgRvnuS6RNyglCzDtqHJZoj/2iit4FizPYia1PKjZfFjHRQz8i3pxvS0GBuqeWuT1IFIJOZIFaokE7c8FzRLWqu7Az8x9hPjy8KdLOqyvJ1dGg+bmOUipXktcmHWN+B4U8G34Hpo8tKpofoPd18w0WUGt7dSnftNG0s03vUv3VYLKUOi7eNChdxIwLUajOowoapjLG4ztrYCe1FtIqs7LMEn4qtGowmjszIPPyq/6ojmCmL6Rwvkhtb1ZVkFoFaRRc0aKiT21ef1uh/ZKA9Ts22YBlnkqEJMwZzNcynMTsQ/2vqT1dVUWbmF0iGCflnH+Somgg+v62GsXLEn0Z1GFDje+g8HgsPE9p6hKKtm+egoK2cNjGOa3aDUTGFsKlhobdUKzW2TjV9BHLuTZq2Ei06o4yp8I0wFz6i891iAao2zuYWsBfxPMG7KN7xjqvryUQG2OGciQy2ukfejdW92008Fk5hZwrjf+sZlzeKtLe+c+ACa7ncnkvOZQRzbCRB/ghnl9ArldmPdJQ4+itxnDeg8EqzYU5rGmnZYNr0kVYx5FQYHZrWyGsPc7xHQNUFMRZFnfFMbsnBMtQmljdy63qdcL3Q7jwxpbEy7LWLv5iXwK2LzKuQW23ysb1kO6I1BptQ0FE5awFxIDb1erwdUwS3mubn2ega3z+4ZQMwgUsmvJ062lfibC34SZifdyJcjamr+Zh99t/cFTCPUjr83lOV0zHKm70FMgqdNi7MDm76b2LSAaWGKkNJltgty5Ywhc30dKxpakQrJUkcVoOza4acTdDU5P0vMz5PyKxDStMx1Pn6Zi0/iYZODtW1b517JuydzrgGmHoSSYNb/X6RWjVYe21+jk98p76G16lsufNeHKGOKjnPMIvhAGhs6VJ6MXz23Pco1S68NajGZwNx+dvJNrkolm2tjRfn/A6apiBrVca/z5PJ4NdjfgYtpMa/pePPGtTe5uErob4XExH9kj8dCaKUlnccGqMfZzsUV9N5834Xv3QcGZ2dZBph2CXlmSBssch/m7Td6J2yqyRw1Zk/4tO+nhJLDlZ6Gi8FvlN+DxBll3GYzMdG3VJq2ZAW31bTQJiIQm0RxS/wRvQHGfdCFGeOFRrN60OcSz6Og1BcKnvh/AAAA//+L8+RX2RkAAA==\n    path: /opt/azure/containers/configure-swarmmode-cluster.sh\n    permissions: \"0744\"\n\n',variables('agentRunCmdFile'),variables('agentRunCmd')))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -4023,15 +5343,15 @@
           "osDisk": {
             "caching": "ReadOnly",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpri7VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpri7VMNamePrefix'), copyIndex(variables('agentpri7Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri7AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri7VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri7Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri7Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri7AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri7VMNamePrefix'), copyIndex(variables('agentpri7Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpri7VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpri7VMNamePrefix'), copyIndex(variables('agentpri7Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -4045,7 +5365,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri8VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpri8VMNamePrefix'), 'nic-', copyIndex(variables('agentpri8Offset')))]",
       "properties": {
         "ipConfigurations": [
           {
@@ -4091,12 +5411,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri8AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri8VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri8Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri8Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri8AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri8VMNamePrefix'), 'nic-', copyIndex(variables('agentpri8Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri8AvailabilitySet'))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri8VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpri8VMNamePrefix'), copyIndex(variables('agentpri8Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpri8AvailabilitySet'))]"
@@ -4107,13 +5427,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri8VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri8VMNamePrefix'), 'nic-', copyIndex(variables('agentpri8Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
-          "computername": "[concat(variables('agentpri8VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpri8VMNamePrefix'), copyIndex(variables('agentpri8Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        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\n    path: /opt/azure/containers/configure-swarmmode-cluster.sh\n    permissions: \"0744\"\n\n',variables('agentRunCmdFile'),variables('agentRunCmd')))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -4137,15 +5457,15 @@
           "osDisk": {
             "caching": "ReadOnly",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpri8VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpri8VMNamePrefix'), copyIndex(variables('agentpri8Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri8AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri8VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri8Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri8Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri8AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri8VMNamePrefix'), copyIndex(variables('agentpri8Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpri8VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpri8VMNamePrefix'), copyIndex(variables('agentpri8Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -4159,7 +5479,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri9VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpri9VMNamePrefix'), 'nic-', copyIndex(variables('agentpri9Offset')))]",
       "properties": {
         "ipConfigurations": [
           {
@@ -4205,12 +5525,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri9AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri9VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri9Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri9Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri9AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri9VMNamePrefix'), 'nic-', copyIndex(variables('agentpri9Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri9AvailabilitySet'))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri9VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpri9VMNamePrefix'), copyIndex(variables('agentpri9Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpri9AvailabilitySet'))]"
@@ -4221,13 +5541,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri9VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri9VMNamePrefix'), 'nic-', copyIndex(variables('agentpri9Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
-          "computername": "[concat(variables('agentpri9VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpri9VMNamePrefix'), copyIndex(variables('agentpri9Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        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\n    path: /opt/azure/containers/configure-swarmmode-cluster.sh\n    permissions: \"0744\"\n\n',variables('agentRunCmdFile'),variables('agentRunCmd')))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -4251,15 +5571,15 @@
           "osDisk": {
             "caching": "ReadOnly",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpri9VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpri9VMNamePrefix'), copyIndex(variables('agentpri9Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri9AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri9VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri9Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri9Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri9AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri9VMNamePrefix'), copyIndex(variables('agentpri9Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpri9VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpri9VMNamePrefix'), copyIndex(variables('agentpri9Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -4273,7 +5593,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri10VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpri10VMNamePrefix'), 'nic-', copyIndex(variables('agentpri10Offset')))]",
       "properties": {
         "ipConfigurations": [
           {
@@ -4319,12 +5639,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri10AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri10VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri10Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri10Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri10AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri10VMNamePrefix'), 'nic-', copyIndex(variables('agentpri10Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri10AvailabilitySet'))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri10VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpri10VMNamePrefix'), copyIndex(variables('agentpri10Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpri10AvailabilitySet'))]"
@@ -4335,13 +5655,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri10VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri10VMNamePrefix'), 'nic-', copyIndex(variables('agentpri10Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
-          "computername": "[concat(variables('agentpri10VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpri10VMNamePrefix'), copyIndex(variables('agentpri10Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        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\n    path: /opt/azure/containers/configure-swarmmode-cluster.sh\n    permissions: \"0744\"\n\n',variables('agentRunCmdFile'),variables('agentRunCmd')))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -4365,15 +5685,15 @@
           "osDisk": {
             "caching": "ReadOnly",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpri10VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpri10VMNamePrefix'), copyIndex(variables('agentpri10Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri10AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri10VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri10Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri10Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri10AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri10VMNamePrefix'), copyIndex(variables('agentpri10Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpri10VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpri10VMNamePrefix'), copyIndex(variables('agentpri10Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -4387,7 +5707,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri11VMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('agentpri11VMNamePrefix'), 'nic-', copyIndex(variables('agentpri11Offset')))]",
       "properties": {
         "ipConfigurations": [
           {
@@ -4433,12 +5753,12 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri11AccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri11VMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri11Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri11Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri11AccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('agentpri11VMNamePrefix'), 'nic-', copyIndex(variables('agentpri11Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('agentpri11AvailabilitySet'))]"
       ],
       "location": "[resourceGroup().location]",
-      "name": "[concat(variables('agentpri11VMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('agentpri11VMNamePrefix'), copyIndex(variables('agentpri11Offset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('agentpri11AvailabilitySet'))]"
@@ -4449,13 +5769,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri11VMNamePrefix'), 'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('agentpri11VMNamePrefix'), 'nic-', copyIndex(variables('agentpri11Offset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('adminUsername')]",
-          "computername": "[concat(variables('agentpri11VMNamePrefix'), copyIndex())]",
+          "computername": "[concat(variables('agentpri11VMNamePrefix'), copyIndex(variables('agentpri11Offset')))]",
           "customData": "[base64(concat('#cloud-config\n\nwrite_files:\n -  encoding: gzip\n    content: !!binary |\n        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\n    path: /opt/azure/containers/configure-swarmmode-cluster.sh\n    permissions: \"0744\"\n\n',variables('agentRunCmdFile'),variables('agentRunCmd')))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -4479,15 +5799,15 @@
           "osDisk": {
             "caching": "ReadOnly",
             "createOption": "FromImage",
-            "name": "[concat(variables('agentpri11VMNamePrefix'), copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('agentpri11VMNamePrefix'), copyIndex(variables('agentpri11Offset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('agentpri11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri11AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri11VMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('agentpri11Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('agentpri11Offset')),variables('maxVMsPerStorageAccount')),variables('agentpri11StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri11AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('agentpri11VMNamePrefix'), copyIndex(variables('agentpri11Offset')), '-osdisk.vhd')]"
             }
           }
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpri11VMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('agentpri11VMNamePrefix'), copyIndex(variables('agentpri11Offset')))]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -4818,6 +6138,110 @@
     }
   ],
   "outputs": {
+    "agentStorageAccountPrefixes": {
+      "type": "array",
+      "value": "[variables('storageAccountPrefixes')]"
+    },
+    "agentStorageAccountSuffix": {
+      "type": "string",
+      "value": "[variables('storageAccountBaseName')]"
+    },
+    "agentpri0StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri0StorageAccountsCount')]"
+    },
+    "agentpri0StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri0StorageAccountOffset')]"
+    },
+    "agentpri10StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri10StorageAccountsCount')]"
+    },
+    "agentpri10StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri10StorageAccountOffset')]"
+    },
+    "agentpri11StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri11StorageAccountsCount')]"
+    },
+    "agentpri11StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri11StorageAccountOffset')]"
+    },
+    "agentpri1StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri1StorageAccountsCount')]"
+    },
+    "agentpri1StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri1StorageAccountOffset')]"
+    },
+    "agentpri2StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri2StorageAccountsCount')]"
+    },
+    "agentpri2StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri2StorageAccountOffset')]"
+    },
+    "agentpri3StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri3StorageAccountsCount')]"
+    },
+    "agentpri3StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri3StorageAccountOffset')]"
+    },
+    "agentpri4StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri4StorageAccountsCount')]"
+    },
+    "agentpri4StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri4StorageAccountOffset')]"
+    },
+    "agentpri5StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri5StorageAccountsCount')]"
+    },
+    "agentpri5StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri5StorageAccountOffset')]"
+    },
+    "agentpri6StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri6StorageAccountsCount')]"
+    },
+    "agentpri6StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri6StorageAccountOffset')]"
+    },
+    "agentpri7StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri7StorageAccountsCount')]"
+    },
+    "agentpri7StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri7StorageAccountOffset')]"
+    },
+    "agentpri8StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri8StorageAccountsCount')]"
+    },
+    "agentpri8StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri8StorageAccountOffset')]"
+    },
+    "agentpri9StorageAccountCount": {
+      "type": "int",
+      "value": "[variables('agentpri9StorageAccountsCount')]"
+    },
+    "agentpri9StorageAccountOffset": {
+      "type": "int",
+      "value": "[variables('agentpri9StorageAccountOffset')]"
+    },
     "masterFQDN": {
       "type": "string",
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn]"
