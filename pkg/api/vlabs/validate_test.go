@@ -8,9 +8,9 @@ func TestProperties_ValidateNetworkPolicy(t *testing.T) {
 	p := &Properties{}
 	p.OrchestratorProfile.OrchestratorType = Kubernetes
 
-	for _, policy := range []string{"", "none", "calico"} {
+	for _, policy := range NetworkPolicyValues {
 		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = policy
-		if err := p.ValidateNetworkPolicy(); err != nil {
+		if err := p.validateNetworkPolicy(); err != nil {
 			t.Errorf(
 				"should not error on networkPolicy=\"%s\"",
 				policy,
@@ -19,7 +19,7 @@ func TestProperties_ValidateNetworkPolicy(t *testing.T) {
 	}
 
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "not-existing"
-	if err := p.ValidateNetworkPolicy(); err == nil {
+	if err := p.validateNetworkPolicy(); err == nil {
 		t.Errorf(
 			"should error on invalid networkPolicy",
 		)
@@ -31,7 +31,7 @@ func TestProperties_ValidateNetworkPolicy(t *testing.T) {
 			OSType: Windows,
 		},
 	}
-	if err := p.ValidateNetworkPolicy(); err == nil {
+	if err := p.validateNetworkPolicy(); err == nil {
 		t.Errorf(
 			"should error on calico for windows clusters",
 		)

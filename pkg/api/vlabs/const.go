@@ -67,3 +67,8 @@ const (
 	// ManagedDisks means that the nodes use managed disks for their os and attached volumes
 	ManagedDisks = "ManagedDisks"
 )
+
+// Network policy
+var (
+	NetworkPolicyValues = [...]string{"", "none", "azure", "calico"}
+)
