@@ -146,7 +146,7 @@ func (a *Properties) Validate() error {
 	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
 	}
-	if e := a.ValidateNetworkPolicy(); e != nil {
+	if e := a.validateNetworkPolicy(); e != nil {
 		return e
 	}
 	if e := a.MasterProfile.Validate(); e != nil {
@@ -274,14 +274,21 @@ func (a *Properties) Validate() error {
 	return nil
 }
 
-func (a *Properties) ValidateNetworkPolicy() error {
-
+func (a *Properties) validateNetworkPolicy() error {
 	if a.OrchestratorProfile.OrchestratorType != Kubernetes {
 		return nil
 	}
 
 	networkPolicy := a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
-	if networkPolicy != "" && networkPolicy != "none" && networkPolicy != "calico" {
+
+	valid := false
+	for _, policy := range NetworkPolicyValues {
+		if networkPolicy == policy {
+			valid = true
+			break
+		}
+	}
+	if !valid {
 		return fmt.Errorf("unknown networkPolicy '%s' specified", networkPolicy)
 	}
 
