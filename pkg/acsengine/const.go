@@ -15,12 +15,16 @@ const (
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultAgentSubnetTemplate specifies a default agent subnet
 	DefaultAgentSubnetTemplate = "10.%d.0.0/16"
+	// DefaultAgentIPAddressCount is the default number of IP addresses per network interface on agents
+	DefaultAgentIPAddressCount = 1
+	// DefaultAgentMultiIPAddressCount is the default number of IP addresses per interface when VNET integration is enabled
+	DefaultAgentMultiIPAddressCount = 64
 	// DefaultKubernetesClusterDomain is the dns suffix used in the cluster (used as a SAN in the PKI generation)
 	DefaultKubernetesClusterDomain = "cluster.local"
 	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP
 	// address relative to the first consecutive Kubernetes static IP
 	DefaultInternalLbStaticIPOffset = 10
-	// DefaultNetworkPolicy is disabling network policy enforcement (valid values: ['calico']
+	// DefaultNetworkPolicy is disabling network policy enforcement
 	DefaultNetworkPolicy = "none"
 )
 

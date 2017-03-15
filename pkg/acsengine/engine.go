@@ -490,6 +490,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 		"IsPublic": func(ports []int) bool {
 			return len(ports) > 0
 		},
+		"IsVNETIntegrated": func() bool {
+			return properties.OrchestratorProfile.IsVNETIntegrated()
+		},
 		"GetVNETSubnetDependencies": func() string {
 			return getVNETSubnetDependencies(properties)
 		},
@@ -701,6 +704,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(properties *api.Properties) map[s
 				dict[key] = values[i+1]
 			}
 			return dict, nil
+		},
+		"loop": func(min, max int) []int {
+			var s []int
+			for i := min; i <= max; i++ {
+				s = append(s, i)
+			}
+			return s
 		},
 	}
 }

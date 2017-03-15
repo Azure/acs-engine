@@ -276,6 +276,7 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.StorageProfile = vlabs.StorageProfile
 	api.DiskSizesGB = []int{}
 	api.DiskSizesGB = append(api.DiskSizesGB, vlabs.DiskSizesGB...)
+	api.IPAddressCount = vlabs.IPAddressCount
 	api.VnetSubnetID = vlabs.VnetSubnetID
 	api.Subnet = vlabs.GetSubnet()
 	api.FQDN = vlabs.FQDN

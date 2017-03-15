@@ -73,7 +73,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
-		a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+		if a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "" {
+			a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+		}
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
 		a.OrchestratorProfile.OrchestratorType = api.DCOS188
@@ -106,6 +108,16 @@ func setAgentNetworkDefaults(a *api.Properties) {
 
 			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 				profile.Subnet = a.MasterProfile.Subnet
+
+				// Allocate IP addresses for containers if VNET integration is enabled.
+				// A custom count specified by the user overrides this value.
+				if profile.IPAddressCount == 0 {
+					if a.OrchestratorProfile.IsVNETIntegrated() {
+						profile.IPAddressCount = DefaultAgentMultiIPAddressCount
+					} else {
+						profile.IPAddressCount = DefaultAgentIPAddressCount
+					}
+				}
 			} else {
 				profile.Subnet = fmt.Sprintf(DefaultAgentSubnetTemplate, subnetCounter)
 			}
