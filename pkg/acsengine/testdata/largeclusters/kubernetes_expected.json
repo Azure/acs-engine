@@ -6653,99 +6653,99 @@
     },
     "agentpool10StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool10StorageAccountsCount')]"
+      "value": "[variables('agentpool10Count')]"
     },
     "agentpool10StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool10StorageAccountOffset')]"
+      "value": "[variables('agentpool10Offset')]"
     },
     "agentpool11StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool11StorageAccountsCount')]"
+      "value": "[variables('agentpool11Count')]"
     },
     "agentpool11StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool11StorageAccountOffset')]"
+      "value": "[variables('agentpool11Offset')]"
     },
     "agentpool12StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool12StorageAccountsCount')]"
+      "value": "[variables('agentpool12Count')]"
     },
     "agentpool12StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool12StorageAccountOffset')]"
+      "value": "[variables('agentpool12Offset')]"
     },
     "agentpool1StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool1StorageAccountsCount')]"
+      "value": "[variables('agentpool1Count')]"
     },
     "agentpool1StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool1StorageAccountOffset')]"
+      "value": "[variables('agentpool1Offset')]"
     },
     "agentpool2StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool2StorageAccountsCount')]"
+      "value": "[variables('agentpool2Count')]"
     },
     "agentpool2StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool2StorageAccountOffset')]"
+      "value": "[variables('agentpool2Offset')]"
     },
     "agentpool3StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool3StorageAccountsCount')]"
+      "value": "[variables('agentpool3Count')]"
     },
     "agentpool3StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool3StorageAccountOffset')]"
+      "value": "[variables('agentpool3Offset')]"
     },
     "agentpool4StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool4StorageAccountsCount')]"
+      "value": "[variables('agentpool4Count')]"
     },
     "agentpool4StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool4StorageAccountOffset')]"
+      "value": "[variables('agentpool4Offset')]"
     },
     "agentpool5StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool5StorageAccountsCount')]"
+      "value": "[variables('agentpool5Count')]"
     },
     "agentpool5StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool5StorageAccountOffset')]"
+      "value": "[variables('agentpool5Offset')]"
     },
     "agentpool6StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool6StorageAccountsCount')]"
+      "value": "[variables('agentpool6Count')]"
     },
     "agentpool6StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool6StorageAccountOffset')]"
+      "value": "[variables('agentpool6Offset')]"
     },
     "agentpool7StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool7StorageAccountsCount')]"
+      "value": "[variables('agentpool7Count')]"
     },
     "agentpool7StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool7StorageAccountOffset')]"
+      "value": "[variables('agentpool7Offset')]"
     },
     "agentpool8StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool8StorageAccountsCount')]"
+      "value": "[variables('agentpool8Count')]"
     },
     "agentpool8StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool8StorageAccountOffset')]"
+      "value": "[variables('agentpool8Offset')]"
     },
     "agentpool9StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool9StorageAccountsCount')]"
+      "value": "[variables('agentpool9Count')]"
     },
     "agentpool9StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool9StorageAccountOffset')]"
+      "value": "[variables('agentpool9Offset')]"
     },
     "masterFQDN": {
       "type": "string",

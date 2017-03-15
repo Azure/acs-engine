@@ -1564,11 +1564,11 @@
     },
     "agentpool1StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool1StorageAccountsCount')]"
+      "value": "[variables('agentpool1Count')]"
     },
     "agentpool1StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool1StorageAccountOffset')]"
+      "value": "[variables('agentpool1Offset')]"
     },
     "masterFQDN": {
       "type": "string",

@@ -2009,19 +2009,19 @@
     },
     "agentpool1StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool1StorageAccountsCount')]"
+      "value": "[variables('agentpool1Count')]"
     },
     "agentpool1StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool1StorageAccountOffset')]"
+      "value": "[variables('agentpool1Offset')]"
     },
     "agentpool2StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool2StorageAccountsCount')]"
+      "value": "[variables('agentpool2Count')]"
     },
     "agentpool2StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool2StorageAccountOffset')]"
+      "value": "[variables('agentpool2Offset')]"
     },
     "masterFQDN": {
       "type": "string",

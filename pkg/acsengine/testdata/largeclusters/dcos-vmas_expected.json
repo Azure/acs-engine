@@ -6489,91 +6489,91 @@
     },
     "agentpri0StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpri0StorageAccountsCount')]"
+      "value": "[variables('agentpri0Count')]"
     },
     "agentpri0StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpri0StorageAccountOffset')]"
+      "value": "[variables('agentpri0Offset')]"
     },
     "agentpri10StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpri10StorageAccountsCount')]"
+      "value": "[variables('agentpri10Count')]"
     },
     "agentpri10StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpri10StorageAccountOffset')]"
+      "value": "[variables('agentpri10Offset')]"
     },
     "agentpri1StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpri1StorageAccountsCount')]"
+      "value": "[variables('agentpri1Count')]"
     },
     "agentpri1StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpri1StorageAccountOffset')]"
+      "value": "[variables('agentpri1Offset')]"
     },
     "agentpri2StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpri2StorageAccountsCount')]"
+      "value": "[variables('agentpri2Count')]"
     },
     "agentpri2StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpri2StorageAccountOffset')]"
+      "value": "[variables('agentpri2Offset')]"
     },
     "agentpri3StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpri3StorageAccountsCount')]"
+      "value": "[variables('agentpri3Count')]"
     },
     "agentpri3StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpri3StorageAccountOffset')]"
+      "value": "[variables('agentpri3Offset')]"
     },
     "agentpri4StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpri4StorageAccountsCount')]"
+      "value": "[variables('agentpri4Count')]"
     },
     "agentpri4StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpri4StorageAccountOffset')]"
+      "value": "[variables('agentpri4Offset')]"
     },
     "agentpri5StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpri5StorageAccountsCount')]"
+      "value": "[variables('agentpri5Count')]"
     },
     "agentpri5StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpri5StorageAccountOffset')]"
+      "value": "[variables('agentpri5Offset')]"
     },
     "agentpri6StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpri6StorageAccountsCount')]"
+      "value": "[variables('agentpri6Count')]"
     },
     "agentpri6StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpri6StorageAccountOffset')]"
+      "value": "[variables('agentpri6Offset')]"
     },
     "agentpri7StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpri7StorageAccountsCount')]"
+      "value": "[variables('agentpri7Count')]"
     },
     "agentpri7StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpri7StorageAccountOffset')]"
+      "value": "[variables('agentpri7Offset')]"
     },
     "agentpri8StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpri8StorageAccountsCount')]"
+      "value": "[variables('agentpri8Count')]"
     },
     "agentpri8StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpri8StorageAccountOffset')]"
+      "value": "[variables('agentpri8Offset')]"
     },
     "agentpri9StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpri9StorageAccountsCount')]"
+      "value": "[variables('agentpri9Count')]"
     },
     "agentpri9StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpri9StorageAccountOffset')]"
+      "value": "[variables('agentpri9Offset')]"
     },
     "agentpublic1FQDN": {
       "type": "string",
@@ -6581,11 +6581,11 @@
     },
     "agentpublic1StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpublic1StorageAccountsCount')]"
+      "value": "[variables('agentpublic1Count')]"
     },
     "agentpublic1StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpublic1StorageAccountOffset')]"
+      "value": "[variables('agentpublic1Offset')]"
     },
     "masterFQDN": {
       "type": "string",

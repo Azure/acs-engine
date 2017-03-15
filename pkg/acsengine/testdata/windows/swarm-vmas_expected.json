@@ -1878,11 +1878,11 @@
     },
     "privatewinStorageAccountCount": {
       "type": "int",
-      "value": "[variables('privatewinStorageAccountsCount')]"
+      "value": "[variables('privatewinCount')]"
     },
     "privatewinStorageAccountOffset": {
       "type": "int",
-      "value": "[variables('privatewinStorageAccountOffset')]"
+      "value": "[variables('privatewinOffset')]"
     },
     "publicwin1FQDN": {
       "type": "string",
@@ -1890,11 +1890,11 @@
     },
     "publicwin1StorageAccountCount": {
       "type": "int",
-      "value": "[variables('publicwin1StorageAccountsCount')]"
+      "value": "[variables('publicwin1Count')]"
     },
     "publicwin1StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('publicwin1StorageAccountOffset')]"
+      "value": "[variables('publicwin1Offset')]"
     }
   }
 }

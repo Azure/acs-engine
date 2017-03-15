@@ -1979,19 +1979,19 @@
     },
     "agentpri2StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpri2StorageAccountsCount')]"
+      "value": "[variables('agentpri2Count')]"
     },
     "agentpri2StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpri2StorageAccountOffset')]"
+      "value": "[variables('agentpri2Offset')]"
     },
     "agentpriStorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpriStorageAccountsCount')]"
+      "value": "[variables('agentpriCount')]"
     },
     "agentpriStorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpriStorageAccountOffset')]"
+      "value": "[variables('agentpriOffset')]"
     },
     "masterFQDN": {
       "type": "string",
