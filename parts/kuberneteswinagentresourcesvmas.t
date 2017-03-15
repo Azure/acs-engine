@@ -12,7 +12,7 @@
 {{end}}
       ], 
       "location": "[variables('location')]", 
-      "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nicp-', copyIndex(variables('{{.Name}}Offset'))]", 
+      "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nicp-', copyIndex(variables('{{.Name}}Offset')))]", 
       "properties": {
 {{if .IsCustomVNET}}                  
 	    "networkSecurityGroup": {
