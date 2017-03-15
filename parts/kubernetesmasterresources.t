@@ -300,12 +300,28 @@
                 }
               ],
               "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(int(variables('masterFirstAddrOctet4'))))]",
+              "primary": true,
               "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('vnetSubnetID')]"
               }
             }
           }
+{{if IsVNETIntegrated}}
+          {{range $seq := loop 2 64}}
+          ,
+          {
+            "name": "ipconfig{{$seq}}",
+            "properties": {
+              "primary": false,
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('vnetSubnetID')]"
+              }
+            }
+          }
+          {{end}}
+{{end}}
         ],
         "enableIPForwarding": true
 {{if .MasterProfile.IsCustomVNET}}

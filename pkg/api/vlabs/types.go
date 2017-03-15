@@ -160,6 +160,7 @@ type AgentPoolProfile struct {
 	AvailabilityProfile string `json:"availabilityProfile"`
 	StorageProfile      string `json:"storageProfile"`
 	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
+	IPAddressCount      int    `json:"ipAddressCount,omitempty"`
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 
 	// subnet is internal

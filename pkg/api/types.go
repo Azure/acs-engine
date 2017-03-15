@@ -154,6 +154,7 @@ type AgentPoolProfile struct {
 	AvailabilityProfile string `json:"availabilityProfile"`
 	StorageProfile      string `json:"storageProfile,omitempty"`
 	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
+	IPAddressCount      int    `json:"ipAddressCount,omitempty"`
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 	Subnet              string `json:"subnet"`
 
@@ -352,4 +353,14 @@ func (o *OrchestratorProfile) IsSwarmMode() bool {
 // IsKubernetes returns true if this template is for Kubernetes orchestrator
 func (o *OrchestratorProfile) IsKubernetes() bool {
 	return o.OrchestratorType == Kubernetes
+}
+
+// IsVNETIntegrated returns true if Azure VNET integration is enabled
+func (o *OrchestratorProfile) IsVNETIntegrated() bool {
+	switch o.OrchestratorType {
+	case Kubernetes:
+		return o.KubernetesConfig.NetworkPolicy == "azure"
+	default:
+		return false
+	}
 }

@@ -98,6 +98,9 @@ func (a *AgentPoolProfile) Validate() error {
 	if len(a.Ports) == 0 && len(a.DNSPrefix) > 0 {
 		return fmt.Errorf("AgentPoolProfile.Ports must be non empty when AgentPoolProfile.DNSPrefix is specified")
 	}
+	if a.IPAddressCount != 0 && (a.IPAddressCount < MinIPAddressCount || a.IPAddressCount > MaxIPAddressCount) {
+		return fmt.Errorf("AgentPoolProfile.IPAddressCount needs to be in the range [%d,%d]", MinIPAddressCount, MaxIPAddressCount)
+	}
 	if e := validateStorageProfile(a.StorageProfile); e != nil {
 		return e
 	}
