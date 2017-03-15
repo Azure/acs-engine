@@ -1833,11 +1833,11 @@
   "outputs": {
     "agent128StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agent128StorageAccountsCount')]"
+      "value": "[variables('agent128Count')]"
     },
     "agent128StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agent128StorageAccountOffset')]"
+      "value": "[variables('agent128Offset')]"
     },
     "agent1publicFQDN": {
       "type": "string",
@@ -1845,11 +1845,11 @@
     },
     "agent1publicStorageAccountCount": {
       "type": "int",
-      "value": "[variables('agent1publicStorageAccountsCount')]"
+      "value": "[variables('agent1publicCount')]"
     },
     "agent1publicStorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agent1publicStorageAccountOffset')]"
+      "value": "[variables('agent1publicOffset')]"
     },
     "agentStorageAccountPrefixes": {
       "type": "array",

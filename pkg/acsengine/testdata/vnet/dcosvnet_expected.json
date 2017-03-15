@@ -1684,11 +1684,11 @@
     },
     "agentprivateStorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentprivateStorageAccountsCount')]"
+      "value": "[variables('agentprivateCount')]"
     },
     "agentprivateStorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentprivateStorageAccountOffset')]"
+      "value": "[variables('agentprivateOffset')]"
     },
     "agentpublicFQDN": {
       "type": "string",
