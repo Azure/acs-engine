@@ -28,7 +28,10 @@
       }
     },
     "extensionsProfile": [
-      { "name": "hello-world-k8s", "version": "v1" }
+      { 
+        "name": "hello-world-k8s", 
+        "version": "v1" 
+      }
     ],
     "servicePrincipalProfile": {
       "servicePrincipalClientID": "",
