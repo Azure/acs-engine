@@ -47,7 +47,14 @@ func writeArtifacts(containerService *api.ContainerService, apiVersion, template
 		properties := &containerService.Properties
 		if properties.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
 			directory := path.Join(artifactsDir, "kubeconfig")
-			for _, location := range acsengine.AzureLocations {
+			var locations []string
+			if containerService.Location != "" {
+				locations = []string{containerService.Location}
+			} else {
+				locations = acsengine.AzureLocations
+			}
+
+			for _, location := range locations {
 				b, gkcerr := acsengine.GenerateKubeConfig(properties, location)
 				if gkcerr != nil {
 					return gkcerr
@@ -56,6 +63,7 @@ func writeArtifacts(containerService *api.ContainerService, apiVersion, template
 					return e
 				}
 			}
+
 		}
 
 		if e := saveFileString(artifactsDir, "ca.key", properties.CertificateProfile.GetCAPrivateKey()); e != nil {

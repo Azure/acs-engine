@@ -3,7 +3,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
@@ -15,7 +15,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountExhibitorName')]",
       "properties": {
         "accountType": "Standard_LRS"
@@ -28,7 +28,7 @@
       "dependsOn": [
           {{GetVNETSubnetDependencies}}
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('virtualNetworkName')]",
       "properties": {
         "addressSpace": {
@@ -45,14 +45,14 @@
 {{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterAvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterPublicIPAddressName')]",
       "properties": {
         "dnsSettings": {
@@ -67,7 +67,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterLbName')]",
       "properties": {
         "backendAddressPools": [
@@ -97,7 +97,7 @@
       "dependsOn": [
         "[variables('masterLbID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterLbName'), '/', 'SSH-', variables('masterVMNamePrefix'), copyIndex())]",
       "properties": {
         "backendPort": 22,
@@ -112,7 +112,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterNSGName')]",
       "properties": {
         "securityRules": [
@@ -148,7 +148,7 @@
         "[variables('masterLbID')]",
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
       "properties": {
         "ipConfigurations": [
@@ -195,7 +195,7 @@
       {
         "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]"
       },
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
       "properties": {
         "availabilitySet": {
@@ -255,7 +255,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), sub(variables('masterCount'), 1))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), sub(variables('masterCount'), 1), '/waitforleader')]",
       "properties": {
         "autoUpgradeMinorVersion": true,

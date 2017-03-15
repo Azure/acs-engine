@@ -74,8 +74,13 @@
     "osImageSKU": "16.04.0-LTS", 
     "osImageVersion": "16.04.201606270",
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]", 
-    "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]", 
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location, variables('orchestratorName')))]", 
+    "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
+    "locations": [
+         "[resourceGroup().location]",
+         "[parameters('location')]"
+    ],
+    "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),variables('location'),variables('orchestratorName')))]", 
     "storageAccountPrefixes": [ "0", "6", "c", "i", "o", "u", "1", "7", "d", "j", "p", "v", "2", "8", "e", "k", "q", "w", "3", "9", "f", "l", "r", "x", "4", "a", "g", "m", "s", "y", "5", "b", "h", "n", "t", "z" ], 
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]", 
     "storageAccountType": "Standard_LRS",

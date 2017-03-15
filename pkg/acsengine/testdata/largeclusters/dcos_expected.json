@@ -2512,6 +2512,13 @@
       },
       "type": "string"
     },
+    "location": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Sets the location for all resources in the cluster"
+      },
+      "type": "string"
+    },
     "masterEndpointDNSNamePrefix": {
       "metadata": {
         "description": "Sets the Domain name label for the master IP Address.  The concatenation of the domain name label and the regional DNS zone make up the fully qualified domain name associated with the public IP address."
@@ -2757,6 +2764,11 @@
     "apiVersionStorage": "2015-06-15",
     "dataStorageAccountPrefixSeed": 97,
     "dcosBootstrapURL": "[parameters('dcosBootstrapURL')]",
+    "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
+    "locations": [
+      "[resourceGroup().location]",
+      "[parameters('location')]"
+    ],
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]",
     "masterCount": 3,
     "masterEndpointDNSNamePrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
@@ -2799,7 +2811,7 @@
     "osImageVersion": "16.04.201606270",
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]",
     "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location, variables('orchestratorName')))]",
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),variables('location'),variables('orchestratorName')))]",
     "storageAccountPrefixes": [
       "0",
       "6",
@@ -3095,7 +3107,7 @@
   "resources": [
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri0NSGName')]",
       "properties": {
         "securityRules": []
@@ -3111,7 +3123,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri0AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri0VMSize')].storageAccountType]"
@@ -3128,7 +3140,7 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(3,variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(3,variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri0AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('agentpri0StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri0AccountName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri0VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
@@ -3205,7 +3217,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri1NSGName')]",
       "properties": {
         "securityRules": []
@@ -3221,7 +3233,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri1AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri1VMSize')].storageAccountType]"
@@ -3238,7 +3250,7 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(3,variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(3,variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri1AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('agentpri1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri1AccountName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri1VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
@@ -3315,7 +3327,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri2NSGName')]",
       "properties": {
         "securityRules": []
@@ -3331,7 +3343,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri2VMSize')].storageAccountType]"
@@ -3348,7 +3360,7 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(3,variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(3,variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('agentpri2StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri2AccountName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri2VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
@@ -3425,7 +3437,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri3NSGName')]",
       "properties": {
         "securityRules": []
@@ -3441,7 +3453,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri3AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri3VMSize')].storageAccountType]"
@@ -3458,7 +3470,7 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(3,variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(3,variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri3AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('agentpri3StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri3AccountName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri3VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
@@ -3535,7 +3547,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri4NSGName')]",
       "properties": {
         "securityRules": []
@@ -3551,7 +3563,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri4AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri4VMSize')].storageAccountType]"
@@ -3568,7 +3580,7 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(3,variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(3,variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri4AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('agentpri4StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri4AccountName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri4VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
@@ -3645,7 +3657,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri5NSGName')]",
       "properties": {
         "securityRules": []
@@ -3661,7 +3673,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri5AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri5VMSize')].storageAccountType]"
@@ -3678,7 +3690,7 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(3,variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(3,variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri5AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('agentpri5StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri5AccountName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri5VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
@@ -3755,7 +3767,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri6NSGName')]",
       "properties": {
         "securityRules": []
@@ -3771,7 +3783,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri6AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri6VMSize')].storageAccountType]"
@@ -3788,7 +3800,7 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(3,variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(3,variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri6AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('agentpri6StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri6AccountName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri6VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
@@ -3865,7 +3877,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri7NSGName')]",
       "properties": {
         "securityRules": []
@@ -3881,7 +3893,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri7AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri7VMSize')].storageAccountType]"
@@ -3898,7 +3910,7 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(3,variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(3,variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri7AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('agentpri7StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri7AccountName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri7VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
@@ -3975,7 +3987,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri8NSGName')]",
       "properties": {
         "securityRules": []
@@ -3991,7 +4003,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri8AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri8VMSize')].storageAccountType]"
@@ -4008,7 +4020,7 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(3,variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(3,variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri8AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('agentpri8StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri8AccountName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri8VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
@@ -4085,7 +4097,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri9NSGName')]",
       "properties": {
         "securityRules": []
@@ -4101,7 +4113,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri9AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri9VMSize')].storageAccountType]"
@@ -4118,7 +4130,7 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(3,variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(3,variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri9AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('agentpri9StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri9AccountName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri9VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
@@ -4195,7 +4207,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpri10NSGName')]",
       "properties": {
         "securityRules": []
@@ -4211,7 +4223,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri10AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpri10VMSize')].storageAccountType]"
@@ -4228,7 +4240,7 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(3,variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(3,variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri10AccountName'))]",
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('agentpri10StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpri10AccountName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri10VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
@@ -4305,7 +4317,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpublic1NSGName')]",
       "properties": {
         "securityRules": [
@@ -4364,7 +4376,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('agentpublic1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('agentpublic1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpublic1AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('agentpublic1VMSize')].storageAccountType]"
@@ -4373,7 +4385,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpublic1IPAddressName')]",
       "properties": {
         "dnsSettings": {
@@ -4388,7 +4400,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('agentpublic1IPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('agentpublic1LbName')]",
       "properties": {
         "backendAddressPools": [
@@ -4512,7 +4524,7 @@
         "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('agentpublic1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('agentpublic1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('agentpublic1AccountName'))]",
         "[concat('Microsoft.Network/loadBalancers/', variables('agentpublic1LbName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpublic1VMNamePrefix'), '-vmss')]",
       "properties": {
         "upgradePolicy": {
@@ -4597,7 +4609,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
@@ -4609,7 +4621,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountExhibitorName')]",
       "properties": {
         "accountType": "Standard_LRS"
@@ -4632,7 +4644,7 @@
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('agentpri10NSGName'))]",
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('agentpublic1NSGName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('virtualNetworkName')]",
       "properties": {
         "addressSpace": {
@@ -4773,14 +4785,14 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterAvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterPublicIPAddressName')]",
       "properties": {
         "dnsSettings": {
@@ -4795,7 +4807,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterLbName')]",
       "properties": {
         "backendAddressPools": [
@@ -4825,7 +4837,7 @@
       "dependsOn": [
         "[variables('masterLbID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterLbName'), '/', 'SSH-', variables('masterVMNamePrefix'), copyIndex())]",
       "properties": {
         "backendPort": 22,
@@ -4840,7 +4852,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterNSGName')]",
       "properties": {
         "securityRules": [
@@ -4874,7 +4886,7 @@
         "[variables('masterLbID')]",
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
       "properties": {
         "ipConfigurations": [
@@ -4917,7 +4929,7 @@
         "[variables('masterStorageAccountName')]",
         "[variables('masterStorageAccountExhibitorName')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
       "properties": {
         "availabilitySet": {
@@ -4976,7 +4988,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), sub(variables('masterCount'), 1))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), sub(variables('masterCount'), 1), '/waitforleader')]",
       "properties": {
         "autoUpgradeMinorVersion": true,
