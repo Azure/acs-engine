@@ -34,7 +34,11 @@
       }
     },
     "extensionsProfile": [
-      { "name": "hello-world-k8s", "version": "v1", "rootURL": "https://raw.githubusercontent.com/RobBagby/acs-engine/rob-master/" }
+      { 
+        "name": "hello-world-k8s", 
+        "version": "v1", 
+        "rootURL": "https://raw.githubusercontent.com/RobBagby/acs-engine/rob-master/" 
+      }
     ],
     "servicePrincipalProfile": {
       "servicePrincipalClientID": "ServicePrincipalClientID",

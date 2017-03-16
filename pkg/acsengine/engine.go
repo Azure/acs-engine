@@ -607,7 +607,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"WriteLinkedTemplatesForExtensions": func() string {
-			extensions := getLinkedTemplatesForExtensions(properties.OrchestratorProfile.OrchestratorType, properties.ExtensionsProfile)
+			extensions := getLinkedTemplatesForExtensions(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.ExtensionsProfile)
 			return extensions
 		},
 		"GetKubernetesB64Provision": func() string {
