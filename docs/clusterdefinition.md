@@ -147,3 +147,15 @@ For apiVersion "2016-03-30", a cluster may have only 1 agent pool profiles.
 |---|---|---|
 |adminUsername|yes|describes the username to be used on all linux clusters|
 |ssh.publicKeys[0].keyData|yes|The public SSH key used for authenticating access to all Linux nodes in the cluster.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation).|
+
+### extensionsProfile
+A cluster can have 0 - N extensions in extension profiles.  Extension profiles allow a user to easily add pre-packaged functionality into a cluster.  An example would be configuring a monitoring solution on your cluster.  You can think of extensions like a marketplace for acs clusters.
+
+|Name|Required|Description|
+|---|---|---|
+|name|yes|the name of the extension.  This has to exactly match the name of a folder under the extensions folder|
+|version|yes|the version of the extension.  This has to exactly match the name of the folder under the extension name folder|
+|extensionParameters|optional|extension parameters may be required by extensions.  The format of the parameters is also extension dependant.|
+|rootURL|optional|url to the root location of extensions.  The rootURL must have an extensions child folder that follows the extensions convention.  The rootURL is mainly used for testing purposes.|
+
+You can find more information, as well as a list of extensions on the [extensions documentation] (extensions.md).

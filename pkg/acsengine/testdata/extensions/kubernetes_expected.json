@@ -2002,6 +2002,44 @@
         "typeHandlerVersion": "1.5"
       },
       "type": "Microsoft.Compute/virtualMachines/extensions"
+    },
+    {
+      "apiVersion": "[variables('apiVersionLinkDefault')]",
+      "dependsOn": [
+        "vmLoopNode"
+      ],
+      "name": "HelloWorldK8s",
+      "properties": {
+        "parameters": {
+          "apiVersionDefault": {
+            "value": "[variables('apiVersionDefault')]"
+          },
+          "apiVersionStorage": {
+            "value": "[variables('apiVersionStorage')]"
+          },
+          "artifactsLocation": {
+            "value": "https://raw.githubusercontent.com/RobBagby/acs-engine/rob-master/"
+          },
+          "extensionParameters": {
+            "value": ""
+          },
+          "masterVMNamePrefix": {
+            "value": "[concat(variables('masterVMNamePrefix'), '0')]"
+          },
+          "storageAccountBaseName": {
+            "value": "[variables('storageAccountBaseName')]"
+          },
+          "username": {
+            "value": "[variables('username')]"
+          }
+        },
+        "mode": "Incremental",
+        "templateLink": {
+          "contentVersion": "1.0.0.0",
+          "uri": "https://raw.githubusercontent.com/RobBagby/acs-engine/rob-master/extensions/hello-world-k8s/v1/template.json"
+        }
+      },
+      "type": "Microsoft.Resources/deployments"
     }
   ],
   "outputs": {
