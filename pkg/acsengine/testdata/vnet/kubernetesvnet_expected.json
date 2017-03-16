@@ -757,6 +757,13 @@
       },
       "type": "string"
     },
+    "location": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Sets the location for all resources in the cluster"
+      },
+      "type": "string"
+    },
     "masterEndpointDNSNamePrefix": {
       "metadata": {
         "description": "Sets the Domain name label for the master IP Address.  The concatenation of the domain name label and the regional DNS zone make up the fully qualified domain name associated with the public IP address."
@@ -950,7 +957,11 @@
     "kubernetesHyperkubeSpec": "[parameters('kubernetesHyperkubeSpec')]",
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesPodInfraContainerSpec": "[parameters('kubernetesPodInfraContainerSpec')]",
-    "location": "[resourceGroup().location]",
+    "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
+    "locations": [
+      "[resourceGroup().location]",
+      "[parameters('location')]"
+    ],
     "masterAvailabilitySet": "[concat('master-availabilityset-', variables('nameSuffix'))]",
     "masterCount": 1,
     "masterEtcdClientPort": 2379,
@@ -1038,7 +1049,7 @@
       2204
     ],
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),resourceGroup().location))]",
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),variables('location')))]",
     "storageAccountPrefixes": [
       "0",
       "6",
@@ -1465,7 +1476,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpriVMNamePrefix'), copyIndex(variables('agentpriOffset')))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpriVMNamePrefix'), copyIndex(variables('agentpriOffset')),'/cse', copyIndex(variables('agentpriOffset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -1606,7 +1617,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpri2VMNamePrefix'), copyIndex(variables('agentpri2Offset')))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpri2VMNamePrefix'), copyIndex(variables('agentpri2Offset')),'/cse', copyIndex(variables('agentpri2Offset')))]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -1953,7 +1964,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -1979,19 +1990,19 @@
     },
     "agentpri2StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpri2StorageAccountsCount')]"
+      "value": "[variables('agentpri2Count')]"
     },
     "agentpri2StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpri2StorageAccountOffset')]"
+      "value": "[variables('agentpri2Offset')]"
     },
     "agentpriStorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpriStorageAccountsCount')]"
+      "value": "[variables('agentpriCount')]"
     },
     "agentpriStorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpriStorageAccountOffset')]"
+      "value": "[variables('agentpriOffset')]"
     },
     "masterFQDN": {
       "type": "string",

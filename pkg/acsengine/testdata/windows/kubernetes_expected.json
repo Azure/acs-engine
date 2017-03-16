@@ -443,6 +443,13 @@
       },
       "type": "string"
     },
+    "location": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Sets the location for all resources in the cluster"
+      },
+      "type": "string"
+    },
     "masterEndpointDNSNamePrefix": {
       "metadata": {
         "description": "Sets the Domain name label for the master IP Address.  The concatenation of the domain name label and the regional DNS zone make up the fully qualified domain name associated with the public IP address."
@@ -640,7 +647,11 @@
     "kubernetesHyperkubeSpec": "[parameters('kubernetesHyperkubeSpec')]",
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesPodInfraContainerSpec": "[parameters('kubernetesPodInfraContainerSpec')]",
-    "location": "[resourceGroup().location]",
+    "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
+    "locations": [
+      "[resourceGroup().location]",
+      "[parameters('location')]"
+    ],
     "masterAvailabilitySet": "[concat('master-availabilityset-', variables('nameSuffix'))]",
     "masterCount": 1,
     "masterEtcdClientPort": 2379,
@@ -729,7 +740,7 @@
       2204
     ],
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),resourceGroup().location))]",
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),variables('location')))]",
     "storageAccountPrefixes": [
       "0",
       "6",
@@ -1043,7 +1054,7 @@
         "[variables('vnetID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('agentpool1VMNamePrefix'), 'nicp-', copyIndex(variables('agentpool1Offset'))]",
+      "name": "[concat(variables('agentpool1VMNamePrefix'), 'nicp-', copyIndex(variables('agentpool1Offset')))]",
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -1150,7 +1161,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')), '/cse')]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -1538,7 +1549,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -1564,11 +1575,11 @@
     },
     "agentpool1StorageAccountCount": {
       "type": "int",
-      "value": "[variables('agentpool1StorageAccountsCount')]"
+      "value": "[variables('agentpool1Count')]"
     },
     "agentpool1StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('agentpool1StorageAccountOffset')]"
+      "value": "[variables('agentpool1Offset')]"
     },
     "masterFQDN": {
       "type": "string",

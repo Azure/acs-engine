@@ -36,8 +36,13 @@
     "apiVersionStorageManagedDisks": "2016-04-30-preview",
 {{end}}
     "location": "[resourceGroup().location]", 
+    "locations": [
+         "[resourceGroup().location]",
+         "[parameters('location')]"
+    ],
+    "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
     "masterAvailabilitySet": "[concat('master-availabilityset-', variables('nameSuffix'))]",
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),resourceGroup().location, variables('orchestratorName')))]",
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),variables('location'),variables('orchestratorName')))]",
     "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
     "nameSuffix": "[parameters('nameSuffix')]", 
     "orchestratorName": "k8s",  
@@ -50,7 +55,7 @@
     "routeTableID": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]",
     "sshNatPorts": [22,2201,2202,2203,2204],
     "sshKeyPath": "[concat('/home/',variables('username'),'/.ssh/authorized_keys')]", 
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),resourceGroup().location))]", 
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),variables('location')))]", 
     "storageAccountPrefixes": [ "0", "6", "c", "i", "o", "u", "1", "7", "d", "j", "p", "v", "2", "8", "e", "k", "q", "w", "3", "9", "f", "l", "r", "x", "4", "a", "g", "m", "s", "y", "5", "b", "h", "n", "t", "z" ], 
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]",
     "vmsPerStorageAccount": 20,

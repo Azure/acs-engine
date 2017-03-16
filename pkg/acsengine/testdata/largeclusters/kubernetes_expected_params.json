@@ -164,6 +164,9 @@
   "linuxAdminUsername": {
     "value": "azureuser"
   },
+  "location": {
+    "value": ""
+  },
   "masterEndpointDNSNamePrefix": {
     "value": "masterdns1"
   },

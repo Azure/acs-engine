@@ -15,6 +15,13 @@
       },
       "type": "string"
     },
+    "location": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "Sets the location for all resources in the cluster"
+      },
+      "type": "string"
+    },
     "masterEndpointDNSNamePrefix": {
       "metadata": {
         "description": "Sets the Domain name label for the master IP Address.  The concatenation of the domain name label and the regional DNS zone make up the fully qualified domain name associated with the public IP address."
@@ -805,6 +812,11 @@
     "clusterInstallParameters": "[concat(variables('masterCount'), ' ',variables('masterVMNamePrefix'), ' ',variables('masterFirstAddrOctet4'), ' ',variables('adminUsername'),' ',variables('postInstallScriptURI'),' ',variables('masterFirstAddrPrefix'))]",
     "configureClusterScriptFile": "configure-swarm-cluster.sh",
     "dataStorageAccountPrefixSeed": 97,
+    "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
+    "locations": [
+      "[resourceGroup().location]",
+      "[parameters('location')]"
+    ],
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]",
     "masterCount": 1,
     "masterCustomScript": "[concat('/bin/bash -c \"/bin/bash /opt/azure/containers/',variables('configureClusterScriptFile'), ' ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1\"')]",
@@ -903,7 +915,7 @@
     "singleQuote": "'",
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]",
     "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location))]",
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),variables('location')))]",
     "storageAccountPrefixes": [
       "0",
       "6",
@@ -1211,7 +1223,7 @@
         "[variables('vnetID')]",
         "[variables('publicwin1LbID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('publicwin1VMNamePrefix'), 'nic-', copyIndex(variables('publicwin1Offset')))]",
       "properties": {
         "ipConfigurations": [
@@ -1247,7 +1259,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('publicwin1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('publicwin1StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('publicwin1AccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('publicwin1VMSize')].storageAccountType]"
@@ -1256,14 +1268,14 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('publicwin1AvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('publicwin1IPAddressName')]",
       "properties": {
         "dnsSettings": {
@@ -1278,7 +1290,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('publicwin1IPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('publicwin1LbName')]",
       "properties": {
         "backendAddressPools": [
@@ -1415,7 +1427,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('publicwin1VMNamePrefix'), 'nic-', copyIndex(variables('publicwin1Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('publicwin1AvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('publicwin1VMNamePrefix'), copyIndex(variables('publicwin1Offset')))]",
       "properties": {
         "availabilitySet": {
@@ -1468,7 +1480,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('publicwin1VMNamePrefix'), copyIndex(variables('publicwin1Offset')))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('publicwin1VMNamePrefix'), copyIndex(variables('publicwin1Offset')), '/cse')]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -1490,7 +1502,7 @@
       "dependsOn": [
         "[variables('vnetID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('privatewinVMNamePrefix'), 'nic-', copyIndex(variables('privatewinOffset')))]",
       "properties": {
         "ipConfigurations": [
@@ -1516,7 +1528,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('privatewinStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('privatewinStorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('privatewinAccountName'))]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('privatewinVMSize')].storageAccountType]"
@@ -1525,7 +1537,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('privatewinAvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
@@ -1541,7 +1553,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('privatewinVMNamePrefix'), 'nic-', copyIndex(variables('privatewinOffset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('privatewinAvailabilitySet'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('privatewinVMNamePrefix'), copyIndex(variables('privatewinOffset')))]",
       "properties": {
         "availabilitySet": {
@@ -1594,7 +1606,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('privatewinVMNamePrefix'), copyIndex(variables('privatewinOffset')))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('privatewinVMNamePrefix'), copyIndex(variables('privatewinOffset')), '/cse')]",
       "properties": {
         "autoUpgradeMinorVersion": true,
@@ -1612,7 +1624,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
@@ -1621,7 +1633,7 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('virtualNetworkName')]",
       "properties": {
         "addressSpace": {
@@ -1656,14 +1668,14 @@
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterAvailabilitySet')]",
       "properties": {},
       "type": "Microsoft.Compute/availabilitySets"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterPublicIPAddressName')]",
       "properties": {
         "dnsSettings": {
@@ -1678,7 +1690,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[variables('masterLbName')]",
       "properties": {
         "backendAddressPools": [
@@ -1708,7 +1720,7 @@
       "dependsOn": [
         "[variables('masterLbID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterLbName'), '/', 'SSH-', variables('masterVMNamePrefix'), copyIndex())]",
       "properties": {
         "backendPort": 22,
@@ -1726,7 +1738,7 @@
       "dependsOn": [
         "[variables('masterLbID')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterSshPort22InboundNatRuleNamePrefix'), '0')]",
       "properties": {
         "backendPort": 2222,
@@ -1751,7 +1763,7 @@
         "[concat(variables('masterSshPort22InboundNatRuleIdPrefix'),'0')]",
         "[concat(variables('masterSshInboundNatRuleIdPrefix'),copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
       "properties": {
         "ipConfigurations": [
@@ -1786,7 +1798,7 @@
         "[concat('Microsoft.Compute/availabilitySets/',variables('masterAvailabilitySet'))]",
         "[variables('masterStorageAccountName')]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
       "properties": {
         "availabilitySet": {
@@ -1849,7 +1861,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', concat(variables('masterVMNamePrefix'), copyIndex()))]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(), '/configuremaster')]",
       "properties": {
         "publisher": "Microsoft.OSTCExtensions",
@@ -1878,11 +1890,11 @@
     },
     "privatewinStorageAccountCount": {
       "type": "int",
-      "value": "[variables('privatewinStorageAccountsCount')]"
+      "value": "[variables('privatewinCount')]"
     },
     "privatewinStorageAccountOffset": {
       "type": "int",
-      "value": "[variables('privatewinStorageAccountOffset')]"
+      "value": "[variables('privatewinOffset')]"
     },
     "publicwin1FQDN": {
       "type": "string",
@@ -1890,11 +1902,11 @@
     },
     "publicwin1StorageAccountCount": {
       "type": "int",
-      "value": "[variables('publicwin1StorageAccountsCount')]"
+      "value": "[variables('publicwin1Count')]"
     },
     "publicwin1StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('publicwin1StorageAccountOffset')]"
+      "value": "[variables('publicwin1Offset')]"
     }
   }
 }
