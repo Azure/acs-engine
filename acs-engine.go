@@ -132,12 +132,25 @@ var artifactsDir = flag.String("artifacts", "", "directory where artifacts will 
 var classicMode = flag.Bool("classicMode", false, "enable classic parameters and outputs")
 var parametersOnly = flag.Bool("parametersOnly", false, "only output the parameters")
 
+// AcsEngineBuildSHA is the Git SHA-1 of the last commit
+var AcsEngineBuildSHA string
+
 // acs-engine takes the caKey and caCert as args, since the caKey is stored separately
 // from the api model since this cannot be easily revoked like the server and client key
 var caCertificatePath = flag.String("caCertificatePath", "", "the path to the CA Certificate file")
 var caKeyPath = flag.String("caKeyPath", "", "the path to the CA key file")
 
 func main() {
+	if (len(os.Args) == 2) &&
+		(os.Args[1] == "--version") || (os.Args[1] == "-v") {
+		if len(AcsEngineBuildSHA) == 0 {
+			fmt.Fprintf(os.Stderr, "No version set. Please run `make build`\n")
+			os.Exit(1)
+		}
+		fmt.Fprintf(os.Stdout, "Git commit: %s \n", AcsEngineBuildSHA)
+		os.Exit(0)
+	}
+
 	start := time.Now()
 	defer func(s time.Time) {
 		fmt.Fprintf(os.Stderr, "acsengine took %s\n", time.Since(s))
