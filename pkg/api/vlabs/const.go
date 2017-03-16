@@ -9,7 +9,7 @@ const (
 const (
 	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS188
 	DCOS = "DCOS"
-  // DCOS188 is the string constant for DCOS 1.8.8 orchestrator type
+	// DCOS190 is the string constant for DCOS 1.8.8 orchestrator type
 	DCOS190 OrchestratorType = "DCOS190"
 	// DCOS188 is the string constant for DCOS 1.8.8 orchestrator type
 	DCOS188 OrchestratorType = "DCOS188"
