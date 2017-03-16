@@ -29,6 +29,7 @@ type Properties struct {
 	MasterProfile           MasterProfile           `json:"masterProfile"`
 	AgentPoolProfiles       []AgentPoolProfile      `json:"agentPoolProfiles"`
 	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
+	ExtensionsProfile       []ExtensionProfile      `json:"extensionsProfile"`
 	WindowsProfile          WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
 	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
@@ -149,6 +150,14 @@ type MasterProfile struct {
 
 // ClassicAgentPoolProfileType represents types of classic profiles
 type ClassicAgentPoolProfileType string
+
+// ExtensionProfile represents an extension definition
+type ExtensionProfile struct {
+	Name                string `json:"name"`
+	Version             string `json:"version"`
+	ExtensionParameters string `json:"extensionParameters"`
+	RootURL             string `json:"rootURL"`
+}
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {

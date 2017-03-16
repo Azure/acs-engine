@@ -133,6 +133,12 @@ func convertPropertiesToVLabs(api *Properties, vlabsProps *vlabs.Properties) {
 		vlabsProps.AgentPoolProfiles = append(vlabsProps.AgentPoolProfiles, *vlabsProfile)
 	}
 	convertLinuxProfileToVLabs(&api.LinuxProfile, &vlabsProps.LinuxProfile)
+	vlabsProps.ExtensionsProfile = []vlabs.ExtensionProfile{}
+	for _, extensionProfile := range api.ExtensionsProfile {
+		vlabsExtensionProfile := &vlabs.ExtensionProfile{}
+		convertExtensionProfileToVLabs(&extensionProfile, vlabsExtensionProfile)
+		vlabsProps.ExtensionsProfile = append(vlabsProps.ExtensionsProfile, *vlabsExtensionProfile)
+	}
 	convertWindowsProfileToVLabs(&api.WindowsProfile, &vlabsProps.WindowsProfile)
 	convertServicePrincipalProfileToVLabs(&api.ServicePrincipalProfile, &vlabsProps.ServicePrincipalProfile)
 	convertCertificateProfileToVLabs(&api.CertificateProfile, &vlabsProps.CertificateProfile)
@@ -156,6 +162,13 @@ func convertLinuxProfileToV20160330(api *LinuxProfile, v20160330 *v20160330.Linu
 	for _, d := range api.SSH.PublicKeys {
 		v20160330.SSH.PublicKeys = append(v20160330.SSH.PublicKeys, d)
 	}
+}
+
+func convertExtensionProfileToVLabs(api *ExtensionProfile, vlabs *vlabs.ExtensionProfile) {
+	vlabs.Name = api.Name
+	vlabs.Version = api.Version
+	vlabs.ExtensionParameters = api.ExtensionParameters
+	vlabs.RootURL = api.RootURL
 }
 
 func convertLinuxProfileToVLabs(api *LinuxProfile, vlabsProfile *vlabs.LinuxProfile) {
