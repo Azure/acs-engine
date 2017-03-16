@@ -113,23 +113,19 @@
 {{if IsDCOS190}}    
     {
       "apiVersion": "[variables('apiVersionDefault')]",
-      "copy": {
-        "count": "[variables('masterCount')]",
-        "name": "masterLbLoopNode"
-      },
       "dependsOn": [
         "[variables('masterLbID')]"
       ],
       "location": "[resourceGroup().location]",
 
-      "name": "[concat(variables('masterLbName'), '/', 'SSHPort22-', variables('masterVMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('masterLbName'), '/', 'SSHPort22-', variables('masterVMNamePrefix'), '0')]",
       "properties": {
         "backendPort": 2222,
         "enableFloatingIP": false,
         "frontendIPConfiguration": {
           "id": "[variables('masterLbIPConfigID')]"
         },
-        "frontendPort": "[copyIndex(22)]",
+        "frontendPort": "22",
         "protocol": "tcp"
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
@@ -187,9 +183,6 @@
         "[variables('vnetID')]",
 {{end}}
         "[variables('masterLbID')]",
-{{if IsDCOS190}}
-        "[concat(variables('masterLbID'),'/inboundNatRules/SSHPort22-',variables('masterVMNamePrefix'),copyIndex())]",
-{{end}}
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
       ],
       "location": "[resourceGroup().location]",
@@ -204,16 +197,15 @@
                   "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
               ],
-              "loadBalancerInboundNatRules": [
 {{if IsDCOS190}}
-                {
-                  "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSHPort22-',variables('masterVMNamePrefix'),copyIndex())]"                 
-                },
-{{end}}
+              "loadBalancerInboundNatRules": "[variables('masterLbInboundNatRules')[copyIndex()]]",
+{{else}}
+              "loadBalancerInboundNatRules": [
                 {
                   "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
                 }
               ],
+{{end}}
               "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(int(variables('masterFirstAddrOctet4'))))]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
