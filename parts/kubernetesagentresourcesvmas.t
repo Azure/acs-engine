@@ -35,8 +35,11 @@
           }
           {{if lt $seq $.IPAddressCount}},{{end}}
           {{end}}
-        ],
+        ]
+{{if not IsVNETIntegrated}}
+        ,
         "enableIPForwarding": true
+{{end}}
       },
       "type": "Microsoft.Network/networkInterfaces"
     },

@@ -63,6 +63,11 @@
 {{if AnyAgentHasDisks}}
     "dataStorageAccountPrefixSeed": 97,
 {{end}}
+{{if IsVNETIntegrated}}
+    "allocateNodeCidrs": false,
+{{else}}
+    "allocateNodeCidrs": true,
+{{end}}
 {{if .MasterProfile.IsCustomVNET}}
     "vnetSubnetID": "[parameters('masterVnetSubnetID')]",
     "subnetNameResourceSegmentIndex": 10,
