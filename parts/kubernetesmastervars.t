@@ -17,6 +17,7 @@
     "kubernetesPodInfraContainerSpec": "[parameters('kubernetesPodInfraContainerSpec')]",
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
+    "networkPolicy": "[parameters('networkPolicy')]",
     "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
     "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
     "username": "[parameters('linuxAdminUsername')]",
@@ -31,6 +32,9 @@
 {{end}}    
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
+{{if .HasManagedDisks}}
+    "apiVersionStorageManagedDisks": "2016-04-30-preview",
+{{end}}
     "location": "[resourceGroup().location]", 
     "masterAvailabilitySet": "[concat('master-availabilityset-', variables('nameSuffix'))]",
     "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),resourceGroup().location, variables('orchestratorName')))]",

@@ -83,6 +83,9 @@
   "masterVnetSubnetID": {
     "value": "/subscriptions/SUBSCRIPTION/resourceGroups/KubeVnet/providers/Microsoft.Network/virtualNetworks/KubernetesCustomVNET/subnets/KubernetesSubnet"
   },
+  "networkPolicy": {
+    "value": "none"
+  },
   "servicePrincipalClientId": {
     "value": "ServicePrincipalClientID"
   },

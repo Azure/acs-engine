@@ -18,14 +18,15 @@ SERVICE_PRINCIPAL_CLIENT_ID="${10}"
 SERVICE_PRINCIPAL_CLIENT_SECRET="${11}"
 KUBELET_PRIVATE_KEY="${12}"
 TARGET_ENVIRONMENT="${13}"
+NETWORK_POLICY="${14}"
 
 # Master only secrets
-APISERVER_PRIVATE_KEY="${14}"
-CA_CERTIFICATE="${15}"
-MASTER_FQDN="${16}"
-KUBECONFIG_CERTIFICATE="${17}"
-KUBECONFIG_KEY="${18}"
-ADMINUSER="${19}"
+APISERVER_PRIVATE_KEY="${15}"
+CA_CERTIFICATE="${16}"
+MASTER_FQDN="${17}"
+KUBECONFIG_CERTIFICATE="${18}"
+KUBECONFIG_KEY="${19}"
+ADMINUSER="${20}"
 
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
@@ -94,6 +95,43 @@ function ensureKubectl() {
     fi
 }
 
+function setNetworkPlugin () {
+    sed -i "s/^KUBELET_NETWORK_PLUGIN=.*/KUBELET_NETWORK_PLUGIN=${1}/" /etc/default/kubelet
+}
+
+function setDockerOpts () {
+    sed -i "s#^DOCKER_OPTS=.*#DOCKER_OPTS=${1}#" /etc/default/kubelet
+}
+
+function configNetworkPolicy() {
+    if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
+        # on masters
+        ADDONS="calico-configmap.yaml calico-daemonset.yaml"
+        ADDONS_PATH=/etc/kubernetes/addons
+        CALICO_URL="https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager"
+        if [[ "${NETWORK_POLICY}" = "calico" ]]; then
+            # download calico yamls
+            for addon in ${ADDONS}; do
+                curl -o "${ADDONS_PATH}/${addon}" -sSL --retry 12 --retry-delay 10 "${CALICO_URL}/${addon}"
+            done
+        else
+            # make sure calico yaml are removed
+            for addon in ${ADDONS}; do
+                rm -f "${ADDONS_PATH}/${addon}"
+            done
+        fi
+    else
+        # on agents
+        if [[ "${NETWORK_POLICY}" = "calico" ]]; then
+            setNetworkPlugin cni
+            setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+        else
+            setNetworkPlugin kubenet
+            setDockerOpts ""
+        fi
+    fi
+}
+
 function ensureEtcd() {
     systemctl stop etcd
     rm -rf /var/lib/etcd/default
@@ -104,7 +142,7 @@ function ensureDocker() {
     systemctl enable docker
     systemctl restart docker
     dockerStarted=1
-    for i in {1..600}; do
+    for i in {1..900}; do
         if ! /usr/bin/docker info; then
             echo "status $?"
             /bin/systemctl restart docker
@@ -206,6 +244,7 @@ users:
 
 # master and node
 ensureDocker
+configNetworkPolicy
 ensureKubelet
 extractKubectl
 

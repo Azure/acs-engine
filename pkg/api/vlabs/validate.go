@@ -147,6 +147,9 @@ func (a *Properties) Validate() error {
 	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
 	}
+	if e := a.ValidateNetworkPolicy(); e != nil {
+		return e
+	}
 	if e := a.MasterProfile.Validate(); e != nil {
 		return e
 	}
@@ -188,6 +191,18 @@ func (a *Properties) Validate() error {
 				return fmt.Errorf("unknown availability profile type '%s' for agent pool '%s'.  Specify either %s, or %s", agentPoolProfile.AvailabilityProfile, agentPoolProfile.Name, AvailabilitySet, VirtualMachineScaleSets)
 			}
 		}
+		switch agentPoolProfile.StorageProfile {
+		case StorageAccount:
+		case StorageAccountClassic:
+		case ManagedDisks:
+		case "":
+		default:
+			{
+				return fmt.Errorf("unknown storage type '%s' for agent pool '%s'.  Specify either %s, or %s", agentPoolProfile.StorageProfile, agentPoolProfile.Name, StorageAccount, ManagedDisks)
+			}
+		}
+		/* this switch statement is left to protect newly added orchestrators until they support Managed Disks*/
+
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
@@ -197,6 +212,7 @@ func (a *Properties) Validate() error {
 			case DCOS188:
 			case DCOS190:
 			case Swarm:
+			case Kubernetes:
 			case SwarmMode:
 			default:
 				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
@@ -217,6 +233,17 @@ func (a *Properties) Validate() error {
 			}
 		}
 
+		if len(agentPoolProfile.CustomNodeLabels) > 0 {
+			switch a.OrchestratorProfile.OrchestratorType {
+			case DCOS:
+			case DCOS173:
+			case DCOS184:
+			case DCOS187:
+			case DCOS188:
+			default:
+				return fmt.Errorf("Agent Type attributes are only supported for DCOS.")
+			}
+		}
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
 			return fmt.Errorf("VirtualMachineScaleSets are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"AvailabilityProfile\":\"%s\"", AvailabilitySet)
 		}
@@ -248,6 +275,24 @@ func (a *Properties) Validate() error {
 	if e := validateVNET(a); e != nil {
 		return e
 	}
+	return nil
+}
+
+func (a *Properties) ValidateNetworkPolicy() error {
+
+	if a.OrchestratorProfile.OrchestratorType != Kubernetes {
+		return nil
+	}
+
+	networkPolicy := a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
+	if networkPolicy != "" && networkPolicy != "none" && networkPolicy != "calico" {
+		return fmt.Errorf("unknown networkPolicy '%s' specified", networkPolicy)
+	}
+
+	if networkPolicy == "calico" && a.HasWindows() {
+		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
+	}
+
 	return nil
 }
 

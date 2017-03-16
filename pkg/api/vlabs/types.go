@@ -125,6 +125,7 @@ type OrchestratorProfile struct {
 // Kubernetes specific configuration
 type KubernetesConfig struct {
 	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
+	NetworkPolicy       string `json:"networkPolicy,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -164,7 +165,8 @@ type AgentPoolProfile struct {
 	// subnet is internal
 	subnet string
 
-	FQDN string `json:"fqdn,omitempty"`
+	FQDN             string            `json:"fqdn,omitempty"`
+	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
 }
 
 // KeyVaultSecrets specifies certificates to install on the pool

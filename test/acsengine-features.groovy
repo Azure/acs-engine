@@ -10,6 +10,8 @@ node {
         def clone_dir = "${env.GOPATH}/src/github.com/Azure/acs-engine"
         env.HOME=clone_dir
         String sendTo = "${SEND_TO}".trim()
+        Integer timeoutInMinutes = STAGE_TIMEOUT.toInteger()
+        def autoclean="${AUTOCLEAN}"
 
         dir(clone_dir) {
           def img = null
@@ -33,9 +35,14 @@ node {
                 env.SERVICE_PRINCIPAL_CLIENT_SECRET="${SPN_PASSWORD}"
                 env.TENANT_ID="${TENANT_ID}"
                 env.SUBSCRIPTION_ID="${SUBSCRIPTION_ID}"
-                env.LOCATION = "${LOCATION}"
                 env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}"
                 env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}"
+
+                // First check to see if var exists in context, then check for true-ness
+                // In Groovy, null and empty strings are false...
+                if(getBinding().hasVariable("CUSTOM_HYPERKUBE_SPEC") && CUSTOM_HYPERKUBE_SPEC) {
+                    env.CUSTOM_HYPERKUBE_SPEC="${CUSTOM_HYPERKUBE_SPEC}"
+                }
 
                 sh("printf 'acs-features-test%x' \$(date '+%s') > INSTANCE_NAME_PREFIX")
                 prefix = readFile('INSTANCE_NAME_PREFIX').trim()
@@ -44,10 +51,16 @@ node {
                 // Build and test acs-engine
                 sh('make ci')
               }
-              def subdirs = "${SCENARIOS}".tokenize('[ \t\n]+')
-              for (i = 0; i < subdirs.size(); i++) {
-                def subdir = subdirs[i]
+              def pairs = "${SCENARIOS_LOCATIONS}".tokenize('|')
+              for(i = 0; i < pairs.size(); i++) {
+                def pair = pairs[i].tokenize('[ \t\n]+')
+                if(pair.size() != 2) {
+                  echo "Skipping '"+pairs[i]+"'"
+                  continue
+                }
+                def subdir = pair[0]
                 def names = sh(returnStdout: true, script: "cd examples; ls ${subdir}/*.json").split("\\r?\\n")
+                env.LOCATION = pair[1]
                 for(j = 0; j< names.size(); j++) {
                   def name = names[j].trim()
                   env.CLUSTER_DEFINITION = pwd()+"/examples/${name}"
@@ -58,6 +71,8 @@ node {
                   if("${env.ORCHESTRATOR}".startsWith("dcos")) {
                     env.ORCHESTRATOR = "dcos"
                   }
+                  env.LOGFILE = pwd()+"/${junit_dir}/${name}.log"
+                  env.CLEANUP = "y"
                   // Generate and deploy template, validate deployments
                   try {
                     stage(name) {
@@ -70,13 +85,16 @@ node {
                         def test = "${name}.${script}"
                         sh("mkdir -p ${junit_dir}/${test}")
                         sh("cp ./test/shunit/${script} ${junit_dir}/${test}/t.sh")
-                        sh("cd ${junit_dir}; shunit.sh -t ${test} > ${test}/junit.xml")
+                        timeout(time: timeoutInMinutes, unit: 'MINUTES') {
+                          sh("cd ${junit_dir}; shunit.sh -t ${test} > ${test}/junit.xml")
+                        }
                         sh("grep 'failures=\"0\"' ${junit_dir}/${test}/junit.xml")
                       }
                     }
                   }
                   catch(exc) {
-                    echo "Exception ${exc}"
+                    env.CLEANUP = autoclean
+                    echo "Exception in [${name}] : ${exc}"
                   }
                   // Clean up
                   try {
@@ -90,6 +108,7 @@ node {
               // Generate reports
               try {
                 junit("${junit_dir}/**/junit.xml")
+                archiveArtifacts(allowEmptyArchive: true, artifacts: "${junit_dir}/**/*.log")
                 if(currentBuild.result == "UNSTABLE") {
                   currentBuild.result = "FAILURE"
                   if(sendTo != "") {
