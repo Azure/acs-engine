@@ -103,32 +103,70 @@ function setDockerOpts () {
     sed -i "s#^DOCKER_OPTS=.*#DOCKER_OPTS=${1}#" /etc/default/kubelet
 }
 
-function configNetworkPolicy() {
+function configAzureNetworkPolicy() {
+    # Download netconfig.
+    NETCONFIGDIR=/etc/cni/net.d
+    NETCONFIGFILE=$NETCONFIGDIR/10-azure.conf
+    mkdir -p $NETCONFIGDIR
+
+    echo "{
+  \"cniVersion\": \"0.2.0\",
+  \"name\": \"azure\",
+  \"type\": \"azure-vnet\",
+  \"master\": \"eth0\",
+  \"bridge\": \"azure0\",
+  \"ipam\": {
+    \"type\": \"azure-vnet-ipam\"
+  }
+}
+" > $NETCONFIGFILE
+
+    chown -R root:root $NETCONFIGDIR
+    chmod 755 $NETCONFIGDIR
+    chmod 644 $NETCONFIGFILE
+
+    # Download Azure VNET CNI plugins.
+    CNIBINDIR=/opt/cni/bin
+    mkdir -p $CNIBINDIR
+    curl -fsSL --retry 12 --retry-delay 10 https://github.com/Azure/azure-container-networking/releases/download/v0.7/azure-cni-linux-amd64-v0.7.tgz | tar -xz -C $CNIBINDIR
+    curl -fsSL --retry 12 --retry-delay 10 https://github.com/containernetworking/cni/releases/download/v0.4.0/cni-amd64-v0.4.0.tgz | tar -xz -C $CNIBINDIR ./loopback
+    chown -R root:root $CNIBINDIR
+    chmod -R 755 $CNIBINDIR
+
+    # List ebtables rules.
+    /sbin/ebtables -t nat --list
+
+    # Enable CNI.
+    setNetworkPlugin cni
+    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+}
+
+function configCalicoNetworkPolicy() {
     if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
         # on masters
         ADDONS="calico-configmap.yaml calico-daemonset.yaml"
         ADDONS_PATH=/etc/kubernetes/addons
         CALICO_URL="https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager"
-        if [[ "${NETWORK_POLICY}" = "calico" ]]; then
-            # download calico yamls
-            for addon in ${ADDONS}; do
-                curl -o "${ADDONS_PATH}/${addon}" -sSL --retry 12 --retry-delay 10 "${CALICO_URL}/${addon}"
-            done
-        else
-            # make sure calico yaml are removed
-            for addon in ${ADDONS}; do
-                rm -f "${ADDONS_PATH}/${addon}"
-            done
-        fi
+
+        # download calico yamls
+        for addon in ${ADDONS}; do
+            curl -o "${ADDONS_PATH}/${addon}" -sSL --retry 12 --retry-delay 10 "${CALICO_URL}/${addon}"
+        done
     else
         # on agents
-        if [[ "${NETWORK_POLICY}" = "calico" ]]; then
-            setNetworkPlugin cni
-            setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
-        else
-            setNetworkPlugin kubenet
-            setDockerOpts ""
-        fi
+        setNetworkPlugin cni
+        setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+    fi
+}
+
+function configNetworkPolicy() {
+    if [[ "${NETWORK_POLICY}" = "azure" ]]; then
+        configAzureNetworkPolicy
+    elif [[ "${NETWORK_POLICY}" = "calico" ]]; then
+        configCalicoNetworkPolicy
+    else
+        setNetworkPlugin kubenet
+        setDockerOpts ""
     fi
 }
 
