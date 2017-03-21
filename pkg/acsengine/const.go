@@ -17,8 +17,11 @@ const (
 	DefaultAgentSubnetTemplate = "10.%d.0.0/16"
 	// DefaultAgentIPAddressCount is the default number of IP addresses per network interface on agents
 	DefaultAgentIPAddressCount = 1
-	// DefaultAgentMultiIPAddressCount is the default number of IP addresses per interface when VNET integration is enabled
-	DefaultAgentMultiIPAddressCount = 64
+	// DefaultAgentMultiIPAddressCount is the default number of IP addresses per network interface on agents,
+	// when VNET integration is enabled. It can be overriden per pool by setting the pool's IPAdddressCount property.
+	// This default number is chosen so that:
+	// 12 agent pools * 100 nodes * 50 addresses = 60000 IP addresses still fit in a single /16 subnet.
+	DefaultAgentMultiIPAddressCount = 50
 	// DefaultKubernetesClusterDomain is the dns suffix used in the cluster (used as a SAN in the PKI generation)
 	DefaultKubernetesClusterDomain = "cluster.local"
 	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP

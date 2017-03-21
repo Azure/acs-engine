@@ -316,7 +316,7 @@
             }
           }
 {{if IsVNETIntegrated}}
-          {{range $seq := loop 2 64}}
+          {{range $seq := loop 2 50}}
           ,
           {
             "name": "ipconfig{{$seq}}",
