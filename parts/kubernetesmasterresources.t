@@ -316,7 +316,7 @@
             }
           }
 {{if IsVNETIntegrated}}
-          {{range $seq := loop 2 50}}
+          {{range $seq := loop 2 .MasterProfile.IPAddressCount}}
           ,
           {
             "name": "ipconfig{{$seq}}",
