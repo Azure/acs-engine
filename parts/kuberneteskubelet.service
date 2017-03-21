@@ -10,6 +10,7 @@ ExecStartPre=/bin/bash /opt/azure/containers/kubelet.sh
 ExecStartPre=/bin/mkdir -p /var/lib/kubelet
 ExecStartPre=/bin/mount --bind /var/lib/kubelet /var/lib/kubelet
 ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
+ExecStartPre=-/sbin/ebtables -t nat --list
 ExecStart=/usr/bin/docker run \
   --net=host \
   --pid=host \
