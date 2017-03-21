@@ -135,6 +135,7 @@ type MasterProfile struct {
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string `json:"subnet"`
+	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
 	StorageProfile           string `json:"storageProfile,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
@@ -154,9 +155,9 @@ type AgentPoolProfile struct {
 	AvailabilityProfile string `json:"availabilityProfile"`
 	StorageProfile      string `json:"storageProfile,omitempty"`
 	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
-	IPAddressCount      int    `json:"ipAddressCount,omitempty"`
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 	Subnet              string `json:"subnet"`
+	IPAddressCount      int    `json:"ipAddressCount,omitempty"`
 
 	FQDN             string            `json:"fqdn,omitempty"`
 	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`

@@ -47,6 +47,9 @@ func (m *MasterProfile) Validate() error {
 	if e := validateStorageProfile(m.StorageProfile); e != nil {
 		return e
 	}
+	if m.IPAddressCount != 0 && (m.IPAddressCount < MinIPAddressCount || m.IPAddressCount > MaxIPAddressCount) {
+		return fmt.Errorf("MasterProfile.IPAddressCount needs to be in the range [%d,%d]", MinIPAddressCount, MaxIPAddressCount)
+	}
 	return nil
 }
 
