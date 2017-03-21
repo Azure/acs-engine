@@ -23,6 +23,10 @@ func (o *OrchestratorProfile) Validate() error {
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
 
+	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil {
+		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
+	}
+
 	return nil
 }
 
@@ -278,12 +282,16 @@ func (a *Properties) Validate() error {
 }
 
 func (a *Properties) validateNetworkPolicy() error {
-	if a.OrchestratorProfile.OrchestratorType != Kubernetes {
+	var networkPolicy string
+
+	switch a.OrchestratorProfile.OrchestratorType {
+	case Kubernetes:
+		networkPolicy = a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
+	default:
 		return nil
 	}
 
-	networkPolicy := a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
-
+	// Check NetworkPolicy has a valid value.
 	valid := false
 	for _, policy := range NetworkPolicyValues {
 		if networkPolicy == policy {
@@ -295,7 +303,8 @@ func (a *Properties) validateNetworkPolicy() error {
 		return fmt.Errorf("unknown networkPolicy '%s' specified", networkPolicy)
 	}
 
-	if networkPolicy == "calico" && a.HasWindows() {
+	// Temporary safety check, to be removed when Windows support is added.
+	if (networkPolicy == "calico" || networkPolicy == "azure") && a.HasWindows() {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 
