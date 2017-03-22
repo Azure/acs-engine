@@ -96,7 +96,7 @@ Per default Calico still allows all communication within the cluster. Using Kube
 
 * [NetworkPolicy User Guide](https://kubernetes.io/docs/user-guide/networkpolicies/)
 * [NetworkPolicy Example Walkthrough](https://kubernetes.io/docs/getting-started-guides/network-policy/walkthrough/)
-* [Calcio Kubernetes](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/)
+* [Calico Kubernetes](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/)
 
 ## Create your First Kubernetes Service
 
