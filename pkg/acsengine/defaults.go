@@ -86,7 +86,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 func setMasterNetworkDefaults(a *api.Properties) {
 	if !a.MasterProfile.IsCustomVNET() {
 		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-			a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
+			if a.OrchestratorProfile.IsVNETIntegrated() {
+				// Use a single large subnet for all masters, agents and pods.
+				a.MasterProfile.Subnet = DefaultKubernetesSubnet
+			} else {
+				a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
+			}
 			a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
 		} else if a.HasWindows() {
 			a.MasterProfile.Subnet = DefaultSwarmWindowsMasterSubnet

@@ -11,6 +11,8 @@ const (
 	DefaultSwarmWindowsFirstConsecutiveStaticIP = "192.168.255.5"
 	// DefaultKubernetesMasterSubnet specifies the default kubernetes master subnet
 	DefaultKubernetesMasterSubnet = "10.240.0.0/16"
+	// DefaultKubernetesSubnet specifies the default Kubernetes subnet when VNET integration is enabled.
+	DefaultKubernetesSubnet = "10.240.0.0/12"
 	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultAgentSubnetTemplate specifies a default agent subnet
@@ -19,9 +21,7 @@ const (
 	DefaultAgentIPAddressCount = 1
 	// DefaultAgentMultiIPAddressCount is the default number of IP addresses per network interface on agents,
 	// when VNET integration is enabled. It can be overriden per pool by setting the pool's IPAdddressCount property.
-	// This default number is chosen so that:
-	// 12 agent pools * 100 nodes * 50 addresses = 60000 IP addresses still fit in a single /16 subnet.
-	DefaultAgentMultiIPAddressCount = 50
+	DefaultAgentMultiIPAddressCount = 128
 	// DefaultKubernetesClusterDomain is the dns suffix used in the cluster (used as a SAN in the PKI generation)
 	DefaultKubernetesClusterDomain = "cluster.local"
 	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP
