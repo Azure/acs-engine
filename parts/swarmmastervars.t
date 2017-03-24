@@ -111,12 +111,13 @@
     "osImagePublisher": "Canonical", 
 {{if .OrchestratorProfile.IsSwarmMode}}
     "orchestratorName": "swarmm", 
-    "osImageSKU": "16.04.0-LTS", 
+    "osImageSKU": "16.04-LTS", 
+    "osImageVersion": "16.04.201703070", 
 {{else}}
     "orchestratorName": "swarm", 
-    "osImageSKU": "14.04.4-LTS", 
+    "osImageSKU": "14.04.4-LTS",
+    "osImageVersion": "14.04.201607140",  
 {{end}}
-    "osImageVersion": "latest", 
     "locations": [
          "[resourceGroup().location]",
          "[parameters('location')]"
