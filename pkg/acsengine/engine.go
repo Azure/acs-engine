@@ -492,7 +492,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			return len(ports) > 0
 		},
 		"IsVNETIntegrated": func() bool {
-			return properties.OrchestratorProfile.IsVNETIntegrated()
+			return cs.Properties.OrchestratorProfile.IsVNETIntegrated()
 		},
 		"GetVNETSubnetDependencies": func() string {
 			return getVNETSubnetDependencies(&cs.Properties)
