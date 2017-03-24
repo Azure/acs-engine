@@ -11,16 +11,23 @@ const (
 	DefaultSwarmWindowsFirstConsecutiveStaticIP = "192.168.255.5"
 	// DefaultKubernetesMasterSubnet specifies the default kubernetes master subnet
 	DefaultKubernetesMasterSubnet = "10.240.0.0/16"
+	// DefaultKubernetesSubnet specifies the default Kubernetes subnet when VNET integration is enabled.
+	DefaultKubernetesSubnet = "10.240.0.0/12"
 	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultAgentSubnetTemplate specifies a default agent subnet
 	DefaultAgentSubnetTemplate = "10.%d.0.0/16"
+	// DefaultAgentIPAddressCount is the default number of IP addresses per network interface on agents
+	DefaultAgentIPAddressCount = 1
+	// DefaultAgentMultiIPAddressCount is the default number of IP addresses per network interface on agents,
+	// when VNET integration is enabled. It can be overriden per pool by setting the pool's IPAdddressCount property.
+	DefaultAgentMultiIPAddressCount = 128
 	// DefaultKubernetesClusterDomain is the dns suffix used in the cluster (used as a SAN in the PKI generation)
 	DefaultKubernetesClusterDomain = "cluster.local"
 	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP
 	// address relative to the first consecutive Kubernetes static IP
 	DefaultInternalLbStaticIPOffset = 10
-	// DefaultNetworkPolicy is disabling network policy enforcement (valid values: ['calico']
+	// DefaultNetworkPolicy is disabling network policy enforcement
 	DefaultNetworkPolicy = "none"
 )
 

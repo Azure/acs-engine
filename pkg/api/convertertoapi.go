@@ -203,6 +203,14 @@ func convertV20160330OrchestratorProfile(v20160330 *v20160330.OrchestratorProfil
 
 func convertVLabsOrchestratorProfile(vlabs *vlabs.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = OrchestratorType(vlabs.OrchestratorType)
+	if api.OrchestratorType == Kubernetes {
+		convertVLabsKubernetesConfig(&vlabs.KubernetesConfig, &api.KubernetesConfig)
+	}
+}
+
+func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *KubernetesConfig) {
+	api.KubernetesImageBase = vlabs.KubernetesImageBase
+	api.NetworkPolicy = vlabs.NetworkPolicy
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {
@@ -228,6 +236,7 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.VnetSubnetID = vlabs.VnetSubnetID
 	api.FirstConsecutiveStaticIP = vlabs.FirstConsecutiveStaticIP
 	api.Subnet = vlabs.GetSubnet()
+	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
 	api.StorageProfile = vlabs.StorageProfile
 }
@@ -270,6 +279,7 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.DiskSizesGB = append(api.DiskSizesGB, vlabs.DiskSizesGB...)
 	api.VnetSubnetID = vlabs.VnetSubnetID
 	api.Subnet = vlabs.GetSubnet()
+	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
 	api.CustomNodeLabels = map[string]string{}
 	for k, v := range vlabs.CustomNodeLabels {

@@ -21,8 +21,11 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
-        "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
+{{if not IsVNETIntegrated}}
+        ,
         "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
+{{end}}
       ],
       "location": "[variables('location')]",
       "name": "[variables('virtualNetworkName')]",
@@ -39,10 +42,13 @@
               "addressPrefix": "[variables('subnet')]",
               "networkSecurityGroup": {
                 "id": "[variables('nsgID')]"
-              },
+              }
+{{if not IsVNETIntegrated}}
+              ,
               "routeTable": {
                 "id": "[variables('routeTableID')]"
               }
+{{end}}
             }
           }
         ]
@@ -104,12 +110,14 @@
       },
       "type": "Microsoft.Network/networkSecurityGroups"
     },
+{{if not IsVNETIntegrated}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "name": "[variables('routeTableName')]",
       "type": "Microsoft.Network/routeTables"
     },
+{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
@@ -300,14 +308,33 @@
                 }
               ],
               "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(int(variables('masterFirstAddrOctet4'))))]",
+              "primary": true,
               "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('vnetSubnetID')]"
               }
             }
           }
-        ],
+{{if IsVNETIntegrated}}
+          {{range $seq := loop 2 .MasterProfile.IPAddressCount}}
+          ,
+          {
+            "name": "ipconfig{{$seq}}",
+            "properties": {
+              "primary": false,
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('vnetSubnetID')]"
+              }
+            }
+          }
+          {{end}}
+{{end}}
+        ]
+{{if not IsVNETIntegrated}}
+        ,
         "enableIPForwarding": true
+{{end}}
 {{if .MasterProfile.IsCustomVNET}}
         ,"networkSecurityGroup": {
           "id": "[variables('nsgID')]"

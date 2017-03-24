@@ -73,7 +73,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
-		a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+		if a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "" {
+			a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+		}
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
 		a.OrchestratorProfile.OrchestratorType = api.DCOS188
@@ -84,7 +86,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 func setMasterNetworkDefaults(a *api.Properties) {
 	if !a.MasterProfile.IsCustomVNET() {
 		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-			a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
+			if a.OrchestratorProfile.IsVNETIntegrated() {
+				// Use a single large subnet for all masters, agents and pods.
+				a.MasterProfile.Subnet = DefaultKubernetesSubnet
+			} else {
+				a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
+			}
 			a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
 		} else if a.HasWindows() {
 			a.MasterProfile.Subnet = DefaultSwarmWindowsMasterSubnet
@@ -92,6 +99,16 @@ func setMasterNetworkDefaults(a *api.Properties) {
 		} else {
 			a.MasterProfile.Subnet = DefaultMasterSubnet
 			a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveStaticIP
+		}
+	}
+
+	// Allocate IP addresses for containers if VNET integration is enabled.
+	// A custom count specified by the user overrides this value.
+	if a.MasterProfile.IPAddressCount == 0 {
+		if a.OrchestratorProfile.IsVNETIntegrated() {
+			a.MasterProfile.IPAddressCount = DefaultAgentMultiIPAddressCount
+		} else {
+			a.MasterProfile.IPAddressCount = DefaultAgentIPAddressCount
 		}
 	}
 }
@@ -113,11 +130,23 @@ func setAgentNetworkDefaults(a *api.Properties) {
 			subnetCounter++
 		}
 	}
-	// set default OSType to Linux
+
 	for i := range a.AgentPoolProfiles {
 		profile := &a.AgentPoolProfiles[i]
+
+		// set default OSType to Linux
 		if profile.OSType == "" {
 			profile.OSType = api.Linux
+		}
+
+		// Allocate IP addresses for containers if VNET integration is enabled.
+		// A custom count specified by the user overrides this value.
+		if profile.IPAddressCount == 0 {
+			if a.OrchestratorProfile.IsVNETIntegrated() {
+				profile.IPAddressCount = DefaultAgentMultiIPAddressCount
+			} else {
+				profile.IPAddressCount = DefaultAgentIPAddressCount
+			}
 		}
 	}
 }

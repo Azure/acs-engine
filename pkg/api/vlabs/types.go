@@ -135,6 +135,7 @@ type MasterProfile struct {
 	VMSize                   string `json:"vmSize"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
+	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
 	StorageProfile           string `json:"storageProfile,omitempty"`
 
 	// subnet is internal
@@ -161,6 +162,7 @@ type AgentPoolProfile struct {
 	StorageProfile      string `json:"storageProfile"`
 	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
+	IPAddressCount      int    `json:"ipAddressCount,omitempty"`
 
 	// subnet is internal
 	subnet string

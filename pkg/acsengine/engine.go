@@ -491,6 +491,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"IsPublic": func(ports []int) bool {
 			return len(ports) > 0
 		},
+		"IsVNETIntegrated": func() bool {
+			return cs.Properties.OrchestratorProfile.IsVNETIntegrated()
+		},
 		"GetVNETSubnetDependencies": func() string {
 			return getVNETSubnetDependencies(&cs.Properties)
 		},
@@ -705,6 +708,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				dict[key] = values[i+1]
 			}
 			return dict, nil
+		},
+		"loop": func(min, max int) []int {
+			var s []int
+			for i := min; i <= max; i++ {
+				s = append(s, i)
+			}
+			return s
 		},
 	}
 }

@@ -23,6 +23,11 @@ func (o *OrchestratorProfile) Validate() error {
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
 
+	if o.OrchestratorType != Kubernetes &&
+		(o.KubernetesConfig.KubernetesImageBase != "" || o.KubernetesConfig.NetworkPolicy != "") {
+		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
+	}
+
 	return nil
 }
 
@@ -42,6 +47,9 @@ func (m *MasterProfile) Validate() error {
 	}
 	if e := validateStorageProfile(m.StorageProfile); e != nil {
 		return e
+	}
+	if m.IPAddressCount != 0 && (m.IPAddressCount < MinIPAddressCount || m.IPAddressCount > MaxIPAddressCount) {
+		return fmt.Errorf("MasterProfile.IPAddressCount needs to be in the range [%d,%d]", MinIPAddressCount, MaxIPAddressCount)
 	}
 	return nil
 }
@@ -98,6 +106,9 @@ func (a *AgentPoolProfile) Validate() error {
 	if len(a.Ports) == 0 && len(a.DNSPrefix) > 0 {
 		return fmt.Errorf("AgentPoolProfile.Ports must be non empty when AgentPoolProfile.DNSPrefix is specified")
 	}
+	if a.IPAddressCount != 0 && (a.IPAddressCount < MinIPAddressCount || a.IPAddressCount > MaxIPAddressCount) {
+		return fmt.Errorf("AgentPoolProfile.IPAddressCount needs to be in the range [%d,%d]", MinIPAddressCount, MaxIPAddressCount)
+	}
 	if e := validateStorageProfile(a.StorageProfile); e != nil {
 		return e
 	}
@@ -146,7 +157,7 @@ func (a *Properties) Validate() error {
 	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
 	}
-	if e := a.ValidateNetworkPolicy(); e != nil {
+	if e := a.validateNetworkPolicy(); e != nil {
 		return e
 	}
 	if e := a.MasterProfile.Validate(); e != nil {
@@ -274,18 +285,30 @@ func (a *Properties) Validate() error {
 	return nil
 }
 
-func (a *Properties) ValidateNetworkPolicy() error {
+func (a *Properties) validateNetworkPolicy() error {
+	var networkPolicy string
 
-	if a.OrchestratorProfile.OrchestratorType != Kubernetes {
+	switch a.OrchestratorProfile.OrchestratorType {
+	case Kubernetes:
+		networkPolicy = a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
+	default:
 		return nil
 	}
 
-	networkPolicy := a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
-	if networkPolicy != "" && networkPolicy != "none" && networkPolicy != "calico" {
+	// Check NetworkPolicy has a valid value.
+	valid := false
+	for _, policy := range NetworkPolicyValues {
+		if networkPolicy == policy {
+			valid = true
+			break
+		}
+	}
+	if !valid {
 		return fmt.Errorf("unknown networkPolicy '%s' specified", networkPolicy)
 	}
 
-	if networkPolicy == "calico" && a.HasWindows() {
+	// Temporary safety check, to be removed when Windows support is added.
+	if (networkPolicy == "calico" || networkPolicy == "azure") && a.HasWindows() {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 
