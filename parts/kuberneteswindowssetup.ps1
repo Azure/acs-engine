@@ -42,15 +42,6 @@ param(
 
 $global:CACertificate = "{{{caCertificate}}}"
 $global:AgentCertificate = "{{{clientCertificate}}}"
-$global:DockerServiceName = "Docker"
-$global:RRASServiceName = "RemoteAccess"
-$global:KubeDir = "c:\k"
-$global:KubeBinariesSASURL = "https://acsengine.blob.core.windows.net/wink8s/v1.5.3int.zip"
-$global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
-$global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
-$global:NatNetworkName="nat"
-$global:TransparentNetworkName="transparentNet"
-
 $global:TenantId = "{{{tenantID}}}"
 $global:SubscriptionId = "{{{subscriptionId}}}"
 $global:ResourceGroup = "{{{resourceGroup}}}"
@@ -59,6 +50,29 @@ $global:SecurityGroupName = "{{{nsgName}}}"
 $global:VNetName = "{{{virtualNetworkName}}}"
 $global:RouteTableName = "{{{routeTableName}}}"
 $global:PrimaryAvailabilitySetName = "{{{primaryAvailablitySetName}}}"
+$global:NetworkPolicy = "{{{networkPolicy}}}"
+
+# Kubelet
+$global:KubeDir = "c:\k"
+$global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
+$global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
+$global:KubeBinariesSASURL = "https://acsengine.blob.core.windows.net/wink8s/v1.5.3int.zip"
+$global:DockerServiceName = "docker"
+
+# CNI
+$global:CNIDir = "c:\cni"
+$global:CNIBinDir = $global:CNIDir + "\bin"
+$global:CNIConfDir = $global:CNIDir + "\netconf"
+$global:CNIKubeletOptions = " --network-plugin=cni --cni-bin-dir=$global:CNIBinDir --cni-conf-dir=$global:CNIConfDir"
+$global:CNIEnabled = $false
+
+# Transparent network
+$global:TransparentNetworkName = "transparentNet"
+$global:NatNetworkName = "nat"
+$global:PodGW = ""
+
+# Azure VNET
+$global:AzureVNetPluginURL = "https://github.com/ofiliz/hello/releases/download/pre-release/testw_v0.6.zip"
 
 filter Timestamp {"$(Get-Date -Format o): $_"}
 
@@ -66,7 +80,7 @@ function
 Write-Log($message)
 {
     $msg = $message | Timestamp
-    Write-Output $msg
+    Write-Host $msg
 }
 
 function
@@ -187,34 +201,51 @@ Get-PodGateway($podCIDR)
 }
 
 function
-Write-KubernetesStartFiles($podCIDR)
+Write-KubernetesStartFiles
 {
-    $podGW=Get-PodGateway($podCIDR)
+    $kubeletOptions = ""
+    if ($global:CNIEnabled) {
+        $kubeletOptions += $global:CNIKubeletOptions
+    }
 
     $kubeConfig = @"
 `$env:CONTAINER_NETWORK="$global:TransparentNetworkName"
 `$env:NAT_NETWORK="$global:NatNetworkName"
-`$env:POD_GW="$podGW"
+`$env:POD_GW="$global:PodGW"
 `$env:VIP_CIDR="10.0.0.0/8"
-c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://${MasterIP}:443 --cluster-dns=$KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json
+c:\k\kubelet.exe ``
+    --hostname-override=$AzureHostname ``
+    --pod-infra-container-image=kubletwin/pause ``
+    --resolv-conf="" ``
+    --allow-privileged=true ``
+    --enable-debugging-handlers ``
+    --api-servers=https://${MasterIP}:443 ``
+    --cluster-dns=$KubeDnsServiceIp ``
+    --cluster-domain=cluster.local ``
+    --kubeconfig=c:\k\config ``
+    --hairpin-mode=promiscuous-bridge ``
+    --v=2 ``
+    --azure-container-registry-config=c:\k\azure.json ``
+    $kubeletOptions
 "@
     $kubeConfig | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
     $kubeProxyStartStr = @"
 `$env:INTERFACE_TO_ADD_SERVICE_IP="vEthernet (forwarder)"
-c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
+c:\k\kube-proxy.exe ``
+    --v=3 ``
+    --proxy-mode=userspace ``
+    --hostname-override=$AzureHostname ``
+    --kubeconfig=c:\k\config
 "@
 
     $kubeProxyStartStr | Out-File -encoding ASCII -filepath $global:KubeProxyStartFile
 }
 
 function
-Set-DockerNetwork($podCIDR)
+Set-NetworkTransparent($podCIDR)
 {
     $podGW=Get-PodGateway($podCIDR)
-
-    # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
-    netsh advfirewall set allprofiles state off
 
     # create new transparent network
     docker network create --driver=transparent --subnet=$podCIDR --gateway=$podGW $global:TransparentNetworkName
@@ -226,6 +257,55 @@ Set-DockerNetwork($podCIDR)
     netsh interface ipv4 add address "vEthernet (forwarder)" $podGW 255.255.255.0
     netsh interface ipv4 set interface "vEthernet (forwarder)" for=en
     netsh interface ipv4 set interface "vEthernet (HNSTransparent)" for=en
+}
+
+function
+Enable-VFP()
+{
+    dism /Online /Enable-Feature /FeatureName:Microsoft-Hyper-V /All /NoRestart
+}
+
+function
+Enable-CNI()
+{
+    mkdir $global:CNIBinDir
+    mkdir $global:CNIConfDir
+    $global:CNIEnabled = $true
+}
+
+function
+Set-NetworkAzure()
+{
+    Enable-CNI
+
+    # Install azure vnet plugin.
+    $zipfile = $global:CNIDir + "\azure-vnet.zip"
+    Invoke-WebRequest -Uri $global:AzureVNetPluginURL -OutFile $zipfile
+    Expand-ZIPFile -File $zipfile -Destination $global:CNIBinDir
+    move $global:CNIBinDir/*.conf $global:CNIConfDir
+    del $zipfile
+
+    Enable-VFP
+}
+
+function
+Set-NetworkConfig
+{
+    Write-Log "Configure networking with NetworkPolicy:$global:NetworkPolicy"
+
+    if ($global:NetworkPolicy -eq "azure") {
+        # Setup Azure VNET.
+        Set-NetworkAzure
+    } else {
+        # Setup transparent network.
+        $podCIDR = Get-PodCIDR
+        $global:PodGW = Get-PodGateway $podCIDR
+        Write-Log "Setup docker transparent network with podCIDR:$podCIDR podGW:$global:PodGW"
+        Set-NetworkTransparent $podCIDR
+    }
+
+    # Turn off Firewall to enable pods to talk to service endpoints.
+    netsh advfirewall set allprofiles state off
 }
 
 function
@@ -303,14 +383,11 @@ try
         Write-Log "Create the Pause Container kubletwin/pause"
         New-InfraContainer
 
-        Write-Log "Get the POD CIDR"
-        $podCIDR = Get-PodCIDR
+        Write-Log "Configure networking"
+        Set-NetworkConfig
 
-        Write-Log "write kubelet startfile with pod CIDR of $podCIDR"
-        Write-KubernetesStartFiles $podCIDR
-
-        Write-Log "setup docker network with pod CIDR of $podCIDR"
-        Set-DockerNetwork $podCIDR
+        Write-Log "Write kubelet startfile"
+        Write-KubernetesStartFiles
 
         Write-Log "install the NSSM service"
         New-NSSMService
@@ -319,6 +396,10 @@ try
         Set-Explorer
 
         Write-Log "Setup Complete"
+
+        if ($global:NetworkPolicy -eq "azure") {
+            Restart-Computer -Force
+        }
     }
     else 
     {

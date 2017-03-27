@@ -307,8 +307,8 @@ func (a *Properties) validateNetworkPolicy() error {
 		return fmt.Errorf("unknown networkPolicy '%s' specified", networkPolicy)
 	}
 
-	// Temporary safety check, to be removed when Windows support is added.
-	if (networkPolicy == "calico" || networkPolicy == "azure") && a.HasWindows() {
+	// Network policy provider-specific checks.
+	if networkPolicy == "calico" && a.HasWindows() {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 

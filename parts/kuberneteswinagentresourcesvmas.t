@@ -20,17 +20,26 @@
         },
 {{end}}
         "ipConfigurations": [
+          {{range $seq := loop 1 .IPAddressCount}}
           {
-            "name": "ipconfig1",
+            "name": "ipconfig{{$seq}}",
             "properties": {
+              {{if eq $seq 1}}
+              "primary": true,
+              {{end}}
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
-                "id": "[variables('{{.Name}}VnetSubnetID')]"
+                "id": "[variables('{{$.Name}}VnetSubnetID')]"
               }
             }
           }
-        ],
+          {{if lt $seq $.IPAddressCount}},{{end}}
+          {{end}}
+        ]
+{{if not IsVNETIntegrated}}
+        ,
         "enableIPForwarding": true
+{{end}}
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
