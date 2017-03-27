@@ -731,11 +731,11 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 	if orchestratorType == api.DCOS190 {
 		switch masterCount {
 		case 1:
-			return "184a00ac1c03d69224966ea84859b1a752779571"
+			return "f53b7dec83de900ef55ade839d9730237b0c7454"
 		case 3:
-			return "e086b496175152c4aa7c5ec52954933d785c8a4a"
+			return "06b50f9dcce85789b858b03ff7f86af6d1a95519"
 		case 5:
-			return "082a0a039f562c8d4ab324de2da9647debbc7b2c"
+			return "32dafb5eeb752025ed70fa9e5ce850e7ff42ba38"
 		}
 	} else if orchestratorType == api.DCOS188 {
 		switch masterCount {
