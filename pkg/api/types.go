@@ -135,6 +135,7 @@ type MasterProfile struct {
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string `json:"subnet"`
+	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
 	StorageProfile           string `json:"storageProfile,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
@@ -156,6 +157,7 @@ type AgentPoolProfile struct {
 	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 	Subnet              string `json:"subnet"`
+	IPAddressCount      int    `json:"ipAddressCount,omitempty"`
 
 	FQDN             string            `json:"fqdn,omitempty"`
 	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
@@ -352,4 +354,14 @@ func (o *OrchestratorProfile) IsSwarmMode() bool {
 // IsKubernetes returns true if this template is for Kubernetes orchestrator
 func (o *OrchestratorProfile) IsKubernetes() bool {
 	return o.OrchestratorType == Kubernetes
+}
+
+// IsVNETIntegrated returns true if Azure VNET integration is enabled
+func (o *OrchestratorProfile) IsVNETIntegrated() bool {
+	switch o.OrchestratorType {
+	case Kubernetes:
+		return o.KubernetesConfig.NetworkPolicy == "azure"
+	default:
+		return false
+	}
 }

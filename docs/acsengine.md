@@ -84,8 +84,8 @@ Build Steps:
   ```
   export PATH=$PATH:/usr/local/go/bin
   export GOPATH=$HOME/gopath
+  source $HOME/.sh_profile
   ```
-  3. `source $HOME/.sh_profile`
 2. Build acs-engine:
   1. type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
   2. type `go get all` to get the supporting components
