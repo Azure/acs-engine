@@ -395,6 +395,7 @@
           {{end}}
         },
         "storageProfile": {
+          {{GetEtcdDisk}}
           "imageReference": {
             "offer": "[variables('osImageOffer')]",
             "publisher": "[variables('osImagePublisher')]",
