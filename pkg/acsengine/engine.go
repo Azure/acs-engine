@@ -968,7 +968,7 @@ func getDataDisks(a *api.AgentPoolProfile) string {
                 "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('%sDataAccountName'),'.blob.core.windows.net/vhds/',variables('%sVMNamePrefix'),copyIndex(), '--datadisk%d.vhd')]"
               }
             }`
-	managedDataDisks := `            {
+	managedDataDisks := `            {mak
               "diskSizeGB": "%d",
               "lun": %d,
               "createOption": "Empty"
@@ -1002,9 +1002,9 @@ func getEtcdDisk(orchestratorType api.OrchestratorType, m *api.MasterProfile) st
                 "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('%sDataAccountName'),'.blob.core.windows.net/vhds/',variables('%sVMNamePrefix'),copyIndex(), '--datadisk%d.vhd')]"
               }
             }`
-	if m.StorageProfile == api.StorageAccount {
-		buf.WriteString(fmt.Sprintf(dataDisks, "1", 0, "master", 0, "master", "master", "master", "master", 0))
-	}
+	// if m.StorageProfile == api.StorageAccount {
+	buf.WriteString(fmt.Sprintf(dataDisks, 1, 0, "master", 0, "master", "master", "master", "master", 0))
+	// }
 	buf.WriteString("\n          ],")
 	return buf.String()
 }
