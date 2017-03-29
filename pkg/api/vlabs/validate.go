@@ -219,6 +219,7 @@ func (a *Properties) Validate() error {
 			case DCOS184:
 			case DCOS187:
 			case DCOS188:
+			case DCOS190:
 			default:
 				return fmt.Errorf("Agent Type attributes are only supported for DCOS.")
 			}
