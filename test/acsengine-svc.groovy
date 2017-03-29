@@ -50,7 +50,7 @@ uksouth ukwest"
                 sh('make ci')
                 // Create template
                 env.CLUSTER_DEFINITION = "examples/${CLUSTER_DEFINITION}"
-                env.ORCHESTRATOR = sh(returnStdout: true, script: "awk '/\\\"orchestratorType\\\"\\s*:/ { print \$2 }' ${env.CLUSTER_DEFINITION} | awk -F\\\" '{print \$2}'").toLowerCase().trim()
+                env.ORCHESTRATOR = sh(returnStdout: true, script: "jq 'getpath([\"properties\",\"orchestratorProfile\",\"orchestratorType\"])' ${env.CLUSTER_DEFINITION} | tr -d '\"'").toLowerCase().trim()
                 if("${env.ORCHESTRATOR}".startsWith("dcos")) {
                   env.ORCHESTRATOR = "dcos"
                 }
