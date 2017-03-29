@@ -12,6 +12,7 @@ import (
 func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case DCOS:
+	case DCOS190:
 	case DCOS188:
 	case DCOS187:
 	case DCOS184:
@@ -181,6 +182,7 @@ func (a *Properties) Validate() error {
 		case DCOS184:
 		case DCOS187:
 		case DCOS188:
+		case DCOS190:
 		case Swarm:
 		default:
 			return fmt.Errorf("StorageAccountClassic is not supported in MasterProfile for Orchestrator %s \n", a.OrchestratorProfile.OrchestratorType)
@@ -219,6 +221,7 @@ func (a *Properties) Validate() error {
 			case DCOS184:
 			case DCOS187:
 			case DCOS188:
+			case DCOS190:
 			case Swarm:
 			case Kubernetes:
 			case SwarmMode:
@@ -234,6 +237,7 @@ func (a *Properties) Validate() error {
 			case DCOS184:
 			case DCOS187:
 			case DCOS188:
+			case DCOS190:
 			case Swarm:
 			default:
 				return fmt.Errorf("StorageAccountClassic is not supported in agentPoolProfile for Orchestrator %s \n", a.OrchestratorProfile.OrchestratorType)
