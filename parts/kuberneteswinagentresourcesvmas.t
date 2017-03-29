@@ -15,9 +15,9 @@
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nicp-', copyIndex(variables('{{.Name}}Offset')))]", 
       "properties": {
 {{if .IsCustomVNET}}                  
-	    "networkSecurityGroup": {
-		    "id": "[variables('nsgID')]"
-	    },
+        "networkSecurityGroup": {
+            "id": "[variables('nsgID')]"
+        },
 {{end}}
         "ipConfigurations": [
           {
@@ -95,6 +95,11 @@
       },
       "location": "[variables('location')]", 
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]", 
+      {{if UseManagedIdentity}}
+      "identity": {
+        "type": "systemAssigned"
+      },
+      {{end}}
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('{{.Name}}AvailabilitySet'))]"
@@ -135,9 +140,54 @@
             }
           }
         }
-      }, 
+      },
       "type": "Microsoft.Compute/virtualMachines"
-    }, 
+    },
+    {{if UseManagedIdentity}}
+    {
+       "apiVersion": "2015-01-01",
+       "type": "Microsoft.Resources/deployments",
+       "copy": {
+         "count": "[variables('{{.Name}}Count')]",
+         "name": "vmLoopNode"
+       },
+       "name": "[concat('vm-msi-rbac-', variables('{{.Name}}VMNamePrefix'), copyIndex())]",
+       "dependsOn": [
+         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex())]"
+       ],
+       "properties": {
+         "mode": "incremental",
+         "templateLink": {
+           "uri": "[concat('https://rbacgenerator.azurewebsites.net/api/rbacgenerator?subscription_id=', variables('subscriptionId'), '&resource_group=', variables('resourceGroup'), '&role_id=', variables('readerRoleDefinitionId'), '&vm_name=', variables('{{.Name}}VMNamePrefix'), copyIndex(), '&principal_id=', reference(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex()), '2017-03-30', 'Full').identity.principalId)]",
+           "contentVersion": "1.0.0.0"
+         }
+       }
+     },
+     {
+       "type": "Microsoft.Compute/virtualMachines/extensions",
+       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(), '/ManagedIdentityExtension')]",
+       "copy": {
+         "count": "[variables('{{.Name}}Count')]",
+         "name": "vmLoopNode"
+       },
+       "apiVersion": "2015-05-01-preview",
+       "location": "[resourceGroup().location]",
+       "dependsOn": [
+         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex())]",
+         "[concat('Microsoft.Resources/deployments/vm-msi-rbac-', variables('{{.Name}}VMNamePrefix'), copyIndex())]"
+       ],
+       "properties": {
+         "publisher": "Microsoft.ManagedIdentity",
+         "type": "ManagedIdentityExtensionForWindows",
+         "typeHandlerVersion": "1.0",
+         "autoUpgradeMinorVersion": true,
+         "settings": {
+           "port": 50343
+         },
+         "protectedSettings": {}
+       }
+     },
+    {{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
       "copy": {
@@ -145,7 +195,11 @@
         "name": "vmLoopNode"
       }, 
       "dependsOn": [
+        {{if UseManagedIdentity}}
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), '/extensions/ManagedIdentityExtension')]"
+        {{else}}
         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
+        {{end}}
       ], 
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/cse')]",
@@ -160,4 +214,4 @@
       }, 
       "type": "Microsoft.Compute/virtualMachines/extensions"
     }
-    
+

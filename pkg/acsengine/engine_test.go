@@ -78,9 +78,8 @@ func TestExpected(t *testing.T) {
 			}
 			ppArmTemplate, e1 := PrettyPrintArmTemplate(armTemplate)
 			if e1 != nil {
-				t.Error(armTemplate)
 				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e1.Error()))
-				break
+				continue
 			}
 
 			ppParams, e2 := PrettyPrintJSON(params)
