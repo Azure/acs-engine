@@ -31,10 +31,13 @@ func TestExpected(t *testing.T) {
 			t.Errorf("Loading file %s got error: %s", tuple.APIModelFilename, err.Error())
 			continue
 		}
+
 		if version == v20160930.APIVersion {
 			// v20160930 need certificate profile to match expected template
-			addV20160930CertificateProfile(&containerService.Properties.CertificateProfile)
+			containerService.Properties.CertificateProfile = &api.CertificateProfile{}
+			addV20160930CertificateProfile(containerService.Properties.CertificateProfile)
 		}
+
 		expectedJson, e1 := ioutil.ReadFile(tuple.GetExpectedArmTemplateFilename())
 		if e1 != nil {
 			t.Error(e1.Error())
@@ -112,7 +115,8 @@ func TestExpected(t *testing.T) {
 			}
 			if version == v20160930.APIVersion {
 				// v20160930 need certificate profile to match expected template
-				addV20160930CertificateProfile(&containerService.Properties.CertificateProfile)
+				containerService.Properties.CertificateProfile = &api.CertificateProfile{}
+				addV20160930CertificateProfile(containerService.Properties.CertificateProfile)
 			}
 		}
 	}

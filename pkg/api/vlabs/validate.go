@@ -24,7 +24,7 @@ func (o *OrchestratorProfile) Validate() error {
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
 
-	if o.OrchestratorType != Kubernetes &&
+	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil &&
 		(o.KubernetesConfig.KubernetesImageBase != "" || o.KubernetesConfig.NetworkPolicy != "") {
 		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
 	}
@@ -263,7 +263,9 @@ func (a *Properties) validateNetworkPolicy() error {
 
 	switch a.OrchestratorProfile.OrchestratorType {
 	case Kubernetes:
-		networkPolicy = a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
+		if a.OrchestratorProfile.KubernetesConfig != nil {
+			networkPolicy = a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
+		}
 	default:
 		return nil
 	}

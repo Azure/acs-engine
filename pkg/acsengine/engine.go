@@ -199,7 +199,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 
 	var templ *template.Template
 
-	properties := &containerService.Properties
+	properties := containerService.Properties
 
 	if certsGenerated, err = SetPropertiesDefaults(containerService); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
@@ -334,7 +334,7 @@ func GetCloudTargetEnv(location string) string {
 }
 
 func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]interface{}, error) {
-	properties := &cs.Properties
+	properties := cs.Properties
 	location := cs.Location
 	parametersMap := map[string]interface{}{}
 
@@ -502,7 +502,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			return cs.Properties.OrchestratorProfile.IsVNETIntegrated()
 		},
 		"GetVNETSubnetDependencies": func() string {
-			return getVNETSubnetDependencies(&cs.Properties)
+			return getVNETSubnetDependencies(cs.Properties)
 		},
 		"GetLBRules": func(name string, ports []int) string {
 			return getLBRules(name, ports)
@@ -514,13 +514,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			return getSecurityRules(ports)
 		},
 		"GetUniqueNameSuffix": func() string {
-			return GenerateClusterID(&cs.Properties)
+			return GenerateClusterID(cs.Properties)
 		},
 		"GetVNETAddressPrefixes": func() string {
-			return getVNETAddressPrefixes(&cs.Properties)
+			return getVNETAddressPrefixes(cs.Properties)
 		},
 		"GetVNETSubnets": func(addNSG bool) string {
-			return getVNETSubnets(&cs.Properties, addNSG)
+			return getVNETSubnets(cs.Properties, addNSG)
 		},
 		"GetDataDisks": func(profile *api.AgentPoolProfile) string {
 			return getDataDisks(profile)
@@ -667,10 +667,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('agentRunCmdFile'),variables('agentRunCmd')))]\",", str)
 		},
 		"GetKubernetesSubnets": func() string {
-			return getKubernetesSubnets(&cs.Properties)
+			return getKubernetesSubnets(cs.Properties)
 		},
 		"GetKubernetesPodStartIndex": func() string {
-			return fmt.Sprintf("%d", getKubernetesPodStartIndex(&cs.Properties))
+			return fmt.Sprintf("%d", getKubernetesPodStartIndex(cs.Properties))
 		},
 		"AnyAgentHasDisks": func() bool {
 			for _, agentProfile := range cs.Properties.AgentPoolProfiles {
