@@ -141,36 +141,52 @@
         "Standard_A9",
         "Standard_D11",
         "Standard_D11_v2",
+        "Standard_D11_v2_Promo",
         "Standard_D12",
         "Standard_D12_v2",
+        "Standard_D12_v2_Promo",
         "Standard_D13",
         "Standard_D13_v2",
+        "Standard_D13_v2_Promo",
         "Standard_D14",
         "Standard_D14_v2",
+        "Standard_D14_v2_Promo",
         "Standard_D15_v2",
         "Standard_D2",
         "Standard_D2_v2",
+        "Standard_D2_v2_Promo",
         "Standard_D3",
         "Standard_D3_v2",
+        "Standard_D3_v2_Promo",
         "Standard_D4",
         "Standard_D4_v2",
+        "Standard_D4_v2_Promo",
         "Standard_D5_v2",
+        "Standard_D5_v2_Promo",
         "Standard_DS11",
         "Standard_DS11_v2",
+        "Standard_DS11_v2_Promo",
         "Standard_DS12",
         "Standard_DS12_v2",
+        "Standard_DS12_v2_Promo",
         "Standard_DS13",
         "Standard_DS13_v2",
+        "Standard_DS13_v2_Promo",
         "Standard_DS14",
         "Standard_DS14_v2",
+        "Standard_DS14_v2_Promo",
         "Standard_DS15_v2",
         "Standard_DS2",
         "Standard_DS2_v2",
+        "Standard_DS2_v2_Promo",
         "Standard_DS3",
         "Standard_DS3_v2",
+        "Standard_DS3_v2_Promo",
         "Standard_DS4",
         "Standard_DS4_v2",
+        "Standard_DS4_v2_Promo",
         "Standard_DS5_v2",
+        "Standard_DS5_v2_Promo",
         "Standard_F16",
         "Standard_F16s",
         "Standard_F2",
@@ -195,6 +211,10 @@
         "Standard_H16r",
         "Standard_H8",
         "Standard_H8m",
+        "Standard_L16s",
+        "Standard_L32s",
+        "Standard_L4s",
+        "Standard_L8s",
         "Standard_NC12",
         "Standard_NC24",
         "Standard_NC24r",
@@ -354,36 +374,52 @@
         "Standard_A9",
         "Standard_D11",
         "Standard_D11_v2",
+        "Standard_D11_v2_Promo",
         "Standard_D12",
         "Standard_D12_v2",
+        "Standard_D12_v2_Promo",
         "Standard_D13",
         "Standard_D13_v2",
+        "Standard_D13_v2_Promo",
         "Standard_D14",
         "Standard_D14_v2",
+        "Standard_D14_v2_Promo",
         "Standard_D15_v2",
         "Standard_D2",
         "Standard_D2_v2",
+        "Standard_D2_v2_Promo",
         "Standard_D3",
         "Standard_D3_v2",
+        "Standard_D3_v2_Promo",
         "Standard_D4",
         "Standard_D4_v2",
+        "Standard_D4_v2_Promo",
         "Standard_D5_v2",
+        "Standard_D5_v2_Promo",
         "Standard_DS11",
         "Standard_DS11_v2",
+        "Standard_DS11_v2_Promo",
         "Standard_DS12",
         "Standard_DS12_v2",
+        "Standard_DS12_v2_Promo",
         "Standard_DS13",
         "Standard_DS13_v2",
+        "Standard_DS13_v2_Promo",
         "Standard_DS14",
         "Standard_DS14_v2",
+        "Standard_DS14_v2_Promo",
         "Standard_DS15_v2",
         "Standard_DS2",
         "Standard_DS2_v2",
+        "Standard_DS2_v2_Promo",
         "Standard_DS3",
         "Standard_DS3_v2",
+        "Standard_DS3_v2_Promo",
         "Standard_DS4",
         "Standard_DS4_v2",
+        "Standard_DS4_v2_Promo",
         "Standard_DS5_v2",
+        "Standard_DS5_v2_Promo",
         "Standard_F16",
         "Standard_F16s",
         "Standard_F2",
@@ -408,6 +444,10 @@
         "Standard_H16r",
         "Standard_H8",
         "Standard_H8m",
+        "Standard_L16s",
+        "Standard_L32s",
+        "Standard_L4s",
+        "Standard_L8s",
         "Standard_NC12",
         "Standard_NC24",
         "Standard_NC24r",
@@ -478,26 +518,37 @@
         "Standard_A9",
         "Standard_D11",
         "Standard_D11_v2",
+        "Standard_D11_v2_Promo",
         "Standard_D12",
         "Standard_D12_v2",
+        "Standard_D12_v2_Promo",
         "Standard_D13",
         "Standard_D13_v2",
+        "Standard_D13_v2_Promo",
         "Standard_D14",
         "Standard_D14_v2",
+        "Standard_D14_v2_Promo",
         "Standard_D15_v2",
         "Standard_D2",
         "Standard_D2_v2",
+        "Standard_D2_v2_Promo",
         "Standard_D3",
         "Standard_D3_v2",
+        "Standard_D3_v2_Promo",
         "Standard_D4",
         "Standard_D4_v2",
+        "Standard_D4_v2_Promo",
         "Standard_D5_v2",
+        "Standard_D5_v2_Promo",
         "Standard_DS13",
         "Standard_DS13_v2",
+        "Standard_DS13_v2_Promo",
         "Standard_DS14",
         "Standard_DS14_v2",
+        "Standard_DS14_v2_Promo",
         "Standard_DS15_v2",
         "Standard_DS5_v2",
+        "Standard_DS5_v2_Promo",
         "Standard_F16",
         "Standard_F8",
         "Standard_G1",
@@ -515,6 +566,10 @@
         "Standard_H16r",
         "Standard_H8",
         "Standard_H8m",
+        "Standard_L16s",
+        "Standard_L32s",
+        "Standard_L4s",
+        "Standard_L8s",
         "Standard_NC12",
         "Standard_NC24",
         "Standard_NC24r",
@@ -735,10 +790,16 @@
       "Standard_D11_v2": {
         "storageAccountType": "Standard_LRS"
       },
+      "Standard_D11_v2_Promo": {
+        "storageAccountType": "Standard_LRS"
+      },
       "Standard_D12": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D12_v2": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D12_v2_Promo": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D13": {
@@ -747,10 +808,16 @@
       "Standard_D13_v2": {
         "storageAccountType": "Standard_LRS"
       },
+      "Standard_D13_v2_Promo": {
+        "storageAccountType": "Standard_LRS"
+      },
       "Standard_D14": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D14_v2": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D14_v2_Promo": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D15_v2": {
@@ -762,10 +829,16 @@
       "Standard_D2_v2": {
         "storageAccountType": "Standard_LRS"
       },
+      "Standard_D2_v2_Promo": {
+        "storageAccountType": "Standard_LRS"
+      },
       "Standard_D3": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D3_v2": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D3_v2_Promo": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D4": {
@@ -774,7 +847,13 @@
       "Standard_D4_v2": {
         "storageAccountType": "Standard_LRS"
       },
+      "Standard_D4_v2_Promo": {
+        "storageAccountType": "Standard_LRS"
+      },
       "Standard_D5_v2": {
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D5_v2_Promo": {
         "storageAccountType": "Standard_LRS"
       },
       "Standard_DS11": {
@@ -783,10 +862,16 @@
       "Standard_DS11_v2": {
         "storageAccountType": "Premium_LRS"
       },
+      "Standard_DS11_v2_Promo": {
+        "storageAccountType": "Premium_LRS"
+      },
       "Standard_DS12": {
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS12_v2": {
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS12_v2_Promo": {
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS13": {
@@ -795,10 +880,16 @@
       "Standard_DS13_v2": {
         "storageAccountType": "Premium_LRS"
       },
+      "Standard_DS13_v2_Promo": {
+        "storageAccountType": "Premium_LRS"
+      },
       "Standard_DS14": {
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS14_v2": {
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS14_v2_Promo": {
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS15_v2": {
@@ -810,10 +901,16 @@
       "Standard_DS2_v2": {
         "storageAccountType": "Premium_LRS"
       },
+      "Standard_DS2_v2_Promo": {
+        "storageAccountType": "Premium_LRS"
+      },
       "Standard_DS3": {
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS3_v2": {
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS3_v2_Promo": {
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS4": {
@@ -822,7 +919,13 @@
       "Standard_DS4_v2": {
         "storageAccountType": "Premium_LRS"
       },
+      "Standard_DS4_v2_Promo": {
+        "storageAccountType": "Premium_LRS"
+      },
       "Standard_DS5_v2": {
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS5_v2_Promo": {
         "storageAccountType": "Premium_LRS"
       },
       "Standard_F16": {
@@ -896,6 +999,18 @@
       },
       "Standard_H8m": {
         "storageAccountType": "Standard_LRS"
+      },
+      "Standard_L16s": {
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_L32s": {
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_L4s": {
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_L8s": {
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_NC12": {
         "storageAccountType": "Standard_LRS"

@@ -8,15 +8,19 @@
 		associated storage map.
 
     .PARAMETER OutFile
-        The name of the outputfile (Default is azureconst.go)
+        The name of the outputfile (Default is pkg\acsengine\azureconst.go)
 
     .EXAMPLE
-        .\Get-AzureConstants.ps1  -OutFile "azureconst.go"
+        .\Get-AzureConstants.ps1  -OutFile "pkg\acsengine\azureconst.go"
+	
+	.NOTES
+		On making any changes to this file, run the following command to generate the 'azureconstant.go' file
+		.\Get-AzureConstants.ps1  -OutFile "pkg\acsengine\azureconst.go"
 #>
 [CmdletBinding(DefaultParameterSetName="Standard")]
 param(
     [string]
-    $OutFile = "azureconst.go"
+    $OutFile = "pkg\acsengine\azureconst.go"
 )
 
 function
@@ -314,6 +318,7 @@ try
 	$text = Get-FileContents -DCOSMasterMap $dcosMasterMap -MasterAgentMap $masterAgentMap -SizeMap $allSizes -Locations $locations
 	$text | Out-File $OutFile
 	(Get-Content $OutFile) -replace "`0", "" | Set-Content $OutFile
+	gofmt -w $OutFile
 }
 catch
 {
