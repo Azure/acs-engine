@@ -136,7 +136,6 @@ type MasterProfile struct {
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string `json:"subnet"`
 	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
-	StorageProfile           string `json:"storageProfile,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -289,12 +288,6 @@ func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
 }
 
-// IsClassicStorageAccount returns true if the storage account
-// follows the older naming convention
-func (m *MasterProfile) IsClassicStorageAccount() bool {
-	return m.StorageProfile == StorageAccountClassic
-}
-
 // IsCustomVNET returns true if the customer brought their own VNET
 func (a *AgentPoolProfile) IsCustomVNET() bool {
 	return len(a.VnetSubnetID) > 0
@@ -320,15 +313,9 @@ func (a *AgentPoolProfile) IsManagedDisks() bool {
 	return a.StorageProfile == ManagedDisks
 }
 
-// IsClassicStorageAccount returns true if the storage account
-// follows the older naming convention
-func (a *AgentPoolProfile) IsClassicStorageAccount() bool {
-	return a.StorageProfile == StorageAccountClassic
-}
-
 // IsStorageAccount returns true if the customer specified storage account
 func (a *AgentPoolProfile) IsStorageAccount() bool {
-	return a.StorageProfile == StorageAccountClassic || a.StorageProfile == StorageAccount
+	return a.StorageProfile == StorageAccount
 }
 
 // HasDisks returns true if the customer specified disks
