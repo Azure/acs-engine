@@ -7,6 +7,21 @@ packages:
  - jq
  - traceroute
 
+disk_setup:
+   /dev/sdc:
+       table_type: mbr
+       layout: true
+       overwrite: true
+
+fs_setup:
+  - device: /dev/sdc1
+    filesystem: ext4
+    overwrite: true
+  
+mounts:
+- - /dev/sdc1
+  - /var/lib/etcd/persistentdisk
+      
 runcmd:
 - /bin/echo DAEMON_ARGS=--name "<<<variables('masterVMNames')[copyIndex()]>>>" --initial-advertise-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --listen-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --advertise-client-urls "<<<variables('masterEtcdClientURLs')[copyIndex()]>>>" --listen-client-urls "<<<concat(variables('masterEtcdClientURLs')[copyIndex()], ',http://127.0.0.1:', variables('masterEtcdClientPort'))>>>" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "<<<variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]>>>" --initial-cluster-state "new" | tee -a /etc/default/etcd
 - apt-get update
