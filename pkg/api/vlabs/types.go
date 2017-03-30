@@ -12,26 +12,26 @@ type ResourcePurchasePlan struct {
 // ContainerService complies with the ARM model of
 // resource definition in a JSON template.
 type ContainerService struct {
-	ID       string               `json:"id,omitempty"`
-	Location string               `json:"location,omitempty"`
-	Name     string               `json:"name,omitempty"`
-	Plan     ResourcePurchasePlan `json:"plan,omitempty"`
-	Tags     map[string]string    `json:"tags,omitempty"`
-	Type     string               `json:"type,omitempty"`
+	ID       string                `json:"id,omitempty"`
+	Location string                `json:"location,omitempty"`
+	Name     string                `json:"name,omitempty"`
+	Plan     *ResourcePurchasePlan `json:"plan,omitempty"`
+	Tags     map[string]string     `json:"tags,omitempty"`
+	Type     string                `json:"type,omitempty"`
 
-	Properties Properties `json:"properties"`
+	Properties *Properties `json:"properties"`
 }
 
 // Properties represents the ACS cluster definition
 type Properties struct {
-	ProvisioningState       ProvisioningState       `json:"provisioningState"`
-	OrchestratorProfile     OrchestratorProfile     `json:"orchestratorProfile"`
-	MasterProfile           MasterProfile           `json:"masterProfile"`
-	AgentPoolProfiles       []AgentPoolProfile      `json:"agentPoolProfiles"`
-	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
-	WindowsProfile          WindowsProfile          `json:"windowsProfile,omitempty"`
-	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
-	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
+	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
+	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
+	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
+	AgentPoolProfiles       []AgentPoolProfile       `json:"agentPoolProfiles,omitempty"`
+	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
+	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
+	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
+	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -117,8 +117,8 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType OrchestratorType `json:"orchestratorType"`
-	KubernetesConfig KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	OrchestratorType OrchestratorType  `json:"orchestratorType"`
+	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 }
 
 // KubernetesConfig contains the Kubernetes config structure, containing
@@ -175,7 +175,7 @@ type AgentPoolProfile struct {
 // of machines from a given key vault
 // the key vault specified must have been granted read permissions to CRP
 type KeyVaultSecrets struct {
-	SourceVault       KeyVaultID            `json:"sourceVault,omitempty"`
+	SourceVault       *KeyVaultID           `json:"sourceVault,omitempty"`
 	VaultCertificates []KeyVaultCertificate `json:"vaultCertificates,omitempty"`
 }
 

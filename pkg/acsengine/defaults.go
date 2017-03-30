@@ -49,7 +49,7 @@ var (
 
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
 func SetPropertiesDefaults(cs *api.ContainerService) (bool, error) {
-	properties := &cs.Properties
+	properties := cs.Properties
 
 	setOrchestratorDefaults(cs)
 
@@ -69,10 +69,13 @@ func SetPropertiesDefaults(cs *api.ContainerService) (bool, error) {
 // setOrchestratorDefaults for orchestrators
 func setOrchestratorDefaults(cs *api.ContainerService) {
 	location := cs.Location
-	a := &cs.Properties
+	a := cs.Properties
 
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+		if a.OrchestratorProfile.KubernetesConfig == nil {
+			a.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
+		}
 		a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
 		if a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "" {
 			a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
@@ -188,6 +191,10 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		ips = append(ips, ip)
 	}
 
+	if a.CertificateProfile == nil {
+		a.CertificateProfile = &api.CertificateProfile{}
+	}
+
 	// use the specified Certificate Authority pair, or generate a new pair
 	var caPair *PkiKeyCertPair
 	if len(a.CertificateProfile.CaCertificate) != 0 && len(a.CertificateProfile.GetCAPrivateKey()) != 0 {
@@ -218,8 +225,9 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 }
 
 func certGenerationRequired(a *api.Properties) bool {
-	if len(a.CertificateProfile.APIServerCertificate) > 0 || len(a.CertificateProfile.APIServerPrivateKey) > 0 ||
-		len(a.CertificateProfile.ClientCertificate) > 0 || len(a.CertificateProfile.ClientPrivateKey) > 0 {
+	if a.CertificateProfile != nil &&
+		(len(a.CertificateProfile.APIServerCertificate) > 0 || len(a.CertificateProfile.APIServerPrivateKey) > 0 ||
+			len(a.CertificateProfile.ClientCertificate) > 0 || len(a.CertificateProfile.ClientPrivateKey) > 0) {
 		return false
 	}
 
