@@ -372,8 +372,10 @@ func convertVLabsKeyVaultSecrets(vlabs *vlabs.KeyVaultSecrets, api *KeyVaultSecr
 }
 
 func convertV20160930DiagnosticsProfile(v20160930 *v20160930.DiagnosticsProfile, api *DiagnosticsProfile) {
-	api.VMDiagnostics = &VMDiagnostics{}
-	convertV20160930VMDiagnostics(v20160930.VMDiagnostics, api.VMDiagnostics)
+	if v20160930.VMDiagnostics != nil {
+		api.VMDiagnostics = &VMDiagnostics{}
+		convertV20160930VMDiagnostics(v20160930.VMDiagnostics, api.VMDiagnostics)
+	}
 }
 
 func convertV20160930VMDiagnostics(v20160930 *v20160930.VMDiagnostics, api *VMDiagnostics) {
@@ -382,8 +384,10 @@ func convertV20160930VMDiagnostics(v20160930 *v20160930.VMDiagnostics, api *VMDi
 }
 
 func convertV20160330DiagnosticsProfile(v20160330 *v20160330.DiagnosticsProfile, api *DiagnosticsProfile) {
-	api.VMDiagnostics = &VMDiagnostics{}
-	convertV20160330VMDiagnostics(v20160330.VMDiagnostics, api.VMDiagnostics)
+	if v20160330.VMDiagnostics != nil {
+		api.VMDiagnostics = &VMDiagnostics{}
+		convertV20160330VMDiagnostics(v20160330.VMDiagnostics, api.VMDiagnostics)
+	}
 }
 
 func convertV20160330VMDiagnostics(v20160330 *v20160330.VMDiagnostics, api *VMDiagnostics) {
