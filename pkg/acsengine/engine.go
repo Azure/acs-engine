@@ -525,6 +525,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"GetDataDisks": func(profile *api.AgentPoolProfile) string {
 			return getDataDisks(profile)
 		},
+		"GetEtcdDisk": func(orchestratorType api.OrchestratorType, masterProfile *api.MasterProfile) string {
+			return getEtcdDisk(orchestratorType, masterProfile)
+		},
 		"GetDCOSMasterCustomData": func() string {
 			masterProvisionScript := getDCOSMasterProvisionScript()
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
@@ -981,6 +984,28 @@ func getDataDisks(a *api.AgentPoolProfile) string {
 		} else if a.StorageProfile == api.ManagedDisks {
 			buf.WriteString(fmt.Sprintf(managedDataDisks, diskSize, i))
 		}
+	}
+	buf.WriteString("\n          ],")
+	return buf.String()
+}
+
+func getEtcdDisk(orchestratorType api.OrchestratorType, m *api.MasterProfile) string {
+	if orchestratorType != api.Kubernetes {
+		return ""
+	}
+	var buf bytes.Buffer
+	buf.WriteString("\"dataDisks\": [\n")
+	dataDisks := `            {
+              "createOption": "Empty",
+              "diskSizeGB": "%d",
+              "lun": %d,
+              "name": "[concat(variables('%sVMNamePrefix'), copyIndex(),'-datadisk%d')]",
+              "vhd": {
+                "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('%sDataAccountName'),'.blob.core.windows.net/vhds/',variables('%sVMNamePrefix'),copyIndex(), '--datadisk%d.vhd')]"
+              }
+            }`
+	if m.StorageProfile == api.StorageAccount {
+		buf.WriteString(fmt.Sprintf(dataDisks, "1", 0, "master", 0, "master", "master", "master", "master", 0))
 	}
 	buf.WriteString("\n          ],")
 	return buf.String()
