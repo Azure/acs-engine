@@ -8,15 +8,15 @@ packages:
  - traceroute
 
 disk_setup:
-   /dev/sdc:
-       table_type: mbr
-       layout: true
-       overwrite: true
+  /dev/sdc:
+      table_type: mbr
+      layout: true
+      overwrite: true
 
 fs_setup:
-  - device: /dev/sdc1
-    filesystem: ext4
-    overwrite: true
+- device: /dev/sdc1
+  filesystem: ext4
+  overwrite: true
   
 mounts:
 - - /dev/sdc1
