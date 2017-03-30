@@ -19,9 +19,10 @@ node {
 australiaeast australiasoutheast \
 brazilsouth \
 canadacentral canadaeast \
-centralindia southindia \
+centralindia southindia westindia \
 centralus eastus2 eastus northcentralus southcentralus westcentralus westus2 westus \
 eastasia southeastasia \
+koreacentral koreasouth \
 japaneast japanwest \
 northeurope westeurope \
 uksouth ukwest"
