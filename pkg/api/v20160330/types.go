@@ -16,37 +16,33 @@ type ResourcePurchasePlan struct {
 // ContainerService complies with the ARM model of
 // resource definition in a JSON template.
 type ContainerService struct {
-	ID       string               `json:"id,omitempty"`
-	Location string               `json:"location,omitempty"`
-	Name     string               `json:"name,omitempty"`
-	Plan     ResourcePurchasePlan `json:"plan,omitempty"`
-	Tags     map[string]string    `json:"tags,omitempty"`
-	Type     string               `json:"type,omitempty"`
+	ID       string                `json:"id,omitempty"`
+	Location string                `json:"location,omitempty"`
+	Name     string                `json:"name,omitempty"`
+	Plan     *ResourcePurchasePlan `json:"plan,omitempty"`
+	Tags     map[string]string     `json:"tags,omitempty"`
+	Type     string                `json:"type,omitempty"`
 
-	Properties Properties `json:"properties"`
+	Properties *Properties `json:"properties"`
 }
 
 // Properties is currently incomplete. More fields will be added later.
 type Properties struct {
-	ProvisioningState   ProvisioningState   `json:"provisioningState"`
-	OrchestratorProfile OrchestratorProfile `json:"orchestratorProfile"`
-
-	MasterProfile MasterProfile `json:"masterProfile"`
-
-	AgentPoolProfiles []AgentPoolProfile `json:"agentPoolProfiles"`
-
-	LinuxProfile LinuxProfile `json:"linuxProfile"`
-
-	WindowsProfile WindowsProfile `json:"windowsProfile"`
+	ProvisioningState   ProvisioningState    `json:"provisioningState,omitempty"`
+	OrchestratorProfile *OrchestratorProfile `json:"orchestratorProfile,omitempty"`
+	MasterProfile       *MasterProfile       `json:"masterProfile,omitempty"`
+	AgentPoolProfiles   []AgentPoolProfile   `json:"agentPoolProfiles,omitempty"`
+	LinuxProfile        *LinuxProfile        `json:"linuxProfile,omitempty"`
+	WindowsProfile      *WindowsProfile      `json:"windowsProfile,omitempty"`
 
 	// TODO: This field is versioned to "2016-03-30"
-	DiagnosticsProfile DiagnosticsProfile `json:"diagnosticsProfile"`
+	DiagnosticsProfile *DiagnosticsProfile `json:"diagnosticsProfile,omitempty"`
 
 	// JumpboxProfile has made it into the new ACS RP stack for
 	// backward compability.
 	// TODO: Version this field so that newer versions don't
 	// allow jumpbox creation
-	JumpboxProfile JumpboxProfile `json:"jumpboxProfile"`
+	JumpboxProfile *JumpboxProfile `json:"jumpboxProfile,omitempty"`
 }
 
 // LinuxProfile represents the Linux configuration passed to the cluster
@@ -63,7 +59,6 @@ type LinuxProfile struct {
 // WindowsProfile represents the Windows configuration passed to the cluster
 type WindowsProfile struct {
 	AdminUsername string `json:"adminUsername"`
-
 	AdminPassword string `json:"adminPassword"`
 }
 
@@ -134,7 +129,7 @@ type JumpboxProfile struct {
 // DiagnosticsProfile setting to enable/disable capturing
 // diagnostics for VMs hosting container cluster.
 type DiagnosticsProfile struct {
-	VMDiagnostics VMDiagnostics `json:"vmDiagnostics"`
+	VMDiagnostics *VMDiagnostics `json:"vmDiagnostics"`
 }
 
 // VMDiagnostics contains settings to on/off boot diagnostics collection

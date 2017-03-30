@@ -25,7 +25,7 @@ func (o *OrchestratorProfile) Validate() error {
 	}
 
 	if o.OrchestratorType != Kubernetes &&
-		(o.KubernetesConfig.KubernetesImageBase != "" || o.KubernetesConfig.NetworkPolicy != "") {
+		(o.KubernetesConfig != nil) {
 		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
 	}
 
@@ -263,6 +263,9 @@ func (a *Properties) validateNetworkPolicy() error {
 
 	switch a.OrchestratorProfile.OrchestratorType {
 	case Kubernetes:
+		if a.OrchestratorProfile.KubernetesConfig == nil {
+			return nil
+		}
 		networkPolicy = a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
 	default:
 		return nil

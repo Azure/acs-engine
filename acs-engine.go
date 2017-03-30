@@ -16,7 +16,7 @@ import (
 
 func writeArtifacts(containerService *api.ContainerService, apiVersion, template, parameters, artifactsDir string, certsGenerated bool, parametersOnly bool) error {
 	if len(artifactsDir) == 0 {
-		artifactsDir = fmt.Sprintf("%s-%s", containerService.Properties.OrchestratorProfile.OrchestratorType, acsengine.GenerateClusterID(&containerService.Properties))
+		artifactsDir = fmt.Sprintf("%s-%s", containerService.Properties.OrchestratorProfile.OrchestratorType, acsengine.GenerateClusterID(containerService.Properties))
 		artifactsDir = path.Join("_output", artifactsDir)
 	}
 
@@ -44,7 +44,7 @@ func writeArtifacts(containerService *api.ContainerService, apiVersion, template
 	}
 
 	if certsGenerated {
-		properties := &containerService.Properties
+		properties := containerService.Properties
 		if properties.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
 			directory := path.Join(artifactsDir, "kubeconfig")
 			var locations []string
