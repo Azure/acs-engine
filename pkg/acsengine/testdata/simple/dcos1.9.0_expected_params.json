@@ -1,24 +1,27 @@
 {
-  "agentpool1Count": {
+  "agentprivateCount": {
     "value": 3
   },
-  "agentpool1EndpointDNSNamePrefix": {
-    "value": "agentdns1"
-  },
-  "agentpool1Subnet": {
+  "agentprivateSubnet": {
     "value": "10.0.0.0/16"
   },
-  "agentpool1VMSize": {
+  "agentprivateVMSize": {
     "value": "Standard_D2_v2"
   },
-  "agentpool2Count": {
+  "agentpublicCount": {
     "value": 3
   },
-  "agentpool2Subnet": {
+  "agentpublicEndpointDNSNamePrefix": {
+    "value": "agentpublic1"
+  },
+  "agentpublicSubnet": {
     "value": "10.1.0.0/16"
   },
-  "agentpool2VMSize": {
+  "agentpublicVMSize": {
     "value": "Standard_D2_v2"
+  },
+  "dcosBootstrapURL": {
+    "value": "https://dcosio.azureedge.net/dcos/EarlyAccess/bootstrap/1bdc9e5f7863c6ead141be2f268cb231ad6c1049.bootstrap.tar.xz"
   },
   "firstConsecutiveStaticIP": {
     "value": "172.16.0.5"

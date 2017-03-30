@@ -9,6 +9,8 @@ const (
 const (
 	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS188
 	DCOS = "DCOS"
+	// DCOS190 is the string constant for DCOS 1.9.0 orchestrator type
+	DCOS190 OrchestratorType = "DCOS190"
 	// DCOS188 is the string constant for DCOS 1.8.8 orchestrator type
 	DCOS188 OrchestratorType = "DCOS188"
 	// DCOS187 is the string constant for DCOS 1.8.7 orchestrator type
@@ -63,9 +65,6 @@ const (
 
 // storage profiles
 const (
-	// StorageAccountClassic means that we follow the older versions (09-30-2016, 03-30-2016)
-	// storage account naming conventions
-	StorageAccountClassic = "StorageAccountClassic"
 	// StorageAccount means that the nodes use raw storage accounts for their os and attached volumes
 	StorageAccount = "StorageAccount"
 	// ManagedDisks means that the nodes use managed disks for their os and attached volumes

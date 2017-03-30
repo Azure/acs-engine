@@ -953,7 +953,7 @@
     "osImageOffer": "UbuntuServer",
     "osImagePublisher": "Canonical",
     "osImageSKU": "14.04.4-LTS",
-    "osImageVersion": "latest",
+    "osImageVersion": "14.04.201607140",
     "postInstallScriptURI": "disabled",
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]",
     "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",

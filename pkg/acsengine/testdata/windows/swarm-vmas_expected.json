@@ -937,7 +937,7 @@
     "osImageOffer": "UbuntuServer",
     "osImagePublisher": "Canonical",
     "osImageSKU": "14.04.4-LTS",
-    "osImageVersion": "latest",
+    "osImageVersion": "14.04.201607140",
     "postInstallScriptURI": "disabled",
     "privatewinAccountName": "[concat(variables('storageAccountBaseName'), 'agnt1')]",
     "privatewinAvailabilitySet": "[concat('privatewin-availabilitySet-', variables('nameSuffix'))]",

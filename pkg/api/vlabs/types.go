@@ -262,7 +262,7 @@ func (a *AgentPoolProfile) IsManagedDisks() bool {
 
 // IsStorageAccount returns true if the customer specified storage account
 func (a *AgentPoolProfile) IsStorageAccount() bool {
-	return a.StorageProfile == StorageAccountClassic || a.StorageProfile == StorageAccount
+	return a.StorageProfile == StorageAccount
 }
 
 // HasDisks returns true if the customer specified disks
