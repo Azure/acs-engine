@@ -82,6 +82,25 @@ Get-MasterAgentMap() {
 	return $agentMap
 }
 
+function 
+Get-KubernetesAgentMap() {
+	param(
+        [System.Collections.Hashtable]
+        $SizeMap
+    )
+
+	$agentMap = @{}
+	ForEach ($k in ($SizeMap.Keys | Sort-Object)) {
+		#Write-Output $location.Location
+		$size = $SizeMap[$k]
+		$agentMap.Add($size.Name, $size)
+		# if ($size.NumberOfCores -ge $MINIMUM_CORES) {
+		# 	$agentMap.Add($size.Name, $size)
+		# }	
+	}
+	return $agentMap
+}
+
 function
 Get-Locations() {
 	$locations = Get-AzureRmLocation | Select-Object -Property Location
@@ -212,6 +231,29 @@ func GetMasterAgentAllowedSizes() string {
 ``
 }
 
+// GetKubernetesAgentAllowedSizes returns the agent allowed sizes
+func GetKubernetesAgentAllowedSizes() string {
+    return ``      "allowedValues": [
+
+"@
+	$first = $TRUE
+	ForEach ($k in ($KubernetesAgentMap.Keys | Sort-Object)) {
+		if ($first -eq $TRUE) 
+		{
+			$first = $FALSE
+		}
+		else
+		{
+			$text += ",`r`n"
+		}
+		$text += '        "' + $KubernetesAgentMap.Item($k).Name + '"'
+	}
+	$text += @"
+
+     ],
+``
+}
+
 // GetSizeMap returns the size / storage map
 func GetSizeMap() string{
     return ``    "vmSizesMap": {
@@ -314,8 +356,9 @@ try
 	$allSizes = Get-AllSizes
 	$dcosMasterMap = Get-DCOSMasterMap -SizeMap $allSizes
 	$masterAgentMap = Get-MasterAgentMap -SizeMap $allSizes
+	$kubernetesAgentMap = Get-KubernetesAgentMap -SizeMap $allSizes
 	$locations = Get-Locations
-	$text = Get-FileContents -DCOSMasterMap $dcosMasterMap -MasterAgentMap $masterAgentMap -SizeMap $allSizes -Locations $locations
+	$text = Get-FileContents -DCOSMasterMap $dcosMasterMap -MasterAgentMap $masterAgentMap -KubernetesAgentMap $kubernetesAgentMap -SizeMap $allSizes -Locations $locations
 	$text | Out-File $OutFile
 	(Get-Content $OutFile) -replace "`0", "" | Set-Content $OutFile
 	gofmt -w $OutFile
