@@ -40,7 +40,6 @@ var AzureLocations = []string{
 	"ukwest",
 	"westcentralus",
 	"westeurope",
-	"westindia",
 	"westus",
 	"westus2",
 	"chinaeast",
