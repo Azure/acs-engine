@@ -4,7 +4,7 @@ metadata:
   labels:
     kubernetes.io/cluster-service: "true"
     k8s-app: kubernetes-dashboard
-    version: v1.5.1
+    version: v1.6.0
   name: kubernetes-dashboard
   namespace: kube-system
 spec:
