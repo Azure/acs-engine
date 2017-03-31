@@ -1,7 +1,7 @@
 FROM buildpack-deps:xenial
 
 ENV GO_VERSION 1.8
-ENV KUBECTL_VERSION 1.5.3
+ENV KUBECTL_VERSION 1.6.0
 ENV AZURE_CLI_VERSION 0.1.2rc1
 
 RUN apt-get update \
