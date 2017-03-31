@@ -18,14 +18,15 @@ SERVICE_PRINCIPAL_CLIENT_ID="${10}"
 SERVICE_PRINCIPAL_CLIENT_SECRET="${11}"
 KUBELET_PRIVATE_KEY="${12}"
 TARGET_ENVIRONMENT="${13}"
+NETWORK_POLICY="${14}"
 
 # Master only secrets
-APISERVER_PRIVATE_KEY="${14}"
-CA_CERTIFICATE="${15}"
-MASTER_FQDN="${16}"
-KUBECONFIG_CERTIFICATE="${17}"
-KUBECONFIG_KEY="${18}"
-ADMINUSER="${19}"
+APISERVER_PRIVATE_KEY="${15}"
+CA_CERTIFICATE="${16}"
+MASTER_FQDN="${17}"
+KUBECONFIG_CERTIFICATE="${18}"
+KUBECONFIG_KEY="${19}"
+ADMINUSER="${20}"
 
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
@@ -94,6 +95,94 @@ function ensureKubectl() {
     fi
 }
 
+function downloadUrl () {
+	# Wrapper around curl to download blobs more reliably.
+	# Workaround the --retry issues with a for loop and set a max timeout.
+	for i in 1 2 3 4 5; do curl --max-time 60 -fsSL ${1}; [ $? -eq 0 ] && break || sleep 10; done
+}
+
+function setNetworkPlugin () {
+    sed -i "s/^KUBELET_NETWORK_PLUGIN=.*/KUBELET_NETWORK_PLUGIN=${1}/" /etc/default/kubelet
+}
+
+function setDockerOpts () {
+    sed -i "s#^DOCKER_OPTS=.*#DOCKER_OPTS=${1}#" /etc/default/kubelet
+}
+
+function configAzureNetworkPolicy() {
+    # CNI release version. Note this may be different than the spec version in config file below.
+    CNI_RELEASE_VERSION=v0.4.0
+    AZURE_PLUGIN_VERSION=v0.7
+
+    # Create network config file.
+    CNI_CONFIG_DIR=/etc/cni/net.d
+    NET_CONFIG_FILE=$CNI_CONFIG_DIR/10-azure.conf
+    mkdir -p $CNI_CONFIG_DIR
+
+    cat <<- EOF > $NET_CONFIG_FILE
+	{
+	  "cniVersion": "0.2.0",
+	  "name": "azure",
+	  "type": "azure-vnet",
+	  "master": "eth0",
+	  "bridge": "azure0",
+	  "ipam": {
+	    "type": "azure-vnet-ipam"
+	  }
+	}
+	EOF
+
+    chown -R root:root $CNI_CONFIG_DIR
+    chmod 755 $CNI_CONFIG_DIR
+    chmod 644 $NET_CONFIG_FILE
+
+    # Download Azure VNET CNI plugins.
+    CNI_BIN_DIR=/opt/cni/bin
+    mkdir -p $CNI_BIN_DIR
+
+    downloadUrl https://github.com/Azure/azure-container-networking/releases/download/$AZURE_PLUGIN_VERSION/azure-cni-linux-amd64-$AZURE_PLUGIN_VERSION.tgz | tar -xz -C $CNI_BIN_DIR
+    downloadUrl https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VERSION/cni-amd64-$CNI_RELEASE_VERSION.tgz | tar -xz -C $CNI_BIN_DIR ./loopback
+    chown -R root:root $CNI_BIN_DIR
+    chmod -R 755 $CNI_BIN_DIR
+
+    # Dump ebtables rules.
+    /sbin/ebtables -t nat --list
+
+    # Enable CNI.
+    setNetworkPlugin cni
+    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+}
+
+function configCalicoNetworkPolicy() {
+    if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
+        # on masters
+        ADDONS="calico-configmap.yaml calico-daemonset.yaml"
+        ADDONS_PATH=/etc/kubernetes/addons
+        CALICO_URL="https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager"
+
+        # download calico yamls
+        for addon in ${ADDONS}; do
+            downloadUrl "${CALICO_URL}/${addon}" > "${ADDONS_PATH}/${addon}"
+        done
+    else
+        # on agents
+        setNetworkPlugin cni
+        setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+    fi
+}
+
+function configNetworkPolicy() {
+    if [[ "${NETWORK_POLICY}" = "azure" ]]; then
+        configAzureNetworkPolicy
+    elif [[ "${NETWORK_POLICY}" = "calico" ]]; then
+        configCalicoNetworkPolicy
+    else
+        # No policy, defaults to kubenet.
+        setNetworkPlugin kubenet
+        setDockerOpts ""
+    fi
+}
+
 function ensureEtcd() {
     systemctl stop etcd
     rm -rf /var/lib/etcd/default
@@ -104,7 +193,7 @@ function ensureDocker() {
     systemctl enable docker
     systemctl restart docker
     dockerStarted=1
-    for i in {1..600}; do
+    for i in {1..900}; do
         if ! /usr/bin/docker info; then
             echo "status $?"
             /bin/systemctl restart docker
@@ -206,6 +295,7 @@ users:
 
 # master and node
 ensureDocker
+configNetworkPolicy
 ensureKubelet
 extractKubectl
 

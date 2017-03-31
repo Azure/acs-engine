@@ -16,7 +16,7 @@ import (
 
 func writeArtifacts(containerService *api.ContainerService, apiVersion, template, parameters, artifactsDir string, certsGenerated bool, parametersOnly bool) error {
 	if len(artifactsDir) == 0 {
-		artifactsDir = fmt.Sprintf("%s-%s", containerService.Properties.OrchestratorProfile.OrchestratorType, acsengine.GenerateClusterID(&containerService.Properties))
+		artifactsDir = fmt.Sprintf("%s-%s", containerService.Properties.OrchestratorProfile.OrchestratorType, acsengine.GenerateClusterID(containerService.Properties))
 		artifactsDir = path.Join("_output", artifactsDir)
 	}
 
@@ -44,10 +44,17 @@ func writeArtifacts(containerService *api.ContainerService, apiVersion, template
 	}
 
 	if certsGenerated {
-		properties := &containerService.Properties
+		properties := containerService.Properties
 		if properties.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
 			directory := path.Join(artifactsDir, "kubeconfig")
-			for _, location := range acsengine.AzureLocations {
+			var locations []string
+			if containerService.Location != "" {
+				locations = []string{containerService.Location}
+			} else {
+				locations = acsengine.AzureLocations
+			}
+
+			for _, location := range locations {
 				b, gkcerr := acsengine.GenerateKubeConfig(properties, location)
 				if gkcerr != nil {
 					return gkcerr
@@ -56,6 +63,7 @@ func writeArtifacts(containerService *api.ContainerService, apiVersion, template
 					return e
 				}
 			}
+
 		}
 
 		if e := saveFileString(artifactsDir, "ca.key", properties.CertificateProfile.GetCAPrivateKey()); e != nil {
@@ -117,6 +125,7 @@ func usage(errs ...error) {
 	fmt.Fprintf(os.Stderr, "\n")
 	fmt.Fprintf(os.Stderr, "options:\n")
 	flag.PrintDefaults()
+	fmt.Fprintf(os.Stderr, "\n%s --version or -v to get the build version \n", os.Args[0])
 }
 
 var noPrettyPrint = flag.Bool("noPrettyPrint", false, "do not pretty print output")
@@ -124,12 +133,28 @@ var artifactsDir = flag.String("artifacts", "", "directory where artifacts will 
 var classicMode = flag.Bool("classicMode", false, "enable classic parameters and outputs")
 var parametersOnly = flag.Bool("parametersOnly", false, "only output the parameters")
 
+// AcsEngineBuildSHA is the Git SHA-1 of the last commit
+var AcsEngineBuildSHA string
+
+// AcsEngineBuildTime is the timestamp of when acs-engine was built
+var AcsEngineBuildTime string
+
 // acs-engine takes the caKey and caCert as args, since the caKey is stored separately
 // from the api model since this cannot be easily revoked like the server and client key
 var caCertificatePath = flag.String("caCertificatePath", "", "the path to the CA Certificate file")
 var caKeyPath = flag.String("caKeyPath", "", "the path to the CA key file")
 
 func main() {
+	if (len(os.Args) == 2) &&
+		((os.Args[1] == "--version") || (os.Args[1] == "-v")) {
+		if len(AcsEngineBuildSHA) == 0 {
+			fmt.Fprintf(os.Stderr, "No version set. Please run `make build`\n")
+			os.Exit(1)
+		}
+		fmt.Fprintf(os.Stdout, "Git commit: %s\nBuild Timestamp: %s\n", AcsEngineBuildSHA, AcsEngineBuildTime)
+		os.Exit(0)
+	}
+
 	start := time.Now()
 	defer func(s time.Time) {
 		fmt.Fprintf(os.Stderr, "acsengine took %s\n", time.Since(s))

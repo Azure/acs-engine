@@ -18,50 +18,62 @@ import (
 
 // ConvertContainerServiceToV20160930 converts an unversioned ContainerService to a v20160930 ContainerService to
 func ConvertContainerServiceToV20160930(api *ContainerService) *v20160930.ContainerService {
-	v20160930 := &v20160930.ContainerService{}
-	v20160930.ID = api.ID
-	v20160930.Location = api.Location
-	v20160930.Name = api.Name
-	convertResourcePurchasePlanToV20160930(&api.Plan, &v20160930.Plan)
-	v20160930.Tags = map[string]string{}
-	for k, v := range api.Tags {
-		v20160930.Tags[k] = v
+	v20160930CS := &v20160930.ContainerService{}
+	v20160930CS.ID = api.ID
+	v20160930CS.Location = api.Location
+	v20160930CS.Name = api.Name
+	if api.Plan != nil {
+		v20160930CS.Plan = &v20160930.ResourcePurchasePlan{}
+		convertResourcePurchasePlanToV20160930(api.Plan, v20160930CS.Plan)
 	}
-	v20160930.Type = api.Type
-	convertPropertiesToV20160930(&api.Properties, &v20160930.Properties)
-	return v20160930
+	v20160930CS.Tags = map[string]string{}
+	for k, v := range api.Tags {
+		v20160930CS.Tags[k] = v
+	}
+	v20160930CS.Type = api.Type
+	v20160930CS.Properties = &v20160930.Properties{}
+	convertPropertiesToV20160930(api.Properties, v20160930CS.Properties)
+	return v20160930CS
 }
 
 // ConvertContainerServiceToV20160330 converts a v20160330 ContainerService to an unversioned ContainerService
 func ConvertContainerServiceToV20160330(api *ContainerService) *v20160330.ContainerService {
-	v20160330 := &v20160330.ContainerService{}
-	v20160330.ID = api.ID
-	v20160330.Location = api.Location
-	v20160330.Name = api.Name
-	convertResourcePurchasePlanToV20160330(&api.Plan, &v20160330.Plan)
-	v20160330.Tags = map[string]string{}
-	for k, v := range api.Tags {
-		v20160330.Tags[k] = v
+	v20160330CS := &v20160330.ContainerService{}
+	v20160330CS.ID = api.ID
+	v20160330CS.Location = api.Location
+	v20160330CS.Name = api.Name
+	if api.Plan != nil {
+		v20160330CS.Plan = &v20160330.ResourcePurchasePlan{}
+		convertResourcePurchasePlanToV20160330(api.Plan, v20160330CS.Plan)
 	}
-	v20160330.Type = api.Type
-	convertPropertiesToV20160330(&api.Properties, &v20160330.Properties)
-	return v20160330
+	v20160330CS.Tags = map[string]string{}
+	for k, v := range api.Tags {
+		v20160330CS.Tags[k] = v
+	}
+	v20160330CS.Type = api.Type
+	v20160330CS.Properties = &v20160330.Properties{}
+	convertPropertiesToV20160330(api.Properties, v20160330CS.Properties)
+	return v20160330CS
 }
 
 // ConvertContainerServiceToVLabs converts a vlabs ContainerService to an unversioned ContainerService
 func ConvertContainerServiceToVLabs(api *ContainerService) *vlabs.ContainerService {
-	vlabs := &vlabs.ContainerService{}
-	vlabs.ID = api.ID
-	vlabs.Location = api.Location
-	vlabs.Name = api.Name
-	convertResourcePurchasePlanToVLabs(&api.Plan, &vlabs.Plan)
-	vlabs.Tags = map[string]string{}
-	for k, v := range api.Tags {
-		vlabs.Tags[k] = v
+	vlabsCS := &vlabs.ContainerService{}
+	vlabsCS.ID = api.ID
+	vlabsCS.Location = api.Location
+	vlabsCS.Name = api.Name
+	if api.Plan != nil {
+		vlabsCS.Plan = &vlabs.ResourcePurchasePlan{}
+		convertResourcePurchasePlanToVLabs(api.Plan, vlabsCS.Plan)
 	}
-	vlabs.Type = api.Type
-	convertPropertiesToVLabs(&api.Properties, &vlabs.Properties)
-	return vlabs
+	vlabsCS.Tags = map[string]string{}
+	for k, v := range api.Tags {
+		vlabsCS.Tags[k] = v
+	}
+	vlabsCS.Type = api.Type
+	vlabsCS.Properties = &vlabs.Properties{}
+	convertPropertiesToVLabs(api.Properties, vlabsCS.Properties)
+	return vlabsCS
 }
 
 // convertResourcePurchasePlanToV20160930 converts a v20160930 ResourcePurchasePlan to an unversioned ResourcePurchasePlan
@@ -90,52 +102,112 @@ func convertResourcePurchasePlanToVLabs(api *ResourcePurchasePlan, vlabs *vlabs.
 
 func convertPropertiesToV20160930(api *Properties, p *v20160930.Properties) {
 	p.ProvisioningState = v20160930.ProvisioningState(api.ProvisioningState)
-	convertOrchestratorProfileToV20160930(&api.OrchestratorProfile, &p.OrchestratorProfile)
-	convertMasterProfileToV20160930(&api.MasterProfile, &p.MasterProfile)
+	if api.OrchestratorProfile != nil {
+		p.OrchestratorProfile = &v20160930.OrchestratorProfile{}
+		convertOrchestratorProfileToV20160930(api.OrchestratorProfile, p.OrchestratorProfile)
+	}
+	if api.MasterProfile != nil {
+		p.MasterProfile = &v20160930.MasterProfile{}
+		convertMasterProfileToV20160930(api.MasterProfile, p.MasterProfile)
+	}
 	p.AgentPoolProfiles = []v20160930.AgentPoolProfile{}
 	for _, apiProfile := range api.AgentPoolProfiles {
 		v20160930Profile := &v20160930.AgentPoolProfile{}
 		convertAgentPoolProfileToV20160930(&apiProfile, v20160930Profile)
 		p.AgentPoolProfiles = append(p.AgentPoolProfiles, *v20160930Profile)
 	}
-	convertLinuxProfileToV20160930(&api.LinuxProfile, &p.LinuxProfile)
-	convertWindowsProfileToV20160930(&api.WindowsProfile, &p.WindowsProfile)
-	convertDiagnosticsProfileToV20160930(&api.DiagnosticsProfile, &p.DiagnosticsProfile)
-	convertJumpboxProfileToV20160930(&api.JumpboxProfile, &p.JumpboxProfile)
-	convertServicePrincipalProfileToV20160930(&api.ServicePrincipalProfile, &p.ServicePrincipalProfile)
-	convertCustomProfileToV20160930(&api.CustomProfile, &p.CustomProfile)
+	if api.LinuxProfile != nil {
+		p.LinuxProfile = &v20160930.LinuxProfile{}
+		convertLinuxProfileToV20160930(api.LinuxProfile, p.LinuxProfile)
+	}
+	if api.WindowsProfile != nil {
+		p.WindowsProfile = &v20160930.WindowsProfile{}
+		convertWindowsProfileToV20160930(api.WindowsProfile, p.WindowsProfile)
+	}
+	if api.DiagnosticsProfile != nil {
+		p.DiagnosticsProfile = &v20160930.DiagnosticsProfile{}
+		convertDiagnosticsProfileToV20160930(api.DiagnosticsProfile, p.DiagnosticsProfile)
+	}
+	if api.JumpboxProfile != nil {
+		p.JumpboxProfile = &v20160930.JumpboxProfile{}
+		convertJumpboxProfileToV20160930(api.JumpboxProfile, p.JumpboxProfile)
+	}
+	if api.ServicePrincipalProfile != nil {
+		p.ServicePrincipalProfile = &v20160930.ServicePrincipalProfile{}
+		convertServicePrincipalProfileToV20160930(api.ServicePrincipalProfile, p.ServicePrincipalProfile)
+	}
+	if api.CustomProfile != nil {
+		p.CustomProfile = &v20160930.CustomProfile{}
+		convertCustomProfileToV20160930(api.CustomProfile, p.CustomProfile)
+	}
 }
 
 func convertPropertiesToV20160330(api *Properties, p *v20160330.Properties) {
 	p.ProvisioningState = v20160330.ProvisioningState(api.ProvisioningState)
-	convertOrchestratorProfileToV20160330(&api.OrchestratorProfile, &p.OrchestratorProfile)
-	convertMasterProfileToV20160330(&api.MasterProfile, &p.MasterProfile)
+	if api.OrchestratorProfile != nil {
+		p.OrchestratorProfile = &v20160330.OrchestratorProfile{}
+		convertOrchestratorProfileToV20160330(api.OrchestratorProfile, p.OrchestratorProfile)
+	}
+	if api.MasterProfile != nil {
+		p.MasterProfile = &v20160330.MasterProfile{}
+		convertMasterProfileToV20160330(api.MasterProfile, p.MasterProfile)
+	}
 	p.AgentPoolProfiles = []v20160330.AgentPoolProfile{}
 	for _, apiProfile := range api.AgentPoolProfiles {
 		v20160330Profile := &v20160330.AgentPoolProfile{}
 		convertAgentPoolProfileToV20160330(&apiProfile, v20160330Profile)
 		p.AgentPoolProfiles = append(p.AgentPoolProfiles, *v20160330Profile)
 	}
-	convertLinuxProfileToV20160330(&api.LinuxProfile, &p.LinuxProfile)
-	convertWindowsProfileToV20160330(&api.WindowsProfile, &p.WindowsProfile)
-	convertDiagnosticsProfileToV20160330(&api.DiagnosticsProfile, &p.DiagnosticsProfile)
-	convertJumpboxProfileToV20160330(&api.JumpboxProfile, &p.JumpboxProfile)
+	if api.LinuxProfile != nil {
+		p.LinuxProfile = &v20160330.LinuxProfile{}
+		convertLinuxProfileToV20160330(api.LinuxProfile, p.LinuxProfile)
+	}
+	if api.WindowsProfile != nil {
+		p.WindowsProfile = &v20160330.WindowsProfile{}
+		convertWindowsProfileToV20160330(api.WindowsProfile, p.WindowsProfile)
+	}
+	if api.DiagnosticsProfile != nil {
+		p.DiagnosticsProfile = &v20160330.DiagnosticsProfile{}
+		convertDiagnosticsProfileToV20160330(api.DiagnosticsProfile, p.DiagnosticsProfile)
+	}
+	if api.JumpboxProfile != nil {
+		p.JumpboxProfile = &v20160330.JumpboxProfile{}
+		convertJumpboxProfileToV20160330(api.JumpboxProfile, p.JumpboxProfile)
+	}
 }
 
 func convertPropertiesToVLabs(api *Properties, vlabsProps *vlabs.Properties) {
 	vlabsProps.ProvisioningState = vlabs.ProvisioningState(api.ProvisioningState)
-	convertOrchestratorProfileToVLabs(&api.OrchestratorProfile, &vlabsProps.OrchestratorProfile)
-	convertMasterProfileToVLabs(&api.MasterProfile, &vlabsProps.MasterProfile)
+	if api.OrchestratorProfile != nil {
+		vlabsProps.OrchestratorProfile = &vlabs.OrchestratorProfile{}
+		convertOrchestratorProfileToVLabs(api.OrchestratorProfile, vlabsProps.OrchestratorProfile)
+	}
+	if api.MasterProfile != nil {
+		vlabsProps.MasterProfile = &vlabs.MasterProfile{}
+		convertMasterProfileToVLabs(api.MasterProfile, vlabsProps.MasterProfile)
+	}
 	vlabsProps.AgentPoolProfiles = []vlabs.AgentPoolProfile{}
 	for _, apiProfile := range api.AgentPoolProfiles {
 		vlabsProfile := &vlabs.AgentPoolProfile{}
 		convertAgentPoolProfileToVLabs(&apiProfile, vlabsProfile)
 		vlabsProps.AgentPoolProfiles = append(vlabsProps.AgentPoolProfiles, *vlabsProfile)
 	}
-	convertLinuxProfileToVLabs(&api.LinuxProfile, &vlabsProps.LinuxProfile)
-	convertWindowsProfileToVLabs(&api.WindowsProfile, &vlabsProps.WindowsProfile)
-	convertServicePrincipalProfileToVLabs(&api.ServicePrincipalProfile, &vlabsProps.ServicePrincipalProfile)
-	convertCertificateProfileToVLabs(&api.CertificateProfile, &vlabsProps.CertificateProfile)
+	if api.LinuxProfile != nil {
+		vlabsProps.LinuxProfile = &vlabs.LinuxProfile{}
+		convertLinuxProfileToVLabs(api.LinuxProfile, vlabsProps.LinuxProfile)
+	}
+	if api.WindowsProfile != nil {
+		vlabsProps.WindowsProfile = &vlabs.WindowsProfile{}
+		convertWindowsProfileToVLabs(api.WindowsProfile, vlabsProps.WindowsProfile)
+	}
+	if api.ServicePrincipalProfile != nil {
+		vlabsProps.ServicePrincipalProfile = &vlabs.ServicePrincipalProfile{}
+		convertServicePrincipalProfileToVLabs(api.ServicePrincipalProfile, vlabsProps.ServicePrincipalProfile)
+	}
+	if api.CertificateProfile != nil {
+		vlabsProps.CertificateProfile = &vlabs.CertificateProfile{}
+		convertCertificateProfileToVLabs(api.CertificateProfile, vlabsProps.CertificateProfile)
+	}
 }
 
 func convertLinuxProfileToV20160930(api *LinuxProfile, v20160930 *v20160930.LinuxProfile) {
@@ -204,7 +276,11 @@ func convertOrchestratorProfileToV20160930(api *OrchestratorProfile, o *v2016093
 }
 
 func convertOrchestratorProfileToV20160330(api *OrchestratorProfile, o *v20160330.OrchestratorProfile) {
-	o.OrchestratorType = v20160330.OrchestratorType(api.OrchestratorType)
+	if strings.HasPrefix(string(api.OrchestratorType), string(v20160330.DCOS)) {
+		o.OrchestratorType = v20160330.OrchestratorType(v20160930.DCOS)
+	} else {
+		o.OrchestratorType = v20160330.OrchestratorType(api.OrchestratorType)
+	}
 }
 
 func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.OrchestratorProfile) {
@@ -233,11 +309,10 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	vlabsProfile.FirstConsecutiveStaticIP = api.FirstConsecutiveStaticIP
 	vlabsProfile.SetSubnet(api.Subnet)
 	vlabsProfile.FQDN = api.FQDN
-	vlabsProfile.StorageProfile = api.StorageProfile
 }
 
 func convertKeyVaultSecretsToVlabs(api *KeyVaultSecrets, vlabsSecrets *vlabs.KeyVaultSecrets) {
-	vlabsSecrets.SourceVault = vlabs.KeyVaultID{ID: api.SourceVault.ID}
+	vlabsSecrets.SourceVault = &vlabs.KeyVaultID{ID: api.SourceVault.ID}
 	vlabsSecrets.VaultCertificates = []vlabs.KeyVaultCertificate{}
 	for _, c := range api.VaultCertificates {
 		cert := vlabs.KeyVaultCertificate{}
@@ -289,7 +364,9 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 }
 
 func convertDiagnosticsProfileToV20160930(api *DiagnosticsProfile, v20160930 *v20160930.DiagnosticsProfile) {
-	convertVMDiagnosticsToV20160930(&api.VMDiagnostics, &v20160930.VMDiagnostics)
+	if api.VMDiagnostics != nil {
+		convertVMDiagnosticsToV20160930(api.VMDiagnostics, v20160930.VMDiagnostics)
+	}
 }
 
 func convertVMDiagnosticsToV20160930(api *VMDiagnostics, v20160930 *v20160930.VMDiagnostics) {
@@ -298,7 +375,9 @@ func convertVMDiagnosticsToV20160930(api *VMDiagnostics, v20160930 *v20160930.VM
 }
 
 func convertDiagnosticsProfileToV20160330(api *DiagnosticsProfile, v20160330 *v20160330.DiagnosticsProfile) {
-	convertVMDiagnosticsToV20160330(&api.VMDiagnostics, &v20160330.VMDiagnostics)
+	if api.VMDiagnostics != nil {
+		convertVMDiagnosticsToV20160330(api.VMDiagnostics, v20160330.VMDiagnostics)
+	}
 }
 
 func convertVMDiagnosticsToV20160330(api *VMDiagnostics, v20160330 *v20160330.VMDiagnostics) {

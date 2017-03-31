@@ -59,6 +59,13 @@
         "description": "The azure deploy environment. Currently support: AzureCloud, AzureChinaCloud"
       },
       "type": "string"
+    },
+    "location": {
+      "defaultValue": "{{GetLocation}}",
+      "metadata": {
+        "description": "Sets the location for all resources in the cluster"
+      },
+      "type": "string"
     }
 {{if  GetClassicMode}}
     ,{{template "classicparams.t" .}}

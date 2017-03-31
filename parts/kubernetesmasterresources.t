@@ -21,8 +21,11 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
-        "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
+{{if not IsVNETIntegrated}}
+        ,
         "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
+{{end}}
       ],
       "location": "[variables('location')]",
       "name": "[variables('virtualNetworkName')]",
@@ -39,10 +42,13 @@
               "addressPrefix": "[variables('subnet')]",
               "networkSecurityGroup": {
                 "id": "[variables('nsgID')]"
-              },
+              }
+{{if not IsVNETIntegrated}}
+              ,
               "routeTable": {
                 "id": "[variables('routeTableID')]"
               }
+{{end}}
             }
           }
         ]
@@ -104,12 +110,14 @@
       },
       "type": "Microsoft.Network/networkSecurityGroups"
     },
+{{if not IsVNETIntegrated}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "name": "[variables('routeTableName')]",
       "type": "Microsoft.Network/routeTables"
     },
+{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
@@ -300,14 +308,33 @@
                 }
               ],
               "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(int(variables('masterFirstAddrOctet4'))))]",
+              "primary": true,
               "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('vnetSubnetID')]"
               }
             }
           }
-        ],
+{{if IsVNETIntegrated}}
+          {{range $seq := loop 2 .MasterProfile.IPAddressCount}}
+          ,
+          {
+            "name": "ipconfig{{$seq}}",
+            "properties": {
+              "primary": false,
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('vnetSubnetID')]"
+              }
+            }
+          }
+          {{end}}
+{{end}}
+        ]
+{{if not IsVNETIntegrated}}
+        ,
         "enableIPForwarding": true
+{{end}}
 {{if .MasterProfile.IsCustomVNET}}
         ,"networkSecurityGroup": {
           "id": "[variables('nsgID')]"
@@ -395,7 +422,7 @@
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]"
       ],
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
       "properties": {
@@ -405,7 +432,7 @@
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
-          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailablitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('targetEnvironment'),' ',variables('apiServerPrivateKey'),' ',variables('caCertificate'),' ',variables('masterFqdnPrefix'),' ',variables('kubeConfigCertificate'),' ',variables('kubeConfigPrivateKey'),' ',variables('username'),' >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
+          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailablitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('targetEnvironment'),' ',variables('networkPolicy'),' ',variables('apiServerPrivateKey'),' ',variables('caCertificate'),' ',variables('masterFqdnPrefix'),' ',variables('kubeConfigCertificate'),' ',variables('kubeConfigPrivateKey'),' ',variables('username'),' >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
         }
       }
     }

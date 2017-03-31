@@ -2,13 +2,16 @@
 
 .PHONY: prereqs build test test_fmt validate-generated fmt lint ci devenv
 
+VERSION=`git describe --always --long --dirty`
+BUILD=`date +%FT%T%z`
+
 prereqs:
 	go get github.com/jteeuwen/go-bindata/...
 
 build: prereqs
 	go generate -v ./...
 	go get .
-	go build -v
+	go build -v -ldflags="-X main.AcsEngineBuildSHA=${VERSION} -X main.AcsEngineBuildTime=${BUILD}"
 	cd test/acs-engine-test; go build -v
 
 test: prereqs test_fmt

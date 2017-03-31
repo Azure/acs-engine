@@ -1,17 +1,14 @@
 {
   "apiVersion": "vlabs",
-  "plan": {},
+  "location": "centralus",
   "properties": {
-    "provisioningState": "",
     "orchestratorProfile": {
       "orchestratorType": "Swarm"
     },
     "masterProfile": {
       "count": 1,
       "dnsPrefix": "masterdns1",
-      "vmSize": "Standard_D2_v2",
-      "firstConsecutiveStaticIP": "172.16.0.5",
-      "storageProfile": "StorageAccountClassic"
+      "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
@@ -23,16 +20,12 @@
           80,
           443,
           8080
-        ],
-        "availabilityProfile": "VirtualMachineScaleSets",
-        "storageProfile": "StorageAccountClassic"
+        ]
       },
       {
         "name": "agentpool2",
         "count": 3,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "VirtualMachineScaleSets",
-        "storageProfile": "StorageAccount"
+        "vmSize": "Standard_D2_v2"
       }
     ],
     "linuxProfile": {
@@ -44,9 +37,6 @@
           }
         ]
       }
-    },
-    "windowsProfile": {},
-    "servicePrincipalProfile": {},
-    "certificateProfile": {}
+    }
   }
 }

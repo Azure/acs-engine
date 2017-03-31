@@ -12,7 +12,10 @@ Here are the steps to deploy a simple Kubernetes cluster:
 4. edit the [Kubernetes example](../examples/kubernetes.json) and fill in the blank strings
 5. [generate the template](acsengine.md#generating-a-template)
 6. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../README.md#deployment-usage)
-7. Temporary workaround when deploying a cluster in a custom VNET with Kubernetes 1.5.3:
+  * To enable the optional network policy enforcement using calico, you have to
+    set the parameter during this step according to this [guide](#optional-enable-network-policy-enforcement-using-calico)
+7. Temporary workaround when deploying a cluster in a custom VNET with
+   Kubernetes 1.5.3:
     1. After a cluster has been created in step 6 get id of the route table resource from Microsoft.Network provider in your resource group. 
        The route table resource id is of the format:
        `/subscriptions/SUBSCRIPTIONID/resourceGroups/RESOURCEGROUPNAME/providers/Microsoft.Network/routeTables/ROUTETABLENAME`
@@ -62,6 +65,38 @@ In the image above, you can see the following parts:
 4. **Networking** - All VMs are assigned an ip address in the 10.240.0.0/16 network.  Each VM is assigned a /24 subnet for their pod CIDR enabling IP per pod.  The proxy running on each VM implements the service network 10.0.0.0/16.
 
 All VMs are in the same private VNET and are fully accessible to each other.
+
+
+## Optional: Enable network policy enforcement using Calico
+
+Using the default configuration, Kubernetes allows communication between all
+Pods within a cluster. To ensure that Pods can only be accessed by authorized
+Pods, a policy enforcement is needed. To enable policy enforcement using Calico
+`azuredeploy.parameters.json` needs to be modified like that:
+
+```json
+"networkPolicy": {
+  "value": "calico"
+}
+```
+
+This will deploy a Calico node controller to every instance of the cluster
+using a Kubernetes DaemonSet. After a successful deployment you should be able
+to see these Pods running in your cluster:
+
+```
+kubectl get pods --namespace kube-system -l k8s-app=calico-node -o wide
+NAME                READY     STATUS    RESTARTS   AGE       IP             NODE
+calico-node-034zh   2/2       Running   0          2h        10.240.255.5   k8s-master-30179930-0
+calico-node-qmr7n   2/2       Running   0          2h        10.240.0.4     k8s-agentpool1-30179930-1
+calico-node-z3p02   2/2       Running   0          2h        10.240.0.5     k8s-agentpool1-30179930-0
+```
+
+Per default Calico still allows all communication within the cluster. Using Kubernetes' NetworkPolicy API, you can define stricter policies. Good resources to get information about that are:
+
+* [NetworkPolicy User Guide](https://kubernetes.io/docs/user-guide/networkpolicies/)
+* [NetworkPolicy Example Walkthrough](https://kubernetes.io/docs/getting-started-guides/network-policy/walkthrough/)
+* [Calico Kubernetes](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/)
 
 ## Create your First Kubernetes Service
 
@@ -148,6 +183,8 @@ After completing this walkthrough you will know how to:
 
 ## Troubleshooting
 
+Scaling your cluster up or down requires different parameters and template than the create. More details here [Scale up](../examples/scale-up/README.md)
+
 If your cluster is not reachable, you can run the following command to check for common failures.
 
 ### Misconfigured Service Principal
@@ -164,6 +201,8 @@ You may need to check to ensure the credentials were provided accurately, and th
 read and **write** permissions to the target Subscription.
 
 `Nov 10 16:35:22 k8s-master-43D6F832-0 docker[3177]: E1110 16:35:22.840688    3201 kubelet_node_status.go:69] Unable to construct api.Node object for kubelet: failed to get external ID from cloud provider: autorest#WithErrorUnlessStatusCode: POST https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/oauth2/token?api-version=1.0 failed with 400 Bad Request: StatusCode=400`
+
+3. [Link](serviceprincipal.md) to documentation on how to create/configure a service principal for an ACS-Engine Kubernetes cluster. 
 
 ## Learning More
 

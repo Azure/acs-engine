@@ -24,6 +24,7 @@ var (
 			DCOS184_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "testing", "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
 			DCOS187_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
 			DCOS188_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "5df43052907c021eeb5de145419a3da1898c58a5"),
+			DCOS190_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "EarlyAccess", "1bdc9e5f7863c6ead141be2f268cb231ad6c1049"),
 		},
 	}
 
@@ -48,7 +49,7 @@ var (
 
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
 func SetPropertiesDefaults(cs *api.ContainerService) (bool, error) {
-	properties := &cs.Properties
+	properties := cs.Properties
 
 	setOrchestratorDefaults(cs)
 
@@ -68,11 +69,17 @@ func SetPropertiesDefaults(cs *api.ContainerService) (bool, error) {
 // setOrchestratorDefaults for orchestrators
 func setOrchestratorDefaults(cs *api.ContainerService) {
 	location := cs.Location
-	a := &cs.Properties
+	a := cs.Properties
 
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+		if a.OrchestratorProfile.KubernetesConfig == nil {
+			a.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
+		}
 		a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
+		if a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "" {
+			a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+		}
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
 		a.OrchestratorProfile.OrchestratorType = api.DCOS188
@@ -83,7 +90,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 func setMasterNetworkDefaults(a *api.Properties) {
 	if !a.MasterProfile.IsCustomVNET() {
 		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-			a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
+			if a.OrchestratorProfile.IsVNETIntegrated() {
+				// Use a single large subnet for all masters, agents and pods.
+				a.MasterProfile.Subnet = DefaultKubernetesSubnet
+			} else {
+				a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
+			}
 			a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
 		} else if a.HasWindows() {
 			a.MasterProfile.Subnet = DefaultSwarmWindowsMasterSubnet
@@ -91,6 +103,16 @@ func setMasterNetworkDefaults(a *api.Properties) {
 		} else {
 			a.MasterProfile.Subnet = DefaultMasterSubnet
 			a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveStaticIP
+		}
+	}
+
+	// Allocate IP addresses for containers if VNET integration is enabled.
+	// A custom count specified by the user overrides this value.
+	if a.MasterProfile.IPAddressCount == 0 {
+		if a.OrchestratorProfile.IsVNETIntegrated() {
+			a.MasterProfile.IPAddressCount = DefaultAgentMultiIPAddressCount
+		} else {
+			a.MasterProfile.IPAddressCount = DefaultAgentIPAddressCount
 		}
 	}
 }
@@ -112,11 +134,23 @@ func setAgentNetworkDefaults(a *api.Properties) {
 			subnetCounter++
 		}
 	}
-	// set default OSType to Linux
+
 	for i := range a.AgentPoolProfiles {
 		profile := &a.AgentPoolProfiles[i]
+
+		// set default OSType to Linux
 		if profile.OSType == "" {
 			profile.OSType = api.Linux
+		}
+
+		// Allocate IP addresses for containers if VNET integration is enabled.
+		// A custom count specified by the user overrides this value.
+		if profile.IPAddressCount == 0 {
+			if a.OrchestratorProfile.IsVNETIntegrated() {
+				profile.IPAddressCount = DefaultAgentMultiIPAddressCount
+			} else {
+				profile.IPAddressCount = DefaultAgentIPAddressCount
+			}
 		}
 	}
 }
@@ -157,6 +191,10 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		ips = append(ips, ip)
 	}
 
+	if a.CertificateProfile == nil {
+		a.CertificateProfile = &api.CertificateProfile{}
+	}
+
 	// use the specified Certificate Authority pair, or generate a new pair
 	var caPair *PkiKeyCertPair
 	if len(a.CertificateProfile.CaCertificate) != 0 && len(a.CertificateProfile.GetCAPrivateKey()) != 0 {
@@ -187,8 +225,9 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 }
 
 func certGenerationRequired(a *api.Properties) bool {
-	if len(a.CertificateProfile.APIServerCertificate) > 0 || len(a.CertificateProfile.APIServerPrivateKey) > 0 ||
-		len(a.CertificateProfile.ClientCertificate) > 0 || len(a.CertificateProfile.ClientPrivateKey) > 0 {
+	if a.CertificateProfile != nil &&
+		(len(a.CertificateProfile.APIServerCertificate) > 0 || len(a.CertificateProfile.APIServerPrivateKey) > 0 ||
+			len(a.CertificateProfile.ClientCertificate) > 0 || len(a.CertificateProfile.ClientPrivateKey) > 0) {
 		return false
 	}
 

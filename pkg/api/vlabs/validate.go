@@ -12,6 +12,7 @@ import (
 func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case DCOS:
+	case DCOS190:
 	case DCOS188:
 	case DCOS187:
 	case DCOS184:
@@ -21,6 +22,11 @@ func (o *OrchestratorProfile) Validate() error {
 	case SwarmMode:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
+	}
+
+	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil &&
+		(o.KubernetesConfig.KubernetesImageBase != "" || o.KubernetesConfig.NetworkPolicy != "") {
+		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
 	}
 
 	return nil
@@ -40,8 +46,8 @@ func (m *MasterProfile) Validate() error {
 	if e := validateName(m.VMSize, "MasterProfile.VMSize"); e != nil {
 		return e
 	}
-	if e := validateStorageProfile(m.StorageProfile); e != nil {
-		return e
+	if m.IPAddressCount != 0 && (m.IPAddressCount < MinIPAddressCount || m.IPAddressCount > MaxIPAddressCount) {
+		return fmt.Errorf("MasterProfile.IPAddressCount needs to be in the range [%d,%d]", MinIPAddressCount, MaxIPAddressCount)
 	}
 	return nil
 }
@@ -98,6 +104,9 @@ func (a *AgentPoolProfile) Validate() error {
 	if len(a.Ports) == 0 && len(a.DNSPrefix) > 0 {
 		return fmt.Errorf("AgentPoolProfile.Ports must be non empty when AgentPoolProfile.DNSPrefix is specified")
 	}
+	if a.IPAddressCount != 0 && (a.IPAddressCount < MinIPAddressCount || a.IPAddressCount > MaxIPAddressCount) {
+		return fmt.Errorf("AgentPoolProfile.IPAddressCount needs to be in the range [%d,%d]", MinIPAddressCount, MaxIPAddressCount)
+	}
 	if e := validateStorageProfile(a.StorageProfile); e != nil {
 		return e
 	}
@@ -146,6 +155,9 @@ func (a *Properties) Validate() error {
 	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
 	}
+	if e := a.validateNetworkPolicy(); e != nil {
+		return e
+	}
 	if e := a.MasterProfile.Validate(); e != nil {
 		return e
 	}
@@ -158,19 +170,6 @@ func (a *Properties) Validate() error {
 
 	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.Secret) == 0 {
 		return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
-	}
-
-	if a.MasterProfile.StorageProfile == StorageAccountClassic {
-		switch a.OrchestratorProfile.OrchestratorType {
-		case DCOS:
-		case DCOS173:
-		case DCOS184:
-		case DCOS187:
-		case DCOS188:
-		case Swarm:
-		default:
-			return fmt.Errorf("StorageAccountClassic is not supported in MasterProfile for Orchestrator %s \n", a.OrchestratorProfile.OrchestratorType)
-		}
 	}
 
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
@@ -186,6 +185,17 @@ func (a *Properties) Validate() error {
 				return fmt.Errorf("unknown availability profile type '%s' for agent pool '%s'.  Specify either %s, or %s", agentPoolProfile.AvailabilityProfile, agentPoolProfile.Name, AvailabilitySet, VirtualMachineScaleSets)
 			}
 		}
+		switch agentPoolProfile.StorageProfile {
+		case StorageAccount:
+		case ManagedDisks:
+		case "":
+		default:
+			{
+				return fmt.Errorf("unknown storage type '%s' for agent pool '%s'.  Specify either %s, or %s", agentPoolProfile.StorageProfile, agentPoolProfile.Name, StorageAccount, ManagedDisks)
+			}
+		}
+		/* this switch statement is left to protect newly added orchestrators until they support Managed Disks*/
+
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
@@ -193,23 +203,12 @@ func (a *Properties) Validate() error {
 			case DCOS184:
 			case DCOS187:
 			case DCOS188:
+			case DCOS190:
 			case Swarm:
+			case Kubernetes:
 			case SwarmMode:
 			default:
 				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
-			}
-		}
-
-		if agentPoolProfile.StorageProfile == StorageAccountClassic {
-			switch a.OrchestratorProfile.OrchestratorType {
-			case DCOS:
-			case DCOS173:
-			case DCOS184:
-			case DCOS187:
-			case DCOS188:
-			case Swarm:
-			default:
-				return fmt.Errorf("StorageAccountClassic is not supported in agentPoolProfile for Orchestrator %s \n", a.OrchestratorProfile.OrchestratorType)
 			}
 		}
 
@@ -220,6 +219,7 @@ func (a *Properties) Validate() error {
 			case DCOS184:
 			case DCOS187:
 			case DCOS188:
+			case DCOS190:
 			default:
 				return fmt.Errorf("Agent Type attributes are only supported for DCOS.")
 			}
@@ -255,6 +255,38 @@ func (a *Properties) Validate() error {
 	if e := validateVNET(a); e != nil {
 		return e
 	}
+	return nil
+}
+
+func (a *Properties) validateNetworkPolicy() error {
+	var networkPolicy string
+
+	switch a.OrchestratorProfile.OrchestratorType {
+	case Kubernetes:
+		if a.OrchestratorProfile.KubernetesConfig != nil {
+			networkPolicy = a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
+		}
+	default:
+		return nil
+	}
+
+	// Check NetworkPolicy has a valid value.
+	valid := false
+	for _, policy := range NetworkPolicyValues {
+		if networkPolicy == policy {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return fmt.Errorf("unknown networkPolicy '%s' specified", networkPolicy)
+	}
+
+	// Temporary safety check, to be removed when Windows support is added.
+	if (networkPolicy == "calico" || networkPolicy == "azure") && a.HasWindows() {
+		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
+	}
+
 	return nil
 }
 
@@ -304,13 +336,12 @@ func validateUniqueProfileNames(profiles []AgentPoolProfile) error {
 
 func validateStorageProfile(storageProfile string) error {
 	switch storageProfile {
-	case StorageAccountClassic:
 	case StorageAccount:
 	case ManagedDisks:
 	case "":
 	default:
 		{
-			return fmt.Errorf("Unknown storage type '%s' for agent pool. Specify either %s, %s or %s", storageProfile, StorageAccountClassic, StorageAccount, ManagedDisks)
+			return fmt.Errorf("Unknown storage type '%s' for agent pool. Specify either %s or %s", storageProfile, StorageAccount, ManagedDisks)
 		}
 	}
 	return nil

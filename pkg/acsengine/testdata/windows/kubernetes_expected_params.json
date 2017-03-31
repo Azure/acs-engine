@@ -65,6 +65,9 @@
   "linuxAdminUsername": {
     "value": "azureuser"
   },
+  "location": {
+    "value": ""
+  },
   "masterEndpointDNSNamePrefix": {
     "value": "masterdns1"
   },
@@ -73,6 +76,9 @@
   },
   "masterVMSize": {
     "value": "Standard_D2_v2"
+  },
+  "networkPolicy": {
+    "value": "none"
   },
   "servicePrincipalClientId": {
     "value": "ServicePrincipalClientID"

@@ -1,7 +1,9 @@
 acs-engine.exe
 acs-engine
 _output/
+_input/
 .vscode
 .DS_Store
 test/user.env
 user.env
+test/acs-engine-test/acs-engine-test

@@ -17,6 +17,9 @@
   "linuxAdminUsername": {
     "value": "azureuser"
   },
+  "location": {
+    "value": ""
+  },
   "masterCount": {
     "value": 3
   },

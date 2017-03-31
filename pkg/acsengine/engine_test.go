@@ -31,10 +31,13 @@ func TestExpected(t *testing.T) {
 			t.Errorf("Loading file %s got error: %s", tuple.APIModelFilename, err.Error())
 			continue
 		}
+
 		if version == v20160930.APIVersion {
 			// v20160930 need certificate profile to match expected template
-			addV20160930CertificateProfile(&containerService.Properties.CertificateProfile)
+			containerService.Properties.CertificateProfile = &api.CertificateProfile{}
+			addV20160930CertificateProfile(containerService.Properties.CertificateProfile)
 		}
+
 		expectedJson, e1 := ioutil.ReadFile(tuple.GetExpectedArmTemplateFilename())
 		if e1 != nil {
 			t.Error(e1.Error())
@@ -112,7 +115,8 @@ func TestExpected(t *testing.T) {
 			}
 			if version == v20160930.APIVersion {
 				// v20160930 need certificate profile to match expected template
-				addV20160930CertificateProfile(&containerService.Properties.CertificateProfile)
+				containerService.Properties.CertificateProfile = &api.CertificateProfile{}
+				addV20160930CertificateProfile(containerService.Properties.CertificateProfile)
 			}
 		}
 	}
@@ -168,8 +172,7 @@ func IterateTestFilesDirectory(directory string, APIModelTestFiles *[]APIModelTe
 				return e
 			}
 		} else {
-			// Skip files like .DS_Store
-			if !strings.Contains(file.Name(), "_expected") && !strings.HasPrefix(file.Name(), ".") {
+			if !strings.Contains(file.Name(), "_expected") && strings.HasSuffix(file.Name(), ".json") {
 				tuple := &APIModelTestFile{}
 				tuple.APIModelFilename = filepath.Join(directory, file.Name())
 				if _, ferr := os.Stat(tuple.GetExpectedArmTemplateFilename()); os.IsNotExist(ferr) {

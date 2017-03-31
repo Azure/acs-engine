@@ -16,28 +16,28 @@ type ResourcePurchasePlan struct {
 // ContainerService complies with the ARM model of
 // resource definition in a JSON template.
 type ContainerService struct {
-	ID       string               `json:"id,omitempty"`
-	Location string               `json:"location,omitempty"`
-	Name     string               `json:"name,omitempty"`
-	Plan     ResourcePurchasePlan `json:"plan,omitempty"`
-	Tags     map[string]string    `json:"tags,omitempty"`
-	Type     string               `json:"type,omitempty"`
+	ID       string                `json:"id,omitempty"`
+	Location string                `json:"location,omitempty"`
+	Name     string                `json:"name,omitempty"`
+	Plan     *ResourcePurchasePlan `json:"plan,omitempty"`
+	Tags     map[string]string     `json:"tags,omitempty"`
+	Type     string                `json:"type,omitempty"`
 
-	Properties Properties `json:"properties"`
+	Properties *Properties `json:"properties"`
 }
 
 // Properties represents the ACS cluster definition
 type Properties struct {
-	ProvisioningState       ProvisioningState       `json:"provisioningState"`
-	OrchestratorProfile     OrchestratorProfile     `json:"orchestratorProfile"`
-	MasterProfile           MasterProfile           `json:"masterProfile"`
-	AgentPoolProfiles       []AgentPoolProfile      `json:"agentPoolProfiles"`
-	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
-	WindowsProfile          WindowsProfile          `json:"windowsProfile"`
-	DiagnosticsProfile      DiagnosticsProfile      `json:"diagnosticsProfile"`
-	JumpboxProfile          JumpboxProfile          `json:"jumpboxProfile"`
-	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
-	CustomProfile           CustomProfile           `json:"customProfile"`
+	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
+	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
+	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
+	AgentPoolProfiles       []AgentPoolProfile       `json:"agentPoolProfiles,omitempty"`
+	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
+	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
+	DiagnosticsProfile      *DiagnosticsProfile      `json:"diagnosticsProfile,omitempty"`
+	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"`
+	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
+	CustomProfile           *CustomProfile           `json:"customProfile,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -142,7 +142,7 @@ type JumpboxProfile struct {
 // DiagnosticsProfile setting to enable/disable capturing
 // diagnostics for VMs hosting container cluster.
 type DiagnosticsProfile struct {
-	VMDiagnostics VMDiagnostics `json:"vmDiagnostics"`
+	VMDiagnostics *VMDiagnostics `json:"vmDiagnostics"`
 }
 
 // VMDiagnostics contains settings to on/off boot diagnostics collection
@@ -156,7 +156,7 @@ type VMDiagnostics struct {
 	// blob domain. i.e. https://storageaccount.blob.core.windows.net/
 	// This field is readonly as ACS RP will create a storage account
 	// for the customer.
-	StorageURL neturl.URL `json:"storageUrl"`
+	StorageURL *neturl.URL `json:"storageUrl"`
 }
 
 // OrchestratorType defines orchestrators supported by ACS
