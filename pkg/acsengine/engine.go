@@ -993,17 +993,18 @@ func getEtcdDisk(orchestratorType api.OrchestratorType, m *api.MasterProfile) st
 	}
 	var buf bytes.Buffer
 	buf.WriteString("\"dataDisks\": [\n")
-	dataDisks := `            {
+	etcdDisks := `            {
               "createOption": "Empty",
               "diskSizeGB": "%d",
               "lun": %d,
-              "name": "[concat(variables('%sVMNamePrefix'), copyIndex(),'-datadisk%d')]",
+              "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'-etcddisk')]",
               "vhd": {
-                "uri": "[concat('http://',variables('storageAccountPrefixes')[mod(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(add(div(copyIndex(),variables('maxVMsPerStorageAccount')),variables('%sStorageAccountOffset')),variables('dataStorageAccountPrefixSeed')),variables('storageAccountPrefixesCount'))],variables('%sDataAccountName'),'.blob.core.windows.net/vhds/',variables('%sVMNamePrefix'),copyIndex(), '--datadisk%d.vhd')]"
-              }
+                "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',    variables('masterVMNamePrefix'),copyIndex(),'-etcddisk.vhd')]"
+               }
             }`
+
 	// if m.StorageProfile == api.StorageAccount {
-	buf.WriteString(fmt.Sprintf(dataDisks, 1, 0, "master", 0, "master", "master", "master", "master", 0))
+	buf.WriteString(fmt.Sprintf(etcdDisks, 1, 0))
 	// }
 	buf.WriteString("\n          ],")
 	return buf.String()
