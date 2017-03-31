@@ -111,7 +111,7 @@
     "value": "Standard_D2_v2"
   },
   "dcosBootstrapURL": {
-    "value": "https://dcosio.azureedge.net/dcos/stable/bootstrap/5df43052907c021eeb5de145419a3da1898c58a5.bootstrap.tar.xz"
+    "value": "https://dcosio.azureedge.net/dcos/stable/bootstrap/58fd0833ce81b6244fc73bf65b5deb43217b0bd7.bootstrap.tar.xz"
   },
   "firstConsecutiveStaticIP": {
     "value": "172.16.0.5"
