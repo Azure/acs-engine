@@ -110,40 +110,26 @@ function setDockerOpts () {
 }
 
 function configAzureNetworkPolicy() {
-    # CNI release version. Note this may be different than the spec version in config file below.
-    CNI_RELEASE_VERSION=v0.4.0
-    AZURE_PLUGIN_VERSION=v0.7
-
-    # Create network config file.
     CNI_CONFIG_DIR=/etc/cni/net.d
-    NET_CONFIG_FILE=$CNI_CONFIG_DIR/10-azure.conf
     mkdir -p $CNI_CONFIG_DIR
-
-    cat <<- EOF > $NET_CONFIG_FILE
-	{
-	  "cniVersion": "0.2.0",
-	  "name": "azure",
-	  "type": "azure-vnet",
-	  "master": "eth0",
-	  "bridge": "azure0",
-	  "ipam": {
-	    "type": "azure-vnet-ipam"
-	  }
-	}
-	EOF
 
     chown -R root:root $CNI_CONFIG_DIR
     chmod 755 $CNI_CONFIG_DIR
-    chmod 644 $NET_CONFIG_FILE
 
     # Download Azure VNET CNI plugins.
     CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
 
-    downloadUrl https://github.com/Azure/azure-container-networking/releases/download/$AZURE_PLUGIN_VERSION/azure-cni-linux-amd64-$AZURE_PLUGIN_VERSION.tgz | tar -xz -C $CNI_BIN_DIR
-    downloadUrl https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VERSION/cni-amd64-$CNI_RELEASE_VERSION.tgz | tar -xz -C $CNI_BIN_DIR ./loopback
+    # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
+    downloadUrl https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz | tar -xz -C $CNI_BIN_DIR
+    # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
+    downloadUrl https://acs-mirror.azureedge.net/cni/cni-amd64-latest.tgz | tar -xz -C $CNI_BIN_DIR ./loopback
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
+
+    # Copy config file
+    mv $CNI_BIN_DIR/10-azure.conf $CNI_CONFIG_DIR/
+    chmod 644 $CNI_CONFIG_DIR/10-azure.conf
 
     # Dump ebtables rules.
     /sbin/ebtables -t nat --list

@@ -19,7 +19,7 @@ node {
 australiaeast australiasoutheast \
 brazilsouth \
 canadacentral canadaeast \
-centralindia southindia westindia \
+centralindia southindia \
 centralus eastus2 eastus northcentralus southcentralus westcentralus westus2 westus \
 eastasia southeastasia \
 koreacentral koreasouth \
