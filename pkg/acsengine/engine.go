@@ -32,6 +32,7 @@ const (
 	dcosCustomData188 = "dcoscustomdata188.t"
 	dcosCustomData190 = "dcoscustomdata190.t"
 	dcosProvision     = "dcosprovision.sh"
+	dcosAgentScript   = "dcosagentcustomscript.sh"
 )
 
 const (
@@ -1069,6 +1070,25 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 		roleFileContents = "touch /etc/mesosphere/roles/slave_public"
 	} else {
 		roleFileContents = "touch /etc/mesosphere/roles/slave"
+	}
+
+	//look for an agent specific script to add
+	as, err2 := Asset(dcosAgentScript)
+
+	if err2 == nil {
+		agentScript := string(as)
+
+		if strings.Contains(agentScript, "'") {
+			panic(fmt.Sprintf("BUG: %s may not contain character '", dcosProvision))
+		}
+
+		var buf bytes.Buffer
+		buf.WriteString(roleFileContents)
+		buf.WriteString("\n")
+		buf.WriteString(agentScript)
+		roleFileContents = buf.String()
+	} else {
+		panic(fmt.Sprintf("BUG: %s", err2.Error()))
 	}
 
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
