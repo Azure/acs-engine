@@ -526,7 +526,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			return getDataDisks(profile)
 		},
 		"GetEtcdDisk": func() string {
-			return getEtcdDisk(cs.Properties.OrchestratorProfile.OrchestratorType, &cs.Properties.MasterProfile)
+			return getEtcdDisk(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.MasterProfile)
 		},
 		"GetDCOSMasterCustomData": func() string {
 			masterProvisionScript := getDCOSMasterProvisionScript()
