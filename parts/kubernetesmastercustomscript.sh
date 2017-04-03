@@ -169,6 +169,15 @@ function configNetworkPolicy() {
     fi
 }
 
+<<<<<<< 26f856000b9a5bfb191f5425972cce1c6a23d7bc
+=======
+# function ensureEtcd() {
+    #systemctl stop etcd
+    #rm -rf /var/lib/etcd/default
+    #systemctl restart etcd
+# }
+
+>>>>>>> etcd update
 function ensureDocker() {
     systemctl enable docker
     systemctl restart docker
@@ -283,6 +292,10 @@ extractKubectl
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     writeKubeConfig
     ensureKubectl
+<<<<<<< 26f856000b9a5bfb191f5425972cce1c6a23d7bc
+=======
+    # ensureEtcd
+>>>>>>> etcd update
     ensureApiserver
 fi
 
