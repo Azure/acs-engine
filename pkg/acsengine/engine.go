@@ -1003,9 +1003,7 @@ func getEtcdDisk(orchestratorType api.OrchestratorType, m *api.MasterProfile) st
                }
             }`
 
-	// if m.StorageProfile == api.StorageAccount {
 	buf.WriteString(fmt.Sprintf(etcdDisks, 1, 0))
-	// }
 	buf.WriteString("\n          ],")
 	return buf.String()
 }
