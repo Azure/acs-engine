@@ -6,7 +6,7 @@
     },
     "masterProfile": {
       "count": 3,
-      "dnsPrefix": "masterdns1",
+      "dnsPrefix": "",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
@@ -19,7 +19,7 @@
         "name": "agentpublic",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "dnsPrefix": "agentpublic1",
+        "dnsPrefix": "",
         "ports": [
           80,
           443,
@@ -32,7 +32,7 @@
       "ssh": {
         "publicKeys": [
           {
-            "keyData": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+            "keyData": ""
           }
         ]
       }

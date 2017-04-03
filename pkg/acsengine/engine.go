@@ -390,7 +390,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		dcosBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOS188_BootstrapDownloadURL
 		switch properties.OrchestratorProfile.OrchestratorType {
 		case api.DCOS:
-			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188_BootstrapDownloadURL
+			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190_BootstrapDownloadURL
 		case api.DCOS173:
 			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS173_BootstrapDownloadURL
 		case api.DCOS184:
@@ -734,11 +734,11 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 	if orchestratorType == api.DCOS190 {
 		switch masterCount {
 		case 1:
-			return "f53b7dec83de900ef55ade839d9730237b0c7454"
+			return "bcc883b7a3191412cf41824bdee06c1142187a0b"
 		case 3:
-			return "06b50f9dcce85789b858b03ff7f86af6d1a95519"
+			return "dcff7e24c0c1827bebeb7f1a806f558054481b33"
 		case 5:
-			return "32dafb5eeb752025ed70fa9e5ce850e7ff42ba38"
+			return "b41bfa84137a6374b2ff5eb1655364d7302bd257"
 		}
 	} else if orchestratorType == api.DCOS188 {
 		switch masterCount {
