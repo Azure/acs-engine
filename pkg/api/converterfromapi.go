@@ -363,9 +363,10 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	}
 }
 
-func convertDiagnosticsProfileToV20160930(api *DiagnosticsProfile, v20160930 *v20160930.DiagnosticsProfile) {
+func convertDiagnosticsProfileToV20160930(api *DiagnosticsProfile, dp *v20160930.DiagnosticsProfile) {
 	if api.VMDiagnostics != nil {
-		convertVMDiagnosticsToV20160930(api.VMDiagnostics, v20160930.VMDiagnostics)
+		dp.VMDiagnostics = &v20160930.VMDiagnostics{}
+		convertVMDiagnosticsToV20160930(api.VMDiagnostics, dp.VMDiagnostics)
 	}
 }
 
@@ -374,9 +375,10 @@ func convertVMDiagnosticsToV20160930(api *VMDiagnostics, v20160930 *v20160930.VM
 	v20160930.StorageURL = api.StorageURL
 }
 
-func convertDiagnosticsProfileToV20160330(api *DiagnosticsProfile, v20160330 *v20160330.DiagnosticsProfile) {
+func convertDiagnosticsProfileToV20160330(api *DiagnosticsProfile, dp *v20160330.DiagnosticsProfile) {
 	if api.VMDiagnostics != nil {
-		convertVMDiagnosticsToV20160330(api.VMDiagnostics, v20160330.VMDiagnostics)
+		dp.VMDiagnostics = &v20160330.VMDiagnostics{}
+		convertVMDiagnosticsToV20160330(api.VMDiagnostics, dp.VMDiagnostics)
 	}
 }
 
