@@ -37,9 +37,6 @@
     },
     "masterVMSize": {
       "allowedValues": [
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A10",
         "Standard_A11",
         "Standard_A2",
@@ -270,9 +267,6 @@
     },
     "privatewinVMSize": {
       "allowedValues": [
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A10",
         "Standard_A11",
         "Standard_A2",
@@ -503,9 +497,6 @@
     },
     "publicwin1VMSize": {
       "allowedValues": [
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A10",
         "Standard_A11",
         "Standard_A2",
@@ -795,15 +786,6 @@
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]",
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "vmSizesMap": {
-      "Basic_A2": {
-        "storageAccountType": "Standard_LRS"
-      },
-      "Basic_A3": {
-        "storageAccountType": "Standard_LRS"
-      },
-      "Basic_A4": {
-        "storageAccountType": "Standard_LRS"
-      },
       "Standard_A10": {
         "storageAccountType": "Standard_LRS"
       },

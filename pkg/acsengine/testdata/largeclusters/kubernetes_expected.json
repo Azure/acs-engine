@@ -229,11 +229,6 @@
     },
     "agentpool10VMSize": {
       "allowedValues": [
-        "Basic_A0",
-        "Basic_A1",
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A0",
         "Standard_A1",
         "Standard_A1_v2",
@@ -576,11 +571,6 @@
     },
     "agentpool11VMSize": {
       "allowedValues": [
-        "Basic_A0",
-        "Basic_A1",
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A0",
         "Standard_A1",
         "Standard_A1_v2",
@@ -923,11 +913,6 @@
     },
     "agentpool12VMSize": {
       "allowedValues": [
-        "Basic_A0",
-        "Basic_A1",
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A0",
         "Standard_A1",
         "Standard_A1_v2",
@@ -1270,11 +1255,6 @@
     },
     "agentpool1VMSize": {
       "allowedValues": [
-        "Basic_A0",
-        "Basic_A1",
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A0",
         "Standard_A1",
         "Standard_A1_v2",
@@ -1617,11 +1597,6 @@
     },
     "agentpool2VMSize": {
       "allowedValues": [
-        "Basic_A0",
-        "Basic_A1",
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A0",
         "Standard_A1",
         "Standard_A1_v2",
@@ -1964,11 +1939,6 @@
     },
     "agentpool3VMSize": {
       "allowedValues": [
-        "Basic_A0",
-        "Basic_A1",
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A0",
         "Standard_A1",
         "Standard_A1_v2",
@@ -2311,11 +2281,6 @@
     },
     "agentpool4VMSize": {
       "allowedValues": [
-        "Basic_A0",
-        "Basic_A1",
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A0",
         "Standard_A1",
         "Standard_A1_v2",
@@ -2658,11 +2623,6 @@
     },
     "agentpool5VMSize": {
       "allowedValues": [
-        "Basic_A0",
-        "Basic_A1",
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A0",
         "Standard_A1",
         "Standard_A1_v2",
@@ -3005,11 +2965,6 @@
     },
     "agentpool6VMSize": {
       "allowedValues": [
-        "Basic_A0",
-        "Basic_A1",
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A0",
         "Standard_A1",
         "Standard_A1_v2",
@@ -3352,11 +3307,6 @@
     },
     "agentpool7VMSize": {
       "allowedValues": [
-        "Basic_A0",
-        "Basic_A1",
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A0",
         "Standard_A1",
         "Standard_A1_v2",
@@ -3699,11 +3649,6 @@
     },
     "agentpool8VMSize": {
       "allowedValues": [
-        "Basic_A0",
-        "Basic_A1",
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A0",
         "Standard_A1",
         "Standard_A1_v2",
@@ -4046,11 +3991,6 @@
     },
     "agentpool9VMSize": {
       "allowedValues": [
-        "Basic_A0",
-        "Basic_A1",
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A0",
         "Standard_A1",
         "Standard_A1_v2",
@@ -4313,9 +4253,6 @@
     },
     "masterVMSize": {
       "allowedValues": [
-        "Basic_A2",
-        "Basic_A3",
-        "Basic_A4",
         "Standard_A10",
         "Standard_A11",
         "Standard_A2",
@@ -4762,15 +4699,6 @@
     "username": "[parameters('linuxAdminUsername')]",
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "vmSizesMap": {
-      "Basic_A2": {
-        "storageAccountType": "Standard_LRS"
-      },
-      "Basic_A3": {
-        "storageAccountType": "Standard_LRS"
-      },
-      "Basic_A4": {
-        "storageAccountType": "Standard_LRS"
-      },
       "Standard_A10": {
         "storageAccountType": "Standard_LRS"
       },

@@ -30,7 +30,7 @@ Get-AllSizes() {
 		#Write-Output $location.Location
 		$sizes = Get-AzureRmVMSize -Location $location.Location
 		ForEach ($size in $sizes) {
-			if (!$sizeMap.ContainsKey($size.Name)) {
+			if (!$sizeMap.ContainsKey($size.Name) -and !($size.Name.split('_')[0] -eq 'BASIC')) {
 				$sizeMap.Add($size.Name, $size)
 			}	
 		}
