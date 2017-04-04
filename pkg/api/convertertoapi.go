@@ -301,6 +301,8 @@ func convertV20160330MasterProfile(v20160330 *v20160330.MasterProfile, api *Mast
 	api.DNSPrefix = v20160330.DNSPrefix
 	api.FQDN = v20160330.FQDN
 	api.Subnet = v20160330.GetSubnet()
+	// Set default VMSize
+	api.VMSize = "Standard_D2_v2"
 }
 
 func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
@@ -333,6 +335,10 @@ func convertV20160330AgentPoolProfile(v20160330 *v20160330.AgentPoolProfile, api
 	api.Count = v20160330.Count
 	api.VMSize = v20160330.VMSize
 	api.DNSPrefix = v20160330.DNSPrefix
+	if api.DNSPrefix != "" {
+		// Set default Ports when DNSPrefix specified
+		api.Ports = []int{80, 443, 8080}
+	}
 	api.FQDN = v20160330.FQDN
 	api.OSType = OSType(v20160330.OSType)
 	api.Subnet = v20160330.GetSubnet()
