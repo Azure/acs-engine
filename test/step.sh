@@ -34,6 +34,11 @@ deploy_template)
   deploy_template
 ;;
 
+get_node_count)
+  export OUTPUT="${ROOT}/_output/${INSTANCE_NAME}"
+  get_node_count
+;;
+
 validate)
   export OUTPUT="${ROOT}/_output/${INSTANCE_NAME}"
   export SSH_KEY="${OUTPUT}/id_rsa"
