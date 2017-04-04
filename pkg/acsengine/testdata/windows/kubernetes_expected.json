@@ -623,7 +623,7 @@
     "agentpool1StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),variables('agentpool1Index'))]",
     "agentpool1StorageAccountsCount": "[add(div(variables('agentpool1Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('agentpool1Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('agentpool1Count'), variables('maxVMsPerStorageAccount')),1)))]",
     "agentpool1SubnetName": "[variables('subnetName')]",
-    "agentpool1VMNamePrefix": "[concat(substring(variables('nameSuffix'), 0, 5), 'acs', add(900,variables('agentpool1Index')))]",
+    "agentpool1VMNamePrefix": "[concat(variables('winResourceNamePrefix'), 'acs', add(900,variables('agentpool1Index')))]",
     "agentpool1VMSize": "[parameters('agentpool1VMSize')]",
     "agentpool1VnetSubnetID": "[variables('vnetSubnetID')]",
     "allocateNodeCidrs": true,
@@ -1041,6 +1041,7 @@
     "vnetCidr": "10.0.0.0/8",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
+    "winResourceNamePrefix": "[substring(variables('nameSuffix'), 0, 5)]",
     "windowsAdminPassword": "[parameters('windowsAdminPassword')]",
     "windowsAdminUsername": "[parameters('windowsAdminUsername')]",
     "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Copy-Item $inputFile $outputFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
@@ -1150,7 +1151,8 @@
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]"
+        "creationSource": "[concat('acsengine-', variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]",
+        "resourceNameSuffix": "[variables('winResourceNamePrefix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -1550,7 +1552,8 @@
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]",
+        "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },

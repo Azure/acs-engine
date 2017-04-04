@@ -1470,7 +1470,8 @@
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]"
+        "creationSource": "[concat('acsengine-', variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]",
+        "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -1610,7 +1611,8 @@
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('agentpool2VMNamePrefix'), copyIndex(variables('agentpool2Offset')))]"
+        "creationSource": "[concat('acsengine-', variables('agentpool2VMNamePrefix'), copyIndex(variables('agentpool2Offset')))]",
+        "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
@@ -1997,7 +1999,8 @@
         }
       },
       "tags": {
-        "creationSource": "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]"
+        "creationSource": "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]",
+        "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
     },

@@ -356,7 +356,8 @@
       ],
       "tags":
       {
-        "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]"
+        "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]",
+        "resourceNameSuffix" : "[variables('nameSuffix')]"
       },
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
