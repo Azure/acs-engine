@@ -589,6 +589,7 @@
     "agentSubnetName": "[concat(variables('orchestratorName'), '-agentsubnet')]",
     "agentVMNamePrefix": "[concat(variables('orchestratorName'), '-agent-', variables('nameSuffix'))]",
     "agentVMSize": "[parameters('agentVMSize')]",
+    "agentVMSizeTier": "[(split(parameters('agentVMSize'),'_')[0]]",
     "agentVnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentSubnetName'))]",
     "agentWindowsBackendPort": 3389,
     "agentWindowsOffer": "WindowsServer",
@@ -1304,7 +1305,7 @@
       "sku": {
         "capacity": "[variables('agentCount')]",
         "name": "[variables('agentVMSize')]",
-        "tier": "Standard"
+        "tier": "[variables('agentVMSizeTier')]"
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentVMNamePrefix'), '-vmss')]"

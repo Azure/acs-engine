@@ -638,6 +638,7 @@
     "agent128SubnetName": "[concat(variables('orchestratorName'), '-agent128subnet')]",
     "agent128VMNamePrefix": "[concat(variables('orchestratorName'), '-agent128-', variables('nameSuffix'))]",
     "agent128VMSize": "[parameters('agent128VMSize')]",
+    "agent128VMSizeTier": "[(split(parameters('agent128VMSize'),'_')[0]]",
     "agent128VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agent128SubnetName'))]",
     "agent1publicCount": "[parameters('agent1publicCount')]",
     "agent1publicEndpointDNSNamePrefix": "[tolower(parameters('agent1publicEndpointDNSNamePrefix'))]",
@@ -653,6 +654,7 @@
     "agent1publicSubnetName": "[concat(variables('orchestratorName'), '-agent1publicsubnet')]",
     "agent1publicVMNamePrefix": "[concat(variables('orchestratorName'), '-agent1public-', variables('nameSuffix'))]",
     "agent1publicVMSize": "[parameters('agent1publicVMSize')]",
+    "agent1publicVMSizeTier": "[(split(parameters('agent1publicVMSize'),'_')[0]]",
     "agent1publicVnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agent1publicSubnetName'))]",
     "agent1publicWindowsRDPEndRangeStop": "[add(variables('agent1publicWindowsRDPNatRangeStart'), add(variables('agent1publicCount'),variables('agent1publicCount')))]",
     "agent1publicWindowsRDPNatRangeStart": 3389,
@@ -1162,7 +1164,7 @@
       "sku": {
         "capacity": "[variables('agent128Count')]",
         "name": "[variables('agent128VMSize')]",
-        "tier": "Standard"
+        "tier": "[variables('agent128VMSizeTier')]"
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agent128VMNamePrefix'), '-vmss')]"
@@ -1396,7 +1398,7 @@
       "sku": {
         "capacity": "[variables('agent1publicCount')]",
         "name": "[variables('agent1publicVMSize')]",
-        "tier": "Standard"
+        "tier": "[variables('agent1publicVMSizeTier')]"
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agent1publicVMNamePrefix'), '-vmss')]"

@@ -721,6 +721,7 @@
     "privatewinSubnetName": "[concat(variables('orchestratorName'), '-privatewinsubnet')]",
     "privatewinVMNamePrefix": "[concat(variables('orchestratorName'), '-privatewin-', variables('nameSuffix'))]",
     "privatewinVMSize": "[parameters('privatewinVMSize')]",
+    "privatewinVMSizeTier": "[(split(parameters('privatewinVMSize'),'_')[0]]",
     "privatewinVnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('privatewinSubnetName'))]",
     "publicwin1AccountName": "[concat(variables('storageAccountBaseName'), 'agnt0')]",
     "publicwin1Count": "[parameters('publicwin1Count')]",
@@ -738,6 +739,7 @@
     "publicwin1SubnetName": "[concat(variables('orchestratorName'), '-publicwin1subnet')]",
     "publicwin1VMNamePrefix": "[concat(variables('orchestratorName'), '-publicwin1-', variables('nameSuffix'))]",
     "publicwin1VMSize": "[parameters('publicwin1VMSize')]",
+    "publicwin1VMSizeTier": "[(split(parameters('publicwin1VMSize'),'_')[0]]",
     "publicwin1VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('publicwin1SubnetName'))]",
     "publicwin1WindowsRDPEndRangeStop": "[add(variables('publicwin1WindowsRDPNatRangeStart'), add(variables('publicwin1Count'),variables('publicwin1Count')))]",
     "publicwin1WindowsRDPNatRangeStart": 3389,
@@ -1349,7 +1351,7 @@
       "sku": {
         "capacity": "[variables('publicwin1Count')]",
         "name": "[variables('publicwin1VMSize')]",
-        "tier": "Standard"
+        "tier": "[variables('publicwin1VMSizeTier')]"
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('publicwin1VMNamePrefix'), '-vmss')]"
@@ -1457,7 +1459,7 @@
       "sku": {
         "capacity": "[variables('privatewinCount')]",
         "name": "[variables('privatewinVMSize')]",
-        "tier": "Standard"
+        "tier": "[variables('privatewinVMSizeTier')]"
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('privatewinVMNamePrefix'), '-vmss')]"

@@ -627,6 +627,7 @@
     "agentprivateStorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentprivateVMNamePrefix": "[concat(variables('orchestratorName'), '-agentprivate-', variables('nameSuffix'))]",
     "agentprivateVMSize": "[parameters('agentprivateVMSize')]",
+    "agentprivateVMSizeTier": "[(split(parameters('agentprivateVMSize'),'_')[0]]",
     "agentprivateVnetSubnetID": "[parameters('agentprivateVnetSubnetID')]",
     "agentpublicAccountName": "[concat(variables('storageAccountBaseName'), 'agnt1')]",
     "agentpublicCount": "[parameters('agentpublicCount')]",
@@ -642,6 +643,7 @@
     "agentpublicStorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
     "agentpublicVMNamePrefix": "[concat(variables('orchestratorName'), '-agentpublic-', variables('nameSuffix'))]",
     "agentpublicVMSize": "[parameters('agentpublicVMSize')]",
+    "agentpublicVMSizeTier": "[(split(parameters('agentpublicVMSize'),'_')[0]]",
     "agentpublicVnetSubnetID": "[parameters('agentpublicVnetSubnetID')]",
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
@@ -1151,7 +1153,7 @@
       "sku": {
         "capacity": "[variables('agentprivateCount')]",
         "name": "[variables('agentprivateVMSize')]",
-        "tier": "Standard"
+        "tier": "[variables('agentprivateVMSizeTier')]"
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentprivateVMNamePrefix'), '-vmss')]"
@@ -1388,7 +1390,7 @@
       "sku": {
         "capacity": "[variables('agentpublicCount')]",
         "name": "[variables('agentpublicVMSize')]",
-        "tier": "Standard"
+        "tier": "[variables('agentpublicVMSizeTier')]"
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpublicVMNamePrefix'), '-vmss')]"

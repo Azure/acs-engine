@@ -591,6 +591,7 @@
     "agentSubnetName": "[concat(variables('orchestratorName'), '-agentsubnet')]",
     "agentVMNamePrefix": "[concat(variables('orchestratorName'), '-agent-', variables('nameSuffix'))]",
     "agentVMSize": "[parameters('agentVMSize')]",
+    "agentVMSizeTier": "[(split(parameters('agentVMSize'),'_')[0]]",
     "agentVnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentSubnetName'))]",
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
@@ -1268,7 +1269,7 @@
       "sku": {
         "capacity": "[variables('agentCount')]",
         "name": "[variables('agentVMSize')]",
-        "tier": "Standard"
+        "tier": "[variables('agentVMSizeTier')]"
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentVMNamePrefix'), '-vmss')]"
