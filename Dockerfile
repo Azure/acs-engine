@@ -16,6 +16,8 @@ RUN mkdir /tmp/godeb \
 
 RUN pip install "azure-cli==${AZURE_CLI_VERSION}"
 
+RUN curl -fsSL https://get.docker.com/ | sh
+
 RUN curl "https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl" > /usr/local/bin/kubectl \
     && chmod +x /usr/local/bin/kubectl
 

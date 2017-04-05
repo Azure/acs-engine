@@ -7,7 +7,7 @@ The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource 
 The easiest way to get started developing on `acs-engine` is to use Docker. If you already have Docker or "Docker for {Windows,Mac}" then you can get started without needing to install anything extra.
 
 * Windows (PowerShell): `.\scripts\devenv.ps1`
-* Linux (bash): `./scripts/devenv.sh`
+* Linux/OSX (bash): `./scripts/devenv.sh`
 
 This setup mounts the `acs-engine` source directory as a volume into the Docker container.
 This means that you can edit your source code normally in your favorite editor on your
