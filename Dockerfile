@@ -6,7 +6,7 @@ ENV AZURE_CLI_VERSION 0.1.2rc1
 
 RUN apt-get update \
     && apt-get -y upgrade \
-    && apt-get -y install python-pip make build-essential curl openssl vim jq \
+    && apt-get -y install python-pip make build-essential curl openssl vim jq docker.io \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /tmp/godeb \
