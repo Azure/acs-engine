@@ -27,9 +27,8 @@ runcmd:
 - sudo /bin/chmod -R 0777  /var/lib/etcddisk
 - systemctl stop etcd
 - sudo rm -rf /var/lib/etcd/default
-- sudo rm -rf /var/lib/etcddisk/member
 - systemctl restart etcd
-- until curl http://127.0.0.1:2379/v2/machines; do sleep 2; done
+- for i in $(seq 1 20); do curl --max-time 60 http://127.0.0.1:2379/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
 - apt-get update
 - apt-get install -y apt-transport-https ca-certificates
 - for i in 1 2 3 4 5; do curl --max-time 60 -fsSL https://apt.dockerproject.org/gpg | apt-key add -; [ $? -eq 0 ] && break || sleep 5; done
