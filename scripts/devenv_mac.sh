@@ -3,7 +3,7 @@
 set -eu -o pipefail
 set -x
 
-docker build --pull -t acs-engine .
+docker build --pull -t acs-engine -f Dockerfile.mac
 
 docker run -it \
 	--privileged \
