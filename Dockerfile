@@ -6,7 +6,7 @@ ENV AZURE_CLI_VERSION 0.1.2rc1
 
 RUN apt-get update \
     && apt-get -y upgrade \
-    && apt-get -y install python-pip make build-essential curl openssl vim jq docker.io \
+    && apt-get -y install python-pip make build-essential curl openssl vim jq \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /tmp/godeb \
@@ -15,6 +15,8 @@ RUN mkdir /tmp/godeb \
     && rm -rf /tmp/godeb
 
 RUN pip install "azure-cli==${AZURE_CLI_VERSION}"
+
+RUN curl -fsSL https://get.docker.com/ | sh
 
 RUN curl "https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl" > /usr/local/bin/kubectl \
     && chmod +x /usr/local/bin/kubectl
