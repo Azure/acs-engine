@@ -525,9 +525,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"GetDataDisks": func(profile *api.AgentPoolProfile) string {
 			return getDataDisks(profile)
 		},
-		"GetEtcdDisk": func() string {
-			return getEtcdDisk(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.MasterProfile)
-		},
 		"GetDCOSMasterCustomData": func() string {
 			masterProvisionScript := getDCOSMasterProvisionScript()
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
@@ -983,27 +980,6 @@ func getDataDisks(a *api.AgentPoolProfile) string {
 			buf.WriteString(fmt.Sprintf(managedDataDisks, diskSize, i))
 		}
 	}
-	buf.WriteString("\n          ],")
-	return buf.String()
-}
-
-func getEtcdDisk(orchestratorType api.OrchestratorType, m *api.MasterProfile) string {
-	if orchestratorType != api.Kubernetes {
-		return ""
-	}
-	var buf bytes.Buffer
-	buf.WriteString("\"dataDisks\": [\n")
-	etcdDisks := `            {
-              "createOption": "Empty",
-              "diskSizeGB": "%d",
-              "lun": %d,
-              "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'-etcddisk')]",
-              "vhd": {
-                "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',    variables('masterVMNamePrefix'),copyIndex(),'-etcddisk.vhd')]"
-               }
-            }`
-
-	buf.WriteString(fmt.Sprintf(etcdDisks, 1, 0))
 	buf.WriteString("\n          ],")
 	return buf.String()
 }

@@ -396,7 +396,17 @@
           {{end}}
         },
         "storageProfile": {
-          {{GetEtcdDisk}}
+          "dataDisks": [
+            {
+              "createOption": "Empty",
+              "diskSizeGB": "128",
+              "lun": 0,
+              "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'-etcddisk')]",
+              "vhd": {
+                "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/', variables('masterVMNamePrefix'),copyIndex(),'-etcddisk.vhd')]"
+              }
+            }
+          ],
           "imageReference": {
             "offer": "[variables('osImageOffer')]",
             "publisher": "[variables('osImagePublisher')]",
