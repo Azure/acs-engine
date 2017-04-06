@@ -29,8 +29,9 @@ Get-AllSizes() {
 	ForEach ($location in $locations) {
 		#Write-Output $location.Location
 		$sizes = Get-AzureRmVMSize -Location $location.Location
+		#Filtered out Basic sizes as Azure Load Balancer does not support Basic SKU
 		ForEach ($size in $sizes) {
-			if (!$sizeMap.ContainsKey($size.Name) -and !($size.Name.split('_')[0] -eq 'BASIC')) {
+			if (!$sizeMap.ContainsKey($size.Name) -and !($size.Name.split('_')[0] -eq 'Basic')) {
 				$sizeMap.Add($size.Name, $size)
 			}	
 		}
