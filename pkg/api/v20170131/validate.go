@@ -84,6 +84,7 @@ func (a *Properties) Validate() error {
 		if agentPoolProfile.OSType == Windows {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Swarm:
+			case Kubernetes:
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
