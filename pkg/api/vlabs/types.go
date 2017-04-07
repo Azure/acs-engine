@@ -117,8 +117,9 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType OrchestratorType  `json:"orchestratorType"`
-	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	OrchestratorType    OrchestratorType  `json:"orchestratorType"`
+	OrchestratorVersion string            `json:"orchestratorVersion"`
+	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 }
 
 // KubernetesConfig contains the Kubernetes config structure, containing
@@ -196,6 +197,10 @@ type KeyVaultCertificate struct {
 
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
+
+// OrchestratorVersions defines versions supported by various orchestrator types.
+type KubernetesVersion string
+type DCOSVersion string
 
 // OSType represents OS types of agents
 type OSType string

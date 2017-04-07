@@ -27,6 +27,13 @@ const (
 	SwarmMode = "SwarmMode"
 )
 
+const (
+	// Kubernetes153 is the string constant for Kubernetes 1.5.3
+	Kubernetes153 KubernetesVersion = "1.5.3"
+	// Kubernetes160 is the string constant for Kubernetes 1.6.0
+	Kubernetes160 KubernetesVersion = "1.6.0"
+)
+
 // the OSTypes supported by vlabs
 const (
 	Windows OSType = "Windows"

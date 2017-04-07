@@ -185,6 +185,9 @@ type VMDiagnostics struct {
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
 
+// OrchestratorVersion defines orchestrators supported by ACS
+type OrchestratorVersion string
+
 // JumpboxProfile dscribes properties of the jumpbox setup
 // in the ACS container cluster.
 type JumpboxProfile struct {
