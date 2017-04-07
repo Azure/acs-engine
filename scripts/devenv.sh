@@ -3,6 +3,8 @@
 set -eu -o pipefail
 set -x
 
+sudo -u $(logname) mkdir -p ~/.azure
+
 docker build --pull -t acs-engine .
 
 docker run -it \
