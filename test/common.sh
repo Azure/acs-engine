@@ -82,10 +82,6 @@ function set_azure_account() {
 	which kubectl || (echo "kubectl must be on PATH" && exit -1)
 	which az || (echo "az must be on PATH" && exit -1)
 
-	# Set custom dir so we don't clobber global 'az' config
-	AZURE_CONFIG_DIR="$(mktemp -d)"
-	trap 'rm -rf ${AZURE_CONFIG_DIR}' EXIT
-
 	# Login to Azure-Cli
 	az login --service-principal \
 		--username "${SERVICE_PRINCIPAL_CLIENT_ID}" \
