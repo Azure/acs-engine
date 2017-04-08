@@ -215,7 +215,7 @@ function ensureJournal(){
 
 function ensureApiserver() {
     kubernetesStarted=1
-    for i in {1..600}; do
+    for i in {1..300}; do
         if [ -e /usr/local/bin/kubectl ]
         then
             /usr/local/bin/kubectl cluster-info
