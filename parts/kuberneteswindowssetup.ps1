@@ -153,7 +153,7 @@ function
 Get-PodCIDR
 {
     $argList = @("--hostname-override=$AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""","--api-servers=https://${MasterIP}:443","--kubeconfig=c:\k\config")
-    $process = Start-Process -FilePath c:\k\kubelet.exe -PassThru -ArgumentList $argList
+    $process = Start-Process -FilePath c:\k\kubelet.exe -PassThru -ArgumentList $argList -RedirectStandardOutput C:\k\kbootstrap.stdout.txt -RedirectStandardError C:\k\kbootstrap.stderr.txt
 
     $podCidrDiscovered=$false
     $podCIDR=""
