@@ -237,6 +237,17 @@ function ensureApiserver() {
     fi
 }
 
+function ensureEtcd() {
+    for i in {1..600}; do
+        if [ -f /var/log/azure/etcdsetupcompleted ]
+        then
+            echo "Etcd setup successfully"
+            break
+        fi
+        sleep 5
+    done
+}
+
 function writeKubeConfig() {
     KUBECONFIGDIR=/home/$ADMINUSER/.kube
     KUBECONFIGFILE=$KUBECONFIGDIR/config
@@ -282,6 +293,7 @@ users:
 # master and node
 ensureDocker
 configNetworkPolicy
+ensureEtcd
 ensureKubelet
 extractKubectl
 ensureJournal
