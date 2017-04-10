@@ -38,11 +38,20 @@
   "firstConsecutiveStaticIP": {
     "value": "10.239.255.245"
   },
+  "kubeClusterCidr": {
+    "value": "172.40.0.0/16"
+  },
   "kubeConfigCertificate": {
     "value": "a3ViZUNvbmZpZ0NlcnRpZmljYXRl"
   },
   "kubeConfigPrivateKey": {
     "value": "a3ViZUNvbmZpZ1ByaXZhdGVLZXk="
+  },
+  "kubeDnsServiceIP": {
+    "value": "172.17.1.10"
+  },
+  "kubeServiceCidr": {
+    "value": "172.16.0.0/14"
   },
   "kubernetesAddonManagerSpec": {
     "value": "gcr.io/google_containers/kube-addon-manager-amd64:v6.2"

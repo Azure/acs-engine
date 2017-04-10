@@ -19,13 +19,19 @@ func (o *OrchestratorProfile) Validate() error {
 	case DCOS173:
 	case Swarm:
 	case Kubernetes:
+		if o.KubernetesConfig != nil {
+			err := o.KubernetesConfig.Validate()
+			if err != nil {
+				return err
+			}
+		}
 	case SwarmMode:
 	default:
-		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
+		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %q", o.OrchestratorType)
 	}
 
 	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil &&
-		(o.KubernetesConfig.KubernetesImageBase != "" || o.KubernetesConfig.NetworkPolicy != "") {
+		(*o.KubernetesConfig != KubernetesConfig{}) {
 		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
 	}
 
@@ -403,4 +409,58 @@ func GetVNETSubnetIDComponents(vnetSubnetID string) (string, string, string, str
 		return "", "", "", "", err
 	}
 	return submatches[1], submatches[2], submatches[3], submatches[4], nil
+}
+
+func (a *KubernetesConfig) Validate() error {
+	if a.ClusterCidr != "" {
+		_, _, err := net.ParseCIDR(a.ClusterCidr)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterCidr '%s' is an invalid CIDR subnet", a.ClusterCidr)
+		}
+	}
+
+	if a.DnsServiceIP != "" || a.ServiceCidr != "" {
+		if a.DnsServiceIP == "" {
+			return errors.New("OrchestratorProfile.KubernetesConfig.ServiceCidr must be specified when DnsServiceIP is")
+		}
+		if a.ServiceCidr == "" {
+			return errors.New("OrchestratorProfile.KubernetesConfig.DnsServiceIP must be specified when ServiceCidr is")
+		}
+
+		dnsIp := net.ParseIP(a.DnsServiceIP)
+		if dnsIp == nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is an invalid IP address", a.DnsServiceIP)
+		}
+
+		_, serviceCidr, err := net.ParseCIDR(a.ServiceCidr)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ServiceCidr '%s' is an invalid CIDR subnet", a.ServiceCidr)
+		}
+
+		// Finally validate that the DNS ip is within the subnet, and _not_ that subnet broadcast address, otherwise it won't work
+		if !serviceCidr.Contains(dnsIp) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is not within the ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		}
+
+		broadcast := ip4BroadcastAddress(serviceCidr)
+		if dnsIp.Equal(broadcast) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' cannot be the broadcast address of ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		}
+	}
+
+	return nil
+}
+
+// ip4BroadcastAddress returns the broadcase address for the given IP subnet.
+func ip4BroadcastAddress(n *net.IPNet) net.IP {
+	ip4 := n.IP.To4()
+	if ip4 == nil {
+		return nil
+	}
+	last := make(net.IP, len(ip4))
+	copy(last, ip4)
+	for i := range ip4 {
+		last[i] |= ^n.Mask[i]
+	}
+	return last
 }

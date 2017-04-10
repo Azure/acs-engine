@@ -375,6 +375,9 @@ func convertVLabsOrchestratorProfile(vlabs *vlabs.OrchestratorProfile, api *Orch
 func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *KubernetesConfig) {
 	api.KubernetesImageBase = vlabs.KubernetesImageBase
 	api.NetworkPolicy = vlabs.NetworkPolicy
+	api.ClusterCIDR = vlabs.ClusterCidr
+	api.DnsServiceIP = vlabs.DnsServiceIP
+	api.ServiceCIDR = vlabs.ServiceCidr
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {

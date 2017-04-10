@@ -241,12 +241,13 @@ write_files:
 
     sed -i "s|<kubernetesAddonManagerSpec>|{{{kubernetesAddonManagerSpec}}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<kubeServiceCidr>|{{{kubeServiceCidr}}}|g; s|<masterEtcdClientPort>|{{{masterEtcdClientPort}}}|g; s|<masterCount>|{{{masterCount}}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<masterFqdnPrefix>|{{{masterFqdnPrefix}}}|g; s|<allocateNodeCidrs>|{{{allocateNodeCidrs}}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<masterFqdnPrefix>|{{{masterFqdnPrefix}}}|g; s|<allocateNodeCidrs>|{{{allocateNodeCidrs}}}|g; s|<kubeClusterCidr>|{{{kubeClusterCidr}}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
-    sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<kubeClusterCidr>|{{{kubeClusterCidr}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
     sed -i "s|<kubernetesKubeDNSSpec>|{{{kubernetesKubeDNSSpec}}}|g; s|<kubernetesDNSMasqSpec>|{{{kubernetesDNSMasqSpec}}}|g; s|<kubernetesExecHealthzSpec>|{{{kubernetesExecHealthzSpec}}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
     sed -i "s|<kubernetesHeapsterSpec>|{{{kubernetesHeapsterSpec}}}|g; s|<kubernetesAddonResizerSpec>|{{{kubernetesAddonResizerSpec}}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
     sed -i "s|<kubernetesDashboardSpec>|{{{kubernetesDashboardSpec}}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+    sed -i "s|<kubeDnsServiceIP>|{{{kubeDnsServiceIP}}}|g" "/etc/kubernetes/addons/kube-dns-service.yaml"
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
