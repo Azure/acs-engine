@@ -3,8 +3,6 @@
 set -eu -o pipefail
 set -x
 
-sudo -u $(logname) mkdir -p ~/.azure
-
 docker build --pull -t acs-engine .
 
 docker run -it \
@@ -15,3 +13,4 @@ docker run -it \
 	-w /gopath/src/github.com/Azure/acs-engine \
 		acs-engine /bin/bash
 
+chown -R $(logname):$(id -gn $(logname)) . ~/.azure
