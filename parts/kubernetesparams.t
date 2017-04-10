@@ -40,7 +40,7 @@
       },  
       "type": "securestring"
     },
-    "kubeDnsServiceIp": {
+    "kubeDnsServiceIP": {
       "metadata": {
         "description": "Kubernetes DNS IP"
       },

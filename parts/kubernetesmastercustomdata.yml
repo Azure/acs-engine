@@ -247,7 +247,7 @@ write_files:
     sed -i "s|<kubernetesKubeDNSSpec>|{{{kubernetesKubeDNSSpec}}}|g; s|<kubernetesDNSMasqSpec>|{{{kubernetesDNSMasqSpec}}}|g; s|<kubernetesExecHealthzSpec>|{{{kubernetesExecHealthzSpec}}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
     sed -i "s|<kubernetesHeapsterSpec>|{{{kubernetesHeapsterSpec}}}|g; s|<kubernetesAddonResizerSpec>|{{{kubernetesAddonResizerSpec}}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
     sed -i "s|<kubernetesDashboardSpec>|{{{kubernetesDashboardSpec}}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
-    sed -i "s|<kubernetesDnsServiceIp>|{{{kubeDnsServiceIp}}}|g" "/etc/kubernetes/addons/kube-dns-service.yaml"
+    sed -i "s|<kubeDnsServiceIP>|{{{kubeDnsServiceIP}}}|g" "/etc/kubernetes/addons/kube-dns-service.yaml"
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"

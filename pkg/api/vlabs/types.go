@@ -126,7 +126,7 @@ type OrchestratorProfile struct {
 type KubernetesConfig struct {
 	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
 	NetworkPolicy       string `json:"networkPolicy,omitempty"`
-	DnsServiceIp        string `json:"dnsServiceIp,omitempty"`
+	DnsServiceIP        string `json:"dnsServiceIP,omitempty"`
 	ServiceCidr         string `json:"serviceCidr,omitempty"`
 	ClusterCidr         string `json:"clusterCidr,omitempt"`
 }

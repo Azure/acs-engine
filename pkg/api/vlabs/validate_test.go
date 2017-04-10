@@ -74,29 +74,29 @@ func TestKubernetesConfig_Validate(t *testing.T) {
 	}
 
 	c = KubernetesConfig{
-		DnsServiceIp: "192.168.0.10",
+		DnsServiceIP: "192.168.0.10",
 	}
 	if err := c.Validate(); err == nil {
-		t.Error("should error when DnsServiceIp but not ServiceCidr")
+		t.Error("should error when DnsServiceIP but not ServiceCidr")
 	}
 
 	c = KubernetesConfig{
 		ServiceCidr: "192.168.0.10/24",
 	}
 	if err := c.Validate(); err == nil {
-		t.Error("should error when ServiceCidr but not DnsServiceIp")
+		t.Error("should error when ServiceCidr but not DnsServiceIP")
 	}
 
 	c = KubernetesConfig{
-		DnsServiceIp: "invalid",
+		DnsServiceIP: "invalid",
 		ServiceCidr:  "192.168.0.0/24",
 	}
 	if err := c.Validate(); err == nil {
-		t.Error("should error when DnsServiceIp is invalid")
+		t.Error("should error when DnsServiceIP is invalid")
 	}
 
 	c = KubernetesConfig{
-		DnsServiceIp: "192.168.1.10",
+		DnsServiceIP: "192.168.1.10",
 		ServiceCidr:  "192.168.0.0/not-a-len",
 	}
 	if err := c.Validate(); err == nil {
@@ -104,26 +104,26 @@ func TestKubernetesConfig_Validate(t *testing.T) {
 	}
 
 	c = KubernetesConfig{
-		DnsServiceIp: "192.168.1.10",
+		DnsServiceIP: "192.168.1.10",
 		ServiceCidr:  "192.168.0.0/24",
 	}
 	if err := c.Validate(); err == nil {
-		t.Error("should error when DnsServiceIp is outside of ServiceCidr")
+		t.Error("should error when DnsServiceIP is outside of ServiceCidr")
 	}
 
 	c = KubernetesConfig{
-		DnsServiceIp: "172.99.255.255",
+		DnsServiceIP: "172.99.255.255",
 		ServiceCidr:  "172.99.0.1/16",
 	}
 	if err := c.Validate(); err == nil {
-		t.Error("should error when DnsServiceIp is broadcast address of ServiceCidr")
+		t.Error("should error when DnsServiceIP is broadcast address of ServiceCidr")
 	}
 
 	c = KubernetesConfig{
-		DnsServiceIp: "172.99.255.10",
+		DnsServiceIP: "172.99.255.10",
 		ServiceCidr:  "172.99.0.1/16",
 	}
 	if err := c.Validate(); err != nil {
-		t.Error("should not error when DnsServiceIp and ServiceCidr are valid")
+		t.Error("should not error when DnsServiceIP and ServiceCidr are valid")
 	}
 }

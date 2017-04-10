@@ -376,7 +376,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.KubernetesImageBase = vlabs.KubernetesImageBase
 	api.NetworkPolicy = vlabs.NetworkPolicy
 	api.ClusterCIDR = vlabs.ClusterCidr
-	api.DnsServiceIP = vlabs.DnsServiceIp
+	api.DnsServiceIP = vlabs.DnsServiceIP
 	api.ServiceCIDR = vlabs.ServiceCidr
 }
 

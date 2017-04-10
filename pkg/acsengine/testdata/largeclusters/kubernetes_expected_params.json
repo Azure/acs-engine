@@ -137,7 +137,7 @@
   "kubeConfigPrivateKey": {
     "value": "a3ViZUNvbmZpZ1ByaXZhdGVLZXk="
   },
-  "kubeDnsServiceIp": {
+  "kubeDnsServiceIP": {
     "value": "10.0.0.10"
   },
   "kubeServiceCidr": {

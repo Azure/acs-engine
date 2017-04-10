@@ -82,7 +82,7 @@
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "vnetCidr": "10.0.0.0/8",
 {{end}}
-    "kubeDnsServiceIp": "[parameters('kubeDnsServiceIp')]",
+    "kubeDnsServiceIP": "[parameters('kubeDnsServiceIP')]",
     "kubeServiceCidr": "[parameters('kubeServiceCidr')]",
     "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
 {{if HasLinuxAgents}}

@@ -419,17 +419,17 @@ func (a *KubernetesConfig) Validate() error {
 		}
 	}
 
-	if a.DnsServiceIp != "" || a.ServiceCidr != "" {
-		if a.DnsServiceIp == "" {
-			return errors.New("OrchestratorProfile.KubernetesConfig.ServiceCidr must be specified when DnsServiceIp is")
+	if a.DnsServiceIP != "" || a.ServiceCidr != "" {
+		if a.DnsServiceIP == "" {
+			return errors.New("OrchestratorProfile.KubernetesConfig.ServiceCidr must be specified when DnsServiceIP is")
 		}
 		if a.ServiceCidr == "" {
-			return errors.New("OrchestratorProfile.KubernetesConfig.DnsServiceIp must be specified when ServiceCidr is")
+			return errors.New("OrchestratorProfile.KubernetesConfig.DnsServiceIP must be specified when ServiceCidr is")
 		}
 
-		dnsIp := net.ParseIP(a.DnsServiceIp)
+		dnsIp := net.ParseIP(a.DnsServiceIP)
 		if dnsIp == nil {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIp '%s' is an invalid IP address", a.DnsServiceIp)
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is an invalid IP address", a.DnsServiceIP)
 		}
 
 		_, serviceCidr, err := net.ParseCIDR(a.ServiceCidr)
@@ -439,12 +439,12 @@ func (a *KubernetesConfig) Validate() error {
 
 		// Finally validate that the DNS ip is within the subnet, and _not_ that subnet broadcast address, otherwise it won't work
 		if !serviceCidr.Contains(dnsIp) {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIp '%s' is not within the ServiceCidr '%s'", a.DnsServiceIp, a.ServiceCidr)
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is not within the ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
 		}
 
 		broadcast := ip4BroadcastAddress(serviceCidr)
 		if dnsIp.Equal(broadcast) {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIp '%s' cannot be the broadcast address of ServiceCidr '%s'", a.DnsServiceIp, a.ServiceCidr)
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' cannot be the broadcast address of ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
 		}
 	}
 
