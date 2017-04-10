@@ -58,6 +58,17 @@ write_files:
     ExecStart=
     ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --log-driver=journald
 
+- path: "/etc/systemd/journald.conf.d/kubernetes.conf"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Journal]
+    Storage=persistent
+    ForwardToSyslog=no
+    MaxLevelConsole=warning
+    RateLimitInterval=1s
+    RateLimitBurst=20000
+  
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
   owner: "root"

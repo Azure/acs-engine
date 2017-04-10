@@ -201,6 +201,12 @@ function extractKubectl(){
     systemctl restart kubectl-extract
 }
 
+function ensureJournal(){
+    systemctl daemon-reload
+    systemctl enable systemd-journald.service
+    systemctl restart systemd-journald.service
+}
+
 function ensureApiserver() {
     kubernetesStarted=1
     for i in {1..600}; do
@@ -278,6 +284,7 @@ ensureDocker
 configNetworkPolicy
 ensureKubelet
 extractKubectl
+ensureJournal
 
 # master only 
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then

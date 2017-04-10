@@ -6,13 +6,13 @@
     },
     "masterProfile": {
       "count": 1,
-      "dnsPrefix": "",
+      "dnsPrefix": "amanok8s0331k1",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
         "name": "agentpool1",
-        "count": 3,
+        "count": 1,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet"
       }
@@ -22,14 +22,14 @@
       "ssh": {
         "publicKeys": [
           {
-            "keyData": ""
+            "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAkdPEftt0srwXM0SxJCG+moMgLkj2Uchxr0ruxIu1ULxfWUmSl/LXNlOSy5QwHX1tLWpppk6B2SP9tRGINqdMm8Fb5au0WZk5IZ1ji7UNZqpbPg0jPaiUWqium9XYr3wqc86erCsqt1c9CdqF1jU8mL2alqE/AGaULWn2jwTheMOwgiyn7XhDoLuCHrjAEv/bl+Z8dUeFMKJLn4wPdLET78mDs7GLNPEANLdgqN2XahTn5GjlKB1wSUsc8Dj3PIWog1UV8UgSI2JseTCy90jEy0n0AOi2PBk/yhjBhrKZIJ42rWxlVAVn7dFT3C6nflv+XfC05uGCIZVA444kDY0ePQ== a@a.com"
           }
         ]
       }
     },
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "",
-      "servicePrincipalClientSecret": ""
+      "servicePrincipalClientID": "3174db11-4e1b-4e26-89ac-42af3ead2b64",
+      "servicePrincipalClientSecret": "508ffe11-887a-4d84-a9ff-d3c5797a73e7"
     }
   }
 }
