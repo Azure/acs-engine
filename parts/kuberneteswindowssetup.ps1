@@ -45,7 +45,7 @@ $global:AgentCertificate = "{{{clientCertificate}}}"
 $global:DockerServiceName = "Docker"
 $global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
-$global:KubeBinariesSASURL = "https://ritahdspark.blob.core.windows.net/input/k.zip"
+$global:KubeBinariesSASURL = "https://acsengine.blob.core.windows.net/wink8s/v1.6.0int.zip"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
 $global:NatNetworkName="nat"
@@ -152,7 +152,7 @@ New-InfraContainer()
 function
 Get-PodCIDR
 {
-    $argList = @("--hostname-override=$AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""","--api-servers=https://${MasterIP}:443","--kubeconfig=c:\k\config")
+    $argList = @("--hostname-override=$AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""","--api-servers=https://${MasterIP}:443","--kubeconfig=c:\k\config","--enable-cri=false")
     $process = Start-Process -FilePath c:\k\kubelet.exe -PassThru -ArgumentList $argList
 
     $podCidrDiscovered=$false
@@ -196,7 +196,7 @@ Write-KubernetesStartFiles($podCIDR)
 `$env:NAT_NETWORK="$global:NatNetworkName"
 `$env:POD_GW="$podGW"
 `$env:VIP_CIDR="10.0.0.0/8"
-c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://${MasterIP}:443 --cluster-dns=$KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json
+c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://${MasterIP}:443 --cluster-dns=$KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --enable-cri=false --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --image-pull-progress-deadline=20m
 "@
     $kubeConfig | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
