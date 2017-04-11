@@ -29,6 +29,15 @@ const (
 	DefaultInternalLbStaticIPOffset = 10
 	// DefaultNetworkPolicy is disabling network policy enforcement
 	DefaultNetworkPolicy = "none"
+	// DefaultKubernetesDnsServiceIP specifies the IP address that kube-dns
+	// listens on by default. must by in the default Service CIDR range.
+	DefaultKubernetesDnsServiceIP = "10.0.0.10"
+	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will
+	// create Service IPs within.
+	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
+	// DefaultKubernetesClusterCIDR specifies the subnet that Pod IPs will be
+	// assigned from.
+	DefaultKubernetesClusterCIDR = "10.244.0.0/16"
 )
 
 const (
