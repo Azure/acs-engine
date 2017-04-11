@@ -239,7 +239,8 @@ function ensureApiserver() {
 
 function ensureEtcd() {
     for i in {1..600}; do
-        if [ -f /var/lib/etcddisk/etcdsetupcompleted ]
+        curl --max-time 60 http://127.0.0.1:2379/v2/machines;
+        if [ $? -eq 0 ]
         then
             echo "Etcd setup successfully"
             break
@@ -293,7 +294,6 @@ users:
 # master and node
 ensureDocker
 configNetworkPolicy
-ensureEtcd
 ensureKubelet
 extractKubectl
 ensureJournal
@@ -302,6 +302,7 @@ ensureJournal
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     writeKubeConfig
     ensureKubectl
+    ensureEtcd
     ensureApiserver
 fi
 
