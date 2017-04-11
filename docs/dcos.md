@@ -45,35 +45,35 @@ This walk through is inspired by the wonderful digital ocean tutorial: https://w
 
 
  1. After successfully deploying the template write down the two output master and agent FQDNs (Fully Qualified Domain Name).
-   1. If using Powershell or CLI, the output parameters are in the OutputsString section named 'agentFQDN' and 'masterFQDN'
-   2. If using Portal, to get the output you need to:
-     1. navigate to "resource group"
-     2. click on the resource group you just created
-     3. then click on "Succeeded" under *last deployment*
-     4. then click on the "Microsoft.Template"
-     5. now you can copy the output FQDNs and sample SSH commands
-     ![Image of docker scaling](images/findingoutputs.png)
+    1. If using Powershell or CLI, the output parameters are in the OutputsString section named 'agentFQDN' and 'masterFQDN'
+    2. If using Portal, to get the output you need to:
+        1. navigate to "resource group"
+        2. click on the resource group you just created
+        3. then click on "Succeeded" under *last deployment*
+        4. then click on the "Microsoft.Template"
+        5. now you can copy the output FQDNs and sample SSH commands
+        ![Image of docker scaling](images/findingoutputs.png)
 
  2. Create an [SSH tunnel to port 80](ssh.md#create-port-80-tunnel-to-the-master) on the master FQDN.
 
  3. browse to the DC/OS UI <http://localhost/>.  This displays the main DC/OS dashboard:
 
  4. The front page shows the DC/OS Dashboard:
-   1. Scroll down to see your CPU, Memory and Disk Allocation.  This also shows you services, node, and component health.
+    1. Scroll down to see your CPU, Memory and Disk Allocation.  This also shows you services, node, and component health.
 
-   ![Image of the DC/OS dashboard](images/dcosdashboard.png)
+    ![Image of the DC/OS dashboard](images/dcosdashboard.png)
 
-   2. On the left side click "Services"
+    2. On the left side click "Services"
 
-   ![Image of DC/OS services on Azure](images/dcosservices.png)
+    ![Image of DC/OS services on Azure](images/dcosservices.png)
 
-   3. start a long running service
-    1. click "Deploy Service"
-    2. type "myfirstapp" for the id
-    3. type `/bin/bash -c 'for i in {1..5}; do echo MyFirstApp $i; sleep 1; done'` for the command
-    4. scroll to bottom and click Deploy
+    3. start a long running service
+        1. click "Deploy Service"
+        2. type "myfirstapp" for the id
+        3. type `/bin/bash -c 'for i in {1..5}; do echo MyFirstApp $i; sleep 1; done'` for the command
+        4. scroll to bottom and click Deploy
 
-    ![Image of Deploy New Service dialog](images/deployfirstapp.png)
+        ![Image of Deploy New Service dialog](images/deployfirstapp.png)
 
   5. you will notice the new app change state from not running to running
 
