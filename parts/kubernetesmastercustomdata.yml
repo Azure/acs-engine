@@ -26,6 +26,7 @@ runcmd:
 - /bin/echo DAEMON_ARGS=--name "<<<variables('masterVMNames')[copyIndex()]>>>" --initial-advertise-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --listen-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --advertise-client-urls "<<<variables('masterEtcdClientURLs')[copyIndex()]>>>" --listen-client-urls "<<<concat(variables('masterEtcdClientURLs')[copyIndex()], ',http://127.0.0.1:', variables('masterEtcdClientPort'))>>>" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "<<<variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]>>> --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
 - sudo /bin/chown -R etcd:etcd /var/lib/etcd/default
 - sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
+- if [ -f /var/lib/etcddisk/etcdsetupcompleted ] ; then rm -f /var/lib/etcddisk/etcdsetupcompleted; fi
 - systemctl stop etcd
 - sudo -u etcd rm -rf /var/lib/etcd/default
 - systemctl restart etcd
@@ -39,7 +40,7 @@ runcmd:
 - apt-get install -y ebtables
 - apt-get install -y docker-engine
 - systemctl restart docker
-- touch /var/log/azure/etcdsetupcompleted
+- touch /var/lib/etcddisk/etcdsetupcompleted
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{{username}}}
 

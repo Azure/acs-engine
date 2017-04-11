@@ -239,7 +239,7 @@ function ensureApiserver() {
 
 function ensureEtcd() {
     for i in {1..600}; do
-        if [ -f /var/log/azure/etcdsetupcompleted ]
+        if [ -f /var/lib/etcddisk/etcdsetupcompleted ]
         then
             echo "Etcd setup successfully"
             break
