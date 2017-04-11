@@ -162,6 +162,7 @@ Write-KubernetesStartFiles($podCIDR)
 function
 Get-PodGateway(`$podCIDR)
 {
+<<<<<<< e4c71e3230da9c4503a4678dae31e3683501c22e
     return `$podCIDR.substring(0,`$podCIDR.lastIndexOf(".")) + ".1"
 }
 
@@ -173,6 +174,16 @@ Set-DockerNetwork(`$podCIDR)
 
     `$dockerTransparentNet=docker network ls --quiet --filter "NAME=`$global:TransparentNetworkName"
     if (`$dockerTransparentNet.length -eq 0)
+=======
+    $argList = @("--hostname-override=$AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""","--api-servers=https://${MasterIP}:443","--kubeconfig=c:\k\config","--enable-cri=false")
+    $process = Start-Process -FilePath c:\k\kubelet.exe -PassThru -ArgumentList $argList
+
+    $podCidrDiscovered=$false
+    $podCIDR=""
+    # run kubelet until podCidr is discovered
+    Write-Host "waiting to discover pod CIDR"
+    while (-not $podCidrDiscovered)
+>>>>>>> Update URL and script for v1.6 Windows binaries
     {
         `$podGW=Get-PodGateway(`$podCIDR)
 
@@ -202,6 +213,7 @@ Test-PodCIDR(`$podCIDR)
     return `$podCIDR.length -gt 0
 }
 
+<<<<<<< e4c71e3230da9c4503a4678dae31e3683501c22e
 try
 {
     `$podCIDR=Get-PodCIDR
@@ -242,6 +254,14 @@ catch
 {
     Write-Error `$_
 }
+=======
+    $kubeConfig = @"
+`$env:CONTAINER_NETWORK="$global:TransparentNetworkName"
+`$env:NAT_NETWORK="$global:NatNetworkName"
+`$env:POD_GW="$podGW"
+`$env:VIP_CIDR="10.0.0.0/8"
+c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://${MasterIP}:443 --cluster-dns=$KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --enable-cri=false --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --image-pull-progress-deadline=20m
+>>>>>>> Update URL and script for v1.6 Windows binaries
 "@
     $kubeStartStr | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
