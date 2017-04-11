@@ -399,7 +399,7 @@
           "dataDisks": [
             {
               "createOption": "Empty",
-              "diskSizeGB": "128",
+              "diskSizeGB": "1",
               "lun": 0,
               "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'-etcddisk')]",
               "vhd": {
