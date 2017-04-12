@@ -129,7 +129,7 @@ type KubernetesConfig struct {
 	NetworkPolicy       string `json:"networkPolicy,omitempty"`
 	DnsServiceIP        string `json:"dnsServiceIP,omitempty"`
 	ServiceCidr         string `json:"serviceCidr,omitempty"`
-	ClusterCidr         string `json:"clusterCidr,omitempt"`
+	ClusterCidr         string `json:"clusterCidr,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
