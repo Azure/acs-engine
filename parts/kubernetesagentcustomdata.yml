@@ -29,7 +29,10 @@ write_files:
   content: |
     [Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --log-driver=journald
+    ExecStartPre=-/usr/bin/iptables -t nat -F
+    ExecStartPre=-/usr/bin/ip link set docker0 down
+    ExecStartPre=-/usr/bin/ip link delete docker0
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --iptables=false --ip-masq=false --log-driver=journald
 
 - path: "/etc/systemd/journald.conf.d/kubernetes.conf"
   permissions: "0644"
@@ -41,7 +44,7 @@ write_files:
     MaxLevelConsole=warning
     RateLimitInterval=1s
     RateLimitBurst=20000
-   
+
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
   owner: "root"
