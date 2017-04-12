@@ -68,6 +68,10 @@ export DEPLOYMENT_NAME="${INSTANCE_NAME}"
 
 source "${ROOT}/test/common.sh"
 
+# Set custom dir so we don't clobber global 'az' config
+export AZURE_CONFIG_DIR="$(mktemp -d)"
+trap 'rm -rf ${AZURE_CONFIG_DIR}' EXIT
+
 make -C "${ROOT}" ci
 generate_template
 set_azure_account
