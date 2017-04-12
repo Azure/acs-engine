@@ -59,3 +59,29 @@ const (
 	// ManagedDisks means that the nodes use managed disks for their os and attached volumes
 	ManagedDisks = "ManagedDisks"
 )
+
+// KubernetesVersion defines supported Kubernetes versions
+type KubernetesVersion string
+
+// DCOSVersion defines supported Kubernetes versions
+type DCOSVersion string
+
+const (
+	// Kubernetes153 is the string constant for Kubernetes 1.5.3
+	Kubernetes153 KubernetesVersion = "1.5.3"
+	// Kubernetes160 is the string constant for Kubernetes 1.6.0
+	Kubernetes160 KubernetesVersion = "1.6.0"
+)
+
+const (
+	// DCOS190Version is the string constant for DCOS 1.9
+	DCOS190Version DCOSVersion = "1.9"
+	// DCOS188Version is the string constant for DCOS 1.8.8
+	DCOS188Version DCOSVersion = "1.8.8"
+	// DCOS187Version is the string constant for DCOS 1.8.7
+	DCOS187Version DCOSVersion = "1.8.7"
+	// DCOS184Version is the string constant for DCOS 1.8.4
+	DCOS184Version DCOSVersion = "1.8.4"
+	// DCOS173Version is the string constant for DCOS 1.7.3
+	DCOS173Version DCOSVersion = "1.7.3"
+)

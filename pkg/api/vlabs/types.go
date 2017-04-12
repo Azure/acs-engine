@@ -201,10 +201,6 @@ type KeyVaultCertificate struct {
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
 
-// OrchestratorVersions defines versions supported by various orchestrator types.
-type KubernetesVersion string
-type DCOSVersion string
-
 // OSType represents OS types of agents
 type OSType string
 
