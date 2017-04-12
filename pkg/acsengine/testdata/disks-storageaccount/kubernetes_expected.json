@@ -1014,7 +1014,7 @@
     "masterFirstAddrOctet4": "[variables('masterFirstAddrOctets')[3]]",
     "masterFirstAddrOctets": "[split(parameters('firstConsecutiveStaticIP'),'.')]",
     "masterFirstAddrPrefix": "[concat(variables('masterFirstAddrOctets')[0],'.',variables('masterFirstAddrOctets')[1],'.',variables('masterFirstAddrOctets')[2],'.')]",
-    "masterFqdnPrefix": "[toLower(parameters('masterEndpointDNSNamePrefix'))]",
+    "masterFqdnPrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
     "masterInternalLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterInternalLbName'))]",
     "masterInternalLbIPConfigID": "[concat(variables('masterInternalLbID'),'/frontendIPConfigurations/', variables('masterInternalLbIPConfigName'))]",
     "masterInternalLbIPConfigName": "[concat(variables('orchestratorName'), '-master-internal-lbFrontEnd-', variables('nameSuffix'))]",
