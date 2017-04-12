@@ -931,7 +931,7 @@
     "dockerEngineVersion": "1.12.*",
     "kubeConfigCertificate": "[parameters('kubeConfigCertificate')]",
     "kubeConfigPrivateKey": "[parameters('kubeConfigPrivateKey')]",
-    "kubeDnsServiceIp": "10.0.0.10",
+    "kubeDnsServiceIP": "10.0.0.10",
     "kubeServiceCidr": "10.0.0.0/16",
     "kubernetesAddonManagerSpec": "[parameters('kubernetesAddonManagerSpec')]",
     "kubernetesAddonResizerSpec": "[parameters('kubernetesAddonResizerSpec')]",

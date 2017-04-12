@@ -126,6 +126,9 @@ type OrchestratorProfile struct {
 type KubernetesConfig struct {
 	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
 	NetworkPolicy       string `json:"networkPolicy,omitempty"`
+	DnsServiceIP        string `json:"dnsServiceIP,omitempty"`
+	ServiceCIDR         string `json:"serviceCidr,omitempty"`
+	ClusterCIDR         string `json:"clusterCidr,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
