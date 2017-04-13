@@ -17,6 +17,7 @@ spec:
         - "--kubeconfig=/var/lib/kubelet/kubeconfig"
         - "--allocate-node-cidrs=<allocateNodeCidrs>"
         - "--cluster-cidr=<kubeClusterCidr>"
+        - "--node-cidr-mask-size=<kubeNodeCidrMask>"
         - "--cluster-name=<masterFqdnPrefix>"
         - "--cloud-provider=azure"
         - "--cloud-config=/etc/kubernetes/azure.json"

@@ -413,10 +413,23 @@ func GetVNETSubnetIDComponents(vnetSubnetID string) (string, string, string, str
 
 func (a *KubernetesConfig) Validate() error {
 	if a.ClusterCidr != "" {
-		_, _, err := net.ParseCIDR(a.ClusterCidr)
+		_, subnet, err := net.ParseCIDR(a.ClusterCidr)
 		if err != nil {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterCidr '%s' is an invalid CIDR subnet", a.ClusterCidr)
 		}
+
+		// Validate that the NodeCIDRMask is smaller than the ClusterCidr -- as
+		// we'll need to get at least 2 smaller networks out of it (for one agent
+		// and one master)
+		clusterCidrSize, _ := subnet.Mask.Size()
+		if a.NodeCidrMask != 0 && a.NodeCidrMask <= clusterCidrSize {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NodeCidrMask /%d needs to be smaller than the ClusterCidr mask /%d", a.NodeCidrMask, clusterCidrSize)
+		}
+	}
+
+	if a.NodeCidrMask != 0 && (a.NodeCidrMask < 1 || a.NodeCidrMask > 32) {
+		// We can't do much useful validation on the NodeCidrMask except that it's a valid IPv4 mask
+		return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NodeCidrMask needs to be in the range [%d,%d]", 1, 32)
 	}
 
 	if a.DnsServiceIP != "" || a.ServiceCidr != "" {

@@ -375,6 +375,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addValue(parametersMap, "kubeDnsServiceIP", properties.OrchestratorProfile.KubernetesConfig.DnsServiceIP)
 		addValue(parametersMap, "kubeServiceCidr", properties.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
 		addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterCIDR)
+		addValue(parametersMap, "kubeNodeCidrMask", properties.OrchestratorProfile.KubernetesConfig.NodeCIDRMask)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase+KubernetesHyperkubeImageName)
 		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubernetesAddonManagerImageName)
 		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubernetesAddonResizerImageName)

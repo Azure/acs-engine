@@ -140,6 +140,9 @@
   "kubeDnsServiceIP": {
     "value": "10.0.0.10"
   },
+  "kubeNodeCidrMask": {
+    "value": 24
+  },
   "kubeServiceCidr": {
     "value": "10.0.0.0/16"
   },
