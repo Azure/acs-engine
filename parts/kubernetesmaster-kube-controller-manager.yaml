@@ -14,7 +14,6 @@ spec:
       command: 
         - "/hyperkube"
         - "controller-manager"
-        - "--master=127.0.0.1:8080"
         - "--kubeconfig=/var/lib/kubelet/kubeconfig"
         - "--allocate-node-cidrs=<allocateNodeCidrs>"
         - "--cluster-cidr=<kubeClusterCidr>"
