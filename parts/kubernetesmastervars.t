@@ -173,6 +173,7 @@
 {{if .HasWindows}}
     ,"windowsAdminUsername": "[parameters('windowsAdminUsername')]",
     "windowsAdminPassword": "[parameters('windowsAdminPassword')]",
+    "kubeBinariesSASURL": "[parameters('kubeBinariesSASURL')]",
     "agentWindowsPublisher": "MicrosoftWindowsServer",
     "agentWindowsOffer": "WindowsServer",
     "agentWindowsSku": "2016-Datacenter-with-Containers",
