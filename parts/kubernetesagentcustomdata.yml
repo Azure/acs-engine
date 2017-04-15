@@ -2,19 +2,6 @@
 
 # { { { variable } } }
 
-runcmd:
-- apt-get update
-- apt-get install -y apt-transport-https ca-certificates
-- for i in 1 2 3 4 5; do curl --max-time 60 -fsSL https://apt.dockerproject.org/gpg | apt-key add -; [ $? -eq 0 ] && break || sleep 5; done
-- echo "deb {{{dockerEngineDownloadRepo}}} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-- "echo \"Package: docker-engine\nPin: version {{{dockerEngineVersion}}}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
-- apt-get update
-- apt-get install -y ebtables
-- apt-get install -y docker-engine
-- systemctl restart docker
-- mkdir -p /etc/kubernetes/manifests
-- usermod -aG docker {{{username}}}
-
 write_files:
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
   permissions: "0644"
@@ -29,7 +16,7 @@ write_files:
   content: |
     [Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --log-driver=journald
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --iptables=false --ip-masq=false --log-driver=journald
 
 - path: "/etc/systemd/journald.conf.d/kubernetes.conf"
   permissions: "0644"
@@ -41,7 +28,7 @@ write_files:
     MaxLevelConsole=warning
     RateLimitInterval=1s
     RateLimitBurst=20000
-   
+
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
   owner: "root"
@@ -151,3 +138,17 @@ write_files:
   owner: "root"
   content: !!binary |
     {{{provisionScript}}}
+
+runcmd:
+- apt-get update
+- apt-get install -y apt-transport-https ca-certificates
+- for i in 1 2 3 4 5; do curl --max-time 60 -fsSL https://aptdocker.azureedge.net/gpg | apt-key add -; [ $? -eq 0 ] && break || sleep 5; done
+- echo "deb {{{dockerEngineDownloadRepo}}} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+- "echo \"Package: docker-engine\nPin: version {{{dockerEngineVersion}}}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
+- apt-get update
+- apt-get install -y ebtables
+- apt-get install -y docker-engine
+- systemctl restart docker
+- mkdir -p /etc/kubernetes/manifests
+- usermod -aG docker {{{username}}}
+

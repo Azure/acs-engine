@@ -12,11 +12,11 @@ var (
 	AzureCloudSpec = AzureEnvironmentSpecConfig{
 		//DockerSpecConfig specify the docker engine download repo
 		DockerSpecConfig: DockerSpecConfig{
-			DockerEngineRepo: "https://apt.dockerproject.org/repo",
+			DockerEngineRepo: "https://aptdocker.azureedge.net/repo",
 		},
 		//KubernetesSpecConfig is the default kubernetes container image url.
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase: "gcr.io/google_containers/",
+			KubernetesImageBase: "gcrio.azureedge.net/google_containers/",
 		},
 
 		DCOSSpecConfig: DCOSSpecConfig{
