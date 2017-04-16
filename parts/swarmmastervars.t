@@ -10,7 +10,7 @@
     "agentRunCmd": "[concat('runcmd:\n -  [ /bin/bash, /opt/azure/containers/install-cluster.sh ]\n\n')]", 
     "agentRunCmdFile": "[concat(' -  content: |\n        #!/bin/bash\n        ','sudo mkdir -p /var/log/azure\n        ',variables('agentCustomScript'),'\n    path: /opt/azure/containers/install-cluster.sh\n    permissions: \"0744\"\n')]",
     "agentMaxVMs": 100,
-    "clusterInstallParameters": "[concat(variables('masterCount'), ' ',variables('masterVMNamePrefix'), ' ',variables('masterFirstAddrOctet4'), ' ',variables('adminUsername'),' ',variables('postInstallScriptURI'),' ',variables('masterFirstAddrPrefix'))]",
+    "clusterInstallParameters": "[concat(variables('masterCount'), ' ',variables('masterVMNamePrefix'), ' ',variables('masterFirstAddrOctet4'), ' ',variables('adminUsername'),' ',variables('postInstallScriptURI'),' ',variables('masterFirstAddrPrefix'),' ', parameters('dockerEngineDownloadRepo'), ' ', parameters('dockerComposeDownloadURL'))]",
 {{if .LinuxProfile.HasSecrets}}
     "linuxProfileSecrets" :
       [
@@ -94,12 +94,12 @@
         }
       ]
     ],
-    "osImageOffer": "UbuntuServer", 
-    "osImagePublisher": "Canonical", 
+    "osImageOffer": "[parameters('osImageOffer')]", 
+    "osImagePublisher": "[parameters('osImagePublisher')]", 
 {{if .OrchestratorProfile.IsSwarmMode}}
     "orchestratorName": "swarmm", 
-    "osImageSKU": "16.04-LTS", 
-    "osImageVersion": "16.04.201706191",
+    "osImageSKU": "[parameters('osImageSKU')]", 
+    "osImageVersion": "[parameters('osImageVersion')]",
 {{else}}
     "orchestratorName": "swarm", 
     "osImageSKU": "14.04.5-LTS",

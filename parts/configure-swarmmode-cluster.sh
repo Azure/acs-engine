@@ -28,6 +28,8 @@ MASTERFIRSTADDR=${3}
 AZUREUSER=${4}
 POSTINSTALLSCRIPTURI=${5}
 BASESUBNET=${6}
+DOCKERENGINEDOWNLOADREPO=${7}
+DOCKERCOMPOSEDOWNLOADURL=${8}
 VMNAME=`hostname`
 VMNUMBER=`echo $VMNAME | sed 's/.*[^0-9]\([0-9]\+\)*$/\1/'`
 VMPREFIX=`echo $VMNAME | sed 's/\(.*[^0-9]\)*[0-9]\+$/\1/'`
@@ -190,7 +192,7 @@ installDockerCompose()
   # sudo -i
 
   for i in {1..10}; do
-    wget --tries 4 --retry-connrefused --waitretry=15 -qO- https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+    wget --tries 4 --retry-connrefused --waitretry=15 -qO- ${8}/$DOCKER_COMPOSE_VERSION/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
     if [ $? -eq 0 ]
     then
       # hostname has been found continue

@@ -18,6 +18,8 @@ MASTERFIRSTADDR=${3}
 AZUREUSER=${4}
 POSTINSTALLSCRIPTURI=${5}
 BASESUBNET=${6}
+DOCKERENGINEDOWNLOADREPO=${7}
+DOCKERCOMPOSEDOWNLOADURL=${8}
 VMNAME=`hostname`
 VMNUMBER=`echo $VMNAME | sed 's/.*[^0-9]\([0-9]\+\)*$/\1/'`
 VMPREFIX=`echo $VMNAME | sed 's/\(.*[^0-9]\)*[0-9]\+$/\1/'`
@@ -161,16 +163,13 @@ echo "Installing and configuring docker"
 
 installDocker()
 {
-  for i in {1..10}; do
-    wget --tries 4 --retry-connrefused --waitretry=15 -qO- https://get.docker.com | sh
-    if [ $? -eq 0 ]
-    then
-      # hostname has been found continue
-      echo "Docker installed successfully"
-      break
-    fi
-    sleep 10
-  done
+  apt-get update
+  apt-get install -y apt-transport-https ca-certificates
+  for i in 1 2 3 4 5; do curl --max-time 60 -fsSL https://apt.dockerproject.org/gpg | apt-key add -; [ $? -eq 0 ] && break || sleep 5; done
+  echo "deb ${DOCKERENGINEDOWNLOADREPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+  apt-get update
+  apt-get install -y --allow-unauthenticated docker-engine
+  systemctl restart docker
 }
 time installDocker
 sudo usermod -aG docker $AZUREUSER
@@ -183,7 +182,7 @@ echo "Installing docker compose"
 installDockerCompose()
 {
   for i in {1..10}; do
-    wget --tries 4 --retry-connrefused --waitretry=15 -qO- https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+    wget --tries 4 --retry-connrefused --waitretry=15 -qO- ${8}/$DOCKER_COMPOSE_VERSION/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
     if [ $? -eq 0 ]
     then
       # hostname has been found continue

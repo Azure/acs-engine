@@ -19,29 +19,33 @@ SERVICE_PRINCIPAL_CLIENT_SECRET="${11}"
 KUBELET_PRIVATE_KEY="${12}"
 TARGET_ENVIRONMENT="${13}"
 NETWORK_POLICY="${14}"
+FQDNSuffix="${15}"
+AZURE_VNET_CNI_URL="${16}"
+AZURE_CNI_URL="${17}"
+CALICO_CONFIG_URL="${18}"
 
 # Default values for backoff configuration
-CLOUDPROVIDER_BACKOFF="${15}"
-CLOUDPROVIDER_BACKOFF_RETRIES="${16}"
-CLOUDPROVIDER_BACKOFF_EXPONENT="${17}"
-CLOUDPROVIDER_BACKOFF_DURATION="${18}"
-CLOUDPROVIDER_BACKOFF_JITTER="${19}"
+CLOUDPROVIDER_BACKOFF="${19}"
+CLOUDPROVIDER_BACKOFF_RETRIES="${20}"
+CLOUDPROVIDER_BACKOFF_EXPONENT="${21}"
+CLOUDPROVIDER_BACKOFF_DURATION="${22}"
+CLOUDPROVIDER_BACKOFF_JITTER="${23}"
 # Default values for rate limit configuration
-CLOUDPROVIDER_RATELIMIT="${20}"
-CLOUDPROVIDER_RATELIMIT_QPS="${21}"
-CLOUDPROVIDER_RATELIMIT_BUCKET="${22}"
+CLOUDPROVIDER_RATELIMIT="${24}"
+CLOUDPROVIDER_RATELIMIT_QPS="${25}"
+CLOUDPROVIDER_RATELIMIT_BUCKET="${26}"
 
-USE_MANAGED_IDENTITY_EXTENSION="${23}"
-USE_INSTANCE_METADATA="${24}"
+USE_MANAGED_IDENTITY_EXTENSION="${27}"
+USE_INSTANCE_METADATA="${28}"
 
 # Master only secrets
-APISERVER_PRIVATE_KEY="${25}"
-CA_CERTIFICATE="${26}"
-CA_PRIVATE_KEY="${27}"
-MASTER_FQDN="${28}"
-KUBECONFIG_CERTIFICATE="${29}"
-KUBECONFIG_KEY="${30}"
-ADMINUSER="${31}"
+APISERVER_PRIVATE_KEY="${29}"
+CA_CERTIFICATE="${30}"
+CA_PRIVATE_KEY="${31}"
+MASTER_FQDN="${32}"
+KUBECONFIG_CERTIFICATE="${33}"
+KUBECONFIG_KEY="${34}"
+ADMINUSER="${35}"
 
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
@@ -186,9 +190,9 @@ function configAzureNetworkPolicy() {
     mkdir -p $CNI_BIN_DIR
 
     # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
-    downloadUrl https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz | tar -xz -C $CNI_BIN_DIR
+    downloadUrl ${AZURE_VNET_CNI_URL} | tar -xz -C $CNI_BIN_DIR
     # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
-    downloadUrl https://acs-mirror.azureedge.net/cni/cni-amd64-latest.tgz | tar -xz -C $CNI_BIN_DIR ./loopback
+    downloadUrl ${AZURE_CNI_URL} | tar -xz -C $CNI_BIN_DIR ./loopback
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
 
@@ -351,12 +355,7 @@ function writeKubeConfig() {
     chown $ADMINUSER:$ADMINUSER $KUBECONFIGFILE
     chmod 700 $KUBECONFIGDIR
     chmod 600 $KUBECONFIGFILE
-
-    FQDNSuffix="cloudapp.azure.com"
-    if [ "$TARGET_ENVIRONMENT" = "AzureChinaCloud" ]
-    then
-        FQDNSuffix="cloudapp.chinacloudapi.cn"
-    fi
+    
     # disable logging after secret output
     set +x
     echo "

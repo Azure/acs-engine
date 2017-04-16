@@ -8,44 +8,107 @@ import (
 )
 
 var (
+	//DefaultKubernetesSpecConfig is the default Docker image source of Kubernetes
+	DefaultKubernetesSpecConfig = KubernetesSpecConfig{
+		KubernetesImageBase:     "gcrio.azureedge.net/google_containers/",
+		KubeBinariesSASURLBase:  "https://acs-mirror.azureedge.net/wink8s/",
+		CalicoConfigDownloadURL: "https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager",
+		AzureCNIDownloadURL:     "https://acs-mirror.azureedge.net/cni/cni-amd64-latest.tgz",
+		AzureVnetCNIDownloadURL: "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz",
+	}
+
+	//DefaultDCOSSpecConfig is the default DC/OS binary download URL.
+	DefaultDCOSSpecConfig = DCOSSpecConfig{
+		DCOS173BootstrapDownloadURL: fmt.Sprintf(MsecndDCOSBootstrapDownloadURL, "testing", "df308b6fc3bd91e1277baa5a3db928ae70964722"),
+		DCOS184BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "testing", "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
+		DCOS187BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
+		DCOS188BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "5df43052907c021eeb5de145419a3da1898c58a5"),
+		DCOS190BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "58fd0833ce81b6244fc73bf65b5deb43217b0bd7"),
+	}
+
+	//DefaultDockerSpecConfig is the default Docker engine repo.
+	DefaultDockerSpecConfig = DockerSpecConfig{
+		DockerEngineRepo:         "https://aptdocker.azureedge.net/repo",
+		DockerComposeDownloadURL: "https://github.com/docker/compose/releases/download",
+	}
+
+	//DefaultOSImageConfig is the default Linux distribution.
+	DefaultOSImageConfig = AzureOSImageConfig{
+		ImageOffer:     "UbuntuServer",
+		ImageSku:       "16.04-LTS",
+		ImagePublisher: "Canonical",
+		ImageVersion:   "16.04.201706191",
+	}
+
 	//AzureCloudSpec is the default configurations for global azure.
 	AzureCloudSpec = AzureEnvironmentSpecConfig{
 		//DockerSpecConfig specify the docker engine download repo
-		DockerSpecConfig: DockerSpecConfig{
-			DockerEngineRepo: "https://aptdocker.azureedge.net/repo",
-		},
+		DockerSpecConfig: DefaultDockerSpecConfig,
 		//KubernetesSpecConfig is the default kubernetes container image url.
-		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase:    "gcrio.azureedge.net/google_containers/",
-			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
+		KubernetesSpecConfig: DefaultKubernetesSpecConfig,
+		DCOSSpecConfig:       DefaultDCOSSpecConfig,
+
+		EndpointConfig: AzureEndpointConfig{
+			ResourceManagerVMDNSSuffix: "cloudapp.azure.com",
 		},
 
-		DCOSSpecConfig: DCOSSpecConfig{
-			DCOS173BootstrapDownloadURL: fmt.Sprintf(MsecndDCOSBootstrapDownloadURL, "testing", "df308b6fc3bd91e1277baa5a3db928ae70964722"),
-			DCOS184BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "testing", "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
-			DCOS187BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
-			DCOS188BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "5df43052907c021eeb5de145419a3da1898c58a5"),
-			DCOS190BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "58fd0833ce81b6244fc73bf65b5deb43217b0bd7"),
+		OSImageConfig: DefaultOSImageConfig,
+	}
+
+	//AzureGermanCloudSpec is the German cloud config.
+	AzureGermanCloudSpec = AzureEnvironmentSpecConfig{
+		DockerSpecConfig:     DefaultDockerSpecConfig,
+		KubernetesSpecConfig: DefaultKubernetesSpecConfig,
+		DCOSSpecConfig:       DefaultDCOSSpecConfig,
+		EndpointConfig: AzureEndpointConfig{
+			ResourceManagerVMDNSSuffix: "cloudapp.microsoftazure.de",
 		},
+		OSImageConfig: AzureOSImageConfig{
+			ImageOffer:     "UbuntuServer",
+			ImageSku:       "16.04-LTS",
+			ImagePublisher: "Canonical",
+			ImageVersion:   "16.04.201701130",
+		},
+	}
+
+	//AzureUSGovernmentCloud is the US goverment config.
+	AzureUSGovernmentCloud = AzureEnvironmentSpecConfig{
+		DockerSpecConfig:     DefaultDockerSpecConfig,
+		KubernetesSpecConfig: DefaultKubernetesSpecConfig,
+		DCOSSpecConfig:       DefaultDCOSSpecConfig,
+		EndpointConfig: AzureEndpointConfig{
+			ResourceManagerVMDNSSuffix: "cloudapp.windowsazure.us",
+		},
+		OSImageConfig: DefaultOSImageConfig,
 	}
 
 	//AzureChinaCloudSpec is the configurations for Azure China (Mooncake)
 	AzureChinaCloudSpec = AzureEnvironmentSpecConfig{
 		//DockerSpecConfig specify the docker engine download repo
 		DockerSpecConfig: DockerSpecConfig{
-			DockerEngineRepo: "https://mirror.azure.cn/docker-engine/apt/repo/",
+			DockerEngineRepo:         "https://mirror.azure.cn/docker-engine/apt/repo/",
+			DockerComposeDownloadURL: "https://mirror.azure.cn/docker-toolbox/linux/compose",
 		},
 		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase:    "mirror.azure.cn:5000/google_containers/",
-			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
+			KubernetesImageBase:     "crproxy.trafficmanager.net:6000/google_containers/",
+			KubeBinariesSASURLBase:  "https://acsengine.blob.core.chinacloudapi.cn/kubernetes/",
+			CalicoConfigDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/cni",
+			AzureVnetCNIDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-linux-amd64-latest.tar",
+			AzureCNIDownloadURL:     "https://acsengine.blob.core.chinacloudapi.cn/cni/cni-amd64-latest.tar",
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
 			DCOS173BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
 			DCOS184BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
 			DCOS187BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
 			DCOS188BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),
+			DCOS190BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "58fd0833ce81b6244fc73bf65b5deb43217b0bd7"),
 		},
+
+		EndpointConfig: AzureEndpointConfig{
+			ResourceManagerVMDNSSuffix: "cloudapp.chinacloudapi.cn",
+		},
+		OSImageConfig: DefaultOSImageConfig,
 	}
 )
 
