@@ -7,19 +7,21 @@ packages:
  - jq
  - traceroute
 
-runcmd:
-- /bin/echo DAEMON_ARGS=--name "<<<variables('masterVMNames')[copyIndex()]>>>" --initial-advertise-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --listen-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --advertise-client-urls "<<<variables('masterEtcdClientURLs')[copyIndex()]>>>" --listen-client-urls "<<<concat(variables('masterEtcdClientURLs')[copyIndex()], ',http://127.0.0.1:', variables('masterEtcdClientPort'))>>>" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "<<<variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]>>>" --initial-cluster-state "new" | tee -a /etc/default/etcd
-- apt-get update
-- apt-get install -y apt-transport-https ca-certificates
-- for i in 1 2 3 4 5; do curl --max-time 60 -fsSL https://apt.dockerproject.org/gpg | apt-key add -; [ $? -eq 0 ] && break || sleep 5; done
-- echo "deb {{{dockerEngineDownloadRepo}}} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-- "echo \"Package: docker-engine\nPin: version {{{dockerEngineVersion}}}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
-- apt-get update
-- apt-get install -y ebtables
-- apt-get install -y docker-engine
-- systemctl restart docker
-- mkdir -p /etc/kubernetes/manifests
-- usermod -aG docker {{{username}}}
+disk_setup:
+  /dev/sdc:
+      table_type: gpt
+      layout: true
+      overwrite: true
+
+fs_setup:
+- special:
+  cmd: /sbin/mkfs.ext4 /dev/sdc1 -F -E lazy_itable_init=1,lazy_journal_init=1
+  filesystem: ext4
+  device: /dev/sdc1
+
+mounts:
+- - /dev/sdc1
+  - /var/lib/etcddisk
 
 write_files:
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
@@ -35,7 +37,7 @@ write_files:
   content: |
     [Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --log-driver=journald
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --iptables=false --ip-masq=false --log-driver=journald
 
 - path: "/etc/systemd/journald.conf.d/kubernetes.conf"
   permissions: "0644"
@@ -255,3 +257,24 @@ write_files:
   owner: "root"
   content: !!binary |
     {{{provisionScript}}}
+
+runcmd:
+- /bin/echo DAEMON_ARGS=--name "<<<variables('masterVMNames')[copyIndex()]>>>" --initial-advertise-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --listen-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --advertise-client-urls "<<<variables('masterEtcdClientURLs')[copyIndex()]>>>" --listen-client-urls "<<<concat(variables('masterEtcdClientURLs')[copyIndex()], ',http://127.0.0.1:', variables('masterEtcdClientPort'))>>>" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "<<<variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]>>> --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
+- sudo /bin/chown -R etcd:etcd /var/lib/etcd/default
+- sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
+- systemctl stop etcd
+- sudo -u etcd rm -rf /var/lib/etcd/default
+- systemctl restart etcd
+- for i in $(seq 1 20); do curl --max-time 60 http://127.0.0.1:2379/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
+- apt-get update
+- apt-get install -y apt-transport-https ca-certificates
+- for i in 1 2 3 4 5; do curl --max-time 60 -fsSL https://aptdocker.azureedge.net/gpg | apt-key add -; [ $? -eq 0 ] && break || sleep 5; done
+- echo "deb {{{dockerEngineDownloadRepo}}} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+- "echo \"Package: docker-engine\nPin: version {{{dockerEngineVersion}}}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
+- apt-get update
+- apt-get install -y ebtables
+- apt-get install -y docker-engine
+- systemctl restart docker
+- mkdir -p /etc/kubernetes/manifests
+- usermod -aG docker {{{username}}}
+

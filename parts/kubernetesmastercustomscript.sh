@@ -170,12 +170,6 @@ function configNetworkPolicy() {
     fi
 }
 
-function ensureEtcd() {
-    systemctl stop etcd
-    rm -rf /var/lib/etcd/default
-    systemctl restart etcd
-}
-
 function ensureDocker() {
     systemctl enable docker
     systemctl restart docker
@@ -242,6 +236,18 @@ function ensureApiserver() {
         echo "kubernetes did not start"
         exit 1
     fi
+}
+
+function ensureEtcd() {
+    for i in {1..600}; do
+        curl --max-time 60 http://127.0.0.1:2379/v2/machines;
+        if [ $? -eq 0 ]
+        then
+            echo "Etcd setup successfully"
+            break
+        fi
+        sleep 5
+    done
 }
 
 function writeKubeConfig() {

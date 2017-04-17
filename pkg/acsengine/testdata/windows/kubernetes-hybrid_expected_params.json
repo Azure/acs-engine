@@ -24,7 +24,7 @@
     "value": "Y2xpZW50UHJpdmF0ZUtleQ=="
   },
   "dockerEngineDownloadRepo": {
-    "value": "https://apt.dockerproject.org/repo"
+    "value": "https://aptdocker.azureedge.net/repo"
   },
   "firstConsecutiveStaticIP": {
     "value": "10.240.255.5"
@@ -45,31 +45,31 @@
     "value": "10.0.0.0/16"
   },
   "kubernetesAddonManagerSpec": {
-    "value": "gcr.io/google_containers/kube-addon-manager-amd64:v6.2"
+    "value": "gcrio.azureedge.net/google_containers/kube-addon-manager-amd64:v6.2"
   },
   "kubernetesAddonResizerSpec": {
-    "value": "gcr.io/google_containers/addon-resizer:1.6"
+    "value": "gcrio.azureedge.net/google_containers/addon-resizer:1.6"
   },
   "kubernetesDNSMasqSpec": {
-    "value": "gcr.io/google_containers/kube-dnsmasq-amd64:1.3"
+    "value": "gcrio.azureedge.net/google_containers/kube-dnsmasq-amd64:1.3"
   },
   "kubernetesDashboardSpec": {
-    "value": "gcr.io/google_containers/kubernetes-dashboard-amd64:v1.5.1"
+    "value": "gcrio.azureedge.net/google_containers/kubernetes-dashboard-amd64:v1.5.1"
   },
   "kubernetesExecHealthzSpec": {
-    "value": "gcr.io/google_containers/exechealthz-amd64:1.2"
+    "value": "gcrio.azureedge.net/google_containers/exechealthz-amd64:1.2"
   },
   "kubernetesHeapsterSpec": {
-    "value": "gcr.io/google_containers/heapster:v1.2.0"
+    "value": "gcrio.azureedge.net/google_containers/heapster:v1.2.0"
   },
   "kubernetesHyperkubeSpec": {
-    "value": "gcr.io/google_containers/hyperkube-amd64:v1.5.3"
+    "value": "gcrio.azureedge.net/google_containers/hyperkube-amd64:v1.5.3"
   },
   "kubernetesKubeDNSSpec": {
-    "value": "gcr.io/google_containers/kubedns-amd64:1.7"
+    "value": "gcrio.azureedge.net/google_containers/kubedns-amd64:1.7"
   },
   "kubernetesPodInfraContainerSpec": {
-    "value": "gcr.io/google_containers/pause-amd64:3.0"
+    "value": "gcrio.azureedge.net/google_containers/pause-amd64:3.0"
   },
   "linuxAdminUsername": {
     "value": "azureuser"
