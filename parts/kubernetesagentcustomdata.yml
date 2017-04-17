@@ -130,7 +130,8 @@ write_files:
   owner: "root"
   content: |
     #!/bin/bash
-    echo $(curl -q http://169.254.169.254/metadata/v1/InstanceInfo 2>/dev/null | sed 's/.*\"FD\":\"\([0-9]*\).*/\1/') > /etc/kubernetes/fd
+    echo $(curl -q http://169.254.169.254/metadata/v1/InstanceInfo 2>/dev/null)
+    echo 1 > /etc/kubernetes/fd
     exit 0
 
 - path: "/opt/azure/containers/provision.sh"
