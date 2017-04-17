@@ -35,7 +35,6 @@
 {{if .HasManagedDisks}}
     "apiVersionStorageManagedDisks": "2016-04-30-preview",
 {{end}}
-    "location": "[resourceGroup().location]", 
     "locations": [
          "[resourceGroup().location]",
          "[parameters('location')]"
