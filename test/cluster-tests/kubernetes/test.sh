@@ -138,7 +138,7 @@ for ip in $ips; do
     log $ret; exit -1
   fi
 done
-
+exit 1
 ###### Testing an nginx deployment
 log "Testing deployments"
 kubectl create namespace ${namespace}
