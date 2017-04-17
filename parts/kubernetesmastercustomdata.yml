@@ -219,7 +219,7 @@ write_files:
     KUBELET_NETWORK_PLUGIN=
     DOCKER_OPTS=
     KUBELET_REGISTER_SCHEDULABLE={{{registerSchedulable}}}
-    KUBELET_NODE_LABELS=role=master
+    KUBELET_NODE_LABELS=role=master,beta.kubernetes.io/instance-type={{{masterVMSize}}}
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{{kubernetesPodInfraContainerSpec}}}
 
 - path: "/etc/systemd/system/kubelet.service"
