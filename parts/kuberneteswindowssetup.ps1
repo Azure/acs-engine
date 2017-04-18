@@ -150,55 +150,100 @@ New-InfraContainer()
 }
 
 function
-Get-PodCIDR
-{
-    $argList = @("--hostname-override=$AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""","--api-servers=https://${MasterIP}:443","--kubeconfig=c:\k\config")
-    $process = Start-Process -FilePath c:\k\kubelet.exe -PassThru -ArgumentList $argList
-
-    $podCidrDiscovered=$false
-    $podCIDR=""
-    # run kubelet until podCidr is discovered
-    Write-Host "waiting to discover pod CIDR"
-    while (-not $podCidrDiscovered)
-    {
-        $podCIDR=c:\k\kubectl.exe --kubeconfig=c:\k\config get nodes/$($AzureHostname.ToLower()) -o custom-columns=podCidr:.spec.podCIDR --no-headers
-
-        if ($podCIDR.length -gt 0)
-        {
-            $podCidrDiscovered=$true
-        }
-        else
-        {
-            Write-Host "Sleeping for 10s, and then waiting to discover pod CIDR"
-            Start-Sleep -sec 10    
-        }
-    }
-    
-    # stop the kubelet process now that we have our CIDR, discard the process output
-    $process | Stop-Process | Out-Null
-    
-    return $podCIDR
-}
-
-function
-Get-PodGateway($podCIDR)
-{
-    return $podCIDR.substring(0,$podCIDR.lastIndexOf(".")) + ".1"
-}
-
-function
 Write-KubernetesStartFiles($podCIDR)
 {
-    $podGW=Get-PodGateway($podCIDR)
+    $kubeStartStr = @"
+`$global:TransparentNetworkName="$global:TransparentNetworkName"
+`$global:AzureHostname="$AzureHostname"
+`$global:MasterIP="$MasterIP"
+`$global:NatNetworkName="$global:NatNetworkName"
+`$global:KubeDnsServiceIp="$KubeDnsServiceIp"
 
-    $kubeConfig = @"
-`$env:CONTAINER_NETWORK="$global:TransparentNetworkName"
-`$env:NAT_NETWORK="$global:NatNetworkName"
-`$env:POD_GW="$podGW"
-`$env:VIP_CIDR="10.0.0.0/8"
-c:\k\kubelet.exe --hostname-override=$AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://${MasterIP}:443 --cluster-dns=$KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json
+function
+Get-PodGateway(`$podCIDR)
+{
+    return `$podCIDR.substring(0,`$podCIDR.lastIndexOf(".")) + ".1"
+}
+
+function
+Set-DockerNetwork(`$podCIDR)
+{
+    # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
+    netsh advfirewall set allprofiles state off
+
+    `$dockerTransparentNet=docker network ls --quiet --filter "NAME=`$global:TransparentNetworkName"
+    if (`$dockerTransparentNet.length -eq 0)
+    {
+        `$podGW=Get-PodGateway(`$podCIDR)
+
+        # create new transparent network
+        docker network create --driver=transparent --subnet=`$podCIDR --gateway=`$podGW `$global:TransparentNetworkName
+
+        # create host vnic for gateway ip to forward the traffic and kubeproxy to listen over VIP
+        Add-VMNetworkAdapter -ManagementOS -Name forwarder -SwitchName "Layered Ethernet 3"
+
+        # Assign gateway IP to new adapter and enable forwarding on host adapters:
+        netsh interface ipv4 add address "vEthernet (forwarder)" `$podGW 255.255.255.0
+        netsh interface ipv4 set interface "vEthernet (forwarder)" for=en
+        netsh interface ipv4 set interface "vEthernet (HNSTransparent)" for=en
+    }
+}
+
+function
+Get-PodCIDR()
+{
+    `$podCIDR=c:\k\kubectl.exe --kubeconfig=c:\k\config get nodes/`$(`$global:AzureHostname.ToLower()) -o custom-columns=podCidr:.spec.podCIDR --no-headers
+    return `$podCIDR
+}
+
+function
+Test-PodCIDR(`$podCIDR)
+{
+    return `$podCIDR.length -gt 0
+}
+
+try
+{
+    `$podCIDR=Get-PodCIDR
+    `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
+
+    # if the podCIDR has not yet been assigned to this node, start the kubelet process to get the podCIDR, and then promptly kill it.
+    if (-not `$podCidrDiscovered)
+    {
+        `$argList = @("--hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""","--api-servers=https://`${global:MasterIP}:443","--kubeconfig=c:\k\config")
+        `$process = Start-Process -FilePath c:\k\kubelet.exe -PassThru -ArgumentList `$argList
+
+        # run kubelet until podCidr is discovered
+        Write-Host "waiting to discover pod CIDR"
+        while (-not `$podCidrDiscovered)
+        {
+            Write-Host "Sleeping for 10s, and then waiting to discover pod CIDR"
+            Start-Sleep -sec 10
+            
+            `$podCIDR=Get-PodCIDR
+            `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
+        }
+    
+        # stop the kubelet process now that we have our CIDR, discard the process output
+        `$process | Stop-Process | Out-Null
+    }
+    
+    Set-DockerNetwork(`$podCIDR)
+
+    # startup the service
+    `$podGW=Get-PodGateway(`$podCIDR)
+    `$env:CONTAINER_NETWORK="`$global:TransparentNetworkName"
+    `$env:NAT_NETWORK="`$global:NatNetworkName"
+    `$env:POD_GW="`$podGW"
+    `$env:VIP_CIDR="10.0.0.0/8"
+    c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://`${global:MasterIP}:443 --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json
+}
+catch
+{
+    Write-Error `$_
+}
 "@
-    $kubeConfig | Out-File -encoding ASCII -filepath $global:KubeletStartFile
+    $kubeStartStr | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
     $kubeProxyStartStr = @"
 `$env:INTERFACE_TO_ADD_SERVICE_IP="vEthernet (forwarder)"
@@ -206,26 +251,6 @@ c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostn
 "@
 
     $kubeProxyStartStr | Out-File -encoding ASCII -filepath $global:KubeProxyStartFile
-}
-
-function
-Set-DockerNetwork($podCIDR)
-{
-    $podGW=Get-PodGateway($podCIDR)
-
-    # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
-    netsh advfirewall set allprofiles state off
-
-    # create new transparent network
-    docker network create --driver=transparent --subnet=$podCIDR --gateway=$podGW $global:TransparentNetworkName
-
-    # create host vnic for gateway ip to forward the traffic and kubeproxy to listen over VIP
-    Add-VMNetworkAdapter -ManagementOS -Name forwarder -SwitchName "Layered Ethernet 3"
-
-    # Assign gateway IP to new adapter and enable forwarding on host adapters:
-    netsh interface ipv4 add address "vEthernet (forwarder)" $podGW 255.255.255.0
-    netsh interface ipv4 set interface "vEthernet (forwarder)" for=en
-    netsh interface ipv4 set interface "vEthernet (HNSTransparent)" for=en
 }
 
 function
@@ -303,14 +328,8 @@ try
         Write-Log "Create the Pause Container kubletwin/pause"
         New-InfraContainer
 
-        Write-Log "Get the POD CIDR"
-        $podCIDR = Get-PodCIDR
-
         Write-Log "write kubelet startfile with pod CIDR of $podCIDR"
         Write-KubernetesStartFiles $podCIDR
-
-        Write-Log "setup docker network with pod CIDR of $podCIDR"
-        Set-DockerNetwork $podCIDR
 
         Write-Log "install the NSSM service"
         New-NSSMService
