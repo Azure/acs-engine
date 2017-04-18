@@ -16,6 +16,7 @@ ExecStartPre=-/sbin/iptables -t nat --list
 ExecStartPre=/bin/bash -c "/bin/systemctl set-environment KUBELET_FD=$(/bin/cat /etc/kubernetes/fd)"
 ExecStartPre=/bin/echo "KUBELET_FD=${KUBELET_FD}"
 ExecStartPre=/bin/echo "KUBELET_NODE_LABELS=${KUBELET_NODE_LABELS}"
+ExecStartPre=/bin/echo "DIMA" {{{[[Name]]VMSize}}}
 ExecStart=/usr/bin/docker run \
   --net=host \
   --pid=host \
