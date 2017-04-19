@@ -16,8 +16,8 @@ var (
 		},
 		//KubernetesSpecConfig is the default kubernetes container image url.
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase: "gcrio.azureedge.net/google_containers/",,
-			KubeBinariesSASURL:  "https://acsengine.blob.core.windows.net/wink8s/v1.6.0int.zip",
+			KubernetesImageBase: "gcrio.azureedge.net/google_containers/",
+			KubeBinariesSASURL:  "https://acs-mirror.azureedge.net/wink8s/v1.6.0int.zip",
 		},
 
 		DCOSSpecConfig: DCOSSpecConfig{
