@@ -41,10 +41,23 @@ const (
 )
 
 const (
-	KubernetesVersion = "1.6.0"
+	KubernetesVersion = "1.6.2"
 )
 
 var KubeImages = map[string]map[string]string{
+
+	"1.6.2": {
+		"hyperkube":    "hyperkube-amd64:v1.6.2",
+		"dashboard":    "kubernetes-dashboard-amd64:v1.6.0",
+		"exechealthz":  "exechealthz-amd64:1.2",
+		"addonresizer": "addon-resizer:1.6",
+		"heapster":     "heapster:v1.2.0",
+		"dns":          "kubedns-amd64:1.7",
+		"addonmanager": "kube-addon-manager-amd64:v6.2",
+		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"pause":        "pause-amd64:3.0",
+		"windowszip":	"v1.6.2int.zip",
+	},
 
 	"1.6.0": {
 		"hyperkube":    "hyperkube-amd64:v1.6.0",
