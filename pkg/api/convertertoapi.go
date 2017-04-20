@@ -378,6 +378,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.ClusterCIDR = vlabs.ClusterCidr
 	api.DnsServiceIP = vlabs.DnsServiceIP
 	api.ServiceCIDR = vlabs.ServiceCidr
+	api.NodeCIDRMask = vlabs.NodeCidrMask
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {

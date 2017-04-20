@@ -35,6 +35,7 @@ Here are the valid values for the orchestrator types:
 |clusterCidr|no|Pod IP address range if you wish to change the default.|
 |dnsServiceIP|no|IP address for kube-dns to listen on. If specified must be in the range of `serivceCidr`.|
 |serviceCidr|no|IP range for Service IPs, Default is "10.0.0.0/16". This range is never routed outside of a node so does not need to lie within clusterCidr or the VNet.|
+|nodeCidrMask|no|CIDR mask size to split clusterCidr by. Maps to the `--node-cidr-mask` parameter to the controller manager. Default is 24 (as in a /24 is assigned from clusterCidr to each agent or master for assigning to its pods).|
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.

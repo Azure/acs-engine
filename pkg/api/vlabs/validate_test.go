@@ -68,7 +68,26 @@ func TestKubernetesConfig_Validate(t *testing.T) {
 		t.Errorf("should not error on valid ClusterCidr: %v", err)
 	}
 
-	c.ClusterCidr = "172.16.0.0/a"
+	c.NodeCidrMask = 24
+	if err := c.Validate(); err != nil {
+		t.Errorf("should not error on valid NodeCidrMask: %v", err)
+	}
+	c.NodeCidrMask = 16
+	if err := c.Validate(); err == nil {
+		t.Errorf("should error on out of range NodeCidrMask")
+	}
+	c.NodeCidrMask = -1
+	if err := c.Validate(); err == nil {
+		t.Errorf("should error on out of range NodeCidrMask")
+	}
+	c.NodeCidrMask = 33
+	if err := c.Validate(); err == nil {
+		t.Errorf("should error on out of range NodeCidrMask")
+	}
+
+	c = KubernetesConfig{
+		ClusterCidr: "172.16.0.0/a",
+	}
 	if err := c.Validate(); err == nil {
 		t.Error("should error on invalid ClusterCidr")
 	}

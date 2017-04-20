@@ -90,6 +90,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if a.OrchestratorProfile.KubernetesConfig.ClusterCIDR == "" {
 			a.OrchestratorProfile.KubernetesConfig.ClusterCIDR = DefaultKubernetesClusterCIDR
 		}
+		if a.OrchestratorProfile.KubernetesConfig.NodeCIDRMask == 0 {
+			a.OrchestratorProfile.KubernetesConfig.NodeCIDRMask = 24
+		}
 
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.DCOS {

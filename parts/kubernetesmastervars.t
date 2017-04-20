@@ -85,6 +85,7 @@
     "kubeDnsServiceIP": "[parameters('kubeDnsServiceIP')]",
     "kubeServiceCidr": "[parameters('kubeServiceCidr')]",
     "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
+    "kubeNodeCidrMask": "[parameters('kubeNodeCidrMask')]",
 {{if HasLinuxAgents}}
     "registerSchedulable": "false",
 {{else}}

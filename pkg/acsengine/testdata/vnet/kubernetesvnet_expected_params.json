@@ -50,6 +50,9 @@
   "kubeDnsServiceIP": {
     "value": "172.17.1.10"
   },
+  "kubeNodeCidrMask": {
+    "value": 24
+  },
   "kubeServiceCidr": {
     "value": "172.16.0.0/14"
   },

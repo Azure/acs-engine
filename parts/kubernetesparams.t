@@ -58,6 +58,12 @@
       },
       "type": "string"
     },
+    "kubeNodeCidrMask": {
+      "metadata": {
+        "description": "Maximum CIDR mask size to split kubeClusterCidr into for to assign one to each agent and master."
+      },
+      "type": "int"
+    },
     "kubernetesHyperkubeSpec": {
       "defaultValue": "",
       "metadata": {
