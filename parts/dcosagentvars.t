@@ -3,6 +3,7 @@
     "{{.Name}}NSGName": "[concat(variables('orchestratorName'), '-{{.Name}}-nsg-', variables('nameSuffix'))]", 
     "{{.Name}}VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'))]", 
     "{{.Name}}VMSize": "[parameters('{{.Name}}VMSize')]",
+    "{{.Name}}VMSizeTier": "[(split(parameters('{{.Name}}VMSize'),'_')[0]]",
 {{if .IsAvailabilitySets}}
     {{if .IsStorageAccount}}
     "{{.Name}}StorageAccountsCount": "[add(div(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),1)))]",
