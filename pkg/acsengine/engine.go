@@ -423,7 +423,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	if properties.HasWindows() {
 		addValue(parametersMap, "windowsAdminUsername", properties.WindowsProfile.AdminUsername)
 		addValue(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword)
-		addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURL)
+		addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+KubeImages[KubernetesVersion]["windowszip"])
 		for i, s := range properties.WindowsProfile.Secrets {
 			addValue(parametersMap, fmt.Sprintf("windowsKeyVaultID%d", i), s.SourceVault.ID)
 			for j, c := range s.VaultCertificates {
