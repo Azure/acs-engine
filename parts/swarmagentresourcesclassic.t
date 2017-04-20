@@ -172,7 +172,7 @@
       "sku": {
         "capacity": "[variables('{{.Name}}Count')]", 
         "name": "[variables('{{.Name}}VMSize')]", 
-        "tier": "[variables('{{.Name}}VMSizeTier')]"
+        "tier": "Standard"
       }, 
       "type": "Microsoft.Compute/virtualMachineScaleSets"
     }
