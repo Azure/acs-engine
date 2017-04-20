@@ -45,7 +45,7 @@ $global:AgentCertificate = "{{{clientCertificate}}}"
 $global:DockerServiceName = "Docker"
 $global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
-$global:KubeBinariesSASURL = "https://acs-mirror.azureedge.net/wink8s/v1.5.3int.zip"
+$global:KubeBinariesSASURL = "https://acs-mirror.azureedge.net/wink8s/v1.5.3intwinnat.zip"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
 $global:NatNetworkName="nat"
@@ -86,6 +86,17 @@ Get-KubeBinaries()
     $zipfile = "c:\k.zip"
     Invoke-WebRequest -Uri $global:KubeBinariesSASURL -OutFile $zipfile
     Expand-ZIPFile -File $zipfile -Destination C:\
+}
+
+function
+Patch-WinNATBinary()
+{
+    Stop-Service winnat
+    $winnatsys = "$env:SystemRoot\System32\drivers\winnat.sys"
+    takeown /f $winnatsys
+    icacls $winnatsys /grant "Administrators:(F)"
+    Copy-Item "c:\k\winnat.sys" $winnatsys
+    bcdedit /set TESTSIGNING on
 }
 
 function
@@ -274,8 +285,7 @@ New-NSSMService
     c:\k\nssm set Kubelet AppRotateOnline 1
     c:\k\nssm set Kubelet AppRotateSeconds 86400
     c:\k\nssm set Kubelet AppRotateBytes 1048576
-    net start Kubelet
-    
+
     # setup kubeproxy
     c:\k\nssm install Kubeproxy C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
     c:\k\nssm set Kubeproxy AppDirectory $global:KubeDir
@@ -293,7 +303,6 @@ New-NSSMService
     c:\k\nssm set Kubeproxy AppRotateOnline 1
     c:\k\nssm set Kubeproxy AppRotateSeconds 86400
     c:\k\nssm set Kubeproxy AppRotateBytes 1048576
-    net start Kubeproxy
 }
 
 function
@@ -337,7 +346,12 @@ try
         Write-Log "Set Internet Explorer"
         Set-Explorer
 
+        Write-Log "Patch winnat binary"
+        Patch-WinNATBinary
+
         Write-Log "Setup Complete"
+        Write-Log "Reboot for patching winnat to be effective and start kubelet/kubeproxy service"
+        Restart-Computer
     }
     else 
     {
