@@ -8,7 +8,7 @@ metadata:
   name: kube-dns
   namespace: kube-system
 spec:
-  clusterIP: 10.0.0.10
+  clusterIP: <kubeDnsServiceIP>
   ports:
   - name: dns
     port: 53

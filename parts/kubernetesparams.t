@@ -40,6 +40,24 @@
       },  
       "type": "securestring"
     },
+    "kubeDnsServiceIP": {
+      "metadata": {
+        "description": "Kubernetes DNS IP"
+      },
+      "type": "string"
+    },
+    "kubeServiceCidr": {
+      "metadata": {
+        "description": "Kubernetes service address space"
+      },
+      "type": "string"
+    },
+    "kubeClusterCidr": {
+      "metadata": {
+        "description": "Kubernetes cluster address space"
+      },
+      "type": "string"
+    },
     "kubernetesHyperkubeSpec": {
       "defaultValue": "",
       "metadata": {
@@ -104,7 +122,7 @@
       "type": "string"
     },
     "dockerEngineDownloadRepo": {
-      "defaultValue": "https://apt.dockerproject.org/repo",
+      "defaultValue": "https://aptdocker.azureedge.net/repo",
       "metadata": {
         "description": "The docker engine download url for kubernetes."
       },

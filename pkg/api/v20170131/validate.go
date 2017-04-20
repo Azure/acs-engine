@@ -84,6 +84,7 @@ func (a *Properties) Validate() error {
 		if agentPoolProfile.OSType == Windows {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Swarm:
+			case Kubernetes:
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
@@ -123,7 +124,7 @@ func validatePoolName(poolName string) error {
 }
 
 func validateDNSName(dnsName string) error {
-	dnsNameRegex := `^([a-z][a-z0-9-]{1,45}[a-z0-9])$`
+	dnsNameRegex := `^([A-Za-z][A-Za-z0-9-]{1,43}[A-Za-z0-9])$`
 	re, err := regexp.Compile(dnsNameRegex)
 	if err != nil {
 		return err

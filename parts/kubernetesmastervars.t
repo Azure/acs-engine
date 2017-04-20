@@ -21,7 +21,7 @@
     "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
     "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
     "username": "[parameters('linuxAdminUsername')]",
-    "masterFqdnPrefix": "[toLower(parameters('masterEndpointDNSNamePrefix'))]",
+    "masterFqdnPrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
     "masterPrivateIp": "[parameters('firstConsecutiveStaticIP')]",
     "masterVMSize": "[parameters('masterVMSize')]",
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
@@ -82,8 +82,9 @@
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "vnetCidr": "10.0.0.0/8",
 {{end}}
-    "kubeDnsServiceIp": "10.0.0.10", 
-    "kubeServiceCidr": "10.0.0.0/16",
+    "kubeDnsServiceIP": "[parameters('kubeDnsServiceIP')]",
+    "kubeServiceCidr": "[parameters('kubeServiceCidr')]",
+    "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
 {{if HasLinuxAgents}}
     "registerSchedulable": "false",
 {{else}}

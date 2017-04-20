@@ -32,6 +32,9 @@ Here are the valid values for the orchestrator types:
 |---|---|---|
 |kubernetesImageBase|no|This specifies the image of kubernetes to use for the cluster.|
 |networkPolicy|no|Specifies the network policy tool for the cluster. Default is `none`, which won't enforce network policy. This can be set to `calico` for clusters with Linux agents only.|
+|clusterCidr|no|Pod IP address range if you wish to change the default.|
+|dnsServiceIP|no|IP address for kube-dns to listen on. If specified must be in the range of `serivceCidr`.|
+|serviceCidr|no|IP range for Service IPs, Default is "10.0.0.0/16". This range is never routed outside of a node so does not need to lie within clusterCidr or the VNet.|
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.
