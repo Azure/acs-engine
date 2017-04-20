@@ -589,7 +589,7 @@
     "agentSubnetName": "[concat(variables('orchestratorName'), '-agentsubnet')]",
     "agentVMNamePrefix": "[concat(variables('orchestratorName'), '-agent-', variables('nameSuffix'))]",
     "agentVMSize": "[parameters('agentVMSize')]",
-    "agentVMSizeTier": "[(split(parameters('agentVMSize'),'_')[0]]",
+    "agentVMSizeTier": "[split(parameters('agentVMSize'),'_')[0]]",
     "agentVnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentSubnetName'))]",
     "agentWindowsBackendPort": 3389,
     "agentWindowsOffer": "WindowsServer",
