@@ -41,8 +41,8 @@ type DCOSSpecConfig struct {
 
 //KubernetesSpecConfig is the kubernetes container images used.
 type KubernetesSpecConfig struct {
-	KubernetesImageBase string
-	KubeBinariesSASURLBase  string
+	KubernetesImageBase    string
+	KubeBinariesSASURLBase string
 }
 
 //AzureEnvironmentSpecConfig is the overall configuration differences in different cloud environments.

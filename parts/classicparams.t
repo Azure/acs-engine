@@ -142,13 +142,6 @@
       },
       "type": "string"
     },
-    "kubeBinariesSASURL": {
-      "defaultValue": "UNUSED",
-      "metadata": {
-        "description": "The download url for kubernetes windows binaries."
-      },
-      "type": "string"
-    },
 {{end}}
     "windowsJumpboxOffer": {
       "defaultValue": "UNUSED",
