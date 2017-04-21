@@ -29,6 +29,12 @@
   "firstConsecutiveStaticIP": {
     "value": "10.240.255.5"
   },
+  "kubeBinariesSASURL": {
+    "value": "https://acs-mirror.azureedge.net/wink8s/v1.6.2int.zip"
+  },
+  "kubeClusterCidr": {
+    "value": "10.244.0.0/16"
+  },
   "kubeConfigCertificate": {
     "value": "a3ViZUNvbmZpZ0NlcnRpZmljYXRl"
   },
@@ -54,7 +60,7 @@
     "value": "gcrio.azureedge.net/google_containers/heapster:v1.2.0"
   },
   "kubernetesHyperkubeSpec": {
-    "value": "gcrio.azureedge.net/google_containers/hyperkube-amd64:v1.6.0"
+    "value": "gcrio.azureedge.net/google_containers/hyperkube-amd64:v1.6.2"
   },
   "kubernetesKubeDNSSpec": {
     "value": "gcrio.azureedge.net/google_containers/kubedns-amd64:1.7"
