@@ -41,9 +41,6 @@
   "kubeBinariesSASURL": {
     "value": "https://acs-mirror.azureedge.net/wink8s/v1.6.2int.zip"
   },
-  "kubeClusterCidr": {
-    "value": "10.244.0.0/16"
-  },
   "kubeConfigCertificate": {
     "value": "a3ViZUNvbmZpZ0NlcnRpZmljYXRl"
   },
