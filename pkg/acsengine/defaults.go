@@ -16,8 +16,8 @@ var (
 		},
 		//KubernetesSpecConfig is the default kubernetes container image url.
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase: "gcrio.azureedge.net/google_containers/",
-			KubeBinariesSASURLBase:  "https://acs-mirror.azureedge.net/wink8s/",
+			KubernetesImageBase:    "gcrio.azureedge.net/google_containers/",
+			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
 		},
 
 		DCOSSpecConfig: DCOSSpecConfig{
@@ -37,8 +37,8 @@ var (
 		},
 		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase: "mirror.azure.cn:5000/google_containers/",
-			KubeBinariesSASURLBase:  "https://acs-mirror.azureedge.net/wink8s/",
+			KubernetesImageBase:    "mirror.azure.cn:5000/google_containers/",
+			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
 			DCOS173_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
