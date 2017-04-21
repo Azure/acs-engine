@@ -68,7 +68,7 @@ ensureAzureNetwork()
   # ensure the host ip can resolve
   networkHealthy=1
   for i in {1..120}; do
-    hostname -i
+    hostname --all-ip-addresses
     if [ $? -eq 0 ]
     then
       # hostname has been found continue
@@ -87,7 +87,7 @@ ensureAzureNetwork()
   fi
 }
 ensureAzureNetwork
-HOSTADDR=`hostname -i`
+HOSTADDR=`hostname --all-ip-addresses | cut -d ' ' -f 1`
 
 ismaster ()
 {
@@ -211,7 +211,7 @@ ensureDocker
 if ismaster ; then
     if [ "$HOSTADDR" = "$MASTER0IPADDR" ]; then
           echo "Creating a new Swarm on first master"
-          docker swarm init --advertise-addr $(hostname -i):2377 --listen-addr $(hostname -i):2377
+          docker swarm init --advertise-addr ${HOSTADDR}:2377 --listen-addr ${$HOSTADDR}:2377
     else
         echo "Secondary master attempting to join an existing Swarm"
         swarmmodetoken=""
