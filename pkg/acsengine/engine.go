@@ -425,6 +425,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addValue(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword)
 		if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+KubeImages[KubernetesVersion]["windowszip"])
+			addValue(parametersMap, "kubeBinariesVersion", KubernetesVersion)
 		}
 		for i, s := range properties.WindowsProfile.Secrets {
 			addValue(parametersMap, fmt.Sprintf("windowsKeyVaultID%d", i), s.SourceVault.ID)

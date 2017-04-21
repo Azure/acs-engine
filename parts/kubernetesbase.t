@@ -11,6 +11,12 @@
         },
         "type": "string"
       },
+      "kubeBinariesVersion": {
+        "metadata": {
+          "description": "Kubernetes windows binaries version"
+        },
+        "type": "string"
+      },
       {{template "windowsparams.t"}},
     {{end}}
     {{template "masterparams.t" .}},

@@ -46,6 +46,7 @@ $global:DockerServiceName = "Docker"
 $global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
 $global:KubeBinariesSASURL = "{{{kubeBinariesSASURL}}}"
+$global:KubeBinariesVersion = "{{{kubeBinariesVersion}}}"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
 $global:NatNetworkName="nat"
@@ -158,6 +159,7 @@ Write-KubernetesStartFiles($podCIDR)
 `$global:MasterIP="$MasterIP"
 `$global:NatNetworkName="$global:NatNetworkName"
 `$global:KubeDnsServiceIp="$KubeDnsServiceIp"
+`$global:KubeBinariesVersion="$global:KubeBinariesVersion"
 
 function
 Get-PodGateway(`$podCIDR)
@@ -211,6 +213,12 @@ try
     if (-not `$podCidrDiscovered)
     {
         `$argList = @("--hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""","--api-servers=https://`${global:MasterIP}:443","--kubeconfig=c:\k\config","--enable-cri=false")
+
+        if (`$global:KubeBinariesVersion -eq "1.5.3")
+        {
+            `$argList = @("--hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""","--api-servers=https://`${global:MasterIP}:443","--kubeconfig=c:\k\config")
+        }
+
         `$process = Start-Process -FilePath c:\k\kubelet.exe -PassThru -ArgumentList `$argList
 
         # run kubelet until podCidr is discovered
@@ -236,7 +244,15 @@ try
     `$env:NAT_NETWORK="`$global:NatNetworkName"
     `$env:POD_GW="`$podGW"
     `$env:VIP_CIDR="10.0.0.0/8"
-    c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://`${global:MasterIP}:443 --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --enable-cri=false --image-pull-progress-deadline=20m
+    
+    if (`$global:KubeBinariesVersion -eq "1.5.3")
+    {
+        c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://`${global:MasterIP}:443 --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json
+    }
+    else
+    {
+        c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://`${global:MasterIP}:443 --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --enable-cri=false --image-pull-progress-deadline=20m
+    }
 }
 catch
 {
