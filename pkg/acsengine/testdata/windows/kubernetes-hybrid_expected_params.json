@@ -32,6 +32,9 @@
   "kubeBinariesSASURL": {
     "value": "https://acs-mirror.azureedge.net/wink8s/v1.6.2int.zip"
   },
+  "kubeBinariesVersion": {
+    "value": "1.6.2"
+  },
   "kubeConfigCertificate": {
     "value": "a3ViZUNvbmZpZ0NlcnRpZmljYXRl"
   },
