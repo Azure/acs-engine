@@ -75,3 +75,16 @@ const (
 var (
 	NetworkPolicyValues = [...]string{"", "none", "azure", "calico"}
 )
+
+const (
+	// DCOS190Version is the string constant for DCOS 1.9
+	DCOS190Version OrchestratorVersion = "1.9"
+	// DCOS188Version is the string constant for DCOS 1.8.8
+	DCOS188Version OrchestratorVersion = "1.8.8"
+	// DCOS187Version is the string constant for DCOS 1.8.7
+	DCOS187Version OrchestratorVersion = "1.8.7"
+	// DCOS184Version is the string constant for DCOS 1.8.4
+	DCOS184Version OrchestratorVersion = "1.8.4"
+	// DCOS173Version is the string constant for DCOS 1.7.3
+	DCOS173Version OrchestratorVersion = "1.7.3"
+)

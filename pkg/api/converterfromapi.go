@@ -380,6 +380,10 @@ func convertOrchestratorProfileToV20170131(api *OrchestratorProfile, o *v2017013
 func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.OrchestratorProfile) {
 	o.OrchestratorType = vlabs.OrchestratorType(api.OrchestratorType)
 
+	if api.OrchestratorVersion != "" {
+		o.OrchestratorVersion = vlabs.OrchestratorVersion(api.OrchestratorVersion)
+	}
+
 	if api.KubernetesConfig != nil {
 		o.KubernetesConfig = &vlabs.KubernetesConfig{}
 		convertKubernetesConfigToVLabs(api.KubernetesConfig, o.KubernetesConfig)

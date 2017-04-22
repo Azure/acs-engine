@@ -152,7 +152,7 @@
               "offer": "[variables('osImageOffer')]",
               "publisher": "[variables('osImagePublisher')]",
               "sku": "[variables('osImageSKU')]",
-              "version": "latest"
+              "version": "[variables('osImageVersion')]"
             },
             {{GetDataDisks .}}
             "osDisk": {

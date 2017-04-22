@@ -374,25 +374,6 @@ func convertVLabsOrchestratorProfile(vlabs *vlabs.OrchestratorProfile, api *Orch
 			api.OrchestratorVersion = Kubernetes160
 		}
 	}
-
-	switch vlabs.OrchestratorType {
-	case DCOS190:
-	case DCOS:
-		api.OrchestratorVersion = DCOS190Version
-		break
-	case DCOS188:
-		api.OrchestratorVersion = string(DCOS188Version)
-		break
-	case DCOS187:
-		api.OrchestratorVersion = string(DCOS187Version)
-		break
-	case DCOS184:
-		api.OrchestratorVersion = string(DCOS184Version)
-		break
-	case DCOS173:
-		api.OrchestratorVersion = string(DCOS173Version)
-		break
-	}
 }
 
 func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *KubernetesConfig) {
