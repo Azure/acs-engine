@@ -554,6 +554,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"GetAgentAllowedSizes": func() string {
 			if t.ClassicMode {
 				return GetClassicAllowedSizes()
+			} else if cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+				return GetKubernetesAgentAllowedSizes()
 			}
 			return GetMasterAgentAllowedSizes()
 		},
