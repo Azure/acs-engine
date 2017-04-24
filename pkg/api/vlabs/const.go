@@ -88,3 +88,10 @@ const (
 	// DCOS173Version is the string constant for DCOS 1.7.3
 	DCOS173Version OrchestratorVersion = "1.7.3"
 )
+
+const (
+	// Kubernetes153 is the string constant for Kubernetes 1.5.3
+	Kubernetes153 OrchestratorVersion = "1.5.3"
+	// Kubernetes160 is the string constant for Kubernetes 1.6.0
+	Kubernetes160 OrchestratorVersion = "1.6.0"
+)

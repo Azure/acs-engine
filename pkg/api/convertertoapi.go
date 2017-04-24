@@ -364,14 +364,50 @@ func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfil
 	api.OrchestratorType = OrchestratorType(v20170131.OrchestratorType)
 }
 
-func convertVLabsOrchestratorProfile(vlabs *vlabs.OrchestratorProfile, api *OrchestratorProfile) {
-	api.OrchestratorType = OrchestratorType(vlabs.OrchestratorType)
-	if api.OrchestratorType == Kubernetes && vlabs.KubernetesConfig != nil {
-		api.KubernetesConfig = &KubernetesConfig{}
-		convertVLabsKubernetesConfig(vlabs.KubernetesConfig, api.KubernetesConfig)
+func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *OrchestratorProfile) {
+	api.OrchestratorType = OrchestratorType(vlabscs.OrchestratorType)
+	if api.OrchestratorType == Kubernetes {
 
-		if vlabs.OrchestratorVersion == "" {
+		if vlabscs.KubernetesConfig != nil {
+			api.KubernetesConfig = &KubernetesConfig{}
+			convertVLabsKubernetesConfig(vlabscs.KubernetesConfig, api.KubernetesConfig)
+		}
+
+		switch vlabscs.OrchestratorVersion {
+		case vlabs.Kubernetes160:
 			api.OrchestratorVersion = Kubernetes160
+		case vlabs.Kubernetes153:
+			api.OrchestratorVersion = Kubernetes153
+		default:
+			api.OrchestratorVersion = Kubernetes160
+		}
+	} else {
+		switch vlabscs.OrchestratorType {
+		case vlabs.DCOS173:
+			api.OrchestratorVersion = DCOS173Version
+		case vlabs.DCOS184:
+			api.OrchestratorVersion = DCOS184Version
+		case vlabs.DCOS187:
+			api.OrchestratorVersion = DCOS187Version
+		case vlabs.DCOS188:
+			api.OrchestratorVersion = DCOS188Version
+		case vlabs.DCOS190:
+			api.OrchestratorVersion = DCOS190Version
+		case vlabs.DCOS:
+			api.OrchestratorVersion = DCOS190Version
+		}
+
+		switch vlabscs.OrchestratorVersion {
+		case vlabs.DCOS173Version:
+			api.OrchestratorVersion = DCOS173Version
+		case vlabs.DCOS184Version:
+			api.OrchestratorVersion = DCOS184Version
+		case vlabs.DCOS187Version:
+			api.OrchestratorVersion = DCOS187Version
+		case vlabs.DCOS188Version:
+			api.OrchestratorVersion = DCOS188Version
+		case vlabs.DCOS190Version:
+			api.OrchestratorVersion = DCOS190Version
 		}
 	}
 }
