@@ -283,20 +283,20 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
 	var files []string
 	var baseFile string
-	if properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS188) ||
-		properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS190) ||
-		properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS187) ||
-		properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS184) ||
-		properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS173) {
+	if properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS188) ||
+		properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS190) ||
+		properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS187) ||
+		properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS184) ||
+		properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS173) {
 		files = append(commonTemplateFiles, dcosTemplateFiles...)
 		baseFile = dcosBaseFile
-	} else if properties.OrchestratorProfile.OrchestratorType.Equal(api.Swarm) {
+	} else if properties.OrchestratorProfile.OrchestratorType.Equals(api.Swarm) {
 		files = append(commonTemplateFiles, swarmTemplateFiles...)
 		baseFile = swarmBaseFile
-	} else if properties.OrchestratorProfile.OrchestratorType.Equal(api.Kubernetes) {
+	} else if properties.OrchestratorProfile.OrchestratorType.Equals(api.Kubernetes) {
 		files = append(commonTemplateFiles, kubernetesTemplateFiles...)
 		baseFile = kubernetesBaseFile
-	} else if properties.OrchestratorProfile.OrchestratorType.Equal(api.SwarmMode) {
+	} else if properties.OrchestratorProfile.OrchestratorType.Equals(api.SwarmMode) {
 		files = append(commonTemplateFiles, swarmModeTemplateFiles...)
 		baseFile = swarmBaseFile
 	} else {
@@ -363,7 +363,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	// Kubernetes Parameters
-	if properties.OrchestratorProfile.OrchestratorType.Equal(api.Kubernetes) {
+	if properties.OrchestratorProfile.OrchestratorType.Equals(api.Kubernetes) {
 		addSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
 		addSecret(parametersMap, "apiServerPrivateKey", properties.CertificateProfile.APIServerPrivateKey, true)
 		addSecret(parametersMap, "caCertificate", properties.CertificateProfile.CaCertificate, true)
@@ -389,17 +389,17 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	if strings.HasPrefix(string(properties.OrchestratorProfile.OrchestratorType), string(api.DCOS)) {
 		dcosBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOS188_BootstrapDownloadURL
 		switch {
-		case properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS):
+		case properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS):
 			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190_BootstrapDownloadURL
-		case properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS173):
+		case properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS173):
 			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS173_BootstrapDownloadURL
-		case properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS184):
+		case properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS184):
 			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS184_BootstrapDownloadURL
-		case properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS187):
+		case properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS187):
 			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS187_BootstrapDownloadURL
-		case properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS188):
+		case properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS188):
 			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188_BootstrapDownloadURL
-		case properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS190):
+		case properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS190):
 			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190_BootstrapDownloadURL
 		}
 		addValue(parametersMap, "dcosBootstrapURL", dcosBootstrapURL)
@@ -472,22 +472,22 @@ func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
 func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[string]interface{} {
 	return template.FuncMap{
 		"IsDCOS173": func() bool {
-			return cs.Properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS173)
+			return cs.Properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS173)
 		},
 		"IsDCOS184": func() bool {
-			return cs.Properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS184)
+			return cs.Properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS184)
 		},
 		"IsDCOS187": func() bool {
-			return cs.Properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS187)
+			return cs.Properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS187)
 		},
 		"IsDCOS188": func() bool {
-			return cs.Properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS188)
+			return cs.Properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS188)
 		},
 		"IsDCOS190": func() bool {
-			return cs.Properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS190)
+			return cs.Properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS190)
 		},
 		"RequiresFakeAgentOutput": func() bool {
-			return cs.Properties.OrchestratorProfile.OrchestratorType.Equal(api.Kubernetes)
+			return cs.Properties.OrchestratorProfile.OrchestratorType.Equals(api.Kubernetes)
 		},
 		"IsSwarmMode": func() bool {
 			return cs.Properties.OrchestratorProfile.IsSwarmMode()
@@ -542,11 +542,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"GetMasterAllowedSizes": func() string {
 			if t.ClassicMode {
 				return GetClassicAllowedSizes()
-			} else if cs.Properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS190) ||
-				cs.Properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS188) ||
-				cs.Properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS187) ||
-				cs.Properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS184) ||
-				cs.Properties.OrchestratorProfile.OrchestratorType.Equal(api.DCOS173) {
+			} else if cs.Properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS190) ||
+				cs.Properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS188) ||
+				cs.Properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS187) ||
+				cs.Properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS184) ||
+				cs.Properties.OrchestratorProfile.OrchestratorType.Equals(api.DCOS173) {
 				return GetDCOSMasterAllowedSizes()
 			}
 			return GetMasterAgentAllowedSizes()
@@ -554,7 +554,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"GetAgentAllowedSizes": func() string {
 			if t.ClassicMode {
 				return GetClassicAllowedSizes()
-			} else if cs.Properties.OrchestratorProfile.OrchestratorType.Equal(api.Kubernetes) {
+			} else if cs.Properties.OrchestratorProfile.OrchestratorType.Equals(api.Kubernetes) {
 				return GetKubernetesAgentAllowedSizes()
 			}
 			return GetMasterAgentAllowedSizes()
@@ -730,7 +730,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 }
 
 func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) string {
-	if orchestratorType.Equal(api.DCOS190) {
+	if orchestratorType.Equals(api.DCOS190) {
 		switch masterCount {
 		case 1:
 			return "bcc883b7a3191412cf41824bdee06c1142187a0b"
@@ -739,7 +739,7 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 		case 5:
 			return "b41bfa84137a6374b2ff5eb1655364d7302bd257"
 		}
-	} else if orchestratorType.Equal(api.DCOS188) {
+	} else if orchestratorType.Equals(api.DCOS188) {
 		switch masterCount {
 		case 1:
 			return "441385ce2f5942df7e29075c12fb38fa5e92cbba"
@@ -748,7 +748,7 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 		case 5:
 			return "d9b61156dfcc9383e014851529738aa550ef57d9"
 		}
-	} else if orchestratorType.Equal(api.DCOS187) {
+	} else if orchestratorType.Equals(api.DCOS187) {
 		switch masterCount {
 		case 1:
 			return "556978041b6ed059cc0f474501083e35ea5645b8"
@@ -757,7 +757,7 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 		case 5:
 			return "2e38627207dc70f46296b9649f9ee2a43500ec15"
 		}
-	} else if orchestratorType.Equal(api.DCOS184) {
+	} else if orchestratorType.Equals(api.DCOS184) {
 		switch masterCount {
 		case 1:
 			return "5ac6a7d060584c58c704e1f625627a591ecbde4e"
@@ -766,7 +766,7 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 		case 5:
 			return "97947a91e2c024ed4f043bfcdad49da9418d3095"
 		}
-	} else if orchestratorType.Equal(api.DCOS173) {
+	} else if orchestratorType.Equals(api.DCOS173) {
 		switch masterCount {
 		case 1:
 			return "6b604c1331c2b8b52bb23d1ea8a8d17e0f2b7428"
@@ -780,11 +780,11 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 }
 
 func getDCOSCustomDataPublicIPStr(orchestratorType api.OrchestratorType, masterCount int) string {
-	if orchestratorType.Equal(api.DCOS173) ||
-		orchestratorType.Equal(api.DCOS184) ||
-		orchestratorType.Equal(api.DCOS187) ||
-		orchestratorType.Equal(api.DCOS188) ||
-		orchestratorType.Equal(api.DCOS190) {
+	if orchestratorType.Equals(api.DCOS173) ||
+		orchestratorType.Equals(api.DCOS184) ||
+		orchestratorType.Equals(api.DCOS187) ||
+		orchestratorType.Equals(api.DCOS188) ||
+		orchestratorType.Equals(api.DCOS190) {
 		var buf bytes.Buffer
 		for i := 0; i < masterCount; i++ {
 			buf.WriteString(fmt.Sprintf("reference(variables('masterVMNic')[%d]).ipConfigurations[0].properties.privateIPAddress,", i))
@@ -1102,15 +1102,15 @@ touch /etc/mesosphere/roles/azure_master`
 func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCount int, provisionContent string, attributeContents string) string {
 	yamlFilename := ""
 	switch {
-	case orchestratorType.Equal(api.DCOS190):
+	case orchestratorType.Equals(api.DCOS190):
 		yamlFilename = dcosCustomData190
-	case orchestratorType.Equal(api.DCOS188):
+	case orchestratorType.Equals(api.DCOS188):
 		yamlFilename = dcosCustomData188
-	case orchestratorType.Equal(api.DCOS187):
+	case orchestratorType.Equals(api.DCOS187):
 		yamlFilename = dcosCustomData187
-	case orchestratorType.Equal(api.DCOS184):
+	case orchestratorType.Equals(api.DCOS184):
 		yamlFilename = dcosCustomData184
-	case orchestratorType.Equal(api.DCOS173):
+	case orchestratorType.Equals(api.DCOS173):
 		yamlFilename = dcosCustomData173
 	default:
 		// it is a bug to get here

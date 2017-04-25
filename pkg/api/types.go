@@ -184,17 +184,17 @@ type VMDiagnostics struct {
 	StorageURL *neturl.URL `json:"storageUrl"`
 }
 
+// StringComparer compares two string type such as OrchestratorType
+type StringComparer interface {
+	Equals(StringComparer) bool
+}
+
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
 
-// OrchestratorTypeEqualer compares OrchestratorType
-type OrchestratorTypeEqualer interface {
-	Equal(OrchestratorTypeEqualer) bool
-}
-
-// Equal returns true if two OrchestratorType are compared to be the same.
+// Equals returns true if two OrchestratorType are compared to be the same.
 // Here it is string case insensitive comparison
-func (o OrchestratorType) Equal(u OrchestratorTypeEqualer) bool {
+func (o OrchestratorType) Equals(u StringComparer) bool {
 	return strings.EqualFold(string(o), string(u.(OrchestratorType)))
 }
 
@@ -356,12 +356,12 @@ func (l *LinuxProfile) HasSecrets() bool {
 
 // IsSwarmMode returns true if this template is for Swarm Mode orchestrator
 func (o *OrchestratorProfile) IsSwarmMode() bool {
-	return o.OrchestratorType.Equal(SwarmMode)
+	return o.OrchestratorType.Equals(SwarmMode)
 }
 
 // IsKubernetes returns true if this template is for Kubernetes orchestrator
 func (o *OrchestratorProfile) IsKubernetes() bool {
-	return o.OrchestratorType.Equal(Kubernetes)
+	return o.OrchestratorType.Equals(Kubernetes)
 }
 
 // IsVNETIntegrated returns true if Azure VNET integration is enabled

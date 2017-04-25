@@ -44,7 +44,7 @@ func writeArtifacts(containerService *api.ContainerService, apiVersion, template
 
 	if certsGenerated {
 		properties := containerService.Properties
-		if properties.OrchestratorProfile.OrchestratorType.Equal(api.Kubernetes) {
+		if properties.OrchestratorProfile.OrchestratorType.Equals(api.Kubernetes) {
 			directory := path.Join(artifactsDir, "kubeconfig")
 			var locations []string
 			if containerService.Location != "" {

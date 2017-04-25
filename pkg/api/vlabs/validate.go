@@ -11,20 +11,20 @@ import (
 // Validate implements APIObject
 func (o *OrchestratorProfile) Validate() error {
 	switch {
-	case o.OrchestratorType.Equal(DCOS):
-	case o.OrchestratorType.Equal(DCOS190):
-	case o.OrchestratorType.Equal(DCOS188):
-	case o.OrchestratorType.Equal(DCOS187):
-	case o.OrchestratorType.Equal(DCOS184):
-	case o.OrchestratorType.Equal(DCOS173):
-	case o.OrchestratorType.Equal(Swarm):
-	case o.OrchestratorType.Equal(Kubernetes):
-	case o.OrchestratorType.Equal(SwarmMode):
+	case o.OrchestratorType.Equals(DCOS):
+	case o.OrchestratorType.Equals(DCOS190):
+	case o.OrchestratorType.Equals(DCOS188):
+	case o.OrchestratorType.Equals(DCOS187):
+	case o.OrchestratorType.Equals(DCOS184):
+	case o.OrchestratorType.Equals(DCOS173):
+	case o.OrchestratorType.Equals(Swarm):
+	case o.OrchestratorType.Equals(Kubernetes):
+	case o.OrchestratorType.Equals(SwarmMode):
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
 
-	if !o.OrchestratorType.Equal(Kubernetes) && o.KubernetesConfig != nil &&
+	if !o.OrchestratorType.Equals(Kubernetes) && o.KubernetesConfig != nil &&
 		(o.KubernetesConfig.KubernetesImageBase != "" || o.KubernetesConfig.NetworkPolicy != "") {
 		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
 	}
@@ -164,11 +164,11 @@ func (a *Properties) Validate() error {
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
 		return e
 	}
-	if a.OrchestratorProfile.OrchestratorType.Equal(Kubernetes) && len(a.ServicePrincipalProfile.ClientID) == 0 {
+	if a.OrchestratorProfile.OrchestratorType.Equals(Kubernetes) && len(a.ServicePrincipalProfile.ClientID) == 0 {
 		return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 	}
 
-	if a.OrchestratorProfile.OrchestratorType.Equal(Kubernetes) && len(a.ServicePrincipalProfile.Secret) == 0 {
+	if a.OrchestratorProfile.OrchestratorType.Equals(Kubernetes) && len(a.ServicePrincipalProfile.Secret) == 0 {
 		return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 	}
 
@@ -198,15 +198,15 @@ func (a *Properties) Validate() error {
 
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			switch {
-			case a.OrchestratorProfile.OrchestratorType.Equal(DCOS):
-			case a.OrchestratorProfile.OrchestratorType.Equal(DCOS173):
-			case a.OrchestratorProfile.OrchestratorType.Equal(DCOS184):
-			case a.OrchestratorProfile.OrchestratorType.Equal(DCOS187):
-			case a.OrchestratorProfile.OrchestratorType.Equal(DCOS188):
-			case a.OrchestratorProfile.OrchestratorType.Equal(DCOS190):
-			case a.OrchestratorProfile.OrchestratorType.Equal(Swarm):
-			case a.OrchestratorProfile.OrchestratorType.Equal(Kubernetes):
-			case a.OrchestratorProfile.OrchestratorType.Equal(SwarmMode):
+			case a.OrchestratorProfile.OrchestratorType.Equals(DCOS):
+			case a.OrchestratorProfile.OrchestratorType.Equals(DCOS173):
+			case a.OrchestratorProfile.OrchestratorType.Equals(DCOS184):
+			case a.OrchestratorProfile.OrchestratorType.Equals(DCOS187):
+			case a.OrchestratorProfile.OrchestratorType.Equals(DCOS188):
+			case a.OrchestratorProfile.OrchestratorType.Equals(DCOS190):
+			case a.OrchestratorProfile.OrchestratorType.Equals(Swarm):
+			case a.OrchestratorProfile.OrchestratorType.Equals(Kubernetes):
+			case a.OrchestratorProfile.OrchestratorType.Equals(SwarmMode):
 			default:
 				return fmt.Errorf("HA volumes are currently unsupported for Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
@@ -214,27 +214,27 @@ func (a *Properties) Validate() error {
 
 		if len(agentPoolProfile.CustomNodeLabels) > 0 {
 			switch {
-			case a.OrchestratorProfile.OrchestratorType.Equal(DCOS):
-			case a.OrchestratorProfile.OrchestratorType.Equal(DCOS173):
-			case a.OrchestratorProfile.OrchestratorType.Equal(DCOS184):
-			case a.OrchestratorProfile.OrchestratorType.Equal(DCOS187):
-			case a.OrchestratorProfile.OrchestratorType.Equal(DCOS188):
-			case a.OrchestratorProfile.OrchestratorType.Equal(DCOS190):
+			case a.OrchestratorProfile.OrchestratorType.Equals(DCOS):
+			case a.OrchestratorProfile.OrchestratorType.Equals(DCOS173):
+			case a.OrchestratorProfile.OrchestratorType.Equals(DCOS184):
+			case a.OrchestratorProfile.OrchestratorType.Equals(DCOS187):
+			case a.OrchestratorProfile.OrchestratorType.Equals(DCOS188):
+			case a.OrchestratorProfile.OrchestratorType.Equals(DCOS190):
 			default:
 				return fmt.Errorf("Agent Type attributes are only supported for DCOS")
 			}
 		}
-		if a.OrchestratorProfile.OrchestratorType.Equal(Kubernetes) && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
+		if a.OrchestratorProfile.OrchestratorType.Equals(Kubernetes) && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
 			return fmt.Errorf("VirtualMachineScaleSets are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"AvailabilityProfile\":\"%s\"", AvailabilitySet)
 		}
-		if a.OrchestratorProfile.OrchestratorType.Equal(Kubernetes) && len(agentPoolProfile.DNSPrefix) > 0 {
+		if a.OrchestratorProfile.OrchestratorType.Equals(Kubernetes) && len(agentPoolProfile.DNSPrefix) > 0 {
 			return errors.New("DNSPrefix not support for agent pools in Kubernetes - Kubernetes marks its own clusters public")
 		}
 		if agentPoolProfile.OSType == Windows {
 			switch {
-			case a.OrchestratorProfile.OrchestratorType.Equal(Swarm):
-			case a.OrchestratorProfile.OrchestratorType.Equal(SwarmMode):
-			case a.OrchestratorProfile.OrchestratorType.Equal(Kubernetes):
+			case a.OrchestratorProfile.OrchestratorType.Equals(Swarm):
+			case a.OrchestratorProfile.OrchestratorType.Equals(SwarmMode):
+			case a.OrchestratorProfile.OrchestratorType.Equals(Kubernetes):
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
@@ -262,7 +262,7 @@ func (a *Properties) validateNetworkPolicy() error {
 	var networkPolicy string
 
 	switch {
-	case a.OrchestratorProfile.OrchestratorType.Equal(Kubernetes):
+	case a.OrchestratorProfile.OrchestratorType.Equals(Kubernetes):
 		if a.OrchestratorProfile.KubernetesConfig != nil {
 			networkPolicy = a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
 		}

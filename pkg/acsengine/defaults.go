@@ -72,7 +72,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	a := cs.Properties
 
 	cloudSpecConfig := GetCloudSpecConfig(location)
-	if a.OrchestratorProfile.OrchestratorType.Equal(api.Kubernetes) {
+	if a.OrchestratorProfile.OrchestratorType.Equals(api.Kubernetes) {
 		if a.OrchestratorProfile.KubernetesConfig == nil {
 			a.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
 		}
@@ -81,7 +81,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 		}
 	}
-	if a.OrchestratorProfile.OrchestratorType.Equal(api.DCOS) {
+	if a.OrchestratorProfile.OrchestratorType.Equals(api.DCOS) {
 		a.OrchestratorProfile.OrchestratorType = api.DCOS190
 	}
 }
@@ -89,7 +89,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 // SetMasterNetworkDefaults for masters
 func setMasterNetworkDefaults(a *api.Properties) {
 	if !a.MasterProfile.IsCustomVNET() {
-		if a.OrchestratorProfile.OrchestratorType.Equal(api.Kubernetes) {
+		if a.OrchestratorProfile.OrchestratorType.Equals(api.Kubernetes) {
 			if a.OrchestratorProfile.IsVNETIntegrated() {
 				// Use a single large subnet for all masters, agents and pods.
 				a.MasterProfile.Subnet = DefaultKubernetesSubnet
@@ -125,7 +125,7 @@ func setAgentNetworkDefaults(a *api.Properties) {
 		for i := range a.AgentPoolProfiles {
 			profile := &a.AgentPoolProfiles[i]
 
-			if a.OrchestratorProfile.OrchestratorType.Equal(api.Kubernetes) {
+			if a.OrchestratorProfile.OrchestratorType.Equals(api.Kubernetes) {
 				profile.Subnet = a.MasterProfile.Subnet
 			} else {
 				profile.Subnet = fmt.Sprintf(DefaultAgentSubnetTemplate, subnetCounter)
@@ -232,15 +232,15 @@ func certGenerationRequired(a *api.Properties) bool {
 	}
 
 	switch {
-	case a.OrchestratorProfile.OrchestratorType.Equal(api.DCOS):
+	case a.OrchestratorProfile.OrchestratorType.Equals(api.DCOS):
 		return false
-	case a.OrchestratorProfile.OrchestratorType.Equal(api.DCOS184):
+	case a.OrchestratorProfile.OrchestratorType.Equals(api.DCOS184):
 		return false
-	case a.OrchestratorProfile.OrchestratorType.Equal(api.DCOS173):
+	case a.OrchestratorProfile.OrchestratorType.Equals(api.DCOS173):
 		return false
-	case a.OrchestratorProfile.OrchestratorType.Equal(api.Swarm):
+	case a.OrchestratorProfile.OrchestratorType.Equals(api.Swarm):
 		return false
-	case a.OrchestratorProfile.OrchestratorType.Equal(api.Kubernetes):
+	case a.OrchestratorProfile.OrchestratorType.Equals(api.Kubernetes):
 		return true
 	default:
 		return false
