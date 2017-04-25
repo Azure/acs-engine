@@ -8,11 +8,11 @@ import (
 
 // Validate implements APIObject
 func (o *OrchestratorProfile) Validate() error {
-	switch o.OrchestratorType {
-	case DCOS:
-	case Mesos:
-	case Swarm:
-	case Kubernetes:
+	switch {
+	case o.OrchestratorType.Equal(DCOS):
+	case o.OrchestratorType.Equal(Mesos):
+	case o.OrchestratorType.Equal(Swarm):
+	case o.OrchestratorType.Equal(Kubernetes):
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
@@ -82,8 +82,8 @@ func (a *Properties) Validate() error {
 			return e
 		}
 		if agentPoolProfile.OSType == Windows {
-			switch a.OrchestratorProfile.OrchestratorType {
-			case Swarm:
+			switch {
+			case a.OrchestratorProfile.OrchestratorType.Equal(Swarm):
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}

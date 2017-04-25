@@ -2,6 +2,7 @@ package v20160930
 
 import (
 	neturl "net/url"
+	"strings"
 )
 
 // ResourcePurchasePlan defines resource plan as required by ARM
@@ -161,6 +162,17 @@ type VMDiagnostics struct {
 
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
+
+// OrchestratorTypeEqualer compares OrchestratorType
+type OrchestratorTypeEqualer interface {
+	Equal(OrchestratorTypeEqualer) bool
+}
+
+// Equal returns true if two OrchestratorType are compared to be the same.
+// Here it is string case insensitive comparison
+func (o OrchestratorType) Equal(u OrchestratorTypeEqualer) bool {
+	return strings.EqualFold(string(o), string(u.(OrchestratorType)))
+}
 
 // OSType represents OS types of agents
 type OSType string

@@ -366,7 +366,7 @@ func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfil
 
 func convertVLabsOrchestratorProfile(vlabs *vlabs.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = OrchestratorType(vlabs.OrchestratorType)
-	if api.OrchestratorType == Kubernetes && vlabs.KubernetesConfig != nil {
+	if api.OrchestratorType.Equal(Kubernetes) && vlabs.KubernetesConfig != nil {
 		api.KubernetesConfig = &KubernetesConfig{}
 		convertVLabsKubernetesConfig(vlabs.KubernetesConfig, api.KubernetesConfig)
 	}
