@@ -153,6 +153,20 @@ New-InfraContainer()
 function
 Write-KubernetesStartFiles($podCIDR)
 {
+    $KubeletArgList = @("--hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--api-servers=https://`${global:MasterIP}:443","--kubeconfig=c:\k\config")
+    $KubeletCommandLine = @"
+c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://`${global:MasterIP}:443 --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json
+"@
+
+    if ($global:KubeBinariesVersion -ne "1.5.3")
+    {
+        $KubeletArgList += "--enable-cri=false"
+        $KubeletCommandLine += " --enable-cri=false --image-pull-progress-deadline=20m"
+    }
+    $KubeletArgListStr = "`"" + ($KubeletArgList -join "`",`"") + "`""
+
+    $KubeletArgListStr = "@`($KubeletArgListStr`)"
+
     $kubeStartStr = @"
 `$global:TransparentNetworkName="$global:TransparentNetworkName"
 `$global:AzureHostname="$AzureHostname"
@@ -212,12 +226,7 @@ try
     # if the podCIDR has not yet been assigned to this node, start the kubelet process to get the podCIDR, and then promptly kill it.
     if (-not `$podCidrDiscovered)
     {
-        `$argList = @("--hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""","--api-servers=https://`${global:MasterIP}:443","--kubeconfig=c:\k\config","--enable-cri=false")
-
-        if (`$global:KubeBinariesVersion -eq "1.5.3")
-        {
-            `$argList = @("--hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""","--api-servers=https://`${global:MasterIP}:443","--kubeconfig=c:\k\config")
-        }
+        `$argList = $KubeletArgListStr
 
         `$process = Start-Process -FilePath c:\k\kubelet.exe -PassThru -ArgumentList `$argList
 
@@ -244,15 +253,8 @@ try
     `$env:NAT_NETWORK="`$global:NatNetworkName"
     `$env:POD_GW="`$podGW"
     `$env:VIP_CIDR="10.0.0.0/8"
-    
-    if (`$global:KubeBinariesVersion -eq "1.5.3")
-    {
-        c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://`${global:MasterIP}:443 --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json
-    }
-    else
-    {
-        c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://`${global:MasterIP}:443 --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --enable-cri=false --image-pull-progress-deadline=20m
-    }
+
+    $KubeletCommandLine
 }
 catch
 {
