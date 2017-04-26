@@ -82,9 +82,8 @@
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "vnetCidr": "10.0.0.0/8",
 {{end}}
-    "kubeDnsServiceIP": "[parameters('kubeDnsServiceIP')]",
-    "kubeServiceCidr": "[parameters('kubeServiceCidr')]",
-    "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
+    "kubeDnsServiceIp": "10.0.0.10", 
+    "kubeServiceCidr": "10.0.0.0/16",
 {{if HasLinuxAgents}}
     "registerSchedulable": "false",
 {{else}}
@@ -174,6 +173,8 @@
 {{if .HasWindows}}
     ,"windowsAdminUsername": "[parameters('windowsAdminUsername')]",
     "windowsAdminPassword": "[parameters('windowsAdminPassword')]",
+    "kubeBinariesSASURL": "[parameters('kubeBinariesSASURL')]",
+    "kubeBinariesVersion": "[parameters('kubeBinariesVersion')]",
     "agentWindowsPublisher": "MicrosoftWindowsServer",
     "agentWindowsOffer": "WindowsServer",
     "agentWindowsSku": "2016-Datacenter-with-Containers",

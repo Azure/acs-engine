@@ -8,15 +8,18 @@
 		associated storage map.
 
     .PARAMETER OutFile
-        The name of the outputfile (Default is azureconst.go)
+        The name of the outputfile (Default is pkg/acsengine/azureconst.go)
 
     .EXAMPLE
-        .\Get-AzureConstants.ps1  -OutFile "azureconst.go"
+        .\Get-AzureConstants.ps1  -OutFile "pkg/acsengine/azureconst.go"
+	.NOTES
+		On making any changes to this file, run the following command to update the output file
+		.\Get-AzureConstants.ps1  -OutFile "pkg/acsengine/azureconst.go"
 #>
 [CmdletBinding(DefaultParameterSetName="Standard")]
 param(
     [string]
-    $OutFile = "azureconst.go"
+    $OutFile = "pkg/acsengine/azureconst.go"
 )
 
 function
@@ -26,8 +29,9 @@ Get-AllSizes() {
 	ForEach ($location in $locations) {
 		#Write-Output $location.Location
 		$sizes = Get-AzureRmVMSize -Location $location.Location
+		#Filtered out Basic sizes as Azure Load Balancer does not support Basic SKU
 		ForEach ($size in $sizes) {
-			if (!$sizeMap.ContainsKey($size.Name)) {
+			if (!$sizeMap.ContainsKey($size.Name) -and !($size.Name.split('_')[0] -eq 'Basic')) {
 				$sizeMap.Add($size.Name, $size)
 			}	
 		}
@@ -74,6 +78,25 @@ Get-MasterAgentMap() {
 		if ($size.NumberOfCores -ge $MINIMUM_CORES) {
 			$agentMap.Add($size.Name, $size)
 		}	
+	}
+	return $agentMap
+}
+
+function 
+Get-KubernetesAgentMap() {
+	param(
+        [System.Collections.Hashtable]
+        $SizeMap
+    )
+
+	$agentMap = @{}
+	ForEach ($k in ($SizeMap.Keys | Sort-Object)) {
+		#Write-Output $location.Location
+		$size = $SizeMap[$k]
+		# if ($size.NumberOfCores -ge $MINIMUM_CORES) {
+		# 	$agentMap.Add($size.Name, $size)
+		# }	
+		$agentMap.Add($size.Name, $size)
 	}
 	return $agentMap
 }
@@ -208,6 +231,29 @@ func GetMasterAgentAllowedSizes() string {
 ``
 }
 
+// GetKubernetesAgentAllowedSizes returns the allowed sizes for Kubernetes agents
+func GetKubernetesAgentAllowedSizes() string {
+    return ``      "allowedValues": [
+
+"@
+	$first = $TRUE
+	ForEach ($k in ($KubernetesAgentMap.Keys | Sort-Object)) {
+		if ($first -eq $TRUE) 
+		{
+			$first = $FALSE
+		}
+		else
+		{
+			$text += ",`r`n"
+		}
+		$text += '        "' + $KubernetesAgentMap.Item($k).Name + '"'
+	}
+	$text += @"
+
+     ],
+``
+}
+
 // GetSizeMap returns the size / storage map
 func GetSizeMap() string{
     return ``    "vmSizesMap": {
@@ -310,10 +356,12 @@ try
 	$allSizes = Get-AllSizes
 	$dcosMasterMap = Get-DCOSMasterMap -SizeMap $allSizes
 	$masterAgentMap = Get-MasterAgentMap -SizeMap $allSizes
+	$kubernetesAgentMap = Get-KubernetesAgentMap -SizeMap $allSizes
 	$locations = Get-Locations
-	$text = Get-FileContents -DCOSMasterMap $dcosMasterMap -MasterAgentMap $masterAgentMap -SizeMap $allSizes -Locations $locations
+	$text = Get-FileContents -DCOSMasterMap $dcosMasterMap -MasterAgentMap $masterAgentMap -KubernetesAgentMap $kubernetesAgentMap -SizeMap $allSizes -Locations $locations
 	$text | Out-File $OutFile
 	(Get-Content $OutFile) -replace "`0", "" | Set-Content $OutFile
+	gofmt -w $OutFile
 }
 catch
 {

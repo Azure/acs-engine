@@ -29,15 +29,6 @@ const (
 	DefaultInternalLbStaticIPOffset = 10
 	// DefaultNetworkPolicy is disabling network policy enforcement
 	DefaultNetworkPolicy = "none"
-	// DefaultKubernetesDnsServiceIP specifies the IP address that kube-dns
-	// listens on by default. must by in the default Service CIDR range.
-	DefaultKubernetesDnsServiceIP = "10.0.0.10"
-	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will
-	// create Service IPs within.
-	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
-	// DefaultKubernetesClusterCIDR specifies the subnet that Pod IPs will be
-	// assigned from.
-	DefaultKubernetesClusterCIDR = "10.244.0.0/16"
 )
 
 const (
@@ -50,16 +41,50 @@ const (
 )
 
 const (
-	KubernetesHyperkubeImageName         = "hyperkube-amd64:v1.5.3"
-	KubernetesDashboardImageName         = "kubernetes-dashboard-amd64:v1.5.1"
-	KubernetesExechealthzImageName       = "exechealthz-amd64:1.2"
-	KubernetesAddonResizerImageName      = "addon-resizer:1.6"
-	KubernetesHeapsterImageName          = "heapster:v1.2.0"
-	KubernetesDNSImageName               = "kubedns-amd64:1.7"
-	KubernetesAddonManagerImageName      = "kube-addon-manager-amd64:v6.2"
-	KubernetesDNSMasqImageName           = "kube-dnsmasq-amd64:1.3"
-	KubernetesPodInfraContainerImageName = "pause-amd64:3.0"
+	KubernetesVersion = "1.6.2"
 )
+
+var KubeImages = map[string]map[string]string{
+
+	"1.6.2": {
+		"hyperkube":    "hyperkube-amd64:v1.6.2",
+		"dashboard":    "kubernetes-dashboard-amd64:v1.6.0",
+		"exechealthz":  "exechealthz-amd64:1.2",
+		"addonresizer": "addon-resizer:1.6",
+		"heapster":     "heapster:v1.2.0",
+		"dns":          "kubedns-amd64:1.7",
+		"addonmanager": "kube-addon-manager-amd64:v6.2",
+		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"pause":        "pause-amd64:3.0",
+		"windowszip":   "v1.6.2int.zip",
+	},
+
+	"1.6.0": {
+		"hyperkube":    "hyperkube-amd64:v1.6.0",
+		"dashboard":    "kubernetes-dashboard-amd64:v1.6.0",
+		"exechealthz":  "exechealthz-amd64:1.2",
+		"addonresizer": "addon-resizer:1.6",
+		"heapster":     "heapster:v1.2.0",
+		"dns":          "kubedns-amd64:1.7",
+		"addonmanager": "kube-addon-manager-amd64:v6.2",
+		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"pause":        "pause-amd64:3.0",
+		"windowszip":   "v1.6.0int.zip",
+	},
+
+	"1.5.3": {
+		"hyperkube":    "hyperkube-amd64:v1.5.3",
+		"dashboard":    "kubernetes-dashboard-amd64:v1.5.1",
+		"exechealthz":  "exechealthz-amd64:1.2",
+		"addonresizer": "addon-resizer:1.6",
+		"heapster":     "heapster:v1.2.0",
+		"dns":          "kubedns-amd64:1.7",
+		"addonmanager": "kube-addon-manager-amd64:v6.2",
+		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"pause":        "pause-amd64:3.0",
+		"windowszip":   "v1.5.3int.zip",
+	},
+}
 
 const (
 	//MsecndDCOSBootstrapDownloadURL Azure CDN to download DCOS1.7.3

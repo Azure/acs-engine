@@ -38,20 +38,11 @@
   "firstConsecutiveStaticIP": {
     "value": "10.239.255.245"
   },
-  "kubeClusterCidr": {
-    "value": "172.40.0.0/16"
-  },
   "kubeConfigCertificate": {
     "value": "a3ViZUNvbmZpZ0NlcnRpZmljYXRl"
   },
   "kubeConfigPrivateKey": {
     "value": "a3ViZUNvbmZpZ1ByaXZhdGVLZXk="
-  },
-  "kubeDnsServiceIP": {
-    "value": "172.17.1.10"
-  },
-  "kubeServiceCidr": {
-    "value": "172.16.0.0/14"
   },
   "kubernetesAddonManagerSpec": {
     "value": "gcrio.azureedge.net/google_containers/kube-addon-manager-amd64:v6.2"
@@ -63,7 +54,7 @@
     "value": "gcrio.azureedge.net/google_containers/kube-dnsmasq-amd64:1.3"
   },
   "kubernetesDashboardSpec": {
-    "value": "gcrio.azureedge.net/google_containers/kubernetes-dashboard-amd64:v1.5.1"
+    "value": "gcrio.azureedge.net/google_containers/kubernetes-dashboard-amd64:v1.6.0"
   },
   "kubernetesExecHealthzSpec": {
     "value": "gcrio.azureedge.net/google_containers/exechealthz-amd64:1.2"
@@ -72,7 +63,7 @@
     "value": "gcrio.azureedge.net/google_containers/heapster:v1.2.0"
   },
   "kubernetesHyperkubeSpec": {
-    "value": "gcrio.azureedge.net/google_containers/hyperkube-amd64:v1.5.3"
+    "value": "gcrio.azureedge.net/google_containers/hyperkube-amd64:v1.6.2"
   },
   "kubernetesKubeDNSSpec": {
     "value": "gcrio.azureedge.net/google_containers/kubedns-amd64:1.7"
