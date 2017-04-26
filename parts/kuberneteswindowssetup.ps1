@@ -60,6 +60,7 @@ $global:SecurityGroupName = "{{{nsgName}}}"
 $global:VNetName = "{{{virtualNetworkName}}}"
 $global:RouteTableName = "{{{routeTableName}}}"
 $global:PrimaryAvailabilitySetName = "{{{primaryAvailablitySetName}}}"
+$global:NeedPatchWinNAT = $false
 
 filter Timestamp {"$(Get-Date -Format o): $_"}
 
@@ -92,12 +93,17 @@ Get-KubeBinaries()
 function
 Patch-WinNATBinary()
 {
-    Stop-Service winnat
-    $winnatsys = "$env:SystemRoot\System32\drivers\winnat.sys"
-    takeown /f $winnatsys
-    icacls $winnatsys /grant "Administrators:(F)"
-    Copy-Item "c:\k\winnat.sys" $winnatsys
-    bcdedit /set TESTSIGNING on
+    $winnatcurr = $global:KubeDir + "\winnat.sys"
+    if (Test-Path $winnatcurr)
+    {
+        $global:NeedPatchWinNAT = $true
+        $winnatsys = "$env:SystemRoot\System32\drivers\winnat.sys"
+        Stop-Service winnat
+        takeown /f $winnatsys
+        icacls $winnatsys /grant "Administrators:(F)"    
+        Copy-Item $winnatcurr $winnatsys
+        bcdedit /set TESTSIGNING on
+    }
 }
 
 function
@@ -303,6 +309,10 @@ New-NSSMService
     c:\k\nssm set Kubelet AppRotateOnline 1
     c:\k\nssm set Kubelet AppRotateSeconds 86400
     c:\k\nssm set Kubelet AppRotateBytes 1048576
+    if ($global:NeedPatchWinNAT -eq $false)
+    {
+        net start Kubelet
+    }
 
     # setup kubeproxy
     c:\k\nssm install Kubeproxy C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
@@ -321,6 +331,10 @@ New-NSSMService
     c:\k\nssm set Kubeproxy AppRotateOnline 1
     c:\k\nssm set Kubeproxy AppRotateSeconds 86400
     c:\k\nssm set Kubeproxy AppRotateBytes 1048576
+    if ($global:NeedPatchWinNAT -eq $false)
+    {
+        net start Kubeproxy
+    }
 }
 
 function
@@ -368,8 +382,11 @@ try
         Patch-WinNATBinary
 
         Write-Log "Setup Complete"
-        Write-Log "Reboot for patching winnat to be effective and start kubelet/kubeproxy service"
-        Restart-Computer
+        if ($global:NeedPatchWinNAT -eq $true)
+        {
+            Write-Log "Reboot for patching winnat to be effective and start kubelet/kubeproxy service"
+            Restart-Computer
+        }
     }
     else 
     {
