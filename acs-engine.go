@@ -11,7 +11,6 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
 func writeArtifacts(containerService *api.ContainerService, apiVersion, template, parameters, artifactsDir string, certsGenerated bool, parametersOnly bool) error {
@@ -45,7 +44,7 @@ func writeArtifacts(containerService *api.ContainerService, apiVersion, template
 
 	if certsGenerated {
 		properties := containerService.Properties
-		if properties.OrchestratorProfile.OrchestratorType == vlabs.Kubernetes {
+		if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 			directory := path.Join(artifactsDir, "kubeconfig")
 			var locations []string
 			if containerService.Location != "" {
