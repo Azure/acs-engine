@@ -4,20 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"strings"
 )
 
 // Validate implements APIObject
 func (o *OrchestratorProfile) Validate() error {
-	switch {
-	case strings.EqualFold(string(o.OrchestratorType), string(DCOS)):
-		o.OrchestratorType = DCOS
-	case strings.EqualFold(string(o.OrchestratorType), string(Mesos)):
-		o.OrchestratorType = Mesos
-	case strings.EqualFold(string(o.OrchestratorType), string(Swarm)):
-		o.OrchestratorType = Swarm
-	case strings.EqualFold(string(o.OrchestratorType), string(Kubernetes)):
-		o.OrchestratorType = Kubernetes
+	switch o.OrchestratorType {
+	case DCOS:
+	case Mesos:
+	case Swarm:
+	case Kubernetes:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
