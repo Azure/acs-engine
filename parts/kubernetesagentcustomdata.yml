@@ -16,7 +16,7 @@ write_files:
   content: |
     [Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --iptables=false --ip-masq=false --log-driver=journald
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --log-driver=journald
 
 - path: "/etc/systemd/journald.conf.d/kubernetes.conf"
   permissions: "0644"
