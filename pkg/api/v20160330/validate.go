@@ -47,6 +47,11 @@ func (a *AgentPoolProfile) Validate() error {
 	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
 		return e
 	}
+	if a.DNSPrefix != "" {
+		if e := validateDNSName(a.DNSPrefix); e != nil {
+			return e
+		}
+	}
 	return nil
 }
 
