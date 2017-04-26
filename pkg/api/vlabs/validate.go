@@ -238,6 +238,11 @@ func (a *Properties) Validate() error {
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
+
+			if a.WindowsProfile == nil {
+				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
+			}
+
 			if len(a.WindowsProfile.AdminUsername) == 0 {
 				return fmt.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}

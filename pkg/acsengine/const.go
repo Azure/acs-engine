@@ -1,5 +1,9 @@
 package acsengine
 
+import (
+	"github.com/Azure/acs-engine/pkg/api"
+)
+
 const (
 	// DefaultMasterSubnet specifies the default master subnet for DCOS or Swarm
 	DefaultMasterSubnet = "172.16.0.0/24"
@@ -40,13 +44,8 @@ const (
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
 
-const (
-	KubernetesVersion = "1.6.2"
-)
-
-var KubeImages = map[string]map[string]string{
-
-	"1.6.2": {
+var KubeImages = map[api.OrchestratorVersion]map[string]string{
+	api.Kubernetes162: {
 		"hyperkube":    "hyperkube-amd64:v1.6.2",
 		"dashboard":    "kubernetes-dashboard-amd64:v1.6.0",
 		"exechealthz":  "exechealthz-amd64:1.2",
@@ -59,7 +58,7 @@ var KubeImages = map[string]map[string]string{
 		"windowszip":   "v1.6.2int.zip",
 	},
 
-	"1.6.0": {
+	api.Kubernetes160: {
 		"hyperkube":    "hyperkube-amd64:v1.6.0",
 		"dashboard":    "kubernetes-dashboard-amd64:v1.6.0",
 		"exechealthz":  "exechealthz-amd64:1.2",
@@ -72,7 +71,7 @@ var KubeImages = map[string]map[string]string{
 		"windowszip":   "v1.6.0int.zip",
 	},
 
-	"1.5.3": {
+	api.Kubernetes153: {
 		"hyperkube":    "hyperkube-amd64:v1.5.3",
 		"dashboard":    "kubernetes-dashboard-amd64:v1.5.1",
 		"exechealthz":  "exechealthz-amd64:1.2",

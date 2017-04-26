@@ -1100,6 +1100,7 @@
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
     "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
     "orchestratorName": "k8s",
+    "orchestratorNameVersionTag": "Kubernetes:1.5.3",
     "osImageOffer": "UbuntuServer",
     "osImagePublisher": "Canonical",
     "osImageSKU": "16.04-LTS",
@@ -1586,6 +1587,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -1726,6 +1728,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool2VMNamePrefix'), copyIndex(variables('agentpool2Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -2114,6 +2117,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]",
+        "orchestrator": "Kubernetes:1.5.3",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"

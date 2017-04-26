@@ -1328,7 +1328,7 @@
               "offer": "[variables('osImageOffer')]",
               "publisher": "[variables('osImagePublisher')]",
               "sku": "[variables('osImageSKU')]",
-              "version": "latest"
+              "version": "[variables('osImageVersion')]"
             },
             "osDisk": {
               "caching": "ReadWrite",
@@ -1431,7 +1431,7 @@
               "offer": "[variables('osImageOffer')]",
               "publisher": "[variables('osImagePublisher')]",
               "sku": "[variables('osImageSKU')]",
-              "version": "latest"
+              "version": "[variables('osImageVersion')]"
             },
             "osDisk": {
               "caching": "ReadWrite",

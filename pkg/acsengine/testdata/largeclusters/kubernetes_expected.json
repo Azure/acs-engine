@@ -4630,6 +4630,7 @@
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
     "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
     "orchestratorName": "k8s",
+    "orchestratorNameVersionTag": "Kubernetes:1.6.2",
     "osImageOffer": "UbuntuServer",
     "osImagePublisher": "Canonical",
     "osImageSKU": "16.04-LTS",
@@ -5116,6 +5117,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool1VMNamePrefix'), copyIndex(variables('agentpool1Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -5256,6 +5258,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool2VMNamePrefix'), copyIndex(variables('agentpool2Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -5396,6 +5399,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool3VMNamePrefix'), copyIndex(variables('agentpool3Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -5536,6 +5540,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool4VMNamePrefix'), copyIndex(variables('agentpool4Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -5676,6 +5681,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool5VMNamePrefix'), copyIndex(variables('agentpool5Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -5816,6 +5822,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool6VMNamePrefix'), copyIndex(variables('agentpool6Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -5956,6 +5963,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool7VMNamePrefix'), copyIndex(variables('agentpool7Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -6096,6 +6104,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool8VMNamePrefix'), copyIndex(variables('agentpool8Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -6236,6 +6245,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool9VMNamePrefix'), copyIndex(variables('agentpool9Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -6376,6 +6386,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool10VMNamePrefix'), copyIndex(variables('agentpool10Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -6516,6 +6527,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool11VMNamePrefix'), copyIndex(variables('agentpool11Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -6656,6 +6668,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('agentpool12VMNamePrefix'), copyIndex(variables('agentpool12Offset')))]",
+        "orchestrator": "[variables('orchestratorNameVersionTag')]",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
@@ -7044,6 +7057,7 @@
       },
       "tags": {
         "creationSource": "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]",
+        "orchestrator": "Kubernetes:1.6.2",
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
