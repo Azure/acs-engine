@@ -1,5 +1,7 @@
 package vlabs
 
+import "strings"
+
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
 type ResourcePurchasePlan struct {
@@ -194,8 +196,19 @@ type KeyVaultCertificate struct {
 	CertificateStore string `json:"certificateStore,omitempty"`
 }
 
+// StringComparer compares two string type such as OrchestratorType
+type StringComparer interface {
+	Equals(StringComparer) bool
+}
+
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
+
+// Equals returns true if two OrchestratorType are compared to be the same.
+// Here it is string case insensitive comparison
+func (o OrchestratorType) Equals(u StringComparer) bool {
+	return strings.EqualFold(string(o), string(u.(OrchestratorType)))
+}
 
 // OSType represents OS types of agents
 type OSType string
@@ -282,5 +295,5 @@ func (a *AgentPoolProfile) SetSubnet(subnet string) {
 
 // IsSwarmMode returns true if this template is for Swarm Mode orchestrator
 func (o *OrchestratorProfile) IsSwarmMode() bool {
-	return o.OrchestratorType == SwarmMode
+	return o.OrchestratorType.Equals(SwarmMode)
 }

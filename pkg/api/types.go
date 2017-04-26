@@ -2,6 +2,7 @@ package api
 
 import (
 	neturl "net/url"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
@@ -183,8 +184,19 @@ type VMDiagnostics struct {
 	StorageURL *neturl.URL `json:"storageUrl"`
 }
 
+// StringComparer compares two string type such as OrchestratorType
+type StringComparer interface {
+	Equals(StringComparer) bool
+}
+
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
+
+// Equals returns true if two OrchestratorType are compared to be the same.
+// Here it is string case insensitive comparison
+func (o OrchestratorType) Equals(u StringComparer) bool {
+	return strings.EqualFold(string(o), string(u.(OrchestratorType)))
+}
 
 // JumpboxProfile dscribes properties of the jumpbox setup
 // in the ACS container cluster.
@@ -344,12 +356,12 @@ func (l *LinuxProfile) HasSecrets() bool {
 
 // IsSwarmMode returns true if this template is for Swarm Mode orchestrator
 func (o *OrchestratorProfile) IsSwarmMode() bool {
-	return o.OrchestratorType == SwarmMode
+	return o.OrchestratorType.Equals(SwarmMode)
 }
 
 // IsKubernetes returns true if this template is for Kubernetes orchestrator
 func (o *OrchestratorProfile) IsKubernetes() bool {
-	return o.OrchestratorType == Kubernetes
+	return o.OrchestratorType.Equals(Kubernetes)
 }
 
 // IsVNETIntegrated returns true if Azure VNET integration is enabled
