@@ -30,7 +30,7 @@
     "value": "10.240.255.5"
   },
   "kubeBinariesSASURL": {
-    "value": "https://acs-mirror.azureedge.net/wink8s/v1.6.2int.zip"
+    "value": "https://acs-mirror.azureedge.net/wink8s/v1.6.2intwinnat.zip"
   },
   "kubeBinariesVersion": {
     "value": "1.6.2"
