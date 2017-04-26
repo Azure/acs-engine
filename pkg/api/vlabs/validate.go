@@ -53,7 +53,7 @@ func (m *MasterProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *AgentPoolProfile) Validate() error {
+func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 	if e := validateName(a.Name, "AgentPoolProfile.Name"); e != nil {
 		return e
 	}
@@ -66,22 +66,35 @@ func (a *AgentPoolProfile) Validate() error {
 	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
 		return e
 	}
-	if len(a.Ports) > 0 {
-		if e := validateUniquePorts(a.Ports, a.Name); e != nil {
-			return e
-		}
-		for _, port := range a.Ports {
-			if port < MinPort || port > MaxPort {
-				return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
-			}
-		}
-		if e := validateName(a.DNSPrefix, "AgentPoolProfile.DNSPrefix when specifying AgentPoolProfile Ports"); e != nil {
-			return e
-		}
+	if a.DNSPrefix != "" {
 		if e := validateDNSName(a.DNSPrefix); e != nil {
 			return e
 		}
+		if len(a.Ports) > 0 {
+			if e := validateUniquePorts(a.Ports, a.Name); e != nil {
+				return e
+			}
+			for _, port := range a.Ports {
+				if port < MinPort || port > MaxPort {
+					return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
+				}
+			}
+		} else {
+			a.Ports = []int{80, 443, 8080}
+		}
+	} else {
+		if len(a.Ports) > 0 {
+			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty")
+		}
 	}
+
+	// for Kubernetes, we don't support AgentPoolProfile.DNSPrefix
+	if orchestratorType == Kubernetes {
+		if e := validateNameEmpty(a.DNSPrefix, "AgentPoolProfile.DNSPrefix"); e != nil {
+			return e
+		}
+	}
+
 	if len(a.DiskSizesGB) > 0 {
 		if len(a.StorageProfile) == 0 {
 			return fmt.Errorf("property 'StorageProfile' must be set to either '%s' or '%s' when attaching disks", StorageAccount, ManagedDisks)
@@ -173,7 +186,7 @@ func (a *Properties) Validate() error {
 	}
 
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
-		if e := agentPoolProfile.Validate(); e != nil {
+		if e := agentPoolProfile.Validate(a.OrchestratorProfile.OrchestratorType); e != nil {
 			return e
 		}
 		switch agentPoolProfile.AvailabilityProfile {
@@ -292,6 +305,13 @@ func (a *Properties) validateNetworkPolicy() error {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 
+	return nil
+}
+
+func validateNameEmpty(name string, label string) error {
+	if name != "" {
+		return fmt.Errorf("%s must be an empty value", label)
+	}
 	return nil
 }
 
