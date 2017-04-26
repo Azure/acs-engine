@@ -4,6 +4,19 @@
   "parameters": {
     {{range .AgentPoolProfiles}}{{template "agentparams.t" .}},{{end}}
     {{if .HasWindows}}
+      "kubeBinariesSASURL": {
+        "defaultValue": "https://acs-mirror.azureedge.net/wink8s/v1.6.2int.zip",
+        "metadata": {
+          "description": "The download url for kubernetes windows binaries."
+        },
+        "type": "string"
+      },
+      "kubeBinariesVersion": {
+        "metadata": {
+          "description": "Kubernetes windows binaries version"
+        },
+        "type": "string"
+      },
       {{template "windowsparams.t"}},
     {{end}}
     {{template "masterparams.t" .}},
