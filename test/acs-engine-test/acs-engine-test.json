@@ -5,6 +5,10 @@
       "location": "westus"
     },
     {
+      "cluster_definition": "examples/kubernetesversions/kubernetes1.6.2.json",
+      "location": "westus"
+    },
+    {
       "cluster_definition": "examples/dcos.json",
       "location": "eastus"
     },
