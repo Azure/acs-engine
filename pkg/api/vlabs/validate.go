@@ -48,9 +48,9 @@ func (o *OrchestratorProfile) Validate() error {
 }
 
 // ValidateOrchestratorVersion validates orchestrator version
-func (o *OrchestratorProfile) ValidateOrchestratorVersion(dcosVersion OrchestratorVersion) error {
-	if o.OrchestratorVersion != dcosVersion && len(o.OrchestratorVersion) != 0 {
-		return fmt.Errorf("Allowed orchestrator version value is: %s, actual: %s \n", dcosVersion, o.OrchestratorVersion)
+func (o *OrchestratorProfile) ValidateOrchestratorVersion(orchestratorVersion OrchestratorVersion) error {
+	if o.OrchestratorVersion != orchestratorVersion && len(o.OrchestratorVersion) != 0 {
+		return fmt.Errorf("Allowed orchestrator version value is: %s, actual: %s \n", orchestratorVersion, o.OrchestratorVersion)
 	}
 
 	return nil
