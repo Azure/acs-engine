@@ -1,7 +1,9 @@
 package v20170131
 
 import (
+	"fmt"
 	neturl "net/url"
+	"strings"
 )
 
 // ResourcePurchasePlan defines resource plan as required by ARM
@@ -161,6 +163,26 @@ type VMDiagnostics struct {
 
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
+
+// UnmarshalText decodes OrchestratorType text, do a case insensitive comparison with
+// the defined OrchestratorType constant and set to it if they equal
+func (o *OrchestratorType) UnmarshalText(text []byte) error {
+	s := string(text)
+	switch {
+	case strings.EqualFold(s, string(DCOS)):
+		*o = DCOS
+	case strings.EqualFold(s, string(Mesos)):
+		*o = Mesos
+	case strings.EqualFold(s, string(Swarm)):
+		*o = Swarm
+	case strings.EqualFold(s, string(Kubernetes)):
+		*o = Kubernetes
+	default:
+		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", s)
+	}
+
+	return nil
+}
 
 // OSType represents OS types of agents
 type OSType string
