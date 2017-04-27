@@ -77,8 +77,8 @@ var (
 )
 
 const (
-	// DCOS190Version is the string constant for DCOS 1.9
-	DCOS190Version OrchestratorVersion = "1.9"
+	// DCOS190Version is the string constant for DCOS 1.9.0
+	DCOS190Version OrchestratorVersion = "1.9.0"
 	// DCOS188Version is the string constant for DCOS 1.8.8
 	DCOS188Version OrchestratorVersion = "1.8.8"
 	// DCOS187Version is the string constant for DCOS 1.8.7
