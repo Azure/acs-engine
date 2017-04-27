@@ -13,10 +13,25 @@ func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case DCOS:
 	case DCOS190:
+		if e := o.ValidateOrchestratorVersion(DCOS190Version); e != nil {
+			return e
+		}
 	case DCOS188:
+		if e := o.ValidateOrchestratorVersion(DCOS188Version); e != nil {
+			return e
+		}
 	case DCOS187:
+		if e := o.ValidateOrchestratorVersion(DCOS187Version); e != nil {
+			return e
+		}
 	case DCOS184:
+		if e := o.ValidateOrchestratorVersion(DCOS184Version); e != nil {
+			return e
+		}
 	case DCOS173:
+		if e := o.ValidateOrchestratorVersion(DCOS173Version); e != nil {
+			return e
+		}
 	case Swarm:
 	case Kubernetes:
 	case SwarmMode:
@@ -27,6 +42,15 @@ func (o *OrchestratorProfile) Validate() error {
 	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil &&
 		(o.KubernetesConfig.KubernetesImageBase != "" || o.KubernetesConfig.NetworkPolicy != "") {
 		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
+	}
+
+	return nil
+}
+
+// ValidateOrchestratorVersion validates orchestrator version
+func (o *OrchestratorProfile) ValidateOrchestratorVersion(dcosVersion OrchestratorVersion) error {
+	if o.OrchestratorVersion != dcosVersion && len(o.OrchestratorVersion) != 0 {
+		return fmt.Errorf("Allowed orchestrator version value is: %s, actual: %s \n", dcosVersion, o.OrchestratorVersion)
 	}
 
 	return nil
