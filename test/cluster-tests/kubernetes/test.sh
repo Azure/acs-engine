@@ -15,7 +15,7 @@ fi
 EXPECTED_NODE_COUNT="${EXPECTED_NODE_COUNT:-4}"
 EXPECTED_DNS="${EXPECTED_DNS:-2}"
 EXPECTED_DASHBOARD="${EXPECTED_DASHBOARD:-1}"
-EXPECTED_ORCHESTRATOR_VERSION="${EXPECTED_ORCHESTRATOR_VERSION:}"
+EXPECTED_ORCHESTRATOR_VERSION="${EXPECTED_ORCHESTRATOR_VERSION:-}"
 
 # set TEST_ACR to "y" for ACR testing
 TEST_ACR="${TEST_ACR:-n}"
@@ -73,11 +73,11 @@ check_node_count
 
 ###### Validate Kubernetes version
 log "Checking Kubernetes version"
-if (( ${EXPECTED_ORCHESTRATOR_VERSION} == "")); then break; fi
-kubernetes_version=$(kubectl --version | grep ${EXPECTED_ORCHESTRATOR_VERSION} | awk '{print $2}' | cut -f 2- -d "v")
-if (( ${kubernetes_version} == ${EXPECTED_ORCHESTRATOR_VERSION} )); then break;
-else
-log "Unexpected Kubernetes version: ${kubernetes_version}"; exit -1
+if (( ${EXPECTED_ORCHESTRATOR_VERSION} != "")); then
+  kubernetes_version=$(kubectl --version | grep ${EXPECTED_ORCHESTRATOR_VERSION} | awk '{print $2}' | cut -f 2- -d "v")
+  if (( ${kubernetes_version} != ${EXPECTED_ORCHESTRATOR_VERSION} )); then 
+    log "Unexpected Kubernetes version: ${kubernetes_version}, expected: ${EXPECTED_ORCHESTRATOR_VERSION}"; exit -1
+  fi 
 fi
 
 ###### Wait for no more container creating

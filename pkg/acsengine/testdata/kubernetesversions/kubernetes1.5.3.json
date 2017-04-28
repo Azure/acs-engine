@@ -3,7 +3,7 @@
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
-       "orchestratoVersion": "1.5.3"
+      "orchestratorVersion": "1.5.3"
     },
     "masterProfile": {
       "count": 1,
