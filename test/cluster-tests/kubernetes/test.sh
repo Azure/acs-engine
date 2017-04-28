@@ -71,6 +71,15 @@ function check_node_count() {
 
 check_node_count
 
+###### Validate Kubernetes version
+log "Checking Kubernetes version"
+if (( ${EXPECTED_ORCHESTRATOR_VERSION} == "")); then break; fi
+kubernetes_version=$(kubectl --version | grep ${EXPECTED_ORCHESTRATOR_VERSION} | awk '{print $2}' | cut -f 2- -d "v")
+if (( ${kubernetes_version} == ${EXPECTED_ORCHESTRATOR_VERSION} )); then break;
+else
+log "Unexpected Kubernetes version: ${kubernetes_version}"; exit -1
+fi
+
 ###### Wait for no more container creating
 log "Checking containers being created"
 count=12
@@ -82,7 +91,6 @@ done
 if (( ${creating_count} != 0 )); then
   log "gave up waiting for creation to finish"; exit -1
 fi
-
 
 ###### Check for Kube-DNS
 log "Checking Kube-DNS"
