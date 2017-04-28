@@ -58,14 +58,14 @@ func TestExpected(t *testing.T) {
 			continue
 		}
 
-		ppArmTemplate, e1 := PrettyPrintArmTemplate(armTemplate)
+		expectedPpArmTemplate, e1 := PrettyPrintArmTemplate(armTemplate)
 		if e1 != nil {
 			t.Error(armTemplate)
 			t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e1.Error()))
 			break
 		}
 
-		ppParams, e2 := PrettyPrintJSON(params)
+		expectedPpParams, e2 := PrettyPrintJSON(params)
 		if e2 != nil {
 			t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e2.Error()))
 			continue
@@ -81,14 +81,14 @@ func TestExpected(t *testing.T) {
 				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 				continue
 			}
-			ppArmTemplateNew, e1 := PrettyPrintArmTemplate(armTemplate)
+			generatedPpArmTemplate, e1 := PrettyPrintArmTemplate(armTemplate)
 			if e1 != nil {
 				t.Error(armTemplate)
 				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e1.Error()))
 				break
 			}
 
-			ppParamsNew, e2 := PrettyPrintJSON(params)
+			generatedPpParams, e2 := PrettyPrintJSON(params)
 			if e2 != nil {
 				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e2.Error()))
 				continue
@@ -98,16 +98,16 @@ func TestExpected(t *testing.T) {
 				t.Errorf("cert generation unexpected for %s", containerService.Properties.OrchestratorProfile.OrchestratorType)
 			}
 
-			if !bytes.Equal([]byte(ppArmTemplateNew), []byte(ppArmTemplate)) {
-				diffstr, differr := tuple.WriteArmTemplateErrFilename([]byte(ppArmTemplateNew))
+			if !bytes.Equal([]byte(expectedPpArmTemplate), []byte(generatedPpArmTemplate)) {
+				diffstr, differr := tuple.WriteArmTemplateErrFilename([]byte(generatedPpArmTemplate))
 				if differr != nil {
 					diffstr += differr.Error()
 				}
 				t.Errorf("generated output different from expected for model %s: '%s'", tuple.APIModelFilename, diffstr)
 			}
 
-			if !bytes.Equal([]byte(ppParamsNew), []byte(ppParams)) {
-				diffstr, differr := tuple.WriteArmTemplateParamsErrFilename([]byte(ppParamsNew))
+			if !bytes.Equal([]byte(expectedPpParams), []byte(generatedPpParams)) {
+				diffstr, differr := tuple.WriteArmTemplateParamsErrFilename([]byte(generatedPpParams))
 				if differr != nil {
 					diffstr += differr.Error()
 				}
