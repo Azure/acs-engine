@@ -60,12 +60,6 @@ const (
 	ManagedDisks = "ManagedDisks"
 )
 
-// KubernetesVersion defines supported Kubernetes versions
-type KubernetesVersion string
-
-// DCOSVersion defines supported Kubernetes versions
-type DCOSVersion string
-
 const (
 	// Kubernetes153 is the string constant for Kubernetes 1.5.3
 	Kubernetes153 OrchestratorVersion = "1.5.3"
