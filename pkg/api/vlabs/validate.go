@@ -34,6 +34,14 @@ func (o *OrchestratorProfile) Validate() error {
 		}
 	case Swarm:
 	case Kubernetes:
+		switch o.OrchestratorVersion {
+		case Kubernetes162:
+		case Kubernetes160:
+		case Kubernetes153:
+		case "":
+		default:
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
+		}
 	case SwarmMode:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
