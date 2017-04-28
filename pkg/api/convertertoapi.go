@@ -137,18 +137,18 @@ func convertV20160930Properties(v20160930 *v20160930.Properties, api *Properties
 		api.MasterProfile = &MasterProfile{}
 		convertV20160930MasterProfile(v20160930.MasterProfile, api.MasterProfile)
 	}
-	api.AgentPoolProfiles = []AgentPoolProfile{}
+	api.AgentPoolProfiles = []*AgentPoolProfile{}
 	for _, p := range v20160930.AgentPoolProfiles {
 		apiProfile := &AgentPoolProfile{}
 		// api.OrchestratorProfile already be filled in correctly
 		if api.OrchestratorProfile.IsKubernetes() {
 			// we only allow AvailabilitySet for kubernetes's agentpool
-			convertV20160930AgentPoolProfile(&p, AvailabilitySet, apiProfile)
+			convertV20160930AgentPoolProfile(p, AvailabilitySet, apiProfile)
 		} else {
 			// other orchestrators all use VMSS
-			convertV20160930AgentPoolProfile(&p, VirtualMachineScaleSets, apiProfile)
+			convertV20160930AgentPoolProfile(p, VirtualMachineScaleSets, apiProfile)
 		}
-		api.AgentPoolProfiles = append(api.AgentPoolProfiles, *apiProfile)
+		api.AgentPoolProfiles = append(api.AgentPoolProfiles, apiProfile)
 	}
 	if v20160930.LinuxProfile != nil {
 		api.LinuxProfile = &LinuxProfile{}
@@ -186,11 +186,11 @@ func convertV20160330Properties(v20160330 *v20160330.Properties, api *Properties
 		api.MasterProfile = &MasterProfile{}
 		convertV20160330MasterProfile(v20160330.MasterProfile, api.MasterProfile)
 	}
-	api.AgentPoolProfiles = []AgentPoolProfile{}
+	api.AgentPoolProfiles = []*AgentPoolProfile{}
 	for _, p := range v20160330.AgentPoolProfiles {
 		apiProfile := &AgentPoolProfile{}
-		convertV20160330AgentPoolProfile(&p, apiProfile)
-		api.AgentPoolProfiles = append(api.AgentPoolProfiles, *apiProfile)
+		convertV20160330AgentPoolProfile(p, apiProfile)
+		api.AgentPoolProfiles = append(api.AgentPoolProfiles, apiProfile)
 
 	}
 	if v20160330.LinuxProfile != nil {
@@ -221,18 +221,18 @@ func convertV20170131Properties(v20170131 *v20170131.Properties, api *Properties
 		api.MasterProfile = &MasterProfile{}
 		convertV20170131MasterProfile(v20170131.MasterProfile, api.MasterProfile)
 	}
-	api.AgentPoolProfiles = []AgentPoolProfile{}
+	api.AgentPoolProfiles = []*AgentPoolProfile{}
 	for _, p := range v20170131.AgentPoolProfiles {
 		apiProfile := &AgentPoolProfile{}
 		// api.OrchestratorProfile already be filled in correctly
 		if api.OrchestratorProfile.IsKubernetes() {
 			// we only allow AvailabilitySet for kubernetes's agentpool
-			convertV20170131AgentPoolProfile(&p, AvailabilitySet, apiProfile)
+			convertV20170131AgentPoolProfile(p, AvailabilitySet, apiProfile)
 		} else {
 			// other orchestrators all use VMSS
-			convertV20170131AgentPoolProfile(&p, VirtualMachineScaleSets, apiProfile)
+			convertV20170131AgentPoolProfile(p, VirtualMachineScaleSets, apiProfile)
 		}
-		api.AgentPoolProfiles = append(api.AgentPoolProfiles, *apiProfile)
+		api.AgentPoolProfiles = append(api.AgentPoolProfiles, apiProfile)
 	}
 	if v20170131.LinuxProfile != nil {
 		api.LinuxProfile = &LinuxProfile{}
@@ -270,11 +270,11 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 		api.MasterProfile = &MasterProfile{}
 		convertVLabsMasterProfile(vlabs.MasterProfile, api.MasterProfile)
 	}
-	api.AgentPoolProfiles = []AgentPoolProfile{}
+	api.AgentPoolProfiles = []*AgentPoolProfile{}
 	for _, p := range vlabs.AgentPoolProfiles {
 		apiProfile := &AgentPoolProfile{}
-		convertVLabsAgentPoolProfile(&p, apiProfile)
-		api.AgentPoolProfiles = append(api.AgentPoolProfiles, *apiProfile)
+		convertVLabsAgentPoolProfile(p, apiProfile)
+		api.AgentPoolProfiles = append(api.AgentPoolProfiles, apiProfile)
 	}
 	if vlabs.LinuxProfile != nil {
 		api.LinuxProfile = &LinuxProfile{}

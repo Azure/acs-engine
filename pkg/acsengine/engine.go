@@ -823,8 +823,7 @@ func getVNETAddressPrefixes(properties *api.Properties) string {
 	var buf bytes.Buffer
 	buf.WriteString(`"[variables('masterSubnet')]"`)
 	visitedSubnets[properties.MasterProfile.Subnet] = true
-	for i := range properties.AgentPoolProfiles {
-		profile := &properties.AgentPoolProfiles[i]
+	for _, profile := range properties.AgentPoolProfiles {
 		if _, ok := visitedSubnets[profile.Subnet]; !ok {
 			buf.WriteString(fmt.Sprintf(",\n            \"[variables('%sSubnet')]\"", profile.Name))
 		}

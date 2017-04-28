@@ -124,9 +124,7 @@ func setAgentNetworkDefaults(a *api.Properties) {
 	// configure the subnets if not in custom VNET
 	if !a.MasterProfile.IsCustomVNET() {
 		subnetCounter := 0
-		for i := range a.AgentPoolProfiles {
-			profile := &a.AgentPoolProfiles[i]
-
+		for _, profile := range a.AgentPoolProfiles {
 			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 				profile.Subnet = a.MasterProfile.Subnet
 			} else {
@@ -137,9 +135,7 @@ func setAgentNetworkDefaults(a *api.Properties) {
 		}
 	}
 
-	for i := range a.AgentPoolProfiles {
-		profile := &a.AgentPoolProfiles[i]
-
+	for _, profile := range a.AgentPoolProfiles {
 		// set default OSType to Linux
 		if profile.OSType == "" {
 			profile.OSType = api.Linux
@@ -159,8 +155,7 @@ func setAgentNetworkDefaults(a *api.Properties) {
 
 // setStorageDefaults for agents
 func setStorageDefaults(a *api.Properties) {
-	for i := range a.AgentPoolProfiles {
-		profile := &a.AgentPoolProfiles[i]
+	for _, profile := range a.AgentPoolProfiles {
 		if len(profile.StorageProfile) == 0 {
 			profile.StorageProfile = api.StorageAccount
 		}
