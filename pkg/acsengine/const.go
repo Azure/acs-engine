@@ -55,7 +55,7 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"addonmanager": "kube-addon-manager-amd64:v6.2",
 		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
 		"pause":        "pause-amd64:3.0",
-		"windowszip":   "v1.6.2int.zip",
+		"windowszip":   "v1.6.2intwinnat.zip",
 	},
 
 	api.Kubernetes160: {
@@ -68,7 +68,7 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"addonmanager": "kube-addon-manager-amd64:v6.2",
 		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
 		"pause":        "pause-amd64:3.0",
-		"windowszip":   "v1.6.0int.zip",
+		"windowszip":   "v1.6.0intwinnat.zip",
 	},
 
 	api.Kubernetes153: {
@@ -81,7 +81,7 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"addonmanager": "kube-addon-manager-amd64:v6.2",
 		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
 		"pause":        "pause-amd64:3.0",
-		"windowszip":   "v1.5.3int.zip",
+		"windowszip":   "v1.5.3intwinnat.zip",
 	},
 }
 
