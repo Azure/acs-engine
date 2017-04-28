@@ -42,7 +42,7 @@ There are several ways to create a Service Principal in Azure Active Directory:
 
    Instructions: ["Use Azure PowerShell to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal/)
 
-   To get you started quickly, the following are simplified instructions for creating a single-tenant AD application and a service principal with password authentication. Please read the full instructions above for proper RBAC setup of your application. Display name and URI are a friendly arbitrary name and address for your application.
+   To get you started quickly, the following are simplified instructions for creating a single-tenant AD application and a service principal with password authentication. Please read the full instructions above for proper RBAC setup of your application. Display name and URI are a friendly arbitrary name and address for your application. Be sure that the URI's format is something like `https://some.tst/thing`. If you use `https://some.tst` you won't have any error during creation process, but your ACS cluster won't work.
 
    ```powershell
    PS> Login-AzureRmAccount -SubscriptionId $subscriptionId
