@@ -4,7 +4,8 @@
     "{{.Name}}AvailabilitySet": "[concat('{{.Name}}-availabilitySet-', variables('nameSuffix'))]",
     "{{.Name}}StorageAccountsCount": "[add(div(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')), mod(add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),2), add(mod(variables('{{.Name}}Count'), variables('maxVMsPerStorageAccount')),1)))]",
 {{if .IsWindows}}
-    "{{.Name}}VMNamePrefix": "[concat(substring(variables('nameSuffix'), 0, 5), 'acs', add(900,variables('{{.Name}}Index')))]",
+    "winResourceNamePrefix" : "[substring(variables('nameSuffix'), 0, 5)]",
+    "{{.Name}}VMNamePrefix": "[concat(variables('winResourceNamePrefix'), 'acs', add(900,variables('{{.Name}}Index')))]",
 {{else}}
     "{{.Name}}VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'), '-')]", 
 {{end}}

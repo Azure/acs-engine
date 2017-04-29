@@ -1,5 +1,10 @@
 package vlabs
 
+import (
+	"fmt"
+	"strings"
+)
+
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
 type ResourcePurchasePlan struct {
@@ -27,7 +32,7 @@ type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
 	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
 	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
-	AgentPoolProfiles       []AgentPoolProfile       `json:"agentPoolProfiles,omitempty"`
+	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
@@ -196,6 +201,36 @@ type KeyVaultCertificate struct {
 
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
+
+// UnmarshalText decodes OrchestratorType text, do a case insensitive comparison with
+// the defined OrchestratorType constant and set to it if they equal
+func (o *OrchestratorType) UnmarshalText(text []byte) error {
+	s := string(text)
+	switch {
+	case strings.EqualFold(s, string(DCOS)):
+		*o = DCOS
+	case strings.EqualFold(s, string(DCOS190)):
+		*o = DCOS190
+	case strings.EqualFold(s, string(DCOS188)):
+		*o = DCOS188
+	case strings.EqualFold(s, string(DCOS187)):
+		*o = DCOS187
+	case strings.EqualFold(s, string(DCOS184)):
+		*o = DCOS184
+	case strings.EqualFold(s, string(DCOS173)):
+		*o = DCOS173
+	case strings.EqualFold(s, string(Swarm)):
+		*o = Swarm
+	case strings.EqualFold(s, string(Kubernetes)):
+		*o = Kubernetes
+	case strings.EqualFold(s, string(SwarmMode)):
+		*o = SwarmMode
+	default:
+		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", s)
+	}
+
+	return nil
+}
 
 // OSType represents OS types of agents
 type OSType string

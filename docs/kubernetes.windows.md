@@ -10,7 +10,7 @@ Here are the steps to deploy a simple Kubernetes cluster with Windows:
 4. edit the [Kubernetes windows example](../examples/windows/kubernetes.json) and fill in the blank strings
 5. [generate the template](acsengine.md#generating-a-template)
 6. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../README.md#deployment-usage)
-7. Temporary workaround when deploying a cluster in a custom VNET with Kubernetes 1.5.3:
+7. Temporary workaround when deploying a cluster in a custom VNET with Kubernetes 1.6.0:
     1. After a cluster has been created in step 6 get id of the route table resource from Microsoft.Network provider in your resource group. 
        The route table resource id is of the format:
        `/subscriptions/SUBSCRIPTIONID/resourceGroups/RESOURCEGROUPNAME/providers/Microsoft.Network/routeTables/ROUTETABLENAME`

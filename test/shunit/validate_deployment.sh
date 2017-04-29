@@ -7,6 +7,7 @@ function shunittest_validate_deployment {
   export SSH_KEY="${OUTPUT}/id_rsa"
   if [[ "${ORCHESTRATOR}" == "kubernetes" ]]; then
     export KUBECONFIG="${OUTPUT}/kubeconfig/kubeconfig.${LOCATION}.json"
+    export EXPECTED_NODE_COUNT=$(${HOME}/test/step.sh get_node_count)
   fi
 
   script="${HOME}/test/cluster-tests/${ORCHESTRATOR}/test.sh"

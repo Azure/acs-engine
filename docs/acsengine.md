@@ -7,7 +7,7 @@ The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource 
 The easiest way to get started developing on `acs-engine` is to use Docker. If you already have Docker or "Docker for {Windows,Mac}" then you can get started without needing to install anything extra.
 
 * Windows (PowerShell): `.\scripts\devenv.ps1`
-* Linux (bash): `./scripts/devenv.sh`
+* Linux/OSX (bash): `./scripts/devenv.sh`
 
 This setup mounts the `acs-engine` source directory as a volume into the Docker container.
 This means that you can edit your source code normally in your favorite editor on your
@@ -60,7 +60,8 @@ Build Steps:
   2. `rundll32 sysdm.cpl,EditEnvironmentVariables` to open the system variables
   3. add `c:\go\bin` to your PATH variables
   4. click "new" and add new environment variable GOPATH and set to `c:\gopath`
-2. Build acs-engine:
+  
+Build acs-engine:
   1. Windows key-R to open the run prompt
   2. `cmd` to open command prompt
   3. mkdir %GOPATH%
@@ -78,20 +79,20 @@ Requirements:
 
 Build Steps: 
 
-1. Open a command prompt to setup your gopath:
-  1. `mkdir $HOME/gopath`
-  2. edit `$HOME/.bash_profile` and add the following line to setup your go path
+  1. Open a command prompt to setup your gopath:
+  2. `mkdir $HOME/gopath`
+  3. edit `$HOME/.bash_profile` and add the following lines to setup your go path
   ```
   export PATH=$PATH:/usr/local/go/bin
   export GOPATH=$HOME/gopath
   source $HOME/.sh_profile
   ```
-2. Build acs-engine:
+Build acs-engine:
   1. type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
   2. type `go get all` to get the supporting components
   3. `cd $GOPATH/src/github.com/Azure/acs-engine`
   4. `go build` to build the project
-3. `./acs-engine` to see the command line parameters
+  5. `./acs-engine` to see the command line parameters
 
 ## Linux
 
@@ -103,20 +104,21 @@ Requirements:
 
 Build Steps: 
 
-1. Setup Go path:
-  1. `mkdir $HOME/gopath`
-  2. edit `$HOME/.profile` and add the following line to setup your go path
+  1. Setup Go path:
+  2. `mkdir $HOME/gopath`
+  3. edit `$HOME/.profile` and add the following lines to setup your go path
   ```
   export PATH=$PATH:/usr/local/go/bin
   export GOPATH=$HOME/gopath
   ```
-  3. `source $HOME/.profile`
-2. Build acs-engine:
+  4. source $HOME/.profile
+ 
+Build acs-engine:
   1. type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
   2. type `go get all` to get the supporting components
   3. `cd $GOPATH/src/github.com/Azure/acs-engine`
   4. `go build` to build the project
-3. `./acs-engine` to see the command line parameters
+  5. `./acs-engine` to see the command line parameters
 
 
 # Template Generation

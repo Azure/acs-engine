@@ -9,7 +9,8 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/api/v20160930"
+	"github.com/Azure/acs-engine/pkg/api/v20160330"
+	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
 const (
@@ -31,10 +32,13 @@ func TestExpected(t *testing.T) {
 			continue
 		}
 
-		if version == v20160930.APIVersion {
-			// v20160930 need certificate profile to match expected template
+		if version != vlabs.APIVersion && version != v20160330.APIVersion {
+			// Set CertificateProfile here to avoid a new one generated.
+			// Kubernetes template needs certificate profile to match expected template
+			// API versions other than vlabs don't expose CertificateProfile
+			// API versions after v20160330 supports Kubernetes
 			containerService.Properties.CertificateProfile = &api.CertificateProfile{}
-			addV20160930CertificateProfile(containerService.Properties.CertificateProfile)
+			addTestCertificateProfile(containerService.Properties.CertificateProfile)
 		}
 
 		isClassicMode := false
@@ -122,10 +126,13 @@ func TestExpected(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if version == v20160930.APIVersion {
-				// v20160930 need certificate profile to match expected template
+			if version != vlabs.APIVersion && version != v20160330.APIVersion {
+				// Set CertificateProfile here to avoid a new one generated.
+				// Kubernetes template needs certificate profile to match expected template
+				// API versions other than vlabs don't expose CertificateProfile
+				// API versions after v20160330 supports Kubernetes
 				containerService.Properties.CertificateProfile = &api.CertificateProfile{}
-				addV20160930CertificateProfile(containerService.Properties.CertificateProfile)
+				addTestCertificateProfile(containerService.Properties.CertificateProfile)
 			}
 		}
 	}
@@ -177,8 +184,8 @@ func IterateTestFilesDirectory(directory string, APIModelTestFiles *[]APIModelTe
 	return nil
 }
 
-// addV20160930CertificateProfile add certificate artifacts for test purpose
-func addV20160930CertificateProfile(api *api.CertificateProfile) {
+// addTestCertificateProfile add certificate artifacts for test purpose
+func addTestCertificateProfile(api *api.CertificateProfile) {
 	api.CaCertificate = "caCertificate"
 	api.APIServerCertificate = "apiServerCertificate"
 	api.APIServerPrivateKey = "apiServerPrivateKey"

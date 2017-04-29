@@ -22,7 +22,7 @@ function generate_template() {
 	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || [[ ! -z "${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_ID" && exit -1)
 	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || [[ ! -z "${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_SECRET" && exit -1)
 	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
-	
+
 	# Set output directory
 	mkdir -p "${OUTPUT}"
 
@@ -82,10 +82,6 @@ function set_azure_account() {
 	which kubectl || (echo "kubectl must be on PATH" && exit -1)
 	which az || (echo "az must be on PATH" && exit -1)
 
-	# Set custom dir so we don't clobber global 'az' config
-	AZURE_CONFIG_DIR="$(mktemp -d)"
-	trap 'rm -rf ${AZURE_CONFIG_DIR}' EXIT
-
 	# Login to Azure-Cli
 	az login --service-principal \
 		--username "${SERVICE_PRINCIPAL_CLIENT_ID}" \
@@ -114,6 +110,49 @@ function deploy_template() {
 		--resource-group "${RESOURCE_GROUP}" \
 		--template-file "${OUTPUT}/azuredeploy.json" \
 		--parameters "@${OUTPUT}/azuredeploy.parameters.json"
+}
+
+function scale_agent_pool() {
+	# Check pre-requisites
+	[[ ! -z "${AGENT_POOL_SIZE:-}" ]] || (echo "Must specify AGENT_POOL_SIZE" && exit -1)
+	[[ ! -z "${DEPLOYMENT_NAME:-}" ]] || (echo "Must specify DEPLOYMENT_NAME" && exit -1)
+	[[ ! -z "${LOCATION:-}" ]] || (echo "Must specify LOCATION" && exit -1)
+	[[ ! -z "${RESOURCE_GROUP:-}" ]] || (echo "Must specify RESOURCE_GROUP" && exit -1)
+	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
+
+	which az || (echo "az must be on PATH" && exit -1)
+
+	APIMODEL="${OUTPUT}/apimodel.json"
+	DEPLOYMENT_PARAMS="${OUTPUT}/azuredeploy.parameters.json"
+
+	for poolname in `jq '.properties.agentPoolProfiles[].name' "${APIMODEL}" | tr -d '\"'`; do
+	  offset=$(jq "getpath([\"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
+	  echo "$poolname : offset=$offset count=$AGENT_POOL_SIZE"
+	  jqi "${DEPLOYMENT_PARAMS}" ".${poolname}Count.value = $AGENT_POOL_SIZE"
+	  jqi "${DEPLOYMENT_PARAMS}" ".${poolname}Offset.value = $offset"
+	done
+
+	az group deployment create \
+		--name "${DEPLOYMENT_NAME}" \
+		--resource-group "${RESOURCE_GROUP}" \
+		--template-file "${OUTPUT}/azuredeploy.json" \
+		--parameters "@${OUTPUT}/azuredeploy.parameters.json"
+}
+
+function get_node_count() {
+	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
+
+	APIMODEL="${OUTPUT}/apimodel.json"
+	DEPLOYMENT_PARAMS="${OUTPUT}/azuredeploy.parameters.json"
+
+	count=$(jq 'getpath(["properties","masterProfile","count"])' ${APIMODEL})
+
+	for poolname in `jq '.properties.agentPoolProfiles[].name' "${APIMODEL}" | tr -d '\"'`; do
+	  nodes=$(jq "getpath([\"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
+	  count=$((count+nodes))
+	done
+
+	echo $count
 }
 
 function cleanup() {

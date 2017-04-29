@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
+	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -54,6 +55,26 @@ func ConvertV20160330ContainerService(v20160330 *v20160330.ContainerService) *Co
 	return c
 }
 
+// ConvertV20170131ContainerService converts a v20170131 ContainerService to an unversioned ContainerService
+func ConvertV20170131ContainerService(v20170131 *v20170131.ContainerService) *ContainerService {
+	c := &ContainerService{}
+	c.ID = v20170131.ID
+	c.Location = v20170131.Location
+	c.Name = v20170131.Name
+	if v20170131.Plan != nil {
+		c.Plan = &ResourcePurchasePlan{}
+		convertV20170131ResourcePurchasePlan(v20170131.Plan, c.Plan)
+	}
+	c.Tags = map[string]string{}
+	for k, v := range v20170131.Tags {
+		c.Tags[k] = v
+	}
+	c.Type = v20170131.Type
+	c.Properties = &Properties{}
+	convertV20170131Properties(v20170131.Properties, c.Properties)
+	return c
+}
+
 // ConvertVLabsContainerService converts a vlabs ContainerService to an unversioned ContainerService
 func ConvertVLabsContainerService(vlabs *vlabs.ContainerService) *ContainerService {
 	c := &ContainerService{}
@@ -90,6 +111,14 @@ func convertV20160330ResourcePurchasePlan(v20160330 *v20160330.ResourcePurchaseP
 	api.Publisher = v20160330.Publisher
 }
 
+// convertV20170131ResourcePurchasePlan converts a v20170131 ResourcePurchasePlan to an unversioned ResourcePurchasePlan
+func convertV20170131ResourcePurchasePlan(v20170131 *v20170131.ResourcePurchasePlan, api *ResourcePurchasePlan) {
+	api.Name = v20170131.Name
+	api.Product = v20170131.Product
+	api.PromotionCode = v20170131.PromotionCode
+	api.Publisher = v20170131.Publisher
+}
+
 // convertVLabsResourcePurchasePlan converts a vlabs ResourcePurchasePlan to an unversioned ResourcePurchasePlan
 func convertVLabsResourcePurchasePlan(vlabs *vlabs.ResourcePurchasePlan, api *ResourcePurchasePlan) {
 	api.Name = vlabs.Name
@@ -108,11 +137,18 @@ func convertV20160930Properties(v20160930 *v20160930.Properties, api *Properties
 		api.MasterProfile = &MasterProfile{}
 		convertV20160930MasterProfile(v20160930.MasterProfile, api.MasterProfile)
 	}
-	api.AgentPoolProfiles = []AgentPoolProfile{}
+	api.AgentPoolProfiles = []*AgentPoolProfile{}
 	for _, p := range v20160930.AgentPoolProfiles {
 		apiProfile := &AgentPoolProfile{}
-		convertV20160930AgentPoolProfile(&p, apiProfile)
-		api.AgentPoolProfiles = append(api.AgentPoolProfiles, *apiProfile)
+		// api.OrchestratorProfile already be filled in correctly
+		if api.OrchestratorProfile.IsKubernetes() {
+			// we only allow AvailabilitySet for kubernetes's agentpool
+			convertV20160930AgentPoolProfile(p, AvailabilitySet, apiProfile)
+		} else {
+			// other orchestrators all use VMSS
+			convertV20160930AgentPoolProfile(p, VirtualMachineScaleSets, apiProfile)
+		}
+		api.AgentPoolProfiles = append(api.AgentPoolProfiles, apiProfile)
 	}
 	if v20160930.LinuxProfile != nil {
 		api.LinuxProfile = &LinuxProfile{}
@@ -150,11 +186,11 @@ func convertV20160330Properties(v20160330 *v20160330.Properties, api *Properties
 		api.MasterProfile = &MasterProfile{}
 		convertV20160330MasterProfile(v20160330.MasterProfile, api.MasterProfile)
 	}
-	api.AgentPoolProfiles = []AgentPoolProfile{}
+	api.AgentPoolProfiles = []*AgentPoolProfile{}
 	for _, p := range v20160330.AgentPoolProfiles {
 		apiProfile := &AgentPoolProfile{}
-		convertV20160330AgentPoolProfile(&p, apiProfile)
-		api.AgentPoolProfiles = append(api.AgentPoolProfiles, *apiProfile)
+		convertV20160330AgentPoolProfile(p, apiProfile)
+		api.AgentPoolProfiles = append(api.AgentPoolProfiles, apiProfile)
 
 	}
 	if v20160330.LinuxProfile != nil {
@@ -175,6 +211,55 @@ func convertV20160330Properties(v20160330 *v20160330.Properties, api *Properties
 	}
 }
 
+func convertV20170131Properties(v20170131 *v20170131.Properties, api *Properties) {
+	api.ProvisioningState = ProvisioningState(v20170131.ProvisioningState)
+	if v20170131.OrchestratorProfile != nil {
+		api.OrchestratorProfile = &OrchestratorProfile{}
+		convertV20170131OrchestratorProfile(v20170131.OrchestratorProfile, api.OrchestratorProfile)
+	}
+	if v20170131.MasterProfile != nil {
+		api.MasterProfile = &MasterProfile{}
+		convertV20170131MasterProfile(v20170131.MasterProfile, api.MasterProfile)
+	}
+	api.AgentPoolProfiles = []*AgentPoolProfile{}
+	for _, p := range v20170131.AgentPoolProfiles {
+		apiProfile := &AgentPoolProfile{}
+		// api.OrchestratorProfile already be filled in correctly
+		if api.OrchestratorProfile.IsKubernetes() {
+			// we only allow AvailabilitySet for kubernetes's agentpool
+			convertV20170131AgentPoolProfile(p, AvailabilitySet, apiProfile)
+		} else {
+			// other orchestrators all use VMSS
+			convertV20170131AgentPoolProfile(p, VirtualMachineScaleSets, apiProfile)
+		}
+		api.AgentPoolProfiles = append(api.AgentPoolProfiles, apiProfile)
+	}
+	if v20170131.LinuxProfile != nil {
+		api.LinuxProfile = &LinuxProfile{}
+		convertV20170131LinuxProfile(v20170131.LinuxProfile, api.LinuxProfile)
+	}
+	if v20170131.WindowsProfile != nil {
+		api.WindowsProfile = &WindowsProfile{}
+		convertV20170131WindowsProfile(v20170131.WindowsProfile, api.WindowsProfile)
+	}
+	if v20170131.DiagnosticsProfile != nil {
+		api.DiagnosticsProfile = &DiagnosticsProfile{}
+		convertV20170131DiagnosticsProfile(v20170131.DiagnosticsProfile, api.DiagnosticsProfile)
+	}
+	if v20170131.JumpboxProfile != nil {
+		api.JumpboxProfile = &JumpboxProfile{}
+		convertV20170131JumpboxProfile(v20170131.JumpboxProfile, api.JumpboxProfile)
+	}
+	if v20170131.ServicePrincipalProfile != nil {
+		api.ServicePrincipalProfile = &ServicePrincipalProfile{}
+		convertV20170131ServicePrincipalProfile(v20170131.ServicePrincipalProfile, api.ServicePrincipalProfile)
+	}
+	if v20170131.CustomProfile != nil {
+		api.CustomProfile = &CustomProfile{}
+		convertV20170131CustomProfile(v20170131.CustomProfile, api.CustomProfile)
+	}
+}
+
 func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
 	if vlabs.OrchestratorProfile != nil {
@@ -185,11 +270,11 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 		api.MasterProfile = &MasterProfile{}
 		convertVLabsMasterProfile(vlabs.MasterProfile, api.MasterProfile)
 	}
-	api.AgentPoolProfiles = []AgentPoolProfile{}
+	api.AgentPoolProfiles = []*AgentPoolProfile{}
 	for _, p := range vlabs.AgentPoolProfiles {
 		apiProfile := &AgentPoolProfile{}
-		convertVLabsAgentPoolProfile(&p, apiProfile)
-		api.AgentPoolProfiles = append(api.AgentPoolProfiles, *apiProfile)
+		convertVLabsAgentPoolProfile(p, apiProfile)
+		api.AgentPoolProfiles = append(api.AgentPoolProfiles, apiProfile)
 	}
 	if vlabs.LinuxProfile != nil {
 		api.LinuxProfile = &LinuxProfile{}
@@ -229,6 +314,16 @@ func convertV20160330LinuxProfile(v20160330 *v20160330.LinuxProfile, api *LinuxP
 	}
 }
 
+func convertV20170131LinuxProfile(v20170131 *v20170131.LinuxProfile, api *LinuxProfile) {
+	api.AdminUsername = v20170131.AdminUsername
+	api.SSH.PublicKeys = []struct {
+		KeyData string `json:"keyData"`
+	}{}
+	for _, d := range v20170131.SSH.PublicKeys {
+		api.SSH.PublicKeys = append(api.SSH.PublicKeys, d)
+	}
+}
+
 func convertVLabsLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
 	api.AdminUsername = vlabs.AdminUsername
 	api.SSH.PublicKeys = []struct {
@@ -255,6 +350,11 @@ func convertV20160330WindowsProfile(v20160330 *v20160330.WindowsProfile, api *Wi
 	api.AdminPassword = v20160330.AdminPassword
 }
 
+func convertV20170131WindowsProfile(v20170131 *v20170131.WindowsProfile, api *WindowsProfile) {
+	api.AdminUsername = v20170131.AdminUsername
+	api.AdminPassword = v20170131.AdminPassword
+}
+
 func convertVLabsWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile) {
 	api.AdminUsername = vlabs.AdminUsername
 	api.AdminPassword = vlabs.AdminPassword
@@ -272,6 +372,10 @@ func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfil
 
 func convertV20160330OrchestratorProfile(v20160330 *v20160330.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = OrchestratorType(v20160330.OrchestratorType)
+}
+
+func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfile, api *OrchestratorProfile) {
+	api.OrchestratorType = OrchestratorType(v20170131.OrchestratorType)
 }
 
 func convertVLabsOrchestratorProfile(vlabs *vlabs.OrchestratorProfile, api *OrchestratorProfile) {
@@ -301,6 +405,18 @@ func convertV20160330MasterProfile(v20160330 *v20160330.MasterProfile, api *Mast
 	api.DNSPrefix = v20160330.DNSPrefix
 	api.FQDN = v20160330.FQDN
 	api.Subnet = v20160330.GetSubnet()
+	// Set default VMSize
+	api.VMSize = "Standard_D2_v2"
+}
+
+func convertV20170131MasterProfile(v20170131 *v20170131.MasterProfile, api *MasterProfile) {
+	api.Count = v20170131.Count
+	api.DNSPrefix = v20170131.DNSPrefix
+	api.FQDN = v20170131.FQDN
+	api.Subnet = v20170131.GetSubnet()
+	// Set default VMSize
+	// TODO: Use azureconst.go to set
+	api.VMSize = "Standard_D2_v2"
 }
 
 func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
@@ -314,7 +430,7 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.FQDN = vlabs.FQDN
 }
 
-func convertV20160930AgentPoolProfile(v20160930 *v20160930.AgentPoolProfile, api *AgentPoolProfile) {
+func convertV20160930AgentPoolProfile(v20160930 *v20160930.AgentPoolProfile, availabilityProfile string, api *AgentPoolProfile) {
 	api.Name = v20160930.Name
 	api.Count = v20160930.Count
 	api.VMSize = v20160930.VMSize
@@ -326,6 +442,7 @@ func convertV20160930AgentPoolProfile(v20160930 *v20160930.AgentPoolProfile, api
 	api.FQDN = v20160930.FQDN
 	api.OSType = OSType(v20160930.OSType)
 	api.Subnet = v20160930.GetSubnet()
+	api.AvailabilityProfile = availabilityProfile
 }
 
 func convertV20160330AgentPoolProfile(v20160330 *v20160330.AgentPoolProfile, api *AgentPoolProfile) {
@@ -333,9 +450,28 @@ func convertV20160330AgentPoolProfile(v20160330 *v20160330.AgentPoolProfile, api
 	api.Count = v20160330.Count
 	api.VMSize = v20160330.VMSize
 	api.DNSPrefix = v20160330.DNSPrefix
+	if api.DNSPrefix != "" {
+		// Set default Ports when DNSPrefix specified
+		api.Ports = []int{80, 443, 8080}
+	}
 	api.FQDN = v20160330.FQDN
 	api.OSType = OSType(v20160330.OSType)
 	api.Subnet = v20160330.GetSubnet()
+}
+
+func convertV20170131AgentPoolProfile(v20170131 *v20170131.AgentPoolProfile, availabilityProfile string, api *AgentPoolProfile) {
+	api.Name = v20170131.Name
+	api.Count = v20170131.Count
+	api.VMSize = v20170131.VMSize
+	api.DNSPrefix = v20170131.DNSPrefix
+	if api.DNSPrefix != "" {
+		// Set default Ports when DNSPrefix specified
+		api.Ports = []int{80, 443, 8080}
+	}
+	api.FQDN = v20170131.FQDN
+	api.OSType = OSType(v20170131.OSType)
+	api.Subnet = v20170131.GetSubnet()
+	api.AvailabilityProfile = availabilityProfile
 }
 
 func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolProfile) {
@@ -395,6 +531,18 @@ func convertV20160330VMDiagnostics(v20160330 *v20160330.VMDiagnostics, api *VMDi
 	api.StorageURL = v20160330.StorageURL
 }
 
+func convertV20170131DiagnosticsProfile(v20170131 *v20170131.DiagnosticsProfile, api *DiagnosticsProfile) {
+	if v20170131.VMDiagnostics != nil {
+		api.VMDiagnostics = &VMDiagnostics{}
+		convertV20170131VMDiagnostics(v20170131.VMDiagnostics, api.VMDiagnostics)
+	}
+}
+
+func convertV20170131VMDiagnostics(v20170131 *v20170131.VMDiagnostics, api *VMDiagnostics) {
+	api.Enabled = v20170131.Enabled
+	api.StorageURL = v20170131.StorageURL
+}
+
 func convertV20160930JumpboxProfile(v20160930 *v20160930.JumpboxProfile, api *JumpboxProfile) {
 	api.OSType = OSType(v20160930.OSType)
 	api.DNSPrefix = v20160930.DNSPrefix
@@ -407,9 +555,20 @@ func convertV20160330JumpboxProfile(v20160330 *v20160330.JumpboxProfile, api *Ju
 	api.FQDN = v20160330.FQDN
 }
 
+func convertV20170131JumpboxProfile(v20170131 *v20170131.JumpboxProfile, api *JumpboxProfile) {
+	api.OSType = OSType(v20170131.OSType)
+	api.DNSPrefix = v20170131.DNSPrefix
+	api.FQDN = v20170131.FQDN
+}
+
 func convertV20160930ServicePrincipalProfile(v20160930 *v20160930.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 	api.ClientID = v20160930.ClientID
 	api.Secret = v20160930.Secret
+}
+
+func convertV20170131ServicePrincipalProfile(v20170131 *v20170131.ServicePrincipalProfile, api *ServicePrincipalProfile) {
+	api.ClientID = v20170131.ClientID
+	api.Secret = v20170131.Secret
 }
 
 func convertVLabsServicePrincipalProfile(vlabs *vlabs.ServicePrincipalProfile, api *ServicePrincipalProfile) {
@@ -419,6 +578,10 @@ func convertVLabsServicePrincipalProfile(vlabs *vlabs.ServicePrincipalProfile, a
 
 func convertV20160930CustomProfile(v20160930 *v20160930.CustomProfile, api *CustomProfile) {
 	api.Orchestrator = v20160930.Orchestrator
+}
+
+func convertV20170131CustomProfile(v20170131 *v20170131.CustomProfile, api *CustomProfile) {
+	api.Orchestrator = v20170131.Orchestrator
 }
 
 func convertVLabsCertificateProfile(vlabs *vlabs.CertificateProfile, api *CertificateProfile) {
