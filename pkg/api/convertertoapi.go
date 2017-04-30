@@ -370,17 +370,24 @@ func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfil
 	api.OrchestratorType = OrchestratorType(v20160930.OrchestratorType)
 	if api.OrchestratorType == Kubernetes {
 		api.OrchestratorVersion = Kubernetes153
+	} else if api.OrchestratorType == DCOS {
+		api.OrchestratorVersion = DCOS190
 	}
 }
 
 func convertV20160330OrchestratorProfile(v20160330 *v20160330.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = OrchestratorType(v20160330.OrchestratorType)
+	if api.OrchestratorType == DCOS {
+		api.OrchestratorVersion = DCOS190
+	}
 }
 
 func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = OrchestratorType(v20170131.OrchestratorType)
 	if api.OrchestratorType == Kubernetes {
 		api.OrchestratorVersion = Kubernetes162
+	} else if api.OrchestratorType == DCOS {
+		api.OrchestratorVersion = DCOS190
 	}
 }
 
@@ -402,33 +409,20 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		default:
 			api.OrchestratorVersion = KubernetesLatest
 		}
-	} else {
-		switch vlabscs.OrchestratorType {
-		case vlabs.DCOS173:
-			api.OrchestratorVersion = DCOS173Version
-		case vlabs.DCOS184:
-			api.OrchestratorVersion = DCOS184Version
-		case vlabs.DCOS187:
-			api.OrchestratorVersion = DCOS187Version
-		case vlabs.DCOS188:
-			api.OrchestratorVersion = DCOS188Version
-		case vlabs.DCOS190:
-			api.OrchestratorVersion = DCOS190Version
-		case vlabs.DCOS:
-			api.OrchestratorVersion = DCOS190Version
-		}
-
+	} else if api.OrchestratorType == DCOS {
 		switch vlabscs.OrchestratorVersion {
-		case vlabs.DCOS173Version:
-			api.OrchestratorVersion = DCOS173Version
-		case vlabs.DCOS184Version:
-			api.OrchestratorVersion = DCOS184Version
-		case vlabs.DCOS187Version:
-			api.OrchestratorVersion = DCOS187Version
-		case vlabs.DCOS188Version:
-			api.OrchestratorVersion = DCOS188Version
-		case vlabs.DCOS190Version:
-			api.OrchestratorVersion = DCOS190Version
+		case vlabs.DCOS173:
+			api.OrchestratorVersion = DCOS173
+		case vlabs.DCOS184:
+			api.OrchestratorVersion = DCOS184
+		case vlabs.DCOS187:
+			api.OrchestratorVersion = DCOS187
+		case vlabs.DCOS188:
+			api.OrchestratorVersion = DCOS188
+		case vlabs.DCOS190:
+			api.OrchestratorVersion = DCOS190
+		default:
+			api.OrchestratorVersion = DCOSLatest
 		}
 	}
 }

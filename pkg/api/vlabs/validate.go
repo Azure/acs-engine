@@ -12,25 +12,15 @@ import (
 func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case DCOS:
-	case DCOS190:
-		if e := o.ValidateOrchestratorVersion(DCOS190Version); e != nil {
-			return e
-		}
-	case DCOS188:
-		if e := o.ValidateOrchestratorVersion(DCOS188Version); e != nil {
-			return e
-		}
-	case DCOS187:
-		if e := o.ValidateOrchestratorVersion(DCOS187Version); e != nil {
-			return e
-		}
-	case DCOS184:
-		if e := o.ValidateOrchestratorVersion(DCOS184Version); e != nil {
-			return e
-		}
-	case DCOS173:
-		if e := o.ValidateOrchestratorVersion(DCOS173Version); e != nil {
-			return e
+		switch o.OrchestratorVersion {
+		case DCOS173:
+		case DCOS184:
+		case DCOS187:
+		case DCOS188:
+		case DCOS190:
+		case "":
+		default:
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
 		}
 	case Swarm:
 	case Kubernetes:
@@ -50,15 +40,6 @@ func (o *OrchestratorProfile) Validate() error {
 	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil &&
 		(o.KubernetesConfig.KubernetesImageBase != "" || o.KubernetesConfig.NetworkPolicy != "") {
 		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
-	}
-
-	return nil
-}
-
-// ValidateOrchestratorVersion validates orchestrator version
-func (o *OrchestratorProfile) ValidateOrchestratorVersion(orchestratorVersion OrchestratorVersion) error {
-	if o.OrchestratorVersion != orchestratorVersion && len(o.OrchestratorVersion) != 0 {
-		return fmt.Errorf("Allowed orchestrator version value is: %s, actual: %s \n", orchestratorVersion, o.OrchestratorVersion)
 	}
 
 	return nil
@@ -244,11 +225,6 @@ func (a *Properties) Validate() error {
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
-			case DCOS173:
-			case DCOS184:
-			case DCOS187:
-			case DCOS188:
-			case DCOS190:
 			case Swarm:
 			case Kubernetes:
 			case SwarmMode:
@@ -260,11 +236,6 @@ func (a *Properties) Validate() error {
 		if len(agentPoolProfile.CustomNodeLabels) > 0 {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
-			case DCOS173:
-			case DCOS184:
-			case DCOS187:
-			case DCOS188:
-			case DCOS190:
 			default:
 				return fmt.Errorf("Agent Type attributes are only supported for DCOS.")
 			}

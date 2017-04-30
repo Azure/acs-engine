@@ -213,16 +213,6 @@ func (o *OrchestratorType) UnmarshalText(text []byte) error {
 	switch {
 	case strings.EqualFold(s, string(DCOS)):
 		*o = DCOS
-	case strings.EqualFold(s, string(DCOS190)):
-		*o = DCOS190
-	case strings.EqualFold(s, string(DCOS188)):
-		*o = DCOS188
-	case strings.EqualFold(s, string(DCOS187)):
-		*o = DCOS187
-	case strings.EqualFold(s, string(DCOS184)):
-		*o = DCOS184
-	case strings.EqualFold(s, string(DCOS173)):
-		*o = DCOS173
 	case strings.EqualFold(s, string(Swarm)):
 		*o = Swarm
 	case strings.EqualFold(s, string(Kubernetes)):

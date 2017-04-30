@@ -6,16 +6,6 @@ const (
 	Mesos OrchestratorType = "Mesos"
 	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS188
 	DCOS OrchestratorType = "DCOS"
-	// DCOS190 is the string constant for DCOS 1.9.0 orchestrator type
-	DCOS190 OrchestratorType = "DCOS190"
-	// DCOS188 is the string constant for DCOS 1.8.8 orchestrator type
-	DCOS188 OrchestratorType = "DCOS188"
-	// DCOS187 is the string constant for DCOS 1.8.7 orchestrator type
-	DCOS187 OrchestratorType = "DCOS187"
-	// DCOS184 is the string constant for DCOS 1.8.4 orchestrator type
-	DCOS184 OrchestratorType = "DCOS184"
-	// DCOS173 is the string constant for DCOS 1.7.3 orchestrator type
-	DCOS173 OrchestratorType = "DCOS173"
 	// Swarm is the string constant for the Swarm orchestrator type
 	Swarm OrchestratorType = "Swarm"
 	// Kubernetes is the string constant for the Kubernetes orchestrator type
@@ -72,14 +62,16 @@ const (
 )
 
 const (
-	// DCOS190Version is the string constant for DCOS 1.9.0
-	DCOS190Version OrchestratorVersion = "1.9.0"
-	// DCOS188Version is the string constant for DCOS 1.8.8
-	DCOS188Version OrchestratorVersion = "1.8.8"
-	// DCOS187Version is the string constant for DCOS 1.8.7
-	DCOS187Version OrchestratorVersion = "1.8.7"
-	// DCOS184Version is the string constant for DCOS 1.8.4
-	DCOS184Version OrchestratorVersion = "1.8.4"
-	// DCOS173Version is the string constant for DCOS 1.7.3
-	DCOS173Version OrchestratorVersion = "1.7.3"
+	// DCOS190 is the string constant for DCOS 1.9.0
+	DCOS190 OrchestratorVersion = "1.9.0"
+	// DCOS188 is the string constant for DCOS 1.8.8
+	DCOS188 OrchestratorVersion = "1.8.8"
+	// DCOS187 is the string constant for DCOS 1.8.7
+	DCOS187 OrchestratorVersion = "1.8.7"
+	// DCOS184 is the string constant for DCOS 1.8.4
+	DCOS184 OrchestratorVersion = "1.8.4"
+	// DCOS173 is the string constant for DCOS 1.7.3
+	DCOS173 OrchestratorVersion = "1.7.3"
+	// DCOSLatest is the string constant for latest DCOS version
+	DCOSLatest OrchestratorVersion = DCOS190
 )
