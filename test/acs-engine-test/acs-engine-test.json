@@ -3,18 +3,18 @@
     {
       "cluster_definition": "examples/kubernetes.json",
       "location": "westus"
-    },
-    {
-      "cluster_definition": "examples/dcos.json",
-      "location": "eastus"
-    },
-    {
-      "cluster_definition": "examples/swarm.json",
-      "location": "southcentralus"
-    },
-    {
-      "cluster_definition": "examples/swarmmode.json",
-      "location": "westus2"
     }
+    // {
+    //   "cluster_definition": "examples/dcos.json",
+    //   "location": "eastus"
+    // },
+    // {
+    //   "cluster_definition": "examples/swarm.json",
+    //   "location": "southcentralus"
+    // },
+    // {
+    //   "cluster_definition": "examples/swarmmode.json",
+    //   "location": "westus2"
+    // }
   ]
 }
