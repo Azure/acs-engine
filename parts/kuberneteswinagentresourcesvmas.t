@@ -92,7 +92,8 @@
       "tags":
       {
         "creationSource" : "[concat('acsengine-', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
-        "resourceNameSuffix" : "[variables('winResourceNamePrefix')]"
+        "resourceNameSuffix" : "[variables('winResourceNamePrefix')]",
+        "orchestrator" : "[variables('orchestratorNameVersionTag')]"
       },
       "location": "[variables('location')]", 
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]", 

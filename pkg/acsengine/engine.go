@@ -283,11 +283,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
 	var files []string
 	var baseFile string
-	if properties.OrchestratorProfile.OrchestratorType == api.DCOS188 ||
-		properties.OrchestratorProfile.OrchestratorType == api.DCOS190 ||
-		properties.OrchestratorProfile.OrchestratorType == api.DCOS187 ||
-		properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
-		properties.OrchestratorProfile.OrchestratorType == api.DCOS173 {
+	if properties.OrchestratorProfile.OrchestratorType == api.DCOS {
 		files = append(commonTemplateFiles, dcosTemplateFiles...)
 		baseFile = dcosBaseFile
 	} else if properties.OrchestratorProfile.OrchestratorType == api.Swarm {
@@ -364,6 +360,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	// Kubernetes Parameters
 	if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+		KubernetesVersion := properties.OrchestratorProfile.OrchestratorVersion
 		addSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
 		addSecret(parametersMap, "apiServerPrivateKey", properties.CertificateProfile.APIServerPrivateKey, true)
 		addSecret(parametersMap, "caCertificate", properties.CertificateProfile.CaCertificate, true)
@@ -390,17 +387,18 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		dcosBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOS188_BootstrapDownloadURL
 		switch properties.OrchestratorProfile.OrchestratorType {
 		case api.DCOS:
-			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190_BootstrapDownloadURL
-		case api.DCOS173:
-			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS173_BootstrapDownloadURL
-		case api.DCOS184:
-			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS184_BootstrapDownloadURL
-		case api.DCOS187:
-			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS187_BootstrapDownloadURL
-		case api.DCOS188:
-			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188_BootstrapDownloadURL
-		case api.DCOS190:
-			dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190_BootstrapDownloadURL
+			switch properties.OrchestratorProfile.OrchestratorVersion {
+			case api.DCOS173:
+				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS173_BootstrapDownloadURL
+			case api.DCOS184:
+				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS184_BootstrapDownloadURL
+			case api.DCOS187:
+				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS187_BootstrapDownloadURL
+			case api.DCOS188:
+				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188_BootstrapDownloadURL
+			case api.DCOS190:
+				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190_BootstrapDownloadURL
+			}
 		}
 		addValue(parametersMap, "dcosBootstrapURL", dcosBootstrapURL)
 	}
@@ -424,6 +422,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addValue(parametersMap, "windowsAdminUsername", properties.WindowsProfile.AdminUsername)
 		addValue(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword)
 		if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+			KubernetesVersion := properties.OrchestratorProfile.OrchestratorVersion
 			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+KubeImages[KubernetesVersion]["windowszip"])
 			addValue(parametersMap, "kubeBinariesVersion", KubernetesVersion)
 		}
@@ -476,19 +475,24 @@ func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
 func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[string]interface{} {
 	return template.FuncMap{
 		"IsDCOS173": func() bool {
-			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS173
+			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
+				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOS173
 		},
 		"IsDCOS184": func() bool {
-			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS184
+			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
+				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOS184
 		},
 		"IsDCOS187": func() bool {
-			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS187
+			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
+				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOS187
 		},
 		"IsDCOS188": func() bool {
-			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS188
+			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
+				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOS188
 		},
 		"IsDCOS190": func() bool {
-			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS190
+			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
+				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOS190
 		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
@@ -532,25 +536,21 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"GetDCOSMasterCustomData": func() string {
 			masterProvisionScript := getDCOSMasterProvisionScript()
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
-			str := getSingleLineDCOSCustomData(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.MasterProfile.Count, masterProvisionScript, masterAttributeContents)
+			str := getSingleLineDCOSCustomData(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion, cs.Properties.MasterProfile.Count, masterProvisionScript, masterAttributeContents)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			agentProvisionScript := getDCOSAgentProvisionScript(profile)
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
-			str := getSingleLineDCOSCustomData(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.MasterProfile.Count, agentProvisionScript, attributeContents)
+			str := getSingleLineDCOSCustomData(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion, cs.Properties.MasterProfile.Count, agentProvisionScript, attributeContents)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetMasterAllowedSizes": func() string {
 			if t.ClassicMode {
 				return GetClassicAllowedSizes()
-			} else if cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS190 ||
-				cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS188 ||
-				cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS187 ||
-				cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS184 ||
-				cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS173 {
+			} else if cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS {
 				return GetDCOSMasterAllowedSizes()
 			}
 			return GetMasterAgentAllowedSizes()
@@ -733,8 +733,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 	}
 }
 
-func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) string {
-	if orchestratorType == api.DCOS190 {
+func getPackageGUID(orchestratorType api.OrchestratorType, orchestratorVersion api.OrchestratorVersion, masterCount int) string {
+	if orchestratorType == api.DCOS && orchestratorVersion == api.DCOS190 {
 		switch masterCount {
 		case 1:
 			return "bcc883b7a3191412cf41824bdee06c1142187a0b"
@@ -743,7 +743,7 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 		case 5:
 			return "b41bfa84137a6374b2ff5eb1655364d7302bd257"
 		}
-	} else if orchestratorType == api.DCOS188 {
+	} else if orchestratorType == api.DCOS && orchestratorVersion == api.DCOS188 {
 		switch masterCount {
 		case 1:
 			return "441385ce2f5942df7e29075c12fb38fa5e92cbba"
@@ -752,7 +752,7 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 		case 5:
 			return "d9b61156dfcc9383e014851529738aa550ef57d9"
 		}
-	} else if orchestratorType == api.DCOS187 {
+	} else if orchestratorType == api.DCOS && orchestratorVersion == api.DCOS187 {
 		switch masterCount {
 		case 1:
 			return "556978041b6ed059cc0f474501083e35ea5645b8"
@@ -761,7 +761,7 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 		case 5:
 			return "2e38627207dc70f46296b9649f9ee2a43500ec15"
 		}
-	} else if orchestratorType == api.DCOS184 {
+	} else if orchestratorType == api.DCOS && orchestratorVersion == api.DCOS184 {
 		switch masterCount {
 		case 1:
 			return "5ac6a7d060584c58c704e1f625627a591ecbde4e"
@@ -770,7 +770,7 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 		case 5:
 			return "97947a91e2c024ed4f043bfcdad49da9418d3095"
 		}
-	} else if orchestratorType == api.DCOS173 {
+	} else if orchestratorType == api.DCOS && orchestratorVersion == api.DCOS173 {
 		switch masterCount {
 		case 1:
 			return "6b604c1331c2b8b52bb23d1ea8a8d17e0f2b7428"
@@ -784,11 +784,7 @@ func getPackageGUID(orchestratorType api.OrchestratorType, masterCount int) stri
 }
 
 func getDCOSCustomDataPublicIPStr(orchestratorType api.OrchestratorType, masterCount int) string {
-	if orchestratorType == api.DCOS173 ||
-		orchestratorType == api.DCOS184 ||
-		orchestratorType == api.DCOS187 ||
-		orchestratorType == api.DCOS188 ||
-		orchestratorType == api.DCOS190 {
+	if orchestratorType == api.DCOS {
 		var buf bytes.Buffer
 		for i := 0; i < masterCount; i++ {
 			buf.WriteString(fmt.Sprintf("reference(variables('masterVMNic')[%d]).ipConfigurations[0].properties.privateIPAddress,", i))
@@ -1102,19 +1098,22 @@ touch /etc/mesosphere/roles/azure_master`
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCount int, provisionContent string, attributeContents string) string {
+func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, orchestratorVersion api.OrchestratorVersion, masterCount int, provisionContent string, attributeContents string) string {
 	yamlFilename := ""
 	switch orchestratorType {
-	case api.DCOS190:
-		yamlFilename = dcosCustomData190
-	case api.DCOS188:
-		yamlFilename = dcosCustomData188
-	case api.DCOS187:
-		yamlFilename = dcosCustomData187
-	case api.DCOS184:
-		yamlFilename = dcosCustomData184
-	case api.DCOS173:
-		yamlFilename = dcosCustomData173
+	case api.DCOS:
+		switch orchestratorVersion {
+		case api.DCOS173:
+			yamlFilename = dcosCustomData173
+		case api.DCOS184:
+			yamlFilename = dcosCustomData184
+		case api.DCOS187:
+			yamlFilename = dcosCustomData187
+		case api.DCOS188:
+			yamlFilename = dcosCustomData188
+		case api.DCOS190:
+			yamlFilename = dcosCustomData190
+		}
 	default:
 		// it is a bug to get here
 		panic(fmt.Sprintf("BUG: invalid orchestrator %s", orchestratorType))
@@ -1154,7 +1153,7 @@ func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, masterCo
 	yamlStr = rVariable.ReplaceAllString(yamlStr, "',variables('$1'),'")
 
 	// replace the internal values
-	guid := getPackageGUID(orchestratorType, masterCount)
+	guid := getPackageGUID(orchestratorType, orchestratorVersion, masterCount)
 	yamlStr = strings.Replace(yamlStr, "DCOSGUID", guid, -1)
 	publicIPStr := getDCOSCustomDataPublicIPStr(orchestratorType, masterCount)
 	yamlStr = strings.Replace(yamlStr, "DCOSCUSTOMDATAPUBLICIPSTR", publicIPStr, -1)

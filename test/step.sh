@@ -39,6 +39,11 @@ get_node_count)
   get_node_count
 ;;
 
+get_orchestrator_version)
+  export OUTPUT="${ROOT}/_output/${INSTANCE_NAME}"
+  export EXPECTED_ORCHESTRATOR_VERSION=$(get_orchestrator_version)
+;;
+
 validate)
   export OUTPUT="${ROOT}/_output/${INSTANCE_NAME}"
   export SSH_KEY="${OUTPUT}/id_rsa"

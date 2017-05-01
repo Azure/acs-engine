@@ -12,13 +12,26 @@ import (
 func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case DCOS:
-	case DCOS190:
-	case DCOS188:
-	case DCOS187:
-	case DCOS184:
-	case DCOS173:
+		switch o.OrchestratorVersion {
+		case DCOS173:
+		case DCOS184:
+		case DCOS187:
+		case DCOS188:
+		case DCOS190:
+		case "":
+		default:
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
+		}
 	case Swarm:
 	case Kubernetes:
+		switch o.OrchestratorVersion {
+		case Kubernetes162:
+		case Kubernetes160:
+		case Kubernetes153:
+		case "":
+		default:
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
+		}
 	case SwarmMode:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
@@ -212,11 +225,6 @@ func (a *Properties) Validate() error {
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
-			case DCOS173:
-			case DCOS184:
-			case DCOS187:
-			case DCOS188:
-			case DCOS190:
 			case Swarm:
 			case Kubernetes:
 			case SwarmMode:
@@ -228,11 +236,6 @@ func (a *Properties) Validate() error {
 		if len(agentPoolProfile.CustomNodeLabels) > 0 {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
-			case DCOS173:
-			case DCOS184:
-			case DCOS187:
-			case DCOS188:
-			case DCOS190:
 			default:
 				return fmt.Errorf("Agent Type attributes are only supported for DCOS.")
 			}
@@ -251,6 +254,11 @@ func (a *Properties) Validate() error {
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
+
+			if a.WindowsProfile == nil {
+				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
+			}
+
 			if len(a.WindowsProfile.AdminUsername) == 0 {
 				return fmt.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}

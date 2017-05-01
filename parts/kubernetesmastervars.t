@@ -60,6 +60,7 @@
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]",
     "vmsPerStorageAccount": 20,
     "provisionScript": "{{GetKubernetesB64Provision}}",
+    "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",  
 {{if AnyAgentHasDisks}}
     "dataStorageAccountPrefixSeed": 97,
 {{end}}

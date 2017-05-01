@@ -83,9 +83,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 		}
 	}
-	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
-		a.OrchestratorProfile.OrchestratorType = api.DCOS190
-	}
 }
 
 // SetMasterNetworkDefaults for masters
@@ -231,11 +228,9 @@ func certGenerationRequired(a *api.Properties) bool {
 	switch a.OrchestratorProfile.OrchestratorType {
 	case api.DCOS:
 		return false
-	case api.DCOS184:
-		return false
-	case api.DCOS173:
-		return false
 	case api.Swarm:
+		return false
+	case api.SwarmMode:
 		return false
 	case api.Kubernetes:
 		return true

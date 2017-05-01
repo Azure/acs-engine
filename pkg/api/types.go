@@ -117,8 +117,9 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType OrchestratorType  `json:"orchestratorType"`
-	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	OrchestratorType    OrchestratorType    `json:"orchestratorType"`
+	OrchestratorVersion OrchestratorVersion `json:"orchestratorVersion"`
+	KubernetesConfig    *KubernetesConfig   `json:"kubernetesConfig,omitempty"`
 }
 
 // KubernetesConfig contains the Kubernetes config structure, containing
@@ -185,6 +186,9 @@ type VMDiagnostics struct {
 
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
+
+// OrchestratorVersion defines the version for orchestratorType
+type OrchestratorVersion string
 
 // JumpboxProfile dscribes properties of the jumpbox setup
 // in the ACS container cluster.
