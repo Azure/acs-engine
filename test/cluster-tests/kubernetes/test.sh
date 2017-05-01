@@ -58,7 +58,7 @@ fi
 ###### Check node count
 function check_node_count() {
   log "Checking node count"
-  count=12
+  count=25
   while (( $count > 0 )); do
     node_count=$(kubectl get nodes --no-headers | grep -v NotReady | grep Ready | wc | awk '{print $1}')
     if (( ${node_count} == ${EXPECTED_NODE_COUNT} )); then break; fi
@@ -74,10 +74,10 @@ check_node_count
 ###### Validate Kubernetes version
 log "Checking Kubernetes version. Expected: ${EXPECTED_ORCHESTRATOR_VERSION}"
 if [ ! -z "${EXPECTED_ORCHESTRATOR_VERSION}" ]; then
-  kubernetes_version=$(kubectl --version | grep ${EXPECTED_ORCHESTRATOR_VERSION} | awk '{print $2}' | cut -f 2- -d "v")
-  if (( ${kubernetes_version} != ${EXPECTED_ORCHESTRATOR_VERSION} )); then 
-    log "Unexpected Kubernetes version: ${kubernetes_version}, expected: ${EXPECTED_ORCHESTRATOR_VERSION}"; exit -1
-  fi 
+  kubernetes_version=$(kubectl version --short)
+  if [[ ${kubernetes_version} != *"Server Version: v${EXPECTED_ORCHESTRATOR_VERSION}"* ]]; then
+    log "unexpected kubernetes version:\n${kubernetes_version}"; exit -1
+  fi
 fi
 
 ###### Wait for no more container creating
