@@ -12,26 +12,33 @@ import (
 func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case DCOS:
-	case DCOS190:
-	case DCOS188:
-	case DCOS187:
-	case DCOS184:
-	case DCOS173:
+		switch o.OrchestratorVersion {
+		case DCOS173:
+		case DCOS184:
+		case DCOS187:
+		case DCOS188:
+		case DCOS190:
+		case "":
+		default:
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
+		}
 	case Swarm:
 	case Kubernetes:
-		if o.KubernetesConfig != nil {
-			err := o.KubernetesConfig.Validate()
-			if err != nil {
-				return err
-			}
+		switch o.OrchestratorVersion {
+		case Kubernetes162:
+		case Kubernetes160:
+		case Kubernetes153:
+		case "":
+		default:
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
 		}
 	case SwarmMode:
 	default:
-		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %q", o.OrchestratorType)
+		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
 
 	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil &&
-		(*o.KubernetesConfig != KubernetesConfig{}) {
+		(o.KubernetesConfig.KubernetesImageBase != "" || o.KubernetesConfig.NetworkPolicy != "") {
 		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
 	}
 
@@ -59,7 +66,7 @@ func (m *MasterProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *AgentPoolProfile) Validate() error {
+func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 	if e := validateName(a.Name, "AgentPoolProfile.Name"); e != nil {
 		return e
 	}
@@ -72,22 +79,35 @@ func (a *AgentPoolProfile) Validate() error {
 	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
 		return e
 	}
-	if len(a.Ports) > 0 {
-		if e := validateUniquePorts(a.Ports, a.Name); e != nil {
-			return e
-		}
-		for _, port := range a.Ports {
-			if port < MinPort || port > MaxPort {
-				return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
-			}
-		}
-		if e := validateName(a.DNSPrefix, "AgentPoolProfile.DNSPrefix when specifying AgentPoolProfile Ports"); e != nil {
-			return e
-		}
+	if a.DNSPrefix != "" {
 		if e := validateDNSName(a.DNSPrefix); e != nil {
 			return e
 		}
+		if len(a.Ports) > 0 {
+			if e := validateUniquePorts(a.Ports, a.Name); e != nil {
+				return e
+			}
+			for _, port := range a.Ports {
+				if port < MinPort || port > MaxPort {
+					return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
+				}
+			}
+		} else {
+			a.Ports = []int{80, 443, 8080}
+		}
+	} else {
+		if len(a.Ports) > 0 {
+			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty")
+		}
 	}
+
+	// for Kubernetes, we don't support AgentPoolProfile.DNSPrefix
+	if orchestratorType == Kubernetes {
+		if e := validateNameEmpty(a.DNSPrefix, "AgentPoolProfile.DNSPrefix"); e != nil {
+			return e
+		}
+	}
+
 	if len(a.DiskSizesGB) > 0 {
 		if len(a.StorageProfile) == 0 {
 			return fmt.Errorf("property 'StorageProfile' must be set to either '%s' or '%s' when attaching disks", StorageAccount, ManagedDisks)
@@ -179,7 +199,7 @@ func (a *Properties) Validate() error {
 	}
 
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
-		if e := agentPoolProfile.Validate(); e != nil {
+		if e := agentPoolProfile.Validate(a.OrchestratorProfile.OrchestratorType); e != nil {
 			return e
 		}
 		switch agentPoolProfile.AvailabilityProfile {
@@ -205,11 +225,6 @@ func (a *Properties) Validate() error {
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
-			case DCOS173:
-			case DCOS184:
-			case DCOS187:
-			case DCOS188:
-			case DCOS190:
 			case Swarm:
 			case Kubernetes:
 			case SwarmMode:
@@ -221,11 +236,6 @@ func (a *Properties) Validate() error {
 		if len(agentPoolProfile.CustomNodeLabels) > 0 {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
-			case DCOS173:
-			case DCOS184:
-			case DCOS187:
-			case DCOS188:
-			case DCOS190:
 			default:
 				return fmt.Errorf("Agent Type attributes are only supported for DCOS.")
 			}
@@ -244,6 +254,11 @@ func (a *Properties) Validate() error {
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
+
+			if a.WindowsProfile == nil {
+				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
+			}
+
 			if len(a.WindowsProfile.AdminUsername) == 0 {
 				return fmt.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}
@@ -296,6 +311,13 @@ func (a *Properties) validateNetworkPolicy() error {
 	return nil
 }
 
+func validateNameEmpty(name string, label string) error {
+	if name != "" {
+		return fmt.Errorf("%s must be an empty value", label)
+	}
+	return nil
+}
+
 func validateName(name string, label string) error {
 	if name == "" {
 		return fmt.Errorf("%s must be a non-empty value", label)
@@ -329,7 +351,7 @@ func validateDNSName(dnsName string) error {
 	return nil
 }
 
-func validateUniqueProfileNames(profiles []AgentPoolProfile) error {
+func validateUniqueProfileNames(profiles []*AgentPoolProfile) error {
 	profileNames := make(map[string]bool)
 	for _, profile := range profiles {
 		if _, ok := profileNames[profile.Name]; ok {
@@ -409,58 +431,4 @@ func GetVNETSubnetIDComponents(vnetSubnetID string) (string, string, string, str
 		return "", "", "", "", err
 	}
 	return submatches[1], submatches[2], submatches[3], submatches[4], nil
-}
-
-func (a *KubernetesConfig) Validate() error {
-	if a.ClusterCidr != "" {
-		_, _, err := net.ParseCIDR(a.ClusterCidr)
-		if err != nil {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterCidr '%s' is an invalid CIDR subnet", a.ClusterCidr)
-		}
-	}
-
-	if a.DnsServiceIP != "" || a.ServiceCidr != "" {
-		if a.DnsServiceIP == "" {
-			return errors.New("OrchestratorProfile.KubernetesConfig.ServiceCidr must be specified when DnsServiceIP is")
-		}
-		if a.ServiceCidr == "" {
-			return errors.New("OrchestratorProfile.KubernetesConfig.DnsServiceIP must be specified when ServiceCidr is")
-		}
-
-		dnsIp := net.ParseIP(a.DnsServiceIP)
-		if dnsIp == nil {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is an invalid IP address", a.DnsServiceIP)
-		}
-
-		_, serviceCidr, err := net.ParseCIDR(a.ServiceCidr)
-		if err != nil {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ServiceCidr '%s' is an invalid CIDR subnet", a.ServiceCidr)
-		}
-
-		// Finally validate that the DNS ip is within the subnet, and _not_ that subnet broadcast address, otherwise it won't work
-		if !serviceCidr.Contains(dnsIp) {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is not within the ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
-		}
-
-		broadcast := ip4BroadcastAddress(serviceCidr)
-		if dnsIp.Equal(broadcast) {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' cannot be the broadcast address of ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
-		}
-	}
-
-	return nil
-}
-
-// ip4BroadcastAddress returns the broadcase address for the given IP subnet.
-func ip4BroadcastAddress(n *net.IPNet) net.IP {
-	ip4 := n.IP.To4()
-	if ip4 == nil {
-		return nil
-	}
-	last := make(net.IP, len(ip4))
-	copy(last, ip4)
-	for i := range ip4 {
-		last[i] |= ^n.Mask[i]
-	}
-	return last
 }

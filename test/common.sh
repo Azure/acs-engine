@@ -155,6 +155,17 @@ function get_node_count() {
 	echo $count
 }
 
+function get_orchestrator_version() {
+	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
+
+	APIMODEL="${OUTPUT}/apimodel.json"
+	DEPLOYMENT_PARAMS="${OUTPUT}/azuredeploy.parameters.json"
+
+	orchestratorVersion=$(jq 'getpath(["properties","orchestratorProfile","orchestratorVersion"])' ${APIMODEL})
+
+	echo $orchestratorVersion
+}
+
 function cleanup() {
 	if [[ "${CLEANUP:-}" == "y" ]]; then
 		az group delete --no-wait --name="${RESOURCE_GROUP}" --yes || true

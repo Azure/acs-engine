@@ -139,11 +139,11 @@ func convertPropertiesToV20160930(api *Properties, p *v20160930.Properties) {
 		p.MasterProfile = &v20160930.MasterProfile{}
 		convertMasterProfileToV20160930(api.MasterProfile, p.MasterProfile)
 	}
-	p.AgentPoolProfiles = []v20160930.AgentPoolProfile{}
+	p.AgentPoolProfiles = []*v20160930.AgentPoolProfile{}
 	for _, apiProfile := range api.AgentPoolProfiles {
 		v20160930Profile := &v20160930.AgentPoolProfile{}
-		convertAgentPoolProfileToV20160930(&apiProfile, v20160930Profile)
-		p.AgentPoolProfiles = append(p.AgentPoolProfiles, *v20160930Profile)
+		convertAgentPoolProfileToV20160930(apiProfile, v20160930Profile)
+		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160930Profile)
 	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20160930.LinuxProfile{}
@@ -181,11 +181,11 @@ func convertPropertiesToV20160330(api *Properties, p *v20160330.Properties) {
 		p.MasterProfile = &v20160330.MasterProfile{}
 		convertMasterProfileToV20160330(api.MasterProfile, p.MasterProfile)
 	}
-	p.AgentPoolProfiles = []v20160330.AgentPoolProfile{}
+	p.AgentPoolProfiles = []*v20160330.AgentPoolProfile{}
 	for _, apiProfile := range api.AgentPoolProfiles {
 		v20160330Profile := &v20160330.AgentPoolProfile{}
-		convertAgentPoolProfileToV20160330(&apiProfile, v20160330Profile)
-		p.AgentPoolProfiles = append(p.AgentPoolProfiles, *v20160330Profile)
+		convertAgentPoolProfileToV20160330(apiProfile, v20160330Profile)
+		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160330Profile)
 	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20160330.LinuxProfile{}
@@ -215,11 +215,11 @@ func convertPropertiesToV20170131(api *Properties, p *v20170131.Properties) {
 		p.MasterProfile = &v20170131.MasterProfile{}
 		convertMasterProfileToV20170131(api.MasterProfile, p.MasterProfile)
 	}
-	p.AgentPoolProfiles = []v20170131.AgentPoolProfile{}
+	p.AgentPoolProfiles = []*v20170131.AgentPoolProfile{}
 	for _, apiProfile := range api.AgentPoolProfiles {
 		v20170131Profile := &v20170131.AgentPoolProfile{}
-		convertAgentPoolProfileToV20170131(&apiProfile, v20170131Profile)
-		p.AgentPoolProfiles = append(p.AgentPoolProfiles, *v20170131Profile)
+		convertAgentPoolProfileToV20170131(apiProfile, v20170131Profile)
+		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20170131Profile)
 	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20170131.LinuxProfile{}
@@ -257,11 +257,11 @@ func convertPropertiesToVLabs(api *Properties, vlabsProps *vlabs.Properties) {
 		vlabsProps.MasterProfile = &vlabs.MasterProfile{}
 		convertMasterProfileToVLabs(api.MasterProfile, vlabsProps.MasterProfile)
 	}
-	vlabsProps.AgentPoolProfiles = []vlabs.AgentPoolProfile{}
+	vlabsProps.AgentPoolProfiles = []*vlabs.AgentPoolProfile{}
 	for _, apiProfile := range api.AgentPoolProfiles {
 		vlabsProfile := &vlabs.AgentPoolProfile{}
-		convertAgentPoolProfileToVLabs(&apiProfile, vlabsProfile)
-		vlabsProps.AgentPoolProfiles = append(vlabsProps.AgentPoolProfiles, *vlabsProfile)
+		convertAgentPoolProfileToVLabs(apiProfile, vlabsProfile)
+		vlabsProps.AgentPoolProfiles = append(vlabsProps.AgentPoolProfiles, vlabsProfile)
 	}
 	if api.LinuxProfile != nil {
 		vlabsProps.LinuxProfile = &vlabs.LinuxProfile{}
@@ -380,18 +380,9 @@ func convertOrchestratorProfileToV20170131(api *OrchestratorProfile, o *v2017013
 func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.OrchestratorProfile) {
 	o.OrchestratorType = vlabs.OrchestratorType(api.OrchestratorType)
 
-	if api.KubernetesConfig != nil {
-		o.KubernetesConfig = &vlabs.KubernetesConfig{}
-		convertKubernetesConfigToVLabs(api.KubernetesConfig, o.KubernetesConfig)
+	if api.OrchestratorVersion != "" {
+		o.OrchestratorVersion = vlabs.OrchestratorVersion(api.OrchestratorVersion)
 	}
-}
-
-func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {
-	vlabs.KubernetesImageBase = api.KubernetesImageBase
-	vlabs.NetworkPolicy = api.NetworkPolicy
-	vlabs.DnsServiceIP = api.DnsServiceIP
-	vlabs.ServiceCidr = api.ServiceCIDR
-	vlabs.ClusterCidr = api.ClusterCIDR
 }
 
 func convertMasterProfileToV20160930(api *MasterProfile, v20160930 *v20160930.MasterProfile) {

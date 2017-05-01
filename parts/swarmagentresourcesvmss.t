@@ -152,7 +152,7 @@
               "offer": "[variables('osImageOffer')]",
               "publisher": "[variables('osImagePublisher')]",
               "sku": "[variables('osImageSKU')]",
-              "version": "latest"
+              "version": "[variables('osImageVersion')]"
             },
             {{GetDataDisks .}}
             "osDisk": {
@@ -175,7 +175,7 @@
       "sku": {
         "capacity": "[variables('{{.Name}}Count')]",
         "name": "[variables('{{.Name}}VMSize')]",
-        "tier": "Standard"
+        "tier": "[variables('{{.Name}}VMSizeTier')]"
       },
       "type": "Microsoft.Compute/virtualMachineScaleSets"
     }

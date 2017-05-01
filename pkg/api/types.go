@@ -42,7 +42,7 @@ type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
 	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
 	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
-	AgentPoolProfiles       []AgentPoolProfile       `json:"agentPoolProfiles,omitempty"`
+	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	DiagnosticsProfile      *DiagnosticsProfile      `json:"diagnosticsProfile,omitempty"`
@@ -117,8 +117,9 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType OrchestratorType  `json:"orchestratorType"`
-	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	OrchestratorType    OrchestratorType    `json:"orchestratorType"`
+	OrchestratorVersion OrchestratorVersion `json:"orchestratorVersion"`
+	KubernetesConfig    *KubernetesConfig   `json:"kubernetesConfig,omitempty"`
 }
 
 // KubernetesConfig contains the Kubernetes config structure, containing
@@ -126,9 +127,6 @@ type OrchestratorProfile struct {
 type KubernetesConfig struct {
 	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
 	NetworkPolicy       string `json:"networkPolicy,omitempty"`
-	DnsServiceIP        string `json:"dnsServiceIP,omitempty"`
-	ServiceCIDR         string `json:"serviceCidr,omitempty"`
-	ClusterCIDR         string `json:"clusterCidr,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -188,6 +186,9 @@ type VMDiagnostics struct {
 
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
+
+// OrchestratorVersion defines the version for orchestratorType
+type OrchestratorVersion string
 
 // JumpboxProfile dscribes properties of the jumpbox setup
 // in the ACS container cluster.
