@@ -72,7 +72,7 @@ function check_node_count() {
 check_node_count
 
 ###### Validate Kubernetes version
-log "Checking Kubernetes version"
+log "Checking Kubernetes version. Expected: ${EXPECTED_ORCHESTRATOR_VERSION}"
 if (( -n "${EXPECTED_ORCHESTRATOR_VERSION}" )); then
   kubernetes_version=$(kubectl --version | grep ${EXPECTED_ORCHESTRATOR_VERSION} | awk '{print $2}' | cut -f 2- -d "v")
   if (( ${kubernetes_version} != ${EXPECTED_ORCHESTRATOR_VERSION} )); then 
