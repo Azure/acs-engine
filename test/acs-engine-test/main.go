@@ -104,6 +104,28 @@ func (m *TestManager) Run() error {
 					retvals[i] = 1
 					break
 				}
+				if step == "generate_template" {
+					// set up extra environment variables available after template generation
+					cmd := exec.Command("test/step.sh", "get_orchestrator_version")
+					cmd.Env = env
+					out, err := cmd.Output()
+					if err != nil {
+						retvals[i] = 1
+						break
+					}
+					env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_VERSION=%s", strings.TrimSpace(string(out))))
+
+					if orchestrator == "kubernetes" {
+						cmd = exec.Command("test/step.sh", "get_node_count")
+						cmd.Env = env
+						out, err = cmd.Output()
+						if err != nil {
+							retvals[i] = 1
+							break
+						}
+						env = append(env, fmt.Sprintf("EXPECTED_NODE_COUNT=%s", strings.TrimSpace(string(out))))
+					}
+				}
 			}
 			// clean up
 			runStep("cleanup", m.rootDir, instanceName, env, logFile, timeout)
