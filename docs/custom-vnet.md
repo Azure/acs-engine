@@ -81,7 +81,7 @@ ACS Engine uses a JSON template in input and generates the ARM template and ARM 
 
 Depending on the orchestrator you want to deploy, the number of agent pools, the machine size you want (etc.) this input template could differ from the one we are going to detail here. 
 
-There are a lot of examples available on the [ACS Engine GitHub](https://github.com/Azure/acs-engine/tree/master/examples).
+There are a lot of examples available on the [ACS Engine GitHub](https://github.com/Azure/acs-engine/tree/master/examples) and you can find [one dedicated for virtual network](https://github.com/Azure/acs-engine/blob/master/examples/vnet/README.md).
 
 In this case, we are going to use the following template:
 
