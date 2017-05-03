@@ -420,7 +420,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	// Windows parameters
 	if properties.HasWindows() {
 		addValue(parametersMap, "windowsAdminUsername", properties.WindowsProfile.AdminUsername)
-		addValue(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword)
+		addSecret(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword, false)
 		if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 			KubernetesVersion := properties.OrchestratorProfile.OrchestratorVersion
 			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+KubeImages[KubernetesVersion]["windowszip"])
