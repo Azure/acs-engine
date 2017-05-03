@@ -75,6 +75,14 @@ type CertificateProfile struct {
 	ClientCertificate string `json:"clientCertificate,omitempty"`
 	// ClientPrivateKey is the private key used by the client kubelet services and signed by the CA
 	ClientPrivateKey string `json:"clientPrivateKey,omitempty"`
+	//EtcdCertificate is the certificate for etcd service in kubernetes cluster and signed by the CA.
+	EtcdCertificate string `json:"etcdCertificate,omitempty"`
+	//EtcdPrivateKey is the private key used by the etcd service and signed by the CA.
+	EtcdPrivateKey string `json:"etcdPrivateKey,omitempty"`
+	//EtcdClientCertificate is the certificate used by etcd client and signed by the CA.
+	EtcdClientCertificate string `json:"etcdClientCertificate,omitempty"`
+	//EtcdClientPrivateKey is the private key used by etcd client and signed by the CA.
+	EtcdClientPrivateKey string `json:"etcdClientPrivateKey,omitempty"`
 	// KubeConfigCertificate is the client certificate used for kubectl cli and signed by the CA
 	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty"`
 	// KubeConfigPrivateKey is the client private key used for kubectl cli and signed by the CA

@@ -27,6 +27,9 @@ MASTER_FQDN="${17}"
 KUBECONFIG_CERTIFICATE="${18}"
 KUBECONFIG_KEY="${19}"
 ADMINUSER="${20}"
+ETCD_PRIVATE_KEY="${21}"
+ETCD_CLIENT_PRIVATE_KEY="${22}"
+MASTER_ETCD_IPADDRESS="${23}"
 
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
@@ -40,6 +43,18 @@ if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
 else
     echo "APISERVER_PRIVATE_KEY is empty, assuming worker node"
 fi
+
+ETCD_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcd.key"
+touch "${ETCD_PRIVATE_KEY_PATH}"
+chmod 0644 "${ETCD_PRIVATE_KEY_PATH}"
+chown root:root "${ETCD_PRIVATE_KEY_PATH}"
+echo "${ETCD_PRIVATE_KEY}" | base64 --decode > "${ETCD_PRIVATE_KEY_PATH}"
+
+ETCD_CLIENT_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdclient.key"
+touch "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+chmod 0644 "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+chown root:root "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+echo "${ETCD_CLIENT_PRIVATE_KEY}" | base64 --decode > "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
 
 KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
 touch "${KUBELET_PRIVATE_KEY_PATH}"
@@ -238,8 +253,10 @@ function ensureApiserver() {
 }
 
 function ensureEtcd() {
+    systemctl enable etcd
+    systemctl restart etcd
     for i in {1..600}; do
-        curl --max-time 60 http://127.0.0.1:2379/v2/machines;
+        curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 ${MASTER_ETCD_IPADDRESS}/v2/machines;
         if [ $? -eq 0 ]
         then
             echo "Etcd setup successfully"
