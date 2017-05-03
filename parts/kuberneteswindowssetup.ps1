@@ -40,26 +40,26 @@ param(
     $AADClientSecret
 )
 
-$global:CACertificate = "{{{caCertificate}}}"
-$global:AgentCertificate = "{{{clientCertificate}}}"
+$global:CACertificate = "{{WrapAsVariable "caCertificate"}}"
+$global:AgentCertificate = "{{WrapAsVariable "clientCertificate"}}"
 $global:DockerServiceName = "Docker"
 $global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
-$global:KubeBinariesSASURL = "{{{kubeBinariesSASURL}}}"
-$global:KubeBinariesVersion = "{{{kubeBinariesVersion}}}"
+$global:KubeBinariesSASURL = "{{WrapAsVariable "kubeBinariesSASURL"}}"
+$global:KubeBinariesVersion = "{{WrapAsVariable "kubeBinariesVersion"}}"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
 $global:NatNetworkName="nat"
 $global:TransparentNetworkName="transparentNet"
 
-$global:TenantId = "{{{tenantID}}}"
-$global:SubscriptionId = "{{{subscriptionId}}}"
-$global:ResourceGroup = "{{{resourceGroup}}}"
-$global:SubnetName = "{{{subnetName}}}"
-$global:SecurityGroupName = "{{{nsgName}}}"
-$global:VNetName = "{{{virtualNetworkName}}}"
-$global:RouteTableName = "{{{routeTableName}}}"
-$global:PrimaryAvailabilitySetName = "{{{primaryAvailablitySetName}}}"
+$global:TenantId = "{{WrapAsVariable "tenantID"}}"
+$global:SubscriptionId = "{{WrapAsVariable "subscriptionId"}}"
+$global:ResourceGroup = "{{WrapAsVariable "resourceGroup"}}"
+$global:SubnetName = "{{WrapAsVariable "subnetName"}}"
+$global:SecurityGroupName = "{{WrapAsVariable "nsgName"}}"
+$global:VNetName = "{{WrapAsVariable "virtualNetworkName"}}"
+$global:RouteTableName = "{{WrapAsVariable "routeTableName"}}"
+$global:PrimaryAvailabilitySetName = "{{WrapAsVariable "primaryAvailablitySetName"}}"
 $global:NeedPatchWinNAT = $false
 
 filter Timestamp {"$(Get-Date -Format o): $_"}

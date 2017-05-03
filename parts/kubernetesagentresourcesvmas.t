@@ -146,7 +146,7 @@
         "osProfile": {
           "adminUsername": "[variables('username')]",
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
-          {{GetKubernetesAgentCustomData}}
+          {{GetKubernetesAgentCustomData .}}
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true",
               "ssh": {
