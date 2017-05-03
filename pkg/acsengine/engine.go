@@ -271,11 +271,11 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	}
 	kubeconfig := string(b)
 	// variable replacement
-	kubeconfig = strings.Replace(kubeconfig, "<<<variables('caCertificate')>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
-	kubeconfig = strings.Replace(kubeconfig, "<<<reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn>>>", FormatAzureProdFQDN(properties.MasterProfile.DNSPrefix, location), -1)
-	kubeconfig = strings.Replace(kubeconfig, "{{{resourceGroup}}}", properties.MasterProfile.DNSPrefix, -1)
-	kubeconfig = strings.Replace(kubeconfig, "<<<variables('kubeConfigCertificate')>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)), -1)
-	kubeconfig = strings.Replace(kubeconfig, "<<<variables('kubeConfigPrivateKey')>>>", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('caCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", FormatAzureProdFQDN(properties.MasterProfile.DNSPrefix, location), -1)
+	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVariable \"resourceGroup\"}}", properties.MasterProfile.DNSPrefix, -1)
+	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('kubeConfigCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('kubeConfigPrivateKey')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)), -1)
 
 	return kubeconfig, nil
 }
@@ -420,7 +420,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	// Windows parameters
 	if properties.HasWindows() {
 		addValue(parametersMap, "windowsAdminUsername", properties.WindowsProfile.AdminUsername)
-		addValue(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword)
+		addSecret(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword, false)
 		if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 			KubernetesVersion := properties.OrchestratorProfile.OrchestratorVersion
 			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+KubeImages[KubernetesVersion]["windowszip"])
@@ -581,8 +581,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"GetKubernetesMasterCustomScript": func() string {
 			return getBase64CustomScript(kubernetesMasterCustomScript)
 		},
-		"GetKubernetesMasterCustomData": func() string {
-			str, e := getSingleLineForTemplate(kubernetesMasterCustomDataYaml)
+		"GetKubernetesMasterCustomData": func(profile *api.Properties) string {
+			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml, cs, profile)
 			if e != nil {
 				return ""
 			}
@@ -606,8 +606,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			// return the custom data
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
-		"GetKubernetesAgentCustomData": func() string {
-			str, e := getSingleLineForTemplate(kubernetesAgentCustomDataYaml)
+		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
+			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
 			if e != nil {
 				return ""
 			}
@@ -646,19 +646,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			str := getBase64CustomScript(swarmModeWindowsProvision)
 			return fmt.Sprintf("\"customData\": \"%s\"", str)
 		},
-		"GetKubernetesWindowsAgentCustomData": func() string {
-			str, e := getSingleLineForTemplate(kubernetesWindowsAgentCustomDataPS1)
+		"GetKubernetesWindowsAgentCustomData": func(profile *api.AgentPoolProfile) string {
+			str, e := t.getSingleLineForTemplate(kubernetesWindowsAgentCustomDataPS1, cs, profile)
 			if e != nil {
 				return ""
 			}
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
-		},
-		"GetKubernetesKubeConfig": func() string {
-			str, e := getSingleLineForTemplate(kubeConfigJSON)
-			if e != nil {
-				return ""
-			}
-			return str
 		},
 		"GetMasterSwarmModeCustomData": func() string {
 			files := []string{swarmModeProvision}
@@ -677,6 +670,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		},
 		"GetKubernetesPodStartIndex": func() string {
 			return fmt.Sprintf("%d", getKubernetesPodStartIndex(cs.Properties))
+		},
+		"WrapAsVariable": func(s string) string {
+			return fmt.Sprintf("',variables('%s'),'", s)
+		},
+		"WrapAsVerbatim": func(s string) string {
+			return fmt.Sprintf("',%s,'", s)
 		},
 		"AnyAgentHasDisks": func() bool {
 			for _, agentProfile := range cs.Properties.AgentPoolProfiles {
@@ -997,26 +996,26 @@ func getSecurityRules(ports []int) string {
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineForTemplate(textFilename string) (string, error) {
+func (t *TemplateGenerator) getSingleLineForTemplate(textFilename string, cs *api.ContainerService, profile interface{}) (string, error) {
 	b, err := Asset(textFilename)
 	if err != nil {
 		return "", fmt.Errorf("yaml file %s does not exist", textFilename)
 	}
 
-	textStr := escapeSingleLine(string(b))
+	// use go templates to process the text filename
+	templ := template.New("customdata template").Funcs(t.getTemplateFuncMap(cs))
+	if _, err = templ.New(textFilename).Parse(string(b)); err != nil {
+		return "", fmt.Errorf("error parsing file %s: %v", textFilename, err)
+	}
 
-	// variable replacement
-	rVariable, e1 := regexp.Compile("{{{([^}]*)}}}")
-	if e1 != nil {
-		return "", e1
+	var buffer bytes.Buffer
+	if err = templ.ExecuteTemplate(&buffer, textFilename, profile); err != nil {
+		return "", fmt.Errorf("error executing template for file %s: %v", textFilename, err)
 	}
-	textStr = rVariable.ReplaceAllString(textStr, "',variables('$1'),'")
-	// verbatim replacement
-	rVerbatim, e2 := regexp.Compile("<<<([^>]*)>>>")
-	if e2 != nil {
-		return "", e2
-	}
-	textStr = rVerbatim.ReplaceAllString(textStr, "',$1,'")
+	expandedTemplate := buffer.String()
+
+	textStr := escapeSingleLine(string(expandedTemplate))
+
 	return textStr, nil
 }
 

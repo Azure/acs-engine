@@ -147,7 +147,7 @@ function get_node_count() {
 
 	count=$(jq 'getpath(["properties","masterProfile","count"])' ${APIMODEL})
 
-	for poolname in `jq '.properties.agentPoolProfiles[].name' "${APIMODEL}" | tr -d '\"'`; do
+	for poolname in `jq -r '.properties.agentPoolProfiles[].name' "${APIMODEL}"`; do
 	  nodes=$(jq "getpath([\"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
 	  count=$((count+nodes))
 	done
@@ -159,9 +159,8 @@ function get_orchestrator_version() {
 	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
 
 	APIMODEL="${OUTPUT}/apimodel.json"
-	DEPLOYMENT_PARAMS="${OUTPUT}/azuredeploy.parameters.json"
 
-	orchestratorVersion=$(jq 'getpath(["properties","orchestratorProfile","orchestratorVersion"])' ${APIMODEL})
+	orchestratorVersion=$(jq -r 'getpath(["properties","orchestratorProfile","orchestratorVersion"])' ${APIMODEL})
 
 	echo $orchestratorVersion
 }
