@@ -219,7 +219,7 @@ write_files:
     KUBELET_NETWORK_PLUGIN=
     DOCKER_OPTS=
     KUBELET_REGISTER_SCHEDULABLE={{{registerSchedulable}}}
-    KUBELET_NODE_LABELS=role=master
+    KUBELET_NODE_LABELS=role=master,beta.kubernetes.io/instance-type={{{masterVMSize}}},failure-domain.beta.kubernetes.io/region={{{location}}}
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{{kubernetesPodInfraContainerSpec}}}
 
 - path: "/etc/systemd/system/kubelet.service"
@@ -249,6 +249,8 @@ write_files:
     sed -i "s|<kubernetesKubeDNSSpec>|{{{kubernetesKubeDNSSpec}}}|g; s|<kubernetesDNSMasqSpec>|{{{kubernetesDNSMasqSpec}}}|g; s|<kubernetesExecHealthzSpec>|{{{kubernetesExecHealthzSpec}}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
     sed -i "s|<kubernetesHeapsterSpec>|{{{kubernetesHeapsterSpec}}}|g; s|<kubernetesAddonResizerSpec>|{{{kubernetesAddonResizerSpec}}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
     sed -i "s|<kubernetesDashboardSpec>|{{{kubernetesDashboardSpec}}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+
+    echo $(curl -q http://169.254.169.254/metadata/v1/InstanceInfo 2>/dev/null | jq -r .FD) > /etc/kubernetes/fd
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
