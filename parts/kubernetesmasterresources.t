@@ -379,7 +379,7 @@
         "osProfile": {
           "adminUsername": "[variables('username')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
-          {{GetKubernetesMasterCustomData}}
+          {{GetKubernetesMasterCustomData .}}
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
             "ssh": {

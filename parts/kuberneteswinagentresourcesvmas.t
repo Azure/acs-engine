@@ -116,7 +116,7 @@
         }, 
         "osProfile": {
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
-          {{GetKubernetesWindowsAgentCustomData}}
+          {{GetKubernetesWindowsAgentCustomData .}}
           "adminUsername": "[variables('windowsAdminUsername')]",
           "adminPassword": "[variables('windowsAdminPassword')]"
         }, 
