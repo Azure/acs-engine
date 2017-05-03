@@ -14,10 +14,13 @@ disk_setup:
       overwrite: true
 
 fs_setup:
-- special:
-  cmd: /sbin/mkfs.ext4 /dev/sdc1 -F -E lazy_itable_init=1,lazy_journal_init=1
+- label: etcd_disk
   filesystem: ext4
   device: /dev/sdc1
+  extra_opts:
+    - "-F"
+    - "-E"
+    - "lazy_itable_init=1,lazy_journal_init=1"
 
 mounts:
 - - /dev/sdc1
