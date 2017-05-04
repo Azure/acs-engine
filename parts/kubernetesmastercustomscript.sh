@@ -327,8 +327,8 @@ ensureJournal
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     writeKubeConfig
     ensureKubectl
-    ensureEtcd
     ensureEtcdDataDir
+    ensureEtcd
     ensureApiserver
 fi
 
