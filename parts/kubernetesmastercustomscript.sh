@@ -250,17 +250,12 @@ function ensureEtcd() {
 }
 
 function ensureEtcdDataDir() {
-    etcdStarted=1
     mount | grep /dev/sdc1 | grep /var/lib/etcddisk
     if [ "$?" = "0" ]
     then
         echo "Etcd running with data dir at: /var/lib/etcddisk"
-        etcdStarted=0
-        break
-    fi
-
-    if [ $etcdStarted -ne 0 ]
-    then
+        return
+    else
         echo "Etcd data dir was not found at: /var/lib/etcddisk"
         exit 1
     fi
