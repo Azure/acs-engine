@@ -249,6 +249,23 @@ function ensureEtcd() {
     done
 }
 
+function ensureEtcdDataDir() {
+    etcdStarted=1
+    mount | grep /dev/sdc1 | grep /var/lib/etcddisk
+    if [ "$?" = "0" ]
+    then
+        echo "Etcd running with data dir at: /var/lib/etcddisk"
+        etcdStarted=0
+        break
+    fi
+
+    if [ $etcdStarted -ne 0 ]
+    then
+        echo "Etcd data dir was not found at: /var/lib/etcddisk"
+        exit 1
+    fi
+}
+
 function writeKubeConfig() {
     KUBECONFIGDIR=/home/$ADMINUSER/.kube
     KUBECONFIGFILE=$KUBECONFIGDIR/config
@@ -303,6 +320,7 @@ if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     writeKubeConfig
     ensureKubectl
     ensureEtcd
+    ensureEtcdDataDir
     ensureApiserver
 fi
 
