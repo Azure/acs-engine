@@ -253,12 +253,25 @@ function ensureEtcdDataDir() {
     mount | grep /dev/sdc1 | grep /var/lib/etcddisk
     if [ "$?" = "0" ]
     then
-        echo "Etcd running with data dir at: /var/lib/etcddisk"
+        echo "Etcd is running with data dir at: /var/lib/etcddisk"
         return
     else
-        echo "Etcd data dir was not found at: /var/lib/etcddisk"
-        exit 1
+        echo "/var/lib/etcddisk was not found at /dev/sdc1. Trying to mount all devices."
+        
+        for i in {1..60}; do
+            sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
+            if [ "$?" = "0" ]
+            then
+                echo "/var/lib/etcddisk mounted at: /dev/sdc1"
+                return
+            fi
+
+            sleep 5
+        done
     fi
+
+   echo "Etcd data dir was not found at: /var/lib/etcddisk"
+   exit 1
 }
 
 function writeKubeConfig() {
