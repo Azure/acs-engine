@@ -178,7 +178,7 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
     if ($global:KubeBinariesVersion -ne "1.5.3")
     {
         $KubeletArgList += "--enable-cri=false"
-        $KubeletCommandLine += " --enable-cri=false --image-pull-progress-deadline=20m"
+        $KubeletCommandLine += " --enable-cri=false --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
     }
     $KubeletArgListStr = "`"" + ($KubeletArgList -join "`",`"") + "`""
 
