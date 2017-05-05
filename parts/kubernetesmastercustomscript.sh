@@ -257,7 +257,6 @@ function ensureEtcdDataDir() {
         return
     else
         echo "/var/lib/etcddisk was not found at /dev/sdc1. Trying to mount all devices."
-        
         for i in {1..60}; do
             sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
             if [ "$?" = "0" ]
@@ -265,7 +264,6 @@ function ensureEtcdDataDir() {
                 echo "/var/lib/etcddisk mounted at: /dev/sdc1"
                 return
             fi
-
             sleep 5
         done
     fi
