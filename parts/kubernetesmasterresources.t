@@ -358,7 +358,7 @@
       {
         "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]",
         "resourceNameSuffix" : "[variables('nameSuffix')]",
-        "orchestrator" : "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}"
+        "orchestrator" : "[variables('orchestratorNameVersionTag')]"
       },
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
