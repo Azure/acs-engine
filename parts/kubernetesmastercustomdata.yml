@@ -243,7 +243,7 @@ write_files:
     iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443
 
     sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsVariable "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
-    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeServiceCidr>|{{WrapAsVariable "kubeServiceCidr"}}|g; s|<masterEtcdClientPort>|{{WrapAsVariable "masterEtcdClientPort"}}|g; s|<masterCount>|{{WrapAsVariable "masterCount"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeServiceCidr>|{{WrapAsVariable "kubeServiceCidr"}}|g; s|<masterEtcdClientPort>|{{WrapAsVariable "masterEtcdClientPort"}}|g; s|<masterInternalLbIp>|{{WrapAsVariable "masterInternalLbIp"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
