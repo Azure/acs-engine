@@ -82,6 +82,14 @@ type CertificateProfile struct {
 	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
 	// caPrivateKey is an internal field only set if generation required
 	caPrivateKey string
+	// SwarmTlsServerCertificate is the Docker server daemon certificate and signed by the CA
+	SwarmTlsServerCertificate string `json:"swarmTlsSeverCertificate,omitempty"`
+	// SwarmTlsClientCertificate is the Docker client cli certificate and signed by the CA
+	SwarmTlsClientCertificate string `json:"swarmTlsClientCertificate,omitempty"`
+	// SwarmTlsServerPrivateKey is the Docker server daemon private key and signed by the CA
+	SwarmTlsServerPrivateKey string `json:"swarmTlsServerPrivateKey,omitempty"`
+	// SwarmTlsClientPrivateKey is the Docker client cli private key and signed by the CA
+	SwarmTlsClientPrivateKey string `json:"swarmTlsClientPrivateKey,omitempty"`
 }
 
 // LinuxProfile represents the linux parameters passed to the cluster
