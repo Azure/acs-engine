@@ -21,6 +21,8 @@ type UpgradeCluster struct{}
 // the operation will drive towards.
 func (uc *UpgradeCluster) UpgradeCluster(subscription uuid.UUID, rg string,
 	cs *vlabs.ContainerService, ucs *vlabs.UpgradeContainerService) {
+
+	// 	ListClusterResources(subscription uuid.UUID, rg string) error
 }
 
 // UpgradeWorkFlow outlines various individual high level steps
@@ -28,11 +30,9 @@ func (uc *UpgradeCluster) UpgradeCluster(subscription uuid.UUID, rg string,
 type UpgradeWorkFlow interface {
 	ClusterPreflightCheck()
 
-	ListClusterResources(subscription uuid.UUID, rg string) error
-
-	UpgradeMasterNodes() error
-
-	UpgradeAgentNodes() error
+	// upgrade masters
+	// upgrade agent nodes
+	RunUpgrade() error
 
 	Validate() error
 }
@@ -40,10 +40,6 @@ type UpgradeWorkFlow interface {
 // UpgradeNode drives work flow of deleting and replacing a master or agent node to a
 // specified target version of Kubernetes
 type UpgradeNode interface {
-	// ListNodeResources collects and inventories resources that the node
-	// needs or uses e.g. etcd in case of master node
-	ListNodeResources(subscription uuid.UUID, rg string, resourceName string)
-
 	// DeleteNode takes state/resources of the master/agent node from ListNodeResources
 	// backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 	// the node
