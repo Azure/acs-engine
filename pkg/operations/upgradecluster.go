@@ -21,7 +21,6 @@ type UpgradeCluster struct{}
 // the operation will drive towards.
 func (uc *UpgradeCluster) UpgradeCluster(subscription uuid.UUID, rg string,
 	cs *vlabs.ContainerService, ucs *vlabs.UpgradeContainerService) {
-
 	// 	ListClusterResources(subscription uuid.UUID, rg string) error
 }
 
