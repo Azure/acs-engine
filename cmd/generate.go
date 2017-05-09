@@ -26,7 +26,7 @@ type generateCmd struct {
 	noPrettyPrint     bool
 	parametersOnly    bool
 
-	// Parsed from inputs
+	// derived
 	containerService *api.ContainerService
 	apiVersion       string
 }
