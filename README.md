@@ -48,7 +48,7 @@ $ vim examples/kubernetes.classic.json
 # insert your preferred, unique DNS prefix
 # insert your SSH public key
 
-$ ./acs-engine examples/kubernetes.classic.json
+$ ./acs-engine generate examples/kubernetes.classic.json
 ```
 
 This produces a new directory inside `_output/` that contains an ARM template

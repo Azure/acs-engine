@@ -5,13 +5,17 @@
 VERSION=`git describe --always --long --dirty`
 BUILD=`date +%FT%T%z`
 
+all: build
+
 prereqs:
 	go get github.com/jteeuwen/go-bindata/...
+	go get github.com/Sirupsen/logrus
+	go get github.com/spf13/cobra
 
 build: prereqs
 	go generate -v ./...
 	go get .
-	go build -v -ldflags="-X main.AcsEngineBuildSHA=${VERSION} -X main.AcsEngineBuildTime=${BUILD}"
+	go build -v -ldflags="-X github.com/Azure/acs-engine/cmd.BuildSHA=${VERSION} -X github.com/Azure/acs-engine/cmd.BuildTime=${BUILD}"
 	cd test/acs-engine-test; go build -v
 
 test: prereqs test_fmt
