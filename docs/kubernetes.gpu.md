@@ -34,6 +34,8 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: gpu-test
+  labels:
+    app: gpu-test
 spec:
   volumes:
   - name: binaries
