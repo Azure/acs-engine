@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -32,6 +34,10 @@ func NewRootCmd() *cobra.Command {
 
 	rootCmd.AddCommand(NewVersionCmd())
 	rootCmd.AddCommand(NewGenerateCmd())
+
+	if val := os.Getenv("ACSENGINE_EXPERIMENTAL_FEATURES"); val == "1" {
+		rootCmd.AddCommand(NewUpgradeCmd())
+	}
 
 	return rootCmd
 }
