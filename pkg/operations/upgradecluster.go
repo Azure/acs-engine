@@ -24,6 +24,11 @@ func (uc *UpgradeCluster) UpgradeCluster(subscription uuid.UUID, rg string,
 	// 	ListClusterResources(subscription uuid.UUID, rg string) error
 }
 
+// GetClusterResources returns ARM resources that constitute this cluster
+func (uc *UpgradeCluster) GetClusterResources(subscription uuid.UUID, rg string) {
+
+}
+
 // UpgradeWorkFlow outlines various individual high level steps
 // that need to be run (one or more times) in the upgrade workflow.
 type UpgradeWorkFlow interface {
