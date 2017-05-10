@@ -14,19 +14,19 @@ type AzureClients struct {
 	AzureEnvironment azure.Environment
 	TenantID         string
 
-	groupsClient *resources.GroupsClient
-	vmClient     *compute.VirtualMachinesClient
+	GroupsClient *resources.GroupsClient
+	VMClient     *compute.VirtualMachinesClient
 }
 
 // Create method creates various Azure clients
 func (ac *AzureClients) Create(token *adal.ServicePrincipalToken) (*AzureClients, error) {
 	gc := resources.NewGroupsClient(ac.SubscriptionID)
 	gc.Authorizer = autorest.NewBearerAuthorizer(token)
-	ac.groupsClient = &gc
+	ac.GroupsClient = &gc
 
 	vmc := compute.NewVirtualMachinesClient(ac.SubscriptionID)
 	vmc.Authorizer = autorest.NewBearerAuthorizer(token)
-	ac.vmClient = &vmc
+	ac.VMClient = &vmc
 
 	return ac, nil
 }

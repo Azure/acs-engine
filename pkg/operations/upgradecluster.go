@@ -22,12 +22,17 @@ type UpgradeCluster struct {
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
 // UpgradeContainerService contains target state of the cluster that
 // the operation will drive towards.
-func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, rg string,
+func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
 	cs *vlabs.ContainerService, ucs *vlabs.UpgradeContainerService, token *adal.ServicePrincipalToken) {
 	azureClients := armhelpers.AzureClients{
 		SubscriptionID: subscriptionID.String(),
 	}
 	azureClients.Create(token)
+
+	_, err := azureClients.VMClient.List(resourceGroup)
+	if err != nil {
+		return
+	}
 }
 
 // UpgradeWorkFlow outlines various individual high level steps
