@@ -39,8 +39,11 @@ get_node_count)
   get_node_count
 ;;
 
+get_orchestrator_type)
+  get_orchestrator_type
+;;
+
 get_orchestrator_version)
-  export OUTPUT="${ROOT}/_output/${INSTANCE_NAME}"
   get_orchestrator_version
 ;;
 

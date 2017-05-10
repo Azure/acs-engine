@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -72,23 +71,26 @@ func (m *TestManager) Run() error {
 			instanceName := fmt.Sprintf("test-acs-%s-%s-%s-%d", strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), i)
 			logFile := fmt.Sprintf("%s/%s.log", logDir, instanceName)
 
+			// update environment
+			env := os.Environ()
+			env = append(env, fmt.Sprintf("CLUSTER_DEFINITION=%s", d.ClusterDefinition))
+			env = append(env, fmt.Sprintf("LOCATION=%s", d.Location))
+			env = append(env, fmt.Sprintf("INSTANCE_NAME=%s", instanceName))
+			env = append(env, fmt.Sprintf("DEPLOYMENT_NAME=%s", instanceName))
+			env = append(env, fmt.Sprintf("RESOURCE_GROUP=%s", instanceName))
+
 			// determine orchestrator
-			orchestrator, err := getOrchestrator(fmt.Sprintf("%s/%s", m.rootDir, d.ClusterDefinition))
+			cmd := exec.Command("test/step.sh", "get_orchestrator_type")
+			cmd.Env = env
+			out, err := cmd.Output()
 			if err != nil {
 				wrileLog(logFile, []byte(err.Error()))
 				fmt.Printf("Error [getOrchestrator %s] : %v\n", d.ClusterDefinition, err)
 				retvals[i] = 1
 				return
 			}
-
-			// update environment
-			env := os.Environ()
-			env = append(env, fmt.Sprintf("CLUSTER_DEFINITION=%s", d.ClusterDefinition))
-			env = append(env, fmt.Sprintf("LOCATION=%s", d.Location))
+			orchestrator := strings.TrimSpace(string(out))
 			env = append(env, fmt.Sprintf("ORCHESTRATOR=%s", orchestrator))
-			env = append(env, fmt.Sprintf("INSTANCE_NAME=%s", instanceName))
-			env = append(env, fmt.Sprintf("DEPLOYMENT_NAME=%s", instanceName))
-			env = append(env, fmt.Sprintf("RESOURCE_GROUP=%s", instanceName))
 
 			steps := []string{"generate_template", "deploy_template"}
 
@@ -158,24 +160,6 @@ func isValidEnv() bool {
 		}
 	}
 	return valid
-}
-
-func getOrchestrator(fname string) (string, error) {
-	data, err := ioutil.ReadFile(fname)
-	if err != nil {
-		return "", err
-	}
-	for _, line := range strings.Split(string(data), "\n") {
-		parts := orchestrator_re.FindStringSubmatch(line)
-		if parts != nil {
-			orchestrator := strings.ToLower(parts[1])
-			if strings.HasPrefix(orchestrator, "dcos") {
-				orchestrator = "dcos"
-			}
-			return orchestrator, nil
-		}
-	}
-	return "", fmt.Errorf("No orchestratorType in %s", fname)
 }
 
 func runStep(step, dir, instanceName string, env []string, logFile string, timeout time.Duration) error {

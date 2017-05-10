@@ -155,12 +155,18 @@ function get_node_count() {
 	echo $count
 }
 
+function get_orchestrator_type() {
+	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
+
+	orchestratorType=$(jq -r 'getpath(["properties","orchestratorProfile","orchestratorType"])' ${CLUSTER_DEFINITION} | tr '[:upper:]' '[:lower:]')
+
+	echo $orchestratorType
+}
+
 function get_orchestrator_version() {
-	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
+	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
 
-	APIMODEL="${OUTPUT}/apimodel.json"
-
-	orchestratorVersion=$(jq -r 'getpath(["properties","orchestratorProfile","orchestratorVersion"])' ${APIMODEL})
+	orchestratorVersion=$(jq -r 'getpath(["properties","orchestratorProfile","orchestratorVersion"])' ${CLUSTER_DEFINITION})
 
 	echo $orchestratorVersion
 }
