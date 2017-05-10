@@ -2,6 +2,8 @@ package operations
 
 import (
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
+	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/satori/uuid"
 )
 
@@ -14,19 +16,18 @@ type ClusterTopology struct {
 // UpgradeCluster upgrades a cluster with Orchestrator version X
 // (or X.X or X.X.X) to version y (or Y.Y or X.X.X). RIght now
 // upgrades are supported for Kubernetes cluster only.
-type UpgradeCluster struct{}
+type UpgradeCluster struct {
+}
 
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
 // UpgradeContainerService contains target state of the cluster that
 // the operation will drive towards.
-func (uc *UpgradeCluster) UpgradeCluster(subscription uuid.UUID, rg string,
-	cs *vlabs.ContainerService, ucs *vlabs.UpgradeContainerService) {
-	// 	ListClusterResources(subscription uuid.UUID, rg string) error
-}
-
-// GetClusterResources returns ARM resources that constitute this cluster
-func (uc *UpgradeCluster) GetClusterResources(subscription uuid.UUID, rg string) {
-
+func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, rg string,
+	cs *vlabs.ContainerService, ucs *vlabs.UpgradeContainerService, token *adal.ServicePrincipalToken) {
+	azureClients := armhelpers.AzureClients{
+		SubscriptionID: subscriptionID.String(),
+	}
+	azureClients.Create(token)
 }
 
 // UpgradeWorkFlow outlines various individual high level steps
