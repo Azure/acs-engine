@@ -1,7 +1,11 @@
 package cmd
 
 import (
+	"os"
+	"path"
+
 	"github.com/Azure/acs-engine/pkg/acsengine"
+	"github.com/Azure/acs-engine/pkg/api"
 
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -21,7 +25,7 @@ type upgradeCmd struct {
 	authMethod          string
 	clientSecret        string
 	resourceGroupName   string
-	kubeconfigPath      string
+	deploymentDirectory string
 	rawClientID         string
 	rawSubscriptionID   string
 	rawAzureEnvironment string
@@ -34,6 +38,8 @@ type upgradeCmd struct {
 	// derived
 	tenantID              string
 	servicePrincipalToken *adal.ServicePrincipalToken
+	containerService      *api.ContainerService
+	apiVersion            string
 }
 
 func NewUpgradeCmd() *cobra.Command {
@@ -56,7 +62,7 @@ func NewUpgradeCmd() *cobra.Command {
 	f.StringVar(&uc.clientSecret, "client-secret", "", "the client secret for the Service Principal to use for authenticating to Azure")
 	f.StringVar(&uc.rawSubscriptionID, "subscription-id", "", "the subscription ID where the cluster is deployed")
 	f.StringVar(&uc.resourceGroupName, "resource-group", "", "the resource group where the cluster is deployed")
-	f.StringVar(&uc.kubeconfigPath, "kubeconfig", "", "path to the kubeconfig file for the cluster")
+	f.StringVar(&uc.deploymentDirectory, "deployment-dir", "", "the location of the output from `generate`")
 
 	return upgradeCmd
 }
@@ -71,22 +77,22 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	}
 
 	if uc.rawSubscriptionID == "" {
+		cmd.Usage()
 		log.Fatal("--subscription-id must be specified")
 	}
 
-	if uc.kubeconfigPath == "" {
-		log.Fatal("--kubeconfig must be specified")
-	}
-
 	if uc.resourceGroupName == "" {
+		cmd.Usage()
 		log.Fatal("--resource-group must be specified")
 	}
 
 	if uc.authMethod == "client-secret" {
 		if uc.rawClientID == "" || uc.clientSecret == "" {
+			cmd.Usage()
 			log.Fatal("--client-id and --client-secret must be specified when --auth-method=\"client_secret\"")
 		}
 	} else {
+		cmd.Usage()
 		log.Fatal("only client secret authentication is currently supported")
 	}
 
@@ -98,10 +104,24 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("failed to parse subscription id as a GUID: %s", err.Error())
 	}
 
-	// get the actual ServicePrincipalToken here
-	// one, bounce off sub, get tenant id
-	// two, create NewServicePrincipalToken()
+	if uc.deploymentDirectory == "" {
+		cmd.Usage()
+		log.Fatal("--deployment-dir must be specified")
+	}
 
+	// load apimodel from the deployment directory
+	apiModelPath := path.Join(uc.deploymentDirectory, "apimodel.json")
+
+	if _, err := os.Stat(apiModelPath); os.IsNotExist(err) {
+		log.Fatalf("specified api model does not exist (%s)", apiModelPath)
+	}
+
+	uc.containerService, uc.apiVersion, err = api.LoadContainerServiceFromFile(apiModelPath)
+	if err != nil {
+		log.Fatalf("error parsing the api model: %s", err.Error())
+	}
+
+	// get the actual ServicePrincipalToken here
 	tenantID, err := acsengine.GetTenantID(uc.azureEnvironment, uc.subscriptionID.String())
 	if err != nil {
 		log.Fatalf("failed to determine tenant id based on subscription id: %s", err.Error())
@@ -125,11 +145,6 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 
 func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	uc.validate(cmd, args)
-	log.Infoln("upgrade procedure... beginning.")
-
-	// drive the actual upgrade process using uc.ServicePrincipalToken
-
-	log.Infoln("upgrade procedure... finished.")
 
 	return nil
 }
