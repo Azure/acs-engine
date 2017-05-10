@@ -4,6 +4,8 @@ By doing this, you will be able to control the properties of the virtual network
 
 *Note: This article describes the procedure with Docker Swarm but it will work in the exact same way with the all the orchestrators available with ACS Engine: Docker Swarm, Kubernetes and DC/OS.*
 
+*For Kubernetes, the cluster should be deployed in the same resource group than the virtual network and the service principal you use for the cluster needs permissions on the VNET resource's group too*
+
 ## Prerequisites
 You can run this walkthrough on OS X, Windows, or Linux.
 - You need an Azure subscription. If you don't have one, you can [sign up for an account](https://azure.microsoft.com/).
