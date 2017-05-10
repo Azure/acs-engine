@@ -1,8 +1,13 @@
 package operations
 
 import (
+	"fmt"
+
+	"strings"
+
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
+	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/satori/uuid"
 )
@@ -10,13 +15,17 @@ import (
 // ClusterTopology contains resources of the cluster the upgrade operation
 // is targeting
 type ClusterTopology struct {
-	*vlabs.ContainerService
+	APIModel  *vlabs.ContainerService
+	MasterVMs *[]compute.VirtualMachine
+	AgentVMs  *[]compute.VirtualMachine
 }
 
 // UpgradeCluster upgrades a cluster with Orchestrator version X
 // (or X.X or X.X.X) to version y (or Y.Y or X.X.X). RIght now
 // upgrades are supported for Kubernetes cluster only.
 type UpgradeCluster struct {
+	ClusterTopology
+	AzureClients armhelpers.AzureClients
 }
 
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
@@ -24,15 +33,44 @@ type UpgradeCluster struct {
 // the operation will drive towards.
 func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
 	cs *vlabs.ContainerService, ucs *vlabs.UpgradeContainerService, token *adal.ServicePrincipalToken) {
-	azureClients := armhelpers.AzureClients{
+	uc.ClusterTopology = ClusterTopology{}
+	uc.APIModel = cs
+
+	AzureClients := armhelpers.AzureClients{
 		SubscriptionID: subscriptionID.String(),
 	}
-	azureClients.Create(token)
+	AzureClients.Create(token)
 
-	_, err := azureClients.VMClient.List(resourceGroup)
-	if err != nil {
+	if err := uc.getUpgradableResources(subscriptionID, resourceGroup); err != nil {
+		// Bail
 		return
 	}
+}
+
+func (uc *UpgradeCluster) getUpgradableResources(subscriptionID uuid.UUID, resourceGroup string) error {
+	vmListResult, err := uc.AzureClients.VMClient.List(resourceGroup)
+	if err != nil {
+		return err
+	}
+
+	orchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.APIModel.Properties.OrchestratorProfile.OrchestratorType,
+		uc.APIModel.Properties.OrchestratorProfile.OrchestratorVersion)
+
+	for _, vm := range *vmListResult.Value {
+		if *(*vm.Tags)["orchestrator"] == orchestratorTypeVersion {
+			if strings.Contains(*(vm.Name), "k8s-master-") {
+				// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX from temp parameter
+				*uc.MasterVMs = append(*uc.MasterVMs, vm)
+			}
+			// TODO: Add logic to separate out VMs in various agent pookls
+			if strings.Contains(*(vm.Name), "k8s-agentpool-") {
+				// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX from temp parameter
+				*uc.AgentVMs = append(*uc.AgentVMs, vm)
+			}
+		}
+	}
+
+	return nil
 }
 
 // UpgradeWorkFlow outlines various individual high level steps
