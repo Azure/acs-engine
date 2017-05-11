@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 
+	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	log "github.com/Sirupsen/logrus"
@@ -145,6 +146,9 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 
 func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	uc.validate(cmd, args)
+
+	upgradeCluster := operations.UpgradeCluster{}
+	upgradeCluster.UpgradeCluster(uc.subscriptionID, uc.resourceGroupName, uc.containerService, nil, uc.servicePrincipalToken)
 
 	return nil
 }

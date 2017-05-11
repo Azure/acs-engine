@@ -5,17 +5,19 @@ import (
 
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/satori/uuid"
+	"github.com/prometheus/common/log"
+	"github.com/satori/go.uuid"
 )
 
 // ClusterTopology contains resources of the cluster the upgrade operation
 // is targeting
 type ClusterTopology struct {
-	APIModel  *vlabs.ContainerService
+	APIModel  *api.ContainerService
 	MasterVMs *[]compute.VirtualMachine
 	AgentVMs  *[]compute.VirtualMachine
 }
@@ -32,7 +34,7 @@ type UpgradeCluster struct {
 // UpgradeContainerService contains target state of the cluster that
 // the operation will drive towards.
 func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
-	cs *vlabs.ContainerService, ucs *vlabs.UpgradeContainerService, token *adal.ServicePrincipalToken) {
+	cs *api.ContainerService, ucs *vlabs.UpgradeContainerService, token *adal.ServicePrincipalToken) {
 	uc.ClusterTopology = ClusterTopology{}
 	uc.APIModel = cs
 
@@ -69,6 +71,9 @@ func (uc *UpgradeCluster) getUpgradableResources(subscriptionID uuid.UUID, resou
 			}
 		}
 	}
+
+	log.Infoln("Master VMs: %+v", *uc.MasterVMs)
+	log.Infoln("Agent VMs: %+v", *uc.AgentVMs)
 
 	return nil
 }
