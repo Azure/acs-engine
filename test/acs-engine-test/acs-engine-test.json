@@ -2,7 +2,7 @@
   "deployments": [
     {
       "cluster_definition": "examples/kubernetes.json",
-      "location": "westus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "examples/dcos.json",

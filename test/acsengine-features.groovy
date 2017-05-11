@@ -67,10 +67,7 @@ node {
                   env.INSTANCE_NAME = "${prefix}-${i}-${j}"
                   env.RESOURCE_GROUP = "test-acs-${subdir}-${env.LOCATION}-${env.BUILD_NUMBER}-${i}-${j}"
                   env.DEPLOYMENT_NAME = "${env.RESOURCE_GROUP}"
-                  env.ORCHESTRATOR = sh(returnStdout: true, script: "awk '/\\\"orchestratorType\\\"\\s*:/ { print \$2 }' ${env.CLUSTER_DEFINITION} | awk -F\\\" '{print \$2}'").toLowerCase().trim()
-                  if("${env.ORCHESTRATOR}".startsWith("dcos")) {
-                    env.ORCHESTRATOR = "dcos"
-                  }
+                  env.ORCHESTRATOR = sh(returnStdout: true, script: './test/step.sh get_orchestrator_type').trim()
                   env.LOGFILE = pwd()+"/${junit_dir}/${name}.log"
                   env.CLEANUP = "y"
                   // Generate and deploy template, validate deployments
@@ -127,11 +124,8 @@ node {
               currentBuild.result = "FAILURE"
               echo "Exception ${exc}"
             }
-            // Final clean up
-            sh("rm -rf ${clone_dir}/_output")
-            sh("rm -rf ${clone_dir}/.azure")
-            sh("rm -rf ${clone_dir}/.kube")
-            sh("rm -rf ${junit_dir}")
+            // Allow for future removal from the host
+            sh("chmod -R a+rwx ${WORKSPACE}")
           }
         }
       }
