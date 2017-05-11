@@ -37,14 +37,16 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	cs *api.ContainerService, ucs *vlabs.UpgradeContainerService, token *adal.ServicePrincipalToken) {
 	uc.ClusterTopology = ClusterTopology{}
 	uc.APIModel = cs
+	uc.MasterVMs = &[]compute.VirtualMachine{}
+	uc.AgentVMs = &[]compute.VirtualMachine{}
 
-	AzureClients := armhelpers.AzureClients{
-		SubscriptionID: subscriptionID.String(),
-	}
-	AzureClients.Create(token)
+	uc.AzureClients = armhelpers.AzureClients{}
+	uc.AzureClients.SubscriptionID = subscriptionID.String()
+
+	uc.AzureClients.Create(token)
 
 	if err := uc.getUpgradableResources(subscriptionID, resourceGroup); err != nil {
-		// Bail
+		log.Errorln("Error while querying ARM for resources: %+v", err)
 		return
 	}
 }
@@ -61,19 +63,18 @@ func (uc *UpgradeCluster) getUpgradableResources(subscriptionID uuid.UUID, resou
 	for _, vm := range *vmListResult.Value {
 		if *(*vm.Tags)["orchestrator"] == orchestratorTypeVersion {
 			if strings.Contains(*(vm.Name), "k8s-master-") {
+				log.Infoln(fmt.Sprintf("Master VM name: %s", *vm.Name))
 				// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX from temp parameter
 				*uc.MasterVMs = append(*uc.MasterVMs, vm)
 			}
 			// TODO: Add logic to separate out VMs in various agent pookls
-			if strings.Contains(*(vm.Name), "k8s-agentpool-") {
+			if strings.Contains(*(vm.Name), "k8s-agentpool") {
+				log.Infoln(fmt.Sprintf("Agent VM name: %s", *vm.Name))
 				// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX from temp parameter
 				*uc.AgentVMs = append(*uc.AgentVMs, vm)
 			}
 		}
 	}
-
-	log.Infoln("Master VMs: %+v", *uc.MasterVMs)
-	log.Infoln("Agent VMs: %+v", *uc.AgentVMs)
 
 	return nil
 }
