@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -34,7 +33,7 @@ type UpgradeCluster struct {
 // UpgradeContainerService contains target state of the cluster that
 // the operation will drive towards.
 func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
-	cs *api.ContainerService, ucs *vlabs.UpgradeContainerService, token *adal.ServicePrincipalToken) {
+	cs *api.ContainerService, ucs *api.UpgradeContainerService, token *adal.ServicePrincipalToken) {
 	uc.ClusterTopology = ClusterTopology{}
 	uc.APIModel = cs
 	uc.MasterVMs = &[]compute.VirtualMachine{}
