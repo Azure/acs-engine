@@ -29,7 +29,7 @@ const (
 )
 
 // NormalizeForVMSSScaling takes a template and removes elements that are unwanted in a VMSS scale up/down case
-func NormalizeForVMSSScaling(logger *logrus.Logger, templateMap map[string]interface{}) error {
+func NormalizeForVMSSScaling(logger *logrus.Entry, templateMap map[string]interface{}) error {
 	if err := NormalizeMasterResourcesForScaling(logger, templateMap); err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func NormalizeForVMSSScaling(logger *logrus.Logger, templateMap map[string]inter
 }
 
 // NormalizeForK8sVMASScalingUp takes a template and removes elements that are unwanted in a K8s VMAS scale up/down case
-func NormalizeForK8sVMASScalingUp(logger *logrus.Logger, templateMap map[string]interface{}) error {
+func NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templateMap map[string]interface{}) error {
 	if err := NormalizeMasterResourcesForScaling(logger, templateMap); err != nil {
 		return err
 	}
@@ -117,7 +117,7 @@ func NormalizeForK8sVMASScalingUp(logger *logrus.Logger, templateMap map[string]
 }
 
 // NormalizeMasterResourcesForScaling takes a template and removes elements that are unwanted in any scale up/down case
-func NormalizeMasterResourcesForScaling(logger *logrus.Logger, templateMap map[string]interface{}) error {
+func NormalizeMasterResourcesForScaling(logger *logrus.Entry, templateMap map[string]interface{}) error {
 	resources := templateMap[resourcesFieldName].([]interface{})
 	//update master nodes resources
 	for _, resource := range resources {
@@ -167,7 +167,7 @@ func NormalizeMasterResourcesForScaling(logger *logrus.Logger, templateMap map[s
 	return nil
 }
 
-func removeCustomData(logger *logrus.Logger, resourceProperties map[string]interface{}) bool {
+func removeCustomData(logger *logrus.Entry, resourceProperties map[string]interface{}) bool {
 	osProfile, ok := resourceProperties[osProfileFieldName].(map[string]interface{})
 	if !ok {
 		logger.Warnf("Template improperly formatted")
@@ -180,7 +180,7 @@ func removeCustomData(logger *logrus.Logger, resourceProperties map[string]inter
 	return ok
 }
 
-func removeImageReference(logger *logrus.Logger, resourceProperties map[string]interface{}) bool {
+func removeImageReference(logger *logrus.Entry, resourceProperties map[string]interface{}) bool {
 	storageProfile, ok := resourceProperties[storageProfileFieldName].(map[string]interface{})
 	if !ok {
 		logger.Warnf("Template improperly formatted")
