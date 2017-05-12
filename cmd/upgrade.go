@@ -62,8 +62,8 @@ func NewUpgradeCmd() *cobra.Command {
 
 	f := upgradeCmd.Flags()
 	// TODO: list supported cloud envs
-	f.StringVar(&uc.rawAzureEnvironment, "azure-env", "AzurePublicCloud", "the target Azure cloud (default:`AzurePublicCloud`)")
-	f.StringVar(&uc.authMethod, "auth-method", "client-secret", "auth method (default:`client_secret`)")
+	f.StringVar(&uc.rawAzureEnvironment, "azure-env", "AzurePublicCloud", "the target Azure cloud")
+	f.StringVar(&uc.authMethod, "auth-method", "client-secret", "auth method")
 	f.StringVar(&uc.rawClientID, "client-id", "", "the client ID for the Service Principal to use for authenticating to Azure")
 	f.StringVar(&uc.clientSecret, "client-secret", "", "the client secret for the Service Principal to use for authenticating to Azure")
 	f.StringVar(&uc.rawSubscriptionID, "subscription-id", "", "the subscription ID where the cluster is deployed")
