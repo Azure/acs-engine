@@ -93,6 +93,12 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatal("--resource-group must be specified")
 	}
 
+	// TODO(colemick): add in the cmd annotation to help enable autocompletion
+	if uc.upgradeModelFile == "" {
+		cmd.Usage()
+		log.Fatal("--upgrademodel-file must be specified")
+	}
+
 	if uc.authMethod == "client-secret" {
 		if uc.rawClientID == "" || uc.clientSecret == "" {
 			cmd.Usage()
