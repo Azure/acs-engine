@@ -6,6 +6,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
 
 	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -75,7 +76,7 @@ func NewUpgradeCmd() *cobra.Command {
 }
 
 func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
-	log.Warnln("validating...")
+	log.Infoln("validating...")
 
 	var err error
 
@@ -163,7 +164,11 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	uc.validate(cmd, args)
 
 	upgradeCluster := operations.UpgradeCluster{}
-	upgradeCluster.UpgradeCluster(uc.subscriptionID, uc.resourceGroupName, uc.containerService, uc.upgradeContainerService, uc.servicePrincipalToken)
+	upgradeCluster.AzureClients = armhelpers.AzureClients{}
+	upgradeCluster.AzureClients.SubscriptionID = uc.rawSubscriptionID
+	upgradeCluster.AzureClients.Create(uc.servicePrincipalToken)
+
+	upgradeCluster.UpgradeCluster(uc.subscriptionID, uc.resourceGroupName, uc.containerService, uc.upgradeContainerService)
 
 	return nil
 }

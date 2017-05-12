@@ -8,7 +8,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
-	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/prometheus/common/log"
 	"github.com/satori/go.uuid"
 )
@@ -33,16 +32,11 @@ type UpgradeCluster struct {
 // UpgradeContainerService contains target state of the cluster that
 // the operation will drive towards.
 func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
-	cs *api.ContainerService, ucs *api.UpgradeContainerService, token *adal.ServicePrincipalToken) {
+	cs *api.ContainerService, ucs *api.UpgradeContainerService) {
 	uc.ClusterTopology = ClusterTopology{}
 	uc.APIModel = cs
 	uc.MasterVMs = &[]compute.VirtualMachine{}
 	uc.AgentVMs = &[]compute.VirtualMachine{}
-
-	uc.AzureClients = armhelpers.AzureClients{}
-	uc.AzureClients.SubscriptionID = subscriptionID.String()
-
-	uc.AzureClients.Create(token)
 
 	if err := uc.getUpgradableResources(subscriptionID, resourceGroup); err != nil {
 		log.Errorln("Error while querying ARM for resources: %+v", err)
