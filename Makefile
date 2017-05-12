@@ -14,6 +14,7 @@ prereqs:
 	go get github.com/spf13/cobra
 	go get github.com/satori/go.uuid
 	go get github.com/Azure/go-autorest/...
+	go get github.com/onsi/gomega
 
 build: prereqs
 	go generate -v ./...
