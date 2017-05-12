@@ -71,6 +71,19 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"windowszip":   "v1.6.0intwinnat.zip",
 	},
 
+	api.Kubernetes157: {
+		"hyperkube":    "hyperkube-amd64:v1.5.7",
+		"dashboard":    "kubernetes-dashboard-amd64:v1.5.1",
+		"exechealthz":  "exechealthz-amd64:1.2",
+		"addonresizer": "addon-resizer:1.6",
+		"heapster":     "heapster:v1.2.0",
+		"dns":          "kubedns-amd64:1.7",
+		"addonmanager": "kube-addon-manager-amd64:v6.2",
+		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"pause":        "pause-amd64:3.0",
+		"windowszip":   "v1.5.7intwinnat.zip",
+	},
+
 	api.Kubernetes153: {
 		"hyperkube":    "hyperkube-amd64:v1.5.3",
 		"dashboard":    "kubernetes-dashboard-amd64:v1.5.1",

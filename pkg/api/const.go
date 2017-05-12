@@ -53,6 +53,8 @@ const (
 const (
 	// Kubernetes153 is the string constant for Kubernetes 1.5.3
 	Kubernetes153 OrchestratorVersion = "1.5.3"
+	// Kubernetes157 is the string constant for Kubernetes 1.5.7
+	Kubernetes157 OrchestratorVersion = "1.5.7"
 	// Kubernetes160 is the string constant for Kubernetes 1.6.0
 	Kubernetes160 OrchestratorVersion = "1.6.0"
 	// Kubernetes162 is the string constant for Kubernetes 1.6.2
