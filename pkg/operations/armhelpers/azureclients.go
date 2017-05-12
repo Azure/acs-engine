@@ -2,7 +2,7 @@ package util
 
 // TODO: refactor a bunch of this out of dockermachine and this into a better azure package
 // TODO: See if SDK folks want to own this... it's super generic
-// TODO: do we need copyright stanzas?
+// TODO: fix the token cache - cache by authority + client_id
 
 import (
 	"crypto/rsa"
@@ -31,6 +31,9 @@ import (
 const (
 	// AcsEngineClientID is the AAD ClientID for the CLI native application
 	AcsEngineClientID = "76e0feec-6b7f-41f0-81a7-b1b944520261"
+
+	// ApplicationDir is the name of the dir where the token is cached
+	ApplicationDir = ".acsengine"
 )
 
 var (
@@ -58,43 +61,52 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 		return nil, err
 	}
 
-	rawToken, err := tryLoadCachedToken(tenantID)
+	home, err := homedir.Dir()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get user home directory to look for cached token: %q", err)
+	}
+	cachePath := filepath.Join(home, ApplicationDir, "cache", fmt.Sprintf("%s_%s.token.json", tenantID, AcsEngineClientID))
+
+	rawToken, err := tryLoadCachedToken(cachePath)
 	if err != nil {
 		return nil, err
 	}
 
 	var armSpt *adal.ServicePrincipalToken
 	if rawToken != nil {
-		armSpt, err = adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.ServiceManagementEndpoint, *rawToken)
+		armSpt, err = adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.ServiceManagementEndpoint, *rawToken, tokenCallback(cachePath))
 		if err != nil {
 			return nil, err
 		}
-
-		// try to refresh
 		err = armSpt.Refresh()
 		if err != nil {
-			// now we need to do device auth to set the armSpt
-
-			log.Warnf("failed to refresh cached token, falling back to device auth")
-			// do device auth for realsies
-			// that will return back... a deviceToken, that I pass to Manual.. same as if cached
-			client := &autorest.Client{}
-			deviceCode, err := adal.InitiateDeviceAuth(client, *oauthConfig, AcsEngineClientID, env.ServiceManagementEndpoint)
+			log.Warnf("Refresh token failed. Will fallback to device auth. %q", err)
+		} else {
+			adSpt, err := adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.GraphEndpoint, armSpt.Token)
 			if err != nil {
 				return nil, err
 			}
-
-			fmt.Println(*deviceCode.Message)
-			rawToken, err := adal.WaitForUserCompletion(client, deviceCode)
-			if err != nil {
-				return nil, err
-			}
-			armSpt, err = adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.ServiceManagementEndpoint, *rawToken)
-			if err != nil {
-				return nil, err
-			}
+			return getClient(env, subscriptionID, armSpt, adSpt)
 		}
 	}
+
+	client := &autorest.Client{}
+
+	deviceCode, err := adal.InitiateDeviceAuth(client, *oauthConfig, AcsEngineClientID, env.ServiceManagementEndpoint)
+	if err != nil {
+		return nil, err
+	}
+	log.Warnln(*deviceCode.Message)
+	deviceToken, err := adal.WaitForUserCompletion(client, deviceCode)
+	if err != nil {
+		return nil, err
+	}
+
+	armSpt, err = adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.ServiceManagementEndpoint, *deviceToken, tokenCallback(cachePath))
+	if err != nil {
+		return nil, err
+	}
+	armSpt.Refresh()
 
 	adRawToken := armSpt.Token
 	adRawToken.Resource = env.GraphEndpoint
@@ -175,13 +187,7 @@ func tokenCallback(path string) func(t adal.Token) error {
 	}
 }
 
-func tryLoadCachedToken(tenantID string) (*adal.Token, error) {
-	home, err := homedir.Dir()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get user home directory to look for cached token: %q", err)
-	}
-	cachePath := filepath.Join(home, ".azkube", fmt.Sprintf("token-cache-%s.json", tenantID))
-
+func tryLoadCachedToken(cachePath string) (*adal.Token, error) {
 	log.Debugf("Attempting to load token from cache. path=%q", cachePath)
 
 	// Check for file not found so we can suppress the file not found error

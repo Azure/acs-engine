@@ -5,9 +5,9 @@ import (
 	"path"
 
 	"github.com/Azure/acs-engine/pkg/api"
-
 	"github.com/Azure/acs-engine/pkg/operations"
 	armhelpers "github.com/Azure/acs-engine/pkg/operations/armhelpers"
+
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	log "github.com/Sirupsen/logrus"
@@ -38,6 +38,8 @@ type upgradeCmd struct {
 	azureEnvironment azure.Environment
 
 	// derived
+	azureClient *armhelpers.AzureClient
+
 	tenantID              string
 	servicePrincipalToken *adal.ServicePrincipalToken
 	containerService      *api.ContainerService
@@ -99,22 +101,32 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatal("--upgrademodel-file must be specified")
 	}
 
+	if uc.subscriptionID, err = uuid.FromString(uc.rawSubscriptionID); err != nil {
+		log.Fatalf("failed to parse subscription id as a GUID: %s", err.Error())
+	}
+
 	if uc.authMethod == "client-secret" {
 		if uc.rawClientID == "" || uc.clientSecret == "" {
 			cmd.Usage()
 			log.Fatal("--client-id and --client-secret must be specified when --auth-method=\"client_secret\"")
 		}
+
+		if uc.clientID, err = uuid.FromString(uc.rawClientID); err != nil {
+			log.Fatalf("failed to parse client id as a GUID. (client id must be specified as the application ID GUID, not the identifier_uri): %s", err.Error())
+		}
+
+		uc.azureClient, err = armhelpers.NewAzureClientWithClientSecret(uc.azureEnvironment, uc.subscriptionID.String(), uc.clientID.String(), uc.clientSecret)
+		if err != nil {
+			log.Fatalln("Failed to retrive access token for Azure:", err)
+		}
+	} else if uc.authMethod == "device" {
+		uc.azureClient, err = armhelpers.NewAzureClientWithDeviceAuth(uc.azureEnvironment, uc.subscriptionID.String())
+		if err != nil {
+			log.Fatalln("Failed to retrive access token for Azure:", err)
+		}
 	} else {
 		cmd.Usage()
 		log.Fatal("only client secret authentication is currently supported")
-	}
-
-	if uc.clientID, err = uuid.FromString(uc.rawClientID); err != nil {
-		log.Fatalf("failed to parse client id as a GUID. (client id must be specified as the application ID GUID, not the identifier_uri): %s", err.Error())
-	}
-
-	if uc.subscriptionID, err = uuid.FromString(uc.rawSubscriptionID); err != nil {
-		log.Fatalf("failed to parse subscription id as a GUID: %s", err.Error())
 	}
 
 	if uc.deploymentDirectory == "" {
@@ -147,13 +159,8 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	uc.validate(cmd, args)
 
-	client, err := armhelpers.NewAzureClientWithClientSecret(uc.azureEnvironment, uc.subscriptionID.String(), uc.clientID.String(), uc.clientSecret)
-	if err != nil {
-		log.Fatalln("Failed to retrive access token for Azure:", err)
-	}
-
 	upgradeCluster := operations.UpgradeCluster{
-		AzureClient: client,
+		AzureClient: uc.azureClient,
 	}
 
 	upgradeCluster.UpgradeCluster(uc.resourceGroupName, uc.containerService, uc.upgradeContainerService)
