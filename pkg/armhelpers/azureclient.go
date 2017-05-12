@@ -1,4 +1,4 @@
-package util
+package armhelpers
 
 // TODO: refactor a bunch of this out of dockermachine and this into a better azure package
 // TODO: See if SDK folks want to own this... it's super generic
@@ -52,6 +52,11 @@ type AzureClient struct {
 	ProvidersClient       resources.ProvidersClient
 	SubscriptionsClient   subscriptions.GroupClient
 	VirtualMachinesClient compute.VirtualMachinesClient
+}
+
+// now we can just return the full azure sdk client as the tempalte deployer, so TD can be mocked
+func (ac *AzureClient) TemplateDeployer() TemplateDeployer {
+	return ac.DeploymentsClient
 }
 
 // NewAzureClientWithDeviceAuth returns an AzureClient by having a user complete a device authentication flow

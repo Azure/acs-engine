@@ -5,8 +5,8 @@ import (
 	"path"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/operations"
-	armhelpers "github.com/Azure/acs-engine/pkg/operations/armhelpers"
 
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
