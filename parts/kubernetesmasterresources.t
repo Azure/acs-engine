@@ -199,7 +199,7 @@
           {
             "name": "[variables('masterInternalLbIPConfigName')]",
             "properties": {
-              "privateIPAddress": "[variables('masterIP')]",
+              "privateIPAddress": "[variables('kubernetesAPIServerIP')]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('vnetSubnetID')]"

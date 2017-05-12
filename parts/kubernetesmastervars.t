@@ -103,9 +103,9 @@
     "masterInternalLbIPConfigName": "[concat(variables('orchestratorName'), '-master-internal-lbFrontEnd-', variables('nameSuffix'))]",
     "masterInternalLbIPConfigID": "[concat(variables('masterInternalLbID'),'/frontendIPConfigurations/', variables('masterInternalLbIPConfigName'))]",
     "masterInternalLbIPOffset": {{GetDefaultInternalLbStaticIPOffset}},
-    "masterIP": "[concat(variables('masterFirstAddrPrefix'), add(variables('masterInternalLbIPOffset'), int(variables('masterFirstAddrOctet4'))))]",
+    "kubernetesAPIServerIP": "[concat(variables('masterFirstAddrPrefix'), add(variables('masterInternalLbIPOffset'), int(variables('masterFirstAddrOctet4'))))]",
 {{else}}
-    "masterIP": "[parameters('firstConsecutiveStaticIP')]",
+    "kubernetesAPIServerIP": "[parameters('firstConsecutiveStaticIP')]",
 {{end}}
     "masterLbBackendPoolName": "[concat(variables('orchestratorName'), '-master-pool-', variables('nameSuffix'))]",
     "masterFirstAddrComment": "these MasterFirstAddrComment are used to place multiple masters consecutively in the address space",
