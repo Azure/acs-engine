@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"os"
+
+	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/go-autorest/autorest/azure"
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
@@ -33,7 +37,10 @@ func NewRootCmd() *cobra.Command {
 
 	rootCmd.AddCommand(NewVersionCmd())
 	rootCmd.AddCommand(NewGenerateCmd())
-	rootCmd.AddCommand(NewUpgradeCmd())
+
+	if val := os.Getenv("ACSENGINE_EXPERIMENTAL_FEATURES"); val == "1" {
+		rootCmd.AddCommand(NewUpgradeCmd())
+	}
 
 	return rootCmd
 }
