@@ -6,7 +6,9 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
 
+	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	log "github.com/Sirupsen/logrus"
@@ -29,6 +31,7 @@ type upgradeCmd struct {
 	rawClientID         string
 	rawSubscriptionID   string
 	rawAzureEnvironment string
+	upgradeModelFile    string
 
 	// parsed
 	clientID         uuid.UUID
@@ -40,8 +43,12 @@ type upgradeCmd struct {
 	servicePrincipalToken *adal.ServicePrincipalToken
 	containerService      *api.ContainerService
 	apiVersion            string
+
+	upgradeContainerService *api.UpgradeContainerService
+	upgradeAPIVersion       string
 }
 
+// NewUpgradeCmd run a command to upgrade a Kubernetes cluster
 func NewUpgradeCmd() *cobra.Command {
 	uc := upgradeCmd{}
 
@@ -63,12 +70,13 @@ func NewUpgradeCmd() *cobra.Command {
 	f.StringVar(&uc.rawSubscriptionID, "subscription-id", "", "the subscription ID where the cluster is deployed")
 	f.StringVar(&uc.resourceGroupName, "resource-group", "", "the resource group where the cluster is deployed")
 	f.StringVar(&uc.deploymentDirectory, "deployment-dir", "", "the location of the output from `generate`")
+	f.StringVar(&uc.upgradeModelFile, "upgrademodel-file", "", "file path to upgrade API model")
 
 	return upgradeCmd
 }
 
 func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
-	log.Warnln("validating...")
+	log.Infoln("validating...")
 
 	var err error
 
@@ -121,6 +129,15 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
 
+	if _, err := os.Stat(uc.upgradeModelFile); os.IsNotExist(err) {
+		log.Fatalf("specified upgrade model file does not exist (%s)", uc.upgradeModelFile)
+	}
+
+	uc.upgradeContainerService, uc.upgradeAPIVersion, err = api.LoadUpgradeContainerServiceFromFile(uc.upgradeModelFile)
+	if err != nil {
+		log.Fatalf("error parsing the upgrade api model: %s", err.Error())
+	}
+
 	// get the actual ServicePrincipalToken here
 	tenantID, err := acsengine.GetTenantID(uc.azureEnvironment, uc.subscriptionID.String())
 	if err != nil {
@@ -145,6 +162,11 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 
 func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	uc.validate(cmd, args)
+
+	upgradeCluster := operations.UpgradeCluster{}
+	upgradeCluster.AzureClients = armhelpers.NewAzureClients(uc.servicePrincipalToken, uc.rawSubscriptionID)
+
+	upgradeCluster.UpgradeCluster(uc.subscriptionID, uc.resourceGroupName, uc.containerService, uc.upgradeContainerService)
 
 	return nil
 }

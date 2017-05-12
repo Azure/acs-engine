@@ -313,8 +313,3 @@ func (a *AgentPoolProfile) SetSubnet(subnet string) {
 func (o *OrchestratorProfile) IsSwarmMode() bool {
 	return o.OrchestratorType == SwarmMode
 }
-
-// UpgradeContainerService API model
-type UpgradeContainerService struct {
-	OrchestratorProfile *OrchestratorProfile `json:"orchestratorProfile,omitempty"`
-}

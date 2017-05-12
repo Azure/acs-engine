@@ -266,6 +266,19 @@ type V20170131ARMContainerService struct {
 	*v20170131.ContainerService
 }
 
+// VlabsUpgradeContainerService is the type we read and write from file
+// needed because the json that is sent to ARM and acs-engine
+// is different from the json that the ACS RP Api gets from ARM
+type VlabsUpgradeContainerService struct {
+	TypeMeta
+	*vlabs.UpgradeContainerService
+}
+
+// UpgradeContainerService API model
+type UpgradeContainerService struct {
+	OrchestratorProfile *OrchestratorProfile `json:"orchestratorProfile,omitempty"`
+}
+
 // HasWindows returns true if the cluster contains windows
 func (p *Properties) HasWindows() bool {
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
