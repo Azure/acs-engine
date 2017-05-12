@@ -81,7 +81,7 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"addonmanager": "kube-addon-manager-amd64:v6.2",
 		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
 		"pause":        "pause-amd64:3.0",
-		"windowszip":   "v1.5.3intwinnat.zip",
+		"windowszip":   "v1.5.7intwinnat.zip",
 	},
 
 	api.Kubernetes153: {
