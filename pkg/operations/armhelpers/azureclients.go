@@ -1,6 +1,8 @@
 package util
 
 // TODO: refactor a bunch of this out of dockermachine and this into a better azure package
+// TODO: See if SDK folks want to own this... it's super generic
+// TODO: do we need copyright stanzas?
 
 import (
 	"crypto/rsa"
@@ -12,7 +14,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/acsengine"
+
 	"github.com/Azure/azure-sdk-for-go/arm/authorization"
+	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/subscriptions"
 	"github.com/Azure/go-autorest/autorest"
@@ -24,131 +29,107 @@ import (
 )
 
 const (
-	AzkubeClientID = "a87032a7-203c-4bf7-913c-44c50d23409a"
+	// AcsEngineClientID is the AAD ClientID for the CLI native application
+	AcsEngineClientID = "76e0feec-6b7f-41f0-81a7-b1b944520261"
 )
 
 var (
+	// RequiredResourceProviders is the list of Azure Resource Providers needed for ACS-Engine to function
 	RequiredResourceProviders = []string{"Microsoft.Compute", "Microsoft.Storage", "Microsoft.Network"}
 )
 
+// AzureClient is the uber client
+// If done right, we really shouldn't need SubscriptionID or TenantID in the client anywhere else
+// they're only used for setting up the clients, we can add them back later if needed
 type AzureClient struct {
-	Environment    azure.Environment
-	OAuthConfig    adal.OAuthConfig
-	SubscriptionID string
-	TenantID       string
-	ClientID       string
-
 	DeploymentsClient     resources.DeploymentsClient
 	GroupsClient          resources.GroupsClient
 	RoleAssignmentsClient authorization.RoleAssignmentsClient
 	ResourcesClient       resources.GroupClient
 	ProvidersClient       resources.ProvidersClient
 	SubscriptionsClient   subscriptions.GroupClient
+	VirtualMachinesClient compute.VirtualMachinesClient
 }
 
-func NewClientWithDeviceAuth(azureEnvironment azure.Environment, subscriptionID, tenantID string) (*AzureClient, error) {
-	oauthConfig, err := adal.OAuthConfigForTenant(azureEnvironment.ActiveDirectoryEndpoint, tenantID)
+// NewAzureClientWithDeviceAuth returns an AzureClient by having a user complete a device authentication flow
+func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) (*AzureClient, error) {
+	oauthConfig, tenantID, err := getOAuthConfig(env, subscriptionID)
 	if err != nil {
 		return nil, err
 	}
 
-	azureClient := AzureClient{
-		Environment:    azureEnvironment,
-		OAuthConfig:    *oauthConfig,
-		TenantID:       tenantID,
-		SubscriptionID: subscriptionID,
-		ClientID:       AzkubeClientID,
-	}
-
-	home, err := homedir.Dir()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get user home directory to look for cached token: %q", err)
-	}
-	cachePath := filepath.Join(home, ".azkube", fmt.Sprintf("token-cache-%s.json", tenantID))
-
-	armSpt, err := azureClient.tryLoadToken(cachePath)
+	rawToken, err := tryLoadCachedToken(tenantID)
 	if err != nil {
 		return nil, err
 	}
-	if armSpt != nil {
+
+	var armSpt *adal.ServicePrincipalToken
+	if rawToken != nil {
+		armSpt, err = adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.ServiceManagementEndpoint, *rawToken)
+		if err != nil {
+			return nil, err
+		}
+
+		// try to refresh
 		err = armSpt.Refresh()
 		if err != nil {
-			log.Warnf("Refresh token failed. Will fallback to device auth. %q", err)
-		} else {
-			adSpt, err := adal.NewServicePrincipalTokenFromManualToken(azureClient.OAuthConfig, azureClient.ClientID, azureClient.Environment.GraphEndpoint, armSpt.Token)
+			// now we need to do device auth to set the armSpt
+
+			log.Warnf("failed to refresh cached token, falling back to device auth")
+			// do device auth for realsies
+			// that will return back... a deviceToken, that I pass to Manual.. same as if cached
+			client := &autorest.Client{}
+			deviceCode, err := adal.InitiateDeviceAuth(client, *oauthConfig, AcsEngineClientID, env.ServiceManagementEndpoint)
 			if err != nil {
 				return nil, err
 			}
-			return azureClient.build(armSpt, adSpt)
+
+			fmt.Println(*deviceCode.Message)
+			rawToken, err := adal.WaitForUserCompletion(client, deviceCode)
+			if err != nil {
+				return nil, err
+			}
+			armSpt, err = adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.ServiceManagementEndpoint, *rawToken)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	client := &autorest.Client{}
-
-	deviceCode, err := azure.InitiateDeviceAuth(client, *oauthConfig, AzkubeClientID, azureEnvironment.ServiceManagementEndpoint)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println(*deviceCode.Message)
-	deviceToken, err := azure.WaitForUserCompletion(client, deviceCode)
+	adRawToken := armSpt.Token
+	adRawToken.Resource = env.GraphEndpoint
+	adSpt, err := adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.GraphEndpoint, adRawToken)
 	if err != nil {
 		return nil, err
 	}
 
-	armSpt, err = adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AzkubeClientID, azureEnvironment.ServiceManagementEndpoint, *deviceToken, tokenCallback(cachePath))
-	if err != nil {
-		return nil, err
-	}
-	armSpt.Refresh()
-
-	rawToken := armSpt.Token
-	rawToken.Resource = azureClient.Environment.GraphEndpoint
-	adSpt, err := adal.NewServicePrincipalTokenFromManualToken(azureClient.OAuthConfig, azureClient.ClientID, azureClient.Environment.GraphEndpoint, rawToken)
-	if err != nil {
-		return nil, err
-	}
-
-	return azureClient.build(armSpt, adSpt)
+	return getClient(env, subscriptionID, armSpt, adSpt)
 }
 
-func NewClientWithClientSecret(azureEnvironment azure.Environment, subscriptionID, tenantID, clientID, clientSecret string) (*AzureClient, error) {
-	oauthConfig, err := azureEnvironment.OAuthConfigForTenant(tenantID)
+// NewAzureClientWithClientSecret returns an AzureClient via client_id and client_secret
+func NewAzureClientWithClientSecret(env azure.Environment, subscriptionID, clientID, clientSecret string) (*AzureClient, error) {
+	oauthConfig, _, err := getOAuthConfig(env, subscriptionID)
 	if err != nil {
 		return nil, err
 	}
 
-	azureClient := AzureClient{
-		Environment:    azureEnvironment,
-		OAuthConfig:    *oauthConfig,
-		TenantID:       tenantID,
-		SubscriptionID: subscriptionID,
-		ClientID:       clientID,
-	}
-
-	armSpt, err := adal.NewServicePrincipalToken(*oauthConfig, clientID, clientSecret, azureEnvironment.ServiceManagementEndpoint)
+	armSpt, err := adal.NewServicePrincipalToken(*oauthConfig, clientID, clientSecret, env.ServiceManagementEndpoint)
 	if err != nil {
 		return nil, err
 	}
-	adSpt, err := adal.NewServicePrincipalToken(*oauthConfig, clientID, clientSecret, azureEnvironment.GraphEndpoint)
+	adSpt, err := adal.NewServicePrincipalToken(*oauthConfig, clientID, clientSecret, env.GraphEndpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	return azureClient.build(armSpt, adSpt)
+	return getClient(env, subscriptionID, armSpt, adSpt)
 }
 
-func NewClientWithClientCertificate(azureEnvironment azure.Environment, subscriptionID, tenantID, clientID, certificatePath, privateKeyPath string) (*AzureClient, error) {
-	oauthConfig, err := azureEnvironment.OAuthConfigForTenant(tenantID)
+// NewAzureClientWithClientCertificate returns an AzureClient via client_id and jwt certificate assertion
+func NewAzureClientWithClientCertificate(env azure.Environment, subscriptionID, clientID, certificatePath, privateKeyPath string) (*AzureClient, error) {
+	oauthConfig, _, err := getOAuthConfig(env, subscriptionID)
 	if err != nil {
 		return nil, err
-	}
-
-	azureClient := AzureClient{
-		Environment:    azureEnvironment,
-		OAuthConfig:    *oauthConfig,
-		TenantID:       tenantID,
-		SubscriptionID: subscriptionID,
-		ClientID:       clientID,
 	}
 
 	certificateData, err := ioutil.ReadFile(certificatePath)
@@ -171,21 +152,21 @@ func NewClientWithClientCertificate(azureEnvironment azure.Environment, subscrip
 		return nil, fmt.Errorf("Failed to parse rsa private key: %q", err)
 	}
 
-	armSpt, err := adal.NewServicePrincipalTokenFromCertificate(*oauthConfig, clientID, certificate, privateKey, azureEnvironment.ServiceManagementEndpoint)
+	armSpt, err := adal.NewServicePrincipalTokenFromCertificate(*oauthConfig, clientID, certificate, privateKey, env.ServiceManagementEndpoint)
 	if err != nil {
 		return nil, err
 	}
-	adSpt, err := adal.NewServicePrincipalTokenFromCertificate(*oauthConfig, clientID, certificate, privateKey, azureEnvironment.GraphEndpoint)
+	adSpt, err := adal.NewServicePrincipalTokenFromCertificate(*oauthConfig, clientID, certificate, privateKey, env.GraphEndpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	return azureClient.build(armSpt, adSpt)
+	return getClient(env, subscriptionID, armSpt, adSpt)
 }
 
-func tokenCallback(path string) func(t azure.Token) error {
-	return func(token azure.Token) error {
-		err := azure.SaveToken(path, 0600, token)
+func tokenCallback(path string) func(t adal.Token) error {
+	return func(token adal.Token) error {
+		err := adal.SaveToken(path, 0600, token)
 		if err != nil {
 			return err
 		}
@@ -194,9 +175,17 @@ func tokenCallback(path string) func(t azure.Token) error {
 	}
 }
 
-func (azureClient *AzureClient) tryLoadToken(cachePath string) (*azure.ServicePrincipalToken, error) {
+func tryLoadCachedToken(tenantID string) (*adal.Token, error) {
+	home, err := homedir.Dir()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get user home directory to look for cached token: %q", err)
+	}
+	cachePath := filepath.Join(home, ".azkube", fmt.Sprintf("token-cache-%s.json", tenantID))
+
 	log.Debugf("Attempting to load token from cache. path=%q", cachePath)
 
+	// Check for file not found so we can suppress the file not found error
+	// LoadToken doesn't discern and returns error either way
 	if _, err := os.Stat(cachePath); err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
@@ -204,41 +193,56 @@ func (azureClient *AzureClient) tryLoadToken(cachePath string) (*azure.ServicePr
 		return nil, err
 	}
 
-	token, err := azure.LoadToken(cachePath)
+	token, err := adal.LoadToken(cachePath)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load token from file: %v", err)
 	}
 
-	armSpt, err := adal.NewServicePrincipalTokenFromManualToken(azureClient.OAuthConfig, azureClient.ClientID, azureClient.Environment.ServiceManagementEndpoint, *token, tokenCallback(cachePath))
-	if err != nil {
-		return nil, fmt.Errorf("Error constructing service principal token: %v", err)
-	}
-	return armSpt, nil
+	return token, nil
 }
 
-func buildSpt(subscriptionID string, armSpt *azure.ServicePrincipalToken) (*AzureClient, error) {
-	azureClient.DeploymentsClient = resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID)
-	azureClient.GroupsClient = resources.NewGroupsClient(env.ResourceManagerEndpoint, subscriptionID)
-	azureClient.RoleAssignmentsClient = authorization.NewRoleAssignmentsClient(env.ResourceManagerEndpoint, subscriptionID)
-	azureClient.ResourcesClient = resources.NewClient(env.ResourceManagerEndpoint, subscriptionID)
-	azureClient.ProvidersClient = resources.NewProvidersClient(env.ResourceManagerEndpoint, subscriptionID)
+func getOAuthConfig(env azure.Environment, subscriptionID string) (*adal.OAuthConfig, string, error) {
+	tenantID, err := acsengine.GetTenantID(env, subscriptionID)
+	if err != nil {
+		return nil, "", err
+	}
 
-	azureClient.DeploymentsClient.Authorizer = armSpt
-	azureClient.GroupsClient.Authorizer = armSpt
-	azureClient.RoleAssignmentsClient.Authorizer = armSpt
-	azureClient.ResourcesClient.Authorizer = armSpt
-	azureClient.ProvidersClient.Authorizer = armSpt
+	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, tenantID)
+	if err != nil {
+		return nil, "", err
+	}
 
-	err := azureClient.ensureProvidersRegistered(subscriptionID)
+	return oauthConfig, tenantID, nil
+}
+
+func getClient(env azure.Environment, subscriptionID string, armSpt *adal.ServicePrincipalToken, adSpt *adal.ServicePrincipalToken) (*AzureClient, error) {
+	c := &AzureClient{
+		DeploymentsClient:     resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		GroupsClient:          resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		RoleAssignmentsClient: authorization.NewRoleAssignmentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		ResourcesClient:       resources.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		ProvidersClient:       resources.NewProvidersClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		VirtualMachinesClient: compute.NewVirtualMachinesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+	}
+
+	authorizer := autorest.NewBearerAuthorizer(armSpt)
+	c.DeploymentsClient.Authorizer = authorizer
+	c.GroupsClient.Authorizer = authorizer
+	c.RoleAssignmentsClient.Authorizer = authorizer
+	c.ResourcesClient.Authorizer = authorizer
+	c.ProvidersClient.Authorizer = authorizer
+	c.VirtualMachinesClient.Authorizer = authorizer
+
+	err := c.ensureProvidersRegistered(subscriptionID)
 	if err != nil {
 		return nil, err
 	}
 
-	return azureClient, nil
+	return c, nil
 }
 
 func (azureClient *AzureClient) ensureProvidersRegistered(subscriptionID string) error {
-	registeredProviders, err := azureClient.ProvidersClient.List(nil)
+	registeredProviders, err := azureClient.ProvidersClient.List(to.Int32Ptr(100), "")
 	if err != nil {
 		return err
 	}
@@ -288,10 +292,10 @@ func parseRsaPrivateKey(path string) (*rsa.PrivateKey, error) {
 	if errPkcs8 == nil {
 		privatePkcs8RsaKey, ok := privatePkcs8Key.(*rsa.PrivateKey)
 		if !ok {
-			return nil, fmt.Errorf("Pkcs8 contained non-RSA key. Expected RSA key.")
+			return nil, fmt.Errorf("pkcs8 contained non-RSA key. Expected RSA key")
 		}
 		return privatePkcs8RsaKey, nil
 	}
 
-	return nil, fmt.Errorf("Failed to parse private key as Pkcs#1 or Pkcs#8. (%s). (%s).", errPkcs1, errPkcs8)
+	return nil, fmt.Errorf("failed to parse private key as Pkcs#1 or Pkcs#8. (%s). (%s)", errPkcs1, errPkcs8)
 }

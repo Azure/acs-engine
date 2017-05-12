@@ -2,14 +2,13 @@ package operations
 
 import (
 	"fmt"
-
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
+	armhelpers "github.com/Azure/acs-engine/pkg/operations/armhelpers"
+
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/prometheus/common/log"
-	"github.com/satori/go.uuid"
 )
 
 // ClusterTopology contains resources of the cluster the upgrade operation
@@ -25,27 +24,27 @@ type ClusterTopology struct {
 // upgrades are supported for Kubernetes cluster only.
 type UpgradeCluster struct {
 	ClusterTopology
-	AzureClients armhelpers.AzureClients
+	AzureClient *armhelpers.AzureClient
 }
 
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
 // UpgradeContainerService contains target state of the cluster that
 // the operation will drive towards.
-func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
+func (uc *UpgradeCluster) UpgradeCluster(resourceGroup string,
 	cs *api.ContainerService, ucs *api.UpgradeContainerService) {
 	uc.ClusterTopology = ClusterTopology{}
 	uc.APIModel = cs
 	uc.MasterVMs = &[]compute.VirtualMachine{}
 	uc.AgentVMs = &[]compute.VirtualMachine{}
 
-	if err := uc.getUpgradableResources(subscriptionID, resourceGroup); err != nil {
+	if err := uc.getUpgradableResources(resourceGroup); err != nil {
 		log.Errorln("Error while querying ARM for resources: %+v", err)
 		return
 	}
 }
 
-func (uc *UpgradeCluster) getUpgradableResources(subscriptionID uuid.UUID, resourceGroup string) error {
-	vmListResult, err := uc.AzureClients.VMClient.List(resourceGroup)
+func (uc *UpgradeCluster) getUpgradableResources(resourceGroup string) error {
+	vmListResult, err := uc.AzureClient.VirtualMachinesClient.List(resourceGroup)
 	if err != nil {
 		return err
 	}

@@ -4,11 +4,10 @@ import (
 	"os"
 	"path"
 
-	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
 
 	"github.com/Azure/acs-engine/pkg/operations"
+	armhelpers "github.com/Azure/acs-engine/pkg/operations/armhelpers"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	log "github.com/Sirupsen/logrus"
@@ -137,36 +136,21 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatalf("error parsing the upgrade api model: %s", err.Error())
 	}
-
-	// get the actual ServicePrincipalToken here
-	tenantID, err := acsengine.GetTenantID(uc.azureEnvironment, uc.subscriptionID.String())
-	if err != nil {
-		log.Fatalf("failed to determine tenant id based on subscription id: %s", err.Error())
-	}
-
-	oauthConfig, err := adal.NewOAuthConfig(uc.azureEnvironment.ActiveDirectoryEndpoint, tenantID)
-	if err != nil {
-		log.Fatalf("failed to create oauth configuration: %s", err.Error())
-	}
-
-	uc.servicePrincipalToken, err = adal.NewServicePrincipalToken(*oauthConfig, uc.clientID.String(), uc.clientSecret, uc.azureEnvironment.ResourceManagerEndpoint)
-	if err != nil {
-		log.Fatalf("failed to retrieve AccessToken for the Service Principal")
-	}
-
-	err = uc.servicePrincipalToken.Refresh()
-	if err != nil {
-		log.Fatalf("failed to refresh AccessToken: %s", err.Error())
-	}
 }
 
 func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	uc.validate(cmd, args)
 
-	upgradeCluster := operations.UpgradeCluster{}
-	upgradeCluster.AzureClients = armhelpers.NewAzureClients(uc.servicePrincipalToken, uc.rawSubscriptionID)
+	client, err := armhelpers.NewAzureClientWithClientSecret(uc.azureEnvironment, uc.subscriptionID.String(), uc.clientID.String(), uc.clientSecret)
+	if err != nil {
+		log.Fatalln("Failed to retrive access token for Azure:", err)
+	}
 
-	upgradeCluster.UpgradeCluster(uc.subscriptionID, uc.resourceGroupName, uc.containerService, uc.upgradeContainerService)
+	upgradeCluster := operations.UpgradeCluster{
+		AzureClient: client,
+	}
+
+	upgradeCluster.UpgradeCluster(uc.resourceGroupName, uc.containerService, uc.upgradeContainerService)
 
 	return nil
 }
