@@ -8,10 +8,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/operations"
 
-	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/go-autorest/autorest/azure"
 	log "github.com/Sirupsen/logrus"
-	"github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -22,31 +19,22 @@ const (
 )
 
 type upgradeCmd struct {
+	authArgs
+
 	// user input
-	authMethod          string
-	clientSecret        string
 	resourceGroupName   string
 	deploymentDirectory string
-	rawClientID         string
-	rawSubscriptionID   string
-	rawAzureEnvironment string
 	upgradeModelFile    string
-
-	// parsed
-	clientID         uuid.UUID
-	subscriptionID   uuid.UUID
-	azureEnvironment azure.Environment
+	containerService    *api.ContainerService
+	apiVersion          string
 
 	// derived
-	azureClient *armhelpers.AzureClient
-
-	tenantID              string
-	servicePrincipalToken *adal.ServicePrincipalToken
-	containerService      *api.ContainerService
-	apiVersion            string
-
 	upgradeContainerService *api.UpgradeContainerService
 	upgradeAPIVersion       string
+
+	// experimental
+	client armhelpers.UberClient
+	deploy bool
 }
 
 // NewUpgradeCmd run a command to upgrade a Kubernetes cluster
@@ -63,15 +51,10 @@ func NewUpgradeCmd() *cobra.Command {
 	}
 
 	f := upgradeCmd.Flags()
-	// TODO: list supported cloud envs
-	f.StringVar(&uc.rawAzureEnvironment, "azure-env", "AzurePublicCloud", "the target Azure cloud")
-	f.StringVar(&uc.authMethod, "auth-method", "client-secret", "auth method")
-	f.StringVar(&uc.rawClientID, "client-id", "", "the client ID for the Service Principal to use for authenticating to Azure")
-	f.StringVar(&uc.clientSecret, "client-secret", "", "the client secret for the Service Principal to use for authenticating to Azure")
-	f.StringVar(&uc.rawSubscriptionID, "subscription-id", "", "the subscription ID where the cluster is deployed")
 	f.StringVar(&uc.resourceGroupName, "resource-group", "", "the resource group where the cluster is deployed")
 	f.StringVar(&uc.deploymentDirectory, "deployment-dir", "", "the location of the output from `generate`")
 	f.StringVar(&uc.upgradeModelFile, "upgrademodel-file", "", "file path to upgrade API model")
+	addAuthFlags(&uc.authArgs, f)
 
 	return upgradeCmd
 }
@@ -80,15 +63,6 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	log.Infoln("validating...")
 
 	var err error
-
-	if uc.azureEnvironment, err = azure.EnvironmentFromName(uc.rawAzureEnvironment); err != nil {
-		log.Fatal("failed to parse --azure-env as a valid target Azure cloud environment")
-	}
-
-	if uc.rawSubscriptionID == "" {
-		cmd.Usage()
-		log.Fatal("--subscription-id must be specified")
-	}
 
 	if uc.resourceGroupName == "" {
 		cmd.Usage()
@@ -101,32 +75,8 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatal("--upgrademodel-file must be specified")
 	}
 
-	if uc.subscriptionID, err = uuid.FromString(uc.rawSubscriptionID); err != nil {
-		log.Fatalf("failed to parse subscription id as a GUID: %s", err.Error())
-	}
-
-	if uc.authMethod == "client-secret" {
-		if uc.rawClientID == "" || uc.clientSecret == "" {
-			cmd.Usage()
-			log.Fatal("--client-id and --client-secret must be specified when --auth-method=\"client_secret\"")
-		}
-
-		if uc.clientID, err = uuid.FromString(uc.rawClientID); err != nil {
-			log.Fatalf("failed to parse client id as a GUID. (client id must be specified as the application ID GUID, not the identifier_uri): %s", err.Error())
-		}
-
-		uc.azureClient, err = armhelpers.NewAzureClientWithClientSecret(uc.azureEnvironment, uc.subscriptionID.String(), uc.clientID.String(), uc.clientSecret)
-		if err != nil {
-			log.Fatalln("Failed to retrive access token for Azure:", err)
-		}
-	} else if uc.authMethod == "device" {
-		uc.azureClient, err = armhelpers.NewAzureClientWithDeviceAuth(uc.azureEnvironment, uc.subscriptionID.String())
-		if err != nil {
-			log.Fatalln("Failed to retrive access token for Azure:", err)
-		}
-	} else {
-		cmd.Usage()
-		log.Fatal("only client secret authentication is currently supported")
+	if uc.client, err = uc.authArgs.getClient(); err != nil {
+		log.Error("Failed to get client:", err)
 	}
 
 	if uc.deploymentDirectory == "" {
@@ -154,13 +104,18 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatalf("error parsing the upgrade api model: %s", err.Error())
 	}
+
+	uc.client, err = uc.authArgs.getClient()
+	if err != nil {
+		log.Fatalf("failed to get client") // TODO: cleanup
+	}
 }
 
 func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	uc.validate(cmd, args)
 
 	upgradeCluster := operations.UpgradeCluster{
-		AzureClient: uc.azureClient,
+		UberClient: uc.client,
 	}
 
 	upgradeCluster.UpgradeCluster(uc.resourceGroupName, uc.containerService, uc.upgradeContainerService)

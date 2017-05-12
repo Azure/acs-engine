@@ -59,6 +59,11 @@ func (ac *AzureClient) TemplateDeployer() TemplateDeployer {
 	return ac.DeploymentsClient
 }
 
+// now we can just return the full azure sdk client as the tempalte deployer, so TD can be mocked
+func (ac *AzureClient) VMClient() VMClient {
+	return ac.VirtualMachinesClient
+}
+
 // NewAzureClientWithDeviceAuth returns an AzureClient by having a user complete a device authentication flow
 func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) (*AzureClient, error) {
 	oauthConfig, tenantID, err := getOAuthConfig(env, subscriptionID)

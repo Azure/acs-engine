@@ -1,14 +1,20 @@
 package cmd
 
 import (
+	"fmt"
+	"math/rand"
 	"os"
 	"path"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"encoding/json"
+
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/armhelpers"
 )
 
 const (
@@ -18,6 +24,8 @@ const (
 )
 
 type generateCmd struct {
+	authArgs
+
 	apimodelPath      string
 	outputDirectory   string // can be auto-determined from clusterDefinition
 	caCertificatePath string
@@ -29,6 +37,13 @@ type generateCmd struct {
 	// derived
 	containerService *api.ContainerService
 	apiVersion       string
+
+	// experimental
+	client        armhelpers.UberClient
+	deploy        bool
+	resourceGroup string
+	random        *rand.Rand
+	location      string
 }
 
 func NewGenerateCmd() *cobra.Command {
@@ -39,7 +54,8 @@ func NewGenerateCmd() *cobra.Command {
 		Short: generateShortDescription,
 		Long:  generateLongDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return gc.run(cmd, args)
+			gc.validate(cmd, args)
+			return gc.run()
 		},
 	}
 
@@ -51,6 +67,11 @@ func NewGenerateCmd() *cobra.Command {
 	f.BoolVar(&gc.classicMode, "classic-mode", false, "enable classic parameters and outputs")
 	f.BoolVar(&gc.noPrettyPrint, "no-pretty-print", false, "skip pretty printing the output")
 	f.BoolVar(&gc.parametersOnly, "parameters-only", false, "only output parameters files")
+	f.BoolVar(&gc.deploy, "deploy", false, "deploy as well")
+	f.StringVar(&gc.resourceGroup, "resource-group", "", "resource group to deploy to")
+	f.StringVar(&gc.location, "location", "", "location to deploy to")
+
+	addAuthFlags(&gc.authArgs, f)
 
 	return generateCmd
 }
@@ -93,10 +114,23 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 
 	gc.containerService = containerService
 	gc.apiVersion = apiVersion
+
+	if gc.deploy {
+		gc.client, err = gc.authArgs.getClient()
+		if err != nil {
+			log.Fatalf("failed to get client") // TODO: cleanup
+		}
+
+		if gc.resourceGroup == "" {
+			cmd.Usage()
+			log.Fatal("--resource-group is required when deploying")
+		}
+	}
+
+	gc.random = rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
-func (gc *generateCmd) run(cmd *cobra.Command, args []string) error {
-	gc.validate(cmd, args)
+func (gc *generateCmd) run() error {
 	log.Infoln("Generating...")
 
 	templateGenerator, err := acsengine.InitializeTemplateGenerator(gc.classicMode)
@@ -122,6 +156,34 @@ func (gc *generateCmd) run(cmd *cobra.Command, args []string) error {
 
 	if err = acsengine.WriteArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
+	}
+
+	if gc.deploy {
+		templateJSON := make(map[string]interface{})
+		parametersJSON := make(map[string]interface{})
+
+		err = json.Unmarshal([]byte(template), &templateJSON)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		deploymentSuffix := gc.random.Int31()
+
+		// TODO(colemick): precreate resource group based on location
+
+		err = json.Unmarshal([]byte(parameters), &parametersJSON)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		_, err := armhelpers.DeployTemplate(
+			gc.client.TemplateDeployer(),
+			gc.resourceGroup,
+			fmt.Sprintf("%s-%d", gc.resourceGroup, deploymentSuffix),
+			templateJSON,
+			parametersJSON)
+		if err != nil {
+			log.Fatalln(err)
+		}
 	}
 
 	return nil

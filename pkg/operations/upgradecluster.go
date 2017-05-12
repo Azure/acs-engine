@@ -25,7 +25,7 @@ type ClusterTopology struct {
 type UpgradeCluster struct {
 	ClusterTopology
 	UpgradeModel *api.UpgradeContainerService
-	AzureClient  *armhelpers.AzureClient
+	UberClient   armhelpers.UberClient
 }
 
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
@@ -49,8 +49,6 @@ func (uc *UpgradeCluster) UpgradeCluster(resourceGroup string,
 	for _, masterVM := range masterVMs {
 		log.Infoln("Upgrade master:", to.String(masterVM.Name))
 
-		uc.AzureClient.TemplateDeployer.DeployTemplate()
-
 		// TODO:
 		// generate template
 		// take extra step of removing the agent, since apparently we can't fully suppress it
@@ -65,7 +63,7 @@ func (uc *UpgradeCluster) UpgradeCluster(resourceGroup string,
 }
 
 func (uc *UpgradeCluster) getUpgradableResources(resourceGroup string) ([]compute.VirtualMachine, []compute.VirtualMachine, error) {
-	vmListResult, err := uc.AzureClient.VirtualMachinesClient.List(resourceGroup)
+	vmListResult, err := uc.UberClient.VMClient().List(resourceGroup)
 	if err != nil {
 		return nil, nil, err
 	}

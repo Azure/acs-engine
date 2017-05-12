@@ -1,6 +1,7 @@
 package armhelpers
 
 import (
+	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest"
 )
@@ -12,6 +13,7 @@ import (
 // currently only one impl: AzureClient
 type UberClient interface {
 	TemplateDeployer() TemplateDeployer // wraps the deployment client
+	VMClient() VMClient
 }
 
 // TemplateDeployer is an interface that knows how to deploy templates
@@ -24,4 +26,10 @@ type TemplateDeployer interface {
 	Delete(resourceGroup, name string, cancel <-chan struct{}) (<-chan autorest.Response, <-chan error)
 	// Get a deployment, returns nil if it doesn't exist, returns an error if one occurs
 	Get(resourceGroup, name string) (resources.DeploymentExtended, error)
+}
+
+// VMClient is an interface that knows how to do VM operations
+type VMClient interface {
+	// List lists VM resources
+	List(resourceGroup string) (compute.VirtualMachineListResult, error)
 }
