@@ -18,15 +18,18 @@ type AzureClients struct {
 	VMClient     *compute.VirtualMachinesClient
 }
 
-// Create method creates various Azure clients
-func (ac *AzureClients) Create(token *adal.ServicePrincipalToken) (*AzureClients, error) {
-	gc := resources.NewGroupsClient(ac.SubscriptionID)
+// NewAzureClients creates various Azure clients
+func NewAzureClients(token *adal.ServicePrincipalToken, subscriptionID string) AzureClients {
+	azureClients := AzureClients{}
+	azureClients.SubscriptionID = subscriptionID
+
+	gc := resources.NewGroupsClient(azureClients.SubscriptionID)
 	gc.Authorizer = autorest.NewBearerAuthorizer(token)
-	ac.GroupsClient = &gc
+	azureClients.GroupsClient = &gc
 
-	vmc := compute.NewVirtualMachinesClient(ac.SubscriptionID)
+	vmc := compute.NewVirtualMachinesClient(azureClients.SubscriptionID)
 	vmc.Authorizer = autorest.NewBearerAuthorizer(token)
-	ac.VMClient = &vmc
+	azureClients.VMClient = &vmc
 
-	return ac, nil
+	return azureClients
 }

@@ -164,9 +164,7 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	uc.validate(cmd, args)
 
 	upgradeCluster := operations.UpgradeCluster{}
-	upgradeCluster.AzureClients = armhelpers.AzureClients{}
-	upgradeCluster.AzureClients.SubscriptionID = uc.rawSubscriptionID
-	upgradeCluster.AzureClients.Create(uc.servicePrincipalToken)
+	upgradeCluster.AzureClients = armhelpers.NewAzureClients(uc.servicePrincipalToken, uc.rawSubscriptionID)
 
 	upgradeCluster.UpgradeCluster(uc.subscriptionID, uc.resourceGroupName, uc.containerService, uc.upgradeContainerService)
 
