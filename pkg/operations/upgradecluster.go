@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
+	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/prometheus/common/log"
 	"github.com/satori/go.uuid"
