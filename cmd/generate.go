@@ -39,7 +39,8 @@ func newGenerateCmd() *cobra.Command {
 		Short: generateShortDescription,
 		Long:  generateLongDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return gc.run(cmd, args)
+			gc.validate(cmd, args)
+			return gc.run()
 		},
 	}
 
@@ -95,8 +96,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 	gc.apiVersion = apiVersion
 }
 
-func (gc *generateCmd) run(cmd *cobra.Command, args []string) error {
-	gc.validate(cmd, args)
+func (gc *generateCmd) run() error {
 	log.Infoln("Generating...")
 
 	templateGenerator, err := acsengine.InitializeTemplateGenerator(gc.classicMode)
