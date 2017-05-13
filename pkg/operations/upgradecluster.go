@@ -26,6 +26,8 @@ type ClusterTopology struct {
 type UpgradeCluster struct {
 	ClusterTopology
 	Client armhelpers.ACSEngineClient
+
+	UpgradeModel *api.UpgradeContainerService
 }
 
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
