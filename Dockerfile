@@ -6,7 +6,7 @@ ENV AZURE_CLI_VERSION 2.0.3
 
 RUN apt-get update \
     && apt-get -y upgrade \
-    && apt-get -y install python-pip make build-essential curl openssl vim jq \
+    && apt-get -y install python-pip make build-essential curl openssl vim jq gettext \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /tmp/godeb \
@@ -28,6 +28,10 @@ RUN git clone https://github.com/akesterson/cmdarg.git /tmp/cmdarg \
     && cd /tmp/cmdarg && make install && rm -rf /tmp/cmdarg
 RUN git clone https://github.com/akesterson/shunit.git /tmp/shunit \
     && cd /tmp/shunit && make install && rm -rf /tmp/shunit
+
+# Go tool for internationalization and localization
+RUN go get github.com/gosexy/gettext/... \
+    && go install github.com/gosexy/gettext/...
 
 # Used by some CI jobs
 ADD ./test/bootstrap/checkout-pr.sh /tmp/checkout-pr.sh

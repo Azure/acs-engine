@@ -9,6 +9,8 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/leonelquinteros/gotext"
 )
 
 const (
@@ -18,17 +20,19 @@ const (
 )
 
 type generateCmd struct {
-	apimodelPath      string
-	outputDirectory   string // can be auto-determined from clusterDefinition
-	caCertificatePath string
-	caPrivateKeyPath  string
-	classicMode       bool
-	noPrettyPrint     bool
-	parametersOnly    bool
+	translationsDirectory string
+	apimodelPath          string
+	outputDirectory       string // can be auto-determined from clusterDefinition
+	caCertificatePath     string
+	caPrivateKeyPath      string
+	classicMode           bool
+	noPrettyPrint         bool
+	parametersOnly        bool
 
 	// Parsed from inputs
 	containerService *api.ContainerService
 	apiVersion       string
+	locale           *gotext.Locale
 }
 
 func NewGenerateCmd() *cobra.Command {
@@ -44,6 +48,7 @@ func NewGenerateCmd() *cobra.Command {
 	}
 
 	f := generateCmd.Flags()
+	f.StringVar(&gc.translationsDirectory, "translations-directory", "", "translations directory (translations in the current directory if absent)")
 	f.StringVar(&gc.apimodelPath, "api-model", "", "")
 	f.StringVar(&gc.outputDirectory, "output-directory", "", "output directory (derived from FQDN if absent)")
 	f.StringVar(&gc.caCertificatePath, "ca-certificate-path", "", "path to the CA certificate to use for Kubernetes PKI assets")
@@ -58,6 +63,13 @@ func NewGenerateCmd() *cobra.Command {
 func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 	var caCertificateBytes []byte
 	var caKeyBytes []byte
+
+	locale, err := i18n.LoadTranslations(gc.translationsDirectory)
+	if err != nil {
+		log.Fatalf("error loading translation files: %s", err.Error())
+	}
+
+	i18n.Initialize(locale)
 
 	if gc.apimodelPath == "" {
 		if len(args) > 0 {
@@ -93,13 +105,17 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 
 	gc.containerService = containerService
 	gc.apiVersion = apiVersion
+	gc.locale = locale
 }
 
 func (gc *generateCmd) run(cmd *cobra.Command, args []string) error {
 	gc.validate(cmd, args)
 	log.Infoln("Generating...")
 
-	templateGenerator, err := acsengine.InitializeTemplateGenerator(gc.classicMode)
+	ctx := acsengine.Context{
+		Locale: gc.locale,
+	}
+	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, gc.classicMode)
 	if err != nil {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}

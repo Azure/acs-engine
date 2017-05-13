@@ -11,6 +11,8 @@ prereqs:
 	go get github.com/jteeuwen/go-bindata/...
 	go get github.com/Sirupsen/logrus
 	go get github.com/spf13/cobra
+	go get github.com/onsi/gomega
+	go get github.com/leonelquinteros/gotext
 
 build: prereqs
 	go generate -v ./...

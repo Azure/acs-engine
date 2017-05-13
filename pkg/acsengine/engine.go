@@ -174,12 +174,14 @@ func (t *TemplateGenerator) verifyFiles() error {
 // TemplateGenerator represents the object that performs the template generation.
 type TemplateGenerator struct {
 	ClassicMode bool
+	Context     Context
 }
 
 // InitializeTemplateGenerator creates a new template generator object
-func InitializeTemplateGenerator(classicMode bool) (*TemplateGenerator, error) {
+func InitializeTemplateGenerator(ctx Context, classicMode bool) (*TemplateGenerator, error) {
 	t := &TemplateGenerator{
 		ClassicMode: classicMode,
+		Context:     ctx,
 	}
 
 	if err := t.verifyFiles(); err != nil {

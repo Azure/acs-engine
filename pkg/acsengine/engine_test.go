@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -11,6 +12,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/leonelquinteros/gotext"
 )
 
 const (
@@ -18,6 +21,10 @@ const (
 )
 
 func TestExpected(t *testing.T) {
+	// Initialize locale for translation
+	locale := gotext.NewLocale(path.Join("..", "..", "translations"), "en_US")
+	i18n.Initialize(locale)
+
 	// iterate the test data directory
 	apiModelTestFiles := &[]APIModelTestFile{}
 	if e := IterateTestFilesDirectory(TestDataDir, apiModelTestFiles); e != nil {
@@ -50,7 +57,10 @@ func TestExpected(t *testing.T) {
 		// 1. first time tests loaded containerService
 		// 2. second time tests generated containerService
 		// 3. third time tests the generated containerService from the generated containerService
-		templateGenerator, e3 := InitializeTemplateGenerator(isClassicMode)
+		ctx := Context{
+			Locale: locale,
+		}
+		templateGenerator, e3 := InitializeTemplateGenerator(ctx, isClassicMode)
 		if e3 != nil {
 			t.Error(e3.Error())
 			continue
