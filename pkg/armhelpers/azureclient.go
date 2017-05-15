@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/azure-sdk-for-go/arm/network"
@@ -240,6 +241,8 @@ func getClient(env azure.Environment, subscriptionID string, armSpt *adal.Servic
 	c.groupsClient.Authorizer = authorizer
 	c.providersClient.Authorizer = authorizer
 	c.virtualMachinesClient.Authorizer = authorizer
+
+	c.deploymentsClient.PollingDelay = time.Second * 5
 
 	err := c.ensureProvidersRegistered(subscriptionID)
 	if err != nil {
