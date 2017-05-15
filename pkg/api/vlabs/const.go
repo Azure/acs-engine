@@ -38,7 +38,7 @@ const (
 	// MinDiskSizeGB specifies the minimum attached disk size
 	MinDiskSizeGB = 1
 	// MaxDiskSizeGB specifies the maximum attached disk size
-	MaxDiskSizeGB = 1024
+	MaxDiskSizeGB = 1023
 	// MinIPAddressCount specifies the minimum number of IP addresses per network interface
 	MinIPAddressCount = 1
 	// MaxIPAddressCount specifies the maximum number of IP addresses per network interface

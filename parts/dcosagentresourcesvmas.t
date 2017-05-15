@@ -224,16 +224,20 @@
             "sku": "[variables('osImageSKU')]",
             "version": "[variables('osImageVersion')]"
           }
-{{if .IsStorageAccount}}
           ,"osDisk": {
-            "caching": "ReadOnly",
-            "createOption": "FromImage",
-            "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'-osdisk')]",
-            "vhd": {
+            "caching": "ReadOnly"
+            ,"createOption": "FromImage"
+{{if .IsStorageAccount}}
+            ,"name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'-osdisk')]"
+            ,"vhd": {
               "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '-osdisk.vhd')]"
             }
-          }
 {{end}}
+{{if ne .OSDiskSizeGB 0}}
+            ,"diskSizeGB": {{.OSDiskSizeGB}}
+{{end}}     
+          }
+
         }
       },
       "type": "Microsoft.Compute/virtualMachines"
