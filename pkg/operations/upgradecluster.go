@@ -6,16 +6,17 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/operations/Kubernetes162Upgrade"
 	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
-	"github.com/prometheus/common/log"
+	log "github.com/Sirupsen/logrus"
 	"github.com/satori/go.uuid"
 )
 
 // ClusterTopology contains resources of the cluster the upgrade operation
 // is targeting
 type ClusterTopology struct {
-	APIModel  *api.ContainerService
+	DataModel  *api.ContainerService
 	MasterVMs *[]compute.VirtualMachine
 	AgentVMs  *[]compute.VirtualMachine
 }
@@ -32,9 +33,9 @@ type UpgradeCluster struct {
 // UpgradeContainerService contains target state of the cluster that
 // the operation will drive towards.
 func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
-	cs *api.ContainerService, ucs *api.UpgradeContainerService) {
+	cs *api.ContainerService, ucs *api.UpgradeContainerService) error {
 	uc.ClusterTopology = ClusterTopology{}
-	uc.APIModel = cs
+	uc.DataModel = cs
 	uc.MasterVMs = &[]compute.VirtualMachine{}
 	uc.AgentVMs = &[]compute.VirtualMachine{}
 
@@ -42,6 +43,17 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 		log.Errorln("Error while querying ARM for resources: %+v", err)
 		return
 	}
+
+	var upgrade UpgradeWorkFlow
+
+	switch ucs.OrchestratorProfile.OrchestratorVersion {
+	case api.Kubernetes162:
+		upgrader = Kubernetes162Upgrade.UpgradeCluster{}
+	case default:
+		return fmt.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s", mp.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+	}
+
+	return nil
 }
 
 func (uc *UpgradeCluster) getUpgradableResources(subscriptionID uuid.UUID, resourceGroup string) error {

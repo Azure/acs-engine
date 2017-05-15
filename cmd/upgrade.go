@@ -170,3 +170,9 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 
 	return nil
 }
+
+func (uc *upgradeCmd) stateValidate() error {
+	// Validate that downgrade is not allowed
+	// Validate noop case and return early
+	return nil
+}
