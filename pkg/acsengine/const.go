@@ -13,14 +13,20 @@ const (
 	DefaultSwarmWindowsMasterSubnet = "192.168.255.0/24"
 	// DefaultSwarmWindowsFirstConsecutiveStaticIP specifies the static IP address on master 0 for a Swarm WIndows cluster
 	DefaultSwarmWindowsFirstConsecutiveStaticIP = "192.168.255.5"
-	// DefaultKubernetesMasterSubnet specifies the default kubernetes master subnet
+	// DefaultKubernetesMasterSubnet specifies the default subnet for masters and agents.
 	DefaultKubernetesMasterSubnet = "10.240.0.0/16"
-	// DefaultKubernetesSubnet specifies the default Kubernetes subnet when VNET integration is enabled.
-	DefaultKubernetesSubnet = "10.240.0.0/12"
+	// DefaultKubernetesClusterSubnet specifies the default subnet for pods.
+	DefaultKubernetesClusterSubnet = "10.244.0.0/16"
 	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultAgentSubnetTemplate specifies a default agent subnet
 	DefaultAgentSubnetTemplate = "10.%d.0.0/16"
+	// DefaultKubernetesSubnet specifies the default subnet used for all masters, agents and pods
+	// when VNET integration is enabled.
+	DefaultKubernetesSubnet = "10.240.0.0/12"
+	// DefaultKubernetesFirstConsecutiveStaticIPOffset specifies the IP address offset of master 0
+	// when VNET integration is enabled.
+	DefaultKubernetesFirstConsecutiveStaticIPOffset = 5
 	// DefaultAgentIPAddressCount is the default number of IP addresses per network interface on agents
 	DefaultAgentIPAddressCount = 1
 	// DefaultAgentMultiIPAddressCount is the default number of IP addresses per network interface on agents,
