@@ -177,6 +177,7 @@
       },
       "type": "Microsoft.Network/loadBalancers"
     },
+{{if gt .MasterProfile.Count 1}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
@@ -198,7 +199,7 @@
           {
             "name": "[variables('masterInternalLbIPConfigName')]",
             "properties": {
-              "privateIPAddress": "[variables('masterInternalLbIp')]",
+              "privateIPAddress": "[variables('kubernetesAPIServerIP')]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('vnetSubnetID')]"
@@ -238,6 +239,7 @@
       },
       "type": "Microsoft.Network/loadBalancers"
     },
+{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
@@ -284,8 +286,10 @@
 {{else}}
         "[variables('vnetID')]",
 {{end}}
-        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]",
-        "[variables('masterInternalLbName')]"
+        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
+{{if gt .MasterProfile.Count 1}}
+        ,"[variables('masterInternalLbName')]"
+{{end}}
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
@@ -297,10 +301,13 @@
               "loadBalancerBackendAddressPools": [
                 {
                   "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
-                },
+                }
+{{if gt .MasterProfile.Count 1}}                
+                ,
                 {
                    "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
+{{end}}
               ],
               "loadBalancerInboundNatRules": [
                 {

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/operations/Kubernetes162Upgrade"
 	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	log "github.com/Sirupsen/logrus"
@@ -16,7 +15,7 @@ import (
 // ClusterTopology contains resources of the cluster the upgrade operation
 // is targeting
 type ClusterTopology struct {
-	DataModel  *api.ContainerService
+	DataModel *api.ContainerService
 	MasterVMs *[]compute.VirtualMachine
 	AgentVMs  *[]compute.VirtualMachine
 }
@@ -40,17 +39,15 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	uc.AgentVMs = &[]compute.VirtualMachine{}
 
 	if err := uc.getUpgradableResources(subscriptionID, resourceGroup); err != nil {
-		log.Errorln("Error while querying ARM for resources: %+v", err)
-		return
+		return fmt.Errorf("Error while querying ARM for resources: %+v", err)
 	}
-
-	var upgrade UpgradeWorkFlow
 
 	switch ucs.OrchestratorProfile.OrchestratorVersion {
 	case api.Kubernetes162:
-		upgrader = Kubernetes162Upgrade.UpgradeCluster{}
-	case default:
-		return fmt.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s", mp.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+		upgrader := Kubernetes162upgrader{}
+		upgrader.RunUpgrade()
+	default:
+		return fmt.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
 	return nil
@@ -62,8 +59,8 @@ func (uc *UpgradeCluster) getUpgradableResources(subscriptionID uuid.UUID, resou
 		return err
 	}
 
-	orchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.APIModel.Properties.OrchestratorProfile.OrchestratorType,
-		uc.APIModel.Properties.OrchestratorProfile.OrchestratorVersion)
+	orchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorType,
+		uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 
 	for _, vm := range *vmListResult.Value {
 		if *(*vm.Tags)["orchestrator"] == orchestratorTypeVersion {

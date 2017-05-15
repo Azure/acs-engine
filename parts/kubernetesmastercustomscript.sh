@@ -40,7 +40,7 @@ if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
 
     AZURE_JSON_PATH="/etc/kubernetes/azure.json"
     touch "${AZURE_JSON_PATH}"
-    chmod 0644 "${AZURE_JSON_PATH}"
+    chmod 0600 "${AZURE_JSON_PATH}"
     chown root:root "${AZURE_JSON_PATH}"
     cat << EOF > "${AZURE_JSON_PATH}"
 {
@@ -322,7 +322,7 @@ ensureKubelet
 extractKubectl
 ensureJournal
 
-# master only 
+# master only
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     writeKubeConfig
     ensureKubectl

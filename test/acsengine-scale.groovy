@@ -52,10 +52,7 @@ uksouth ukwest"
                 sh('make ci')
                 // Create template
                 env.CLUSTER_DEFINITION = pwd()+"/examples/${CLUSTER_DEFINITION}"
-                env.ORCHESTRATOR = sh(returnStdout: true, script: "jq 'getpath([\"properties\",\"orchestratorProfile\",\"orchestratorType\"])' ${env.CLUSTER_DEFINITION} | tr -d '\"'").toLowerCase().trim()
-                if("${env.ORCHESTRATOR}".startsWith("dcos")) {
-                  env.ORCHESTRATOR = "dcos"
-                }
+                env.ORCHESTRATOR = sh(returnStdout: true, script: './test/step.sh get_orchestrator_type').trim()
                 sh("printf 'acs-test%x' \$(date '+%s') > INSTANCE_NAME")
                 env.INSTANCE_NAME = readFile('INSTANCE_NAME').trim()
                 env.CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}"
@@ -167,11 +164,8 @@ uksouth ukwest"
               currentBuild.result = "FAILURE"
               echo "Exception ${exc}"
             }
-            // Final clean up
-            sh("rm -rf ${clone_dir}/_output")
-            sh("rm -rf ${clone_dir}/.azure")
-            sh("rm -rf ${clone_dir}/.kube")
-            sh("rm -rf ${junit_dir}")
+            // Allow for future removal from the host
+            sh("chmod -R a+rwx ${WORKSPACE}")
           }
         }
       }
