@@ -26,12 +26,12 @@ type generateCmd struct {
 	noPrettyPrint     bool
 	parametersOnly    bool
 
-	// Parsed from inputs
+	// derived
 	containerService *api.ContainerService
 	apiVersion       string
 }
 
-func NewGenerateCmd() *cobra.Command {
+func newGenerateCmd() *cobra.Command {
 	gc := generateCmd{}
 
 	generateCmd := &cobra.Command{
