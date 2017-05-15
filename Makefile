@@ -8,9 +8,12 @@ BUILD=`date +%FT%T%z`
 all: build
 
 prereqs:
+	go get github.com/Azure/azure-sdk-for-go/arm/resources/resources
 	go get github.com/jteeuwen/go-bindata/...
 	go get github.com/Sirupsen/logrus
 	go get github.com/spf13/cobra
+	go get github.com/satori/go.uuid
+	go get github.com/Azure/go-autorest/...
 
 build: prereqs
 	go generate -v ./...
