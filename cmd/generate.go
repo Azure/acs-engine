@@ -31,7 +31,7 @@ type generateCmd struct {
 	apiVersion       string
 }
 
-func NewGenerateCmd() *cobra.Command {
+func newGenerateCmd() *cobra.Command {
 	gc := generateCmd{}
 
 	generateCmd := &cobra.Command{

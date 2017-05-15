@@ -25,7 +25,7 @@ type ClusterTopology struct {
 // upgrades are supported for Kubernetes cluster only.
 type UpgradeCluster struct {
 	ClusterTopology
-	Client armhelpers.UberClient
+	Client armhelpers.ACSEngineClient
 }
 
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
@@ -45,7 +45,7 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 }
 
 func (uc *UpgradeCluster) getUpgradableResources(subscriptionID uuid.UUID, resourceGroup string) error {
-	vmListResult, err := uc.Client.VMClient().List(resourceGroup)
+	vmListResult, err := uc.Client.VirtualMachinesClient().ListVirtualMachines(resourceGroup)
 	if err != nil {
 		return err
 	}

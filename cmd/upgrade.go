@@ -45,11 +45,11 @@ type upgradeCmd struct {
 
 	upgradeContainerService *api.UpgradeContainerService
 	upgradeAPIVersion       string
-	client                  armhelpers.UberClient
+	client                  armhelpers.ACSEngineClient
 }
 
 // NewUpgradeCmd run a command to upgrade a Kubernetes cluster
-func NewUpgradeCmd() *cobra.Command {
+func newUpgradeCmd() *cobra.Command {
 	uc := upgradeCmd{}
 
 	upgradeCmd := &cobra.Command{
