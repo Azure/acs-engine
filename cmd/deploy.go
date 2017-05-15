@@ -128,8 +128,6 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 }
 
 func (dc *deployCmd) run() error {
-	log.Infoln("Generating...")
-
 	templateGenerator, err := acsengine.InitializeTemplateGenerator(dc.classicMode)
 	if err != nil {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
@@ -155,6 +153,12 @@ func (dc *deployCmd) run() error {
 
 	log.Infoln("deploying...")
 
+
+	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	templateJSON := make(map[string]interface{})
 	parametersJSON := make(map[string]interface{})
 
@@ -163,14 +167,13 @@ func (dc *deployCmd) run() error {
 		log.Fatalln(err)
 	}
 
-	deploymentSuffix := dc.random.Int31()
-
-	// TODO(colemick): precreate resource group based on location
-
 	err = json.Unmarshal([]byte(parameters), &parametersJSON)
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	deploymentSuffix := dc.random.Int31()
+
 	_, err = dc.client.DeployTemplate(
 		dc.resourceGroup,
 		fmt.Sprintf("%s-%d", dc.resourceGroup, deploymentSuffix),

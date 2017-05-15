@@ -47,6 +47,7 @@ type AzureClient struct {
 	resourcesClient       resources.GroupClient
 	storageAccountsClient storage.AccountsClient
 	interfacesClient      network.InterfacesClient
+	groupsClient          resources.GroupsClient
 	providersClient       resources.ProvidersClient
 	subscriptionsClient   subscriptions.GroupClient
 	virtualMachinesClient compute.VirtualMachinesClient
@@ -226,6 +227,7 @@ func getClient(env azure.Environment, subscriptionID string, armSpt *adal.Servic
 		resourcesClient:       resources.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		storageAccountsClient: storage.NewAccountsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		interfacesClient:      network.NewInterfacesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		groupsClient:          resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		providersClient:       resources.NewProvidersClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		virtualMachinesClient: compute.NewVirtualMachinesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 	}
@@ -235,6 +237,7 @@ func getClient(env azure.Environment, subscriptionID string, armSpt *adal.Servic
 	c.resourcesClient.Authorizer = authorizer
 	c.storageAccountsClient.Authorizer = authorizer
 	c.interfacesClient.Authorizer = authorizer
+	c.groupsClient.Authorizer = authorizer
 	c.providersClient.Authorizer = authorizer
 	c.virtualMachinesClient.Authorizer = authorizer
 
