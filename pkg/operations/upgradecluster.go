@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
+	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/prometheus/common/log"
 	"github.com/satori/go.uuid"
@@ -25,7 +25,7 @@ type ClusterTopology struct {
 // upgrades are supported for Kubernetes cluster only.
 type UpgradeCluster struct {
 	ClusterTopology
-	AzureClients armhelpers.AzureClients
+	Client armhelpers.ACSEngineClient
 }
 
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
@@ -45,7 +45,7 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 }
 
 func (uc *UpgradeCluster) getUpgradableResources(subscriptionID uuid.UUID, resourceGroup string) error {
-	vmListResult, err := uc.AzureClients.VMClient.List(resourceGroup)
+	vmListResult, err := uc.Client.ListVirtualMachines(resourceGroup)
 	if err != nil {
 		return err
 	}
