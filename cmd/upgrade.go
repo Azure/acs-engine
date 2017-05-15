@@ -4,9 +4,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
+	"github.com/Azure/acs-engine/pkg/armhelpers"
 
 	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -46,10 +45,11 @@ type upgradeCmd struct {
 
 	upgradeContainerService *api.UpgradeContainerService
 	upgradeAPIVersion       string
+	client                  armhelpers.ACSEngineClient
 }
 
 // NewUpgradeCmd run a command to upgrade a Kubernetes cluster
-func NewUpgradeCmd() *cobra.Command {
+func newUpgradeCmd() *cobra.Command {
 	uc := upgradeCmd{}
 
 	upgradeCmd := &cobra.Command{
@@ -63,8 +63,8 @@ func NewUpgradeCmd() *cobra.Command {
 
 	f := upgradeCmd.Flags()
 	// TODO: list supported cloud envs
-	f.StringVar(&uc.rawAzureEnvironment, "azure-env", "AzurePublicCloud", "the target Azure cloud (default:`AzurePublicCloud`)")
-	f.StringVar(&uc.authMethod, "auth-method", "client-secret", "auth method (default:`client_secret`)")
+	f.StringVar(&uc.rawAzureEnvironment, "azure-env", "AzurePublicCloud", "the target Azure cloud")
+	f.StringVar(&uc.authMethod, "auth-method", "client-secret", "auth method")
 	f.StringVar(&uc.rawClientID, "client-id", "", "the client ID for the Service Principal to use for authenticating to Azure")
 	f.StringVar(&uc.clientSecret, "client-secret", "", "the client secret for the Service Principal to use for authenticating to Azure")
 	f.StringVar(&uc.rawSubscriptionID, "subscription-id", "", "the subscription ID where the cluster is deployed")
@@ -145,21 +145,10 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	}
 
 	// get the actual ServicePrincipalToken here
-	tenantID, err := acsengine.GetTenantID(uc.azureEnvironment, uc.subscriptionID.String())
-	if err != nil {
-		log.Fatalf("failed to determine tenant id based on subscription id: %s", err.Error())
-	}
-
-	oauthConfig, err := adal.NewOAuthConfig(uc.azureEnvironment.ActiveDirectoryEndpoint, tenantID)
-	if err != nil {
-		log.Fatalf("failed to create oauth configuration: %s", err.Error())
-	}
-
-	uc.servicePrincipalToken, err = adal.NewServicePrincipalToken(*oauthConfig, uc.clientID.String(), uc.clientSecret, uc.azureEnvironment.ResourceManagerEndpoint)
+	uc.client, err = armhelpers.NewAzureClientWithClientSecret(uc.azureEnvironment, uc.subscriptionID.String(), uc.clientID.String(), uc.clientSecret)
 	if err != nil {
 		log.Fatalf("failed to retrieve AccessToken for the Service Principal")
 	}
-
 	err = uc.servicePrincipalToken.Refresh()
 	if err != nil {
 		log.Fatalf("failed to refresh AccessToken: %s", err.Error())
@@ -169,8 +158,9 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	uc.validate(cmd, args)
 
-	upgradeCluster := operations.UpgradeCluster{}
-	upgradeCluster.AzureClients = armhelpers.NewAzureClients(uc.servicePrincipalToken, uc.rawSubscriptionID)
+	upgradeCluster := operations.UpgradeCluster{
+		Client: uc.client,
+	}
 
 	upgradeCluster.UpgradeCluster(uc.subscriptionID, uc.resourceGroupName, uc.containerService, uc.upgradeContainerService)
 

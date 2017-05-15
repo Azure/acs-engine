@@ -60,6 +60,9 @@ func (m *MasterProfile) Validate() error {
 	if e := validateName(m.VMSize, "MasterProfile.VMSize"); e != nil {
 		return e
 	}
+	if m.OSDiskSizeGB != 0 && (m.OSDiskSizeGB < MinDiskSizeGB || m.OSDiskSizeGB > MaxDiskSizeGB) {
+		return fmt.Errorf("Invalid master os disk size of %d specified.  The range of valid values are [%d, %d]", m.OSDiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
+	}
 	if m.IPAddressCount != 0 && (m.IPAddressCount < MinIPAddressCount || m.IPAddressCount > MaxIPAddressCount) {
 		return fmt.Errorf("MasterProfile.IPAddressCount needs to be in the range [%d,%d]", MinIPAddressCount, MaxIPAddressCount)
 	}
@@ -79,6 +82,9 @@ func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 	}
 	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
 		return e
+	}
+	if a.OSDiskSizeGB != 0 && (a.OSDiskSizeGB < MinDiskSizeGB || a.OSDiskSizeGB > MaxDiskSizeGB) {
+		return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", a.OSDiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
 	}
 	if a.DNSPrefix != "" {
 		if e := validateDNSName(a.DNSPrefix); e != nil {

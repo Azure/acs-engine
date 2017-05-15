@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/operations/armhelpers"
 )
 
 // Compiler to verify QueueMessageProcessor implements OperationsProcessor
@@ -13,7 +12,6 @@ var _ UpgradeWorkFlow = &Kubernetes162upgrader{}
 // Kubernetes162upgrader upgrades a Kubernetes 1.5.3 cluster to 1.6.2
 type Kubernetes162upgrader struct {
 	ClusterTopology
-	AzureClients armhelpers.AzureClients
 }
 
 // ClusterPreflightCheck dpes preflight check
