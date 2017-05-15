@@ -11,8 +11,10 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Azure/azure-sdk-for-go/arm/network"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/subscriptions"
+	"github.com/Azure/azure-sdk-for-go/arm/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -39,8 +41,12 @@ var (
 // AzureClient implements the `ACSEngineClient` interface.
 // This client is backed by real Azure clients talking to an ARM endpoint.
 type AzureClient struct {
+	environment azure.Environment
+
 	deploymentsClient     resources.DeploymentsClient
 	resourcesClient       resources.GroupClient
+	storageAccountsClient storage.AccountsClient
+	interfacesClient      network.InterfacesClient
 	providersClient       resources.ProvidersClient
 	subscriptionsClient   subscriptions.GroupClient
 	virtualMachinesClient compute.VirtualMachinesClient
@@ -215,8 +221,11 @@ func getOAuthConfig(env azure.Environment, subscriptionID string) (*adal.OAuthCo
 
 func getClient(env azure.Environment, subscriptionID string, armSpt *adal.ServicePrincipalToken, adSpt *adal.ServicePrincipalToken) (*AzureClient, error) {
 	c := &AzureClient{
+		environment:           env,
 		deploymentsClient:     resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		resourcesClient:       resources.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		storageAccountsClient: storage.NewAccountsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		interfacesClient:      network.NewInterfacesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		providersClient:       resources.NewProvidersClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		virtualMachinesClient: compute.NewVirtualMachinesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 	}
@@ -224,6 +233,8 @@ func getClient(env azure.Environment, subscriptionID string, armSpt *adal.Servic
 	authorizer := autorest.NewBearerAuthorizer(armSpt)
 	c.deploymentsClient.Authorizer = authorizer
 	c.resourcesClient.Authorizer = authorizer
+	c.storageAccountsClient.Authorizer = authorizer
+	c.interfacesClient.Authorizer = authorizer
 	c.providersClient.Authorizer = authorizer
 	c.virtualMachinesClient.Authorizer = authorizer
 
