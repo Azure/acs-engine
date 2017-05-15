@@ -10,9 +10,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Azure/acs-engine/pkg/acsengine"
-
-	"github.com/Azure/azure-sdk-for-go/arm/authorization"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/subscriptions"
@@ -22,6 +19,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	log "github.com/Sirupsen/logrus"
 	"github.com/mitchellh/go-homedir"
+
+	"github.com/Azure/acs-engine/pkg/acsengine"
 )
 
 const (
@@ -37,27 +36,24 @@ var (
 	RequiredResourceProviders = []string{"Microsoft.Compute", "Microsoft.Storage", "Microsoft.Network"}
 )
 
-// AzureClient is the uber client
-// If done right, we really shouldn't need SubscriptionID or TenantID in the client anywhere else
-// they're only used for setting up the clients, we can add them back later if needed
+// AzureClient implements the `ACSEngineClient` interface.
+// This client is backed by real Azure clients talking to an ARM endpoint.
 type AzureClient struct {
-	DeploymentsClient     resources.DeploymentsClient
-	GroupsClient          resources.GroupsClient
-	RoleAssignmentsClient authorization.RoleAssignmentsClient
-	ResourcesClient       resources.GroupClient
-	ProvidersClient       resources.ProvidersClient
-	SubscriptionsClient   subscriptions.GroupClient
-	VirtualMachinesClient compute.VirtualMachinesClient
+	deploymentsClient     resources.DeploymentsClient
+	resourcesClient       resources.GroupClient
+	providersClient       resources.ProvidersClient
+	subscriptionsClient   subscriptions.GroupClient
+	virtualMachinesClient compute.VirtualMachinesClient
 }
 
-// now we can just return the full azure sdk client as the tempalte deployer, so TD can be mocked
-func (ac *AzureClient) TemplateDeployer() TemplateDeployer {
-	return ac.DeploymentsClient
+// DeploymentsClient returns an implementation of the `DeploymentsClient` interface
+func (az *AzureClient) DeploymentsClient() DeploymentsClient {
+	return az
 }
 
-// now we can just return the full azure sdk client as the tempalte deployer, so TD can be mocked
-func (ac *AzureClient) VMClient() VMClient {
-	return ac.VirtualMachinesClient
+// VirtualMachinesClient returns an implementation of the `VirtualMachinesClient` interface
+func (az *AzureClient) VirtualMachinesClient() VirtualMachinesClient {
+	return az
 }
 
 // NewAzureClientWithDeviceAuth returns an AzureClient by having a user complete a device authentication flow
@@ -229,21 +225,17 @@ func getOAuthConfig(env azure.Environment, subscriptionID string) (*adal.OAuthCo
 
 func getClient(env azure.Environment, subscriptionID string, armSpt *adal.ServicePrincipalToken, adSpt *adal.ServicePrincipalToken) (*AzureClient, error) {
 	c := &AzureClient{
-		DeploymentsClient:     resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		GroupsClient:          resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		RoleAssignmentsClient: authorization.NewRoleAssignmentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		ResourcesClient:       resources.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		ProvidersClient:       resources.NewProvidersClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		VirtualMachinesClient: compute.NewVirtualMachinesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		deploymentsClient:     resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		resourcesClient:       resources.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		providersClient:       resources.NewProvidersClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		virtualMachinesClient: compute.NewVirtualMachinesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 	}
 
 	authorizer := autorest.NewBearerAuthorizer(armSpt)
-	c.DeploymentsClient.Authorizer = authorizer
-	c.GroupsClient.Authorizer = authorizer
-	c.RoleAssignmentsClient.Authorizer = authorizer
-	c.ResourcesClient.Authorizer = authorizer
-	c.ProvidersClient.Authorizer = authorizer
-	c.VirtualMachinesClient.Authorizer = authorizer
+	c.deploymentsClient.Authorizer = authorizer
+	c.resourcesClient.Authorizer = authorizer
+	c.providersClient.Authorizer = authorizer
+	c.virtualMachinesClient.Authorizer = authorizer
 
 	err := c.ensureProvidersRegistered(subscriptionID)
 	if err != nil {
@@ -253,8 +245,8 @@ func getClient(env azure.Environment, subscriptionID string, armSpt *adal.Servic
 	return c, nil
 }
 
-func (azureClient *AzureClient) ensureProvidersRegistered(subscriptionID string) error {
-	registeredProviders, err := azureClient.ProvidersClient.List(to.Int32Ptr(100), "")
+func (az *AzureClient) ensureProvidersRegistered(subscriptionID string) error {
+	registeredProviders, err := az.providersClient.List(to.Int32Ptr(100), "")
 	if err != nil {
 		return err
 	}
@@ -276,7 +268,7 @@ func (azureClient *AzureClient) ensureProvidersRegistered(subscriptionID string)
 			log.Debugf("Already registered for %q", provider)
 		} else {
 			log.Info("Registering subscription to resource provider. provider=%q subscription=%q", provider, subscriptionID)
-			if _, err := azureClient.ProvidersClient.Register(provider); err != nil {
+			if _, err := az.providersClient.Register(provider); err != nil {
 				return err
 			}
 		}

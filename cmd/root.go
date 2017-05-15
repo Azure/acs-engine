@@ -17,6 +17,7 @@ var (
 	debug bool
 )
 
+// NewRootCmd returns the root command for ACS-Engine.
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   rootName,
@@ -32,11 +33,11 @@ func NewRootCmd() *cobra.Command {
 	p := rootCmd.PersistentFlags()
 	p.BoolVar(&debug, "debug", false, "enable verbose debug logs")
 
-	rootCmd.AddCommand(NewVersionCmd())
-	rootCmd.AddCommand(NewGenerateCmd())
+	rootCmd.AddCommand(newVersionCmd())
+	rootCmd.AddCommand(newGenerateCmd())
 
 	if val := os.Getenv("ACSENGINE_EXPERIMENTAL_FEATURES"); val == "1" {
-		rootCmd.AddCommand(NewUpgradeCmd())
+		rootCmd.AddCommand(newUpgradeCmd())
 	}
 
 	return rootCmd

@@ -3,33 +3,23 @@ package armhelpers
 import (
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
-	"github.com/Azure/go-autorest/autorest"
 )
 
-// the master client interface
-// if this is mocked out, then the entire context of the target environment is mocked:
-// once one of the NewAzureClient... returns, it has returned a fully initialized UberClient
-// all other code that needs to do work in subscription/AAD tenant will use this
-// currently only one impl: AzureClient
-type UberClient interface {
-	TemplateDeployer() TemplateDeployer // wraps the deployment client
-	VMClient() VMClient
+// ACSEngineClient is the interface used to talk to an Azure environment.
+// This interface exposes just the subset of Azure APIs and clients needed for
+// ACS-Engine.
+type ACSEngineClient interface {
+	DeploymentsClient() DeploymentsClient // wraps the deployment client
+	VirtualMachinesClient() VirtualMachinesClient
 }
 
-// TemplateDeployer is an interface that knows how to deploy templates
-type TemplateDeployer interface {
-	// Validate validates if a deployment is valid (e.g. it can be run successfully)
-	Validate(resourceGroup, name string, d resources.Deployment) (resources.DeploymentValidateResult, error)
-	// CreateOrUpdate a deployment of a template, returns an error if one occurs
-	CreateOrUpdate(resourceGroup, name string, d resources.Deployment, cancel <-chan struct{}) (<-chan resources.DeploymentExtended, <-chan error)
-	// Delete a deployment of a template, returns an error if one occurs
-	Delete(resourceGroup, name string, cancel <-chan struct{}) (<-chan autorest.Response, <-chan error)
-	// Get a deployment, returns nil if it doesn't exist, returns an error if one occurs
-	Get(resourceGroup, name string) (resources.DeploymentExtended, error)
+// DeploymentsClient exposes methods needed for handling Deployments
+type DeploymentsClient interface {
+	DeployTemplate(resourceGroup, name string, template, parameters map[string]interface{}, cancel <-chan struct{}) (*resources.DeploymentExtended, error)
 }
 
-// VMClient is an interface that knows how to do VM operations
-type VMClient interface {
+// VirtualMachinesClient exposes methods needed for handling VirtualMachines
+type VirtualMachinesClient interface {
 	// List lists VM resources
-	List(resourceGroup string) (compute.VirtualMachineListResult, error)
+	ListVirtualMachines(resourceGroup string) (compute.VirtualMachineListResult, error)
 }
