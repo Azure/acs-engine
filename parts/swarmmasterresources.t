@@ -216,6 +216,9 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
+{{if ne .MasterProfile.OSDiskSizeGB 0}}
+            "diskSizeGB": {{.MasterProfile.OSDiskSizeGB}},
+{{end}}
             "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'-osdisk')]",
             "vhd": {
               "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('masterStorageAccountName')), variables('apiVersionStorage')).primaryEndpoints.blob, 'vhds/', variables('masterVMNamePrefix'), copyIndex(), '-osdisk.vhd')]"
