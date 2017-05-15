@@ -9,6 +9,8 @@ all: build
 
 prereqs:
 	go get github.com/Azure/azure-sdk-for-go/arm/resources/resources
+	go get github.com/Azure/azure-sdk-for-go/arm/compute
+	go get github.com/Azure/azure-storage-go
 	go get github.com/jteeuwen/go-bindata/...
 	go get github.com/Sirupsen/logrus
 	go get github.com/spf13/cobra
