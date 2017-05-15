@@ -9,17 +9,9 @@ import (
 // This interface exposes just the subset of Azure APIs and clients needed for
 // ACS-Engine.
 type ACSEngineClient interface {
-	DeploymentsClient() DeploymentsClient // wraps the deployment client
-	VirtualMachinesClient() VirtualMachinesClient
-}
-
-// DeploymentsClient exposes methods needed for handling Deployments
-type DeploymentsClient interface {
+	// DeployTemplate can deploy a template into Azure ARM
 	DeployTemplate(resourceGroup, name string, template, parameters map[string]interface{}, cancel <-chan struct{}) (*resources.DeploymentExtended, error)
-}
 
-// VirtualMachinesClient exposes methods needed for handling VirtualMachines
-type VirtualMachinesClient interface {
 	// List lists VM resources
 	ListVirtualMachines(resourceGroup string) (compute.VirtualMachineListResult, error)
 }

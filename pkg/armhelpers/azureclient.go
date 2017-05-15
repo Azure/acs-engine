@@ -46,16 +46,6 @@ type AzureClient struct {
 	virtualMachinesClient compute.VirtualMachinesClient
 }
 
-// DeploymentsClient returns an implementation of the `DeploymentsClient` interface
-func (az *AzureClient) DeploymentsClient() DeploymentsClient {
-	return az
-}
-
-// VirtualMachinesClient returns an implementation of the `VirtualMachinesClient` interface
-func (az *AzureClient) VirtualMachinesClient() VirtualMachinesClient {
-	return az
-}
-
 // NewAzureClientWithDeviceAuth returns an AzureClient by having a user complete a device authentication flow
 func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) (*AzureClient, error) {
 	oauthConfig, tenantID, err := getOAuthConfig(env, subscriptionID)

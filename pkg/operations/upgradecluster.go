@@ -45,7 +45,7 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 }
 
 func (uc *UpgradeCluster) getUpgradableResources(subscriptionID uuid.UUID, resourceGroup string) error {
-	vmListResult, err := uc.Client.VirtualMachinesClient().ListVirtualMachines(resourceGroup)
+	vmListResult, err := uc.Client.ListVirtualMachines(resourceGroup)
 	if err != nil {
 		return err
 	}
