@@ -24,7 +24,7 @@ spec:
         - "--service-cluster-ip-range=<kubeServiceCidr>"
         - "--etcd-servers=http://127.0.0.1:<masterEtcdClientPort>"
         - "--etcd-quorum-read=true"
-        - "--advertise-address=<masterInternalLbIp>"
+        - "--advertise-address=<kubernetesAPIServerIP>"
         - "--tls-cert-file=/etc/kubernetes/certs/apiserver.crt"
         - "--tls-private-key-file=/etc/kubernetes/certs/apiserver.key"
         - "--client-ca-file=/etc/kubernetes/certs/ca.crt"
