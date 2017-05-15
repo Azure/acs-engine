@@ -8,16 +8,13 @@ BUILD=`date +%FT%T%z`
 all: build
 
 prereqs:
-	go get github.com/Azure/azure-sdk-for-go/arm/resources/resources
-	go get github.com/jteeuwen/go-bindata/...
-	go get github.com/Sirupsen/logrus
-	go get github.com/spf13/cobra
-	go get github.com/satori/go.uuid
-	go get github.com/Azure/go-autorest/...
+	go get github.com/Masterminds/glide
+	glide install
 
-build: prereqs
-	go generate -v ./...
-	go get .
+build: prereqs _build
+
+_build:
+	go generate -v ./pkg/...
 	go build -v -ldflags="-X github.com/Azure/acs-engine/cmd.BuildSHA=${VERSION} -X github.com/Azure/acs-engine/cmd.BuildTime=${BUILD}"
 	cd test/acs-engine-test; go build -v
 
