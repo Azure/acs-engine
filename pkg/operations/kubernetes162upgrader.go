@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/armhelpers"
 )
 
 // Compiler to verify QueueMessageProcessor implements OperationsProcessor
@@ -12,9 +13,10 @@ var _ UpgradeWorkFlow = &Kubernetes162upgrader{}
 // Kubernetes162upgrader upgrades a Kubernetes 1.5.3 cluster to 1.6.2
 type Kubernetes162upgrader struct {
 	ClusterTopology
+	Client armhelpers.ACSEngineClient
 }
 
-// ClusterPreflightCheck dpes preflight check
+// ClusterPreflightCheck does preflight check
 func (mp *Kubernetes162upgrader) ClusterPreflightCheck() error {
 	// Check that current cluster is 1.5.3
 	if mp.DataModel.Properties.OrchestratorProfile.OrchestratorVersion != api.Kubernetes153 {
@@ -32,6 +34,7 @@ func (mp *Kubernetes162upgrader) RunUpgrade() error {
 
 	// 1.	Shutdown and delete one master VM at a time while preserving the persistent disk backing etcd.
 	// 2.	Call CreateVMWithRetries
+
 	return nil
 }
 

@@ -45,6 +45,8 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	switch ucs.OrchestratorProfile.OrchestratorVersion {
 	case api.Kubernetes162:
 		upgrader := Kubernetes162upgrader{}
+		upgrader.ClusterTopology = uc.ClusterTopology
+		upgrader.Client = uc.Client
 		upgrader.RunUpgrade()
 	default:
 		return fmt.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
