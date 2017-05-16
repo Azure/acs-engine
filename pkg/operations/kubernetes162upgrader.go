@@ -1,8 +1,10 @@
 package operations
 
 import (
+	"encoding/json"
 	"fmt"
 
+	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 )
@@ -17,28 +19,54 @@ type Kubernetes162upgrader struct {
 }
 
 // ClusterPreflightCheck does preflight check
-func (mp *Kubernetes162upgrader) ClusterPreflightCheck() error {
+func (ku *Kubernetes162upgrader) ClusterPreflightCheck() error {
 	// Check that current cluster is 1.5.3
-	if mp.DataModel.Properties.OrchestratorProfile.OrchestratorVersion != api.Kubernetes153 {
-		return fmt.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s", mp.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+	if ku.DataModel.Properties.OrchestratorProfile.OrchestratorVersion != api.Kubernetes153 {
+		return fmt.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s", ku.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
 	return nil
 }
 
 // RunUpgrade runs the upgrade pipeline
-func (mp *Kubernetes162upgrader) RunUpgrade() error {
-	if err := mp.ClusterPreflightCheck(); err != nil {
+func (ku *Kubernetes162upgrader) RunUpgrade() error {
+	if err := ku.ClusterPreflightCheck(); err != nil {
 		return err
 	}
 
-	// 1.	Shutdown and delete one master VM at a time while preserving the persistent disk backing etcd.
-	// 2.	Call CreateVMWithRetries
+	upgradeContainerService := ku.ClusterTopology.DataModel
+	upgradeContainerService.Properties.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
+
+	templateGenerator, err := acsengine.InitializeTemplateGenerator(false)
+	if err != nil {
+		return fmt.Errorf("failed to initialize template generator: %s", err.Error())
+	}
+
+	var templateJSON string
+	var parametersJSON string
+	if templateJSON, parametersJSON, _, err = templateGenerator.GenerateTemplate(upgradeContainerService); err != nil {
+		return fmt.Errorf("error generating upgrade template: %s", err.Error())
+	}
+
+	var template interface{}
+	var parameters interface{}
+	json.Unmarshal([]byte(templateJSON), &template)
+	json.Unmarshal([]byte(parametersJSON), &parameters)
+	templateMap := template.(map[string]interface{})
+	parametersMap := parameters.(map[string]interface{})
+
+	for _, vm := range *ku.ClusterTopology.MasterVMs {
+		upgradeMasterNode := UpgradeMasterNode{}
+		// 1.	Shutdown and delete one master VM at a time while preserving the persistent disk backing etcd.
+
+		// 2.	Call CreateVMWithRetries
+		// ************************
+	}
 
 	return nil
 }
 
 // Validate will run validation post upgrade
-func (mp *Kubernetes162upgrader) Validate() error {
+func (ku *Kubernetes162upgrader) Validate() error {
 	return nil
 }
