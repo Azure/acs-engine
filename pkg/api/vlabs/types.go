@@ -131,6 +131,7 @@ type OrchestratorProfile struct {
 // Kubernetes specific configuration
 type KubernetesConfig struct {
 	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
 	NetworkPolicy       string `json:"networkPolicy,omitempty"`
 }
 
