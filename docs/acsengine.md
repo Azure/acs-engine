@@ -67,7 +67,6 @@ Build acs-engine:
   3. mkdir %GOPATH%
   4. cd %GOPATH%
   5. type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
-  6. type `go get all` to get the supporting components
   7. `cd %GOPATH%\src\github.com\Azure\acs-engine`
   8. `go build` to build the project
 3. `acs-engine` to see the command line parameters
@@ -89,7 +88,6 @@ Build Steps:
   ```
 Build acs-engine:
   1. type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
-  2. type `go get all` to get the supporting components
   3. `cd $GOPATH/src/github.com/Azure/acs-engine`
   4. `go build` to build the project
   5. `./acs-engine` to see the command line parameters
@@ -115,7 +113,6 @@ Build Steps:
  
 Build acs-engine:
   1. type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
-  2. type `go get all` to get the supporting components
   3. `cd $GOPATH/src/github.com/Azure/acs-engine`
   4. `go build` to build the project
   5. `./acs-engine` to see the command line parameters
