@@ -610,7 +610,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"WriteLinkedTemplatesForExtensions": func() string {
-			extensions := getLinkedTemplatesForExtensions(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.ExtensionsProfile)
+			extensions := getLinkedTemplatesForExtensions(cs.Properties)
 			return extensions
 		},
 		"GetKubernetesB64Provision": func() string {
@@ -1207,8 +1207,31 @@ func getKubernetesPodStartIndex(properties *api.Properties) int {
 
 // getLinkedTemplatesForExtensions returns the
 // Microsoft.Resources/deployments for each extension
-func getLinkedTemplatesForExtensions(orchestratorType api.OrchestratorType, extensions []api.ExtensionProfile) string {
+//func getLinkedTemplatesForExtensions(properties api.Properties) string {
+func getLinkedTemplatesForExtensions(properties api.Properties) string {
 	var result string
+
+	var orchestratorType = properties.OrchestratorProfile.OrchestratorType
+	var extensions = properties.ExtensionsProfile
+
+	//This is temporary - to show you how to access the Extensions in the MasterProfile
+	var masterExtensions = properties.MasterProfile.Extensions
+
+	for _, extension := range masterExtensions {
+		var fred = extension
+		fmt.Print(fred)
+	}
+
+	//This is temporary - to show you how to access the Extensions in the AgentPoolProfile
+	for _, agentPoolProfile := range properties.AgentPoolProfiles {
+		var agentExtensions = agentPoolProfile.Extensions
+
+		for _, agentExtension := range agentExtensions {
+			var hank = agentExtension
+			fmt.Print(hank)
+		}
+	}
+
 	for err, extensionProfile := range extensions {
 		_ = err
 

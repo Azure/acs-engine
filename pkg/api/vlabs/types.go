@@ -131,13 +131,14 @@ type KubernetesConfig struct {
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int    `json:"count"`
-	DNSPrefix                string `json:"dnsPrefix"`
-	VMSize                   string `json:"vmSize"`
-	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
-	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
-	StorageProfile           string `json:"storageProfile,omitempty"`
+	Count                    int         `json:"count"`
+	DNSPrefix                string      `json:"dnsPrefix"`
+	VMSize                   string      `json:"vmSize"`
+	VnetSubnetID             string      `json:"vnetSubnetID,omitempty"`
+	FirstConsecutiveStaticIP string      `json:"firstConsecutiveStaticIP,omitempty"`
+	IPAddressCount           int         `json:"ipAddressCount,omitempty"`
+	StorageProfile           string      `json:"storageProfile,omitempty"`
+	Extensions               []Extension `json:"extensions"`
 
 	// subnet is internal
 	subnet string
@@ -159,6 +160,13 @@ type ExtensionProfile struct {
 	RootURL             string `json:"rootURL"`
 }
 
+// Extension represents an extension definition in the master or agentPoolProfile
+type Extension struct {
+	Name        string `json:"name"`
+	SingleOrAll string `json:"singleOrAll"`
+	Template    string `json:"template"`
+}
+
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
 	Name                string `json:"name"`
@@ -178,6 +186,7 @@ type AgentPoolProfile struct {
 
 	FQDN             string            `json:"fqdn,omitempty"`
 	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
+	Extensions       []Extension       `json:"extensions"`
 }
 
 // KeyVaultSecrets specifies certificates to install on the pool

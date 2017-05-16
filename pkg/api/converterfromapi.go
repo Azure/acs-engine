@@ -171,6 +171,12 @@ func convertExtensionProfileToVLabs(api *ExtensionProfile, vlabs *vlabs.Extensio
 	vlabs.RootURL = api.RootURL
 }
 
+func convertExtensionToVLabs(api *Extension, vlabs *vlabs.Extension) {
+	vlabs.Name = api.Name
+	vlabs.SingleOrAll = api.SingleOrAll
+	vlabs.Template = api.Template
+}
+
 func convertLinuxProfileToVLabs(api *LinuxProfile, vlabsProfile *vlabs.LinuxProfile) {
 	vlabsProfile.AdminUsername = api.AdminUsername
 	vlabsProfile.SSH.PublicKeys = []struct {
@@ -247,6 +253,13 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	vlabsProfile.SetSubnet(api.Subnet)
 	vlabsProfile.FQDN = api.FQDN
 	vlabsProfile.StorageProfile = api.StorageProfile
+
+	vlabsProfile.Extensions = []vlabs.Extension{}
+	for _, extension := range api.Extensions {
+		vlabsExtension := &vlabs.Extension{}
+		convertExtensionToVLabs(&extension, vlabsExtension)
+		vlabsProfile.Extensions = append(vlabsProfile.Extensions, *vlabsExtension)
+	}
 }
 
 func convertKeyVaultSecretsToVlabs(api *KeyVaultSecrets, vlabsSecrets *vlabs.KeyVaultSecrets) {
@@ -298,6 +311,13 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	p.CustomNodeLabels = map[string]string{}
 	for k, v := range api.CustomNodeLabels {
 		p.CustomNodeLabels[k] = v
+	}
+
+	p.Extensions = []vlabs.Extension{}
+	for _, extension := range api.Extensions {
+		vlabsExtension := &vlabs.Extension{}
+		convertExtensionToVLabs(&extension, vlabsExtension)
+		p.Extensions = append(p.Extensions, *vlabsExtension)
 	}
 }
 
