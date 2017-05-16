@@ -10,6 +10,8 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 ####################################################
 
+source "$DIR/../utils.sh"
+
 set -e
 # -o pipefail
 set -x
@@ -17,18 +19,6 @@ set -x
 remote_exec="ssh -i "${SSH_KEY}" -o StrictHostKeyChecking=no azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com -p2200"
 agentFQDN="dcos-agent-ip-${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"
 remote_cp="scp -i "${SSH_KEY}" -P 2200 -o StrictHostKeyChecking=no"
-
-function log {
-    local message="$1"
-    local caller="$(caller 0)"
-	  now=$(date +"%D %T %Z")
-
-	if [[ ! -z "${LOGFILE:-}" ]]; then
-		echo "[${now}] [${caller}] ${message}" | tee -a ${LOGFILE}
-	else
-		echo "[${now}] [${caller}] ${message}"
-    fi
-}
 
 function teardown {
   ${remote_exec} ./dcos marathon app remove /web

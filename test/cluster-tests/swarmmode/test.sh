@@ -1,22 +1,22 @@
 #!/bin/bash
 
+####################################################
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+####################################################
+
+source "$DIR/../utils.sh"
+
 set -x
 set -e
 set -u
 
 ssh_args="-i ${SSH_KEY} -o StrictHostKeyChecking=no -p2200 azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"
-
-function log {
-    local message="$1"
-    local caller="$(caller 0)"
-	  now=$(date +"%D %T %Z")
-
-	if [[ ! -z "${LOGFILE:-}" ]]; then
-		echo "[${now}] [${caller}] ${message}" | tee -a ${LOGFILE}
-	else
-		echo "[${now}] [${caller}] ${message}"
-    fi
-}
 
 function teardown {
   ssh ${ssh_args} docker service rm nginx || true
