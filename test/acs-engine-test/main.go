@@ -100,20 +100,22 @@ func (m *TestManager) Run() error {
 			}
 
 			for _, step := range steps {
-				txt, err := runStep(name, step, m.rootDir, env, timeout)
+				txt, err := runStep(instanceName, step, m.rootDir, env, timeout)
 				if err != nil {
-					wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", name, step, err, txt)
+					wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, name, err, txt)
 					retvals[i] = 1
 					break
 				}
 				wrileLog(logFile, txt)
 				if step == "generate_template" {
 					// set up extra environment variables available after template generation
+					env = append(env, fmt.Sprintf("LOGFILE=validate-%s", instanceName))
+
 					cmd := exec.Command("test/step.sh", "get_orchestrator_version")
 					cmd.Env = env
 					out, err := cmd.Output()
 					if err != nil {
-						wrileLog(logFile, "Error [%s:%s] %v", name, "get_orchestrator_version", err)
+						wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_version", name, err)
 						retvals[i] = 1
 						break
 					}
@@ -124,7 +126,7 @@ func (m *TestManager) Run() error {
 						cmd.Env = env
 						out, err = cmd.Output()
 						if err != nil {
-							wrileLog(logFile, "Error [%s:%s] %v", name, "get_node_count", err)
+							wrileLog(logFile, "Error [%s:%s] %v", "get_node_count", name, err)
 							retvals[i] = 1
 							break
 						}
@@ -133,8 +135,8 @@ func (m *TestManager) Run() error {
 				}
 			}
 			// clean up
-			if txt, err := runStep(name, "cleanup", m.rootDir, env, timeout); err != nil {
-				wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", name, "cleanup", err, txt)
+			if txt, err := runStep(instanceName, "cleanup", m.rootDir, env, timeout); err != nil {
+				wrileLog(logFile, "Error: %v\nOutput: %s", err, txt)
 			}
 		}(i, d)
 	}
@@ -186,10 +188,10 @@ func runStep(name, step, dir string, env []string, timeout time.Duration) (strin
 	timer.Stop()
 
 	if err != nil {
-		fmt.Printf("Error [%s %s]\n", name, step)
+		fmt.Printf("Error [%s %s]\n", step, name)
 		return out.String(), err
 	}
-	fmt.Printf("SUCCESS [%s %s]\n", name, step)
+	fmt.Printf("SUCCESS [%s %s]\n", step, name)
 	return out.String(), nil
 }
 
