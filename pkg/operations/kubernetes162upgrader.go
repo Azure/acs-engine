@@ -1,10 +1,8 @@
 package operations
 
 import (
-	"encoding/json"
 	"fmt"
 
-	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 )
@@ -37,31 +35,44 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	upgradeContainerService := ku.ClusterTopology.DataModel
 	upgradeContainerService.Properties.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
 
-	templateGenerator, err := acsengine.InitializeTemplateGenerator(false)
-	if err != nil {
-		return fmt.Errorf("failed to initialize template generator: %s", err.Error())
-	}
+	// templateGenerator, err := acsengine.InitializeTemplateGenerator(false)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to initialize template generator: %s", err.Error())
+	// }
 
-	var templateJSON string
-	var parametersJSON string
-	if templateJSON, parametersJSON, _, err = templateGenerator.GenerateTemplate(upgradeContainerService); err != nil {
-		return fmt.Errorf("error generating upgrade template: %s", err.Error())
-	}
+	// var templateJSON string
+	// var parametersJSON string
+	// if templateJSON, parametersJSON, _, err = templateGenerator.GenerateTemplate(upgradeContainerService); err != nil {
+	// 	return fmt.Errorf("error generating upgrade template: %s", err.Error())
+	// }
 
-	var template interface{}
-	var parameters interface{}
-	json.Unmarshal([]byte(templateJSON), &template)
-	json.Unmarshal([]byte(parametersJSON), &parameters)
-	templateMap := template.(map[string]interface{})
-	parametersMap := parameters.(map[string]interface{})
+	// var template interface{}
+	// var parameters interface{}
+	// json.Unmarshal([]byte(templateJSON), &template)
+	// json.Unmarshal([]byte(parametersJSON), &parameters)
+	// templateMap := template.(map[string]interface{})
+	// parametersMap := parameters.(map[string]interface{})
 
-	for _, vm := range *ku.ClusterTopology.MasterVMs {
-		upgradeMasterNode := UpgradeMasterNode{}
-		// 1.	Shutdown and delete one master VM at a time while preserving the persistent disk backing etcd.
+	// masterCount, ok := parametersMap["masterCount"].(int)
+	// if !ok {
+	// 	return fmt.Errorf("could not find master count")
+	// }
 
-		// 2.	Call CreateVMWithRetries
-		// ************************
-	}
+	// masterOffset, ok := parametersMap["masterOffset"].(int)
+	// if !ok {
+	// 	return fmt.Errorf("could not find master offset")
+	// }
+
+	// loopCount := 1
+	// for _, vm := range *ku.ClusterTopology.MasterVMs {
+	// 	upgradeMasterNode := UpgradeMasterNode{}
+	// 	// 1.	Shutdown and delete one master VM at a time while preserving the persistent disk backing etcd.
+
+	// 	// 2.	Call CreateVMWithRetries
+	// 	// ************************
+	// 	parametersMap["masterOffset"] = masterCount - loopCount
+	// 	loopCount++
+	// }
 
 	return nil
 }
