@@ -62,7 +62,6 @@ ${remote_exec} ./dcos package install marathon-lb --yes
 # curl simpleweb through external haproxy
 log "Checking Service"
 count=10
-success="n"
 while (( $count > 0 )); do
   log "  ... counting down $count"
   [[ $(curl -sI --max-time 60 "http://${agentFQDN}" |head -n1 |cut -d$' ' -f2) -eq "200" ]] && echo "Successfully hitting simpleweb through external haproxy http://${agentFQDN}" && break

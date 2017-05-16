@@ -168,7 +168,7 @@ function get_orchestrator_version() {
 
 	orchestratorVersion=$(jq -r 'getpath(["properties","orchestratorProfile","orchestratorVersion"])' ${CLUSTER_DEFINITION})
 	if [[ "$orchestratorVersion" == "null" ]]; then
-		orchestratorVersion = ""
+		orchestratorVersion=""
 	fi
 
 	echo $orchestratorVersion
