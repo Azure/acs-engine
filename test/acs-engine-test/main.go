@@ -102,7 +102,7 @@ func (m *TestManager) Run() error {
 			for _, step := range steps {
 				txt, err := runStep(name, step, m.rootDir, env, timeout)
 				if err != nil {
-					wrileLog(logFile, "Error [%s:%s] %v", name, step, err)
+					wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", name, step, err, txt)
 					retvals[i] = 1
 					break
 				}
@@ -133,8 +133,8 @@ func (m *TestManager) Run() error {
 				}
 			}
 			// clean up
-			if _, err := runStep(name, "cleanup", m.rootDir, env, timeout); err != nil {
-				wrileLog(logFile, "Error [%s:%s] %v", name, "cleanup", err)
+			if txt, err := runStep(name, "cleanup", m.rootDir, env, timeout); err != nil {
+				wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", name, "cleanup", err, txt)
 			}
 		}(i, d)
 	}
@@ -187,7 +187,7 @@ func runStep(name, step, dir string, env []string, timeout time.Duration) (strin
 
 	if err != nil {
 		fmt.Printf("Error [%s %s]\n", name, step)
-		return "", err
+		return out.String(), err
 	}
 	fmt.Printf("SUCCESS [%s %s]\n", name, step)
 	return out.String(), nil
@@ -243,6 +243,7 @@ func main_internal() error {
 	}
 	// make logs directory
 	logDir = fmt.Sprintf("%s/_logs", rootDir)
+	os.RemoveAll(logDir)
 	if err = os.Mkdir(logDir, os.FileMode(0755)); err != nil {
 		return err
 	}
