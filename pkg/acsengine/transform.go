@@ -26,6 +26,7 @@ const (
 	nsgResourceType  = "Microsoft.Network/networkSecurityGroups"
 	vmResourceType   = "Microsoft.Compute/virtualMachines"
 	vmssResourceType = "Microsoft.Compute/virtualMachineScaleSets"
+	vmExtensionType  = "Microsoft.Compute/virtualMachines/extensions"
 )
 
 // NormalizeForVMSSScaling takes a template and removes elements that are unwanted in a VMSS scale up/down case
@@ -191,4 +192,44 @@ func removeImageReference(logger *logrus.Entry, resourceProperties map[string]in
 		delete(storageProfile, imageReferenceFieldName)
 	}
 	return ok
+}
+
+// NormalizeResourcesForK8sMasterUpgrade takes a template and removes elements that are unwanted in any scale up/down case
+func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map[string]interface{}) error {
+	var requiredResourceProviders = []string{vmResourceType, vmExtensionType}
+
+	for _, requiredResourceProvider := range requiredResourceProviders {
+		resources := templateMap[resourcesFieldName].([]interface{})
+
+		agentPoolIndex := -1
+		//remove agent nodes resources
+		for index, resource := range resources {
+			resourceMap, ok := resource.(map[string]interface{})
+			if !ok {
+				logger.Warnf("Template improperly formatted")
+				continue
+			}
+
+			resourceType, ok := resourceMap[typeFieldName].(string)
+			if !ok || resourceType != requiredResourceProvider {
+				continue
+			}
+
+			resourceName, ok := resourceMap[nameFieldName].(string)
+			if !ok {
+				logger.Warnf("Template improperly formatted")
+				continue
+			}
+
+			// make sure this is only modifying the agent vms
+			if !strings.Contains(resourceName, "variables('agentpool1VMNamePrefix')") {
+				continue
+			}
+
+			agentPoolIndex = index
+		}
+
+		templateMap[resourcesFieldName] = append(resources[:agentPoolIndex], resources[agentPoolIndex+1:]...)
+	}
+	return nil
 }

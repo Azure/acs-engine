@@ -15,7 +15,9 @@ import (
 // ClusterTopology contains resources of the cluster the upgrade operation
 // is targeting
 type ClusterTopology struct {
-	DataModel *api.ContainerService
+	DataModel     *api.ContainerService
+	ResourceGroup string
+
 	MasterVMs *[]compute.VirtualMachine
 	AgentVMs  *[]compute.VirtualMachine
 }
@@ -36,6 +38,7 @@ type UpgradeCluster struct {
 func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
 	cs *api.ContainerService, ucs *api.UpgradeContainerService) error {
 	uc.ClusterTopology = ClusterTopology{}
+	uc.ResourceGroup = resourceGroup
 	uc.DataModel = cs
 	uc.MasterVMs = &[]compute.VirtualMachine{}
 	uc.AgentVMs = &[]compute.VirtualMachine{}
@@ -46,12 +49,16 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 
 	switch ucs.OrchestratorProfile.OrchestratorVersion {
 	case api.Kubernetes162:
+		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes 1.6.2"))
 		upgrader := Kubernetes162upgrader{}
 		upgrader.ClusterTopology = uc.ClusterTopology
 		upgrader.Client = uc.Client
-		upgrader.RunUpgrade()
+		if err := upgrader.RunUpgrade(); err != nil {
+			return err
+		}
 	default:
-		return fmt.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+		return fmt.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s",
+			uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
 	return nil

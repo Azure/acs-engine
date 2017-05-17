@@ -115,7 +115,10 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		Client: uc.client,
 	}
 
-	upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.resourceGroupName, uc.containerService, uc.upgradeContainerService)
+	if err := upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.resourceGroupName,
+		uc.containerService, uc.upgradeContainerService); err != nil {
+		log.Fatalf("Error upgrading cluster: %s \n", err.Error())
+	}
 
 	return nil
 }
