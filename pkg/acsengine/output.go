@@ -61,28 +61,46 @@ func WriteArtifacts(containerService *api.ContainerService, apiVersion, template
 
 		}
 
-		if e := saveFileString(artifactsDir, "ca.key", properties.CertificateProfile.GetCAPrivateKey()); e != nil {
+		if e := saveFileString(artifactsDir, "ca.key", properties.KubernetesCertificateProfile.GetKubernetesCAPrivateKey()); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "ca.crt", properties.CertificateProfile.CaCertificate); e != nil {
+		if e := saveFileString(artifactsDir, "ca.crt", properties.KubernetesCertificateProfile.CaCertificate); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "apiserver.key", properties.CertificateProfile.APIServerPrivateKey); e != nil {
+		if e := saveFileString(artifactsDir, "apiserver.key", properties.KubernetesCertificateProfile.APIServerPrivateKey); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "apiserver.crt", properties.CertificateProfile.APIServerCertificate); e != nil {
+		if e := saveFileString(artifactsDir, "apiserver.crt", properties.KubernetesCertificateProfile.APIServerCertificate); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "client.key", properties.CertificateProfile.ClientPrivateKey); e != nil {
+		if e := saveFileString(artifactsDir, "client.key", properties.KubernetesCertificateProfile.ClientPrivateKey); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "client.crt", properties.CertificateProfile.ClientCertificate); e != nil {
+		if e := saveFileString(artifactsDir, "client.crt", properties.KubernetesCertificateProfile.ClientCertificate); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "kubectlClient.key", properties.CertificateProfile.KubeConfigPrivateKey); e != nil {
+		if e := saveFileString(artifactsDir, "kubectlClient.key", properties.KubernetesCertificateProfile.KubeConfigPrivateKey); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "kubectlClient.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
+		if e := saveFileString(artifactsDir, "kubectlClient.crt", properties.KubernetesCertificateProfile.KubeConfigCertificate); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "ca.key", properties.SwarmModeCertificateProfile.GetSwarmModeCAPrivateKey()); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "ca.crt", properties.SwarmModeCertificateProfile.CaCertificate); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "server.key", properties.SwarmModeCertificateProfile.SwarmTLSServerPrivateKey); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "server.crt", properties.SwarmModeCertificateProfile.SwarmTLSServerCertificate); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "client.key", properties.SwarmModeCertificateProfile.SwarmTLSClientPrivateKey); e != nil {
+			return e
+		}
+		if e := saveFileString(artifactsDir, "client.crt", properties.SwarmModeCertificateProfile.SwarmTLSClientCertificate); e != nil {
 			return e
 		}
 	}

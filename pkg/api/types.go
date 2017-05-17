@@ -45,17 +45,18 @@ type Properties struct {
 	// should be emitted.
 	UpgradeMode bool `json:"upgradeMode,omitempty"` // TODO: remove this.
 
-	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
-	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
-	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
-	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
-	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
-	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
-	DiagnosticsProfile      *DiagnosticsProfile      `json:"diagnosticsProfile,omitempty"`
-	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"`
-	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
-	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
-	CustomProfile           *CustomProfile           `json:"customProfile,omitempty"`
+	ProvisioningState            ProvisioningState             `json:"provisioningState,omitempty"`
+	OrchestratorProfile          *OrchestratorProfile          `json:"orchestratorProfile,omitempty"`
+	MasterProfile                *MasterProfile                `json:"masterProfile,omitempty"`
+	AgentPoolProfiles            []*AgentPoolProfile           `json:"agentPoolProfiles,omitempty"`
+	LinuxProfile                 *LinuxProfile                 `json:"linuxProfile,omitempty"`
+	WindowsProfile               *WindowsProfile               `json:"windowsProfile,omitempty"`
+	DiagnosticsProfile           *DiagnosticsProfile           `json:"diagnosticsProfile,omitempty"`
+	JumpboxProfile               *JumpboxProfile               `json:"jumpboxProfile,omitempty"`
+	ServicePrincipalProfile      *ServicePrincipalProfile      `json:"servicePrincipalProfile,omitempty"`
+	KubernetesCertificateProfile *KubernetesCertificateProfile `json:"kubernetesCertificateProfile,omitempty"`
+	SwarmModeCertificateProfile  *SwarmModeCertificateProfile  `json:"swarmModeCertificateProfile,omitempty"`
+	CustomProfile                *CustomProfile                `json:"customProfile,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -64,8 +65,8 @@ type ServicePrincipalProfile struct {
 	Secret   string `json:"servicePrincipalClientSecret,omitempty"`
 }
 
-// CertificateProfile represents the definition of the master cluster
-type CertificateProfile struct {
+// KubernetesCertificateProfile represents the definition of the master cluster
+type KubernetesCertificateProfile struct {
 	// CaCertificate is the certificate authority certificate.
 	CaCertificate string `json:"caCertificate,omitempty"`
 	// ApiServerCertificate is the rest api server certificate, and signed by the CA
@@ -86,6 +87,10 @@ type CertificateProfile struct {
 
 // SwarmModeCertificateProfile represents the definition of the master cluster
 type SwarmModeCertificateProfile struct {
+	// CaCertificate is the certificate authority certificate.
+	CaCertificate string `json:"caCertificate,omitempty"`
+	// caPrivateKey is an internal field only set if generation required
+	caPrivateKey string
 	// SwarmTLSServerCertificate is the Docker server daemon certificate and signed by the CA
 	SwarmTLSServerCertificate string `json:"swarmTlsSeverCertificate,omitempty"`
 	// SwarmTLSClientCertificate is the Docker client cli certificate and signed by the CA
@@ -320,13 +325,23 @@ func (p *Properties) HasManagedDisks() bool {
 	return false
 }
 
-// GetCAPrivateKey returns the ca private key
-func (c *CertificateProfile) GetCAPrivateKey() string {
+// GetKubernetesCAPrivateKey returns the ca private key
+func (c *KubernetesCertificateProfile) GetKubernetesCAPrivateKey() string {
 	return c.caPrivateKey
 }
 
-// SetCAPrivateKey sets the ca private key
-func (c *CertificateProfile) SetCAPrivateKey(caPrivateKey string) {
+// SetKubernetesCAPrivateKey sets the ca private key
+func (c *KubernetesCertificateProfile) SetKubernetesCAPrivateKey(caPrivateKey string) {
+	c.caPrivateKey = caPrivateKey
+}
+
+// GetSwarmModeCAPrivateKey returns the ca private key
+func (c *SwarmModeCertificateProfile) GetSwarmModeCAPrivateKey() string {
+	return c.caPrivateKey
+}
+
+// SetSwarmModeCAPrivateKey sets the ca private key
+func (c *SwarmModeCertificateProfile) SetSwarmModeCAPrivateKey(caPrivateKey string) {
 	c.caPrivateKey = caPrivateKey
 }
 

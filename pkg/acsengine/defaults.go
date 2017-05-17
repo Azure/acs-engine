@@ -194,46 +194,82 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		ips = append(ips, ip)
 	}
 
-	if a.CertificateProfile == nil {
-		a.CertificateProfile = &api.CertificateProfile{}
-	}
+	if a.OrchestratorProfile.IsSwarmMode() {
+		a.SwarmModeCertificateProfile = &api.SwarmModeCertificateProfile{}
 
-	// use the specified Certificate Authority pair, or generate a new pair
-	var caPair *PkiKeyCertPair
-	if len(a.CertificateProfile.CaCertificate) != 0 && len(a.CertificateProfile.GetCAPrivateKey()) != 0 {
-		caPair = &PkiKeyCertPair{CertificatePem: a.CertificateProfile.CaCertificate, PrivateKeyPem: a.CertificateProfile.GetCAPrivateKey()}
-	} else {
-		caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, nil, nil)
+		// use the specified Certificate Authority pair, or generate a new pair
+		var caPair *PkiKeyCertPair
+		if len(a.SwarmModeCertificateProfile.CaCertificate) != 0 && len(a.SwarmModeCertificateProfile.GetSwarmModeCAPrivateKey()) != 0 {
+			caPair = &PkiKeyCertPair{CertificatePem: a.SwarmModeCertificateProfile.CaCertificate, PrivateKeyPem: a.SwarmModeCertificateProfile.GetSwarmModeCAPrivateKey()}
+		} else {
+			caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, nil, nil)
+			if err != nil {
+				return false, err
+			}
+			caPair = &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))}
+			a.SwarmModeCertificateProfile.CaCertificate = caPair.CertificatePem
+			a.SwarmModeCertificateProfile.SetSwarmModeCAPrivateKey(caPair.PrivateKeyPem)
+		}
+
+		// TODO: this needs to call CreateSwarmModePKI
+		apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
 		if err != nil {
 			return false, err
 		}
-		caPair = &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))}
-		a.CertificateProfile.CaCertificate = caPair.CertificatePem
-		a.CertificateProfile.SetCAPrivateKey(caPair.PrivateKeyPem)
+
+		a.SwarmModeCertificateProfile.SwarmTLSServerCertificate = apiServerPair.CertificatePem
+		a.SwarmModeCertificateProfile.SwarmTLSServerPrivateKey = apiServerPair.PrivateKeyPem
+		a.SwarmModeCertificateProfile.SwarmTLSClientCertificate = clientPair.CertificatePem
+		a.SwarmModeCertificateProfile.SwarmTLSClientPrivateKey = clientPair.PrivateKeyPem
+
+		// TODO: Remove this
+		a.KubernetesCertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
+		a.KubernetesCertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
 	}
 
-	apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
-	if err != nil {
-		return false, err
-	}
+	if a.OrchestratorProfile.IsKubernetes() {
+		a.KubernetesCertificateProfile = &api.KubernetesCertificateProfile{}
 
-	a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
-	a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
-	a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
-	a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
-	a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
-	a.CertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
+		// use the specified Certificate Authority pair, or generate a new pair
+		var caPair *PkiKeyCertPair
+		if len(a.KubernetesCertificateProfile.CaCertificate) != 0 && len(a.KubernetesCertificateProfile.GetKubernetesCAPrivateKey()) != 0 {
+			caPair = &PkiKeyCertPair{CertificatePem: a.KubernetesCertificateProfile.CaCertificate, PrivateKeyPem: a.KubernetesCertificateProfile.GetKubernetesCAPrivateKey()}
+		} else {
+			caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, nil, nil)
+			if err != nil {
+				return false, err
+			}
+			caPair = &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))}
+			a.KubernetesCertificateProfile.CaCertificate = caPair.CertificatePem
+			a.KubernetesCertificateProfile.SetKubernetesCAPrivateKey(caPair.PrivateKeyPem)
+		}
+
+		// TODO: This needs to call CreateKubernetesPki
+		apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
+		if err != nil {
+			return false, err
+		}
+
+		a.KubernetesCertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
+		a.KubernetesCertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
+		a.KubernetesCertificateProfile.ClientCertificate = clientPair.CertificatePem
+		a.KubernetesCertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
+		a.KubernetesCertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
+		a.KubernetesCertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
+	}
 
 	return true, nil
 }
 
 func certGenerationRequired(a *api.Properties) bool {
-	if a.CertificateProfile != nil &&
-		(len(a.CertificateProfile.APIServerCertificate) > 0 || len(a.CertificateProfile.APIServerPrivateKey) > 0 ||
-			len(a.CertificateProfile.ClientCertificate) > 0 || len(a.CertificateProfile.ClientPrivateKey) > 0) {
+	// TODO: Need to handle swarmmode
+	if a.KubernetesCertificateProfile != nil &&
+		(len(a.KubernetesCertificateProfile.APIServerCertificate) > 0 || len(a.KubernetesCertificateProfile.APIServerPrivateKey) > 0 ||
+			len(a.KubernetesCertificateProfile.ClientCertificate) > 0 || len(a.KubernetesCertificateProfile.ClientPrivateKey) > 0) {
 		return false
 	}
 
+	// TODO: Need to return true for swarmmode
 	switch a.OrchestratorProfile.OrchestratorType {
 	case api.DCOS:
 		return false
