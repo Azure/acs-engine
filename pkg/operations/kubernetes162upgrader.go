@@ -3,7 +3,9 @@ package operations
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"path"
+	"time"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
@@ -55,7 +57,7 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	json.Unmarshal([]byte(templateJSON), &template)
 	json.Unmarshal([]byte(parametersJSON), &parameters)
 	templateMap := template.(map[string]interface{})
-	// parametersMap := parameters.(map[string]interface{})
+	parametersMap := parameters.(map[string]interface{})
 
 	log.Infoln(fmt.Sprintf("RunUpgrade 2"))
 
@@ -76,9 +78,6 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	// 1.	Shutdown and delete one master VM at a time while preserving the persistent disk backing etcd.
 
 	// 2.	Call CreateVMWithRetries
-
-	// log.Infoln(fmt.Sprintf("Master VM: %v", vm))
-
 	templateVariables["masterOffset"] = masterCountInt - loopCount
 	masterOffset, _ = templateVariables["masterOffset"]
 	log.Infoln(fmt.Sprintf("Master offset: %v", masterOffset))
@@ -88,9 +87,9 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	}
 
 	// ************************
-	output, _ := json.Marshal(templateMap)
+	updatedTemplateJSON, _ := json.Marshal(templateMap)
 	var templateapp, parametersapp string
-	if templateapp, err = acsengine.PrettyPrintArmTemplate(string(output)); err != nil {
+	if templateapp, err = acsengine.PrettyPrintArmTemplate(string(updatedTemplateJSON)); err != nil {
 		log.Fatalf("error pretty printing template: %s \n", err.Error())
 	}
 	if parametersapp, err = acsengine.PrettyPrintJSON(parametersJSON); err != nil {
@@ -100,24 +99,23 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	if err = acsengine.WriteArtifacts(upgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
-
 	// ************************
 
-	// loopCount++
+	loopCount++
 
-	// var random *rand.Rand
-	// deploymentSuffix := random.Int31()
+	random := rand.New(rand.NewSource(time.Now().UnixNano()))
+	deploymentSuffix := random.Int31()
 
-	// _, err = ku.Client.DeployTemplate(
-	// 	ku.ClusterTopology.ResourceGroup,
-	// 	fmt.Sprintf("%s-%d", ku.ResourceGroup, deploymentSuffix),
-	// 	templateMap,
-	// 	parametersMap,
-	// 	nil)
+	_, err = ku.Client.DeployTemplate(
+		ku.ClusterTopology.ResourceGroup,
+		fmt.Sprintf("%s-%d", ku.ResourceGroup, deploymentSuffix),
+		templateMap,
+		parametersMap,
+		nil)
 
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
+	if err != nil {
+		log.Fatalln(err)
+	}
 	// }
 
 	return nil
