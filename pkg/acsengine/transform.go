@@ -234,6 +234,7 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 				storageProfile, ok := resourceProperties[storageProfileFieldName].(map[string]interface{})
 				if !ok {
 					logger.Warnf("Template improperly formatted")
+					continue
 				}
 
 				dataDisks := storageProfile[dataDisksFieldName].([]interface{})

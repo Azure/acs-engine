@@ -135,7 +135,7 @@
       "type": "securestring"
     },
     "masterOffset": {
-      "defaultValue": 0,
+      "defaultValue": 1,
       "allowedValues": [
         1,
         2,
