@@ -121,6 +121,7 @@ var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, sw
  - kubeConfigCertificate
  - kubeConfigPrivateKey
  - servicePrincipalClientSecret
+ - windowsAdminPassword
 
  To refer to a keyvault secret, the value of the parameter in the api model file should be formatted as:
 
