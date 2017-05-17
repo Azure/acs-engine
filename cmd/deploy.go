@@ -76,6 +76,7 @@ func newDeployCmd() *cobra.Command {
 func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 	var caCertificateBytes []byte
 	var caKeyBytes []byte
+	var err error
 
 	if dc.apimodelPath == "" {
 		if len(args) > 0 {
@@ -93,43 +94,41 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("specified api model does not exist (%s)", dc.apimodelPath)
 	}
 
-	containerService, apiVersion, err := api.LoadContainerServiceFromFile(dc.apimodelPath)
+	dc.containerService, dc.apiVersion, err = api.LoadContainerServiceFromFile(dc.apimodelPath)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
 
 	if dc.outputDirectory == "" {
-		dc.outputDirectory = path.Join("_output", containerService.Properties.MasterProfile.DNSPrefix)
+		dc.outputDirectory = path.Join("_output", dc.containerService.Properties.MasterProfile.DNSPrefix)
+	}
+
+	if dc.resourceGroup == "" {
+		dnsPrefix := dc.containerService.Properties.MasterProfile.DNSPrefix
+		log.Warnf("--resource-group was not specified. Using the DNS prefix from the apimodel as the resource group name: %s")
+		dc.resourceGroup = dnsPrefix
+		if dc.location == "" {
+			// TODO: move this so we only require location for a non-pre-existing RG?
+			log.Fatal("--resource-group was not specified. --location must be specified in case the resource group needs creation.")
+		}
 	}
 
 	if len(caKeyBytes) != 0 {
 		// the caKey is not in the api model, and should be stored separately from the model
 		// we put these in the model after model is deserialized
-		containerService.Properties.CertificateProfile.CaCertificate = string(caCertificateBytes)
-		containerService.Properties.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
+		dc.containerService.Properties.CertificateProfile.CaCertificate = string(caCertificateBytes)
+		dc.containerService.Properties.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
 	}
 
-	dc.containerService = containerService
-	dc.apiVersion = apiVersion
-
-	if dc.deploy {
-		dc.client, err = dc.authArgs.getClient()
-		if err != nil {
-			log.Fatalf("failed to get client") // TODO: cleanup
-		}
-
-		if dc.resourceGroup == "" {
-			cmd.Usage()
-			log.Fatal("--resource-group is required when deploying")
-		}
+	dc.client, err = dc.authArgs.getClient()
+	if err != nil {
+		log.Fatalf("failed to get client") // TODO: cleanup
 	}
 
 	dc.random = rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
 func (dc *deployCmd) run() error {
-	log.Infoln("Generating...")
-
 	templateGenerator, err := acsengine.InitializeTemplateGenerator(dc.classicMode)
 	if err != nil {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
@@ -155,6 +154,11 @@ func (dc *deployCmd) run() error {
 
 	log.Infoln("deploying...")
 
+	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	templateJSON := make(map[string]interface{})
 	parametersJSON := make(map[string]interface{})
 
@@ -163,14 +167,13 @@ func (dc *deployCmd) run() error {
 		log.Fatalln(err)
 	}
 
-	deploymentSuffix := dc.random.Int31()
-
-	// TODO(colemick): precreate resource group based on location
-
 	err = json.Unmarshal([]byte(parameters), &parametersJSON)
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	deploymentSuffix := dc.random.Int31()
+
 	_, err = dc.client.DeployTemplate(
 		dc.resourceGroup,
 		fmt.Sprintf("%s-%d", dc.resourceGroup, deploymentSuffix),
