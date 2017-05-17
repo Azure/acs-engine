@@ -102,20 +102,20 @@ func (m *TestManager) Run() error {
 			for _, step := range steps {
 				txt, err := runStep(instanceName, step, m.rootDir, env, timeout)
 				if err != nil {
-					wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, name, err, txt)
+					wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, instanceName, err, txt)
 					retvals[i] = 1
 					break
 				}
 				wrileLog(logFile, txt)
 				if step == "generate_template" {
 					// set up extra environment variables available after template generation
-					env = append(env, fmt.Sprintf("LOGFILE=validate-%s", instanceName))
+					env = append(env, fmt.Sprintf("LOGFILE=%s/validate-%s.log", logDir, instanceName))
 
 					cmd := exec.Command("test/step.sh", "get_orchestrator_version")
 					cmd.Env = env
 					out, err := cmd.Output()
 					if err != nil {
-						wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_version", name, err)
+						wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_version", instanceName, err)
 						retvals[i] = 1
 						break
 					}
@@ -126,7 +126,7 @@ func (m *TestManager) Run() error {
 						cmd.Env = env
 						out, err = cmd.Output()
 						if err != nil {
-							wrileLog(logFile, "Error [%s:%s] %v", "get_node_count", name, err)
+							wrileLog(logFile, "Error [%s:%s] %v", "get_node_count", instanceName, err)
 							retvals[i] = 1
 							break
 						}

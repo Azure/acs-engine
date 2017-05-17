@@ -10,14 +10,14 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 ####################################################
 
-source "$DIR/../utils.sh"
-
 # exit on errors
 set -e
 # exit on unbound variables
 set -u
 # verbose logging
 set -x
+
+source "$DIR/../utils.sh"
 
 ENV_FILE="${CLUSTER_DEFINITION}.env"
 if [ -e "${ENV_FILE}" ]; then

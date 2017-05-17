@@ -10,11 +10,11 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 ####################################################
 
-source "$DIR/../utils.sh"
-
 set -e
 # -o pipefail
 set -x
+
+source "$DIR/../utils.sh"
 
 remote_exec="ssh -i "${SSH_KEY}" -o StrictHostKeyChecking=no azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com -p2200"
 agentFQDN="dcos-agent-ip-${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"

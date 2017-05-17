@@ -10,11 +10,11 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 ####################################################
 
-source "$DIR/../utils.sh"
-
 set -x
 set -e
 set -u
+
+source "$DIR/../utils.sh"
 
 ssh_args="-i ${SSH_KEY} -o StrictHostKeyChecking=no -p2200 azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"
 
