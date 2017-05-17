@@ -106,6 +106,9 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatalf("failed to get client") // TODO: cleanup
 	}
+
+	// TODO: Validate that downgrade is not allowed
+	// TODO: Validate noop case and return early
 }
 
 func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
@@ -120,11 +123,5 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		log.Fatalf("Error upgrading cluster: %s \n", err.Error())
 	}
 
-	return nil
-}
-
-func (uc *upgradeCmd) stateValidate() error {
-	// Validate that downgrade is not allowed
-	// Validate noop case and return early
 	return nil
 }
