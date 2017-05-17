@@ -59,6 +59,18 @@
       },
       "type": "string"
     },
+    "kubeDnsServiceIP": {
+      "metadata": {
+        "description": "Kubernetes DNS IP"
+      },
+      "type": "string"
+    },
+    "kubeServiceCidr": {
+      "metadata": {
+        "description": "Kubernetes service address space"
+      },
+      "type": "string"
+    },
     "kubernetesHyperkubeSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesHyperkubeSpec"}}
       "metadata": {

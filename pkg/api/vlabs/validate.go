@@ -330,6 +330,35 @@ func (a *KubernetesConfig) Validate() error {
 		}
 	}
 
+	if a.DnsServiceIP != "" || a.ServiceCidr != "" {
+		if a.DnsServiceIP == "" {
+			return errors.New("OrchestratorProfile.KubernetesConfig.ServiceCidr must be specified when DnsServiceIP is")
+		}
+		if a.ServiceCidr == "" {
+			return errors.New("OrchestratorProfile.KubernetesConfig.DnsServiceIP must be specified when ServiceCidr is")
+		}
+
+		dnsIp := net.ParseIP(a.DnsServiceIP)
+		if dnsIp == nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is an invalid IP address", a.DnsServiceIP)
+		}
+
+		_, serviceCidr, err := net.ParseCIDR(a.ServiceCidr)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ServiceCidr '%s' is an invalid CIDR subnet", a.ServiceCidr)
+		}
+
+		// Finally validate that the DNS ip is within the subnet, and _not_ that subnet broadcast address, otherwise it won't work
+		if !serviceCidr.Contains(dnsIp) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is not within the ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		}
+
+		broadcast := ip4BroadcastAddress(serviceCidr)
+		if dnsIp.Equal(broadcast) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' cannot be the broadcast address of ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		}
+	}
+
 	return nil
 }
 
@@ -485,4 +514,18 @@ func GetVNETSubnetIDComponents(vnetSubnetID string) (string, string, string, str
 		return "", "", "", "", err
 	}
 	return submatches[1], submatches[2], submatches[3], submatches[4], nil
+}
+
+// ip4BroadcastAddress returns the broadcast address for the given IP subnet.
+func ip4BroadcastAddress(n *net.IPNet) net.IP {
+	ip4 := n.IP.To4()
+	if ip4 == nil {
+		return nil
+	}
+	last := make(net.IP, len(ip4))
+	copy(last, ip4)
+	for i := range ip4 {
+		last[i] |= ^n.Mask[i]
+	}
+	return last
 }
