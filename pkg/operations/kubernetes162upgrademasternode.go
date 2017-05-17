@@ -48,7 +48,7 @@ func (kmn *UpgradeMasterNode) CreateNode(countForOffset int) error {
 		return err
 	}
 
-	// ************************
+	// ***********Save master update template*************
 	updatedTemplateJSON, _ := json.Marshal(kmn.TemplateMap)
 	parametersJSON, _ := json.Marshal(kmn.ParametersMap)
 
@@ -60,7 +60,7 @@ func (kmn *UpgradeMasterNode) CreateNode(countForOffset int) error {
 	if e != nil {
 		log.Fatalf("error pretty printing template parameters: %s \n", e.Error())
 	}
-	outputDirectory := path.Join("_output", "Upgrade")
+	outputDirectory := path.Join("_output", kmn.UpgradeContainerService.Properties.MasterProfile.DNSPrefix, "Upgrade")
 	if err := acsengine.WriteArtifacts(kmn.UpgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
