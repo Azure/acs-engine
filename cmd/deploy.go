@@ -105,7 +105,7 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 
 	if dc.resourceGroup == "" {
 		dnsPrefix := dc.containerService.Properties.MasterProfile.DNSPrefix
-		log.Warnf("--resource-group was not specified. Using the DNS prefix from the apimodel as the resource group name: %s")
+		log.Warnf("--resource-group was not specified. Using the DNS prefix from the apimodel as the resource group name: %s", dnsPrefix)
 		dc.resourceGroup = dnsPrefix
 		if dc.location == "" {
 			// TODO: move this so we only require location for a non-pre-existing RG?
