@@ -29,14 +29,15 @@ type ContainerService struct {
 
 // Properties represents the ACS cluster definition
 type Properties struct {
-	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
-	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
-	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
-	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
-	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
-	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
-	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
-	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
+	ProvisioningState            ProvisioningState             `json:"provisioningState,omitempty"`
+	OrchestratorProfile          *OrchestratorProfile          `json:"orchestratorProfile,omitempty"`
+	MasterProfile                *MasterProfile                `json:"masterProfile,omitempty"`
+	AgentPoolProfiles            []*AgentPoolProfile           `json:"agentPoolProfiles,omitempty"`
+	LinuxProfile                 *LinuxProfile                 `json:"linuxProfile,omitempty"`
+	WindowsProfile               *WindowsProfile               `json:"windowsProfile,omitempty"`
+	ServicePrincipalProfile      *ServicePrincipalProfile      `json:"servicePrincipalProfile,omitempty"`
+	KubernetesCertificateProfile *KubernetesCertificateProfile `json:"kubernetesCertificateProfile,omitempty"`
+	SwarmModeCertificateProfile  *SwarmModeCertificateProfile  `json:"swarmModeCertificateProfile,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -54,7 +55,7 @@ type ServicePrincipalProfile struct {
 	Secret   string `json:"servicePrincipalClientSecret,omitempty"`
 }
 
-// CertificateProfile represents the definition of the master cluster
+// KubernetesCertificateProfile represents the definition of the master cluster
 // The JSON parameters could be either a plain text, or referenced to a secret in a keyvault.
 // In the latter case, the format of the parameter's value should be
 // "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
@@ -64,7 +65,7 @@ type ServicePrincipalProfile struct {
 //    <KV_NAME> is the name of the keyvault
 //    <NAME> is the name of the secret
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
-type CertificateProfile struct {
+type KubernetesCertificateProfile struct {
 	// CaCertificate is the certificate authority certificate.
 	CaCertificate string `json:"caCertificate,omitempty"`
 	// ApiServerCertificate is the rest api server certificate, and signed by the CA
@@ -81,6 +82,22 @@ type CertificateProfile struct {
 	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
 	// caPrivateKey is an internal field only set if generation required
 	caPrivateKey string
+}
+
+// SwarmModeCertificateProfile represents the definition of the master cluster
+type SwarmModeCertificateProfile struct {
+	// CaCertificate is the certificate authority certificate.
+	CaCertificate string `json:"caCertificate,omitempty"`
+	// caPrivateKey is an internal field only set if generation required
+	caPrivateKey string
+	// SwarmTLSServerCertificate is the Docker server daemon certificate and signed by the CA
+	SwarmTLSServerCertificate string `json:"swarmTlsSeverCertificate,omitempty"`
+	// SwarmTLSClientCertificate is the Docker client cli certificate and signed by the CA
+	SwarmTLSClientCertificate string `json:"swarmTlsClientCertificate,omitempty"`
+	// SwarmTLSServerPrivateKey is the Docker server daemon private key and signed by the CA
+	SwarmTLSServerPrivateKey string `json:"swarmTlsServerPrivateKey,omitempty"`
+	// SwarmTLSClientPrivateKey is the Docker client cli private key and signed by the CA
+	SwarmTLSClientPrivateKey string `json:"swarmTlsClientPrivateKey,omitempty"`
 }
 
 // LinuxProfile represents the linux parameters passed to the cluster
@@ -241,13 +258,23 @@ func (p *Properties) HasWindows() bool {
 	return false
 }
 
-// GetCAPrivateKey returns the ca private key
-func (c *CertificateProfile) GetCAPrivateKey() string {
+// GetKubernetesCAPrivateKey returns the ca private key
+func (c *KubernetesCertificateProfile) GetKubernetesCAPrivateKey() string {
 	return c.caPrivateKey
 }
 
-// SetCAPrivateKey sets the ca private key
-func (c *CertificateProfile) SetCAPrivateKey(caPrivateKey string) {
+// SetKubernetesCAPrivateKey sets the ca private key
+func (c *KubernetesCertificateProfile) SetKubernetesCAPrivateKey(caPrivateKey string) {
+	c.caPrivateKey = caPrivateKey
+}
+
+// GetSwarmModeCAPrivateKey returns the ca private key
+func (c *SwarmModeCertificateProfile) GetSwarmModeCAPrivateKey() string {
+	return c.caPrivateKey
+}
+
+// SetSwarmModeCAPrivateKey sets the ca private key
+func (c *SwarmModeCertificateProfile) SetSwarmModeCAPrivateKey(caPrivateKey string) {
 	c.caPrivateKey = caPrivateKey
 }
 

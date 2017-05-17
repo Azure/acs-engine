@@ -288,9 +288,13 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 		api.ServicePrincipalProfile = &ServicePrincipalProfile{}
 		convertVLabsServicePrincipalProfile(vlabs.ServicePrincipalProfile, api.ServicePrincipalProfile)
 	}
-	if vlabs.CertificateProfile != nil {
-		api.CertificateProfile = &CertificateProfile{}
-		convertVLabsCertificateProfile(vlabs.CertificateProfile, api.CertificateProfile)
+	if vlabs.KubernetesCertificateProfile != nil {
+		api.KubernetesCertificateProfile = &KubernetesCertificateProfile{}
+		convertVLabsCertificateProfileKubernetes(vlabs.KubernetesCertificateProfile, api.KubernetesCertificateProfile)
+	}
+	if vlabs.SwarmModeCertificateProfile != nil {
+		api.SwarmModeCertificateProfile = &SwarmModeCertificateProfile{}
+		convertVLabsCertificateProfileSwarmMode(vlabs.SwarmModeCertificateProfile, api.SwarmModeCertificateProfile)
 	}
 }
 
@@ -629,7 +633,7 @@ func convertV20170131CustomProfile(v20170131 *v20170131.CustomProfile, api *Cust
 	api.Orchestrator = v20170131.Orchestrator
 }
 
-func convertVLabsCertificateProfile(vlabs *vlabs.CertificateProfile, api *CertificateProfile) {
+func convertVLabsCertificateProfileKubernetes(vlabs *vlabs.KubernetesCertificateProfile, api *KubernetesCertificateProfile) {
 	api.CaCertificate = vlabs.CaCertificate
 	api.APIServerCertificate = vlabs.APIServerCertificate
 	api.APIServerPrivateKey = vlabs.APIServerPrivateKey
@@ -637,5 +641,14 @@ func convertVLabsCertificateProfile(vlabs *vlabs.CertificateProfile, api *Certif
 	api.ClientPrivateKey = vlabs.ClientPrivateKey
 	api.KubeConfigCertificate = vlabs.KubeConfigCertificate
 	api.KubeConfigPrivateKey = vlabs.KubeConfigPrivateKey
-	api.SetCAPrivateKey(vlabs.GetCAPrivateKey())
+	api.SetKubernetesCAPrivateKey(vlabs.GetKubernetesCAPrivateKey())
+}
+
+func convertVLabsCertificateProfileSwarmMode(vlabs *vlabs.SwarmModeCertificateProfile, api *SwarmModeCertificateProfile) {
+	api.CaCertificate = vlabs.CaCertificate
+	api.SwarmTLSClientCertificate = vlabs.SwarmTLSClientCertificate
+	api.SwarmTLSClientPrivateKey = vlabs.SwarmTLSClientPrivateKey
+	api.SwarmTLSServerCertificate = vlabs.SwarmTLSServerCertificate
+	api.SwarmTLSServerPrivateKey = vlabs.SwarmTLSServerPrivateKey
+	api.SetSwarmModeCAPrivateKey(vlabs.GetSwarmModeCAPrivateKey())
 }

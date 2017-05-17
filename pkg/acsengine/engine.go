@@ -271,11 +271,11 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	}
 	kubeconfig := string(b)
 	// variable replacement
-	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('caCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('caCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.KubernetesCertificateProfile.CaCertificate)), -1)
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", FormatAzureProdFQDN(properties.MasterProfile.DNSPrefix, location), -1)
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVariable \"resourceGroup\"}}", properties.MasterProfile.DNSPrefix, -1)
-	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('kubeConfigCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)), -1)
-	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('kubeConfigPrivateKey')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('kubeConfigCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.KubernetesCertificateProfile.KubeConfigCertificate)), -1)
+	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('kubeConfigPrivateKey')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.KubernetesCertificateProfile.KubeConfigPrivateKey)), -1)
 
 	return kubeconfig, nil
 }
@@ -359,15 +359,16 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	// Kubernetes Parameters
+	// TODO: Do we need to do this for SwarmMode?
 	if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		KubernetesVersion := properties.OrchestratorProfile.OrchestratorVersion
-		addSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
-		addSecret(parametersMap, "apiServerPrivateKey", properties.CertificateProfile.APIServerPrivateKey, true)
-		addSecret(parametersMap, "caCertificate", properties.CertificateProfile.CaCertificate, true)
-		addSecret(parametersMap, "clientCertificate", properties.CertificateProfile.ClientCertificate, true)
-		addSecret(parametersMap, "clientPrivateKey", properties.CertificateProfile.ClientPrivateKey, true)
-		addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
-		addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
+		addSecret(parametersMap, "apiServerCertificate", properties.KubernetesCertificateProfile.APIServerCertificate, true)
+		addSecret(parametersMap, "apiServerPrivateKey", properties.KubernetesCertificateProfile.APIServerPrivateKey, true)
+		addSecret(parametersMap, "caCertificate", properties.KubernetesCertificateProfile.CaCertificate, true)
+		addSecret(parametersMap, "clientCertificate", properties.KubernetesCertificateProfile.ClientCertificate, true)
+		addSecret(parametersMap, "clientPrivateKey", properties.KubernetesCertificateProfile.ClientPrivateKey, true)
+		addSecret(parametersMap, "kubeConfigCertificate", properties.KubernetesCertificateProfile.KubeConfigCertificate, true)
+		addSecret(parametersMap, "kubeConfigPrivateKey", properties.KubernetesCertificateProfile.KubeConfigPrivateKey, true)
 		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["hyperkube"])
 		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["addonmanager"])
