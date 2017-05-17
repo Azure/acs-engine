@@ -110,7 +110,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 }
 
 func (gc *generateCmd) run() error {
-	log.Infoln("Generating...")
+	log.Infoln("Generating assets...")
 
 	templateGenerator, err := acsengine.InitializeTemplateGenerator(gc.classicMode)
 	if err != nil {
