@@ -9,7 +9,7 @@
 				"description": "Artifacts Location - URL"
 			}
         },
-		"apiVersionCompute": {
+		"apiVersionDefault": {
 			"type": "string",
 			"minLength": 1,
 			"metadata": {
@@ -33,7 +33,7 @@
    },
    "variables": {  
 		"singleQuote": "'",
-		"initScriptUrl": "[concat(parameters('artifactsLocation'), 'extensions/sysdig-cloud-k8s/v1/sysdig-cloud-k8s.sh')]"
+		"initScriptUrl": "[concat(parameters('artifactsLocation'), 'extensions/microsoft-oms-agent-k8s/v1/microsoft-oms-agent-k8s.sh')]"
    },
    "resources": [  
 	{
@@ -53,7 +53,7 @@
 			 ]
 		},
         "protectedSettings": {
-			"commandToExecute": "[concat('/bin/bash ./sysdig-cloud-k8s.sh ', variables('singleQuote'), parameters('extensionParameters'), variables('singleQuote'), ' >> /var/log/azure/sysdig-provision.log 2>&1 &\" &')]"
+			"commandToExecute": "[concat('/bin/bash -c \"/bin/bash ./smicrosoft-oms-agent-k8s.sh ', variables('singleQuote'), parameters('extensionParameters'), variables('singleQuote'), ' >> /var/log/azure/microsoft-oms-agent.log 2>&1 &\" &')]"
         }
       }
     }
