@@ -3,14 +3,10 @@ package operations
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
-	"path"
-	"time"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
-	log "github.com/Sirupsen/logrus"
 )
 
 // Compiler to verify QueueMessageProcessor implements OperationsProcessor
@@ -59,63 +55,22 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	templateMap := template.(map[string]interface{})
 	parametersMap := parameters.(map[string]interface{})
 
-	log.Infoln(fmt.Sprintf("RunUpgrade 2"))
-
-	templateVariables := templateMap["variables"].(map[string]interface{})
-
-	masterCount, _ := templateVariables["masterCount"]
-	masterCountInt := int(masterCount.(float64))
-	log.Infoln(fmt.Sprintf("Master count: %d", masterCountInt))
-
-	masterOffset, _ := templateVariables["masterOffset"]
-	log.Infoln(fmt.Sprintf("Master offset: %v", masterOffset))
-
 	loopCount := 1
 
+	upgradeMasterNode := UpgradeMasterNode{}
+	upgradeMasterNode.TemplateMap = templateMap
+	upgradeMasterNode.ParametersMap = parametersMap
+	upgradeMasterNode.UpgradeContainerService = upgradeContainerService
+	upgradeMasterNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
+	upgradeMasterNode.Client = ku.Client
+
 	// for _, vm := range *ku.ClusterTopology.MasterVMs {
-	// upgradeMasterNode := UpgradeMasterNode{}
-
 	// 1.	Shutdown and delete one master VM at a time while preserving the persistent disk backing etcd.
-
+	upgradeMasterNode.DeleteNode()
 	// 2.	Call CreateVMWithRetries
-	templateVariables["masterOffset"] = masterCountInt - loopCount
-	masterOffset, _ = templateVariables["masterOffset"]
-	log.Infoln(fmt.Sprintf("Master offset: %v", masterOffset))
-
-	if e := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), templateMap); e != nil {
-		log.Fatalln(err)
-	}
-
-	// ************************
-	updatedTemplateJSON, _ := json.Marshal(templateMap)
-	var templateapp, parametersapp string
-	if templateapp, err = acsengine.PrettyPrintArmTemplate(string(updatedTemplateJSON)); err != nil {
-		log.Fatalf("error pretty printing template: %s \n", err.Error())
-	}
-	if parametersapp, err = acsengine.PrettyPrintJSON(parametersJSON); err != nil {
-		log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
-	}
-	outputDirectory := path.Join("_output", upgradeContainerService.Properties.MasterProfile.DNSPrefix, "Upgrade")
-	if err = acsengine.WriteArtifacts(upgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
-		log.Fatalf("error writing artifacts: %s \n", err.Error())
-	}
-	// ************************
-
+	upgradeMasterNode.CreateNode(loopCount)
 	loopCount++
 
-	random := rand.New(rand.NewSource(time.Now().UnixNano()))
-	deploymentSuffix := random.Int31()
-
-	_, err = ku.Client.DeployTemplate(
-		ku.ClusterTopology.ResourceGroup,
-		fmt.Sprintf("%s-%d", ku.ResourceGroup, deploymentSuffix),
-		templateMap,
-		parametersMap,
-		nil)
-
-	if err != nil {
-		log.Fatalln(err)
-	}
 	// }
 
 	return nil

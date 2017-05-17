@@ -15,7 +15,7 @@ func (kmn *UpgradeAgentNode) DeleteNode() error {
 }
 
 // CreateNode creates a new master/agent node with the targeted version of Kubernetes
-func (kmn *UpgradeAgentNode) CreateNode() error {
+func (kmn *UpgradeAgentNode) CreateNode(int) error {
 	return nil
 }
 

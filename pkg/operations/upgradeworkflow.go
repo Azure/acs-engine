@@ -21,7 +21,7 @@ type UpgradeNode interface {
 	DeleteNode() error
 
 	// CreateNode creates a new master/agent node with the targeted version of Kubernetes
-	CreateNode() error
+	CreateNode(int) error
 
 	// Validate will verify the that master/agent node has been upgraded as expected.
 	Validate() error
