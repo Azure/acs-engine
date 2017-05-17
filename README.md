@@ -26,6 +26,7 @@ The cluster definition file enables the following customizations to your Docker 
 * [Attached Disks](examples/disks-storageaccount) - shows how to attach up to 4 disks per node
 * [Managed Disks](examples/disks-managed) (under private preview) - shows how to use managed disks 
 * [Large Clusters](examples/largeclusters) - shows how to create cluster sizes of up to 1200 nodes
+* [K8S deployment demo video](https://youtu.be/e04npMaRzlE) - walks you through using the acs engine to create a custom Kubernetes ARM template and deploy it on Azure using the Azure CLI
 
 ## Contributing
 
