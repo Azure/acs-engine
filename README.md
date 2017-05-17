@@ -94,11 +94,11 @@ $ az login
 
 $ az account set --subscription "<SUBSCRIPTION NAME OR ID>"
 
-$ az group create \
+$ az resource group create \
     --name "<RESOURCE_GROUP_NAME>" \
     --location "<LOCATION>"
 
-$ az group deployment create \
+$ az resource group deployment create \
     --name "<DEPLOYMENT NAME>" \
     --resource-group "<RESOURCE_GROUP_NAME>" \
     --template-file "./_output/<INSTANCE>/azuredeploy.json" \
