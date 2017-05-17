@@ -15,20 +15,11 @@
             "artifactsLocation": {
                 "value": "EXTENSION_URL_REPLACE"
             },
-			"apiVersionStorage": {
-                "value": "[variables('apiVersionStorage')]"
-            },
-            "apiVersionDefault": {
+            "apiVersionCompute": {
                 "value": "[variables('apiVersionDefault')]"
             },
             "masterVMNamePrefix": {
                 "value": "[concat(variables('masterVMNamePrefix'), '0')]"
-            },
-            "username": {
-                "value": "[variables('username')]"
-            },
-            "storageAccountBaseName": {
-                "value": "[variables('storageAccountBaseName')]"
             },
             "extensionParameters": {
                 "value": "EXTENSION_PARAMETERS_REPLACE"
