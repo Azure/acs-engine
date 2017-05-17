@@ -177,6 +177,7 @@
       },
       "type": "Microsoft.Network/loadBalancers"
     },
+{{if gt .MasterProfile.Count 1}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
@@ -198,7 +199,7 @@
           {
             "name": "[variables('masterInternalLbIPConfigName')]",
             "properties": {
-              "privateIPAddress": "[variables('masterInternalLbIp')]",
+              "privateIPAddress": "[variables('kubernetesAPIServerIP')]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('vnetSubnetID')]"
@@ -238,6 +239,7 @@
       },
       "type": "Microsoft.Network/loadBalancers"
     },
+{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
@@ -284,8 +286,10 @@
 {{else}}
         "[variables('vnetID')]",
 {{end}}
-        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]",
-        "[variables('masterInternalLbName')]"
+        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
+{{if gt .MasterProfile.Count 1}}
+        ,"[variables('masterInternalLbName')]"
+{{end}}
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
@@ -297,10 +301,13 @@
               "loadBalancerBackendAddressPools": [
                 {
                   "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
-                },
+                }
+{{if gt .MasterProfile.Count 1}}                
+                ,
                 {
                    "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
+{{end}}
               ],
               "loadBalancerInboundNatRules": [
                 {
@@ -358,7 +365,7 @@
       {
         "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]",
         "resourceNameSuffix" : "[variables('nameSuffix')]",
-        "orchestrator" : "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}"
+        "orchestrator" : "[variables('orchestratorNameVersionTag')]"
       },
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
@@ -417,6 +424,9 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
+{{if ne .MasterProfile.OSDiskSizeGB 0}}
+            "diskSizeGB": {{.MasterProfile.OSDiskSizeGB}},
+{{end}}
             "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'-osdisk')]",
             "vhd": {
               "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('masterVMNamePrefix'),copyIndex(),'-osdisk.vhd')]"

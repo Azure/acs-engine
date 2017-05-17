@@ -36,25 +36,6 @@ echo "AZUREUSER: $AZUREUSER"
 
 ensureAzureNetwork()
 {
-  # ensure the host name is resolvable
-  hostResolveHealthy=1
-  for i in {1..120}; do
-    host $VMNAME
-    if [ $? -eq 0 ]
-    then
-      # hostname has been found continue
-      hostResolveHealthy=0
-      echo "the host name resolves"
-      break
-    fi
-    sleep 1
-  done
-  if [ $hostResolveHealthy -ne 0 ]
-  then
-    echo "host name does not resolve, aborting install"
-    exit 1
-  fi
-
   # ensure the network works
   networkHealthy=1
   for i in {1..12}; do
@@ -88,6 +69,20 @@ ensureAzureNetwork()
     fi
     sleep 1
   done
+  # attempt to fix hostname, in case dns is not resolving Azure IPs (but can resolve public ips)
+  if [ $networkHealthy -ne 0 ]
+  then
+    HOSTNAME=`hostname`
+    HOSTADDR=`ip address show dev eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*'`
+    echo $HOSTADDR $HOSTNAME >> /etc/hosts
+    hostname -i
+    if [ $? -eq 0 ]
+    then
+      # hostname has been found continue
+      networkHealthy=0
+      echo "the network is healthy by updating /etc/hosts"
+    fi
+  fi
   if [ $networkHealthy -ne 0 ]
   then
     echo "the network is not healthy, cannot resolve ip address, aborting install"

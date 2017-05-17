@@ -85,8 +85,8 @@ Build Steps:
   ```
   export PATH=$PATH:/usr/local/go/bin
   export GOPATH=$HOME/gopath
-  source $HOME/.sh_profile
   ```
+  4. `source $HOME/.bash_profile`
 Build acs-engine:
   1. type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
   2. type `go get all` to get the supporting components
@@ -111,7 +111,7 @@ Build Steps:
   export PATH=$PATH:/usr/local/go/bin
   export GOPATH=$HOME/gopath
   ```
-  4. source $HOME/.profile
+  4. `source $HOME/.profile`
  
 Build acs-engine:
   1. type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
@@ -138,7 +138,7 @@ Here is an example of how to generate a new deployment.  This example assumes yo
 
 1. Before starting ensure you have generated a valid [SSH Public/Private key pair](ssh.md#ssh-key-generation).
 2. edit [examples/kubernetes.json](../examples/kubernetes.json) and fill in the blanks.
-3. run `acs-engine examples/kubernetes.json` to generate the templates in the _output/Kubernetes-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
+3. run `acs-engine generate examples/kubernetes.json` to generate the templates in the _output/Kubernetes-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
 4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [deployment usage](../README.md#deployment-usage).
 
 # Deploying templates

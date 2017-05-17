@@ -107,7 +107,7 @@
 {{if .OrchestratorProfile.IsSwarmMode}}
     "orchestratorName": "swarmm", 
     "osImageSKU": "16.04-LTS", 
-    "osImageVersion": "16.04.201703070", 
+    "osImageVersion": "16.04.201705080",
 {{else}}
     "orchestratorName": "swarm", 
     "osImageSKU": "14.04.4-LTS",

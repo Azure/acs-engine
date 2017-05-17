@@ -7,10 +7,10 @@
 {{if .IsAvailabilitySets}}
     "{{.Name}}StorageAccountOffset": {
       "type": "int",
-      "value": "[variables('{{.Name}}Offset')]"
+      "value": "[variables('{{.Name}}StorageAccountOffset')]"
     },
     "{{.Name}}StorageAccountCount": {
       "type": "int",
-      "value": "[variables('{{.Name}}Count')]"
+      "value": "[variables('{{.Name}}StorageAccountsCount')]"
     },
 {{end}}
