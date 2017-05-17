@@ -43,6 +43,7 @@ func NewRootCmd() *cobra.Command {
 
 	if val := os.Getenv("ACSENGINE_EXPERIMENTAL_FEATURES"); val == "1" {
 		rootCmd.AddCommand(newUpgradeCmd())
+		rootCmd.AddCommand(newDeployCmd())
 	}
 
 	return rootCmd

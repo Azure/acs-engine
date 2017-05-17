@@ -1,11 +1,23 @@
 #!/bin/bash
 
+####################################################
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+####################################################
+
 # exit on errors
 set -e
 # exit on unbound variables
 set -u
 # verbose logging
 set -x
+
+source "$DIR/../utils.sh"
 
 ENV_FILE="${CLUSTER_DEFINITION}.env"
 if [ -e "${ENV_FILE}" ]; then
@@ -19,18 +31,6 @@ EXPECTED_ORCHESTRATOR_VERSION="${EXPECTED_ORCHESTRATOR_VERSION:-}"
 
 # set TEST_ACR to "y" for ACR testing
 TEST_ACR="${TEST_ACR:-n}"
-
-function log {
-    local message="$1"
-    local caller="$(caller 0)"
-	  now=$(date +"%D %T %Z")
-
-	if [[ ! -z "${LOGFILE:-}" ]]; then
-		echo "[${now}] [${caller}] ${message}" | tee -a ${LOGFILE}
-	else
-		echo "[${now}] [${caller}] ${message}"
-    fi
-}
 
 namespace="namespace-${RANDOM}"
 log "Running test in namespace: ${namespace}"
