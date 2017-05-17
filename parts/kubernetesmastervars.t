@@ -30,6 +30,7 @@
 {{else}}
     "masterCount": {{.MasterProfile.Count}}, 
 {{end}}    
+    "masterOffset": "[parameters('masterOffset')]",
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
 {{if .HasManagedDisks}}
