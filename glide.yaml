@@ -1,0 +1,33 @@
+package: github.com/Azure/acs-engine
+import:
+- package: github.com/Azure/azure-sdk-for-go
+  version: ^10.0.2-beta
+  subpackages:
+  - arm/compute
+  - arm/network
+  - arm/resources/resources
+  - arm/resources/subscriptions
+  - arm/storage
+  - storage
+- package: github.com/Azure/go-autorest
+  version: ^8.0.0
+  subpackages:
+  - autorest
+  - autorest/adal
+  - autorest/azure
+  - autorest/to
+- package: github.com/Sirupsen/logrus
+  version: ^0.11.5
+- package: github.com/ghodss/yaml
+  version: ^1.0.0
+- package: github.com/mitchellh/go-homedir
+- package: github.com/prometheus/common
+  subpackages:
+  - log
+- package: github.com/satori/go.uuid
+  version: ^1.1.0
+- package: github.com/spf13/cobra
+- package: github.com/spf13/pflag
+testImport:
+- package: github.com/onsi/gomega
+  version: ^1.1.0
