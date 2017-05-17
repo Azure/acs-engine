@@ -90,6 +90,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
 			}
 		}
+		if a.OrchestratorProfile.KubernetesConfig.DnsServiceIP == "" {
+			a.OrchestratorProfile.KubernetesConfig.DnsServiceIP = DefaultKubernetesDnsServiceIP
+		}
+		if a.OrchestratorProfile.KubernetesConfig.ServiceCIDR == "" {
+			a.OrchestratorProfile.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
+		}
 	}
 }
 
@@ -211,6 +217,24 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		a.CertificateProfile.CaCertificate = caPair.CertificatePem
 		a.CertificateProfile.SetCAPrivateKey(caPair.PrivateKeyPem)
 	}
+
+	// Work out the first IP in KubeServiceCidr range
+	_, serviceCidr, err := net.ParseCIDR(a.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
+	if err != nil {
+		return false, err
+	}
+	// Based off https://play.golang.org/p/m8TNTtygK0
+	// Increment the last octet if it's zero.
+	firstIP := func(ip net.IP) net.IP {
+		for j := len(ip) - 1; j >= 0; j-- {
+			if ip[j] == 0 {
+				ip[j]++
+				break
+			}
+		}
+		return ip
+	}
+	ips = append(ips, firstIP(serviceCidr.IP))
 
 	apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
 	if err != nil {

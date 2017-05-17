@@ -128,6 +128,8 @@ type KubernetesConfig struct {
 	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
 	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
 	NetworkPolicy       string `json:"networkPolicy,omitempty"`
+	DnsServiceIP        string `json:"dnsServiceIP,omitempty"`
+	ServiceCIDR         string `json:"serviceCidr,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
