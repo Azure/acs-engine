@@ -7,11 +7,12 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"io/ioutil"
+
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/leonelquinteros/gotext"
-	"io/ioutil"
 )
 
 const (
@@ -67,12 +68,12 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 	var caKeyBytes []byte
 	var err error
 
-	gc.locale, err := i18n.LoadTranslations(gc.translationsDirectory)
+	gc.locale, err = i18n.LoadTranslations(gc.translationsDirectory)
 	if err != nil {
 		log.Fatalf("error loading translation files: %s", err.Error())
 	}
 
-	i18n.Initialize(locale)
+	i18n.Initialize(gc.locale)
 
 	if gc.apimodelPath == "" {
 		if len(args) > 0 {

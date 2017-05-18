@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	log "github.com/Sirupsen/logrus"
 	"github.com/satori/go.uuid"
@@ -26,6 +27,7 @@ type ClusterTopology struct {
 // (or X.X or X.X.X) to version y (or Y.Y or X.X.X). RIght now
 // upgrades are supported for Kubernetes cluster only.
 type UpgradeCluster struct {
+	Translator *i18n.Translator
 	ClusterTopology
 	Client armhelpers.ACSEngineClient
 
@@ -44,20 +46,22 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	uc.AgentVMs = &[]compute.VirtualMachine{}
 
 	if err := uc.getUpgradableResources(subscriptionID, resourceGroup); err != nil {
-		return fmt.Errorf("Error while querying ARM for resources: %+v", err)
+		return uc.Translator.Errorf("Error while querying ARM for resources: %+v", err)
 	}
 
 	switch ucs.OrchestratorProfile.OrchestratorVersion {
 	case api.Kubernetes162:
 		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes 1.6.2"))
-		upgrader := Kubernetes162upgrader{}
+		upgrader := Kubernetes162upgrader{
+			Translator: uc.Translator,
+		}
 		upgrader.ClusterTopology = uc.ClusterTopology
 		upgrader.Client = uc.Client
 		if err := upgrader.RunUpgrade(); err != nil {
 			return err
 		}
 	default:
-		return fmt.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s",
+		return uc.Translator.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s",
 			uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 

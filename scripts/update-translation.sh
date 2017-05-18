@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GO_SOURCE="pkg/acsengine/*.go pkg/api/*.go"
+GO_SOURCE="pkg/acsengine/*.go pkg/api/*.go pkg/operations/*.go"
 LANGUAGE="en_US"
 DOMAIN="acsengine"
 generate_po="false"

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
 
 	"encoding/json"
@@ -15,6 +16,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
 const (
@@ -24,6 +26,7 @@ const (
 )
 
 type deployCmd struct {
+	translationsDirectory string
 	authArgs
 
 	apimodelPath      string
@@ -37,6 +40,7 @@ type deployCmd struct {
 	// derived
 	containerService *api.ContainerService
 	apiVersion       string
+	locale           *gotext.Locale
 
 	// experimental
 	client        armhelpers.ACSEngineClient
@@ -60,6 +64,7 @@ func newDeployCmd() *cobra.Command {
 	}
 
 	f := deployCmd.Flags()
+	f.StringVar(&dc.translationsDirectory, "translations-directory", "", "translations directory (translations in the current directory if absent)")
 	f.StringVar(&dc.apimodelPath, "api-model", "", "")
 	f.StringVar(&dc.outputDirectory, "output-directory", "", "output directory (derived from FQDN if absent)")
 	f.StringVar(&dc.caCertificatePath, "ca-certificate-path", "", "path to the CA certificate to use for Kubernetes PKI assets")
@@ -78,6 +83,13 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 	var caKeyBytes []byte
 	var err error
 
+	dc.locale, err = i18n.LoadTranslations(dc.translationsDirectory)
+	if err != nil {
+		log.Fatalf("error loading translation files: %s", err.Error())
+	}
+
+	i18n.Initialize(dc.locale)
+
 	if dc.apimodelPath == "" {
 		if len(args) > 0 {
 			dc.apimodelPath = args[0]
@@ -94,7 +106,12 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("specified api model does not exist (%s)", dc.apimodelPath)
 	}
 
-	dc.containerService, dc.apiVersion, err = api.LoadContainerServiceFromFile(dc.apimodelPath)
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: dc.locale,
+		},
+	}
+	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
@@ -129,7 +146,13 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 }
 
 func (dc *deployCmd) run() error {
-	templateGenerator, err := acsengine.InitializeTemplateGenerator(dc.classicMode)
+	ctx := acsengine.Context{
+		Translator: &i18n.Translator{
+			Locale: dc.locale,
+		},
+	}
+
+	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, dc.classicMode)
 	if err != nil {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}
@@ -148,7 +171,12 @@ func (dc *deployCmd) run() error {
 		log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
 	}
 
-	if err = acsengine.WriteArtifacts(dc.containerService, dc.apiVersion, template, parameters, dc.outputDirectory, certsgenerated, dc.parametersOnly); err != nil {
+	writer := &acsengine.ArtifactWriter{
+		Translator: &i18n.Translator{
+			Locale: dc.locale,
+		},
+	}
+	if err = writer.WriteArtifacts(dc.containerService, dc.apiVersion, template, parameters, dc.outputDirectory, certsgenerated, dc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 

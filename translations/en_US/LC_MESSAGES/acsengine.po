@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: acsengine\n"
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-05-18 05:09+0000\n"
-"PO-Revision-Date: 2017-05-17 22:16-0700\n"
+"POT-Creation-Date: 2017-05-18 22:00+0000\n"
+"PO-Revision-Date: 2017-05-18 15:03-0700\n"
 "Last-Translator: Jiangtian Li <jiangtianli@hotmail.com>\n"
 "Language-Team: English\n"
 "Language: en_US\n"
@@ -23,6 +23,27 @@ msgstr ""
 msgid "Error reading file %s, Error: %s"
 msgstr "Error reading file %s, Error: %s"
 
+#: pkg/operations/upgradecluster.go:49
+#, c-format
+msgid "Error while querying ARM for resources: %+v"
+msgstr "Error while querying ARM for resources: %+v"
+
+#: pkg/acsengine/transform.go:94
+#, c-format
+msgid "Found 2 resources with type %s in the template. There should only be 1"
+msgstr "Found 2 resources with type %s in the template. There should only be 1"
+
+#: pkg/acsengine/transform.go:117
+#, c-format
+msgid "Found no resources with type %s in the template. There should have been 1"
+msgstr "Found no resources with type %s in the template. There should have been 1"
+
+#: pkg/operations/kubernetes162upgrader.go:26
+#: pkg/operations/upgradecluster.go:64
+#, c-format
+msgid "Upgrade to Kubernetes 1.6.2 is not supported from version: %s"
+msgstr "Upgrade to Kubernetes 1.6.2 is not supported from version: %s"
+
 #: pkg/acsengine/output.go:109
 #, c-format
 msgid "error creating directory '%s': %s"
@@ -33,17 +54,27 @@ msgstr "error creating directory '%s': %s"
 msgid "error executing template for file %s: %v"
 msgstr "error executing template for file %s: %v"
 
+#: pkg/operations/kubernetes162upgrader.go:52
+#, c-format
+msgid "error generating upgrade template: %s"
+msgstr "error generating upgrade template: %s"
+
 #: pkg/acsengine/engine.go:1011
 #, c-format
 msgid "error parsing file %s: %v"
 msgstr "error parsing file %s: %v"
 
-#: pkg/api/apiloader.go:23
+#: pkg/api/apiloader.go:23 pkg/api/upgradeapiloader.go:20
 #, c-format
 msgid "error reading file %s: %s"
 msgstr "error reading file %s: %s"
 
-#: pkg/api/apiloader.go:136
+#: pkg/operations/kubernetes162upgrader.go:46
+#, c-format
+msgid "failed to initialize template generator: %s"
+msgstr "failed to initialize template generator: %s"
+
+#: pkg/api/apiloader.go:136 pkg/api/upgradeapiloader.go:70
 #, c-format
 msgid "invalid version %s for conversion back from unversioned object"
 msgstr "invalid version %s for conversion back from unversioned object"
@@ -58,7 +89,7 @@ msgstr "orchestrator '%s' is unsupported"
 msgid "template file %s does not exist"
 msgstr "template file %s does not exist"
 
-#: pkg/api/apiloader.go:84
+#: pkg/api/apiloader.go:84 pkg/api/upgradeapiloader.go:51
 #, c-format
 msgid "unrecognized APIVersion '%s'"
 msgstr "unrecognized APIVersion '%s'"

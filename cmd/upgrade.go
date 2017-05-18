@@ -6,7 +6,9 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
+	"github.com/leonelquinteros/gotext"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -19,6 +21,7 @@ const (
 )
 
 type upgradeCmd struct {
+	translationsDirectory string
 	authArgs
 
 	// user input
@@ -32,6 +35,7 @@ type upgradeCmd struct {
 	upgradeContainerService *api.UpgradeContainerService
 	upgradeAPIVersion       string
 	client                  armhelpers.ACSEngineClient
+	locale                  *gotext.Locale
 }
 
 // NewUpgradeCmd run a command to upgrade a Kubernetes cluster
@@ -48,6 +52,7 @@ func newUpgradeCmd() *cobra.Command {
 	}
 
 	f := upgradeCmd.Flags()
+	f.StringVar(&uc.translationsDirectory, "translations-directory", "", "translations directory (translations in the current directory if absent)")
 	f.StringVar(&uc.resourceGroupName, "resource-group", "", "the resource group where the cluster is deployed")
 	f.StringVar(&uc.deploymentDirectory, "deployment-dir", "", "the location of the output from `generate`")
 	f.StringVar(&uc.upgradeModelFile, "upgrademodel-file", "", "file path to upgrade API model")
@@ -60,6 +65,13 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	log.Infoln("validating...")
 
 	var err error
+
+	uc.locale, err = i18n.LoadTranslations(uc.translationsDirectory)
+	if err != nil {
+		log.Fatalf("error loading translation files: %s", err.Error())
+	}
+
+	i18n.Initialize(uc.locale)
 
 	if uc.resourceGroupName == "" {
 		cmd.Usage()
@@ -88,7 +100,12 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("specified api model does not exist (%s)", apiModelPath)
 	}
 
-	uc.containerService, uc.apiVersion, err = api.LoadContainerServiceFromFile(apiModelPath)
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: uc.locale,
+		},
+	}
+	uc.containerService, uc.apiVersion, err = apiloader.LoadContainerServiceFromFile(apiModelPath)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
@@ -97,7 +114,12 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("specified upgrade model file does not exist (%s)", uc.upgradeModelFile)
 	}
 
-	uc.upgradeContainerService, uc.upgradeAPIVersion, err = api.LoadUpgradeContainerServiceFromFile(uc.upgradeModelFile)
+	upgradeapiloader := &api.UpgradeApiloader{
+		Translator: &i18n.Translator{
+			Locale: uc.locale,
+		},
+	}
+	uc.upgradeContainerService, uc.upgradeAPIVersion, err = upgradeapiloader.LoadUpgradeContainerServiceFromFile(uc.upgradeModelFile)
 	if err != nil {
 		log.Fatalf("error parsing the upgrade api model: %s", err.Error())
 	}
@@ -115,6 +137,9 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	uc.validate(cmd, args)
 
 	upgradeCluster := operations.UpgradeCluster{
+		Translator: &i18n.Translator{
+			Locale: uc.locale,
+		},
 		Client: uc.client,
 	}
 

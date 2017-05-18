@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-05-18 05:35+0000\n"
-"PO-Revision-Date: 2017-05-17 22:41-0700\n"
+"POT-Creation-Date: 2017-05-18 22:07+0000\n"
+"PO-Revision-Date: 2017-05-18 15:18-0700\n"
 "Last-Translator: Jiangtian Li <jiangtianli@hotmail.com>\n"
 "Language-Team: Chinese (simplified)\n"
 "Language: zh_CN\n"
@@ -22,6 +22,27 @@ msgstr ""
 msgid "Error reading file %s, Error: %s"
 msgstr "文件 %s，错误读取时出错: %s"
 
+#: pkg/operations/upgradecluster.go:49
+#, c-format
+msgid "Error while querying ARM for resources: %+v"
+msgstr "查询ARM资源时出错： %+v"
+
+#: pkg/acsengine/transform.go:94
+#, c-format
+msgid "Found 2 resources with type %s in the template. There should only be 1"
+msgstr "模板发现两个类型%s 的资源。应该只有一个"
+
+#: pkg/acsengine/transform.go:117
+#, c-format
+msgid "Found no resources with type %s in the template. There should have been 1"
+msgstr "模板没有发现类型%s 的资源。应该有一个"
+
+#: pkg/operations/kubernetes162upgrader.go:26
+#: pkg/operations/upgradecluster.go:64
+#, c-format
+msgid "Upgrade to Kubernetes 1.6.2 is not supported from version: %s"
+msgstr "版本%s 不支持升级到Kubernetes 1.6.2"
+
 #: pkg/acsengine/output.go:109
 #, c-format
 msgid "error creating directory '%s': %s"
@@ -32,17 +53,27 @@ msgstr "创建目录 %s 时出错: %s"
 msgid "error executing template for file %s: %v"
 msgstr "执行文件 %s %v 模板时出错"
 
+#: pkg/operations/kubernetes162upgrader.go:52
+#, c-format
+msgid "error generating upgrade template: %s"
+msgstr "执行文件 %s 模板时出错"
+
 #: pkg/acsengine/engine.go:1011
 #, c-format
 msgid "error parsing file %s: %v"
 msgstr "解析文件 %s: %v 时出错"
 
-#: pkg/api/apiloader.go:23
+#: pkg/api/apiloader.go:23 pkg/api/upgradeapiloader.go:20
 #, c-format
 msgid "error reading file %s: %s"
 msgstr "读取文件 %s: %s 时出错"
 
-#: pkg/api/apiloader.go:136
+#: pkg/operations/kubernetes162upgrader.go:46
+#, c-format
+msgid "failed to initialize template generator: %s"
+msgstr "初始化模板生成器时出错： %s"
+
+#: pkg/api/apiloader.go:136 pkg/api/upgradeapiloader.go:70
 #, c-format
 msgid "invalid version %s for conversion back from unversioned object"
 msgstr "与回是非版本化的对象的转换的版本无效 %s"
@@ -57,7 +88,7 @@ msgstr "%s 配器是不受支持"
 msgid "template file %s does not exist"
 msgstr "模板文件 %s 不存在"
 
-#: pkg/api/apiloader.go:84
+#: pkg/api/apiloader.go:84 pkg/api/upgradeapiloader.go:51
 #, c-format
 msgid "unrecognized APIVersion '%s'"
 msgstr "无法识别的 APIVersion '%s'"

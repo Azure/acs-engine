@@ -10,6 +10,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -18,6 +19,7 @@ var _ UpgradeNode = &UpgradeMasterNode{}
 
 // UpgradeMasterNode upgrades a Kubernetes 1.5.3 master node to 1.6.2
 type UpgradeMasterNode struct {
+	Translator              *i18n.Translator
 	TemplateMap             map[string]interface{}
 	ParametersMap           map[string]interface{}
 	UpgradeContainerService *api.ContainerService
@@ -43,7 +45,10 @@ func (kmn *UpgradeMasterNode) CreateNode(countForOffset int) error {
 	masterOffset, _ := templateVariables["masterOffset"]
 	log.Infoln(fmt.Sprintf("Master offset: %v", masterOffset))
 
-	if err := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), kmn.TemplateMap); err != nil {
+	transformer := &acsengine.Transformer{
+		Translator: kmn.Translator,
+	}
+	if err := transformer.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), kmn.TemplateMap); err != nil {
 		log.Fatalln(err)
 		return err
 	}
@@ -61,7 +66,11 @@ func (kmn *UpgradeMasterNode) CreateNode(countForOffset int) error {
 		log.Fatalf("error pretty printing template parameters: %s \n", e.Error())
 	}
 	outputDirectory := path.Join("_output", kmn.UpgradeContainerService.Properties.MasterProfile.DNSPrefix, "Upgrade")
-	if err := acsengine.WriteArtifacts(kmn.UpgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
+
+	writer := &acsengine.ArtifactWriter{
+		Translator: kmn.Translator,
+	}
+	if err := writer.WriteArtifacts(kmn.UpgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 	// ************************
