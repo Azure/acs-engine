@@ -15,7 +15,7 @@ signed the CLA can be accepted into the repository.
 
 ## Support Channels
 
-Whether you are a user or contributor, official support channels include:
+This is an open source project and as such no formal support is available. However, like all good open source projects we do offer "best effort" support through github issues.
 
 GitHub issues:
 - ACS-Engine: https://github.com/Azure/acs-engine/issues - file issues and PRs related to ACS-Engine
@@ -24,19 +24,11 @@ GitHub issues:
 Before opening a new issue or submitting a new pull request, it's helpful to search the project - it's likely that another user has already reported the issue you're facing, or it's a known issue that we're already aware of.
 
 ## Milestones
-We use milestones to track progress of releases. There are also 2 special milestones
-used for helping us keep work organized: `Upcoming - Minor` and `Upcoming - Major`
+We use milestones to track progress of releases.
 
-`Upcoming - Minor` is used for keeping track of issues that aren't assigned to a specific
-release but could easily be addressed in a minor release. `Upcoming - Major` keeps track
-of issues that will need to be addressed in a major release. For example, if the current
-version is `2.2.0` an issue/PR could fall in to one of 4 different active milestones:
-`2.2.1`, `2.3.0`, `Upcoming - Minor`, or `Upcoming - Major`. If an issue pertains to a
-specific upcoming bug or minor release, it would go into `2.2.1` or `2.3.0`. If the issue/PR
-does not have a specific milestone yet, but it is likely that it will land in a `2.X` release,
-it should go into `Upcoming - Minor`. If the issue/PR is a large functionality add or change
-and/or it breaks compatibility, then it should be added to the `Upcoming - Major` milestone.
-An issue that we are not sure we will be doing will not be added to any milestone.
+For example, if the current version is `2.2.0` an issue/PR could fall in to one of 2 different active milestones:
+`2.2.1`, `2.3.0`.  If an issue pertains to a
+specific upcoming bug or minor release, it would go into `2.2.1` or `2.3.0`.
 
 A milestone (and hence release) is considered done when all outstanding issues/PRs have been closed or moved to another milestone.
 
@@ -49,8 +41,7 @@ contributing to acs-engine. All issue types follow the same general lifecycle. D
 1. Issue creation
 2. Triage
     - The maintainer in charge of triaging will apply the proper labels for the issue. This
-    includes labels for priority, type, and metadata (such as "orchestrator/k8s"). The only issue
-    priority we will be tracking is whether or not the issue is "critical." If additional
+    includes labels for priority, type, and metadata (such as "orchestrator/k8s"). If additional
     levels are needed in the future, we will add them.
     - (If needed) Clean up the title to succinctly and clearly state the issue. Also ensure
     that proposals are prefaced with "Proposal".
