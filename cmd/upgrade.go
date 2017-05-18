@@ -6,12 +6,9 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
-
 	"github.com/Azure/acs-engine/pkg/operations"
-	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/go-autorest/autorest/azure"
+
 	log "github.com/Sirupsen/logrus"
-	"github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -22,27 +19,16 @@ const (
 )
 
 type upgradeCmd struct {
+	authArgs
+
 	// user input
-	authMethod          string
-	clientSecret        string
 	resourceGroupName   string
 	deploymentDirectory string
-	rawClientID         string
-	rawSubscriptionID   string
-	rawAzureEnvironment string
 	upgradeModelFile    string
-
-	// parsed
-	clientID         uuid.UUID
-	subscriptionID   uuid.UUID
-	azureEnvironment azure.Environment
+	containerService    *api.ContainerService
+	apiVersion          string
 
 	// derived
-	tenantID              string
-	servicePrincipalToken *adal.ServicePrincipalToken
-	containerService      *api.ContainerService
-	apiVersion            string
-
 	upgradeContainerService *api.UpgradeContainerService
 	upgradeAPIVersion       string
 	client                  armhelpers.ACSEngineClient
@@ -62,15 +48,10 @@ func newUpgradeCmd() *cobra.Command {
 	}
 
 	f := upgradeCmd.Flags()
-	// TODO: list supported cloud envs
-	f.StringVar(&uc.rawAzureEnvironment, "azure-env", "AzurePublicCloud", "the target Azure cloud")
-	f.StringVar(&uc.authMethod, "auth-method", "client-secret", "auth method")
-	f.StringVar(&uc.rawClientID, "client-id", "", "the client ID for the Service Principal to use for authenticating to Azure")
-	f.StringVar(&uc.clientSecret, "client-secret", "", "the client secret for the Service Principal to use for authenticating to Azure")
-	f.StringVar(&uc.rawSubscriptionID, "subscription-id", "", "the subscription ID where the cluster is deployed")
 	f.StringVar(&uc.resourceGroupName, "resource-group", "", "the resource group where the cluster is deployed")
 	f.StringVar(&uc.deploymentDirectory, "deployment-dir", "", "the location of the output from `generate`")
 	f.StringVar(&uc.upgradeModelFile, "upgrademodel-file", "", "file path to upgrade API model")
+	addAuthFlags(&uc.authArgs, f)
 
 	return upgradeCmd
 }
@@ -79,15 +60,6 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	log.Infoln("validating...")
 
 	var err error
-
-	if uc.azureEnvironment, err = azure.EnvironmentFromName(uc.rawAzureEnvironment); err != nil {
-		log.Fatal("failed to parse --azure-env as a valid target Azure cloud environment")
-	}
-
-	if uc.rawSubscriptionID == "" {
-		cmd.Usage()
-		log.Fatal("--subscription-id must be specified")
-	}
 
 	if uc.resourceGroupName == "" {
 		cmd.Usage()
@@ -100,22 +72,8 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatal("--upgrademodel-file must be specified")
 	}
 
-	if uc.authMethod == "client-secret" {
-		if uc.rawClientID == "" || uc.clientSecret == "" {
-			cmd.Usage()
-			log.Fatal("--client-id and --client-secret must be specified when --auth-method=\"client_secret\"")
-		}
-	} else {
-		cmd.Usage()
-		log.Fatal("only client secret authentication is currently supported")
-	}
-
-	if uc.clientID, err = uuid.FromString(uc.rawClientID); err != nil {
-		log.Fatalf("failed to parse client id as a GUID. (client id must be specified as the application ID GUID, not the identifier_uri): %s", err.Error())
-	}
-
-	if uc.subscriptionID, err = uuid.FromString(uc.rawSubscriptionID); err != nil {
-		log.Fatalf("failed to parse subscription id as a GUID: %s", err.Error())
+	if uc.client, err = uc.authArgs.getClient(); err != nil {
+		log.Error("Failed to get client:", err)
 	}
 
 	if uc.deploymentDirectory == "" {
@@ -144,15 +102,13 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("error parsing the upgrade api model: %s", err.Error())
 	}
 
-	// get the actual ServicePrincipalToken here
-	uc.client, err = armhelpers.NewAzureClientWithClientSecret(uc.azureEnvironment, uc.subscriptionID.String(), uc.clientID.String(), uc.clientSecret)
+	uc.client, err = uc.authArgs.getClient()
 	if err != nil {
-		log.Fatalf("failed to retrieve AccessToken for the Service Principal")
+		log.Fatalf("failed to get client") // TODO: cleanup
 	}
-	err = uc.servicePrincipalToken.Refresh()
-	if err != nil {
-		log.Fatalf("failed to refresh AccessToken: %s", err.Error())
-	}
+
+	// TODO: Validate that downgrade is not allowed
+	// TODO: Validate noop case and return early
 }
 
 func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
@@ -162,7 +118,10 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		Client: uc.client,
 	}
 
-	upgradeCluster.UpgradeCluster(uc.subscriptionID, uc.resourceGroupName, uc.containerService, uc.upgradeContainerService)
+	if err := upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.resourceGroupName,
+		uc.containerService, uc.upgradeContainerService); err != nil {
+		log.Fatalf("Error upgrading cluster: %s \n", err.Error())
+	}
 
 	return nil
 }

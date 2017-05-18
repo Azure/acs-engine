@@ -9,6 +9,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
+	"io/ioutil"
 )
 
 const (
@@ -39,7 +40,8 @@ func newGenerateCmd() *cobra.Command {
 		Short: generateShortDescription,
 		Long:  generateLongDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return gc.run(cmd, args)
+			gc.validate(cmd, args)
+			return gc.run()
 		},
 	}
 
@@ -58,6 +60,7 @@ func newGenerateCmd() *cobra.Command {
 func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 	var caCertificateBytes []byte
 	var caKeyBytes []byte
+	var err error
 
 	if gc.apimodelPath == "" {
 		if len(args) > 0 {
@@ -75,29 +78,39 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("specified api model does not exist (%s)", gc.apimodelPath)
 	}
 
-	containerService, apiVersion, err := api.LoadContainerServiceFromFile(gc.apimodelPath)
+	gc.containerService, gc.apiVersion, err = api.LoadContainerServiceFromFile(gc.apimodelPath)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
 
 	if gc.outputDirectory == "" {
-		gc.outputDirectory = path.Join("_output", containerService.Properties.MasterProfile.DNSPrefix)
+		gc.outputDirectory = path.Join("_output", gc.containerService.Properties.MasterProfile.DNSPrefix)
 	}
 
-	if len(caKeyBytes) != 0 {
-		// the caKey is not in the api model, and should be stored separately from the model
-		// we put these in the model after model is deserialized
-		containerService.Properties.CertificateProfile.CaCertificate = string(caCertificateBytes)
-		containerService.Properties.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
-	}
+	// consume gc.caCertificatePath and gc.caPrivateKeyPath
 
-	gc.containerService = containerService
-	gc.apiVersion = apiVersion
+	if (gc.caCertificatePath != "" && gc.caPrivateKeyPath == "") || (gc.caCertificatePath == "" && gc.caPrivateKeyPath != "") {
+		log.Fatal("--ca-certificate-path and --ca-private-key-path must be specified together")
+	}
+	if gc.caCertificatePath != "" {
+		if caCertificateBytes, err = ioutil.ReadFile(gc.caCertificatePath); err != nil {
+			log.Fatal("failed to read CA certificate file:", err)
+		}
+		if caKeyBytes, err = ioutil.ReadFile(gc.caPrivateKeyPath); err != nil {
+			log.Fatal("failed to read CA private key file:", err)
+		}
+
+		prop := gc.containerService.Properties
+		if prop.CertificateProfile == nil {
+			prop.CertificateProfile = &api.CertificateProfile{}
+		}
+		prop.CertificateProfile.CaCertificate = string(caCertificateBytes)
+		prop.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
+	}
 }
 
-func (gc *generateCmd) run(cmd *cobra.Command, args []string) error {
-	gc.validate(cmd, args)
-	log.Infoln("Generating...")
+func (gc *generateCmd) run() error {
+	log.Infoln("Generating assets...")
 
 	templateGenerator, err := acsengine.InitializeTemplateGenerator(gc.classicMode)
 	if err != nil {
