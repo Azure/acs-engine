@@ -87,7 +87,12 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("specified api model does not exist (%s)", gc.apimodelPath)
 	}
 
-	containerService, apiVersion, err := api.LoadContainerServiceFromFile(gc.apimodelPath)
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: locale,
+		},
+	}
+	containerService, apiVersion, err := apiloader.LoadContainerServiceFromFile(gc.apimodelPath)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
@@ -113,7 +118,9 @@ func (gc *generateCmd) run(cmd *cobra.Command, args []string) error {
 	log.Infoln("Generating...")
 
 	ctx := acsengine.Context{
-		Locale: gc.locale,
+		Translator: &i18n.Translator{
+			Locale: gc.locale,
+		},
 	}
 	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, gc.classicMode)
 	if err != nil {
@@ -136,7 +143,12 @@ func (gc *generateCmd) run(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if err = acsengine.WriteArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
+	writer := &acsengine.ArtifactWriter{
+		Translator: &i18n.Translator{
+			Locale: gc.locale,
+		},
+	}
+	if err = writer.WriteArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 

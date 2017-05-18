@@ -4,7 +4,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
-	"github.com/leonelquinteros/gotext"
+	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
 // DCOSNodeType represents the type of DCOS Node
@@ -55,5 +55,5 @@ type AzureEnvironmentSpecConfig struct {
 
 // Context represents the object that is passed to the package
 type Context struct {
-	Locale *gotext.Locale
+	Translator *i18n.Translator
 }

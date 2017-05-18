@@ -14,6 +14,7 @@ import (
 	"text/template"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/ghodss/yaml"
 )
 
@@ -165,7 +166,7 @@ func (t *TemplateGenerator) verifyFiles() error {
 	allFiles = append(allFiles, swarmTemplateFiles...)
 	for _, file := range allFiles {
 		if _, err := Asset(file); err != nil {
-			return fmt.Errorf("template file %s does not exist", file)
+			return t.Translator.Errorf("template file %s does not exist", file)
 		}
 	}
 	return nil
@@ -174,14 +175,14 @@ func (t *TemplateGenerator) verifyFiles() error {
 // TemplateGenerator represents the object that performs the template generation.
 type TemplateGenerator struct {
 	ClassicMode bool
-	Context     Context
+	Translator  *i18n.Translator
 }
 
 // InitializeTemplateGenerator creates a new template generator object
 func InitializeTemplateGenerator(ctx Context, classicMode bool) (*TemplateGenerator, error) {
 	t := &TemplateGenerator{
 		ClassicMode: classicMode,
-		Context:     ctx,
+		Translator:  ctx.Translator,
 	}
 
 	if err := t.verifyFiles(); err != nil {
@@ -209,7 +210,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 
 	templ = template.New("acs template").Funcs(t.getTemplateFuncMap(containerService))
 
-	files, baseFile, e := prepareTemplateFiles(properties)
+	files, baseFile, e := t.prepareTemplateFiles(properties)
 	if e != nil {
 		return "", "", false, e
 	}
@@ -217,7 +218,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	for _, file := range files {
 		bytes, e := Asset(file)
 		if e != nil {
-			err = fmt.Errorf("Error reading file %s, Error: %s", file, e.Error())
+			err = t.Translator.Errorf("Error reading file %s, Error: %s", file, e.Error())
 			return templateRaw, parametersRaw, certsGenerated, err
 		}
 		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
@@ -282,7 +283,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	return kubeconfig, nil
 }
 
-func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
+func (t *TemplateGenerator) prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
 	var files []string
 	var baseFile string
 	if properties.OrchestratorProfile.OrchestratorType == api.DCOS {
@@ -298,7 +299,7 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 		files = append(commonTemplateFiles, swarmModeTemplateFiles...)
 		baseFile = swarmBaseFile
 	} else {
-		return nil, "", fmt.Errorf("orchestrator '%s' is unsupported", properties.OrchestratorProfile.OrchestratorType)
+		return nil, "", t.Translator.Errorf("orchestrator '%s' is unsupported", properties.OrchestratorProfile.OrchestratorType)
 	}
 
 	return files, baseFile, nil
@@ -1001,18 +1002,18 @@ func getSecurityRules(ports []int) string {
 func (t *TemplateGenerator) getSingleLineForTemplate(textFilename string, cs *api.ContainerService, profile interface{}) (string, error) {
 	b, err := Asset(textFilename)
 	if err != nil {
-		return "", fmt.Errorf("yaml file %s does not exist", textFilename)
+		return "", t.Translator.Errorf("yaml file %s does not exist", textFilename)
 	}
 
 	// use go templates to process the text filename
 	templ := template.New("customdata template").Funcs(t.getTemplateFuncMap(cs))
 	if _, err = templ.New(textFilename).Parse(string(b)); err != nil {
-		return "", fmt.Errorf("error parsing file %s: %v", textFilename, err)
+		return "", t.Translator.Errorf("error parsing file %s: %v", textFilename, err)
 	}
 
 	var buffer bytes.Buffer
 	if err = templ.ExecuteTemplate(&buffer, textFilename, profile); err != nil {
-		return "", fmt.Errorf("error executing template for file %s: %v", textFilename, err)
+		return "", t.Translator.Errorf("error executing template for file %s: %v", textFilename, err)
 	}
 	expandedTemplate := buffer.String()
 

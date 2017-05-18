@@ -79,3 +79,20 @@ func TestTranslationsPlural(t *testing.T) {
 	msg = translator.NT("There is %d parameter in resource %s", "There are %d parameters in resource %s", 9, 9, "Foo")
 	Expect(msg).Should(Equal("There are 9 parameters in resource Foo"))
 }
+
+func TestTranslationsError(t *testing.T) {
+	RegisterTestingT(t)
+
+	l, err := LoadTranslations(path.Join("..", "..", "translations", "test"))
+	Expect(err).Should(BeNil())
+
+	translator := &Translator{
+		Locale: l,
+	}
+
+	e := translator.Errorf("File not exists")
+	Expect(e.Error()).Should(Equal("File not exists"))
+
+	e = translator.NErrorf("There is %d error in the api model", "There are %d errors in the api model", 3, 3)
+	Expect(e.Error()).Should(Equal("There are 3 errors in the api model"))
+}

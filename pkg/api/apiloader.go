@@ -2,38 +2,43 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
+// Apiloader represents the object that loads api model
+type Apiloader struct {
+	Translator *i18n.Translator
+}
+
 // LoadContainerServiceFromFile loads an ACS Cluster API Model from a JSON file
-func LoadContainerServiceFromFile(jsonFile string) (*ContainerService, string, error) {
+func (a *Apiloader) LoadContainerServiceFromFile(jsonFile string) (*ContainerService, string, error) {
 	contents, e := ioutil.ReadFile(jsonFile)
 	if e != nil {
-		return nil, "", fmt.Errorf("error reading file %s: %s", jsonFile, e.Error())
+		return nil, "", a.Translator.Errorf("error reading file %s: %s", jsonFile, e.Error())
 	}
-	return DeserializeContainerService(contents)
+	return a.DeserializeContainerService(contents)
 }
 
 // DeserializeContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
-func DeserializeContainerService(contents []byte) (*ContainerService, string, error) {
+func (a *Apiloader) DeserializeContainerService(contents []byte) (*ContainerService, string, error) {
 	m := &TypeMeta{}
 	if err := json.Unmarshal(contents, &m); err != nil {
 		return nil, "", err
 	}
 	version := m.APIVersion
-	service, err := LoadContainerService(contents, version)
+	service, err := a.LoadContainerService(contents, version)
 
 	return service, version, err
 }
 
 // LoadContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
-func LoadContainerService(contents []byte, version string) (*ContainerService, error) {
+func (a *Apiloader) LoadContainerService(contents []byte, version string) (*ContainerService, error) {
 	switch version {
 	case v20160930.APIVersion:
 		containerService := &v20160930.ContainerService{}
@@ -76,12 +81,12 @@ func LoadContainerService(contents []byte, version string) (*ContainerService, e
 		return ConvertVLabsContainerService(containerService), nil
 
 	default:
-		return nil, fmt.Errorf("unrecognized APIVersion '%s'", version)
+		return nil, a.Translator.Errorf("unrecognized APIVersion '%s'", version)
 	}
 }
 
 // SerializeContainerService takes an unversioned container service and returns the bytes
-func SerializeContainerService(containerService *ContainerService, version string) ([]byte, error) {
+func (a *Apiloader) SerializeContainerService(containerService *ContainerService, version string) ([]byte, error) {
 	switch version {
 	case v20160930.APIVersion:
 		v20160930ContainerService := ConvertContainerServiceToV20160930(containerService)
@@ -128,6 +133,6 @@ func SerializeContainerService(containerService *ContainerService, version strin
 		return b, nil
 
 	default:
-		return nil, fmt.Errorf("invalid version %s for conversion back from unversioned object", version)
+		return nil, a.Translator.Errorf("invalid version %s for conversion back from unversioned object", version)
 	}
 }
