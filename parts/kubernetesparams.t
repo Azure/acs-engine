@@ -133,4 +133,19 @@
         "description": "The Service Principal Client Secret."
       },
       "type": "securestring"
+    },
+    "masterOffset": {
+      "defaultValue": 0,
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "metadata": {
+        "description": "The offset into the master pool where to start creating master VMs.  This value can be from 0 to 4, but must be less than masterCount."
+      },
+      "type": "int"
     }
+

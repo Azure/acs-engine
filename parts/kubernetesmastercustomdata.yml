@@ -9,7 +9,7 @@ disk_setup:
   /dev/sdc:
       table_type: gpt
       layout: true
-      overwrite: true
+      overwrite: false
 
 fs_setup:
 - label: etcd_disk
