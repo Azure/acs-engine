@@ -81,6 +81,7 @@ func (uc *UpgradeCluster) getUpgradableResources(subscriptionID uuid.UUID, resou
 				*uc.MasterVMs = append(*uc.MasterVMs, vm)
 			}
 			// TODO: Add logic to separate out VMs in various agent pookls
+			// TODO: This logic won't work for Windows agents
 			if strings.Contains(*(vm.Name), "k8s-agentpool") {
 				log.Infoln(fmt.Sprintf("Agent VM name: %s", *vm.Name))
 				// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX from temp parameter
