@@ -70,7 +70,7 @@ func (m *TestManager) Run() error {
 			defer m.wg.Done()
 
 			name := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
-			instanceName := fmt.Sprintf("acse-%d-%s-%s-%d", rand.Int(), d.Location, os.Getenv("BUILD_NUMBER"), i)
+			instanceName := fmt.Sprintf("acse-%d-%s-%s-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUMBER"), i)
 			resourceGroup := fmt.Sprintf("test-acs-%s-%s-%s-%d", strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), i)
 			logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
 
