@@ -16,7 +16,7 @@ set -u
 
 source "$DIR/../utils.sh"
 
-ssh_args="-i ${SSH_KEY} -o ConnectTimeout 30 -o StrictHostKeyChecking=no -p2200 azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"
+ssh_args="-i ${SSH_KEY} -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p2200 azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"
 
 function teardown {
   ssh ${ssh_args} docker service rm nginx || true
