@@ -7,9 +7,10 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"io/ioutil"
+
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
-	"io/ioutil"
 )
 
 const (
@@ -101,11 +102,20 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 		}
 
 		prop := gc.containerService.Properties
-		if prop.CertificateProfile == nil {
-			prop.CertificateProfile = &api.CertificateProfile{}
+		if prop.OrchestratorProfile.IsKubernetes() {
+			if prop.KubernetesCertificateProfile == nil {
+				prop.KubernetesCertificateProfile = &api.KubernetesCertificateProfile{}
+			}
+			prop.KubernetesCertificateProfile.CaCertificate = string(caCertificateBytes)
+			prop.KubernetesCertificateProfile.SetKubernetesCAPrivateKey(string(caKeyBytes))
 		}
-		prop.CertificateProfile.CaCertificate = string(caCertificateBytes)
-		prop.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
+		if prop.OrchestratorProfile.IsSwarmMode() {
+			if prop.SwarmModeCertificateProfile == nil {
+				prop.SwarmModeCertificateProfile = &api.SwarmModeCertificateProfile{}
+			}
+			prop.SwarmModeCertificateProfile.CaCertificate = string(caCertificateBytes)
+			prop.SwarmModeCertificateProfile.SetSwarmModeCAPrivateKey(string(caKeyBytes))
+		}
 	}
 }
 
