@@ -105,8 +105,14 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 	if len(caKeyBytes) != 0 {
 		// the caKey is not in the api model, and should be stored separately from the model
 		// we put these in the model after model is deserialized
-		containerService.Properties.CertificateProfile.CaCertificate = string(caCertificateBytes)
-		containerService.Properties.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
+		if containerService.Properties.OrchestratorProfile.IsKubernetes() {
+			containerService.Properties.KubernetesCertificateProfile.CaCertificate = string(caCertificateBytes)
+			containerService.Properties.KubernetesCertificateProfile.SetKubernetesCAPrivateKey(string(caKeyBytes))
+		}
+		if containerService.Properties.OrchestratorProfile.IsSwarmMode() {
+			containerService.Properties.SwarmModeCertificateProfile.CaCertificate = string(caCertificateBytes)
+			containerService.Properties.SwarmModeCertificateProfile.SetSwarmModeCAPrivateKey(string(caKeyBytes))
+		}
 	}
 
 	dc.containerService = containerService
