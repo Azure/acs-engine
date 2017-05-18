@@ -1,5 +1,5 @@
-hash: e217865c5465d4716f3e1b48ecba293a1e50b8498c1ad000334baaacfbd8a775
-updated: 2017-05-17T11:57:36.3187972-07:00
+hash: 3f99d1be0dbcab7f2196ed9896f8b215b096742a7d71e234ef265c426b01e00c
+updated: 2017-05-18T20:17:11.1103248Z
 imports:
 - name: github.com/Azure/azure-sdk-for-go
   version: 5841475edc7c8725d79885d635aa8956f97fdf0e
@@ -25,6 +25,14 @@ imports:
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/leonelquinteros/gotext
+  version: a735812a72672008b3902f8b2bc1302166a9a8ea
+- name: github.com/mattn/anko
+  version: a8c68fa2983e7dd5d3472992b1fbe2f7c44261f0
+  subpackages:
+  - ast
+  - parser
+  - vm
 - name: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - name: github.com/prometheus/common
