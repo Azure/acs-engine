@@ -10,7 +10,7 @@ type UpgradeAgentNode struct {
 // DeleteNode takes state/resources of the master/agent node from ListNodeResources
 // backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 // the node
-func (kmn *UpgradeAgentNode) DeleteNode() error {
+func (kmn *UpgradeAgentNode) DeleteNode(*string) error {
 	return nil
 }
 
