@@ -27,7 +27,6 @@
 			"type": "securestring",
 			"minLength": 1,
 			"metadata": {
-				"description": "Custom Parameter for Extension - for Sysdig, this is the Access Key"
 			}
 		}
    },
