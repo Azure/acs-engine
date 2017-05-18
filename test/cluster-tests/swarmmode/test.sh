@@ -16,7 +16,7 @@ set -u
 
 source "$DIR/../utils.sh"
 
-ssh_args="-i ${SSH_KEY} -o StrictHostKeyChecking=no -p2200 azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"
+ssh_args="-i ${SSH_KEY} -o ConnectTimeout 30 -o StrictHostKeyChecking=no -p2200 azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"
 
 function teardown {
   ssh ${ssh_args} docker service rm nginx || true
@@ -28,7 +28,7 @@ trap teardown EXIT
 
 log "Starting swarmmode deployment validation in ${LOCATION}"
 sleep 30
-log "Creating network..."
+log "Creating network"
 wait=10
 count=12
 args="${ssh_args} docker network create --driver overlay --subnet 10.0.9.0/24 --opt encrypted network"

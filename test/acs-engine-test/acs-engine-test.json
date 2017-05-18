@@ -1,19 +1,19 @@
 {
   "deployments": [
     {
-      "cluster_definition": "examples/kubernetes.json",
+      "cluster_definition": "kubernetes.json",
       "location": "westus"
     },
     {
-      "cluster_definition": "examples/dcos.json",
+      "cluster_definition": "dcos.json",
       "location": "eastus"
     },
     {
-      "cluster_definition": "examples/swarm.json",
+      "cluster_definition": "swarm.json",
       "location": "southcentralus"
     },
     {
-      "cluster_definition": "examples/swarmmode.json",
+      "cluster_definition": "swarmmode.json",
       "location": "westus2"
     }
   ]
