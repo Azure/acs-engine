@@ -11,7 +11,7 @@ import (
 func TestLoadTranslations(t *testing.T) {
 	RegisterTestingT(t)
 
-	_, err := LoadTranslations(path.Join("..", "..", "translations", "test"))
+	_, err := LoadTranslations(path.Join("..", "..", "test", "translations"))
 	Expect(err).Should(BeNil())
 
 	_, err = LoadTranslations("non_existing_directory")
@@ -23,7 +23,7 @@ func TestTranslationLanguage(t *testing.T) {
 
 	origLang := os.Getenv("LANG")
 	os.Setenv("LANG", "en_US.UTF-8")
-	_, err := LoadTranslations(path.Join("..", "..", "translations", "test"))
+	_, err := LoadTranslations(path.Join("..", "..", "test", "translations"))
 	Expect(err).Should(BeNil())
 
 	lang := GetLanguage()
@@ -37,7 +37,7 @@ func TestTranslationLanguageDefault(t *testing.T) {
 
 	origLang := os.Getenv("LANG")
 	os.Setenv("LANG", "ll_CC.UTF-8")
-	_, err := LoadTranslations(path.Join("..", "..", "translations", "test"))
+	_, err := LoadTranslations(path.Join("..", "..", "test", "translations"))
 	Expect(err).Should(BeNil())
 
 	lang := GetLanguage()
@@ -49,7 +49,7 @@ func TestTranslationLanguageDefault(t *testing.T) {
 func TestTranslations(t *testing.T) {
 	RegisterTestingT(t)
 
-	l, err := LoadTranslations(path.Join("..", "..", "translations", "test"))
+	l, err := LoadTranslations(path.Join("..", "..", "test", "translations"))
 	Expect(err).Should(BeNil())
 
 	translator := &Translator{
@@ -66,7 +66,7 @@ func TestTranslations(t *testing.T) {
 func TestTranslationsPlural(t *testing.T) {
 	RegisterTestingT(t)
 
-	l, err := LoadTranslations(path.Join("..", "..", "translations", "test"))
+	l, err := LoadTranslations(path.Join("..", "..", "test", "translations"))
 	Expect(err).Should(BeNil())
 
 	translator := &Translator{
@@ -83,7 +83,7 @@ func TestTranslationsPlural(t *testing.T) {
 func TestTranslationsError(t *testing.T) {
 	RegisterTestingT(t)
 
-	l, err := LoadTranslations(path.Join("..", "..", "translations", "test"))
+	l, err := LoadTranslations(path.Join("..", "..", "test", "translations"))
 	Expect(err).Should(BeNil())
 
 	translator := &Translator{
