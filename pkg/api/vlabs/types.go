@@ -1,5 +1,10 @@
 package vlabs
 
+import (
+	"fmt"
+	"strings"
+)
+
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
 type ResourcePurchasePlan struct {
@@ -27,7 +32,7 @@ type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
 	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
 	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
-	AgentPoolProfiles       []AgentPoolProfile       `json:"agentPoolProfiles,omitempty"`
+	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
@@ -117,8 +122,9 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType OrchestratorType  `json:"orchestratorType"`
-	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	OrchestratorType    OrchestratorType    `json:"orchestratorType"`
+	OrchestratorVersion OrchestratorVersion `json:"orchestratorVersion"`
+	KubernetesConfig    *KubernetesConfig   `json:"kubernetesConfig,omitempty"`
 }
 
 // KubernetesConfig contains the Kubernetes config structure, containing
@@ -133,6 +139,7 @@ type MasterProfile struct {
 	Count                    int    `json:"count"`
 	DNSPrefix                string `json:"dnsPrefix"`
 	VMSize                   string `json:"vmSize"`
+	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
@@ -155,6 +162,7 @@ type AgentPoolProfile struct {
 	Name                string `json:"name"`
 	Count               int    `json:"count"`
 	VMSize              string `json:"vmSize"`
+	OSDiskSizeGB        int    `json:"osDiskSizeGB,omitempty"`
 	DNSPrefix           string `json:"dnsPrefix,omitempty"`
 	OSType              OSType `json:"osType,omitempty"`
 	Ports               []int  `json:"ports,omitempty"`
@@ -196,6 +204,29 @@ type KeyVaultCertificate struct {
 
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
+
+// OrchestratorVersion defines the version for orchestratorType
+type OrchestratorVersion string
+
+// UnmarshalText decodes OrchestratorType text, do a case insensitive comparison with
+// the defined OrchestratorType constant and set to it if they equal
+func (o *OrchestratorType) UnmarshalText(text []byte) error {
+	s := string(text)
+	switch {
+	case strings.EqualFold(s, string(DCOS)):
+		*o = DCOS
+	case strings.EqualFold(s, string(Swarm)):
+		*o = Swarm
+	case strings.EqualFold(s, string(Kubernetes)):
+		*o = Kubernetes
+	case strings.EqualFold(s, string(SwarmMode)):
+		*o = SwarmMode
+	default:
+		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", s)
+	}
+
+	return nil
+}
 
 // OSType represents OS types of agents
 type OSType string

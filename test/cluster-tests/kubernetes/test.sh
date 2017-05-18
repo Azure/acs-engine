@@ -1,11 +1,23 @@
 #!/bin/bash
 
+####################################################
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+####################################################
+
 # exit on errors
 set -e
 # exit on unbound variables
 set -u
 # verbose logging
 set -x
+
+source "$DIR/../utils.sh"
 
 ENV_FILE="${CLUSTER_DEFINITION}.env"
 if [ -e "${ENV_FILE}" ]; then
@@ -15,21 +27,10 @@ fi
 EXPECTED_NODE_COUNT="${EXPECTED_NODE_COUNT:-4}"
 EXPECTED_DNS="${EXPECTED_DNS:-2}"
 EXPECTED_DASHBOARD="${EXPECTED_DASHBOARD:-1}"
+EXPECTED_ORCHESTRATOR_VERSION="${EXPECTED_ORCHESTRATOR_VERSION:-}"
 
 # set TEST_ACR to "y" for ACR testing
 TEST_ACR="${TEST_ACR:-n}"
-
-function log {
-    local message="$1"
-    local caller="$(caller 0)"
-	  now=$(date +"%D %T %Z")
-
-	if [[ ! -z "${LOGFILE:-}" ]]; then
-		echo "[${now}] [${caller}] ${message}" | tee -a ${LOGFILE}
-	else
-		echo "[${now}] [${caller}] ${message}"
-    fi
-}
 
 namespace="namespace-${RANDOM}"
 log "Running test in namespace: ${namespace}"
@@ -57,7 +58,7 @@ fi
 ###### Check node count
 function check_node_count() {
   log "Checking node count"
-  count=12
+  count=25
   while (( $count > 0 )); do
     node_count=$(kubectl get nodes --no-headers | grep -v NotReady | grep Ready | wc | awk '{print $1}')
     if (( ${node_count} == ${EXPECTED_NODE_COUNT} )); then break; fi
@@ -70,6 +71,15 @@ function check_node_count() {
 
 check_node_count
 
+###### Validate Kubernetes version
+log "Checking Kubernetes version. Expected: ${EXPECTED_ORCHESTRATOR_VERSION}"
+if [ ! -z "${EXPECTED_ORCHESTRATOR_VERSION}" ]; then
+  kubernetes_version=$(kubectl version --short)
+  if [[ ${kubernetes_version} != *"Server Version: v${EXPECTED_ORCHESTRATOR_VERSION}"* ]]; then
+    log "unexpected kubernetes version:\n${kubernetes_version}"; exit -1
+  fi
+fi
+
 ###### Wait for no more container creating
 log "Checking containers being created"
 count=12
@@ -81,7 +91,6 @@ done
 if (( ${creating_count} != 0 )); then
   log "gave up waiting for creation to finish"; exit -1
 fi
-
 
 ###### Check for Kube-DNS
 log "Checking Kube-DNS"

@@ -1,5 +1,9 @@
 package acsengine
 
+import (
+	"github.com/Azure/acs-engine/pkg/api"
+)
+
 const (
 	// DefaultMasterSubnet specifies the default master subnet for DCOS or Swarm
 	DefaultMasterSubnet = "172.16.0.0/24"
@@ -40,17 +44,59 @@ const (
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
 
-const (
-	KubernetesHyperkubeImageName         = "hyperkube-amd64:v1.5.3"
-	KubernetesDashboardImageName         = "kubernetes-dashboard-amd64:v1.5.1"
-	KubernetesExechealthzImageName       = "exechealthz-amd64:1.2"
-	KubernetesAddonResizerImageName      = "addon-resizer:1.6"
-	KubernetesHeapsterImageName          = "heapster:v1.2.0"
-	KubernetesDNSImageName               = "kubedns-amd64:1.7"
-	KubernetesAddonManagerImageName      = "kube-addon-manager-amd64:v6.2"
-	KubernetesDNSMasqImageName           = "kube-dnsmasq-amd64:1.3"
-	KubernetesPodInfraContainerImageName = "pause-amd64:3.0"
-)
+var KubeImages = map[api.OrchestratorVersion]map[string]string{
+	api.Kubernetes162: {
+		"hyperkube":    "hyperkube-amd64:v1.6.2",
+		"dashboard":    "kubernetes-dashboard-amd64:v1.6.0",
+		"exechealthz":  "exechealthz-amd64:1.2",
+		"addonresizer": "addon-resizer:1.6",
+		"heapster":     "heapster:v1.2.0",
+		"dns":          "kubedns-amd64:1.7",
+		"addonmanager": "kube-addon-manager-amd64:v6.2",
+		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"pause":        "pause-amd64:3.0",
+		"windowszip":   "v1.6.2intwinnat.zip",
+	},
+
+	api.Kubernetes160: {
+		"hyperkube":    "hyperkube-amd64:v1.6.0",
+		"dashboard":    "kubernetes-dashboard-amd64:v1.6.0",
+		"exechealthz":  "exechealthz-amd64:1.2",
+		"addonresizer": "addon-resizer:1.6",
+		"heapster":     "heapster:v1.2.0",
+		"dns":          "kubedns-amd64:1.7",
+		"addonmanager": "kube-addon-manager-amd64:v6.2",
+		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"pause":        "pause-amd64:3.0",
+		"windowszip":   "v1.6.0intwinnat.zip",
+	},
+
+	api.Kubernetes157: {
+		"hyperkube":    "hyperkube-amd64:v1.5.7",
+		"dashboard":    "kubernetes-dashboard-amd64:v1.5.1",
+		"exechealthz":  "exechealthz-amd64:1.2",
+		"addonresizer": "addon-resizer:1.6",
+		"heapster":     "heapster:v1.2.0",
+		"dns":          "kubedns-amd64:1.7",
+		"addonmanager": "kube-addon-manager-amd64:v6.2",
+		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"pause":        "pause-amd64:3.0",
+		"windowszip":   "v1.5.7intwinnat.zip",
+	},
+
+	api.Kubernetes153: {
+		"hyperkube":    "hyperkube-amd64:v1.5.3",
+		"dashboard":    "kubernetes-dashboard-amd64:v1.5.1",
+		"exechealthz":  "exechealthz-amd64:1.2",
+		"addonresizer": "addon-resizer:1.6",
+		"heapster":     "heapster:v1.2.0",
+		"dns":          "kubedns-amd64:1.7",
+		"addonmanager": "kube-addon-manager-amd64:v6.2",
+		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"pause":        "pause-amd64:3.0",
+		"windowszip":   "v1.5.3intwinnat.zip",
+	},
+}
 
 const (
 	//MsecndDCOSBootstrapDownloadURL Azure CDN to download DCOS1.7.3

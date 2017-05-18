@@ -15,7 +15,7 @@ Here are the steps to deploy a simple Kubernetes cluster:
   * To enable the optional network policy enforcement using calico, you have to
     set the parameter during this step according to this [guide](#optional-enable-network-policy-enforcement-using-calico)
 7. Temporary workaround when deploying a cluster in a custom VNET with
-   Kubernetes 1.5.3:
+   Kubernetes 1.6.0:
     1. After a cluster has been created in step 6 get id of the route table resource from Microsoft.Network provider in your resource group. 
        The route table resource id is of the format:
        `/subscriptions/SUBSCRIPTIONID/resourceGroups/RESOURCEGROUPNAME/providers/Microsoft.Network/routeTables/ROUTETABLENAME`
@@ -110,13 +110,12 @@ After completing this walkthrough you will know how to:
 1. After successfully deploying the template write down the master FQDNs (Fully Qualified Domain Name).
    1. If using Powershell or CLI, the output parameter is in the OutputsString section named 'masterFQDN'
    2. If using Portal, to get the output you need to:
-     1. navigate to "resource group"
-     2. click on the resource group you just created
-     3. then click on "Succeeded" under *last deployment*
-     4. then click on the "Microsoft.Template"
-     5. now you can copy the output FQDNs and sample SSH commands
-
-   ![Image of docker scaling](images/portal-kubernetes-outputs.png)
+      1. navigate to "resource group"
+      2. click on the resource group you just created
+      3. then click on "Succeeded" under *last deployment*
+      4. then click on the "Microsoft.Template"
+      5. now you can copy the output FQDNs and sample SSH commands
+      ![Image of docker scaling](images/portal-kubernetes-outputs.png)
 
 2. SSH to the master FQDN obtained in step 1.
 
@@ -149,9 +148,9 @@ After completing this walkthrough you will know how to:
   ![Image of browsing to nginx](images/kubernetes-nginx4.png)  
 
 8. The next step in this walkthrough is to show you how to remotely manage your Kubernetes cluster.  First download Kubectl to your machine and put it in your path:
-  * [Windows Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.5.3/bin/windows/amd64/kubectl.exe)
-  * [OSX Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.5.3/bin/darwin/amd64/kubectl)
-  * [Linux](https://storage.googleapis.com/kubernetes-release/release/v1.5.3/bin/linux/amd64/kubectl)
+  * [Windows Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/windows/amd64/kubectl.exe)
+  * [OSX Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/darwin/amd64/kubectl)
+  * [Linux](https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/linux/amd64/kubectl)
 
 9. The Kubernetes master contains the kube config file for remote access under the home directory ~/.kube/config.  Download this file to your machine, set the KUBECONFIG environment variable, and run kubectl to verify you can connect to cluster:
   * Windows to use pscp from [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html).  Ensure you have your certificate exposed through [pageant](ssh.md#key-management-and-agent-forwarding-with-windows-pageant):

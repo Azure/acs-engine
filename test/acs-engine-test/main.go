@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -47,16 +46,15 @@ func (m *TestManager) Run() error {
 		return nil
 	}
 
-	// deternime timeout
+	// determine timeout
 	timeoutMin, err := strconv.Atoi(os.Getenv("STAGE_TIMEOUT_MIN"))
 	if err != nil {
-		fmt.Printf("Error [Atoi STAGE_TIMEOUT_MIN]: %v\n", err)
-		return err
+		return fmt.Errorf("Error [Atoi STAGE_TIMEOUT_MIN]: %v", err)
 	}
 	timeout := time.Duration(time.Minute * time.Duration(timeoutMin))
 
 	// login to Azure
-	if err := runStep("set_azure_account", m.rootDir, "main", os.Environ(), fmt.Sprintf("%s/main.log", logDir), timeout); err != nil {
+	if _, err := runStep("init", "set_azure_account", m.rootDir, os.Environ(), timeout); err != nil {
 		return err
 	}
 
@@ -73,17 +71,19 @@ func (m *TestManager) Run() error {
 			logFile := fmt.Sprintf("%s/%s.log", logDir, instanceName)
 
 			// determine orchestrator
-			orchestrator, err := getOrchestrator(fmt.Sprintf("%s/%s", m.rootDir, d.ClusterDefinition))
+			env := os.Environ()
+			env = append(env, fmt.Sprintf("CLUSTER_DEFINITION=%s", d.ClusterDefinition))
+			cmd := exec.Command("test/step.sh", "get_orchestrator_type")
+			cmd.Env = env
+			out, err := cmd.Output()
 			if err != nil {
-				wrileLog(logFile, []byte(err.Error()))
-				fmt.Printf("Error [getOrchestrator %s] : %v\n", d.ClusterDefinition, err)
+				wrileLog(logFile, "Error [getOrchestrator %s] : %v", d.ClusterDefinition, err)
 				retvals[i] = 1
 				return
 			}
+			orchestrator := strings.TrimSpace(string(out))
 
 			// update environment
-			env := os.Environ()
-			env = append(env, fmt.Sprintf("CLUSTER_DEFINITION=%s", d.ClusterDefinition))
 			env = append(env, fmt.Sprintf("LOCATION=%s", d.Location))
 			env = append(env, fmt.Sprintf("ORCHESTRATOR=%s", orchestrator))
 			env = append(env, fmt.Sprintf("INSTANCE_NAME=%s", instanceName))
@@ -100,13 +100,44 @@ func (m *TestManager) Run() error {
 			}
 
 			for _, step := range steps {
-				if err = runStep(step, m.rootDir, instanceName, env, logFile, timeout); err != nil {
+				txt, err := runStep(instanceName, step, m.rootDir, env, timeout)
+				if err != nil {
+					wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, instanceName, err, txt)
 					retvals[i] = 1
 					break
 				}
+				wrileLog(logFile, txt)
+				if step == "generate_template" {
+					// set up extra environment variables available after template generation
+					env = append(env, fmt.Sprintf("LOGFILE=%s/validate-%s.log", logDir, instanceName))
+
+					cmd := exec.Command("test/step.sh", "get_orchestrator_version")
+					cmd.Env = env
+					out, err := cmd.Output()
+					if err != nil {
+						wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_version", instanceName, err)
+						retvals[i] = 1
+						break
+					}
+					env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_VERSION=%s", strings.TrimSpace(string(out))))
+
+					if orchestrator == "kubernetes" {
+						cmd = exec.Command("test/step.sh", "get_node_count")
+						cmd.Env = env
+						out, err = cmd.Output()
+						if err != nil {
+							wrileLog(logFile, "Error [%s:%s] %v", "get_node_count", instanceName, err)
+							retvals[i] = 1
+							break
+						}
+						env = append(env, fmt.Sprintf("EXPECTED_NODE_COUNT=%s", strings.TrimSpace(string(out))))
+					}
+				}
 			}
 			// clean up
-			runStep("cleanup", m.rootDir, instanceName, env, logFile, timeout)
+			if txt, err := runStep(instanceName, "cleanup", m.rootDir, env, timeout); err != nil {
+				wrileLog(logFile, "Error: %v\nOutput: %s", err, txt)
+			}
 		}(i, d)
 	}
 	m.wg.Wait()
@@ -138,25 +169,7 @@ func isValidEnv() bool {
 	return valid
 }
 
-func getOrchestrator(fname string) (string, error) {
-	data, err := ioutil.ReadFile(fname)
-	if err != nil {
-		return "", err
-	}
-	for _, line := range strings.Split(string(data), "\n") {
-		parts := orchestrator_re.FindStringSubmatch(line)
-		if parts != nil {
-			orchestrator := strings.ToLower(parts[1])
-			if strings.HasPrefix(orchestrator, "dcos") {
-				orchestrator = "dcos"
-			}
-			return orchestrator, nil
-		}
-	}
-	return "", fmt.Errorf("No orchestratorType in %s", fname)
-}
-
-func runStep(step, dir, instanceName string, env []string, logFile string, timeout time.Duration) error {
+func runStep(name, step, dir string, env []string, timeout time.Duration) (string, error) {
 	cmd := exec.Command("/bin/bash", "-c", fmt.Sprintf("%s %s", script, step))
 	cmd.Dir = dir
 	cmd.Env = env
@@ -166,8 +179,7 @@ func runStep(step, dir, instanceName string, env []string, logFile string, timeo
 	cmd.Stderr = &out
 
 	if err := cmd.Start(); err != nil {
-		fmt.Printf("Error [%s %s] : %v\n", step, instanceName, err)
-		return err
+		return "", err
 	}
 	timer := time.AfterFunc(timeout, func() {
 		cmd.Process.Kill()
@@ -175,16 +187,17 @@ func runStep(step, dir, instanceName string, env []string, logFile string, timeo
 	err := cmd.Wait()
 	timer.Stop()
 
-	wrileLog(logFile, out.Bytes())
 	if err != nil {
-		fmt.Printf("Error [%s %s] : %v\n", step, instanceName, err)
-		return err
+		fmt.Printf("Error [%s %s]\n", step, name)
+		return out.String(), err
 	}
-	fmt.Printf("SUCCESS [%s %s]\n", step, instanceName)
-	return nil
+	fmt.Printf("SUCCESS [%s %s]\n", step, name)
+	return out.String(), nil
 }
 
-func wrileLog(fname string, data []byte) {
+func wrileLog(fname string, format string, args ...interface{}) {
+	str := fmt.Sprintf(format, args...)
+
 	f, err := os.OpenFile(fname, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Printf("Error [OpenFile %s] : %v\n", fname, err)
@@ -192,7 +205,7 @@ func wrileLog(fname string, data []byte) {
 	}
 	defer f.Close()
 
-	if _, err = f.Write(data); err != nil {
+	if _, err = f.Write([]byte(str)); err != nil {
 		fmt.Printf("Error [Write %s] : %v\n", fname, err)
 	}
 }
@@ -232,6 +245,7 @@ func main_internal() error {
 	}
 	// make logs directory
 	logDir = fmt.Sprintf("%s/_logs", rootDir)
+	os.RemoveAll(logDir)
 	if err = os.Mkdir(logDir, os.FileMode(0755)); err != nil {
 		return err
 	}

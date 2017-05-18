@@ -1,8 +1,8 @@
 FROM buildpack-deps:xenial
 
 ENV GO_VERSION 1.8
-ENV KUBECTL_VERSION 1.5.3
-ENV AZURE_CLI_VERSION 0.1.2rc1
+ENV KUBECTL_VERSION 1.6.0
+ENV AZURE_CLI_VERSION 2.0.3
 
 RUN apt-get update \
     && apt-get -y upgrade \
@@ -15,6 +15,8 @@ RUN mkdir /tmp/godeb \
     && rm -rf /tmp/godeb
 
 RUN pip install "azure-cli==${AZURE_CLI_VERSION}"
+
+RUN curl -fsSL https://get.docker.com/ | sh
 
 RUN curl "https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl" > /usr/local/bin/kubectl \
     && chmod +x /usr/local/bin/kubectl

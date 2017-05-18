@@ -12,13 +12,27 @@ import (
 func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case DCOS:
-	case DCOS190:
-	case DCOS188:
-	case DCOS187:
-	case DCOS184:
-	case DCOS173:
+		switch o.OrchestratorVersion {
+		case DCOS173:
+		case DCOS184:
+		case DCOS187:
+		case DCOS188:
+		case DCOS190:
+		case "":
+		default:
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
+		}
 	case Swarm:
 	case Kubernetes:
+		switch o.OrchestratorVersion {
+		case Kubernetes162:
+		case Kubernetes160:
+		case Kubernetes157:
+		case Kubernetes153:
+		case "":
+		default:
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
+		}
 	case SwarmMode:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
@@ -46,6 +60,9 @@ func (m *MasterProfile) Validate() error {
 	if e := validateName(m.VMSize, "MasterProfile.VMSize"); e != nil {
 		return e
 	}
+	if m.OSDiskSizeGB != 0 && (m.OSDiskSizeGB < MinDiskSizeGB || m.OSDiskSizeGB > MaxDiskSizeGB) {
+		return fmt.Errorf("Invalid master os disk size of %d specified.  The range of valid values are [%d, %d]", m.OSDiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
+	}
 	if m.IPAddressCount != 0 && (m.IPAddressCount < MinIPAddressCount || m.IPAddressCount > MaxIPAddressCount) {
 		return fmt.Errorf("MasterProfile.IPAddressCount needs to be in the range [%d,%d]", MinIPAddressCount, MaxIPAddressCount)
 	}
@@ -53,7 +70,7 @@ func (m *MasterProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *AgentPoolProfile) Validate() error {
+func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 	if e := validateName(a.Name, "AgentPoolProfile.Name"); e != nil {
 		return e
 	}
@@ -66,22 +83,38 @@ func (a *AgentPoolProfile) Validate() error {
 	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
 		return e
 	}
-	if len(a.Ports) > 0 {
-		if e := validateUniquePorts(a.Ports, a.Name); e != nil {
-			return e
-		}
-		for _, port := range a.Ports {
-			if port < MinPort || port > MaxPort {
-				return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
-			}
-		}
-		if e := validateName(a.DNSPrefix, "AgentPoolProfile.DNSPrefix when specifying AgentPoolProfile Ports"); e != nil {
-			return e
-		}
+	if a.OSDiskSizeGB != 0 && (a.OSDiskSizeGB < MinDiskSizeGB || a.OSDiskSizeGB > MaxDiskSizeGB) {
+		return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", a.OSDiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
+	}
+	if a.DNSPrefix != "" {
 		if e := validateDNSName(a.DNSPrefix); e != nil {
 			return e
 		}
+		if len(a.Ports) > 0 {
+			if e := validateUniquePorts(a.Ports, a.Name); e != nil {
+				return e
+			}
+			for _, port := range a.Ports {
+				if port < MinPort || port > MaxPort {
+					return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
+				}
+			}
+		} else {
+			a.Ports = []int{80, 443, 8080}
+		}
+	} else {
+		if len(a.Ports) > 0 {
+			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty")
+		}
 	}
+
+	// for Kubernetes, we don't support AgentPoolProfile.DNSPrefix
+	if orchestratorType == Kubernetes {
+		if e := validateNameEmpty(a.DNSPrefix, "AgentPoolProfile.DNSPrefix"); e != nil {
+			return e
+		}
+	}
+
 	if len(a.DiskSizesGB) > 0 {
 		if len(a.StorageProfile) == 0 {
 			return fmt.Errorf("property 'StorageProfile' must be set to either '%s' or '%s' when attaching disks", StorageAccount, ManagedDisks)
@@ -173,7 +206,7 @@ func (a *Properties) Validate() error {
 	}
 
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
-		if e := agentPoolProfile.Validate(); e != nil {
+		if e := agentPoolProfile.Validate(a.OrchestratorProfile.OrchestratorType); e != nil {
 			return e
 		}
 		switch agentPoolProfile.AvailabilityProfile {
@@ -199,11 +232,6 @@ func (a *Properties) Validate() error {
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
-			case DCOS173:
-			case DCOS184:
-			case DCOS187:
-			case DCOS188:
-			case DCOS190:
 			case Swarm:
 			case Kubernetes:
 			case SwarmMode:
@@ -215,11 +243,6 @@ func (a *Properties) Validate() error {
 		if len(agentPoolProfile.CustomNodeLabels) > 0 {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
-			case DCOS173:
-			case DCOS184:
-			case DCOS187:
-			case DCOS188:
-			case DCOS190:
 			default:
 				return fmt.Errorf("Agent Type attributes are only supported for DCOS.")
 			}
@@ -238,6 +261,11 @@ func (a *Properties) Validate() error {
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
+
+			if a.WindowsProfile == nil {
+				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
+			}
+
 			if len(a.WindowsProfile.AdminUsername) == 0 {
 				return fmt.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}
@@ -290,6 +318,13 @@ func (a *Properties) validateNetworkPolicy() error {
 	return nil
 }
 
+func validateNameEmpty(name string, label string) error {
+	if name != "" {
+		return fmt.Errorf("%s must be an empty value", label)
+	}
+	return nil
+}
+
 func validateName(name string, label string) error {
 	if name == "" {
 		return fmt.Errorf("%s must be a non-empty value", label)
@@ -312,7 +347,7 @@ func validatePoolName(poolName string) error {
 }
 
 func validateDNSName(dnsName string) error {
-	dnsNameRegex := `^[a-z][a-z0-9-]{1,43}[a-z0-9]$`
+	dnsNameRegex := `^([A-Za-z][A-Za-z0-9-]{1,43}[A-Za-z0-9])$`
 	re, err := regexp.Compile(dnsNameRegex)
 	if err != nil {
 		return err
@@ -323,7 +358,7 @@ func validateDNSName(dnsName string) error {
 	return nil
 }
 
-func validateUniqueProfileNames(profiles []AgentPoolProfile) error {
+func validateUniqueProfileNames(profiles []*AgentPoolProfile) error {
 	profileNames := make(map[string]bool)
 	for _, profile := range profiles {
 		if _, ok := profileNames[profile.Name]; ok {
