@@ -11,6 +11,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/leonelquinteros/gotext"
+	"io/ioutil"
 )
 
 const (
@@ -29,13 +30,13 @@ type generateCmd struct {
 	noPrettyPrint         bool
 	parametersOnly        bool
 
-	// Parsed from inputs
+	// derived
 	containerService *api.ContainerService
 	apiVersion       string
 	locale           *gotext.Locale
 }
 
-func NewGenerateCmd() *cobra.Command {
+func newGenerateCmd() *cobra.Command {
 	gc := generateCmd{}
 
 	generateCmd := &cobra.Command{
@@ -43,7 +44,8 @@ func NewGenerateCmd() *cobra.Command {
 		Short: generateShortDescription,
 		Long:  generateLongDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return gc.run(cmd, args)
+			gc.validate(cmd, args)
+			return gc.run()
 		},
 	}
 
@@ -63,8 +65,9 @@ func NewGenerateCmd() *cobra.Command {
 func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 	var caCertificateBytes []byte
 	var caKeyBytes []byte
+	var err error
 
-	locale, err := i18n.LoadTranslations(gc.translationsDirectory)
+	gc.locale, err := i18n.LoadTranslations(gc.translationsDirectory)
 	if err != nil {
 		log.Fatalf("error loading translation files: %s", err.Error())
 	}
@@ -89,33 +92,43 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 
 	apiloader := &api.Apiloader{
 		Translator: &i18n.Translator{
-			Locale: locale,
+			Locale: gc.locale,
 		},
 	}
-	containerService, apiVersion, err := apiloader.LoadContainerServiceFromFile(gc.apimodelPath)
+	gc.containerService, gc.apiVersion, err = apiloader.LoadContainerServiceFromFile(gc.apimodelPath)
+
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
 
 	if gc.outputDirectory == "" {
-		gc.outputDirectory = path.Join("_output", containerService.Properties.MasterProfile.DNSPrefix)
+		gc.outputDirectory = path.Join("_output", gc.containerService.Properties.MasterProfile.DNSPrefix)
 	}
 
-	if len(caKeyBytes) != 0 {
-		// the caKey is not in the api model, and should be stored separately from the model
-		// we put these in the model after model is deserialized
-		containerService.Properties.CertificateProfile.CaCertificate = string(caCertificateBytes)
-		containerService.Properties.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
-	}
+	// consume gc.caCertificatePath and gc.caPrivateKeyPath
 
-	gc.containerService = containerService
-	gc.apiVersion = apiVersion
-	gc.locale = locale
+	if (gc.caCertificatePath != "" && gc.caPrivateKeyPath == "") || (gc.caCertificatePath == "" && gc.caPrivateKeyPath != "") {
+		log.Fatal("--ca-certificate-path and --ca-private-key-path must be specified together")
+	}
+	if gc.caCertificatePath != "" {
+		if caCertificateBytes, err = ioutil.ReadFile(gc.caCertificatePath); err != nil {
+			log.Fatal("failed to read CA certificate file:", err)
+		}
+		if caKeyBytes, err = ioutil.ReadFile(gc.caPrivateKeyPath); err != nil {
+			log.Fatal("failed to read CA private key file:", err)
+		}
+
+		prop := gc.containerService.Properties
+		if prop.CertificateProfile == nil {
+			prop.CertificateProfile = &api.CertificateProfile{}
+		}
+		prop.CertificateProfile.CaCertificate = string(caCertificateBytes)
+		prop.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
+	}
 }
 
-func (gc *generateCmd) run(cmd *cobra.Command, args []string) error {
-	gc.validate(cmd, args)
-	log.Infoln("Generating...")
+func (gc *generateCmd) run() error {
+	log.Infoln("Generating assets...")
 
 	ctx := acsengine.Context{
 		Translator: &i18n.Translator{

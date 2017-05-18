@@ -9,7 +9,7 @@ disk_setup:
   /dev/sdc:
       table_type: gpt
       layout: true
-      overwrite: true
+      overwrite: false
 
 fs_setup:
 - label: etcd_disk
@@ -220,7 +220,7 @@ write_files:
     KUBELET_NETWORK_PLUGIN=
     DOCKER_OPTS=
     KUBELET_REGISTER_SCHEDULABLE={{WrapAsVariable "registerSchedulable"}}
-    KUBELET_NODE_LABELS=role=master,failure-domain.beta.kubernetes.io/region={{WrapAsVariable "location"}}
+    KUBELET_NODE_LABELS=role=master
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
 
 - path: "/etc/systemd/system/kubelet.service"
@@ -237,22 +237,21 @@ write_files:
     #!/bin/bash
     set -e
 
+{{if gt .MasterProfile.Count 1}}
     # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
     # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
     # This IPTable rule then redirects ILB traffic to port 443 in the prerouting chain
     iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443
+{{end}}
 
     sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsVariable "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
-    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeServiceCidr>|{{WrapAsVariable "kubeServiceCidr"}}|g; s|<masterEtcdClientPort>|{{WrapAsVariable "masterEtcdClientPort"}}|g; s|<masterInternalLbIp>|{{WrapAsVariable "masterInternalLbIp"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeServiceCidr>|{{WrapAsVariable "kubeServiceCidr"}}|g; s|<masterEtcdClientPort>|{{WrapAsVariable "masterEtcdClientPort"}}|g; s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
     sed -i "s|<kubernetesKubeDNSSpec>|{{WrapAsVariable "kubernetesKubeDNSSpec"}}|g; s|<kubernetesDNSMasqSpec>|{{WrapAsVariable "kubernetesDNSMasqSpec"}}|g; s|<kubernetesExecHealthzSpec>|{{WrapAsVariable "kubernetesExecHealthzSpec"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
     sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsVariable "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsVariable "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
     sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
-
-    echo $(curl -f --retry 5 http://169.254.169.254/metadata/v1/InstanceInfo 2>/dev/null | jq -r .FD) > /etc/kubernetes/fd
-    echo "{{WrapAsVariable "masterVMSize"}}" > /etc/kubernetes/vmsize
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
