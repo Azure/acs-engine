@@ -26,8 +26,7 @@
     },
     {
       "cluster_definition": "disks-storageaccount/dcos.json",
-      "location": "eastus",
-      "skip_validation": true
+      "location": "eastus"
     },
     {
       "cluster_definition": "disks-storageaccount/kubernetes.json",
@@ -35,8 +34,7 @@
     },
     {
       "cluster_definition": "disks-storageaccount/swarmmode.json",
-      "location": "eastus",
-      "skip_validation": true
+      "location": "eastus"
     },
     {
       "cluster_definition": "windows/kubernetes-hybrid.json",
