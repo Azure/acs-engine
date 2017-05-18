@@ -1215,25 +1215,17 @@ func getLinkedTemplatesForExtensions(properties api.Properties) string {
 	var extensions = properties.ExtensionsProfile
 
 	//This is temporary - to show you how to access the Extensions in the MasterProfile
-	var masterExtensions = properties.MasterProfile.Extensions
-
-	for _, extension := range masterExtensions {
-		var fred = extension
-		fmt.Print(fred)
-	}
-
-	//This is temporary - to show you how to access the Extensions in the AgentPoolProfile
-	for _, agentPoolProfile := range properties.AgentPoolProfiles {
-		var agentExtensions = agentPoolProfile.Extensions
-
-		for _, agentExtension := range agentExtensions {
-			var hank = agentExtension
-			fmt.Print(hank)
-		}
-	}
+	var masterProfileExtensions = properties.MasterProfile.Extensions
 
 	for err, extensionProfile := range extensions {
 		_ = err
+
+		masterOptedForExtension := validateMasterOptedForExtension(extensionProfile.Name, masterProfileExtensions)
+		if masterOptedForExtension == false {
+			fmt.Printf("Error: Master did not have extension defined for extension name: %s", extensionProfile.Name)
+			fmt.Println()
+			continue
+		}
 
 		result += ","
 		dta, e := getLinkedTemplateText(orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.RootURL)
@@ -1253,6 +1245,15 @@ func getLinkedTemplatesForExtensions(properties api.Properties) string {
 	}
 
 	return result
+}
+
+func validateMasterOptedForExtension(extensionName string, masterProfileExtensions []api.Extension) bool {
+	for _, extension := range masterProfileExtensions {
+		if extensionName == extension.Name {
+			return true
+		}
+	}
+	return false
 }
 
 // getLinkedTemplateText returns the string data from

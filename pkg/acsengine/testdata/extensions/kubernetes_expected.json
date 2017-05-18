@@ -2016,11 +2016,8 @@
       "name": "HelloWorldK8s",
       "properties": {
         "parameters": {
-          "apiVersionDefault": {
+          "apiVersionCompute": {
             "value": "[variables('apiVersionDefault')]"
-          },
-          "apiVersionStorage": {
-            "value": "[variables('apiVersionStorage')]"
           },
           "artifactsLocation": {
             "value": "https://raw.githubusercontent.com/RobBagby/acs-engine/rob-master/"
@@ -2030,12 +2027,6 @@
           },
           "masterVMNamePrefix": {
             "value": "[concat(variables('masterVMNamePrefix'), '0')]"
-          },
-          "storageAccountBaseName": {
-            "value": "[variables('storageAccountBaseName')]"
-          },
-          "username": {
-            "value": "[variables('username')]"
           }
         },
         "mode": "Incremental",
