@@ -12,7 +12,7 @@ The microsoft-oms-agent-k8s extension installs Microsoft OMS agent container on 
 
 # Example
 ``` javascript
-	{ 
+    { 
         "name": "hello-world-k8s", 
         "version": "v1" 
 		"extensionsParameters": {
