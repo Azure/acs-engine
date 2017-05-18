@@ -27,6 +27,7 @@
 			"type": "securestring",
 			"minLength": 1,
 			"metadata": {
+				"description": "Custom Parameter for Extension - WSID and KEY. Must be JSON formatted and base64 encoded first."
 			}
 		}
    },
