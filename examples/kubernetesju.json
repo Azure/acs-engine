@@ -1,0 +1,44 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes"
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "jstr123ted1",
+      "vmSize": "Standard_D2_v2",
+      "extensions": [
+        { 
+          "name": "helm-k8s", 
+          "singleOrAll": "single"
+        }
+      ]
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDeEGzm1gUUaMMtvp8+G5lh2v9VokcxxogLGWvVAhRnMjBwYzlUAWbZKJQvmq0ZYwdJcFTUw5yikbBgYtvIu5RddFrvKN6h/9O7CxkAsJlBekhO8EKCjAR67d8i4mVLDQuwlSN+cjTgKaTeglzd2U/Z/3mez9s/3ZHoZuj0UytKXB0OptdM+AfVMGi81vHMMuj0IzYObB8aVp3RtgjCwh3hYB9oHBficUFQMhcAIrZc/pN4/Mv+PkxpKfkWQbtRBtYwhnS2PzZ+iHqaaF2MlQAZH15g850xy3gA6Z+y835pTj75wjz8uIqkmj8t/Wr9gtnr7XsGmwHqfHnK4x8PYk1 Unknown+User@NUCJS"
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "servicePrincipalClientID": "7fb4173c-3ca3-4d5b-87f8-1daac941207a",
+      "servicePrincipalClientSecret": "MPNSuM1auUuITefiLGBrpZZnLMDKBLw2"
+    },
+    "extensionsProfile": [
+      { "name": "helm-k8s", "version": "v1", "rootURL": "https://bagbyimages.blob.core.windows.net:443/" }
+    ]
+  }
+}
