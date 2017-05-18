@@ -9,7 +9,7 @@
 				"description": "Artifacts Location - URL"
 			}
         },
-		"apiVersionCompute": {
+		"apiVersionDefault": {
 			"type": "string",
 			"minLength": 1,
 			"metadata": {
@@ -25,15 +25,15 @@
 		},
 		"extensionParameters": {
 			"type": "securestring",
-			"minLength": 1,
+			"minLength": 0,
 			"metadata": {
-				"description": "Custom Parameter for Extension - for Sysdig, this is the Access Key"
+				"description": "Custom Parameter for Extension - for hello-world, this is empty"
 			}
 		}
    },
    "variables": {  
 		"singleQuote": "'",
-		"initScriptUrl": "[concat(parameters('artifactsLocation'), 'extensions/sysdig-cloud-k8s/v1/sysdig-cloud-k8s.sh')]"
+		"initScriptUrl": "[concat(parameters('artifactsLocation'), 'extensions/hello-world-dcos/v1/hello-world-dcos.sh')]"
    },
    "resources": [  
 	{
@@ -41,7 +41,7 @@
       "dependsOn": [],
       "location": "[resourceGroup().location]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-	  "name": "[concat(parameters('masterVMNamePrefix'), '/cse0')]",
+	  "name": "[concat(parameters('masterVMNamePrefix'), '/helloworlddcos')]",
       "properties": {
         "publisher": "Microsoft.OSTCExtensions",
         "type": "CustomScriptForLinux",
@@ -53,7 +53,7 @@
 			 ]
 		},
         "protectedSettings": {
-			"commandToExecute": "[concat('/bin/bash ./sysdig-cloud-k8s.sh ', variables('singleQuote'), parameters('extensionParameters'), variables('singleQuote'), ' >> /var/log/azure/sysdig-provision.log 2>&1 &\" &')]"
+			"commandToExecute": "[concat('/bin/bash -c \"/bin/bash ./hello-world-dcos.sh ', variables('singleQuote'), parameters('extensionParameters'), variables('singleQuote'), ' >> /var/log/azure/hello-world-dcos-provision.log 2>&1 &\" &')]"
         }
       }
     }

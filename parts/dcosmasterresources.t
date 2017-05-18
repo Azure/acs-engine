@@ -267,4 +267,4 @@
         "typeHandlerVersion": "1.4"
       },
       "type": "Microsoft.Compute/virtualMachines/extensions"
-    }
+    }{{WriteLinkedTemplatesForExtensions}}

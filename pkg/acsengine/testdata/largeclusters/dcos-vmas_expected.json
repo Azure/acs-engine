@@ -4093,6 +4093,7 @@
     "agentpublic1VMSize": "[parameters('agentpublic1VMSize')]",
     "agentpublic1VnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('agentpublic1SubnetName'))]",
     "apiVersionDefault": "2016-03-30",
+    "apiVersionLinkDefault": "2015-01-01",
     "apiVersionStorage": "2015-06-15",
     "dataStorageAccountPrefixSeed": 97,
     "dcosBootstrapURL": "[parameters('dcosBootstrapURL')]",
