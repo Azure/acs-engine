@@ -6,7 +6,7 @@
     },
     {
       "cluster_definition": "disks-managed/dcos-vmss.json",
-      "location": "eastus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "disks-managed/swarmmode-vmss.json",
@@ -14,7 +14,7 @@
     },
     {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmas-windows.json",
-      "location": "eastus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "disks-managed/kubernetes-preAttachedDisks-vmas.json",
@@ -22,23 +22,25 @@
     },
     {
       "cluster_definition": "disks-managed/kubernetes-vmas.json",
-      "location": "eastus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "disks-storageaccount/dcos.json",
-      "location": "eastus"
+      "location": "eastus",
+      "skip_validation": true
     },
     {
       "cluster_definition": "disks-storageaccount/kubernetes.json",
-      "location": "eastus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "disks-storageaccount/swarmmode.json",
-      "location": "eastus"
+      "location": "eastus",
+      "skip_validation": true
     },
     {
       "cluster_definition": "windows/kubernetes-hybrid.json",
-      "location": "eastus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "windows/kubernetes.json",

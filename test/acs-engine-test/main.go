@@ -97,12 +97,13 @@ func (m *TestManager) Run() error {
 			steps := []string{"generate_template", "deploy_template"}
 
 			// determine validation script
-			validate := fmt.Sprintf("test/cluster-tests/%s/test.sh", orchestrator)
-			if _, err = os.Stat(fmt.Sprintf("%s/%s", m.rootDir, validate)); err == nil {
-				env = append(env, fmt.Sprintf("VALIDATE=%s", validate))
-				steps = append(steps, "validate")
+			if !d.SkipValidation {
+				validate := fmt.Sprintf("test/cluster-tests/%s/test.sh", orchestrator)
+				if _, err = os.Stat(fmt.Sprintf("%s/%s", m.rootDir, validate)); err == nil {
+					env = append(env, fmt.Sprintf("VALIDATE=%s", validate))
+					steps = append(steps, "validate")
+				}
 			}
-
 			for _, step := range steps {
 				txt, err := runStep(resourceGroup, step, m.rootDir, env, timeout)
 				if err != nil {
