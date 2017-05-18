@@ -48,8 +48,8 @@ create_secret_yaml() {
   log 'Creating oms-agentsecret.yaml file'
   log ''
 
-  local wsid=$(get_param 'wsid')
-  local key=$(get_param 'key')
+  local wsid=$(get_param 'WSID')
+  local key=$(get_param 'KEY')
 
   cat > ./oms-agentsecret.yaml <<EOFSECRET
 apiVersion: v1
@@ -58,8 +58,8 @@ metadata:
   name: omsagent-secret
 type: Opaque
 data:
-  WSID: `echo $wsid | base64 -`
-  KEY: `echo $key | base64 -` 
+  wsid: `echo $wsid | base64 -w0`
+  key: `echo $key | base64 -w0` 
 EOFSECRET
 
   log 'done'
@@ -92,12 +92,12 @@ spec:
         - name: WSID
           valueFrom:
             secretKeyRef:
-              name: omssecrets
+              name: omsagent-secret
               key: wsid
         - name: KEY
           valueFrom:
             secretKeyRef:
-              name: omssecrets
+              name: omsagent-secret
               key: key
        securityContext:
          privileged: true
@@ -144,6 +144,7 @@ deploy_yaml() {
   log ''
 }
 
+log ''
 log 'ACS-Engine - installing Microsoft OMS Agent (k8s)'
 log '--------------------------------------------------'
 
