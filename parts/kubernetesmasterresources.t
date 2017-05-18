@@ -255,7 +255,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('masterCount')]",
+        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "masterLbLoopNode"
       },
       "dependsOn": [
@@ -277,7 +277,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('masterCount')]",
+        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "nicLoopNode"
       },
       "dependsOn": [
@@ -439,7 +439,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('masterCount')]",
+        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
