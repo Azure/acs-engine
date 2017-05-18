@@ -3,15 +3,8 @@
 set -e
 [ "$DEBUG" == 'true' ] && set -x
 
-parameters=$(echo $1 | base64 -d -)
-
 log() {
   echo "`date +'[%Y-%m-%d %H:%M:%S:%N %Z]'` $1"
-}
-
-get_param() {
-  local param=$1
-  echo $(echo "$parameters" | jq ".$param" -r)
 }
 
 install_script_dependencies() {

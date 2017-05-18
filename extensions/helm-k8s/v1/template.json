@@ -26,14 +26,15 @@
 		"extensionParameters": {
 			"type": "securestring",
 			"minLength": 1,
+			"defaultValue": "dontNeedIt",
 			"metadata": {
-				"description": "Custom Parameter for Extension - for Sysdig, this is the Access Key"
+				"description": "Custom Parameter for Extension"
 			}
 		}
    },
    "variables": {  
 		"singleQuote": "'",
-		"initScriptUrl": "[concat(parameters('artifactsLocation'), 'extensions/microsoft-oms-agent-k8s/v1/microsoft-oms-agent-k8s.sh')]"
+		"initScriptUrl": "[concat(parameters('artifactsLocation'), 'extensions/helm-k8s/v1/helm-k8s.sh')]"
    },
    "resources": [  
 	{
@@ -41,7 +42,7 @@
       "dependsOn": [],
       "location": "[resourceGroup().location]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-	  "name": "[concat(parameters('masterVMNamePrefix'), '/helmk8s')]",
+	  "name": "[concat(parameters('masterVMNamePrefix'), '/cse0')]",
       "properties": {
         "publisher": "Microsoft.OSTCExtensions",
         "type": "CustomScriptForLinux",
@@ -53,7 +54,7 @@
 			 ]
 		},
         "protectedSettings": {
-			"commandToExecute": "[concat('/bin/bash -c \"/bin/bash ./helm-k8s.sh ', variables('singleQuote'), parameters('extensionParameters'), variables('singleQuote'), ' >> /var/log/azure/helm.log 2>&1 &\" &')]"
+			"commandToExecute": "[concat('/bin/bash -c \"/bin/bash ./helm-k8s.sh ', ' >> /var/log/azure/helm.log 2>&1 &\" &')]"
         }
       }
     }
