@@ -5,6 +5,7 @@
     "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
     "dataStorageAccountPrefixSeed": 97, 
     "apiVersionDefault": "2016-03-30", 
+    "apiVersionLinkDefault": "2015-01-01",
     "apiVersionStorage": "2015-06-15",
 {{if .HasManagedDisks}}
     "apiVersionStorageManagedDisks": "2016-04-30-preview",
