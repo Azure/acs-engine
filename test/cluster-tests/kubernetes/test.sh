@@ -143,7 +143,7 @@ for ip in $ips; do
   success="n"
   while (( $count > 0 )); do
     log "  ... counting down $count"
-    ret=$(ssh -i "${OUTPUT}/id_rsa" -o "ConnectTimeout 10" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" "azureuser@${master}" "curl --max-time 60 http://${ip}:${port}" || echo "curl_error")
+    ret=$(ssh -i "${OUTPUT}/id_rsa" -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "azureuser@${master}" "curl --max-time 60 http://${ip}:${port}" || echo "curl_error")
     if [[ ! $ret =~ .*curl_error.* ]]; then
       success="y"
       break
