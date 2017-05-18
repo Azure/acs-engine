@@ -2,11 +2,14 @@ package operations
 
 import (
 	"encoding/json"
+	"fmt"
+	"sort"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/prometheus/common/log"
 )
 
 // Compiler to verify QueueMessageProcessor implements OperationsProcessor
@@ -70,14 +73,21 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	upgradeMasterNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 	upgradeMasterNode.Client = ku.Client
 
-	// for _, vm := range *ku.ClusterTopology.MasterVMs {
-	// 1.	Shutdown and delete one master VM at a time while preserving the persistent disk backing etcd.
-	upgradeMasterNode.DeleteNode()
-	// 2.	Call CreateVMWithRetries
-	upgradeMasterNode.CreateNode(loopCount)
-	loopCount++
+	// Sort by VM Name (e.g.: k8s-master-22551669-0) offset no. in descending order
+	sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*ku.ClusterTopology.MasterVMs)))
 
-	// }
+	for _, vm := range *ku.ClusterTopology.MasterVMs {
+		log.Infoln(fmt.Sprintf("Upgrading Master VM: %s", *vm.Name))
+
+		// 1.	Shutdown and delete one master VM at a time while preserving the persistent disk backing etcd.
+		upgradeMasterNode.DeleteNode(vm.Name)
+		// 2.	Call CreateVMWithRetries
+		upgradeMasterNode.CreateNode(loopCount)
+
+		upgradeMasterNode.Validate()
+
+		loopCount++
+	}
 
 	return nil
 }
