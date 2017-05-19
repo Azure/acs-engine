@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -60,19 +61,22 @@ func (m *TestManager) Run() error {
 
 	// return values for tests
 	retvals := make([]byte, n)
+	rand.Seed(time.Now().UnixNano())
 
 	m.wg.Add(n)
 	for i, d := range m.config.Deployments {
+		time.Sleep(time.Second)
 		go func(i int, d Deployment) {
 			defer m.wg.Done()
 
 			name := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
-			instanceName := fmt.Sprintf("test-acs-%s-%s-%s-%d", strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), i)
-			logFile := fmt.Sprintf("%s/%s.log", logDir, instanceName)
+			instanceName := fmt.Sprintf("acse-%d-%s-%s-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUMBER"), i)
+			resourceGroup := fmt.Sprintf("test-acs-%s-%s-%s-%d", strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), i)
+			logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
 
 			// determine orchestrator
 			env := os.Environ()
-			env = append(env, fmt.Sprintf("CLUSTER_DEFINITION=%s", d.ClusterDefinition))
+			env = append(env, fmt.Sprintf("CLUSTER_DEFINITION=examples/%s", d.ClusterDefinition))
 			cmd := exec.Command("test/step.sh", "get_orchestrator_type")
 			cmd.Env = env
 			out, err := cmd.Output()
@@ -88,34 +92,35 @@ func (m *TestManager) Run() error {
 			env = append(env, fmt.Sprintf("ORCHESTRATOR=%s", orchestrator))
 			env = append(env, fmt.Sprintf("INSTANCE_NAME=%s", instanceName))
 			env = append(env, fmt.Sprintf("DEPLOYMENT_NAME=%s", instanceName))
-			env = append(env, fmt.Sprintf("RESOURCE_GROUP=%s", instanceName))
+			env = append(env, fmt.Sprintf("RESOURCE_GROUP=%s", resourceGroup))
 
 			steps := []string{"generate_template", "deploy_template"}
 
 			// determine validation script
-			validate := fmt.Sprintf("test/cluster-tests/%s/test.sh", orchestrator)
-			if _, err = os.Stat(fmt.Sprintf("%s/%s", m.rootDir, validate)); err == nil {
-				env = append(env, fmt.Sprintf("VALIDATE=%s", validate))
-				steps = append(steps, "validate")
+			if !d.SkipValidation {
+				validate := fmt.Sprintf("test/cluster-tests/%s/test.sh", orchestrator)
+				if _, err = os.Stat(fmt.Sprintf("%s/%s", m.rootDir, validate)); err == nil {
+					env = append(env, fmt.Sprintf("VALIDATE=%s", validate))
+					steps = append(steps, "validate")
+				}
 			}
-
 			for _, step := range steps {
-				txt, err := runStep(instanceName, step, m.rootDir, env, timeout)
+				txt, err := runStep(resourceGroup, step, m.rootDir, env, timeout)
 				if err != nil {
-					wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, instanceName, err, txt)
+					wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, resourceGroup, err, txt)
 					retvals[i] = 1
 					break
 				}
 				wrileLog(logFile, txt)
 				if step == "generate_template" {
 					// set up extra environment variables available after template generation
-					env = append(env, fmt.Sprintf("LOGFILE=%s/validate-%s.log", logDir, instanceName))
+					env = append(env, fmt.Sprintf("LOGFILE=%s/validate-%s.log", logDir, resourceGroup))
 
 					cmd := exec.Command("test/step.sh", "get_orchestrator_version")
 					cmd.Env = env
 					out, err := cmd.Output()
 					if err != nil {
-						wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_version", instanceName, err)
+						wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_version", resourceGroup, err)
 						retvals[i] = 1
 						break
 					}
@@ -126,7 +131,7 @@ func (m *TestManager) Run() error {
 						cmd.Env = env
 						out, err = cmd.Output()
 						if err != nil {
-							wrileLog(logFile, "Error [%s:%s] %v", "get_node_count", instanceName, err)
+							wrileLog(logFile, "Error [%s:%s] %v", "get_node_count", resourceGroup, err)
 							retvals[i] = 1
 							break
 						}
@@ -135,7 +140,7 @@ func (m *TestManager) Run() error {
 				}
 			}
 			// clean up
-			if txt, err := runStep(instanceName, "cleanup", m.rootDir, env, timeout); err != nil {
+			if txt, err := runStep(resourceGroup, "cleanup", m.rootDir, env, timeout); err != nil {
 				wrileLog(logFile, "Error: %v\nOutput: %s", err, txt)
 			}
 		}(i, d)
