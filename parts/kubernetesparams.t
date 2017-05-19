@@ -40,6 +40,12 @@
       },  
       "type": "securestring"
     },
+    "kubeClusterCidr": {
+      "metadata": {
+        "description": "Kubernetes cluster subnet"
+      },
+      "type": "string"
+    },
     "kubernetesHyperkubeSpec": {
       "defaultValue": "",
       "metadata": {
