@@ -106,6 +106,9 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatalf("failed to get client") // TODO: cleanup
 	}
+
+	// TODO: Validate that downgrade is not allowed
+	// TODO: Validate noop case and return early
 }
 
 func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
@@ -115,7 +118,10 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		Client: uc.client,
 	}
 
-	upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.resourceGroupName, uc.containerService, uc.upgradeContainerService)
+	if err := upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.resourceGroupName,
+		uc.containerService, uc.upgradeContainerService); err != nil {
+		log.Fatalf("Error upgrading cluster: %s \n", err.Error())
+	}
 
 	return nil
 }
