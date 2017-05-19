@@ -67,6 +67,9 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 	var err error
 
 	gc.locale, err = i18n.LoadTranslations()
+	if err != nil {
+		log.Fatalf("error loading translation files: %s", err.Error())
+	}
 
 	if gc.apimodelPath == "" {
 		if len(args) > 0 {

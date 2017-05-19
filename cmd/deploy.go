@@ -82,6 +82,9 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 	var err error
 
 	dc.locale, err = i18n.LoadTranslations()
+	if err != nil {
+		log.Fatalf("error loading translation files: %s", err.Error())
+	}
 
 	if dc.apimodelPath == "" {
 		if len(args) > 0 {

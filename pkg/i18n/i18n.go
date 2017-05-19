@@ -3,16 +3,20 @@ package i18n
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
+
+	"path"
 
 	"github.com/leonelquinteros/gotext"
 )
 
 const (
-	defaultLanguage = "default"
-	defaultDomain   = "acsengine"
-	defaultLocalDir = "translations"
+	defaultLanguage   = "default"
+	defaultDomain     = "acsengine"
+	defaultLocalDir   = "translations"
+	defaultMessageDir = "LC_MESSAGES"
 )
 
 var supportedTranslations = map[string]bool{
@@ -32,7 +36,10 @@ func loadSystemLanguage() string {
 	if len(parts) == 0 {
 		return defaultLanguage
 	}
-	return parts[0]
+	if _, ok := supportedTranslations[parts[0]]; ok {
+		return parts[0]
+	}
+	return defaultLanguage
 }
 
 // LoadTranslations loads translation files and sets the locale to
@@ -40,6 +47,31 @@ func loadSystemLanguage() string {
 func LoadTranslations() (*gotext.Locale, error) {
 	lang := loadSystemLanguage()
 	SetLanguage(lang)
+
+	dir := path.Join(defaultLocalDir, lang, defaultMessageDir)
+	translationFiles := []string{
+		path.Join(dir, fmt.Sprintf("%s.mo", defaultDomain)),
+		path.Join(dir, fmt.Sprintf("%s.po", defaultDomain)),
+	}
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			return nil, err
+		}
+	}
+
+	for _, file := range translationFiles {
+		if _, err := os.Stat(file); os.IsNotExist(err) {
+			data, err := Asset(file)
+			if err != nil {
+				return nil, err
+			}
+			err = ioutil.WriteFile(file, data, 0600)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 
 	locale := gotext.NewLocale(defaultLocalDir, lang)
 	Initialize(locale)

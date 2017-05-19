@@ -65,6 +65,9 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	var err error
 
 	uc.locale, err = i18n.LoadTranslations()
+	if err != nil {
+		log.Fatalf("error loading translation files: %s", err.Error())
+	}
 
 	if uc.resourceGroupName == "" {
 		cmd.Usage()

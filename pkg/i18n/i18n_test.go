@@ -2,6 +2,7 @@ package i18n
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -9,6 +10,12 @@ import (
 
 func TestLoadTranslations(t *testing.T) {
 	RegisterTestingT(t)
+
+	origLang := os.Getenv("LANG")
+	if origLang != "" && !strings.HasPrefix(origLang, "en_US") {
+		// The unit test has only en_US translation files
+		return
+	}
 
 	_, err := LoadTranslations()
 	Expect(err).Should(BeNil())
@@ -45,6 +52,12 @@ func TestTranslationLanguageDefault(t *testing.T) {
 func TestTranslations(t *testing.T) {
 	RegisterTestingT(t)
 
+	origLang := os.Getenv("LANG")
+	if origLang != "" && !strings.HasPrefix(origLang, "en_US") {
+		// The unit test has only en_US translation files
+		return
+	}
+
 	l, err := LoadTranslations()
 	Expect(err).Should(BeNil())
 
@@ -62,6 +75,12 @@ func TestTranslations(t *testing.T) {
 func TestTranslationsPlural(t *testing.T) {
 	RegisterTestingT(t)
 
+	origLang := os.Getenv("LANG")
+	if origLang != "" && !strings.HasPrefix(origLang, "en_US") {
+		// The unit test has only en_US translation files
+		return
+	}
+
 	l, err := LoadTranslations()
 	Expect(err).Should(BeNil())
 
@@ -78,6 +97,12 @@ func TestTranslationsPlural(t *testing.T) {
 
 func TestTranslationsError(t *testing.T) {
 	RegisterTestingT(t)
+
+	origLang := os.Getenv("LANG")
+	if origLang != "" && !strings.HasPrefix(origLang, "en_US") {
+		// The unit test has only en_US translation files
+		return
+	}
 
 	l, err := LoadTranslations()
 	Expect(err).Should(BeNil())
