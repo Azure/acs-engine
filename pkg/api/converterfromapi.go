@@ -383,6 +383,17 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 	if api.OrchestratorVersion != "" {
 		o.OrchestratorVersion = vlabs.OrchestratorVersion(api.OrchestratorVersion)
 	}
+
+	if api.KubernetesConfig != nil {
+		o.KubernetesConfig = &vlabs.KubernetesConfig{}
+		convertKubernetesConfigToVLabs(api.KubernetesConfig, o.KubernetesConfig)
+	}
+}
+
+func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {
+	vlabs.KubernetesImageBase = api.KubernetesImageBase
+	vlabs.ClusterSubnet = api.ClusterSubnet
+	vlabs.NetworkPolicy = api.NetworkPolicy
 }
 
 func convertMasterProfileToV20160930(api *MasterProfile, v20160930 *v20160930.MasterProfile) {

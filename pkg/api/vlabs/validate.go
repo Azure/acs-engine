@@ -22,7 +22,10 @@ func (o *OrchestratorProfile) Validate() error {
 		default:
 			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
 		}
+
 	case Swarm:
+	case SwarmMode:
+
 	case Kubernetes:
 		switch o.OrchestratorVersion {
 		case Kubernetes162:
@@ -33,13 +36,19 @@ func (o *OrchestratorProfile) Validate() error {
 		default:
 			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
 		}
-	case SwarmMode:
+
+		if o.KubernetesConfig != nil {
+			err := o.KubernetesConfig.Validate()
+			if err != nil {
+				return err
+			}
+		}
+
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
 
-	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil &&
-		(o.KubernetesConfig.KubernetesImageBase != "" || o.KubernetesConfig.NetworkPolicy != "") {
+	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil && (*o.KubernetesConfig != KubernetesConfig{}) {
 		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
 	}
 
@@ -270,7 +279,7 @@ func (a *Properties) Validate() error {
 				return fmt.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}
 			if len(a.WindowsProfile.AdminPassword) == 0 {
-				return fmt.Errorf("WindowsProfile.AdminPassword must not be empty since  agent pool '%s' specifies windows", agentPoolProfile.Name)
+				return fmt.Errorf("WindowsProfile.AdminPassword must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}
 			if e := validateKeyVaultSecrets(a.WindowsProfile.Secrets, true); e != nil {
 				return e
@@ -283,6 +292,18 @@ func (a *Properties) Validate() error {
 	if e := validateVNET(a); e != nil {
 		return e
 	}
+	return nil
+}
+
+// Validate validates the KubernetesConfig.
+func (a *KubernetesConfig) Validate() error {
+	if a.ClusterSubnet != "" {
+		_, _, err := net.ParseCIDR(a.ClusterSubnet)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' is an invalid subnet", a.ClusterSubnet)
+		}
+	}
+
 	return nil
 }
 
