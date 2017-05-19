@@ -139,22 +139,12 @@ function configAzureNetworkPolicy() {
     setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
+# Configures Kubelet to use CNI and mount the appropriate hostpaths
 function configCalicoNetworkPolicy() {
-    if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
-        # on masters
-        ADDONS="calico-configmap.yaml calico-daemonset.yaml"
-        ADDONS_PATH=/etc/kubernetes/addons
-        CALICO_URL="https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager"
 
-        # download calico yamls
-        for addon in ${ADDONS}; do
-            downloadUrl "${CALICO_URL}/${addon}" > "${ADDONS_PATH}/${addon}"
-        done
-    else
-        # on agents
         setNetworkPlugin cni
         setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
-    fi
+
 }
 
 function configNetworkPolicy() {
