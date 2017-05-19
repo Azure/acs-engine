@@ -14,6 +14,7 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-node
+    kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: "Reconcile"
 spec:
   selector:
@@ -121,3 +122,4 @@ spec:
         - name: cni-net-dir
           hostPath:
             path: /etc/cni/net.d
+            
