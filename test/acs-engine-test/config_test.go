@@ -9,11 +9,13 @@ func TestConfigParse(t *testing.T) {
   [
     {
       "cluster_definition":"examples/kubernetes.json",
-      "location":"westus"
+      "location":"westus",
+      "skip_validation":true
     },
     {
       "cluster_definition":"examples/dcos.json",
-      "location":"eastus"
+      "location":"eastus",
+      "skip_validation":false
     },
     {
       "cluster_definition":"examples/swarm.json",
