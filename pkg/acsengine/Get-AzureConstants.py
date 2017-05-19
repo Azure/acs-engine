@@ -66,6 +66,9 @@ def getLocations():
     #hard code Azure China Cloud location
     locationList.append('chinanorth')
     locationList.append('chinaeast')
+    # Adding two Canary locations
+    locationList.append('centraluseuap')
+    locationList.append('eastus2euap')
 
     locationList = sorted(locationList)
     return locationList    
