@@ -1,11 +1,23 @@
 #!/bin/bash
 
+####################################################
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+####################################################
+
 # exit on errors
 set -e
 # exit on unbound variables
 set -u
 # verbose logging
 set -x
+
+source "$DIR/../utils.sh"
 
 ENV_FILE="${CLUSTER_DEFINITION}.env"
 if [ -e "${ENV_FILE}" ]; then
@@ -19,18 +31,6 @@ EXPECTED_ORCHESTRATOR_VERSION="${EXPECTED_ORCHESTRATOR_VERSION:-}"
 
 # set TEST_ACR to "y" for ACR testing
 TEST_ACR="${TEST_ACR:-n}"
-
-function log {
-    local message="$1"
-    local caller="$(caller 0)"
-	  now=$(date +"%D %T %Z")
-
-	if [[ ! -z "${LOGFILE:-}" ]]; then
-		echo "[${now}] [${caller}] ${message}" | tee -a ${LOGFILE}
-	else
-		echo "[${now}] [${caller}] ${message}"
-    fi
-}
 
 namespace="namespace-${RANDOM}"
 log "Running test in namespace: ${namespace}"
@@ -60,6 +60,7 @@ function check_node_count() {
   log "Checking node count"
   count=25
   while (( $count > 0 )); do
+    log "  ... counting down $count"
     node_count=$(kubectl get nodes --no-headers | grep -v NotReady | grep Ready | wc | awk '{print $1}')
     if (( ${node_count} == ${EXPECTED_NODE_COUNT} )); then break; fi
     sleep 5; count=$((count-1))
@@ -84,6 +85,7 @@ fi
 log "Checking containers being created"
 count=12
 while (( $count > 0 )); do
+  log "  ... counting down $count"
   creating_count=$(kubectl get nodes --no-headers | grep 'CreatingContainer' | wc | awk '{print $1}')
   if (( ${creating_count} == 0 )); then break; fi
   sleep 5; count=$((count-1))
@@ -96,6 +98,7 @@ fi
 log "Checking Kube-DNS"
 count=12
 while (( $count > 0 )); do
+  log "  ... counting down $count"
   running=$(kubectl get pods --namespace=kube-system | grep kube-dns | grep Running | wc | awk '{print $1}')
   if (( ${running} == ${EXPECTED_DNS} )); then break; fi
   sleep 5; count=$((count-1))
@@ -108,6 +111,7 @@ fi
 log "Checking Kube-Dashboard"
 count=12
 while (( $count > 0 )); do
+  log "  ... counting down $count"
   running=$(kubectl get pods --namespace=kube-system | grep kubernetes-dashboard | grep Running | wc | awk '{print $1}')
   if (( ${running} == ${EXPECTED_DASHBOARD} )); then break; fi
   sleep 5; count=$((count-1))
@@ -120,6 +124,7 @@ fi
 log "Checking Kube-Proxys"
 count=12
 while (( $count > 0 )); do
+  log "  ... counting down $count"
   nonrunning=$(kubectl get pods --namespace=kube-system | grep kube-proxy | grep -v Running | wc | awk '{print $1}')
   if (( ${nonrunning} == 0 )); then break; fi
   sleep 5; count=$((count-1))
@@ -133,10 +138,12 @@ port=$(kubectl get svc --namespace=kube-system | grep dashboard | awk '{print $4
 ips=$(kubectl get nodes --all-namespaces -o yaml | grep -B 1 InternalIP | grep address | awk '{print $3}')
 
 for ip in $ips; do
+  log "Probing IP address ${ip}"
   count=5
   success="n"
   while (( $count > 0 )); do
-    ret=$(ssh -i "${OUTPUT}/id_rsa" -o "ConnectTimeout 10" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" "azureuser@${master}" "curl --max-time 60 http://${ip}:${port}" || echo "curl_error")
+    log "  ... counting down $count"
+    ret=$(ssh -i "${OUTPUT}/id_rsa" -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "azureuser@${master}" "curl --max-time 60 http://${ip}:${port}" || echo "curl_error")
     if [[ ! $ret =~ .*curl_error.* ]]; then
       success="y"
       break
@@ -169,6 +176,7 @@ fi
 kubectl run --image="${IMAGE}" nginx --namespace=${namespace} --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
 count=12
 while (( $count > 0 )); do
+  log "  ... counting down $count"
   running=$(kubectl get pods --namespace=${namespace} | grep nginx | grep Running | wc | awk '{print $1}')
   if (( ${running} == 1 )); then break; fi
   sleep 5; count=$((count-1))
@@ -185,6 +193,7 @@ log "Checking Service External IP"
 count=60
 external_ip=""
 while (( $count > 0 )); do
+  log "  ... counting down $count"
 	external_ip=$(kubectl get svc --namespace ${namespace} nginx --template="{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}")
 	[[ ! -z "${external_ip}" ]] && break
 	sleep 10; count=$((count-1))
@@ -198,6 +207,7 @@ log "Checking Service"
 count=5
 success="n"
 while (( $count > 0 )); do
+  log "  ... counting down $count"
   ret=$(curl -f --max-time 60 "http://${external_ip}" | grep 'Welcome to nginx!' || echo "curl_error")
   if [[ $ret =~ .*'Welcome to nginx!'.* ]]; then
     success="y"

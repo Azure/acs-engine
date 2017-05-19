@@ -21,11 +21,14 @@ const (
 	typeFieldName                  = "type"
 	virtualMachineProfileFieldName = "virtualMachineProfile"
 	vmSizeFieldName                = "vmSize"
+	dataDisksFieldName             = "dataDisks"
+	createOptionFieldName          = "createOption"
 
 	// ARM resource Types
 	nsgResourceType  = "Microsoft.Network/networkSecurityGroups"
 	vmResourceType   = "Microsoft.Compute/virtualMachines"
 	vmssResourceType = "Microsoft.Compute/virtualMachineScaleSets"
+	vmExtensionType  = "Microsoft.Compute/virtualMachines/extensions"
 )
 
 // NormalizeForVMSSScaling takes a template and removes elements that are unwanted in a VMSS scale up/down case
@@ -191,4 +194,65 @@ func removeImageReference(logger *logrus.Entry, resourceProperties map[string]in
 		delete(storageProfile, imageReferenceFieldName)
 	}
 	return ok
+}
+
+// NormalizeResourcesForK8sMasterUpgrade takes a template and removes elements that are unwanted in any scale up/down case
+func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map[string]interface{}) error {
+	var computeResourceTypes = []string{vmResourceType, vmExtensionType}
+
+	for _, computeResourceType := range computeResourceTypes {
+		resources := templateMap[resourcesFieldName].([]interface{})
+
+		agentPoolIndex := -1
+		//remove agent nodes resources
+		for index, resource := range resources {
+			resourceMap, ok := resource.(map[string]interface{})
+			if !ok {
+				logger.Warnf("Template improperly formatted")
+				continue
+			}
+
+			resourceType, ok := resourceMap[typeFieldName].(string)
+			if !ok || resourceType != computeResourceType {
+				continue
+			}
+
+			resourceName, ok := resourceMap[nameFieldName].(string)
+			if !ok {
+				logger.Warnf("Template improperly formatted")
+				continue
+			}
+
+			if strings.EqualFold(resourceType, vmResourceType) &&
+				strings.Contains(resourceName, "variables('masterVMNamePrefix')") {
+				resourceProperties, ok := resourceMap[propertiesFieldName].(map[string]interface{})
+				if !ok {
+					logger.Warnf("Template improperly formatted")
+					continue
+				}
+
+				storageProfile, ok := resourceProperties[storageProfileFieldName].(map[string]interface{})
+				if !ok {
+					logger.Warnf("Template improperly formatted")
+					continue
+				}
+
+				dataDisks := storageProfile[dataDisksFieldName].([]interface{})
+				dataDisk, ok := dataDisks[0].(map[string]interface{})
+				dataDisk[createOptionFieldName] = "attach"
+			}
+
+			// make sure this is only modifying the agent vms
+			// TODO: This is NOT a desirable way to filter agents, need to add a
+			// tag to identify VM type (master or agent)
+			if !strings.Contains(resourceName, "variables('agentpool") {
+				continue
+			}
+
+			agentPoolIndex = index
+		}
+
+		templateMap[resourcesFieldName] = append(resources[:agentPoolIndex], resources[agentPoolIndex+1:]...)
+	}
+	return nil
 }

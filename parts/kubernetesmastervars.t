@@ -30,6 +30,7 @@
 {{else}}
     "masterCount": {{.MasterProfile.Count}}, 
 {{end}}    
+    "masterOffset": "[parameters('masterOffset')]",
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
 {{if .HasManagedDisks}}
@@ -84,6 +85,7 @@
 {{end}}
     "kubeDnsServiceIp": "10.0.0.10", 
     "kubeServiceCidr": "10.0.0.0/16",
+    "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
 {{if HasLinuxAgents}}
     "registerSchedulable": "false",
 {{else}}

@@ -12,12 +12,14 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 set -x
 
+export GOFILES="$(go list ./... | grep -v "github.com/Azure/acs-engine/vendor" | sed 's|github.com/Azure/acs-engine|.|g' | grep -v -w '^.$')"
+
 T="$(mktemp -d)"
 trap "rm -rf ${T}" EXIT
 
 cp -a "${DIR}/.." "${T}/"
 
-(cd "${T}/" && go generate ./...)
+(cd "${T}/" && go generate ${GOFILES})
 
 if ! diff -I '.*bindataFileInfo.*' --exclude=.git -r "${DIR}/.." "${T}" 2>&1 ; then 
 	echo "go generate produced changes that were not already present"
