@@ -1,13 +1,10 @@
 package operations
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand"
-	"path"
 	"time"
 
-	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	log "github.com/Sirupsen/logrus"
@@ -38,7 +35,7 @@ func (kmn *UpgradeMasterNode) DeleteNode(vmName *string) error {
 }
 
 // CreateNode creates a new master/agent node with the targeted version of Kubernetes
-func (kmn *UpgradeMasterNode) CreateNode(countForOffset int) error {
+func (kmn *UpgradeMasterNode) CreateNode(poolName string, countForOffset int) error {
 	templateVariables := kmn.TemplateMap["variables"].(map[string]interface{})
 	masterCount, _ := templateVariables["masterCount"]
 	masterCountInt := int(masterCount.(float64))
@@ -48,33 +45,12 @@ func (kmn *UpgradeMasterNode) CreateNode(countForOffset int) error {
 	masterOffset, _ := templateVariables["masterOffset"]
 	log.Infoln(fmt.Sprintf("Master offset: %v", masterOffset))
 
-	if err := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), kmn.TemplateMap); err != nil {
-		log.Fatalln(err)
-		return err
-	}
-
-	// ***********Save master update template*************
-	updatedTemplateJSON, _ := json.Marshal(kmn.TemplateMap)
-	parametersJSON, _ := json.Marshal(kmn.ParametersMap)
-
-	templateapp, err := acsengine.PrettyPrintArmTemplate(string(updatedTemplateJSON))
-	if err != nil {
-		log.Fatalf("error pretty printing template: %s \n", err.Error())
-	}
-	parametersapp, e := acsengine.PrettyPrintJSON(string(parametersJSON))
-	if e != nil {
-		log.Fatalf("error pretty printing template parameters: %s \n", e.Error())
-	}
-	outputDirectory := path.Join("_output", kmn.UpgradeContainerService.Properties.MasterProfile.DNSPrefix, "Upgrade")
-	if err := acsengine.WriteArtifacts(kmn.UpgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
-		log.Fatalf("error writing artifacts: %s \n", err.Error())
-	}
-	// ************************
+	WriteTemplate(kmn.UpgradeContainerService, kmn.TemplateMap, kmn.ParametersMap)
 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	deploymentSuffix := random.Int31()
 
-	_, err = kmn.Client.DeployTemplate(
+	_, err := kmn.Client.DeployTemplate(
 		kmn.ResourceGroup,
 		fmt.Sprintf("%s-%d", kmn.ResourceGroup, deploymentSuffix),
 		kmn.TemplateMap,

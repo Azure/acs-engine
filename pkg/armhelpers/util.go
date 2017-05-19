@@ -3,6 +3,7 @@ package armhelpers
 import (
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
@@ -33,6 +34,23 @@ func SplitBlobURI(URI string) (string, string, string, error) {
 	blobPath := strings.Join(urlParts[2:], "/")
 
 	return accountName, containerName, blobPath, nil
+}
+
+// VMNameParts returns parts of Linux VM name e.g: k8s-agentpool1-11290731-0
+func VMNameParts(vmName string) (string, string, string, int, error) {
+	vmNameParts := strings.Split(vmName, "-")
+
+	if len(vmNameParts) != 4 {
+		return "", "", "", -1, fmt.Errorf("resource name was missing from identifier")
+	}
+
+	vmNum, err := strconv.Atoi(vmNameParts[3])
+
+	if err != nil {
+		return "", "", "", -1, fmt.Errorf("Error parsing VM Name: %v", err)
+	}
+
+	return vmNameParts[0], vmNameParts[1], vmNameParts[2], vmNum, nil
 }
 
 // ByVMNameOffset implements sort.Interface for []VirtualMachine based on

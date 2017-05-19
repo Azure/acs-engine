@@ -1,10 +1,13 @@
 package operations
 
 import (
+	"encoding/json"
 	"fmt"
+	"path"
 
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
@@ -91,4 +94,25 @@ func (uc *UpgradeCluster) getUpgradableResources(subscriptionID uuid.UUID, resou
 	}
 
 	return nil
+}
+
+// WriteTemplate writes upgrade template to a folder
+func WriteTemplate(upgradeContainerService *api.ContainerService,
+	templateMap map[string]interface{}, parametersMap map[string]interface{}) {
+	// ***********Save upgrade template*************
+	updatedTemplateJSON, _ := json.Marshal(templateMap)
+	parametersJSON, _ := json.Marshal(parametersMap)
+
+	templateapp, err := acsengine.PrettyPrintArmTemplate(string(updatedTemplateJSON))
+	if err != nil {
+		log.Fatalf("error pretty printing template: %s \n", err.Error())
+	}
+	parametersapp, e := acsengine.PrettyPrintJSON(string(parametersJSON))
+	if e != nil {
+		log.Fatalf("error pretty printing template parameters: %s \n", e.Error())
+	}
+	outputDirectory := path.Join("_output", upgradeContainerService.Properties.MasterProfile.DNSPrefix, "Upgrade")
+	if err := acsengine.WriteArtifacts(upgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
+		log.Fatalf("error writing artifacts: %s \n", err.Error())
+	}
 }
