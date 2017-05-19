@@ -31,7 +31,8 @@ Here are the valid values for the orchestrator types:
 |Name|Required|Description|
 |---|---|---|
 |kubernetesImageBase|no|This specifies the image of kubernetes to use for the cluster.|
-|networkPolicy|no|Specifies the network policy tool for the cluster. Default is `none`, which won't enforce network policy. This can be set to `calico` for clusters with Linux agents only.|
+|networkPolicy|no|Specifies the network policy tool for the cluster. Valid values are:<br>`none` (default), which won't enforce any network policy,<br>`azure` for applying Azure VNET network policy,<br>`calico` for Calico network policy for clusters with Linux agents only.<br>See [network policy examples](../examples/networkpolicy) for more information.|
+|clusterSubnet|no|The IP subnet used for allocating IP addresses for pod network interfaces. The subnet must be in the VNET address space. Default value is 10.244.0.0/16.|
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.
