@@ -252,7 +252,9 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 			agentPoolIndex = index
 		}
 
-		templateMap[resourcesFieldName] = append(resources[:agentPoolIndex], resources[agentPoolIndex+1:]...)
+		if agentPoolIndex != -1 {
+			templateMap[resourcesFieldName] = append(resources[:agentPoolIndex], resources[agentPoolIndex+1:]...)
+		}
 	}
 	return nil
 }
