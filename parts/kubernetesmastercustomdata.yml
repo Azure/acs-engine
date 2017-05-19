@@ -5,6 +5,7 @@ packages:
  - jq
  - traceroute
 
+{{if not .UpgradeMode}}
 disk_setup:
   /dev/sdc:
       table_type: gpt
@@ -19,6 +20,7 @@ fs_setup:
     - "-F"
     - "-E"
     - "lazy_itable_init=1,lazy_journal_init=1"
+{{end}}
 
 mounts:
 - - /dev/sdc1
