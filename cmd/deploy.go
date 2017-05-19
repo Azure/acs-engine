@@ -26,7 +26,6 @@ const (
 )
 
 type deployCmd struct {
-	translationsDirectory string
 	authArgs
 
 	apimodelPath      string
@@ -64,7 +63,6 @@ func newDeployCmd() *cobra.Command {
 	}
 
 	f := deployCmd.Flags()
-	f.StringVar(&dc.translationsDirectory, "translations-directory", "", "translations directory (translations in the current directory if absent)")
 	f.StringVar(&dc.apimodelPath, "api-model", "", "")
 	f.StringVar(&dc.outputDirectory, "output-directory", "", "output directory (derived from FQDN if absent)")
 	f.StringVar(&dc.caCertificatePath, "ca-certificate-path", "", "path to the CA certificate to use for Kubernetes PKI assets")
@@ -83,12 +81,7 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 	var caKeyBytes []byte
 	var err error
 
-	dc.locale, err = i18n.LoadTranslations(dc.translationsDirectory)
-	if err != nil {
-		log.Fatalf("error loading translation files: %s", err.Error())
-	}
-
-	i18n.Initialize(dc.locale)
+	dc.locale, err = i18n.LoadTranslations()
 
 	if dc.apimodelPath == "" {
 		if len(args) > 0 {

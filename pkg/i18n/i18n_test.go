@@ -2,7 +2,6 @@ package i18n
 
 import (
 	"os"
-	"path"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -11,11 +10,8 @@ import (
 func TestLoadTranslations(t *testing.T) {
 	RegisterTestingT(t)
 
-	_, err := LoadTranslations(path.Join("..", "..", "test", "translations"))
+	_, err := LoadTranslations()
 	Expect(err).Should(BeNil())
-
-	_, err = LoadTranslations("non_existing_directory")
-	Expect(err).ShouldNot(BeNil())
 }
 
 func TestTranslationLanguage(t *testing.T) {
@@ -23,7 +19,7 @@ func TestTranslationLanguage(t *testing.T) {
 
 	origLang := os.Getenv("LANG")
 	os.Setenv("LANG", "en_US.UTF-8")
-	_, err := LoadTranslations(path.Join("..", "..", "test", "translations"))
+	_, err := LoadTranslations()
 	Expect(err).Should(BeNil())
 
 	lang := GetLanguage()
@@ -37,7 +33,7 @@ func TestTranslationLanguageDefault(t *testing.T) {
 
 	origLang := os.Getenv("LANG")
 	os.Setenv("LANG", "ll_CC.UTF-8")
-	_, err := LoadTranslations(path.Join("..", "..", "test", "translations"))
+	_, err := LoadTranslations()
 	Expect(err).Should(BeNil())
 
 	lang := GetLanguage()
@@ -49,7 +45,7 @@ func TestTranslationLanguageDefault(t *testing.T) {
 func TestTranslations(t *testing.T) {
 	RegisterTestingT(t)
 
-	l, err := LoadTranslations(path.Join("..", "..", "test", "translations"))
+	l, err := LoadTranslations()
 	Expect(err).Should(BeNil())
 
 	translator := &Translator{
@@ -66,7 +62,7 @@ func TestTranslations(t *testing.T) {
 func TestTranslationsPlural(t *testing.T) {
 	RegisterTestingT(t)
 
-	l, err := LoadTranslations(path.Join("..", "..", "test", "translations"))
+	l, err := LoadTranslations()
 	Expect(err).Should(BeNil())
 
 	translator := &Translator{
@@ -83,7 +79,7 @@ func TestTranslationsPlural(t *testing.T) {
 func TestTranslationsError(t *testing.T) {
 	RegisterTestingT(t)
 
-	l, err := LoadTranslations(path.Join("..", "..", "test", "translations"))
+	l, err := LoadTranslations()
 	Expect(err).Should(BeNil())
 
 	translator := &Translator{

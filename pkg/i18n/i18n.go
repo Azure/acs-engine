@@ -37,20 +37,11 @@ func loadSystemLanguage() string {
 
 // LoadTranslations loads translation files and sets the locale to
 // the system locale. It should be called by the main program.
-func LoadTranslations(translationsDir string) (*gotext.Locale, error) {
-	dir := defaultLocalDir
-	if translationsDir != "" {
-		dir = translationsDir
-	}
-
-	if stat, err := os.Stat(dir); os.IsNotExist(err) || !stat.IsDir() {
-		return nil, fmt.Errorf("Translations directory %s does not exist: %v", dir, err)
-	}
-
+func LoadTranslations() (*gotext.Locale, error) {
 	lang := loadSystemLanguage()
 	SetLanguage(lang)
 
-	locale := gotext.NewLocale(dir, lang)
+	locale := gotext.NewLocale(defaultLocalDir, lang)
 	Initialize(locale)
 
 	return locale, nil

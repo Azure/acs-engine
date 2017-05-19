@@ -21,7 +21,6 @@ const (
 )
 
 type upgradeCmd struct {
-	translationsDirectory string
 	authArgs
 
 	// user input
@@ -52,7 +51,6 @@ func newUpgradeCmd() *cobra.Command {
 	}
 
 	f := upgradeCmd.Flags()
-	f.StringVar(&uc.translationsDirectory, "translations-directory", "", "translations directory (translations in the current directory if absent)")
 	f.StringVar(&uc.resourceGroupName, "resource-group", "", "the resource group where the cluster is deployed")
 	f.StringVar(&uc.deploymentDirectory, "deployment-dir", "", "the location of the output from `generate`")
 	f.StringVar(&uc.upgradeModelFile, "upgrademodel-file", "", "file path to upgrade API model")
@@ -66,12 +64,7 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 
 	var err error
 
-	uc.locale, err = i18n.LoadTranslations(uc.translationsDirectory)
-	if err != nil {
-		log.Fatalf("error loading translation files: %s", err.Error())
-	}
-
-	i18n.Initialize(uc.locale)
+	uc.locale, err = i18n.LoadTranslations()
 
 	if uc.resourceGroupName == "" {
 		cmd.Usage()

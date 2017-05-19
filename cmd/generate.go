@@ -22,14 +22,13 @@ const (
 )
 
 type generateCmd struct {
-	translationsDirectory string
-	apimodelPath          string
-	outputDirectory       string // can be auto-determined from clusterDefinition
-	caCertificatePath     string
-	caPrivateKeyPath      string
-	classicMode           bool
-	noPrettyPrint         bool
-	parametersOnly        bool
+	apimodelPath      string
+	outputDirectory   string // can be auto-determined from clusterDefinition
+	caCertificatePath string
+	caPrivateKeyPath  string
+	classicMode       bool
+	noPrettyPrint     bool
+	parametersOnly    bool
 
 	// derived
 	containerService *api.ContainerService
@@ -51,7 +50,6 @@ func newGenerateCmd() *cobra.Command {
 	}
 
 	f := generateCmd.Flags()
-	f.StringVar(&gc.translationsDirectory, "translations-directory", "", "translations directory (translations in the current directory if absent)")
 	f.StringVar(&gc.apimodelPath, "api-model", "", "")
 	f.StringVar(&gc.outputDirectory, "output-directory", "", "output directory (derived from FQDN if absent)")
 	f.StringVar(&gc.caCertificatePath, "ca-certificate-path", "", "path to the CA certificate to use for Kubernetes PKI assets")
@@ -68,12 +66,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 	var caKeyBytes []byte
 	var err error
 
-	gc.locale, err = i18n.LoadTranslations(gc.translationsDirectory)
-	if err != nil {
-		log.Fatalf("error loading translation files: %s", err.Error())
-	}
-
-	i18n.Initialize(gc.locale)
+	gc.locale, err = i18n.LoadTranslations()
 
 	if gc.apimodelPath == "" {
 		if len(args) > 0 {
