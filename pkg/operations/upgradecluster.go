@@ -40,6 +40,10 @@ type UpgradeCluster struct {
 // the operation will drive towards.
 func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
 	cs *api.ContainerService, ucs *api.UpgradeContainerService) error {
+
+	// TODO: remove this when we fix cloud-init properly
+	cs.Properties.UpgradeMode = true
+
 	uc.ClusterTopology = ClusterTopology{}
 	uc.ResourceGroup = resourceGroup
 	uc.DataModel = cs
