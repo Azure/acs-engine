@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 
@@ -48,11 +47,6 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, countForOffset int) err
 	templateVariables[poolOffsetVarName] = agentCountInt - countForOffset
 	agentOffset, _ := templateVariables[poolOffsetVarName]
 	log.Infoln(fmt.Sprintf("Agent offset: %v", agentOffset))
-
-	if err := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), kan.TemplateMap); err != nil {
-		log.Fatalln(err)
-		return err
-	}
 
 	WriteTemplate(kan.UpgradeContainerService, kan.TemplateMap, kan.ParametersMap)
 
