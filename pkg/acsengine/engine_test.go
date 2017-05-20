@@ -37,8 +37,14 @@ func TestExpected(t *testing.T) {
 			// Kubernetes template needs certificate profile to match expected template
 			// API versions other than vlabs don't expose CertificateProfile
 			// API versions after v20160330 supports Kubernetes
-			containerService.Properties.CertificateProfile = &api.CertificateProfile{}
-			addTestCertificateProfile(containerService.Properties.CertificateProfile)
+			if containerService.Properties.OrchestratorProfile.IsKubernetes() {
+				containerService.Properties.KubernetesCertificateProfile = &api.KubernetesCertificateProfile{}
+				addTestKubernetesCertificateProfile(containerService.Properties.KubernetesCertificateProfile)
+			}
+			if containerService.Properties.OrchestratorProfile.IsSwarmMode() {
+				containerService.Properties.SwarmModeCertificateProfile = &api.SwarmModeCertificateProfile{}
+				addTestSwarmModeCertificateProfile(containerService.Properties.SwarmModeCertificateProfile)
+			}
 		}
 
 		isClassicMode := false
@@ -131,8 +137,14 @@ func TestExpected(t *testing.T) {
 				// Kubernetes template needs certificate profile to match expected template
 				// API versions other than vlabs don't expose CertificateProfile
 				// API versions after v20160330 supports Kubernetes
-				containerService.Properties.CertificateProfile = &api.CertificateProfile{}
-				addTestCertificateProfile(containerService.Properties.CertificateProfile)
+				if containerService.Properties.OrchestratorProfile.IsKubernetes() {
+					containerService.Properties.KubernetesCertificateProfile = &api.KubernetesCertificateProfile{}
+					addTestKubernetesCertificateProfile(containerService.Properties.KubernetesCertificateProfile)
+				}
+				if containerService.Properties.OrchestratorProfile.IsSwarmMode() {
+					containerService.Properties.SwarmModeCertificateProfile = &api.SwarmModeCertificateProfile{}
+					addTestSwarmModeCertificateProfile(containerService.Properties.SwarmModeCertificateProfile)
+				}
 			}
 		}
 	}
@@ -184,8 +196,8 @@ func IterateTestFilesDirectory(directory string, APIModelTestFiles *[]APIModelTe
 	return nil
 }
 
-// addTestCertificateProfile add certificate artifacts for test purpose
-func addTestCertificateProfile(api *api.CertificateProfile) {
+// addTestKubernetesCertificateProfile add certificate artifacts for test purpose
+func addTestKubernetesCertificateProfile(api *api.KubernetesCertificateProfile) {
 	api.CaCertificate = "caCertificate"
 	api.APIServerCertificate = "apiServerCertificate"
 	api.APIServerPrivateKey = "apiServerPrivateKey"
@@ -193,5 +205,15 @@ func addTestCertificateProfile(api *api.CertificateProfile) {
 	api.ClientPrivateKey = "clientPrivateKey"
 	api.KubeConfigCertificate = "kubeConfigCertificate"
 	api.KubeConfigPrivateKey = "kubeConfigPrivateKey"
-	api.SetCAPrivateKey("")
+	api.SetKubernetesCAPrivateKey("")
+}
+
+// addTestSwarmModeCertificateProfile add certificate artifacts for test purpose
+func addTestSwarmModeCertificateProfile(api *api.SwarmModeCertificateProfile) {
+	api.CaCertificate = "caCertificate"
+	api.SwarmTLSServerCertificate = "serverCertificate"
+	api.SwarmTLSServerPrivateKey = "serverPrivateKey"
+	api.SwarmTLSClientCertificate = "clientCertificate"
+	api.SwarmTLSClientPrivateKey = "clientPrivateKey"
+	api.SetSwarmModeCAPrivateKey("")
 }
