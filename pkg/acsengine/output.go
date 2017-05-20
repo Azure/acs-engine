@@ -85,24 +85,24 @@ func WriteArtifacts(containerService *api.ContainerService, apiVersion, template
 		if e := saveFileString(artifactsDir, "kubectlClient.crt", properties.KubernetesCertificateProfile.KubeConfigCertificate); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "ca.key", properties.SwarmModeCertificateProfile.GetSwarmModeCAPrivateKey()); e != nil {
-			return e
-		}
-		if e := saveFileString(artifactsDir, "ca.crt", properties.SwarmModeCertificateProfile.CaCertificate); e != nil {
-			return e
-		}
-		if e := saveFileString(artifactsDir, "server.key", properties.SwarmModeCertificateProfile.SwarmTLSServerPrivateKey); e != nil {
-			return e
-		}
-		if e := saveFileString(artifactsDir, "server.crt", properties.SwarmModeCertificateProfile.SwarmTLSServerCertificate); e != nil {
-			return e
-		}
-		if e := saveFileString(artifactsDir, "client.key", properties.SwarmModeCertificateProfile.SwarmTLSClientPrivateKey); e != nil {
-			return e
-		}
-		if e := saveFileString(artifactsDir, "client.crt", properties.SwarmModeCertificateProfile.SwarmTLSClientCertificate); e != nil {
-			return e
-		}
+		// if e := saveFileString(artifactsDir, "ca.key", properties.SwarmModeCertificateProfile.GetSwarmModeCAPrivateKey()); e != nil {
+		// 	return e
+		// }
+		// if e := saveFileString(artifactsDir, "ca.crt", properties.SwarmModeCertificateProfile.CaCertificate); e != nil {
+		// 	return e
+		// }
+		// if e := saveFileString(artifactsDir, "server.key", properties.SwarmModeCertificateProfile.SwarmTLSServerPrivateKey); e != nil {
+		// 	return e
+		// }
+		// if e := saveFileString(artifactsDir, "server.crt", properties.SwarmModeCertificateProfile.SwarmTLSServerCertificate); e != nil {
+		// 	return e
+		// }
+		// if e := saveFileString(artifactsDir, "client.key", properties.SwarmModeCertificateProfile.SwarmTLSClientPrivateKey); e != nil {
+		// 	return e
+		// }
+		// if e := saveFileString(artifactsDir, "client.crt", properties.SwarmModeCertificateProfile.SwarmTLSClientCertificate); e != nil {
+		// 	return e
+		// }
 	}
 
 	return nil
