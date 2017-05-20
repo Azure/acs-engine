@@ -27,8 +27,8 @@ type UpgradeAgentNode struct {
 // DeleteNode takes state/resources of the master/agent node from ListNodeResources
 // backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 // the node
-func (kma *UpgradeAgentNode) DeleteNode(vmName *string) error {
-	if err := CleanDeleteVirtualMachine(kma.Client, kma.ResourceGroup, *vmName); err != nil {
+func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
+	if err := CleanDeleteVirtualMachine(kan.Client, kan.ResourceGroup, *vmName); err != nil {
 		log.Fatalln(err)
 		return err
 	}
@@ -37,33 +37,33 @@ func (kma *UpgradeAgentNode) DeleteNode(vmName *string) error {
 }
 
 // CreateNode creates a new master/agent node with the targeted version of Kubernetes
-func (kma *UpgradeAgentNode) CreateNode(poolName string, countForOffset int) error {
-	poolCountParameter := kma.ParametersMap[poolName+"Count"].(map[string]interface{})
+func (kan *UpgradeAgentNode) CreateNode(poolName string, countForOffset int) error {
+	poolCountParameter := kan.ParametersMap[poolName+"Count"].(map[string]interface{})
 	agentCount, _ := poolCountParameter["value"]
 	agentCountInt := int(agentCount.(float64))
 	log.Infoln(fmt.Sprintf("Agent pool: %s, count: %d", poolName, agentCountInt))
 
 	poolOffsetVarName := poolName + "Offset"
-	templateVariables := kma.TemplateMap["variables"].(map[string]interface{})
+	templateVariables := kan.TemplateMap["variables"].(map[string]interface{})
 	templateVariables[poolOffsetVarName] = agentCountInt - countForOffset
 	agentOffset, _ := templateVariables[poolOffsetVarName]
 	log.Infoln(fmt.Sprintf("Agent offset: %v", agentOffset))
 
-	if err := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), kma.TemplateMap); err != nil {
+	if err := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), kan.TemplateMap); err != nil {
 		log.Fatalln(err)
 		return err
 	}
 
-	WriteTemplate(kma.UpgradeContainerService, kma.TemplateMap, kma.ParametersMap)
+	WriteTemplate(kan.UpgradeContainerService, kan.TemplateMap, kan.ParametersMap)
 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	deploymentSuffix := random.Int31()
 
-	_, err := kma.Client.DeployTemplate(
-		kma.ResourceGroup,
-		fmt.Sprintf("%s-%d", kma.ResourceGroup, deploymentSuffix),
-		kma.TemplateMap,
-		kma.ParametersMap,
+	_, err := kan.Client.DeployTemplate(
+		kan.ResourceGroup,
+		fmt.Sprintf("%s-%d", kan.ResourceGroup, deploymentSuffix),
+		kan.TemplateMap,
+		kan.ParametersMap,
 		nil)
 
 	if err != nil {
@@ -74,6 +74,6 @@ func (kma *UpgradeAgentNode) CreateNode(poolName string, countForOffset int) err
 }
 
 // Validate will verify the that master/agent node has been upgraded as expected.
-func (kma *UpgradeAgentNode) Validate() error {
+func (kan *UpgradeAgentNode) Validate() error {
 	return nil
 }
