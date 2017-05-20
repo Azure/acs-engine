@@ -38,12 +38,13 @@ func (kma *UpgradeAgentNode) DeleteNode(vmName *string) error {
 
 // CreateNode creates a new master/agent node with the targeted version of Kubernetes
 func (kma *UpgradeAgentNode) CreateNode(poolName string, countForOffset int) error {
-	templateVariables := kma.TemplateMap["variables"].(map[string]interface{})
-	agentCount, _ := templateVariables[poolName+"Count"]
+	poolCountParameter := kma.ParametersMap[poolName+"Count"].(map[string]interface{})
+	agentCount, _ := poolCountParameter["value"]
 	agentCountInt := int(agentCount.(float64))
+	log.Infoln(fmt.Sprintf("Agent pool: %s, count: %d", poolName, agentCountInt))
 
 	poolOffsetVarName := poolName + "Offset"
-	// Call CreateVMWithRetries
+	templateVariables := kma.TemplateMap["variables"].(map[string]interface{})
 	templateVariables[poolOffsetVarName] = agentCountInt - countForOffset
 	agentOffset, _ := templateVariables[poolOffsetVarName]
 	log.Infoln(fmt.Sprintf("Agent offset: %v", agentOffset))

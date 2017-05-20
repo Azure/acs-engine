@@ -61,6 +61,8 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	// Sort by VM Name (e.g.: k8s-master-22551669-0) offset no. in descending order
 	sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*ku.ClusterTopology.MasterVMs)))
 
+	log.Infoln(fmt.Sprintf("Starting master nodes upgrade..."))
+
 	masterLoopCount := 1
 	for _, vm := range *ku.ClusterTopology.MasterVMs {
 		log.Infoln(fmt.Sprintf("Upgrading Master VM: %s", *vm.Name))
@@ -94,6 +96,8 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	upgradeAgentNode.Client = ku.Client
 
 	sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*ku.ClusterTopology.AgentVMs)))
+
+	log.Infoln(fmt.Sprintf("Starting agent nodes upgrade..."))
 
 	// TODO: Upgrade one agent pool at a time
 	// TODO: Enable upgrade of Windows agent pools

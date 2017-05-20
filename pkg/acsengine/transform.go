@@ -79,7 +79,7 @@ func NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templateMap map[string]i
 	for index, resource := range resources {
 		resourceMap, ok := resource.(map[string]interface{})
 		if !ok {
-			logger.Warnf("Template improperly formatted")
+			logger.Warnf("Template improperly formatted for field name: %s", resourcesFieldName)
 			continue
 		}
 
@@ -95,7 +95,7 @@ func NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templateMap map[string]i
 
 		dependencies, ok := resourceMap[dependsOnFieldName].([]interface{})
 		if !ok {
-			logger.Warnf("Template improperly formatted")
+			logger.Warnf("Template improperly formatted for field name: %s", resourcesFieldName)
 			continue
 		}
 
@@ -208,7 +208,7 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 		for index, resource := range resources {
 			resourceMap, ok := resource.(map[string]interface{})
 			if !ok {
-				logger.Warnf("Template improperly formatted")
+				logger.Warnf("Template improperly formatted for field name: %s", resourcesFieldName)
 				continue
 			}
 
@@ -219,7 +219,7 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 
 			resourceName, ok := resourceMap[nameFieldName].(string)
 			if !ok {
-				logger.Warnf("Template improperly formatted")
+				logger.Warnf("Template improperly formatted for field name: %s", nameFieldName)
 				continue
 			}
 
@@ -227,7 +227,7 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 				strings.Contains(resourceName, "variables('masterVMNamePrefix')") {
 				resourceProperties, ok := resourceMap[propertiesFieldName].(map[string]interface{})
 				if !ok {
-					logger.Warnf("Template improperly formatted")
+					logger.Warnf("Template improperly formatted for field name: %s, resource name: %s", propertiesFieldName, resourceName)
 					continue
 				}
 
