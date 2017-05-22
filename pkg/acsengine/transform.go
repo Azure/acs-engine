@@ -2,6 +2,7 @@ package acsengine
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/Sirupsen/logrus"
@@ -197,7 +198,7 @@ func removeImageReference(logger *logrus.Entry, resourceProperties map[string]in
 }
 
 // NormalizeResourcesForK8sMasterUpgrade takes a template and removes elements that are unwanted in any scale up/down case
-func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map[string]interface{}) error {
+func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, removeAgents bool) error {
 	var computeResourceTypes = []string{vmResourceType, vmExtensionType}
 
 	for _, computeResourceType := range computeResourceTypes {
@@ -252,9 +253,24 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 			agentPoolIndex = index
 		}
 
-		if agentPoolIndex != -1 {
+		if removeAgents == true && agentPoolIndex != -1 {
 			templateMap[resourcesFieldName] = append(resources[:agentPoolIndex], resources[agentPoolIndex+1:]...)
 		}
 	}
+	return nil
+}
+
+// NormalizeResourcesForK8sAgentUpgrade takes a template and removes elements that are unwanted in any scale up/down case
+func NormalizeResourcesForK8sAgentUpgrade(logger *logrus.Entry, templateMap map[string]interface{}) error {
+	if err := NormalizeResourcesForK8sMasterUpgrade(logger, templateMap, false); err != nil {
+		log.Fatalln(err)
+		return err
+	}
+
+	if err := NormalizeForK8sVMASScalingUp(logger, templateMap); err != nil {
+		log.Fatalln(err)
+		return err
+	}
+
 	return nil
 }

@@ -46,7 +46,7 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 		return fmt.Errorf("error generating upgrade template: %s", err.Error())
 	}
 
-	if err := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), templateMap); err != nil {
+	if err := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), templateMap, true); err != nil {
 		log.Fatalln(err)
 		return err
 	}
@@ -83,7 +83,7 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 		return fmt.Errorf("error generating upgrade template: %s", err.Error())
 	}
 
-	if err := acsengine.NormalizeForK8sVMASScalingUp(log.NewEntry(log.New()), templateMap); err != nil {
+	if err := acsengine.NormalizeResourcesForK8sAgentUpgrade(log.NewEntry(log.New()), templateMap); err != nil {
 		log.Fatalln(err)
 		return err
 	}
