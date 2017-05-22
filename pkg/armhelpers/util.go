@@ -36,8 +36,8 @@ func SplitBlobURI(URI string) (string, string, string, error) {
 	return accountName, containerName, blobPath, nil
 }
 
-// VMNameParts returns parts of Linux VM name e.g: k8s-agentpool1-11290731-0
-func VMNameParts(vmName string) (string, string, string, int, error) {
+// LinuxVMNameParts returns parts of Linux VM name e.g: k8s-agentpool1-11290731-0
+func LinuxVMNameParts(vmName string) (string, string, string, int, error) {
 	vmNameParts := strings.Split(vmName, "-")
 
 	if len(vmNameParts) != 4 {
