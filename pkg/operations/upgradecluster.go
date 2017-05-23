@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"strconv"
 
 	"strings"
 
@@ -21,11 +22,17 @@ type ClusterTopology struct {
 	DataModel     *api.ContainerService
 	ResourceGroup string
 
-	MasterVMs *[]compute.VirtualMachine
-	AgentVMs  *[]compute.VirtualMachine
+	AgentPools map[string]*AgentPoolTopology
 
+	MasterVMs         *[]compute.VirtualMachine
 	UpgradedMasterVMs *[]compute.VirtualMachine
-	UpgradedAgentVMs  *[]compute.VirtualMachine
+}
+
+// AgentPoolTopology contains agent VMs in a single pool
+type AgentPoolTopology struct {
+	Name             *string
+	AgentVMs         *[]compute.VirtualMachine
+	UpgradedAgentVMs *[]compute.VirtualMachine
 }
 
 // UpgradeCluster upgrades a cluster with Orchestrator version X
@@ -50,11 +57,12 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	uc.ClusterTopology = ClusterTopology{}
 	uc.ResourceGroup = resourceGroup
 	uc.DataModel = cs
-	uc.MasterVMs = &[]compute.VirtualMachine{}
-	uc.AgentVMs = &[]compute.VirtualMachine{}
-	uc.UpgradedMasterVMs = &[]compute.VirtualMachine{}
-	uc.UpgradedAgentVMs = &[]compute.VirtualMachine{}
 	uc.UpgradeModel = ucs
+
+	uc.MasterVMs = &[]compute.VirtualMachine{}
+	uc.UpgradedMasterVMs = &[]compute.VirtualMachine{}
+
+	uc.AgentPools = make(map[string]*AgentPoolTopology)
 
 	if err := uc.getClusterNodeStatus(subscriptionID, resourceGroup); err != nil {
 		return fmt.Errorf("Error while querying ARM for resources: %+v", err)
@@ -88,35 +96,61 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.UpgradeModel.OrchestratorProfile.OrchestratorType,
 		uc.UpgradeModel.OrchestratorProfile.OrchestratorVersion)
 
+	// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX and filter out resources
+	// that don't belong to this cluster
 	for _, vm := range *vmListResult.Value {
 		vmOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
 		if vmOrchestratorTypeAndVersion == orchestratorTypeVersion {
 			if strings.Contains(*(vm.Name), "k8s-master-") {
 				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s", *vm.Name, vmOrchestratorTypeAndVersion))
-				// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX from temp parameter
 				*uc.MasterVMs = append(*uc.MasterVMs, vm)
-			}
-			// TODO: Add logic to separate out VMs in various agent pookls
-			// TODO: This logic won't work for Windows agents
-			if strings.Contains(*(vm.Name), "k8s-agentpool") {
-				log.Infoln(fmt.Sprintf("Agent VM name: %s, orchestrator: %s", *vm.Name, vmOrchestratorTypeAndVersion))
-				// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX from temp parameter
-				*uc.AgentVMs = append(*uc.AgentVMs, vm)
+			} else {
+				uc.addVMToAgentPool(vm, true)
 			}
 		} else if vmOrchestratorTypeAndVersion == targetOrchestratorTypeVersion {
 			if strings.Contains(*(vm.Name), "k8s-master-") {
 				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s", *vm.Name, vmOrchestratorTypeAndVersion))
-				// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX from temp parameter
 				*uc.UpgradedMasterVMs = append(*uc.UpgradedMasterVMs, vm)
-			}
-			// TODO: Add logic to separate out VMs in various agent pookls
-			// TODO: This logic won't work for Windows agents
-			if strings.Contains(*(vm.Name), "k8s-agentpool") {
-				log.Infoln(fmt.Sprintf("Agent VM name: %s, orchestrator: %s", *vm.Name, vmOrchestratorTypeAndVersion))
-				// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX from temp parameter
-				*uc.UpgradedAgentVMs = append(*uc.UpgradedAgentVMs, vm)
+			} else {
+				uc.addVMToAgentPool(vm, false)
 			}
 		}
+	}
+
+	return nil
+}
+
+func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradableVM bool) error {
+	var poolName string
+	var err error
+	if vm.StorageProfile.OsDisk.OsType == compute.Linux {
+		_, poolName, _, _, err = armhelpers.LinuxVMNameParts(*vm.Name)
+		if err != nil {
+			log.Errorln(err)
+			return err
+		}
+	} else if vm.StorageProfile.OsDisk.OsType == compute.Windows {
+		poolPrefix, acsStr, poolIdentifier, _, err := armhelpers.WindowsVMNameParts(*vm.Name)
+		if err != nil {
+			log.Errorln(err)
+			return err
+		}
+
+		poolName = poolPrefix + acsStr + strconv.Itoa(poolIdentifier)
+	}
+
+	if uc.AgentPools[poolName] == nil {
+		uc.AgentPools[poolName] = &AgentPoolTopology{&poolName, &[]compute.VirtualMachine{}, &[]compute.VirtualMachine{}}
+	}
+
+	if isUpgradableVM {
+		log.Infoln(fmt.Sprintf("Adding Agent VM: %s, orchestrator: %s to pool: %s (AgentVMs)",
+			*vm.Name, *(*vm.Tags)["orchestrator"], poolName))
+		*uc.AgentPools[poolName].AgentVMs = append(*uc.AgentPools[poolName].AgentVMs, vm)
+	} else {
+		log.Infoln(fmt.Sprintf("Adding Agent VM: %s, orchestrator: %s to pool: %s (UpgradedAgentVMs)",
+			*vm.Name, *(*vm.Tags)["orchestrator"], poolName))
+		*uc.AgentPools[poolName].UpgradedAgentVMs = append(*uc.AgentPools[poolName].UpgradedAgentVMs, vm)
 	}
 
 	return nil

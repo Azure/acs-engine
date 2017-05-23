@@ -20,6 +20,8 @@ var _ UpgradeWorkFlow = &Kubernetes162upgrader{}
 // Kubernetes162upgrader upgrades a Kubernetes 1.5.3 cluster to 1.6.2
 type Kubernetes162upgrader struct {
 	ClusterTopology
+	GoalStateDataModel *api.ContainerService
+
 	Client armhelpers.ACSEngineClient
 }
 
@@ -40,11 +42,28 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 		return err
 	}
 
-	upgradeContainerService := ku.ClusterTopology.DataModel
-	upgradeContainerService.Properties.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
+	ku.GoalStateDataModel = ku.ClusterTopology.DataModel
+	ku.GoalStateDataModel.Properties.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
 
+	if err := ku.upgradeMasterNodes(); err != nil {
+		return err
+	}
+
+	if err := ku.upgradeAgentPools(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Validate will run validation post upgrade
+func (ku *Kubernetes162upgrader) Validate() error {
+	return nil
+}
+
+func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 	// Upgrade Master VMs
-	templateMap, parametersMap, err := ku.generateUpgradeTemplate(upgradeContainerService)
+	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.GoalStateDataModel)
 	if err != nil {
 		return fmt.Errorf("error generating upgrade template: %s", err.Error())
 	}
@@ -57,11 +76,11 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	upgradeMasterNode := UpgradeMasterNode{}
 	upgradeMasterNode.TemplateMap = templateMap
 	upgradeMasterNode.ParametersMap = parametersMap
-	upgradeMasterNode.UpgradeContainerService = upgradeContainerService
+	upgradeMasterNode.UpgradeContainerService = ku.GoalStateDataModel
 	upgradeMasterNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 	upgradeMasterNode.Client = ku.Client
 
-	expectedMasterCount := upgradeContainerService.Properties.MasterProfile.Count
+	expectedMasterCount := ku.GoalStateDataModel.Properties.MasterProfile.Count
 
 	mastersToUgradeCount := len(*ku.ClusterTopology.MasterVMs)
 	mastersUpgradedCount := len(*ku.ClusterTopology.UpgradedMasterVMs)
@@ -81,6 +100,7 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 
 	var sampleMasterVMName *string
 
+	// Add Master VMs that need to be upgraded to masterVMsToUgradeStatus
 	for _, vm := range *ku.ClusterTopology.MasterVMs {
 		vmStatus := VMStatus{vm.Name, true, true}
 		sampleMasterVMName = vm.Name
@@ -90,6 +110,7 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 			*vm.Name, *(*vm.Tags)["orchestrator"]))
 	}
 
+	// Add Master VMs that have already been upgraded to masterVMsToUgradeStatus
 	for _, vm := range *ku.ClusterTopology.UpgradedMasterVMs {
 		vmStatus := VMStatus{vm.Name, false, false}
 		masterVMsToUgradeStatus = append(masterVMsToUgradeStatus, &vmStatus)
@@ -98,6 +119,8 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 			*vm.Name, *(*vm.Tags)["orchestrator"]))
 	}
 
+	// This condition is possible if the previous upgrade operation failed during master
+	// VM upgrade when a master VM was deleted but creation of upgraded master did not run.
 	if masterNodesInCluster < expectedMasterCount {
 		log.Infoln(fmt.Sprintf(
 			"Found missing master VMs in the cluster. Reconstructing names of missing master VMs for recreation during upgrade..."))
@@ -147,8 +170,12 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 		upgradeMasterNode.Validate()
 	}
 
+	return nil
+}
+
+func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 	// Upgrade Agent VMs
-	templateMap, parametersMap, err = ku.generateUpgradeTemplate(upgradeContainerService)
+	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.GoalStateDataModel)
 	if err != nil {
 		return fmt.Errorf("error generating upgrade template: %s", err.Error())
 	}
@@ -158,47 +185,40 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 		return err
 	}
 
-	upgradeAgentNode := UpgradeAgentNode{}
-	upgradeAgentNode.TemplateMap = templateMap
-	upgradeAgentNode.ParametersMap = parametersMap
-	upgradeAgentNode.UpgradeContainerService = upgradeContainerService
-	upgradeAgentNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
-	upgradeAgentNode.Client = ku.Client
+	for _, agentPool := range ku.ClusterTopology.AgentPools {
+		upgradeAgentNode := UpgradeAgentNode{}
+		upgradeAgentNode.TemplateMap = templateMap
+		upgradeAgentNode.ParametersMap = parametersMap
+		upgradeAgentNode.UpgradeContainerService = ku.GoalStateDataModel
+		upgradeAgentNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
+		upgradeAgentNode.Client = ku.Client
 
-	sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*ku.ClusterTopology.AgentVMs)))
-	sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*ku.ClusterTopology.UpgradedAgentVMs)))
+		sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*agentPool.AgentVMs)))
+		sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*agentPool.UpgradedAgentVMs)))
 
-	log.Infoln(fmt.Sprintf("Starting agent nodes upgrade..."))
+		log.Infoln(fmt.Sprintf("Starting upgrade of agent nodes in pool: %s...", *agentPool.Name))
 
-	// TODO: Upgrade one agent pool at a time
-	// TODO: Enable upgrade of Windows agent pools
-	agentLoopCount := 1
-	for _, vm := range *ku.ClusterTopology.AgentVMs {
-		_, poolName, _, _, _ := armhelpers.LinuxVMNameParts(*vm.Name)
-		log.Infoln(fmt.Sprintf("Upgrading Agent VM: %s, pool name: %s", *vm.Name, poolName))
+		agentLoopCount := 1
+		for _, vm := range *agentPool.AgentVMs {
+			log.Infoln(fmt.Sprintf("Upgrading Agent VM: %s, pool name: %s", *vm.Name, *agentPool.Name))
 
-		// 1.	Shutdown and delete one agent VM at a time
-		upgradeAgentNode.DeleteNode(vm.Name)
+			// 1.	Shutdown and delete one agent VM at a time
+			upgradeAgentNode.DeleteNode(vm.Name)
 
-		// 2.	Call CreateVMWithRetries
-		upgradeAgentNode.CreateNode(poolName, agentLoopCount)
+			// 2.	Call CreateVMWithRetries
+			upgradeAgentNode.CreateNode(*agentPool.Name, agentLoopCount)
 
-		upgradeAgentNode.Validate()
+			upgradeAgentNode.Validate()
 
-		agentLoopCount++
+			agentLoopCount++
+		}
 	}
 
 	return nil
 }
 
-// Validate will run validation post upgrade
-func (ku *Kubernetes162upgrader) Validate() error {
-	return nil
-}
-
 func (ku *Kubernetes162upgrader) generateUpgradeTemplate(upgradeContainerService *api.ContainerService) (map[string]interface{}, map[string]interface{}, error) {
 	var err error
-
 	templateGenerator, err := acsengine.InitializeTemplateGenerator(false)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to initialize template generator: %s", err.Error())

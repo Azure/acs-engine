@@ -37,7 +37,7 @@ func SplitBlobURI(URI string) (string, string, string, error) {
 }
 
 // LinuxVMNameParts returns parts of Linux VM name e.g: k8s-agentpool1-11290731-0
-func LinuxVMNameParts(vmName string) (string, string, string, int, error) {
+func LinuxVMNameParts(vmName string) (orchestrator string, poolType string, nameSuffix string, agentIndex int, err error) {
 	vmNameParts := strings.Split(vmName, "-")
 
 	if len(vmNameParts) != 4 {
@@ -51,6 +51,26 @@ func LinuxVMNameParts(vmName string) (string, string, string, int, error) {
 	}
 
 	return vmNameParts[0], vmNameParts[1], vmNameParts[2], vmNum, nil
+}
+
+// WindowsVMNameParts returns parts of Windows VM name e.g: 50621acs9000
+func WindowsVMNameParts(vmName string) (poolPrefix string, acsStr string, poolIdentifier int, agentIndex int, err error) {
+	poolPrefix = strings.Split(vmName, "acs")[0]
+	poolInfo := strings.Split(vmName, "acs")[1]
+
+	poolIdentifier, err = strconv.Atoi(poolInfo[:3])
+	if err != nil {
+		return "", "", -1, -1, fmt.Errorf("Error parsing VM Name: %v", err)
+	}
+
+	agentIndex, _ = strconv.Atoi(poolInfo[3:])
+	fmt.Printf("%d\n", agentIndex)
+
+	if err != nil {
+		return "", "", -1, -1, fmt.Errorf("Error parsing VM Name: %v", err)
+	}
+
+	return poolPrefix, "acs", poolIdentifier, agentIndex, nil
 }
 
 // ByVMNameOffset implements sort.Interface for []VirtualMachine based on
