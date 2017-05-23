@@ -115,6 +115,9 @@ write_files:
     KUBELET_REGISTER_SCHEDULABLE=true
     KUBELET_NODE_LABELS=role=agent
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
+{{if IsKubernetesGte16}}
+     KUBELET_FEATURE_GATES=--feature-gates=Accelerators=true
+{{end}}
 
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
