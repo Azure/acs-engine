@@ -5,27 +5,6 @@ packages:
  - jq
  - traceroute
 
-{{if not .UpgradeMode}}
-disk_setup:
-  /dev/sdc:
-      table_type: gpt
-      layout: true
-      overwrite: false
-
-fs_setup:
-- label: etcd_disk
-  filesystem: ext4
-  device: /dev/sdc1
-  extra_opts:
-    - "-F"
-    - "-E"
-    - "lazy_itable_init=1,lazy_journal_init=1"
-{{end}}
-
-mounts:
-- - /dev/sdc1
-  - /var/lib/etcddisk
-
 write_files:
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
   permissions: "0644"
@@ -283,9 +262,43 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionScript"}}
 
+- path: "/opt/azure/containers/mountetcd.sh"
+  permissions: "0744"
+  owner: "root"
+  content: |
+    #!/bin/bash
+    set -x
+    DISK=/dev/sdc
+    PARTITION=${DISK}1
+    MOUNTPOINT=/var/lib/etcddisk
+    udevadm settle
+    mkdir -p $MOUNTPOINT
+    mount | grep $MOUNTPOINT
+    if [ $? -eq 0 ]
+    then
+        echo "disk is already mounted"
+        exit 0
+    fi
+    # fill /etc/fstab
+    grep "/dev/sdc1" /etc/fstab
+    if [ $? -ne 0 ]
+    then
+        echo "$PARTITION       $MOUNTPOINT       auto    defaults,nofail       0       2" >> /etc/fstab
+    fi
+    # check if partition exists
+    ls $PARTITION
+    if [ $? -ne 0 ]
+    then
+        # partition does not exist
+        /sbin/sgdisk --new 1 $DISK
+        /sbin/mkfs.ext4 $PARTITION -L etcd_disk -F -E lazy_itable_init=1,lazy_journal_init=1
+    fi
+    mount $MOUNTPOINT
+
 runcmd:
 - /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',http://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
 - sudo /bin/chown -R etcd:etcd /var/lib/etcd/default
+- /opt/azure/containers/mountetcd.sh
 - sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
 - systemctl stop etcd
 - sudo -u etcd rm -rf /var/lib/etcd/default
