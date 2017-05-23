@@ -262,11 +262,13 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 
 // NormalizeResourcesForK8sAgentUpgrade takes a template and removes elements that are unwanted in any scale up/down case
 func NormalizeResourcesForK8sAgentUpgrade(logger *logrus.Entry, templateMap map[string]interface{}) error {
+	logger.Infoln(fmt.Sprintf("Running NormalizeResourcesForK8sMasterUpgrade...."))
 	if err := NormalizeResourcesForK8sMasterUpgrade(logger, templateMap, false); err != nil {
 		log.Fatalln(err)
 		return err
 	}
 
+	logger.Infoln(fmt.Sprintf("Running NormalizeForK8sVMASScalingUp...."))
 	if err := NormalizeForK8sVMASScalingUp(logger, templateMap); err != nil {
 		log.Fatalln(err)
 		return err

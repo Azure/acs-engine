@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
+
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
@@ -58,23 +61,90 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	upgradeMasterNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 	upgradeMasterNode.Client = ku.Client
 
-	// Sort by VM Name (e.g.: k8s-master-22551669-0) offset no. in descending order
-	sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*ku.ClusterTopology.MasterVMs)))
+	expectedMasterCount := upgradeContainerService.Properties.MasterProfile.Count
+
+	mastersToUgradeCount := len(*ku.ClusterTopology.MasterVMs)
+	mastersUpgradedCount := len(*ku.ClusterTopology.UpgradedMasterVMs)
+
+	log.Infoln(fmt.Sprintf("Total expected master count: %d", expectedMasterCount))
+	log.Infoln(fmt.Sprintf("Master nodes that need to be upgraded: %d", mastersToUgradeCount))
+	log.Infoln(fmt.Sprintf("Master nodes that have been upgraded: %d", mastersUpgradedCount))
 
 	log.Infoln(fmt.Sprintf("Starting master nodes upgrade..."))
 
-	masterLoopCount := 1
+	masterNodesInCluster := mastersToUgradeCount + mastersUpgradedCount
+	if masterNodesInCluster > expectedMasterCount {
+		return fmt.Errorf("Total count of master VMs: %d exceeded expected count: %d", masterNodesInCluster, expectedMasterCount)
+	}
+
+	masterVMsToUgradeStatus := make(VMStatusSlice, 0, masterNodesInCluster)
+
+	var sampleMasterVMName *string
+
 	for _, vm := range *ku.ClusterTopology.MasterVMs {
+		vmStatus := VMStatus{vm.Name, true, true}
+		sampleMasterVMName = vm.Name
+		masterVMsToUgradeStatus = append(masterVMsToUgradeStatus, &vmStatus)
+
+		log.Infoln(fmt.Sprintf("Adding master VM name: %s with tag: %s to masterVMsToUgradeStatus list",
+			*vm.Name, *(*vm.Tags)["orchestrator"]))
+	}
+
+	for _, vm := range *ku.ClusterTopology.UpgradedMasterVMs {
+		vmStatus := VMStatus{vm.Name, false, false}
+		masterVMsToUgradeStatus = append(masterVMsToUgradeStatus, &vmStatus)
+
+		log.Infoln(fmt.Sprintf("Adding master VM name: %s with tag: %s to masterVMsToUgradeStatus list",
+			*vm.Name, *(*vm.Tags)["orchestrator"]))
+	}
+
+	if masterNodesInCluster < expectedMasterCount {
+		log.Infoln(fmt.Sprintf(
+			"Found missing master VMs in the cluster. Reconstructing names of missing master VMs for recreation during upgrade..."))
+
+		// Note that this assumes that VM numbers were in the pool were consecutive
+		availableMasterVMs := make([]bool, expectedMasterCount)
+		for _, masterVMStatus := range masterVMsToUgradeStatus {
+			availableMasterVMs[masterVMStatus.VMNumber()] = true
+		}
+
+		// orchestrator, type, suffix, _, err := armhelpers.LinuxVMNameParts(*sampleMasterVMName)
+		orch, poolType, suffix, _, err := armhelpers.LinuxVMNameParts(*sampleMasterVMName)
+		if err != nil {
+			log.Fatalln(err)
+			return err
+		}
+
+		for i := 0; i < len(availableMasterVMs); i++ {
+			if availableMasterVMs[i] == false {
+				var vmNameArray = []string{orch, poolType, suffix, strconv.Itoa(i)}
+				var vmName = strings.Join(vmNameArray, "-")
+				vmStatus := VMStatus{&vmName, false, true}
+				log.Infoln(fmt.Sprintf(
+					"Adding missing master VM: %s for recreation during upgrade...", vmName))
+				masterVMsToUgradeStatus = append(masterVMsToUgradeStatus, &vmStatus)
+			}
+		}
+	}
+
+	sort.Sort(sort.Reverse(masterVMsToUgradeStatus))
+
+	for _, vm := range masterVMsToUgradeStatus {
 		log.Infoln(fmt.Sprintf("Upgrading Master VM: %s", *vm.Name))
 
-		// 1.	Shutdown and delete one master VM at a time while preserving the persistent disk backing etcd.
-		upgradeMasterNode.DeleteNode(vm.Name)
-		// 2.	Call CreateVMWithRetries
-		upgradeMasterNode.CreateNode("master", masterLoopCount)
+		if vm.Delete == true {
+			log.Infoln(fmt.Sprintf("Deleting Master VM: %s", *vm.Name))
+			// 1.	Shutdown and delete one master VM at a time while preserving the persistent disk backing etcd.
+			upgradeMasterNode.DeleteNode(vm.Name)
+		}
+
+		if vm.Upgrade == true {
+			log.Infoln(fmt.Sprintf("Creating upgraded Master VM: %s", *vm.Name))
+			// 2.	Call CreateVMWithRetries
+			upgradeMasterNode.CreateNode("master", vm.VMNumber())
+		}
 
 		upgradeMasterNode.Validate()
-
-		masterLoopCount++
 	}
 
 	// Upgrade Agent VMs
@@ -96,6 +166,7 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	upgradeAgentNode.Client = ku.Client
 
 	sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*ku.ClusterTopology.AgentVMs)))
+	sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*ku.ClusterTopology.UpgradedAgentVMs)))
 
 	log.Infoln(fmt.Sprintf("Starting agent nodes upgrade..."))
 
@@ -103,16 +174,16 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	// TODO: Enable upgrade of Windows agent pools
 	agentLoopCount := 1
 	for _, vm := range *ku.ClusterTopology.AgentVMs {
-		// 1.	Shutdown and delete one agent VM at a time
-		upgradeAgentNode.DeleteNode(vm.Name)
-
-		// 2.	Call CreateVMWithRetries
 		_, poolName, _, _, _ := armhelpers.LinuxVMNameParts(*vm.Name)
 		log.Infoln(fmt.Sprintf("Upgrading Agent VM: %s, pool name: %s", *vm.Name, poolName))
 
-		upgradeAgentNode.CreateNode(poolName, agentLoopCount)
+		// // 1.	Shutdown and delete one agent VM at a time
+		// upgradeAgentNode.DeleteNode(vm.Name)
 
-		upgradeAgentNode.Validate()
+		// // 2.	Call CreateVMWithRetries
+		// upgradeAgentNode.CreateNode(poolName, agentLoopCount)
+
+		// upgradeAgentNode.Validate()
 
 		agentLoopCount++
 	}

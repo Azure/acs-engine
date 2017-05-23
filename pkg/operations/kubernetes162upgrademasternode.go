@@ -35,15 +35,13 @@ func (kmn *UpgradeMasterNode) DeleteNode(vmName *string) error {
 }
 
 // CreateNode creates a new master/agent node with the targeted version of Kubernetes
-func (kmn *UpgradeMasterNode) CreateNode(poolName string, countForOffset int) error {
+func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterOffset int) error {
 	templateVariables := kmn.TemplateMap["variables"].(map[string]interface{})
-	masterCount, _ := templateVariables["masterCount"]
-	masterCountInt := int(masterCount.(float64))
 
 	// Call CreateVMWithRetries
-	templateVariables["masterOffset"] = masterCountInt - countForOffset
-	masterOffset, _ := templateVariables["masterOffset"]
-	log.Infoln(fmt.Sprintf("Master offset: %v", masterOffset))
+	templateVariables["masterOffset"] = masterOffset
+	masterOffsetVar, _ := templateVariables["masterOffset"]
+	log.Infoln(fmt.Sprintf("Master offset: %v", masterOffsetVar))
 
 	WriteTemplate(kmn.UpgradeContainerService, kmn.TemplateMap, kmn.ParametersMap)
 

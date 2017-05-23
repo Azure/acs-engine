@@ -23,6 +23,9 @@ type ClusterTopology struct {
 
 	MasterVMs *[]compute.VirtualMachine
 	AgentVMs  *[]compute.VirtualMachine
+
+	UpgradedMasterVMs *[]compute.VirtualMachine
+	UpgradedAgentVMs  *[]compute.VirtualMachine
 }
 
 // UpgradeCluster upgrades a cluster with Orchestrator version X
@@ -49,8 +52,11 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	uc.DataModel = cs
 	uc.MasterVMs = &[]compute.VirtualMachine{}
 	uc.AgentVMs = &[]compute.VirtualMachine{}
+	uc.UpgradedMasterVMs = &[]compute.VirtualMachine{}
+	uc.UpgradedAgentVMs = &[]compute.VirtualMachine{}
+	uc.UpgradeModel = ucs
 
-	if err := uc.getUpgradableResources(subscriptionID, resourceGroup); err != nil {
+	if err := uc.getClusterNodeStatus(subscriptionID, resourceGroup); err != nil {
 		return fmt.Errorf("Error while querying ARM for resources: %+v", err)
 	}
 
@@ -71,7 +77,7 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	return nil
 }
 
-func (uc *UpgradeCluster) getUpgradableResources(subscriptionID uuid.UUID, resourceGroup string) error {
+func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourceGroup string) error {
 	vmListResult, err := uc.Client.ListVirtualMachines(resourceGroup)
 	if err != nil {
 		return err
@@ -79,20 +85,36 @@ func (uc *UpgradeCluster) getUpgradableResources(subscriptionID uuid.UUID, resou
 
 	orchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorType,
 		uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.UpgradeModel.OrchestratorProfile.OrchestratorType,
+		uc.UpgradeModel.OrchestratorProfile.OrchestratorVersion)
 
 	for _, vm := range *vmListResult.Value {
-		if *(*vm.Tags)["orchestrator"] == orchestratorTypeVersion {
+		vmOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
+		if vmOrchestratorTypeAndVersion == orchestratorTypeVersion {
 			if strings.Contains(*(vm.Name), "k8s-master-") {
-				log.Infoln(fmt.Sprintf("Master VM name: %s", *vm.Name))
+				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s", *vm.Name, vmOrchestratorTypeAndVersion))
 				// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX from temp parameter
 				*uc.MasterVMs = append(*uc.MasterVMs, vm)
 			}
 			// TODO: Add logic to separate out VMs in various agent pookls
 			// TODO: This logic won't work for Windows agents
 			if strings.Contains(*(vm.Name), "k8s-agentpool") {
-				log.Infoln(fmt.Sprintf("Agent VM name: %s", *vm.Name))
+				log.Infoln(fmt.Sprintf("Agent VM name: %s, orchestrator: %s", *vm.Name, vmOrchestratorTypeAndVersion))
 				// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX from temp parameter
 				*uc.AgentVMs = append(*uc.AgentVMs, vm)
+			}
+		} else if vmOrchestratorTypeAndVersion == targetOrchestratorTypeVersion {
+			if strings.Contains(*(vm.Name), "k8s-master-") {
+				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s", *vm.Name, vmOrchestratorTypeAndVersion))
+				// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX from temp parameter
+				*uc.UpgradedMasterVMs = append(*uc.UpgradedMasterVMs, vm)
+			}
+			// TODO: Add logic to separate out VMs in various agent pookls
+			// TODO: This logic won't work for Windows agents
+			if strings.Contains(*(vm.Name), "k8s-agentpool") {
+				log.Infoln(fmt.Sprintf("Agent VM name: %s, orchestrator: %s", *vm.Name, vmOrchestratorTypeAndVersion))
+				// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX from temp parameter
+				*uc.UpgradedAgentVMs = append(*uc.UpgradedAgentVMs, vm)
 			}
 		}
 	}
