@@ -212,8 +212,10 @@ Set-DockerNetwork(`$podCIDR)
         # create new transparent network
         docker network create --driver=transparent --subnet=`$podCIDR --gateway=`$podGW `$global:TransparentNetworkName
 
+        
+        `$vmswitch = get-vmSwitch  | ? SwitchType -EQ External
         # create host vnic for gateway ip to forward the traffic and kubeproxy to listen over VIP
-        Add-VMNetworkAdapter -ManagementOS -Name forwarder -SwitchName "Layered Ethernet 3"
+        Add-VMNetworkAdapter -ManagementOS -Name forwarder -SwitchName `$vmswitch.Name
 
         # Assign gateway IP to new adapter and enable forwarding on host adapters:
         netsh interface ipv4 add address "vEthernet (forwarder)" `$podGW 255.255.255.0
