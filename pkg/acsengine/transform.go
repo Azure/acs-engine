@@ -80,7 +80,7 @@ func NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templateMap map[string]i
 	for index, resource := range resources {
 		resourceMap, ok := resource.(map[string]interface{})
 		if !ok {
-			logger.Warnf("Template improperly formatted for field name: %s", resourcesFieldName)
+			logger.Warnf("Template improperly formatted for resource")
 			continue
 		}
 
@@ -96,7 +96,7 @@ func NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templateMap map[string]i
 
 		dependencies, ok := resourceMap[dependsOnFieldName].([]interface{})
 		if !ok {
-			logger.Warnf("Template improperly formatted for field name: %s", resourcesFieldName)
+			logger.Warnf("%s field not found for type: %s. Continue...", dependsOnFieldName, resourceType)
 			continue
 		}
 
@@ -187,7 +187,7 @@ func removeCustomData(logger *logrus.Entry, resourceProperties map[string]interf
 func removeImageReference(logger *logrus.Entry, resourceProperties map[string]interface{}) bool {
 	storageProfile, ok := resourceProperties[storageProfileFieldName].(map[string]interface{})
 	if !ok {
-		logger.Warnf("Template improperly formatted")
+		logger.Warnf("Template improperly formatted. Could not find: %s", storageProfileFieldName)
 		return ok
 	}
 
@@ -205,7 +205,7 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 		resources := templateMap[resourcesFieldName].([]interface{})
 
 		agentPoolIndex := -1
-		//remove agent nodes resources
+		// remove agent nodes resources if needed and set dataDisk createOption to attach
 		for index, resource := range resources {
 			resourceMap, ok := resource.(map[string]interface{})
 			if !ok {
@@ -234,7 +234,7 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 
 				storageProfile, ok := resourceProperties[storageProfileFieldName].(map[string]interface{})
 				if !ok {
-					logger.Warnf("Template improperly formatted")
+					logger.Warnf("Template improperly formatted: %s", storageProfileFieldName)
 					continue
 				}
 

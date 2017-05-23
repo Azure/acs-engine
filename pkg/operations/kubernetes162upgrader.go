@@ -177,13 +177,13 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 		_, poolName, _, _, _ := armhelpers.LinuxVMNameParts(*vm.Name)
 		log.Infoln(fmt.Sprintf("Upgrading Agent VM: %s, pool name: %s", *vm.Name, poolName))
 
-		// // 1.	Shutdown and delete one agent VM at a time
-		// upgradeAgentNode.DeleteNode(vm.Name)
+		// 1.	Shutdown and delete one agent VM at a time
+		upgradeAgentNode.DeleteNode(vm.Name)
 
-		// // 2.	Call CreateVMWithRetries
-		// upgradeAgentNode.CreateNode(poolName, agentLoopCount)
+		// 2.	Call CreateVMWithRetries
+		upgradeAgentNode.CreateNode(poolName, agentLoopCount)
 
-		// upgradeAgentNode.Validate()
+		upgradeAgentNode.Validate()
 
 		agentLoopCount++
 	}
