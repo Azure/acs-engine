@@ -13,14 +13,20 @@ const (
 	DefaultSwarmWindowsMasterSubnet = "192.168.255.0/24"
 	// DefaultSwarmWindowsFirstConsecutiveStaticIP specifies the static IP address on master 0 for a Swarm WIndows cluster
 	DefaultSwarmWindowsFirstConsecutiveStaticIP = "192.168.255.5"
-	// DefaultKubernetesMasterSubnet specifies the default kubernetes master subnet
+	// DefaultKubernetesMasterSubnet specifies the default subnet for masters and agents.
 	DefaultKubernetesMasterSubnet = "10.240.0.0/16"
-	// DefaultKubernetesSubnet specifies the default Kubernetes subnet when VNET integration is enabled.
-	DefaultKubernetesSubnet = "10.240.0.0/12"
+	// DefaultKubernetesClusterSubnet specifies the default subnet for pods.
+	DefaultKubernetesClusterSubnet = "10.244.0.0/16"
 	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultAgentSubnetTemplate specifies a default agent subnet
 	DefaultAgentSubnetTemplate = "10.%d.0.0/16"
+	// DefaultKubernetesSubnet specifies the default subnet used for all masters, agents and pods
+	// when VNET integration is enabled.
+	DefaultKubernetesSubnet = "10.240.0.0/12"
+	// DefaultKubernetesFirstConsecutiveStaticIPOffset specifies the IP address offset of master 0
+	// when VNET integration is enabled.
+	DefaultKubernetesFirstConsecutiveStaticIPOffset = 5
 	// DefaultAgentIPAddressCount is the default number of IP addresses per network interface on agents
 	DefaultAgentIPAddressCount = 1
 	// DefaultAgentMultiIPAddressCount is the default number of IP addresses per network interface on agents,
@@ -69,6 +75,19 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
 		"pause":        "pause-amd64:3.0",
 		"windowszip":   "v1.6.0intwinnat.zip",
+	},
+
+	api.Kubernetes157: {
+		"hyperkube":    "hyperkube-amd64:v1.5.7",
+		"dashboard":    "kubernetes-dashboard-amd64:v1.5.1",
+		"exechealthz":  "exechealthz-amd64:1.2",
+		"addonresizer": "addon-resizer:1.6",
+		"heapster":     "heapster:v1.2.0",
+		"dns":          "kubedns-amd64:1.7",
+		"addonmanager": "kube-addon-manager-amd64:v6.2",
+		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"pause":        "pause-amd64:3.0",
+		"windowszip":   "v1.5.7intwinnat.zip",
 	},
 
 	api.Kubernetes153: {

@@ -37,12 +37,21 @@ if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     chmod 0644 "${APISERVER_PRIVATE_KEY_PATH}"
     chown root:root "${APISERVER_PRIVATE_KEY_PATH}"
     echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
+else
+    echo "APISERVER_PRIVATE_KEY is empty, assuming worker node"
+fi
 
-    AZURE_JSON_PATH="/etc/kubernetes/azure.json"
-    touch "${AZURE_JSON_PATH}"
-    chmod 0644 "${AZURE_JSON_PATH}"
-    chown root:root "${AZURE_JSON_PATH}"
-    cat << EOF > "${AZURE_JSON_PATH}"
+KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
+touch "${KUBELET_PRIVATE_KEY_PATH}"
+chmod 0644 "${KUBELET_PRIVATE_KEY_PATH}"
+chown root:root "${KUBELET_PRIVATE_KEY_PATH}"
+echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
+
+AZURE_JSON_PATH="/etc/kubernetes/azure.json"
+touch "${AZURE_JSON_PATH}"
+chmod 0600 "${AZURE_JSON_PATH}"
+chown root:root "${AZURE_JSON_PATH}"
+cat << EOF > "${AZURE_JSON_PATH}"
 {
     "cloud":"${TARGET_ENVIRONMENT}",
     "tenantId": "${TENANT_ID}",
@@ -58,16 +67,6 @@ if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}"
 }
 EOF
-
-else
-    echo "APISERVER_PRIVATE_KEY is empty, assuming worker node"
-fi
-
-KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
-touch "${KUBELET_PRIVATE_KEY_PATH}"
-chmod 0644 "${KUBELET_PRIVATE_KEY_PATH}"
-chown root:root "${KUBELET_PRIVATE_KEY_PATH}"
-echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
 
 ###########################################################
 # END OF SECRET DATA
@@ -140,22 +139,12 @@ function configAzureNetworkPolicy() {
     setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
+# Configures Kubelet to use CNI and mount the appropriate hostpaths
 function configCalicoNetworkPolicy() {
-    if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
-        # on masters
-        ADDONS="calico-configmap.yaml calico-daemonset.yaml"
-        ADDONS_PATH=/etc/kubernetes/addons
-        CALICO_URL="https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager"
 
-        # download calico yamls
-        for addon in ${ADDONS}; do
-            downloadUrl "${CALICO_URL}/${addon}" > "${ADDONS_PATH}/${addon}"
-        done
-    else
-        # on agents
         setNetworkPlugin cni
         setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
-    fi
+
 }
 
 function configNetworkPolicy() {
@@ -322,7 +311,7 @@ ensureKubelet
 extractKubectl
 ensureJournal
 
-# master only 
+# master only
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     writeKubeConfig
     ensureKubectl

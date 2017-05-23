@@ -24,20 +24,22 @@ When the build process completes, verify that `acs-engine` is available, invokin
 You should see something like this:
 
 ```
-# acs-engine
-Usage of acs-engine:
-  -artifacts string
-    	directory where artifacts will be written
-  -caCertificatePath string
-    	the path to the CA Certificate file
-  -caKeyPath string
-    	the path to the CA key file
-  -classicMode
-    	enable classic parameters and outputs
-  -noPrettyPrint
-    	do not pretty print output
-  -parametersOnly
-    	only output the parameters
+# ./acs-engine 
+ACS-Engine deploys and manages Kubernetes, Swarm Mode, and DC/OS clusters in Azure
+
+Usage:
+  acs-engine [command]
+
+Available Commands:
+  generate    Generate an Azure Resource Manager template
+  help        Help about any command
+  version     Print the version of ACS-Engine
+
+Flags:
+      --debug   enable verbose debug logs
+  -h, --help    help for acs-engine
+
+Use "acs-engine [command] --help" for more information about a command.
 ```
 
 [Here's a quick demo video showing the dev/build/test cycle with this setup.](https://www.youtube.com/watch?v=lc6UZmqxQMs)
@@ -85,8 +87,8 @@ Build Steps:
   ```
   export PATH=$PATH:/usr/local/go/bin
   export GOPATH=$HOME/gopath
-  source $HOME/.sh_profile
   ```
+  4. `source $HOME/.bash_profile`
 Build acs-engine:
   1. type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
   2. type `go get all` to get the supporting components
@@ -111,7 +113,7 @@ Build Steps:
   export PATH=$PATH:/usr/local/go/bin
   export GOPATH=$HOME/gopath
   ```
-  4. source $HOME/.profile
+  4. `source $HOME/.profile`
  
 Build acs-engine:
   1. type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
@@ -138,7 +140,7 @@ Here is an example of how to generate a new deployment.  This example assumes yo
 
 1. Before starting ensure you have generated a valid [SSH Public/Private key pair](ssh.md#ssh-key-generation).
 2. edit [examples/kubernetes.json](../examples/kubernetes.json) and fill in the blanks.
-3. run `acs-engine generate examples/kubernetes.json` to generate the templates in the _output/Kubernetes-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
+3. run `./acs-engine generate examples/kubernetes.json` to generate the templates in the _output/Kubernetes-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
 4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [deployment usage](../README.md#deployment-usage).
 
 # Deploying templates

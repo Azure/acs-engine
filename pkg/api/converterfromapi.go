@@ -383,6 +383,17 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 	if api.OrchestratorVersion != "" {
 		o.OrchestratorVersion = vlabs.OrchestratorVersion(api.OrchestratorVersion)
 	}
+
+	if api.KubernetesConfig != nil {
+		o.KubernetesConfig = &vlabs.KubernetesConfig{}
+		convertKubernetesConfigToVLabs(api.KubernetesConfig, o.KubernetesConfig)
+	}
+}
+
+func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {
+	vlabs.KubernetesImageBase = api.KubernetesImageBase
+	vlabs.ClusterSubnet = api.ClusterSubnet
+	vlabs.NetworkPolicy = api.NetworkPolicy
 }
 
 func convertMasterProfileToV20160930(api *MasterProfile, v20160930 *v20160930.MasterProfile) {
@@ -410,6 +421,7 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	vlabsProfile.Count = api.Count
 	vlabsProfile.DNSPrefix = api.DNSPrefix
 	vlabsProfile.VMSize = api.VMSize
+	vlabsProfile.OSDiskSizeGB = api.OSDiskSizeGB
 	vlabsProfile.VnetSubnetID = api.VnetSubnetID
 	vlabsProfile.FirstConsecutiveStaticIP = api.FirstConsecutiveStaticIP
 	vlabsProfile.SetSubnet(api.Subnet)
@@ -461,6 +473,7 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	p.Name = api.Name
 	p.Count = api.Count
 	p.VMSize = api.VMSize
+	p.OSDiskSizeGB = api.OSDiskSizeGB
 	p.DNSPrefix = api.DNSPrefix
 	p.OSType = vlabs.OSType(api.OSType)
 	p.Ports = []int{}

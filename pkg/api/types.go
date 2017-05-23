@@ -39,6 +39,12 @@ type ContainerService struct {
 
 // Properties represents the ACS cluster definition
 type Properties struct {
+	// TODO: remove UpgradeMode
+	// It does not belong here, and is only done for expediency.
+	// This is ONLY to be used to control whether the 'disk_setup` and 'fs_setup' sections of cloud-init
+	// should be emitted.
+	UpgradeMode bool `json:"upgradeMode,omitempty"` // TODO: remove this.
+
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
 	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
 	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
@@ -126,6 +132,7 @@ type OrchestratorProfile struct {
 // Kubernetes specific configuration
 type KubernetesConfig struct {
 	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
 	NetworkPolicy       string `json:"networkPolicy,omitempty"`
 }
 
@@ -134,6 +141,7 @@ type MasterProfile struct {
 	Count                    int    `json:"count"`
 	DNSPrefix                string `json:"dnsPrefix"`
 	VMSize                   string `json:"vmSize"`
+	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string `json:"subnet"`
@@ -150,6 +158,7 @@ type AgentPoolProfile struct {
 	Name                string `json:"name"`
 	Count               int    `json:"count"`
 	VMSize              string `json:"vmSize"`
+	OSDiskSizeGB        int    `json:"osDiskSizeGB,omitempty"`
 	DNSPrefix           string `json:"dnsPrefix,omitempty"`
 	OSType              OSType `json:"osType,omitempty"`
 	Ports               []int  `json:"ports,omitempty"`
@@ -264,6 +273,19 @@ type V20160930ARMContainerService struct {
 type V20170131ARMContainerService struct {
 	TypeMeta
 	*v20170131.ContainerService
+}
+
+// VlabsUpgradeContainerService is the type we read and write from file
+// needed because the json that is sent to ARM and acs-engine
+// is different from the json that the ACS RP Api gets from ARM
+type VlabsUpgradeContainerService struct {
+	TypeMeta
+	*vlabs.UpgradeContainerService
+}
+
+// UpgradeContainerService API model
+type UpgradeContainerService struct {
+	OrchestratorProfile *OrchestratorProfile `json:"orchestratorProfile,omitempty"`
 }
 
 // HasWindows returns true if the cluster contains windows
