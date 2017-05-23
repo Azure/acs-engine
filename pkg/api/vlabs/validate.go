@@ -22,23 +22,33 @@ func (o *OrchestratorProfile) Validate() error {
 		default:
 			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
 		}
+
 	case Swarm:
+	case SwarmMode:
+
 	case Kubernetes:
 		switch o.OrchestratorVersion {
 		case Kubernetes162:
 		case Kubernetes160:
+		case Kubernetes157:
 		case Kubernetes153:
 		case "":
 		default:
 			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
 		}
-	case SwarmMode:
+
+		if o.KubernetesConfig != nil {
+			err := o.KubernetesConfig.Validate()
+			if err != nil {
+				return err
+			}
+		}
+
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
 
-	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil &&
-		(o.KubernetesConfig.KubernetesImageBase != "" || o.KubernetesConfig.NetworkPolicy != "") {
+	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil && (*o.KubernetesConfig != KubernetesConfig{}) {
 		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
 	}
 
@@ -59,6 +69,9 @@ func (m *MasterProfile) Validate() error {
 	if e := validateName(m.VMSize, "MasterProfile.VMSize"); e != nil {
 		return e
 	}
+	if m.OSDiskSizeGB != 0 && (m.OSDiskSizeGB < MinDiskSizeGB || m.OSDiskSizeGB > MaxDiskSizeGB) {
+		return fmt.Errorf("Invalid master os disk size of %d specified.  The range of valid values are [%d, %d]", m.OSDiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
+	}
 	if m.IPAddressCount != 0 && (m.IPAddressCount < MinIPAddressCount || m.IPAddressCount > MaxIPAddressCount) {
 		return fmt.Errorf("MasterProfile.IPAddressCount needs to be in the range [%d,%d]", MinIPAddressCount, MaxIPAddressCount)
 	}
@@ -78,6 +91,9 @@ func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 	}
 	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
 		return e
+	}
+	if a.OSDiskSizeGB != 0 && (a.OSDiskSizeGB < MinDiskSizeGB || a.OSDiskSizeGB > MaxDiskSizeGB) {
+		return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", a.OSDiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
 	}
 	if a.DNSPrefix != "" {
 		if e := validateDNSName(a.DNSPrefix); e != nil {
@@ -263,7 +279,7 @@ func (a *Properties) Validate() error {
 				return fmt.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}
 			if len(a.WindowsProfile.AdminPassword) == 0 {
-				return fmt.Errorf("WindowsProfile.AdminPassword must not be empty since  agent pool '%s' specifies windows", agentPoolProfile.Name)
+				return fmt.Errorf("WindowsProfile.AdminPassword must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}
 			if e := validateKeyVaultSecrets(a.WindowsProfile.Secrets, true); e != nil {
 				return e
@@ -276,6 +292,18 @@ func (a *Properties) Validate() error {
 	if e := validateVNET(a); e != nil {
 		return e
 	}
+	return nil
+}
+
+// Validate validates the KubernetesConfig.
+func (a *KubernetesConfig) Validate() error {
+	if a.ClusterSubnet != "" {
+		_, _, err := net.ParseCIDR(a.ClusterSubnet)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' is an invalid subnet", a.ClusterSubnet)
+		}
+	}
+
 	return nil
 }
 

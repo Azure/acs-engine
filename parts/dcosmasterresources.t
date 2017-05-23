@@ -110,7 +110,7 @@
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
-{{if IsDCOS190}}    
+{{if IsDCOS190}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
@@ -183,6 +183,9 @@
         "[variables('vnetID')]",
 {{end}}
         "[variables('masterLbID')]",
+{{if IsDCOS190}}
+        "[concat(variables('masterLbID'),'/inboundNatRules/SSHPort22-',variables('masterVMNamePrefix'),0)]",
+{{end}}
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
       ],
       "location": "[variables('location')]",
@@ -282,6 +285,9 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
+{{if ne .MasterProfile.OSDiskSizeGB 0}}
+            "diskSizeGB": {{.MasterProfile.OSDiskSizeGB}},
+{{end}}
             "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'-osdisk')]",
             "vhd": {
               "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('masterVMNamePrefix'),copyIndex(),'-osdisk.vhd')]"

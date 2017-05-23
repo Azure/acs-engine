@@ -404,6 +404,8 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 			api.OrchestratorVersion = Kubernetes162
 		case vlabs.Kubernetes160:
 			api.OrchestratorVersion = Kubernetes160
+		case vlabs.Kubernetes157:
+			api.OrchestratorVersion = Kubernetes157
 		case vlabs.Kubernetes153:
 			api.OrchestratorVersion = Kubernetes153
 		default:
@@ -429,6 +431,7 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 
 func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *KubernetesConfig) {
 	api.KubernetesImageBase = vlabs.KubernetesImageBase
+	api.ClusterSubnet = vlabs.ClusterSubnet
 	api.NetworkPolicy = vlabs.NetworkPolicy
 }
 
@@ -464,6 +467,7 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.Count = vlabs.Count
 	api.DNSPrefix = vlabs.DNSPrefix
 	api.VMSize = vlabs.VMSize
+	api.OSDiskSizeGB = vlabs.OSDiskSizeGB
 	api.VnetSubnetID = vlabs.VnetSubnetID
 	api.FirstConsecutiveStaticIP = vlabs.FirstConsecutiveStaticIP
 	api.Subnet = vlabs.GetSubnet()
@@ -519,6 +523,7 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.Name = vlabs.Name
 	api.Count = vlabs.Count
 	api.VMSize = vlabs.VMSize
+	api.OSDiskSizeGB = vlabs.OSDiskSizeGB
 	api.DNSPrefix = vlabs.DNSPrefix
 	api.OSType = OSType(vlabs.OSType)
 	api.Ports = []int{}

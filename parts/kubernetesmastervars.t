@@ -30,6 +30,7 @@
 {{else}}
     "masterCount": {{.MasterProfile.Count}}, 
 {{end}}    
+    "masterOffset": "[parameters('masterOffset')]",
     "apiVersionDefault": "2016-03-30",
     "apiVersionStorage": "2015-06-15",
 {{if .HasManagedDisks}}
@@ -48,7 +49,7 @@
     "osImageOffer": "UbuntuServer", 
     "osImagePublisher": "Canonical", 
     "osImageSKU": "16.04-LTS", 
-    "osImageVersion": "16.04.201703070",
+    "osImageVersion": "16.04.201705080",
     "resourceGroup": "[resourceGroup().name]", 
     "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
     "routeTableID": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]",
@@ -84,6 +85,7 @@
 {{end}}
     "kubeDnsServiceIp": "10.0.0.10", 
     "kubeServiceCidr": "10.0.0.0/16",
+    "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
 {{if HasLinuxAgents}}
     "registerSchedulable": "false",
 {{else}}
@@ -182,7 +184,7 @@
     "agentWindowsPublisher": "MicrosoftWindowsServer",
     "agentWindowsOffer": "WindowsServer",
     "agentWindowsSku": "2016-Datacenter-with-Containers",
-    "agentWindowsVersion": "2016.0.20170127",
+    "agentWindowsVersion": "2016.127.20170411",
     "singleQuote": "'",
     "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Copy-Item $inputFile $outputFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
 {{end}}
