@@ -39,3 +39,19 @@ func (az *AzureClient) DeployTemplate(resourceGroupName, deploymentName string, 
 
 	return &res, nil
 }
+
+// ValidateTemplate validate the template and parameters
+func (az *AzureClient) ValidateTemplate(
+	resourceGroupName string,
+	deploymentName string,
+	template map[string]interface{},
+	parameters map[string]interface{}) (result resources.DeploymentValidateResult, err error) {
+	deployment := resources.Deployment{
+		Properties: &resources.DeploymentProperties{
+			Template:   &template,
+			Parameters: &parameters,
+			Mode:       resources.Incremental,
+		},
+	}
+	return az.deploymentsClient.Validate(resourceGroupName, deploymentName, deployment)
+}
