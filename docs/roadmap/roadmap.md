@@ -10,3 +10,4 @@ items are designed to provide a sense of direction over many releases.
 ## CI dashboard available to the public
 ## Native Azure VNET CNI support
 ## Multi-GPU support
+## Support for dedicated etcd cluster VMs
