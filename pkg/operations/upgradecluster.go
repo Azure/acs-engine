@@ -30,6 +30,7 @@ type ClusterTopology struct {
 
 // AgentPoolTopology contains agent VMs in a single pool
 type AgentPoolTopology struct {
+	Identifier       *string
 	Name             *string
 	AgentVMs         *[]compute.VirtualMachine
 	UpgradedAgentVMs *[]compute.VirtualMachine
@@ -121,36 +122,37 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 }
 
 func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradableVM bool) error {
-	var poolName string
+	var poolIdentifier string
 	var err error
 	if vm.StorageProfile.OsDisk.OsType == compute.Linux {
-		_, poolName, _, _, err = armhelpers.LinuxVMNameParts(*vm.Name)
+		_, poolIdentifier, _, _, err = armhelpers.LinuxVMNameParts(*vm.Name)
 		if err != nil {
 			log.Errorln(err)
 			return err
 		}
 	} else if vm.StorageProfile.OsDisk.OsType == compute.Windows {
-		poolPrefix, acsStr, poolIdentifier, _, err := armhelpers.WindowsVMNameParts(*vm.Name)
+		poolPrefix, acsStr, poolIndex, _, err := armhelpers.WindowsVMNameParts(*vm.Name)
 		if err != nil {
 			log.Errorln(err)
 			return err
 		}
 
-		poolName = poolPrefix + acsStr + strconv.Itoa(poolIdentifier)
+		poolIdentifier = poolPrefix + acsStr + strconv.Itoa(poolIndex)
 	}
 
-	if uc.AgentPools[poolName] == nil {
-		uc.AgentPools[poolName] = &AgentPoolTopology{&poolName, &[]compute.VirtualMachine{}, &[]compute.VirtualMachine{}}
+	if uc.AgentPools[poolIdentifier] == nil {
+		uc.AgentPools[poolIdentifier] =
+			&AgentPoolTopology{&poolIdentifier, (*vm.Tags)["poolName"], &[]compute.VirtualMachine{}, &[]compute.VirtualMachine{}}
 	}
 
 	if isUpgradableVM {
 		log.Infoln(fmt.Sprintf("Adding Agent VM: %s, orchestrator: %s to pool: %s (AgentVMs)",
-			*vm.Name, *(*vm.Tags)["orchestrator"], poolName))
-		*uc.AgentPools[poolName].AgentVMs = append(*uc.AgentPools[poolName].AgentVMs, vm)
+			*vm.Name, *(*vm.Tags)["orchestrator"], poolIdentifier))
+		*uc.AgentPools[poolIdentifier].AgentVMs = append(*uc.AgentPools[poolIdentifier].AgentVMs, vm)
 	} else {
 		log.Infoln(fmt.Sprintf("Adding Agent VM: %s, orchestrator: %s to pool: %s (UpgradedAgentVMs)",
-			*vm.Name, *(*vm.Tags)["orchestrator"], poolName))
-		*uc.AgentPools[poolName].UpgradedAgentVMs = append(*uc.AgentPools[poolName].UpgradedAgentVMs, vm)
+			*vm.Name, *(*vm.Tags)["orchestrator"], poolIdentifier))
+		*uc.AgentPools[poolIdentifier].UpgradedAgentVMs = append(*uc.AgentPools[poolIdentifier].UpgradedAgentVMs, vm)
 	}
 
 	return nil

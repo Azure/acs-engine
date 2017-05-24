@@ -24,6 +24,7 @@ const (
 	vmSizeFieldName                = "vmSize"
 	dataDisksFieldName             = "dataDisks"
 	createOptionFieldName          = "createOption"
+	tagsFieldName                  = "tags"
 
 	// ARM resource Types
 	nsgResourceType  = "Microsoft.Network/networkSecurityGroups"
@@ -198,7 +199,7 @@ func removeImageReference(logger *logrus.Entry, resourceProperties map[string]in
 }
 
 // NormalizeResourcesForK8sMasterUpgrade takes a template and removes elements that are unwanted in any scale up/down case
-func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, removeAgents bool) error {
+func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, agentPoolsToPreserve map[string]bool) error {
 	var computeResourceTypes = []string{vmResourceType, vmExtensionType}
 
 	for _, computeResourceType := range computeResourceTypes {
@@ -243,17 +244,21 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 				dataDisk[createOptionFieldName] = "attach"
 			}
 
-			// make sure this is only modifying the agent vms
-			// TODO: This is NOT a desirable way to filter agents, need to add a
-			// tag to identify VM type (master or agent)
-			if !strings.Contains(resourceName, "variables('agentpool") {
+			tags, ok := resourceMap[tagsFieldName].(map[string]string)
+			poolName := tags["poolName"] // tag exists agents only
+
+			if !strings.Contains(resourceName, "variables('agentpool") || poolName == "" {
 				continue
 			}
 
-			agentPoolIndex = index
+			logger.Infoln(fmt.Sprintf("Evaluating if agent pool: %s needs to be removed...", poolName))
+			if agentPoolsToPreserve == nil || len(agentPoolsToPreserve) == 0 || agentPoolsToPreserve[poolName] != true {
+				logger.Infoln(fmt.Sprintf("Removing agent pool: %s...", poolName))
+				agentPoolIndex = index
+			}
 		}
 
-		if removeAgents == true && agentPoolIndex != -1 {
+		if agentPoolIndex != -1 {
 			templateMap[resourcesFieldName] = append(resources[:agentPoolIndex], resources[agentPoolIndex+1:]...)
 		}
 	}
@@ -261,9 +266,9 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 }
 
 // NormalizeResourcesForK8sAgentUpgrade takes a template and removes elements that are unwanted in any scale up/down case
-func NormalizeResourcesForK8sAgentUpgrade(logger *logrus.Entry, templateMap map[string]interface{}) error {
+func NormalizeResourcesForK8sAgentUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, agentPoolsToPreserve map[string]bool) error {
 	logger.Infoln(fmt.Sprintf("Running NormalizeResourcesForK8sMasterUpgrade...."))
-	if err := NormalizeResourcesForK8sMasterUpgrade(logger, templateMap, false); err != nil {
+	if err := NormalizeResourcesForK8sMasterUpgrade(logger, templateMap, agentPoolsToPreserve); err != nil {
 		log.Fatalln(err)
 		return err
 	}

@@ -68,7 +68,7 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 		return fmt.Errorf("error generating upgrade template: %s", err.Error())
 	}
 
-	if err := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), templateMap, true); err != nil {
+	if err := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), templateMap, nil); err != nil {
 		log.Fatalln(err)
 		return err
 	}
@@ -174,18 +174,19 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 }
 
 func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
-	// Upgrade Agent VMs
-	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.GoalStateDataModel)
-	if err != nil {
-		return fmt.Errorf("error generating upgrade template: %s", err.Error())
-	}
-
-	if err := acsengine.NormalizeResourcesForK8sAgentUpgrade(log.NewEntry(log.New()), templateMap); err != nil {
-		log.Fatalln(err)
-		return err
-	}
-
 	for _, agentPool := range ku.ClusterTopology.AgentPools {
+		// Upgrade Agent VMs
+		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.GoalStateDataModel)
+		if err != nil {
+			return fmt.Errorf("error generating upgrade template: %s", err.Error())
+		}
+
+		preservePools := map[string]bool{*agentPool.Name: true}
+		if err := acsengine.NormalizeResourcesForK8sAgentUpgrade(log.NewEntry(log.New()), templateMap, preservePools); err != nil {
+			log.Fatalln(err)
+			return err
+		}
+
 		upgradeAgentNode := UpgradeAgentNode{}
 		upgradeAgentNode.TemplateMap = templateMap
 		upgradeAgentNode.ParametersMap = parametersMap
@@ -196,7 +197,7 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 		sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*agentPool.AgentVMs)))
 		sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*agentPool.UpgradedAgentVMs)))
 
-		log.Infoln(fmt.Sprintf("Starting upgrade of agent nodes in pool: %s...", *agentPool.Name))
+		log.Infoln(fmt.Sprintf("Starting upgrade of agent nodes in pool identifier: %s, name: %s...", *agentPool.Identifier, *agentPool.Name))
 
 		agentLoopCount := 1
 		for _, vm := range *agentPool.AgentVMs {
