@@ -7,9 +7,6 @@
     },
     {
       "apiVersion": "[variables('apiVersionStorage')]",
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-      ],
       "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
       "properties": {
@@ -121,7 +118,11 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
+{{if NoPublicIP }}
+        "[variables('vnetID')]"
+{{else}}
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
+{{end}}
       ],
       "location": "[variables('location')]",
       "name": "[variables('masterLbName')]",
@@ -135,9 +136,16 @@
           {
             "name": "[variables('masterLbIPConfigName')]",
             "properties": {
+{{if NoPublicIP }}
+              "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                  "id": "[variables('vnetSubnetID')]"
+                }
+{{else}}
               "publicIPAddress": {
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('masterPublicIPAddressName'))]"
               }
+{{end}}
             }
           }
         ],
@@ -240,6 +248,7 @@
       "type": "Microsoft.Network/loadBalancers"
     },
 {{end}}
+{{if not NoPublicIP }}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
@@ -252,6 +261,7 @@
       },
       "type": "Microsoft.Network/publicIPAddresses"
     },
+{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
