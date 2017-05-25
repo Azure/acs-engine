@@ -220,11 +220,12 @@ func runStep(name, step, dir string, env []string, timeout time.Duration) (strin
 	err := cmd.Wait()
 	timer.Stop()
 
+	now := time.Now().Format("15:04:05")
 	if err != nil {
-		fmt.Printf("Error [%s %s]\n", step, name)
+		fmt.Printf("ERROR [%s] [%s %s]\n", now, step, name)
 		return out.String(), err
 	}
-	fmt.Printf("SUCCESS [%s %s]\n", step, name)
+	fmt.Printf("SUCCESS [%s] [%s %s]\n", now, step, name)
 	return out.String(), nil
 }
 
