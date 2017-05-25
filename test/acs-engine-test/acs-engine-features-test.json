@@ -14,7 +14,7 @@
     },
     {
       "cluster_definition": "windows/kubernetes-manageddisks.json",
-      "location": "canadaeast"
+      "location": "northcentralus"
     },
     {
       "cluster_definition": "windows/kubernetes-sadisks.json",
@@ -38,7 +38,7 @@
     },
     {
       "cluster_definition": "disks-managed/dcos-preAttachedDisks-vmas.json",
-      "location": "westus"
+      "location": "centralus"
     },
     {
       "cluster_definition": "disks-managed/dcos-preAttachedDisks-vmss.json",
@@ -74,11 +74,11 @@
     },
     {
       "cluster_definition": "disks-managed/swarm-vmas-windows.json",
-      "location": "westus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "disks-managed/swarm-vmas.json",
-      "location": "westus2"
+      "location": "westus"
     },
     {
       "cluster_definition": "disks-managed/swarm-vmss-windows.json",
@@ -98,7 +98,7 @@
     },
     {
       "cluster_definition": "disks-storageaccount/dcos.json",
-      "location": "northcentralus"
+      "location": "canadaeast"
     },
     {
       "cluster_definition": "disks-storageaccount/kubernetes.json",
@@ -118,19 +118,19 @@
     },
     {
       "cluster_definition": "keyvaultcerts/kubernetes.json",
-      "location": "canadacentral"
+      "location": "westus"
     },
     {
       "cluster_definition": "keyvaultcerts/swarm-windows.json",
-      "location": "canadaeast"
+      "location": "westus"
     },
     {
       "cluster_definition": "keyvaultcerts/swarm.json",
-      "location": "centralus"
+      "location": "westus"
     },
     {
       "cluster_definition": "keyvaultcerts/swarmmode.json",
-      "location": "eastus2"
+      "location": "westus"
     },
     {
       "cluster_definition": "kubernetesversions/kubernetes1.5.3.json",
@@ -154,7 +154,7 @@
     },
     {
       "cluster_definition": "custom-pod-cidr/kubernetes.json",
-      "location": "westus"
+      "location": "eastus2"
     }
   ]
 }
