@@ -14,7 +14,7 @@
     },
     {
       "cluster_definition": "windows/kubernetes-manageddisks.json",
-      "location": "northcentralus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "windows/kubernetes-sadisks.json",
@@ -74,7 +74,7 @@
     },
     {
       "cluster_definition": "disks-managed/swarm-vmas-windows.json",
-      "location": "westus2"
+      "location": "eastus2"
     },
     {
       "cluster_definition": "disks-managed/swarm-vmas.json",
