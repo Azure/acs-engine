@@ -152,6 +152,10 @@ func (m *TestManager) Run() error {
 				}
 				// do not retry if successful
 				if retvals[i] == 0 {
+					// do not keep logs for successful test
+					if err := os.Remove(logFile); err != nil {
+						fmt.Printf("Failed to remove %s : %v\n", logFile, err)
+					}
 					break
 				}
 			}
