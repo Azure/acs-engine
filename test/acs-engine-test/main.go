@@ -82,6 +82,8 @@ func (m *TestManager) Run() error {
 				logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
 				var validateLogFile string
 
+				// clear the return value
+				retvals[i] = 0
 				// determine orchestrator
 				env := os.Environ()
 				env = append(env, fmt.Sprintf("CLUSTER_DEFINITION=examples/%s", d.ClusterDefinition))
