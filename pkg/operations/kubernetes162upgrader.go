@@ -68,6 +68,8 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 		return fmt.Errorf("error generating upgrade template: %s", err.Error())
 	}
 
+	log.Infoln(fmt.Sprintf("Prepping master nodes for upgrade..."))
+
 	if err := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), templateMap, nil); err != nil {
 		log.Fatalln(err)
 		return err
@@ -81,9 +83,8 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 	upgradeMasterNode.Client = ku.Client
 
 	expectedMasterCount := ku.GoalStateDataModel.Properties.MasterProfile.Count
-
-	mastersToUgradeCount := len(*ku.ClusterTopology.MasterVMs)
 	mastersUpgradedCount := len(*ku.ClusterTopology.UpgradedMasterVMs)
+	mastersToUgradeCount := expectedMasterCount - mastersUpgradedCount
 
 	log.Infoln(fmt.Sprintf("Total expected master count: %d", expectedMasterCount))
 	log.Infoln(fmt.Sprintf("Master nodes that need to be upgraded: %d", mastersToUgradeCount))
@@ -91,7 +92,8 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 
 	log.Infoln(fmt.Sprintf("Starting master nodes upgrade..."))
 
-	masterNodesInCluster := mastersToUgradeCount + mastersUpgradedCount
+	masterNodesInCluster := len(*ku.ClusterTopology.MasterVMs) + mastersUpgradedCount
+	log.Infoln(fmt.Sprintf("masterNodesInCluster: %d", masterNodesInCluster))
 	if masterNodesInCluster > expectedMasterCount {
 		return fmt.Errorf("Total count of master VMs: %d exceeded expected count: %d", masterNodesInCluster, expectedMasterCount)
 	}
@@ -99,6 +101,9 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 	masterVMsToUgradeStatus := make(VMStatusSlice, 0, masterNodesInCluster)
 
 	var sampleMasterVMName *string
+	// TODO pass suffix and set this
+	temp := "k8s-master-12345678-0"
+	sampleMasterVMName = &temp
 
 	// Add Master VMs that need to be upgraded to masterVMsToUgradeStatus
 	for _, vm := range *ku.ClusterTopology.MasterVMs {
@@ -180,6 +185,8 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 		if err != nil {
 			return fmt.Errorf("error generating upgrade template: %s", err.Error())
 		}
+
+		log.Infoln(fmt.Sprintf("Prepping agent pool: %s for upgrade...", *agentPool.Name))
 
 		preservePools := map[string]bool{*agentPool.Name: true}
 		if err := acsengine.NormalizeResourcesForK8sAgentUpgrade(log.NewEntry(log.New()), templateMap, preservePools); err != nil {

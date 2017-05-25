@@ -103,14 +103,14 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 		vmOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
 		if vmOrchestratorTypeAndVersion == orchestratorTypeVersion {
 			if strings.Contains(*(vm.Name), "k8s-master-") {
-				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s", *vm.Name, vmOrchestratorTypeAndVersion))
+				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (MasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
 				*uc.MasterVMs = append(*uc.MasterVMs, vm)
 			} else {
 				uc.addVMToAgentPool(vm, true)
 			}
 		} else if vmOrchestratorTypeAndVersion == targetOrchestratorTypeVersion {
 			if strings.Contains(*(vm.Name), "k8s-master-") {
-				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s", *vm.Name, vmOrchestratorTypeAndVersion))
+				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (UpgradedMasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
 				*uc.UpgradedMasterVMs = append(*uc.UpgradedMasterVMs, vm)
 			} else {
 				uc.addVMToAgentPool(vm, false)
