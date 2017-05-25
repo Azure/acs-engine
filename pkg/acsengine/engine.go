@@ -530,11 +530,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
 				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOS190
 		},
-		"IsKubernetesGte16": func() bool {
+		"IsKubernetesVersionGe": func(version string) bool {
+			targetVersion := api.OrchestratorVersion(version)
+			targetVersionOrdinal := VersionOrdinal(targetVersion)
 			orchestratorVersionOrdinal := VersionOrdinal(cs.Properties.OrchestratorProfile.OrchestratorVersion)
-			kubernetes16VersionOrdinal := VersionOrdinal(api.Kubernetes160)
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes &&
-				orchestratorVersionOrdinal >= kubernetes16VersionOrdinal
+				orchestratorVersionOrdinal >= targetVersionOrdinal
 		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
