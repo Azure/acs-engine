@@ -78,8 +78,9 @@ func (m *TestManager) Run() error {
 			for attempt := 0; attempt < retries; attempt++ {
 				name := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
 				instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUMBER"), i, attempt)
-				resourceGroup := fmt.Sprintf("test-acs-%s-%s-%s-%d-%d", strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), i, attempt)
+				resourceGroup := fmt.Sprintf("x-%s-%s-%s-%d-%d", strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), i, attempt)
 				logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
+				var validateLogFile string
 
 				// determine orchestrator
 				env := os.Environ()
@@ -121,7 +122,8 @@ func (m *TestManager) Run() error {
 					wrileLog(logFile, txt)
 					if step == "generate_template" {
 						// set up extra environment variables available after template generation
-						env = append(env, fmt.Sprintf("LOGFILE=%s/validate-%s.log", logDir, resourceGroup))
+						validateLogFile = fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
+						env = append(env, fmt.Sprintf("LOGFILE=%s", validateLogFile))
 
 						cmd := exec.Command("test/step.sh", "get_orchestrator_version")
 						cmd.Env = env
@@ -153,8 +155,12 @@ func (m *TestManager) Run() error {
 				// do not retry if successful
 				if retvals[i] == 0 {
 					// do not keep logs for successful test
-					if err := os.Remove(logFile); err != nil {
-						fmt.Printf("Failed to remove %s : %v\n", logFile, err)
+					for _, fname := range []string{logFile, validateLogFile} {
+						if _, err := os.Stat(fname); !os.IsNotExist(err) {
+							if err = os.Remove(fname); err != nil {
+								fmt.Printf("Failed to remove %s : %v\n", fname, err)
+							}
+						}
 					}
 					break
 				}
