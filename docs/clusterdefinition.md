@@ -47,6 +47,8 @@ Here are the valid values for the orchestrator types:
 |vmsize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/).  These are restricted machines with at least 2 cores and 100GB of ephemeral disk space.|
 |osDiskSizeGB|no|Describes the OS Disk Size in GB|
 |vnetSubnetId|no|specifies the Id of an alternate VNET subnet.  The subnet id must specify a valid VNET ID owned by the same subscription. ([bring your own VNET examples](../examples/vnet))|
+|extensions|no|This is an array of extensions.  This indicates that the extension be run on a single master.  The name in the extensions array must exactly match the extension name in the extensionsProfile.|
+
 
 ### agentPoolProfiles
 A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for creating agents with different capabilities such as VMSizes, VMSS or Availability Set, Public/Private access, [attached storage disks](../examples/disks-storageaccount), [attached managed disks](../examples/disks-managed), or [Windows](../examples/windows).
@@ -152,3 +154,15 @@ For apiVersion "2016-03-30", a cluster may have only 1 agent pool profiles.
 |---|---|---|
 |adminUsername|yes|describes the username to be used on all linux clusters|
 |ssh.publicKeys[0].keyData|yes|The public SSH key used for authenticating access to all Linux nodes in the cluster.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation).|
+
+### extensionsProfile
+A cluster can have 0 - N extensions in extension profiles.  Extension profiles allow a user to easily add pre-packaged functionality into a cluster.  An example would be configuring a monitoring solution on your cluster.  You can think of extensions like a marketplace for acs clusters.
+
+|Name|Required|Description|
+|---|---|---|
+|name|yes|the name of the extension.  This has to exactly match the name of a folder under the extensions folder|
+|version|yes|the version of the extension.  This has to exactly match the name of the folder under the extension name folder|
+|extensionParameters|optional|extension parameters may be required by extensions.  The format of the parameters is also extension dependant.|
+|rootURL|optional|url to the root location of extensions.  The rootURL must have an extensions child folder that follows the extensions convention.  The rootURL is mainly used for testing purposes.|
+
+You can find more information, as well as a list of extensions on the [extensions documentation] (extensions.md).

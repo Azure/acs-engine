@@ -1,0 +1,29 @@
+{
+    "name": "HelloWorldK8s",
+    "type": "Microsoft.Resources/deployments",
+    "apiVersion": "[variables('apiVersionLinkDefault')]",
+    "dependsOn": [
+        "vmLoopNode"
+    ],
+    "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+            "uri": "EXTENSION_URL_REPLACEextensions/hello-world-k8s/v1/template.json",
+            "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+            "artifactsLocation": {
+                "value": "EXTENSION_URL_REPLACE"
+            },
+            "apiVersionCompute": {
+                "value": "[variables('apiVersionDefault')]"
+            },
+            "masterVMNamePrefix": {
+                "value": "[concat(variables('masterVMNamePrefix'), '0')]"
+            },
+            "extensionParameters": {
+                "value": "EXTENSION_PARAMETERS_REPLACE"
+            }
+        }
+    }
+}
