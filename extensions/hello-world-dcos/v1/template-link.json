@@ -1,0 +1,30 @@
+{
+    "name": "HelloWorldDcos",
+    "type": "Microsoft.Resources/deployments",
+    "apiVersion": "[variables('apiVersionLinkDefault')]",
+    "dependsOn": [
+        "vmLoopNode",
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('masterVMNamePrefix'), sub(variables('masterCount'), 1)), 'waitforleader')]"
+    ],
+    "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+            "uri": "EXTENSION_URL_REPLACEextensions/hello-world-dcos/v1/template.json",
+            "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+            "artifactsLocation": {
+                "value": "EXTENSION_URL_REPLACE"
+            },
+            "apiVersionDefault": {
+                "value": "[variables('apiVersionDefault')]"
+            },
+            "masterVMNamePrefix": {
+                "value": "[concat(variables('masterVMNamePrefix'), '0')]"
+            },
+            "extensionParameters": {
+                "value": "EXTENSION_PARAMETERS_REPLACE"
+            }
+        }
+    }
+}
