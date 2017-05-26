@@ -61,7 +61,7 @@ func (m *TestManager) Run() error {
 		retries = 1
 	}
 	// login to Azure
-	if _, err := runStep("init", "set_azure_account", m.rootDir, os.Environ(), timeout); err != nil {
+	if _, err := m.runStep("init", "set_azure_account", os.Environ(), timeout); err != nil {
 		return err
 	}
 
@@ -71,7 +71,6 @@ func (m *TestManager) Run() error {
 
 	m.wg.Add(n)
 	for index, dep := range m.config.Deployments {
-		time.Sleep(time.Second)
 		go func(index int, dep Deployment) {
 			defer m.wg.Done()
 			for attempt := 0; attempt < retries; attempt++ {
@@ -130,7 +129,7 @@ func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Dur
 		}
 	}
 	for _, step := range steps {
-		txt, err := runStep(resourceGroup, step, m.rootDir, env, timeout)
+		txt, err := m.runStep(resourceGroup, step, env, timeout)
 		if err != nil {
 			wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, resourceGroup, err, txt)
 			success = false
@@ -166,7 +165,7 @@ func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Dur
 		}
 	}
 	// clean up
-	if txt, err := runStep(resourceGroup, "cleanup", m.rootDir, env, timeout); err != nil {
+	if txt, err := m.runStep(resourceGroup, "cleanup", env, timeout); err != nil {
 		wrileLog(logFile, "Error: %v\nOutput: %s", err, txt)
 	}
 	if success {
@@ -202,9 +201,16 @@ func isValidEnv() bool {
 	return valid
 }
 
-func runStep(name, step, dir string, env []string, timeout time.Duration) (string, error) {
+func (m *TestManager) runStep(name, step string, env []string, timeout time.Duration) (string, error) {
+	// work around az-cli parallelization issue https://github.com/Azure/azure-cli/issues/3255
+	m.lock.Lock()
+	go func() {
+		time.Sleep(2 * time.Second)
+		m.lock.Unlock()
+	}()
+
 	cmd := exec.Command("/bin/bash", "-c", fmt.Sprintf("%s %s", script, step))
-	cmd.Dir = dir
+	cmd.Dir = m.rootDir
 	cmd.Env = env
 
 	var out bytes.Buffer
