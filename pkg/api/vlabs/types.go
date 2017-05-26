@@ -34,6 +34,7 @@ type Properties struct {
 	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
+	ExtensionsProfile       []ExtensionProfile       `json:"extensionsProfile"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
@@ -137,14 +138,15 @@ type KubernetesConfig struct {
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int    `json:"count"`
-	DNSPrefix                string `json:"dnsPrefix"`
-	VMSize                   string `json:"vmSize"`
-	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
-	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
-	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
-	StorageProfile           string `json:"storageProfile,omitempty"`
+	Count                    int         `json:"count"`
+	DNSPrefix                string      `json:"dnsPrefix"`
+	VMSize                   string      `json:"vmSize"`
+	OSDiskSizeGB             int         `json:"osDiskSizeGB,omitempty"`
+	VnetSubnetID             string      `json:"vnetSubnetID,omitempty"`
+	FirstConsecutiveStaticIP string      `json:"firstConsecutiveStaticIP,omitempty"`
+	IPAddressCount           int         `json:"ipAddressCount,omitempty"`
+	StorageProfile           string      `json:"storageProfile,omitempty"`
+	Extensions               []Extension `json:"extensions"`
 
 	// subnet is internal
 	subnet string
@@ -157,6 +159,21 @@ type MasterProfile struct {
 
 // ClassicAgentPoolProfileType represents types of classic profiles
 type ClassicAgentPoolProfileType string
+
+// ExtensionProfile represents an extension definition
+type ExtensionProfile struct {
+	Name                string `json:"name"`
+	Version             string `json:"version"`
+	ExtensionParameters string `json:"extensionParameters"`
+	RootURL             string `json:"rootURL"`
+}
+
+// Extension represents an extension definition in the master or agentPoolProfile
+type Extension struct {
+	Name        string `json:"name"`
+	SingleOrAll string `json:"singleOrAll"`
+	Template    string `json:"template"`
+}
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
@@ -178,6 +195,7 @@ type AgentPoolProfile struct {
 
 	FQDN             string            `json:"fqdn,omitempty"`
 	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
+	Extensions       []Extension       `json:"extensions"`
 }
 
 // KeyVaultSecrets specifies certificates to install on the pool

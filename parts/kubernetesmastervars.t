@@ -36,6 +36,7 @@
 {{if .HasManagedDisks}}
     "apiVersionStorageManagedDisks": "2016-04-30-preview",
 {{end}}
+    "apiVersionLinkDefault": "2015-01-01",
     "locations": [
          "[resourceGroup().location]",
          "[parameters('location')]"
