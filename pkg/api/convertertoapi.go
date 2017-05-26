@@ -280,6 +280,12 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 		api.LinuxProfile = &LinuxProfile{}
 		convertVLabsLinuxProfile(vlabs.LinuxProfile, api.LinuxProfile)
 	}
+	api.ExtensionsProfile = []ExtensionProfile{}
+	for _, p := range vlabs.ExtensionsProfile {
+		apiExtensionProfile := &ExtensionProfile{}
+		convertVLabsExtensionProfile(&p, apiExtensionProfile)
+		api.ExtensionsProfile = append(api.ExtensionsProfile, *apiExtensionProfile)
+	}
 	if vlabs.WindowsProfile != nil {
 		api.WindowsProfile = &WindowsProfile{}
 		convertVLabsWindowsProfile(vlabs.WindowsProfile, api.WindowsProfile)
@@ -322,6 +328,19 @@ func convertV20170131LinuxProfile(v20170131 *v20170131.LinuxProfile, api *LinuxP
 	for _, d := range v20170131.SSH.PublicKeys {
 		api.SSH.PublicKeys = append(api.SSH.PublicKeys, d)
 	}
+}
+
+func convertVLabsExtensionProfile(vlabs *vlabs.ExtensionProfile, api *ExtensionProfile) {
+	api.Name = vlabs.Name
+	api.Version = vlabs.Version
+	api.ExtensionParameters = vlabs.ExtensionParameters
+	api.RootURL = vlabs.RootURL
+}
+
+func convertVLabsExtension(vlabs *vlabs.Extension, api *Extension) {
+	api.Name = vlabs.Name
+	api.SingleOrAll = vlabs.SingleOrAll
+	api.Template = vlabs.Template
 }
 
 func convertVLabsLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
@@ -473,6 +492,13 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.Subnet = vlabs.GetSubnet()
 	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
+
+	api.Extensions = []Extension{}
+	for _, extension := range vlabs.Extensions {
+		apiExtension := &Extension{}
+		convertVLabsExtension(&extension, apiExtension)
+		api.Extensions = append(api.Extensions, *apiExtension)
+	}
 }
 
 func convertV20160930AgentPoolProfile(v20160930 *v20160930.AgentPoolProfile, availabilityProfile string, api *AgentPoolProfile) {
@@ -539,6 +565,13 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.CustomNodeLabels = map[string]string{}
 	for k, v := range vlabs.CustomNodeLabels {
 		api.CustomNodeLabels[k] = v
+	}
+
+	api.Extensions = []Extension{}
+	for _, extension := range vlabs.Extensions {
+		apiExtension := &Extension{}
+		convertVLabsExtension(&extension, apiExtension)
+		api.Extensions = append(api.Extensions, *apiExtension)
 	}
 }
 

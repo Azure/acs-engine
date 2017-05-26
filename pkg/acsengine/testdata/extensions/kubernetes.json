@@ -1,0 +1,63 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes"
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "masterdns1",
+      "vmSize": "Standard_D2_v2",
+      "extensions": [
+        { 
+          "name": "hello-world-k8s", 
+          "singleOrAll": "single"
+        }
+     ]
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet"
+      },
+      {
+        "name": "agentpool2",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+          }
+        ]
+      }
+    },
+    "extensionsProfile": [
+      { 
+        "name": "hello-world-k8s", 
+        "version": "v1", 
+        "rootURL": "https://raw.githubusercontent.com/RobBagby/acs-engine/rob-master/" 
+      }
+    ],
+    "servicePrincipalProfile": {
+      "servicePrincipalClientID": "ServicePrincipalClientID",
+      "servicePrincipalClientSecret": "myServicePrincipalClientSecret"
+    },
+    "certificateProfile": {
+      "caCertificate": "caCertificate",
+      "apiServerCertificate": "apiServerCertificate",
+      "apiServerPrivateKey": "apiServerPrivateKey",
+      "clientCertificate": "clientCertificate",
+      "clientPrivateKey": "clientPrivateKey",
+      "kubeConfigCertificate": "kubeConfigCertificate",
+      "kubeConfigPrivateKey": "kubeConfigPrivateKey"
+    }
+  }
+}
