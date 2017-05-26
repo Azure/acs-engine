@@ -4,6 +4,7 @@ import (
 	"container/list"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	log "github.com/Sirupsen/logrus"
 )
 
 //VMScalingErrorDetails give the index in the agent pool that failed and the accompanying error
@@ -14,13 +15,13 @@ type VMScalingErrorDetails struct {
 
 // ScaleDownVMs removes the vms in the provided list. Returns a list with details on each failure.
 // all items in the list will always be of type *VMScalingErrorDetails
-func ScaleDownVMs(az armhelpers.ACSEngineClient, resourceGroup string, vmNames ...string) *list.List {
+func ScaleDownVMs(az armhelpers.ACSEngineClient, logger *log.Entry, resourceGroup string, vmNames ...string) *list.List {
 	numVmsToDelete := len(vmNames)
 	errChan := make(chan *VMScalingErrorDetails, numVmsToDelete)
 	defer close(errChan)
 	for _, vmName := range vmNames {
 		go func(vmName string) {
-			err := CleanDeleteVirtualMachine(az, resourceGroup, vmName)
+			err := CleanDeleteVirtualMachine(az, logger, resourceGroup, vmName)
 			if err != nil {
 				errChan <- &VMScalingErrorDetails{Name: vmName, Error: err}
 				return
@@ -33,6 +34,7 @@ func ScaleDownVMs(az armhelpers.ACSEngineClient, resourceGroup string, vmNames .
 		errDetails := <-errChan
 		if errDetails != nil {
 			failedVMDeletions.PushBack(errDetails)
+			logger.Errorf("Vm '%s' failed to delete with error: '%s'", errDetails.Name, errDetails.Error.Error())
 		}
 	}
 	if failedVMDeletions.Len() > 0 {
