@@ -36,15 +36,15 @@ func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
 }
 
 // CreateNode creates a new master/agent node with the targeted version of Kubernetes
-func (kan *UpgradeAgentNode) CreateNode(poolName string, countForOffset int) error {
+func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 	poolCountParameter := kan.ParametersMap[poolName+"Count"].(map[string]interface{})
+	poolCountParameter["value"] = agentNo + 1
 	agentCount, _ := poolCountParameter["value"]
-	agentCountInt := int(agentCount.(float64))
-	log.Infoln(fmt.Sprintf("Agent pool: %s, count: %d", poolName, agentCountInt))
+	log.Infoln(fmt.Sprintf("Agent pool: %s, set count to: %d temporarily during upgrade...", poolName, agentCount))
 
 	poolOffsetVarName := poolName + "Offset"
 	templateVariables := kan.TemplateMap["variables"].(map[string]interface{})
-	templateVariables[poolOffsetVarName] = agentCountInt - countForOffset
+	templateVariables[poolOffsetVarName] = agentNo
 	agentOffset, _ := templateVariables[poolOffsetVarName]
 	log.Infoln(fmt.Sprintf("Agent offset: %v", agentOffset))
 

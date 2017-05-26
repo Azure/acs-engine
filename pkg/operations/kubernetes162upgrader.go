@@ -194,6 +194,14 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 			return err
 		}
 
+		var agentCount int
+		for _, app := range ku.GoalStateDataModel.Properties.AgentPoolProfiles {
+			if app.Name == *agentPool.Name {
+				agentCount = app.Count
+				break
+			}
+		}
+
 		upgradeAgentNode := UpgradeAgentNode{}
 		upgradeAgentNode.TemplateMap = templateMap
 		upgradeAgentNode.ParametersMap = parametersMap
@@ -201,24 +209,49 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 		upgradeAgentNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 		upgradeAgentNode.Client = ku.Client
 
-		sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*agentPool.AgentVMs)))
-		sort.Sort(sort.Reverse(armhelpers.ByVMNameOffset(*agentPool.UpgradedAgentVMs)))
+		upgradedAgentsIndex := make(map[int]bool)
+
+		for _, vm := range *agentPool.UpgradedAgentVMs {
+			log.Infoln(fmt.Sprintf("Agent VM: %s, pool name: %s is upgraded to expected orchestrator version", *vm.Name, *agentPool.Name))
+			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
+			upgradedAgentsIndex[agentIndex] = true
+		}
 
 		log.Infoln(fmt.Sprintf("Starting upgrade of agent nodes in pool identifier: %s, name: %s...", *agentPool.Identifier, *agentPool.Name))
 
-		agentLoopCount := 1
 		for _, vm := range *agentPool.AgentVMs {
 			log.Infoln(fmt.Sprintf("Upgrading Agent VM: %s, pool name: %s", *vm.Name, *agentPool.Name))
+
+			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
 			// 1.	Shutdown and delete one agent VM at a time
 			upgradeAgentNode.DeleteNode(vm.Name)
 
 			// 2.	Call CreateVMWithRetries
-			upgradeAgentNode.CreateNode(*agentPool.Name, agentLoopCount)
+			upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
 
 			upgradeAgentNode.Validate()
 
-			agentLoopCount++
+			upgradedAgentsIndex[agentIndex] = true
+		}
+
+		agentsToCreate := agentCount - len(upgradedAgentsIndex)
+		log.Infoln(fmt.Sprintf("Expected agent count in the pool: %d, Creating %d more agents", agentCount, agentsToCreate))
+
+		// NOTE: this is NOT completely idempotent because it assumes that
+		// the OS disk has been deleted
+		for i := 0; i < agentsToCreate; i++ {
+			agentIndexToCreate := 0
+			for upgradedAgentsIndex[agentIndexToCreate] == true {
+				agentIndexToCreate++
+			}
+
+			log.Infoln(fmt.Sprintf("Creating upgraded Agent VM with index: %d, pool name: %s", agentIndexToCreate, *agentPool.Name))
+			upgradeAgentNode.CreateNode(*agentPool.Name, agentIndexToCreate)
+
+			upgradeAgentNode.Validate()
+
+			upgradedAgentsIndex[agentIndexToCreate] = true
 		}
 	}
 

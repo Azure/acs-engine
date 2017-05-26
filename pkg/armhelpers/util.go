@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	log "github.com/Sirupsen/logrus"
 )
 
 // ResourceName returns the last segment (the resource name) for the specified resource identifier.
@@ -73,18 +74,23 @@ func WindowsVMNameParts(vmName string) (poolPrefix string, acsStr string, poolIn
 	return poolPrefix, "acs", poolIndex, agentIndex, nil
 }
 
-// ByVMNameOffset implements sort.Interface for []VirtualMachine based on
-// the Name field.
-type ByVMNameOffset []compute.VirtualMachine
+// GetVMNameIndex return VM index of a node in the Kubernetes cluster
+func GetVMNameIndex(osType compute.OperatingSystemTypes, vmName string) (int, error) {
+	var agentIndex int
+	var err error
+	if osType == compute.Linux {
+		_, _, _, agentIndex, err = LinuxVMNameParts(vmName)
+		if err != nil {
+			log.Errorln(err)
+			return 0, err
+		}
+	} else if osType == compute.Windows {
+		_, _, _, agentIndex, err = WindowsVMNameParts(vmName)
+		if err != nil {
+			log.Errorln(err)
+			return 0, err
+		}
+	}
 
-func (vm ByVMNameOffset) Len() int      { return len(vm) }
-func (vm ByVMNameOffset) Swap(i, j int) { vm[i], vm[j] = vm[j], vm[i] }
-func (vm ByVMNameOffset) Less(i, j int) bool {
-	vm1NameParts := strings.Split(*vm[i].Name, "-")
-	vm1Num := vm1NameParts[len(vm1NameParts)-1]
-
-	vm2NameParts := strings.Split(*vm[j].Name, "-")
-	vm2Num := vm2NameParts[len(vm2NameParts)-1]
-
-	return vm1Num < vm2Num
+	return agentIndex, nil
 }
