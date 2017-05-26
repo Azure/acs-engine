@@ -105,7 +105,7 @@ func (mc *MockClient) GetVirtualMachine(resourceGroup, name string) (compute.Vir
 			},
 			NetworkProfile: &compute.NetworkProfile{
 				NetworkInterfaces: &[]compute.NetworkInterfaceReference{
-					compute.NetworkInterfaceReference{
+					{
 						ID: &validNicID,
 					},
 				},
