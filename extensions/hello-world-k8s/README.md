@@ -3,12 +3,12 @@
 Sample hello-world extension.  Calls the following on the master:
 
 ```
- kubectl run hello-world --image=hello-world
+ kubectl run hello-world --quiet --image=busybox --restart=OnFailure -- echo "Hello Kubernetes!"
 ```
 
 You can validate that the extension was run by running:
 ```
-kubectl get pods 
+kubectl get pods --show-all
 kubectl logs <name from kubectl get pods>
 ```
 
