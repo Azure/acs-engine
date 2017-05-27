@@ -17,6 +17,18 @@ VERSION   := $(shell git rev-parse HEAD)
 
 GOFILES=`glide novendor | xargs go list`
 
+
+REPO_PATH := github.com/Azure/acs-engine
+DEV_ENV_IMAGE := quay.io/deis/go-dev:v0.26.0
+DEV_ENV_WORK_DIR := /go/src/${REPO_PATH}
+DEV_ENV_OPTS := --rm -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR} ${DEV_ENV_VARS}
+DEV_ENV_CMD := docker run ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
+DEV_ENV_CMD_IT := docker run -it ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
+DEV_CMD_RUN := docker run ${DEV_ENV_OPTS}
+LDFLAGS := -s -X main.version=${VERSION}
+BINARY_DEST_DIR ?= bin
+
+
 all: build
 
 .PHONY: generate
@@ -27,6 +39,12 @@ generate:
 build: generate
 	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -ldflags '$(LDFLAGS)'
 	cd test/acs-engine-test; go build
+
+build-binary: bootstrap generate
+	go build -v -ldflags "${LDFLAGS}" -o ${BINARY_DEST_DIR}/acs-engine .
+
+build-binary-with-container:
+	${DEV_ENV_CMD} make build-binary
 
 # usage: make clean build-cross dist VERSION=v0.4.0
 .PHONY: build-cross
@@ -112,3 +130,4 @@ devenv:
 	./scripts/devenv.sh
 
 include versioning.mk
+include test.mk

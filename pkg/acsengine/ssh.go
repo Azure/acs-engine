@@ -7,7 +7,7 @@ import (
 	"io"
 
 	"github.com/Azure/acs-engine/pkg/i18n"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 )
 

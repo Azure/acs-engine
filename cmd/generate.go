@@ -8,8 +8,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
-	log "github.com/Sirupsen/logrus"
 	"github.com/leonelquinteros/gotext"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -129,6 +129,7 @@ func (gc *generateCmd) run() error {
 			Locale: gc.locale,
 		},
 	}
+
 	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, gc.classicMode)
 	if err != nil {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
@@ -141,9 +142,11 @@ func (gc *generateCmd) run() error {
 	}
 
 	if !gc.noPrettyPrint {
+
 		if template, err = acsengine.PrettyPrintArmTemplate(template); err != nil {
 			log.Fatalf("error pretty printing template: %s \n", err.Error())
 		}
+
 		if parameters, err = acsengine.BuildAzureParametersFile(parameters); err != nil {
 			log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
 		}
@@ -157,6 +160,5 @@ func (gc *generateCmd) run() error {
 	if err = writer.WriteTLSArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
-
 	return nil
 }
