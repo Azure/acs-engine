@@ -46,3 +46,8 @@ ci: validate-generated build test lint
 
 devenv:
 	./scripts/devenv.sh
+
+test-functional: test-kube
+
+test-kubernetes:
+	ginkgo -r test/e2e/kubernetes
