@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/i18n"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	. "github.com/onsi/gomega"
 )
 

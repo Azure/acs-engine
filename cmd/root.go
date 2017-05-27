@@ -6,7 +6,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 
 	"github.com/Azure/go-autorest/autorest/azure"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"

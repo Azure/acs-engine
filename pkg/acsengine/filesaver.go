@@ -6,7 +6,7 @@ import (
 	"path"
 
 	"github.com/Azure/acs-engine/pkg/i18n"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // FileSaver represents the object that save string or byte data to file
@@ -28,6 +28,7 @@ func (f *FileSaver) SaveFile(dir string, file string, data []byte) error {
 	}
 
 	path := path.Join(dir, file)
+	// log.Printf("Data:%s\n", string(data))
 	if err := ioutil.WriteFile(path, []byte(data), 0600); err != nil {
 		return err
 	}

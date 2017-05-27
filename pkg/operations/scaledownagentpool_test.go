@@ -5,9 +5,9 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	. "github.com/Azure/acs-engine/pkg/test"
-	log "github.com/Sirupsen/logrus"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 )
 
 func TestScaleDownVMs(t *testing.T) {
