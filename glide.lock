@@ -1,8 +1,8 @@
-hash: e217865c5465d4716f3e1b48ecba293a1e50b8498c1ad000334baaacfbd8a775
-updated: 2017-05-17T11:57:36.3187972-07:00
+hash: b73a57968bf60a8617f3fea5547c5c1ed05926ee5b2c52ebb7e2b9531113b3f2
+updated: 2017-05-25T16:06:21.922207288-04:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
-  version: 5841475edc7c8725d79885d635aa8956f97fdf0e
+  version: 26132835cbefa2669a306b777f34b929b56aa0a2
   subpackages:
   - arm/compute
   - arm/network
@@ -25,6 +25,8 @@ imports:
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/kelseyhightower/envconfig
+  version: f611eb38b3875cc3bd991ca91c51d06446afa14c
 - name: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - name: github.com/prometheus/common
@@ -38,11 +40,11 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/spf13/cobra
-  version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
+  version: ca57f0f5dba473a8a58765d16d7e811fb8027add
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 - name: golang.org/x/sys
-  version: 98b5b1e7e80eb60271c8dc4eba6521ec2c3e811e
+  version: a55a76086885b80f79961eacb876ebd8caf3868d
   subpackages:
   - unix
   - windows
@@ -51,6 +53,26 @@ imports:
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
 testImports:
+- name: github.com/onsi/ginkgo
+  version: a1f616c97771e46da1722d3aa9dcde0a43f55682
+  subpackages:
+  - config
+  - internal/codelocation
+  - internal/containernode
+  - internal/failer
+  - internal/leafnodes
+  - internal/remote
+  - internal/spec
+  - internal/spec_iterator
+  - internal/specrunner
+  - internal/suite
+  - internal/testingtproxy
+  - internal/writer
+  - reporters
+  - reporters/stenographer
+  - reporters/stenographer/support/go-colorable
+  - reporters/stenographer/support/go-isatty
+  - types
 - name: github.com/onsi/gomega
   version: 334b8f472b3af5d541c5642701c1e29e2126f486
   subpackages:
