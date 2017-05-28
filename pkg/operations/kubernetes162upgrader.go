@@ -180,12 +180,13 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 		upgradedAgentsIndex := make(map[int]bool)
 
 		for _, vm := range *agentPool.UpgradedAgentVMs {
-			log.Infoln(fmt.Sprintf("Agent VM: %s, pool name: %s is upgraded to expected orchestrator version", *vm.Name, *agentPool.Name))
+			log.Infoln(fmt.Sprintf("Agent VM: %s, pool name: %s on expected orchestrator version", *vm.Name, *agentPool.Name))
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 			upgradedAgentsIndex[agentIndex] = true
 		}
 
-		log.Infoln(fmt.Sprintf("Starting upgrade of agent nodes in pool identifier: %s, name: %s...", *agentPool.Identifier, *agentPool.Name))
+		log.Infoln(fmt.Sprintf("Starting upgrade of agent nodes in pool identifier: %s, name: %s...",
+			*agentPool.Identifier, *agentPool.Name))
 
 		for _, vm := range *agentPool.AgentVMs {
 			log.Infoln(fmt.Sprintf("Upgrading Agent VM: %s, pool name: %s", *vm.Name, *agentPool.Name))

@@ -21,6 +21,7 @@ import (
 type ClusterTopology struct {
 	DataModel     *api.ContainerService
 	ResourceGroup string
+	NameSuffix    string
 
 	AgentPools map[string]*AgentPoolTopology
 
@@ -50,16 +51,16 @@ type UpgradeCluster struct {
 // UpgradeContainerService contains target state of the cluster that
 // the operation will drive towards.
 func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
-	cs *api.ContainerService, ucs *api.UpgradeContainerService) error {
+	cs *api.ContainerService, ucs *api.UpgradeContainerService, nameSuffix string) error {
 	uc.ClusterTopology = ClusterTopology{}
 	uc.ResourceGroup = resourceGroup
 	uc.DataModel = cs
-	uc.UpgradeModel = ucs
-
+	uc.NameSuffix = nameSuffix
 	uc.MasterVMs = &[]compute.VirtualMachine{}
 	uc.UpgradedMasterVMs = &[]compute.VirtualMachine{}
-
 	uc.AgentPools = make(map[string]*AgentPoolTopology)
+
+	uc.UpgradeModel = ucs
 
 	if err := uc.getClusterNodeStatus(subscriptionID, resourceGroup); err != nil {
 		return fmt.Errorf("Error while querying ARM for resources: %+v", err)
@@ -100,12 +101,22 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 		vmOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
 		if vmOrchestratorTypeAndVersion == orchestratorTypeVersion {
 			if strings.Contains(*(vm.Name), "k8s-master-") {
+				if !strings.Contains(*(vm.Name), uc.NameSuffix) {
+					log.Infoln(fmt.Sprintf("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s",
+						*vm.Name, uc.NameSuffix))
+					continue
+				}
 				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (MasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
 				*uc.MasterVMs = append(*uc.MasterVMs, vm)
 			} else {
 				uc.addVMToAgentPool(vm, true)
 			}
 		} else if vmOrchestratorTypeAndVersion == targetOrchestratorTypeVersion {
+			if !strings.Contains(*(vm.Name), uc.NameSuffix) {
+				log.Infoln(fmt.Sprintf("Not adding VM: %s to upgraded list as it does not belong to cluster with expected name suffix: %s",
+					*vm.Name, uc.NameSuffix))
+				continue
+			}
 			if strings.Contains(*(vm.Name), "k8s-master-") {
 				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (UpgradedMasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
 				*uc.UpgradedMasterVMs = append(*uc.UpgradedMasterVMs, vm)
@@ -120,9 +131,10 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 
 func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradableVM bool) error {
 	var poolIdentifier string
+	var poolPrefix string
 	var err error
 	if vm.StorageProfile.OsDisk.OsType == compute.Linux {
-		_, poolIdentifier, _, _, err = armhelpers.LinuxVMNameParts(*vm.Name)
+		_, poolIdentifier, poolPrefix, _, err = armhelpers.LinuxVMNameParts(*vm.Name)
 		if err != nil {
 			log.Errorln(err)
 			return err
@@ -135,6 +147,12 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 		}
 
 		poolIdentifier = poolPrefix + acsStr + strconv.Itoa(poolIndex)
+	}
+
+	if !strings.Contains(uc.NameSuffix, poolPrefix) {
+		log.Infoln(fmt.Sprintf("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s",
+			*vm.Name, uc.NameSuffix))
+		return nil
 	}
 
 	if uc.AgentPools[poolIdentifier] == nil {
