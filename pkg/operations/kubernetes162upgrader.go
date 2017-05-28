@@ -3,10 +3,6 @@ package operations
 import (
 	"encoding/json"
 	"fmt"
-	"sort"
-	"strconv"
-
-	"strings"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
@@ -98,30 +94,28 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 		return fmt.Errorf("Total count of master VMs: %d exceeded expected count: %d", masterNodesInCluster, expectedMasterCount)
 	}
 
-	masterVMsToUgradeStatus := make(VMStatusSlice, 0, masterNodesInCluster)
+	upgradedMastersIndex := make(map[int]bool)
 
-	var sampleMasterVMName *string
-	// TODO pass suffix and set this
-	temp := "k8s-master-12345678-0"
-	sampleMasterVMName = &temp
-
-	// Add Master VMs that need to be upgraded to masterVMsToUgradeStatus
-	for _, vm := range *ku.ClusterTopology.MasterVMs {
-		vmStatus := VMStatus{vm.Name, true, true}
-		sampleMasterVMName = vm.Name
-		masterVMsToUgradeStatus = append(masterVMsToUgradeStatus, &vmStatus)
-
-		log.Infoln(fmt.Sprintf("Adding master VM name: %s with tag: %s to masterVMsToUgradeStatus list",
-			*vm.Name, *(*vm.Tags)["orchestrator"]))
+	for _, vm := range *ku.ClusterTopology.UpgradedMasterVMs {
+		log.Infoln(fmt.Sprintf("Master VM: %s is upgraded to expected orchestrator version", *vm.Name))
+		masterIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
+		upgradedMastersIndex[masterIndex] = true
 	}
 
-	// Add Master VMs that have already been upgraded to masterVMsToUgradeStatus
-	for _, vm := range *ku.ClusterTopology.UpgradedMasterVMs {
-		vmStatus := VMStatus{vm.Name, false, false}
-		masterVMsToUgradeStatus = append(masterVMsToUgradeStatus, &vmStatus)
+	log.Infoln(fmt.Sprintf("Starting upgrade of master nodes..."))
 
-		log.Infoln(fmt.Sprintf("Adding master VM name: %s with tag: %s to masterVMsToUgradeStatus list",
-			*vm.Name, *(*vm.Tags)["orchestrator"]))
+	for _, vm := range *ku.ClusterTopology.MasterVMs {
+		log.Infoln(fmt.Sprintf("Upgrading Master VM: %s", *vm.Name))
+
+		masterIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
+
+		if upgradeMasterNode.DeleteNode(vm.Name) == nil &&
+			upgradeMasterNode.CreateNode("master", masterIndex) == nil &&
+			upgradeMasterNode.Validate() == nil {
+			upgradedMastersIndex[masterIndex] = true
+		} else {
+			log.Infoln(fmt.Sprintf("Error upgrading master VM: %s", *vm.Name))
+		}
 	}
 
 	// This condition is possible if the previous upgrade operation failed during master
@@ -129,50 +123,24 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 	if masterNodesInCluster < expectedMasterCount {
 		log.Infoln(fmt.Sprintf(
 			"Found missing master VMs in the cluster. Reconstructing names of missing master VMs for recreation during upgrade..."))
-
-		// Note that this assumes that VM numbers were in the pool were consecutive
-		availableMasterVMs := make([]bool, expectedMasterCount)
-		for _, masterVMStatus := range masterVMsToUgradeStatus {
-			availableMasterVMs[masterVMStatus.VMNumber()] = true
-		}
-
-		// orchestrator, type, suffix, _, err := armhelpers.LinuxVMNameParts(*sampleMasterVMName)
-		orch, poolType, suffix, _, err := armhelpers.LinuxVMNameParts(*sampleMasterVMName)
-		if err != nil {
-			log.Fatalln(err)
-			return err
-		}
-
-		for i := 0; i < len(availableMasterVMs); i++ {
-			if availableMasterVMs[i] == false {
-				var vmNameArray = []string{orch, poolType, suffix, strconv.Itoa(i)}
-				var vmName = strings.Join(vmNameArray, "-")
-				vmStatus := VMStatus{&vmName, false, true}
-				log.Infoln(fmt.Sprintf(
-					"Adding missing master VM: %s for recreation during upgrade...", vmName))
-				masterVMsToUgradeStatus = append(masterVMsToUgradeStatus, &vmStatus)
-			}
-		}
 	}
 
-	sort.Sort(sort.Reverse(masterVMsToUgradeStatus))
+	mastersToCreate := expectedMasterCount - masterNodesInCluster
+	log.Infoln(fmt.Sprintf("Expected master count: %d, Creating %d more master VMs", expectedMasterCount, mastersToCreate))
 
-	for _, vm := range masterVMsToUgradeStatus {
-		log.Infoln(fmt.Sprintf("Upgrading Master VM: %s", *vm.Name))
-
-		if vm.Delete == true {
-			log.Infoln(fmt.Sprintf("Deleting Master VM: %s", *vm.Name))
-			// 1.	Shutdown and delete one master VM at a time while preserving the persistent disk backing etcd.
-			upgradeMasterNode.DeleteNode(vm.Name)
+	// NOTE: this is NOT completely idempotent because it assumes that
+	// the OS disk has been deleted
+	for i := 0; i < mastersToCreate; i++ {
+		masterIndexToCreate := 0
+		for upgradedMastersIndex[masterIndexToCreate] == true {
+			masterIndexToCreate++
 		}
 
-		if vm.Upgrade == true {
-			log.Infoln(fmt.Sprintf("Creating upgraded Master VM: %s", *vm.Name))
-			// 2.	Call CreateVMWithRetries
-			upgradeMasterNode.CreateNode("master", vm.VMNumber())
+		log.Infoln(fmt.Sprintf("Creating upgraded master VM with index: %d", masterIndexToCreate))
+		if upgradeMasterNode.CreateNode("master", masterIndexToCreate) == nil &&
+			upgradeMasterNode.Validate() == nil {
+			upgradedMastersIndex[masterIndexToCreate] = true
 		}
-
-		upgradeMasterNode.Validate()
 	}
 
 	return nil
@@ -224,15 +192,13 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
-			// 1.	Shutdown and delete one agent VM at a time
-			upgradeAgentNode.DeleteNode(vm.Name)
-
-			// 2.	Call CreateVMWithRetries
-			upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
-
-			upgradeAgentNode.Validate()
-
-			upgradedAgentsIndex[agentIndex] = true
+			if upgradeAgentNode.DeleteNode(vm.Name) == nil &&
+				upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex) == nil &&
+				upgradeAgentNode.Validate() == nil {
+				upgradedAgentsIndex[agentIndex] = true
+			} else {
+				log.Infoln(fmt.Sprintf("Error upgrading agent VM: %s in pool: %s", *vm.Name, *agentPool.Name))
+			}
 		}
 
 		agentsToCreate := agentCount - len(upgradedAgentsIndex)
@@ -247,11 +213,10 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 			}
 
 			log.Infoln(fmt.Sprintf("Creating upgraded Agent VM with index: %d, pool name: %s", agentIndexToCreate, *agentPool.Name))
-			upgradeAgentNode.CreateNode(*agentPool.Name, agentIndexToCreate)
-
-			upgradeAgentNode.Validate()
-
-			upgradedAgentsIndex[agentIndexToCreate] = true
+			if upgradeAgentNode.CreateNode(*agentPool.Name, agentIndexToCreate) == nil &&
+				upgradeAgentNode.Validate() == nil {
+				upgradedAgentsIndex[agentIndexToCreate] = true
+			}
 		}
 	}
 

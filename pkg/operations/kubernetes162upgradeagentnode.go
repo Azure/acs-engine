@@ -62,6 +62,7 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 
 	if err != nil {
 		log.Fatalln(err)
+		return err
 	}
 
 	return nil
