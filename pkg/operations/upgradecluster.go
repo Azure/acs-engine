@@ -75,7 +75,8 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 			return err
 		}
 	default:
-		return fmt.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s",
+		return fmt.Errorf("Upgrade to Kubernetes version: %s is not supported from version: %s",
+			ucs.OrchestratorProfile.OrchestratorVersion,
 			uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
