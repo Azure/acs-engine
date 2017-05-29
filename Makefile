@@ -46,3 +46,6 @@ ci: validate-generated build test lint
 
 devenv:
 	./scripts/devenv.sh
+
+test-functional:
+	ginkgo -r e2e/
