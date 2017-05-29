@@ -81,6 +81,8 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 			uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
+	log.Infoln(fmt.Sprintf("Cluster upraded sucessfully to Kubernetes version: %s",
+		ucs.OrchestratorProfile.OrchestratorVersion))
 	return nil
 }
 
