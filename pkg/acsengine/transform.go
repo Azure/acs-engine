@@ -201,7 +201,7 @@ func removeImageReference(logger *logrus.Entry, resourceProperties map[string]in
 // NormalizeResourcesForK8sMasterUpgrade takes a template and removes elements that are unwanted in any scale up/down case
 func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, agentPoolsToPreserve map[string]bool) error {
 	resources := templateMap[resourcesFieldName].([]interface{})
-	logger.Infoln(fmt.Sprintf("****Resources count: %d", len(resources)))
+	logger.Infoln(fmt.Sprintf("Resource count before running NormalizeResourcesForK8sMasterUpgrade: %d", len(resources)))
 
 	filteredResources := resources[:0]
 
@@ -292,7 +292,8 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 
 	templateMap[resourcesFieldName] = filteredResources
 
-	logger.Infoln(fmt.Sprintf("****Resources count: %d", len(templateMap[resourcesFieldName].([]interface{}))))
+	logger.Infoln(fmt.Sprintf("Resource count after running NormalizeResourcesForK8sMasterUpgrade: %d",
+		len(templateMap[resourcesFieldName].([]interface{}))))
 	return nil
 }
 
