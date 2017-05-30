@@ -18,8 +18,10 @@ const (
 )
 
 const (
+	// Windows string constant for VMs
 	Windows OSType = "Windows"
-	Linux   OSType = "Linux"
+	// Linux string constant for VMs
+	Linux OSType = "Linux"
 )
 
 // validation values

@@ -20,7 +20,7 @@ func (o *OrchestratorProfile) Validate() error {
 		case DCOS190:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
 		}
 
 	case Swarm:
@@ -35,7 +35,7 @@ func (o *OrchestratorProfile) Validate() error {
 		case Kubernetes153:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
 		}
 
 		if o.KubernetesConfig != nil {
@@ -169,7 +169,7 @@ func validateKeyVaultSecrets(secrets []KeyVaultSecrets, requireCertificateStore 
 		}
 		for _, c := range s.VaultCertificates {
 			if _, e := url.Parse(c.CertificateURL); e != nil {
-				return fmt.Errorf("Certificate url was invalid. recieved error %s", e)
+				return fmt.Errorf("Certificate url was invalid. received error %s", e)
 			}
 			if e := validateName(c.CertificateStore, "KeyVaultCertificate.CertificateStore"); requireCertificateStore && e != nil {
 				return fmt.Errorf("%s for certificates in a WindowsProfile", e)
@@ -257,7 +257,7 @@ func (a *Properties) Validate() error {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
 			default:
-				return fmt.Errorf("Agent Type attributes are only supported for DCOS.")
+				return fmt.Errorf("Agent Type attributes are only supported for DCOS")
 			}
 		}
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
@@ -422,7 +422,7 @@ func validateVNET(a *Properties) error {
 	isCustomVNET := a.MasterProfile.IsCustomVNET()
 	for _, agentPool := range a.AgentPoolProfiles {
 		if agentPool.IsCustomVNET() != isCustomVNET {
-			return fmt.Errorf("Multiple VNET Subnet configurations specified.  The master profile and each agent pool profile must all specify a custom VNET Subnet, or none at all.")
+			return fmt.Errorf("Multiple VNET Subnet configurations specified.  The master profile and each agent pool profile must all specify a custom VNET Subnet, or none at all")
 		}
 	}
 	if isCustomVNET {
@@ -439,7 +439,7 @@ func validateVNET(a *Properties) error {
 			if agentSubID != subscription ||
 				agentRG != resourcegroup ||
 				agentVNET != vnetname {
-				return errors.New("Multipe VNETS specified.  The master profile and each agent pool must reference the same VNET (but it is ok to reference different subnets on that VNET)")
+				return errors.New("Multiple VNETS specified.  The master profile and each agent pool must reference the same VNET (but it is ok to reference different subnets on that VNET)")
 			}
 		}
 
