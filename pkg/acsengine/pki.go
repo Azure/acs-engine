@@ -25,7 +25,7 @@ type PkiKeyCertPair struct {
 	PrivateKeyPem  string
 }
 
-func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
+func CreateKubernetesPki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
 	start := time.Now()
 	defer func(s time.Time) {
 		fmt.Fprintf(os.Stderr, "cert creation took %s\n", time.Since(s))
@@ -94,6 +94,58 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(clientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(clientPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(kubeConfigCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(kubeConfigPrivateKey))},
+		nil
+}
+
+func CreateSwarmModePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, error) {
+	start := time.Now()
+	defer func(s time.Time) {
+		fmt.Fprintf(os.Stderr, "cert creation took %s\n", time.Since(s))
+	}(start)
+
+	var (
+		caCertificate             *x509.Certificate
+		caPrivateKey              *rsa.PrivateKey
+		SwarmTLSServerCertificate *x509.Certificate
+		SwarmTLSServerPrivateKey  *rsa.PrivateKey
+		SwarmTLSClientCertificate *x509.Certificate
+		SwarmTLSClientPrivateKey  *rsa.PrivateKey
+	)
+	errors := make(chan error)
+
+	var err error
+	caCertificate, err = pemToCertificate(caPair.CertificatePem)
+	if err != nil {
+		return nil, nil, err
+	}
+	caPrivateKey, err = pemToKey(caPair.PrivateKeyPem)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	go func() {
+		var err error
+		SwarmTLSServerCertificate, SwarmTLSServerPrivateKey, err = createCertificate("apiserver", caCertificate, caPrivateKey, true, extraFQDNs, extraIPs)
+		errors <- err
+	}()
+
+	go func() {
+		var err error
+		SwarmTLSClientCertificate, SwarmTLSClientPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil)
+		errors <- err
+	}()
+
+	e1 := <-errors
+	e2 := <-errors
+	if e1 != nil {
+		return nil, nil, e1
+	}
+	if e2 != nil {
+		return nil, nil, e2
+	}
+
+	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(SwarmTLSServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(SwarmTLSServerPrivateKey))},
+		&PkiKeyCertPair{CertificatePem: string(certificateToPem(SwarmTLSClientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(SwarmTLSClientPrivateKey))},
 		nil
 }
 

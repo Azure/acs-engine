@@ -212,7 +212,7 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		}
 
 		// TODO: this needs to call CreateSwarmModePKI
-		apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
+		apiServerPair, clientPair, kubeConfigPair, err := CreateSwarmModePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
 		if err != nil {
 			return false, err
 		}
@@ -245,7 +245,7 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		}
 
 		// TODO: This needs to call CreateKubernetesPki
-		apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
+		apiServerPair, clientPair, kubeConfigPair, err := CreateKubernetesPki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
 		if err != nil {
 			return false, err
 		}
