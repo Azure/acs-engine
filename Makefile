@@ -23,7 +23,7 @@ _build:
 	go build -v -ldflags="-X github.com/Azure/acs-engine/cmd.BuildSHA=${VERSION} -X github.com/Azure/acs-engine/cmd.BuildTime=${BUILD}"
 	cd test/acs-engine-test; go build -v
 
-build: prereqs _build
+build: _build
 
 test: test_fmt
 	go test -v $(GOFILES)
@@ -32,7 +32,7 @@ test: test_fmt
 test-style:
 	@scripts/validate-go.sh
 
-validate-generated: prereqs
+validate-generated:
 	./scripts/validate-generated.sh
 
 ci: validate-generated build test lint
