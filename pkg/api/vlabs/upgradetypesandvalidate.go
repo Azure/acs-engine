@@ -13,13 +13,13 @@ func (ucs *UpgradeContainerService) Validate() error {
 	case DCOS:
 	case Swarm:
 	case SwarmMode:
-		return fmt.Errorf("Upgrade is not supported for orchestrator: %s \n", ucs.OrchestratorProfile.OrchestratorType)
+		return fmt.Errorf("Upgrade is not supported for orchestrator: %s", ucs.OrchestratorProfile.OrchestratorType)
 	case Kubernetes:
 		switch ucs.OrchestratorProfile.OrchestratorVersion {
 		case Kubernetes162:
 		case Kubernetes160:
 		default:
-			return fmt.Errorf("Invalid orchestrator version: %s \n", ucs.OrchestratorProfile.OrchestratorVersion)
+			return fmt.Errorf("Invalid orchestrator version: %s", ucs.OrchestratorProfile.OrchestratorVersion)
 		}
 	}
 

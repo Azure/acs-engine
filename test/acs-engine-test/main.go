@@ -28,10 +28,10 @@ const usage = `Usage:
 `
 
 var logDir string
-var orchestrator_re *regexp.Regexp
+var orchestratorRe *regexp.Regexp
 
 func init() {
-	orchestrator_re = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
+	orchestratorRe = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
 }
 
 type TestManager struct {
@@ -250,7 +250,7 @@ func wrileLog(fname string, format string, args ...interface{}) {
 	}
 }
 
-func main_internal() error {
+func mainInternal() error {
 	var configFile string
 	var rootDir string
 	var err error
@@ -294,7 +294,7 @@ func main_internal() error {
 }
 
 func main() {
-	if err := main_internal(); err != nil {
+	if err := mainInternal(); err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}

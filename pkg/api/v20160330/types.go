@@ -41,7 +41,7 @@ type Properties struct {
 	DiagnosticsProfile *DiagnosticsProfile `json:"diagnosticsProfile,omitempty"`
 
 	// JumpboxProfile has made it into the new ACS RP stack for
-	// backward compability.
+	// backward compatibility.
 	// TODO: Version this field so that newer versions don't
 	// allow jumpbox creation
 	JumpboxProfile *JumpboxProfile `json:"jumpboxProfile,omitempty"`
