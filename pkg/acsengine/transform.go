@@ -252,7 +252,7 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 		poolName := fmt.Sprint(tags["poolName"]) // poolName tag exists on agents only
 
 		if resourceType == vmResourceType {
-			logger.Infoln(fmt.Sprintf("Evaluating if agent pool: %s, resourcce: %s needs to be removed", poolName, resourceName))
+			logger.Infoln(fmt.Sprintf("Evaluating if agent pool: %s, resource: %s needs to be removed", poolName, resourceName))
 			// Not an agent (could be a master VM)
 			if tags["poolName"] == nil || strings.Contains(resourceName, "variables('masterVMNamePrefix')") {
 				continue
