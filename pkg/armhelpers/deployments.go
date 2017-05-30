@@ -48,6 +48,7 @@ func (az *AzureClient) ValidateTemplate(
 	return az.deploymentsClient.Validate(resourceGroupName, deploymentName, deployment)
 }
 
+// GetDeployment returns the template deployment
 func (az *AzureClient) GetDeployment(resourceGroupName, deploymentName string) (result resources.DeploymentExtended, err error) {
 	return az.deploymentsClient.Get(resourceGroupName, deploymentName)
 }
