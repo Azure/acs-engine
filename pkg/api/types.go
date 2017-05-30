@@ -43,8 +43,7 @@ type Properties struct {
 	// It does not belong here, and is only done for expediency.
 	// This is ONLY to be used to control whether the 'disk_setup` and 'fs_setup' sections of cloud-init
 	// should be emitted.
-	UpgradeMode bool `json:"upgradeMode,omitempty"` // TODO: remove this.
-
+	UpgradeMode                  bool                          `json:"upgradeMode,omitempty"` // TODO: remove this.
 	ProvisioningState            ProvisioningState             `json:"provisioningState,omitempty"`
 	OrchestratorProfile          *OrchestratorProfile          `json:"orchestratorProfile,omitempty"`
 	MasterProfile                *MasterProfile                `json:"masterProfile,omitempty"`

@@ -126,6 +126,16 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	dc.containerService = containerService
+	dc.apiVersion = apiVersion
+
+	if dc.deploy {
+		dc.client, err = dc.authArgs.getClient()
+		if err != nil {
+			log.Fatalf("failed to get client") // TODO: cleanup
+		}
+	}
+
 	dc.client, err = dc.authArgs.getClient()
 	if err != nil {
 		log.Fatalf("failed to get client") // TODO: cleanup
