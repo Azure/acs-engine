@@ -25,22 +25,15 @@ _build:
 
 build: prereqs _build
 
-test: prereqs test_fmt
+test: test_fmt
 	go test -v $(GOFILES)
 
-test_fmt: prereqs
-	test -z "$$(gofmt -s -l $(GOFILES) | tee /dev/stderr)"
+.PHONY: test-style
+test-style:
+	@scripts/validate-go.sh
 
 validate-generated: prereqs
 	./scripts/validate-generated.sh
-
-fmt:
-	gofmt -s -l -w $(GOFILES)
-
-lint: prereqs
-	go get -u github.com/golang/lint/golint
-	# TODO: fix lint errors, enable linting
-	# golint -set_exit_status
 
 ci: validate-generated build test lint
 
