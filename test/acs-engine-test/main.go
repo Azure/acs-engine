@@ -35,7 +35,7 @@ func init() {
 }
 
 type TestManager struct {
-	config  *TestConfig
+	config  *testConfig
 	lock    sync.Mutex
 	wg      sync.WaitGroup
 	rootDir string

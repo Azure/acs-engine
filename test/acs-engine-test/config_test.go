@@ -29,7 +29,7 @@ func TestConfigParse(t *testing.T) {
 }
 `
 
-	testConfig := TestConfig{}
+	testConfig := testConfig{}
 	if err := testConfig.Read([]byte(testCfg)); err != nil {
 		t.Fatal(err)
 	}
