@@ -148,14 +148,3 @@ func validateUniqueProfileNames(profiles []*AgentPoolProfile) error {
 	}
 	return nil
 }
-
-func validateUniquePorts(ports []int, name string) error {
-	portMap := make(map[int]bool)
-	for _, port := range ports {
-		if _, ok := portMap[port]; ok {
-			return fmt.Errorf("agent profile '%s' has duplicate port '%d', ports must be unique", name, port)
-		}
-		portMap[port] = true
-	}
-	return nil
-}
