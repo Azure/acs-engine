@@ -32,7 +32,11 @@ ${remote_cp} "${DIR}/marathon.json" azureuser@${INSTANCE_NAME}.${LOCATION}.cloud
 
 # feed agentFQDN to marathon.json
 ${remote_exec} sed -i "s/{agentFQDN}/${agentFQDN}/g" marathon.json
-${remote_exec} ./dcos marathon app add marathon.json
+count=0
+while [[ ${count} -lt 10 ]]; do
+  count=$((count+1))
+  log "  ... cycle $count"
+  ${remote_exec} ./dcos marathon app add marathon.json
 
 # only need to teardown if app added successfully
 trap teardown EXIT
