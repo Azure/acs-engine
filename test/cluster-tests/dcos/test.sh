@@ -16,7 +16,7 @@ set -x
 
 source "$DIR/../utils.sh"
 
-remote_exec="ssh -i "${SSH_KEY}" -o StrictHostKeyChecking=no azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com -p2200"
+remote_exec="ssh -i "${SSH_KEY}" -o ConnectTimeout=30 -o StrictHostKeyChecking=no azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com -p2200"
 agentFQDN="dcos-agent-ip-${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"
 remote_cp="scp -i "${SSH_KEY}" -P 2200 -o StrictHostKeyChecking=no"
 
@@ -32,7 +32,11 @@ ${remote_cp} "${DIR}/marathon.json" azureuser@${INSTANCE_NAME}.${LOCATION}.cloud
 
 # feed agentFQDN to marathon.json
 ${remote_exec} sed -i "s/{agentFQDN}/${agentFQDN}/g" marathon.json
-${remote_exec} ./dcos marathon app add marathon.json
+count=0
+while [[ ${count} -lt 10 ]]; do
+  count=$((count+1))
+  log "  ... cycle $count"
+  ${remote_exec} ./dcos marathon app add marathon.json
 
 # only need to teardown if app added successfully
 trap teardown EXIT
