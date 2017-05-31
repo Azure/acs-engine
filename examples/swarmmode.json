@@ -1,5 +1,6 @@
 {
   "apiVersion": "vlabs",
+  "location": "",
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "SwarmMode"

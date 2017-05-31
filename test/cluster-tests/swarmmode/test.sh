@@ -16,8 +16,12 @@ set -u
 
 
 source "$DIR/../utils.sh"
-
-ssh_args="-i ${SSH_KEY} -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p2200 azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"
+FQDNSuffix="cloudapp.azure.com"
+if [ "$TARGET_ENVIRONMENT" = "AzureChinaCloud" ]
+then
+    FQDNSuffix="cloudapp.chinacloudapi.cn"
+fi
+ssh_args="-i ${SSH_KEY} -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p2200 azureuser@${INSTANCE_NAME}.${LOCATION}.${FQDNSuffix}"
 
 function teardown {
   ssh ${ssh_args} docker service rm nginx
@@ -69,7 +73,7 @@ wait=5
 count=12
 while (( $count > 0 )); do
   log "  ... counting down $count"
-  curl --fail "http://${INSTANCE_NAME}0.${LOCATION}.cloudapp.azure.com:80/"
+  curl --fail "http://${INSTANCE_NAME}0.${LOCATION}.${FQDNSuffix}:80/"
   retval=$?
   if [[ "$retval" == "0" ]]; then break; fi
   sleep $wait

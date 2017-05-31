@@ -15,16 +15,20 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 set -x
 
 source "$DIR/../utils.sh"
+<<<<<<< HEAD
 
 ENV_FILE="${CLUSTER_DEFINITION}.env"
 if [ -e "${ENV_FILE}" ]; then
   source "${ENV_FILE}"
 fi
 
+if [ "$TARGET_ENVIRONMENT" = "AzureChinaCloud" ]; then
+    FQDNSuffix="cloudapp.chinacloudapi.cn"
+fi
 MARATHON_JSON="${MARATHON_JSON:-marathon.json}"
 
-remote_exec="ssh -i "${SSH_KEY}" -o ConnectTimeout=30 -o StrictHostKeyChecking=no azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com -p2200"
-agentFQDN="${INSTANCE_NAME}0.${LOCATION}.cloudapp.azure.com"
+remote_exec="ssh -i "${SSH_KEY}" -o ConnectTimeout=30 -o StrictHostKeyChecking=no azureuser@${INSTANCE_NAME}.${LOCATION}.${FQDNSuffix} -p2200"
+agentFQDN="${INSTANCE_NAME}0.${LOCATION}.${FQDNSuffix}"
 remote_cp="scp -i "${SSH_KEY}" -P 2200 -o StrictHostKeyChecking=no"
 
 function teardown {
@@ -60,9 +64,13 @@ ${remote_exec} ./dcos config set core.dcos_url http://localhost:80
 if [[ "$?" != "0" ]]; then log "Failed to configure dcos"; exit 1; fi
 
 log "Copying marathon.json"
+<<<<<<< HEAD
 
 ${remote_cp} "${DIR}/${MARATHON_JSON}" azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com:marathon.json
 if [[ "$?" != "0" ]]; then log "Failed to copy marathon.json"; exit 1; fi
+=======
+${remote_cp} "${DIR}/marathon.json" azureuser@${INSTANCE_NAME}.${LOCATION}.${FQDNSuffix}:marathon.json || (log "Failed to copy marathon.json"; exit 1)
+>>>>>>> Support Mooncake for CI and validation testing
 
 # feed agentFQDN to marathon.json
 log "Configuring marathon.json"

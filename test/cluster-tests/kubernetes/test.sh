@@ -185,6 +185,10 @@ log "Testing deployments"
 kubectl create namespace ${namespace}
 
 NGINX="docker.io/library/nginx:latest"
+if [ "$TARGET_ENVIRONMENT" = "AzureChinaCloud" ]
+then
+    NGINX="mirror.azure.cn:5000/library/nginx:latest"
+fi
 IMAGE="${NGINX}" # default to the library image unless we're in TEST_ACR mode
 if [[ "${TEST_ACR}" == "y" ]]; then
 	# force it to pull from ACR

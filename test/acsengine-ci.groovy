@@ -34,13 +34,22 @@ node {
                   // Create log directory
                   sh("mkdir -p ${log_dir}")
                   // Create template, deploy and test
-                  env.SERVICE_PRINCIPAL_CLIENT_ID="${SPN_USER}"
-                  env.SERVICE_PRINCIPAL_CLIENT_SECRET="${SPN_PASSWORD}"
+                  //For Mooncake use cluster service prinicipal as service prinicipal to avoid mutiple credentials in Jenkins 
+                  String chinaCloud = "AzureChinaCloud"
+                  if(TARGET_ENVIRONMENT == chinaCloud) {
+                    env.SERVICE_PRINCIPAL_CLIENT_ID = "${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}"
+                    env.SERVICE_PRINCIPAL_CLIENT_SECRET = "${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}"  
+                  }
+                  else {
+                    env.SERVICE_PRINCIPAL_CLIENT_ID="${SPN_USER}"
+                    env.SERVICE_PRINCIPAL_CLIENT_SECRET="${SPN_PASSWORD}" 
+                  }
                   env.TENANT_ID="${TENANT_ID}"
                   env.SUBSCRIPTION_ID="${SUBSCRIPTION_ID}"
                   env.LOCATION = "${LOCATION}"
                   env.LOGFILE = "${log_dir}/${LOCATION}.log"
                   env.CLEANUP = "${CLEANUP}"
+                  env.TARGET_ENVIRONMENT = "${TARGET_ENVIRONMENT}"
 
                   env.INSTANCE_NAME = "test-acs-ci-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
                   env.INSTANCE_NAME_PREFIX = "test-acs-ci"
