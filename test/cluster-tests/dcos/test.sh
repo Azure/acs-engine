@@ -22,9 +22,12 @@ if [ -e "${ENV_FILE}" ]; then
 fi
 
 MARATHON_JSON="${MARATHON_JSON:-marathon.json}"
-
-remote_exec="ssh -i "${SSH_KEY}" -o ConnectTimeout=30 -o StrictHostKeyChecking=no azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com -p2200"
-agentFQDN="${INSTANCE_NAME}0.${LOCATION}.cloudapp.azure.com"
+FQDNSuffix="cloudapp.azure.com"
+if [ "$TARGET_ENVIRONMENT" = "AzureChinaCloud" ]; then
+    FQDNSuffix="cloudapp.chinacloudapi.cn"
+fi
+remote_exec="ssh -i "${SSH_KEY}" -o ConnectTimeout=30 -o StrictHostKeyChecking=no azureuser@${INSTANCE_NAME}.${LOCATION}.${FQDNSuffix} -p2200"
+agentFQDN="${INSTANCE_NAME}0.${LOCATION}.${FQDNSuffix}"
 remote_cp="scp -i "${SSH_KEY}" -P 2200 -o StrictHostKeyChecking=no"
 
 function teardown {
@@ -61,7 +64,7 @@ if [[ "$?" != "0" ]]; then log "Failed to configure dcos"; exit 1; fi
 
 log "Copying marathon.json"
 
-${remote_cp} "${DIR}/${MARATHON_JSON}" azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com:marathon.json
+${remote_cp} "${DIR}/${MARATHON_JSON}" azureuser@${INSTANCE_NAME}.${LOCATION}.${FQDNSuffix}:marathon.json
 if [[ "$?" != "0" ]]; then log "Failed to copy marathon.json"; exit 1; fi
 
 # feed agentFQDN to marathon.json
