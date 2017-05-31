@@ -1,8 +1,8 @@
-hash: e217865c5465d4716f3e1b48ecba293a1e50b8498c1ad000334baaacfbd8a775
-updated: 2017-05-17T11:57:36.3187972-07:00
+hash: abeb912be5c8943efc3d763200837e372cb8a696cb7ac64715e6ab22f72e4f85
+updated: 2017-05-31T18:25:04.2038789Z
 imports:
 - name: github.com/Azure/azure-sdk-for-go
-  version: 5841475edc7c8725d79885d635aa8956f97fdf0e
+  version: 2629e2dfcfeab50896230140542c3b9d89b35ae1
   subpackages:
   - arm/compute
   - arm/network
@@ -64,4 +64,24 @@ testImports:
   - matchers/support/goraph/edge
   - matchers/support/goraph/node
   - matchers/support/goraph/util
+  - types
+- name: github.com/onsi/ginkgo
+  version: 77a8c1e5c40d6bb6c5eb4dd4bdce9763564f6298
+  subpackages:
+  - config
+  - internal/codelocation
+  - internal/containernode
+  - internal/failer
+  - internal/leafnodes
+  - internal/remote
+  - internal/spec
+  - internal/spec_iterator
+  - internal/specrunner
+  - internal/suite
+  - internal/testingtproxy
+  - internal/writer
+  - reporters
+  - reporters/stenographer
+  - reporters/stenographer/support/go-colorable
+  - reporters/stenographer/support/go-isatty
   - types
