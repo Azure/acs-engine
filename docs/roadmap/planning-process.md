@@ -1,6 +1,6 @@
 # Planning Process
 
-acs-engine features a lightweight process that emphasizes openness and ensures every community member can be an integral part of planning for the future.
+acs-engine features a lightweight process that emphasizes openness and ensures every community member can see project goals for the future.
 
 ## The Role of Maintainers
 
@@ -20,7 +20,7 @@ The Roadmap gets delivered progressively via the [Release Schedule][].  Releases
 
 ## Release Planning Meetings
 
-Major decisions affecting the Roadmap are discussed during Release Planning Meetings on the first Thursday of each month, aligned with the [Release Schedule][].
+Major decisions affecting the Roadmap are discussed during Release Planning Meetings on the first Thursday of each month, aligned with the [Release Schedule][] and monthly objectives for the Microsoft ACS team.
 
 Release Planning Meetings are not currently open to non-Microsoft contributors, but we may change this in the future.
 

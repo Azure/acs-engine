@@ -72,6 +72,8 @@ When showstopper-level bugs are found, the process is as follows:
 
 1. Create an issue that describes the bug.
 1. Create an PR that fixes the bug.
+  - PRs should always include tests (unit or e2e as appropriate) to add
+ automated coverage for the bug.
 1. Once the PR passes and is reviewed, merge it and update the CHANGELOG
 
 
