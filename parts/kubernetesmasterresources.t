@@ -255,7 +255,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('masterCount')]",
+        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "masterLbLoopNode"
       },
       "dependsOn": [
@@ -277,7 +277,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('masterCount')]",
+        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "nicLoopNode"
       },
       "dependsOn": [
@@ -314,7 +314,7 @@
                   "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
                 }
               ],
-              "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(int(variables('masterFirstAddrOctet4'))))]",
+              "privateIPAddress": "[variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))]]",
               "primary": true,
               "privateIPAllocationMethod": "Static",
               "subnet": {
@@ -439,7 +439,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('masterCount')]",
+        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
