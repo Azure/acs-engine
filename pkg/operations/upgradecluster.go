@@ -97,8 +97,6 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.UpgradeModel.OrchestratorProfile.OrchestratorType,
 		uc.UpgradeModel.OrchestratorProfile.OrchestratorVersion)
 
-	// TODO: *vm.Tags["resourceNameSuffix"] ==  Read VM NAME SUFFIX and filter out resources
-	// that don't belong to this cluster
 	for _, vm := range *vmListResult.Value {
 		vmOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
 		if vmOrchestratorTypeAndVersion == orchestratorTypeVersion {
@@ -178,7 +176,6 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 // WriteTemplate writes upgrade template to a folder
 func WriteTemplate(upgradeContainerService *api.ContainerService,
 	templateMap map[string]interface{}, parametersMap map[string]interface{}) {
-	// ***********Save upgrade template*************
 	updatedTemplateJSON, _ := json.Marshal(templateMap)
 	parametersJSON, _ := json.Marshal(parametersMap)
 

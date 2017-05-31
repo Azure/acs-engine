@@ -40,13 +40,12 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 	poolCountParameter := kan.ParametersMap[poolName+"Count"].(map[string]interface{})
 	poolCountParameter["value"] = agentNo + 1
 	agentCount, _ := poolCountParameter["value"]
-	log.Infoln(fmt.Sprintf("Agent pool: %s, set count to: %d temporarily during upgrade...", poolName, agentCount))
+	log.Infoln(fmt.Sprintf("Agent pool: %s, set count to: %d temporarily during upgrade. Upgrading agent: %d",
+		poolName, agentCount, agentNo))
 
 	poolOffsetVarName := poolName + "Offset"
 	templateVariables := kan.TemplateMap["variables"].(map[string]interface{})
 	templateVariables[poolOffsetVarName] = agentNo
-	agentOffset, _ := templateVariables[poolOffsetVarName]
-	log.Infoln(fmt.Sprintf("Agent offset: %v", agentOffset))
 
 	WriteTemplate(kan.UpgradeContainerService, kan.TemplateMap, kan.ParametersMap)
 
