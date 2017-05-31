@@ -9,7 +9,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
-	"github.com/Azure/acs-engine/pkg/operations"
+	"github.com/Azure/acs-engine/pkg/operations/kubernetesupgrade"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -133,7 +133,7 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	uc.validate(cmd, args)
 
-	upgradeCluster := operations.UpgradeCluster{
+	upgradeCluster := kubernetesupgrade.UpgradeCluster{
 		Client: uc.client,
 	}
 
