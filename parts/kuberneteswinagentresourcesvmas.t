@@ -124,7 +124,8 @@
       {
         "creationSource" : "[concat('acsengine-', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
         "resourceNameSuffix" : "[variables('winResourceNamePrefix')]",
-        "orchestrator" : "[variables('orchestratorNameVersionTag')]"
+        "orchestrator" : "[variables('orchestratorNameVersionTag')]",
+        "poolName" : "{{.Name}}"
       },
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
