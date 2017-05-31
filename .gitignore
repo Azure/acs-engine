@@ -9,3 +9,4 @@ user.env
 test/acs-engine-test/acs-engine-test
 
 test/acs-engine-test/acs-engine-test.exe
+pkg/operations/junit.xml
