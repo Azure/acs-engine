@@ -27,7 +27,6 @@ var _ = Describe("Scale down vms operation tests", func() {
 		}
 	})
 	It("Should return nil for errors if all deletes successful", func() {
-
 		errs := ScaleDownVMs(&armhelpers.MockClient{}, log.NewEntry(log.New()), "rg", "k8s-agent-F8EADCCF-0", "k8s-agent-F8EADCCF-3", "k8s-agent-F8EADCCF-2", "k8s-agent-F8EADCCF-4")
 		Expect(errs).To(BeNil())
 	})
