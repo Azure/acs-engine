@@ -29,7 +29,7 @@ type UpgradeMasterNode struct {
 // backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 // the node
 func (kmn *UpgradeMasterNode) DeleteNode(vmName *string) error {
-	if err := CleanDeleteVirtualMachine(kmn.Client, kmn.ResourceGroup, *vmName); err != nil {
+	if err := CleanDeleteVirtualMachine(kmn.Client, log.NewEntry(log.New()), kmn.ResourceGroup, *vmName); err != nil {
 		log.Fatalln(err)
 		return err
 	}
