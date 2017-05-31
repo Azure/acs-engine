@@ -202,7 +202,7 @@ func isValidEnv() bool {
 }
 
 func (m *TestManager) runStep(name, step string, env []string, timeout time.Duration) (string, error) {
-	// work around az-cli parallelization issue https://github.com/Azure/azure-cli/issues/3255
+	// prevent ARM throttling
 	m.lock.Lock()
 	go func() {
 		time.Sleep(2 * time.Second)
