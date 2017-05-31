@@ -58,13 +58,13 @@ func (mc *MockACSEngineClient) GetVirtualMachine(resourceGroup, name string) (co
 			StorageProfile: &compute.StorageProfile{
 				OsDisk: &compute.OSDisk{
 					Vhd: &compute.VirtualHardDisk{
-						URI: &validOSDiskURI},
+						URI: &validOSDiskResourceName},
 				},
 			},
 			NetworkProfile: &compute.NetworkProfile{
 				NetworkInterfaces: &[]compute.NetworkInterfaceReference{
 					{
-						ID: &validNicID,
+						ID: &validNicResourceName,
 					},
 				},
 			},
@@ -149,13 +149,5 @@ func (mc *MockACSEngineClient) DeleteNetworkInterface(resourceGroup, nicName str
 	return respChan, errChan
 }
 
-//MockStorageClient mock implementation of StorageClient
-type MockStorageClient struct{}
-
-//DeleteBlob mock
-func (msc *MockStorageClient) DeleteBlob(container, blob string) error {
-	return nil
-}
-
-var validOSDiskURI = "https://00k71r4u927seqiagnt0.blob.core.windows.net/osdisk/k8s-agentpool1-12345678-0-osdisk.vhd"
-var validNicID = "/subscriptions/DEC923E3-1EF1-4745-9516-37906D56DEC4/resourceGroups/acsK8sTest/providers/Microsoft.Network/networkInterfaces/k8s-agent-12345678-nic-0"
+var validOSDiskResourceName = "https://00k71r4u927seqiagnt0.blob.core.windows.net/osdisk/k8s-agentpool1-12345678-0-osdisk.vhd"
+var validNicResourceName = "/subscriptions/DEC923E3-1EF1-4745-9516-37906D56DEC4/resourceGroups/acsK8sTest/providers/Microsoft.Network/networkInterfaces/k8s-agent-12345678-nic-0"

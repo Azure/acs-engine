@@ -27,7 +27,7 @@ type UpgradeAgentNode struct {
 // backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 // the node
 func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
-	if err := CleanDeleteVirtualMachine(kan.Client, kan.ResourceGroup, *vmName); err != nil {
+	if err := CleanDeleteVirtualMachine(kan.Client, log.NewEntry(log.New()), kan.ResourceGroup, *vmName); err != nil {
 		log.Fatalln(err)
 		return err
 	}
