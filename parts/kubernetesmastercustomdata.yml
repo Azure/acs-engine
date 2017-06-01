@@ -5,25 +5,6 @@ packages:
  - jq
  - traceroute
 
-disk_setup:
-  /dev/sdc:
-      table_type: gpt
-      layout: true
-      overwrite: false
-
-fs_setup:
-- label: etcd_disk
-  filesystem: ext4
-  device: /dev/sdc1
-  extra_opts:
-    - "-F"
-    - "-E"
-    - "lazy_itable_init=1,lazy_journal_init=1"
-
-mounts:
-- - /dev/sdc1
-  - /var/lib/etcddisk
-
 write_files:
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
   permissions: "0644"
@@ -187,6 +168,22 @@ write_files:
   content: !!binary |
     MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR
 
+{{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
+- path: /etc/kubernetes/addons/calico-configmap.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_CALICO_CONFIGMAP_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/calico-daemonset.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR
+{{end}}
+
 - path: "/etc/systemd/system/kubectl-extract.service"
   permissions: "0644"
   owner: "root"
@@ -253,6 +250,11 @@ write_files:
     sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsVariable "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsVariable "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
     sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
 
+{{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
+    # If Calico Policy enabled then update Cluster Cidr
+    sed -i "s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-daemonset.yaml"
+{{end}}
+
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
   encoding: gzip
@@ -260,9 +262,45 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionScript"}}
 
+- path: "/opt/azure/containers/mountetcd.sh"
+  permissions: "0744"
+  owner: "root"
+  content: |
+    #!/bin/bash
+    # Mounting is done here instead of etcd because of bug https://bugs.launchpad.net/cloud-init/+bug/1692093
+    # Once the bug is fixed, replace the below with the cloud init changes replaced in https://github.com/Azure/acs-engine/pull/661.
+    set -x
+    DISK=/dev/sdc
+    PARTITION=${DISK}1
+    MOUNTPOINT=/var/lib/etcddisk
+    udevadm settle
+    mkdir -p $MOUNTPOINT
+    mount | grep $MOUNTPOINT
+    if [ $? -eq 0 ]
+    then
+        echo "disk is already mounted"
+        exit 0
+    fi
+    # fill /etc/fstab
+    grep "/dev/sdc1" /etc/fstab
+    if [ $? -ne 0 ]
+    then
+        echo "$PARTITION       $MOUNTPOINT       auto    defaults,nofail       0       2" >> /etc/fstab
+    fi
+    # check if partition exists
+    ls $PARTITION
+    if [ $? -ne 0 ]
+    then
+        # partition does not exist
+        /sbin/sgdisk --new 1 $DISK
+        /sbin/mkfs.ext4 $PARTITION -L etcd_disk -F -E lazy_itable_init=1,lazy_journal_init=1
+    fi
+    mount $MOUNTPOINT
+
 runcmd:
 - /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',http://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
 - sudo /bin/chown -R etcd:etcd /var/lib/etcd/default
+- /opt/azure/containers/mountetcd.sh
 - sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
 - systemctl stop etcd
 - sudo -u etcd rm -rf /var/lib/etcd/default
