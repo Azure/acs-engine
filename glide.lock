@@ -1,5 +1,5 @@
-hash: abeb912be5c8943efc3d763200837e372cb8a696cb7ac64715e6ab22f72e4f85
-updated: 2017-05-31T18:25:04.2038789Z
+hash: 82b941a3e4a8d15b0b3e4f2fd66a3589d70399f080ced551542cbff72fc6d559
+updated: 2017-06-01T10:42:14.423883806-04:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
   version: 2629e2dfcfeab50896230140542c3b9d89b35ae1
@@ -40,7 +40,7 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/spf13/cobra
-  version: ca57f0f5dba473a8a58765d16d7e811fb8027add
+  version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 - name: golang.org/x/sys
