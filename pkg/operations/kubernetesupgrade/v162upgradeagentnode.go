@@ -1,4 +1,4 @@
-package operations
+package kubernetesupgrade
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/operations"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -27,7 +28,7 @@ type UpgradeAgentNode struct {
 // backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 // the node
 func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
-	if err := CleanDeleteVirtualMachine(kan.Client, log.NewEntry(log.New()), kan.ResourceGroup, *vmName); err != nil {
+	if err := operations.CleanDeleteVirtualMachine(kan.Client, log.NewEntry(log.New()), kan.ResourceGroup, *vmName); err != nil {
 		log.Fatalln(err)
 		return err
 	}

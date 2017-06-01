@@ -1,4 +1,4 @@
-package operations
+package kubernetesupgrade
 
 import (
 	"testing"
