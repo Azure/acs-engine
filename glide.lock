@@ -1,5 +1,5 @@
-hash: abeb912be5c8943efc3d763200837e372cb8a696cb7ac64715e6ab22f72e4f85
-updated: 2017-05-31T18:25:04.2038789Z
+hash: a21dccf5f589251bb5a0fdf46aa79bb2e7a6995b619abc3619964eee60b3b0fd
+updated: 2017-05-31T23:05:21.232650495-07:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
   version: 2629e2dfcfeab50896230140542c3b9d89b35ae1
@@ -51,20 +51,6 @@ imports:
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
 testImports:
-- name: github.com/onsi/gomega
-  version: 334b8f472b3af5d541c5642701c1e29e2126f486
-  subpackages:
-  - format
-  - internal/assertion
-  - internal/asyncassertion
-  - internal/oraclematcher
-  - internal/testingtsupport
-  - matchers
-  - matchers/support/goraph/bipartitegraph
-  - matchers/support/goraph/edge
-  - matchers/support/goraph/node
-  - matchers/support/goraph/util
-  - types
 - name: github.com/onsi/ginkgo
   version: 77a8c1e5c40d6bb6c5eb4dd4bdce9763564f6298
   subpackages:
@@ -84,4 +70,18 @@ testImports:
   - reporters/stenographer
   - reporters/stenographer/support/go-colorable
   - reporters/stenographer/support/go-isatty
+  - types
+- name: github.com/onsi/gomega
+  version: 334b8f472b3af5d541c5642701c1e29e2126f486
+  subpackages:
+  - format
+  - internal/assertion
+  - internal/asyncassertion
+  - internal/oraclematcher
+  - internal/testingtsupport
+  - matchers
+  - matchers/support/goraph/bipartitegraph
+  - matchers/support/goraph/edge
+  - matchers/support/goraph/node
+  - matchers/support/goraph/util
   - types
