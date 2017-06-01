@@ -9,6 +9,7 @@ import (
 type Deployment struct {
 	ClusterDefinition string `json:"cluster_definition"`
 	Location          string `json:"location"`
+	SkipValidation    bool   `json:"skip_validation,omitempty"`
 }
 
 type TestConfig struct {

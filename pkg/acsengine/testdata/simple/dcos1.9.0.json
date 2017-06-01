@@ -2,7 +2,8 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "DCOS190"
+      "orchestratorType": "DCOS",
+      "orchestratorVersion": "1.9.0"
     },
     "masterProfile": {
       "count": 3,

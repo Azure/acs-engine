@@ -49,7 +49,7 @@ echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
 
 AZURE_JSON_PATH="/etc/kubernetes/azure.json"
 touch "${AZURE_JSON_PATH}"
-chmod 0644 "${AZURE_JSON_PATH}"
+chmod 0600 "${AZURE_JSON_PATH}"
 chown root:root "${AZURE_JSON_PATH}"
 cat << EOF > "${AZURE_JSON_PATH}"
 {
@@ -139,22 +139,12 @@ function configAzureNetworkPolicy() {
     setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
+# Configures Kubelet to use CNI and mount the appropriate hostpaths
 function configCalicoNetworkPolicy() {
-    if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
-        # on masters
-        ADDONS="calico-configmap.yaml calico-daemonset.yaml"
-        ADDONS_PATH=/etc/kubernetes/addons
-        CALICO_URL="https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager"
 
-        # download calico yamls
-        for addon in ${ADDONS}; do
-            downloadUrl "${CALICO_URL}/${addon}" > "${ADDONS_PATH}/${addon}"
-        done
-    else
-        # on agents
         setNetworkPlugin cni
         setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
-    fi
+
 }
 
 function configNetworkPolicy() {
@@ -249,6 +239,29 @@ function ensureEtcd() {
     done
 }
 
+function ensureEtcdDataDir() {
+    mount | grep /dev/sdc1 | grep /var/lib/etcddisk
+    if [ "$?" = "0" ]
+    then
+        echo "Etcd is running with data dir at: /var/lib/etcddisk"
+        return
+    else
+        echo "/var/lib/etcddisk was not found at /dev/sdc1. Trying to mount all devices."
+        for i in {1..60}; do
+            sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
+            if [ "$?" = "0" ]
+            then
+                echo "/var/lib/etcddisk mounted at: /dev/sdc1"
+                return
+            fi
+            sleep 5
+        done
+    fi
+
+   echo "Etcd data dir was not found at: /var/lib/etcddisk"
+   exit 1
+}
+
 function writeKubeConfig() {
     KUBECONFIGDIR=/home/$ADMINUSER/.kube
     KUBECONFIGFILE=$KUBECONFIGDIR/config
@@ -298,10 +311,11 @@ ensureKubelet
 extractKubectl
 ensureJournal
 
-# master only 
+# master only
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     writeKubeConfig
     ensureKubectl
+    ensureEtcdDataDir
     ensureEtcd
     ensureApiserver
 fi

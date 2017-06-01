@@ -64,7 +64,7 @@ function generate_template() {
 		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.windowsProfile.secrets[0].vaultCertificates[0].certificateStore = \"My\""
 	fi
 	# Generate template
-	"${DIR}/../acs-engine" -artifacts "${OUTPUT}" "${FINAL_CLUSTER_DEFINITION}"
+	"${DIR}/../acs-engine" generate --output-directory "${OUTPUT}" "${FINAL_CLUSTER_DEFINITION}" --debug
 
 	# Fill in custom hyperkube spec, if it was set
 	if [[ ! -z "${CUSTOM_HYPERKUBE_SPEC:-}" ]]; then
@@ -147,12 +147,31 @@ function get_node_count() {
 
 	count=$(jq 'getpath(["properties","masterProfile","count"])' ${APIMODEL})
 
-	for poolname in `jq '.properties.agentPoolProfiles[].name' "${APIMODEL}" | tr -d '\"'`; do
+	for poolname in `jq -r '.properties.agentPoolProfiles[].name' "${APIMODEL}"`; do
 	  nodes=$(jq "getpath([\"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
 	  count=$((count+nodes))
 	done
 
 	echo $count
+}
+
+function get_orchestrator_type() {
+	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
+
+	orchestratorType=$(jq -r 'getpath(["properties","orchestratorProfile","orchestratorType"])' ${CLUSTER_DEFINITION} | tr '[:upper:]' '[:lower:]')
+
+	echo $orchestratorType
+}
+
+function get_orchestrator_version() {
+	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
+
+	orchestratorVersion=$(jq -r 'getpath(["properties","orchestratorProfile","orchestratorVersion"])' ${CLUSTER_DEFINITION})
+	if [[ "$orchestratorVersion" == "null" ]]; then
+		orchestratorVersion=""
+	fi
+
+	echo $orchestratorVersion
 }
 
 function cleanup() {

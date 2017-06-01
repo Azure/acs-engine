@@ -42,7 +42,7 @@ type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
 	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
 	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
-	AgentPoolProfiles       []AgentPoolProfile       `json:"agentPoolProfiles,omitempty"`
+	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	DiagnosticsProfile      *DiagnosticsProfile      `json:"diagnosticsProfile,omitempty"`
@@ -117,18 +117,17 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType OrchestratorType  `json:"orchestratorType"`
-	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	OrchestratorType    OrchestratorType    `json:"orchestratorType"`
+	OrchestratorVersion OrchestratorVersion `json:"orchestratorVersion"`
+	KubernetesConfig    *KubernetesConfig   `json:"kubernetesConfig,omitempty"`
 }
 
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
 	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
 	NetworkPolicy       string `json:"networkPolicy,omitempty"`
-	DnsServiceIP        string `json:"dnsServiceIP,omitempty"`
-	ServiceCIDR         string `json:"serviceCidr,omitempty"`
-	ClusterCIDR         string `json:"clusterCidr,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -136,6 +135,7 @@ type MasterProfile struct {
 	Count                    int    `json:"count"`
 	DNSPrefix                string `json:"dnsPrefix"`
 	VMSize                   string `json:"vmSize"`
+	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string `json:"subnet"`
@@ -152,6 +152,7 @@ type AgentPoolProfile struct {
 	Name                string `json:"name"`
 	Count               int    `json:"count"`
 	VMSize              string `json:"vmSize"`
+	OSDiskSizeGB        int    `json:"osDiskSizeGB,omitempty"`
 	DNSPrefix           string `json:"dnsPrefix,omitempty"`
 	OSType              OSType `json:"osType,omitempty"`
 	Ports               []int  `json:"ports,omitempty"`
@@ -188,6 +189,9 @@ type VMDiagnostics struct {
 
 // OrchestratorType defines orchestrators supported by ACS
 type OrchestratorType string
+
+// OrchestratorVersion defines the version for orchestratorType
+type OrchestratorVersion string
 
 // JumpboxProfile dscribes properties of the jumpbox setup
 // in the ACS container cluster.
@@ -263,6 +267,19 @@ type V20160930ARMContainerService struct {
 type V20170131ARMContainerService struct {
 	TypeMeta
 	*v20170131.ContainerService
+}
+
+// VlabsUpgradeContainerService is the type we read and write from file
+// needed because the json that is sent to ARM and acs-engine
+// is different from the json that the ACS RP Api gets from ARM
+type VlabsUpgradeContainerService struct {
+	TypeMeta
+	*vlabs.UpgradeContainerService
+}
+
+// UpgradeContainerService API model
+type UpgradeContainerService struct {
+	OrchestratorProfile *OrchestratorProfile `json:"orchestratorProfile,omitempty"`
 }
 
 // HasWindows returns true if the cluster contains windows

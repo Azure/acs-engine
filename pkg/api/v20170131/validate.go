@@ -35,7 +35,7 @@ func (m *MasterProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *AgentPoolProfile) Validate() error {
+func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 	if e := validateName(a.Name, "AgentPoolProfile.Name"); e != nil {
 		return e
 	}
@@ -47,6 +47,19 @@ func (a *AgentPoolProfile) Validate() error {
 	}
 	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
 		return e
+	}
+	// Kubernetes don't allow agent DNSPrefix
+	if orchestratorType == Kubernetes {
+		// The line below need to be removed after June 2017
+		a.DNSPrefix = ""
+		if e := validateNameEmpty(a.DNSPrefix, "AgentPoolProfile.DNSPrefix"); e != nil {
+			return e
+		}
+	}
+	if a.DNSPrefix != "" {
+		if e := validateDNSName(a.DNSPrefix); e != nil {
+			return e
+		}
 	}
 	return nil
 }
@@ -78,9 +91,10 @@ func (a *Properties) Validate() error {
 	}
 
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
-		if e := agentPoolProfile.Validate(); e != nil {
+		if e := agentPoolProfile.Validate(a.OrchestratorProfile.OrchestratorType); e != nil {
 			return e
 		}
+
 		if agentPoolProfile.OSType == Windows {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Swarm:
@@ -98,6 +112,13 @@ func (a *Properties) Validate() error {
 	}
 	if e := a.LinuxProfile.Validate(); e != nil {
 		return e
+	}
+	return nil
+}
+
+func validateNameEmpty(name string, label string) error {
+	if name != "" {
+		return fmt.Errorf("%s must be an empty value", label)
 	}
 	return nil
 }
@@ -135,7 +156,7 @@ func validateDNSName(dnsName string) error {
 	return nil
 }
 
-func validateUniqueProfileNames(profiles []AgentPoolProfile) error {
+func validateUniqueProfileNames(profiles []*AgentPoolProfile) error {
 	profileNames := make(map[string]bool)
 	for _, profile := range profiles {
 		if _, ok := profileNames[profile.Name]; ok {

@@ -16,7 +16,8 @@ var (
 		},
 		//KubernetesSpecConfig is the default kubernetes container image url.
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase: "gcrio.azureedge.net/google_containers/",
+			KubernetesImageBase:    "gcrio.azureedge.net/google_containers/",
+			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
 		},
 
 		DCOSSpecConfig: DCOSSpecConfig{
@@ -36,7 +37,8 @@ var (
 		},
 		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase: "mirror.azure.cn:5000/google_containers/",
+			KubernetesImageBase:    "mirror.azure.cn:5000/google_containers/",
+			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
 			DCOS173_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
@@ -80,20 +82,14 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "" {
 			a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 		}
-
-		if a.OrchestratorProfile.KubernetesConfig.DnsServiceIP == "" {
-			a.OrchestratorProfile.KubernetesConfig.DnsServiceIP = DefaultKubernetesDnsServiceIP
+		if a.OrchestratorProfile.KubernetesConfig.ClusterSubnet == "" {
+			if a.OrchestratorProfile.IsVNETIntegrated() {
+				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
+				a.OrchestratorProfile.KubernetesConfig.ClusterSubnet = DefaultKubernetesSubnet
+			} else {
+				a.OrchestratorProfile.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
+			}
 		}
-		if a.OrchestratorProfile.KubernetesConfig.ServiceCIDR == "" {
-			a.OrchestratorProfile.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
-		}
-		if a.OrchestratorProfile.KubernetesConfig.ClusterCIDR == "" {
-			a.OrchestratorProfile.KubernetesConfig.ClusterCIDR = DefaultKubernetesClusterCIDR
-		}
-
-	}
-	if a.OrchestratorProfile.OrchestratorType == api.DCOS {
-		a.OrchestratorProfile.OrchestratorType = api.DCOS190
 	}
 }
 
@@ -102,12 +98,13 @@ func setMasterNetworkDefaults(a *api.Properties) {
 	if !a.MasterProfile.IsCustomVNET() {
 		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 			if a.OrchestratorProfile.IsVNETIntegrated() {
-				// Use a single large subnet for all masters, agents and pods.
-				a.MasterProfile.Subnet = DefaultKubernetesSubnet
+				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
+				a.MasterProfile.Subnet = a.OrchestratorProfile.KubernetesConfig.ClusterSubnet
+				a.MasterProfile.FirstConsecutiveStaticIP = getFirstConsecutiveStaticIPAddress(a.MasterProfile.Subnet)
 			} else {
 				a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
+				a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
 			}
-			a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
 		} else if a.HasWindows() {
 			a.MasterProfile.Subnet = DefaultSwarmWindowsMasterSubnet
 			a.MasterProfile.FirstConsecutiveStaticIP = DefaultSwarmWindowsFirstConsecutiveStaticIP
@@ -133,9 +130,7 @@ func setAgentNetworkDefaults(a *api.Properties) {
 	// configure the subnets if not in custom VNET
 	if !a.MasterProfile.IsCustomVNET() {
 		subnetCounter := 0
-		for i := range a.AgentPoolProfiles {
-			profile := &a.AgentPoolProfiles[i]
-
+		for _, profile := range a.AgentPoolProfiles {
 			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 				profile.Subnet = a.MasterProfile.Subnet
 			} else {
@@ -146,9 +141,7 @@ func setAgentNetworkDefaults(a *api.Properties) {
 		}
 	}
 
-	for i := range a.AgentPoolProfiles {
-		profile := &a.AgentPoolProfiles[i]
-
+	for _, profile := range a.AgentPoolProfiles {
 		// set default OSType to Linux
 		if profile.OSType == "" {
 			profile.OSType = api.Linux
@@ -168,8 +161,7 @@ func setAgentNetworkDefaults(a *api.Properties) {
 
 // setStorageDefaults for agents
 func setStorageDefaults(a *api.Properties) {
-	for i := range a.AgentPoolProfiles {
-		profile := &a.AgentPoolProfiles[i]
+	for _, profile := range a.AgentPoolProfiles {
 		if len(profile.StorageProfile) == 0 {
 			profile.StorageProfile = api.StorageAccount
 		}
@@ -220,24 +212,6 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		a.CertificateProfile.SetCAPrivateKey(caPair.PrivateKeyPem)
 	}
 
-	// Work out the first IP in KubeServiceCidr range
-	_, serviceCidr, err := net.ParseCIDR(a.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
-	if err != nil {
-		return false, err
-	}
-	// Based off https://play.golang.org/p/m8TNTtygK0
-	// Increment the last octet if it's zero.
-	firstIP := func(ip net.IP) net.IP {
-		for j := len(ip) - 1; j >= 0; j-- {
-			if ip[j] == 0 {
-				ip[j]++
-				break
-			}
-		}
-		return ip
-	}
-	ips = append(ips, firstIP(serviceCidr.IP))
-
 	apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
 	if err != nil {
 		return false, err
@@ -263,15 +237,37 @@ func certGenerationRequired(a *api.Properties) bool {
 	switch a.OrchestratorProfile.OrchestratorType {
 	case api.DCOS:
 		return false
-	case api.DCOS184:
-		return false
-	case api.DCOS173:
-		return false
 	case api.Swarm:
+		return false
+	case api.SwarmMode:
 		return false
 	case api.Kubernetes:
 		return true
 	default:
 		return false
 	}
+}
+
+// getFirstConsecutiveStaticIPAddress returns the first static IP address of the given subnet.
+func getFirstConsecutiveStaticIPAddress(subnetStr string) string {
+	_, subnet, err := net.ParseCIDR(subnetStr)
+	if err != nil {
+		return DefaultFirstConsecutiveKubernetesStaticIP
+	}
+
+	// Round up the prefix length to the nearest octet boundary.
+	ones, bits := subnet.Mask.Size()
+	if ones%8 != 0 {
+		ones += 8 - ones%8
+	}
+
+	// Fill the intermediate octets with 1s and last octet with offset. This is done so to match
+	// the existing behavior of allocating static IP addresses from the last /24 of the subnet.
+	lastOctet := bits/8 - 1
+	for i := ones / 8; i < lastOctet; i++ {
+		subnet.IP[i] = 255
+	}
+	subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffset
+
+	return subnet.IP.String()
 }

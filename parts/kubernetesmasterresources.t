@@ -177,6 +177,7 @@
       },
       "type": "Microsoft.Network/loadBalancers"
     },
+{{if gt .MasterProfile.Count 1}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
@@ -198,7 +199,7 @@
           {
             "name": "[variables('masterInternalLbIPConfigName')]",
             "properties": {
-              "privateIPAddress": "[variables('masterInternalLbIp')]",
+              "privateIPAddress": "[variables('kubernetesAPIServerIP')]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('vnetSubnetID')]"
@@ -238,6 +239,7 @@
       },
       "type": "Microsoft.Network/loadBalancers"
     },
+{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
@@ -253,21 +255,21 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('masterCount')]",
+        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "masterLbLoopNode"
       },
       "dependsOn": [
         "[variables('masterLbID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('masterLbName'), '/', 'SSH-', variables('masterVMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('masterLbName'), '/', 'SSH-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
       "properties": {
         "backendPort": 22,
         "enableFloatingIP": false,
         "frontendIPConfiguration": {
           "id": "[variables('masterLbIPConfigID')]"
         },
-        "frontendPort": "[variables('sshNatPorts')[copyIndex()]]",
+        "frontendPort": "[variables('sshNatPorts')[copyIndex(variables('masterOffset'))]]",
         "protocol": "tcp"
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
@@ -275,7 +277,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('masterCount')]",
+        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "nicLoopNode"
       },
       "dependsOn": [
@@ -284,11 +286,13 @@
 {{else}}
         "[variables('vnetID')]",
 {{end}}
-        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]",
-        "[variables('masterInternalLbName')]"
+        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
+{{if gt .MasterProfile.Count 1}}
+        ,"[variables('masterInternalLbName')]"
+{{end}}
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
+      "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]",
       "properties": {
         "ipConfigurations": [
           {
@@ -297,17 +301,20 @@
               "loadBalancerBackendAddressPools": [
                 {
                   "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
-                },
+                }
+{{if gt .MasterProfile.Count 1}}                
+                ,
                 {
                    "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
+{{end}}
               ],
               "loadBalancerInboundNatRules": [
                 {
-                  "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
+                  "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
                 }
               ],
-              "privateIPAddress": "[concat(variables('masterFirstAddrPrefix'), copyIndex(int(variables('masterFirstAddrOctet4'))))]",
+              "privateIPAddress": "[variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))]]",
               "primary": true,
               "privateIPAllocationMethod": "Static",
               "subnet": {
@@ -346,21 +353,22 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('masterCount')]",
+        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'nic-', copyIndex())]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]",
         "[concat('Microsoft.Compute/availabilitySets/',variables('masterAvailabilitySet'))]",
         "[variables('masterStorageAccountName')]"
       ],
       "tags":
       {
-        "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex())]",
-        "resourceNameSuffix" : "[variables('nameSuffix')]"
+        "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
+        "resourceNameSuffix" : "[variables('nameSuffix')]",
+        "orchestrator" : "[variables('orchestratorNameVersionTag')]"
       },
       "location": "[variables('location')]",
-      "name": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
+      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('masterAvailabilitySet'))]"
@@ -371,14 +379,14 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('masterVMNamePrefix'),'nic-', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('masterVMNamePrefix'),'nic-', copyIndex(variables('masterOffset'))))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
-          {{GetKubernetesMasterCustomData}}
+          "computername": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
+          {{GetKubernetesMasterCustomData .}}
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
             "ssh": {
@@ -401,9 +409,9 @@
               "createOption": "Empty",
               "diskSizeGB": "128",
               "lun": 0,
-              "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'-etcddisk')]",
+              "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]",
               "vhd": {
-                "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/', variables('masterVMNamePrefix'),copyIndex(),'-etcddisk.vhd')]"
+                "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/', variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-etcddisk.vhd')]"
               }
             }
           ],
@@ -416,9 +424,12 @@
           "osDisk": {
             "caching": "ReadWrite",
             "createOption": "FromImage",
-            "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'-osdisk')]",
+{{if ne .MasterProfile.OSDiskSizeGB 0}}
+            "diskSizeGB": {{.MasterProfile.OSDiskSizeGB}},
+{{end}}
+            "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('masterVMNamePrefix'),copyIndex(),'-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-osdisk.vhd')]"
             }
           }
         }
@@ -428,15 +439,15 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "[variables('masterCount')]",
+        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]"
       ],
       "location": "[variables('location')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(),'/cse', copyIndex())]",
+      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'/cse', copyIndex(variables('masterOffset')))]",
       "properties": {
         "publisher": "Microsoft.Azure.Extensions",
         "type": "CustomScript",

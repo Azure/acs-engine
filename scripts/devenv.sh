@@ -13,4 +13,4 @@ docker run -it \
 	-w /gopath/src/github.com/Azure/acs-engine \
 		acs-engine /bin/bash
 
-chown -R $(logname):$(id -gn $(logname)) . ~/.azure
+chown -R "$(logname):$(id -gn $(logname))" . ~/.azure

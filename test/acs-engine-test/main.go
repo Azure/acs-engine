@@ -5,7 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -47,75 +47,138 @@ func (m *TestManager) Run() error {
 		return nil
 	}
 
-	// deternime timeout
+	// determine timeout
 	timeoutMin, err := strconv.Atoi(os.Getenv("STAGE_TIMEOUT_MIN"))
 	if err != nil {
-		fmt.Printf("Error [Atoi STAGE_TIMEOUT_MIN]: %v\n", err)
-		return err
+		return fmt.Errorf("Error [Atoi STAGE_TIMEOUT_MIN]: %v", err)
 	}
 	timeout := time.Duration(time.Minute * time.Duration(timeoutMin))
 
+	// determine number of retries
+	retries, err := strconv.Atoi(os.Getenv("NUM_OF_RETRIES"))
+	if err != nil {
+		fmt.Println("Warning: NUM_OF_RETRIES is not set or invalid. Assuming 1")
+		retries = 1
+	}
 	// login to Azure
-	if err := runStep("set_azure_account", m.rootDir, "main", os.Environ(), fmt.Sprintf("%s/main.log", logDir), timeout); err != nil {
+	if _, err := m.runStep("init", "set_azure_account", os.Environ(), timeout); err != nil {
 		return err
 	}
 
 	// return values for tests
-	retvals := make([]byte, n)
+	success := make([]bool, n)
+	rand.Seed(time.Now().UnixNano())
 
 	m.wg.Add(n)
-	for i, d := range m.config.Deployments {
-		go func(i int, d Deployment) {
+	for index, dep := range m.config.Deployments {
+		go func(index int, dep Deployment) {
 			defer m.wg.Done()
-
-			name := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
-			instanceName := fmt.Sprintf("test-acs-%s-%s-%s-%d", strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), i)
-			logFile := fmt.Sprintf("%s/%s.log", logDir, instanceName)
-
-			// determine orchestrator
-			orchestrator, err := getOrchestrator(fmt.Sprintf("%s/%s", m.rootDir, d.ClusterDefinition))
-			if err != nil {
-				wrileLog(logFile, []byte(err.Error()))
-				fmt.Printf("Error [getOrchestrator %s] : %v\n", d.ClusterDefinition, err)
-				retvals[i] = 1
-				return
-			}
-
-			// update environment
-			env := os.Environ()
-			env = append(env, fmt.Sprintf("CLUSTER_DEFINITION=%s", d.ClusterDefinition))
-			env = append(env, fmt.Sprintf("LOCATION=%s", d.Location))
-			env = append(env, fmt.Sprintf("ORCHESTRATOR=%s", orchestrator))
-			env = append(env, fmt.Sprintf("INSTANCE_NAME=%s", instanceName))
-			env = append(env, fmt.Sprintf("DEPLOYMENT_NAME=%s", instanceName))
-			env = append(env, fmt.Sprintf("RESOURCE_GROUP=%s", instanceName))
-
-			steps := []string{"generate_template", "deploy_template"}
-
-			// determine validation script
-			validate := fmt.Sprintf("test/cluster-tests/%s/test.sh", orchestrator)
-			if _, err = os.Stat(fmt.Sprintf("%s/%s", m.rootDir, validate)); err == nil {
-				env = append(env, fmt.Sprintf("VALIDATE=%s", validate))
-				steps = append(steps, "validate")
-			}
-
-			for _, step := range steps {
-				if err = runStep(step, m.rootDir, instanceName, env, logFile, timeout); err != nil {
-					retvals[i] = 1
+			for attempt := 0; attempt < retries; attempt++ {
+				success[index] = m.testRun(dep, index, attempt, timeout)
+				// do not retry if successful
+				if success[index] {
 					break
 				}
 			}
-			// clean up
-			runStep("cleanup", m.rootDir, instanceName, env, logFile, timeout)
-		}(i, d)
+		}(index, dep)
 	}
 	m.wg.Wait()
-	for _, retval := range retvals {
-		if retval != 0 {
+	for _, ok := range success {
+		if !ok {
 			return errors.New("Test failed")
 		}
 	}
 	return nil
+}
+
+func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Duration) bool {
+	name := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
+	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
+	resourceGroup := fmt.Sprintf("x-%s-%s-%s-%d-%d", strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
+	logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
+	validateLogFile := fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
+	success := true
+
+	// determine orchestrator
+	env := os.Environ()
+	env = append(env, fmt.Sprintf("CLUSTER_DEFINITION=examples/%s", d.ClusterDefinition))
+	cmd := exec.Command("test/step.sh", "get_orchestrator_type")
+	cmd.Env = env
+	out, err := cmd.Output()
+	if err != nil {
+		wrileLog(logFile, "Error [getOrchestrator %s] : %v", d.ClusterDefinition, err)
+		return false
+	}
+	orchestrator := strings.TrimSpace(string(out))
+
+	// update environment
+	env = append(env, fmt.Sprintf("LOCATION=%s", d.Location))
+	env = append(env, fmt.Sprintf("ORCHESTRATOR=%s", orchestrator))
+	env = append(env, fmt.Sprintf("INSTANCE_NAME=%s", instanceName))
+	env = append(env, fmt.Sprintf("DEPLOYMENT_NAME=%s", instanceName))
+	env = append(env, fmt.Sprintf("RESOURCE_GROUP=%s", resourceGroup))
+
+	steps := []string{"generate_template", "deploy_template"}
+
+	// determine validation script
+	if !d.SkipValidation {
+		validate := fmt.Sprintf("test/cluster-tests/%s/test.sh", orchestrator)
+		if _, err = os.Stat(fmt.Sprintf("%s/%s", m.rootDir, validate)); err == nil {
+			env = append(env, fmt.Sprintf("VALIDATE=%s", validate))
+			steps = append(steps, "validate")
+		}
+	}
+	for _, step := range steps {
+		txt, err := m.runStep(resourceGroup, step, env, timeout)
+		if err != nil {
+			wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, resourceGroup, err, txt)
+			success = false
+			break
+		}
+		wrileLog(logFile, txt)
+		if step == "generate_template" {
+			// set up extra environment variables available after template generation
+			validateLogFile = fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
+			env = append(env, fmt.Sprintf("LOGFILE=%s", validateLogFile))
+
+			cmd := exec.Command("test/step.sh", "get_orchestrator_version")
+			cmd.Env = env
+			out, err := cmd.Output()
+			if err != nil {
+				wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_version", resourceGroup, err)
+				success = false
+				break
+			}
+			env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_VERSION=%s", strings.TrimSpace(string(out))))
+
+			if orchestrator == "kubernetes" {
+				cmd = exec.Command("test/step.sh", "get_node_count")
+				cmd.Env = env
+				out, err = cmd.Output()
+				if err != nil {
+					wrileLog(logFile, "Error [%s:%s] %v", "get_node_count", resourceGroup, err)
+					success = false
+					break
+				}
+				env = append(env, fmt.Sprintf("EXPECTED_NODE_COUNT=%s", strings.TrimSpace(string(out))))
+			}
+		}
+	}
+	// clean up
+	if txt, err := m.runStep(resourceGroup, "cleanup", env, timeout); err != nil {
+		wrileLog(logFile, "Error: %v\nOutput: %s", err, txt)
+	}
+	if success {
+		// do not keep logs for successful test
+		for _, fname := range []string{logFile, validateLogFile} {
+			if _, err := os.Stat(fname); !os.IsNotExist(err) {
+				if err = os.Remove(fname); err != nil {
+					fmt.Printf("Failed to remove %s : %v\n", fname, err)
+				}
+			}
+		}
+	}
+	return success
 }
 
 func isValidEnv() bool {
@@ -138,27 +201,16 @@ func isValidEnv() bool {
 	return valid
 }
 
-func getOrchestrator(fname string) (string, error) {
-	data, err := ioutil.ReadFile(fname)
-	if err != nil {
-		return "", err
-	}
-	for _, line := range strings.Split(string(data), "\n") {
-		parts := orchestrator_re.FindStringSubmatch(line)
-		if parts != nil {
-			orchestrator := strings.ToLower(parts[1])
-			if strings.HasPrefix(orchestrator, "dcos") {
-				orchestrator = "dcos"
-			}
-			return orchestrator, nil
-		}
-	}
-	return "", fmt.Errorf("No orchestratorType in %s", fname)
-}
+func (m *TestManager) runStep(name, step string, env []string, timeout time.Duration) (string, error) {
+	// prevent ARM throttling
+	m.lock.Lock()
+	go func() {
+		time.Sleep(2 * time.Second)
+		m.lock.Unlock()
+	}()
 
-func runStep(step, dir, instanceName string, env []string, logFile string, timeout time.Duration) error {
 	cmd := exec.Command("/bin/bash", "-c", fmt.Sprintf("%s %s", script, step))
-	cmd.Dir = dir
+	cmd.Dir = m.rootDir
 	cmd.Env = env
 
 	var out bytes.Buffer
@@ -166,8 +218,7 @@ func runStep(step, dir, instanceName string, env []string, logFile string, timeo
 	cmd.Stderr = &out
 
 	if err := cmd.Start(); err != nil {
-		fmt.Printf("Error [%s %s] : %v\n", step, instanceName, err)
-		return err
+		return "", err
 	}
 	timer := time.AfterFunc(timeout, func() {
 		cmd.Process.Kill()
@@ -175,16 +226,18 @@ func runStep(step, dir, instanceName string, env []string, logFile string, timeo
 	err := cmd.Wait()
 	timer.Stop()
 
-	wrileLog(logFile, out.Bytes())
+	now := time.Now().Format("15:04:05")
 	if err != nil {
-		fmt.Printf("Error [%s %s] : %v\n", step, instanceName, err)
-		return err
+		fmt.Printf("ERROR [%s] [%s %s]\n", now, step, name)
+		return out.String(), err
 	}
-	fmt.Printf("SUCCESS [%s %s]\n", step, instanceName)
-	return nil
+	fmt.Printf("SUCCESS [%s] [%s %s]\n", now, step, name)
+	return out.String(), nil
 }
 
-func wrileLog(fname string, data []byte) {
+func wrileLog(fname string, format string, args ...interface{}) {
+	str := fmt.Sprintf(format, args...)
+
 	f, err := os.OpenFile(fname, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Printf("Error [OpenFile %s] : %v\n", fname, err)
@@ -192,7 +245,7 @@ func wrileLog(fname string, data []byte) {
 	}
 	defer f.Close()
 
-	if _, err = f.Write(data); err != nil {
+	if _, err = f.Write([]byte(str)); err != nil {
 		fmt.Printf("Error [Write %s] : %v\n", fname, err)
 	}
 }
@@ -232,6 +285,7 @@ func main_internal() error {
 	}
 	// make logs directory
 	logDir = fmt.Sprintf("%s/_logs", rootDir)
+	os.RemoveAll(logDir)
 	if err = os.Mkdir(logDir, os.FileMode(0755)); err != nil {
 		return err
 	}
