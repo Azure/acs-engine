@@ -105,6 +105,11 @@ var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
 }
 
+var calicoAddonYamls = map[string]string{
+	"MASTER_ADDON_CALICO_CONFIGMAP_B64_GZIP_STR": "kubernetesmasteraddons-calico-configmap.yaml",
+	"MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR": "kubernetesmasteraddons-calico-daemonset.yaml",
+}
+
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars, dcosParams}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
@@ -378,6 +383,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["heapster"])
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["pause"])
+		addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
 		addValue(parametersMap, "networkPolicy", properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
 		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 		addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
@@ -601,6 +607,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			for placeholder, filename := range kubernetesAddonYamls {
 				addonTextContents := getBase64CustomScript(filename)
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
+			}
+
+			// add calico manifests
+			if profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "calico" {
+				for placeholder, filename := range calicoAddonYamls {
+					addonTextContents := getBase64CustomScript(filename)
+					str = strings.Replace(str, placeholder, addonTextContents, -1)
+				}
 			}
 
 			// return the custom data

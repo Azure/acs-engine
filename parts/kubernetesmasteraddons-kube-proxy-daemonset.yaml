@@ -19,6 +19,7 @@ spec:
         - "/hyperkube"
         - proxy
         - "--kubeconfig=/var/lib/kubelet/kubeconfig"
+        - "--cluster-cidr=<kubeClusterCidr>"
         image: "<kubernetesHyperkubeSpec>"
         name: kube-proxy
         resources:
