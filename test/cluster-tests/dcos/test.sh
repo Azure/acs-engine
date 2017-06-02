@@ -39,7 +39,7 @@ log "Configuring marathon.json"
 ${remote_exec} sed -i "s/{agentFQDN}/${agentFQDN}/g" marathon.json || (log "Failed to configure marathon.json"; exit 1)
 
 log "Adding marathon app"
-count=5
+count=10
 while (( $count > 0 )); do
   log "  ... counting down $count"
   ${remote_exec} ./dcos marathon app add marathon.json
