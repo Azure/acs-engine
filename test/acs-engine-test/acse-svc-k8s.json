@@ -1,0 +1,104 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "australiaeast"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "australiasoutheast"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "brazilsouth"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "canadacentral"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "canadaeast"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "centralindia"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "southindia"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "centralus"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "eastus2"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "eastus"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "northcentralus"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "southcentralus"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "westcentralus"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "westus2"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "westus"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "eastasia"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "southeastasia"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "koreacentral"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "koreasouth"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "japaneast"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "japanwest"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "northeurope"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "westeurope"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "uksouth"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "ukwest"
+    }
+  ]
+}
