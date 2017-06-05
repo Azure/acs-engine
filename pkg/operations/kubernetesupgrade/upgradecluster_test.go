@@ -37,7 +37,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to detete VMs during upgrade operation", func() {
-		cs := createContainerService("testcluster")
+		cs := createContainerService("testcluster", 1, 1)
 
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
@@ -54,11 +54,11 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		err := uc.UpgradeCluster(subID, "TestRg", cs, &ucs, "12345678")
 
-		Expect(err.Error()).To(Equal("Error while querying ARM for resources: DeleteVirtualMachine failed"))
+		Expect(err.Error()).To(Equal("DeleteVirtualMachine failed"))
 	})
 })
 
-func createContainerService(containerServiceName string) *api.ContainerService {
+func createContainerService(containerServiceName string, masterCount int, agentCount int) *api.ContainerService {
 	cs := api.ContainerService{}
 	cs.ID = uuid.NewV4().String()
 	cs.Location = "eastus"
@@ -67,18 +67,19 @@ func createContainerService(containerServiceName string) *api.ContainerService {
 	cs.Properties = &api.Properties{}
 
 	cs.Properties.MasterProfile = &api.MasterProfile{}
-	cs.Properties.MasterProfile.Count = 3
+	cs.Properties.MasterProfile.Count = masterCount
 	cs.Properties.MasterProfile.DNSPrefix = "testmaster"
 	cs.Properties.MasterProfile.VMSize = "Standard_D2_v2"
 
 	cs.Properties.AgentPoolProfiles = []*api.AgentPoolProfile{}
 	agentPool := &api.AgentPoolProfile{}
-	agentPool.Count = 3
+	agentPool.Count = agentCount
 	agentPool.Name = "agentpool1"
 	agentPool.VMSize = "Standard_D2_v2"
 	agentPool.OSType = "Linux"
 	agentPool.AvailabilityProfile = "AvailabilitySet"
 	agentPool.StorageProfile = "StorageAccount"
+
 	cs.Properties.AgentPoolProfiles = append(cs.Properties.AgentPoolProfiles, agentPool)
 
 	cs.Properties.LinuxProfile = &api.LinuxProfile{
@@ -91,9 +92,8 @@ func createContainerService(containerServiceName string) *api.ContainerService {
 			PublicKeys: []struct {
 				KeyData string `json:"keyData"`
 			}{
-				struct {
-					KeyData string `json:"keyData"`
-				}{
+
+				{
 					KeyData: "test",
 				},
 			},
