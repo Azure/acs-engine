@@ -62,11 +62,14 @@ function check_node_count() {
   while (( $count > 0 )); do
     log "  ... counting down $count"
     node_count=$(kubectl get nodes --no-headers | grep -v NotReady | grep Ready | wc | awk '{print $1}')
-    if (( ${node_count} == ${EXPECTED_NODE_COUNT} )); then break; fi
-    sleep 5; count=$((count-1))
+    echo "node count:${node_count}"
+    if [ ${node_count} -eq ${EXPECTED_NODE_COUNT} ]; then break; fi
+    sleep 5; 
+    count=$((count-1))
   done
-  if (( $node_count != ${EXPECTED_NODE_COUNT} )); then
-    log "gave up waiting for apiserver / node counts"; exit -1
+  if [ $node_count -ne ${EXPECTED_NODE_COUNT} ]; then
+    kubectl get nodes
+    echo "gave up waiting for apiserver / node counts"; exit -1
   fi
 }
 
