@@ -44,6 +44,38 @@ func TestNormalizeForK8sVMASScalingUp(t *testing.T) {
 	ValidateTemplate(templateMap, expectedFileContents, "k8sVMASTemplate")
 }
 
+func TestNormalizeResourcesForK8sMasterUpgrade(t *testing.T) {
+	RegisterTestingT(t)
+	logger := logrus.New()
+	fileContents, e := ioutil.ReadFile("./testFiles/k8sVMASTemplate.json")
+	Expect(e).To(BeNil())
+	expectedFileContents, e := ioutil.ReadFile("./testFiles/k8sVMASTemplate_expected.json")
+	Expect(e).To(BeNil())
+	templateJSON := string(fileContents)
+	var template interface{}
+	json.Unmarshal([]byte(templateJSON), &template)
+	templateMap := template.(map[string]interface{})
+	e = NormalizeResourcesForK8sMasterUpgrade(logger, templateMap)
+	Expect(e).To(BeNil())
+	ValidateTemplate(templateMap, expectedFileContents, "k8sVMASTemplate")
+}
+
+func TestNormalizeResourcesForK8sAgentUpgrade(t *testing.T) {
+	RegisterTestingT(t)
+	logger := logrus.New()
+	fileContents, e := ioutil.ReadFile("./testFiles/k8sVMASTemplate.json")
+	Expect(e).To(BeNil())
+	expectedFileContents, e := ioutil.ReadFile("./testFiles/k8sVMASTemplate_expected.json")
+	Expect(e).To(BeNil())
+	templateJSON := string(fileContents)
+	var template interface{}
+	json.Unmarshal([]byte(templateJSON), &template)
+	templateMap := template.(map[string]interface{})
+	e = NormalizeResourcesForK8sAgentUpgrade(logger, templateMap)
+	Expect(e).To(BeNil())
+	ValidateTemplate(templateMap, expectedFileContents, "k8sVMASTemplate")
+}
+
 func ValidateTemplate(templateMap map[string]interface{}, expectedFileContents []byte, testFileName string) {
 	output, e := json.Marshal(templateMap)
 	Expect(e).To(BeNil())
