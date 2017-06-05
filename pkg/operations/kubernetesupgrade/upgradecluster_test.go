@@ -110,8 +110,3 @@ func createContainerService(containerServiceName string, masterCount int, agentC
 
 	return &cs
 }
-
-// FailDeployTemplate         bool
-// FailGetVirtualMachine      bool
-// FailGetStorageClient       bool
-// FailDeleteNetworkInterface bool
