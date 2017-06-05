@@ -201,8 +201,17 @@ Get-PodGateway(`$podCIDR)
 function
 Set-DockerNetwork(`$podCIDR)
 {
-    # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
-    netsh advfirewall set allprofiles state off
+    # Windows Firewall rules to allow only Master to access Node's kubelet ports
+    # Firewall rules to allow access to container's websockets
+    netsh advfirewall firewall add rule name="Container: Allow access to node localport 8080" dir=in action=allow protocol=TCP localport=8080
+    netsh advfirewall firewall add rule name="Container: Allow access to node localport 8888" dir=in action=allow protocol=TCP localport=8888
+    netsh advfirewall firewall add rule name="Container: Allow UDP inbound traffic for Container DNS Port 53" dir=in action=allow localport=53 protocol=UDP
+    netsh advfirewall firewall add rule name="Node: Allow only K8 Master to access localport 4194" dir=in action=allow protocol=TCP localport=4194 remoteip=`${global:MasterIP}
+    netsh advfirewall firewall add rule name="Node: Allow only K8 Master to access localport 10250" dir=in action=allow protocol=TCP localport=10250 remoteip=`${global:MasterIP}
+    netsh advfirewall firewall add rule name="Node: Allow only K8 Master to access localport 10255" dir=in action=allow protocol=TCP localport=10255 remoteip=`${global:MasterIP}
+    
+    # Turn-on the firewall since we have allowed access to required ports
+    netsh advfirewall set allprofiles state on
 
     `$dockerTransparentNet=docker network ls --quiet --filter "NAME=`$global:TransparentNetworkName"
     if (`$dockerTransparentNet.length -eq 0)
