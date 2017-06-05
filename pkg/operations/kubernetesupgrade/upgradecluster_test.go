@@ -112,6 +112,6 @@ func createContainerService(containerServiceName string, masterCount int, agentC
 }
 
 // FailDeployTemplate         bool
-// FailGetVirtualMachine      boolmake
+// FailGetVirtualMachine      bool
 // FailGetStorageClient       bool
 // FailDeleteNetworkInterface bool
