@@ -55,6 +55,7 @@ if [[ "${TEST_ACR}" == "y" ]]; then
 	fi
 fi
 
+log "Checking for Node Count"
 ###### Check node count
 function check_node_count() {
   echo "Checking node count"
