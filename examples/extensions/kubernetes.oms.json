@@ -1,0 +1,47 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes"
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "",
+      "vmSize": "Standard_D2_v2",
+      "extensions": [
+        { 
+          "name": "microsoft-oms-agent-k8s"
+        }
+     ]
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": ""
+          }
+        ]
+      }
+    },
+    "extensionsProfile": [
+      { 
+        "name": "microsoft-oms-agent-k8s", 
+        "version": "v1", 
+        "rootURL": "https://bagbyimages.blob.core.windows.net:443/" 
+      }
+    ],
+    "servicePrincipalProfile": {
+      "servicePrincipalClientID": "",
+      "servicePrincipalClientSecret": ""
+    }
+  }
+}
