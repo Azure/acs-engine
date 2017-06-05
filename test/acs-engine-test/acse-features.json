@@ -38,7 +38,7 @@
     },
     {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmas-windows.json",
-      "location": "northcentralus"
+      "location": "centralus"
     },
     {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json",
@@ -46,7 +46,7 @@
     },
     {
       "cluster_definition": "disks-managed/swarm-vmas-windows.json",
-      "location": "northeurope"
+      "location": "westeurope"
     },
     {
       "cluster_definition": "disks-managed/swarm-vmss.json",
