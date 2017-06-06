@@ -55,6 +55,7 @@ if [[ "${TEST_ACR}" == "y" ]]; then
 	fi
 fi
 
+sleep 5m
 log "Checking for Node Count"
 ###### Check node count
 function check_node_count() {
