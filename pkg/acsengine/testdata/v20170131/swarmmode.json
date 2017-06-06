@@ -14,7 +14,7 @@
         "name": "agentpublic",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "dnsPrefix": "",
+        "dnsPrefix": "agentdns1",
         "ports": [
           80,
           443,
@@ -32,5 +32,5 @@
         ]
       }
     }
-  }
+  } 
 }
