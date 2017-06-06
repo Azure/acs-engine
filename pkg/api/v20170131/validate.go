@@ -12,6 +12,7 @@ func (o *OrchestratorProfile) Validate() error {
 	case DCOS:
 	case Mesos:
 	case Swarm:
+	case SwarmMode:
 	case Kubernetes:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
@@ -98,6 +99,7 @@ func (a *Properties) Validate() error {
 		if agentPoolProfile.OSType == Windows {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Swarm:
+			case SwarmMode:
 			case Kubernetes:
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
