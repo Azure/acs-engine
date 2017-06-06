@@ -98,6 +98,11 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 		uc.UpgradeModel.OrchestratorProfile.OrchestratorVersion)
 
 	for _, vm := range *vmListResult.Value {
+		if vm.Tags == nil {
+			log.Infoln(fmt.Sprintf("No tags found for VM: %s skipping.", *vm.Name))
+			continue
+		}
+
 		vmOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
 		if vmOrchestratorTypeAndVersion == orchestratorTypeVersion {
 			if strings.Contains(*(vm.Name), "k8s-master-") {
