@@ -44,7 +44,46 @@ func (mc *MockACSEngineClient) ListVirtualMachines(resourceGroup string) (comput
 		return compute.VirtualMachineListResult{}, fmt.Errorf("ListVirtualMachines failed")
 	}
 
-	return compute.VirtualMachineListResult{}, nil
+	vm1Name := "k8s-master-12345678-0"
+
+	creationSourceString := "creationSource"
+	orchestratorString := "orchestrator"
+	resourceNameSuffixString := "resourceNameSuffix"
+
+	creationSource := "acsengine-k8s-master-12345678-0"
+	orchestrator := "Kubernetes:1.5.3"
+	resourceNameSuffix := "12345678"
+
+	tags := map[string]*string{
+		creationSourceString:     &creationSource,
+		orchestratorString:       &orchestrator,
+		resourceNameSuffixString: &resourceNameSuffix,
+	}
+
+	vm1 := compute.VirtualMachine{
+		Name: &vm1Name,
+		Tags: &tags,
+		VirtualMachineProperties: &compute.VirtualMachineProperties{
+			StorageProfile: &compute.StorageProfile{
+				OsDisk: &compute.OSDisk{
+					Vhd: &compute.VirtualHardDisk{
+						URI: &validOSDiskResourceName},
+				},
+			},
+			NetworkProfile: &compute.NetworkProfile{
+				NetworkInterfaces: &[]compute.NetworkInterfaceReference{
+					{
+						ID: &validNicResourceName,
+					},
+				},
+			},
+		},
+	}
+
+	vmr := compute.VirtualMachineListResult{}
+	vmr.Value = &[]compute.VirtualMachine{vm1}
+
+	return vmr, nil
 }
 
 //GetVirtualMachine mock
@@ -53,7 +92,25 @@ func (mc *MockACSEngineClient) GetVirtualMachine(resourceGroup, name string) (co
 		return compute.VirtualMachine{}, fmt.Errorf("GetVirtualMachine failed")
 	}
 
+	vm1Name := "k8s-master-12345678-0"
+
+	creationSourceString := "creationSource"
+	orchestratorString := "orchestrator"
+	resourceNameSuffixString := "resourceNameSuffix"
+
+	creationSource := "acsengine-k8s-master-12345678-0"
+	orchestrator := "Kubernetes:1.5.3"
+	resourceNameSuffix := "12345678"
+
+	tags := map[string]*string{
+		creationSourceString:     &creationSource,
+		orchestratorString:       &orchestrator,
+		resourceNameSuffixString: &resourceNameSuffix,
+	}
+
 	return compute.VirtualMachine{
+		Name: &vm1Name,
+		Tags: &tags,
 		VirtualMachineProperties: &compute.VirtualMachineProperties{
 			StorageProfile: &compute.StorageProfile{
 				OsDisk: &compute.OSDisk{
