@@ -64,7 +64,7 @@
         "count": "[variables('{{.Name}}StorageAccountsCount')]",
         "name": "loop"
       },
-{{if NoPublicIP }}
+{{if not NoPublicIP }}
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
@@ -83,7 +83,7 @@
         "count": "[variables('{{.Name}}StorageAccountsCount')]",
         "name": "datadiskLoop"
       },
-{{if NoPublicIP }}
+{{if not NoPublicIP }}
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],

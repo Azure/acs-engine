@@ -18,6 +18,7 @@
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
     "networkPolicy": "[parameters('networkPolicy')]",
+    "noPublicIp": "[parameters('noPublicIp')]",
     "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
     "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
     "username": "[parameters('linuxAdminUsername')]",

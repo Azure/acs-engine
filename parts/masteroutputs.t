@@ -1,6 +1,10 @@
     "masterFQDN": {
       "type": "string", 
-      "value": "NEEDS UPDATING"
+{{if not NoPublicIP}}
+      "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn]"
+{{else}}
+      "value": ""
+{{end}}
     }
 {{if  GetClassicMode}}
     ,

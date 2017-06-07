@@ -27,6 +27,7 @@ MASTER_FQDN="${17}"
 KUBECONFIG_CERTIFICATE="${18}"
 KUBECONFIG_KEY="${19}"
 ADMINUSER="${20}"
+NOPUBLICIP="${21}"
 
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
@@ -277,6 +278,14 @@ function writeKubeConfig() {
     then
         FQDNSuffix="cloudapp.chinacloudapi.cn"
     fi
+
+    # if no public IP created use internal kubeconfig
+    if [ "$NOPUBLICIP" = "true"]
+    then
+        cp /var/lib/kubelet/kubeconfig $KUBECONFIGFILE
+        return
+    fi
+
     # disable logging after secret output
     set +x
     echo "

@@ -115,14 +115,11 @@
       "type": "Microsoft.Network/routeTables"
     },
 {{end}}
+{{if not NoPublicIP }}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
-{{if NoPublicIP }}
-        "[variables('vnetID')]"
-{{else}}
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-{{end}}
       ],
       "location": "[variables('location')]",
       "name": "[variables('masterLbName')]",
@@ -136,16 +133,9 @@
           {
             "name": "[variables('masterLbIPConfigName')]",
             "properties": {
-{{if NoPublicIP }}
-              "privateIPAllocationMethod": "Dynamic",
-                "subnet": {
-                  "id": "[variables('vnetSubnetID')]"
-                }
-{{else}}
               "publicIPAddress": {
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('masterPublicIPAddressName'))]"
               }
-{{end}}
             }
           }
         ],
@@ -185,6 +175,7 @@
       },
       "type": "Microsoft.Network/loadBalancers"
     },
+{{end}}
 {{if gt .MasterProfile.Count 1}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
@@ -465,7 +456,7 @@
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
-          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailablitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('targetEnvironment'),' ',variables('networkPolicy'),' ',variables('apiServerPrivateKey'),' ',variables('caCertificate'),' ',variables('masterFqdnPrefix'),' ',variables('kubeConfigCertificate'),' ',variables('kubeConfigPrivateKey'),' ',variables('username'),' >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailablitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('targetEnvironment'),' ',variables('networkPolicy'),' ',variables('apiServerPrivateKey'),' ',variables('caCertificate'),' ',variables('masterFqdnPrefix'),' ',variables('kubeConfigCertificate'),' ',variables('kubeConfigPrivateKey'),' ',variables('username'),' ',variables('noPublicIp'),' >> /var/log/azure/cluster-provision.log 2>&1\"')]"
         }
       }
     }
