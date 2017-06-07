@@ -18,7 +18,7 @@
           {
             "name": "KubernetesSubnet",
             "properties": {
-              "addressPrefix": "10.239.0.0/16"
+              "addressPrefix": "10.239.255.0/24"
             }
           }
         ]
