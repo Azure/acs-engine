@@ -58,12 +58,12 @@ fi
 ###### Check node count
 function check_node_count() {
   log "Checking node count"
-  count=25
+  count=20
   while (( $count > 0 )); do
     log "  ... counting down $count"
     node_count=$(kubectl get nodes --no-headers | grep -v NotReady | grep Ready | wc | awk '{print $1}')
     if (( ${node_count} == ${EXPECTED_NODE_COUNT} )); then break; fi
-    sleep 5; count=$((count-1))
+    sleep 15; count=$((count-1))
   done
   if (( $node_count != ${EXPECTED_NODE_COUNT} )); then
     log "gave up waiting for apiserver / node counts"; exit -1
