@@ -125,8 +125,8 @@ log "Checking Kube-Proxys"
 count=12
 while (( $count > 0 )); do
   log "  ... counting down $count"
-  nonrunning=$(kubectl get pods --namespace=kube-system | grep kube-proxy | grep -v Running | wc | awk '{print $1}')
-  if (( ${nonrunning} == 0 )); then break; fi
+  running=$(kubectl get pods --namespace=kube-system | grep kube-proxy | grep Running | wc | awk '{print $1}')
+  if (( ${running} == ${EXPECTED_NODE_COUNT} )); then break; fi
   sleep 5; count=$((count-1))
 done
 
@@ -139,16 +139,16 @@ ips=$(kubectl get nodes --all-namespaces -o yaml | grep -B 1 InternalIP | grep a
 
 for ip in $ips; do
   log "Probing IP address ${ip}"
-  count=5
+  count=12
   success="n"
   while (( $count > 0 )); do
     log "  ... counting down $count"
-    ret=$(ssh -i "${OUTPUT}/id_rsa" -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "azureuser@${master}" "curl --max-time 60 http://${ip}:${port}" || echo "curl_error")
+    ret=$(ssh -i "${OUTPUT}/id_rsa" -o ConnectTimeout=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "azureuser@${master}" "curl --max-time 60 http://${ip}:${port}" || echo "curl_error")
     if [[ ! $ret =~ .*curl_error.* ]]; then
       success="y"
       break
     fi
-    sleep 4; count=$((count-1))
+    sleep 5; count=$((count-1))
   done
   if [[ "${success}" == "n" ]]; then
     log $ret; exit -1
