@@ -12,6 +12,7 @@ func (o *OrchestratorProfile) Validate() error {
 	case DCOS:
 	case Mesos:
 	case Swarm:
+	case SwarmMode:
 	case Kubernetes:
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
