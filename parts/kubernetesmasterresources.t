@@ -7,6 +7,11 @@
     },
     {
       "apiVersion": "[variables('apiVersionStorage')]",
+{{if not NoPublicIP }}
+      "dependsOn": [		
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"		
+      ],
+{{end}}
       "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
       "properties": {
