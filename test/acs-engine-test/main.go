@@ -94,7 +94,7 @@ func (m *TestManager) Run() error {
 func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Duration) bool {
 	name := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
 	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
-	resourceGroup := fmt.Sprintf("x-%s-%s-%s-%d-%d", strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
+	resourceGroup := fmt.Sprintf("y-%s-%s-%s-%d-%d", strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
 	logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
 	validateLogFile := fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
 	success := true

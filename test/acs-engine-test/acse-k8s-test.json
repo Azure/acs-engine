@@ -1,0 +1,48 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "windows/kubernetes-hybrid.json",
+      "location": "brazilsouth"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "canadacentral"
+    },
+    {
+      "cluster_definition": "disks-managed/kubernetes-preAttachedDisks-vmas.json",
+      "location": "eastus2"
+    },
+    {
+      "cluster_definition": "disks-managed/kubernetes-vmas.json",
+      "location": "eastus"
+    },
+    {
+      "cluster_definition": "disks-storageaccount/kubernetes.json",
+      "location": "eastasia"
+    },
+    {
+      "cluster_definition": "kubernetesversions/kubernetes1.5.3.json",
+      "location": "koreasouth"
+    },
+    {
+      "cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
+      "location": "japaneast"
+    },
+    {
+      "cluster_definition": "kubernetesversions/kubernetes1.6.2.json",
+      "location": "japanwest"
+    },
+    {
+      "cluster_definition": "cni/kubernetes-azure.json",
+      "location": "uksouth"
+    },
+    {
+      "cluster_definition": "cni/kubernetes-calico.json",
+      "location": "australiaeast"
+    },
+    {
+      "cluster_definition": "custom-pod-cidr/kubernetes.json",
+      "location": "ukwest"
+    }
+  ]
+}
