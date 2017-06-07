@@ -86,7 +86,7 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 	log.Infoln(fmt.Sprintf("Master nodes that need to be upgraded: %d", mastersToUgradeCount))
 	log.Infoln(fmt.Sprintf("Master nodes that have been upgraded: %d", mastersUpgradedCount))
 
-	log.Infoln(fmt.Sprintf("Starting master nodes upgrade..."))
+	log.Infoln(fmt.Sprintf("Starting upgrade of master nodes..."))
 
 	masterNodesInCluster := len(*ku.ClusterTopology.MasterVMs) + mastersUpgradedCount
 	log.Infoln(fmt.Sprintf("masterNodesInCluster: %d", masterNodesInCluster))
@@ -102,20 +102,30 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 		upgradedMastersIndex[masterIndex] = true
 	}
 
-	log.Infoln(fmt.Sprintf("Starting upgrade of master nodes..."))
-
 	for _, vm := range *ku.ClusterTopology.MasterVMs {
 		log.Infoln(fmt.Sprintf("Upgrading Master VM: %s", *vm.Name))
 
 		masterIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
-		if upgradeMasterNode.DeleteNode(vm.Name) == nil &&
-			upgradeMasterNode.CreateNode("master", masterIndex) == nil &&
-			upgradeMasterNode.Validate() == nil {
-			upgradedMastersIndex[masterIndex] = true
-		} else {
-			log.Infoln(fmt.Sprintf("Error upgrading master VM: %s", *vm.Name))
+		err := upgradeMasterNode.DeleteNode(vm.Name)
+		if err != nil {
+			log.Infoln(fmt.Sprintf("Error deleting master VM: %s, err: %v", *vm.Name, err))
+			return err
 		}
+
+		err = upgradeMasterNode.CreateNode("master", masterIndex)
+		if err != nil {
+			log.Infoln(fmt.Sprintf("Error creating upgraded master VM: %s", *vm.Name))
+			return err
+		}
+
+		err = upgradeMasterNode.Validate()
+		if err != nil {
+			log.Infoln(fmt.Sprintf("Error validating upgraded master VM: %s", *vm.Name))
+			return err
+		}
+
+		upgradedMastersIndex[masterIndex] = true
 	}
 
 	// This condition is possible if the previous upgrade operation failed during master
@@ -137,10 +147,20 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 		}
 
 		log.Infoln(fmt.Sprintf("Creating upgraded master VM with index: %d", masterIndexToCreate))
-		if upgradeMasterNode.CreateNode("master", masterIndexToCreate) == nil &&
-			upgradeMasterNode.Validate() == nil {
-			upgradedMastersIndex[masterIndexToCreate] = true
+
+		err = upgradeMasterNode.CreateNode("master", masterIndexToCreate)
+		if err != nil {
+			log.Infoln(fmt.Sprintf("Error creating upgraded master VM with index: %d", masterIndexToCreate))
+			return err
 		}
+
+		err = upgradeMasterNode.Validate()
+		if err != nil {
+			log.Infoln(fmt.Sprintf("Error validating upgraded master VM with index: %d", masterIndexToCreate))
+			return err
+		}
+
+		upgradedMastersIndex[masterIndexToCreate] = true
 	}
 
 	return nil
@@ -193,13 +213,25 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
-			if upgradeAgentNode.DeleteNode(vm.Name) == nil &&
-				upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex) == nil &&
-				upgradeAgentNode.Validate() == nil {
-				upgradedAgentsIndex[agentIndex] = true
-			} else {
-				log.Infoln(fmt.Sprintf("Error upgrading agent VM: %s in pool: %s", *vm.Name, *agentPool.Name))
+			err := upgradeAgentNode.DeleteNode(vm.Name)
+			if err != nil {
+				log.Infoln(fmt.Sprintf("Error deleting agent VM: %s", *vm.Name))
+				return err
 			}
+
+			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
+			if err != nil {
+				log.Infoln(fmt.Sprintf("Error creating upgraded agent VM: %s", *vm.Name))
+				return err
+			}
+
+			err = upgradeAgentNode.Validate()
+			if err != nil {
+				log.Infoln(fmt.Sprintf("Error validating upgraded agent VM: %s", *vm.Name))
+				return err
+			}
+
+			upgradedAgentsIndex[agentIndex] = true
 		}
 
 		agentsToCreate := agentCount - len(upgradedAgentsIndex)
@@ -214,10 +246,20 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 			}
 
 			log.Infoln(fmt.Sprintf("Creating upgraded Agent VM with index: %d, pool name: %s", agentIndexToCreate, *agentPool.Name))
-			if upgradeAgentNode.CreateNode(*agentPool.Name, agentIndexToCreate) == nil &&
-				upgradeAgentNode.Validate() == nil {
-				upgradedAgentsIndex[agentIndexToCreate] = true
+
+			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndexToCreate)
+			if err != nil {
+				log.Infoln(fmt.Sprintf("Error creating upgraded agent VM with index: %d", agentIndexToCreate))
+				return err
 			}
+
+			err = upgradeAgentNode.Validate()
+			if err != nil {
+				log.Infoln(fmt.Sprintf("Error validating upgraded agent VM with index: %d", agentIndexToCreate))
+				return err
+			}
+
+			upgradedAgentsIndex[agentIndexToCreate] = true
 		}
 	}
 
