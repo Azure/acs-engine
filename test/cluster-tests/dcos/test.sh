@@ -17,7 +17,7 @@ set -x
 source "$DIR/../utils.sh"
 
 remote_exec="ssh -i "${SSH_KEY}" -o ConnectTimeout=30 -o StrictHostKeyChecking=no azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com -p2200"
-agentFQDN="dcos-agent-ip-${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"
+agentFQDN="${INSTANCE_NAME}0.${LOCATION}.cloudapp.azure.com"
 remote_cp="scp -i "${SSH_KEY}" -P 2200 -o StrictHostKeyChecking=no"
 
 function teardown {
@@ -82,11 +82,10 @@ log "Checking Service"
 count=10
 while true; do
   log "  ... counting down $count"
-  resp=$(curl -sI --max-time 60 "http://${agentFQDN}")
-  echo $resp
-  [[ $(echo $resp | head -n1 | cut -d$' ' -f2) -eq "200" ]] && log "Successfully hitting simpleweb through external haproxy http://${agentFQDN}" && break
+  rc=$(curl -sI --max-time 60 "http://${agentFQDN}" | head -n1 | cut -d$' ' -f2)
+  [[ "$rc" -eq "200" ]] && log "Successfully hitting simpleweb through external haproxy http://${agentFQDN}" && break
   if [[ "${count}" -le 1 ]]; then
-    log "failed to get expected response from nginx through the loadbalancer"
+    log "failed to get expected response from nginx through the loadbalancer: Error $rc"
     exit 1
   fi
   sleep 5; count=$((count-1))
