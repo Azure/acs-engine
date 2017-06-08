@@ -35,7 +35,7 @@ type Properties struct {
 	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty" validate:"required"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`
-	ExtensionsProfile       []ExtensionProfile       `json:"extensionsProfile"`
+	ExtensionsProfile       []ExtensionProfile       `json:"extensionsProfile,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`

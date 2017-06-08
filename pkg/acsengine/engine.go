@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"net/http"
 	"regexp"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"text/template"
@@ -1584,12 +1585,12 @@ func validateMasterOptedForExtension(extensionName string, masterProfileExtensio
 // It returns an error if the extension cannot be found
 // or loaded.  getLinkedTemplateText calls getLinkedTemplateTextForURL,
 // passing the default rootURL.
-func getLinkedTemplateText(orchestratorType api.OrchestratorType, extensionName string, version string, rootURL string) (string, error) {
+func getLinkedTemplateText(orchestratorType string, extensionName string, version string, rootURL string) (string, error) {
 	if strings.TrimSpace(rootURL) == "" {
-		return getLinkedTemplateTextForURL(DefaultExtensionsRootURL, string(orchestratorType), extensionName, version)
+		return getLinkedTemplateTextForURL(DefaultExtensionsRootURL, orchestratorType, extensionName, version)
 	}
 
-	return getLinkedTemplateTextForURL(rootURL, string(orchestratorType), extensionName, version)
+	return getLinkedTemplateTextForURL(rootURL, orchestratorType, extensionName, version)
 }
 
 // getLinkedTemplateTextForURL returns the string data from

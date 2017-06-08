@@ -16,13 +16,6 @@
 				"description": "Compute API Version"
 			}
 		},
-		"masterVMNamePrefix": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Master VM Name Prefix"
-			}
-		},
 		"extensionParameters": {
 			"type": "securestring",
 			"minLength": 1,
@@ -41,7 +34,7 @@
       "dependsOn": [],
       "location": "[resourceGroup().location]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-	  "name": "[concat(parameters('masterVMNamePrefix'), '/cse0')]",
+	  "name": "MicrosoftOMSAgentk8sExtension",
       "properties": {
         "publisher": "Microsoft.Azure.Extensions",
         "type": "CustomScript",
