@@ -82,7 +82,9 @@ log "Checking Service"
 count=10
 while true; do
   log "  ... counting down $count"
-  [[ $(curl -sI --max-time 60 "http://${agentFQDN}" |head -n1 |cut -d$' ' -f2) -eq "200" ]] && log "Successfully hitting simpleweb through external haproxy http://${agentFQDN}" && break
+  resp=$(curl -sI --max-time 60 "http://${agentFQDN}")
+  echo $resp
+  [[ $(echo $resp | head -n1 | cut -d$' ' -f2) -eq "200" ]] && log "Successfully hitting simpleweb through external haproxy http://${agentFQDN}" && break
   if [[ "${count}" -le 1 ]]; then
     log "failed to get expected response from nginx through the loadbalancer"
     exit 1
