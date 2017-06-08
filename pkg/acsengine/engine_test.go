@@ -11,6 +11,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+	. "github.com/onsi/gomega"
 )
 
 const (
@@ -194,4 +195,21 @@ func addTestCertificateProfile(api *api.CertificateProfile) {
 	api.KubeConfigCertificate = "kubeConfigCertificate"
 	api.KubeConfigPrivateKey = "kubeConfigPrivateKey"
 	api.SetCAPrivateKey("")
+}
+
+func TestVersionOrdinal(t *testing.T) {
+	RegisterTestingT(t)
+	v162 := api.OrchestratorVersion("1.6.2")
+	v160 := api.OrchestratorVersion("1.6.0")
+	v153 := api.OrchestratorVersion("1.5.3")
+	v16 := api.OrchestratorVersion("1.6")
+
+	Expect(v162 > v160).To(BeTrue())
+	Expect(v160 < v162).To(BeTrue())
+	Expect(v153 < v160).To(BeTrue())
+
+	//testing with different version length
+	Expect(v16 < v162).To(BeTrue())
+	Expect(v16 > v153).To(BeTrue())
+
 }
