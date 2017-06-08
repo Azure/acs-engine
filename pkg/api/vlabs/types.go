@@ -31,11 +31,11 @@ type ContainerService struct {
 // Properties represents the ACS cluster definition
 type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
-	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
-	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
-	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
-	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
-	ExtensionsProfile       []ExtensionProfile       `json:"extensionsProfile"`
+	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty" validate:"required"`
+	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty" validate:"required"`
+	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
+	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`
+	ExtensionsProfile       []ExtensionProfile       `json:"extensionsProfile,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
@@ -189,14 +189,16 @@ type KubernetesConfig struct {
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int         `json:"count"`
-	DNSPrefix                string      `json:"dnsPrefix"`
-	VMSize                   string      `json:"vmSize"`
-	OSDiskSizeGB             int         `json:"osDiskSizeGB,omitempty"`
+	Count                    int         `json:"count" validate:"required,eq=1|eq=3|eq=5"`
+	DNSPrefix                string      `json:"dnsPrefix" validate:"required"`
+	VMSize                   string      `json:"vmSize" validate:"required"`
+	OSDiskSizeGB             int         `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	VnetSubnetID             string      `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string      `json:"firstConsecutiveStaticIP,omitempty"`
-	IPAddressCount           int         `json:"ipAddressCount,omitempty"`
-	StorageProfile           string      `json:"storageProfile,omitempty"`
+	IPAddressCount           int         `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
+	StorageProfile           string      `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	HTTPSourceAddressPrefix  string      `json:"HTTPSourceAddressPrefix,omitempty"`
+	OAuthEnabled             bool        `json:"oauthEnabled"`
 	Extensions               []Extension `json:"extensions"`
 
 	// subnet is internal

@@ -166,6 +166,9 @@ type MasterProfile struct {
 	FirstConsecutiveStaticIP string      `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string      `json:"subnet"`
 	IPAddressCount           int         `json:"ipAddressCount,omitempty"`
+	StorageProfile           string      `json:"storageProfile,omitempty"`
+	HTTPSourceAddressPrefix  string      `json:"HTTPSourceAddressPrefix,omitempty"`
+	OAuthEnabled             bool        `json:"oauthEnabled"`
 	Extensions               []Extension `json:"extensions"`
 
 	// Master LB public endpoint/FQDN with port

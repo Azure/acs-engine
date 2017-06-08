@@ -649,6 +649,13 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.Subnet = vlabs.GetSubnet()
 	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
+	api.StorageProfile = vlabs.StorageProfile
+	api.HTTPSourceAddressPrefix = vlabs.HTTPSourceAddressPrefix
+	api.OAuthEnabled = vlabs.OAuthEnabled
+	// by default vlabs will use managed disks as it has encryption at rest
+	if len(api.StorageProfile) == 0 {
+		api.StorageProfile = ManagedDisks
+	}
 
 	api.Extensions = []Extension{}
 	for _, extension := range vlabs.Extensions {

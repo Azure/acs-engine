@@ -19,9 +19,6 @@
             "apiVersionDefault": {
                 "value": "[variables('apiVersionDefault')]"
             },
-            "masterVMNamePrefix": {
-                "value": "[concat(variables('masterVMNamePrefix'), '0')]"
-            },
             "extensionParameters": {
                 "value": "EXTENSION_PARAMETERS_REPLACE"
             }
