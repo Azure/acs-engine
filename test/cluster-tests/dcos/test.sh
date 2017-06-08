@@ -68,8 +68,6 @@ while [[ ${count} -lt 25 ]]; do
   if [[ "${running}" == "3" ]]; then
     log "Found 3 running tasks"
     break
-  else
-    ${remote_exec} ./dcos marathon app list
   fi
   sleep ${count}
 done
@@ -77,6 +75,7 @@ done
 if [[ "${running}" != "3" ]]; then
   log "marathon validation failed"
   ${remote_exec} ./dcos marathon app show /web
+  ${remote_exec} ./dcos marathon app list
   exit 1
 fi
 
