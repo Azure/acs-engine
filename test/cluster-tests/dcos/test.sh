@@ -17,7 +17,7 @@ set -x
 source "$DIR/../utils.sh"
 
 remote_exec="ssh -i "${SSH_KEY}" -o ConnectTimeout=30 -o StrictHostKeyChecking=no azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com -p2200"
-agentFQDN="dcos-agent-ip-${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"
+agentFQDN="${INSTANCE_NAME}0.${LOCATION}.cloudapp.azure.com"
 remote_cp="scp -i "${SSH_KEY}" -P 2200 -o StrictHostKeyChecking=no"
 
 function teardown {
@@ -39,13 +39,13 @@ log "Configuring marathon.json"
 ${remote_exec} sed -i "s/{agentFQDN}/${agentFQDN}/g" marathon.json || (log "Failed to configure marathon.json"; exit 1)
 
 log "Adding marathon app"
-count=10
+count=20
 while (( $count > 0 )); do
   log "  ... counting down $count"
   ${remote_exec} ./dcos marathon app add marathon.json
   retval=$?
   if [[ "$retval" == "0" ]]; then break; fi
-  sleep 5; count=$((count-1))
+  sleep 15; count=$((count-1))
 done
 if [[ "$retval" != "0" ]]; then
   log "gave up waiting for marathon to be added"
@@ -80,11 +80,12 @@ ${remote_exec} ./dcos package install marathon-lb --yes || (log "Failed to insta
 # curl simpleweb through external haproxy
 log "Checking Service"
 count=10
-while (( $count > 0 )); do
+while true; do
   log "  ... counting down $count"
-  [[ $(curl -sI --max-time 60 "http://${agentFQDN}" |head -n1 |cut -d$' ' -f2) -eq "200" ]] && log "Successfully hitting simpleweb through external haproxy http://${agentFQDN}" && break
-  if [[ "${count}" -le 0 ]]; then
-    log "failed to get expected response from nginx through the loadbalancer"
+  rc=$(curl -sI --max-time 60 "http://${agentFQDN}" | head -n1 | cut -d$' ' -f2)
+  [[ "$rc" -eq "200" ]] && log "Successfully hitting simpleweb through external haproxy http://${agentFQDN}" && break
+  if [[ "${count}" -le 1 ]]; then
+    log "failed to get expected response from nginx through the loadbalancer: Error $rc"
     exit 1
   fi
   sleep 5; count=$((count-1))
