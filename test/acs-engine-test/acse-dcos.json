@@ -1,0 +1,8 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "dcos.json",
+      "location": "eastus"
+    }
+  ]
+}
