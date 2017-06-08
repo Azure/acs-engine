@@ -1,14 +1,15 @@
 {
-    "name": "MicrosoftOMSAgentk8s",
+    "name": "VampDcos",
     "type": "Microsoft.Resources/deployments",
     "apiVersion": "[variables('apiVersionLinkDefault')]",
     "dependsOn": [
-        "vmLoopNode"
+        "vmLoopNode",
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('masterVMNamePrefix'), sub(variables('masterCount'), 1)), 'waitforleader')]"
     ],
     "properties": {
         "mode": "Incremental",
         "templateLink": {
-            "uri": "EXTENSION_URL_REPLACEextensions/microsoft-oms-agent-k8s/v1/template.json",
+            "uri": "EXTENSION_URL_REPLACEextensions/vamp-dcos/v1/template.json",
             "contentVersion": "1.0.0.0"
         },
         "parameters": {
