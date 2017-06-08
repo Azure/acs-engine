@@ -38,8 +38,8 @@
       }
     },
     "servicePrincipalProfile": {
-      "clientId": "",
-      "secret": ""
+      "servicePrincipalClientID": "",
+      "servicePrincipalClientSecret": ""
     }
   }
 }
