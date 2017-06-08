@@ -9,7 +9,7 @@
 				"description": "Artifacts Location - URL"
 			}
         },
-		"apiVersionCompute": {
+		"apiVersionDefault": {
 			"type": "string",
 			"minLength": 1,
 			"metadata": {
@@ -20,25 +20,25 @@
 			"type": "securestring",
 			"minLength": 0,
 			"metadata": {
-				"description": "Custom Parameter for Extension - for hello-world, this is empty"
+				"description": "Custom Parameter for Extension - for VAMP, this is currently empty"
 			}
 		}
    },
    "variables": {  
 		"singleQuote": "'",
-		"initScriptUrl": "[concat(parameters('artifactsLocation'), 'extensions/hello-world-k8s/v1/hello-world-k8s.sh')]"
+		"initScriptUrl": "[concat(parameters('artifactsLocation'), 'extensions/vamp-dcos/v1/vamp-dcos.sh')]"
    },
    "resources": [  
 	{
-      "apiVersion": "[parameters('apiVersionCompute')]",
+      "apiVersion": "[parameters('apiVersionDefault')]",
       "dependsOn": [],
       "location": "[resourceGroup().location]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-	  "name": "HelloWorldK8sExtension",
+	  "name": "VampDcosExtension",
       "properties": {
-        "publisher": "Microsoft.Azure.Extensions",
-        "type": "CustomScript",
-        "typeHandlerVersion": "2.0",
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.5",
         "autoUpgradeMinorVersion": true,
         "settings": {
 			"fileUris": [ 
@@ -46,7 +46,7 @@
 			 ]
 		},
         "protectedSettings": {
-			"commandToExecute": "[concat('/bin/bash -c \"/bin/bash ./hello-world-k8s.sh ', variables('singleQuote'), parameters('extensionParameters'), variables('singleQuote'), ' >> /var/log/azure/hello-world-provision.log 2>&1 &\" &')]"
+			"commandToExecute": "[concat('/bin/bash -c \"/bin/bash ./vamp-dcos.sh ', variables('singleQuote'), parameters('extensionParameters'), variables('singleQuote'), ' >> /var/log/azure/vamp-dcos-provision.log 2>&1 &\" &')]"
         }
       }
     }
