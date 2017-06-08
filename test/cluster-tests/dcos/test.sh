@@ -84,7 +84,7 @@ ${remote_exec} ./dcos package install marathon-lb --yes || (log "Failed to insta
 
 # curl simpleweb through external haproxy
 log "Checking Service"
-count=10
+count=20
 while true; do
   log "  ... counting down $count"
   rc=$(curl -sI --max-time 60 "http://${agentFQDN}" | head -n1 | cut -d$' ' -f2)
@@ -93,5 +93,5 @@ while true; do
     log "failed to get expected response from nginx through the loadbalancer: Error $rc"
     exit 1
   fi
-  sleep 5; count=$((count-1))
+  sleep 15; count=$((count-1))
 done
