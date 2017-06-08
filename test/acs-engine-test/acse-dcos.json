@@ -2,7 +2,7 @@
   "deployments": [
     {
       "cluster_definition": "dcos.json",
-      "location": "eastus"
+      "location": "westus2"
     }
   ]
 }
