@@ -19,6 +19,16 @@ SERVICE_PRINCIPAL_CLIENT_SECRET="${11}"
 KUBELET_PRIVATE_KEY="${12}"
 TARGET_ENVIRONMENT="${13}"
 NETWORK_POLICY="${14}"
+# Default values for backoff configuration
+CLOUDPROVIDER_BACKOFF=true
+CLOUDPROVIDER_BACKOFF_RETRIES=6
+CLOUDPROVIDER_BACKOFF_EXPONENT=1.5
+CLOUDPROVIDER_BACKOFF_DURATION=5 # in seconds
+CLOUDPROVIDER_BACKOFF_JITTER=1.0
+# Default values for rate limit configuration
+CLOUDPROVIDER_RATELIMIT=true
+CLOUDPROVIDER_RATELIMIT_QPS=5
+CLOUDPROVIDER_RATELIMIT_BUCKET=20
 
 # Master only secrets
 APISERVER_PRIVATE_KEY="${15}"
@@ -102,7 +112,15 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "securityGroupName": "${NETWORK_SECURITY_GROUP}",
     "vnetName": "${VIRTUAL_NETWORK}",
     "routeTableName": "${ROUTE_TABLE}",
-    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}"
+    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
+    "cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
+    "cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
+    "cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
+    "cloudProviderBackoffDuration": ${CLOUDPROVIDER_BACKOFF_DURATION},
+    "cloudProviderBackoffJitter": ${CLOUDPROVIDER_BACKOFF_JITTER},
+    "cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
+    "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
+    "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET}
 }
 EOF
 
