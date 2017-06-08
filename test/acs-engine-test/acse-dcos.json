@@ -1,8 +1,0 @@
-{
-  "deployments": [
-    {
-      "cluster_definition": "dcos.json",
-      "location": "westus2"
-    }
-  ]
-}
