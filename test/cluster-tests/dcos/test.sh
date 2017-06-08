@@ -57,7 +57,7 @@ if [[ $retval -ne 0 ]]; then
 fi
 
 # only need to teardown if app added successfully
-#trap teardown EXIT
+trap teardown EXIT
 
 log "Validating marathon app"
 count=0
