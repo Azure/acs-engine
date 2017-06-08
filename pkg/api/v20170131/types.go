@@ -177,6 +177,8 @@ func (o *OrchestratorType) UnmarshalText(text []byte) error {
 		*o = Swarm
 	case strings.EqualFold(s, string(Kubernetes)):
 		*o = Kubernetes
+	case strings.EqualFold(s, string(SwarmMode)):
+		*o = SwarmMode
 	default:
 		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", s)
 	}
@@ -225,4 +227,9 @@ func (a *AgentPoolProfile) GetSubnet() string {
 // SetSubnet sets the read-only subnet for the agent pool
 func (a *AgentPoolProfile) SetSubnet(subnet string) {
 	a.subnet = subnet
+}
+
+// IsSwarmMode returns true if this template is for Swarm Mode orchestrator
+func (o *OrchestratorProfile) IsSwarmMode() bool {
+	return o.OrchestratorType == SwarmMode
 }
