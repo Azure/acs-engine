@@ -38,16 +38,20 @@ ${remote_cp} "${DIR}/marathon.json" azureuser@${INSTANCE_NAME}.${LOCATION}.cloud
 log "Configuring marathon.json"
 ${remote_exec} sed -i "s/{agentFQDN}/${agentFQDN}/g" marathon.json || (log "Failed to configure marathon.json"; exit 1)
 
+
 log "Adding marathon app"
 count=20
 while (( $count > 0 )); do
   log "  ... counting down $count"
+  ${remote_exec} ./dcos marathon app list | grep /web
+  retval=$?
+  if [[ $retval -eq 0 ]]; then log "Marathon App successfully installed" && break; fi
   ${remote_exec} ./dcos marathon app add marathon.json
   retval=$?
   if [[ "$retval" == "0" ]]; then break; fi
   sleep 15; count=$((count-1))
 done
-if [[ "$retval" != "0" ]]; then
+if [[ $retval -ne 0 ]]; then
   log "gave up waiting for marathon to be added"
   exit -1
 fi
@@ -71,6 +75,7 @@ done
 if [[ "${running}" != "3" ]]; then
   log "marathon validation failed"
   ${remote_exec} ./dcos marathon app show /web
+  ${remote_exec} ./dcos marathon app list
   exit 1
 fi
 
