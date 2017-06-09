@@ -107,11 +107,11 @@
 {{if .OrchestratorProfile.IsSwarmMode}}
     "orchestratorName": "swarmm", 
     "osImageSKU": "16.04-LTS", 
-    "osImageVersion": "16.04.201705080",
+    "osImageVersion": "16.04.201705160",
 {{else}}
     "orchestratorName": "swarm", 
-    "osImageSKU": "14.04.4-LTS",
-    "osImageVersion": "14.04.201607140",  
+    "osImageSKU": "14.04.5-LTS",
+    "osImageVersion": "14.04.201705170",  
 {{end}}
     "locations": [
          "[resourceGroup().location]",

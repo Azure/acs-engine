@@ -94,6 +94,9 @@ ensureAzureNetwork()
 ensureAzureNetwork
 HOSTADDR=`hostname -i`
 
+# apply all Canonical security updates during provisioning
+/usr/lib/apt/apt.systemd.daily
+
 ismaster ()
 {
   if [ "$MASTERPREFIX" == "$VMPREFIX" ]

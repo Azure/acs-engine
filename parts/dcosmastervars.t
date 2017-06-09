@@ -72,7 +72,7 @@
     "osImageOffer": "UbuntuServer", 
     "osImagePublisher": "Canonical", 
     "osImageSKU": "16.04-LTS", 
-    "osImageVersion": "16.04.201705080",
+    "osImageVersion": "16.04.201705160",
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]", 
     "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
     "locations": [

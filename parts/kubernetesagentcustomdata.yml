@@ -138,6 +138,7 @@ write_files:
     {{WrapAsVariable "provisionScript"}}
 
 runcmd:
+- /usr/lib/apt/apt.systemd.daily
 - apt-get update
 - apt-get install -y apt-transport-https ca-certificates nfs-common
 - systemctl enable rpcbind
