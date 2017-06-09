@@ -323,3 +323,13 @@ fi
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 echo "Install complete successfully"
 
+if [ -f /var/run/reboot-required ]; then
+  if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
+    # wait 1 minute to restart master
+    echo 'reboot required, rebooting master in 1 minute'
+    /bin/bash -c "shutdown -r 1 &"
+  else
+    echo 'reboot required, rebooting agent in 1 minute'
+    shutdown -r now
+  fi
+fi

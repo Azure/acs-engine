@@ -21,6 +21,7 @@ mounts:
 - - ephemeral0.2
   - /var/lib/docker
 runcmd:
+- /usr/lib/apt/apt.systemd.daily
 - - ln
   - -s
   - /bin/rm

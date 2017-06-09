@@ -27,6 +27,7 @@ mounts:
 - - ephemeral0.3
   - /var/tmp
 runcmd:
+- /usr/lib/apt/apt.systemd.daily
 - - ln
   - -s
   - /bin/rm
