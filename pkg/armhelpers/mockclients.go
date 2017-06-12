@@ -11,13 +11,14 @@ import (
 
 //MockACSEngineClient is an implemetnation of ACSEngineClient where all requests error out
 type MockACSEngineClient struct {
-	FailDeployTemplate         bool
-	FailEnsureResourceGroup    bool
-	FailListVirtualMachines    bool
-	FailGetVirtualMachine      bool
-	FailDeleteVirtualMachine   bool
-	FailGetStorageClient       bool
-	FailDeleteNetworkInterface bool
+	FailDeployTemplate              bool
+	FailEnsureResourceGroup         bool
+	FailListVirtualMachines         bool
+	FailListVirtualMachineScaleSets bool
+	FailGetVirtualMachine           bool
+	FailDeleteVirtualMachine        bool
+	FailGetStorageClient            bool
+	FailDeleteNetworkInterface      bool
 }
 
 //DeployTemplate mock
@@ -84,6 +85,15 @@ func (mc *MockACSEngineClient) ListVirtualMachines(resourceGroup string) (comput
 	vmr.Value = &[]compute.VirtualMachine{vm1}
 
 	return vmr, nil
+}
+
+//ListVirtualMachineScaleSets mock
+func (mc *MockACSEngineClient) ListVirtualMachineScaleSets(resourceGroup string) (compute.VirtualMachineScaleSetListResult, error) {
+	if mc.FailListVirtualMachineScaleSets {
+		return compute.VirtualMachineScaleSetListResult{}, fmt.Errorf("ListVirtualMachines failed")
+	}
+
+	return compute.VirtualMachineScaleSetListResult{}, nil
 }
 
 //GetVirtualMachine mock
