@@ -24,6 +24,23 @@ function teardown {
   ${remote_exec} ./dcos marathon app remove /web
 }
 
+###### Check node count
+function check_node_count() {
+  log "Checking node count"
+  count=20
+  while (( $count > 0 )); do
+    log "  ... counting down $count"
+    node_count=$(${remote_exec} curl -s http://localhost:1050/system/health/v1/nodes | jq '.nodes | length')
+    [ $? -eq 0 ] && [ ! -z "$node_count" ] && [ $node_count -eq ${EXPECTED_NODE_COUNT} ] && log "Successfully got $EXPECTED_NODE_COUNT nodes" && break
+    sleep 15; count=$((count-1))
+  done
+  if (( $node_count != ${EXPECTED_NODE_COUNT} )); then
+    log "gave up waiting for DCOS nodes: $node_count available, ${EXPECTED_NODE_COUNT} expected"; exit -1
+  fi
+}
+
+check_node_count
+
 log "Downloading dcos"
 ${remote_exec} curl -O https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.8/dcos || (log "Failed to download dcos"; exit 1)
 log "Setting dcos permissions"
