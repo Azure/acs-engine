@@ -155,17 +155,15 @@ func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Dur
 			}
 			env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_VERSION=%s", strings.TrimSpace(string(out))))
 
-			if orchestrator == "kubernetes" {
-				cmd = exec.Command("test/step.sh", "get_node_count")
-				cmd.Env = env
-				out, err = cmd.Output()
-				if err != nil {
-					wrileLog(logFile, "Error [%s:%s] %v", "get_node_count", resourceGroup, err)
-					success = false
-					break
-				}
-				env = append(env, fmt.Sprintf("EXPECTED_NODE_COUNT=%s", strings.TrimSpace(string(out))))
+			cmd = exec.Command("test/step.sh", "get_node_count")
+			cmd.Env = env
+			out, err = cmd.Output()
+			if err != nil {
+				wrileLog(logFile, "Error [%s:%s] %v", "get_node_count", resourceGroup, err)
+				success = false
+				break
 			}
+			env = append(env, fmt.Sprintf("EXPECTED_NODE_COUNT=%s", strings.TrimSpace(string(out))))
 		}
 	}
 	// clean up
