@@ -90,6 +90,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
 			}
 		}
+		if a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet == "" {
+			a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
+		}
 	}
 }
 
