@@ -16,6 +16,13 @@ set -x
 
 source "$DIR/../utils.sh"
 
+ENV_FILE="${CLUSTER_DEFINITION}.env"
+if [ -e "${ENV_FILE}" ]; then
+  source "${ENV_FILE}"
+fi
+
+MARATHON_JSON="${MARATHON_JSON:- marathon.json}"
+
 remote_exec="ssh -i "${SSH_KEY}" -o ConnectTimeout=30 -o StrictHostKeyChecking=no azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com -p2200"
 agentFQDN="${INSTANCE_NAME}0.${LOCATION}.cloudapp.azure.com"
 remote_cp="scp -i "${SSH_KEY}" -P 2200 -o StrictHostKeyChecking=no"
@@ -49,7 +56,8 @@ log "Configuring dcos"
 ${remote_exec} ./dcos config set core.dcos_url http://localhost:80 || (log "Failed to configure dcos"; exit 1)
 
 log "Copying marathon.json"
-${remote_cp} "${DIR}/marathon.json" azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com:marathon.json || (log "Failed to copy marathon.json"; exit 1)
+
+${remote_cp} "${DIR}/${MARATHON_JSON}" azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com:marathon.json || (log "Failed to copy marathon.json"; exit 1)
 
 # feed agentFQDN to marathon.json
 log "Configuring marathon.json"
