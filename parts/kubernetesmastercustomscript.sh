@@ -28,6 +28,30 @@ KUBECONFIG_CERTIFICATE="${18}"
 KUBECONFIG_KEY="${19}"
 ADMINUSER="${20}"
 
+# cloudinit runcmd and the extension will run in parallel, this is to ensure
+# runcmd finishes
+ensureRunCommandCompleted()
+{
+    echo "waiting for runcmd to finish"
+    for i in {1..900}; do
+        if [ -e /opt/azure/containers/runcmd.complete ]; then
+            echo "runcmd finished"
+            break
+        fi
+        sleep 1
+    done
+}
+ensureRunCommandCompleted
+
+# A delay to start the kubernetes processes is necessary
+# if a reboot is required.  Otherwise, the agents will encounter issue: 
+# https://github.com/kubernetes/kubernetes/issues/41185
+if [ -f /var/run/reboot-required ]; then
+    REBOOTREQUIRED=true
+else
+    REBOOTREQUIRED=false
+fi
+
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     echo "APISERVER_PRIVATE_KEY is non-empty, assuming master node"
@@ -76,6 +100,9 @@ set -x
 
 # wait for kubectl to report successful cluster health
 function ensureKubectl() {
+    if $REBOOTREQUIRED; then
+        return
+    fi
     kubectlfound=1
     for i in {1..600}; do
         if [ -e /usr/local/bin/kubectl ]
@@ -161,43 +188,58 @@ function configNetworkPolicy() {
 
 function ensureDocker() {
     systemctl enable docker
-    systemctl restart docker
-    dockerStarted=1
-    for i in {1..900}; do
-        if ! /usr/bin/docker info; then
-            echo "status $?"
-            /bin/systemctl restart docker
-        else
-            echo "docker started"
-            dockerStarted=0
-            break
+    # only start if a reboot is not required
+    if ! $REBOOTREQUIRED; then
+        systemctl restart docker
+        dockerStarted=1
+        for i in {1..900}; do
+            if ! /usr/bin/docker info; then
+                echo "status $?"
+                /bin/systemctl restart docker
+            else
+                echo "docker started"
+                dockerStarted=0
+                break
+            fi
+            sleep 1
+        done
+        if [ $dockerStarted -ne 0 ]
+        then
+            echo "docker did not start"
+            exit 1
         fi
-        sleep 1
-    done
-    if [ $dockerStarted -ne 0 ]
-    then
-        echo "docker did not start"
-        exit 1
     fi
 }
 
 function ensureKubelet() {
     systemctl enable kubelet
-    systemctl restart kubelet
+    # only start if a reboot is not required
+    if ! $REBOOTREQUIRED; then
+        systemctl restart kubelet
+    fi
 }
 
 function extractKubectl(){
     systemctl enable kubectl-extract
-    systemctl restart kubectl-extract
+    # only start if a reboot is not required
+    if ! $REBOOTREQUIRED; then
+        systemctl restart kubectl-extract
+    fi
 }
 
 function ensureJournal(){
     systemctl daemon-reload
     systemctl enable systemd-journald.service
-    systemctl restart systemd-journald.service
+    # only start if a reboot is not required
+    if ! $REBOOTREQUIRED; then
+        systemctl restart systemd-journald.service
+    fi
 }
 
 function ensureApiserver() {
+    if $REBOOTREQUIRED; then
+        return
+    fi
     kubernetesStarted=1
     for i in {1..600}; do
         if [ -e /usr/local/bin/kubectl ]
@@ -323,7 +365,7 @@ fi
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 echo "Install complete successfully"
 
-if [ -f /var/run/reboot-required ]; then
+if $REBOOTREQUIRED; then
   if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     # wait 1 minute to restart master
     echo 'reboot required, rebooting master in 1 minute'
