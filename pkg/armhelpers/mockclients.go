@@ -21,6 +21,14 @@ type MockACSEngineClient struct {
 	FailDeleteNetworkInterface      bool
 }
 
+//MockStorageClient mock implementation of StorageClient
+type MockStorageClient struct{}
+
+//DeleteBlob mock
+func (msc *MockStorageClient) DeleteBlob(container, blob string) error {
+	return nil
+}
+
 //DeployTemplate mock
 func (mc *MockACSEngineClient) DeployTemplate(resourceGroup, name string, template, parameters map[string]interface{}, cancel <-chan struct{}) (*resources.DeploymentExtended, error) {
 	if mc.FailDeployTemplate {
