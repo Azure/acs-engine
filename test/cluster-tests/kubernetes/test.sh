@@ -108,7 +108,6 @@ while (( $count > 0 )); do
       log "... $pod is Running"
       pods=$(echo $pods | sed -e "s/ *$pod */ /")
     fi
-    echo "'$pods'"
   done
   if [ -z "$(echo $pods | tr -d '[:space:]')" ]; then
     break
