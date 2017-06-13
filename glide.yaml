@@ -21,13 +21,16 @@ import:
 - package: github.com/ghodss/yaml
   version: ^1.0.0
 - package: github.com/mitchellh/go-homedir
+  version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - package: github.com/prometheus/common
   subpackages:
   - log
 - package: github.com/satori/go.uuid
   version: ^1.1.0
 - package: github.com/spf13/cobra
+  version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
 - package: github.com/spf13/pflag
+  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 testImport:
 - package: github.com/onsi/gomega
   version: ^1.1.0

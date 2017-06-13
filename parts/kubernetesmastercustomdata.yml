@@ -317,4 +317,5 @@ runcmd:
 - systemctl restart docker
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
-
+- /usr/lib/apt/apt.systemd.daily
+- touch /opt/azure/containers/runcmd.complete

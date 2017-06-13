@@ -44,14 +44,15 @@ var (
 type AzureClient struct {
 	environment azure.Environment
 
-	deploymentsClient     resources.DeploymentsClient
-	resourcesClient       resources.GroupClient
-	storageAccountsClient storage.AccountsClient
-	interfacesClient      network.InterfacesClient
-	groupsClient          resources.GroupsClient
-	providersClient       resources.ProvidersClient
-	subscriptionsClient   subscriptions.GroupClient
-	virtualMachinesClient compute.VirtualMachinesClient
+	deploymentsClient             resources.DeploymentsClient
+	resourcesClient               resources.GroupClient
+	storageAccountsClient         storage.AccountsClient
+	interfacesClient              network.InterfacesClient
+	groupsClient                  resources.GroupsClient
+	providersClient               resources.ProvidersClient
+	subscriptionsClient           subscriptions.GroupClient
+	virtualMachinesClient         compute.VirtualMachinesClient
+	virtualMachineScaleSetsClient compute.VirtualMachineScaleSetsClient
 }
 
 // NewAzureClientWithDeviceAuth returns an AzureClient by having a user complete a device authentication flow
@@ -223,14 +224,15 @@ func getOAuthConfig(env azure.Environment, subscriptionID string) (*adal.OAuthCo
 
 func getClient(env azure.Environment, subscriptionID string, armSpt *adal.ServicePrincipalToken, adSpt *adal.ServicePrincipalToken) (*AzureClient, error) {
 	c := &AzureClient{
-		environment:           env,
-		deploymentsClient:     resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		resourcesClient:       resources.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		storageAccountsClient: storage.NewAccountsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		interfacesClient:      network.NewInterfacesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		groupsClient:          resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		providersClient:       resources.NewProvidersClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
-		virtualMachinesClient: compute.NewVirtualMachinesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		environment:                   env,
+		deploymentsClient:             resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		resourcesClient:               resources.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		storageAccountsClient:         storage.NewAccountsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		interfacesClient:              network.NewInterfacesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		groupsClient:                  resources.NewGroupsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		providersClient:               resources.NewProvidersClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		virtualMachinesClient:         compute.NewVirtualMachinesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		virtualMachineScaleSetsClient: compute.NewVirtualMachineScaleSetsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 	}
 
 	authorizer := autorest.NewBearerAuthorizer(armSpt)

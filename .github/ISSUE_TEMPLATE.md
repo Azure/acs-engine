@@ -4,10 +4,10 @@
 
 ---
 
-**Is this a BUG REPORT or FEATURE REQUEST?** (choose one):
+**Is this an ISSUE or FEATURE REQUEST?** (choose one):
 
 <!--
-If this is a BUG REPORT, please:
+If this is a ISSUE, please:
   - Fill in as much of the template below as you can.  If you leave out
     information, we can't help you as well.
 

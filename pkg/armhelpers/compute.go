@@ -18,3 +18,8 @@ func (az *AzureClient) GetVirtualMachine(resourceGroup, name string) (compute.Vi
 func (az *AzureClient) DeleteVirtualMachine(resourceGroup, name string, cancel <-chan struct{}) (<-chan compute.OperationStatusResponse, <-chan error) {
 	return az.virtualMachinesClient.Delete(resourceGroup, name, cancel)
 }
+
+// ListVirtualMachineScaleSets returns (the first page of) the vmss resources in the specified resource group.
+func (az *AzureClient) ListVirtualMachineScaleSets(resourceGroup string) (compute.VirtualMachineScaleSetListResult, error) {
+	return az.virtualMachineScaleSetsClient.List(resourceGroup)
+}
