@@ -94,6 +94,31 @@ if (( ${creating_count} != 0 )); then
   log "gave up waiting for creation to finish"; exit -1
 fi
 
+###### Check existence and status of essential pods
+
+# we test other essential pods (kube-dns, kube-proxy, kubernetes-dashboard) separately
+pods="heapster kube-addon-manager kube-apiserver kube-controller-manager kube-scheduler"
+log "Checking $pods"
+
+count=12
+while (( $count > 0 )); do
+  for pod in $pods; do
+    running=$(kubectl get pods --all-namespaces | grep $pod | grep Running | wc -l)
+    if (( $running > 0 )); then
+      log "... $pod is Running"
+      pods=$(echo $pods | sed -e "s/ *$pod */ /")
+    fi
+    echo "'$pods'"
+  done
+  if [ -z "$(echo $pods | tr -d '[:space:]')" ]; then
+    break
+  fi
+done
+
+if [ ! -z "$(echo $pods | tr -d '[:space:]')" ]; then
+  log "gave up waiting for running pods [$pods]"; exit -1
+fi
+
 ###### Check for Kube-DNS
 log "Checking Kube-DNS"
 count=12
