@@ -141,7 +141,6 @@ write_files:
     {{WrapAsVariable "provisionScript"}}
 
 runcmd:
-- /usr/lib/apt/apt.systemd.daily
 - apt-get update
 - apt-get install -y apt-transport-https ca-certificates nfs-common
 - systemctl enable rpcbind
@@ -157,3 +156,5 @@ runcmd:
 - systemctl restart docker
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
+- /usr/lib/apt/apt.systemd.daily
+- touch /opt/azure/containers/runcmd.complete
