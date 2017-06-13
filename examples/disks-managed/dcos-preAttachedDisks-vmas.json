@@ -11,12 +11,18 @@
     },
     "agentPoolProfiles": [
       {
-        "name": "agent128",
-        "count": 10,
+        "name": "agentpublic",
+        "count": 6,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet",
         "storageProfile": "ManagedDisks",
-        "diskSizesGB": [128, 128, 128, 128]
+        "diskSizesGB": [128, 128, 128, 128],
+        "dnsPrefix": "",
+        "ports": [
+          80,
+          443,
+          8080
+        ]
       }
     ],
     "linuxProfile": {
