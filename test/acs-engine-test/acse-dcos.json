@@ -1,0 +1,12 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "disks-managed/dcos-preAttachedDisks-vmas.json",
+      "location": "westeurope"
+    },
+    {
+      "cluster_definition": "disks-managed/dcos-vmss.json",
+      "location": "centralus"
+    }
+  ]
+}
