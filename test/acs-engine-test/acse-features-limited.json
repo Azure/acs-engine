@@ -22,7 +22,7 @@
     },
     {
       "cluster_definition": "disks-managed/dcos-preAttachedDisks-vmas.json",
-      "location": "westeurope"
+      "location": "eastus"
     },
     {
       "cluster_definition": "disks-managed/dcos-vmss.json",
