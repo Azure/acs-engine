@@ -43,26 +43,31 @@ function check_node_count() {
   done
   if (( $node_count != ${EXPECTED_NODE_COUNT} )); then
     log "gave up waiting for DCOS nodes: $node_count available, ${EXPECTED_NODE_COUNT} expected"
-    exit -1
+    exit 1
   fi
 }
 
 check_node_count
 
 log "Downloading dcos"
-${remote_exec} curl -O https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.8/dcos || (log "Failed to download dcos" && exit 1)
+${remote_exec} curl -O https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.8/dcos
+if [[ "$?" != "0" ]]; then log "Failed to download dcos"; exit 1; fi
 log "Setting dcos permissions"
-${remote_exec} chmod a+x ./dcos || (log "Failed to chmod dcos" && exit 1)
+${remote_exec} chmod a+x ./dcos
+if [[ "$?" != "0" ]]; then log "Failed to chmod dcos"; exit 1; fi
 log "Configuring dcos"
-${remote_exec} ./dcos config set core.dcos_url http://localhost:80 || (log "Failed to configure dcos" && exit 1)
+${remote_exec} ./dcos config set core.dcos_url http://localhost:80
+if [[ "$?" != "0" ]]; then log "Failed to configure dcos"; exit 1; fi
 
 log "Copying marathon.json"
 
-${remote_cp} "${DIR}/${MARATHON_JSON}" azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com:marathon.json || (log "Failed to copy marathon.json" && exit 1)
+${remote_cp} "${DIR}/${MARATHON_JSON}" azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com:marathon.json
+if [[ "$?" != "0" ]]; then log "Failed to copy marathon.json"; exit 1; fi
 
 # feed agentFQDN to marathon.json
 log "Configuring marathon.json"
-${remote_exec} sed -i "s/{agentFQDN}/${agentFQDN}/g" marathon.json || (log "Failed to configure marathon.json" && exit 1)
+${remote_exec} sed -i "s/{agentFQDN}/${agentFQDN}/g" marathon.json
+if [[ "$?" != "0" ]]; then log "Failed to configure marathon.json"; exit 1; fi
 
 
 log "Adding marathon app"
@@ -77,10 +82,7 @@ while (( $count > 0 )); do
   if [[ "$retval" == "0" ]]; then break; fi
   sleep 15; count=$((count-1))
 done
-if [[ $retval -ne 0 ]]; then
-  log "gave up waiting for marathon to be added"
-  exit -1
-fi
+if [[ $retval -ne 0 ]]; then log "gave up waiting for marathon to be added"; exit 1; fi
 
 # only need to teardown if app added successfully
 trap teardown EXIT
@@ -106,7 +108,8 @@ if [[ "${running}" != "3" ]]; then
 fi
 
 # install marathon-lb
-${remote_exec} ./dcos package install marathon-lb --yes || (log "Failed to install marathon-lb" && exit 1)
+${remote_exec} ./dcos package install marathon-lb --yes
+if [[ "$?" != "0" ]]; then log "Failed to install marathon-lb"; exit 1; fi
 
 # curl simpleweb through external haproxy
 log "Checking Service"
