@@ -97,11 +97,11 @@
       "location": "japanwest"
     },
     {
-      "cluster_definition": "cni/kubernetes-azure.json",
+      "cluster_definition": "networkpolicy/kubernetes-azure.json",
       "location": "uksouth"
     },
     {
-      "cluster_definition": "cni/kubernetes-calico.json",
+      "cluster_definition": "networkpolicy/kubernetes-calico.json",
       "location": "australiaeast"
     },
     {
