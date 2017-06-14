@@ -41,70 +41,70 @@
       "type": "securestring"
     },
     "kubeClusterCidr": {
-      "defaultValue": "{{PopulateDefaultValue "kubeClusterCidr"}}",
+      {{PopulateClassicModeDefaultValue "kubeClusterCidr"}}
       "metadata": {
         "description": "Kubernetes cluster subnet"
       },
       "type": "string"
     },
     "kubernetesHyperkubeSpec": {
-      "defaultValue": "",
+      {{PopulateClassicModeDefaultValue "kubernetesHyperkubeSpec"}}
       "metadata": {
         "description": "The container spec for hyperkube."
       },
       "type": "string"
     },
     "kubernetesAddonManagerSpec": {
-      "defaultValue": "{{PopulateDefaultValue "kubernetesAddonManagerSpec"}}",
+      {{PopulateClassicModeDefaultValue "kubernetesAddonManagerSpec"}}
       "metadata": {
         "description": "The container spec for hyperkube."
       },
       "type": "string"
     },
     "kubernetesAddonResizerSpec": {
-      "defaultValue": "{{PopulateDefaultValue "kubernetesAddonResizerSpec"}}",
+      {{PopulateClassicModeDefaultValue "kubernetesAddonResizerSpec"}}
       "metadata": {
         "description": "The container spec for addon-resizer."
       },
       "type": "string"
     },
     "kubernetesDashboardSpec": {
-      "defaultValue": "{{PopulateDefaultValue "kubernetesDashboardSpec"}}",
+      {{PopulateClassicModeDefaultValue "kubernetesDashboardSpec"}}
       "metadata": {
         "description": "The container spec for kubernetes-dashboard-amd64."
       },
       "type": "string"
     },
     "kubernetesExecHealthzSpec": {
-      "defaultValue": "{{PopulateDefaultValue "kubernetesExecHealthzSpec"}}",
+      {{PopulateClassicModeDefaultValue "kubernetesExecHealthzSpec"}}
       "metadata": {
         "description": "The container spec for exechealthz-amd64."
       },
       "type": "string"
     },
     "kubernetesHeapsterSpec": {
-      "defaultValue": "{{PopulateDefaultValue "kubernetesHeapsterSpec"}}",
+      {{PopulateClassicModeDefaultValue "kubernetesHeapsterSpec"}}
       "metadata": {
         "description": "The container spec for heapster."
       },
       "type": "string"
     },
     "kubernetesPodInfraContainerSpec": {
-      "defaultValue": "{{PopulateDefaultValue "kubernetesPodInfraContainerSpec"}}",
+      {{PopulateClassicModeDefaultValue "kubernetesPodInfraContainerSpec"}}
       "metadata": {
         "description": "The container spec for pod infra."
       },
       "type": "string"
     },
     "kubernetesKubeDNSSpec": {
-      "defaultValue": "{{PopulateDefaultValue "kubernetesKubeDNSSpec"}}",
+      {{PopulateClassicModeDefaultValue "kubernetesKubeDNSSpec"}}
       "metadata": {
         "description": "The container spec for kubedns-amd64."
       },
       "type": "string"
     },
     "kubernetesDNSMasqSpec": {
-      "defaultValue": "{{PopulateDefaultValue "kubernetesDNSMasqSpec"}}",
+      {{PopulateClassicModeDefaultValue "kubernetesDNSMasqSpec"}}
       "metadata": {
         "description": "The container spec for kube-dnsmasq-amd64."
       },
