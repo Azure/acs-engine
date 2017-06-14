@@ -59,7 +59,6 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 		nil)
 
 	if err != nil {
-		log.Fatalln(err)
 		return err
 	}
 
