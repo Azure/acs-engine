@@ -39,7 +39,7 @@ function check_node_count() {
     log "  ... counting down $count"
     node_count=$(${remote_exec} curl -s http://localhost:1050/system/health/v1/nodes | jq '.nodes | length')
     [ $? -eq 0 ] && [ ! -z "$node_count" ] && [ $node_count -eq ${EXPECTED_NODE_COUNT} ] && log "Successfully got $EXPECTED_NODE_COUNT nodes" && break
-    sleep 15; count=$((count-1))
+    sleep 30; count=$((count-1))
   done
   if (( $node_count != ${EXPECTED_NODE_COUNT} )); then
     log "gave up waiting for DCOS nodes: $node_count available, ${EXPECTED_NODE_COUNT} expected"

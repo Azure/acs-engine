@@ -22,7 +22,7 @@
     },
     {
       "cluster_definition": "disks-managed/dcos-preAttachedDisks-vmas.json",
-      "location": "eastus"
+      "location": "westeurope"
     },
     {
       "cluster_definition": "disks-managed/dcos-vmss.json",
@@ -38,7 +38,7 @@
     },
     {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmas-windows.json",
-      "location": "centralus"
+      "location": "northcentralus"
     },
     {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json",
@@ -46,7 +46,7 @@
     },
     {
       "cluster_definition": "disks-managed/swarm-vmas-windows.json",
-      "location": "westeurope"
+      "location": "northeurope"
     },
     {
       "cluster_definition": "disks-managed/swarm-vmss.json",
@@ -94,7 +94,7 @@
     },
     {
       "cluster_definition": "kubernetesversions/kubernetes1.6.2.json",
-      "location": "southcentralus"
+      "location": "uksouth"
     },
     {
       "cluster_definition": "networkpolicy/kubernetes-calico.json",
@@ -102,7 +102,7 @@
     },
     {
       "cluster_definition": "custom-pod-cidr/kubernetes.json",
-      "location": "westus"
+      "location": "ukwest"
     }
   ]
 }
