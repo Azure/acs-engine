@@ -26,7 +26,12 @@ write_files:
   owner: "root"
   content: |
     {
-      "live-restore": true
+      "live-restore": true,
+      "log-driver": "json-file",
+      "log-opts":  {
+         "max-size": "50m",
+         "max-files": "5"
+      }
     }
 
 - path: "/etc/kubernetes/certs/ca.crt"
