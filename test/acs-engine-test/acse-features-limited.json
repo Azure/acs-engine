@@ -103,6 +103,10 @@
     {
       "cluster_definition": "custom-pod-cidr/kubernetes.json",
       "location": "ukwest"
+    },
+    {
+      "cluster_definition": "v20170131/swarmmode.json",
+      "location": "westindia"
     }
   ]
 }
