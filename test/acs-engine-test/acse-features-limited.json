@@ -6,7 +6,7 @@
     },
     {
       "cluster_definition": "windows/kubernetes.json",
-      "location": "westus2"
+      "location": "canadacentral"
     },
     {
       "cluster_definition": "dcos-versions/dcos1.8.4.json",
@@ -21,6 +21,14 @@
       "location": "southindia"
     },
     {
+      "cluster_definition": "disks-managed/dcos-preAttachedDisks-vmas.json",
+      "location": "westeurope"
+    },
+    {
+      "cluster_definition": "disks-managed/dcos-vmss.json",
+      "location": "centralus"
+    },
+    {
       "cluster_definition": "disks-managed/kubernetes-preAttachedDisks-vmas.json",
       "location": "eastus2"
     },
@@ -30,7 +38,7 @@
     },
     {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmas-windows.json",
-      "location": "eastus"
+      "location": "centralus"
     },
     {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json",
@@ -38,7 +46,7 @@
     },
     {
       "cluster_definition": "disks-managed/swarm-vmas-windows.json",
-      "location": "eastus"
+      "location": "westeurope"
     },
     {
       "cluster_definition": "disks-managed/swarm-vmss.json",
