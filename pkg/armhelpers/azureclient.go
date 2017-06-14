@@ -243,6 +243,7 @@ func getClient(env azure.Environment, subscriptionID string, armSpt *adal.Servic
 	c.groupsClient.Authorizer = authorizer
 	c.providersClient.Authorizer = authorizer
 	c.virtualMachinesClient.Authorizer = authorizer
+	c.virtualMachineScaleSetsClient.Authorizer = authorizer
 
 	c.deploymentsClient.PollingDelay = time.Second * 5
 

@@ -12,7 +12,7 @@
     "agentPoolProfiles": [
       {
         "name": "agentpublic",
-        "count": 10,
+        "count": 6,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet",
         "storageProfile": "ManagedDisks",

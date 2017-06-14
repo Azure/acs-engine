@@ -89,11 +89,7 @@
       "location": "southcentralus"
     },
     {
-      "cluster_definition": "cni/kubernetes-azure.json",
-      "location": "westus2"
-    },
-    {
-      "cluster_definition": "cni/kubernetes-calico.json",
+      "cluster_definition": "networkpolicy/kubernetes-calico.json",
       "location": "australiaeast"
     },
     {
