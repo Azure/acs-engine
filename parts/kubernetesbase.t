@@ -12,6 +12,7 @@
         "type": "string"
       },
       "kubeBinariesVersion": {
+        "defaultValue": "{{PopulateDefaultValue "kubeBinariesVersion"}}"
         "metadata": {
           "description": "Kubernetes windows binaries version"
         },

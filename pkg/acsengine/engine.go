@@ -758,6 +758,37 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"HasWindowsSecrets": func() bool {
 			return cs.Properties.WindowsProfile.HasSecrets()
 		},
+		"PopulateDefaultValue": func(attr string) string {
+			if !t.ClassicMode {
+				return ""
+			}
+			kubernetesVersion := cs.Properties.OrchestratorProfile.OrchestratorVersion
+			cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+			switch {
+			case "kubernetesAddonManagerSpec":
+				return cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["addonmanager"]
+			case "kubernetesAddonResizerSpec":
+				return cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["addonresizer"]
+			case "kubernetesDashboardSpec":
+				return cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dashboard"]
+			case "kubernetesDNSMasqSpec":
+				return cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dnsmasq"]
+			case "kubernetesExecHealthzSpec":
+				return cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["exechealthz"]
+			case "kubernetesHeapsterSpec":
+				return cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["heapster"]
+			case "kubernetesKubeDNSSpec":
+				return cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dns"]
+			case "kubernetesPodInfraContainerSpec":
+				return cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["pause"]
+			case "kubeClusterCidr":
+				return "10.244.0.0/16"
+			case "kubeBinariesVersion":
+				return "1.6.2"
+			default:
+				return ""
+			}
+		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
 			if len(values)%2 != 0 {
