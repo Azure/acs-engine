@@ -1,0 +1,8 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "v20170131/swarmmode.json",
+      "location": "westindia"
+    }
+  ]
+}
