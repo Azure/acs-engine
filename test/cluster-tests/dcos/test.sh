@@ -21,7 +21,7 @@ if [ -e "${ENV_FILE}" ]; then
   source "${ENV_FILE}"
 fi
 
-MARATHON_JSON="${MARATHON_JSON:- marathon.json}"
+MARATHON_JSON="${MARATHON_JSON:-marathon.json}"
 
 remote_exec="ssh -i "${SSH_KEY}" -o ConnectTimeout=30 -o StrictHostKeyChecking=no azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com -p2200"
 agentFQDN="${INSTANCE_NAME}0.${LOCATION}.cloudapp.azure.com"
