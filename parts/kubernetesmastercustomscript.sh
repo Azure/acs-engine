@@ -206,7 +206,7 @@ function ensureDocker() {
         if [ $dockerStarted -ne 0 ]
         then
             echo "docker did not start"
-            exit 1
+            exit 2
         fi
     fi
 }
@@ -265,7 +265,7 @@ function ensureApiserver() {
     if [ $kubernetesStarted -ne 0 ]
     then
         echo "kubernetes did not start"
-        exit 1
+        exit 3
     fi
 }
 
@@ -301,7 +301,7 @@ function ensureEtcdDataDir() {
     fi
 
    echo "Etcd data dir was not found at: /var/lib/etcddisk"
-   exit 1
+   exit 4
 }
 
 function writeKubeConfig() {
