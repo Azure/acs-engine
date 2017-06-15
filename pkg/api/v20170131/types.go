@@ -219,6 +219,11 @@ func (a *AgentPoolProfile) IsLinux() bool {
 	return a.OSType == Linux
 }
 
+// IsDCOS returns true if this template is for DCOS orchestrator
+func (o *OrchestratorProfile) IsDCOS() bool {
+	return o.OrchestratorType == DCOS
+}
+
 // GetSubnet returns the read-only subnet for the agent pool
 func (a *AgentPoolProfile) GetSubnet() string {
 	return a.subnet
