@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
@@ -146,17 +145,6 @@ func convertPropertiesToV20160930(api *Properties, p *v20160930.Properties) {
 		convertAgentPoolProfileToV20160930(apiProfile, v20160930Profile)
 		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160930Profile)
 	}
-	if api.OrchestratorProfile.OrchestratorType == "DCOS" && len(p.AgentPoolProfiles) == 1 {
-		publicPool, _ := addDCOSPublicAgentPool(api.AgentPoolProfiles[0], api, api.MasterProfile)
-		v20160930PublicPool := &v20160930.AgentPoolProfile{}
-		// TODO verify that we want the public agent pool to be v20160930-specific
-		// Ports, for example, get stripped after this conversion
-		convertAgentPoolProfileToV20160930(publicPool, v20160930PublicPool)
-		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160930PublicPool)
-	} else {
-		// validation should fail >1 agent pool for versions API versions v20160330, v20160930, v20170131.
-		// TODO do we fail here?
-	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20160930.LinuxProfile{}
 		convertLinuxProfileToV20160930(api.LinuxProfile, p.LinuxProfile)
@@ -199,17 +187,6 @@ func convertPropertiesToV20160330(api *Properties, p *v20160330.Properties) {
 		convertAgentPoolProfileToV20160330(apiProfile, v20160330Profile)
 		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160330Profile)
 	}
-	if api.OrchestratorProfile.OrchestratorType == "DCOS" && len(p.AgentPoolProfiles) == 1 {
-		publicPool, _ := addDCOSPublicAgentPool(api.AgentPoolProfiles[0], api, api.MasterProfile)
-		v20160330PublicPool := &v20160330.AgentPoolProfile{}
-		// TODO verify that we want the public agent pool to be v20160330-specific
-		// Ports, for example, get stripped after this conversion
-		convertAgentPoolProfileToV20160330(publicPool, v20160330PublicPool)
-		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160330PublicPool)
-	} else {
-		// validation should fail >1 agent pool for versions API versions v20160330, v20160930, v20170131.
-		// TODO do we fail here?
-	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20160330.LinuxProfile{}
 		convertLinuxProfileToV20160330(api.LinuxProfile, p.LinuxProfile)
@@ -243,18 +220,6 @@ func convertPropertiesToV20170131(api *Properties, p *v20170131.Properties) {
 		v20170131Profile := &v20170131.AgentPoolProfile{}
 		convertAgentPoolProfileToV20170131(apiProfile, v20170131Profile)
 		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20170131Profile)
-	}
-	if api.OrchestratorProfile.OrchestratorType == "DCOS" && len(p.AgentPoolProfiles) == 1 {
-		publicPool, _ := addDCOSPublicAgentPool(api.AgentPoolProfiles[0], api, api.MasterProfile)
-		v20170131PublicPool := &v20170131.AgentPoolProfile{}
-		// TODO verify that we want the public agent pool to be v20170131-specific
-		// Ports, for example, get stripped after this conversion
-		convertAgentPoolProfileToV20170131(publicPool, v20170131PublicPool)
-		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20170131PublicPool)
-
-	} else {
-		// validation should fail >1 agent pool for versions API versions v20160330, v20160930, v20170131.
-		// TODO do we fail here?
 	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20170131.LinuxProfile{}
@@ -612,31 +577,4 @@ func convertCertificateProfileToVLabs(api *CertificateProfile, vlabs *vlabs.Cert
 	vlabs.KubeConfigCertificate = api.KubeConfigCertificate
 	vlabs.KubeConfigPrivateKey = api.KubeConfigPrivateKey
 	vlabs.SetCAPrivateKey(api.GetCAPrivateKey())
-}
-
-func addDCOSPublicAgentPool(privateAgentPool *AgentPoolProfile, p *Properties, m *MasterProfile) (*AgentPoolProfile, error) {
-	privateAgentPool.DNSPrefix = "" // - don't use DNS for private pool
-	// TODO - VM Count for private pool matches api model
-	// p.AgentPoolProfiles[0].Count = ??? <-- TODO
-	publicPool := &AgentPoolProfile{}
-	publicPool.Name = privateAgentPool.Name + "_public"
-	publicPool.VMSize = privateAgentPool.VMSize // - use same VMsize for public pool
-	publicPool.OSType = privateAgentPool.OSType
-	for _, port := range [3]int{80, 443, 8080} {
-		fmt.Println(port)
-		publicPool.Ports = append(publicPool.Ports, port)
-	}
-	fmt.Println("%#v\n", publicPool.Ports)
-	// - VM Count for public agents is based on the following:
-	// 1 master => 1 VM
-	// 3, 5 master => 3 VMsize
-	if m.Count == 1 {
-		publicPool.Count = 1
-	} else if m.Count == 3 {
-		publicPool.Count = 3
-	} else if m.Count == 5 {
-		publicPool.Count = 3
-	}
-	// TODO how do we set v20160930PublicPool.Count if p.MasterProfile.Count is neither 1, 3, nor 5?
-	return publicPool, nil
 }

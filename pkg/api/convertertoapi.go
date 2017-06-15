@@ -174,6 +174,9 @@ func convertV20160930Properties(v20160930 *v20160930.Properties, api *Properties
 		api.CustomProfile = &CustomProfile{}
 		convertV20160930CustomProfile(v20160930.CustomProfile, api.CustomProfile)
 	}
+	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 1 {
+		addDCOSPublicAgentPool(api)
+	}
 }
 
 func convertV20160330Properties(v20160330 *v20160330.Properties, api *Properties) {
@@ -208,6 +211,9 @@ func convertV20160330Properties(v20160330 *v20160330.Properties, api *Properties
 	if v20160330.JumpboxProfile != nil {
 		api.JumpboxProfile = &JumpboxProfile{}
 		convertV20160330JumpboxProfile(v20160330.JumpboxProfile, api.JumpboxProfile)
+	}
+	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 1 {
+		addDCOSPublicAgentPool(api)
 	}
 }
 
@@ -257,6 +263,9 @@ func convertV20170131Properties(v20170131 *v20170131.Properties, api *Properties
 	if v20170131.CustomProfile != nil {
 		api.CustomProfile = &CustomProfile{}
 		convertV20170131CustomProfile(v20170131.CustomProfile, api.CustomProfile)
+	}
+	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 1 {
+		addDCOSPublicAgentPool(api)
 	}
 }
 
@@ -639,4 +648,26 @@ func convertVLabsCertificateProfile(vlabs *vlabs.CertificateProfile, api *Certif
 	api.KubeConfigCertificate = vlabs.KubeConfigCertificate
 	api.KubeConfigPrivateKey = vlabs.KubeConfigPrivateKey
 	api.SetCAPrivateKey(vlabs.GetCAPrivateKey())
+}
+
+func addDCOSPublicAgentPool(api *Properties) {
+	publicPool := &AgentPoolProfile{}
+	publicPool.Name = api.AgentPoolProfiles[0].Name + "_public"
+	// move DNS prefix to public pool
+	publicPool.DNSPrefix = api.AgentPoolProfiles[0].DNSPrefix
+	api.AgentPoolProfiles[0].DNSPrefix = ""
+	publicPool.VMSize = api.AgentPoolProfiles[0].VMSize // - use same VMsize for public pool
+	publicPool.OSType = api.AgentPoolProfiles[0].OSType // - use same OSType for public pool
+	for _, port := range [3]int{80, 443, 8080} {
+		publicPool.Ports = append(publicPool.Ports, port)
+	}
+	// - VM Count for public agents is based on the following:
+	// 1 master => 1 VM
+	// 3, 5 master => 3 VMsize
+	if api.MasterProfile.Count == 1 {
+		publicPool.Count = 1
+	} else {
+		publicPool.Count = 3
+	}
+	api.AgentPoolProfiles = append(api.AgentPoolProfiles, publicPool)
 }
