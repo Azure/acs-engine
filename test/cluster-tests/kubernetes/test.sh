@@ -37,10 +37,10 @@ log "Running test in namespace: ${namespace}"
 trap teardown EXIT
 
 function teardown {
-  kubectl get all --all-namespaces
-  kubectl get nodes
-  kubectl get namespaces
-  kubectl delete namespaces ${namespace}
+  kubectl get all --all-namespaces || echo "teardown error"
+  kubectl get nodes || echo "teardown error"
+  kubectl get namespaces || echo "teardown error"
+  kubectl delete namespaces ${namespace} || echo "teardown error"
 }
 
 # TODO: cleanup the loops more
@@ -218,7 +218,7 @@ count=60
 external_ip=""
 while (( $count > 0 )); do
   log "  ... counting down $count"
-	external_ip=$(kubectl get svc --namespace ${namespace} nginx --template="{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}")
+	external_ip=$(kubectl get svc --namespace ${namespace} nginx --template="{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}" || echo "")
 	[[ ! -z "${external_ip}" ]] && break
 	sleep 10; count=$((count-1))
 done
