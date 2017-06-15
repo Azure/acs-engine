@@ -54,7 +54,7 @@ ensureAzureNetwork()
     echo "the network is not healthy, aborting install"
     ifconfig
     ip a
-    exit 2
+    exit 1
   fi
   # ensure the host ip can resolve
   networkHealthy=1

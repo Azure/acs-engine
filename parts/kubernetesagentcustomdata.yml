@@ -14,25 +14,19 @@ write_files:
   content: |
     [Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --log-driver=journald
-
-- path: "/etc/systemd/journald.conf.d/kubernetes.conf"
-  permissions: "0644"
-  owner: "root"
-  content: |
-    [Journal]
-    Storage=persistent
-    ForwardToSyslog=no
-    MaxLevelConsole=warning
-    RateLimitInterval=1s
-    RateLimitBurst=20000
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay
 
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
   owner: "root"
   content: |
     {
-      "live-restore": true
+      "live-restore": true,
+      "log-driver": "json-file",
+      "log-opts":  {
+         "max-size": "50m",
+         "max-file": "5"
+      }
     }
 
 - path: "/etc/kubernetes/certs/ca.crt"

@@ -44,8 +44,14 @@ function generate_template() {
 
 	k8sServicePrincipal=$(jq 'getpath(["properties","servicePrincipalProfile"])' ${FINAL_CLUSTER_DEFINITION})
 	if [[ "${k8sServicePrincipal}" != "null" ]]; then
-		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientID = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
-		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+	    apiVersion=$(get_api_version)
+		if [[ "$apiVersion" == "vlabs" ]]; then
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientID = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+		else
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.clientId = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.secret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+		fi
 	fi
 
 	secrets=$(jq 'getpath(["properties","linuxProfile","secrets"])' ${FINAL_CLUSTER_DEFINITION})
@@ -172,6 +178,17 @@ function get_orchestrator_version() {
 	fi
 
 	echo $orchestratorVersion
+}
+
+function get_api_version() {
+	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
+
+	apiVersion=$(jq -r 'getpath(["apiVersion"])' ${CLUSTER_DEFINITION})
+	if [[ "$apiVersion" == "null" ]]; then
+		apiVersion=""
+	fi
+
+	echo $apiVersion
 }
 
 function cleanup() {
