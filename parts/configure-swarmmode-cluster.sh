@@ -63,7 +63,7 @@ ensureAzureNetwork()
     echo "the network is not healthy, aborting install"
     ifconfig
     ip a
-    exit 2
+    exit 1
   fi
   # ensure the host ip can resolve
   networkHealthy=1
@@ -244,7 +244,7 @@ if ismaster ; then
         if [ $swarmmodetokenAcquired -ne 0 ]
         then
             echo "Secondary master couldn't connect to Swarm, aborting install"
-            exit 2
+            exit 3
         fi
         docker swarm join --token $swarmmodetoken $MASTER0IPADDR:2377
     fi
@@ -275,7 +275,7 @@ if isagent ; then
     if [ $swarmmodetokenAcquired -ne 0 ]
     then
         echo "Agent couldn't join Swarm, aborting install"
-        exit 2
+        exit 4
     fi
     docker swarm join --token $swarmmodetoken $MASTER0IPADDR:2377
 fi
