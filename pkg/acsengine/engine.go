@@ -758,6 +758,44 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"HasWindowsSecrets": func() bool {
 			return cs.Properties.WindowsProfile.HasSecrets()
 		},
+		"PopulateClassicModeDefaultValue": func(attr string) string {
+			var val string
+			if !t.ClassicMode {
+				val = ""
+			} else {
+				kubernetesVersion := cs.Properties.OrchestratorProfile.OrchestratorVersion
+				cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+				switch attr {
+				case "kubernetesHyperkubeSpec":
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["hyperkube"]
+				case "kubernetesAddonManagerSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["addonmanager"]
+				case "kubernetesAddonResizerSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["addonresizer"]
+				case "kubernetesDashboardSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dashboard"]
+				case "kubernetesDNSMasqSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dnsmasq"]
+				case "kubernetesExecHealthzSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["exechealthz"]
+				case "kubernetesHeapsterSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["heapster"]
+				case "kubernetesKubeDNSSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dns"]
+				case "kubernetesPodInfraContainerSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["pause"]
+				case "kubeBinariesSASURL":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeImages[kubernetesVersion]["windowszip"]
+				case "kubeClusterCidr":
+					val = "10.244.0.0/16"
+				case "kubeBinariesVersion":
+					val = string(api.KubernetesLatest)
+				default:
+					val = ""
+				}
+			}
+			return fmt.Sprintf("\"defaultValue\": \"%s\",", val)
+		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
 			if len(values)%2 != 0 {
