@@ -137,7 +137,9 @@ MASTER0IPADDR="${BASESUBNET}${MASTERFIRSTADDR}"
 # resolve self in DNS
 ######################
 
-echo "$HOSTADDR $VMNAME" | sudo tee -a /etc/hosts
+if [ -z "$(grep "$HOSTADDR $VMNAME" /etc/hosts)" ]; then
+    echo "$HOSTADDR $VMNAME" | sudo tee -a /etc/hosts
+fi
 
 ################
 # Install Docker
