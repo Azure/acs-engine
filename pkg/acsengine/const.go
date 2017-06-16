@@ -51,6 +51,18 @@ const (
 )
 
 var KubeImages = map[api.OrchestratorVersion]map[string]string{
+	api.Kubernetes166: {
+		"hyperkube":    "hyperkube-amd64:v1.6.6",
+		"dashboard":    "kubernetes-dashboard-amd64:v1.6.0",
+		"exechealthz":  "exechealthz-amd64:1.2",
+		"addonresizer": "addon-resizer:1.6",
+		"heapster":     "heapster:v1.2.0",
+		"dns":          "kubedns-amd64:1.7",
+		"addonmanager": "kube-addon-manager-amd64:v6.2",
+		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"pause":        "pause-amd64:3.0",
+		"windowszip":   "v1.6.2intwinnat.zip",
+	},
 	api.Kubernetes162: {
 		"hyperkube":    "hyperkube-amd64:v1.6.2",
 		"dashboard":    "kubernetes-dashboard-amd64:v1.6.0",
@@ -61,7 +73,7 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"addonmanager": "kube-addon-manager-amd64:v6.2",
 		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
 		"pause":        "pause-amd64:3.0",
-		"windowszip":   "v1.6.2intwinnat.zip",
+		"windowszip":   "v1.6.6intwinnat.zip",
 	},
 
 	api.Kubernetes160: {
