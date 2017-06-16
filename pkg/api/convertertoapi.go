@@ -385,7 +385,7 @@ func convertV20160330OrchestratorProfile(v20160330 *v20160330.OrchestratorProfil
 func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = OrchestratorType(v20170131.OrchestratorType)
 	if api.OrchestratorType == Kubernetes {
-		api.OrchestratorVersion = Kubernetes162
+		api.OrchestratorVersion = KubernetesLatest
 	} else if api.OrchestratorType == DCOS {
 		api.OrchestratorVersion = DCOS190
 	}
@@ -400,6 +400,8 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		}
 
 		switch vlabscs.OrchestratorVersion {
+		case vlabs.Kubernetes166:
+			api.OrchestratorVersion = Kubernetes166
 		case vlabs.Kubernetes162:
 			api.OrchestratorVersion = Kubernetes162
 		case vlabs.Kubernetes160:
