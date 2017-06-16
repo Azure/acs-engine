@@ -130,6 +130,9 @@ func convertResourcePurchasePlanToVLabs(api *ResourcePurchasePlan, vlabs *vlabs.
 }
 
 func convertPropertiesToV20160930(api *Properties, p *v20160930.Properties) {
+	if api == nil {
+		return
+	}
 	p.ProvisioningState = v20160930.ProvisioningState(api.ProvisioningState)
 	if api.OrchestratorProfile != nil {
 		p.OrchestratorProfile = &v20160930.OrchestratorProfile{}
@@ -172,6 +175,9 @@ func convertPropertiesToV20160930(api *Properties, p *v20160930.Properties) {
 }
 
 func convertPropertiesToV20160330(api *Properties, p *v20160330.Properties) {
+	if api == nil {
+		return
+	}
 	p.ProvisioningState = v20160330.ProvisioningState(api.ProvisioningState)
 	if api.OrchestratorProfile != nil {
 		p.OrchestratorProfile = &v20160330.OrchestratorProfile{}
@@ -206,6 +212,9 @@ func convertPropertiesToV20160330(api *Properties, p *v20160330.Properties) {
 }
 
 func convertPropertiesToV20170131(api *Properties, p *v20170131.Properties) {
+	if api == nil {
+		return
+	}
 	p.ProvisioningState = v20170131.ProvisioningState(api.ProvisioningState)
 	if api.OrchestratorProfile != nil {
 		p.OrchestratorProfile = &v20170131.OrchestratorProfile{}
@@ -248,6 +257,9 @@ func convertPropertiesToV20170131(api *Properties, p *v20170131.Properties) {
 }
 
 func convertPropertiesToVLabs(api *Properties, vlabsProps *vlabs.Properties) {
+	if api == nil {
+		return
+	}
 	vlabsProps.ProvisioningState = vlabs.ProvisioningState(api.ProvisioningState)
 	if api.OrchestratorProfile != nil {
 		vlabsProps.OrchestratorProfile = &vlabs.OrchestratorProfile{}
