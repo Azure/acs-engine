@@ -140,10 +140,18 @@ func convertPropertiesToV20160930(api *Properties, p *v20160930.Properties) {
 		convertMasterProfileToV20160930(api.MasterProfile, p.MasterProfile)
 	}
 	p.AgentPoolProfiles = []*v20160930.AgentPoolProfile{}
-	for _, apiProfile := range api.AgentPoolProfiles {
-		v20160930Profile := &v20160930.AgentPoolProfile{}
-		convertAgentPoolProfileToV20160930(apiProfile, v20160930Profile)
-		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160930Profile)
+	// We expect exactly 2 agent pools: index [0] is the private pool, index [1] is the public pool
+	for i, apiProfile := range api.AgentPoolProfiles {
+		// a V20160930 should only have one (private) agent pool
+		if i < 1 {
+			v20160930Profile := &v20160930.AgentPoolProfile{}
+			convertAgentPoolProfileToV20160930(apiProfile, v20160930Profile)
+			p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160930Profile)
+		}
+	}
+	// Assign DNS Prefix to private agent pool from public agent pool
+	if len(p.AgentPoolProfiles) > 0 {
+		p.AgentPoolProfiles[0].DNSPrefix = api.AgentPoolProfiles[1].DNSPrefix
 	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20160930.LinuxProfile{}
@@ -182,10 +190,18 @@ func convertPropertiesToV20160330(api *Properties, p *v20160330.Properties) {
 		convertMasterProfileToV20160330(api.MasterProfile, p.MasterProfile)
 	}
 	p.AgentPoolProfiles = []*v20160330.AgentPoolProfile{}
-	for _, apiProfile := range api.AgentPoolProfiles {
-		v20160330Profile := &v20160330.AgentPoolProfile{}
-		convertAgentPoolProfileToV20160330(apiProfile, v20160330Profile)
-		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160330Profile)
+	// We expect exactly 2 agent pools: index [0] is the private pool, index [1] is the public pool
+	for i, apiProfile := range api.AgentPoolProfiles {
+		// a V20160330 should only have one (private) agent pool
+		if i < 1 {
+			v20160330Profile := &v20160330.AgentPoolProfile{}
+			convertAgentPoolProfileToV20160330(apiProfile, v20160330Profile)
+			p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160330Profile)
+		}
+	}
+	// Assign DNS Prefix to private agent pool from public agent pool
+	if len(p.AgentPoolProfiles) > 0 {
+		p.AgentPoolProfiles[0].DNSPrefix = api.AgentPoolProfiles[1].DNSPrefix	
 	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20160330.LinuxProfile{}
@@ -216,10 +232,18 @@ func convertPropertiesToV20170131(api *Properties, p *v20170131.Properties) {
 		convertMasterProfileToV20170131(api.MasterProfile, p.MasterProfile)
 	}
 	p.AgentPoolProfiles = []*v20170131.AgentPoolProfile{}
-	for _, apiProfile := range api.AgentPoolProfiles {
-		v20170131Profile := &v20170131.AgentPoolProfile{}
-		convertAgentPoolProfileToV20170131(apiProfile, v20170131Profile)
-		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20170131Profile)
+	// We expect exactly 2 agent pools: index [0] is the private pool, index [1] is the public pool
+	for i, apiProfile := range api.AgentPoolProfiles {
+		// a V20170131 should only have one (private) agent pool
+		if i < 1 {
+			v20170131Profile := &v20170131.AgentPoolProfile{}
+			convertAgentPoolProfileToV20170131(apiProfile, v20170131Profile)
+			p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20170131Profile)
+		}
+	}
+	// Assign DNS Prefix to private agent pool from public agent pool
+	if len(p.AgentPoolProfiles) > 0 {
+		p.AgentPoolProfiles[0].DNSPrefix = api.AgentPoolProfiles[1].DNSPrefix
 	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20170131.LinuxProfile{}
