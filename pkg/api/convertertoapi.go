@@ -4,6 +4,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
+	"github.com/Azure/acs-engine/pkg/api/v20170701"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -75,6 +76,26 @@ func ConvertV20170131ContainerService(v20170131 *v20170131.ContainerService) *Co
 	return c
 }
 
+// ConvertV20170701ContainerService converts a v20170701 ContainerService to an unversioned ContainerService
+func ConvertV20170701ContainerService(v20170701 *v20170701.ContainerService) *ContainerService {
+	c := &ContainerService{}
+	c.ID = v20170701.ID
+	c.Location = v20170701.Location
+	c.Name = v20170701.Name
+	if v20170701.Plan != nil {
+		c.Plan = &ResourcePurchasePlan{}
+		convertV20170701ResourcePurchasePlan(v20170701.Plan, c.Plan)
+	}
+	c.Tags = map[string]string{}
+	for k, v := range v20170701.Tags {
+		c.Tags[k] = v
+	}
+	c.Type = v20170701.Type
+	c.Properties = &Properties{}
+	convertV20170701Properties(v20170701.Properties, c.Properties)
+	return c
+}
+
 // ConvertVLabsContainerService converts a vlabs ContainerService to an unversioned ContainerService
 func ConvertVLabsContainerService(vlabs *vlabs.ContainerService) *ContainerService {
 	c := &ContainerService{}
@@ -117,6 +138,14 @@ func convertV20170131ResourcePurchasePlan(v20170131 *v20170131.ResourcePurchaseP
 	api.Product = v20170131.Product
 	api.PromotionCode = v20170131.PromotionCode
 	api.Publisher = v20170131.Publisher
+}
+
+// convertV20170701ResourcePurchasePlan converts a v20170701 ResourcePurchasePlan to an unversioned ResourcePurchasePlan
+func convertV20170701ResourcePurchasePlan(v20170701 *v20170701.ResourcePurchasePlan, api *ResourcePurchasePlan) {
+	api.Name = v20170701.Name
+	api.Product = v20170701.Product
+	api.PromotionCode = v20170701.PromotionCode
+	api.Publisher = v20170701.Publisher
 }
 
 // convertVLabsResourcePurchasePlan converts a vlabs ResourcePurchasePlan to an unversioned ResourcePurchasePlan
@@ -260,6 +289,43 @@ func convertV20170131Properties(v20170131 *v20170131.Properties, api *Properties
 	}
 }
 
+func convertV20170701Properties(v20170701 *v20170701.Properties, api *Properties) {
+	api.ProvisioningState = ProvisioningState(v20170701.ProvisioningState)
+	if v20170701.OrchestratorProfile != nil {
+		api.OrchestratorProfile = &OrchestratorProfile{}
+		convertV20170701OrchestratorProfile(v20170701.OrchestratorProfile, api.OrchestratorProfile)
+	}
+	if v20170701.MasterProfile != nil {
+		api.MasterProfile = &MasterProfile{}
+		convertV20170701MasterProfile(v20170701.MasterProfile, api.MasterProfile)
+	}
+	api.AgentPoolProfiles = []*AgentPoolProfile{}
+	for _, p := range v20170701.AgentPoolProfiles {
+		apiProfile := &AgentPoolProfile{}
+		// api.OrchestratorProfile already be filled in correctly
+		if api.OrchestratorProfile.IsKubernetes() {
+			// we only allow AvailabilitySet for kubernetes's agentpool
+			convertV20170701AgentPoolProfile(p, AvailabilitySet, apiProfile)
+		} else {
+			// other orchestrators all use VMSS
+			convertV20170701AgentPoolProfile(p, VirtualMachineScaleSets, apiProfile)
+		}
+		api.AgentPoolProfiles = append(api.AgentPoolProfiles, apiProfile)
+	}
+	if v20170701.LinuxProfile != nil {
+		api.LinuxProfile = &LinuxProfile{}
+		convertV20170701LinuxProfile(v20170701.LinuxProfile, api.LinuxProfile)
+	}
+	if v20170701.WindowsProfile != nil {
+		api.WindowsProfile = &WindowsProfile{}
+		convertV20170701WindowsProfile(v20170701.WindowsProfile, api.WindowsProfile)
+	}
+	if v20170701.ServicePrincipalProfile != nil {
+		api.ServicePrincipalProfile = &ServicePrincipalProfile{}
+		convertV20170701ServicePrincipalProfile(v20170701.ServicePrincipalProfile, api.ServicePrincipalProfile)
+	}
+}
+
 func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
 	if vlabs.OrchestratorProfile != nil {
@@ -324,6 +390,22 @@ func convertV20170131LinuxProfile(v20170131 *v20170131.LinuxProfile, api *LinuxP
 	}
 }
 
+func convertV20170701LinuxProfile(v20170701 *v20170701.LinuxProfile, api *LinuxProfile) {
+	api.AdminUsername = v20170701.AdminUsername
+	api.SSH.PublicKeys = []struct {
+		KeyData string `json:"keyData"`
+	}{}
+	for _, d := range v20170701.SSH.PublicKeys {
+		api.SSH.PublicKeys = append(api.SSH.PublicKeys, d)
+	}
+	api.Secrets = []KeyVaultSecrets{}
+	for _, s := range v20170701.Secrets {
+		secret := &KeyVaultSecrets{}
+		convertV20170701KeyVaultSecrets(&s, secret)
+		api.Secrets = append(api.Secrets, *secret)
+	}
+}
+
 func convertVLabsLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
 	api.AdminUsername = vlabs.AdminUsername
 	api.SSH.PublicKeys = []struct {
@@ -353,6 +435,17 @@ func convertV20160330WindowsProfile(v20160330 *v20160330.WindowsProfile, api *Wi
 func convertV20170131WindowsProfile(v20170131 *v20170131.WindowsProfile, api *WindowsProfile) {
 	api.AdminUsername = v20170131.AdminUsername
 	api.AdminPassword = v20170131.AdminPassword
+}
+
+func convertV20170701WindowsProfile(v20170701 *v20170701.WindowsProfile, api *WindowsProfile) {
+	api.AdminUsername = v20170701.AdminUsername
+	api.AdminPassword = v20170701.AdminPassword
+	api.Secrets = []KeyVaultSecrets{}
+	for _, s := range v20170701.Secrets {
+		secret := &KeyVaultSecrets{}
+		convertV20170701KeyVaultSecrets(&s, secret)
+		api.Secrets = append(api.Secrets, *secret)
+	}
 }
 
 func convertVLabsWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile) {
@@ -388,6 +481,37 @@ func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfil
 		api.OrchestratorVersion = KubernetesLatest
 	} else if api.OrchestratorType == DCOS {
 		api.OrchestratorVersion = DCOS190
+	}
+}
+
+func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProfile, api *OrchestratorProfile) {
+	if v20170701cs.OrchestratorType == v20170701.DockerCE {
+		api.OrchestratorType = SwarmMode
+	} else {
+		api.OrchestratorType = OrchestratorType(v20170701cs.OrchestratorType)
+	}
+
+	if api.OrchestratorType == Kubernetes {
+
+		switch v20170701cs.OrchestratorVersion {
+		case v20170701.Kubernetes166:
+			api.OrchestratorVersion = Kubernetes166
+		case v20170701.Kubernetes157:
+			api.OrchestratorVersion = Kubernetes157
+		default:
+			api.OrchestratorVersion = KubernetesLatest
+		}
+	} else if api.OrchestratorType == DCOS {
+		switch v20170701cs.OrchestratorVersion {
+		case v20170701.DCOS187:
+			api.OrchestratorVersion = DCOS187
+		case v20170701.DCOS188:
+			api.OrchestratorVersion = DCOS188
+		case v20170701.DCOS190:
+			api.OrchestratorVersion = DCOS190
+		default:
+			api.OrchestratorVersion = DCOSLatest
+		}
 	}
 }
 
@@ -465,6 +589,17 @@ func convertV20170131MasterProfile(v20170131 *v20170131.MasterProfile, api *Mast
 	api.VMSize = "Standard_D2_v2"
 }
 
+func convertV20170701MasterProfile(v20170701 *v20170701.MasterProfile, api *MasterProfile) {
+	api.Count = v20170701.Count
+	api.DNSPrefix = v20170701.DNSPrefix
+	api.FQDN = v20170701.FQDN
+	api.Subnet = v20170701.GetSubnet()
+	api.VMSize = v20170701.VMSize
+	api.OSDiskSizeGB = v20170701.OSDiskSizeGB
+	api.VnetSubnetID = v20170701.VnetSubnetID
+	api.FirstConsecutiveStaticIP = v20170701.FirstConsecutiveStaticIP
+}
+
 func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.Count = vlabs.Count
 	api.DNSPrefix = vlabs.DNSPrefix
@@ -521,6 +656,22 @@ func convertV20170131AgentPoolProfile(v20170131 *v20170131.AgentPoolProfile, ava
 	api.AvailabilityProfile = availabilityProfile
 }
 
+func convertV20170701AgentPoolProfile(v20170701 *v20170701.AgentPoolProfile, availabilityProfile string, api *AgentPoolProfile) {
+	api.Name = v20170701.Name
+	api.Count = v20170701.Count
+	api.VMSize = v20170701.VMSize
+	api.OSDiskSizeGB = v20170701.OSDiskSizeGB
+	api.DNSPrefix = v20170701.DNSPrefix
+	api.OSType = OSType(v20170701.OSType)
+	api.Ports = []int{}
+	api.Ports = append(api.Ports, v20170701.Ports...)
+	api.StorageProfile = v20170701.StorageProfile
+	api.VnetSubnetID = v20170701.VnetSubnetID
+	api.Subnet = v20170701.GetSubnet()
+	api.FQDN = v20170701.FQDN
+	api.AvailabilityProfile = availabilityProfile
+}
+
 func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolProfile) {
 	api.Name = vlabs.Name
 	api.Count = vlabs.Count
@@ -541,6 +692,17 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.CustomNodeLabels = map[string]string{}
 	for k, v := range vlabs.CustomNodeLabels {
 		api.CustomNodeLabels[k] = v
+	}
+}
+
+func convertV20170701KeyVaultSecrets(v20170701 *v20170701.KeyVaultSecrets, api *KeyVaultSecrets) {
+	api.SourceVault = &KeyVaultID{ID: v20170701.SourceVault.ID}
+	api.VaultCertificates = []KeyVaultCertificate{}
+	for _, c := range v20170701.VaultCertificates {
+		cert := KeyVaultCertificate{}
+		cert.CertificateStore = c.CertificateStore
+		cert.CertificateURL = c.CertificateURL
+		api.VaultCertificates = append(api.VaultCertificates, cert)
 	}
 }
 
@@ -619,6 +781,11 @@ func convertV20170131ServicePrincipalProfile(v20170131 *v20170131.ServicePrincip
 	api.Secret = v20170131.Secret
 }
 
+func convertV20170701ServicePrincipalProfile(v20170701 *v20170701.ServicePrincipalProfile, api *ServicePrincipalProfile) {
+	api.ClientID = v20170701.ClientID
+	api.Secret = v20170701.Secret
+}
+
 func convertVLabsServicePrincipalProfile(vlabs *vlabs.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 	api.ClientID = vlabs.ClientID
 	api.Secret = vlabs.Secret
@@ -630,6 +797,17 @@ func convertV20160930CustomProfile(v20160930 *v20160930.CustomProfile, api *Cust
 
 func convertV20170131CustomProfile(v20170131 *v20170131.CustomProfile, api *CustomProfile) {
 	api.Orchestrator = v20170131.Orchestrator
+}
+
+func convertV20170701CertificateProfile(v20170701 *v20170701.CertificateProfile, api *CertificateProfile) {
+	api.CaCertificate = v20170701.CaCertificate
+	api.APIServerCertificate = v20170701.APIServerCertificate
+	api.APIServerPrivateKey = v20170701.APIServerPrivateKey
+	api.ClientCertificate = v20170701.ClientCertificate
+	api.ClientPrivateKey = v20170701.ClientPrivateKey
+	api.KubeConfigCertificate = v20170701.KubeConfigCertificate
+	api.KubeConfigPrivateKey = v20170701.KubeConfigPrivateKey
+	api.SetCAPrivateKey(v20170701.GetCAPrivateKey())
 }
 
 func convertVLabsCertificateProfile(vlabs *vlabs.CertificateProfile, api *CertificateProfile) {
