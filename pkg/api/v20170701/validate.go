@@ -10,6 +10,7 @@ import (
 // Validate implements APIObject
 func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
+	case Swarm:
 	case DCOS:
 		switch o.OrchestratorVersion {
 		case DCOS187:

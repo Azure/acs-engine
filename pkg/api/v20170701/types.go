@@ -181,6 +181,8 @@ func (o *OrchestratorType) UnmarshalText(text []byte) error {
 		*o = DCOS
 	case strings.EqualFold(s, string(Kubernetes)):
 		*o = Kubernetes
+	case strings.EqualFold(s, string(Swarm)):
+		*o = Swarm
 	case strings.EqualFold(s, string(DockerCE)):
 		*o = DockerCE
 	default:
