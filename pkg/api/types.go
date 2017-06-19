@@ -45,6 +45,7 @@ type Properties struct {
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
+	ExtensionsProfile       []ExtensionProfile       `json:"extensionsProfile"`
 	DiagnosticsProfile      *DiagnosticsProfile      `json:"diagnosticsProfile,omitempty"`
 	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
@@ -132,19 +133,35 @@ type KubernetesConfig struct {
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int    `json:"count"`
-	DNSPrefix                string `json:"dnsPrefix"`
-	VMSize                   string `json:"vmSize"`
-	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
-	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
-	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	Subnet                   string `json:"subnet"`
-	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
+	Count                    int         `json:"count"`
+	DNSPrefix                string      `json:"dnsPrefix"`
+	VMSize                   string      `json:"vmSize"`
+	OSDiskSizeGB             int         `json:"osDiskSizeGB,omitempty"`
+	VnetSubnetID             string      `json:"vnetSubnetID,omitempty"`
+	FirstConsecutiveStaticIP string      `json:"firstConsecutiveStaticIP,omitempty"`
+	Subnet                   string      `json:"subnet"`
+	IPAddressCount           int         `json:"ipAddressCount,omitempty"`
+	Extensions               []Extension `json:"extensions"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
 	// Not used during PUT, returned as part of GET
 	FQDN string `json:"fqdn,omitempty"`
+}
+
+// ExtensionProfile represents an extension definition
+type ExtensionProfile struct {
+	Name                string `json:"name"`
+	Version             string `json:"version"`
+	ExtensionParameters string `json:"extensionParameters"`
+	RootURL             string `json:"rootURL"`
+}
+
+// Extension represents an extension definition in the master or agentPoolProfile
+type Extension struct {
+	Name        string `json:"name"`
+	SingleOrAll string `json:"singleOrAll"`
+	Template    string `json:"template"`
 }
 
 // AgentPoolProfile represents an agent pool definition
@@ -165,6 +182,7 @@ type AgentPoolProfile struct {
 
 	FQDN             string            `json:"fqdn,omitempty"`
 	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
+	Extensions       []Extension       `json:"extensions"`
 }
 
 // DiagnosticsProfile setting to enable/disable capturing
