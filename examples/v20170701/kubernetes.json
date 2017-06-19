@@ -14,14 +14,12 @@
       {
         "name": "agentpool1",
         "count": 1,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
+        "vmSize": "Standard_D2_v2"
       },
       {
         "name": "agentpool1",
         "count": 1,
         "vmSize": "Standard_D3_v2",
-        "availabilityProfile": "AvailabilitySet",
         "osType": "Windows"
       }
     ],
