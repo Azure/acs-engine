@@ -304,9 +304,9 @@ func convertPropertiesToV20170701(api *Properties, p *v20170701.Properties) {
 		p.ServicePrincipalProfile = &v20170701.ServicePrincipalProfile{}
 		convertServicePrincipalProfileToV20170701(api.ServicePrincipalProfile, p.ServicePrincipalProfile)
 	}
-	if api.CertificateProfile != nil {
-		p.CertificateProfile = &v20170701.CertificateProfile{}
-		convertCertificateProfileToV20170701(api.CertificateProfile, p.CertificateProfile)
+	if api.CustomProfile != nil {
+		p.CustomProfile = &v20170701.CustomProfile{}
+		convertCustomProfileToV20170701(api.CustomProfile, p.CustomProfile)
 	}
 }
 
@@ -679,6 +679,10 @@ func convertCustomProfileToV20170131(api *CustomProfile, v20170131 *v20170131.Cu
 	v20170131.Orchestrator = api.Orchestrator
 }
 
+func convertCustomProfileToV20170701(api *CustomProfile, v20170701 *v20170701.CustomProfile) {
+	v20170701.Orchestrator = api.Orchestrator
+}
+
 func convertServicePrincipalProfileToV20170701(api *ServicePrincipalProfile, v20170701 *v20170701.ServicePrincipalProfile) {
 	v20170701.ClientID = api.ClientID
 	v20170701.Secret = api.Secret
@@ -687,17 +691,6 @@ func convertServicePrincipalProfileToV20170701(api *ServicePrincipalProfile, v20
 func convertServicePrincipalProfileToVLabs(api *ServicePrincipalProfile, vlabs *vlabs.ServicePrincipalProfile) {
 	vlabs.ClientID = api.ClientID
 	vlabs.Secret = api.Secret
-}
-
-func convertCertificateProfileToV20170701(api *CertificateProfile, v20170701 *v20170701.CertificateProfile) {
-	v20170701.CaCertificate = api.CaCertificate
-	v20170701.APIServerCertificate = api.APIServerCertificate
-	v20170701.APIServerPrivateKey = api.APIServerPrivateKey
-	v20170701.ClientCertificate = api.ClientCertificate
-	v20170701.ClientPrivateKey = api.ClientPrivateKey
-	v20170701.KubeConfigCertificate = api.KubeConfigCertificate
-	v20170701.KubeConfigPrivateKey = api.KubeConfigPrivateKey
-	v20170701.SetCAPrivateKey(api.GetCAPrivateKey())
 }
 
 func convertCertificateProfileToVLabs(api *CertificateProfile, vlabs *vlabs.CertificateProfile) {

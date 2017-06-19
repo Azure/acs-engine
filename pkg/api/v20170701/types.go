@@ -36,7 +36,7 @@ type Properties struct {
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
-	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
+	CustomProfile           *CustomProfile           `json:"customProfile,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -54,33 +54,10 @@ type ServicePrincipalProfile struct {
 	Secret   string `json:"secret,omitempty"`
 }
 
-// CertificateProfile represents the definition of the master cluster
-// The JSON parameters could be either a plain text, or referenced to a secret in a keyvault.
-// In the latter case, the format of the parameter's value should be
-// "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
-// where:
-//    <SUB_ID> is the subscription ID of the keyvault
-//    <RG_NAME> is the resource group of the keyvault
-//    <KV_NAME> is the name of the keyvault
-//    <NAME> is the name of the secret
-//    <VERSION> (optional) is the version of the secret (default: the latest version)
-type CertificateProfile struct {
-	// CaCertificate is the certificate authority certificate.
-	CaCertificate string `json:"caCertificate,omitempty"`
-	// ApiServerCertificate is the rest api server certificate, and signed by the CA
-	APIServerCertificate string `json:"apiServerCertificate,omitempty"`
-	// ApiServerPrivateKey is the rest api server private key, and signed by the CA
-	APIServerPrivateKey string `json:"apiServerPrivateKey,omitempty"`
-	// ClientCertificate is the certificate used by the client kubelet services and signed by the CA
-	ClientCertificate string `json:"clientCertificate,omitempty"`
-	// ClientPrivateKey is the private key used by the client kubelet services and signed by the CA
-	ClientPrivateKey string `json:"clientPrivateKey,omitempty"`
-	// KubeConfigCertificate is the client certificate used for kubectl cli and signed by the CA
-	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty"`
-	// KubeConfigPrivateKey is the client private key used for kubectl cli and signed by the CA
-	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
-	// caPrivateKey is an internal field only set if generation required
-	caPrivateKey string
+// CustomProfile specifies custom properties that are used for
+// cluster instantiation.  Should not be used by most users.
+type CustomProfile struct {
+	Orchestrator string `json:"orchestrator,omitempty"`
 }
 
 // LinuxProfile represents the Linux configuration passed to the cluster
@@ -203,16 +180,6 @@ func (a *Properties) HasWindows() bool {
 		}
 	}
 	return false
-}
-
-// GetCAPrivateKey returns the ca private key
-func (c *CertificateProfile) GetCAPrivateKey() string {
-	return c.caPrivateKey
-}
-
-// SetCAPrivateKey sets the ca private key
-func (c *CertificateProfile) SetCAPrivateKey(caPrivateKey string) {
-	c.caPrivateKey = caPrivateKey
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
