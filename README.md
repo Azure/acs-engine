@@ -102,7 +102,7 @@ $ az group deployment create \
     --name "<DEPLOYMENT NAME>" \
     --resource-group "<RESOURCE_GROUP_NAME>" \
     --template-file "./_output/<INSTANCE>/azuredeploy.json" \
-    --parameters "@./_output/<INSTANCE>/azuredeploy.parameters.json"
+    --parameters "./_output/<INSTANCE>/azuredeploy.parameters.json"
 ```
 
 ### Deploying with Powershell
