@@ -138,8 +138,8 @@ func NewAzureClientWithClientSecret(env azure.Environment, subscriptionID, clien
 	return getClient(env, subscriptionID, armSpt, adSpt)
 }
 
-// NewAzureClientWithClientCertificate returns an AzureClient via client_id and jwt certificate assertion
-func NewAzureClientWithClientCertificate(env azure.Environment, subscriptionID, clientID, certificatePath, privateKeyPath string) (*AzureClient, error) {
+// NewAzureClientWithClientCertificateFile returns an AzureClient via client_id and jwt certificate assertion
+func NewAzureClientWithClientCertificateFile(env azure.Environment, subscriptionID, clientID, certificatePath, privateKeyPath string) (*AzureClient, error) {
 	oauthConfig, _, err := getOAuthConfig(env, subscriptionID)
 	if err != nil {
 		return nil, err
@@ -163,6 +163,33 @@ func NewAzureClientWithClientCertificate(env azure.Environment, subscriptionID, 
 	privateKey, err := parseRsaPrivateKey(privateKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse rsa private key: %q", err)
+	}
+
+	armSpt, err := adal.NewServicePrincipalTokenFromCertificate(*oauthConfig, clientID, certificate, privateKey, env.ServiceManagementEndpoint)
+	if err != nil {
+		return nil, err
+	}
+	adSpt, err := adal.NewServicePrincipalTokenFromCertificate(*oauthConfig, clientID, certificate, privateKey, env.GraphEndpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return getClient(env, subscriptionID, armSpt, adSpt)
+}
+
+// NewAzureClientWithClientCertificate returns an AzureClient via client_id and jwt certificate assertion
+func NewAzureClientWithClientCertificate(env azure.Environment, subscriptionID, clientID string, certificate *x509.Certificate, privateKey *rsa.PrivateKey) (*AzureClient, error) {
+	oauthConfig, _, err := getOAuthConfig(env, subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	if certificate == nil {
+		return nil, fmt.Errorf("certificate should not be nil")
+	}
+
+	if privateKey == nil {
+		return nil, fmt.Errorf("privateKey  should not be nil")
 	}
 
 	armSpt, err := adal.NewServicePrincipalTokenFromCertificate(*oauthConfig, clientID, certificate, privateKey, env.ServiceManagementEndpoint)

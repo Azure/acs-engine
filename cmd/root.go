@@ -102,7 +102,7 @@ func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
 	case "client_secret":
 		return armhelpers.NewAzureClientWithClientSecret(env, authArgs.SubscriptionID.String(), authArgs.ClientID.String(), authArgs.ClientSecret)
 	case "client_certificate":
-		return armhelpers.NewAzureClientWithClientCertificate(env, authArgs.SubscriptionID.String(), authArgs.ClientID.String(), authArgs.CertificatePath, authArgs.PrivateKeyPath)
+		return armhelpers.NewAzureClientWithClientCertificateFile(env, authArgs.SubscriptionID.String(), authArgs.ClientID.String(), authArgs.CertificatePath, authArgs.PrivateKeyPath)
 	default:
 		log.Fatalf("--auth-method: ERROR: method unsupported. method=%q.", authArgs.AuthMethod)
 	}
