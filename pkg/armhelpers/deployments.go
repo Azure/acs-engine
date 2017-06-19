@@ -2,6 +2,7 @@ package armhelpers
 
 import (
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/prometheus/common/log"
 )
 
@@ -51,4 +52,9 @@ func (az *AzureClient) ValidateTemplate(
 // GetDeployment returns the template deployment
 func (az *AzureClient) GetDeployment(resourceGroupName, deploymentName string) (result resources.DeploymentExtended, err error) {
 	return az.deploymentsClient.Get(resourceGroupName, deploymentName)
+}
+
+// CheckDeploymentExistence returns if the deployment already exists
+func (az *AzureClient) CheckDeploymentExistence(resourceGroupName string, deploymentName string) (result autorest.Response, err error) {
+	return az.deploymentsClient.CheckExistence(resourceGroupName, deploymentName)
 }
