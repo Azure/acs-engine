@@ -6,6 +6,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,7 +43,8 @@ var (
 // AzureClient implements the `ACSEngineClient` interface.
 // This client is backed by real Azure clients talking to an ARM endpoint.
 type AzureClient struct {
-	environment azure.Environment
+	AcceptLanguages []string
+	environment     azure.Environment
 
 	deploymentsClient             resources.DeploymentsClient
 	deploymentOperationsClient    resources.DeploymentOperationsClient
@@ -328,4 +330,13 @@ func parseRsaPrivateKey(path string) (*rsa.PrivateKey, error) {
 	}
 
 	return nil, fmt.Errorf("failed to parse private key as Pkcs#1 or Pkcs#8. (%s). (%s)", errPkcs1, errPkcs8)
+}
+
+func (az *AzureClient) addAcceptLanguages(request *http.Request) {
+	if az.AcceptLanguages == nil {
+		return
+	}
+	for _, language := range az.AcceptLanguages {
+		request.Header.Add("Accept-Language", language)
+	}
 }
