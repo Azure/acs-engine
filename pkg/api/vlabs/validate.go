@@ -305,6 +305,13 @@ func (a *KubernetesConfig) Validate() error {
 		}
 	}
 
+	if a.DockerBridgeSubnet != "" {
+		_, _, err := net.ParseCIDR(a.DockerBridgeSubnet)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet '%s' is an invalid subnet", a.DockerBridgeSubnet)
+		}
+	}
+
 	return nil
 }
 

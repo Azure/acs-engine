@@ -19,7 +19,7 @@ write_files:
   content: |
     [Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --log-driver=journald --bip={{WrapAsVariable "dockerBridgeCidr"}}
 
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
