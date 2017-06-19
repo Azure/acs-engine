@@ -382,12 +382,6 @@ func convertLinuxProfileToV20170701(api *LinuxProfile, v20170701Profile *v201707
 	for _, d := range api.SSH.PublicKeys {
 		v20170701Profile.SSH.PublicKeys = append(v20170701Profile.SSH.PublicKeys, d)
 	}
-	v20170701Profile.Secrets = []v20170701.KeyVaultSecrets{}
-	for _, s := range api.Secrets {
-		secret := &v20170701.KeyVaultSecrets{}
-		convertKeyVaultSecretsToV20170701(&s, secret)
-		v20170701Profile.Secrets = append(v20170701Profile.Secrets, *secret)
-	}
 }
 
 func convertLinuxProfileToVLabs(api *LinuxProfile, vlabsProfile *vlabs.LinuxProfile) {
@@ -424,12 +418,6 @@ func convertWindowsProfileToV20170131(api *WindowsProfile, v20170131 *v20170131.
 func convertWindowsProfileToV20170701(api *WindowsProfile, v20170701Profile *v20170701.WindowsProfile) {
 	v20170701Profile.AdminUsername = api.AdminUsername
 	v20170701Profile.AdminPassword = api.AdminPassword
-	v20170701Profile.Secrets = []v20170701.KeyVaultSecrets{}
-	for _, s := range api.Secrets {
-		secret := &v20170701.KeyVaultSecrets{}
-		convertKeyVaultSecretsToV20170701(&s, secret)
-		v20170701Profile.Secrets = append(v20170701Profile.Secrets, *secret)
-	}
 }
 
 func convertWindowsProfileToVLabs(api *WindowsProfile, vlabsProfile *vlabs.WindowsProfile) {
@@ -539,17 +527,6 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	vlabsProfile.FirstConsecutiveStaticIP = api.FirstConsecutiveStaticIP
 	vlabsProfile.SetSubnet(api.Subnet)
 	vlabsProfile.FQDN = api.FQDN
-}
-
-func convertKeyVaultSecretsToV20170701(api *KeyVaultSecrets, v20170701Secrets *v20170701.KeyVaultSecrets) {
-	v20170701Secrets.SourceVault = &v20170701.KeyVaultID{ID: api.SourceVault.ID}
-	v20170701Secrets.VaultCertificates = []v20170701.KeyVaultCertificate{}
-	for _, c := range api.VaultCertificates {
-		cert := v20170701.KeyVaultCertificate{}
-		cert.CertificateStore = c.CertificateStore
-		cert.CertificateURL = c.CertificateURL
-		v20170701Secrets.VaultCertificates = append(v20170701Secrets.VaultCertificates, cert)
-	}
 }
 
 func convertKeyVaultSecretsToVlabs(api *KeyVaultSecrets, vlabsSecrets *vlabs.KeyVaultSecrets) {

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"net/url"
 	"regexp"
 )
 
@@ -109,26 +108,6 @@ func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 	return nil
 }
 
-func validateKeyVaultSecrets(secrets []KeyVaultSecrets, requireCertificateStore bool) error {
-	for _, s := range secrets {
-		if len(s.VaultCertificates) == 0 {
-			return fmt.Errorf("Invalid KeyVaultSecrets must have no empty VaultCertificates")
-		}
-		if s.SourceVault.ID == "" {
-			return fmt.Errorf("KeyVaultSecrets must have a SourceVault.ID")
-		}
-		for _, c := range s.VaultCertificates {
-			if _, e := url.Parse(c.CertificateURL); e != nil {
-				return fmt.Errorf("Certificate url was invalid. recieved error %s", e)
-			}
-			if e := validateName(c.CertificateStore, "KeyVaultCertificate.CertificateStore"); requireCertificateStore && e != nil {
-				return fmt.Errorf("%s for certificates in a WindowsProfile", e)
-			}
-		}
-	}
-	return nil
-}
-
 // Validate implements APIObject
 func (l *LinuxProfile) Validate() error {
 	if e := validateName(l.AdminUsername, "LinuxProfile.AdminUsername"); e != nil {
@@ -138,9 +117,6 @@ func (l *LinuxProfile) Validate() error {
 		return errors.New("LinuxProfile.PublicKeys requires only 1 SSH Key")
 	}
 	if e := validateName(l.SSH.PublicKeys[0].KeyData, "LinuxProfile.PublicKeys.KeyData"); e != nil {
-		return e
-	}
-	if e := validateKeyVaultSecrets(l.Secrets, false); e != nil {
 		return e
 	}
 	return nil
@@ -193,9 +169,6 @@ func (a *Properties) Validate() error {
 			}
 			if len(a.WindowsProfile.AdminPassword) == 0 {
 				return fmt.Errorf("WindowsProfile.AdminPassword must not be empty since  agent pool '%s' specifies windows", agentPoolProfile.Name)
-			}
-			if e := validateKeyVaultSecrets(a.WindowsProfile.Secrets, true); e != nil {
-				return e
 			}
 		}
 	}

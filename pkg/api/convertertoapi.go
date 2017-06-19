@@ -398,12 +398,6 @@ func convertV20170701LinuxProfile(v20170701 *v20170701.LinuxProfile, api *LinuxP
 	for _, d := range v20170701.SSH.PublicKeys {
 		api.SSH.PublicKeys = append(api.SSH.PublicKeys, d)
 	}
-	api.Secrets = []KeyVaultSecrets{}
-	for _, s := range v20170701.Secrets {
-		secret := &KeyVaultSecrets{}
-		convertV20170701KeyVaultSecrets(&s, secret)
-		api.Secrets = append(api.Secrets, *secret)
-	}
 }
 
 func convertVLabsLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
@@ -440,12 +434,6 @@ func convertV20170131WindowsProfile(v20170131 *v20170131.WindowsProfile, api *Wi
 func convertV20170701WindowsProfile(v20170701 *v20170701.WindowsProfile, api *WindowsProfile) {
 	api.AdminUsername = v20170701.AdminUsername
 	api.AdminPassword = v20170701.AdminPassword
-	api.Secrets = []KeyVaultSecrets{}
-	for _, s := range v20170701.Secrets {
-		secret := &KeyVaultSecrets{}
-		convertV20170701KeyVaultSecrets(&s, secret)
-		api.Secrets = append(api.Secrets, *secret)
-	}
 }
 
 func convertVLabsWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile) {
@@ -692,17 +680,6 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.CustomNodeLabels = map[string]string{}
 	for k, v := range vlabs.CustomNodeLabels {
 		api.CustomNodeLabels[k] = v
-	}
-}
-
-func convertV20170701KeyVaultSecrets(v20170701 *v20170701.KeyVaultSecrets, api *KeyVaultSecrets) {
-	api.SourceVault = &KeyVaultID{ID: v20170701.SourceVault.ID}
-	api.VaultCertificates = []KeyVaultCertificate{}
-	for _, c := range v20170701.VaultCertificates {
-		cert := KeyVaultCertificate{}
-		cert.CertificateStore = c.CertificateStore
-		cert.CertificateURL = c.CertificateURL
-		api.VaultCertificates = append(api.VaultCertificates, cert)
 	}
 }
 
