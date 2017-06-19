@@ -25,10 +25,10 @@ _build:
 
 build: prereqs _build
 
-test: prereqs test_fmt
+test: test_fmt
 	go test -v $(GOFILES)
 
-test_fmt: prereqs
+test_fmt:
 	test -z "$$(gofmt -s -l $(GOFILES) | tee /dev/stderr)"
 
 validate-generated: prereqs
