@@ -6,7 +6,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -335,17 +334,17 @@ func parseRsaPrivateKey(path string) (*rsa.PrivateKey, error) {
 //AddAcceptLanguages sets the list of languages to accept on this request
 func (az *AzureClient) AddAcceptLanguages(languages []string) {
 	az.acceptLanguages = languages
-	az.deploymentOperationsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
-	az.deploymentsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
-	c.deploymentsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
-	c.deploymentOperationsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
-	c.resourcesClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
-	c.storageAccountsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
-	c.interfacesClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
-	c.groupsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
-	c.providersClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
-	c.virtualMachinesClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
-	c.virtualMachineScaleSetsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
+	az.deploymentOperationsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.deploymentsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.deploymentsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.deploymentOperationsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.resourcesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.storageAccountsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.interfacesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.groupsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.providersClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.virtualMachinesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.virtualMachineScaleSetsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
 }
 
 func (az *AzureClient) addAcceptLanguages() autorest.PrepareDecorator {
