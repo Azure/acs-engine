@@ -6,6 +6,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,7 +43,8 @@ var (
 // AzureClient implements the `ACSEngineClient` interface.
 // This client is backed by real Azure clients talking to an ARM endpoint.
 type AzureClient struct {
-	environment azure.Environment
+	acceptLanguages []string
+	environment     azure.Environment
 
 	deploymentsClient             resources.DeploymentsClient
 	deploymentOperationsClient    resources.DeploymentOperationsClient
@@ -328,4 +330,32 @@ func parseRsaPrivateKey(path string) (*rsa.PrivateKey, error) {
 	}
 
 	return nil, fmt.Errorf("failed to parse private key as Pkcs#1 or Pkcs#8. (%s). (%s)", errPkcs1, errPkcs8)
+}
+
+//AddAcceptLanguages sets the list of languages to accept on this request
+func (az *AzureClient) AddAcceptLanguages(languages []string) {
+	az.acceptLanguages = languages
+	az.deploymentOperationsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
+	az.deploymentsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
+	c.deploymentsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
+	c.deploymentOperationsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
+	c.resourcesClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
+	c.storageAccountsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
+	c.interfacesClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
+	c.groupsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
+	c.providersClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
+	c.virtualMachinesClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
+	c.virtualMachineScaleSetsClient.ManagementClient.Client.RequestInspector = addAcceptLanguages()
+}
+
+func (az *AzureClient) addAcceptLanguages() autorest.PrepareDecorator {
+	preparer := autorest.WithNothing()
+	if az.acceptLanguages != nil {
+		for _, language := range az.acceptLanguages {
+			preparer = autorest.WithHeader("Accept-Language", language)
+			// when the go sdk team updates the sdk add all the languages not just the first
+			break
+		}
+	}
+	return preparer
 }

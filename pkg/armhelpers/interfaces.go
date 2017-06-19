@@ -10,6 +10,9 @@ import (
 // This interface exposes just the subset of Azure APIs and clients needed for
 // ACS-Engine.
 type ACSEngineClient interface {
+
+	//AddAcceptLanguages sets the list of languages to accept on this request
+	AddAcceptLanguages(languages []string)
 	//
 	// RESOURCES
 
