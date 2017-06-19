@@ -45,6 +45,7 @@ type AzureClient struct {
 	environment azure.Environment
 
 	deploymentsClient             resources.DeploymentsClient
+	deploymentOperationsClient    resources.DeploymentOperationsClient
 	resourcesClient               resources.GroupClient
 	storageAccountsClient         storage.AccountsClient
 	interfacesClient              network.InterfacesClient
@@ -226,6 +227,7 @@ func getClient(env azure.Environment, subscriptionID string, armSpt *adal.Servic
 	c := &AzureClient{
 		environment:                   env,
 		deploymentsClient:             resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		deploymentOperationsClient:    resources.NewDeploymentOperationsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		resourcesClient:               resources.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		storageAccountsClient:         storage.NewAccountsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		interfacesClient:              network.NewInterfacesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
@@ -237,6 +239,7 @@ func getClient(env azure.Environment, subscriptionID string, armSpt *adal.Servic
 
 	authorizer := autorest.NewBearerAuthorizer(armSpt)
 	c.deploymentsClient.Authorizer = authorizer
+	c.deploymentOperationsClient.Authorizer = authorizer
 	c.resourcesClient.Authorizer = authorizer
 	c.storageAccountsClient.Authorizer = authorizer
 	c.interfacesClient.Authorizer = authorizer
