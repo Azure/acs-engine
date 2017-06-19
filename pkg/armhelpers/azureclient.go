@@ -140,11 +140,6 @@ func NewAzureClientWithClientSecret(env azure.Environment, subscriptionID, clien
 
 // NewAzureClientWithClientCertificateFile returns an AzureClient via client_id and jwt certificate assertion
 func NewAzureClientWithClientCertificateFile(env azure.Environment, subscriptionID, clientID, certificatePath, privateKeyPath string) (*AzureClient, error) {
-	oauthConfig, _, err := getOAuthConfig(env, subscriptionID)
-	if err != nil {
-		return nil, err
-	}
-
 	certificateData, err := ioutil.ReadFile(certificatePath)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read certificate: %q", err)
@@ -165,16 +160,7 @@ func NewAzureClientWithClientCertificateFile(env azure.Environment, subscription
 		return nil, fmt.Errorf("Failed to parse rsa private key: %q", err)
 	}
 
-	armSpt, err := adal.NewServicePrincipalTokenFromCertificate(*oauthConfig, clientID, certificate, privateKey, env.ServiceManagementEndpoint)
-	if err != nil {
-		return nil, err
-	}
-	adSpt, err := adal.NewServicePrincipalTokenFromCertificate(*oauthConfig, clientID, certificate, privateKey, env.GraphEndpoint)
-	if err != nil {
-		return nil, err
-	}
-
-	return getClient(env, subscriptionID, armSpt, adSpt)
+	return NewAzureClientWithClientCertificate(env, subscriptionID, clientID, certificate, privateKey)
 }
 
 // NewAzureClientWithClientCertificate returns an AzureClient via client_id and jwt certificate assertion
