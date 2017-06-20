@@ -170,7 +170,8 @@ func convertPropertiesToV20160930(api *Properties, p *v20160930.Properties) {
 		convertMasterProfileToV20160930(api.MasterProfile, p.MasterProfile)
 	}
 	p.AgentPoolProfiles = []*v20160930.AgentPoolProfile{}
-	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) > 1 {
+	// DCOS conversion logic
+	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 2 {
 		var privIndex, pubIndex int
 		for i, apiProfile := range api.AgentPoolProfiles {
 			// We added a pool with a "_public" suffix when converting to API model;
@@ -187,6 +188,12 @@ func convertPropertiesToV20160930(api *Properties, p *v20160930.Properties) {
 		}
 		// Assign DNS Prefix to private agent pool from public agent pool
 		p.AgentPoolProfiles[privIndex].DNSPrefix = api.AgentPoolProfiles[pubIndex].DNSPrefix
+	} else {
+		for _, apiProfile := range api.AgentPoolProfiles {
+			v20160930Profile := &v20160930.AgentPoolProfile{}
+			convertAgentPoolProfileToV20160930(apiProfile, v20160930Profile)
+			p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160930Profile)
+		}
 	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20160930.LinuxProfile{}
@@ -225,7 +232,8 @@ func convertPropertiesToV20160330(api *Properties, p *v20160330.Properties) {
 		convertMasterProfileToV20160330(api.MasterProfile, p.MasterProfile)
 	}
 	p.AgentPoolProfiles = []*v20160330.AgentPoolProfile{}
-	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) > 1 {
+	// DCOS conversion logic
+	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 2 {
 		var privIndex, pubIndex int
 		for i, apiProfile := range api.AgentPoolProfiles {
 			// We added a pool with a "_public" suffix when converting to API model;
@@ -242,6 +250,12 @@ func convertPropertiesToV20160330(api *Properties, p *v20160330.Properties) {
 		}
 		// Assign DNS Prefix to private agent pool from public agent pool
 		p.AgentPoolProfiles[privIndex].DNSPrefix = api.AgentPoolProfiles[pubIndex].DNSPrefix
+	} else {
+		for _, apiProfile := range api.AgentPoolProfiles {
+			v20160330Profile := &v20160330.AgentPoolProfile{}
+			convertAgentPoolProfileToV20160330(apiProfile, v20160330Profile)
+			p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160330Profile)
+		}
 	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20160330.LinuxProfile{}
@@ -272,7 +286,8 @@ func convertPropertiesToV20170131(api *Properties, p *v20170131.Properties) {
 		convertMasterProfileToV20170131(api.MasterProfile, p.MasterProfile)
 	}
 	p.AgentPoolProfiles = []*v20170131.AgentPoolProfile{}
-	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) > 1 {
+	// DCOS conversion logic
+	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 2 {
 		var privIndex, pubIndex int
 		for i, apiProfile := range api.AgentPoolProfiles {
 			// We added a pool with a "_public" suffix when converting to API model;
@@ -289,6 +304,12 @@ func convertPropertiesToV20170131(api *Properties, p *v20170131.Properties) {
 		}
 		// Assign DNS Prefix to private agent pool from public agent pool
 		p.AgentPoolProfiles[privIndex].DNSPrefix = api.AgentPoolProfiles[pubIndex].DNSPrefix
+	} else {
+		for _, apiProfile := range api.AgentPoolProfiles {
+			v20170131Profile := &v20170131.AgentPoolProfile{}
+			convertAgentPoolProfileToV20170131(apiProfile, v20170131Profile)
+			p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20170131Profile)
+		}
 	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20170131.LinuxProfile{}
