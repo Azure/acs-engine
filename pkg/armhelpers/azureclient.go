@@ -6,6 +6,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -348,13 +349,18 @@ func (az *AzureClient) AddAcceptLanguages(languages []string) {
 }
 
 func (az *AzureClient) addAcceptLanguages() autorest.PrepareDecorator {
-	preparer := autorest.WithNothing()
-	if az.acceptLanguages != nil {
-		for _, language := range az.acceptLanguages {
-			preparer = autorest.WithHeader("Accept-Language", language)
-			// when the go sdk team updates the sdk add all the languages not just the first
-			break
-		}
+	return func(p autorest.Preparer) autorest.Preparer {
+		return autorest.PreparerFunc(func(r *http.Request) (*http.Request, error) {
+			r, err := p.Prepare(r)
+			if err != nil {
+				return r, err
+			}
+			if az.acceptLanguages != nil {
+				for _, language := range az.acceptLanguages {
+					r.Header.Add("Accept-Language", language)
+				}
+			}
+			return r, nil
+		})
 	}
-	return preparer
 }
