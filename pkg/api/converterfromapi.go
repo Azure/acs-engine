@@ -172,7 +172,7 @@ func convertPropertiesToV20160930(api *Properties, p *v20160930.Properties) {
 	p.AgentPoolProfiles = []*v20160930.AgentPoolProfile{}
 	for _, apiProfile := range api.AgentPoolProfiles {
 		// We added a pool with a "_public" suffix when converting to API model;
-	    // we don't want to include that when converting back to a version-specific model
+		// we don't want to include that when converting back to a version-specific model
 		matched, err := regexp.MatchString(publicAgentPoolSuffix + "$", apiProfile.Name)
 		if !matched && err == nil {
 			v20160930Profile := &v20160930.AgentPoolProfile{}
@@ -223,7 +223,7 @@ func convertPropertiesToV20160330(api *Properties, p *v20160330.Properties) {
 	p.AgentPoolProfiles = []*v20160330.AgentPoolProfile{}
 	for _, apiProfile := range api.AgentPoolProfiles {
 		// We added a pool with a "_public" suffix when converting to API model;
-	    // we don't want to include that when converting back to a version-specific model
+		// we don't want to include that when converting back to a version-specific model
 		matched, err := regexp.MatchString(publicAgentPoolSuffix + "$", apiProfile.Name)
 		if !matched && err == nil {
 			v20160330Profile := &v20160330.AgentPoolProfile{}
@@ -266,7 +266,7 @@ func convertPropertiesToV20170131(api *Properties, p *v20170131.Properties) {
 	p.AgentPoolProfiles = []*v20170131.AgentPoolProfile{}
 	for _, apiProfile := range api.AgentPoolProfiles {
 		// We added a pool with a "_public" suffix when converting to API model;
-	    // we don't want to include that when converting back to a version-specific model
+		// we don't want to include that when converting back to a version-specific model
 		matched, err := regexp.MatchString(publicAgentPoolSuffix + "$", apiProfile.Name)
 		if !matched && err == nil {
 			v20170131Profile := &v20170131.AgentPoolProfile{}
