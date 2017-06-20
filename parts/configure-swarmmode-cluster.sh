@@ -16,7 +16,8 @@ echo "starting Swarm Mode cluster configuration"
 date
 ps ax
 
-DOCKER_COMPOSE_VERSION="1.12.0"
+DOCKER_CE_VERSION="17.03.*"
+DOCKER_COMPOSE_VERSION="1.14.0"
 #############
 # Parameters
 #############
@@ -150,9 +151,14 @@ echo "Installing and configuring Docker"
 installDocker()
 {
   for i in {1..10}; do
-    wget --tries 4 --retry-connrefused --waitretry=15 -qO- https://get.docker.com | sh
+    apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+    curl --max-time 60 -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - 
+    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    apt-get update
+    apt-get install -y docker-ce=${DOCKER_CE_VERSION}
     if [ $? -eq 0 ]
     then
+      systemctl restart docker
       # hostname has been found continue
       echo "Docker installed successfully"
       break
