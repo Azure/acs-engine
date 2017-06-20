@@ -806,7 +806,8 @@ func convertVLabsCertificateProfile(vlabs *vlabs.CertificateProfile, api *Certif
 
 func addDCOSPublicAgentPool(api *Properties) {
 	publicPool := &AgentPoolProfile{}
-	publicPool.Name = api.AgentPoolProfiles[0].Name + "_public"
+	// tag this agent pool with a known suffix string
+	publicPool.Name = api.AgentPoolProfiles[0].Name + publicAgentPoolSuffix
 	// move DNS prefix to public pool
 	publicPool.DNSPrefix = api.AgentPoolProfiles[0].DNSPrefix
 	api.AgentPoolProfiles[0].DNSPrefix = ""

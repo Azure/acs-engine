@@ -2,6 +2,7 @@ package api
 
 import (
 	"strings"
+	"regexp"
 
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
@@ -169,10 +170,11 @@ func convertPropertiesToV20160930(api *Properties, p *v20160930.Properties) {
 		convertMasterProfileToV20160930(api.MasterProfile, p.MasterProfile)
 	}
 	p.AgentPoolProfiles = []*v20160930.AgentPoolProfile{}
-	// We expect exactly 2 agent pools: index [0] is the private pool, index [1] is the public pool
-	for i, apiProfile := range api.AgentPoolProfiles {
-		// a V20160930 should only have one (private) agent pool
-		if i < 1 {
+	for _, apiProfile := range api.AgentPoolProfiles {
+		// We added a pool with a "_public" suffix when converting to API model;
+	    // we don't want to include that when converting back to a version-specific model
+		matched, err := regexp.MatchString(publicAgentPoolSuffix + "$", apiProfile.Name)
+		if !matched && err == nil {
 			v20160930Profile := &v20160930.AgentPoolProfile{}
 			convertAgentPoolProfileToV20160930(apiProfile, v20160930Profile)
 			p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160930Profile)
@@ -219,10 +221,11 @@ func convertPropertiesToV20160330(api *Properties, p *v20160330.Properties) {
 		convertMasterProfileToV20160330(api.MasterProfile, p.MasterProfile)
 	}
 	p.AgentPoolProfiles = []*v20160330.AgentPoolProfile{}
-	// We expect exactly 2 agent pools: index [0] is the private pool, index [1] is the public pool
-	for i, apiProfile := range api.AgentPoolProfiles {
-		// a V20160330 should only have one (private) agent pool
-		if i < 1 {
+	for _, apiProfile := range api.AgentPoolProfiles {
+		// We added a pool with a "_public" suffix when converting to API model;
+	    // we don't want to include that when converting back to a version-specific model
+		matched, err := regexp.MatchString(publicAgentPoolSuffix + "$", apiProfile.Name)
+		if !matched && err == nil {
 			v20160330Profile := &v20160330.AgentPoolProfile{}
 			convertAgentPoolProfileToV20160330(apiProfile, v20160330Profile)
 			p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160330Profile)
@@ -261,10 +264,11 @@ func convertPropertiesToV20170131(api *Properties, p *v20170131.Properties) {
 		convertMasterProfileToV20170131(api.MasterProfile, p.MasterProfile)
 	}
 	p.AgentPoolProfiles = []*v20170131.AgentPoolProfile{}
-	// We expect exactly 2 agent pools: index [0] is the private pool, index [1] is the public pool
-	for i, apiProfile := range api.AgentPoolProfiles {
-		// a V20170131 should only have one (private) agent pool
-		if i < 1 {
+	for _, apiProfile := range api.AgentPoolProfiles {
+		// We added a pool with a "_public" suffix when converting to API model;
+	    // we don't want to include that when converting back to a version-specific model
+		matched, err := regexp.MatchString(publicAgentPoolSuffix + "$", apiProfile.Name)
+		if !matched && err == nil {
 			v20170131Profile := &v20170131.AgentPoolProfile{}
 			convertAgentPoolProfileToV20170131(apiProfile, v20170131Profile)
 			p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20170131Profile)
