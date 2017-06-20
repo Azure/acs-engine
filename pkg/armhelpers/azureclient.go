@@ -6,6 +6,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,7 +43,8 @@ var (
 // AzureClient implements the `ACSEngineClient` interface.
 // This client is backed by real Azure clients talking to an ARM endpoint.
 type AzureClient struct {
-	environment azure.Environment
+	acceptLanguages []string
+	environment     azure.Environment
 
 	deploymentsClient             resources.DeploymentsClient
 	deploymentOperationsClient    resources.DeploymentOperationsClient
@@ -328,4 +330,37 @@ func parseRsaPrivateKey(path string) (*rsa.PrivateKey, error) {
 	}
 
 	return nil, fmt.Errorf("failed to parse private key as Pkcs#1 or Pkcs#8. (%s). (%s)", errPkcs1, errPkcs8)
+}
+
+//AddAcceptLanguages sets the list of languages to accept on this request
+func (az *AzureClient) AddAcceptLanguages(languages []string) {
+	az.acceptLanguages = languages
+	az.deploymentOperationsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.deploymentsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.deploymentsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.deploymentOperationsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.resourcesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.storageAccountsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.interfacesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.groupsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.providersClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.virtualMachinesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.virtualMachineScaleSetsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+}
+
+func (az *AzureClient) addAcceptLanguages() autorest.PrepareDecorator {
+	return func(p autorest.Preparer) autorest.Preparer {
+		return autorest.PreparerFunc(func(r *http.Request) (*http.Request, error) {
+			r, err := p.Prepare(r)
+			if err != nil {
+				return r, err
+			}
+			if az.acceptLanguages != nil {
+				for _, language := range az.acceptLanguages {
+					r.Header.Add("Accept-Language", language)
+				}
+			}
+			return r, nil
+		})
+	}
 }

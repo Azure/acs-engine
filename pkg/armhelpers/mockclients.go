@@ -29,6 +29,11 @@ func (msc *MockStorageClient) DeleteBlob(container, blob string) error {
 	return nil
 }
 
+//AddAcceptLanguage mock
+func (mc *MockACSEngineClient) AddAcceptLanguages(languages []string) {
+	return
+}
+
 //DeployTemplate mock
 func (mc *MockACSEngineClient) DeployTemplate(resourceGroup, name string, template, parameters map[string]interface{}, cancel <-chan struct{}) (*resources.DeploymentExtended, error) {
 	if mc.FailDeployTemplate {
