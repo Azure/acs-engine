@@ -6,14 +6,14 @@ import (
 
 func TestIsDCOS(t *testing.T) {
 	dCOSProfile := &OrchestratorProfile{
-		OrchestratorType: "DCOS",
+		OrchestratorType:    "DCOS",
 		OrchestratorVersion: "vlabs",
 	}
 	if !dCOSProfile.IsDCOS() {
 		t.Fatalf("unable to detect DCOS orchestrator profile from OrchestratorType=%s", dCOSProfile.OrchestratorType)
 	}
 	kubernetesProfile := &OrchestratorProfile{
-		OrchestratorType: "Kubernetes",
+		OrchestratorType:    "Kubernetes",
 		OrchestratorVersion: "vlabs",
 	}
 	if kubernetesProfile.IsDCOS() {

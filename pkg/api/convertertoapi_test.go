@@ -49,25 +49,25 @@ func TestAddDCOSPublicAgentPool(t *testing.T) {
 
 func makeAgentPoolProfile(count int, name, dNSPrefix, vMSize string, oSType OSType) *AgentPoolProfile {
 	return &AgentPoolProfile{
-		Name: name,
-		Count: count,
+		Name:      name,
+		Count:     count,
 		DNSPrefix: dNSPrefix,
-		OSType: oSType,
-		VMSize: vMSize,
+		OSType:    oSType,
+		VMSize:    vMSize,
 	}
 }
 
 func makeMasterProfile(count int, dNSPrefix, vMSize string) *MasterProfile {
 	return &MasterProfile{
-		Count: count,
+		Count:     count,
 		DNSPrefix: "test-dcos",
-		VMSize: "Standard_D2_v2",
+		VMSize:    "Standard_D2_v2",
 	}
 }
 
 func getProperties(profiles []*AgentPoolProfile, master *MasterProfile) *Properties {
 	return &Properties{
 		AgentPoolProfiles: profiles,
-		MasterProfile: master,
+		MasterProfile:     master,
 	}
 }
