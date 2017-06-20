@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
+	"github.com/Azure/acs-engine/pkg/api/v20170701"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -65,6 +66,16 @@ func LoadContainerService(contents []byte, version string) (*ContainerService, e
 		}
 		return ConvertV20170131ContainerService(containerService), nil
 
+	case v20170701.APIVersion:
+		containerService := &v20170701.ContainerService{}
+		if e := json.Unmarshal(contents, &containerService); e != nil {
+			return nil, e
+		}
+		if e := containerService.Properties.Validate(); e != nil {
+			return nil, e
+		}
+		return ConvertV20170701ContainerService(containerService), nil
+
 	case vlabs.APIVersion:
 		containerService := &vlabs.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
@@ -109,6 +120,17 @@ func SerializeContainerService(containerService *ContainerService, version strin
 		v20170131ContainerService := ConvertContainerServiceToV20170131(containerService)
 		armContainerService := &V20170131ARMContainerService{}
 		armContainerService.ContainerService = v20170131ContainerService
+		armContainerService.APIVersion = version
+		b, err := json.MarshalIndent(armContainerService, "", "  ")
+		if err != nil {
+			return nil, err
+		}
+		return b, nil
+
+	case v20170701.APIVersion:
+		v20170701ContainerService := ConvertContainerServiceToV20170701(containerService)
+		armContainerService := &V20170701ARMContainerService{}
+		armContainerService.ContainerService = v20170701ContainerService
 		armContainerService.APIVersion = version
 		b, err := json.MarshalIndent(armContainerService, "", "  ")
 		if err != nil {
