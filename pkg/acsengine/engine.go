@@ -538,11 +538,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				orchestratorVersionOrdinal >= targetVersionOrdinal
 		},
 		"GetKubernetesCustomLabels": func(profile *api.AgentPoolProfile) string {
-			var labels = ""
+			var buf bytes.Buffer
+			buf.WriteString(fmt.Sprintf(",agentpool=%s", profile.Name))
 			for k, v := range profile.CustomNodeLabels {
-				labels += fmt.Sprintf(",%s=%s", k, v)
+				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
 			}
-			return labels
+
+			return buf.String()
 		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
@@ -1279,12 +1281,12 @@ write_files:
 
 func getKubernetesSubnets(properties *api.Properties) string {
 	subnetString := `{
-            "name": "podCIDR%d", 
+            "name": "podCIDR%d",
             "properties": {
-              "addressPrefix": "10.244.%d.0/24", 
+              "addressPrefix": "10.244.%d.0/24",
               "networkSecurityGroup": {
                 "id": "[variables('nsgID')]"
-              }, 
+              },
               "routeTable": {
                 "id": "[variables('routeTableID')]"
               }
