@@ -107,7 +107,7 @@ write_files:
     DOCKER_OPTS=
     CUSTOM_CMD=/bin/true
     KUBELET_REGISTER_SCHEDULABLE=true
-    KUBELET_NODE_LABELS=role=agent
+    KUBELET_NODE_LABELS=role=agent{{ GetKubernetesCustomLabels . }}
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
 {{if IsKubernetesVersionGe "1.6.0"}}
      KUBELET_FEATURE_GATES=--feature-gates=Accelerators=true

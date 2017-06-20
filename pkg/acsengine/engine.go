@@ -537,6 +537,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes &&
 				orchestratorVersionOrdinal >= targetVersionOrdinal
 		},
+		"GetKubernetesCustomLabels": func(profile *api.AgentPoolProfile) string {
+			var labels = ""
+			for k, v := range profile.CustomNodeLabels {
+				labels += fmt.Sprintf(",%s=%s", k, v)
+			}
+			return labels
+		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
 		},
