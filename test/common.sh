@@ -71,6 +71,7 @@ function generate_template() {
 		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.windowsProfile.secrets[0].vaultCertificates[0].certificateUrl = \"${CERT_SECRET_URL}\""
 		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.windowsProfile.secrets[0].vaultCertificates[0].certificateStore = \"My\""
 	fi
+	echo "$(cat ${FINAL_CLUSTER_DEFINITION})"
 	# Generate template
 	"${DIR}/../acs-engine" generate --output-directory "${OUTPUT}" "${FINAL_CLUSTER_DEFINITION}" --debug
 
