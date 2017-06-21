@@ -381,6 +381,11 @@ func (o *OrchestratorProfile) IsKubernetes() bool {
 	return o.OrchestratorType == Kubernetes
 }
 
+// IsDCOS returns true if this template is for DCOS orchestrator
+func (o *OrchestratorProfile) IsDCOS() bool {
+	return o.OrchestratorType == DCOS
+}
+
 // IsVNETIntegrated returns true if Azure VNET integration is enabled
 func (o *OrchestratorProfile) IsVNETIntegrated() bool {
 	switch o.OrchestratorType {

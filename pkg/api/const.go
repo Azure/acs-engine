@@ -79,3 +79,6 @@ const (
 	// DCOSLatest is the string constant for latest DCOS version
 	DCOSLatest OrchestratorVersion = DCOS190
 )
+
+// To identify programmatically generated public agent pools
+const publicAgentPoolSuffix = "_public"
