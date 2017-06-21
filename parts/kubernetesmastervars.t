@@ -4,6 +4,7 @@
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
     "apiServerPrivateKey": "[parameters('apiServerPrivateKey')]",
     "caCertificate": "[parameters('caCertificate')]",
+    "caPrivateKey": "[parameters('caPrivateKey')]",
     "clientCertificate": "[parameters('clientCertificate')]",
     "clientPrivateKey": "[parameters('clientPrivateKey')]",
     "kubeConfigCertificate": "[parameters('kubeConfigCertificate')]",

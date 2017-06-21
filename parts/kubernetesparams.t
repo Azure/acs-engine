@@ -16,6 +16,12 @@
       },  
       "type": "string"
     }, 
+    "caPrivateKey": {
+      "metadata": {
+        "description": "The base 64 CA private key used on the master."
+      }, 
+      "type": "securestring"
+    }, 
     "clientCertificate": {
       "metadata": {
         "description": "The base 64 client certificate used to communicate with the master"
