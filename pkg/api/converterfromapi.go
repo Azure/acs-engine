@@ -756,11 +756,11 @@ func convertServicePrincipalProfileToVLabs(api *ServicePrincipalProfile, vlabs *
 
 func convertCertificateProfileToVLabs(api *CertificateProfile, vlabs *vlabs.CertificateProfile) {
 	vlabs.CaCertificate = api.CaCertificate
+	vlabs.CaPrivateKey = api.CaPrivateKey
 	vlabs.APIServerCertificate = api.APIServerCertificate
 	vlabs.APIServerPrivateKey = api.APIServerPrivateKey
 	vlabs.ClientCertificate = api.ClientCertificate
 	vlabs.ClientPrivateKey = api.ClientPrivateKey
 	vlabs.KubeConfigCertificate = api.KubeConfigCertificate
 	vlabs.KubeConfigPrivateKey = api.KubeConfigPrivateKey
-	vlabs.SetCAPrivateKey(api.GetCAPrivateKey())
 }

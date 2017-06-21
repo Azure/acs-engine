@@ -61,7 +61,7 @@ func WriteArtifacts(containerService *api.ContainerService, apiVersion, template
 
 		}
 
-		if e := saveFileString(artifactsDir, "ca.key", properties.CertificateProfile.GetCAPrivateKey()); e != nil {
+		if e := saveFileString(artifactsDir, "ca.key", properties.CertificateProfile.CaPrivateKey); e != nil {
 			return e
 		}
 		if e := saveFileString(artifactsDir, "ca.crt", properties.CertificateProfile.CaCertificate); e != nil {
