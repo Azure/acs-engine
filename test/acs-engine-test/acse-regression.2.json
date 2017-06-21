@@ -26,15 +26,15 @@
     },
     {
       "cluster_definition": "keyvaultcerts/swarmmode.json",
-      "location": "westus"
+      "location": "westeurope"
     },
     {
       "cluster_definition": "kubernetesversions/kubernetes1.5.3.json",
-      "location": "koreasouth"
+      "location": "canadaeast"
     },
     {
       "cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
-      "location": "westcentralus"
+      "location": "centralus"
     },
     {
       "cluster_definition": "kubernetesversions/kubernetes1.6.2.json",
