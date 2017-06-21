@@ -55,7 +55,7 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"hyperkube":    "hyperkube-amd64:v1.6.6",
 		"dashboard":    "kubernetes-dashboard-amd64:v1.6.1",
 		"exechealthz":  "exechealthz-amd64:1.2",
-		"addonresizer": "addon-resizer:1.6",
+		"addonresizer": "addon-resizer:1.7",
 		"heapster":     "heapster:v1.3.0",
 		"dns":          "k8s-dns-kube-dns-amd64:1.14.2",
 		"addonmanager": "kube-addon-manager-amd64:v6.4",
