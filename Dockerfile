@@ -2,7 +2,9 @@ FROM buildpack-deps:xenial
 
 ENV GO_VERSION 1.8
 ENV KUBECTL_VERSION 1.6.0
-ENV AZURE_CLI_VERSION 2.0.7
+
+# See: https://github.com/Azure/azure-cli/blob/master/packaged_releases/bundled/README.md#using-the-bundled-installer
+ENV AZURE_CLI_BUNDLE_VERSION 0.2.9
 
 RUN apt-get update \
     && apt-get -y upgrade \
@@ -14,7 +16,10 @@ RUN mkdir /tmp/godeb \
     && (cd /tmp/godeb; tar zvxf godeb.tar.gz; ./godeb install "${GO_VERSION}") \
     && rm -rf /tmp/godeb
 
-RUN pip install "azure-cli==${AZURE_CLI_VERSION}"
+RUN mkdir /tmp/azurecli \
+    && curl "https://azurecliprod.blob.core.windows.net/bundled/azure-cli_bundle_${AZURE_CLI_BUNDLE_VERSION}.tar.gz" > /tmp/azurecli/azure-cli_bundle.tar.gz \
+    && (cd /tmp/azurecli && tar -xvzf azure-cli_bundle.tar.gz && azure-cli_bundle_*/installer) \
+    && rm -rf /tmp/azurecli
 
 RUN curl -fsSL https://get.docker.com/ | sh
 
