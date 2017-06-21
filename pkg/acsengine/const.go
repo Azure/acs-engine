@@ -53,7 +53,7 @@ const (
 var KubeImages = map[api.OrchestratorVersion]map[string]string{
 	api.Kubernetes166: {
 		"hyperkube":    "hyperkube-amd64:v1.6.6",
-		"dashboard":    "kubernetes-dashboard-amd64:v1.6.0",
+		"dashboard":    "kubernetes-dashboard-amd64:v1.6.1",
 		"exechealthz":  "exechealthz-amd64:1.2",
 		"addonresizer": "addon-resizer:1.6",
 		"heapster":     "heapster:v1.2.0",
