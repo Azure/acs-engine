@@ -33,7 +33,7 @@ test-style:
 validate-generated:
 	./scripts/validate-generated.sh
 
-ci: validate-generated build test lint
+ci: prereqs validate-generated build test lint
 
 devenv:
 	./scripts/devenv.sh
