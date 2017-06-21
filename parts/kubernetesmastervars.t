@@ -50,7 +50,7 @@
     "osImageOffer": "UbuntuServer", 
     "osImagePublisher": "Canonical", 
     "osImageSKU": "16.04-LTS", 
-    "osImageVersion": "16.04.201705160",
+    "osImageVersion": "16.04.201706191",
     "resourceGroup": "[resourceGroup().name]", 
     "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
     "routeTableID": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]",
