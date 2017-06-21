@@ -57,7 +57,7 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"exechealthz":  "exechealthz-amd64:1.2",
 		"addonresizer": "addon-resizer:1.6",
 		"heapster":     "heapster:v1.3.0",
-		"dns":          "k8s-dns-kube-dns-amd64:1.13.0",
+		"dns":          "k8s-dns-kube-dns-amd64:1.14.2",
 		"addonmanager": "kube-addon-manager-amd64:v6.4",
 		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":        "pause-amd64:3.0",
