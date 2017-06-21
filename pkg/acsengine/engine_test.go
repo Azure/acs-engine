@@ -188,13 +188,13 @@ func IterateTestFilesDirectory(directory string, APIModelTestFiles *[]APIModelTe
 // addTestCertificateProfile add certificate artifacts for test purpose
 func addTestCertificateProfile(api *api.CertificateProfile) {
 	api.CaCertificate = "caCertificate"
+	api.CaPrivateKey = "caPrivateKey"
 	api.APIServerCertificate = "apiServerCertificate"
 	api.APIServerPrivateKey = "apiServerPrivateKey"
 	api.ClientCertificate = "clientCertificate"
 	api.ClientPrivateKey = "clientPrivateKey"
 	api.KubeConfigCertificate = "kubeConfigCertificate"
 	api.KubeConfigPrivateKey = "kubeConfigPrivateKey"
-	api.SetCAPrivateKey("")
 }
 
 func TestVersionOrdinal(t *testing.T) {

@@ -200,8 +200,8 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 
 	// use the specified Certificate Authority pair, or generate a new pair
 	var caPair *PkiKeyCertPair
-	if len(a.CertificateProfile.CaCertificate) != 0 && len(a.CertificateProfile.GetCAPrivateKey()) != 0 {
-		caPair = &PkiKeyCertPair{CertificatePem: a.CertificateProfile.CaCertificate, PrivateKeyPem: a.CertificateProfile.GetCAPrivateKey()}
+	if len(a.CertificateProfile.CaCertificate) != 0 && len(a.CertificateProfile.CaPrivateKey) != 0 {
+		caPair = &PkiKeyCertPair{CertificatePem: a.CertificateProfile.CaCertificate, PrivateKeyPem: a.CertificateProfile.CaPrivateKey}
 	} else {
 		caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, nil, nil)
 		if err != nil {
@@ -209,7 +209,7 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		}
 		caPair = &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))}
 		a.CertificateProfile.CaCertificate = caPair.CertificatePem
-		a.CertificateProfile.SetCAPrivateKey(caPair.PrivateKeyPem)
+		a.CertificateProfile.CaPrivateKey = caPair.PrivateKeyPem
 	}
 
 	apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)

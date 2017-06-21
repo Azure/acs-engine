@@ -105,7 +105,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 			prop.CertificateProfile = &api.CertificateProfile{}
 		}
 		prop.CertificateProfile.CaCertificate = string(caCertificateBytes)
-		prop.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
+		prop.CertificateProfile.CaPrivateKey = string(caKeyBytes)
 	}
 }
 

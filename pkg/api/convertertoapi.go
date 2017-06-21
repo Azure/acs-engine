@@ -795,13 +795,13 @@ func convertV20170701CustomProfile(v20170701 *v20170701.CustomProfile, api *Cust
 
 func convertVLabsCertificateProfile(vlabs *vlabs.CertificateProfile, api *CertificateProfile) {
 	api.CaCertificate = vlabs.CaCertificate
+	api.CaPrivateKey = vlabs.CaPrivateKey
 	api.APIServerCertificate = vlabs.APIServerCertificate
 	api.APIServerPrivateKey = vlabs.APIServerPrivateKey
 	api.ClientCertificate = vlabs.ClientCertificate
 	api.ClientPrivateKey = vlabs.ClientPrivateKey
 	api.KubeConfigCertificate = vlabs.KubeConfigCertificate
 	api.KubeConfigPrivateKey = vlabs.KubeConfigPrivateKey
-	api.SetCAPrivateKey(vlabs.GetCAPrivateKey())
 }
 
 func addDCOSPublicAgentPool(api *Properties) {
