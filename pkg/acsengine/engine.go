@@ -369,6 +369,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
 		addSecret(parametersMap, "apiServerPrivateKey", properties.CertificateProfile.APIServerPrivateKey, true)
 		addSecret(parametersMap, "caCertificate", properties.CertificateProfile.CaCertificate, true)
+		addSecret(parametersMap, "caPrivateKey", properties.CertificateProfile.GetCAPrivateKey(), true)
 		addSecret(parametersMap, "clientCertificate", properties.CertificateProfile.ClientCertificate, true)
 		addSecret(parametersMap, "clientPrivateKey", properties.CertificateProfile.ClientPrivateKey, true)
 		addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
