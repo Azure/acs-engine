@@ -18,12 +18,10 @@ prereqs:
 	go get github.com/jteeuwen/go-bindata/...
 	glide install
 
-_build:
+build:
 	go generate -v $(GOFILES)
 	go build -v -ldflags="-X github.com/Azure/acs-engine/cmd.BuildSHA=${VERSION} -X github.com/Azure/acs-engine/cmd.BuildTime=${BUILD}"
 	cd test/acs-engine-test; go build -v
-
-build: _build
 
 test: test_fmt
 	go test -v $(GOFILES)
