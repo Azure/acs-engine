@@ -54,6 +54,9 @@ func (m *MasterProfile) Validate() error {
 	if m.OSDiskSizeGB != 0 && (m.OSDiskSizeGB < MinDiskSizeGB || m.OSDiskSizeGB > MaxDiskSizeGB) {
 		return fmt.Errorf("Invalid master os disk size of %d specified.  The range of valid values are [%d, %d]", m.OSDiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
 	}
+	if e := validateStorageProfile(m.StorageProfile); e != nil {
+		return e
+	}
 	return nil
 }
 
@@ -240,7 +243,7 @@ func validateStorageProfile(storageProfile string) error {
 	case "":
 	default:
 		{
-			return fmt.Errorf("Unknown storage type '%s' for agent pool. Specify either %s or %s", storageProfile, StorageAccount, ManagedDisks)
+			return fmt.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", storageProfile, StorageAccount, ManagedDisks)
 		}
 	}
 	return nil

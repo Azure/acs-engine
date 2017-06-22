@@ -599,6 +599,11 @@ func convertV20170701MasterProfile(v20170701 *v20170701.MasterProfile, api *Mast
 	api.OSDiskSizeGB = v20170701.OSDiskSizeGB
 	api.VnetSubnetID = v20170701.VnetSubnetID
 	api.FirstConsecutiveStaticIP = v20170701.FirstConsecutiveStaticIP
+	api.StorageProfile = v20170701.StorageProfile
+	// by default 20170701 will use managed disks as it has encryption at rest
+	if len(api.StorageProfile) == 0 {
+		api.StorageProfile = ManagedDisks
+	}
 }
 
 func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
@@ -611,6 +616,11 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.Subnet = vlabs.GetSubnet()
 	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
+	api.StorageProfile = vlabs.StorageProfile
+	// by default vlabs will use managed disks as it has encryption at rest
+	if len(api.StorageProfile) == 0 {
+		api.StorageProfile = ManagedDisks
+	}
 }
 
 func convertV20160930AgentPoolProfile(v20160930 *v20160930.AgentPoolProfile, availabilityProfile string, api *AgentPoolProfile) {
