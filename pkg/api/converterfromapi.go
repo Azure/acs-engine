@@ -577,6 +577,7 @@ func convertMasterProfileToV20170701(api *MasterProfile, v20170701Profile *v2017
 	v20170701Profile.OSDiskSizeGB = api.OSDiskSizeGB
 	v20170701Profile.VnetSubnetID = api.VnetSubnetID
 	v20170701Profile.FirstConsecutiveStaticIP = api.FirstConsecutiveStaticIP
+	v20170701Profile.StorageProfile = api.StorageProfile
 }
 
 func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterProfile) {
@@ -588,6 +589,7 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	vlabsProfile.FirstConsecutiveStaticIP = api.FirstConsecutiveStaticIP
 	vlabsProfile.SetSubnet(api.Subnet)
 	vlabsProfile.FQDN = api.FQDN
+	vlabsProfile.StorageProfile = api.StorageProfile
 }
 
 func convertKeyVaultSecretsToVlabs(api *KeyVaultSecrets, vlabsSecrets *vlabs.KeyVaultSecrets) {

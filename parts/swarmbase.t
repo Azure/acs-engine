@@ -21,9 +21,7 @@
         {{end}}
     {{end}}
 
-    {{template "swarmmastervars.t" .}},
-    
-    {{GetSizeMap}}
+    {{template "swarmmastervars.t" .}}
   },
   "resources": [
     {{range .AgentPoolProfiles}}

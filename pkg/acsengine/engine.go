@@ -747,14 +747,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"WrapAsVerbatim": func(s string) string {
 			return fmt.Sprintf("',%s,'", s)
 		},
-		"AnyAgentHasDisks": func() bool {
-			for _, agentProfile := range cs.Properties.AgentPoolProfiles {
-				if agentProfile.HasDisks() {
-					return true
-				}
-			}
-			return false
-		},
 		"AnyAgentUsesAvailablilitySets": func() bool {
 			for _, agentProfile := range cs.Properties.AgentPoolProfiles {
 				if agentProfile.IsAvailabilitySets() {
