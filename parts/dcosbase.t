@@ -18,9 +18,7 @@
         {{end}}
     {{end}}
     
-    {{template "dcosmastervars.t" .}},
-    
-    {{GetSizeMap}}
+    {{template "dcosmastervars.t" .}}
   },
   "resources": [
     {{range .AgentPoolProfiles}}

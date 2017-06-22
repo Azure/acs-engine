@@ -141,6 +141,7 @@ type MasterProfile struct {
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string `json:"subnet"`
 	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
+	StorageProfile           string `json:"storageProfile,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -303,8 +304,24 @@ func (p *Properties) HasWindows() bool {
 
 // HasManagedDisks returns true if the cluster contains Managed Disks
 func (p *Properties) HasManagedDisks() bool {
+	if p.MasterProfile.StorageProfile == ManagedDisks {
+		return true
+	}
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.StorageProfile == ManagedDisks {
+			return true
+		}
+	}
+	return false
+}
+
+// HasStorageAccountDisks returns true if the cluster contains Storage Account Disks
+func (p *Properties) HasStorageAccountDisks() bool {
+	if p.MasterProfile.StorageProfile == StorageAccount {
+		return true
+	}
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
+		if agentPoolProfile.StorageProfile == StorageAccount {
 			return true
 		}
 	}
@@ -314,6 +331,16 @@ func (p *Properties) HasManagedDisks() bool {
 // IsCustomVNET returns true if the customer brought their own VNET
 func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
+}
+
+// IsManagedDisks returns true if the master specified managed disks
+func (m *MasterProfile) IsManagedDisks() bool {
+	return m.StorageProfile == ManagedDisks
+}
+
+// IsStorageAccount returns true if the master specified storage account
+func (m *MasterProfile) IsStorageAccount() bool {
+	return m.StorageProfile == StorageAccount
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
