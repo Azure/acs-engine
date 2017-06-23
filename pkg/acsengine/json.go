@@ -28,6 +28,22 @@ func PrettyPrintArmTemplate(template string) (string, error) {
 	return template, nil
 }
 
+// PrettyPrintArmParameters will pretty print the arm template ensuring the header is $schema and contentVersion are at top.
+func PrettyPrintArmParameters(template string) (string, error) {
+	translateParams := [][]string{
+		{"\"contentVersion\"", "\"$zcontentVersion\""},
+	}
+
+	template = translateJSON(template, translateParams, false)
+	var err error
+	if template, err = PrettyPrintJSON(template); err != nil {
+		return "", err
+	}
+	template = translateJSON(template, translateParams, true)
+
+	return template, nil
+}
+
 // PrettyPrintJSON will pretty print the json into
 func PrettyPrintJSON(content string) (string, error) {
 	var data map[string]interface{}

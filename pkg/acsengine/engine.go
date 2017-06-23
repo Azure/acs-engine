@@ -350,6 +350,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	location := cs.Location
 	parametersMap := map[string]interface{}{}
 
+	// add the header
+	parametersMap["$schema"] = "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#"
+	parametersMap["contentVersion"] = "1.0.0.0"
+
 	// Master Parameters
 	addValue(parametersMap, "location", location)
 	addValue(parametersMap, "targetEnvironment", GetCloudTargetEnv(location))
