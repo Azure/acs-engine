@@ -188,6 +188,7 @@ func convertPropertiesToV20160930(api *Properties, p *v20160930.Properties) {
 		}
 		// Assign DNS Prefix to private agent pool from public agent pool
 		p.AgentPoolProfiles[privIndex].DNSPrefix = api.AgentPoolProfiles[pubIndex].DNSPrefix
+		p.AgentPoolProfiles[privIndex].FQDN = api.AgentPoolProfiles[pubIndex].FQDN
 	} else {
 		for _, apiProfile := range api.AgentPoolProfiles {
 			v20160930Profile := &v20160930.AgentPoolProfile{}
@@ -250,6 +251,7 @@ func convertPropertiesToV20160330(api *Properties, p *v20160330.Properties) {
 		}
 		// Assign DNS Prefix to private agent pool from public agent pool
 		p.AgentPoolProfiles[privIndex].DNSPrefix = api.AgentPoolProfiles[pubIndex].DNSPrefix
+		p.AgentPoolProfiles[privIndex].FQDN = api.AgentPoolProfiles[pubIndex].FQDN
 	} else {
 		for _, apiProfile := range api.AgentPoolProfiles {
 			v20160330Profile := &v20160330.AgentPoolProfile{}
@@ -304,6 +306,7 @@ func convertPropertiesToV20170131(api *Properties, p *v20170131.Properties) {
 		}
 		// Assign DNS Prefix to private agent pool from public agent pool
 		p.AgentPoolProfiles[privIndex].DNSPrefix = api.AgentPoolProfiles[pubIndex].DNSPrefix
+		p.AgentPoolProfiles[privIndex].FQDN = api.AgentPoolProfiles[pubIndex].FQDN
 	} else {
 		for _, apiProfile := range api.AgentPoolProfiles {
 			v20170131Profile := &v20170131.AgentPoolProfile{}
