@@ -81,4 +81,4 @@ const (
 )
 
 // To identify programmatically generated public agent pools
-const publicAgentPoolSuffix = "_public"
+const publicAgentPoolSuffix = "-public"

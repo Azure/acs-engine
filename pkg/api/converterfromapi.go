@@ -174,7 +174,7 @@ func convertPropertiesToV20160930(api *Properties, p *v20160930.Properties) {
 	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 2 {
 		var privIndex, pubIndex int
 		for i, apiProfile := range api.AgentPoolProfiles {
-			// We added a pool with a "_public" suffix when converting to API model;
+			// We added a pool with a "-public" suffix when converting to API model;
 			// we don't want to include that when converting back to a version-specific model
 			matched, err := regexp.MatchString(publicAgentPoolSuffix+"$", apiProfile.Name)
 			if !matched && err == nil {
@@ -236,7 +236,7 @@ func convertPropertiesToV20160330(api *Properties, p *v20160330.Properties) {
 	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 2 {
 		var privIndex, pubIndex int
 		for i, apiProfile := range api.AgentPoolProfiles {
-			// We added a pool with a "_public" suffix when converting to API model;
+			// We added a pool with a "-public" suffix when converting to API model;
 			// we don't want to include that when converting back to a version-specific model
 			matched, err := regexp.MatchString(publicAgentPoolSuffix+"$", apiProfile.Name)
 			if !matched && err == nil {
@@ -290,7 +290,7 @@ func convertPropertiesToV20170131(api *Properties, p *v20170131.Properties) {
 	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 2 {
 		var privIndex, pubIndex int
 		for i, apiProfile := range api.AgentPoolProfiles {
-			// We added a pool with a "_public" suffix when converting to API model;
+			// We added a pool with a "-public" suffix when converting to API model;
 			// we don't want to include that when converting back to a version-specific model
 			matched, err := regexp.MatchString(publicAgentPoolSuffix+"$", apiProfile.Name)
 			if !matched && err == nil {
