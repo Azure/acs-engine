@@ -1,0 +1,117 @@
+# Produced by 'helm init --dry-run --debug'
+apiVersion: extensions/v1beta1
+kind: Deployment
+Spec:
+  MinReadySeconds: 0
+  Paused: false
+  ProgressDeadlineSeconds: null
+  Replicas: 1
+  RevisionHistoryLimit: null
+  RollbackTo: null
+  Selector: null
+  Strategy:
+    RollingUpdate: null
+    Type: ""
+  Template:
+    Spec:
+      ActiveDeadlineSeconds: null
+      Affinity: null
+      AutomountServiceAccountToken: null
+      Containers:
+      - Args: null
+        Command: null
+        Env:
+        - Name: TILLER_NAMESPACE
+          Value: kube-system
+          ValueFrom: null
+        EnvFrom: null
+        Image: <kubernetesTillerSpec>
+        ImagePullPolicy: IfNotPresent
+        Lifecycle: null
+        LivenessProbe:
+          Exec: null
+          FailureThreshold: 0
+          HTTPGet:
+            HTTPHeaders: null
+            Host: ""
+            Path: /liveness
+            Port: 44135
+            Scheme: ""
+          InitialDelaySeconds: 1
+          PeriodSeconds: 0
+          SuccessThreshold: 0
+          TCPSocket: null
+          TimeoutSeconds: 1
+        Name: tiller
+        Ports:
+        - ContainerPort: 44134
+          HostIP: ""
+          HostPort: 0
+          Name: tiller
+          Protocol: ""
+        ReadinessProbe:
+          Exec: null
+          FailureThreshold: 0
+          HTTPGet:
+            HTTPHeaders: null
+            Host: ""
+            Path: /readiness
+            Port: 44135
+            Scheme: ""
+          InitialDelaySeconds: 1
+          PeriodSeconds: 0
+          SuccessThreshold: 0
+          TCPSocket: null
+          TimeoutSeconds: 1
+        Resources:
+          Limits: null
+          Requests: null
+        SecurityContext: null
+        Stdin: false
+        StdinOnce: false
+        TTY: false
+        TerminationMessagePath: ""
+        TerminationMessagePolicy: ""
+        VolumeMounts: null
+        WorkingDir: ""
+      DNSPolicy: ""
+      Hostname: ""
+      ImagePullSecrets: null
+      InitContainers: null
+      NodeName: ""
+      NodeSelector:
+        beta.kubernetes.io/os: linux
+      RestartPolicy: ""
+      SchedulerName: ""
+      SecurityContext:
+        FSGroup: null
+        HostIPC: false
+        HostNetwork: false
+        HostPID: false
+        RunAsNonRoot: null
+        RunAsUser: null
+        SELinuxOptions: null
+        SupplementalGroups: null
+      ServiceAccountName: ""
+      Subdomain: ""
+      TerminationGracePeriodSeconds: null
+      Tolerations: null
+      Volumes: null
+    creationTimestamp: null
+    labels:
+      app: helm
+      name: tiller
+Status:
+  AvailableReplicas: 0
+  Conditions: null
+  ObservedGeneration: 0
+  ReadyReplicas: 0
+  Replicas: 0
+  UnavailableReplicas: 0
+  UpdatedReplicas: 0
+creationTimestamp: null
+labels:
+  app: helm
+  name: tiller
+name: tiller-deploy
+namespace: kube-system

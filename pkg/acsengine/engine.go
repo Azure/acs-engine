@@ -107,6 +107,8 @@ var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR":  "kubernetesmasteraddons-managed-standard-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR":   "kubernetesmasteraddons-managed-premium-storage-class.yaml",
+	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment.yaml",
+	"MASTER_ADDON_TILLER_SERVICE_B64_GZIP_STR":                  "kubernetesmasteraddons-tiller-service.yaml",
 }
 
 var kubernetesAddonYamls15 = map[string]string{
@@ -120,6 +122,8 @@ var kubernetesAddonYamls15 = map[string]string{
 	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR":  "kubernetesmasteraddons-managed-standard-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR":   "kubernetesmasteraddons-managed-premium-storage-class.yaml",
+	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment.yaml",
+	"MASTER_ADDON_TILLER_SERVICE_B64_GZIP_STR":                  "kubernetesmasteraddons-tiller-service.yaml",
 }
 
 var calicoAddonYamls = map[string]string{
@@ -407,6 +411,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dnsmasq"])
 		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["exechealthz"])
 		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["heapster"])
+		addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["tiller"])
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["pause"])
 		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
