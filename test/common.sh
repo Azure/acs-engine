@@ -132,7 +132,7 @@ function scale_agent_pool() {
 	DEPLOYMENT_PARAMS="${OUTPUT}/azuredeploy.parameters.json"
 
 	for poolname in `jq '.properties.agentPoolProfiles[].name' "${APIMODEL}" | tr -d '\"'`; do
-	  offset=$(jq "getpath([\"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
+	  offset=$(jq "getpath([\"parameters\", \"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
 	  echo "$poolname : offset=$offset count=$AGENT_POOL_SIZE"
 	  jqi "${DEPLOYMENT_PARAMS}" ".${poolname}Count.value = $AGENT_POOL_SIZE"
 	  jqi "${DEPLOYMENT_PARAMS}" ".${poolname}Offset.value = $offset"
@@ -154,7 +154,7 @@ function get_node_count() {
 	count=$(jq 'getpath(["properties","masterProfile","count"])' ${APIMODEL})
 
 	for poolname in `jq -r '.properties.agentPoolProfiles[].name' "${APIMODEL}"`; do
-	  nodes=$(jq "getpath([\"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
+	  nodes=$(jq "getpath([\"parameters\", \"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
 	  count=$((count+nodes))
 	done
 
