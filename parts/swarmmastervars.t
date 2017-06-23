@@ -122,6 +122,9 @@
     "vmsPerStorageAccount": 20,
     "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),variables('location')))]",
     {{GetSizeMap}},
+{{else}}
+    "storageAccountPrefixes": [],
+    "storageAccountBaseName": "",
 {{end}}
 {{if .HasManagedDisks}}
     "apiVersionStorageManagedDisks": "2016-04-30-preview",
