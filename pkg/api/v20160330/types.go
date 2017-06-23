@@ -110,7 +110,7 @@ type AgentPoolProfile struct {
 	Count     int    `json:"count"`
 	VMSize    string `json:"vmSize"`
 	DNSPrefix string `json:"dnsPrefix"`
-	FQDN      string `json:"fqdn,omitempty"`
+	FQDN      string `json:"fqdn"`
 	OSType    OSType `json:"osType"` // TODO: This field is versioned to "2016-03-30"
 	// subnet is internal
 	subnet string
@@ -200,6 +200,11 @@ func (a *AgentPoolProfile) IsWindows() bool {
 // IsLinux returns true if the agent pool is linux
 func (a *AgentPoolProfile) IsLinux() bool {
 	return a.OSType == Linux
+}
+
+// IsDCOS returns true if this template is for DCOS orchestrator
+func (o *OrchestratorProfile) IsDCOS() bool {
+	return o.OrchestratorType == DCOS
 }
 
 // GetSubnet returns the read-only subnet for the agent pool

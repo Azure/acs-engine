@@ -6,6 +6,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,9 +43,11 @@ var (
 // AzureClient implements the `ACSEngineClient` interface.
 // This client is backed by real Azure clients talking to an ARM endpoint.
 type AzureClient struct {
-	environment azure.Environment
+	acceptLanguages []string
+	environment     azure.Environment
 
 	deploymentsClient             resources.DeploymentsClient
+	deploymentOperationsClient    resources.DeploymentOperationsClient
 	resourcesClient               resources.GroupClient
 	storageAccountsClient         storage.AccountsClient
 	interfacesClient              network.InterfacesClient
@@ -138,13 +141,8 @@ func NewAzureClientWithClientSecret(env azure.Environment, subscriptionID, clien
 	return getClient(env, subscriptionID, armSpt, adSpt)
 }
 
-// NewAzureClientWithClientCertificate returns an AzureClient via client_id and jwt certificate assertion
-func NewAzureClientWithClientCertificate(env azure.Environment, subscriptionID, clientID, certificatePath, privateKeyPath string) (*AzureClient, error) {
-	oauthConfig, _, err := getOAuthConfig(env, subscriptionID)
-	if err != nil {
-		return nil, err
-	}
-
+// NewAzureClientWithClientCertificateFile returns an AzureClient via client_id and jwt certificate assertion
+func NewAzureClientWithClientCertificateFile(env azure.Environment, subscriptionID, clientID, certificatePath, privateKeyPath string) (*AzureClient, error) {
 	certificateData, err := ioutil.ReadFile(certificatePath)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read certificate: %q", err)
@@ -163,6 +161,24 @@ func NewAzureClientWithClientCertificate(env azure.Environment, subscriptionID, 
 	privateKey, err := parseRsaPrivateKey(privateKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse rsa private key: %q", err)
+	}
+
+	return NewAzureClientWithClientCertificate(env, subscriptionID, clientID, certificate, privateKey)
+}
+
+// NewAzureClientWithClientCertificate returns an AzureClient via client_id and jwt certificate assertion
+func NewAzureClientWithClientCertificate(env azure.Environment, subscriptionID, clientID string, certificate *x509.Certificate, privateKey *rsa.PrivateKey) (*AzureClient, error) {
+	oauthConfig, _, err := getOAuthConfig(env, subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	if certificate == nil {
+		return nil, fmt.Errorf("certificate should not be nil")
+	}
+
+	if privateKey == nil {
+		return nil, fmt.Errorf("privateKey  should not be nil")
 	}
 
 	armSpt, err := adal.NewServicePrincipalTokenFromCertificate(*oauthConfig, clientID, certificate, privateKey, env.ServiceManagementEndpoint)
@@ -226,6 +242,7 @@ func getClient(env azure.Environment, subscriptionID string, armSpt *adal.Servic
 	c := &AzureClient{
 		environment:                   env,
 		deploymentsClient:             resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		deploymentOperationsClient:    resources.NewDeploymentOperationsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		resourcesClient:               resources.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		storageAccountsClient:         storage.NewAccountsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		interfacesClient:              network.NewInterfacesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
@@ -237,6 +254,7 @@ func getClient(env azure.Environment, subscriptionID string, armSpt *adal.Servic
 
 	authorizer := autorest.NewBearerAuthorizer(armSpt)
 	c.deploymentsClient.Authorizer = authorizer
+	c.deploymentOperationsClient.Authorizer = authorizer
 	c.resourcesClient.Authorizer = authorizer
 	c.storageAccountsClient.Authorizer = authorizer
 	c.interfacesClient.Authorizer = authorizer
@@ -312,4 +330,37 @@ func parseRsaPrivateKey(path string) (*rsa.PrivateKey, error) {
 	}
 
 	return nil, fmt.Errorf("failed to parse private key as Pkcs#1 or Pkcs#8. (%s). (%s)", errPkcs1, errPkcs8)
+}
+
+//AddAcceptLanguages sets the list of languages to accept on this request
+func (az *AzureClient) AddAcceptLanguages(languages []string) {
+	az.acceptLanguages = languages
+	az.deploymentOperationsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.deploymentsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.deploymentsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.deploymentOperationsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.resourcesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.storageAccountsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.interfacesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.groupsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.providersClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.virtualMachinesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.virtualMachineScaleSetsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+}
+
+func (az *AzureClient) addAcceptLanguages() autorest.PrepareDecorator {
+	return func(p autorest.Preparer) autorest.Preparer {
+		return autorest.PreparerFunc(func(r *http.Request) (*http.Request, error) {
+			r, err := p.Prepare(r)
+			if err != nil {
+				return r, err
+			}
+			if az.acceptLanguages != nil {
+				for _, language := range az.acceptLanguages {
+					r.Header.Add("Accept-Language", language)
+				}
+			}
+			return r, nil
+		})
+	}
 }

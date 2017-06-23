@@ -117,7 +117,7 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 		// the caKey is not in the api model, and should be stored separately from the model
 		// we put these in the model after model is deserialized
 		dc.containerService.Properties.CertificateProfile.CaCertificate = string(caCertificateBytes)
-		dc.containerService.Properties.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
+		dc.containerService.Properties.CertificateProfile.CaPrivateKey = string(caKeyBytes)
 	}
 
 	dc.client, err = dc.authArgs.getClient()

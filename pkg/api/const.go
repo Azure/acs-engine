@@ -59,8 +59,10 @@ const (
 	Kubernetes160 OrchestratorVersion = "1.6.0"
 	// Kubernetes162 is the string constant for Kubernetes 1.6.2
 	Kubernetes162 OrchestratorVersion = "1.6.2"
+	// Kubernetes166 is the string constant for Kubernetes 1.6.6
+	Kubernetes166 OrchestratorVersion = "1.6.6"
 	// KubernetesLatest is the string constant for latest Kubernetes version
-	KubernetesLatest OrchestratorVersion = Kubernetes162
+	KubernetesLatest OrchestratorVersion = Kubernetes166
 )
 
 const (
@@ -77,3 +79,6 @@ const (
 	// DCOSLatest is the string constant for latest DCOS version
 	DCOSLatest OrchestratorVersion = DCOS190
 )
+
+// To identify programmatically generated public agent pools
+const publicAgentPoolSuffix = "_public"

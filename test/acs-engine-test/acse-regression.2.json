@@ -1,0 +1,56 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "disks-managed/swarmmode-vmss.json",
+      "location": "eastus"
+    },
+    {
+      "cluster_definition": "disks-storageaccount/dcos.json",
+      "location": "westus2"
+    },
+    {
+      "cluster_definition": "disks-storageaccount/kubernetes.json",
+      "location": "eastasia"
+    },
+    {
+      "cluster_definition": "disks-storageaccount/swarm.json",
+      "location": "southeastasia"
+    },
+    {
+      "cluster_definition": "disks-storageaccount/swarmmode.json",
+      "location": "koreacentral"
+    },
+    {
+      "cluster_definition": "keyvaultcerts/swarm-windows.json",
+      "location": "westus"
+    },
+    {
+      "cluster_definition": "keyvaultcerts/swarmmode.json",
+      "location": "westus"
+    },
+    {
+      "cluster_definition": "kubernetesversions/kubernetes1.5.3.json",
+      "location": "canadaeast"
+    },
+    {
+      "cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
+      "location": "centralus"
+    },
+    {
+      "cluster_definition": "kubernetesversions/kubernetes1.6.2.json",
+      "location": "uksouth"
+    },
+    {
+      "cluster_definition": "networkpolicy/kubernetes-calico.json",
+      "location": "australiaeast"
+    },
+    {
+      "cluster_definition": "custom-pod-cidr/kubernetes.json",
+      "location": "ukwest"
+    },
+    {
+      "cluster_definition": "v20170131/swarmmode.json",
+      "location": "westindia"
+    }
+  ]
+}

@@ -28,6 +28,7 @@ func (o *OrchestratorProfile) Validate() error {
 
 	case Kubernetes:
 		switch o.OrchestratorVersion {
+		case Kubernetes166:
 		case Kubernetes162:
 		case Kubernetes160:
 		case Kubernetes157:
@@ -74,6 +75,9 @@ func (m *MasterProfile) Validate() error {
 	}
 	if m.IPAddressCount != 0 && (m.IPAddressCount < MinIPAddressCount || m.IPAddressCount > MaxIPAddressCount) {
 		return fmt.Errorf("MasterProfile.IPAddressCount needs to be in the range [%d,%d]", MinIPAddressCount, MaxIPAddressCount)
+	}
+	if e := validateStorageProfile(m.StorageProfile); e != nil {
+		return e
 	}
 	return nil
 }
@@ -397,7 +401,7 @@ func validateStorageProfile(storageProfile string) error {
 	case "":
 	default:
 		{
-			return fmt.Errorf("Unknown storage type '%s' for agent pool. Specify either %s or %s", storageProfile, StorageAccount, ManagedDisks)
+			return fmt.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", storageProfile, StorageAccount, ManagedDisks)
 		}
 	}
 	return nil

@@ -47,7 +47,7 @@
       "location": "[variables('location')]", 
       "name": "[variables('{{.Name}}AvailabilitySet')]", 
       "properties": { 
-        "platformFaultDomainCount": "3", 
+        "platformFaultDomainCount": "2", 
         "platformUpdateDomainCount": "3",
         "managed": "true"
       },
