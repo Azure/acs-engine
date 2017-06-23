@@ -545,6 +545,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.KubernetesImageBase = api.KubernetesImageBase
 	vlabs.ClusterSubnet = api.ClusterSubnet
 	vlabs.NetworkPolicy = api.NetworkPolicy
+	vlabs.DockerBridgeSubnet = api.DockerBridgeSubnet
 }
 
 func convertMasterProfileToV20160930(api *MasterProfile, v20160930 *v20160930.MasterProfile) {

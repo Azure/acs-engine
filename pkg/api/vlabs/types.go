@@ -133,6 +133,7 @@ type KubernetesConfig struct {
 	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
 	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
 	NetworkPolicy       string `json:"networkPolicy,omitempty"`
+	DockerBridgeSubnet  string `json:"DockerBridgeSubnet,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
