@@ -248,7 +248,7 @@ func certGenerationRequired(a *api.Properties) bool {
 	case api.SwarmMode:
 		return false
 	case api.Kubernetes:
-		return true
+		return false
 	default:
 		return false
 	}

@@ -633,6 +633,7 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	if len(api.StorageProfile) == 0 {
 		api.StorageProfile = ManagedDisks
 	}
+	api.PodCidr = vlabs.PodCidr
 }
 
 func convertV20160930AgentPoolProfile(v20160930 *v20160930.AgentPoolProfile, availabilityProfile string, api *AgentPoolProfile) {

@@ -1,0 +1,45 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "orchestratorVersion": "1.6.2"
+    },
+    "masterProfile": {
+      "dnsPrefix": "knova-k8s-agent-pool",
+      "vmSize": "Standard_D2_v2",
+      "podCidr": "10.0.0.0/24"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "user",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "pubkey"
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "servicePrincipalClientID": "appid",
+      "servicePrincipalClientSecret": "password"
+    },
+    "certificateProfile": {
+      "caCertificate": "123456789",
+      "apiServerCertificate": "123456789",
+      "apiServerPrivateKey": "123456789",
+      "clientCertificate": "123456789",
+      "clientPrivateKey": "123456789",
+      "kubeConfigCertificate": "123456789",
+      "kubeConfigPrivateKey": "123456789"
+    }
+  }
+}

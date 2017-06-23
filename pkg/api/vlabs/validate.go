@@ -58,6 +58,15 @@ func (o *OrchestratorProfile) Validate() error {
 
 // Validate implements APIObject
 func (m *MasterProfile) Validate() error {
+	if m.PodCidr != "" {
+		// --------------------------------------------------------------------
+		// Hosted Master
+
+		// Todo (@kris-nova) Add real validation after the branch is working as intended
+
+		return nil
+
+	}
 	if m.Count != 1 && m.Count != 3 && m.Count != 5 {
 		return fmt.Errorf("MasterProfile count needs to be 1, 3, or 5")
 	}

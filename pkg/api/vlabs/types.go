@@ -136,16 +136,10 @@ type KubernetesConfig struct {
 	DockerBridgeSubnet  string `json:"DockerBridgeSubnet,omitempty"`
 }
 
-// MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int    `json:"count"`
-	DNSPrefix                string `json:"dnsPrefix"`
-	VMSize                   string `json:"vmSize"`
-	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
-	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
-	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
-	StorageProfile           string `json:"storageProfile,omitempty"`
+	MasterHostedProfile
+	MasterVmProfile
+	DNSPrefix string `json:"dnsPrefix"`
 
 	// subnet is internal
 	subnet string
@@ -154,6 +148,23 @@ type MasterProfile struct {
 	// The format will be FQDN:2376
 	// Not used during PUT, returned as part of GET
 	FQDN string `json:"fqdn,omitempty"`
+}
+
+// MasterProfile represents the definition of the master cluster
+type MasterVmProfile struct {
+	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
+	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
+	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
+	StorageProfile           string `json:"storageProfile,omitempty"`
+	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
+	Count                    int    `json:"count"`
+	VMSize                   string `json:"vmSize"`
+}
+
+type MasterHostedProfile struct {
+	// PodCidr will define an optional pod cidr to pass
+	// to the kubelet container.
+	PodCidr string `json: "podCidr"`
 }
 
 // ClassicAgentPoolProfileType represents types of classic profiles

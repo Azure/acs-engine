@@ -15,12 +15,14 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/ghodss/yaml"
+	"os"
 )
 
 const (
 	kubernetesMasterCustomDataYaml      = "kubernetesmastercustomdata.yml"
 	kubernetesMasterCustomScript        = "kubernetesmastercustomscript.sh"
 	kubernetesAgentCustomDataYaml       = "kubernetesagentcustomdata.yml"
+	hostedKubernetesAgentCustomDataYaml = "hostedkubernetesagentcustomdata.yml"
 	kubeConfigJSON                      = "kubeconfig.json"
 	kubernetesWindowsAgentCustomDataPS1 = "kuberneteswindowssetup.ps1"
 )
@@ -43,36 +45,37 @@ const (
 )
 
 const (
-	agentOutputs                 = "agentoutputs.t"
-	agentParams                  = "agentparams.t"
-	classicParams                = "classicparams.t"
-	dcosAgentResourcesVMAS       = "dcosagentresourcesvmas.t"
-	dcosAgentResourcesVMSS       = "dcosagentresourcesvmss.t"
-	dcosAgentVars                = "dcosagentvars.t"
-	dcosBaseFile                 = "dcosbase.t"
-	dcosParams                   = "dcosparams.t"
-	dcosMasterResources          = "dcosmasterresources.t"
-	dcosMasterVars               = "dcosmastervars.t"
-	kubernetesBaseFile           = "kubernetesbase.t"
-	kubernetesAgentResourcesVMAS = "kubernetesagentresourcesvmas.t"
-	kubernetesAgentVars          = "kubernetesagentvars.t"
-	kubernetesMasterResources    = "kubernetesmasterresources.t"
-	kubernetesMasterVars         = "kubernetesmastervars.t"
-	kubernetesParams             = "kubernetesparams.t"
-	kubernetesWinAgentVars       = "kuberneteswinagentresourcesvmas.t"
-	kubernetesKubeletService     = "kuberneteskubelet.service"
-	masterOutputs                = "masteroutputs.t"
-	masterParams                 = "masterparams.t"
-	swarmBaseFile                = "swarmbase.t"
-	swarmAgentResourcesVMAS      = "swarmagentresourcesvmas.t"
-	swarmAgentResourcesVMSS      = "swarmagentresourcesvmss.t"
-	swarmAgentResourcesClassic   = "swarmagentresourcesclassic.t"
-	swarmAgentVars               = "swarmagentvars.t"
-	swarmMasterResources         = "swarmmasterresources.t"
-	swarmMasterVars              = "swarmmastervars.t"
-	swarmWinAgentResourcesVMAS   = "swarmwinagentresourcesvmas.t"
-	swarmWinAgentResourcesVMSS   = "swarmwinagentresourcesvmss.t"
-	windowsParams                = "windowsparams.t"
+	agentOutputs                   = "agentoutputs.t"
+	agentParams                    = "agentparams.t"
+	classicParams                  = "classicparams.t"
+	dcosAgentResourcesVMAS         = "dcosagentresourcesvmas.t"
+	dcosAgentResourcesVMSS         = "dcosagentresourcesvmss.t"
+	dcosAgentVars                  = "dcosagentvars.t"
+	dcosBaseFile                   = "dcosbase.t"
+	dcosParams                     = "dcosparams.t"
+	dcosMasterResources            = "dcosmasterresources.t"
+	dcosMasterVars                 = "dcosmastervars.t"
+	kubernetesBaseFile             = "kubernetesbase.t"
+	kubernetesAgentResourcesVMAS   = "kubernetesagentresourcesvmas.t"
+	kubernetesAgentVars            = "kubernetesagentvars.t"
+	kubernetesMasterResources      = "kubernetesmasterresources.t"
+	kubernetesMasterVars           = "kubernetesmastervars.t"
+	kubernetesParams               = "kubernetesparams.t"
+	kubernetesWinAgentVars         = "kuberneteswinagentresourcesvmas.t"
+	kubernetesKubeletService       = "kuberneteskubelet.service"
+	hostedKubernetesKubeletService = "hostedkuberneteskubelet.service"
+	masterOutputs                  = "masteroutputs.t"
+	masterParams                   = "masterparams.t"
+	swarmBaseFile                  = "swarmbase.t"
+	swarmAgentResourcesVMAS        = "swarmagentresourcesvmas.t"
+	swarmAgentResourcesVMSS        = "swarmagentresourcesvmss.t"
+	swarmAgentResourcesClassic     = "swarmagentresourcesclassic.t"
+	swarmAgentVars                 = "swarmagentvars.t"
+	swarmMasterResources           = "swarmmasterresources.t"
+	swarmMasterVars                = "swarmmastervars.t"
+	swarmWinAgentResourcesVMAS     = "swarmwinagentresourcesvmas.t"
+	swarmWinAgentResourcesVMSS     = "swarmwinagentresourcesvmss.t"
+	windowsParams                  = "windowsparams.t"
 )
 
 const (
@@ -90,8 +93,9 @@ var kubernetesManifestYamls = map[string]string{
 }
 
 var kubernetesAritfacts = map[string]string{
-	"MASTER_PROVISION_B64_GZIP_STR": kubernetesMasterCustomScript,
-	"KUBELET_SERVICE_B64_GZIP_STR":  kubernetesKubeletService,
+	"MASTER_PROVISION_B64_GZIP_STR":       kubernetesMasterCustomScript,
+	"KUBELET_SERVICE_B64_GZIP_STR":        kubernetesKubeletService,
+	"KUBELET_HOSTED_SERVICE_B64_GZIP_STR": hostedKubernetesKubeletService,
 }
 
 var kubernetesAddonYamls = map[string]string{
@@ -224,6 +228,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	templ = template.New("acs template").Funcs(t.getTemplateFuncMap(containerService))
 
 	files, baseFile, e := prepareTemplateFiles(properties)
+
 	if e != nil {
 		return "", "", false, e
 	}
@@ -325,7 +330,7 @@ func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
 	switch GetCloudTargetEnv(location) {
 	case azureChinaCloud:
 		return AzureChinaCloudSpec
-	//TODO - add cloud specs for germany and usgov
+		//TODO - add cloud specs for germany and usgov
 	default:
 		return AzureCloudSpec
 	}
@@ -686,9 +691,26 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			// return the custom data
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
+		"IsHostedMaster": func(profile *api.AgentPoolProfile) bool {
+			if cs.Properties.MasterProfile.PodCidr != "" {
+				return true
+			}
+			return false
+		},
+		"GetPodCidr": func(profile *api.AgentPoolProfile) string {
+			return cs.Properties.MasterProfile.PodCidr
+		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
+			var data string
+			if cs.Properties.MasterProfile.PodCidr != "" {
+				data = hostedKubernetesAgentCustomDataYaml
+			} else {
+				data = kubernetesAgentCustomDataYaml
+			}
+			str, e := t.getSingleLineForTemplate(data, cs, profile)
 			if e != nil {
+				fmt.Println(e.Error())
+				os.Exit(1)
 				return ""
 			}
 

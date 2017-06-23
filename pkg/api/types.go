@@ -147,7 +147,8 @@ type MasterProfile struct {
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
 	// Not used during PUT, returned as part of GET
-	FQDN string `json:"fqdn,omitempty"`
+	FQDN    string `json:"fqdn,omitempty"`
+	PodCidr string `json: "podCidr"`
 }
 
 // AgentPoolProfile represents an agent pool definition
