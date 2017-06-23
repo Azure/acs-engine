@@ -103,6 +103,13 @@
       },
       "type": "string"
     },
+    "kubernetesTillerSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerSpec"}}
+      "metadata": {
+        "description": "The container spec for Helm Tiller."
+      },
+      "type": "string"
+    },
     "kubernetesPodInfraContainerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesPodInfraContainerSpec"}}
       "metadata": {

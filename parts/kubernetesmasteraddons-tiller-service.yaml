@@ -1,0 +1,29 @@
+# Produced by 'helm init --dry-run --debug'
+apiVersion: v1
+kind: Service
+Spec:
+  ClusterIP: ""
+  ExternalIPs: null
+  ExternalName: ""
+  LoadBalancerIP: ""
+  LoadBalancerSourceRanges: null
+  Ports:
+  - Name: tiller
+    NodePort: 0
+    Port: 44134
+    Protocol: ""
+    TargetPort: tiller
+  Selector:
+    app: helm
+    name: tiller
+  SessionAffinity: ""
+  Type: ClusterIP
+Status:
+  LoadBalancer:
+    Ingress: null
+creationTimestamp: null
+labels:
+  app: helm
+  name: tiller
+name: tiller-deploy
+namespace: kube-system
