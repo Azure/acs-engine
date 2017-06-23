@@ -4,7 +4,7 @@ import "testing"
 
 func TestConfigParse(t *testing.T) {
 
-	test_cfg := `
+	testCfg := `
 {"deployments":
   [
     {
@@ -29,11 +29,11 @@ func TestConfigParse(t *testing.T) {
 }
 `
 
-	testConfig := TestConfig{}
-	if err := testConfig.Read([]byte(test_cfg)); err != nil {
+	testConfig := testConfig{}
+	if err := testConfig.Read([]byte(testCfg)); err != nil {
 		t.Fatal(err)
 	}
-	if err := testConfig.Validate(); err != nil {
+	if err := testConfig.validate(); err != nil {
 		t.Fatal(err)
 	}
 	if len(testConfig.Deployments) != 4 {

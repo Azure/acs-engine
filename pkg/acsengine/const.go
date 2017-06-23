@@ -30,7 +30,7 @@ const (
 	// DefaultAgentIPAddressCount is the default number of IP addresses per network interface on agents
 	DefaultAgentIPAddressCount = 1
 	// DefaultAgentMultiIPAddressCount is the default number of IP addresses per network interface on agents,
-	// when VNET integration is enabled. It can be overriden per pool by setting the pool's IPAdddressCount property.
+	// when VNET integration is enabled. It can be overridden per pool by setting the pool's IPAdddressCount property.
 	DefaultAgentMultiIPAddressCount = 128
 	// DefaultKubernetesClusterDomain is the dns suffix used in the cluster (used as a SAN in the PKI generation)
 	DefaultKubernetesClusterDomain = "cluster.local"
@@ -42,14 +42,15 @@ const (
 )
 
 const (
-	// Master represents the master node type
+	// DCOSMaster represents the master node type
 	DCOSMaster DCOSNodeType = "DCOSMaster"
-	// PrivateAgent represents the private agent node type
+	// DCOSPrivateAgent represents the private agent node type
 	DCOSPrivateAgent DCOSNodeType = "DCOSPrivateAgent"
-	// PublicAgent represents the public agent node type
+	// DCOSPublicAgent represents the public agent node type
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
 
+// KubeImages represents Docker images used for Kubernetes components based on Kubernetes version
 var KubeImages = map[api.OrchestratorVersion]map[string]string{
 	api.Kubernetes166: {
 		"hyperkube":    "hyperkube-amd64:v1.6.6",
