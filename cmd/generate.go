@@ -128,7 +128,7 @@ func (gc *generateCmd) run() error {
 		if template, err = acsengine.PrettyPrintArmTemplate(template); err != nil {
 			log.Fatalf("error pretty printing template: %s \n", err.Error())
 		}
-		if parameters, err = acsengine.PrettyPrintJSON(parameters); err != nil {
+		if parameters, err = acsengine.BuildAzureParametersFile(parameters); err != nil {
 			log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
 		}
 	}
