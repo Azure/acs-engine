@@ -348,7 +348,6 @@ func GetCloudTargetEnv(location string) string {
 func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]interface{}, error) {
 	properties := cs.Properties
 	location := cs.Location
-	parametersAll := map[string]interface{}{}
 	parametersMap := map[string]interface{}{}
 
 	// Master Parameters
@@ -455,12 +454,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		}
 	}
 
-	// add the header
-	parametersAll["$schema"] = "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#"
-	parametersAll["contentVersion"] = "1.0.0.0"
-	parametersAll["parameters"] = parametersMap
-
-	return parametersAll, nil
+	return parametersMap, nil
 }
 
 func addValue(m map[string]interface{}, k string, v interface{}) {
