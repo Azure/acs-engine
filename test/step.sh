@@ -24,6 +24,17 @@ set_azure_account)
   set_azure_account
 ;;
 
+create_resource_group)
+  create_resource_group
+;;
+
+pretest_init)
+  script="${CLUSTER_DEFINITION}.pretest.sh"
+  if [ -x "${script}" ]; then
+    "${script}"
+  fi
+;;
+
 generate_template)
   export OUTPUT="${ROOT}/_output/${INSTANCE_NAME}"
   generate_template
