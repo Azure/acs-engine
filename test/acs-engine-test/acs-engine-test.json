@@ -15,10 +15,6 @@
     {
       "cluster_definition": "swarmmode.json",
       "location": "westus2"
-    },
-    {
-      "cluster_definition": "defaults.json",
-      "location": "westus2"
     }
   ]
 }
