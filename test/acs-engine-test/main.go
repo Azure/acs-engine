@@ -118,7 +118,7 @@ func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Dur
 	env = append(env, fmt.Sprintf("DEPLOYMENT_NAME=%s", instanceName))
 	env = append(env, fmt.Sprintf("RESOURCE_GROUP=%s", resourceGroup))
 
-	steps := []string{"generate_template", "deploy_template"}
+	steps := []string{"create_resource_group", "pretest_init", "generate_template", "deploy_template"}
 
 	// determine validation script
 	if !d.SkipValidation {
