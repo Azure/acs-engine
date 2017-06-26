@@ -164,6 +164,9 @@ func validateKeyVaultSecrets(secrets []KeyVaultSecrets, requireCertificateStore 
 		if len(s.VaultCertificates) == 0 {
 			return fmt.Errorf("Invalid KeyVaultSecrets must have no empty VaultCertificates")
 		}
+		if s.SourceVault == nil {
+			return fmt.Errorf("missing SourceVault in KeyVaultSecrets")
+		}
 		if s.SourceVault.ID == "" {
 			return fmt.Errorf("KeyVaultSecrets must have a SourceVault.ID")
 		}
@@ -198,6 +201,15 @@ func (l *LinuxProfile) Validate() error {
 
 // Validate implements APIObject
 func (a *Properties) Validate() error {
+	if a.OrchestratorProfile == nil {
+		return fmt.Errorf("missing OrchestratorProfile")
+	}
+	if a.MasterProfile == nil {
+		return fmt.Errorf("missing MasterProfile")
+	}
+	if a.LinuxProfile == nil {
+		return fmt.Errorf("missing LinuxProfile")
+	}
 	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
 	}
@@ -267,6 +279,9 @@ func (a *Properties) Validate() error {
 			return errors.New("DNSPrefix not support for agent pools in Kubernetes - Kubernetes marks its own clusters public")
 		}
 		if agentPoolProfile.OSType == Windows {
+			if a.WindowsProfile == nil {
+				return fmt.Errorf("missing WindowsProfile")
+			}
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Swarm:
 			case SwarmMode:
