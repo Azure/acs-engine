@@ -1,9 +1,8 @@
     "maxVMsPerPool": 100,
-    "maxVMsPerStorageAccount": 20,
-    "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
     "apiServerPrivateKey": "[parameters('apiServerPrivateKey')]",
     "caCertificate": "[parameters('caCertificate')]",
+    "caPrivateKey": "[parameters('caPrivateKey')]",
     "clientCertificate": "[parameters('clientCertificate')]",
     "clientPrivateKey": "[parameters('clientPrivateKey')]",
     "kubeConfigCertificate": "[parameters('kubeConfigCertificate')]",
@@ -28,42 +27,50 @@
 {{if  GetClassicMode}}
     "masterCount": "[parameters('masterCount')]",
 {{else}}
-    "masterCount": {{.MasterProfile.Count}}, 
-{{end}}    
+    "masterCount": {{.MasterProfile.Count}},
+{{end}}
     "masterOffset": "[parameters('masterOffset')]",
     "apiVersionDefault": "2016-03-30",
-    "apiVersionStorage": "2015-06-15",
-{{if .HasManagedDisks}}
-    "apiVersionStorageManagedDisks": "2016-04-30-preview",
-{{end}}
     "locations": [
          "[resourceGroup().location]",
          "[parameters('location')]"
     ],
     "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
     "masterAvailabilitySet": "[concat('master-availabilityset-', variables('nameSuffix'))]",
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),variables('location'),variables('orchestratorName')))]",
-    "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
-    "nameSuffix": "[parameters('nameSuffix')]", 
-    "orchestratorName": "k8s",  
-    "osImageOffer": "UbuntuServer", 
-    "osImagePublisher": "Canonical", 
-    "osImageSKU": "16.04-LTS", 
-    "osImageVersion": "16.04.201705160",
-    "resourceGroup": "[resourceGroup().name]", 
+    "nameSuffix": "[parameters('nameSuffix')]",
+    "orchestratorName": "k8s",
+    "osImageOffer": "UbuntuServer",
+    "osImagePublisher": "Canonical",
+    "osImageSKU": "16.04-LTS",
+    "osImageVersion": "16.04.201706191",
+    "resourceGroup": "[resourceGroup().name]",
     "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
     "routeTableID": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]",
     "sshNatPorts": [22,2201,2202,2203,2204],
-    "sshKeyPath": "[concat('/home/',variables('username'),'/.ssh/authorized_keys')]", 
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),variables('location')))]", 
-    "storageAccountPrefixes": [ "0", "6", "c", "i", "o", "u", "1", "7", "d", "j", "p", "v", "2", "8", "e", "k", "q", "w", "3", "9", "f", "l", "r", "x", "4", "a", "g", "m", "s", "y", "5", "b", "h", "n", "t", "z" ], 
+    "sshKeyPath": "[concat('/home/',variables('username'),'/.ssh/authorized_keys')]",
+
+{{if .HasStorageAccountDisks}}
+    "apiVersionStorage": "2015-06-15",
+    "maxVMsPerStorageAccount": 20,
+    "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
+    "dataStorageAccountPrefixSeed": 97,
+    "storageAccountPrefixes": [ "0", "6", "c", "i", "o", "u", "1", "7", "d", "j", "p", "v", "2", "8", "e", "k", "q", "w", "3", "9", "f", "l", "r", "x", "4", "a", "g", "m", "s", "y", "5", "b", "h", "n", "t", "z" ],
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]",
     "vmsPerStorageAccount": 20,
-    "provisionScript": "{{GetKubernetesB64Provision}}",
-    "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",  
-{{if AnyAgentHasDisks}}
-    "dataStorageAccountPrefixSeed": 97,
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),variables('location')))]",
+    {{GetSizeMap}},
+{{else}}
+    "storageAccountPrefixes": [],
+    "storageAccountBaseName": "",
 {{end}}
+{{if .HasManagedDisks}}
+    "apiVersionStorageManagedDisks": "2016-04-30-preview",
+{{end}}
+{{if .MasterProfile.IsStorageAccount}}
+    "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
+{{end}}
+    "provisionScript": "{{GetKubernetesB64Provision}}",
+    "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
 {{if IsVNETIntegrated}}
     "allocateNodeCidrs": false,
 {{else}}
@@ -83,9 +90,10 @@
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "vnetCidr": "10.0.0.0/8",
 {{end}}
-    "kubeDnsServiceIp": "10.0.0.10", 
+    "kubeDnsServiceIp": "10.0.0.10",
     "kubeServiceCidr": "10.0.0.0/16",
     "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
+    "dockerBridgeCidr": "[parameters('dockerBridgeCidr')]",
 {{if HasLinuxAgents}}
     "registerSchedulable": "false",
 {{else}}
@@ -95,8 +103,8 @@
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
     "primaryAvailablitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',variables('nameSuffix'))]",
     "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterFqdnPrefix'), '-', variables('nameSuffix'))]",
-    "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]", 
-    "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]", 
+    "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]",
+    "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]",
     "masterLbIPConfigName": "[concat(variables('orchestratorName'), '-master-lbFrontEnd-', variables('nameSuffix'))]",
     "masterLbName": "[concat(variables('orchestratorName'), '-master-lb-', variables('nameSuffix'))]",
 {{if gt .MasterProfile.Count 1}}
@@ -143,7 +151,7 @@
       "[concat('http://', variables('masterPrivateIpAddrs')[1], ':', variables('masterEtcdClientPort'))]",
       "[concat('http://', variables('masterPrivateIpAddrs')[2], ':', variables('masterEtcdClientPort'))]",
       "[concat('http://', variables('masterPrivateIpAddrs')[3], ':', variables('masterEtcdClientPort'))]",
-      "[concat('http://', variables('masterPrivateIpAddrs')[4], ':', variables('masterEtcdClientPort'))]"    
+      "[concat('http://', variables('masterPrivateIpAddrs')[4], ':', variables('masterEtcdClientPort'))]"
     ],
     "masterEtcdClusterStates": [
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0])]",
@@ -174,7 +182,7 @@
                 ]
               }
         {{end}}
-      ] 
+      ]
 {{end}}
 {{if .HasWindows}}
     ,"windowsAdminUsername": "[parameters('windowsAdminUsername')]",

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
@@ -169,10 +170,31 @@ func convertPropertiesToV20160930(api *Properties, p *v20160930.Properties) {
 		convertMasterProfileToV20160930(api.MasterProfile, p.MasterProfile)
 	}
 	p.AgentPoolProfiles = []*v20160930.AgentPoolProfile{}
-	for _, apiProfile := range api.AgentPoolProfiles {
-		v20160930Profile := &v20160930.AgentPoolProfile{}
-		convertAgentPoolProfileToV20160930(apiProfile, v20160930Profile)
-		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160930Profile)
+	// DCOS conversion logic
+	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 2 {
+		var privIndex, pubIndex int
+		for i, apiProfile := range api.AgentPoolProfiles {
+			// We added a pool with a "-public" suffix when converting to API model;
+			// we don't want to include that when converting back to a version-specific model
+			matched, err := regexp.MatchString(publicAgentPoolSuffix+"$", apiProfile.Name)
+			if !matched && err == nil {
+				v20160930Profile := &v20160930.AgentPoolProfile{}
+				convertAgentPoolProfileToV20160930(apiProfile, v20160930Profile)
+				p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160930Profile)
+				privIndex = i
+			} else {
+				pubIndex = i
+			}
+		}
+		// Assign DNS Prefix to private agent pool from public agent pool
+		p.AgentPoolProfiles[privIndex].DNSPrefix = api.AgentPoolProfiles[pubIndex].DNSPrefix
+		p.AgentPoolProfiles[privIndex].FQDN = api.AgentPoolProfiles[pubIndex].FQDN
+	} else {
+		for _, apiProfile := range api.AgentPoolProfiles {
+			v20160930Profile := &v20160930.AgentPoolProfile{}
+			convertAgentPoolProfileToV20160930(apiProfile, v20160930Profile)
+			p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160930Profile)
+		}
 	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20160930.LinuxProfile{}
@@ -211,10 +233,31 @@ func convertPropertiesToV20160330(api *Properties, p *v20160330.Properties) {
 		convertMasterProfileToV20160330(api.MasterProfile, p.MasterProfile)
 	}
 	p.AgentPoolProfiles = []*v20160330.AgentPoolProfile{}
-	for _, apiProfile := range api.AgentPoolProfiles {
-		v20160330Profile := &v20160330.AgentPoolProfile{}
-		convertAgentPoolProfileToV20160330(apiProfile, v20160330Profile)
-		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160330Profile)
+	// DCOS conversion logic
+	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 2 {
+		var privIndex, pubIndex int
+		for i, apiProfile := range api.AgentPoolProfiles {
+			// We added a pool with a "-public" suffix when converting to API model;
+			// we don't want to include that when converting back to a version-specific model
+			matched, err := regexp.MatchString(publicAgentPoolSuffix+"$", apiProfile.Name)
+			if !matched && err == nil {
+				v20160330Profile := &v20160330.AgentPoolProfile{}
+				convertAgentPoolProfileToV20160330(apiProfile, v20160330Profile)
+				p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160330Profile)
+				privIndex = i
+			} else {
+				pubIndex = i
+			}
+		}
+		// Assign DNS Prefix to private agent pool from public agent pool
+		p.AgentPoolProfiles[privIndex].DNSPrefix = api.AgentPoolProfiles[pubIndex].DNSPrefix
+		p.AgentPoolProfiles[privIndex].FQDN = api.AgentPoolProfiles[pubIndex].FQDN
+	} else {
+		for _, apiProfile := range api.AgentPoolProfiles {
+			v20160330Profile := &v20160330.AgentPoolProfile{}
+			convertAgentPoolProfileToV20160330(apiProfile, v20160330Profile)
+			p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20160330Profile)
+		}
 	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20160330.LinuxProfile{}
@@ -245,10 +288,31 @@ func convertPropertiesToV20170131(api *Properties, p *v20170131.Properties) {
 		convertMasterProfileToV20170131(api.MasterProfile, p.MasterProfile)
 	}
 	p.AgentPoolProfiles = []*v20170131.AgentPoolProfile{}
-	for _, apiProfile := range api.AgentPoolProfiles {
-		v20170131Profile := &v20170131.AgentPoolProfile{}
-		convertAgentPoolProfileToV20170131(apiProfile, v20170131Profile)
-		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20170131Profile)
+	// DCOS conversion logic
+	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 2 {
+		var privIndex, pubIndex int
+		for i, apiProfile := range api.AgentPoolProfiles {
+			// We added a pool with a "-public" suffix when converting to API model;
+			// we don't want to include that when converting back to a version-specific model
+			matched, err := regexp.MatchString(publicAgentPoolSuffix+"$", apiProfile.Name)
+			if !matched && err == nil {
+				v20170131Profile := &v20170131.AgentPoolProfile{}
+				convertAgentPoolProfileToV20170131(apiProfile, v20170131Profile)
+				p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20170131Profile)
+				privIndex = i
+			} else {
+				pubIndex = i
+			}
+		}
+		// Assign DNS Prefix to private agent pool from public agent pool
+		p.AgentPoolProfiles[privIndex].DNSPrefix = api.AgentPoolProfiles[pubIndex].DNSPrefix
+		p.AgentPoolProfiles[privIndex].FQDN = api.AgentPoolProfiles[pubIndex].FQDN
+	} else {
+		for _, apiProfile := range api.AgentPoolProfiles {
+			v20170131Profile := &v20170131.AgentPoolProfile{}
+			convertAgentPoolProfileToV20170131(apiProfile, v20170131Profile)
+			p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20170131Profile)
+		}
 	}
 	if api.LinuxProfile != nil {
 		p.LinuxProfile = &v20170131.LinuxProfile{}
@@ -484,6 +548,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.KubernetesImageBase = api.KubernetesImageBase
 	vlabs.ClusterSubnet = api.ClusterSubnet
 	vlabs.NetworkPolicy = api.NetworkPolicy
+	vlabs.DockerBridgeSubnet = api.DockerBridgeSubnet
 }
 
 func convertMasterProfileToV20160930(api *MasterProfile, v20160930 *v20160930.MasterProfile) {
@@ -516,6 +581,7 @@ func convertMasterProfileToV20170701(api *MasterProfile, v20170701Profile *v2017
 	v20170701Profile.OSDiskSizeGB = api.OSDiskSizeGB
 	v20170701Profile.VnetSubnetID = api.VnetSubnetID
 	v20170701Profile.FirstConsecutiveStaticIP = api.FirstConsecutiveStaticIP
+	v20170701Profile.StorageProfile = api.StorageProfile
 }
 
 func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterProfile) {
@@ -527,6 +593,7 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	vlabsProfile.FirstConsecutiveStaticIP = api.FirstConsecutiveStaticIP
 	vlabsProfile.SetSubnet(api.Subnet)
 	vlabsProfile.FQDN = api.FQDN
+	vlabsProfile.StorageProfile = api.StorageProfile
 }
 
 func convertKeyVaultSecretsToVlabs(api *KeyVaultSecrets, vlabsSecrets *vlabs.KeyVaultSecrets) {
@@ -695,11 +762,11 @@ func convertServicePrincipalProfileToVLabs(api *ServicePrincipalProfile, vlabs *
 
 func convertCertificateProfileToVLabs(api *CertificateProfile, vlabs *vlabs.CertificateProfile) {
 	vlabs.CaCertificate = api.CaCertificate
+	vlabs.CaPrivateKey = api.CaPrivateKey
 	vlabs.APIServerCertificate = api.APIServerCertificate
 	vlabs.APIServerPrivateKey = api.APIServerPrivateKey
 	vlabs.ClientCertificate = api.ClientCertificate
 	vlabs.ClientPrivateKey = api.ClientPrivateKey
 	vlabs.KubeConfigCertificate = api.KubeConfigCertificate
 	vlabs.KubeConfigPrivateKey = api.KubeConfigPrivateKey
-	vlabs.SetCAPrivateKey(api.GetCAPrivateKey())
 }

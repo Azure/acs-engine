@@ -1,4 +1,5 @@
-acs-engine
-acs-engine.exe
-_output/
-.git/
+./acs-engine
+./acs-engine.exe
+./_output
+./.git
+./test/acs-engine-test/acs-engine-test

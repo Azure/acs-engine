@@ -17,6 +17,8 @@ const (
 	DefaultKubernetesMasterSubnet = "10.240.0.0/16"
 	// DefaultKubernetesClusterSubnet specifies the default subnet for pods.
 	DefaultKubernetesClusterSubnet = "10.244.0.0/16"
+	// DefaultDockerBridgeSubnet specifies the default subnet for the docker bridge network for masters and agents.
+	DefaultDockerBridgeSubnet = "172.17.0.1/16"
 	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultAgentSubnetTemplate specifies a default agent subnet
@@ -30,7 +32,7 @@ const (
 	// DefaultAgentIPAddressCount is the default number of IP addresses per network interface on agents
 	DefaultAgentIPAddressCount = 1
 	// DefaultAgentMultiIPAddressCount is the default number of IP addresses per network interface on agents,
-	// when VNET integration is enabled. It can be overriden per pool by setting the pool's IPAdddressCount property.
+	// when VNET integration is enabled. It can be overridden per pool by setting the pool's IPAdddressCount property.
 	DefaultAgentMultiIPAddressCount = 128
 	// DefaultKubernetesClusterDomain is the dns suffix used in the cluster (used as a SAN in the PKI generation)
 	DefaultKubernetesClusterDomain = "cluster.local"
@@ -42,24 +44,25 @@ const (
 )
 
 const (
-	// Master represents the master node type
+	// DCOSMaster represents the master node type
 	DCOSMaster DCOSNodeType = "DCOSMaster"
-	// PrivateAgent represents the private agent node type
+	// DCOSPrivateAgent represents the private agent node type
 	DCOSPrivateAgent DCOSNodeType = "DCOSPrivateAgent"
-	// PublicAgent represents the public agent node type
+	// DCOSPublicAgent represents the public agent node type
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
 
+// KubeImages represents Docker images used for Kubernetes components based on Kubernetes version
 var KubeImages = map[api.OrchestratorVersion]map[string]string{
 	api.Kubernetes166: {
 		"hyperkube":    "hyperkube-amd64:v1.6.6",
-		"dashboard":    "kubernetes-dashboard-amd64:v1.6.0",
+		"dashboard":    "kubernetes-dashboard-amd64:v1.6.1",
 		"exechealthz":  "exechealthz-amd64:1.2",
-		"addonresizer": "addon-resizer:1.6",
-		"heapster":     "heapster:v1.2.0",
-		"dns":          "kubedns-amd64:1.7",
-		"addonmanager": "kube-addon-manager-amd64:v6.2",
-		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"addonresizer": "addon-resizer:1.7",
+		"heapster":     "heapster:v1.3.0",
+		"dns":          "k8s-dns-kube-dns-amd64:1.14.2",
+		"addonmanager": "kube-addon-manager-amd64:v6.4",
+		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":        "pause-amd64:3.0",
 		"windowszip":   "v1.6.6intwinnat.zip",
 	},
@@ -69,9 +72,9 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"exechealthz":  "exechealthz-amd64:1.2",
 		"addonresizer": "addon-resizer:1.6",
 		"heapster":     "heapster:v1.2.0",
-		"dns":          "kubedns-amd64:1.7",
-		"addonmanager": "kube-addon-manager-amd64:v6.2",
-		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"dns":          "k8s-dns-kube-dns-amd64:1.13.0",
+		"addonmanager": "kube-addon-manager-amd64:v6.4",
+		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":        "pause-amd64:3.0",
 		"windowszip":   "v1.6.2intwinnat.zip",
 	},
@@ -82,9 +85,9 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"exechealthz":  "exechealthz-amd64:1.2",
 		"addonresizer": "addon-resizer:1.6",
 		"heapster":     "heapster:v1.2.0",
-		"dns":          "kubedns-amd64:1.7",
-		"addonmanager": "kube-addon-manager-amd64:v6.2",
-		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
+		"dns":          "k8s-dns-kube-dns-amd64:1.13.0",
+		"addonmanager": "kube-addon-manager-amd64:v6.4",
+		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":        "pause-amd64:3.0",
 		"windowszip":   "v1.6.0intwinnat.zip",
 	},

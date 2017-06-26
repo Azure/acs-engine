@@ -203,6 +203,9 @@ func convertV20160930Properties(v20160930 *v20160930.Properties, api *Properties
 		api.CustomProfile = &CustomProfile{}
 		convertV20160930CustomProfile(v20160930.CustomProfile, api.CustomProfile)
 	}
+	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 1 {
+		addDCOSPublicAgentPool(api)
+	}
 }
 
 func convertV20160330Properties(v20160330 *v20160330.Properties, api *Properties) {
@@ -237,6 +240,9 @@ func convertV20160330Properties(v20160330 *v20160330.Properties, api *Properties
 	if v20160330.JumpboxProfile != nil {
 		api.JumpboxProfile = &JumpboxProfile{}
 		convertV20160330JumpboxProfile(v20160330.JumpboxProfile, api.JumpboxProfile)
+	}
+	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 1 {
+		addDCOSPublicAgentPool(api)
 	}
 }
 
@@ -287,6 +293,9 @@ func convertV20170131Properties(v20170131 *v20170131.Properties, api *Properties
 		api.CustomProfile = &CustomProfile{}
 		convertV20170131CustomProfile(v20170131.CustomProfile, api.CustomProfile)
 	}
+	if api.OrchestratorProfile.IsDCOS() && len(api.AgentPoolProfiles) == 1 {
+		addDCOSPublicAgentPool(api)
+	}
 }
 
 func convertV20170701Properties(v20170701 *v20170701.Properties, api *Properties) {
@@ -309,6 +318,10 @@ func convertV20170701Properties(v20170701 *v20170701.Properties, api *Properties
 		} else {
 			// other orchestrators all use VMSS
 			convertV20170701AgentPoolProfile(p, VirtualMachineScaleSets, apiProfile)
+			// by default vlabs will use managed disks for all orchestrators but kubernetes as it has encryption at rest.
+			if len(p.StorageProfile) == 0 {
+				apiProfile.StorageProfile = ManagedDisks
+			}
 		}
 		api.AgentPoolProfiles = append(api.AgentPoolProfiles, apiProfile)
 	}
@@ -344,6 +357,13 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 	for _, p := range vlabs.AgentPoolProfiles {
 		apiProfile := &AgentPoolProfile{}
 		convertVLabsAgentPoolProfile(p, apiProfile)
+		// by default vlabs will use managed disks for all orchestrators but kubernetes as it has encryption at rest.
+		if !api.OrchestratorProfile.IsKubernetes() {
+			// by default vlabs will use managed disks for all orchestrators but kubernetes as it has encryption at rest.
+			if len(p.StorageProfile) == 0 {
+				apiProfile.StorageProfile = ManagedDisks
+			}
+		}
 		api.AgentPoolProfiles = append(api.AgentPoolProfiles, apiProfile)
 	}
 	if vlabs.LinuxProfile != nil {
@@ -551,6 +571,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.KubernetesImageBase = vlabs.KubernetesImageBase
 	api.ClusterSubnet = vlabs.ClusterSubnet
 	api.NetworkPolicy = vlabs.NetworkPolicy
+	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {
@@ -590,6 +611,11 @@ func convertV20170701MasterProfile(v20170701 *v20170701.MasterProfile, api *Mast
 	api.OSDiskSizeGB = v20170701.OSDiskSizeGB
 	api.VnetSubnetID = v20170701.VnetSubnetID
 	api.FirstConsecutiveStaticIP = v20170701.FirstConsecutiveStaticIP
+	api.StorageProfile = v20170701.StorageProfile
+	// by default 20170701 will use managed disks as it has encryption at rest
+	if len(api.StorageProfile) == 0 {
+		api.StorageProfile = ManagedDisks
+	}
 }
 
 func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
@@ -602,6 +628,11 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.Subnet = vlabs.GetSubnet()
 	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
+	api.StorageProfile = vlabs.StorageProfile
+	// by default vlabs will use managed disks as it has encryption at rest
+	if len(api.StorageProfile) == 0 {
+		api.StorageProfile = ManagedDisks
+	}
 }
 
 func convertV20160930AgentPoolProfile(v20160930 *v20160930.AgentPoolProfile, availabilityProfile string, api *AgentPoolProfile) {
@@ -786,11 +817,35 @@ func convertV20170701CustomProfile(v20170701 *v20170701.CustomProfile, api *Cust
 
 func convertVLabsCertificateProfile(vlabs *vlabs.CertificateProfile, api *CertificateProfile) {
 	api.CaCertificate = vlabs.CaCertificate
+	api.CaPrivateKey = vlabs.CaPrivateKey
 	api.APIServerCertificate = vlabs.APIServerCertificate
 	api.APIServerPrivateKey = vlabs.APIServerPrivateKey
 	api.ClientCertificate = vlabs.ClientCertificate
 	api.ClientPrivateKey = vlabs.ClientPrivateKey
 	api.KubeConfigCertificate = vlabs.KubeConfigCertificate
 	api.KubeConfigPrivateKey = vlabs.KubeConfigPrivateKey
-	api.SetCAPrivateKey(vlabs.GetCAPrivateKey())
+}
+
+func addDCOSPublicAgentPool(api *Properties) {
+	publicPool := &AgentPoolProfile{}
+	// tag this agent pool with a known suffix string
+	publicPool.Name = api.AgentPoolProfiles[0].Name + publicAgentPoolSuffix
+	// move DNS prefix to public pool
+	publicPool.DNSPrefix = api.AgentPoolProfiles[0].DNSPrefix
+	api.AgentPoolProfiles[0].DNSPrefix = ""
+	publicPool.VMSize = api.AgentPoolProfiles[0].VMSize // - use same VMsize for public pool
+	publicPool.OSType = api.AgentPoolProfiles[0].OSType // - use same OSType for public pool
+	api.AgentPoolProfiles[0].Ports = nil
+	for _, port := range [3]int{80, 443, 8080} {
+		publicPool.Ports = append(publicPool.Ports, port)
+	}
+	// - VM Count for public agents is based on the following:
+	// 1 master => 1 VM
+	// 3, 5 master => 3 VMsize
+	if api.MasterProfile.Count == 1 {
+		publicPool.Count = 1
+	} else {
+		publicPool.Count = 3
+	}
+	api.AgentPoolProfiles = append(api.AgentPoolProfiles, publicPool)
 }

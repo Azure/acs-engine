@@ -10,7 +10,7 @@
     },
     {
       "cluster_definition": "dcos-versions/dcos1.8.4.json",
-      "location": "canadaeast"
+      "location": "eastus"
     },
     {
       "cluster_definition": "dcos-versions/dcos1.8.8.json",
@@ -86,11 +86,11 @@
     },
     {
       "cluster_definition": "kubernetesversions/kubernetes1.5.3.json",
-      "location": "koreasouth"
+      "location": "canadaeast"
     },
     {
       "cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
-      "location": "westcentralus"
+      "location": "centralus"
     },
     {
       "cluster_definition": "kubernetesversions/kubernetes1.6.2.json",

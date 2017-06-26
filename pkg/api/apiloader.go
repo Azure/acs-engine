@@ -41,6 +41,7 @@ func LoadContainerService(contents []byte, version string) (*ContainerService, e
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
+		setContainerServiceDefaultsv20160930(containerService)
 		if e := containerService.Properties.Validate(); e != nil {
 			return nil, e
 		}
@@ -51,6 +52,7 @@ func LoadContainerService(contents []byte, version string) (*ContainerService, e
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
+		setContainerServiceDefaultsv20160330(containerService)
 		if e := containerService.Properties.Validate(); e != nil {
 			return nil, e
 		}
@@ -61,6 +63,7 @@ func LoadContainerService(contents []byte, version string) (*ContainerService, e
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
+		setContainerServiceDefaultsv20170131(containerService)
 		if e := containerService.Properties.Validate(); e != nil {
 			return nil, e
 		}
@@ -151,5 +154,32 @@ func SerializeContainerService(containerService *ContainerService, version strin
 
 	default:
 		return nil, fmt.Errorf("invalid version %s for conversion back from unversioned object", version)
+	}
+}
+
+// Sets default container service property values for any appropriate zero values
+func setContainerServiceDefaultsv20160930(c *v20160930.ContainerService) {
+	if c.Properties.OrchestratorProfile == nil {
+		c.Properties.OrchestratorProfile = &v20160930.OrchestratorProfile{
+			OrchestratorType: v20160930.DCOS,
+		}
+	}
+}
+
+// Sets default container service property values for any appropriate zero values
+func setContainerServiceDefaultsv20160330(c *v20160330.ContainerService) {
+	if c.Properties.OrchestratorProfile == nil {
+		c.Properties.OrchestratorProfile = &v20160330.OrchestratorProfile{
+			OrchestratorType: v20160330.DCOS,
+		}
+	}
+}
+
+// Sets default container service property values for any appropriate zero values
+func setContainerServiceDefaultsv20170131(c *v20170131.ContainerService) {
+	if c.Properties.OrchestratorProfile == nil {
+		c.Properties.OrchestratorProfile = &v20170131.OrchestratorProfile{
+			OrchestratorType: v20170131.DCOS,
+		}
 	}
 }

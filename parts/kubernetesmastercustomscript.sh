@@ -23,10 +23,11 @@ NETWORK_POLICY="${14}"
 # Master only secrets
 APISERVER_PRIVATE_KEY="${15}"
 CA_CERTIFICATE="${16}"
-MASTER_FQDN="${17}"
-KUBECONFIG_CERTIFICATE="${18}"
-KUBECONFIG_KEY="${19}"
-ADMINUSER="${20}"
+CA_PRIVATE_KEY="${17}"
+MASTER_FQDN="${18}"
+KUBECONFIG_CERTIFICATE="${19}"
+KUBECONFIG_KEY="${20}"
+ADMINUSER="${21}"
 
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
@@ -58,16 +59,29 @@ if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
 
     APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
     touch "${APISERVER_PRIVATE_KEY_PATH}"
-    chmod 0644 "${APISERVER_PRIVATE_KEY_PATH}"
+    chmod 0600 "${APISERVER_PRIVATE_KEY_PATH}"
     chown root:root "${APISERVER_PRIVATE_KEY_PATH}"
     echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
 else
     echo "APISERVER_PRIVATE_KEY is empty, assuming worker node"
 fi
 
+# If CA_PRIVATE_KEY is empty, then we are not on the master
+if [[ ! -z "${CA_PRIVATE_KEY}" ]]; then
+    echo "CA_KEY is non-empty, assuming master node"
+
+    CA_PRIVATE_KEY_PATH="/etc/kubernetes/certs/ca.key"
+    touch "${CA_PRIVATE_KEY_PATH}"
+    chmod 0600 "${CA_PRIVATE_KEY_PATH}"
+    chown root:root "${CA_PRIVATE_KEY_PATH}"
+    echo "${CA_PRIVATE_KEY}" | base64 --decode > "${CA_PRIVATE_KEY_PATH}"
+else
+    echo "CA_PRIVATE_KEY is empty, assuming worker node"
+fi
+
 KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
 touch "${KUBELET_PRIVATE_KEY_PATH}"
-chmod 0644 "${KUBELET_PRIVATE_KEY_PATH}"
+chmod 0600 "${KUBELET_PRIVATE_KEY_PATH}"
 chown root:root "${KUBELET_PRIVATE_KEY_PATH}"
 echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
 
@@ -156,7 +170,7 @@ function configAzureNetworkPolicy() {
 
     # Copy config file
     mv $CNI_BIN_DIR/10-azure.conf $CNI_CONFIG_DIR/
-    chmod 644 $CNI_CONFIG_DIR/10-azure.conf
+    chmod 600 $CNI_CONFIG_DIR/10-azure.conf
 
     # Dump ebtables rules.
     /sbin/ebtables -t nat --list

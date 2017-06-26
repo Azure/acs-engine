@@ -17,7 +17,6 @@
         "vmSize": "Standard_D2_v2",
         "storageProfile" : "ManagedDisks",
         "availabilityProfile": "AvailabilitySet",
-        "storageProfile": "StorageAccount",
         "OSDiskSizeGB": 200,
         "diskSizesGB": [128, 128, 128, 128],
         "osType": "Windows"

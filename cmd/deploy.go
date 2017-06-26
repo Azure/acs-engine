@@ -117,7 +117,7 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 		// the caKey is not in the api model, and should be stored separately from the model
 		// we put these in the model after model is deserialized
 		dc.containerService.Properties.CertificateProfile.CaCertificate = string(caCertificateBytes)
-		dc.containerService.Properties.CertificateProfile.SetCAPrivateKey(string(caKeyBytes))
+		dc.containerService.Properties.CertificateProfile.CaPrivateKey = string(caKeyBytes)
 	}
 
 	dc.client, err = dc.authArgs.getClient()
@@ -144,11 +144,12 @@ func (dc *deployCmd) run() error {
 	if template, err = acsengine.PrettyPrintArmTemplate(template); err != nil {
 		log.Fatalf("error pretty printing template: %s \n", err.Error())
 	}
-	if parameters, err = acsengine.PrettyPrintJSON(parameters); err != nil {
+	var parametersFile string
+	if parametersFile, err = acsengine.BuildAzureParametersFile(parameters); err != nil {
 		log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
 	}
 
-	if err = acsengine.WriteArtifacts(dc.containerService, dc.apiVersion, template, parameters, dc.outputDirectory, certsgenerated, dc.parametersOnly); err != nil {
+	if err = acsengine.WriteArtifacts(dc.containerService, dc.apiVersion, template, parametersFile, dc.outputDirectory, certsgenerated, dc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 

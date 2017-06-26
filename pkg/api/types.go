@@ -63,6 +63,8 @@ type ServicePrincipalProfile struct {
 type CertificateProfile struct {
 	// CaCertificate is the certificate authority certificate.
 	CaCertificate string `json:"caCertificate,omitempty"`
+	// CaPrivateKey is the certificate authority key.
+	CaPrivateKey string `json:"caPrivateKey,omitempty"`
 	// ApiServerCertificate is the rest api server certificate, and signed by the CA
 	APIServerCertificate string `json:"apiServerCertificate,omitempty"`
 	// ApiServerPrivateKey is the rest api server private key, and signed by the CA
@@ -75,8 +77,6 @@ type CertificateProfile struct {
 	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty"`
 	// KubeConfigPrivateKey is the client private key used for kubectl cli and signed by the CA
 	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
-	// caPrivateKey is an internal field only set if generation required
-	caPrivateKey string
 }
 
 // LinuxProfile represents the linux parameters passed to the cluster
@@ -129,6 +129,7 @@ type KubernetesConfig struct {
 	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
 	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
 	NetworkPolicy       string `json:"networkPolicy,omitempty"`
+	DockerBridgeSubnet  string `json:"dockerBridgeSubnet,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -141,6 +142,7 @@ type MasterProfile struct {
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string `json:"subnet"`
 	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
+	StorageProfile           string `json:"storageProfile,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -303,6 +305,9 @@ func (p *Properties) HasWindows() bool {
 
 // HasManagedDisks returns true if the cluster contains Managed Disks
 func (p *Properties) HasManagedDisks() bool {
+	if p.MasterProfile.StorageProfile == ManagedDisks {
+		return true
+	}
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			return true
@@ -311,19 +316,32 @@ func (p *Properties) HasManagedDisks() bool {
 	return false
 }
 
-// GetCAPrivateKey returns the ca private key
-func (c *CertificateProfile) GetCAPrivateKey() string {
-	return c.caPrivateKey
-}
-
-// SetCAPrivateKey sets the ca private key
-func (c *CertificateProfile) SetCAPrivateKey(caPrivateKey string) {
-	c.caPrivateKey = caPrivateKey
+// HasStorageAccountDisks returns true if the cluster contains Storage Account Disks
+func (p *Properties) HasStorageAccountDisks() bool {
+	if p.MasterProfile.StorageProfile == StorageAccount {
+		return true
+	}
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
+		if agentPoolProfile.StorageProfile == StorageAccount {
+			return true
+		}
+	}
+	return false
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
 func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
+}
+
+// IsManagedDisks returns true if the master specified managed disks
+func (m *MasterProfile) IsManagedDisks() bool {
+	return m.StorageProfile == ManagedDisks
+}
+
+// IsStorageAccount returns true if the master specified storage account
+func (m *MasterProfile) IsStorageAccount() bool {
+	return m.StorageProfile == StorageAccount
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
@@ -379,6 +397,11 @@ func (o *OrchestratorProfile) IsSwarmMode() bool {
 // IsKubernetes returns true if this template is for Kubernetes orchestrator
 func (o *OrchestratorProfile) IsKubernetes() bool {
 	return o.OrchestratorType == Kubernetes
+}
+
+// IsDCOS returns true if this template is for DCOS orchestrator
+func (o *OrchestratorProfile) IsDCOS() bool {
+	return o.OrchestratorType == DCOS
 }
 
 // IsVNETIntegrated returns true if Azure VNET integration is enabled

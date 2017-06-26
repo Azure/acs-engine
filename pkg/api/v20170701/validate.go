@@ -54,6 +54,9 @@ func (m *MasterProfile) Validate() error {
 	if m.OSDiskSizeGB != 0 && (m.OSDiskSizeGB < MinDiskSizeGB || m.OSDiskSizeGB > MaxDiskSizeGB) {
 		return fmt.Errorf("Invalid master os disk size of %d specified.  The range of valid values are [%d, %d]", m.OSDiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
 	}
+	if e := validateStorageProfile(m.StorageProfile); e != nil {
+		return e
+	}
 	return nil
 }
 
@@ -125,6 +128,15 @@ func (l *LinuxProfile) Validate() error {
 
 // Validate implements APIObject
 func (a *Properties) Validate() error {
+	if a.OrchestratorProfile == nil {
+		return fmt.Errorf("missing OrchestratorProfile")
+	}
+	if a.MasterProfile == nil {
+		return fmt.Errorf("missing MasterProfile")
+	}
+	if a.LinuxProfile == nil {
+		return fmt.Errorf("missing LinuxProfile")
+	}
 	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
 	}
@@ -134,12 +146,16 @@ func (a *Properties) Validate() error {
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
 		return e
 	}
-	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.ClientID) == 0 {
-		return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
-	}
-
-	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.Secret) == 0 {
-		return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		if a.ServicePrincipalProfile == nil {
+			return fmt.Errorf("missing ServicePrincipalProfile")
+		}
+		if len(a.ServicePrincipalProfile.ClientID) == 0 {
+			return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+		}
+		if len(a.ServicePrincipalProfile.Secret) == 0 {
+			return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+		}
 	}
 
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
@@ -157,6 +173,9 @@ func (a *Properties) Validate() error {
 		}
 
 		if agentPoolProfile.OSType == Windows {
+			if a.WindowsProfile == nil {
+				return fmt.Errorf("missing WindowsProfile")
+			}
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Kubernetes:
 			default:
@@ -240,7 +259,7 @@ func validateStorageProfile(storageProfile string) error {
 	case "":
 	default:
 		{
-			return fmt.Errorf("Unknown storage type '%s' for agent pool. Specify either %s or %s", storageProfile, StorageAccount, ManagedDisks)
+			return fmt.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", storageProfile, StorageAccount, ManagedDisks)
 		}
 	}
 	return nil
