@@ -20,6 +20,11 @@ func (az *AzureClient) EnsureResourceGroup(name, location string) (resourceGroup
 	return &response, nil
 }
 
+// CheckExistenceResourceGroup return if the resourcegroup exists
+func (az *AzureClient) CheckExistenceResourceGroup(name string) (result autorest.Response, err error) {
+	return az.groupsClient.CheckExistence(name)
+}
+
 // DeleteResourceGroup delete the named resource group
 func (az *AzureClient) DeleteResourceGroup(name string, cancel chan struct{}) (<-chan autorest.Response, <-chan error) {
 	return az.groupsClient.Delete(name, cancel)
