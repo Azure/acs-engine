@@ -1,6 +1,7 @@
 #!/bin/bash
 
-az network vnet create -g ${RESOURCE_GROUP} -n DcosCustomVNET --address-prefixes 10.100.0.0/24 10.200.0.0/24 --subnet-name DcosMasterSubnet --subnet-prefix 10.100.0.0/24 --subnet-name DcosAgentSubnet --subnet-prefix 10.200.0.0/24
+az network vnet create -g ${RESOURCE_GROUP} -n DcosCustomVNET --address-prefixes 10.100.0.0/24 10.200.0.0/24 --subnet-name DcosMasterSubnet --subnet-prefix 10.100.0.0/24
+az network vnet subnet create --name DcosAgentSubnet --address-prefix 10.200.0.0/24 -g ${RESOURCE_GROUP} --vnet-name DcosCustomVNET
 
 tempfile="$(mktemp)"
 trap "rm -rf \"${tempfile}\"" EXIT
