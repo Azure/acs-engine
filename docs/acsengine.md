@@ -16,7 +16,7 @@ same environment used in our Continuous Integration system).
 
 When the execution of `devenv.{ps1,sh}` completes, you should find the console logged into the container. 
 
-Now we need to do a one time call to setup the prerequesits.
+Now we need to do a one-time call to setup the prerequisites.
 
 ```
 make prereqs
