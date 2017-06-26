@@ -1,8 +1,0 @@
-{
-  "deployments": [
-    {
-      "cluster_definition": "vnet/swarmmodevnet.json",
-      "location": "westus"
-    }
-  ]
-}
