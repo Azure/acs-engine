@@ -29,6 +29,7 @@ create_resource_group)
 ;;
 
 pretest_init)
+  ACSE_PRETEST_INIT=${ACSE_PRETEST_INIT:-}
   if [ ! -z "${ACSE_PRETEST_INIT}" ] && [ -x "${ACSE_PRETEST_INIT}" ]; then
       "${ACSE_PRETEST_INIT}"
   fi
