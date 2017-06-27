@@ -138,7 +138,7 @@ func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Dur
 		}
 	}
 
-	steps := []string{"create_resource_group", "pretest_init", "generate_template", "deploy_template"}
+	steps := []string{"create_resource_group", "predeploy", "generate_template", "deploy_template", "postdeploy"}
 
 	// determine validation script
 	if !d.SkipValidation {

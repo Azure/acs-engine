@@ -28,10 +28,17 @@ create_resource_group)
   create_resource_group
 ;;
 
-pretest_init)
-  ACSE_PRETEST_INIT=${ACSE_PRETEST_INIT:-}
-  if [ ! -z "${ACSE_PRETEST_INIT}" ] && [ -x "${ACSE_PRETEST_INIT}" ]; then
-      "${ACSE_PRETEST_INIT}"
+predeploy)
+  ACSE_PREDEPLOY=${ACSE_PREDEPLOY:-}
+  if [ ! -z "${ACSE_PREDEPLOY}" ] && [ -x "${ACSE_PREDEPLOY}" ]; then
+      "${ACSE_PREDEPLOY}"
+  fi
+;;
+
+postdeploy)
+  ACSE_POSTDEPLOY=${ACSE_POSTDEPLOY:-}
+  if [ ! -z "${ACSE_POSTDEPLOY}" ] && [ -x "${ACSE_POSTDEPLOY}" ]; then
+      "${ACSE_POSTDEPLOY}"
   fi
 ;;
 
