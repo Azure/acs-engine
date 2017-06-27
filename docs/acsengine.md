@@ -14,7 +14,15 @@ This means that you can edit your source code normally in your favorite editor o
 machine, while still being able to compile and test inside of the Docker container (the
 same environment used in our Continuous Integration system).
 
-When the execution of `devenv.{ps1,sh}` completes, you should find the console logged into the container. As a final step, in order to get the `acs-engine` tool ready, you should build the sources with:
+When the execution of `devenv.{ps1,sh}` completes, you should find the console logged into the container. 
+
+Now we need to do a one-time call to setup the prerequisites.
+
+```
+make prereqs
+```
+
+As a final step, in order to get the `acs-engine` tool ready, you should build the sources with:
 
 ```
 make build
