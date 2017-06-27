@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"flag"
@@ -117,6 +118,25 @@ func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Dur
 	env = append(env, fmt.Sprintf("INSTANCE_NAME=%s", instanceName))
 	env = append(env, fmt.Sprintf("DEPLOYMENT_NAME=%s", instanceName))
 	env = append(env, fmt.Sprintf("RESOURCE_GROUP=%s", resourceGroup))
+
+	// add scenario-specific environment variables
+	envFile := fmt.Sprintf("examples/%s.env", d.ClusterDefinition)
+	if _, err = os.Stat(envFile); err == nil {
+		envHandle, err := os.Open(envFile)
+		if err != nil {
+			wrileLog(logFile, "Error [open %s] : %v", envFile, err)
+			return false
+		}
+		defer envHandle.Close()
+
+		fileScanner := bufio.NewScanner(envHandle)
+		for fileScanner.Scan() {
+			str := strings.TrimSpace(fileScanner.Text())
+			if match, _ := regexp.MatchString(`^\S+=\S+$`, str); match {
+				env = append(env, str)
+			}
+		}
+	}
 
 	steps := []string{"create_resource_group", "pretest_init", "generate_template", "deploy_template"}
 
