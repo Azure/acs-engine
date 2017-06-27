@@ -5,10 +5,13 @@
         "name": "loop"
       },
       "dependsOn": [
+{{if IsVNETIntegrated}}
+        "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]",
+{{end}}
 {{if .IsCustomVNET}}
-      "[variables('nsgID')]"
+        "[variables('nsgID')]"
 {{else}}
-      "[variables('vnetID')]"
+        "[variables('vnetID')]"
 {{end}}
       ],
       "location": "[variables('location')]",
