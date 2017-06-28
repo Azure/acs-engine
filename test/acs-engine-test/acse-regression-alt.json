@@ -34,7 +34,7 @@
     },
     {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json",
-      "location": "westcentralus"
+      "location": "eastus"
     },
     {
       "cluster_definition": "disks-managed/swarm-vmas-windows.json",
@@ -54,7 +54,7 @@
     },
     {
       "cluster_definition": "disks-storageaccount/dcos.json",
-      "location": "westus2"
+      "location": "eastus"
     },
     {
       "cluster_definition": "disks-storageaccount/kubernetes.json",
