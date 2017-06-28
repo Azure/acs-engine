@@ -15,6 +15,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Azure/acs-engine/test/acs-engine-test/config"
 )
 
 const script = "test/step.sh"
@@ -36,7 +38,7 @@ func init() {
 }
 
 type TestManager struct {
-	config  *testConfig
+	config  *config.TestConfig
 	lock    sync.Mutex
 	wg      sync.WaitGroup
 	rootDir string
@@ -72,7 +74,7 @@ func (m *TestManager) Run() error {
 
 	m.wg.Add(n)
 	for index, dep := range m.config.Deployments {
-		go func(index int, dep Deployment) {
+		go func(index int, dep config.Deployment) {
 			defer m.wg.Done()
 			for attempt := 0; attempt < retries; attempt++ {
 				success[index] = m.testRun(dep, index, attempt, timeout)
@@ -92,7 +94,7 @@ func (m *TestManager) Run() error {
 	return nil
 }
 
-func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Duration) bool {
+func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout time.Duration) bool {
 	name := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
 	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
 	resourceGroup := fmt.Sprintf("x-%s-%s-%s-%d-%d", strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
@@ -293,7 +295,7 @@ func mainInternal() error {
 	if configFile == "" {
 		return fmt.Errorf("test configuration is not provided")
 	}
-	testManager.config, err = getTestConfig(configFile)
+	testManager.config, err = config.GetTestConfig(configFile)
 	if err != nil {
 		return err
 	}
