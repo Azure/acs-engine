@@ -17,7 +17,7 @@
         "vmSize": "Standard_D2_v2"
       },
       {
-        "name": "agentpool1",
+        "name": "agentpool2",
         "count": 1,
         "vmSize": "Standard_D3_v2",
         "osType": "Windows"
@@ -33,9 +33,13 @@
         ]
       }
     },
+    "windowsProfile": {
+      "adminUsername": "azureuser",
+      "adminPassword": "replacepassword1234$"
+    },
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "",
-      "servicePrincipalClientSecret": ""
+      "clientId": "",
+      "secret": ""
     }
   }
 }
