@@ -9,16 +9,8 @@
       "location": "canadacentral"
     },
     {
-      "cluster_definition": "dcos-versions/dcos1.8.4.json",
-      "location": "eastus"
-    },
-    {
       "cluster_definition": "dcos-versions/dcos1.8.8.json",
       "location": "centralindia"
-    },
-    {
-      "cluster_definition": "dcos-versions/dcos1.9.0.json",
-      "location": "southindia"
     },
     {
       "cluster_definition": "disks-managed/dcos-preAttachedDisks-vmas.json",
@@ -85,16 +77,8 @@
       "location": "westus"
     },
     {
-      "cluster_definition": "kubernetesversions/kubernetes1.5.3.json",
-      "location": "canadaeast"
-    },
-    {
       "cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
       "location": "centralus"
-    },
-    {
-      "cluster_definition": "kubernetesversions/kubernetes1.6.2.json",
-      "location": "uksouth"
     },
     {
       "cluster_definition": "networkpolicy/kubernetes-calico.json",
