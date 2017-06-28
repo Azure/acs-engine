@@ -107,6 +107,18 @@
     {
       "cluster_definition": "v20170131/swarmmode.json",
       "location": "westindia"
+    },
+    {
+      "cluster_definition": "vnet/dcosvnet.json",
+      "location": "westus"
+    },
+    {
+      "cluster_definition": "vnet/kubernetesvnet.json",
+      "location": "westus"
+    },
+    {
+      "cluster_definition": "vnet/swarmmodevnet.json",
+      "location": "westus"
     }
   ]
 }
