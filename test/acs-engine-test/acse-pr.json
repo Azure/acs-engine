@@ -74,7 +74,7 @@
     },
     {
       "cluster_definition": "disks-storageaccount/swarmmode.json",
-      "location": "westus2"
+      "location": "centralus"
     },
     {
       "cluster_definition": "keyvaultcerts/swarm-windows.json",
@@ -86,19 +86,19 @@
     },
     {
       "cluster_definition": "kubernetesversions/kubernetes1.5.3.json",
-      "location": "westus2"
+      "location": "centralus"
     },
     {
       "cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
-      "location": "westus2"
+      "location": "centralus"
     },
     {
       "cluster_definition": "kubernetesversions/kubernetes1.6.2.json",
-      "location": "westus2"
+      "location": "centralus"
     },
     {
       "cluster_definition": "networkpolicy/kubernetes-calico.json",
-      "location": "westus2"
+      "location": "centralus"
     },
     {
       "cluster_definition": "custom-pod-cidr/kubernetes.json",
