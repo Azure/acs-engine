@@ -5,6 +5,20 @@ import (
 	"strings"
 )
 
+// Add the validate tag to add a mark, if this is a required or optional field
+// Current it is not used in any logic yet
+// TODO, we could possibly use this tag in all the Validate functions
+const (
+	ValidateTag = "validate"
+)
+
+type ValidateValue string
+
+const (
+	Required ValidateValue = "required"
+	Optional ValidateValue = "optional"
+)
+
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
 type ResourcePurchasePlan struct {
@@ -18,7 +32,7 @@ type ResourcePurchasePlan struct {
 // resource definition in a JSON template.
 type ContainerService struct {
 	ID       string                `json:"id,omitempty"`
-	Location string                `json:"location,omitempty"`
+	Location string                `json:"location,omitempty" validate:"required"`
 	Name     string                `json:"name,omitempty"`
 	Plan     *ResourcePurchasePlan `json:"plan,omitempty"`
 	Tags     map[string]string     `json:"tags,omitempty"`
@@ -50,31 +64,31 @@ type Properties struct {
 //    <NAME> is the name of the secret.
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
-	ClientID string `json:"clientId,omitempty"`
-	Secret   string `json:"secret,omitempty"`
+	ClientID string `json:"clientId,omitempty" validate:"required"`
+	Secret   string `json:"secret,omitempty" validate:"required"`
 }
 
 // CustomProfile specifies custom properties that are used for
 // cluster instantiation.  Should not be used by most users.
 type CustomProfile struct {
-	Orchestrator string `json:"orchestrator,omitempty"`
+	Orchestrator string `json:"orchestrator,omitempty" validate:"required"`
 }
 
 // LinuxProfile represents the Linux configuration passed to the cluster
 type LinuxProfile struct {
-	AdminUsername string `json:"adminUsername"`
+	AdminUsername string `json:"adminUsername" validate:"required"`
 
 	SSH struct {
 		PublicKeys []struct {
 			KeyData string `json:"keyData"`
-		} `json:"publicKeys"`
-	} `json:"ssh"`
+		} `json:"publicKeys" validate:"required"`
+	} `json:"ssh" validate:"required"`
 }
 
 // WindowsProfile represents the Windows configuration passed to the cluster
 type WindowsProfile struct {
-	AdminUsername string `json:"adminUsername,omitempty"`
-	AdminPassword string `json:"adminPassword,omitempty"`
+	AdminUsername string `json:"adminUsername,omitempty" validate:"required"`
+	AdminPassword string `json:"adminPassword,omitempty" validate:"required"`
 }
 
 // ProvisioningState represents the current state of container service resource.
@@ -98,15 +112,15 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType    OrchestratorType    `json:"orchestratorType"`
+	OrchestratorType    OrchestratorType    `json:"orchestratorType" validate:"required"`
 	OrchestratorVersion OrchestratorVersion `json:"orchestratorVersion"`
 }
 
 // MasterProfile represents the definition of master cluster
 type MasterProfile struct {
-	Count                    int    `json:"count"`
-	DNSPrefix                string `json:"dnsPrefix"`
-	VMSize                   string `json:"vmSize"`
+	Count                    int    `json:"count" validate:"required"`
+	DNSPrefix                string `json:"dnsPrefix" validate:"required"`
+	VMSize                   string `json:"vmSize" validate:"required"`
 	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
@@ -124,9 +138,9 @@ type MasterProfile struct {
 // daemons that register with the master and offer resources to
 // host applications in containers.
 type AgentPoolProfile struct {
-	Name           string `json:"name"`
-	Count          int    `json:"count"`
-	VMSize         string `json:"vmSize"`
+	Name           string `json:"name" validate:"required"`
+	Count          int    `json:"count" validate:"required"`
+	VMSize         string `json:"vmSize" validate:"required"`
 	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty"`
 	DNSPrefix      string `json:"dnsPrefix"`
 	FQDN           string `json:"fqdn"`
