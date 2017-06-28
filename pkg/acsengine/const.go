@@ -69,6 +69,12 @@ const (
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
 	// DefaultTillerImage defines the Helm Tiller deployment version on Kubernetes Clusters
 	DefaultTillerImage = "tiller:v2.6.0"
+	// DefaultKubernetesDnsServiceIP specifies the IP address that kube-dns
+	// listens on by default. must by in the default Service CIDR range.
+	DefaultKubernetesDnsServiceIP = "10.0.0.10"
+	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will
+	// create Service IPs within.
+	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
 )
 
 const (
