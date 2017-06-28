@@ -94,15 +94,15 @@
     },
     {
       "cluster_definition": "vnet/dcosvnet.json",
-      "location": "westus"
+      "location": "eastus"
     },
     {
       "cluster_definition": "vnet/kubernetesvnet.json",
-      "location": "westus"
+      "location": "canadaeast"
     },
     {
       "cluster_definition": "vnet/swarmmodevnet.json",
-      "location": "westus"
+      "location": "uksouth"
     }
   ]
 }

@@ -38,7 +38,7 @@
     },
     {
       "cluster_definition": "disks-managed/swarm-vmas-windows.json",
-      "location": "northeurope"
+      "location": "eastus"
     },
     {
       "cluster_definition": "disks-managed/swarm-vmss.json",
@@ -66,7 +66,7 @@
     },
     {
       "cluster_definition": "disks-storageaccount/swarmmode.json",
-      "location": "koreacentral"
+      "location": "eastus"
     },
     {
       "cluster_definition": "keyvaultcerts/swarm-windows.json",
@@ -86,23 +86,23 @@
     },
     {
       "cluster_definition": "custom-pod-cidr/kubernetes.json",
-      "location": "ukwest"
+      "location": "eastus"
     },
     {
       "cluster_definition": "v20170131/swarmmode.json",
-      "location": "westindia"
+      "location": "eastus"
     },
     {
       "cluster_definition": "vnet/dcosvnet.json",
-      "location": "westus"
+      "location": "eastus"
     },
     {
       "cluster_definition": "vnet/kubernetesvnet.json",
-      "location": "westus"
+      "location": "canadaeast"
     },
     {
       "cluster_definition": "vnet/swarmmodevnet.json",
-      "location": "westus"
+      "location": "eastus"
     }
   ]
 }
