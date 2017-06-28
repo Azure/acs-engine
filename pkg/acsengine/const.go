@@ -65,6 +65,7 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":        "pause-amd64:3.0",
 		"windowszip":   "v1.6.6intwinnat.zip",
+		"tiller":       "tiller:v2.5.0",
 	},
 	api.Kubernetes162: {
 		"hyperkube":    "hyperkube-amd64:v1.6.2",
@@ -77,6 +78,7 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":        "pause-amd64:3.0",
 		"windowszip":   "v1.6.2intwinnat.zip",
+		"tiller":       "tiller:v2.5.0",
 	},
 
 	api.Kubernetes160: {
@@ -90,6 +92,7 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":        "pause-amd64:3.0",
 		"windowszip":   "v1.6.0intwinnat.zip",
+		"tiller":       "tiller:v2.5.0",
 	},
 
 	api.Kubernetes157: {
@@ -103,6 +106,7 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
 		"pause":        "pause-amd64:3.0",
 		"windowszip":   "v1.5.7intwinnat.zip",
+		"tiller":       "tiller:v2.5.0",
 	},
 
 	api.Kubernetes153: {
@@ -116,6 +120,7 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
 		"pause":        "pause-amd64:3.0",
 		"windowszip":   "v1.5.3intwinnat.zip",
+		"tiller":       "tiller:v2.5.0",
 	},
 }
 
