@@ -144,11 +144,12 @@ func (dc *deployCmd) run() error {
 	if template, err = acsengine.PrettyPrintArmTemplate(template); err != nil {
 		log.Fatalf("error pretty printing template: %s \n", err.Error())
 	}
-	if parameters, err = acsengine.PrettyPrintJSON(parameters); err != nil {
+	var parametersFile string
+	if parametersFile, err = acsengine.BuildAzureParametersFile(parameters); err != nil {
 		log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
 	}
 
-	if err = acsengine.WriteArtifacts(dc.containerService, dc.apiVersion, template, parameters, dc.outputDirectory, certsgenerated, dc.parametersOnly); err != nil {
+	if err = acsengine.WriteArtifacts(dc.containerService, dc.apiVersion, template, parametersFile, dc.outputDirectory, certsgenerated, dc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 

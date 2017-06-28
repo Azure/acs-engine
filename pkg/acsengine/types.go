@@ -32,11 +32,11 @@ type DockerSpecConfig struct {
 
 //DCOSSpecConfig is the configurations of DCOS
 type DCOSSpecConfig struct {
-	DCOS173_BootstrapDownloadURL string
-	DCOS184_BootstrapDownloadURL string
-	DCOS187_BootstrapDownloadURL string
-	DCOS188_BootstrapDownloadURL string
-	DCOS190_BootstrapDownloadURL string
+	DCOS173BootstrapDownloadURL string
+	DCOS184BootstrapDownloadURL string
+	DCOS187BootstrapDownloadURL string
+	DCOS188BootstrapDownloadURL string
+	DCOS190BootstrapDownloadURL string
 }
 
 //KubernetesSpecConfig is the kubernetes container images used.

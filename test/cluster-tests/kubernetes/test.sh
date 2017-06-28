@@ -112,6 +112,7 @@ while (( $count > 0 )); do
   if [ -z "$(echo $pods | tr -d '[:space:]')" ]; then
     break
   fi
+  sleep 5; count=$((count-1))
 done
 
 if [ ! -z "$(echo $pods | tr -d '[:space:]')" ]; then

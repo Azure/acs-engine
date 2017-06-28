@@ -17,17 +17,3 @@ func ConvertVLabsUpgradeContainerService(vlabs *vlabs.UpgradeContainerService) *
 	convertVLabsOrchestratorProfile(vlabs.OrchestratorProfile, ucs.OrchestratorProfile)
 	return ucs
 }
-
-func convertVLabsUpgradeOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *OrchestratorProfile) {
-	api.OrchestratorType = OrchestratorType(vlabscs.OrchestratorType)
-	if api.OrchestratorType == Kubernetes {
-		switch vlabscs.OrchestratorVersion {
-		case vlabs.Kubernetes162:
-			api.OrchestratorVersion = Kubernetes162
-		case vlabs.Kubernetes160:
-			api.OrchestratorVersion = Kubernetes160
-		default:
-			api.OrchestratorVersion = KubernetesLatest
-		}
-	}
-}

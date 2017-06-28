@@ -97,6 +97,18 @@ function set_azure_account() {
 	az account set --subscription "${SUBSCRIPTION_ID}"
 }
 
+function create_resource_group() {
+	[[ ! -z "${LOCATION:-}" ]] || (echo "Must specify LOCATION" && exit -1)
+	[[ ! -z "${RESOURCE_GROUP:-}" ]] || (echo "Must specify RESOURCE_GROUP" && exit -1)
+
+	# Create resource group if doesn't exist
+	rg=$(az group show --name="${RESOURCE_GROUP}")
+	if [ -z "$rg" ]; then
+		az group create --name="${RESOURCE_GROUP}" --location="${LOCATION}"
+		sleep 3 # TODO: investigate why this is needed (eventual consistency in ARM)
+	fi
+}
+
 function deploy_template() {
 	# Check pre-requisites
 	[[ ! -z "${DEPLOYMENT_NAME:-}" ]] || (echo "Must specify DEPLOYMENT_NAME" && exit -1)
@@ -107,10 +119,9 @@ function deploy_template() {
 	which kubectl || (echo "kubectl must be on PATH" && exit -1)
 	which az || (echo "az must be on PATH" && exit -1)
 
-	# Deploy the template
-	az group create --name="${RESOURCE_GROUP}" --location="${LOCATION}"
+	create_resource_group
 
-	sleep 3 # TODO: investigate why this is needed (eventual consistency in ARM)
+	# Deploy the template
 	az group deployment create \
 		--name "${DEPLOYMENT_NAME}" \
 		--resource-group "${RESOURCE_GROUP}" \
@@ -132,7 +143,7 @@ function scale_agent_pool() {
 	DEPLOYMENT_PARAMS="${OUTPUT}/azuredeploy.parameters.json"
 
 	for poolname in `jq '.properties.agentPoolProfiles[].name' "${APIMODEL}" | tr -d '\"'`; do
-	  offset=$(jq "getpath([\"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
+	  offset=$(jq "getpath([\"parameters\", \"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
 	  echo "$poolname : offset=$offset count=$AGENT_POOL_SIZE"
 	  jqi "${DEPLOYMENT_PARAMS}" ".${poolname}Count.value = $AGENT_POOL_SIZE"
 	  jqi "${DEPLOYMENT_PARAMS}" ".${poolname}Offset.value = $offset"
@@ -154,7 +165,7 @@ function get_node_count() {
 	count=$(jq 'getpath(["properties","masterProfile","count"])' ${APIMODEL})
 
 	for poolname in `jq -r '.properties.agentPoolProfiles[].name' "${APIMODEL}"`; do
-	  nodes=$(jq "getpath([\"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
+	  nodes=$(jq "getpath([\"parameters\", \"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
 	  count=$((count+nodes))
 	done
 

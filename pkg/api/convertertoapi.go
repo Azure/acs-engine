@@ -571,6 +571,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.KubernetesImageBase = vlabs.KubernetesImageBase
 	api.ClusterSubnet = vlabs.ClusterSubnet
 	api.NetworkPolicy = vlabs.NetworkPolicy
+	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {
@@ -834,6 +835,7 @@ func addDCOSPublicAgentPool(api *Properties) {
 	api.AgentPoolProfiles[0].DNSPrefix = ""
 	publicPool.VMSize = api.AgentPoolProfiles[0].VMSize // - use same VMsize for public pool
 	publicPool.OSType = api.AgentPoolProfiles[0].OSType // - use same OSType for public pool
+	api.AgentPoolProfiles[0].Ports = nil
 	for _, port := range [3]int{80, 443, 8080} {
 		publicPool.Ports = append(publicPool.Ports, port)
 	}

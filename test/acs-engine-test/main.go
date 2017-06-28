@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"flag"
@@ -28,14 +29,14 @@ const usage = `Usage:
 `
 
 var logDir string
-var orchestrator_re *regexp.Regexp
+var orchestratorRe *regexp.Regexp
 
 func init() {
-	orchestrator_re = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
+	orchestratorRe = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
 }
 
 type TestManager struct {
-	config  *TestConfig
+	config  *testConfig
 	lock    sync.Mutex
 	wg      sync.WaitGroup
 	rootDir string
@@ -118,7 +119,26 @@ func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Dur
 	env = append(env, fmt.Sprintf("DEPLOYMENT_NAME=%s", instanceName))
 	env = append(env, fmt.Sprintf("RESOURCE_GROUP=%s", resourceGroup))
 
-	steps := []string{"generate_template", "deploy_template"}
+	// add scenario-specific environment variables
+	envFile := fmt.Sprintf("examples/%s.env", d.ClusterDefinition)
+	if _, err = os.Stat(envFile); err == nil {
+		envHandle, err := os.Open(envFile)
+		if err != nil {
+			wrileLog(logFile, "Error [open %s] : %v", envFile, err)
+			return false
+		}
+		defer envHandle.Close()
+
+		fileScanner := bufio.NewScanner(envHandle)
+		for fileScanner.Scan() {
+			str := strings.TrimSpace(fileScanner.Text())
+			if match, _ := regexp.MatchString(`^\S+=\S+$`, str); match {
+				env = append(env, str)
+			}
+		}
+	}
+
+	steps := []string{"create_resource_group", "predeploy", "generate_template", "deploy_template", "postdeploy"}
 
 	// determine validation script
 	if !d.SkipValidation {
@@ -252,7 +272,7 @@ func wrileLog(fname string, format string, args ...interface{}) {
 	}
 }
 
-func main_internal() error {
+func mainInternal() error {
 	var configFile string
 	var rootDir string
 	var err error
@@ -296,7 +316,7 @@ func main_internal() error {
 }
 
 func main() {
-	if err := main_internal(); err != nil {
+	if err := mainInternal(); err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
