@@ -26,6 +26,10 @@
     },
     {
       "cluster_definition": "kubernetes.json",
+      "location": "westindia"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
       "location": "southindia"
     },
     {
