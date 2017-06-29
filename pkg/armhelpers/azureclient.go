@@ -264,7 +264,7 @@ func getClient(env azure.Environment, subscriptionID string, armSpt *adal.Servic
 	c.virtualMachineScaleSetsClient.Authorizer = authorizer
 
 	c.deploymentsClient.PollingDelay = time.Second * 5
-
+	c.resourcesClient.PollingDelay = time.Second * 5
 	err := c.ensureProvidersRegistered(subscriptionID)
 	if err != nil {
 		return nil, err
