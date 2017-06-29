@@ -13,28 +13,28 @@ import (
 )
 
 // LoadContainerServiceFromFile loads an ACS Cluster API Model from a JSON file
-func LoadContainerServiceFromFile(jsonFile string) (*ContainerService, string, error) {
+func LoadContainerServiceFromFile(jsonFile string, validate bool) (*ContainerService, string, error) {
 	contents, e := ioutil.ReadFile(jsonFile)
 	if e != nil {
 		return nil, "", fmt.Errorf("error reading file %s: %s", jsonFile, e.Error())
 	}
-	return DeserializeContainerService(contents)
+	return DeserializeContainerService(contents, validate)
 }
 
 // DeserializeContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
-func DeserializeContainerService(contents []byte) (*ContainerService, string, error) {
+func DeserializeContainerService(contents []byte, validate bool) (*ContainerService, string, error) {
 	m := &TypeMeta{}
 	if err := json.Unmarshal(contents, &m); err != nil {
 		return nil, "", err
 	}
 	version := m.APIVersion
-	service, err := LoadContainerService(contents, version)
+	service, err := LoadContainerService(contents, version, validate)
 
 	return service, version, err
 }
 
 // LoadContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
-func LoadContainerService(contents []byte, version string) (*ContainerService, error) {
+func LoadContainerService(contents []byte, version string, validate bool) (*ContainerService, error) {
 	switch version {
 	case v20160930.APIVersion:
 		containerService := &v20160930.ContainerService{}
@@ -42,7 +42,7 @@ func LoadContainerService(contents []byte, version string) (*ContainerService, e
 			return nil, e
 		}
 		setContainerServiceDefaultsv20160930(containerService)
-		if e := containerService.Properties.Validate(); e != nil {
+		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
 		return ConvertV20160930ContainerService(containerService), nil
@@ -53,7 +53,7 @@ func LoadContainerService(contents []byte, version string) (*ContainerService, e
 			return nil, e
 		}
 		setContainerServiceDefaultsv20160330(containerService)
-		if e := containerService.Properties.Validate(); e != nil {
+		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
 		return ConvertV20160330ContainerService(containerService), nil
@@ -64,7 +64,7 @@ func LoadContainerService(contents []byte, version string) (*ContainerService, e
 			return nil, e
 		}
 		setContainerServiceDefaultsv20170131(containerService)
-		if e := containerService.Properties.Validate(); e != nil {
+		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
 		return ConvertV20170131ContainerService(containerService), nil
@@ -74,7 +74,7 @@ func LoadContainerService(contents []byte, version string) (*ContainerService, e
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
-		if e := containerService.Properties.Validate(); e != nil {
+		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
 		return ConvertV20170701ContainerService(containerService), nil
@@ -84,7 +84,7 @@ func LoadContainerService(contents []byte, version string) (*ContainerService, e
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
-		if e := containerService.Properties.Validate(); e != nil {
+		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
 		return ConvertVLabsContainerService(containerService), nil
