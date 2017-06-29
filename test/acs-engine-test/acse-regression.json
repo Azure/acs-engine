@@ -90,7 +90,7 @@
     },
     {
       "cluster_definition": "v20170131/swarmmode.json",
-      "location": "westindia"
+      "location": "eastus"
     },
     {
       "cluster_definition": "vnet/dcosvnet.json",
