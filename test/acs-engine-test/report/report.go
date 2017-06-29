@@ -62,6 +62,7 @@ func New(build string) *ReportManager {
 }
 
 func (h *ReportManager) Process(txt string) {
+	fmt.Println("ReportManager.Process")
 	for key, regex := range errorRegexpMap {
 		if match, _ := regexp.MatchString(regex, txt); match {
 			h.addFailure(key)
@@ -72,6 +73,7 @@ func (h *ReportManager) Process(txt string) {
 }
 
 func (h *ReportManager) addFailure(key string) {
+	fmt.Println("ReportManager.addFailure")
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
@@ -83,6 +85,7 @@ func (h *ReportManager) addFailure(key string) {
 }
 
 func (h *ReportManager) CreateReport(filepath string) error {
+	fmt.Println("ReportManager.CreateReport")
 	testReport := &TestReport{}
 	testReport.Build = h.build
 	testReport.Failures = make([]TestFailure, len(h.failures))
