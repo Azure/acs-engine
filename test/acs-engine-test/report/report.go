@@ -2,7 +2,6 @@ package report
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"regexp"
 	"sync"
@@ -30,15 +29,16 @@ func init() {
 	errorRegexpMap = map[string]string{
 		"Azure CLI error ": "_init__.py",
 
+		"Deployment error: VMStartTimedOut":                                "VMStartTimedOut",
+		"Deployment error: OSProvisioningTimedOut":                         "OSProvisioningTimedOut",
+		"Deployment error: VMExtensionProvisioningError":                   "VMExtensionProvisioningError",
 		"Deployment error: VMExtensionProvisioningTimeout":                 "VMExtensionProvisioningTimeout",
 		"Deployment error: InternalExecutionError":                         "InternalExecutionError",
-		"Deployment error: OSProvisioningTimedOut":                         "OSProvisioningTimedOut",
-		"Deployment error: VMStartTimedOut":                                "VMStartTimedOut",
-		"Deployment error: DiskServiceInternalError":                       "DiskServiceInternalError",
-		"Deployment error: VMExtensionProvisioningError":                   "VMExtensionProvisioningError",
+		"Deployment error: SkuNotAvailable":                                "SkuNotAvailable",
 		"Deployment error: MaxStorageAccountsCountPerSubscriptionExceeded": "MaxStorageAccountsCountPerSubscriptionExceeded",
 		"Deployment error: ImageManagementOperationError":                  "ImageManagementOperationError",
 		"Deployment error: DiskProcessingError":                            "DiskProcessingError",
+		"Deployment error: DiskServiceInternalError":                       "DiskServiceInternalError",
 		"Deployment error: AllocationFailed":                               "AllocationFailed",
 		"Deployment error: NetworkingInternalOperationError":               "NetworkingInternalOperationError",
 
@@ -62,7 +62,6 @@ func New(build string) *ReportManager {
 }
 
 func (h *ReportManager) Process(txt string) {
-	fmt.Println("ReportManager.Process")
 	for key, regex := range errorRegexpMap {
 		if match, _ := regexp.MatchString(regex, txt); match {
 			h.addFailure(key)
@@ -73,7 +72,6 @@ func (h *ReportManager) Process(txt string) {
 }
 
 func (h *ReportManager) addFailure(key string) {
-	fmt.Println("ReportManager.addFailure")
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
@@ -85,7 +83,6 @@ func (h *ReportManager) addFailure(key string) {
 }
 
 func (h *ReportManager) CreateReport(filepath string) error {
-	fmt.Println("ReportManager.CreateReport")
 	testReport := &TestReport{}
 	testReport.Build = h.build
 	testReport.Failures = make([]TestFailure, len(h.failures))
