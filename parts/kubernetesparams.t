@@ -17,6 +17,7 @@
       "type": "string"
     },
     "caPrivateKey": {
+      {{PopulateClassicModeDefaultValue "caPrivateKey"}}
       "metadata": {
         "description": "The base 64 CA private key used on the master."
       },
@@ -47,6 +48,7 @@
       "type": "securestring"
     },
     "dockerBridgeCidr": {
+      {{PopulateClassicModeDefaultValue "dockerBridgeCidr"}}
       "metadata": {
         "description": "Docker bridge network IP address and subnet"
       },
