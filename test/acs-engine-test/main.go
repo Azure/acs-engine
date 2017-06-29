@@ -88,16 +88,16 @@ func (m *TestManager) Run() error {
 		}(index, dep)
 	}
 	m.wg.Wait()
-	for _, ok := range success {
-		if !ok {
-			return errors.New("Test failed")
-		}
-	}
 
 	if err = m.reportMgr.CreateReport(fmt.Sprintf("%s/report.json", logDir)); err != nil {
 		fmt.Printf("Failed to create final report: %v\n", err)
 	}
 
+	for _, ok := range success {
+		if !ok {
+			return errors.New("Test failed")
+		}
+	}
 	return nil
 }
 
