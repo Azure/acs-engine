@@ -8,61 +8,13 @@
     "masterProfile": {
       "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_D5_v2"
+      "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
-        "name": "agentpool100",
-        "count": 20,
-        "vmSize": "Standard_D3_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool101",
-        "count": 20,
-        "vmSize": "Standard_D3_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool102",
-        "count": 20,
-        "vmSize": "Standard_D3_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool103",
-        "count": 20,
-        "vmSize": "Standard_D3_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool104",
-        "count": 20,
-        "vmSize": "Standard_D3_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool105",
-        "count": 20,
-        "vmSize": "Standard_D3_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool106",
-        "count": 20,
-        "vmSize": "Standard_D3_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool107",
-        "count": 20,
-        "vmSize": "Standard_D3_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool108",
-        "count": 20,
-        "vmSize": "Standard_D3_v2",
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet"
       }
     ],
