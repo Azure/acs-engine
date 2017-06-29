@@ -85,13 +85,12 @@ node {
 
             if(!success) {
               currentBuild.result = "FAILURE"
-              //String to = "${SEND_TO}".trim()
-              String to = "vincentl@microsoft.com"
+              String to = "${SEND_TO}".trim()
               if(errorMsg != "") {
                 if(to != "") {
                   to += ";"
                 }
-                //to += emailextrecipients([[$class: 'CulpritsRecipientProvider']])
+                to += emailextrecipients([[$class: 'CulpritsRecipientProvider']])
               }
               if(to != "") {
                 def url = "${env.BUILD_URL}\n\n"

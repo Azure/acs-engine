@@ -64,13 +64,9 @@ ${remote_exec} ./dcos config set core.dcos_url http://localhost:80
 if [[ "$?" != "0" ]]; then log "Failed to configure dcos"; exit 1; fi
 
 log "Copying marathon.json"
-<<<<<<< HEAD
 
-${remote_cp} "${DIR}/${MARATHON_JSON}" azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com:marathon.json
+${remote_cp} "${DIR}/${MARATHON_JSON}" azureuser@${INSTANCE_NAME}.${LOCATION}.${FQDNSuffix}:marathon.json
 if [[ "$?" != "0" ]]; then log "Failed to copy marathon.json"; exit 1; fi
-=======
-${remote_cp} "${DIR}/marathon.json" azureuser@${INSTANCE_NAME}.${LOCATION}.${FQDNSuffix}:marathon.json || (log "Failed to copy marathon.json"; exit 1)
->>>>>>> Support Mooncake for CI and validation testing
 
 # feed agentFQDN to marathon.json
 log "Configuring marathon.json"
