@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/Azure/acs-engine/test/acs-engine-test/config"
+	"github.com/Azure/acs-engine/test/acs-engine-test/report"
 )
 
 const script = "test/step.sh"
@@ -38,10 +39,11 @@ func init() {
 }
 
 type TestManager struct {
-	config  *config.TestConfig
-	lock    sync.Mutex
-	wg      sync.WaitGroup
-	rootDir string
+	config    *config.TestConfig
+	reportMgr *report.ReportManager
+	lock      sync.Mutex
+	wg        sync.WaitGroup
+	rootDir   string
 }
 
 func (m *TestManager) Run() error {
@@ -91,6 +93,11 @@ func (m *TestManager) Run() error {
 			return errors.New("Test failed")
 		}
 	}
+
+	if err = m.reportMgr.CreateReport(fmt.Sprintf("%s/report.json", logDir)); err != nil {
+		fmt.Printf("Failed to create final report: %v\n", err)
+	}
+
 	return nil
 }
 
@@ -153,6 +160,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	for _, step := range steps {
 		txt, err := m.runStep(resourceGroup, step, env, timeout)
 		if err != nil {
+			m.reportMgr.Process(txt)
 			wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, resourceGroup, err, txt)
 			success = false
 			// check AUTOCLEAN flag: if set to 'n', don't remove deployment
@@ -299,6 +307,7 @@ func mainInternal() error {
 	if err != nil {
 		return err
 	}
+	testManager.reportMgr = report.New(os.Getenv("BUILD_NUMBER"))
 	// check root directory
 	if rootDir == "" {
 		return fmt.Errorf("acs-engine root directory is not provided")
