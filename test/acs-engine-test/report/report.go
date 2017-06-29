@@ -98,18 +98,10 @@ func (h *ReportManager) CreateReport(filepath string) error {
 	if err != nil {
 		return err
 	}
-	file, err := os.OpenFile(filepath, os.O_RDWR, os.FileMode(0644))
+	file, err := os.OpenFile(filepath, os.O_CREATE|os.O_WRONLY, os.FileMode(0644))
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	err = file.Truncate(0)
-	if err != nil {
-		return fmt.Errorf("Failed to truncate %s prior to write: %v", filepath, err)
-	}
-	_, err = file.Write(data)
-	if err != nil {
-		return fmt.Errorf("Failed to write to %s: %v", filepath, err)
-	}
-	return nil
+	return file.Write(data)
 }
