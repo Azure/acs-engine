@@ -103,5 +103,9 @@ func (h *ReportManager) CreateReport(filepath string) error {
 		return err
 	}
 	defer file.Close()
-	return file.Write(data)
+	_, err = file.Write(data)
+	if err != nil {
+		return err
+	}
+	return nil
 }
