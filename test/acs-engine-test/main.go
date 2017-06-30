@@ -88,9 +88,12 @@ func (m *TestManager) Run() error {
 		}(index, dep)
 	}
 	m.wg.Wait()
-	//create report
-	if err = m.reportMgr.CreateReport(fmt.Sprintf("%s/TestReport.json", logDir)); err != nil {
-		fmt.Printf("Failed to create final report: %v\n", err)
+	//create reports
+	if err = m.reportMgr.CreateTestReport(fmt.Sprintf("%s/TestReport.json", logDir)); err != nil {
+		fmt.Printf("Failed to create test report: %v\n", err)
+	}
+	if err = m.reportMgr.CreateCombinedReport(fmt.Sprintf("%s/CombinedReport.json", logDir), "TestReport.json"); err != nil {
+		fmt.Printf("Failed to create combined report: %v\n", err)
 	}
 	// fail the test on error
 	for _, ok := range success {
@@ -307,7 +310,14 @@ func mainInternal() error {
 	if err != nil {
 		return err
 	}
-	testManager.reportMgr = report.New(os.Getenv("BUILD_NUMBER"), len(testManager.config.Deployments))
+	// get Jenkins build number
+	buildNum, err := strconv.Atoi(os.Getenv("BUILD_NUMBER"))
+	if err != nil {
+		fmt.Println("Warning: BUILD_NUMBER is not set or invalid. Assuming 0")
+		buildNum = 0
+	}
+	// initialize report manager
+	testManager.reportMgr = report.New(buildNum, len(testManager.config.Deployments))
 	// check root directory
 	if rootDir == "" {
 		return fmt.Errorf("acs-engine root directory is not provided")

@@ -2,6 +2,8 @@ package report
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"regexp"
 	"sync"
@@ -14,7 +16,7 @@ type TestFailure struct {
 }
 
 type TestReport struct {
-	Build       string        `json:"build"`
+	BuildNum    int           `json:"build"`
 	Deployments int           `json:"deployments"`
 	Errors      int           `json:"errors"`
 	StartTime   time.Time     `json:"startTime"`
@@ -24,7 +26,7 @@ type TestReport struct {
 
 type ReportManager struct {
 	lock      sync.Mutex
-	build     string
+	buildNum  int
 	nDeploys  int
 	nErrors   int
 	timestamp time.Time
@@ -62,9 +64,9 @@ func init() {
 	}
 }
 
-func New(build string, nDeploys int) *ReportManager {
+func New(buildNum int, nDeploys int) *ReportManager {
 	h := &ReportManager{}
-	h.build = build
+	h.buildNum = buildNum
 	h.nDeploys = nDeploys
 	h.nErrors = 0
 	h.timestamp = time.Now().UTC()
@@ -75,29 +77,29 @@ func New(build string, nDeploys int) *ReportManager {
 func (h *ReportManager) Process(txt string) {
 	for key, regex := range errorRegexpMap {
 		if match, _ := regexp.MatchString(regex, txt); match {
-			h.addFailure(key)
+			h.addFailure(key, 1)
 			return
 		}
 	}
-	h.addFailure("Unspecified error")
+	h.addFailure("Unspecified error", 1)
 }
 
-func (h *ReportManager) addFailure(key string) {
+func (h *ReportManager) addFailure(key string, n int) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
-	h.nErrors++
+	h.nErrors += n
 
 	if testFailure, ok := h.failures[key]; !ok {
-		h.failures[key] = &TestFailure{Error: key, Count: 1}
+		h.failures[key] = &TestFailure{Error: key, Count: n}
 	} else {
-		testFailure.Count++
+		testFailure.Count += n
 	}
 }
 
-func (h *ReportManager) CreateReport(filepath string) error {
+func (h *ReportManager) CreateTestReport(filepath string) error {
 	testReport := &TestReport{}
-	testReport.Build = h.build
+	testReport.BuildNum = h.buildNum
 	testReport.Deployments = h.nDeploys
 	testReport.Errors = h.nErrors
 	testReport.StartTime = h.timestamp
@@ -122,4 +124,34 @@ func (h *ReportManager) CreateReport(filepath string) error {
 		return err
 	}
 	return nil
+}
+
+func (h *ReportManager) CreateCombinedReport(filepath, testReportFname string) error {
+	basedir := fmt.Sprintf("/var/lib/jenkins/jobs/%s/builds", os.Getenv("JOB_BASE_NAME"))
+	if _, err := os.Stat(basedir); err != nil {
+		return err
+	}
+	now := time.Now().UTC()
+	combinedReport := New(h.buildNum, 0)
+	for n := h.buildNum; n > 0; n-- {
+		data, err := ioutil.ReadFile(fmt.Sprintf("%s/%d/%s", basedir, n, testReportFname))
+		if err != nil {
+			break
+		}
+		testReport := &TestReport{}
+		if err := json.Unmarshal(data, &testReport); err != nil {
+			break
+		}
+		// get combined report for past 24 hours
+		if now.Sub(testReport.StartTime) > time.Duration(time.Hour*24) {
+			break
+		}
+		combinedReport.timestamp = testReport.StartTime
+		combinedReport.nDeploys += testReport.Deployments
+
+		for _, f := range testReport.Failures {
+			combinedReport.addFailure(f.Error, f.Count)
+		}
+	}
+	return combinedReport.CreateTestReport(filepath)
 }
