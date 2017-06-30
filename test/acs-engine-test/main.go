@@ -88,12 +88,13 @@ func (m *TestManager) Run() error {
 		}(index, dep)
 	}
 	m.wg.Wait()
-
+	//create report
+	if err = m.reportMgr.CreateReport(fmt.Sprintf("%s/TestReport.json", logDir)); err != nil {
+		fmt.Printf("Failed to create final report: %v\n", err)
+	}
+	// fail the test on error
 	for _, ok := range success {
 		if !ok {
-			if err = m.reportMgr.CreateReport(fmt.Sprintf("%s/ErrorReport.json", logDir)); err != nil {
-				fmt.Printf("Failed to create final report: %v\n", err)
-			}
 			return errors.New("Test failed")
 		}
 	}
@@ -306,7 +307,7 @@ func mainInternal() error {
 	if err != nil {
 		return err
 	}
-	testManager.reportMgr = report.New(os.Getenv("BUILD_NUMBER"))
+	testManager.reportMgr = report.New(os.Getenv("BUILD_NUMBER"), len(testManager.config.Deployments))
 	// check root directory
 	if rootDir == "" {
 		return fmt.Errorf("acs-engine root directory is not provided")

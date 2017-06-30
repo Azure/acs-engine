@@ -5,6 +5,7 @@ import (
 	"os"
 	"regexp"
 	"sync"
+	"time"
 )
 
 type TestFailure struct {
@@ -13,14 +14,20 @@ type TestFailure struct {
 }
 
 type TestReport struct {
-	Build    string        `json:"build"`
-	Failures []TestFailure `json:"failures"`
+	Build       string        `json:"build"`
+	Deployments int           `json:"deployments"`
+	Errors      int           `json:"errors"`
+	StartTime   time.Time     `json:"startTime"`
+	Duration    time.Duration `json:"duration"`
+	Failures    []TestFailure `json:"failures"`
 }
 
 type ReportManager struct {
-	lock     sync.Mutex
-	build    string
-	failures map[string]*TestFailure
+	lock      sync.Mutex
+	build     string
+	nDeploy   int
+	timestamp time.Time
+	failures  map[string]*TestFailure
 }
 
 var errorRegexpMap map[string]string
@@ -54,9 +61,11 @@ func init() {
 	}
 }
 
-func New(build string) *ReportManager {
+func New(build string, nDeploy int) *ReportManager {
 	h := &ReportManager{}
 	h.build = build
+	h.nDeploy = nDeploy
+	h.timestamp = time.Now().UTC()
 	h.failures = map[string]*TestFailure{}
 	return h
 }
@@ -85,7 +94,11 @@ func (h *ReportManager) addFailure(key string) {
 func (h *ReportManager) CreateReport(filepath string) error {
 	testReport := &TestReport{}
 	testReport.Build = h.build
-	testReport.Failures = make([]TestFailure, len(h.failures))
+	testReport.Deployments = h.nDeploy
+	testReport.Errors = len(h.failures)
+	testReport.StartTime = h.timestamp
+	testReport.Duration = time.Now().UTC().Sub(h.timestamp)
+	testReport.Failures = make([]TestFailure, testReport.Errors)
 	i := 0
 	for _, f := range h.failures {
 		testReport.Failures[i] = *f
