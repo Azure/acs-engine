@@ -82,7 +82,7 @@
     },
     {
       "cluster_definition": "networkpolicy/kubernetes-calico.json",
-      "location": "australiaeast"
+      "location": "westus2"
     },
     {
       "cluster_definition": "custom-pod-cidr/kubernetes.json",
