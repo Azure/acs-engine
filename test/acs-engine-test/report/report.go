@@ -25,7 +25,8 @@ type TestReport struct {
 type ReportManager struct {
 	lock      sync.Mutex
 	build     string
-	nDeploy   int
+	nDeploys  int
+	nErrors   int
 	timestamp time.Time
 	failures  map[string]*TestFailure
 }
@@ -61,10 +62,11 @@ func init() {
 	}
 }
 
-func New(build string, nDeploy int) *ReportManager {
+func New(build string, nDeploys int) *ReportManager {
 	h := &ReportManager{}
 	h.build = build
-	h.nDeploy = nDeploy
+	h.nDeploys = nDeploys
+	h.nErrors = 0
 	h.timestamp = time.Now().UTC()
 	h.failures = map[string]*TestFailure{}
 	return h
@@ -84,6 +86,8 @@ func (h *ReportManager) addFailure(key string) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
+	h.nErrors++
+
 	if testFailure, ok := h.failures[key]; !ok {
 		h.failures[key] = &TestFailure{Error: key, Count: 1}
 	} else {
@@ -94,11 +98,11 @@ func (h *ReportManager) addFailure(key string) {
 func (h *ReportManager) CreateReport(filepath string) error {
 	testReport := &TestReport{}
 	testReport.Build = h.build
-	testReport.Deployments = h.nDeploy
-	testReport.Errors = len(h.failures)
+	testReport.Deployments = h.nDeploys
+	testReport.Errors = h.nErrors
 	testReport.StartTime = h.timestamp
 	testReport.Duration = time.Now().UTC().Sub(h.timestamp).String()
-	testReport.Failures = make([]TestFailure, testReport.Errors)
+	testReport.Failures = make([]TestFailure, len(h.failures))
 	i := 0
 	for _, f := range h.failures {
 		testReport.Failures[i] = *f
