@@ -9,8 +9,16 @@
       "location": "canadacentral"
     },
     {
+      "cluster_definition": "dcos-versions/dcos1.8.4.json",
+      "location": "canadaeast"
+    },
+    {
       "cluster_definition": "dcos-versions/dcos1.8.8.json",
       "location": "centralindia"
+    },
+    {
+      "cluster_definition": "dcos-versions/dcos1.9.0.json",
+      "location": "southindia"
     },
     {
       "cluster_definition": "disks-managed/dcos-preAttachedDisks-vmas.json",
@@ -34,11 +42,11 @@
     },
     {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json",
-      "location": "eastus"
+      "location": "westcentralus"
     },
     {
       "cluster_definition": "disks-managed/swarm-vmas-windows.json",
-      "location": "eastus"
+      "location": "northeurope"
     },
     {
       "cluster_definition": "disks-managed/swarm-vmss.json",
@@ -54,7 +62,7 @@
     },
     {
       "cluster_definition": "disks-storageaccount/dcos.json",
-      "location": "eastus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "disks-storageaccount/kubernetes.json",
@@ -66,7 +74,7 @@
     },
     {
       "cluster_definition": "disks-storageaccount/swarmmode.json",
-      "location": "eastus"
+      "location": "koreacentral"
     },
     {
       "cluster_definition": "keyvaultcerts/swarm-windows.json",
@@ -77,8 +85,16 @@
       "location": "westus"
     },
     {
+      "cluster_definition": "kubernetesversions/kubernetes1.5.3.json",
+      "location": "koreasouth"
+    },
+    {
       "cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
-      "location": "centralus"
+      "location": "westcentralus"
+    },
+    {
+      "cluster_definition": "kubernetesversions/kubernetes1.6.2.json",
+      "location": "uksouth"
     },
     {
       "cluster_definition": "networkpolicy/kubernetes-calico.json",
@@ -86,23 +102,11 @@
     },
     {
       "cluster_definition": "custom-pod-cidr/kubernetes.json",
-      "location": "eastus"
+      "location": "ukwest"
     },
     {
       "cluster_definition": "v20170131/swarmmode.json",
-      "location": "eastus"
-    },
-    {
-      "cluster_definition": "vnet/dcosvnet.json",
-      "location": "eastus"
-    },
-    {
-      "cluster_definition": "vnet/kubernetesvnet.json",
-      "location": "canadaeast"
-    },
-    {
-      "cluster_definition": "vnet/swarmmodevnet.json",
-      "location": "eastus"
+      "location": "westindia"
     }
   ]
 }
