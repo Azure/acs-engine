@@ -18,7 +18,7 @@ type TestReport struct {
 	Deployments int           `json:"deployments"`
 	Errors      int           `json:"errors"`
 	StartTime   time.Time     `json:"startTime"`
-	Duration    time.Duration `json:"duration"`
+	Duration    string        `json:"duration"`
 	Failures    []TestFailure `json:"failures"`
 }
 
@@ -97,7 +97,7 @@ func (h *ReportManager) CreateReport(filepath string) error {
 	testReport.Deployments = h.nDeploy
 	testReport.Errors = len(h.failures)
 	testReport.StartTime = h.timestamp
-	testReport.Duration = time.Now().UTC().Sub(h.timestamp)
+	testReport.Duration = time.Now().UTC().Sub(h.timestamp).String()
 	testReport.Failures = make([]TestFailure, testReport.Errors)
 	i := 0
 	for _, f := range h.failures {
