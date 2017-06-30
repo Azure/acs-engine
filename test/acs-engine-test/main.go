@@ -92,9 +92,6 @@ func (m *TestManager) Run() error {
 	if err = m.reportMgr.CreateTestReport(fmt.Sprintf("%s/TestReport.json", logDir)); err != nil {
 		fmt.Printf("Failed to create test report: %v\n", err)
 	}
-	if err = m.reportMgr.CreateCombinedReport(fmt.Sprintf("%s/CombinedReport.json", logDir), "TestReport.json"); err != nil {
-		fmt.Printf("Failed to create combined report: %v\n", err)
-	}
 	// fail the test on error
 	for _, ok := range success {
 		if !ok {
