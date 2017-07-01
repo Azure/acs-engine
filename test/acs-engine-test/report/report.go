@@ -148,12 +148,10 @@ func (h *ReportManager) CreateCombinedReport(filepath, testReportFname string) e
 		data, err := ioutil.ReadFile(fmt.Sprintf("%s/%d/%s/%s",
 			os.Getenv("JOB_BUILD_ROOTDIR"), n, os.Getenv("JOB_BUILD_SUBDIR"), testReportFname))
 		if err != nil {
-			fmt.Printf("%v\n", err.Error())
 			break
 		}
 		testReport := &TestReport{}
 		if err := json.Unmarshal(data, &testReport); err != nil {
-			fmt.Printf("%v\n", err.Error())
 			break
 		}
 		// get combined report for past 24 hours
