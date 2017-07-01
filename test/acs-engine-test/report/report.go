@@ -132,7 +132,7 @@ func (h *ReportManager) CreateTestReport(filepath string) error {
 }
 
 func (h *ReportManager) CreateCombinedReport(filepath, testReportFname string) error {
-	basedir := fmt.Sprintf("/var/lib/jenkins/jobs/%s/builds", os.Getenv("JOB_BASE_NAME"))
+	basedir := os.Getenv("JOB_BUILDS")
 	if _, err := os.Stat(basedir); err != nil {
 		return err
 	}

@@ -20,8 +20,12 @@ import (
 	"github.com/Azure/acs-engine/test/acs-engine-test/report"
 )
 
-const script = "test/step.sh"
+const (
+	script = "test/step.sh"
 
+	testReport     = "TestReport.json"
+	combinedReport = "CombinedReport.json"
+)
 const usage = `Usage:
   acs-engine-test -c <configuration.json> -d <acs-engine root directory>
 
@@ -89,8 +93,11 @@ func (m *TestManager) Run() error {
 	}
 	m.wg.Wait()
 	//create reports
-	if err = m.reportMgr.CreateTestReport(fmt.Sprintf("%s/TestReport.json", logDir)); err != nil {
-		fmt.Printf("Failed to create test report: %v\n", err)
+	if err = m.reportMgr.CreateTestReport(fmt.Sprintf("%s/%s", logDir, testReport)); err != nil {
+		fmt.Printf("Failed to create %s: %v\n", testReport, err)
+	}
+	if err = m.reportMgr.CreateCombinedReport(fmt.Sprintf("%s/%s", logDir, combinedReport), testReport); err != nil {
+		fmt.Printf("Failed to create %s: %v\n", combinedReport, err)
 	}
 	// fail the test on error
 	for _, ok := range success {
