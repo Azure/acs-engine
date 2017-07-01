@@ -132,21 +132,18 @@ func (h *ReportManager) CreateTestReport(filepath string) error {
 }
 
 func (h *ReportManager) CreateCombinedReport(filepath, testReportFname string) error {
-	basedir := os.Getenv("JOB_BUILDS")
-	if _, err := os.Stat(basedir); err != nil {
-		return err
-	}
 	now := time.Now().UTC()
 	combinedReport := New(h.jobName, h.buildNum, 0)
 	for n := h.buildNum - 1; n > 0; n-- {
-		data, err := ioutil.ReadFile(fmt.Sprintf("%s/%d/%s", basedir, n, testReportFname))
+		data, err := ioutil.ReadFile(fmt.Sprintf("%s/%d/%s/%s",
+			os.Getenv("JOB_BUILD_ROOTDIR"), n, os.Getenv("JOB_BUILD_SUBDIR"), testReportFname))
 		if err != nil {
 			fmt.Printf("%v\n", err.Error())
 			break
 		}
-		fmt.Printf("File %s/%d/%s present\n", basedir, n, testReportFname)
 		testReport := &TestReport{}
 		if err := json.Unmarshal(data, &testReport); err != nil {
+			fmt.Printf("%v\n", err.Error())
 			break
 		}
 		// get combined report for past 24 hours
