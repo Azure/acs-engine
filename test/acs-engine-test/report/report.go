@@ -78,6 +78,16 @@ func New(jobName string, buildNum int, nDeploys int) *ReportManager {
 	return h
 }
 
+func (h *ReportManager) Copy() *ReportManager {
+	n := New(h.jobName, h.buildNum, h.nDeploys)
+	n.nErrors = h.nErrors
+	n.timestamp = h.timestamp
+	for k, f := range h.failures {
+		n.failures[k] = &TestFailure{Error: f.Error, Count: f.Count}
+	}
+	return n
+}
+
 func (h *ReportManager) Process(txt string) {
 	for key, regex := range errorRegexpMap {
 		if match, _ := regexp.MatchString(regex, txt); match {
@@ -133,8 +143,8 @@ func (h *ReportManager) CreateTestReport(filepath string) error {
 
 func (h *ReportManager) CreateCombinedReport(filepath, testReportFname string) error {
 	now := time.Now().UTC()
-	combinedReport := New(h.jobName, h.buildNum, 0)
-	for n := h.buildNum; n > 0; n-- {
+	combinedReport := h.Copy()
+	for n := h.buildNum - 1; n > 0; n-- {
 		data, err := ioutil.ReadFile(fmt.Sprintf("%s/%d/%s/%s",
 			os.Getenv("JOB_BUILD_ROOTDIR"), n, os.Getenv("JOB_BUILD_SUBDIR"), testReportFname))
 		if err != nil {
