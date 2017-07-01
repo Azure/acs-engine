@@ -16,6 +16,7 @@ type TestFailure struct {
 }
 
 type TestReport struct {
+	Job         string        `json:"job"`
 	BuildNum    int           `json:"build"`
 	Deployments int           `json:"deployments"`
 	Errors      int           `json:"errors"`
@@ -26,6 +27,7 @@ type TestReport struct {
 
 type ReportManager struct {
 	lock      sync.Mutex
+	jobName   string
 	buildNum  int
 	nDeploys  int
 	nErrors   int
@@ -37,35 +39,37 @@ var errorRegexpMap map[string]string
 
 func init() {
 	errorRegexpMap = map[string]string{
-		"Azure CLI error ": "_init__.py",
+		"azcli run":  "_init__.py",
+		"azcli load": "Error loading command module",
 
-		"Deployment error: VMStartTimedOut":                                "VMStartTimedOut",
-		"Deployment error: OSProvisioningTimedOut":                         "OSProvisioningTimedOut",
-		"Deployment error: VMExtensionProvisioningError":                   "VMExtensionProvisioningError",
-		"Deployment error: VMExtensionProvisioningTimeout":                 "VMExtensionProvisioningTimeout",
-		"Deployment error: InternalExecutionError":                         "InternalExecutionError",
-		"Deployment error: SkuNotAvailable":                                "SkuNotAvailable",
-		"Deployment error: MaxStorageAccountsCountPerSubscriptionExceeded": "MaxStorageAccountsCountPerSubscriptionExceeded",
-		"Deployment error: ImageManagementOperationError":                  "ImageManagementOperationError",
-		"Deployment error: DiskProcessingError":                            "DiskProcessingError",
-		"Deployment error: DiskServiceInternalError":                       "DiskServiceInternalError",
-		"Deployment error: AllocationFailed":                               "AllocationFailed",
-		"Deployment error: NetworkingInternalOperationError":               "NetworkingInternalOperationError",
+		"VMStartTimedOut":                                "VMStartTimedOut",
+		"OSProvisioningTimedOut":                         "OSProvisioningTimedOut",
+		"VMExtensionProvisioningError":                   "VMExtensionProvisioningError",
+		"VMExtensionProvisioningTimeout":                 "VMExtensionProvisioningTimeout",
+		"InternalExecutionError":                         "InternalExecutionError",
+		"SkuNotAvailable":                                "SkuNotAvailable",
+		"MaxStorageAccountsCountPerSubscriptionExceeded": "MaxStorageAccountsCountPerSubscriptionExceeded",
+		"ImageManagementOperationError":                  "ImageManagementOperationError",
+		"DiskProcessingError":                            "DiskProcessingError",
+		"DiskServiceInternalError":                       "DiskServiceInternalError",
+		"AllocationFailed":                               "AllocationFailed",
+		"NetworkingInternalOperationError":               "NetworkingInternalOperationError",
 
-		"K8S validattion: curl error":                 "curl_error",
-		"K8S validation: external IP":                 "gave up waiting for loadbalancer to get an ingress ip",
-		"K8S validation: nodes not ready":             "gave up waiting for apiserver",
-		"K8S validation: service unreachable":         "gave up waiting for service to be externally reachable",
-		"K8S validation: nginx unreachable":           "failed to get expected response from nginx through the loadbalancer",
-		"DCOS validation: nodes not ready":            "gave up waiting for DCOS nodes",
-		"DCOS validation: marathon validation failed": "dcos/test.sh] marathon validation failed",
-		"DCOS validation: marathon not added":         "dcos/test.sh] gave up waiting for marathon to be added",
-		"DCOS validation: marathon-lb not installed":  "Failed to install marathon-lb",
+		"K8S curl error":                  "curl_error",
+		"K8S no external IP":              "gave up waiting for loadbalancer to get an ingress ip",
+		"K8S nodes not ready":             "gave up waiting for apiserver",
+		"K8S service unreachable":         "gave up waiting for service to be externally reachable",
+		"K8S nginx unreachable":           "failed to get expected response from nginx through the loadbalancer",
+		"DCOS nodes not ready":            "gave up waiting for DCOS nodes",
+		"DCOS marathon validation failed": "dcos/test.sh] marathon validation failed",
+		"DCOS marathon not added":         "dcos/test.sh] gave up waiting for marathon to be added",
+		"DCOS marathon-lb not installed":  "Failed to install marathon-lb",
 	}
 }
 
-func New(buildNum int, nDeploys int) *ReportManager {
+func New(jobName string, buildNum int, nDeploys int) *ReportManager {
 	h := &ReportManager{}
+	h.jobName = jobName
 	h.buildNum = buildNum
 	h.nDeploys = nDeploys
 	h.nErrors = 0
@@ -99,6 +103,7 @@ func (h *ReportManager) addFailure(key string, n int) {
 
 func (h *ReportManager) CreateTestReport(filepath string) error {
 	testReport := &TestReport{}
+	testReport.Job = h.jobName
 	testReport.BuildNum = h.buildNum
 	testReport.Deployments = h.nDeploys
 	testReport.Errors = h.nErrors
@@ -110,7 +115,7 @@ func (h *ReportManager) CreateTestReport(filepath string) error {
 		testReport.Failures[i] = *f
 		i++
 	}
-	data, err := json.Marshal(testReport)
+	data, err := json.MarshalIndent(testReport, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -132,7 +137,7 @@ func (h *ReportManager) CreateCombinedReport(filepath, testReportFname string) e
 		return err
 	}
 	now := time.Now().UTC()
-	combinedReport := New(h.buildNum, 0)
+	combinedReport := New(h.jobName, h.buildNum, 0)
 	for n := h.buildNum; n > 0; n-- {
 		data, err := ioutil.ReadFile(fmt.Sprintf("%s/%d/%s", basedir, n, testReportFname))
 		if err != nil {

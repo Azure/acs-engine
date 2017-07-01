@@ -314,7 +314,7 @@ func mainInternal() error {
 		buildNum = 0
 	}
 	// initialize report manager
-	testManager.reportMgr = report.New(buildNum, len(testManager.config.Deployments))
+	testManager.reportMgr = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments))
 	// check root directory
 	if rootDir == "" {
 		return fmt.Errorf("acs-engine root directory is not provided")
