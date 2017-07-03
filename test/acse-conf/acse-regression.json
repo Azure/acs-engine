@@ -10,11 +10,11 @@
     },
     {
       "cluster_definition": "dcos-versions/dcos1.8.8.json",
-      "location": "centralindia"
+      "location": "eastus2"
     },
     {
       "cluster_definition": "disks-managed/dcos-preAttachedDisks-vmas.json",
-      "location": "westeurope"
+      "location": "westcentralus"
     },
     {
       "cluster_definition": "disks-managed/dcos-vmss.json",
@@ -34,7 +34,7 @@
     },
     {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json",
-      "location": "eastus"
+      "location": "westcentralus"
     },
     {
       "cluster_definition": "disks-managed/swarm-vmas-windows.json",
@@ -54,7 +54,7 @@
     },
     {
       "cluster_definition": "disks-storageaccount/dcos.json",
-      "location": "eastus"
+      "location": "centralus"
     },
     {
       "cluster_definition": "disks-storageaccount/kubernetes.json",
@@ -82,7 +82,7 @@
     },
     {
       "cluster_definition": "networkpolicy/kubernetes-calico.json",
-      "location": "australiaeast"
+      "location": "northcentralus"
     },
     {
       "cluster_definition": "custom-pod-cidr/kubernetes.json",
@@ -90,7 +90,7 @@
     },
     {
       "cluster_definition": "v20170131/swarmmode.json",
-      "location": "westindia"
+      "location": "eastus"
     },
     {
       "cluster_definition": "vnet/dcosvnet.json",
