@@ -217,7 +217,7 @@ function systemctlEnableAndCheck() {
     if [ $enabled -ne 0 ]
     then
         echo "$1 could not be enabled by systemctl"
-        exit 2
+        exit 5
     fi
     systemctl enable $1
 }
