@@ -44,7 +44,7 @@ func init() {
 
 type TestManager struct {
 	config    *config.TestConfig
-	reportMgr *report.ReportManager
+	reportMgr *report.ReportMgr
 	lock      sync.Mutex
 	wg        sync.WaitGroup
 	rootDir   string
@@ -167,7 +167,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	for _, step := range steps {
 		txt, err := m.runStep(resourceGroup, step, env, timeout)
 		if err != nil {
-			m.reportMgr.Process(txt)
+			m.reportMgr.Process(txt, d.Location)
 			wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, resourceGroup, err, txt)
 			success = false
 			// check AUTOCLEAN flag: if set to 'n', don't remove deployment
