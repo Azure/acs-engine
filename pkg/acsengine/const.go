@@ -69,6 +69,8 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"nodegraceperiod":   "40s",
 		"podeviction":   "5m0s",
 		"routeperiod":   "10s",
+		"backoff": false,
+		"ratelimit": false,
 	},
 	api.Kubernetes162: {
 		"hyperkube":    "hyperkube-amd64:v1.6.2",
@@ -85,6 +87,8 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"nodegraceperiod":   "40s",
 		"podeviction":   "5m0s",
 		"routeperiod":   "10s",
+		"backoff": false,
+		"ratelimit": false,
 	},
 
 	api.Kubernetes160: {
@@ -102,6 +106,8 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"nodegraceperiod":   "40s",
 		"podeviction":   "5m0s",
 		"routeperiod":   "10s",
+		"backoff": false,
+		"ratelimit": false,
 	},
 
 	api.Kubernetes157: {
@@ -119,6 +125,8 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"nodegraceperiod":   "40s",
 		"podeviction":   "5m0s",
 		"routeperiod":   "10s",
+		"backoff": false,
+		"ratelimit": false,
 	},
 
 	api.Kubernetes153: {
@@ -136,6 +144,8 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"nodegraceperiod":   "40s",
 		"podeviction":   "5m0s",
 		"routeperiod":   "10s",
+		"backoff": false,
+		"ratelimit": false,
 	},
 }
 

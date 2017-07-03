@@ -138,6 +138,62 @@
       },
       "type": "string"
     },
+    "cloudProviderBackoff": {
+      {{PopulateClassicModeDefaultValue "cloudProviderBackoff"}}
+      "metadata": {
+        "description": "Enable cloudprovider backoff?"
+      },
+      "type": "boolean"
+    },
+    "cloudProviderBackoffRetries": {
+      {{PopulateClassicModeDefaultValue "cloudProviderBackoffRetries"}}
+      "metadata": {
+        "description": "If backoff enabled, how many times to retry"
+      },
+      "type": "int"
+    },
+    "cloudProviderBackoffExponent": {
+      {{PopulateClassicModeDefaultValue "cloudProviderBackoffExponent"}}
+      "metadata": {
+        "description": "If backoff enabled, retry exponent"
+      },
+      "type": "int"
+    },
+    "cloudProviderBackoffDuration": {
+      {{PopulateClassicModeDefaultValue "cloudProviderBackoffDuration"}}
+      "metadata": {
+        "description": "If backoff enabled, how long until timeout"
+      },
+      "type": "int"
+    },
+    "cloudProviderBackoffJitter": {
+      {{PopulateClassicModeDefaultValue "cloudProviderBackoffJitter"}}
+      "metadata": {
+        "description": "If backoff enabled, jitter factor between retries"
+      },
+      "type": "float"
+    },
+    "cloudProviderRatelimit": {
+      {{PopulateClassicModeDefaultValue "cloudProviderRatelimit"}}
+      "metadata": {
+        "description": "Enable cloudprovider rate limiting?"
+      },
+      "type": "boolean"
+    },
+    "cloudProviderRatelimitQPS": {
+      {{PopulateClassicModeDefaultValue "cloudProviderRatelimitQPS"}}
+      "metadata": {
+        "description": "If rate limiting enabled, target maximum QPS"
+      },
+      "type": "float"
+    },
+    "cloudProviderRatelimitBucket": {
+      {{PopulateClassicModeDefaultValue "cloudProviderRatelimitBucket"}}
+      "metadata": {
+        "description": "If rate limiting enabled, bucket size"
+      },
+      "type": "int"
+    },
     "kubernetesKubeDNSSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesKubeDNSSpec"}}
       "metadata": {

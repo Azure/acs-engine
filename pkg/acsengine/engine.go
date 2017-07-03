@@ -399,6 +399,14 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["nodegraceperiod"])
 		addValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["podeviction"])
 		addValue(parametersMap, "kubernetesCtrlMgrRouteReconciliationPeriod", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["routeperiod"])
+		addValue(parametersMap, "cloudProviderBackoff", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["backoff"])
+		addValue(parametersMap, "cloudProviderBackoffRetries", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["backoffretries"])
+		addValue(parametersMap, "cloudProviderBackoffExponent", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["backoffexponent"])
+		addValue(parametersMap, "cloudProviderBackoffDuration", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["backoffduration"])
+		addValue(parametersMap, "cloudProviderBackoffJitter", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["backoffjitter"])
+		addValue(parametersMap, "cloudProviderRatelimit", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["ratelimit"])
+		addValue(parametersMap, "cloudProviderRatelimitQPS", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["ratelimitqps"])
+		addValue(parametersMap, "cloudProviderRatelimitBucket", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["ratelimitbucket"])
 		addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
 		addValue(parametersMap, "dockerBridgeCidr", properties.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet)
 		addValue(parametersMap, "networkPolicy", properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
@@ -817,6 +825,22 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["podeviction"]
 				case "kubernetesCtrlMgrRouteReconciliationPeriod":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["routeperiod"]
+				case "cloudProviderBackoff":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["backoff"]
+				case "cloudProviderBackoffRetries":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["backoffretries"]
+				case "cloudProviderBackoffExponent":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["backoffexponent"]
+				case "cloudProviderBackoffDuration":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["backoffduration"]
+				case "cloudProviderBackoffJitter":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["backoffjitter"]
+				case "cloudProviderRatelimit":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["ratelimit"]
+				case "cloudProviderRatelimitQPS":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["ratelimitqps"]
+				case "cloudProviderRatelimitBucket":
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["ratelimitbucket"]
 				case "kubeBinariesSASURL":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeImages[kubernetesVersion]["windowszip"]
 				case "kubeClusterCidr":
