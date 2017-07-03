@@ -110,6 +110,34 @@
       },
       "type": "string"
     },
+    "kubernetesNodeStatusUpdateFrequency": {
+      {{PopulateClassicModeDefaultValue "kubernetesNodeStatusUpdateFrequency"}}
+      "metadata": {
+        "description": "Kubelet config for node status update frequency interval."
+      },
+      "type": "string"
+    },
+    "kubernetesCtrlMgrNodeMonitorGracePeriod": {
+      {{PopulateClassicModeDefaultValue "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
+      "metadata": {
+        "description": "Kubernetes controller manager grace period for node status updates."
+      },
+      "type": "string"
+    },
+    "kubernetesCtrlMgrPodEvictionTimeout": {
+      {{PopulateClassicModeDefaultValue "kubernetesCtrlMgrPodEvictionTimeout"}}
+      "metadata": {
+        "description": "Kubernetes controller manager pod eviction timeout."
+      },
+      "type": "string"
+    },
+    "kubernetesCtrlMgrRouteReconciliationPeriod": {
+      {{PopulateClassicModeDefaultValue "kubernetesCtrlMgrRouteReconciliationPeriod"}}
+      "metadata": {
+        "description": "Kubernetes controller manager route reconciliation period."
+      },
+      "type": "string"
+    },
     "kubernetesKubeDNSSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesKubeDNSSpec"}}
       "metadata": {

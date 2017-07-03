@@ -24,9 +24,9 @@ spec:
         - "--service-account-private-key-file=/etc/kubernetes/certs/apiserver.key"
         - "--leader-elect=true"
         - "--v=2"
-        - "--node-monitor-grace-period=5m"
-        - "--pod-eviction-timeout=1m"
-        - "--route-reconciliation-period=10s"
+        - "--node-monitor-grace-period=${KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD}"
+        - "--pod-eviction-timeout=${KUBE_CTRL_MGR_POD_EVICTION_TIMEOUT}"
+        - "--route-reconciliation-period=${KUBE_CTRL_MGR_ROUTE_RECONCILIATION_PERIOD}"
       volumeMounts: 
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"
