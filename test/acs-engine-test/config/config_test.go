@@ -1,4 +1,4 @@
-package main
+package config
 
 import "testing"
 
@@ -29,7 +29,7 @@ func TestConfigParse(t *testing.T) {
 }
 `
 
-	testConfig := testConfig{}
+	testConfig := TestConfig{}
 	if err := testConfig.Read([]byte(testCfg)); err != nil {
 		t.Fatal(err)
 	}

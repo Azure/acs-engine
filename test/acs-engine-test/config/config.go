@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"encoding/json"
@@ -13,15 +13,15 @@ type Deployment struct {
 	SkipValidation    bool   `json:"skip_validation,omitempty"`
 }
 
-type testConfig struct {
+type TestConfig struct {
 	Deployments []Deployment `json:"deployments"`
 }
 
-func (c *testConfig) Read(data []byte) error {
+func (c *TestConfig) Read(data []byte) error {
 	return json.Unmarshal(data, c)
 }
 
-func (c *testConfig) validate() error {
+func (c *TestConfig) validate() error {
 	for _, d := range c.Deployments {
 		if d.ClusterDefinition == "" {
 			return errors.New("Cluster definition is not set")
@@ -33,12 +33,12 @@ func (c *testConfig) validate() error {
 	return nil
 }
 
-func getTestConfig(fname string) (*testConfig, error) {
+func GetTestConfig(fname string) (*TestConfig, error) {
 	data, err := ioutil.ReadFile(fname)
 	if err != nil {
 		return nil, err
 	}
-	config := &testConfig{}
+	config := &TestConfig{}
 	if err = config.Read(data); err != nil {
 		return nil, err
 	}
