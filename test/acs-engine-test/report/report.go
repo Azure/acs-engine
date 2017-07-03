@@ -10,29 +10,21 @@ import (
 	"time"
 )
 
-type TestFailure struct {
-	Error string `json:"error"`
-	Count int    `json:"count"`
+type ErrorStat struct {
+	Count     int            `json:"count"`
+	Locations map[string]int `json:"locations"`
 }
 
-type TestReport struct {
-	Job         string        `json:"job"`
-	BuildNum    int           `json:"build"`
-	Deployments int           `json:"deployments"`
-	Errors      int           `json:"errors"`
-	StartTime   time.Time     `json:"startTime"`
-	Duration    string        `json:"duration"`
-	Failures    []TestFailure `json:"failures"`
-}
-
-type ReportManager struct {
-	lock      sync.Mutex
-	jobName   string
-	buildNum  int
-	nDeploys  int
-	nErrors   int
-	timestamp time.Time
-	failures  map[string]*TestFailure
+type ReportMgr struct {
+	lock        sync.Mutex
+	JobName     string    `json:"job"`
+	BuildNum    int       `json:"build"`
+	Deployments int       `json:"deployments"`
+	Errors      int       `json:"errors"`
+	StartTime   time.Time `json:"startTime"`
+	Duration    string    `json:"duration"`
+	// Failure map: key=error, value=locations
+	Failures map[string]*ErrorStat `json:"failures"`
 }
 
 var errorRegexpMap map[string]string
@@ -67,65 +59,71 @@ func init() {
 	}
 }
 
-func New(jobName string, buildNum int, nDeploys int) *ReportManager {
-	h := &ReportManager{}
-	h.jobName = jobName
-	h.buildNum = buildNum
-	h.nDeploys = nDeploys
-	h.nErrors = 0
-	h.timestamp = time.Now().UTC()
-	h.failures = map[string]*TestFailure{}
+func New(jobName string, buildNum int, nDeploys int) *ReportMgr {
+	h := &ReportMgr{}
+	h.JobName = jobName
+	h.BuildNum = buildNum
+	h.Deployments = nDeploys
+	h.Errors = 0
+	h.StartTime = time.Now().UTC()
+	h.Failures = make(map[string]*ErrorStat)
 	return h
 }
 
-func (h *ReportManager) Copy() *ReportManager {
-	n := New(h.jobName, h.buildNum, h.nDeploys)
-	n.nErrors = h.nErrors
-	n.timestamp = h.timestamp
-	for k, f := range h.failures {
-		n.failures[k] = &TestFailure{Error: f.Error, Count: f.Count}
+func (h *ReportMgr) Copy() *ReportMgr {
+	n := New(h.JobName, h.BuildNum, h.Deployments)
+	n.Errors = h.Errors
+	n.StartTime = h.StartTime
+	for e, f := range h.Failures {
+		locs := make(map[string]int)
+		for l, c := range f.Locations {
+			locs[l] = c
+		}
+		n.Failures[e] = &ErrorStat{Count: f.Count, Locations: locs}
 	}
 	return n
 }
 
-func (h *ReportManager) Process(txt string) {
+func (h *ReportMgr) Process(txt, location string) {
 	for key, regex := range errorRegexpMap {
 		if match, _ := regexp.MatchString(regex, txt); match {
-			h.addFailure(key, 1)
+			h.addFailure(key, map[string]int{location: 1})
 			return
 		}
 	}
-	h.addFailure("Unspecified error", 1)
+	h.addFailure("Unspecified error", map[string]int{location: 1})
 }
 
-func (h *ReportManager) addFailure(key string, n int) {
+func (h *ReportMgr) addFailure(key string, locations map[string]int) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
-	h.nErrors += n
+	cnt := 0
 
-	if testFailure, ok := h.failures[key]; !ok {
-		h.failures[key] = &TestFailure{Error: key, Count: n}
+	if failure, ok := h.Failures[key]; !ok {
+		locs := make(map[string]int)
+		for l, c := range locations {
+			locs[l] = c
+			cnt += c
+		}
+		h.Failures[key] = &ErrorStat{Count: cnt, Locations: locs}
 	} else {
-		testFailure.Count += n
+		for l, c := range locations {
+			cnt += c
+			if _, ok := failure.Locations[l]; !ok {
+				failure.Locations[l] = c
+			} else {
+				failure.Locations[l] += c
+			}
+		}
+		failure.Count += cnt
 	}
+	h.Errors += cnt
 }
 
-func (h *ReportManager) CreateTestReport(filepath string) error {
-	testReport := &TestReport{}
-	testReport.Job = h.jobName
-	testReport.BuildNum = h.buildNum
-	testReport.Deployments = h.nDeploys
-	testReport.Errors = h.nErrors
-	testReport.StartTime = h.timestamp
-	testReport.Duration = time.Now().UTC().Sub(h.timestamp).String()
-	testReport.Failures = make([]TestFailure, len(h.failures))
-	i := 0
-	for _, f := range h.failures {
-		testReport.Failures[i] = *f
-		i++
-	}
-	data, err := json.MarshalIndent(testReport, "", "  ")
+func (h *ReportMgr) CreateTestReport(filepath string) error {
+	h.Duration = time.Now().UTC().Sub(h.StartTime).String()
+	data, err := json.MarshalIndent(h, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -141,16 +139,16 @@ func (h *ReportManager) CreateTestReport(filepath string) error {
 	return nil
 }
 
-func (h *ReportManager) CreateCombinedReport(filepath, testReportFname string) error {
+func (h *ReportMgr) CreateCombinedReport(filepath, testReportFname string) error {
 	now := time.Now().UTC()
 	combinedReport := h.Copy()
-	for n := h.buildNum - 1; n > 0; n-- {
+	for n := h.BuildNum - 1; n > 0; n-- {
 		data, err := ioutil.ReadFile(fmt.Sprintf("%s/%d/%s/%s",
 			os.Getenv("JOB_BUILD_ROOTDIR"), n, os.Getenv("JOB_BUILD_SUBDIR"), testReportFname))
 		if err != nil {
 			break
 		}
-		testReport := &TestReport{}
+		testReport := &ReportMgr{}
 		if err := json.Unmarshal(data, &testReport); err != nil {
 			break
 		}
@@ -158,11 +156,11 @@ func (h *ReportManager) CreateCombinedReport(filepath, testReportFname string) e
 		if now.Sub(testReport.StartTime) > time.Duration(time.Hour*24) {
 			break
 		}
-		combinedReport.timestamp = testReport.StartTime
-		combinedReport.nDeploys += testReport.Deployments
+		combinedReport.StartTime = testReport.StartTime
+		combinedReport.Deployments += testReport.Deployments
 
-		for _, f := range testReport.Failures {
-			combinedReport.addFailure(f.Error, f.Count)
+		for e, f := range testReport.Failures {
+			combinedReport.addFailure(e, f.Locations)
 		}
 	}
 	return combinedReport.CreateTestReport(filepath)
