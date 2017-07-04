@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -140,20 +141,21 @@ func (h *ReportMgr) CreateTestReport(filepath string) error {
 }
 
 func (h *ReportMgr) CreateCombinedReport(filepath, testReportFname string) error {
-	now := time.Now().UTC()
+	// "COMBINED_PAST_REPORTS" is the number of recent reports in the combined report
+	reports, err := strconv.Atoi(os.Getenv("COMBINED_PAST_REPORTS"))
+	if err != nil || reports <= 0 {
+		fmt.Println("Warning: COMBINED_PAST_REPORTS is not set or invalid. Ignoring")
+		return nil
+	}
 	combinedReport := h.Copy()
-	for n := h.BuildNum - 1; n > 0; n-- {
+	for i := 1; i <= reports; i++ {
 		data, err := ioutil.ReadFile(fmt.Sprintf("%s/%d/%s/%s",
-			os.Getenv("JOB_BUILD_ROOTDIR"), n, os.Getenv("JOB_BUILD_SUBDIR"), testReportFname))
+			os.Getenv("JOB_BUILD_ROOTDIR"), h.BuildNum-i, os.Getenv("JOB_BUILD_SUBDIR"), testReportFname))
 		if err != nil {
 			break
 		}
 		testReport := &ReportMgr{}
 		if err := json.Unmarshal(data, &testReport); err != nil {
-			break
-		}
-		// get combined report for past 24 hours
-		if now.Sub(testReport.StartTime) > time.Duration(time.Hour*24) {
 			break
 		}
 		combinedReport.StartTime = testReport.StartTime
