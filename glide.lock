@@ -1,5 +1,5 @@
-hash: da3e0fcf66ad686323d814a6ad63ef641b99e783cc06f15f1bd2f10c373162f7
-updated: 2017-07-05T13:07:52.175896552-07:00
+hash: 67f0e13bc8656b6069da7262fee9163e3791a894814f702a0c43431b97b4c724
+updated: 2017-07-05T13:40:43.051816462-07:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
   version: 59c277f1b488b81b1a5f944212f25b69bea8ece3
@@ -23,6 +23,12 @@ imports:
   version: 6c8dedd55f8a2e41f605de6d5d66e51ed1f299fc
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
+- name: github.com/go-playground/locales
+  version: 1e5f1161c6416a5ff48840eb8724a394e48cc534
+  subpackages:
+  - currency
+- name: github.com/go-playground/universal-translator
+  version: b32fa301c9fe55953584134cb6853a13c87ec0a1
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/mitchellh/go-homedir
