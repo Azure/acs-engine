@@ -12,7 +12,7 @@ RUN mkdir /tmp/godeb \
     && rm -rf /tmp/godeb
 
 # See: https://github.com/Azure/azure-cli/blob/master/packaged_releases/bundled/README.md#using-the-bundled-installer
-ENV AZURE_CLI_BUNDLE_VERSION 0.2.9
+ENV AZURE_CLI_BUNDLE_VERSION 0.2.10-1
 RUN mkdir /tmp/azurecli \
     && curl "https://azurecliprod.blob.core.windows.net/bundled/azure-cli_bundle_${AZURE_CLI_BUNDLE_VERSION}.tar.gz" > /tmp/azurecli/azure-cli_bundle.tar.gz \
     && (cd /tmp/azurecli \
