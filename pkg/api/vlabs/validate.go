@@ -60,7 +60,6 @@ func (o *OrchestratorProfile) Validate() error {
 func (m *MasterProfile) Validate() error {
 	if m.PodCidr != "" {
 		// --------------------------------------------------------------------
-		// Hosted Master
 
 		// Todo (@kris-nova) Add real validation after the branch is working as intended
 
