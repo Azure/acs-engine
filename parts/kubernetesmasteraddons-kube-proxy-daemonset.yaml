@@ -20,6 +20,7 @@ spec:
         - proxy
         - "--kubeconfig=/var/lib/kubelet/kubeconfig"
         - "--cluster-cidr=<kubeClusterCidr>"
+        - "--feature-gates=ExperimentalCriticalPodAnnotation=true"
         image: "<kubernetesHyperkubeSpec>"
         name: kube-proxy
         resources:
@@ -38,6 +39,9 @@ spec:
           name: kubeconfig
           readOnly: true
       hostNetwork: true
+      tolerations:
+      - effect: NoExecute
+        operator: Exists
       volumes:
       - hostPath:
           path: "/usr/share/ca-certificates"
