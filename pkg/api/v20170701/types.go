@@ -5,19 +5,8 @@ import (
 	"strings"
 )
 
-// Add the validate tag to add a mark, if this is a required or optional field
-// Current it is not used in any logic yet
-// TODO, we could possibly use this tag in all the Validate functions
-const (
-	ValidateTag = "validate"
-)
-
-type ValidateValue string
-
-const (
-	Required ValidateValue = "required"
-	Optional ValidateValue = "optional"
-)
+// The validate tag is used for validation
+// Reference to gopkg.in/go-playground/validator.v9
 
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
@@ -81,7 +70,7 @@ type LinuxProfile struct {
 	SSH struct {
 		PublicKeys []struct {
 			KeyData string `json:"keyData"`
-		} `json:"publicKeys" validate:"required"`
+		} `json:"publicKeys" validate:"required,len=1"`
 	} `json:"ssh" validate:"required"`
 }
 
@@ -118,13 +107,13 @@ type OrchestratorProfile struct {
 
 // MasterProfile represents the definition of master cluster
 type MasterProfile struct {
-	Count                    int    `json:"count" validate:"required"`
+	Count                    int    `json:"count" validate:"required,eq=1|eq=3|eq=5"`
 	DNSPrefix                string `json:"dnsPrefix" validate:"required"`
 	VMSize                   string `json:"vmSize" validate:"required"`
-	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
+	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty validate:"min=0,max=1023"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	StorageProfile           string `json:"storageProfile,omitempty"`
+	StorageProfile           string `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
 
 	// subnet is internal
 	subnet string
@@ -139,13 +128,13 @@ type MasterProfile struct {
 // host applications in containers.
 type AgentPoolProfile struct {
 	Name           string `json:"name" validate:"required"`
-	Count          int    `json:"count" validate:"required"`
+	Count          int    `json:"count" validate:"required,min=1,max=100"`
 	VMSize         string `json:"vmSize" validate:"required"`
-	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty"`
+	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	DNSPrefix      string `json:"dnsPrefix"`
 	FQDN           string `json:"fqdn"`
 	Ports          []int  `json:"ports,omitempty"`
-	StorageProfile string `json:"storageProfile"`
+	StorageProfile string `json:"storageProfile" validate:"StorageAccount|ManagedDisks|len=0`
 	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
 	// OSType is the operating system type for agents
 	// Set as nullable to support backward compat because
