@@ -485,7 +485,7 @@ func convertV20160330OrchestratorProfile(v20160330 *v20160330.OrchestratorProfil
 func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = OrchestratorType(v20170131.OrchestratorType)
 	if api.OrchestratorType == Kubernetes {
-		api.OrchestratorVersion = KubernetesLatest
+		api.OrchestratorVersion = KubernetesDefaultVersion
 	} else if api.OrchestratorType == DCOS {
 		api.OrchestratorVersion = DCOS190
 	}
@@ -506,7 +506,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 		case v20170701.Kubernetes157:
 			api.OrchestratorVersion = Kubernetes157
 		default:
-			api.OrchestratorVersion = KubernetesLatest
+			api.OrchestratorVersion = KubernetesDefaultVersion
 		}
 	} else if api.OrchestratorType == DCOS {
 		switch v20170701cs.OrchestratorVersion {
@@ -531,6 +531,8 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		}
 
 		switch vlabscs.OrchestratorVersion {
+		case vlabs.Kubernetes170:
+			api.OrchestratorVersion = Kubernetes170
 		case vlabs.Kubernetes166:
 			api.OrchestratorVersion = Kubernetes166
 		case vlabs.Kubernetes162:
@@ -542,7 +544,7 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		case vlabs.Kubernetes153:
 			api.OrchestratorVersion = Kubernetes153
 		default:
-			api.OrchestratorVersion = KubernetesLatest
+			api.OrchestratorVersion = KubernetesDefaultVersion
 		}
 	} else if api.OrchestratorType == DCOS {
 		switch vlabscs.OrchestratorVersion {
