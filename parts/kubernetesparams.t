@@ -143,56 +143,56 @@
       "metadata": {
         "description": "Enable cloudprovider backoff?"
       },
-      "type": "bool"
+      "type": "string"
     },
     "cloudProviderBackoffRetries": {
       {{PopulateClassicModeDefaultValue "cloudProviderBackoffRetries"}}
       "metadata": {
         "description": "If backoff enabled, how many times to retry"
       },
-      "type": "int"
+      "type": "string"
     },
     "cloudProviderBackoffExponent": {
       {{PopulateClassicModeDefaultValue "cloudProviderBackoffExponent"}}
       "metadata": {
         "description": "If backoff enabled, retry exponent"
       },
-      "type": "int"
+      "type": "string"
     },
     "cloudProviderBackoffDuration": {
       {{PopulateClassicModeDefaultValue "cloudProviderBackoffDuration"}}
       "metadata": {
         "description": "If backoff enabled, how long until timeout"
       },
-      "type": "int"
+      "type": "string"
     },
     "cloudProviderBackoffJitter": {
       {{PopulateClassicModeDefaultValue "cloudProviderBackoffJitter"}}
       "metadata": {
         "description": "If backoff enabled, jitter factor between retries"
       },
-      "type": "int"
+      "type": "string"
     },
     "cloudProviderRatelimit": {
       {{PopulateClassicModeDefaultValue "cloudProviderRatelimit"}}
       "metadata": {
         "description": "Enable cloudprovider rate limiting?"
       },
-      "type": "boolean"
+      "type": "string"
     },
     "cloudProviderRatelimitQPS": {
       {{PopulateClassicModeDefaultValue "cloudProviderRatelimitQPS"}}
       "metadata": {
         "description": "If rate limiting enabled, target maximum QPS"
       },
-      "type": "int"
+      "type": "string"
     },
     "cloudProviderRatelimitBucket": {
       {{PopulateClassicModeDefaultValue "cloudProviderRatelimitBucket"}}
       "metadata": {
         "description": "If rate limiting enabled, bucket size"
       },
-      "type": "int"
+      "type": "string"
     },
     "kubernetesKubeDNSSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesKubeDNSSpec"}}
