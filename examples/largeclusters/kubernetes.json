@@ -12,31 +12,31 @@
     },
     "agentPoolProfiles": [
       {
-        "name": "agentpool_large_cluster_1",
+        "name": "pool1",
         "count": 20,
         "vmSize": "Standard_D3_v2",
         "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentpool_large_cluster_2",
+        "name": "pool2",
         "count": 20,
         "vmSize": "Standard_D3_v2",
         "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentpool_large_cluster_3",
+        "name": "pool3",
         "count": 20,
         "vmSize": "Standard_D3_v2",
         "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentpool_large_cluster_4",
+        "name": "pool4",
         "count": 20,
         "vmSize": "Standard_D3_v2",
         "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentpool_large_cluster_5",
+        "name": "pool5",
         "count": 20,
         "vmSize": "Standard_D3_v2",
         "availabilityProfile": "AvailabilitySet"
