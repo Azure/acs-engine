@@ -97,6 +97,7 @@ spec:
         operator: Exists
       serviceAccountName: heapster
       containers:
+        serviceAccountName: heapster
       - image: <kubernetesHeapsterSpec>
         command:
         - "/heapster"
