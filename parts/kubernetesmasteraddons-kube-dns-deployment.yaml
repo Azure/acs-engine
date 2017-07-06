@@ -8,8 +8,8 @@ metadata:
     addonmanager.kubernetes.io/mode: Reconcile
 
 ---
-apiVersion: v1
-kind: ReplicationController
+apiVersion: apps/v1beta1
+kind: Deployment
 metadata:
   labels:
     kubernetes.io/cluster-service: "true"
@@ -18,10 +18,15 @@ metadata:
   name: kube-dns-v20
   namespace: kube-system
 spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 10%
+      maxUnavailable: 0
   replicas: 2
   selector:
-    k8s-app: kube-dns
-    version: v20
+    matchLabels:
+      k8s-app: kube-dns
+      version: v20
   template:
     metadata:
       annotations:
