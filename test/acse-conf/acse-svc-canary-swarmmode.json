@@ -1,7 +1,7 @@
 {
   "deployments": [
     {
-      "cluster_definition": "swarmmode.json",
+      "cluster_definition": "disks-storageaccount/swarmmode-master-sa.json",
       "location": "centraluseuap"
     },
     {
