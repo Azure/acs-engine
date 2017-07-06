@@ -29,6 +29,17 @@ KUBECONFIG_CERTIFICATE="${19}"
 KUBECONFIG_KEY="${20}"
 ADMINUSER="${21}"
 
+# Default values for backoff configuration
+CLOUDPROVIDER_BACKOFF="${22}"
+CLOUDPROVIDER_BACKOFF_RETRIES="${23}"
+CLOUDPROVIDER_BACKOFF_EXPONENT="${24}"
+CLOUDPROVIDER_BACKOFF_DURATION="${25}"
+CLOUDPROVIDER_BACKOFF_JITTER="${26}"
+# Default values for rate limit configuration
+CLOUDPROVIDER_RATELIMIT="${27}"
+CLOUDPROVIDER_RATELIMIT_QPS="${28}"
+CLOUDPROVIDER_RATELIMIT_BUCKET="${29}"
+
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
 ensureRunCommandCompleted()
@@ -102,7 +113,15 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "securityGroupName": "${NETWORK_SECURITY_GROUP}",
     "vnetName": "${VIRTUAL_NETWORK}",
     "routeTableName": "${ROUTE_TABLE}",
-    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}"
+    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
+    "cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
+    "cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
+    "cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
+    "cloudProviderBackoffDuration": ${CLOUDPROVIDER_BACKOFF_DURATION},
+    "cloudProviderBackoffJitter": ${CLOUDPROVIDER_BACKOFF_JITTER},
+    "cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
+    "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
+    "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET}
 }
 EOF
 

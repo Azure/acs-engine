@@ -109,6 +109,10 @@ write_files:
     KUBELET_REGISTER_SCHEDULABLE=true
     KUBELET_NODE_LABELS={{ GetKubernetesLabels . }}
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
+    KUBELET_NODE_STATUS_UPDATE_FREQUENCY={{WrapAsVariable "kubernetesNodeStatusUpdateFrequency"}}
+    KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD={{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
+    KUBE_CTRL_MGR_POD_EVICTION_TIMEOUT={{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}
+    KUBE_CTRL_MGR_ROUTE_RECONCILIATION_PERIOD={{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}
 {{if IsKubernetesVersionGe "1.6.0"}}
      KUBELET_FEATURE_GATES=--feature-gates=Accelerators=true
 {{end}}
