@@ -120,13 +120,6 @@ write_files:
   content: !!binary |
     MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR
 
-- path: /etc/kubernetes/addons/kube-dns-rolebinding.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_KUBE_DNS_ROLEBINDING_B64_GZIP_STR
-
 - path: /etc/kubernetes/addons/kube-proxy-daemonset.yaml
   permissions: "0644"
   encoding: gzip
@@ -161,13 +154,6 @@ write_files:
   owner: "root"
   content: !!binary |
     MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR
-
-- path: /etc/kubernetes/addons/kube-heapster-rolebinding.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_HEAPSTER_ROLEBINDING_B64_GZIP_STR
 
 - path: /etc/kubernetes/addons/default-storage-class.yaml
   permissions: "0644"
