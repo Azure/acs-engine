@@ -1,7 +1,7 @@
 {
   "deployments": [
     {
-      "cluster_definition": "kubernetes.json",
+      "cluster_definition": "disks-storageaccount/kubernetes-master-sa.json",
       "location": "centraluseuap"
     },
     {
