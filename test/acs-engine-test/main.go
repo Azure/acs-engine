@@ -109,9 +109,14 @@ func (m *TestManager) Run() error {
 }
 
 func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout time.Duration) bool {
+	rgPrefix := os.Getenv("RESOURCE_GROUP_PREFIX")
+	if rgPrefix == "" {
+		rgPrefix = "x"
+		fmt.Printf("RESOURCE_GROUP_PREFIX is not set. Using default '%s'\n", rgPrefix)
+	}
 	name := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
 	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
-	resourceGroup := fmt.Sprintf("x-%s-%s-%s-%d-%d", strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
+	resourceGroup := fmt.Sprintf("%s-%s-%s-%s-%d-%d", rgPrefix, strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
 	logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
 	validateLogFile := fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
 	success := true
