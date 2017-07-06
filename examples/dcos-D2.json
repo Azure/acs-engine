@@ -2,18 +2,23 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "SwarmMode"
+      "orchestratorType": "DCOS"
     },
     "masterProfile": {
-      "count": 3,
+      "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v1"
+      "vmSize": "Standard_D2"
     },
     "agentPoolProfiles": [
       {
+        "name": "agentprivate",
+        "count": 1,
+        "vmSize": "Standard_D2"
+      },
+      {
         "name": "agentpublic",
-        "count": 3,
-        "vmSize": "Standard_D2_v1",
+        "count": 1,
+        "vmSize": "Standard_D2",
         "dnsPrefix": "",
         "ports": [
           80,

@@ -85,7 +85,7 @@
       "location": "japaneast"
     },
     {
-      "cluster_definition": "dcos-Dv1.json",
+      "cluster_definition": "dcos-D2.json",
       "location": "japanwest"
     },
     {
