@@ -1,0 +1,16 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "dcos-versions/dcos1.8.8.json",
+      "location": "eastus2"
+    },
+    {
+      "cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
+      "location": "centralus"
+    },
+    {
+      "cluster_definition": "v20170131/swarmmode.json",
+      "location": "eastus"
+    }
+  ]
+}

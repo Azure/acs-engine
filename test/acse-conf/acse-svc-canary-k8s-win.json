@@ -1,0 +1,12 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "windows/kubernetes-master-sa.json",
+      "location": "centraluseuap"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "eastus2euap"
+    }
+  ]
+}

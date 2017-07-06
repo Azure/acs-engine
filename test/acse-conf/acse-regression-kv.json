@@ -1,0 +1,12 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "keyvaultcerts/swarm-windows.json",
+      "location": "westus"
+    },
+    {
+      "cluster_definition": "keyvaultcerts/swarmmode.json",
+      "location": "westus"
+    }
+  ]
+}

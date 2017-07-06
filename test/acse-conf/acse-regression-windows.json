@@ -1,0 +1,12 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "windows/kubernetes-hybrid.json",
+      "location": "brazilsouth"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "canadacentral"
+    }
+  ]
+}

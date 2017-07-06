@@ -1,7 +1,7 @@
 {
   "deployments": [
     {
-      "cluster_definition": "dcos.json",
+      "cluster_definition": "disks-storageaccount/dcos-master-sa.json",
       "location": "centraluseuap"
     },
     {

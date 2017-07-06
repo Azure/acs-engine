@@ -47,6 +47,7 @@ func init() {
 		"DiskServiceInternalError":                       "DiskServiceInternalError",
 		"AllocationFailed":                               "AllocationFailed",
 		"NetworkingInternalOperationError":               "NetworkingInternalOperationError",
+		"PlatformFaultDomainCount":                       "platformFaultDomainCount",
 
 		"K8S curl error":                  "curl_error",
 		"K8S no external IP":              "gave up waiting for loadbalancer to get an ingress ip",

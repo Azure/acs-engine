@@ -2,19 +2,25 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "Kubernetes"
+      "orchestratorType": "SwarmMode"
     },
     "masterProfile": {
-      "count": 1,
+      "count": 3,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2"
+      "vmSize": "Standard_D2_v2",
+      "storageProfile": "StorageAccount"
     },
     "agentPoolProfiles": [
       {
-        "name": "agentpool1",
+        "name": "agentpublic",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
+        "dnsPrefix": "",
+        "ports": [
+          80,
+          443,
+          8080
+        ]
       }
     ],
     "linuxProfile": {
@@ -26,10 +32,6 @@
           }
         ]
       }
-    },
-    "servicePrincipalProfile": {
-      "servicePrincipalClientID": "",
-      "servicePrincipalClientSecret": ""
     }
   }
 }

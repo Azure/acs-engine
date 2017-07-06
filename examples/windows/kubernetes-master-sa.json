@@ -7,16 +7,22 @@
     "masterProfile": {
       "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2"
+      "vmSize": "Standard_D2_v2",
+      "storageProfile": "StorageAccount"
     },
     "agentPoolProfiles": [
       {
-        "name": "agentpool1",
-        "count": 3,
+        "name": "windowspool2",
+        "count": 2,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
+        "availabilityProfile": "AvailabilitySet",
+        "osType": "Windows"
       }
     ],
+    "windowsProfile": {
+      "adminUsername": "azureuser",
+      "adminPassword": "replacepassword1234$"
+    },
     "linuxProfile": {
       "adminUsername": "azureuser",
       "ssh": {
