@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	log "github.com/Sirupsen/logrus"
 )
 
 func WriteArtifacts(containerService *api.ContainerService, apiVersion, template, parameters, artifactsDir string, certsGenerated bool, parametersOnly bool) error {
@@ -106,7 +107,7 @@ func saveFile(dir string, file string, data []byte) error {
 		return err
 	}
 
-	fmt.Fprintf(os.Stderr, "wrote %s\n", path)
+	log.Debugf("output: wrote %s", path)
 
 	return nil
 }

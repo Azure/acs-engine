@@ -11,8 +11,9 @@ import (
 	"fmt"
 	"math/big"
 	"net"
-	"os"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 const (
@@ -28,7 +29,7 @@ type PkiKeyCertPair struct {
 func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
 	start := time.Now()
 	defer func(s time.Time) {
-		fmt.Fprintf(os.Stderr, "cert creation took %s\n", time.Since(s))
+		log.Debugf("pki: PKI asset creation took %s", time.Since(s))
 	}(start)
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.default"))
