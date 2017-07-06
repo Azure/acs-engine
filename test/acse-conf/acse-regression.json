@@ -78,7 +78,7 @@
     },
     {
       "cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
-      "location": "centralus"
+      "location": "southcentralus"
     },
     {
       "cluster_definition": "networkpolicy/kubernetes-calico.json",
