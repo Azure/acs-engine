@@ -85,7 +85,7 @@
       "location": "japaneast"
     },
     {
-      "cluster_definition": "swarmmode.json",
+      "cluster_definition": "swarmmode-Dv1.json",
       "location": "japanwest"
     },
     {

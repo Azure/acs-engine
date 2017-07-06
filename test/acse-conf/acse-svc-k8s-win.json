@@ -85,7 +85,7 @@
       "location": "japaneast"
     },
     {
-      "cluster_definition": "windows/kubernetes.json",
+      "cluster_definition": "windows/kubernetes-Dv1.json",
       "location": "japanwest"
     },
     {
