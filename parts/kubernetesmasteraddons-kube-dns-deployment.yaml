@@ -65,12 +65,18 @@ spec:
                   - kube-dns
               topologyKey: kubernetes.io/hostname
       strategy:
+<<<<<<< HEAD
         rollingUpdate:
           maxSurge: 10%
           maxUnavailable: 0
       tolerations:
       - key: "CriticalAddonsOnly"
         operator: "Exists"
+=======
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+>>>>>>> Add kube-dns rolebindings.
       volumes:
       - name: kube-dns-config
         configMap:
