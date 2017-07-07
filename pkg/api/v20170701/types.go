@@ -35,7 +35,7 @@ type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
 	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty" validate:"required"`
 	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty" validate:"required"`
-	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
+	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
@@ -110,7 +110,7 @@ type MasterProfile struct {
 	Count                    int    `json:"count" validate:"required,eq=1|eq=3|eq=5"`
 	DNSPrefix                string `json:"dnsPrefix" validate:"required"`
 	VMSize                   string `json:"vmSize" validate:"required"`
-	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty validate:"min=0,max=1023"`
+	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	StorageProfile           string `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
@@ -133,7 +133,7 @@ type AgentPoolProfile struct {
 	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	DNSPrefix      string `json:"dnsPrefix"`
 	FQDN           string `json:"fqdn"`
-	Ports          []int  `json:"ports,omitempty"`
+	Ports          []int  `json:"ports,omitempty" validate:"dive,min=1,max=65535"`
 	StorageProfile string `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
 	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
 	// OSType is the operating system type for agents
