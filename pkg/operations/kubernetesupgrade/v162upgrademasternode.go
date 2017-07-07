@@ -30,7 +30,6 @@ type UpgradeMasterNode struct {
 // the node
 func (kmn *UpgradeMasterNode) DeleteNode(vmName *string) error {
 	if err := operations.CleanDeleteVirtualMachine(kmn.Client, log.NewEntry(log.New()), kmn.ResourceGroup, *vmName); err != nil {
-		log.Fatalln(err)
 		return err
 	}
 
@@ -47,7 +46,7 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 
 	templateVariables["masterCount"] = masterNo + 1
 	masterOffset, _ := templateVariables["masterCount"]
-	log.Infoln(fmt.Sprintf("Mastet pool set count to: %v temporarily during upgrade...", masterOffset))
+	log.Infoln(fmt.Sprintf("Master pool set count to: %v temporarily during upgrade...", masterOffset))
 
 	WriteTemplate(kmn.Translator, kmn.UpgradeContainerService, kmn.TemplateMap, kmn.ParametersMap)
 
@@ -62,7 +61,6 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 		nil)
 
 	if err != nil {
-		log.Fatalln(err)
 		return err
 	}
 

@@ -10,7 +10,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-// findTenantID figures out the AAD tenant ID of the subscription by making an
+// GetTenantID figures out the AAD tenant ID of the subscription by making an
 // unauthenticated request to the Get Subscription Details endpoint and parses
 // the value from WWW-Authenticate header.
 func GetTenantID(env azure.Environment, subscriptionID string) (string, error) {

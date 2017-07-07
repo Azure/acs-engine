@@ -54,7 +54,7 @@ ensureAzureNetwork()
     echo "the network is not healthy, aborting install"
     ifconfig
     ip a
-    exit 2
+    exit 1
   fi
   # ensure the host ip can resolve
   networkHealthy=1
@@ -93,6 +93,9 @@ ensureAzureNetwork()
 }
 ensureAzureNetwork
 HOSTADDR=`hostname -i`
+
+# apply all Canonical security updates during provisioning
+/usr/lib/apt/apt.systemd.daily
 
 ismaster ()
 {

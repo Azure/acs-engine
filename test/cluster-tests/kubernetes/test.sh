@@ -37,10 +37,10 @@ log "Running test in namespace: ${namespace}"
 trap teardown EXIT
 
 function teardown {
-  kubectl get all --all-namespaces
-  kubectl get nodes
-  kubectl get namespaces
-  kubectl delete namespaces ${namespace}
+  kubectl get all --all-namespaces || echo "teardown error"
+  kubectl get nodes || echo "teardown error"
+  kubectl get namespaces || echo "teardown error"
+  kubectl delete namespaces ${namespace} || echo "teardown error"
 }
 
 # TODO: cleanup the loops more
@@ -58,12 +58,12 @@ fi
 ###### Check node count
 function check_node_count() {
   log "Checking node count"
-  count=25
+  count=20
   while (( $count > 0 )); do
     log "  ... counting down $count"
     node_count=$(kubectl get nodes --no-headers | grep -v NotReady | grep Ready | wc | awk '{print $1}')
     if (( ${node_count} == ${EXPECTED_NODE_COUNT} )); then break; fi
-    sleep 5; count=$((count-1))
+    sleep 15; count=$((count-1))
   done
   if (( $node_count != ${EXPECTED_NODE_COUNT} )); then
     log "gave up waiting for apiserver / node counts"; exit -1
@@ -92,6 +92,31 @@ while (( $count > 0 )); do
 done
 if (( ${creating_count} != 0 )); then
   log "gave up waiting for creation to finish"; exit -1
+fi
+
+###### Check existence and status of essential pods
+
+# we test other essential pods (kube-dns, kube-proxy, kubernetes-dashboard) separately
+pods="heapster kube-addon-manager kube-apiserver kube-controller-manager kube-scheduler"
+log "Checking $pods"
+
+count=12
+while (( $count > 0 )); do
+  for pod in $pods; do
+    running=$(kubectl get pods --all-namespaces | grep $pod | grep Running | wc -l)
+    if (( $running > 0 )); then
+      log "... $pod is Running"
+      pods=$(echo $pods | sed -e "s/ *$pod */ /")
+    fi
+  done
+  if [ -z "$(echo $pods | tr -d '[:space:]')" ]; then
+    break
+  fi
+  sleep 5; count=$((count-1))
+done
+
+if [ ! -z "$(echo $pods | tr -d '[:space:]')" ]; then
+  log "gave up waiting for running pods [$pods]"; exit -1
 fi
 
 ###### Check for Kube-DNS
@@ -125,8 +150,8 @@ log "Checking Kube-Proxys"
 count=12
 while (( $count > 0 )); do
   log "  ... counting down $count"
-  nonrunning=$(kubectl get pods --namespace=kube-system | grep kube-proxy | grep -v Running | wc | awk '{print $1}')
-  if (( ${nonrunning} == 0 )); then break; fi
+  running=$(kubectl get pods --namespace=kube-system | grep kube-proxy | grep Running | wc | awk '{print $1}')
+  if (( ${running} == ${EXPECTED_NODE_COUNT} )); then break; fi
   sleep 5; count=$((count-1))
 done
 
@@ -139,16 +164,16 @@ ips=$(kubectl get nodes --all-namespaces -o yaml | grep -B 1 InternalIP | grep a
 
 for ip in $ips; do
   log "Probing IP address ${ip}"
-  count=5
+  count=12
   success="n"
   while (( $count > 0 )); do
     log "  ... counting down $count"
-    ret=$(ssh -i "${OUTPUT}/id_rsa" -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "azureuser@${master}" "curl --max-time 60 http://${ip}:${port}" || echo "curl_error")
+    ret=$(ssh -i "${OUTPUT}/id_rsa" -o ConnectTimeout=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "azureuser@${master}" "curl --max-time 60 http://${ip}:${port}" || echo "curl_error")
     if [[ ! $ret =~ .*curl_error.* ]]; then
       success="y"
       break
     fi
-    sleep 4; count=$((count-1))
+    sleep 5; count=$((count-1))
   done
   if [[ "${success}" == "n" ]]; then
     log $ret; exit -1
@@ -194,7 +219,7 @@ count=60
 external_ip=""
 while (( $count > 0 )); do
   log "  ... counting down $count"
-	external_ip=$(kubectl get svc --namespace ${namespace} nginx --template="{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}")
+	external_ip=$(kubectl get svc --namespace ${namespace} nginx --template="{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}" || echo "")
 	[[ ! -z "${external_ip}" ]] && break
 	sleep 10; count=$((count-1))
 done

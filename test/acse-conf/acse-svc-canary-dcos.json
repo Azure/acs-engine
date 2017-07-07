@@ -1,0 +1,12 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "disks-storageaccount/dcos-master-sa.json",
+      "location": "centraluseuap"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "eastus2euap"
+    }
+  ]
+}

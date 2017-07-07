@@ -31,7 +31,6 @@ type UpgradeAgentNode struct {
 // the node
 func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
 	if err := operations.CleanDeleteVirtualMachine(kan.Client, log.NewEntry(log.New()), kan.ResourceGroup, *vmName); err != nil {
-		log.Fatalln(err)
 		return err
 	}
 
@@ -63,7 +62,6 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 		nil)
 
 	if err != nil {
-		log.Fatalln(err)
 		return err
 	}
 

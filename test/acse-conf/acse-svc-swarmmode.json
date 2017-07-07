@@ -1,0 +1,108 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "australiaeast"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "australiasoutheast"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "brazilsouth"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "canadacentral"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "canadaeast"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "centralindia"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "westindia"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "southindia"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "centralus"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "eastus2"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "eastus"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "northcentralus"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "southcentralus"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "westcentralus"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "westus2"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "westus"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "eastasia"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "southeastasia"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "koreacentral"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "koreasouth"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "japaneast"
+    },
+    {
+      "cluster_definition": "swarmmode-D2.json",
+      "location": "japanwest"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "northeurope"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "westeurope"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "uksouth"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "ukwest"
+    }
+  ]
+}

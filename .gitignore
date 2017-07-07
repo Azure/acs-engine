@@ -7,7 +7,9 @@ _input/
 test/user.env
 user.env
 test/acs-engine-test/acs-engine-test
+.editorconfig
 
 test/acs-engine-test/acs-engine-test.exe
 pkg/operations/junit.xml
 pkg/operations/kubernetesupgrade/junit.xml
+pkg/acsengine/templates.go

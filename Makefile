@@ -18,31 +18,22 @@ prereqs:
 	go get github.com/jteeuwen/go-bindata/...
 	glide install
 
-_build:
+build:
 	go generate -v $(GOFILES)
 	go build -v -ldflags="-X github.com/Azure/acs-engine/cmd.BuildSHA=${VERSION} -X github.com/Azure/acs-engine/cmd.BuildTime=${BUILD}"
 	cd test/acs-engine-test; go build -v
 
-build: prereqs _build
-
-test: prereqs test_fmt
+test: test_fmt
 	go test -v $(GOFILES)
 
-test_fmt: prereqs
-	test -z "$$(gofmt -s -l $(GOFILES) | tee /dev/stderr)"
+.PHONY: test-style
+test-style:
+	@scripts/validate-go.sh
 
-validate-generated: prereqs
+validate-generated:
 	./scripts/validate-generated.sh
 
-fmt:
-	gofmt -s -l -w $(GOFILES)
-
-lint: prereqs
-	go get -u github.com/golang/lint/golint
-	# TODO: fix lint errors, enable linting
-	# golint -set_exit_status
-
-ci: validate-generated build test lint
+ci: prereqs validate-generated build test lint
 
 devenv:
 	./scripts/devenv.sh

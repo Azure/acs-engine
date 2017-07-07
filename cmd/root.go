@@ -40,10 +40,10 @@ func NewRootCmd() *cobra.Command {
 
 	rootCmd.AddCommand(newVersionCmd())
 	rootCmd.AddCommand(newGenerateCmd())
+	rootCmd.AddCommand(newDeployCmd())
 
 	if val := os.Getenv("ACSENGINE_EXPERIMENTAL_FEATURES"); val == "1" {
 		rootCmd.AddCommand(newUpgradeCmd())
-		rootCmd.AddCommand(newDeployCmd())
 	}
 
 	return rootCmd
@@ -60,6 +60,7 @@ type authArgs struct {
 	ClientSecret    string
 	CertificatePath string
 	PrivateKeyPath  string
+	language        string
 }
 
 func addAuthFlags(authArgs *authArgs, f *flag.FlagSet) {
@@ -70,6 +71,7 @@ func addAuthFlags(authArgs *authArgs, f *flag.FlagSet) {
 	f.StringVar(&authArgs.ClientSecret, "client-secret", "", "client secret (used with --auth-mode=client_secret)")
 	f.StringVar(&authArgs.CertificatePath, "certificate-path", "", "path to client certificate (used with --auth-method=client_certificate)")
 	f.StringVar(&authArgs.PrivateKeyPath, "private-key-path", "", "path to private key (used with --auth-method=client_certificate)")
+	f.StringVar(&authArgs.language, "language", "en-us", "language to return error messages in")
 }
 
 func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
@@ -96,16 +98,21 @@ func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
 		log.Fatal("failed to parse --azure-env as a valid target Azure cloud environment")
 	}
 
+	var client *armhelpers.AzureClient
 	switch authArgs.AuthMethod {
 	case "device":
-		return armhelpers.NewAzureClientWithDeviceAuth(env, authArgs.SubscriptionID.String())
+		client, err = armhelpers.NewAzureClientWithDeviceAuth(env, authArgs.SubscriptionID.String())
 	case "client_secret":
-		return armhelpers.NewAzureClientWithClientSecret(env, authArgs.SubscriptionID.String(), authArgs.ClientID.String(), authArgs.ClientSecret)
+		client, err = armhelpers.NewAzureClientWithClientSecret(env, authArgs.SubscriptionID.String(), authArgs.ClientID.String(), authArgs.ClientSecret)
 	case "client_certificate":
-		return armhelpers.NewAzureClientWithClientCertificate(env, authArgs.SubscriptionID.String(), authArgs.ClientID.String(), authArgs.CertificatePath, authArgs.PrivateKeyPath)
+		client, err = armhelpers.NewAzureClientWithClientCertificateFile(env, authArgs.SubscriptionID.String(), authArgs.ClientID.String(), authArgs.CertificatePath, authArgs.PrivateKeyPath)
 	default:
 		log.Fatalf("--auth-method: ERROR: method unsupported. method=%q.", authArgs.AuthMethod)
+		return nil, nil // unreachable
 	}
-
-	return nil, nil // unreachable
+	if err != nil {
+		return nil, err
+	}
+	client.AddAcceptLanguages([]string{authArgs.language})
+	return client, nil
 }

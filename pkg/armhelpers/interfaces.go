@@ -10,6 +10,9 @@ import (
 // This interface exposes just the subset of Azure APIs and clients needed for
 // ACS-Engine.
 type ACSEngineClient interface {
+
+	//AddAcceptLanguages sets the list of languages to accept on this request
+	AddAcceptLanguages(languages []string)
 	//
 	// RESOURCES
 
@@ -30,6 +33,9 @@ type ACSEngineClient interface {
 
 	// DeleteVirtualMachine deletes the specified virtual machine.
 	DeleteVirtualMachine(resourceGroup, name string, cancel <-chan struct{}) (<-chan compute.OperationStatusResponse, <-chan error)
+
+	// ListVirtualMachineScaleSets lists the vmss resources in the resource group
+	ListVirtualMachineScaleSets(resourceGroup string) (compute.VirtualMachineScaleSetListResult, error)
 
 	//
 	// STORAGE

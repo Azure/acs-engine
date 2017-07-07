@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"flag"
@@ -14,10 +15,17 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Azure/acs-engine/test/acs-engine-test/config"
+	"github.com/Azure/acs-engine/test/acs-engine-test/report"
 )
 
-const script = "test/step.sh"
+const (
+	script = "test/step.sh"
 
+	testReport     = "TestReport.json"
+	combinedReport = "CombinedReport.json"
+)
 const usage = `Usage:
   acs-engine-test -c <configuration.json> -d <acs-engine root directory>
 
@@ -28,17 +36,18 @@ const usage = `Usage:
 `
 
 var logDir string
-var orchestrator_re *regexp.Regexp
+var orchestratorRe *regexp.Regexp
 
 func init() {
-	orchestrator_re = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
+	orchestratorRe = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
 }
 
 type TestManager struct {
-	config  *TestConfig
-	lock    sync.Mutex
-	wg      sync.WaitGroup
-	rootDir string
+	config    *config.TestConfig
+	reportMgr *report.ReportMgr
+	lock      sync.Mutex
+	wg        sync.WaitGroup
+	rootDir   string
 }
 
 func (m *TestManager) Run() error {
@@ -71,7 +80,7 @@ func (m *TestManager) Run() error {
 
 	m.wg.Add(n)
 	for index, dep := range m.config.Deployments {
-		go func(index int, dep Deployment) {
+		go func(index int, dep config.Deployment) {
 			defer m.wg.Done()
 			for attempt := 0; attempt < retries; attempt++ {
 				success[index] = m.testRun(dep, index, attempt, timeout)
@@ -83,6 +92,14 @@ func (m *TestManager) Run() error {
 		}(index, dep)
 	}
 	m.wg.Wait()
+	//create reports
+	if err = m.reportMgr.CreateTestReport(fmt.Sprintf("%s/%s", logDir, testReport)); err != nil {
+		fmt.Printf("Failed to create %s: %v\n", testReport, err)
+	}
+	if err = m.reportMgr.CreateCombinedReport(fmt.Sprintf("%s/%s", logDir, combinedReport), testReport); err != nil {
+		fmt.Printf("Failed to create %s: %v\n", combinedReport, err)
+	}
+	// fail the test on error
 	for _, ok := range success {
 		if !ok {
 			return errors.New("Test failed")
@@ -91,10 +108,15 @@ func (m *TestManager) Run() error {
 	return nil
 }
 
-func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Duration) bool {
+func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout time.Duration) bool {
+	rgPrefix := os.Getenv("RESOURCE_GROUP_PREFIX")
+	if rgPrefix == "" {
+		rgPrefix = "x"
+		fmt.Printf("RESOURCE_GROUP_PREFIX is not set. Using default '%s'\n", rgPrefix)
+	}
 	name := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
 	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
-	resourceGroup := fmt.Sprintf("x-%s-%s-%s-%d-%d", strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
+	resourceGroup := fmt.Sprintf("%s-%s-%s-%s-%d-%d", rgPrefix, strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
 	logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
 	validateLogFile := fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
 	success := true
@@ -118,7 +140,26 @@ func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Dur
 	env = append(env, fmt.Sprintf("DEPLOYMENT_NAME=%s", instanceName))
 	env = append(env, fmt.Sprintf("RESOURCE_GROUP=%s", resourceGroup))
 
-	steps := []string{"generate_template", "deploy_template"}
+	// add scenario-specific environment variables
+	envFile := fmt.Sprintf("examples/%s.env", d.ClusterDefinition)
+	if _, err = os.Stat(envFile); err == nil {
+		envHandle, err := os.Open(envFile)
+		if err != nil {
+			wrileLog(logFile, "Error [open %s] : %v", envFile, err)
+			return false
+		}
+		defer envHandle.Close()
+
+		fileScanner := bufio.NewScanner(envHandle)
+		for fileScanner.Scan() {
+			str := strings.TrimSpace(fileScanner.Text())
+			if match, _ := regexp.MatchString(`^\S+=\S+$`, str); match {
+				env = append(env, str)
+			}
+		}
+	}
+
+	steps := []string{"create_resource_group", "predeploy", "generate_template", "deploy_template", "postdeploy"}
 
 	// determine validation script
 	if !d.SkipValidation {
@@ -131,8 +172,13 @@ func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Dur
 	for _, step := range steps {
 		txt, err := m.runStep(resourceGroup, step, env, timeout)
 		if err != nil {
+			m.reportMgr.Process(txt, d.Location)
 			wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, resourceGroup, err, txt)
 			success = false
+			// check AUTOCLEAN flag: if set to 'n', don't remove deployment
+			if os.Getenv("AUTOCLEAN") == "n" {
+				env = append(env, "CLEANUP=n")
+			}
 			break
 		}
 		wrileLog(logFile, txt)
@@ -151,17 +197,15 @@ func (m *TestManager) testRun(d Deployment, index, attempt int, timeout time.Dur
 			}
 			env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_VERSION=%s", strings.TrimSpace(string(out))))
 
-			if orchestrator == "kubernetes" {
-				cmd = exec.Command("test/step.sh", "get_node_count")
-				cmd.Env = env
-				out, err = cmd.Output()
-				if err != nil {
-					wrileLog(logFile, "Error [%s:%s] %v", "get_node_count", resourceGroup, err)
-					success = false
-					break
-				}
-				env = append(env, fmt.Sprintf("EXPECTED_NODE_COUNT=%s", strings.TrimSpace(string(out))))
+			cmd = exec.Command("test/step.sh", "get_node_count")
+			cmd.Env = env
+			out, err = cmd.Output()
+			if err != nil {
+				wrileLog(logFile, "Error [%s:%s] %v", "get_node_count", resourceGroup, err)
+				success = false
+				break
 			}
+			env = append(env, fmt.Sprintf("EXPECTED_NODE_COUNT=%s", strings.TrimSpace(string(out))))
 		}
 	}
 	// clean up
@@ -250,7 +294,7 @@ func wrileLog(fname string, format string, args ...interface{}) {
 	}
 }
 
-func main_internal() error {
+func mainInternal() error {
 	var configFile string
 	var rootDir string
 	var err error
@@ -271,10 +315,18 @@ func main_internal() error {
 	if configFile == "" {
 		return fmt.Errorf("test configuration is not provided")
 	}
-	testManager.config, err = getTestConfig(configFile)
+	testManager.config, err = config.GetTestConfig(configFile)
 	if err != nil {
 		return err
 	}
+	// get Jenkins build number
+	buildNum, err := strconv.Atoi(os.Getenv("BUILD_NUMBER"))
+	if err != nil {
+		fmt.Println("Warning: BUILD_NUMBER is not set or invalid. Assuming 0")
+		buildNum = 0
+	}
+	// initialize report manager
+	testManager.reportMgr = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments))
 	// check root directory
 	if rootDir == "" {
 		return fmt.Errorf("acs-engine root directory is not provided")
@@ -294,7 +346,7 @@ func main_internal() error {
 }
 
 func main() {
-	if err := main_internal(); err != nil {
+	if err := mainInternal(); err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}

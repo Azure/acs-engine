@@ -1,0 +1,108 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "australiaeast"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "australiasoutheast"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "brazilsouth"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "canadacentral"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "canadaeast"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "centralindia"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "westindia"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "southindia"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "centralus"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "eastus2"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "eastus"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "northcentralus"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "southcentralus"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "westcentralus"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "westus2"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "westus"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "eastasia"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "southeastasia"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "koreacentral"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "koreasouth"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "japaneast"
+    },
+    {
+      "cluster_definition": "windows/kubernetes-D2.json",
+      "location": "japanwest"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "northeurope"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "westeurope"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "uksouth"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "location": "ukwest"
+    }
+  ]
+}

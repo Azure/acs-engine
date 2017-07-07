@@ -12,7 +12,9 @@
     "{{.Name}}AvailabilitySet": "[concat('{{.Name}}-availabilitySet-', variables('nameSuffix'))]",
     "{{.Name}}Offset": "[parameters('{{.Name}}Offset')]",
 {{else}}
+    {{if .IsStorageAccount}}
     "{{.Name}}StorageAccountsCount": "[variables('maxStorageAccountsPerAgent')]",
+    {{end}}
 {{end}}
 {{if .IsCustomVNET}}
     "{{.Name}}VnetSubnetID": "[parameters('{{.Name}}VnetSubnetID')]",

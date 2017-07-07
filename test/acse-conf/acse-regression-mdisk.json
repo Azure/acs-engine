@@ -1,0 +1,44 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "disks-managed/dcos-preAttachedDisks-vmas.json",
+      "location": "westcentralus"
+    },
+    {
+      "cluster_definition": "disks-managed/dcos-vmss.json",
+      "location": "centralus"
+    },
+    {
+      "cluster_definition": "disks-managed/kubernetes-preAttachedDisks-vmas.json",
+      "location": "eastus2"
+    },
+    {
+      "cluster_definition": "disks-managed/kubernetes-vmas.json",
+      "location": "eastus"
+    },
+    {
+      "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmas-windows.json",
+      "location": "northcentralus"
+    },
+    {
+      "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json",
+      "location": "westcentralus"
+    },
+    {
+      "cluster_definition": "disks-managed/swarm-vmas-windows.json",
+      "location": "northeurope"
+    },
+    {
+      "cluster_definition": "disks-managed/swarm-vmss.json",
+      "location": "eastus2"
+    },
+    {
+      "cluster_definition": "disks-managed/swarmmode-vmas.json",
+      "location": "southcentralus"
+    },
+    {
+      "cluster_definition": "disks-managed/swarmmode-vmss.json",
+      "location": "eastus"
+    }
+  ]
+}

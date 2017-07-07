@@ -70,7 +70,7 @@ func (w *ArtifactWriter) WriteArtifacts(containerService *api.ContainerService, 
 
 		}
 
-		if e := w.saveFileString(artifactsDir, "ca.key", properties.CertificateProfile.GetCAPrivateKey()); e != nil {
+		if e := w.saveFileString(artifactsDir, "ca.key", properties.CertificateProfile.CaPrivateKey); e != nil {
 			return e
 		}
 		if e := w.saveFileString(artifactsDir, "ca.crt", properties.CertificateProfile.CaCertificate); e != nil {

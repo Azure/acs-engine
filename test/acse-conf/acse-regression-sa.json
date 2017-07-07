@@ -1,0 +1,20 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "disks-storageaccount/dcos.json",
+      "location": "centralus"
+    },
+    {
+      "cluster_definition": "disks-storageaccount/kubernetes.json",
+      "location": "eastasia"
+    },
+    {
+      "cluster_definition": "disks-storageaccount/swarm.json",
+      "location": "southeastasia"
+    },
+    {
+      "cluster_definition": "disks-storageaccount/swarmmode.json",
+      "location": "koreacentral"
+    }
+  ]
+}

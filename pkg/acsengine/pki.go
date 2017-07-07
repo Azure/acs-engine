@@ -182,7 +182,7 @@ func privateKeyToPem(privateKey *rsa.PrivateKey) []byte {
 func pemToCertificate(raw string) (*x509.Certificate, error) {
 	cpb, _ := pem.Decode([]byte(raw))
 	if cpb == nil {
-		return nil, errors.New("The raw pem is not a valid PEM formatted block.")
+		return nil, errors.New("The raw pem is not a valid PEM formatted block")
 	}
 	return x509.ParseCertificate(cpb.Bytes)
 }
@@ -190,7 +190,7 @@ func pemToCertificate(raw string) (*x509.Certificate, error) {
 func pemToKey(raw string) (*rsa.PrivateKey, error) {
 	kpb, _ := pem.Decode([]byte(raw))
 	if kpb == nil {
-		return nil, errors.New("The raw pem is not a valid PEM formatted block.")
+		return nil, errors.New("The raw pem is not a valid PEM formatted block")
 	}
 	return x509.ParsePKCS1PrivateKey(kpb.Bytes)
 }

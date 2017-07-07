@@ -1,0 +1,108 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "dcos.json",
+      "location": "australiaeast"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "australiasoutheast"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "brazilsouth"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "canadacentral"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "canadaeast"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "centralindia"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "westindia"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "southindia"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "centralus"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "eastus2"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "eastus"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "northcentralus"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "southcentralus"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "westcentralus"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "westus2"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "westus"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "eastasia"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "southeastasia"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "koreacentral"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "koreasouth"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "japaneast"
+    },
+    {
+      "cluster_definition": "dcos-D2.json",
+      "location": "japanwest"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "northeurope"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "westeurope"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "uksouth"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "ukwest"
+    }
+  ]
+}
