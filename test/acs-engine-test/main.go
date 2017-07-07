@@ -205,7 +205,14 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 				success = false
 				break
 			}
-			env = append(env, fmt.Sprintf("EXPECTED_NODE_COUNT=%s", strings.TrimSpace(string(out))))
+			nodesCount := strings.Split(strings.TrimSpace(string(out)), ":")
+			if len(nodesCount) != 2 {
+				wrileLog(logFile, "get_node_count: unexpected output '%s'", string(out))
+				success = false
+				break
+			}
+			env = append(env, fmt.Sprintf("EXPECTED_NODE_COUNT=%s", nodesCount[0]))
+			env = append(env, fmt.Sprintf("EXPECTED_LINUX_NODE_COUNT=%s", nodesCount[1]))
 		}
 	}
 	// clean up

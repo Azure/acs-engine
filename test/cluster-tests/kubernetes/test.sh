@@ -25,6 +25,7 @@ if [ -e "${ENV_FILE}" ]; then
 fi
 
 EXPECTED_NODE_COUNT="${EXPECTED_NODE_COUNT:-4}"
+EXPECTED_LINUX_NODE_COUNT="${EXPECTED_LINUX_NODE_COUNT:-4}"
 EXPECTED_DNS="${EXPECTED_DNS:-2}"
 EXPECTED_DASHBOARD="${EXPECTED_DASHBOARD:-1}"
 EXPECTED_ORCHESTRATOR_VERSION="${EXPECTED_ORCHESTRATOR_VERSION:-}"
@@ -151,10 +152,10 @@ count=12
 while (( $count > 0 )); do
   log "  ... counting down $count"
   running=$(kubectl get pods --namespace=kube-system | grep kube-proxy | grep Running | wc | awk '{print $1}')
-  if (( ${running} == ${EXPECTED_NODE_COUNT} )); then break; fi
+  if (( ${running} == ${EXPECTED_LINUX_NODE_COUNT} )); then break; fi
   sleep 5; count=$((count-1))
 done
-if (( ${running} != ${EXPECTED_NODE_COUNT} )); then
+if (( ${running} != ${EXPECTED_LINUX_NODE_COUNT} )); then
   log "K8S: gave up waiting for kube-proxy"; exit 1
 fi
 
