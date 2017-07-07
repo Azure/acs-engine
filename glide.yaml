@@ -31,6 +31,10 @@ import:
   version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
 - package: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
+- package: gopkg.in/go-playground/validator.v9
+  version: v9.4.0
+- package: github.com/go-playground/universal-translator
+  version: v0.16.0
 testImport:
 - package: github.com/onsi/gomega
   version: ^1.1.0

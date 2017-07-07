@@ -1,8 +1,8 @@
-hash: 8e720201075f5eebf4b50fb6a4d6c57dc59f1416ac16f9013429f0931b6685b4
-updated: 2017-06-01T12:33:17.417859757-04:00
+hash: 67f0e13bc8656b6069da7262fee9163e3791a894814f702a0c43431b97b4c724
+updated: 2017-07-05T13:40:43.051816462-07:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
-  version: 2629e2dfcfeab50896230140542c3b9d89b35ae1
+  version: 59c277f1b488b81b1a5f944212f25b69bea8ece3
   subpackages:
   - arm/compute
   - arm/network
@@ -11,7 +11,7 @@ imports:
   - arm/storage
   - storage
 - name: github.com/Azure/go-autorest
-  version: 58f6f26e200fa5dfb40c9cd1c83f3e2c860d779d
+  version: 10791a4516e77c53ab10f198f144804cca3d5b43
   subpackages:
   - autorest
   - autorest/adal
@@ -23,6 +23,12 @@ imports:
   version: 6c8dedd55f8a2e41f605de6d5d66e51ed1f299fc
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
+- name: github.com/go-playground/locales
+  version: 1e5f1161c6416a5ff48840eb8724a394e48cc534
+  subpackages:
+  - currency
+- name: github.com/go-playground/universal-translator
+  version: b32fa301c9fe55953584134cb6853a13c87ec0a1
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/mitchellh/go-homedir
@@ -48,6 +54,8 @@ imports:
   - windows
   - windows/registry
   - windows/svc/eventlog
+- name: gopkg.in/go-playground/validator.v9
+  version: fb68f39656d7ebf8aa339ad4917aa0c260ecc237
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
 testImports:
