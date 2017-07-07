@@ -86,23 +86,23 @@
     },
     {
       "cluster_definition": "custom-pod-cidr/kubernetes.json",
-      "location": "northcentralus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "v20170131/swarmmode.json",
-      "location": "northcentralus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "vnet/dcosvnet.json",
-      "location": "northcentralus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "vnet/kubernetesvnet.json",
-      "location": "northcentralus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "vnet/swarmmodevnet.json",
-      "location": "northcentralus"
+      "location": "westus2"
     }
   ]
 }

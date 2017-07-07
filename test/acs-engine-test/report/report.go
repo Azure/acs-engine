@@ -49,15 +49,26 @@ func init() {
 		"NetworkingInternalOperationError":               "NetworkingInternalOperationError",
 		"PlatformFaultDomainCount":                       "platformFaultDomainCount",
 
-		"K8S curl error":                  "curl_error",
-		"K8S no external IP":              "gave up waiting for loadbalancer to get an ingress ip",
-		"K8S nodes not ready":             "gave up waiting for apiserver",
-		"K8S service unreachable":         "gave up waiting for service to be externally reachable",
-		"K8S nginx unreachable":           "failed to get expected response from nginx through the loadbalancer",
+		"K8S nodes not ready":        "K8S: gave up waiting for apiserver",
+		"K8S unexpected version":     "K8S: unexpected kubernetes version",
+		"K8S containers not created": "K8S: gave up waiting for containers",
+		"K8S pods not running":       "K8S: gave up waiting for running pods",
+		"K8S kube-dns not running":   "K8S: gave up waiting for kube-dns",
+		"K8S dashboard not running":  "K8S: gave up waiting for kubernetes-dashboard",
+		"K8S kube-proxy not running": "K8S: gave up waiting for kube-proxy",
+		"K8S proxy not working":      "K8S: gave up verifying proxy",
+		"K8S deployment not ready":   "K8S: gave up waiting for deployment",
+		"K8S no external IP":         "K8S: gave up waiting for loadbalancer to get an ingress ip",
+		"K8S nginx unreachable":      "K8S: failed to get expected response from nginx through the loadbalancer",
+
 		"DCOS nodes not ready":            "gave up waiting for DCOS nodes",
 		"DCOS marathon validation failed": "dcos/test.sh] marathon validation failed",
 		"DCOS marathon not added":         "dcos/test.sh] gave up waiting for marathon to be added",
 		"DCOS marathon-lb not installed":  "Failed to install marathon-lb",
+
+		"DockerCE failed to create network": "DockerCE: gave up waiting for network to be created",
+		"DockerCE failed to create service": "DockerCE: gave up waiting for service to be created",
+		"DockerCE service unreachable":      "DockerCE: gave up waiting for service to be externally reachable",
 	}
 }
 
