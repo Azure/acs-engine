@@ -49,15 +49,20 @@ func init() {
 		"NetworkingInternalOperationError":               "NetworkingInternalOperationError",
 		"PlatformFaultDomainCount":                       "platformFaultDomainCount",
 
-		"K8S curl error":                  "curl_error",
-		"K8S no external IP":              "gave up waiting for loadbalancer to get an ingress ip",
-		"K8S nodes not ready":             "gave up waiting for apiserver",
-		"K8S service unreachable":         "gave up waiting for service to be externally reachable",
-		"K8S nginx unreachable":           "failed to get expected response from nginx through the loadbalancer",
+		"K8S curl error":          "curl_error",
+		"K8S no external IP":      "gave up waiting for loadbalancer to get an ingress ip",
+		"K8S nodes not ready":     "gave up waiting for apiserver",
+		"K8S service unreachable": "gave up waiting for service to be externally reachable",
+		"K8S nginx unreachable":   "failed to get expected response from nginx through the loadbalancer",
+
 		"DCOS nodes not ready":            "gave up waiting for DCOS nodes",
 		"DCOS marathon validation failed": "dcos/test.sh] marathon validation failed",
 		"DCOS marathon not added":         "dcos/test.sh] gave up waiting for marathon to be added",
 		"DCOS marathon-lb not installed":  "Failed to install marathon-lb",
+
+		"DockerCE failed to create network": "DockerCE: gave up waiting for network to be created",
+		"DockerCE failed to create service": "DockerCE: gave up waiting for service to be created",
+		"DockerCE service unreachable":      "DockerCE: gave up waiting for service to be externally reachable",
 	}
 }
 
