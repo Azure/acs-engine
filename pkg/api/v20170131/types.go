@@ -1,6 +1,7 @@
 package v20170131
 
 import (
+	"encoding/json"
 	"fmt"
 	neturl "net/url"
 	"strings"
@@ -107,6 +108,23 @@ type MasterProfile struct {
 
 	// subnet is internal
 	subnet string
+}
+
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (m *MasterProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasMasterProfile MasterProfile
+	mm := aliasMasterProfile{}
+	if e := json.Unmarshal(b, &mm); e != nil {
+		return e
+	}
+	*m = MasterProfile(mm)
+	if m.Count == 0 {
+		// When MasterProfile.Count is missing or 0, set to default 1
+		m.Count = 1
+	}
+	return nil
 }
 
 // AgentPoolProfile represents configuration of VMs running agent
