@@ -138,6 +138,30 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionScript"}}
 
+- path: "/opt/azure/containers/kubelet-restart.sh"
+  permissions: "0744"
+  owner: "root"
+  content: |
+    #!/bin/bash
+
+    if [ ! -e /opt/azure/containers/runcmd.complete ]; then
+      exit 0
+    fi
+
+    ready=$(kubectl --kubeconfig /var/lib/kubelet/kubeconfig get nodes/$(hostname) -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
+    if [ "$ready" = "Unknown" ]; then
+      systemctl restart kubelet
+    fi
+
+- path: "/opt/azure/containers/kubelet-restart-cancel.sh"
+  permissions: "0744"
+  owner: "root"
+  content: |
+    #!/bin/bash
+
+    /bin/systemctl stop kubelet-restart.service
+    /bin/systemctl stop kubelet-restart.timer || true
+
 runcmd:
 - apt-get update
 - apt-get install -y apt-transport-https ca-certificates nfs-common
