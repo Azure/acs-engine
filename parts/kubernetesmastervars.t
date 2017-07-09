@@ -82,6 +82,8 @@
     "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
 {{end}}
     "provisionScript": "{{GetKubernetesB64Provision}}",
+    "kubeletRestartScript": "{{GetKubernetesB64KubeletRestart}}",
+    "kubeletRestartCancelScript": "{{GetKubernetesB64KubeletRestartCancel}}",
     "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
 {{if IsVNETIntegrated}}
     "allocateNodeCidrs": false,

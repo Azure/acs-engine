@@ -23,6 +23,8 @@ const (
 	kubernetesAgentCustomDataYaml       = "kubernetesagentcustomdata.yml"
 	kubeConfigJSON                      = "kubeconfig.json"
 	kubernetesWindowsAgentCustomDataPS1 = "kuberneteswindowssetup.ps1"
+	kubeletRestartScript                = "kubelet-restart.sh"
+	kubeletRestartCancelScript          = "kubelet-restart-cancel.sh"
 )
 
 const (
@@ -715,6 +717,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"GetKubernetesB64Provision": func() string {
 			return getBase64CustomScript(kubernetesMasterCustomScript)
 		},
+		"GetKubernetesB64KubeletRestart": func() string {
+			return getBase64CustomScript(kubeletRestartScript)
+		},
+		"GetKubernetesB64KubeletRestartCancel": func() string {
+			return getBase64CustomScript(kubeletRestartCancelScript)
+		},
 		"GetMasterSwarmCustomData": func() string {
 			files := []string{swarmProvision}
 			str := buildYamlFileWithWriteFiles(files)
@@ -830,7 +838,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				case "cloudProviderBackoffRetries":
 					val = KubeImages[kubernetesVersion]["backoffretries"]
 				case "cloudProviderBackoffExponent":
-					val =  KubeImages[kubernetesVersion]["backoffexponent"]
+					val = KubeImages[kubernetesVersion]["backoffexponent"]
 				case "cloudProviderBackoffDuration":
 					val = KubeImages[kubernetesVersion]["backoffduration"]
 				case "cloudProviderBackoffJitter":
