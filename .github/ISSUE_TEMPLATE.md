@@ -6,6 +6,13 @@
 
 **Is this an ISSUE or FEATURE REQUEST?** (choose one):
 
+---
+
+**What version of acs-engine?**:
+
+---
+
+
 <!--
 If this is a ISSUE, please:
   - Fill in as much of the template below as you can.  If you leave out
