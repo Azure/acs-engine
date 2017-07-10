@@ -224,6 +224,23 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	templ = template.New("acs template").Funcs(t.getTemplateFuncMap(containerService))
 
 	files, baseFile, e := prepareTemplateFiles(properties)
+
+	// ----------------------
+	//agentoutputs.t
+	//agentparams.t
+	//classicparams.t
+	//masteroutputs.t
+	//masterparams.t
+	//windowsparams.t
+	//kubernetesbase.t
+	//kubernetesagentresourcesvmas.t
+	//kubernetesagentvars.t
+	//kubernetesmasterresources.t
+	//kubernetesmastervars.t
+	//kubernetesparams.t
+	//kuberneteswinagentresourcesvmas.t
+	// ----------------------
+
 	if e != nil {
 		return "", "", false, e
 	}

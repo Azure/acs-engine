@@ -1,0 +1,33 @@
+{
+  "location": "westus",
+  "tags": {
+    "key": "value"
+  },
+  "properties": {
+    "dnsPrefix": "knova",
+    "version": "1.6.6",
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "osType": "Linux",
+        "osDiskSizeGB": 128
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "knova",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC34QGJe1+MkcimmQmiRgZiZX5y7k/z7Y4W2H0WTnh/WhKkUvjRgWcd3A0kUb5MIW9zbRzBFIJBEBrm8HRlF4enXRACr+tVbHUqI5JO3xIEHKWkJHGf0Bg43+VW8X/7ftP7QPe5imet5TL+AqsC62Wq2aUTZMHag1R6xv4AGHHPNx/dbbRn26Mtrc8Jh4WJXtYfk3CDU46zHHUW+VInuDMFmtW4ykeyPqBaKQvrjr+XQm15vfsrtoaBG4JweKOD/LJLs+tiKtsVMf55sWZxdPdHLtO1/Rsb+Z+1wSeT8mM1tBanigShxmJeC0gZ8HQOO2OveF0jYUjMK4wPwGryPZkf kris@Kriss-MacBook-Pro.local"
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "clientId": "d676348a-9c8e-433d-84fc-e6a7562858ee",
+      "secret": "feb44fb6-0bc6-484c-8211-4242276cec5e"
+    }
+  }
+}

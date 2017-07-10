@@ -37,6 +37,11 @@ type Properties struct {
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
+	CustomProfile           *CustomProfile           `json:"customProfile,omitempty"`
+}
+
+type CustomProfile struct {
+	AgentPoolsOnly bool `json:"agentPoolsOnly,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD

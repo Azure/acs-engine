@@ -7,8 +7,10 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"fmt"
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
 	"io/ioutil"
 )
 
@@ -83,6 +85,18 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
 
+	// ------------------------------------------------------------------------------------------
+	//
+	// TODO (@kris-nova) Here we need to actually validate the API model.
+	// TODO (@kris-nova) Let's code this after we know what the API is going to look like and
+	// TODO (@kris-nova) how it's supposed to behave
+	if gc.apiVersion == kubernetesagentpool.APIVersion {
+		log.Infof("Bypassing validation for API: [%s]", kubernetesagentpool.APIVersion)
+		return
+	}
+	//
+	// ------------------------------------------------------------------------------------------
+
 	if gc.outputDirectory == "" {
 		gc.outputDirectory = path.Join("_output", gc.containerService.Properties.MasterProfile.DNSPrefix)
 	}
@@ -111,6 +125,12 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 
 func (gc *generateCmd) run() error {
 	log.Infoln("Generating assets...")
+
+	fmt.Println("------------------------------------------------------------------------------------------")
+	fmt.Println(" Kris coding here")
+	fmt.Printf("%+v\n")
+	fmt.Println("--------------------------------------------------")
+	os.Exit(1)
 
 	templateGenerator, err := acsengine.InitializeTemplateGenerator(gc.classicMode)
 	if err != nil {
