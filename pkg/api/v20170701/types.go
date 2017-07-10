@@ -149,8 +149,8 @@ func (m *MasterProfile) UnmarshalJSON(b []byte) error {
 		m.StorageProfile = StorageAccount
 	}
 
-	// OSDiskSizeGB
-	// The current behavior is, when OSDiskSizeGB is 0, we just don't pass it in the arm template
+	// OSDiskSizeGB is an override value. vm sizes have default OS disk sizes.
+	// If it is not set. The user should get the default for the vm size
 	return nil
 }
 
@@ -205,8 +205,8 @@ func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
 		a.OSType = Linux
 	}
 
-	// OSDiskSizeGB
-	// The current behavior is, when OSDiskSizeGB is 0, we just don't pass it in the arm template
+	// OSDiskSizeGB is an override value. vm sizes have default OS disk sizes.
+	// If it is not set. The user should get the default for the vm size
 	return nil
 }
 
