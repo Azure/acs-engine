@@ -139,9 +139,18 @@ func (m *MasterProfile) UnmarshalJSON(b []byte) error {
 		m.Count = 1
 	}
 
-	// TODO:
-	// Need to set default values for
-	// OSDiskSizeGB, FirstConsecutiveStaticIP, StorageProfile
+	if m.FirstConsecutiveStaticIP == "" {
+		// if FirstConsecutiveStaticIP is missing, set to default 10.240.255.5
+		m.FirstConsecutiveStaticIP = "10.240.255.5"
+	}
+
+	if m.StorageProfile == "" {
+		// if StorageProfile is missing, set to default StorageAccount
+		m.StorageProfile = StorageAccount
+	}
+
+	// OSDiskSizeGB is an override value. vm sizes have default OS disk sizes.
+	// If it is not set. The user should get the default for the vm size
 	return nil
 }
 
@@ -183,6 +192,11 @@ func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
 		a.Count = 1
 	}
 
+	if a.StorageProfile == "" {
+		// if StorageProfile is missing, set to default StorageAccount
+		a.StorageProfile = StorageAccount
+	}
+
 	if string(a.OSType) == "" {
 		// OSType is the operating system type for agents
 		// Set as nullable to support backward compat because
@@ -190,9 +204,9 @@ func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
 		// If the value is null or not set, it defaulted to Linux.
 		a.OSType = Linux
 	}
-	// TODO:
-	// Need to set default values for
-	// OSDiskSizeGB, StorageProfile
+
+	// OSDiskSizeGB is an override value. vm sizes have default OS disk sizes.
+	// If it is not set. The user should get the default for the vm size
 	return nil
 }
 
