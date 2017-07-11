@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/url"
 	"regexp"
+	"time"
 )
 
 // Validate implements APIObject
@@ -328,6 +329,13 @@ func (a *KubernetesConfig) Validate() error {
 		_, _, err := net.ParseCIDR(a.DockerBridgeSubnet)
 		if err != nil {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet '%s' is an invalid subnet", a.DockerBridgeSubnet)
+		}
+	}
+
+	if a.NodeStatusUpdateFrequency != "" {
+		_, err := time.ParseDuration(a.NodeStatusUpdateFrequency)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency '%s' is not a valid duration", a.NodeStatusUpdateFrequency)
 		}
 	}
 

@@ -130,10 +130,11 @@ type OrchestratorProfile struct {
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
-	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
-	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
-	NetworkPolicy       string `json:"networkPolicy,omitempty"`
-	DockerBridgeSubnet  string `json:"DockerBridgeSubnet,omitempty"`
+	KubernetesImageBase       string `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet             string `json:"clusterSubnet,omitempty"`
+	NetworkPolicy             string `json:"networkPolicy,omitempty"`
+	DockerBridgeSubnet        string `json:"DockerBridgeSubnet,omitempty"`
+	NodeStatusUpdateFrequency string `json:"nodeStatusUpdateFrequency,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster

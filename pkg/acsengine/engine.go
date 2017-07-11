@@ -395,7 +395,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["heapster"])
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["pause"])
-		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", KubeImages[KubernetesVersion]["nodestatusfreq"])
+		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
 		addValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", KubeImages[KubernetesVersion]["nodegraceperiod"])
 		addValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", KubeImages[KubernetesVersion]["podeviction"])
 		addValue(parametersMap, "kubernetesCtrlMgrRouteReconciliationPeriod", KubeImages[KubernetesVersion]["routeperiod"])
@@ -818,7 +818,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				case "kubernetesPodInfraContainerSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["pause"]
 				case "kubernetesNodeStatusUpdateFrequency":
-					val = KubeImages[kubernetesVersion]["nodestatusfreq"]
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency
 				case "kubernetesCtrlMgrNodeMonitorGracePeriod":
 					val = KubeImages[kubernetesVersion]["nodegraceperiod"]
 				case "kubernetesCtrlMgrPodEvictionTimeout":
@@ -830,7 +830,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				case "cloudProviderBackoffRetries":
 					val = KubeImages[kubernetesVersion]["backoffretries"]
 				case "cloudProviderBackoffExponent":
-					val =  KubeImages[kubernetesVersion]["backoffexponent"]
+					val = KubeImages[kubernetesVersion]["backoffexponent"]
 				case "cloudProviderBackoffDuration":
 					val = KubeImages[kubernetesVersion]["backoffduration"]
 				case "cloudProviderBackoffJitter":
