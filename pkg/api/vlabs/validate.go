@@ -337,6 +337,45 @@ func (a *KubernetesConfig) Validate() error {
 		if err != nil {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency '%s' is not a valid duration", a.NodeStatusUpdateFrequency)
 		}
+		if a.CtrlMgrNodeMonitorGracePeriod == "" {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency was set to '%s' but OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod was not set", a.NodeStatusUpdateFrequency)
+		}
+	}
+
+	if a.CtrlMgrNodeMonitorGracePeriod != "" {
+		_, err := time.ParseDuration(a.CtrlMgrNodeMonitorGracePeriod)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod '%s' is not a valid duration", a.CtrlMgrNodeMonitorGracePeriod)
+		}
+		if a.NodeStatusUpdateFrequency == "" {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod was set to '%s' but OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency was not set", a.NodeStatusUpdateFrequency)
+		}
+	}
+
+	// number of minimum retries allowed for kubelet to post node status
+	const minKubeletRetries = 4
+
+	if a.NodeStatusUpdateFrequency != "" && a.CtrlMgrNodeMonitorGracePeriod != "" {
+		nodeStatusUpdateFrequency, _ := time.ParseDuration(a.NodeStatusUpdateFrequency)
+		ctrlMgrNodeMonitorGracePeriod, _ := time.ParseDuration(a.CtrlMgrNodeMonitorGracePeriod)
+		kubeletRetries := ctrlMgrNodeMonitorGracePeriod.Seconds() / nodeStatusUpdateFrequency.Seconds()
+		if kubeletRetries < minKubeletRetries {
+			return fmt.Errorf("acs-engine requires that ctrlMgrNodeMonitorGracePeriod(%f)s be larger than nodeStatusUpdateFrequency(%f)s by at least a factor of %d; ", ctrlMgrNodeMonitorGracePeriod.Seconds(), nodeStatusUpdateFrequency.Seconds(), minKubeletRetries)
+		}
+	}
+
+	if a.CtrlMgrPodEvictionTimeout != "" {
+		_, err := time.ParseDuration(a.CtrlMgrPodEvictionTimeout)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout '%s' is not a valid duration", a.CtrlMgrPodEvictionTimeout)
+		}
+	}
+
+	if a.CtrlMgrRouteReconciliationPeriod != "" {
+		_, err := time.ParseDuration(a.CtrlMgrRouteReconciliationPeriod)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod '%s' is not a valid duration", a.CtrlMgrRouteReconciliationPeriod)
+		}
 	}
 
 	return nil

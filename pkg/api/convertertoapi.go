@@ -573,6 +573,17 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.NetworkPolicy = vlabs.NetworkPolicy
 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
 	api.NodeStatusUpdateFrequency = vlabs.NodeStatusUpdateFrequency
+	api.CtrlMgrNodeMonitorGracePeriod = vlabs.CtrlMgrNodeMonitorGracePeriod
+	api.CtrlMgrPodEvictionTimeout = vlabs.CtrlMgrPodEvictionTimeout
+	api.CtrlMgrRouteReconciliationPeriod = vlabs.CtrlMgrRouteReconciliationPeriod
+	api.CloudProviderBackoff = vlabs.CloudProviderBackoff
+	api.CloudProviderBackoffDuration = vlabs.CloudProviderBackoffDuration
+	api.CloudProviderBackoffExponent = vlabs.CloudProviderBackoffExponent
+	api.CloudProviderBackoffJitter = vlabs.CloudProviderBackoffJitter
+	api.CloudProviderBackoffRetries = vlabs.CloudProviderBackoffRetries
+	api.CloudProviderRateLimit = vlabs.CloudProviderRateLimit
+	api.CloudProviderRateLimitBucket = vlabs.CloudProviderRateLimitBucket
+	api.CloudProviderRateLimitQPS = vlabs.CloudProviderRateLimitQPS
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {

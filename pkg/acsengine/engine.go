@@ -10,6 +10,7 @@ import (
 	"hash/fnv"
 	"math/rand"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -396,17 +397,17 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["pause"])
 		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
-		addValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", KubeImages[KubernetesVersion]["nodegraceperiod"])
-		addValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", KubeImages[KubernetesVersion]["podeviction"])
-		addValue(parametersMap, "kubernetesCtrlMgrRouteReconciliationPeriod", KubeImages[KubernetesVersion]["routeperiod"])
-		addValue(parametersMap, "cloudProviderBackoff", KubeImages[KubernetesVersion]["backoff"])
-		addValue(parametersMap, "cloudProviderBackoffRetries", KubeImages[KubernetesVersion]["backoffretries"])
-		addValue(parametersMap, "cloudProviderBackoffExponent", KubeImages[KubernetesVersion]["backoffexponent"])
-		addValue(parametersMap, "cloudProviderBackoffDuration", KubeImages[KubernetesVersion]["backoffduration"])
-		addValue(parametersMap, "cloudProviderBackoffJitter", KubeImages[KubernetesVersion]["backoffjitter"])
-		addValue(parametersMap, "cloudProviderRatelimit", KubeImages[KubernetesVersion]["ratelimit"])
-		addValue(parametersMap, "cloudProviderRatelimitQPS", KubeImages[KubernetesVersion]["ratelimitqps"])
-		addValue(parametersMap, "cloudProviderRatelimitBucket", KubeImages[KubernetesVersion]["ratelimitbucket"])
+		addValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod)
+		addValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout)
+		addValue(parametersMap, "kubernetesCtrlMgrRouteReconciliationPeriod", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod)
+		addValue(parametersMap, "cloudProviderBackoff", properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff)
+		addValue(parametersMap, "cloudProviderBackoffRetries", properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries)
+		addValue(parametersMap, "cloudProviderBackoffExponent", properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent)
+		addValue(parametersMap, "cloudProviderBackoffDuration", properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration)
+		addValue(parametersMap, "cloudProviderBackoffJitter", properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter)
+		addValue(parametersMap, "cloudProviderRatelimit", properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit)
+		addValue(parametersMap, "cloudProviderRatelimitQPS", properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS)
+		addValue(parametersMap, "cloudProviderRatelimitBucket", properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket)
 		addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
 		addValue(parametersMap, "dockerBridgeCidr", properties.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet)
 		addValue(parametersMap, "networkPolicy", properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
@@ -820,27 +821,27 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				case "kubernetesNodeStatusUpdateFrequency":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency
 				case "kubernetesCtrlMgrNodeMonitorGracePeriod":
-					val = KubeImages[kubernetesVersion]["nodegraceperiod"]
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod
 				case "kubernetesCtrlMgrPodEvictionTimeout":
-					val = KubeImages[kubernetesVersion]["podeviction"]
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout
 				case "kubernetesCtrlMgrRouteReconciliationPeriod":
-					val = KubeImages[kubernetesVersion]["routeperiod"]
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod
 				case "cloudProviderBackoff":
-					val = KubeImages[kubernetesVersion]["backoff"]
+					val = strconv.FormatBool(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff)
 				case "cloudProviderBackoffRetries":
-					val = KubeImages[kubernetesVersion]["backoffretries"]
+					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries)
 				case "cloudProviderBackoffExponent":
-					val = KubeImages[kubernetesVersion]["backoffexponent"]
+					val = strconv.FormatFloat(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent, 'E', -1, 32)
 				case "cloudProviderBackoffDuration":
-					val = KubeImages[kubernetesVersion]["backoffduration"]
+					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration)
 				case "cloudProviderBackoffJitter":
-					val = KubeImages[kubernetesVersion]["backoffjitter"]
+					val = strconv.FormatFloat(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter, 'E', -1, 32)
 				case "cloudProviderRatelimit":
-					val = KubeImages[kubernetesVersion]["ratelimit"]
+					val = strconv.FormatBool(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit)
 				case "cloudProviderRatelimitQPS":
-					val = KubeImages[kubernetesVersion]["ratelimitqps"]
+					val = strconv.FormatFloat(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS, 'E', -1, 32)
 				case "cloudProviderRatelimitBucket":
-					val = KubeImages[kubernetesVersion]["ratelimitbucket"]
+					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket)
 				case "kubeBinariesSASURL":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeImages[kubernetesVersion]["windowszip"]
 				case "kubeClusterCidr":

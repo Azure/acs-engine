@@ -41,8 +41,30 @@ const (
 	DefaultInternalLbStaticIPOffset = 10
 	// DefaultNetworkPolicy is disabling network policy enforcement
 	DefaultNetworkPolicy = "none"
-	// DefaultNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/
-	DefaultNodeStatusUpdateFrequency = "10s"
+	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/
+	DefaultKubernetesNodeStatusUpdateFrequency = "10s"
+	// DefaultKubernetesCtrlMgrNodeMonitorGracePeriod is 40s, see --node-monitor-grace-period at https://kubernetes.io/docs/admin/kube-controller-manager/
+	DefaultKubernetesCtrlMgrNodeMonitorGracePeriod = "40s"
+	// DefaultKubernetesCtrlMgrPodEvictionTimeout is 5m0s, see --pod-eviction-timeout at https://kubernetes.io/docs/admin/kube-controller-manager/
+	DefaultKubernetesCtrlMgrPodEvictionTimeout = "5m0s"
+	// DefaultKubernetesCtrlMgrRouteReconciliationPeriod is 10s, see --route-reconciliation-period at https://kubernetes.io/docs/admin/kube-controller-manager/
+	DefaultKubernetesCtrlMgrRouteReconciliationPeriod = "10s"
+	// DefaultKubernetesCloudProviderBackoff is false to disable cloudprovider backoff implementation for API calls
+	DefaultKubernetesCloudProviderBackoff = false
+	// DefaultKubernetesCloudProviderBackoffRetries is 6, takes effect if DefaultKubernetesCloudProviderBackoff is true
+	DefaultKubernetesCloudProviderBackoffRetries = 6
+	// DefaultKubernetesCloudProviderBackoffJitter is 1, takes effect if DefaultKubernetesCloudProviderBackoff is true
+	DefaultKubernetesCloudProviderBackoffJitter = 1
+	// DefaultKubernetesCloudProviderBackoffDuration is 5, takes effect if DefaultKubernetesCloudProviderBackoff is true
+	DefaultKubernetesCloudProviderBackoffDuration = 5
+	// DefaultKubernetesCloudProviderBackoffExponent is 1.5, takes effect if DefaultKubernetesCloudProviderBackoff is true
+	DefaultKubernetesCloudProviderBackoffExponent = 1.5
+	// DefaultKubernetesCloudProviderRateLimit is false to disable cloudprovider rate limiting implementation for API calls
+	DefaultKubernetesCloudProviderRateLimit = false
+	// DefaultKubernetesCloudProviderRateLimitQPS is 3, takes effect if DefaultKubernetesCloudProviderRateLimit is true
+	DefaultKubernetesCloudProviderRateLimitQPS = 3
+	// DefaultKubernetesCloudProviderRateLimitBucket is 10, takes effect if DefaultKubernetesCloudProviderRateLimit is true
+	DefaultKubernetesCloudProviderRateLimitBucket = 10
 )
 
 const (
@@ -67,17 +89,10 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":           "pause-amd64:3.0",
 		"windowszip":      "v1.6.6intwinnat.zip",
-		"nodegraceperiod": "40s",
-		"podeviction":     "5m0s",
-		"routeperiod":     "10s",
-		"backoff":         "false",
-		"backoffduration": "5",
-		"backoffexponent": "1.5",
-		"backoffretries":  "6",
-		"backoffjitter":   "1",
-		"ratelimit":       "false",
-		"ratelimitqps":    "1",
-		"ratelimitbucket": "5",
+		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
+		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
+		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
+		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
 	},
 	api.Kubernetes162: {
 		"hyperkube":       "hyperkube-amd64:v1.6.2",
@@ -90,9 +105,10 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":           "pause-amd64:3.0",
 		"windowszip":      "v1.6.2intwinnat.zip",
-		"nodegraceperiod": "40s",
-		"podeviction":     "5m0s",
-		"routeperiod":     "10s",
+		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
+		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
+		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
+		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
 	},
 
 	api.Kubernetes160: {
@@ -106,9 +122,10 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":           "pause-amd64:3.0",
 		"windowszip":      "v1.6.0intwinnat.zip",
-		"nodegraceperiod": "40s",
-		"podeviction":     "5m0s",
-		"routeperiod":     "10s",
+		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
+		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
+		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
+		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
 	},
 
 	api.Kubernetes157: {
@@ -122,9 +139,10 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"dnsmasq":         "kube-dnsmasq-amd64:1.3",
 		"pause":           "pause-amd64:3.0",
 		"windowszip":      "v1.5.7intwinnat.zip",
-		"nodegraceperiod": "40s",
-		"podeviction":     "5m0s",
-		"routeperiod":     "10s",
+		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
+		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
+		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
+		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
 	},
 
 	api.Kubernetes153: {
@@ -138,9 +156,10 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"dnsmasq":         "kube-dnsmasq-amd64:1.3",
 		"pause":           "pause-amd64:3.0",
 		"windowszip":      "v1.5.3intwinnat.zip",
-		"nodegraceperiod": "40s",
-		"podeviction":     "5m0s",
-		"routeperiod":     "10s",
+		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
+		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
+		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
+		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
 	},
 }
 
