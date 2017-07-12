@@ -146,6 +146,8 @@ type MasterProfile struct {
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
 	StorageProfile           string `json:"storageProfile,omitempty"`
+	HttpSourceAddressPrefix  string `json:"httpSourceAddressPrefix,omitempty"`
+	OAuthEnabled             bool   `json:"oauthEnabled"`
 
 	// subnet is internal
 	subnet string
