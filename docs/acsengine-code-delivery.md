@@ -34,14 +34,17 @@ The following steps constitute ACS Engine delivery pipeline
 ```
   5. Create a pull request (PR) from github.com/Azure/acs-engine portal.
   6. The PR triggers a Jenkins job that 
-  + applies the changes on the HEAD of the master branch
+  + applies the changes to the HEAD of the master branch
   + generates multiple ARM templates for different deployment scenarios
   + simultaneously provisions the clusters based on generated templates in Azure
   This test might take 20-40 minutes.
-  If you don't want to trigger Jenkins PR job, mark your PR as ***in progress***
   If the test fails, review the logs. If the failure was caused by your code change, return to step (1).
   Sometimes the test might fail because of intermittent Azure issues, such as resource unavailability of provisioning timeout. In this case manually trigger Jenkins PR job from your GitHub PR page.
+> **Note:** You may want to suppress triggering the PR builds, for example, when you add/change the documentation, or when you are in the middle of your changes but want to make them visible to others.
+> There are few ways to do so:
+> (1) applying ***in progress*** or ***kind/documentation*** label to your PR
+> (2) adding ***[skip ci]*** to the PR title
+> Make sure to mark your PR prior to submitting it.
   7. The PR is reviewed by the members of ACS Engine team. Should the changes have been requested, return to step (1).
   8. Once the PR is approved, and Jenkins PR job has passed, the PR could be merged into the master branch
   9. Once merged, another Jenkins job is triggered, to verify integrity of the master branch. This job is similar to the PR job.
-
