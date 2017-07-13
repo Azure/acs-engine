@@ -77,18 +77,17 @@ func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 		if e := validateDNSName(a.DNSPrefix); e != nil {
 			return e
 		}
-		if len(a.Ports) > 0 {
-			if e := validateUniquePorts(a.Ports, a.Name); e != nil {
-				return e
-			}
-		} else {
-			a.Ports = []int{80, 443, 8080}
+	}
+	// ports doesn't need to be tied with dnsprefix
+	// if ports not specified, use {80, 443, 8080} as default
+	if len(a.Ports) > 0 {
+		if e := validateUniquePorts(a.Ports, a.Name); e != nil {
+			return e
 		}
 	} else {
-		if len(a.Ports) > 0 {
-			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty")
-		}
+		a.Ports = []int{80, 443, 8080}
 	}
+
 	return nil
 }
 
