@@ -586,6 +586,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"IsVNETIntegrated": func() bool {
 			return cs.Properties.OrchestratorProfile.IsVNETIntegrated()
 		},
+		"UseManagedIdentity": func() bool {
+			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
+		},
 		"GetVNETSubnetDependencies": func() string {
 			return getVNETSubnetDependencies(cs.Properties)
 		},
