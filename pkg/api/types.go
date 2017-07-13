@@ -142,6 +142,7 @@ type KubernetesConfig struct {
 	CloudProviderRateLimit           bool    `json:"cloudProviderRateLimit,omitempty"`
 	CloudProviderRateLimitQPS        float64 `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket     int     `json:"cloudProviderRateLimitBucket,omitempty"`
+	UseManagedIdentity               bool    `json:"useManagedIdentity,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
