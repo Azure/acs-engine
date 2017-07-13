@@ -1,6 +1,8 @@
 package acsengine
 
 import (
+	"strconv"
+
 	"github.com/Azure/acs-engine/pkg/api"
 )
 
@@ -54,7 +56,7 @@ const (
 	// DefaultKubernetesCloudProviderBackoffRetries is 6, takes effect if DefaultKubernetesCloudProviderBackoff is true
 	DefaultKubernetesCloudProviderBackoffRetries = 6
 	// DefaultKubernetesCloudProviderBackoffJitter is 1, takes effect if DefaultKubernetesCloudProviderBackoff is true
-	DefaultKubernetesCloudProviderBackoffJitter = 1
+	DefaultKubernetesCloudProviderBackoffJitter = 1.0
 	// DefaultKubernetesCloudProviderBackoffDuration is 5, takes effect if DefaultKubernetesCloudProviderBackoff is true
 	DefaultKubernetesCloudProviderBackoffDuration = 5
 	// DefaultKubernetesCloudProviderBackoffExponent is 1.5, takes effect if DefaultKubernetesCloudProviderBackoff is true
@@ -62,7 +64,7 @@ const (
 	// DefaultKubernetesCloudProviderRateLimit is false to disable cloudprovider rate limiting implementation for API calls
 	DefaultKubernetesCloudProviderRateLimit = false
 	// DefaultKubernetesCloudProviderRateLimitQPS is 3, takes effect if DefaultKubernetesCloudProviderRateLimit is true
-	DefaultKubernetesCloudProviderRateLimitQPS = 3
+	DefaultKubernetesCloudProviderRateLimitQPS = 3.0
 	// DefaultKubernetesCloudProviderRateLimitBucket is 10, takes effect if DefaultKubernetesCloudProviderRateLimit is true
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
 )
@@ -93,6 +95,12 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
 		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
+		"backoffretries":  strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
+		"backoffjitter":   strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
+		"backoffduration": strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
+		"backoffexponent": strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
+		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
+		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 	},
 	api.Kubernetes162: {
 		"hyperkube":       "hyperkube-amd64:v1.6.2",

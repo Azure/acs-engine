@@ -107,9 +107,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod = KubeImages[k8sVersion]["routeperiod"]
 		}
 		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
-		// Only available in kubernetes 1.6.6
-		// TODO: enable version-specific settings
-		if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff == true && k8sVersion == api.Kubernetes166 {
+		if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff == true {
 			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration == 0 {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
 			}
@@ -124,8 +122,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
-		// Only available in kubernetes 1.6.6
-		// TODO: enable version-specific settings
 		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && k8sVersion == api.Kubernetes166 {
 			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS

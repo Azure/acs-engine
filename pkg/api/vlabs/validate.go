@@ -40,7 +40,7 @@ func (o *OrchestratorProfile) Validate() error {
 		}
 
 		if o.KubernetesConfig != nil {
-			err := o.KubernetesConfig.Validate()
+			err := o.KubernetesConfig.Validate(o.OrchestratorVersion)
 			if err != nil {
 				return err
 			}
@@ -317,7 +317,16 @@ func (a *Properties) Validate() error {
 }
 
 // Validate validates the KubernetesConfig.
-func (a *KubernetesConfig) Validate() error {
+func (a *KubernetesConfig) Validate(k8sVersion OrchestratorVersion) error {
+	// number of minimum retries allowed for kubelet to post node status
+	const minKubeletRetries = 4
+	// k8s versions that have cloudprovider backoff enabled
+	var backoffEnabledVersions = map[OrchestratorVersion]bool{
+		Kubernetes166: true,
+	}
+	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
+	ratelimitEnabledVersions := backoffEnabledVersions
+
 	if a.ClusterSubnet != "" {
 		_, _, err := net.ParseCIDR(a.ClusterSubnet)
 		if err != nil {
@@ -352,9 +361,6 @@ func (a *KubernetesConfig) Validate() error {
 		}
 	}
 
-	// number of minimum retries allowed for kubelet to post node status
-	const minKubeletRetries = 4
-
 	if a.NodeStatusUpdateFrequency != "" && a.CtrlMgrNodeMonitorGracePeriod != "" {
 		nodeStatusUpdateFrequency, _ := time.ParseDuration(a.NodeStatusUpdateFrequency)
 		ctrlMgrNodeMonitorGracePeriod, _ := time.ParseDuration(a.CtrlMgrNodeMonitorGracePeriod)
@@ -375,6 +381,18 @@ func (a *KubernetesConfig) Validate() error {
 		_, err := time.ParseDuration(a.CtrlMgrRouteReconciliationPeriod)
 		if err != nil {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod '%s' is not a valid duration", a.CtrlMgrRouteReconciliationPeriod)
+		}
+	}
+
+	if a.CloudProviderBackoff {
+		if !backoffEnabledVersions[k8sVersion] {
+			return fmt.Errorf("cloudprovider backoff functionality not available in kubernetes version %s", k8sVersion)
+		}
+	}
+
+	if a.CloudProviderRateLimit {
+		if !ratelimitEnabledVersions[k8sVersion] {
+			return fmt.Errorf("cloudprovider rate limiting functionality not available in kubernetes version %s", k8sVersion)
 		}
 	}
 
