@@ -785,6 +785,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			}
 			return false
 		},
+		"HasGPU": func(profile *api.AgentPoolProfile) bool {
+			if strings.HasPrefix(profile.VMSize, "Standard_N") {
+				return true
+			}
+			return false
+		},
 		"HasLinuxSecrets": func() bool {
 			return cs.Properties.LinuxProfile.HasSecrets()
 		},
@@ -830,7 +836,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				case "cloudProviderBackoffRetries":
 					val = KubeImages[kubernetesVersion]["backoffretries"]
 				case "cloudProviderBackoffExponent":
-					val =  KubeImages[kubernetesVersion]["backoffexponent"]
+					val = KubeImages[kubernetesVersion]["backoffexponent"]
 				case "cloudProviderBackoffDuration":
 					val = KubeImages[kubernetesVersion]["backoffduration"]
 				case "cloudProviderBackoffJitter":
