@@ -103,6 +103,10 @@
     {
       "cluster_definition": "vnet/swarmmodevnet.json",
       "location": "westus2"
+    },
+    {
+      "cluster_definition": "managed-identity/kubernetes-msi.json",
+      "location": "westus2"
     }
   ]
 }
