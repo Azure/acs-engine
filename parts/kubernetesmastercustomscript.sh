@@ -31,14 +31,16 @@ CLOUDPROVIDER_RATELIMIT="${20}"
 CLOUDPROVIDER_RATELIMIT_QPS="${21}"
 CLOUDPROVIDER_RATELIMIT_BUCKET="${22}"
 
+USE_MANAGED_IDENTITY_EXTENSION="${23}"
+
 # Master only secrets
-APISERVER_PRIVATE_KEY="${23}"
-CA_CERTIFICATE="${24}"
-CA_PRIVATE_KEY="${25}"
-MASTER_FQDN="${26}"
-KUBECONFIG_CERTIFICATE="${27}"
-KUBECONFIG_KEY="${28}"
-ADMINUSER="${29}"
+APISERVER_PRIVATE_KEY="${24}"
+CA_CERTIFICATE="${25}"
+CA_PRIVATE_KEY="${26}"
+MASTER_FQDN="${27}"
+KUBECONFIG_CERTIFICATE="${28}"
+KUBECONFIG_KEY="${29}"
+ADMINUSER="${30}"
 
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
@@ -121,7 +123,8 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "cloudProviderBackoffJitter": ${CLOUDPROVIDER_BACKOFF_JITTER},
     "cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
     "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
-    "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET}
+    "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
+    "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION}
 }
 EOF
 
