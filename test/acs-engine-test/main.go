@@ -114,9 +114,9 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		rgPrefix = "x"
 		fmt.Printf("RESOURCE_GROUP_PREFIX is not set. Using default '%s'\n", rgPrefix)
 	}
-	name := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
+	testName := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
 	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
-	resourceGroup := fmt.Sprintf("%s-%s-%s-%s-%d-%d", rgPrefix, strings.Replace(name, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
+	resourceGroup := fmt.Sprintf("%s-%s-%s-%s-%d-%d", rgPrefix, strings.Replace(testName, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
 	logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
 	validateLogFile := fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
 	success := true
@@ -172,7 +172,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	for _, step := range steps {
 		txt, err := m.runStep(resourceGroup, step, env, timeout)
 		if err != nil {
-			m.reportMgr.Process(txt, d.Location)
+			m.reportMgr.Process(txt, testName, d.Location)
 			wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, resourceGroup, err, txt)
 			success = false
 			// check AUTOCLEAN flag: if set to 'n', don't remove deployment
@@ -333,7 +333,7 @@ func mainInternal() error {
 		buildNum = 0
 	}
 	// initialize report manager
-	testManager.reportMgr = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments))
+	testManager.reportMgr = report.New("ACSEngine", "Error", os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments))
 	// check root directory
 	if rootDir == "" {
 		return fmt.Errorf("acs-engine root directory is not provided")
