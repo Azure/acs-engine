@@ -129,6 +129,11 @@
       },
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
+      {{if UseManagedIdentity}}
+      "identity": {
+        "type": "systemAssigned"
+      },
+      {{end}}
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('{{.Name}}AvailabilitySet'))]"
