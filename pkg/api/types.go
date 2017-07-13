@@ -130,6 +130,7 @@ type KubernetesConfig struct {
 	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
 	NetworkPolicy       string `json:"networkPolicy,omitempty"`
 	DockerBridgeSubnet  string `json:"dockerBridgeSubnet,omitempty"`
+	UseManagedIdentity  bool   `json:"useManagedIdentity,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
