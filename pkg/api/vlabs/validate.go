@@ -103,22 +103,20 @@ func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 		if e := validateDNSName(a.DNSPrefix); e != nil {
 			return e
 		}
-		if len(a.Ports) > 0 {
-			if e := validateUniquePorts(a.Ports, a.Name); e != nil {
-				return e
+	}
+	// ports doesn't need to be tied with dnsprefix
+	// if ports not specified, use {80, 443, 8080} as default
+	if len(a.Ports) > 0 {
+		if e := validateUniquePorts(a.Ports, a.Name); e != nil {
+			return e
+		}
+		for _, port := range a.Ports {
+			if port < MinPort || port > MaxPort {
+				return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
 			}
-			for _, port := range a.Ports {
-				if port < MinPort || port > MaxPort {
-					return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
-				}
-			}
-		} else {
-			a.Ports = []int{80, 443, 8080}
 		}
 	} else {
-		if len(a.Ports) > 0 {
-			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty")
-		}
+		a.Ports = []int{80, 443, 8080}
 	}
 
 	// for Kubernetes, we don't support AgentPoolProfile.DNSPrefix
