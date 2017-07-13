@@ -4,6 +4,21 @@ import (
 	"testing"
 )
 
+const (
+	ValidKubernetesNodeStatusUpdateFrequency        = "10s"
+	ValidKubernetesCtrlMgrNodeMonitorGracePeriod    = "40s"
+	ValidKubernetesCtrlMgrPodEvictionTimeout        = "5m0s"
+	ValidKubernetesCtrlMgrRouteReconciliationPeriod = "10s"
+	ValidKubernetesCloudProviderBackoff             = false
+	ValidKubernetesCloudProviderBackoffRetries      = 6
+	ValidKubernetesCloudProviderBackoffJitter       = 1
+	ValidKubernetesCloudProviderBackoffDuration     = 5
+	ValidKubernetesCloudProviderBackoffExponent     = 1.5
+	ValidKubernetesCloudProviderRateLimit           = false
+	ValidKubernetesCloudProviderRateLimitQPS        = 3
+	ValidKubernetesCloudProviderRateLimitBucket     = 10
+)
+
 func Test_OrchestratorProfile_Validate(t *testing.T) {
 	o := &OrchestratorProfile{
 		OrchestratorType: "DCOS",
@@ -21,20 +36,104 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 }
 
 func Test_KubernetesConfig_Validate(t *testing.T) {
-	c := KubernetesConfig{}
+	// Tests that should pass across all versions
+	for _, k8sVersion := range []OrchestratorVersion{Kubernetes153, Kubernetes157, Kubernetes160, Kubernetes162, Kubernetes166} {
+		c := KubernetesConfig{}
+		if err := c.Validate(k8sVersion); err != nil {
+			t.Errorf("should not error on empty KubernetesConfig: %v, version %s", err, k8sVersion)
+		}
 
-	if err := c.Validate(); err != nil {
-		t.Errorf("should not error on empty KubernetesConfig: %v", err)
+		c = KubernetesConfig{
+			ClusterSubnet:                    "10.120.0.0/16",
+			DockerBridgeSubnet:               "10.120.1.0/16",
+			NodeStatusUpdateFrequency:        ValidKubernetesNodeStatusUpdateFrequency,
+			CtrlMgrNodeMonitorGracePeriod:    ValidKubernetesCtrlMgrNodeMonitorGracePeriod,
+			CtrlMgrPodEvictionTimeout:        ValidKubernetesCtrlMgrPodEvictionTimeout,
+			CtrlMgrRouteReconciliationPeriod: ValidKubernetesCtrlMgrRouteReconciliationPeriod,
+			CloudProviderBackoff:             ValidKubernetesCloudProviderBackoff,
+			CloudProviderBackoffRetries:      ValidKubernetesCloudProviderBackoffRetries,
+			CloudProviderBackoffJitter:       ValidKubernetesCloudProviderBackoffJitter,
+			CloudProviderBackoffDuration:     ValidKubernetesCloudProviderBackoffDuration,
+			CloudProviderBackoffExponent:     ValidKubernetesCloudProviderBackoffExponent,
+			CloudProviderRateLimit:           ValidKubernetesCloudProviderRateLimit,
+			CloudProviderRateLimitQPS:        ValidKubernetesCloudProviderRateLimitQPS,
+			CloudProviderRateLimitBucket:     ValidKubernetesCloudProviderRateLimitBucket,
+		}
+		if err := c.Validate(k8sVersion); err != nil {
+			t.Errorf("should not error on a KubernetesConfig with valid param values: %v", err)
+		}
+
+		c = KubernetesConfig{
+			ClusterSubnet: "10.16.x.0/invalid",
+		}
+		if err := c.Validate(k8sVersion); err == nil {
+			t.Error("should error on invalid ClusterSubnet")
+		}
+
+		c = KubernetesConfig{
+			DockerBridgeSubnet: "10.120.1.0/invalid",
+		}
+		if err := c.Validate(k8sVersion); err == nil {
+			t.Error("should error on invalid DockerBridgeSubnet")
+		}
+
+		c = KubernetesConfig{
+			NodeStatusUpdateFrequency: "invalid",
+		}
+		if err := c.Validate(k8sVersion); err == nil {
+			t.Error("should error on invalid NodeStatusUpdateFrequency")
+		}
+
+		c = KubernetesConfig{
+			CtrlMgrNodeMonitorGracePeriod: "invalid",
+		}
+		if err := c.Validate(k8sVersion); err == nil {
+			t.Error("should error on invalid CtrlMgrNodeMonitorGracePeriod")
+		}
+
+		c = KubernetesConfig{
+			NodeStatusUpdateFrequency:     "10s",
+			CtrlMgrNodeMonitorGracePeriod: "30s",
+		}
+		if err := c.Validate(k8sVersion); err == nil {
+			t.Error("should error when CtrlMgrRouteReconciliationPeriod is not sufficiently larger than NodeStatusUpdateFrequency")
+		}
+
+		c = KubernetesConfig{
+			CtrlMgrPodEvictionTimeout: "invalid",
+		}
+		if err := c.Validate(k8sVersion); err == nil {
+			t.Error("should error on invalid CtrlMgrPodEvictionTimeout")
+		}
+
+		c = KubernetesConfig{
+			CtrlMgrRouteReconciliationPeriod: "invalid",
+		}
+		if err := c.Validate(k8sVersion); err == nil {
+			t.Error("should error on invalid CtrlMgrRouteReconciliationPeriod")
+		}
 	}
 
-	c.ClusterSubnet = "10.120.0.0/16"
-	if err := c.Validate(); err != nil {
-		t.Errorf("should not error on valid ClusterSubnet: %v", err)
+	// Tests that apply to pre-1.6.6 versions
+	for _, k8sVersion := range []OrchestratorVersion{Kubernetes153, Kubernetes157, Kubernetes160, Kubernetes162} {
+		c := KubernetesConfig{
+			CloudProviderBackoff:   true,
+			CloudProviderRateLimit: true,
+		}
+		if err := c.Validate(k8sVersion); err == nil {
+			t.Error("should error because backoff and rate limiting are not available before v1.6.6")
+		}
 	}
 
-	c.ClusterSubnet = "10.16.x.0/invalid"
-	if err := c.Validate(); err == nil {
-		t.Error("should error on invalid ClusterSubnet")
+	// Tests that apply to 1.6.6 and later versions
+	for _, k8sVersion := range []OrchestratorVersion{Kubernetes166} {
+		c := KubernetesConfig{
+			CloudProviderBackoff:   true,
+			CloudProviderRateLimit: true,
+		}
+		if err := c.Validate(k8sVersion); err != nil {
+			t.Error("should not error when basic backoff and rate limiting are set to true with no options")
+		}
 	}
 }
 
