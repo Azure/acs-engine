@@ -48,4 +48,4 @@ spec:
         path: "/var/lib/kubelet"
     - name: msi
       hostPath:
-      path: "/var/lib/waagent/ManagedIdentity-Settings"
+        path: "/var/lib/waagent/ManagedIdentity-Settings"
