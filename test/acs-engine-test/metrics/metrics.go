@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	//"github.com/alexcesaro/statsd"
 )
 
 type mdmBucket struct {
@@ -22,18 +23,36 @@ func AddMetric(namespace, metric string, dims map[string]string) error {
 		return err
 	}
 	fmt.Println(string(data))
-	conn, err := net.Dial("udp", "127.0.0.1:8125")
+
+	//statsdClient.Count(string(durationBucketBytes), latency.Nanoseconds()/nanoSecondToMillisecondConversionFactor)
+
+	/*
+		conn, err := net.Dial("udp", "127.0.0.1:8125")
+		if err != nil {
+			return err
+		}
+		defer conn.Close()
+
+		//simple Read
+		//buffer := make([]byte, 1024)
+		//conn.Read(buffer)
+
+		//simple write
+		_, err = conn.Write(data)
+		fmt.Printf("AddMetric [%s] [%v]\n", string(data), err)*/
+	sAddr, err := net.ResolveUDPAddr("udp", "127.0.0.1:8125")
+	if err != nil {
+		return err
+	}
+	conn, err := net.DialUDP("udp", nil, sAddr)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
-
-	//simple Read
-	//buffer := make([]byte, 1024)
-	//conn.Read(buffer)
-
-	//simple write
-	_, err = conn.Write(data)
-	fmt.Printf("AddMetric [%s] [%v]\n", string(data), err)
-	return err
+	n, err := conn.Write(data)
+	if err != nil {
+		return err
+	}
+	fmt.Println("client: wrote:", string(data[0:n]))
+	return nil
 }
