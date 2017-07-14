@@ -69,10 +69,13 @@ type LinuxProfile struct {
 	AdminUsername string `json:"adminUsername" validate:"required"`
 
 	SSH struct {
-		PublicKeys []struct {
-			KeyData string `json:"keyData"`
-		} `json:"publicKeys" validate:"required,len=1"`
+		PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
 	} `json:"ssh" validate:"required"`
+}
+
+// PublicKey represents an SSH key for LinuxProfile
+type PublicKey struct {
+	KeyData string `json:"keyData"`
 }
 
 // WindowsProfile represents the Windows configuration passed to the cluster
