@@ -77,6 +77,7 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 	var caCertificateBytes []byte
 	var caKeyBytes []byte
 	var err error
+	dc.containerService, dc.apiVersion, err = api.LoadContainerServiceFromFile(dc.apimodelPath, true)
 
 	if dc.apimodelPath == "" {
 		if len(args) > 0 {
