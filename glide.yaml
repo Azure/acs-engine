@@ -16,6 +16,7 @@ import:
   - autorest/adal
   - autorest/azure
   - autorest/to
+  - autorest/date
 - package: github.com/Sirupsen/logrus
   version: ^0.11.5
 - package: github.com/ghodss/yaml

@@ -1,10 +1,12 @@
-hash: 50399ef6469769fc53acc7fc339d4e51f3fb98af11e242c6fbc5808ebdc53314
-updated: 2017-07-13T18:39:30.929691268-07:00
+hash: bc78cb839bb3808469b125fa910900b787e0f50d650f24f305f9fdd1df7713d6
+updated: 2017-07-13T18:39:57.075835669-07:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
   version: 59c277f1b488b81b1a5f944212f25b69bea8ece3
   subpackages:
+  - arm/authorization
   - arm/compute
+  - arm/graphrbac
   - arm/network
   - arm/resources/resources
   - arm/resources/subscriptions
