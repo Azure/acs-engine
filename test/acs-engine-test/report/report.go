@@ -158,7 +158,7 @@ func (h *ReportMgr) addFailure(key string, locations map[string]int) {
 	h.Errors += cnt
 }
 
-func (h *ReportMgr) sendMetric(testName, location, errName, errClass string) error {
+func (h *ReportMgr) sendMetric(testName, location, errName, errClass string) {
 	// add metrics
 	dims := map[string]string{
 		"test":     testName,
@@ -166,7 +166,10 @@ func (h *ReportMgr) sendMetric(testName, location, errName, errClass string) err
 		"errName":  errName,
 		"errClass": errClass,
 	}
-	return metrics.AddMetric(h.metricsNS, h.metricName, dims)
+	err := metrics.AddMetric(h.metricsNS, h.metricName, dims)
+	if err != nil {
+		fmt.Printf("Failed to send metric: %v", err)
+	}
 }
 
 func (h *ReportMgr) CreateTestReport(filepath string) error {
