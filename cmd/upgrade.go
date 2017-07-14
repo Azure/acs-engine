@@ -92,7 +92,7 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("specified api model does not exist (%s)", apiModelPath)
 	}
 
-	uc.containerService, uc.apiVersion, err = api.LoadContainerServiceFromFile(apiModelPath)
+	uc.containerService, uc.apiVersion, err = api.LoadContainerServiceFromFile(apiModelPath, true)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}

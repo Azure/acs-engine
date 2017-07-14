@@ -408,56 +408,55 @@ func convertPropertiesToVLabs(api *Properties, vlabsProps *vlabs.Properties) {
 	}
 }
 
-func convertLinuxProfileToV20160930(api *LinuxProfile, v20160930 *v20160930.LinuxProfile) {
-	v20160930.AdminUsername = api.AdminUsername
-	v20160930.SSH.PublicKeys = []struct {
-		KeyData string `json:"keyData"`
-	}{}
+func convertLinuxProfileToV20160930(api *LinuxProfile, obj *v20160930.LinuxProfile) {
+	obj.AdminUsername = api.AdminUsername
+	obj.SSH.PublicKeys = []v20160930.PublicKey{}
 	for _, d := range api.SSH.PublicKeys {
-		v20160930.SSH.PublicKeys = append(v20160930.SSH.PublicKeys, d)
+		obj.SSH.PublicKeys = append(obj.SSH.PublicKeys, v20160930.PublicKey{
+			KeyData: d.KeyData,
+		})
 	}
 }
 
-func convertLinuxProfileToV20160330(api *LinuxProfile, v20160330 *v20160330.LinuxProfile) {
-	v20160330.AdminUsername = api.AdminUsername
-	v20160330.SSH.PublicKeys = []struct {
-		KeyData string `json:"keyData"`
-	}{}
+func convertLinuxProfileToV20160330(api *LinuxProfile, obj *v20160330.LinuxProfile) {
+	obj.AdminUsername = api.AdminUsername
+	obj.SSH.PublicKeys = []v20160330.PublicKey{}
 	for _, d := range api.SSH.PublicKeys {
-		v20160330.SSH.PublicKeys = append(v20160330.SSH.PublicKeys, d)
+		obj.SSH.PublicKeys = append(obj.SSH.PublicKeys, v20160330.PublicKey{
+			KeyData: d.KeyData,
+		})
 	}
 }
 
-func convertLinuxProfileToV20170131(api *LinuxProfile, v20170131 *v20170131.LinuxProfile) {
-	v20170131.AdminUsername = api.AdminUsername
-	v20170131.SSH.PublicKeys = []struct {
-		KeyData string `json:"keyData"`
-	}{}
+func convertLinuxProfileToV20170131(api *LinuxProfile, obj *v20170131.LinuxProfile) {
+	obj.AdminUsername = api.AdminUsername
+	obj.SSH.PublicKeys = []v20170131.PublicKey{}
 	for _, d := range api.SSH.PublicKeys {
-		v20170131.SSH.PublicKeys = append(v20170131.SSH.PublicKeys, d)
+		obj.SSH.PublicKeys = append(obj.SSH.PublicKeys, v20170131.PublicKey{
+			KeyData: d.KeyData,
+		})
 	}
 }
 
-func convertLinuxProfileToV20170701(api *LinuxProfile, v20170701Profile *v20170701.LinuxProfile) {
-	v20170701Profile.AdminUsername = api.AdminUsername
-	v20170701Profile.SSH.PublicKeys = []struct {
-		KeyData string `json:"keyData"`
-	}{}
+func convertLinuxProfileToV20170701(api *LinuxProfile, obj *v20170701.LinuxProfile) {
+	obj.AdminUsername = api.AdminUsername
+	obj.SSH.PublicKeys = []v20170701.PublicKey{}
 	for _, d := range api.SSH.PublicKeys {
-		v20170701Profile.SSH.PublicKeys = append(v20170701Profile.SSH.PublicKeys, d)
+		obj.SSH.PublicKeys = append(obj.SSH.PublicKeys, v20170701.PublicKey{
+			KeyData: d.KeyData,
+		})
 	}
 }
 
-func convertLinuxProfileToVLabs(api *LinuxProfile, vlabsProfile *vlabs.LinuxProfile) {
-	vlabsProfile.AdminUsername = api.AdminUsername
-	vlabsProfile.SSH.PublicKeys = []struct {
-		KeyData string `json:"keyData"`
-	}{}
-	for _, d := range api.SSH.PublicKeys {
-		vlabsProfile.SSH.PublicKeys = append(vlabsProfile.SSH.PublicKeys, d)
+func convertLinuxProfileToVLabs(obj *LinuxProfile, vlabsProfile *vlabs.LinuxProfile) {
+	vlabsProfile.AdminUsername = obj.AdminUsername
+	vlabsProfile.SSH.PublicKeys = []vlabs.PublicKey{}
+	for _, d := range obj.SSH.PublicKeys {
+		vlabsProfile.SSH.PublicKeys = append(vlabsProfile.SSH.PublicKeys,
+			vlabs.PublicKey{KeyData: d.KeyData})
 	}
 	vlabsProfile.Secrets = []vlabs.KeyVaultSecrets{}
-	for _, s := range api.Secrets {
+	for _, s := range obj.Secrets {
 		secret := &vlabs.KeyVaultSecrets{}
 		convertKeyVaultSecretsToVlabs(&s, secret)
 		vlabsProfile.Secrets = append(vlabsProfile.Secrets, *secret)

@@ -87,11 +87,14 @@ type CertificateProfile struct {
 type LinuxProfile struct {
 	AdminUsername string `json:"adminUsername"`
 	SSH           struct {
-		PublicKeys []struct {
-			KeyData string `json:"keyData"`
-		} `json:"publicKeys"`
+		PublicKeys []PublicKey `json:"publicKeys"`
 	} `json:"ssh"`
 	Secrets []KeyVaultSecrets `json:"secrets,omitempty"`
+}
+
+// PublicKey represents an SSH key for LinuxProfile
+type PublicKey struct {
+	KeyData string `json:"keyData"`
 }
 
 // WindowsProfile represents the windows parameters passed to the cluster
