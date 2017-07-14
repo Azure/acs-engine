@@ -62,6 +62,8 @@ $global:RouteTableName = "{{WrapAsVariable "routeTableName"}}"
 $global:PrimaryAvailabilitySetName = "{{WrapAsVariable "primaryAvailablitySetName"}}"
 $global:NeedPatchWinNAT = $false
 
+$global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
+
 filter Timestamp {"$(Get-Date -Format o): $_"}
 
 function
@@ -123,7 +125,8 @@ Write-AzureConfig()
     "securityGroupName": "$global:SecurityGroupName",
     "vnetName": "$global:VNetName",
     "routeTableName": "$global:RouteTableName",
-    "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName"
+    "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName",
+    "useManagedIdentityExtension": $global:UseManagedIdentityExtension
 }
 "@
 
