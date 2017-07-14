@@ -22,6 +22,9 @@ spec:
           mountPath: "/etc/kubernetes"
         - name: "var-lib-kubelet"
           mountPath: "/var/lib/kubelet"
+        - name: msi
+          mountPath: "/var/lib/waagent/ManagedIdentity-Settings"
+          readOnly: true
   volumes:
     - name: "etc-kubernetes"
       hostPath:
@@ -29,4 +32,6 @@ spec:
     - name: "var-lib-kubelet"
       hostPath:
         path: "/var/lib/kubelet"
-        
+    - name: msi
+      hostPath:
+        path: "/var/lib/waagent/ManagedIdentity-Settings"

@@ -1,15 +1,14 @@
 package cmd
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/spf13/cobra"
-
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
-	"io/ioutil"
+	log "github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 const (
@@ -78,7 +77,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("specified api model does not exist (%s)", gc.apimodelPath)
 	}
 
-	gc.containerService, gc.apiVersion, err = api.LoadContainerServiceFromFile(gc.apimodelPath)
+	gc.containerService, gc.apiVersion, err = api.LoadContainerServiceFromFile(gc.apimodelPath, true)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}

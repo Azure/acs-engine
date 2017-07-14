@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/url"
 	"regexp"
+	"time"
 )
 
 // Validate implements APIObject
@@ -39,7 +40,7 @@ func (o *OrchestratorProfile) Validate() error {
 		}
 
 		if o.KubernetesConfig != nil {
-			err := o.KubernetesConfig.Validate()
+			err := o.KubernetesConfig.Validate(o.OrchestratorVersion)
 			if err != nil {
 				return err
 			}
@@ -316,7 +317,16 @@ func (a *Properties) Validate() error {
 }
 
 // Validate validates the KubernetesConfig.
-func (a *KubernetesConfig) Validate() error {
+func (a *KubernetesConfig) Validate(k8sVersion OrchestratorVersion) error {
+	// number of minimum retries allowed for kubelet to post node status
+	const minKubeletRetries = 4
+	// k8s versions that have cloudprovider backoff enabled
+	var backoffEnabledVersions = map[OrchestratorVersion]bool{
+		Kubernetes166: true,
+	}
+	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
+	ratelimitEnabledVersions := backoffEnabledVersions
+
 	if a.ClusterSubnet != "" {
 		_, _, err := net.ParseCIDR(a.ClusterSubnet)
 		if err != nil {
@@ -328,6 +338,61 @@ func (a *KubernetesConfig) Validate() error {
 		_, _, err := net.ParseCIDR(a.DockerBridgeSubnet)
 		if err != nil {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet '%s' is an invalid subnet", a.DockerBridgeSubnet)
+		}
+	}
+
+	if a.NodeStatusUpdateFrequency != "" {
+		_, err := time.ParseDuration(a.NodeStatusUpdateFrequency)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency '%s' is not a valid duration", a.NodeStatusUpdateFrequency)
+		}
+		if a.CtrlMgrNodeMonitorGracePeriod == "" {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency was set to '%s' but OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod was not set", a.NodeStatusUpdateFrequency)
+		}
+	}
+
+	if a.CtrlMgrNodeMonitorGracePeriod != "" {
+		_, err := time.ParseDuration(a.CtrlMgrNodeMonitorGracePeriod)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod '%s' is not a valid duration", a.CtrlMgrNodeMonitorGracePeriod)
+		}
+		if a.NodeStatusUpdateFrequency == "" {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod was set to '%s' but OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency was not set", a.NodeStatusUpdateFrequency)
+		}
+	}
+
+	if a.NodeStatusUpdateFrequency != "" && a.CtrlMgrNodeMonitorGracePeriod != "" {
+		nodeStatusUpdateFrequency, _ := time.ParseDuration(a.NodeStatusUpdateFrequency)
+		ctrlMgrNodeMonitorGracePeriod, _ := time.ParseDuration(a.CtrlMgrNodeMonitorGracePeriod)
+		kubeletRetries := ctrlMgrNodeMonitorGracePeriod.Seconds() / nodeStatusUpdateFrequency.Seconds()
+		if kubeletRetries < minKubeletRetries {
+			return fmt.Errorf("acs-engine requires that ctrlMgrNodeMonitorGracePeriod(%f)s be larger than nodeStatusUpdateFrequency(%f)s by at least a factor of %d; ", ctrlMgrNodeMonitorGracePeriod.Seconds(), nodeStatusUpdateFrequency.Seconds(), minKubeletRetries)
+		}
+	}
+
+	if a.CtrlMgrPodEvictionTimeout != "" {
+		_, err := time.ParseDuration(a.CtrlMgrPodEvictionTimeout)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout '%s' is not a valid duration", a.CtrlMgrPodEvictionTimeout)
+		}
+	}
+
+	if a.CtrlMgrRouteReconciliationPeriod != "" {
+		_, err := time.ParseDuration(a.CtrlMgrRouteReconciliationPeriod)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod '%s' is not a valid duration", a.CtrlMgrRouteReconciliationPeriod)
+		}
+	}
+
+	if a.CloudProviderBackoff {
+		if !backoffEnabledVersions[k8sVersion] {
+			return fmt.Errorf("cloudprovider backoff functionality not available in kubernetes version %s", k8sVersion)
+		}
+	}
+
+	if a.CloudProviderRateLimit {
+		if !ratelimitEnabledVersions[k8sVersion] {
+			return fmt.Errorf("cloudprovider rate limiting functionality not available in kubernetes version %s", k8sVersion)
 		}
 	}
 

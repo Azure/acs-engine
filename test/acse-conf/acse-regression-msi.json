@@ -1,0 +1,7 @@
+{
+  "deployments": [
+    { "location": "westcentralus",    "cluster_definition": "managed-identity/kubernetes-msi.json" },
+    { "location": "northcentralus",   "cluster_definition": "managed-identity/kubernetes-msi.json" },
+    { "location": "westus",          "cluster_definition": "managed-identity/kubernetes-msi.json" }
+  ]
+}
