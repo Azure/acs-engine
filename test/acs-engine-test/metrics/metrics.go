@@ -17,8 +17,11 @@ func AddMetric(namespace, metric string, dims map[string]string) error {
 		Namespace: namespace,
 		Metric:    metric,
 		Dims:      dims}
-	data, _ := json.Marshal(bucket)
-
+	data, err := json.Marshal(bucket)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(data))
 	conn, err := net.Dial("udp", "127.0.0.1:8125")
 	if err != nil {
 		return err
