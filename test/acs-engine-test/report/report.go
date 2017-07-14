@@ -166,7 +166,7 @@ func (h *ReportMgr) sendMetric(testName, location, errName, errClass string) {
 		"errName":  errName,
 		"errClass": errClass,
 	}
-	err := metrics.AddMetric(h.metricsNS, h.metricName, dims)
+	err := metrics.AddMetric(h.metricsNS, h.metricName, 1, dims)
 	if err != nil {
 		fmt.Printf("Failed to send metric: %v", err)
 	}
