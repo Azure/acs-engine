@@ -40,10 +40,10 @@ type errorInstance struct {
 }
 
 const (
-	errClassDeployment = "deployment"
-	errClassValidation = "validation"
-	errClassAzcli      = "azcli"
-	errClassNone       = "none"
+	errClassDeployment = "Deployment"
+	errClassValidation = "Validation"
+	errClassAzcli      = "AzCLI"
+	errClassNone       = "None"
 
 	errUnknown = "Unspecified error"
 )
