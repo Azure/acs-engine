@@ -3,9 +3,18 @@ package metrics
 import (
 	"encoding/json"
 	"fmt"
-	"net"
-	//"github.com/alexcesaro/statsd"
+
+	"github.com/alexcesaro/statsd"
 )
+
+// statsdMetricClientWrapper is an interface wrapping
+// interactions to write metrics to statsd
+type statsdMetricClientWrapper interface {
+	Sector() string
+	Region() string
+	Count(string, int64)
+	Close()
+}
 
 type mdmBucket struct {
 	Namespace string            `json:"Namespace"`
@@ -25,22 +34,28 @@ func AddMetric(namespace, metric string, dims map[string]string) error {
 	fmt.Println(string(data))
 
 	//statsdClient.Count(string(durationBucketBytes), latency.Nanoseconds()/nanoSecondToMillisecondConversionFactor)
+	client, err := statsd.New(statsd.Address("127.0.0.1:8125"), statsd.Network("udp"))
+	if err != nil {
+		return err
+	}
+	client.Count(string(data), 1000)
+	client.Close()
+	return nil
 
-	/*
-		conn, err := net.Dial("udp", "127.0.0.1:8125")
-		if err != nil {
-			return err
-		}
-		defer conn.Close()
+	/*conn, err := net.Dial("udp", "127.0.0.1:8125")
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
 
-		//simple Read
-		//buffer := make([]byte, 1024)
-		//conn.Read(buffer)
+	//simple Read
+	//buffer := make([]byte, 1024)
+	//conn.Read(buffer)
 
-		//simple write
-		_, err = conn.Write(data)
-		fmt.Printf("AddMetric [%s] [%v]\n", string(data), err)*/
-	sAddr, err := net.ResolveUDPAddr("udp", "127.0.0.1:8125")
+	//simple write
+	_, err = conn.Write(data)
+	fmt.Printf("AddMetric [%s] [%v]\n", string(data), err)*/
+	/*sAddr, err := net.ResolveUDPAddr("udp", "127.0.0.1:8125")
 	if err != nil {
 		return err
 	}
@@ -53,6 +68,6 @@ func AddMetric(namespace, metric string, dims map[string]string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("client: wrote:", string(data[0:n]))
+	fmt.Println("client: wrote:", string(data[0:n]))*/
 	return nil
 }
