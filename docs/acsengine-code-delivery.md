@@ -3,8 +3,7 @@
 [![ACS Engine](https://azurecomcdn.azureedge.net/mediahandler/acomblog/media/Default/blog/a8f28783-3ddc-4081-a57d-6d97147467bf.png)](https://github.com/azure/acs-engine)
 
 ACS Engine is an open source project to generate ARM (Azure Resource Manager) templates DC/OS, Kubernetes, Swarm Mode clusters on Microsoft Azure.
-ACS Engine code lives in Azure, and it is imperative to ensure its quality.
-This document provides guidelines to achieve that.
+This documents provides guidelines to the acs-engine testing and continuous integration process.
 
 ## Development pipeline
 
