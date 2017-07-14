@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 )
 
@@ -18,7 +19,7 @@ func AddMetric(namespace, metric string, dims map[string]string) error {
 		Dims:      dims}
 	data, _ := json.Marshal(bucket)
 
-	conn, err := net.Dial("udp", "localhost:8125")
+	conn, err := net.Dial("udp", "127.0.0.1:8125")
 	if err != nil {
 		return err
 	}
@@ -30,5 +31,6 @@ func AddMetric(namespace, metric string, dims map[string]string) error {
 
 	//simple write
 	_, err = conn.Write(data)
+	fmt.Printf("AddMetric [%s] [%v]\n", string(data), err)
 	return err
 }
