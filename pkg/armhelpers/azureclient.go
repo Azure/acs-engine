@@ -27,6 +27,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
+	"github.com/Azure/azure-sdk-for-go/arm/disk"
 )
 
 const (
@@ -60,6 +61,7 @@ type AzureClient struct {
 	subscriptionsClient           subscriptions.GroupClient
 	virtualMachinesClient         compute.VirtualMachinesClient
 	virtualMachineScaleSetsClient compute.VirtualMachineScaleSetsClient
+	disksClient                   disk.DisksClient
 
 	applicationsClient      graphrbac.ApplicationsClient
 	servicePrincipalsClient graphrbac.ServicePrincipalsClient
