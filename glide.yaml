@@ -8,6 +8,7 @@ import:
   - arm/resources/resources
   - arm/resources/subscriptions
   - arm/storage
+  - arm/disk
   - storage
 - package: github.com/Azure/go-autorest
   version: ^8.0.0
