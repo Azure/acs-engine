@@ -4,7 +4,8 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
-        "useManagedIdentity": true
+        "useManagedIdentity": true,
+        "customHyperkubeImage": "docker.io/colemickens/hyperkube-amd64:1c0426e4a391583b28922e9163c0ffe1c5528664"
       }
     },
     "masterProfile": {
@@ -42,8 +43,8 @@
       }
     },
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "",
-      "servicePrincipalClientSecret": ""
+      "servicePrincipalClientID": "msi",
+      "servicePrincipalClientSecret": "msi"
     }
   }
 }
