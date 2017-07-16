@@ -103,7 +103,7 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 	}
 
 	if dc.location == "" {
-		log.Fatalf("--subscription-id must be specified")
+		log.Fatalf("--location must be specified")
 	}
 
 	if dc.containerService.Properties.LinuxProfile.AdminUsername == "" {
