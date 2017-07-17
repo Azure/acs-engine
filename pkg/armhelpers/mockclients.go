@@ -6,6 +6,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/arm/authorization"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Azure/azure-sdk-for-go/arm/disk"
 	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest"
@@ -264,4 +265,22 @@ func (mc *MockACSEngineClient) CreateRoleAssignment(scope string, roleAssignment
 // CreateRoleAssignmentSimple is a wrapper around RoleAssignmentsClient.Create
 func (mc *MockACSEngineClient) CreateRoleAssignmentSimple(applicationID, roleID string) error {
 	return nil
+}
+
+// DeleteManagedDisk is a wrapper around disksClient.Delete
+func (mc *MockACSEngineClient) DeleteManagedDisk(resourceGroupName string, diskName string, cancel <-chan struct{}) (<-chan disk.OperationStatusResponse, <-chan error) {
+	errChan := make(chan error)
+	respChan := make(chan disk.OperationStatusResponse)
+	go func() {
+		defer func() {
+			close(errChan)
+		}()
+		defer func() {
+			close(respChan)
+		}()
+		errChan <- nil
+		respChan <- disk.OperationStatusResponse{}
+		time.Sleep(1 * time.Second)
+	}()
+	return respChan, errChan
 }
