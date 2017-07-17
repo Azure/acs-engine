@@ -29,6 +29,7 @@ func (o *OrchestratorProfile) Validate() error {
 
 	case Kubernetes:
 		switch o.OrchestratorVersion {
+		case Kubernetes171:
 		case Kubernetes166:
 		case Kubernetes162:
 		case Kubernetes160:
@@ -322,6 +323,7 @@ func (a *KubernetesConfig) Validate(k8sVersion OrchestratorVersion) error {
 	const minKubeletRetries = 4
 	// k8s versions that have cloudprovider backoff enabled
 	var backoffEnabledVersions = map[OrchestratorVersion]bool{
+		Kubernetes171: true,
 		Kubernetes166: true,
 	}
 	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
