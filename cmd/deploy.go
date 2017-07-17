@@ -76,8 +76,6 @@ func newDeployCmd() *cobra.Command {
 }
 
 func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
-	var caCertificateBytes []byte
-	var caKeyBytes []byte
 	var err error
 
 	if dc.apimodelPath == "" {
@@ -151,13 +149,6 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 		}
 
 		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{api.PublicKey{KeyData: publicKey}}
-	}
-
-	if len(caKeyBytes) != 0 {
-		// the caKey is not in the api model, and should be stored separately from the model
-		// we put these in the model after model is deserialized
-		dc.containerService.Properties.CertificateProfile.CaCertificate = string(caCertificateBytes)
-		dc.containerService.Properties.CertificateProfile.CaPrivateKey = string(caKeyBytes)
 	}
 
 	dc.client, err = dc.authArgs.getClient()
