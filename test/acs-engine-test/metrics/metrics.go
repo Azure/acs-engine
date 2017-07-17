@@ -13,7 +13,7 @@ type mdmBucket struct {
 	Dims      map[string]string `json:"Dims"`
 }
 
-func AddMetric(namespace, metric string, count int64, dims map[string]string) error {
+func AddMetric(endpoint, namespace, metric string, count int64, dims map[string]string) error {
 	bucket := mdmBucket{
 		Namespace: namespace,
 		Metric:    metric,
@@ -23,7 +23,7 @@ func AddMetric(namespace, metric string, count int64, dims map[string]string) er
 		return err
 	}
 	client, err := statsd.New(
-		statsd.Address(":8125"),
+		statsd.Address(endpoint),
 		statsd.Network("udp"),
 		statsd.ErrorHandler(
 			func(err error) {

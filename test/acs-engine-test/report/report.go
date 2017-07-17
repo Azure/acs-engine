@@ -19,9 +19,10 @@ type ErrorStat struct {
 }
 
 type ReportMgr struct {
-	lock       sync.Mutex
-	metricsNS  string
-	metricName string
+	lock            sync.Mutex
+	metricsEndpoint string
+	metricsNS       string
+	metricName      string
 
 	JobName     string    `json:"job"`
 	BuildNum    int       `json:"build"`
@@ -92,7 +93,7 @@ func init() {
 	}
 }
 
-func New(metricsNS, metricName, jobName string, buildNum int, nDeploys int) *ReportMgr {
+func New(metricsEndpoint, metricsNS, metricName, jobName string, buildNum int, nDeploys int) *ReportMgr {
 	h := &ReportMgr{}
 	h.metricsNS = metricsNS
 	h.metricName = metricName
@@ -106,7 +107,7 @@ func New(metricsNS, metricName, jobName string, buildNum int, nDeploys int) *Rep
 }
 
 func (h *ReportMgr) Copy() *ReportMgr {
-	n := New(h.metricsNS, h.metricName, h.JobName, h.BuildNum, h.Deployments)
+	n := New(h.metricsEndpoint, h.metricsNS, h.metricName, h.JobName, h.BuildNum, h.Deployments)
 	n.Errors = h.Errors
 	n.StartTime = h.StartTime
 	for e, f := range h.Failures {
@@ -163,10 +164,10 @@ func (h *ReportMgr) sendMetric(testName, location, errName, errClass string) {
 	dims := map[string]string{
 		"test":     testName,
 		"location": location,
-		"errName":  errName,
+		"error":    errName,
 		"errClass": errClass,
 	}
-	err := metrics.AddMetric(h.metricsNS, h.metricName, 1, dims)
+	err := metrics.AddMetric(h.metricsEndpoint, h.metricsNS, h.metricName, 1, dims)
 	if err != nil {
 		fmt.Printf("Failed to send metric: %v", err)
 	}
