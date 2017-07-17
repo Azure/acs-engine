@@ -160,6 +160,7 @@ var KubeImages = map[string]map[string]string{
 		"dns":             "k8s-dns-kube-dns-amd64:1.14.4",
 		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.13.0",
+		"rescheduler":     "rescheduler:v0.3.1",
 		"pause":           "pause-amd64:3.0",
 		"tiller":          DefaultTillerImage,
 		"windowszip":      "v1.6.6intwinnat.zip",
