@@ -104,6 +104,25 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("--subscription-id must be specified")
 	}
 
+	dc.client, err = dc.authArgs.getClient()
+	if err != nil {
+		log.Fatalf("failed to get client") // TODO: cleanup
+	}
+
+	// autofillApimodel calls log.Fatal() directly and does not return errors
+	autofillApimodel(dc)
+
+	_, _, err = revalidateApimodel(dc.containerService, dc.apiVersion)
+	if err != nil {
+		log.Fatalf("Failed to validate the apimodel after populating values: %s", err)
+	}
+
+	dc.random = rand.New(rand.NewSource(time.Now().UnixNano()))
+}
+
+func autofillApimodel(dc *deployCmd) {
+	var err error
+
 	if dc.containerService.Properties.LinuxProfile.AdminUsername == "" {
 		log.Warnf("apimodel: no linuxProfile.adminUsername was specified. Will use 'azureuser'.")
 		dc.containerService.Properties.LinuxProfile.AdminUsername = "azureuser"
@@ -151,11 +170,6 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{api.PublicKey{KeyData: publicKey}}
 	}
 
-	dc.client, err = dc.authArgs.getClient()
-	if err != nil {
-		log.Fatalf("failed to get client") // TODO: cleanup
-	}
-
 	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location)
 	if err != nil {
 		log.Fatalln(err)
@@ -198,18 +212,15 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 		}
 
 	}
+}
 
+func revalidateApimodel(containerService *api.ContainerService, apiVersion string) (*api.ContainerService, string, error) {
 	// This isn't terribly elegant, but it's the easiest way to go for now w/o duplicating a bunch of code
-	rawVersionedAPIModel, err := api.SerializeContainerService(dc.containerService, dc.apiVersion)
+	rawVersionedAPIModel, err := api.SerializeContainerService(containerService, apiVersion)
 	if err != nil {
-		log.Fatalf("Failed to serialize the apimodel to validate it after populating values: %s", err)
+		return nil, "", err
 	}
-	dc.containerService, dc.apiVersion, err = api.DeserializeContainerService(rawVersionedAPIModel, true)
-	if err != nil {
-		log.Fatalf("error parsing the api model: %s", err.Error())
-	}
-
-	dc.random = rand.New(rand.NewSource(time.Now().UnixNano()))
+	return api.DeserializeContainerService(rawVersionedAPIModel, true)
 }
 
 func (dc *deployCmd) run() error {
