@@ -266,6 +266,7 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 		providersClient:               resources.NewProvidersClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		virtualMachinesClient:         compute.NewVirtualMachinesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		virtualMachineScaleSetsClient: compute.NewVirtualMachineScaleSetsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+		disksClient:                   disk.NewDisksClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 
 		applicationsClient:      graphrbac.NewApplicationsClientWithBaseURI(env.GraphEndpoint, tenantID),
 		servicePrincipalsClient: graphrbac.NewServicePrincipalsClientWithBaseURI(env.GraphEndpoint, tenantID),
@@ -282,6 +283,7 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 	c.providersClient.Authorizer = authorizer
 	c.virtualMachinesClient.Authorizer = authorizer
 	c.virtualMachineScaleSetsClient.Authorizer = authorizer
+	c.disksClient.Authorizer = authorizer
 
 	c.deploymentsClient.PollingDelay = time.Second * 5
 	c.resourcesClient.PollingDelay = time.Second * 5
@@ -372,6 +374,7 @@ func (az *AzureClient) AddAcceptLanguages(languages []string) {
 	az.providersClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.virtualMachinesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.virtualMachineScaleSetsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.disksClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
 
 	az.applicationsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.servicePrincipalsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()

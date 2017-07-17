@@ -25,8 +25,9 @@ type ClusterTopology struct {
 
 	AgentPools map[string]*AgentPoolTopology
 
-	MasterVMs         *[]compute.VirtualMachine
-	UpgradedMasterVMs *[]compute.VirtualMachine
+	MasterVMStorageProfile string
+	MasterVMs              *[]compute.VirtualMachine
+	UpgradedMasterVMs      *[]compute.VirtualMachine
 }
 
 // AgentPoolTopology contains agent VMs in a single pool
@@ -47,6 +48,9 @@ type UpgradeCluster struct {
 	UpgradeModel *api.UpgradeContainerService
 }
 
+// MasterVMNamePrefix is the prefix for all master VM names for Kubernetes clusters
+const MasterVMNamePrefix = "k8s-master-"
+
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
 // UpgradeContainerService contains target state of the cluster that
 // the operation will drive towards.
@@ -65,6 +69,8 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	if err := uc.getClusterNodeStatus(subscriptionID, resourceGroup); err != nil {
 		return fmt.Errorf("Error while querying ARM for resources: %+v", err)
 	}
+
+	uc.DataModel.Properties.MasterProfile.StorageProfile = uc.MasterVMStorageProfile
 
 	switch ucs.OrchestratorProfile.OrchestratorVersion {
 	case api.Kubernetes162:
@@ -105,7 +111,7 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 
 		vmOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
 		if vmOrchestratorTypeAndVersion == orchestratorTypeVersion {
-			if strings.Contains(*(vm.Name), "k8s-master-") {
+			if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
 				if !strings.Contains(*(vm.Name), uc.NameSuffix) {
 					log.Infoln(fmt.Sprintf("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s",
 						*vm.Name, uc.NameSuffix))
@@ -113,6 +119,8 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 				}
 				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (MasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
 				*uc.MasterVMs = append(*uc.MasterVMs, vm)
+
+				uc.setMasterVMStorageProfile(vm)
 			} else {
 				uc.addVMToAgentPool(vm, true)
 			}
@@ -122,9 +130,11 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 					*vm.Name, uc.NameSuffix))
 				continue
 			}
-			if strings.Contains(*(vm.Name), "k8s-master-") {
+			if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
 				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (UpgradedMasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
 				*uc.UpgradedMasterVMs = append(*uc.UpgradedMasterVMs, vm)
+
+				uc.setMasterVMStorageProfile(vm)
 			} else {
 				uc.addVMToAgentPool(vm, false)
 			}
@@ -176,6 +186,18 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 	}
 
 	return nil
+}
+
+func (uc *UpgradeCluster) setMasterVMStorageProfile(vm compute.VirtualMachine) {
+	for _, dataDisk := range *vm.VirtualMachineProperties.StorageProfile.DataDisks {
+		if dataDisk.ManagedDisk != nil && strings.Contains(*(dataDisk.Name), *(vm.Name)) &&
+			strings.Contains(*(vm.Name), MasterVMNamePrefix) &&
+			(strings.Contains(*(dataDisk.Name), "-etcdisk") || strings.Contains(*(dataDisk.Name), "_disk")) {
+			uc.MasterVMStorageProfile = api.ManagedDisks
+		} else {
+			uc.MasterVMStorageProfile = api.StorageAccount
+		}
+	}
 }
 
 // WriteTemplate writes upgrade template to a folder

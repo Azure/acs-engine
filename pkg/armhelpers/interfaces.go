@@ -3,6 +3,7 @@ package armhelpers
 import (
 	"github.com/Azure/azure-sdk-for-go/arm/authorization"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Azure/azure-sdk-for-go/arm/disk"
 	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest"
@@ -65,6 +66,9 @@ type ACSEngineClient interface {
 	// RBAC
 	CreateRoleAssignment(scope string, roleAssignmentName string, parameters authorization.RoleAssignmentCreateParameters) (authorization.RoleAssignment, error)
 	CreateRoleAssignmentSimple(applicationID, roleID string) error
+
+	// MANAGED DISKS
+	DeleteManagedDisk(resourceGroupName string, diskName string, cancel <-chan struct{}) (<-chan disk.OperationStatusResponse, <-chan error)
 }
 
 // ACSStorageClient interface models the azure storage client
