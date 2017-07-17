@@ -10,6 +10,7 @@ import (
 	"hash/fnv"
 	"math/rand"
 	"regexp"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"text/template"
@@ -243,7 +244,9 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	// and ensures the panic is returned as an error
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
+			s := debug.Stack()
+			err = fmt.Errorf("%v - %s", r, s)
+
 			// invalidate the template and the parameters
 			templateRaw = ""
 			parametersRaw = ""
