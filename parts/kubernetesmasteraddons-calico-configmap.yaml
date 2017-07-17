@@ -14,15 +14,23 @@ metadata:
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: "Reconcile"
 data:
+  # The interface used by canal for host <-> host communication.
+  # If left blank, then the interface is chosen using the node's
+  # default route.
+  canal_iface: ""
+
+  # Whether or not to masquerade traffic to destinations not within
+  # the pod network.
+  masquerade: "true"
+
   # The CNI network configuration to install on each node.
   cni_network_config: |-
     {
         "name": "k8s-pod-network",
-        "cniVersion": "0.1.0",
         "type": "calico",
-        "log_level": "debug",
+        "log_level": "info",
         "datastore_type": "kubernetes",
-        "nodename": "__KUBERNETES_NODE_NAME__",
+        "hostname": "__KUBERNETES_NODE_NAME__",
         "ipam": {
             "type": "host-local",
             "subnet": "usePodCidr"
@@ -35,4 +43,13 @@ data:
             "k8s_api_root": "https://__KUBERNETES_SERVICE_HOST__:__KUBERNETES_SERVICE_PORT__",
             "kubeconfig": "__KUBECONFIG_FILEPATH__"
         }
+    }
+
+  # Flannel network configuration. Mounted into the flannel container.
+  net-conf.json: |
+    {
+      "Network": "<kubeClusterCidr>",
+      "Backend": {
+        "Type": "vxlan"
+      }
     }

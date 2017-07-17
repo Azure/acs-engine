@@ -1,29 +1,23 @@
-# Calico Version v2.2.1
-# http://docs.projectcalico.org/v2.2/releases#v2.2.1
-# This manifest includes the following component versions:
-#   calico/node:v1.2.1
-#   calico/cni:v1.8.3
-
 # This manifest installs the calico/node container, as well
 # as the Calico CNI plugins and network config on
 # each master and worker node in a Kubernetes cluster.
 kind: DaemonSet
 apiVersion: extensions/v1beta1
 metadata:
-  name: calico-node
+  name: canal
   namespace: kube-system
   labels:
-    k8s-app: calico-node
+    k8s-app: canal
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: "Reconcile"
 spec:
   selector:
     matchLabels:
-      k8s-app: calico-node
+      k8s-app: canal
   template:
     metadata:
       labels:
-        k8s-app: calico-node
+        k8s-app: canal
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         scheduler.alpha.kubernetes.io/tolerations: |
@@ -31,6 +25,15 @@ spec:
            {"key":"CriticalAddonsOnly", "operator":"Exists"}]
     spec:
       hostNetwork: true
+      serviceAccountName: canal
+      tolerations:
+        # Allow the pod to run on the master.  This is required for
+        # the master to communicate with pods.
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+        # Mark the pod as a critical add-on for rescheduling.
+        - key: "CriticalAddonsOnly"
+          operator: "Exists"
       containers:
         # Runs calico/node container on each Kubernetes node.  This
         # container programs network policy and routes on each
@@ -41,38 +44,33 @@ spec:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
               value: "kubernetes"
-            # Enable felix info logging.
-            - name: FELIX_LOGSEVERITYSCREEN
+            # Enable felix logging.
+            - name: FELIX_LOGSEVERITYSYS
               value: "info"
+            # Period, in seconds, at which felix re-applies all iptables state
+            - name: FELIX_IPTABLESREFRESHINTERVAL
+              value: "60"
+            # Disable IPV6 support in Felix.
+            - name: FELIX_IPV6SUPPORT
+              value: "false"
             # Don't enable BGP.
             - name: CALICO_NETWORKING_BACKEND
               value: "none"
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
-            # Set Felix endpoint to host default action to ACCEPT.
-            - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
-              value: "ACCEPT"
-            # Disable IPV6 on Kubernetes.
-            - name: FELIX_IPV6SUPPORT
-              value: "false"
-            # Wait for the datastore.
             - name: WAIT_FOR_DATASTORE
               value: "true"
-            # The Calico IPv4 pool to use.  This should match `--cluster-cidr`
-            - name: CALICO_IPV4POOL_CIDR
-              value: "<kubeClusterCidr>"
-            # Enable IPIP
-            - name: CALICO_IPV4POOL_IPIP
-              value: "always"
-            # Set based on the k8s node name.
-            - name: NODENAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
             # No IP address needed.
             - name: IP
               value: ""
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            # Set Felix endpoint to host default action to ACCEPT.
+            - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
+              value: "ACCEPT"
           securityContext:
             privileged: true
           resources:
@@ -95,9 +93,8 @@ spec:
             - name: CNI_NETWORK_CONFIG
               valueFrom:
                 configMapKeyRef:
-                  name: calico-config
+                  name: canal-config
                   key: cni_network_config
-            # Set the hostname based on the k8s node name.
             - name: KUBERNETES_NODE_NAME
               valueFrom:
                 fieldRef:
@@ -107,6 +104,37 @@ spec:
               name: cni-bin-dir
             - mountPath: /host/etc/cni/net.d
               name: cni-net-dir
+        # This container runs flannel using the kube-subnet-mgr backend
+        # for allocating subnets.
+        - name: kube-flannel
+          image: quay.io/coreos/flannel:v0.8.0
+          command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
+          securityContext:
+            privileged: true
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: FLANNELD_IFACE
+              valueFrom:
+                configMapKeyRef:
+                  name: canal-config
+                  key: canal_iface
+            - name: FLANNELD_IP_MASQ
+              valueFrom:
+                configMapKeyRef:
+                  name: canal-config
+                  key: masquerade
+          volumeMounts:
+          - name: run
+            mountPath: /run
+          - name: flannel-cfg
+            mountPath: /etc/kube-flannel/
       volumes:
         # Used by calico/node.
         - name: lib-modules
@@ -122,3 +150,20 @@ spec:
         - name: cni-net-dir
           hostPath:
             path: /etc/cni/net.d
+        # Used by flannel.
+        - name: run
+          hostPath:
+            path: /run
+        - name: flannel-cfg
+          configMap:
+            name: canal-config
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: canal
+  namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: "Reconcile"
