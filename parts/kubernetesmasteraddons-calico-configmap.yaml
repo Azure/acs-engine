@@ -8,7 +8,7 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: calico-config
+  name: canal-config
   namespace: kube-system
   labels:
     kubernetes.io/cluster-service: "true"
