@@ -58,6 +58,8 @@ func (ku *Kubernetes162upgrader) Validate() error {
 }
 
 func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
+
+	log.Infoln(fmt.Sprintf("Master nodes StorageProfile: %s", ku.GoalStateDataModel.Properties.MasterProfile.StorageProfile))
 	// Upgrade Master VMs
 	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.GoalStateDataModel)
 	if err != nil {
