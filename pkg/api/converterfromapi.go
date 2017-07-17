@@ -765,11 +765,13 @@ func convertCustomProfileToV20170701(api *CustomProfile, v20170701 *v20170701.Cu
 func convertServicePrincipalProfileToV20170701(api *ServicePrincipalProfile, v20170701 *v20170701.ServicePrincipalProfile) {
 	v20170701.ClientID = api.ClientID
 	v20170701.Secret = api.Secret
+	v20170701.KeyvaultSecretRef = api.KeyvaultSecretRef
 }
 
 func convertServicePrincipalProfileToVLabs(api *ServicePrincipalProfile, vlabs *vlabs.ServicePrincipalProfile) {
 	vlabs.ClientID = api.ClientID
 	vlabs.Secret = api.Secret
+	vlabs.KeyvaultSecretRef = api.KeyvaultSecretRef
 }
 
 func convertCertificateProfileToVLabs(api *CertificateProfile, vlabs *vlabs.CertificateProfile) {

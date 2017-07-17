@@ -9,6 +9,12 @@ import (
 	"time"
 )
 
+var keyvaultSecretPathRe *regexp.Regexp
+
+func init() {
+	keyvaultSecretPathRe = regexp.MustCompile(`^(/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/\S+)/secrets/([^/\s]+)(/(\S+))?$`)
+}
+
 // Validate implements APIObject
 func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
@@ -227,8 +233,18 @@ func (a *Properties) Validate() error {
 		return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 	}
 
-	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.Secret) == 0 {
-		return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		if (len(a.ServicePrincipalProfile.Secret) == 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) == 0) ||
+			(len(a.ServicePrincipalProfile.Secret) != 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0) {
+			return fmt.Errorf("either the service principal client secrect or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+		}
+
+		if len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0 {
+			parts := keyvaultSecretPathRe.FindStringSubmatch(a.ServicePrincipalProfile.KeyvaultSecretRef)
+			if len(parts) != 5 {
+				return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
+			}
+		}
 	}
 
 	for _, agentPoolProfile := range a.AgentPoolProfiles {

@@ -804,11 +804,13 @@ func convertV20170131ServicePrincipalProfile(v20170131 *v20170131.ServicePrincip
 func convertV20170701ServicePrincipalProfile(v20170701 *v20170701.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 	api.ClientID = v20170701.ClientID
 	api.Secret = v20170701.Secret
+	api.KeyvaultSecretRef = v20170701.KeyvaultSecretRef
 }
 
 func convertVLabsServicePrincipalProfile(vlabs *vlabs.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 	api.ClientID = vlabs.ClientID
 	api.Secret = vlabs.Secret
+	api.KeyvaultSecretRef = vlabs.KeyvaultSecretRef
 }
 
 func convertV20160930CustomProfile(v20160930 *v20160930.CustomProfile, api *CustomProfile) {
