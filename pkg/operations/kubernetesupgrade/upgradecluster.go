@@ -190,9 +190,10 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 
 func (uc *UpgradeCluster) setMasterVMStorageProfile(vm compute.VirtualMachine) {
 	for _, dataDisk := range *vm.VirtualMachineProperties.StorageProfile.DataDisks {
+		log.Infoln(fmt.Sprintf("Master VM name: %s, disk name: %s", *vm.Name, *(dataDisk.Name)))
 		if dataDisk.ManagedDisk != nil && strings.Contains(*(dataDisk.Name), *(vm.Name)) &&
 			strings.Contains(*(vm.Name), MasterVMNamePrefix) &&
-			(strings.Contains(*(dataDisk.Name), "-etcdisk") || strings.Contains(*(dataDisk.Name), "_disk")) {
+			(strings.Contains(*(dataDisk.Name), "-etcddisk") || strings.Contains(*(dataDisk.Name), "_disk")) {
 			log.Infoln(fmt.Sprintf("Master VM name: %s is using managed disk", *vm.Name))
 			uc.MasterVMStorageProfile = api.ManagedDisks
 		} else {
