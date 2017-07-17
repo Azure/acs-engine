@@ -193,8 +193,10 @@ func (uc *UpgradeCluster) setMasterVMStorageProfile(vm compute.VirtualMachine) {
 		if dataDisk.ManagedDisk != nil && strings.Contains(*(dataDisk.Name), *(vm.Name)) &&
 			strings.Contains(*(vm.Name), MasterVMNamePrefix) &&
 			(strings.Contains(*(dataDisk.Name), "-etcdisk") || strings.Contains(*(dataDisk.Name), "_disk")) {
+			log.Infoln(fmt.Sprintf("Master VM name: %s is using managed disk", *vm.Name))
 			uc.MasterVMStorageProfile = api.ManagedDisks
 		} else {
+			log.Infoln(fmt.Sprintf("Master VM name: %s is NOT using managed disk", *vm.Name))
 			uc.MasterVMStorageProfile = api.StorageAccount
 		}
 	}
