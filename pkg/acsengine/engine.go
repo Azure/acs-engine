@@ -411,8 +411,11 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
 		addValue(parametersMap, "dockerBridgeCidr", properties.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet)
 		addValue(parametersMap, "networkPolicy", properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
-		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
-		addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
+		if properties.OrchestratorProfile.KubernetesConfig != nil &&
+			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
+			addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
+			addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
+		}
 	}
 
 	if strings.HasPrefix(string(properties.OrchestratorProfile.OrchestratorType), string(api.DCOS)) {
