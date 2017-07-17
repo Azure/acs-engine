@@ -95,6 +95,7 @@ func init() {
 
 func New(metricsEndpoint, metricsNS, metricName, jobName string, buildNum int, nDeploys int) *ReportMgr {
 	h := &ReportMgr{}
+	h.metricsEndpoint = metricsEndpoint
 	h.metricsNS = metricsNS
 	h.metricName = metricName
 	h.JobName = jobName
@@ -169,7 +170,7 @@ func (h *ReportMgr) sendMetric(testName, location, errName, errClass string) {
 	}
 	err := metrics.AddMetric(h.metricsEndpoint, h.metricsNS, h.metricName, 1, dims)
 	if err != nil {
-		fmt.Printf("Failed to send metric: %v", err)
+		fmt.Printf("Failed to send metric: %v\n", err)
 	}
 }
 
