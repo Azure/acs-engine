@@ -25,7 +25,7 @@ spec:
         - "--cluster-signing-key-file=/etc/kubernetes/certs/ca.key"
         - "--service-account-private-key-file=/etc/kubernetes/certs/apiserver.key"
         - "--leader-elect=true"
-        - "--use-service-account-credentials"
+        - "<kubernetesEnableRbac>"
         - "--v=2"
         - "--node-monitor-grace-period=<kubernetesCtrlMgrNodeMonitorGracePeriod>"
         - "--pod-eviction-timeout=<kubernetesCtrlMgrPodEvictionTimeout>"
