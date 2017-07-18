@@ -250,7 +250,7 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 
 			if isMasterManagedDisk {
 				managedDisk := compute.ManagedDiskParameters{}
-				id := "[concat('/subscriptions/', variables('subscriptionId'), '/resourceGroups/variables('resourceGroup')/providers/Microsoft.Compute/disks/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
+				id := "[concat('/subscriptions/', variables('subscriptionId'), '/resourceGroups/', variables('resourceGroup'),'/providers/Microsoft.Compute/disks/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
 				managedDisk.ID = &id
 				var diskInterface interface{}
 				diskInterface = &managedDisk
