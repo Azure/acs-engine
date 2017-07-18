@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -97,6 +98,27 @@ func ConvertV20170701ContainerService(v20170701 *v20170701.ContainerService) *Co
 }
 
 // ConvertVLabsContainerService converts a vlabs ContainerService to an unversioned ContainerService
+func ConvertKubernetesAgentPoolContainerService(k8sagentpool *kubernetesagentpool.ContainerService) *ContainerService {
+	c := &ContainerService{
+		ID:       k8sagentpool.ID,
+		Location: k8sagentpool.Location,
+		Name:     k8sagentpool.Name,
+		Type: k8sagentpool.Type,
+		Properties: &Properties{},
+	}
+	if k8sagentpool.Plan != nil {
+		c.Plan = &ResourcePurchasePlan{}
+		convertKubernetesAgentPoolPurchasePlan(k8sagentpool.Plan, c.Plan)
+	}
+	c.Tags = map[string]string{}
+	for k, v := range k8sagentpool.Tags {
+		c.Tags[k] = v
+	}
+	convertKubernetesAgentPoolProperties(k8sagentpool.Properties, c.Properties)
+	return c
+}
+
+// ConvertVLabsContainerService converts a vlabs ContainerService to an unversioned ContainerService
 func ConvertVLabsContainerService(vlabs *vlabs.ContainerService) *ContainerService {
 	c := &ContainerService{}
 	c.ID = vlabs.ID
@@ -146,6 +168,14 @@ func convertV20170701ResourcePurchasePlan(v20170701 *v20170701.ResourcePurchaseP
 	api.Product = v20170701.Product
 	api.PromotionCode = v20170701.PromotionCode
 	api.Publisher = v20170701.Publisher
+}
+
+// convertKubernetesAgentPoolPurchasePlan converts a vlabs ResourcePurchasePlan to an unversioned ResourcePurchasePlan
+func convertKubernetesAgentPoolPurchasePlan(k8sagentpoolpurchaseplan *kubernetesagentpool.ResourcePurchasePlan, api *ResourcePurchasePlan) {
+	api.Name = k8sagentpoolpurchaseplan.Name
+	api.Product = k8sagentpoolpurchaseplan.Product
+	api.PromotionCode = k8sagentpoolpurchaseplan.PromotionCode
+	api.Publisher = k8sagentpoolpurchaseplan.Publisher
 }
 
 // convertVLabsResourcePurchasePlan converts a vlabs ResourcePurchasePlan to an unversioned ResourcePurchasePlan
@@ -341,6 +371,10 @@ func convertV20170701Properties(v20170701 *v20170701.Properties, api *Properties
 		api.CustomProfile = &CustomProfile{}
 		convertV20170701CustomProfile(v20170701.CustomProfile, api.CustomProfile)
 	}
+}
+
+func convertKubernetesAgentPoolProperties(k8sagentpoolproperties *kubernetesagentpool.Properties, api *Properties) {
+
 }
 
 func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {

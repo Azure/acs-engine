@@ -8,6 +8,8 @@ test/user.env
 user.env
 test/acs-engine-test/acs-engine-test
 .editorconfig
+dev.json
+kubernetes.json
 
 test/acs-engine-test/acs-engine-test.exe
 pkg/operations/junit.xml

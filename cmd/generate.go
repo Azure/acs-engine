@@ -1,15 +1,14 @@
 package cmd
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/spf13/cobra"
-
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
-	"io/ioutil"
+	log "github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 const (
