@@ -6,13 +6,14 @@ metadata:
   labels:
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: Reconcile
-
 ---
-
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: system:heapster
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -21,12 +22,30 @@ subjects:
 - kind: ServiceAccount
   name: heapster
   namespace: kube-system
-
 ---
 kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  labels:
+    k8s-app: heapster
+    version: v1.4.0
+    kubernetes.io/cluster-service: "true"
+  namespace: kube-system
+  name: heapster-v1.4.0
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: heapster
+      version: v1.4.0
   template:
+    metadata:
+      labels:
+        task: monitoring
+        k8s-app: heapster
+        version: v1.4.0
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
     spec:
       tolerations:
       - key: "CriticalAddonsOnly"
@@ -74,22 +93,3 @@ spec:
           name: MY_POD_NAMESPACE
       nodeSelector:
         beta.kubernetes.io/os: linux
-    metadata:
-      labels:
-        task: monitoring
-        k8s-app: heapster
-        version: v1.4.0
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ""
-  selector:
-    matchLabels:
-      k8s-app: heapster
-      version: v1.4.0
-apiVersion: extensions/v1beta1
-metadata:
-  labels:
-    k8s-app: heapster
-    version: v1.4.0
-    kubernetes.io/cluster-service: "true"
-  namespace: kube-system
-  name: heapster-v1.4.0

@@ -148,6 +148,7 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitBucket     int     `json:"cloudProviderRateLimitBucket,omitempty"`
 	UseManagedIdentity               bool    `json:"useManagedIdentity,omitempty"`
 	CustomHyperkubeImage             string  `json:"customHyperkubeImage,omitempty"`
+	EnableRbac                       bool    `json:"enableRbac,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
