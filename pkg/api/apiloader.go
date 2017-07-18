@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -88,7 +89,15 @@ func LoadContainerService(contents []byte, version string, validate bool) (*Cont
 			return nil, e
 		}
 		return ConvertVLabsContainerService(containerService), nil
-
+	case kubernetesagentpool.APIVersion:
+		containerService := &kubernetesagentpool.ContainerService{}
+		if e := json.Unmarshal(contents, &containerService); e != nil {
+			return nil, e
+		}
+		if e := containerService.Properties.Validate(); e != nil {
+			return nil, e
+		}
+		return ConvertKubernetesAgentPoolContainerService(containerService), nil
 	default:
 		return nil, fmt.Errorf("unrecognized APIVersion '%s'", version)
 	}

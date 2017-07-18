@@ -10,7 +10,8 @@ test/acs-engine-test/acs-engine-test
 .editorconfig
 _dist/
 bin/
-
+dev.json
+kubernetes.json
 test/acs-engine-test/acs-engine-test.exe
 pkg/operations/junit.xml
 pkg/operations/kubernetesupgrade/junit.xml
