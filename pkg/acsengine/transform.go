@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Sirupsen/logrus"
 )
 
@@ -199,7 +200,7 @@ func removeImageReference(logger *logrus.Entry, resourceProperties map[string]in
 }
 
 // NormalizeResourcesForK8sMasterUpgrade takes a template and removes elements that are unwanted in any scale up/down case
-func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, agentPoolsToPreserve map[string]bool) error {
+func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, isMasterManagedDisk bool, agentPoolsToPreserve map[string]bool) error {
 	resources := templateMap[resourcesFieldName].([]interface{})
 	logger.Infoln(fmt.Sprintf("Resource count before running NormalizeResourcesForK8sMasterUpgrade: %d", len(resources)))
 
@@ -246,6 +247,15 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 			dataDisks := storageProfile[dataDisksFieldName].([]interface{})
 			dataDisk, ok := dataDisks[0].(map[string]interface{})
 			dataDisk[createOptionFieldName] = "attach"
+
+			if isMasterManagedDisk {
+				managedDisk := compute.ManagedDiskParameters{}
+				id := "[concat('/subscriptions/', variables('subscriptionId'), '/resourceGroups/variables('resourceGroup')/providers/Microsoft.Compute/disks/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
+				managedDisk.ID = &id
+				var diskInterface interface{}
+				diskInterface = &managedDisk
+				dataDisk["managedDisk"] = diskInterface
+			}
 		}
 
 		tags, ok := resourceMap[tagsFieldName].(map[string]interface{})
@@ -298,9 +308,9 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 }
 
 // NormalizeResourcesForK8sAgentUpgrade takes a template and removes elements that are unwanted in any scale up/down case
-func NormalizeResourcesForK8sAgentUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, agentPoolsToPreserve map[string]bool) error {
+func NormalizeResourcesForK8sAgentUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, isMasterManagedDisk bool, agentPoolsToPreserve map[string]bool) error {
 	logger.Infoln(fmt.Sprintf("Running NormalizeResourcesForK8sMasterUpgrade...."))
-	if err := NormalizeResourcesForK8sMasterUpgrade(logger, templateMap, agentPoolsToPreserve); err != nil {
+	if err := NormalizeResourcesForK8sMasterUpgrade(logger, templateMap, isMasterManagedDisk, agentPoolsToPreserve); err != nil {
 		log.Fatalln(err)
 		return err
 	}

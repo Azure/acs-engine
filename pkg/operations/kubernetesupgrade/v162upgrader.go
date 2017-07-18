@@ -58,7 +58,6 @@ func (ku *Kubernetes162upgrader) Validate() error {
 }
 
 func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
-
 	log.Infoln(fmt.Sprintf("Master nodes StorageProfile: %s", ku.GoalStateDataModel.Properties.MasterProfile.StorageProfile))
 	// Upgrade Master VMs
 	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.GoalStateDataModel)
@@ -68,7 +67,7 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 
 	log.Infoln(fmt.Sprintf("Prepping master nodes for upgrade..."))
 
-	if err := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), templateMap, nil); err != nil {
+	if err := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), templateMap, ku.DataModel.Properties.MasterProfile.IsManagedDisks(), nil); err != nil {
 		log.Fatalln(err)
 		return err
 	}
@@ -179,7 +178,7 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 		log.Infoln(fmt.Sprintf("Prepping agent pool: %s for upgrade...", *agentPool.Name))
 
 		preservePools := map[string]bool{*agentPool.Name: true}
-		if err := acsengine.NormalizeResourcesForK8sAgentUpgrade(log.NewEntry(log.New()), templateMap, preservePools); err != nil {
+		if err := acsengine.NormalizeResourcesForK8sAgentUpgrade(log.NewEntry(log.New()), templateMap, ku.DataModel.Properties.MasterProfile.IsManagedDisks(), preservePools); err != nil {
 			log.Fatalln(err)
 			return err
 		}

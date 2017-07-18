@@ -25,9 +25,8 @@ type ClusterTopology struct {
 
 	AgentPools map[string]*AgentPoolTopology
 
-	MasterVMStorageProfile string
-	MasterVMs              *[]compute.VirtualMachine
-	UpgradedMasterVMs      *[]compute.VirtualMachine
+	MasterVMs         *[]compute.VirtualMachine
+	UpgradedMasterVMs *[]compute.VirtualMachine
 }
 
 // AgentPoolTopology contains agent VMs in a single pool
@@ -69,8 +68,6 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	if err := uc.getClusterNodeStatus(subscriptionID, resourceGroup); err != nil {
 		return fmt.Errorf("Error while querying ARM for resources: %+v", err)
 	}
-
-	uc.DataModel.Properties.MasterProfile.StorageProfile = uc.MasterVMStorageProfile
 
 	switch ucs.OrchestratorProfile.OrchestratorVersion {
 	case api.Kubernetes162:
@@ -195,10 +192,10 @@ func (uc *UpgradeCluster) setMasterVMStorageProfile(vm compute.VirtualMachine) {
 			strings.Contains(*(vm.Name), MasterVMNamePrefix) &&
 			(strings.Contains(*(dataDisk.Name), "-etcddisk") || strings.Contains(*(dataDisk.Name), "_disk")) {
 			log.Infoln(fmt.Sprintf("Master VM name: %s is using managed disk", *vm.Name))
-			uc.MasterVMStorageProfile = api.ManagedDisks
+			// uc.MasterVMStorageProfile = api.ManagedDisks
 		} else {
 			log.Infoln(fmt.Sprintf("Master VM name: %s is NOT using managed disk", *vm.Name))
-			uc.MasterVMStorageProfile = api.StorageAccount
+			// uc.MasterVMStorageProfile = api.StorageAccount
 		}
 	}
 }
