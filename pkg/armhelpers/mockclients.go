@@ -284,3 +284,8 @@ func (mc *MockACSEngineClient) DeleteManagedDisk(resourceGroupName string, diskN
 	}()
 	return respChan, errChan
 }
+
+// ListManagedDisksByResourceGroup is a wrapper around disksClient.ListManagedDisksByResourceGroup
+func (mc *MockACSEngineClient) ListManagedDisksByResourceGroup(resourceGroupName string) (result disk.ListType, err error) {
+	return disk.ListType{}, nil
+}

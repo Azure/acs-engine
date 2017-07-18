@@ -69,6 +69,7 @@ type ACSEngineClient interface {
 
 	// MANAGED DISKS
 	DeleteManagedDisk(resourceGroupName string, diskName string, cancel <-chan struct{}) (<-chan disk.OperationStatusResponse, <-chan error)
+	ListManagedDisksByResourceGroup(resourceGroupName string) (result disk.ListType, err error)
 }
 
 // ACSStorageClient interface models the azure storage client
