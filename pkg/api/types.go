@@ -51,6 +51,7 @@ type Properties struct {
 	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
+	AadProfile              *AadProfile              `json:"aadProfile,omitempty"`
 	CustomProfile           *CustomProfile           `json:"customProfile,omitempty"`
 	HostedMasterProfile     *HostedMasterProfile     `json:"hostedMasterProfile,omitempty"`
 }
@@ -271,6 +272,16 @@ type HostedMasterProfile struct {
 	DNSPrefix string `json:"dnsPrefix"`
 }
 
+// AadProfile specifies attributes for AAD integration
+type AadProfile struct {
+	// The server AAD application ID.
+	ServerAppID string `json:"serverAppID,omitempty"`
+	// The AAD tenant ID to use for authentication.
+	// If not specified, will use the tenant of the deployment subscription.
+	// Optional
+	TenantID string `json:"tenantId,omitempty"`
+}
+
 // CustomProfile specifies custom properties that are used for
 // cluster instantiation.  Should not be used by most users.
 type CustomProfile struct {
@@ -457,4 +468,9 @@ func (o *OrchestratorProfile) IsVNETIntegrated() bool {
 	default:
 		return false
 	}
+}
+
+// HasAadProfile  returns true if the has aad profile
+func (p *Properties) HasAadProfile() bool {
+	return p.AadProfile != nil
 }
