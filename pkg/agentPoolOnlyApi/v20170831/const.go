@@ -2,7 +2,7 @@ package v20170831
 
 const (
 	// APIVersion is the version of this API
-	APIVersion = "2018-08-31"
+	APIVersion = "2017-08-31"
 )
 
 const (
