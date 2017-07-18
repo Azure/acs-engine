@@ -423,7 +423,12 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		if properties.OrchestratorProfile.KubernetesConfig != nil &&
 			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
 			addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
-			addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
+
+			if properties.ServicePrincipalProfile.KeyvaultSecretRef != "" {
+				addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.KeyvaultSecretRef, false)
+			} else {
+				addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
+			}
 		}
 	}
 
