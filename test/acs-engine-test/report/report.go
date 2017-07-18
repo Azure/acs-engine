@@ -9,9 +9,14 @@ import (
 	"strconv"
 	"sync"
 	"time"
-
-	"github.com/Azure/acs-engine/test/acs-engine-test/metrics"
 )
+
+type ErrorInfo struct {
+	TestName string
+	ErrName  string
+	ErrClass string
+	Location string
+}
 
 type ErrorStat struct {
 	Count     int            `json:"count"`
@@ -19,11 +24,7 @@ type ErrorStat struct {
 }
 
 type ReportMgr struct {
-	lock            sync.Mutex
-	metricsEndpoint string
-	metricsNS       string
-	metricName      string
-
+	lock        sync.Mutex
 	JobName     string    `json:"job"`
 	BuildNum    int       `json:"build"`
 	Deployments int       `json:"deployments"`
@@ -46,15 +47,16 @@ const (
 	errClassAzcli      = "AzCLI"
 	errClassNone       = "None"
 
-	errUnknown = "Unspecified error"
+	errSuccess = "Success"
+	errUnknown = "UnspecifiedError"
 )
 
 var logErrors []logError
 
 func init() {
 	logErrors = []logError{
-		{name: "azcli run", class: errClassAzcli, regex: "_init__.py"},
-		{name: "azcli load", class: errClassAzcli, regex: "Error loading command module"},
+		{name: "AzCliRunError", class: errClassAzcli, regex: "_init__.py"},
+		{name: "AzCliLoadError", class: errClassAzcli, regex: "Error loading command module"},
 
 		{name: "VMStartTimedOut", class: errClassDeployment, regex: "VMStartTimedOut"},
 		{name: "OSProvisioningTimedOut", class: errClassDeployment, regex: "OSProvisioningTimedOut"},
@@ -70,34 +72,31 @@ func init() {
 		{name: "NetworkingInternalOperationError", class: errClassDeployment, regex: "NetworkingInternalOperationError"},
 		{name: "PlatformFaultDomainCount", class: errClassDeployment, regex: "platformFaultDomainCount"},
 
-		{name: "K8S nodes not ready", class: errClassValidation, regex: "K8S: gave up waiting for apiserver"},
-		{name: "K8S unexpected version", class: errClassValidation, regex: "K8S: unexpected kubernetes version"},
-		{name: "K8S containers not created", class: errClassValidation, regex: "K8S: gave up waiting for containers"},
-		{name: "K8S pods not running", class: errClassValidation, regex: "K8S: gave up waiting for running pods"},
-		{name: "K8S kube-dns not running", class: errClassValidation, regex: "K8S: gave up waiting for kube-dns"},
-		{name: "K8S dashboard not running", class: errClassValidation, regex: "K8S: gave up waiting for kubernetes-dashboard"},
-		{name: "K8S kube-proxy not running", class: errClassValidation, regex: "K8S: gave up waiting for kube-proxy"},
-		{name: "K8S proxy not working", class: errClassValidation, regex: "K8S: gave up verifying proxy"},
-		{name: "K8S deployment not ready", class: errClassValidation, regex: "K8S: gave up waiting for deployment"},
-		{name: "K8S no external IP", class: errClassValidation, regex: "K8S: gave up waiting for loadbalancer to get an ingress ip"},
-		{name: "K8S nginx unreachable", class: errClassValidation, regex: "K8S: failed to get expected response from nginx through the loadbalancer"},
+		{name: "K8sNodeNotReady", class: errClassValidation, regex: "K8S: gave up waiting for apiserver"},
+		{name: "K8sUnexpectedVersion", class: errClassValidation, regex: "K8S: unexpected kubernetes version"},
+		{name: "K8sContainerNotCreated", class: errClassValidation, regex: "K8S: gave up waiting for containers"},
+		{name: "K8sPodNotRunning", class: errClassValidation, regex: "K8S: gave up waiting for running pods"},
+		{name: "K8sKubeDnsNotRunning", class: errClassValidation, regex: "K8S: gave up waiting for kube-dns"},
+		{name: "K8sDashboardNotRunning", class: errClassValidation, regex: "K8S: gave up waiting for kubernetes-dashboard"},
+		{name: "K8sKubeProxyNotRunning", class: errClassValidation, regex: "K8S: gave up waiting for kube-proxy"},
+		{name: "K8sProxyNotWorking", class: errClassValidation, regex: "K8S: gave up verifying proxy"},
+		{name: "K8sDeploymentNotReady", class: errClassValidation, regex: "K8S: gave up waiting for deployment"},
+		{name: "K8sNoExternalIP", class: errClassValidation, regex: "K8S: gave up waiting for loadbalancer to get an ingress ip"},
+		{name: "K8sNginxUnreachable", class: errClassValidation, regex: "K8S: failed to get expected response from nginx through the loadbalancer"},
 
-		{name: "DCOS nodes not ready", class: errClassValidation, regex: "gave up waiting for DCOS nodes"},
-		{name: "DCOS marathon validation failed", class: errClassValidation, regex: "dcos/test.sh] marathon validation failed"},
-		{name: "DCOS marathon not added", class: errClassValidation, regex: "dcos/test.sh] gave up waiting for marathon to be added"},
-		{name: "DCOS marathon-lb not installed", class: errClassValidation, regex: "Failed to install marathon-lb"},
+		{name: "DcosNodeNotReady", class: errClassValidation, regex: "gave up waiting for DCOS nodes"},
+		{name: "DcosMarathonValidationFailed", class: errClassValidation, regex: "dcos/test.sh] marathon validation failed"},
+		{name: "DcosMarathonNotAdded", class: errClassValidation, regex: "dcos/test.sh] gave up waiting for marathon to be added"},
+		{name: "DcosMarathonLbNotInstalled", class: errClassValidation, regex: "Failed to install marathon-lb"},
 
-		{name: "DockerCE failed to create network", class: errClassValidation, regex: "DockerCE: gave up waiting for network to be created"},
-		{name: "DockerCE failed to create service", class: errClassValidation, regex: "DockerCE: gave up waiting for service to be created"},
-		{name: "DockerCE service unreachable", class: errClassValidation, regex: "DockerCE: gave up waiting for service to be externally reachable"},
+		{name: "DockerCeNetworkNotReady", class: errClassValidation, regex: "DockerCE: gave up waiting for network to be created"},
+		{name: "DockerCeServiceNotReady", class: errClassValidation, regex: "DockerCE: gave up waiting for service to be created"},
+		{name: "DockerCeServiceUnreachable", class: errClassValidation, regex: "DockerCE: gave up waiting for service to be externally reachable"},
 	}
 }
 
-func New(metricsEndpoint, metricsNS, metricName, jobName string, buildNum int, nDeploys int) *ReportMgr {
+func New(jobName string, buildNum int, nDeploys int) *ReportMgr {
 	h := &ReportMgr{}
-	h.metricsEndpoint = metricsEndpoint
-	h.metricsNS = metricsNS
-	h.metricName = metricName
 	h.JobName = jobName
 	h.BuildNum = buildNum
 	h.Deployments = nDeploys
@@ -108,7 +107,7 @@ func New(metricsEndpoint, metricsNS, metricName, jobName string, buildNum int, n
 }
 
 func (h *ReportMgr) Copy() *ReportMgr {
-	n := New(h.metricsEndpoint, h.metricsNS, h.metricName, h.JobName, h.BuildNum, h.Deployments)
+	n := New(h.JobName, h.BuildNum, h.Deployments)
 	n.Errors = h.Errors
 	n.StartTime = h.StartTime
 	for e, f := range h.Failures {
@@ -121,16 +120,15 @@ func (h *ReportMgr) Copy() *ReportMgr {
 	return n
 }
 
-func (h *ReportMgr) Process(txt, testName, location string) {
+func (h *ReportMgr) Process(txt, testName, location string) *ErrorInfo {
 	for _, logErr := range logErrors {
 		if match, _ := regexp.MatchString(logErr.regex, txt); match {
 			h.addFailure(logErr.name, map[string]int{location: 1})
-			h.sendMetric(testName, location, logErr.name, logErr.class)
-			return
+			return NewErrorInfo(testName, logErr.name, logErr.class, location)
 		}
 	}
 	h.addFailure(errUnknown, map[string]int{location: 1})
-	h.sendMetric(testName, location, errUnknown, errClassNone)
+	return NewErrorInfo(testName, errUnknown, errClassNone, location)
 }
 
 func (h *ReportMgr) addFailure(key string, locations map[string]int) {
@@ -138,7 +136,6 @@ func (h *ReportMgr) addFailure(key string, locations map[string]int) {
 	defer h.lock.Unlock()
 
 	cnt := 0
-
 	if failure, ok := h.Failures[key]; !ok {
 		locs := make(map[string]int)
 		for l, c := range locations {
@@ -158,20 +155,6 @@ func (h *ReportMgr) addFailure(key string, locations map[string]int) {
 		failure.Count += cnt
 	}
 	h.Errors += cnt
-}
-
-func (h *ReportMgr) sendMetric(testName, location, errName, errClass string) {
-	// add metrics
-	dims := map[string]string{
-		"test":     testName,
-		"location": location,
-		"error":    errName,
-		"errClass": errClass,
-	}
-	err := metrics.AddMetric(h.metricsEndpoint, h.metricsNS, h.metricName, 1, dims)
-	if err != nil {
-		fmt.Printf("Failed to send metric: %v\n", err)
-	}
 }
 
 func (h *ReportMgr) CreateTestReport(filepath string) error {
@@ -218,4 +201,8 @@ func (h *ReportMgr) CreateCombinedReport(filepath, testReportFname string) error
 		}
 	}
 	return combinedReport.CreateTestReport(filepath)
+}
+
+func NewErrorInfo(testName, errName, errClass, location string) *ErrorInfo {
+	return &ErrorInfo{TestName: testName, ErrName: errName, ErrClass: errClass, Location: location}
 }

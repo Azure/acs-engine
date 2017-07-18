@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/Azure/acs-engine/test/acs-engine-test/config"
+	"github.com/Azure/acs-engine/test/acs-engine-test/metrics"
 	"github.com/Azure/acs-engine/test/acs-engine-test/report"
 )
 
@@ -25,7 +26,12 @@ const (
 
 	testReport     = "TestReport.json"
 	combinedReport = "CombinedReport.json"
+
+	metricsEndpoint = ":8125"
+	metricsNS       = "ACSEngine"
+	metricName      = "Error"
 )
+
 const usage = `Usage:
   acs-engine-test -c <configuration.json> -d <acs-engine root directory>
 
@@ -40,6 +46,11 @@ var orchestratorRe *regexp.Regexp
 
 func init() {
 	orchestratorRe = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
+}
+
+type ErrorStat struct {
+	errorInfo *report.ErrorInfo
+	count     int64
 }
 
 type TestManager struct {
@@ -82,13 +93,21 @@ func (m *TestManager) Run() error {
 	for index, dep := range m.config.Deployments {
 		go func(index int, dep config.Deployment) {
 			defer m.wg.Done()
+			resMap := make(map[string]*ErrorStat)
 			for attempt := 0; attempt < retries; attempt++ {
-				success[index] = m.testRun(dep, index, attempt, timeout)
+				errorInfo := m.testRun(dep, index, attempt, timeout)
 				// do not retry if successful
-				if success[index] {
+				if errorInfo == nil {
+					success[index] = true
 					break
 				}
+				if errorStat, ok := resMap[errorInfo.ErrName]; !ok {
+					resMap[errorInfo.ErrName] = &ErrorStat{errorInfo: errorInfo, count: 1}
+				} else {
+					errorStat.count++
+				}
 			}
+			sendMetrics(resMap)
 		}(index, dep)
 	}
 	m.wg.Wait()
@@ -108,7 +127,7 @@ func (m *TestManager) Run() error {
 	return nil
 }
 
-func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout time.Duration) bool {
+func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout time.Duration) *report.ErrorInfo {
 	rgPrefix := os.Getenv("RESOURCE_GROUP_PREFIX")
 	if rgPrefix == "" {
 		rgPrefix = "x"
@@ -119,7 +138,6 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	resourceGroup := fmt.Sprintf("%s-%s-%s-%s-%d-%d", rgPrefix, strings.Replace(testName, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
 	logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
 	validateLogFile := fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
-	success := true
 
 	// determine orchestrator
 	env := os.Environ()
@@ -129,7 +147,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	out, err := cmd.Output()
 	if err != nil {
 		wrileLog(logFile, "Error [getOrchestrator %s] : %v", d.ClusterDefinition, err)
-		return false
+		return report.NewErrorInfo(testName, "OrchestratorTypeParsingError", "PreRun", d.Location)
 	}
 	orchestrator := strings.TrimSpace(string(out))
 
@@ -146,7 +164,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		envHandle, err := os.Open(envFile)
 		if err != nil {
 			wrileLog(logFile, "Error [open %s] : %v", envFile, err)
-			return false
+			return report.NewErrorInfo(testName, "FileAccessError", "PreRun", d.Location)
 		}
 		defer envHandle.Close()
 
@@ -159,6 +177,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		}
 	}
 
+	var errorInfo *report.ErrorInfo
 	steps := []string{"create_resource_group", "predeploy", "generate_template", "deploy_template", "postdeploy"}
 
 	// determine validation script
@@ -172,9 +191,8 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	for _, step := range steps {
 		txt, err := m.runStep(resourceGroup, step, env, timeout)
 		if err != nil {
-			m.reportMgr.Process(txt, testName, d.Location)
+			errorInfo = m.reportMgr.Process(txt, testName, d.Location)
 			wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, resourceGroup, err, txt)
-			success = false
 			// check AUTOCLEAN flag: if set to 'n', don't remove deployment
 			if os.Getenv("AUTOCLEAN") == "n" {
 				env = append(env, "CLEANUP=n")
@@ -192,7 +210,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 			out, err := cmd.Output()
 			if err != nil {
 				wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_version", resourceGroup, err)
-				success = false
+				errorInfo = report.NewErrorInfo(testName, "OrchestratorVersionParsingError", "PreRun", d.Location)
 				break
 			}
 			env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_VERSION=%s", strings.TrimSpace(string(out))))
@@ -202,13 +220,13 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 			out, err = cmd.Output()
 			if err != nil {
 				wrileLog(logFile, "Error [%s:%s] %v", "get_node_count", resourceGroup, err)
-				success = false
+				errorInfo = report.NewErrorInfo(testName, "NodeCountParsingError", "PreRun", d.Location)
 				break
 			}
 			nodesCount := strings.Split(strings.TrimSpace(string(out)), ":")
 			if len(nodesCount) != 2 {
 				wrileLog(logFile, "get_node_count: unexpected output '%s'", string(out))
-				success = false
+				errorInfo = report.NewErrorInfo(testName, "NodeCountParsingError", "PreRun", d.Location)
 				break
 			}
 			env = append(env, fmt.Sprintf("EXPECTED_NODE_COUNT=%s", nodesCount[0]))
@@ -219,7 +237,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	if txt, err := m.runStep(resourceGroup, "cleanup", env, timeout); err != nil {
 		wrileLog(logFile, "Error: %v\nOutput: %s", err, txt)
 	}
-	if success {
+	if errorInfo == nil {
 		// do not keep logs for successful test
 		for _, fname := range []string{logFile, validateLogFile} {
 			if _, err := os.Stat(fname); !os.IsNotExist(err) {
@@ -229,7 +247,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 			}
 		}
 	}
-	return success
+	return errorInfo
 }
 
 func isValidEnv() bool {
@@ -301,6 +319,29 @@ func wrileLog(fname string, format string, args ...interface{}) {
 	}
 }
 
+func sendMetrics(resMap map[string]*ErrorStat) {
+	for _, errorStat := range resMap {
+		var severity string
+		if errorStat.count > 1 {
+			severity = "Critical"
+		} else {
+			severity = "Intermittent"
+		}
+		// add metrics
+		dims := map[string]string{
+			"Test":     errorStat.errorInfo.TestName,
+			"Location": errorStat.errorInfo.Location,
+			"Error":    errorStat.errorInfo.ErrName,
+			"Class":    errorStat.errorInfo.ErrClass,
+			"Severity": severity,
+		}
+		err := metrics.AddMetric(metricsEndpoint, metricsNS, metricName, errorStat.count, dims)
+		if err != nil {
+			fmt.Printf("Failed to send metric: %v\n", err)
+		}
+	}
+}
+
 func mainInternal() error {
 	var configFile string
 	var rootDir string
@@ -333,7 +374,7 @@ func mainInternal() error {
 		buildNum = 0
 	}
 	// initialize report manager
-	testManager.reportMgr = report.New(":8125", "ACSEngine", "Error", os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments))
+	testManager.reportMgr = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments))
 	// check root directory
 	if rootDir == "" {
 		return fmt.Errorf("acs-engine root directory is not provided")
