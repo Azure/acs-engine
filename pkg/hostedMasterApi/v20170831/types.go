@@ -14,9 +14,9 @@ type ResourcePurchasePlan struct {
 	Publisher     string `json:"publisher,omitempty"`
 }
 
-// ContainerService complies with the ARM model of
+// HostedMaster complies with the ARM model of
 // resource definition in a JSON template.
-type ContainerService struct {
+type HostedMaster struct {
 	ID       string                `json:"id,omitempty"`
 	Location string                `json:"location,omitempty" validate:"required"`
 	Name     string                `json:"name,omitempty"`
