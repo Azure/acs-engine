@@ -49,8 +49,9 @@ func init() {
 }
 
 type ErrorStat struct {
-	errorInfo *report.ErrorInfo
-	count     int64
+	errorInfo    *report.ErrorInfo
+	testCategory string
+	count        int64
 }
 
 type TestManager struct {
@@ -102,7 +103,7 @@ func (m *TestManager) Run() error {
 					break
 				}
 				if errorStat, ok := resMap[errorInfo.ErrName]; !ok {
-					resMap[errorInfo.ErrName] = &ErrorStat{errorInfo: errorInfo, count: 1}
+					resMap[errorInfo.ErrName] = &ErrorStat{errorInfo: errorInfo, testCategory: dep.TestCategory, count: 1}
 				} else {
 					errorStat.count++
 				}
@@ -329,11 +330,12 @@ func sendMetrics(resMap map[string]*ErrorStat) {
 		}
 		// add metrics
 		dims := map[string]string{
-			"Test":     errorStat.errorInfo.TestName,
-			"Location": errorStat.errorInfo.Location,
-			"Error":    errorStat.errorInfo.ErrName,
-			"Class":    errorStat.errorInfo.ErrClass,
-			"Severity": severity,
+			"TestName":     errorStat.errorInfo.TestName,
+			"TestCategory": errorStat.testCategory,
+			"Location":     errorStat.errorInfo.Location,
+			"Error":        errorStat.errorInfo.ErrName,
+			"Class":        errorStat.errorInfo.ErrClass,
+			"Severity":     severity,
 		}
 		err := metrics.AddMetric(metricsEndpoint, metricsNS, metricName, errorStat.count, dims)
 		if err != nil {
