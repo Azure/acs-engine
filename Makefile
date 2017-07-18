@@ -30,10 +30,7 @@ test: test_fmt
 test-style:
 	@scripts/validate-go.sh
 
-validate-generated:
-	./scripts/validate-generated.sh
-
-ci: prereqs validate-generated build test lint
+ci: prereqs build test lint
 
 devenv:
 	./scripts/devenv.sh

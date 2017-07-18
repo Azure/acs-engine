@@ -384,53 +384,48 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 	}
 }
 
-func convertV20160930LinuxProfile(v20160930 *v20160930.LinuxProfile, api *LinuxProfile) {
-	api.AdminUsername = v20160930.AdminUsername
-	api.SSH.PublicKeys = []struct {
-		KeyData string `json:"keyData"`
-	}{}
-	for _, d := range v20160930.SSH.PublicKeys {
-		api.SSH.PublicKeys = append(api.SSH.PublicKeys, d)
+func convertV20160930LinuxProfile(obj *v20160930.LinuxProfile, api *LinuxProfile) {
+	api.AdminUsername = obj.AdminUsername
+	api.SSH.PublicKeys = []PublicKey{}
+	for _, d := range obj.SSH.PublicKeys {
+		api.SSH.PublicKeys = append(api.SSH.PublicKeys,
+			PublicKey{KeyData: d.KeyData})
 	}
 }
 
 func convertV20160330LinuxProfile(v20160330 *v20160330.LinuxProfile, api *LinuxProfile) {
 	api.AdminUsername = v20160330.AdminUsername
-	api.SSH.PublicKeys = []struct {
-		KeyData string `json:"keyData"`
-	}{}
+	api.SSH.PublicKeys = []PublicKey{}
 	for _, d := range v20160330.SSH.PublicKeys {
-		api.SSH.PublicKeys = append(api.SSH.PublicKeys, d)
+		api.SSH.PublicKeys = append(api.SSH.PublicKeys,
+			PublicKey{KeyData: d.KeyData})
 	}
 }
 
 func convertV20170131LinuxProfile(v20170131 *v20170131.LinuxProfile, api *LinuxProfile) {
 	api.AdminUsername = v20170131.AdminUsername
-	api.SSH.PublicKeys = []struct {
-		KeyData string `json:"keyData"`
-	}{}
+	api.SSH.PublicKeys = []PublicKey{}
 	for _, d := range v20170131.SSH.PublicKeys {
-		api.SSH.PublicKeys = append(api.SSH.PublicKeys, d)
+		api.SSH.PublicKeys = append(api.SSH.PublicKeys,
+			PublicKey{KeyData: d.KeyData})
 	}
 }
 
 func convertV20170701LinuxProfile(v20170701 *v20170701.LinuxProfile, api *LinuxProfile) {
 	api.AdminUsername = v20170701.AdminUsername
-	api.SSH.PublicKeys = []struct {
-		KeyData string `json:"keyData"`
-	}{}
+	api.SSH.PublicKeys = []PublicKey{}
 	for _, d := range v20170701.SSH.PublicKeys {
-		api.SSH.PublicKeys = append(api.SSH.PublicKeys, d)
+		api.SSH.PublicKeys = append(api.SSH.PublicKeys,
+			PublicKey{KeyData: d.KeyData})
 	}
 }
 
 func convertVLabsLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
 	api.AdminUsername = vlabs.AdminUsername
-	api.SSH.PublicKeys = []struct {
-		KeyData string `json:"keyData"`
-	}{}
+	api.SSH.PublicKeys = []PublicKey{}
 	for _, d := range vlabs.SSH.PublicKeys {
-		api.SSH.PublicKeys = append(api.SSH.PublicKeys, d)
+		api.SSH.PublicKeys = append(api.SSH.PublicKeys,
+			PublicKey{KeyData: d.KeyData})
 	}
 	api.Secrets = []KeyVaultSecrets{}
 	for _, s := range vlabs.Secrets {
@@ -572,6 +567,20 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.ClusterSubnet = vlabs.ClusterSubnet
 	api.NetworkPolicy = vlabs.NetworkPolicy
 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
+	api.NodeStatusUpdateFrequency = vlabs.NodeStatusUpdateFrequency
+	api.CtrlMgrNodeMonitorGracePeriod = vlabs.CtrlMgrNodeMonitorGracePeriod
+	api.CtrlMgrPodEvictionTimeout = vlabs.CtrlMgrPodEvictionTimeout
+	api.CtrlMgrRouteReconciliationPeriod = vlabs.CtrlMgrRouteReconciliationPeriod
+	api.CloudProviderBackoff = vlabs.CloudProviderBackoff
+	api.CloudProviderBackoffDuration = vlabs.CloudProviderBackoffDuration
+	api.CloudProviderBackoffExponent = vlabs.CloudProviderBackoffExponent
+	api.CloudProviderBackoffJitter = vlabs.CloudProviderBackoffJitter
+	api.CloudProviderBackoffRetries = vlabs.CloudProviderBackoffRetries
+	api.CloudProviderRateLimit = vlabs.CloudProviderRateLimit
+	api.CloudProviderRateLimitBucket = vlabs.CloudProviderRateLimitBucket
+	api.CloudProviderRateLimitQPS = vlabs.CloudProviderRateLimitQPS
+	api.UseManagedIdentity = vlabs.UseManagedIdentity
+	api.CustomHyperkubeImage = vlabs.CustomHyperkubeImage
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {

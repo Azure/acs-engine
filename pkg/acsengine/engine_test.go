@@ -27,7 +27,7 @@ func TestExpected(t *testing.T) {
 	}
 
 	for _, tuple := range *apiModelTestFiles {
-		containerService, version, err := api.LoadContainerServiceFromFile(tuple.APIModelFilename)
+		containerService, version, err := api.LoadContainerServiceFromFile(tuple.APIModelFilename, true)
 		if err != nil {
 			t.Errorf("Loading file %s got error: %s", tuple.APIModelFilename, err.Error())
 			continue
@@ -88,9 +88,8 @@ func TestExpected(t *testing.T) {
 			}
 			generatedPpArmTemplate, e1 := PrettyPrintArmTemplate(armTemplate)
 			if e1 != nil {
-				t.Error(armTemplate)
 				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e1.Error()))
-				break
+				continue
 			}
 
 			generatedPpParams, e2 := PrettyPrintJSON(params)
@@ -123,7 +122,7 @@ func TestExpected(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			containerService, version, err = api.DeserializeContainerService(b)
+			containerService, version, err = api.DeserializeContainerService(b, true)
 			if err != nil {
 				t.Error(err)
 			}

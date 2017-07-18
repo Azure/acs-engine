@@ -65,12 +65,16 @@ func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 	if e := validatePoolName(a.Name); e != nil {
 		return e
 	}
-	// Kubernetes don't allow agent DNSPrefix
+	// Kubernetes don't allow agent DNSPrefix and ports
 	if orchestratorType == Kubernetes {
-		// The line below need to be removed after June 2017
+		// The two lines below need to be removed after August 2017
 		a.DNSPrefix = ""
+		a.Ports = []int{}
 		if e := validate.Var(a.DNSPrefix, "len=0"); e != nil {
-			return e
+			return fmt.Errorf("AgentPoolProfile.DNSPrefix must be empty for Kubernetes")
+		}
+		if e := validate.Var(a.Ports, "len=0"); e != nil {
+			return fmt.Errorf("AgentPoolProfile.Ports must be empty for Kubernetes")
 		}
 	}
 	if a.DNSPrefix != "" {
@@ -85,8 +89,8 @@ func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 			a.Ports = []int{80, 443, 8080}
 		}
 	} else {
-		if len(a.Ports) > 0 {
-			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty")
+		if e := validate.Var(a.Ports, "len=0"); e != nil {
+			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty for Orchestrator: %s", string(orchestratorType))
 		}
 	}
 	return nil

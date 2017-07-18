@@ -12,7 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/arm/authorization"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
 	"github.com/Azure/azure-sdk-for-go/arm/network"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/subscriptions"
@@ -45,7 +47,9 @@ var (
 type AzureClient struct {
 	acceptLanguages []string
 	environment     azure.Environment
+	subscriptionID  string
 
+	authorizationClient           authorization.RoleAssignmentsClient
 	deploymentsClient             resources.DeploymentsClient
 	deploymentOperationsClient    resources.DeploymentOperationsClient
 	resourcesClient               resources.GroupClient
@@ -56,6 +60,9 @@ type AzureClient struct {
 	subscriptionsClient           subscriptions.GroupClient
 	virtualMachinesClient         compute.VirtualMachinesClient
 	virtualMachineScaleSetsClient compute.VirtualMachineScaleSetsClient
+
+	applicationsClient      graphrbac.ApplicationsClient
+	servicePrincipalsClient graphrbac.ServicePrincipalsClient
 }
 
 // NewAzureClientWithDeviceAuth returns an AzureClient by having a user complete a device authentication flow
@@ -86,11 +93,12 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 		if err != nil {
 			log.Warnf("Refresh token failed. Will fallback to device auth. %q", err)
 		} else {
-			adSpt, err := adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.GraphEndpoint, armSpt.Token)
+			graphSpt, err := adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.GraphEndpoint, armSpt.Token)
 			if err != nil {
 				return nil, err
 			}
-			return getClient(env, subscriptionID, armSpt, adSpt)
+			graphSpt.Refresh()
+			return getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
 		}
 	}
 
@@ -114,17 +122,18 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 
 	adRawToken := armSpt.Token
 	adRawToken.Resource = env.GraphEndpoint
-	adSpt, err := adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.GraphEndpoint, adRawToken)
+	graphSpt, err := adal.NewServicePrincipalTokenFromManualToken(*oauthConfig, AcsEngineClientID, env.GraphEndpoint, adRawToken)
 	if err != nil {
 		return nil, err
 	}
+	graphSpt.Refresh()
 
-	return getClient(env, subscriptionID, armSpt, adSpt)
+	return getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
 }
 
 // NewAzureClientWithClientSecret returns an AzureClient via client_id and client_secret
 func NewAzureClientWithClientSecret(env azure.Environment, subscriptionID, clientID, clientSecret string) (*AzureClient, error) {
-	oauthConfig, _, err := getOAuthConfig(env, subscriptionID)
+	oauthConfig, tenantID, err := getOAuthConfig(env, subscriptionID)
 	if err != nil {
 		return nil, err
 	}
@@ -133,12 +142,13 @@ func NewAzureClientWithClientSecret(env azure.Environment, subscriptionID, clien
 	if err != nil {
 		return nil, err
 	}
-	adSpt, err := adal.NewServicePrincipalToken(*oauthConfig, clientID, clientSecret, env.GraphEndpoint)
+	graphSpt, err := adal.NewServicePrincipalToken(*oauthConfig, clientID, clientSecret, env.GraphEndpoint)
 	if err != nil {
 		return nil, err
 	}
+	graphSpt.Refresh()
 
-	return getClient(env, subscriptionID, armSpt, adSpt)
+	return getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
 }
 
 // NewAzureClientWithClientCertificateFile returns an AzureClient via client_id and jwt certificate assertion
@@ -168,7 +178,7 @@ func NewAzureClientWithClientCertificateFile(env azure.Environment, subscription
 
 // NewAzureClientWithClientCertificate returns an AzureClient via client_id and jwt certificate assertion
 func NewAzureClientWithClientCertificate(env azure.Environment, subscriptionID, clientID string, certificate *x509.Certificate, privateKey *rsa.PrivateKey) (*AzureClient, error) {
-	oauthConfig, _, err := getOAuthConfig(env, subscriptionID)
+	oauthConfig, tenantID, err := getOAuthConfig(env, subscriptionID)
 	if err != nil {
 		return nil, err
 	}
@@ -185,12 +195,13 @@ func NewAzureClientWithClientCertificate(env azure.Environment, subscriptionID, 
 	if err != nil {
 		return nil, err
 	}
-	adSpt, err := adal.NewServicePrincipalTokenFromCertificate(*oauthConfig, clientID, certificate, privateKey, env.GraphEndpoint)
+	graphSpt, err := adal.NewServicePrincipalTokenFromCertificate(*oauthConfig, clientID, certificate, privateKey, env.GraphEndpoint)
 	if err != nil {
 		return nil, err
 	}
+	graphSpt.Refresh()
 
-	return getClient(env, subscriptionID, armSpt, adSpt)
+	return getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
 }
 
 func tokenCallback(path string) func(t adal.Token) error {
@@ -238,9 +249,12 @@ func getOAuthConfig(env azure.Environment, subscriptionID string) (*adal.OAuthCo
 	return oauthConfig, tenantID, nil
 }
 
-func getClient(env azure.Environment, subscriptionID string, armSpt *adal.ServicePrincipalToken, adSpt *adal.ServicePrincipalToken) (*AzureClient, error) {
+func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *adal.ServicePrincipalToken, graphSpt *adal.ServicePrincipalToken) (*AzureClient, error) {
 	c := &AzureClient{
-		environment:                   env,
+		environment:    env,
+		subscriptionID: subscriptionID,
+
+		authorizationClient:           authorization.NewRoleAssignmentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		deploymentsClient:             resources.NewDeploymentsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		deploymentOperationsClient:    resources.NewDeploymentOperationsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		resourcesClient:               resources.NewGroupClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
@@ -250,9 +264,13 @@ func getClient(env azure.Environment, subscriptionID string, armSpt *adal.Servic
 		providersClient:               resources.NewProvidersClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		virtualMachinesClient:         compute.NewVirtualMachinesClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
 		virtualMachineScaleSetsClient: compute.NewVirtualMachineScaleSetsClientWithBaseURI(env.ResourceManagerEndpoint, subscriptionID),
+
+		applicationsClient:      graphrbac.NewApplicationsClientWithBaseURI(env.GraphEndpoint, tenantID),
+		servicePrincipalsClient: graphrbac.NewServicePrincipalsClientWithBaseURI(env.GraphEndpoint, tenantID),
 	}
 
 	authorizer := autorest.NewBearerAuthorizer(armSpt)
+	c.authorizationClient.Authorizer = authorizer
 	c.deploymentsClient.Authorizer = authorizer
 	c.deploymentOperationsClient.Authorizer = authorizer
 	c.resourcesClient.Authorizer = authorizer
@@ -264,6 +282,11 @@ func getClient(env azure.Environment, subscriptionID string, armSpt *adal.Servic
 	c.virtualMachineScaleSetsClient.Authorizer = authorizer
 
 	c.deploymentsClient.PollingDelay = time.Second * 5
+	c.resourcesClient.PollingDelay = time.Second * 5
+
+	graphAuthorizer := autorest.NewBearerAuthorizer(graphSpt)
+	c.applicationsClient.Authorizer = graphAuthorizer
+	c.servicePrincipalsClient.Authorizer = graphAuthorizer
 
 	err := c.ensureProvidersRegistered(subscriptionID)
 	if err != nil {
@@ -335,6 +358,7 @@ func parseRsaPrivateKey(path string) (*rsa.PrivateKey, error) {
 //AddAcceptLanguages sets the list of languages to accept on this request
 func (az *AzureClient) AddAcceptLanguages(languages []string) {
 	az.acceptLanguages = languages
+	az.authorizationClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.deploymentOperationsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.deploymentsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.deploymentsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
@@ -346,6 +370,9 @@ func (az *AzureClient) AddAcceptLanguages(languages []string) {
 	az.providersClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.virtualMachinesClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
 	az.virtualMachineScaleSetsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+
+	az.applicationsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
+	az.servicePrincipalsClient.ManagementClient.Client.RequestInspector = az.addAcceptLanguages()
 }
 
 func (az *AzureClient) addAcceptLanguages() autorest.PrepareDecorator {
