@@ -446,6 +446,11 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 				addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
 			}
 		}
+
+		if properties.AadProfile != nil {
+			addValue(parametersMap, "aadTenantId", properties.AadProfile.TenantID)
+			addValue(parametersMap, "aadServerAppId", properties.AadProfile.ServerAppID)
+		}
 	}
 
 	if strings.HasPrefix(string(properties.OrchestratorProfile.OrchestratorType), string(api.DCOS)) {

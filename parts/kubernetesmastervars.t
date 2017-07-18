@@ -44,6 +44,10 @@
     "masterPrivateIp": "[parameters('firstConsecutiveStaticIP')]",
     "masterVMSize": "[parameters('masterVMSize')]",
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
+{{if .HasAadProfile}}
+    "aadServerAppId": "[parameters('aadServerAppId')]",
+    "aadTenantId": "[parameters('aadTenantId')]",
+{{end}}    
 {{if  GetClassicMode}}
     "masterCount": "[parameters('masterCount')]",
 {{else}}
