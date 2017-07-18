@@ -149,7 +149,6 @@ type KubernetesConfig struct {
 	UseManagedIdentity               bool    `json:"useManagedIdentity,omitempty"`
 	CustomHyperkubeImage             string  `json:"customHyperkubeImage,omitempty"`
 	UseInstanceMetadata              bool    `json:"useInstanceMetadata,omitempty"`
-	KubernetesImageBase              string  `json:"kubernetesImageBase,omitempty"`
 	EnableRbac                       bool    `json:"enableRbac,omitempty"`
 }
 
