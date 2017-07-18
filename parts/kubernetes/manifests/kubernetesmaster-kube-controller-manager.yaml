@@ -11,7 +11,7 @@ spec:
   containers:
     - name: "kube-controller-manager"
       image: "<kubernetesHyperkubeSpec>"
-      command: 
+      command:
         - "/hyperkube"
         - "controller-manager"
         - "--kubeconfig=/var/lib/kubelet/kubeconfig"
@@ -27,7 +27,7 @@ spec:
         - "--node-monitor-grace-period=<kubernetesCtrlMgrNodeMonitorGracePeriod>"
         - "--pod-eviction-timeout=<kubernetesCtrlMgrPodEvictionTimeout>"
         - "--route-reconciliation-period=<kubernetesCtrlMgrRouteReconciliationPeriod>"
-      volumeMounts: 
+      volumeMounts:
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"
         - name: "var-lib-kubelet"

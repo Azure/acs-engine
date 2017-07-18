@@ -20,11 +20,11 @@ import (
 )
 
 const (
-	kubernetesMasterCustomDataYaml      = "kubernetesmastercustomdata.yml"
+	kubernetesMasterCustomDataYaml      = "kubernetes/kubernetesmastercustomdata.yml"
 	kubernetesMasterCustomScript        = "kubernetesmastercustomscript.sh"
-	kubernetesAgentCustomDataYaml       = "kubernetesagentcustomdata.yml"
-	kubeConfigJSON                      = "kubeconfig.json"
-	kubernetesWindowsAgentCustomDataPS1 = "kuberneteswindowssetup.ps1"
+	kubernetesAgentCustomDataYaml       = "kubernetes/kubernetesagentcustomdata.yml"
+	kubeConfigJSON                      = "kubernetes/kubeconfig.json"
+	kubernetesWindowsAgentCustomDataPS1 = "kubernetes/kuberneteswindowssetup.ps1"
 )
 
 const (
@@ -62,7 +62,7 @@ const (
 	kubernetesMasterVars         = "kubernetesmastervars.t"
 	kubernetesParams             = "kubernetesparams.t"
 	kubernetesWinAgentVars       = "kuberneteswinagentresourcesvmas.t"
-	kubernetesKubeletService     = "kuberneteskubelet.service"
+	kubernetesKubeletService     = "kubernetes/kuberneteskubelet.service"
 	masterOutputs                = "masteroutputs.t"
 	masterParams                 = "masterparams.t"
 	swarmBaseFile                = "swarmbase.t"
@@ -85,10 +85,10 @@ const (
 )
 
 var kubernetesManifestYamls = map[string]string{
-	"MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR":          "kubernetesmaster-kube-scheduler.yaml",
-	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetesmaster-kube-controller-manager.yaml",
-	"MASTER_KUBERNETES_APISERVER_B64_GZIP_STR":          "kubernetesmaster-kube-apiserver.yaml",
-	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":      "kubernetesmaster-kube-addon-manager.yaml",
+	"MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR":          "kubernetes/manifests/kubernetesmaster-kube-scheduler.yaml",
+	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetes/manifests/kubernetesmaster-kube-controller-manager.yaml",
+	"MASTER_KUBERNETES_APISERVER_B64_GZIP_STR":          "kubernetes/manifests/kubernetesmaster-kube-apiserver.yaml",
+	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":      "kubernetes/manifests/kubernetesmaster-kube-addon-manager.yaml",
 }
 
 var kubernetesAritfacts = map[string]string{
@@ -97,30 +97,30 @@ var kubernetesAritfacts = map[string]string{
 }
 
 var kubernetesAddonYamls = map[string]string{
-	"MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR":             "kubernetesmasteraddons-heapster-deployment.yaml",
-	"MASTER_ADDON_HEAPSTER_SERVICE_B64_GZIP_STR":                "kubernetesmasteraddons-heapster-service.yaml",
-	"MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR":             "kubernetesmasteraddons-kube-dns-deployment.yaml",
-	"MASTER_ADDON_KUBE_DNS_SERVICE_B64_GZIP_STR":                "kubernetesmasteraddons-kube-dns-service.yaml",
-	"MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR":            "kubernetesmasteraddons-kube-proxy-daemonset.yaml",
-	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
-	"MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR":    "kubernetesmasteraddons-kubernetes-dashboard-service.yaml",
-	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
+	"MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR":             "kubernetes/manifests/kubernetesmasteraddons-heapster-deployment.yaml",
+	"MASTER_ADDON_HEAPSTER_SERVICE_B64_GZIP_STR":                "kubernetes/manifests/kubernetesmasteraddons-heapster-service.yaml",
+	"MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR":             "kubernetes/manifests/kubernetesmasteraddons-kube-dns-deployment.yaml",
+	"MASTER_ADDON_KUBE_DNS_SERVICE_B64_GZIP_STR":                "kubernetes/manifests/kubernetesmasteraddons-kube-dns-service.yaml",
+	"MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR":            "kubernetes/manifests/kubernetesmasteraddons-kube-proxy-daemonset.yaml",
+	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetes/manifests/kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
+	"MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR":    "kubernetes/manifests/kubernetesmasteraddons-kubernetes-dashboard-service.yaml",
+	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetes/manifests/kubernetesmasteraddons-default-storage-class.yaml",
 }
 
 var kubernetesAddonYamls15 = map[string]string{
-	"MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR":             "kubernetesmasteraddons-heapster-deployment.yaml",
-	"MASTER_ADDON_HEAPSTER_SERVICE_B64_GZIP_STR":                "kubernetesmasteraddons-heapster-service.yaml",
-	"MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR":             "kubernetesmasteraddons-kube-dns-deployment1.5.yaml",
-	"MASTER_ADDON_KUBE_DNS_SERVICE_B64_GZIP_STR":                "kubernetesmasteraddons-kube-dns-service.yaml",
-	"MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR":            "kubernetesmasteraddons-kube-proxy-daemonset.yaml",
-	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
-	"MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR":    "kubernetesmasteraddons-kubernetes-dashboard-service.yaml",
-	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
+	"MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR":             "kubernetes/manifests/kubernetesmasteraddons-heapster-deployment.yaml",
+	"MASTER_ADDON_HEAPSTER_SERVICE_B64_GZIP_STR":                "kubernetes/manifests/kubernetesmasteraddons-heapster-service.yaml",
+	"MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR":             "kubernetes/manifests/kubernetesmasteraddons-kube-dns-deployment1.5.yaml",
+	"MASTER_ADDON_KUBE_DNS_SERVICE_B64_GZIP_STR":                "kubernetes/manifests/kubernetesmasteraddons-kube-dns-service.yaml",
+	"MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR":            "kubernetes/manifests/kubernetesmasteraddons-kube-proxy-daemonset.yaml",
+	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetes/manifests/kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
+	"MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR":    "kubernetes/manifests/kubernetesmasteraddons-kubernetes-dashboard-service.yaml",
+	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetes/manifests/kubernetesmasteraddons-default-storage-class.yaml",
 }
 
 var calicoAddonYamls = map[string]string{
-	"MASTER_ADDON_CALICO_CONFIGMAP_B64_GZIP_STR": "kubernetesmasteraddons-calico-configmap.yaml",
-	"MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR": "kubernetesmasteraddons-calico-daemonset.yaml",
+	"MASTER_ADDON_CALICO_CONFIGMAP_B64_GZIP_STR": "kubernetes/manifests/kubernetesmasteraddons-calico-configmap.yaml",
+	"MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR": "./kubernetes/manifests/kubernetesmasteraddons-calico-daemonset.yaml",
 }
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams, windowsParams}
@@ -854,7 +854,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				case "cloudProviderBackoffRetries":
 					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries)
 				case "cloudProviderBackoffExponent":
-					val = strconv.FormatFloat(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent, 'f', -1, 64)
+					val = KubeImages[kubernetesVersion]["backoffexponent"]
 				case "cloudProviderBackoffDuration":
 					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration)
 				case "cloudProviderBackoffJitter":

@@ -17,7 +17,7 @@ spec:
         k8s-app: kubernetes-dashboard
     spec:
       containers:
-      - args: 
+      - args:
         image: <kubernetesDashboardSpec>
         imagePullPolicy: Always
         livenessProbe:
@@ -31,4 +31,4 @@ spec:
         - containerPort: 9090
           protocol: TCP
       nodeSelector:
-        beta.kubernetes.io/os: linux 
+        beta.kubernetes.io/os: linux

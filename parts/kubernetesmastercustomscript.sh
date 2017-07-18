@@ -58,7 +58,7 @@ ensureRunCommandCompleted()
 ensureRunCommandCompleted
 
 # A delay to start the kubernetes processes is necessary
-# if a reboot is required.  Otherwise, the agents will encounter issue: 
+# if a reboot is required.  Otherwise, the agents will encounter issue:
 # https://github.com/kubernetes/kubernetes/issues/41185
 if [ -f /var/run/reboot-required ]; then
     REBOOTREQUIRED=true

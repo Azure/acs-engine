@@ -67,4 +67,3 @@ metadata:
     kubernetes.io/cluster-service: "true"
   namespace: kube-system
   name: heapster-v1.2.0
-

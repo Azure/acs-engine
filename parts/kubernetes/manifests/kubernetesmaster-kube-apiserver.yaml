@@ -11,7 +11,7 @@ spec:
   containers:
     - name: "kube-apiserver"
       image: "<kubernetesHyperkubeSpec>"
-      command: 
+      command:
         - "/hyperkube"
         - "apiserver"
         - "--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
