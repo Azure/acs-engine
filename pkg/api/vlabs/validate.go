@@ -229,20 +229,26 @@ func (a *Properties) Validate() error {
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
 		return e
 	}
-	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.ClientID) == 0 {
-		return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
-	}
 
 	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
-		if (len(a.ServicePrincipalProfile.Secret) == 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) == 0) ||
-			(len(a.ServicePrincipalProfile.Secret) != 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0) {
-			return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
-		}
+		useManagedIdentity := (a.OrchestratorProfile.KubernetesConfig != nil &&
+			a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity)
 
-		if len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0 {
-			parts := keyvaultSecretPathRegex.FindStringSubmatch(a.ServicePrincipalProfile.KeyvaultSecretRef)
-			if len(parts) != 5 {
-				return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
+		if !useManagedIdentity {
+			if len(a.ServicePrincipalProfile.ClientID) == 0 {
+				return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+
+			if (len(a.ServicePrincipalProfile.Secret) == 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) == 0) ||
+				(len(a.ServicePrincipalProfile.Secret) != 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0) {
+				return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+
+			if len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0 {
+				parts := keyvaultSecretPathRegex.FindStringSubmatch(a.ServicePrincipalProfile.KeyvaultSecretRef)
+				if len(parts) != 5 {
+					return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
+				}
 			}
 		}
 	}

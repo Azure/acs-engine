@@ -30,8 +30,13 @@
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
     "networkPolicy": "[parameters('networkPolicy')]",
+{{ if UseManagedIdentity }}
+    "servicePrincipalClientId": "msi",
+    "servicePrincipalClientSecret": "msi",
+{{ else }}
     "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
     "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
+{{ end }}
     "username": "[parameters('linuxAdminUsername')]",
     "masterFqdnPrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
     "masterPrivateIp": "[parameters('firstConsecutiveStaticIP')]",

@@ -76,8 +76,6 @@ func newDeployCmd() *cobra.Command {
 }
 
 func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
-	var caCertificateBytes []byte
-	var caKeyBytes []byte
 	var err error
 
 	if dc.apimodelPath == "" {
@@ -103,8 +101,27 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 	}
 
 	if dc.location == "" {
-		log.Fatalf("--subscription-id must be specified")
+		log.Fatalf("--location must be specified")
 	}
+
+	dc.client, err = dc.authArgs.getClient()
+	if err != nil {
+		log.Fatalf("failed to get client") // TODO: cleanup
+	}
+
+	// autofillApimodel calls log.Fatal() directly and does not return errors
+	autofillApimodel(dc)
+
+	_, _, err = revalidateApimodel(dc.containerService, dc.apiVersion)
+	if err != nil {
+		log.Fatalf("Failed to validate the apimodel after populating values: %s", err)
+	}
+
+	dc.random = rand.New(rand.NewSource(time.Now().UnixNano()))
+}
+
+func autofillApimodel(dc *deployCmd) {
+	var err error
 
 	if dc.containerService.Properties.LinuxProfile.AdminUsername == "" {
 		log.Warnf("apimodel: no linuxProfile.adminUsername was specified. Will use 'azureuser'.")
@@ -153,27 +170,17 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{api.PublicKey{KeyData: publicKey}}
 	}
 
-	if len(caKeyBytes) != 0 {
-		// the caKey is not in the api model, and should be stored separately from the model
-		// we put these in the model after model is deserialized
-		dc.containerService.Properties.CertificateProfile.CaCertificate = string(caCertificateBytes)
-		dc.containerService.Properties.CertificateProfile.CaPrivateKey = string(caKeyBytes)
-	}
-
-	dc.client, err = dc.authArgs.getClient()
-	if err != nil {
-		log.Fatalf("failed to get client") // TODO: cleanup
-	}
-
 	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	spp := dc.containerService.Properties.ServicePrincipalProfile
-	if spp == nil || spp.ClientID == "" || spp.Secret == "" {
-		// TODO: don't do this whenever the user specifies MSI is enabled
-		if !(spp.ClientID == "" && spp.Secret == "") {
+	useManagedIdentity := dc.containerService.Properties.OrchestratorProfile.KubernetesConfig != nil &&
+		dc.containerService.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
+
+	if !useManagedIdentity {
+		spp := dc.containerService.Properties.ServicePrincipalProfile
+		if spp != nil && !(spp.ClientID == "" && spp.Secret == "") {
 			log.Fatal("apimodel invalid: ServicePrincipalProfile is missing either the clientid or secret.")
 		}
 
@@ -203,19 +210,17 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 			ClientID: applicationID,
 			Secret:   secret,
 		}
-	}
 
+	}
+}
+
+func revalidateApimodel(containerService *api.ContainerService, apiVersion string) (*api.ContainerService, string, error) {
 	// This isn't terribly elegant, but it's the easiest way to go for now w/o duplicating a bunch of code
-	rawVersionedAPIModel, err := api.SerializeContainerService(dc.containerService, dc.apiVersion)
+	rawVersionedAPIModel, err := api.SerializeContainerService(containerService, apiVersion)
 	if err != nil {
-		log.Fatalf("Failed to serialize the apimodel to validate it after populating values: %s", err)
+		return nil, "", err
 	}
-	dc.containerService, dc.apiVersion, err = api.DeserializeContainerService(rawVersionedAPIModel, true)
-	if err != nil {
-		log.Fatalf("error parsing the api model: %s", err.Error())
-	}
-
-	dc.random = rand.New(rand.NewSource(time.Now().UnixNano()))
+	return api.DeserializeContainerService(rawVersionedAPIModel, true)
 }
 
 func (dc *deployCmd) run() error {
