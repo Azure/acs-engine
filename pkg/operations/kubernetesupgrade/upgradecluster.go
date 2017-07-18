@@ -116,8 +116,6 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 				}
 				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (MasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
 				*uc.MasterVMs = append(*uc.MasterVMs, vm)
-
-				uc.setMasterVMStorageProfile(vm)
 			} else {
 				uc.addVMToAgentPool(vm, true)
 			}
@@ -130,8 +128,6 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 			if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
 				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (UpgradedMasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
 				*uc.UpgradedMasterVMs = append(*uc.UpgradedMasterVMs, vm)
-
-				uc.setMasterVMStorageProfile(vm)
 			} else {
 				uc.addVMToAgentPool(vm, false)
 			}
@@ -183,21 +179,6 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 	}
 
 	return nil
-}
-
-func (uc *UpgradeCluster) setMasterVMStorageProfile(vm compute.VirtualMachine) {
-	for _, dataDisk := range *vm.VirtualMachineProperties.StorageProfile.DataDisks {
-		log.Infoln(fmt.Sprintf("Master VM name: %s, disk name: %s", *vm.Name, *(dataDisk.Name)))
-		if dataDisk.ManagedDisk != nil && strings.Contains(*(dataDisk.Name), *(vm.Name)) &&
-			strings.Contains(*(vm.Name), MasterVMNamePrefix) &&
-			(strings.Contains(*(dataDisk.Name), "-etcddisk") || strings.Contains(*(dataDisk.Name), "_disk")) {
-			log.Infoln(fmt.Sprintf("Master VM name: %s is using managed disk", *vm.Name))
-			// uc.MasterVMStorageProfile = api.ManagedDisks
-		} else {
-			log.Infoln(fmt.Sprintf("Master VM name: %s is NOT using managed disk", *vm.Name))
-			// uc.MasterVMStorageProfile = api.StorageAccount
-		}
-	}
 }
 
 // WriteTemplate writes upgrade template to a folder
