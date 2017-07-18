@@ -116,3 +116,8 @@ devenv:
 	./scripts/devenv.sh
 
 include versioning.mk
+
+dev:
+	go generate $(GOFILES)
+	go build -ldflags="-X github.com/Azure/acs-engine/cmd.BuildSHA=${VERSION} -X github.com/Azure/acs-engine/cmd.BuildTime=${BUILD}"
+	mv acs-engine ${GOPATH}/bin/acs-engine
