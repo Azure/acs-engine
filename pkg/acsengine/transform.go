@@ -26,6 +26,7 @@ const (
 	dataDisksFieldName             = "dataDisks"
 	createOptionFieldName          = "createOption"
 	tagsFieldName                  = "tags"
+	managedDiskFieldName           = "managedDisk"
 
 	// ARM resource Types
 	nsgResourceType  = "Microsoft.Network/networkSecurityGroups"
@@ -254,7 +255,7 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 				managedDisk.ID = &id
 				var diskInterface interface{}
 				diskInterface = &managedDisk
-				dataDisk["managedDisk"] = diskInterface
+				dataDisk[managedDiskFieldName] = diskInterface
 			}
 		}
 
