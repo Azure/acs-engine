@@ -328,10 +328,14 @@ func sendMetrics(resMap map[string]*ErrorStat) {
 		} else {
 			severity = "Intermittent"
 		}
+		category := errorStat.testCategory
+		if len(category) == 0 {
+			category = "generic"
+		}
 		// add metrics
 		dims := map[string]string{
 			"TestName":     errorStat.errorInfo.TestName,
-			"TestCategory": errorStat.testCategory,
+			"TestCategory": category,
 			"Location":     errorStat.errorInfo.Location,
 			"Error":        errorStat.errorInfo.ErrName,
 			"Class":        errorStat.errorInfo.ErrClass,
