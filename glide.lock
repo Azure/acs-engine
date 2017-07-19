@@ -1,17 +1,22 @@
-hash: 8e720201075f5eebf4b50fb6a4d6c57dc59f1416ac16f9013429f0931b6685b4
-updated: 2017-06-01T12:33:17.417859757-04:00
+hash: 47bdadf4225410bca8b7b7ad7e6512555c80a60db5ec90d874a0ea2ca876b3e5
+updated: 2017-07-15T01:36:15.006608-07:00
 imports:
+- name: github.com/alexcesaro/statsd
+  version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
 - name: github.com/Azure/azure-sdk-for-go
-  version: 2629e2dfcfeab50896230140542c3b9d89b35ae1
+  version: 59c277f1b488b81b1a5f944212f25b69bea8ece3
   subpackages:
+  - arm/authorization
   - arm/compute
+  - arm/disk
+  - arm/graphrbac
   - arm/network
   - arm/resources/resources
   - arm/resources/subscriptions
   - arm/storage
   - storage
 - name: github.com/Azure/go-autorest
-  version: 58f6f26e200fa5dfb40c9cd1c83f3e2c860d779d
+  version: 10791a4516e77c53ab10f198f144804cca3d5b43
   subpackages:
   - autorest
   - autorest/adal
@@ -23,6 +28,12 @@ imports:
   version: 6c8dedd55f8a2e41f605de6d5d66e51ed1f299fc
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
+- name: github.com/go-playground/locales
+  version: 1e5f1161c6416a5ff48840eb8724a394e48cc534
+  subpackages:
+  - currency
+- name: github.com/go-playground/universal-translator
+  version: b32fa301c9fe55953584134cb6853a13c87ec0a1
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/mitchellh/go-homedir
@@ -41,6 +52,13 @@ imports:
   version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
+- name: golang.org/x/crypto
+  version: dd85ac7e6a88fc6ca420478e934de5f1a42dd3c6
+  subpackages:
+  - curve25519
+  - ed25519
+  - ed25519/internal/edwards25519
+  - ssh
 - name: golang.org/x/sys
   version: a55a76086885b80f79961eacb876ebd8caf3868d
   subpackages:
@@ -48,6 +66,8 @@ imports:
   - windows
   - windows/registry
   - windows/svc/eventlog
+- name: gopkg.in/go-playground/validator.v9
+  version: fb68f39656d7ebf8aa339ad4917aa0c260ecc237
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
 testImports:

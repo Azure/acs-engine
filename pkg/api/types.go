@@ -55,8 +55,9 @@ type Properties struct {
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
 type ServicePrincipalProfile struct {
-	ClientID string `json:"servicePrincipalClientID,omitempty"`
-	Secret   string `json:"servicePrincipalClientSecret,omitempty"`
+	ClientID          string `json:"servicePrincipalClientID,omitempty"`
+	Secret            string `json:"servicePrincipalClientSecret,omitempty"`
+	KeyvaultSecretRef string `json:"keyvaultSecretRef,omitempty"`
 }
 
 // CertificateProfile represents the definition of the master cluster
@@ -83,11 +84,14 @@ type CertificateProfile struct {
 type LinuxProfile struct {
 	AdminUsername string `json:"adminUsername"`
 	SSH           struct {
-		PublicKeys []struct {
-			KeyData string `json:"keyData"`
-		} `json:"publicKeys"`
+		PublicKeys []PublicKey `json:"publicKeys"`
 	} `json:"ssh"`
 	Secrets []KeyVaultSecrets `json:"secrets,omitempty"`
+}
+
+// PublicKey represents an SSH key for LinuxProfile
+type PublicKey struct {
+	KeyData string `json:"keyData"`
 }
 
 // WindowsProfile represents the windows parameters passed to the cluster
@@ -126,11 +130,25 @@ type OrchestratorProfile struct {
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
-	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
-	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
-	NetworkPolicy       string `json:"networkPolicy,omitempty"`
-	DockerBridgeSubnet  string `json:"dockerBridgeSubnet,omitempty"`
-	EnableRbac          bool   `json:"enableRbac,omitempty"`
+	KubernetesImageBase              string  `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet                    string  `json:"clusterSubnet,omitempty"`
+	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
+	DockerBridgeSubnet               string  `json:"dockerBridgeSubnet,omitempty"`
+	EnableRbac          			 bool    `json:"enableRbac,omitempty"`
+	NodeStatusUpdateFrequency        string  `json:"nodeStatusUpdateFrequency,omitempty"`
+	CtrlMgrNodeMonitorGracePeriod    string  `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
+	CtrlMgrPodEvictionTimeout        string  `json:"ctrlMgrPodEvictionTimeout,omitempty"`
+	CtrlMgrRouteReconciliationPeriod string  `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
+	CloudProviderBackoff             bool    `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries      int     `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter       float64 `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration     int     `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent     float64 `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit           bool    `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS        float64 `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket     int     `json:"cloudProviderRateLimitBucket,omitempty"`
+	UseManagedIdentity               bool    `json:"useManagedIdentity,omitempty"`
+	CustomHyperkubeImage             string  `json:"customHyperkubeImage,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster

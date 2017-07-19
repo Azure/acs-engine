@@ -47,10 +47,10 @@ function generate_template() {
 	    apiVersion=$(get_api_version)
 		if [[ "$apiVersion" == "vlabs" ]]; then
 			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientID = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
-			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientKeyvaultSecretRef  = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
 		else
 			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.clientId = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
-			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.secret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
 		fi
 	fi
 
@@ -75,7 +75,7 @@ function generate_template() {
 	# Fill in custom hyperkube spec, if it was set
 	if [[ ! -z "${CUSTOM_HYPERKUBE_SPEC:-}" ]]; then
 		# TODO: plumb hyperkube into the apimodel
-		jqi "${OUTPUT}/azuredeploy.parameters.json" ".kubernetesHyperkubeSpec.value = \"${CUSTOM_HYPERKUBE_SPEC}\""
+		jqi "${OUTPUT}/azuredeploy.parameters.json" ".parameters.kubernetesHyperkubeSpec.value = \"${CUSTOM_HYPERKUBE_SPEC}\""
 	fi
 }
 
@@ -157,19 +157,25 @@ function scale_agent_pool() {
 }
 
 function get_node_count() {
-	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
+	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
 
-	APIMODEL="${OUTPUT}/apimodel.json"
-	DEPLOYMENT_PARAMS="${OUTPUT}/azuredeploy.parameters.json"
+	count=$(jq '.properties.masterProfile.count' ${CLUSTER_DEFINITION})
+	linux_count=$count
 
-	count=$(jq 'getpath(["properties","masterProfile","count"])' ${APIMODEL})
+	nodes=$(jq -r '.properties.agentPoolProfiles[].count' ${CLUSTER_DEFINITION})
+	osTypes=$(jq -r '.properties.agentPoolProfiles[].osType' ${CLUSTER_DEFINITION})
 
-	for poolname in `jq -r '.properties.agentPoolProfiles[].name' "${APIMODEL}"`; do
-	  nodes=$(jq "getpath([\"parameters\", \"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
-	  count=$((count+nodes))
+	nArr=( $nodes )
+	oArr=( $osTypes )
+	indx=0
+	for n in "${nArr[@]}"; do
+		count=$((count+n))
+		if [ "${oArr[$indx]}" != "Windows" ]; then
+			linux_count=$((linux_count+n))
+		fi
+		indx=$((indx+1))
 	done
-
-	echo $count
+	echo "${count}:${linux_count}"
 }
 
 function get_orchestrator_type() {

@@ -62,6 +62,8 @@ $global:RouteTableName = "{{WrapAsVariable "routeTableName"}}"
 $global:PrimaryAvailabilitySetName = "{{WrapAsVariable "primaryAvailablitySetName"}}"
 $global:NeedPatchWinNAT = $false
 
+$global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
+
 filter Timestamp {"$(Get-Date -Format o): $_"}
 
 function
@@ -123,7 +125,8 @@ Write-AzureConfig()
     "securityGroupName": "$global:SecurityGroupName",
     "vnetName": "$global:VNetName",
     "routeTableName": "$global:RouteTableName",
-    "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName"
+    "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName",
+    "useManagedIdentityExtension": $global:UseManagedIdentityExtension
 }
 "@
 
@@ -172,12 +175,14 @@ Write-KubernetesStartFiles($podCIDR)
 {
     $KubeletArgList = @("--hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--api-servers=https://`${global:MasterIP}:443","--kubeconfig=c:\k\config")
     $KubeletCommandLine = @"
-c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://`${global:MasterIP}:443 --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json
+c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://`${global:MasterIP}:443 --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m
 "@
 
-    if ($global:KubeBinariesVersion -ne "1.5.3" -and $global:KubeBinariesVersion -ne "1.5.7")
+    if ($global:KubeBinariesVersion -ge "1.6.0")
     {
+        # stop using container runtime interface from 1.6.0+ (officially deprecated from 1.7.0)
         $KubeletArgList += "--enable-cri=false"
+        # more time is needed to pull windows server images (flag supported from 1.6.0)
         $KubeletCommandLine += " --enable-cri=false --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
     }
     $KubeletArgListStr = "`"" + ($KubeletArgList -join "`",`"") + "`""

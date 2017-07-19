@@ -20,14 +20,27 @@ KUBELET_PRIVATE_KEY="${12}"
 TARGET_ENVIRONMENT="${13}"
 NETWORK_POLICY="${14}"
 
+# Default values for backoff configuration
+CLOUDPROVIDER_BACKOFF="${15}"
+CLOUDPROVIDER_BACKOFF_RETRIES="${16}"
+CLOUDPROVIDER_BACKOFF_EXPONENT="${17}"
+CLOUDPROVIDER_BACKOFF_DURATION="${18}"
+CLOUDPROVIDER_BACKOFF_JITTER="${19}"
+# Default values for rate limit configuration
+CLOUDPROVIDER_RATELIMIT="${20}"
+CLOUDPROVIDER_RATELIMIT_QPS="${21}"
+CLOUDPROVIDER_RATELIMIT_BUCKET="${22}"
+
+USE_MANAGED_IDENTITY_EXTENSION="${23}"
+
 # Master only secrets
-APISERVER_PRIVATE_KEY="${15}"
-CA_CERTIFICATE="${16}"
-CA_PRIVATE_KEY="${17}"
-MASTER_FQDN="${18}"
-KUBECONFIG_CERTIFICATE="${19}"
-KUBECONFIG_KEY="${20}"
-ADMINUSER="${21}"
+APISERVER_PRIVATE_KEY="${24}"
+CA_CERTIFICATE="${25}"
+CA_PRIVATE_KEY="${26}"
+MASTER_FQDN="${27}"
+KUBECONFIG_CERTIFICATE="${28}"
+KUBECONFIG_KEY="${29}"
+ADMINUSER="${30}"
 
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
@@ -102,7 +115,16 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "securityGroupName": "${NETWORK_SECURITY_GROUP}",
     "vnetName": "${VIRTUAL_NETWORK}",
     "routeTableName": "${ROUTE_TABLE}",
-    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}"
+    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
+    "cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
+    "cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
+    "cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
+    "cloudProviderBackoffDuration": ${CLOUDPROVIDER_BACKOFF_DURATION},
+    "cloudProviderBackoffJitter": ${CLOUDPROVIDER_BACKOFF_JITTER},
+    "cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
+    "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
+    "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
+    "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION}
 }
 EOF
 

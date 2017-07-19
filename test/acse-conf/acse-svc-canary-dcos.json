@@ -1,11 +1,13 @@
 {
   "deployments": [
     {
-      "cluster_definition": "dcos.json",
+      "cluster_definition": "disks-storageaccount/dcos-master-sa.json",
+      "category": "canary",
       "location": "centraluseuap"
     },
     {
       "cluster_definition": "dcos.json",
+      "category": "canary",
       "location": "eastus2euap"
     }
   ]

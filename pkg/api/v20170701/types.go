@@ -1,9 +1,13 @@
 package v20170701
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
+
+// The validate tag is used for validation
+// Reference to gopkg.in/go-playground/validator.v9
 
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
@@ -18,7 +22,7 @@ type ResourcePurchasePlan struct {
 // resource definition in a JSON template.
 type ContainerService struct {
 	ID       string                `json:"id,omitempty"`
-	Location string                `json:"location,omitempty"`
+	Location string                `json:"location,omitempty" validate:"required"`
 	Name     string                `json:"name,omitempty"`
 	Plan     *ResourcePurchasePlan `json:"plan,omitempty"`
 	Tags     map[string]string     `json:"tags,omitempty"`
@@ -30,18 +34,19 @@ type ContainerService struct {
 // Properties represents the ACS cluster definition
 type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
-	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty"`
-	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty"`
-	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
-	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
+	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty" validate:"required"`
+	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty" validate:"required"`
+	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
+	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CustomProfile           *CustomProfile           `json:"customProfile,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
-// The 'Secret' parameter could be either a plain text, or referenced to a secret in a keyvault.
-// In the latter case, the format of the parameter's value should be
+// The 'Secret' parameter should be a secret in plain text.
+// The 'KeyvaultSecretRef' parameter is a reference to a secret in a keyvault.
+// The format of the parameter's value should be
 // "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
 // where:
 //    <SUB_ID> is the subscription ID of the keyvault
@@ -50,8 +55,9 @@ type Properties struct {
 //    <NAME> is the name of the secret.
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
-	ClientID string `json:"clientId,omitempty"`
-	Secret   string `json:"secret,omitempty"`
+	ClientID          string `json:"clientId,omitempty" validate:"required"`
+	Secret            string `json:"secret,omitempty"`
+	KeyvaultSecretRef string `json:"keyvaultSecretRef,omitempty"`
 }
 
 // CustomProfile specifies custom properties that are used for
@@ -62,19 +68,22 @@ type CustomProfile struct {
 
 // LinuxProfile represents the Linux configuration passed to the cluster
 type LinuxProfile struct {
-	AdminUsername string `json:"adminUsername"`
+	AdminUsername string `json:"adminUsername" validate:"required"`
 
 	SSH struct {
-		PublicKeys []struct {
-			KeyData string `json:"keyData"`
-		} `json:"publicKeys"`
-	} `json:"ssh"`
+		PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
+	} `json:"ssh" validate:"required"`
+}
+
+// PublicKey represents an SSH key for LinuxProfile
+type PublicKey struct {
+	KeyData string `json:"keyData"`
 }
 
 // WindowsProfile represents the Windows configuration passed to the cluster
 type WindowsProfile struct {
-	AdminUsername string `json:"adminUsername,omitempty"`
-	AdminPassword string `json:"adminPassword,omitempty"`
+	AdminUsername string `json:"adminUsername,omitempty" validate:"required"`
+	AdminPassword string `json:"adminPassword,omitempty" validate:"required"`
 }
 
 // ProvisioningState represents the current state of container service resource.
@@ -98,19 +107,19 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType    OrchestratorType    `json:"orchestratorType"`
+	OrchestratorType    OrchestratorType    `json:"orchestratorType" validate:"required"`
 	OrchestratorVersion OrchestratorVersion `json:"orchestratorVersion"`
 }
 
 // MasterProfile represents the definition of master cluster
 type MasterProfile struct {
-	Count                    int    `json:"count"`
-	DNSPrefix                string `json:"dnsPrefix"`
-	VMSize                   string `json:"vmSize"`
-	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
+	Count                    int    `json:"count" validate:"required,eq=1|eq=3|eq=5"`
+	DNSPrefix                string `json:"dnsPrefix" validate:"required"`
+	VMSize                   string `json:"vmSize" validate:"required"`
+	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	StorageProfile           string `json:"storageProfile,omitempty"`
+	StorageProfile           string `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
 
 	// subnet is internal
 	subnet string
@@ -120,18 +129,48 @@ type MasterProfile struct {
 	FQDN string `json:"fqdn,omitempty"`
 }
 
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (m *MasterProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasMasterProfile MasterProfile
+	mm := aliasMasterProfile{}
+	if e := json.Unmarshal(b, &mm); e != nil {
+		return e
+	}
+	*m = MasterProfile(mm)
+	if m.Count == 0 {
+		// if MasterProfile.Count is missing or 0, set to default 1
+		m.Count = 1
+	}
+
+	if m.FirstConsecutiveStaticIP == "" {
+		// if FirstConsecutiveStaticIP is missing, set to default 10.240.255.5
+		m.FirstConsecutiveStaticIP = "10.240.255.5"
+	}
+
+	if m.StorageProfile == "" {
+		// if StorageProfile is missing, set to default StorageAccount
+		m.StorageProfile = StorageAccount
+	}
+
+	// OSDiskSizeGB is an override value. vm sizes have default OS disk sizes.
+	// If it is not set. The user should get the default for the vm size
+	return nil
+}
+
 // AgentPoolProfile represents configuration of VMs running agent
 // daemons that register with the master and offer resources to
 // host applications in containers.
 type AgentPoolProfile struct {
-	Name           string `json:"name"`
-	Count          int    `json:"count"`
-	VMSize         string `json:"vmSize"`
-	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty"`
+	Name           string `json:"name" validate:"required"`
+	Count          int    `json:"count" validate:"required,min=1,max=100"`
+	VMSize         string `json:"vmSize" validate:"required"`
+	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	DNSPrefix      string `json:"dnsPrefix"`
 	FQDN           string `json:"fqdn"`
-	Ports          []int  `json:"ports,omitempty"`
-	StorageProfile string `json:"storageProfile"`
+	Ports          []int  `json:"ports,omitempty" validate:"dive,min=1,max=65535"`
+	StorageProfile string `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
 	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
 	// OSType is the operating system type for agents
 	// Set as nullable to support backward compat because
@@ -141,6 +180,39 @@ type AgentPoolProfile struct {
 
 	// subnet is internal
 	subnet string
+}
+
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasAgentPoolProfile AgentPoolProfile
+	aa := aliasAgentPoolProfile{}
+	if e := json.Unmarshal(b, &aa); e != nil {
+		return e
+	}
+	*a = AgentPoolProfile(aa)
+	if a.Count == 0 {
+		// if AgentPoolProfile.Count is missing or 0, set it to default 1
+		a.Count = 1
+	}
+
+	if a.StorageProfile == "" {
+		// if StorageProfile is missing, set to default StorageAccount
+		a.StorageProfile = StorageAccount
+	}
+
+	if string(a.OSType) == "" {
+		// OSType is the operating system type for agents
+		// Set as nullable to support backward compat because
+		// this property was added later.
+		// If the value is null or not set, it defaulted to Linux.
+		a.OSType = Linux
+	}
+
+	// OSDiskSizeGB is an override value. vm sizes have default OS disk sizes.
+	// If it is not set. The user should get the default for the vm size
+	return nil
 }
 
 // OrchestratorType defines orchestrators supported by ACS

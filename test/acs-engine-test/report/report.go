@@ -11,6 +11,13 @@ import (
 	"time"
 )
 
+type ErrorInfo struct {
+	TestName string
+	ErrName  string
+	ErrClass string
+	Location string
+}
+
 type ErrorStat struct {
 	Count     int            `json:"count"`
 	Locations map[string]int `json:"locations"`
@@ -28,35 +35,63 @@ type ReportMgr struct {
 	Failures map[string]*ErrorStat `json:"failures"`
 }
 
-var errorRegexpMap map[string]string
+type logError struct {
+	name  string
+	class string
+	regex string
+}
+
+const (
+	errClassDeployment = "Deployment"
+	errClassValidation = "Validation"
+	errClassAzcli      = "AzCLI"
+	errClassNone       = "None"
+
+	errSuccess = "Success"
+	errUnknown = "UnspecifiedError"
+)
+
+var logErrors []logError
 
 func init() {
-	errorRegexpMap = map[string]string{
-		"azcli run":  "_init__.py",
-		"azcli load": "Error loading command module",
+	logErrors = []logError{
+		{name: "AzCliRunError", class: errClassAzcli, regex: "_init__.py"},
+		{name: "AzCliLoadError", class: errClassAzcli, regex: "Error loading command module"},
 
-		"VMStartTimedOut":                                "VMStartTimedOut",
-		"OSProvisioningTimedOut":                         "OSProvisioningTimedOut",
-		"VMExtensionProvisioningError":                   "VMExtensionProvisioningError",
-		"VMExtensionProvisioningTimeout":                 "VMExtensionProvisioningTimeout",
-		"InternalExecutionError":                         "InternalExecutionError",
-		"SkuNotAvailable":                                "SkuNotAvailable",
-		"MaxStorageAccountsCountPerSubscriptionExceeded": "MaxStorageAccountsCountPerSubscriptionExceeded",
-		"ImageManagementOperationError":                  "ImageManagementOperationError",
-		"DiskProcessingError":                            "DiskProcessingError",
-		"DiskServiceInternalError":                       "DiskServiceInternalError",
-		"AllocationFailed":                               "AllocationFailed",
-		"NetworkingInternalOperationError":               "NetworkingInternalOperationError",
+		{name: "VMStartTimedOut", class: errClassDeployment, regex: "VMStartTimedOut"},
+		{name: "OSProvisioningTimedOut", class: errClassDeployment, regex: "OSProvisioningTimedOut"},
+		{name: "VMExtensionProvisioningError", class: errClassDeployment, regex: "VMExtensionProvisioningError"},
+		{name: "VMExtensionProvisioningTimeout", class: errClassDeployment, regex: "VMExtensionProvisioningTimeout"},
+		{name: "InternalExecutionError", class: errClassDeployment, regex: "InternalExecutionError"},
+		{name: "SkuNotAvailable", class: errClassDeployment, regex: "SkuNotAvailable"},
+		{name: "MaxStorageAccountsCountPerSubscriptionExceeded", class: errClassDeployment, regex: "MaxStorageAccountsCountPerSubscriptionExceeded"},
+		{name: "ImageManagementOperationError", class: errClassDeployment, regex: "ImageManagementOperationError"},
+		{name: "DiskProcessingError", class: errClassDeployment, regex: "DiskProcessingError"},
+		{name: "DiskServiceInternalError", class: errClassDeployment, regex: "DiskServiceInternalError"},
+		{name: "AllocationFailed", class: errClassDeployment, regex: "AllocationFailed"},
+		{name: "NetworkingInternalOperationError", class: errClassDeployment, regex: "NetworkingInternalOperationError"},
+		{name: "PlatformFaultDomainCount", class: errClassDeployment, regex: "platformFaultDomainCount"},
 
-		"K8S curl error":                  "curl_error",
-		"K8S no external IP":              "gave up waiting for loadbalancer to get an ingress ip",
-		"K8S nodes not ready":             "gave up waiting for apiserver",
-		"K8S service unreachable":         "gave up waiting for service to be externally reachable",
-		"K8S nginx unreachable":           "failed to get expected response from nginx through the loadbalancer",
-		"DCOS nodes not ready":            "gave up waiting for DCOS nodes",
-		"DCOS marathon validation failed": "dcos/test.sh] marathon validation failed",
-		"DCOS marathon not added":         "dcos/test.sh] gave up waiting for marathon to be added",
-		"DCOS marathon-lb not installed":  "Failed to install marathon-lb",
+		{name: "K8sNodeNotReady", class: errClassValidation, regex: "K8S: gave up waiting for apiserver"},
+		{name: "K8sUnexpectedVersion", class: errClassValidation, regex: "K8S: unexpected kubernetes version"},
+		{name: "K8sContainerNotCreated", class: errClassValidation, regex: "K8S: gave up waiting for containers"},
+		{name: "K8sPodNotRunning", class: errClassValidation, regex: "K8S: gave up waiting for running pods"},
+		{name: "K8sKubeDnsNotRunning", class: errClassValidation, regex: "K8S: gave up waiting for kube-dns"},
+		{name: "K8sDashboardNotRunning", class: errClassValidation, regex: "K8S: gave up waiting for kubernetes-dashboard"},
+		{name: "K8sKubeProxyNotRunning", class: errClassValidation, regex: "K8S: gave up waiting for kube-proxy"},
+		{name: "K8sProxyNotWorking", class: errClassValidation, regex: "K8S: gave up verifying proxy"},
+		{name: "K8sDeploymentNotReady", class: errClassValidation, regex: "K8S: gave up waiting for deployment"},
+		{name: "K8sNoExternalIP", class: errClassValidation, regex: "K8S: gave up waiting for loadbalancer to get an ingress ip"},
+		{name: "K8sNginxUnreachable", class: errClassValidation, regex: "K8S: failed to get expected response from nginx through the loadbalancer"},
+
+		{name: "DcosNodeNotReady", class: errClassValidation, regex: "gave up waiting for DCOS nodes"},
+		{name: "DcosMarathonValidationFailed", class: errClassValidation, regex: "dcos/test.sh] marathon validation failed"},
+		{name: "DcosMarathonNotAdded", class: errClassValidation, regex: "dcos/test.sh] gave up waiting for marathon to be added"},
+		{name: "DcosMarathonLbNotInstalled", class: errClassValidation, regex: "Failed to install marathon-lb"},
+
+		{name: "DockerCeNetworkNotReady", class: errClassValidation, regex: "DockerCE: gave up waiting for network to be created"},
+		{name: "DockerCeServiceNotReady", class: errClassValidation, regex: "DockerCE: gave up waiting for service to be created"},
+		{name: "DockerCeServiceUnreachable", class: errClassValidation, regex: "DockerCE: gave up waiting for service to be externally reachable"},
 	}
 }
 
@@ -85,14 +120,15 @@ func (h *ReportMgr) Copy() *ReportMgr {
 	return n
 }
 
-func (h *ReportMgr) Process(txt, location string) {
-	for key, regex := range errorRegexpMap {
-		if match, _ := regexp.MatchString(regex, txt); match {
-			h.addFailure(key, map[string]int{location: 1})
-			return
+func (h *ReportMgr) Process(txt, testName, location string) *ErrorInfo {
+	for _, logErr := range logErrors {
+		if match, _ := regexp.MatchString(logErr.regex, txt); match {
+			h.addFailure(logErr.name, map[string]int{location: 1})
+			return NewErrorInfo(testName, logErr.name, logErr.class, location)
 		}
 	}
-	h.addFailure("Unspecified error", map[string]int{location: 1})
+	h.addFailure(errUnknown, map[string]int{location: 1})
+	return NewErrorInfo(testName, errUnknown, errClassNone, location)
 }
 
 func (h *ReportMgr) addFailure(key string, locations map[string]int) {
@@ -100,7 +136,6 @@ func (h *ReportMgr) addFailure(key string, locations map[string]int) {
 	defer h.lock.Unlock()
 
 	cnt := 0
-
 	if failure, ok := h.Failures[key]; !ok {
 		locs := make(map[string]int)
 		for l, c := range locations {
@@ -166,4 +201,8 @@ func (h *ReportMgr) CreateCombinedReport(filepath, testReportFname string) error
 		}
 	}
 	return combinedReport.CreateTestReport(filepath)
+}
+
+func NewErrorInfo(testName, errName, errClass, location string) *ErrorInfo {
+	return &ErrorInfo{TestName: testName, ErrName: errName, ErrClass: errClass, Location: location}
 }

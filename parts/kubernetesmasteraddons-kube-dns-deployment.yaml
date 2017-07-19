@@ -36,9 +36,24 @@ spec:
         kubernetes.io/cluster-service: "true"
         version: v20
     spec:
+<<<<<<< HEAD
       tolerations:
       - key: "CriticalAddonsOnly"
         operator: "Exists"
+=======
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: k8s-app
+                  operator: In
+                  values:
+                  - kube-dns
+              topologyKey: kubernetes.io/hostname
+>>>>>>> master
       volumes:
       - name: kube-dns-config
         configMap:

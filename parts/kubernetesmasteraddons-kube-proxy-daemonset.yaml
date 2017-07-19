@@ -20,6 +20,7 @@ spec:
         - proxy
         - "--kubeconfig=/var/lib/kubelet/kubeconfig"
         - "--cluster-cidr=<kubeClusterCidr>"
+        - "--feature-gates=ExperimentalCriticalPodAnnotation=true"
         image: "<kubernetesHyperkubeSpec>"
         name: kube-proxy
         resources:

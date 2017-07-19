@@ -110,6 +110,90 @@
       },
       "type": "string"
     },
+    "kubernetesNodeStatusUpdateFrequency": {
+      {{PopulateClassicModeDefaultValue "kubernetesNodeStatusUpdateFrequency"}}
+      "metadata": {
+        "description": "Kubelet config for node status update frequency interval."
+      },
+      "type": "string"
+    },
+    "kubernetesCtrlMgrNodeMonitorGracePeriod": {
+      {{PopulateClassicModeDefaultValue "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
+      "metadata": {
+        "description": "Kubernetes controller manager grace period for node status updates."
+      },
+      "type": "string"
+    },
+    "kubernetesCtrlMgrPodEvictionTimeout": {
+      {{PopulateClassicModeDefaultValue "kubernetesCtrlMgrPodEvictionTimeout"}}
+      "metadata": {
+        "description": "Kubernetes controller manager pod eviction timeout."
+      },
+      "type": "string"
+    },
+    "kubernetesCtrlMgrRouteReconciliationPeriod": {
+      {{PopulateClassicModeDefaultValue "kubernetesCtrlMgrRouteReconciliationPeriod"}}
+      "metadata": {
+        "description": "Kubernetes controller manager route reconciliation period."
+      },
+      "type": "string"
+    },
+    "cloudProviderBackoff": {
+      {{PopulateClassicModeDefaultValue "cloudProviderBackoff"}}
+      "metadata": {
+        "description": "Enable cloudprovider backoff?"
+      },
+      "type": "string"
+    },
+    "cloudProviderBackoffRetries": {
+      {{PopulateClassicModeDefaultValue "cloudProviderBackoffRetries"}}
+      "metadata": {
+        "description": "If backoff enabled, how many times to retry"
+      },
+      "type": "string"
+    },
+    "cloudProviderBackoffExponent": {
+      {{PopulateClassicModeDefaultValue "cloudProviderBackoffExponent"}}
+      "metadata": {
+        "description": "If backoff enabled, retry exponent"
+      },
+      "type": "string"
+    },
+    "cloudProviderBackoffDuration": {
+      {{PopulateClassicModeDefaultValue "cloudProviderBackoffDuration"}}
+      "metadata": {
+        "description": "If backoff enabled, how long until timeout"
+      },
+      "type": "string"
+    },
+    "cloudProviderBackoffJitter": {
+      {{PopulateClassicModeDefaultValue "cloudProviderBackoffJitter"}}
+      "metadata": {
+        "description": "If backoff enabled, jitter factor between retries"
+      },
+      "type": "string"
+    },
+    "cloudProviderRatelimit": {
+      {{PopulateClassicModeDefaultValue "cloudProviderRatelimit"}}
+      "metadata": {
+        "description": "Enable cloudprovider rate limiting?"
+      },
+      "type": "string"
+    },
+    "cloudProviderRatelimitQPS": {
+      {{PopulateClassicModeDefaultValue "cloudProviderRatelimitQPS"}}
+      "metadata": {
+        "description": "If rate limiting enabled, target maximum QPS"
+      },
+      "type": "string"
+    },
+    "cloudProviderRatelimitBucket": {
+      {{PopulateClassicModeDefaultValue "cloudProviderRatelimitBucket"}}
+      "metadata": {
+        "description": "If rate limiting enabled, bucket size"
+      },
+      "type": "string"
+    },
     "kubernetesKubeDNSSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesKubeDNSSpec"}}
       "metadata": {
@@ -143,6 +227,7 @@
       ],
       "type": "string"
     },
+{{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {
         "description": "Client ID (used by cloudprovider)"
@@ -155,6 +240,7 @@
       },
       "type": "securestring"
     },
+{{ end }}
     "masterOffset": {
       "defaultValue": 0,
       "allowedValues": [

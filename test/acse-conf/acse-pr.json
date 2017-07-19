@@ -37,14 +37,6 @@
       "location": "southcentralus"
     },
     {
-      "cluster_definition": "disks-managed/swarm-vmas-windows.json",
-      "location": "southcentralus"
-    },
-    {
-      "cluster_definition": "disks-managed/swarm-vmss.json",
-      "location": "southcentralus"
-    },
-    {
       "cluster_definition": "disks-managed/swarmmode-vmas.json",
       "location": "southcentralus"
     },
@@ -58,10 +50,6 @@
     },
     {
       "cluster_definition": "disks-storageaccount/kubernetes.json",
-      "location": "westus"
-    },
-    {
-      "cluster_definition": "disks-storageaccount/swarm.json",
       "location": "westus"
     },
     {
@@ -86,23 +74,27 @@
     },
     {
       "cluster_definition": "custom-pod-cidr/kubernetes.json",
-      "location": "northcentralus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "v20170131/swarmmode.json",
-      "location": "northcentralus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "vnet/dcosvnet.json",
-      "location": "northcentralus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "vnet/kubernetesvnet.json",
-      "location": "northcentralus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "vnet/swarmmodevnet.json",
-      "location": "northcentralus"
+      "location": "westus2"
+    },
+    {
+      "cluster_definition": "managed-identity/kubernetes-msi.json",
+      "location": "westus2"
     }
   ]
 }

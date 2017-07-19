@@ -1,6 +1,7 @@
 package v20170131
 
 import (
+	"encoding/json"
 	"fmt"
 	neturl "net/url"
 	"strings"
@@ -59,10 +60,13 @@ type LinuxProfile struct {
 	AdminUsername string `json:"adminUsername"`
 
 	SSH struct {
-		PublicKeys []struct {
-			KeyData string `json:"keyData"`
-		} `json:"publicKeys"`
+		PublicKeys []PublicKey `json:"publicKeys"`
 	} `json:"ssh"`
+}
+
+// PublicKey represents an SSH key for LinuxProfile
+type PublicKey struct {
+	KeyData string `json:"keyData"`
 }
 
 // WindowsProfile represents the Windows configuration passed to the cluster
@@ -109,6 +113,23 @@ type MasterProfile struct {
 	subnet string
 }
 
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (m *MasterProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasMasterProfile MasterProfile
+	mm := aliasMasterProfile{}
+	if e := json.Unmarshal(b, &mm); e != nil {
+		return e
+	}
+	*m = MasterProfile(mm)
+	if m.Count == 0 {
+		// if MasterProfile.Count is missing or 0, set to default 1
+		m.Count = 1
+	}
+	return nil
+}
+
 // AgentPoolProfile represents configuration of VMs running agent
 // daemons that register with the master and offer resources to
 // host applications in containers.
@@ -127,6 +148,31 @@ type AgentPoolProfile struct {
 
 	// subnet is internal
 	subnet string
+}
+
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasAgentPoolProfile AgentPoolProfile
+	aa := aliasAgentPoolProfile{}
+	if e := json.Unmarshal(b, &aa); e != nil {
+		return e
+	}
+	*a = AgentPoolProfile(aa)
+	if a.Count == 0 {
+		// if AgentPoolProfile.Count is missing or 0, set it to default 1
+		a.Count = 1
+	}
+
+	if string(a.OSType) == "" {
+		// OSType is the operating system type for agents
+		// Set as nullable to support backward compat because
+		// this property was added later.
+		// If the value is null or not set, it defaulted to Linux.
+		a.OSType = Linux
+	}
+	return nil
 }
 
 // JumpboxProfile dscribes properties of the jumpbox setup

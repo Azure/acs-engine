@@ -2,9 +2,11 @@ package armhelpers
 
 import (
 	"fmt"
-	"time"
 
+	"github.com/Azure/azure-sdk-for-go/arm/authorization"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Azure/azure-sdk-for-go/arm/disk"
+	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest"
 )
@@ -29,7 +31,7 @@ func (msc *MockStorageClient) DeleteBlob(container, blob string) error {
 	return nil
 }
 
-//AddAcceptLanguage mock
+//AddAcceptLanguages mock
 func (mc *MockACSEngineClient) AddAcceptLanguages(languages []string) {
 	return
 }
@@ -165,7 +167,6 @@ func (mc *MockACSEngineClient) DeleteVirtualMachine(resourceGroup, name string, 
 				close(respChan)
 			}()
 			errChan <- fmt.Errorf("DeleteVirtualMachine failed")
-			time.Sleep(1 * time.Second)
 		}()
 		return respChan, errChan
 	}
@@ -181,7 +182,6 @@ func (mc *MockACSEngineClient) DeleteVirtualMachine(resourceGroup, name string, 
 		}()
 		errChan <- nil
 		respChan <- compute.OperationStatusResponse{}
-		time.Sleep(1 * time.Second)
 	}()
 	return respChan, errChan
 }
@@ -208,7 +208,6 @@ func (mc *MockACSEngineClient) DeleteNetworkInterface(resourceGroup, nicName str
 				close(respChan)
 			}()
 			errChan <- fmt.Errorf("DeleteNetworkInterface failed")
-			time.Sleep(1 * time.Second)
 		}()
 		return respChan, errChan
 	}
@@ -224,10 +223,63 @@ func (mc *MockACSEngineClient) DeleteNetworkInterface(resourceGroup, nicName str
 		}()
 		errChan <- nil
 		respChan <- autorest.Response{}
-		time.Sleep(1 * time.Second)
 	}()
 	return respChan, errChan
 }
 
 var validOSDiskResourceName = "https://00k71r4u927seqiagnt0.blob.core.windows.net/osdisk/k8s-agentpool1-12345678-0-osdisk.vhd"
 var validNicResourceName = "/subscriptions/DEC923E3-1EF1-4745-9516-37906D56DEC4/resourceGroups/acsK8sTest/providers/Microsoft.Network/networkInterfaces/k8s-agent-12345678-nic-0"
+
+// Active Directory
+// Mocks
+
+// Graph Mocks
+
+// CreateGraphApplication creates an application via the graphrbac client
+func (mc *MockACSEngineClient) CreateGraphApplication(applicationCreateParameters graphrbac.ApplicationCreateParameters) (graphrbac.Application, error) {
+	return graphrbac.Application{}, nil
+}
+
+// CreateGraphPrincipal creates a service principal via the graphrbac client
+func (mc *MockACSEngineClient) CreateGraphPrincipal(servicePrincipalCreateParameters graphrbac.ServicePrincipalCreateParameters) (graphrbac.ServicePrincipal, error) {
+	return graphrbac.ServicePrincipal{}, nil
+}
+
+// CreateApp is a simpler method for creating an application
+func (mc *MockACSEngineClient) CreateApp(applicationName, applicationURL string) (applicationID, servicePrincipalObjectID, secret string, err error) {
+	return "app-id", "client-id", "client-secret", nil
+}
+
+// RBAC Mocks
+
+// CreateRoleAssignment creates a role assignment via the authorization client
+func (mc *MockACSEngineClient) CreateRoleAssignment(scope string, roleAssignmentName string, parameters authorization.RoleAssignmentCreateParameters) (authorization.RoleAssignment, error) {
+	return authorization.RoleAssignment{}, nil
+}
+
+// CreateRoleAssignmentSimple is a wrapper around RoleAssignmentsClient.Create
+func (mc *MockACSEngineClient) CreateRoleAssignmentSimple(applicationID, roleID string) error {
+	return nil
+}
+
+// DeleteManagedDisk is a wrapper around disksClient.Delete
+func (mc *MockACSEngineClient) DeleteManagedDisk(resourceGroupName string, diskName string, cancel <-chan struct{}) (<-chan disk.OperationStatusResponse, <-chan error) {
+	errChan := make(chan error)
+	respChan := make(chan disk.OperationStatusResponse)
+	go func() {
+		defer func() {
+			close(errChan)
+		}()
+		defer func() {
+			close(respChan)
+		}()
+		errChan <- nil
+		respChan <- disk.OperationStatusResponse{}
+	}()
+	return respChan, errChan
+}
+
+// ListManagedDisksByResourceGroup is a wrapper around disksClient.ListManagedDisksByResourceGroup
+func (mc *MockACSEngineClient) ListManagedDisksByResourceGroup(resourceGroupName string) (result disk.ListType, err error) {
+	return disk.ListType{}, nil
+}

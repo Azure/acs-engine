@@ -5,10 +5,25 @@ import (
 	"fmt"
 	"net"
 	"regexp"
+	"strings"
+
+	validator "gopkg.in/go-playground/validator.v9"
 )
+
+var (
+	validate                *validator.Validate
+	keyvaultSecretPathRegex *regexp.Regexp
+)
+
+func init() {
+	validate = validator.New()
+	keyvaultSecretPathRegex = regexp.MustCompile(`^(/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/\S+)/secrets/([^/\s]+)(/(\S+))?$`)
+}
 
 // Validate implements APIObject
 func (o *OrchestratorProfile) Validate() error {
+	// Don't need to call validate.Struct(o)
+	// It is handled by Properties.Validate()
 	switch o.OrchestratorType {
 	case Swarm:
 	case DCOS:
@@ -39,22 +54,9 @@ func (o *OrchestratorProfile) Validate() error {
 
 // Validate implements APIObject
 func (m *MasterProfile) Validate() error {
-	if m.Count != 1 && m.Count != 3 && m.Count != 5 {
-		return fmt.Errorf("MasterProfile count needs to be 1, 3, or 5")
-	}
-	if e := validateName(m.DNSPrefix, "MasterProfile.DNSPrefix"); e != nil {
-		return e
-	}
+	// Don't need to call validate.Struct(m)
+	// It is handled by Properties.Validate()
 	if e := validateDNSName(m.DNSPrefix); e != nil {
-		return e
-	}
-	if e := validateName(m.VMSize, "MasterProfile.VMSize"); e != nil {
-		return e
-	}
-	if m.OSDiskSizeGB != 0 && (m.OSDiskSizeGB < MinDiskSizeGB || m.OSDiskSizeGB > MaxDiskSizeGB) {
-		return fmt.Errorf("Invalid master os disk size of %d specified.  The range of valid values are [%d, %d]", m.OSDiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
-	}
-	if e := validateStorageProfile(m.StorageProfile); e != nil {
 		return e
 	}
 	return nil
@@ -62,28 +64,22 @@ func (m *MasterProfile) Validate() error {
 
 // Validate implements APIObject
 func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
-	if e := validateName(a.Name, "AgentPoolProfile.Name"); e != nil {
-		return e
-	}
+	// Don't need to call validate.Struct(a)
+	// It is handled by Properties.Validate()
 	if e := validatePoolName(a.Name); e != nil {
 		return e
 	}
-	if a.Count < MinAgentCount || a.Count > MaxAgentCount {
-		return fmt.Errorf("AgentPoolProfile count needs to be in the range [%d,%d]", MinAgentCount, MaxAgentCount)
-	}
-	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
-		return e
-	}
-	// Kubernetes don't allow agent DNSPrefix
+	// Kubernetes don't allow agent DNSPrefix and ports
 	if orchestratorType == Kubernetes {
-		// The line below need to be removed after June 2017
+		// The two lines below need to be removed after August 2017
 		a.DNSPrefix = ""
-		if e := validateNameEmpty(a.DNSPrefix, "AgentPoolProfile.DNSPrefix"); e != nil {
-			return e
+		a.Ports = []int{}
+		if e := validate.Var(a.DNSPrefix, "len=0"); e != nil {
+			return fmt.Errorf("AgentPoolProfile.DNSPrefix must be empty for Kubernetes")
 		}
-	}
-	if a.OSDiskSizeGB != 0 && (a.OSDiskSizeGB < MinDiskSizeGB || a.OSDiskSizeGB > MaxDiskSizeGB) {
-		return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", a.OSDiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
+		if e := validate.Var(a.Ports, "len=0"); e != nil {
+			return fmt.Errorf("AgentPoolProfile.Ports must be empty for Kubernetes")
+		}
 	}
 	if a.DNSPrefix != "" {
 		if e := validateDNSName(a.DNSPrefix); e != nil {
@@ -93,49 +89,68 @@ func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 			if e := validateUniquePorts(a.Ports, a.Name); e != nil {
 				return e
 			}
-			for _, port := range a.Ports {
-				if port < MinPort || port > MaxPort {
-					return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
-				}
-			}
 		} else {
 			a.Ports = []int{80, 443, 8080}
 		}
 	} else {
-		if len(a.Ports) > 0 {
-			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty")
+		if e := validate.Var(a.Ports, "len=0"); e != nil {
+			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty for Orchestrator: %s", string(orchestratorType))
 		}
-	}
-	if e := validateStorageProfile(a.StorageProfile); e != nil {
-		return e
 	}
 	return nil
 }
 
 // Validate implements APIObject
 func (l *LinuxProfile) Validate() error {
-	if e := validateName(l.AdminUsername, "LinuxProfile.AdminUsername"); e != nil {
-		return e
-	}
-	if len(l.SSH.PublicKeys) != 1 {
-		return errors.New("LinuxProfile.PublicKeys requires only 1 SSH Key")
-	}
-	if e := validateName(l.SSH.PublicKeys[0].KeyData, "LinuxProfile.PublicKeys.KeyData"); e != nil {
-		return e
+	// Don't need to call validate.Struct(l)
+	// It is handled by Properties.Validate()
+	if e := validate.Var(l.SSH.PublicKeys[0].KeyData, "required"); e != nil {
+		return fmt.Errorf("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string")
 	}
 	return nil
 }
 
+func handleValidationErrors(e validator.ValidationErrors) error {
+	err := e[0]
+	ns := err.Namespace()
+	switch ns {
+	case "Properties.OrchestratorProfile", "Properties.MasterProfile",
+		"Properties.MasterProfile.DNSPrefix", "Properties.MasterProfile.VMSize",
+		"Properties.LinuxProfile", "Properties.ServicePrincipalProfile.ClientID",
+		"Properties.ServicePrincipalProfile.Secret", "Properties.WindowsProfile.AdminUsername",
+		"Properties.WindowsProfile.AdminPassword":
+		return fmt.Errorf("missing %s", ns)
+	case "Properties.MasterProfile.Count":
+		return fmt.Errorf("MasterProfile count needs to be 1, 3, or 5")
+	case "Properties.MasterProfile.OSDiskSizeGB":
+		return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", err.Value().(int), MinDiskSizeGB, MaxDiskSizeGB)
+	case "Properties.MasterProfile.StorageProfile":
+		return fmt.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", err.Value().(string), StorageAccount, ManagedDisks)
+	default:
+		if strings.HasPrefix(ns, "Properties.AgentPoolProfiles") {
+			switch {
+			case strings.HasSuffix(ns, ".Name") || strings.HasSuffix(ns, "VMSize"):
+				return fmt.Errorf("missing %s", ns)
+			case strings.HasSuffix(ns, ".Count"):
+				return fmt.Errorf("AgentPoolProfile count needs to be in the range [%d,%d]", MinAgentCount, MaxAgentCount)
+			case strings.HasSuffix(ns, ".OSDiskSizeGB"):
+				return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", err.Value().(int), MinDiskSizeGB, MaxDiskSizeGB)
+			case strings.Contains(ns, ".Ports"):
+				return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
+			case strings.HasSuffix(ns, ".StorageProfile"):
+				return fmt.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", err.Value().(string), StorageAccount, ManagedDisks)
+			default:
+				break
+			}
+		}
+	}
+	return fmt.Errorf("Namespace %s is not caught, %+v", ns, e)
+}
+
 // Validate implements APIObject
 func (a *Properties) Validate() error {
-	if a.OrchestratorProfile == nil {
-		return fmt.Errorf("missing OrchestratorProfile")
-	}
-	if a.MasterProfile == nil {
-		return fmt.Errorf("missing MasterProfile")
-	}
-	if a.LinuxProfile == nil {
-		return fmt.Errorf("missing LinuxProfile")
+	if e := validate.Struct(a); e != nil {
+		return handleValidationErrors(e.(validator.ValidationErrors))
 	}
 	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
@@ -146,30 +161,24 @@ func (a *Properties) Validate() error {
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
 		return e
 	}
+
 	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
-		if a.ServicePrincipalProfile == nil {
-			return fmt.Errorf("missing ServicePrincipalProfile")
+		if (len(a.ServicePrincipalProfile.Secret) == 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) == 0) ||
+			(len(a.ServicePrincipalProfile.Secret) != 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0) {
+			return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 		}
-		if len(a.ServicePrincipalProfile.ClientID) == 0 {
-			return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
-		}
-		if len(a.ServicePrincipalProfile.Secret) == 0 {
-			return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+
+		if len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0 {
+			parts := keyvaultSecretPathRegex.FindStringSubmatch(a.ServicePrincipalProfile.KeyvaultSecretRef)
+			if len(parts) != 5 {
+				return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
+			}
 		}
 	}
 
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
 		if e := agentPoolProfile.Validate(a.OrchestratorProfile.OrchestratorType); e != nil {
 			return e
-		}
-		switch agentPoolProfile.StorageProfile {
-		case StorageAccount:
-		case ManagedDisks:
-		case "":
-		default:
-			{
-				return fmt.Errorf("unknown storage type '%s' for agent pool '%s'.  Specify either %s, or %s", agentPoolProfile.StorageProfile, agentPoolProfile.Name, StorageAccount, ManagedDisks)
-			}
 		}
 
 		if agentPoolProfile.OSType == Windows {
@@ -197,20 +206,6 @@ func (a *Properties) Validate() error {
 	}
 	if e := validateVNET(a); e != nil {
 		return e
-	}
-	return nil
-}
-
-func validateNameEmpty(name string, label string) error {
-	if name != "" {
-		return fmt.Errorf("%s must be an empty value", label)
-	}
-	return nil
-}
-
-func validateName(name string, label string) error {
-	if name == "" {
-		return fmt.Errorf("%s must be a non-empty value", label)
 	}
 	return nil
 }
@@ -248,19 +243,6 @@ func validateUniqueProfileNames(profiles []*AgentPoolProfile) error {
 			return fmt.Errorf("profile name '%s' already exists, profile names must be unique across pools", profile.Name)
 		}
 		profileNames[profile.Name] = true
-	}
-	return nil
-}
-
-func validateStorageProfile(storageProfile string) error {
-	switch storageProfile {
-	case StorageAccount:
-	case ManagedDisks:
-	case "":
-	default:
-		{
-			return fmt.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", storageProfile, StorageAccount, ManagedDisks)
-		}
 	}
 	return nil
 }
