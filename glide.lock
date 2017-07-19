@@ -1,5 +1,5 @@
-hash: 73d446bde305bc460c8eda98525b92ae41ec1676a34643d34d274311b4b62bae
-updated: 2017-07-14T14:44:35.503228239-07:00
+hash: 47bdadf4225410bca8b7b7ad7e6512555c80a60db5ec90d874a0ea2ca876b3e5
+updated: 2017-07-15T01:36:15.006608-07:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -8,6 +8,7 @@ imports:
   subpackages:
   - arm/authorization
   - arm/compute
+  - arm/disk
   - arm/graphrbac
   - arm/network
   - arm/resources/resources
