@@ -246,6 +246,48 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 }
 
+func Test_AadProfile_Validate(t *testing.T) {
+	t.Run("Valid aadProfile should pass", func(t *testing.T) {
+		for _, aadProfile := range []AadProfile{
+			{
+				ClientAppID: "92444486-5bc3-4291-818b-d53ae480991b",
+				ServerAppID: "403f018b-4d89-495b-b548-0cf9868cdb0a",
+			},
+			{
+				ClientAppID: "92444486-5bc3-4291-818b-d53ae480991b",
+				ServerAppID: "403f018b-4d89-495b-b548-0cf9868cdb0a",
+				TenantID:    "feb784f6-7174-46da-aeae-da66e80c7a11",
+			},
+		} {
+			if err := aadProfile.Validate(); err != nil {
+				t.Errorf("should not error %v", err)
+			}
+		}
+	})
+
+	t.Run("Invalid aadProfiles should NOT pass", func(t *testing.T) {
+		for _, aadProfile := range []AadProfile{
+			{
+				ClientAppID: "1",
+				ServerAppID: "d",
+			},
+			{
+				ClientAppID: "6a247d73-ae33-4559-8e5d-4001fdc17b15",
+			},
+			{
+				ClientAppID: "92444486-5bc3-4291-818b-d53ae480991b",
+				ServerAppID: "403f018b-4d89-495b-b548-0cf9868cdb0a",
+				TenantID:    "1",
+			},
+			{},
+		} {
+			if err := aadProfile.Validate(); err == nil {
+				t.Errorf("error should have occurred")
+			}
+		}
+	})
+}
+
 func getK8sDefaultProperties() *Properties {
 	return &Properties{
 		OrchestratorProfile: &OrchestratorProfile{
