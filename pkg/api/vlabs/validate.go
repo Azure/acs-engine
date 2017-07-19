@@ -9,6 +9,12 @@ import (
 	"time"
 )
 
+var keyvaultSecretPathRegex *regexp.Regexp
+
+func init() {
+	keyvaultSecretPathRegex = regexp.MustCompile(`^(/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/\S+)/secrets/([^/\s]+)(/(\S+))?$`)
+}
+
 // Validate implements APIObject
 func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
@@ -29,6 +35,7 @@ func (o *OrchestratorProfile) Validate() error {
 
 	case Kubernetes:
 		switch o.OrchestratorVersion {
+		case Kubernetes170:
 		case Kubernetes166:
 		case Kubernetes162:
 		case Kubernetes160:
@@ -228,8 +235,22 @@ func (a *Properties) Validate() error {
 		useManagedIdentity := (a.OrchestratorProfile.KubernetesConfig != nil &&
 			a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity)
 
-		if !useManagedIdentity && (len(a.ServicePrincipalProfile.ClientID) == 0 || len(a.ServicePrincipalProfile.Secret) == 0) {
-			return fmt.Errorf("the service principal clientId and clientSecret must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+		if !useManagedIdentity {
+			if len(a.ServicePrincipalProfile.ClientID) == 0 {
+				return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+
+			if (len(a.ServicePrincipalProfile.Secret) == 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) == 0) ||
+				(len(a.ServicePrincipalProfile.Secret) != 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0) {
+				return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+
+			if len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0 {
+				parts := keyvaultSecretPathRegex.FindStringSubmatch(a.ServicePrincipalProfile.KeyvaultSecretRef)
+				if len(parts) != 5 {
+					return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
+				}
+			}
 		}
 	}
 
@@ -325,6 +346,7 @@ func (a *KubernetesConfig) Validate(k8sVersion OrchestratorVersion) error {
 	// k8s versions that have cloudprovider backoff enabled
 	var backoffEnabledVersions = map[OrchestratorVersion]bool{
 		Kubernetes166: true,
+		Kubernetes170: true,
 	}
 	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
 	ratelimitEnabledVersions := backoffEnabledVersions

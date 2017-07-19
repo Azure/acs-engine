@@ -37,14 +37,6 @@
       "location": "southcentralus"
     },
     {
-      "cluster_definition": "disks-managed/swarm-vmas-windows.json",
-      "location": "southcentralus"
-    },
-    {
-      "cluster_definition": "disks-managed/swarm-vmss.json",
-      "location": "southcentralus"
-    },
-    {
       "cluster_definition": "disks-managed/swarmmode-vmas.json",
       "location": "southcentralus"
     },
@@ -58,10 +50,6 @@
     },
     {
       "cluster_definition": "disks-storageaccount/kubernetes.json",
-      "location": "westus"
-    },
-    {
-      "cluster_definition": "disks-storageaccount/swarm.json",
       "location": "westus"
     },
     {

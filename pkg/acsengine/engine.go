@@ -425,7 +425,12 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		if properties.OrchestratorProfile.KubernetesConfig != nil &&
 			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
 			addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
-			addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
+
+			if properties.ServicePrincipalProfile.KeyvaultSecretRef != "" {
+				addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.KeyvaultSecretRef, false)
+			} else {
+				addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
+			}
 		}
 	}
 
@@ -873,7 +878,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				case "kubeClusterCidr":
 					val = "10.244.0.0/16"
 				case "kubeBinariesVersion":
-					val = string(api.KubernetesLatest)
+					val = string(api.KubernetesDefaultVersion)
 				case "caPrivateKey":
 					// The base64 encoded "NotAvailable"
 					val = "Tm90QXZhaWxhYmxlCg=="

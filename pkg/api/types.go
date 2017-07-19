@@ -55,8 +55,9 @@ type Properties struct {
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
 type ServicePrincipalProfile struct {
-	ClientID string `json:"servicePrincipalClientID,omitempty"`
-	Secret   string `json:"servicePrincipalClientSecret,omitempty"`
+	ClientID          string `json:"servicePrincipalClientID,omitempty"`
+	Secret            string `json:"servicePrincipalClientSecret,omitempty"`
+	KeyvaultSecretRef string `json:"keyvaultSecretRef,omitempty"`
 }
 
 // CertificateProfile represents the definition of the master cluster
