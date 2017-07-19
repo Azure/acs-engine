@@ -49,19 +49,8 @@ func (i *Interpolator) Interpolate() error {
 		}
 	}
 
-	// Watch for panics
-	//defer func() {
-	//	if r := recover(); r != nil {
-	//		//err = fmt.Errorf("%v", r)
-	//		log.Fatal(err)
-	//		// invalidate the template and the parameters
-	//		//templateRaw = ""
-	//		//parametersRaw = ""
-	//	}
-	//}()
-
 	var b bytes.Buffer
-	if err = templ.ExecuteTemplate(&b, "kubernetesbase.t", i.agentPool.Properties); err != nil {
+	if err = templ.ExecuteTemplate(&b, "azuredeploy.json.template", i.agentPool.Properties); err != nil {
 		return fmt.Errorf("Unable to execute template: %v", err)
 	}
 
