@@ -44,8 +44,10 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 
 	logger.Infof("deleting nic: %s/%s", resourceGroup, nicName)
 	_, nicErrChan := az.DeleteNetworkInterface(resourceGroup, nicName, nil)
-	if err := <-nicErrChan; err != nil {
-		return err
+
+	logger.Infof("waiting for nic deletion: %s/%s", resourceGroup, nicName)
+	if nicErr := <-nicErrChan; nicErr != nil {
+		return nicErr
 	}
 
 	if vhd != nil {
@@ -72,11 +74,6 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 		if err := <-diskErrChan; err != nil {
 			return err
 		}
-	}
-
-	logger.Infof("waiting for nic deletion: %s/%s", resourceGroup, nicName)
-	if nicErr := <-nicErrChan; nicErr != nil {
-		return nicErr
 	}
 
 	return nil

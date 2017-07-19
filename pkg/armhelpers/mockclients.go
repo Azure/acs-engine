@@ -2,7 +2,6 @@ package armhelpers
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/arm/authorization"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
@@ -168,7 +167,6 @@ func (mc *MockACSEngineClient) DeleteVirtualMachine(resourceGroup, name string, 
 				close(respChan)
 			}()
 			errChan <- fmt.Errorf("DeleteVirtualMachine failed")
-			time.Sleep(1 * time.Second)
 		}()
 		return respChan, errChan
 	}
@@ -184,7 +182,6 @@ func (mc *MockACSEngineClient) DeleteVirtualMachine(resourceGroup, name string, 
 		}()
 		errChan <- nil
 		respChan <- compute.OperationStatusResponse{}
-		time.Sleep(1 * time.Second)
 	}()
 	return respChan, errChan
 }
@@ -211,7 +208,6 @@ func (mc *MockACSEngineClient) DeleteNetworkInterface(resourceGroup, nicName str
 				close(respChan)
 			}()
 			errChan <- fmt.Errorf("DeleteNetworkInterface failed")
-			time.Sleep(1 * time.Second)
 		}()
 		return respChan, errChan
 	}
@@ -227,7 +223,6 @@ func (mc *MockACSEngineClient) DeleteNetworkInterface(resourceGroup, nicName str
 		}()
 		errChan <- nil
 		respChan <- autorest.Response{}
-		time.Sleep(1 * time.Second)
 	}()
 	return respChan, errChan
 }
@@ -280,7 +275,6 @@ func (mc *MockACSEngineClient) DeleteManagedDisk(resourceGroupName string, diskN
 		}()
 		errChan <- nil
 		respChan <- disk.OperationStatusResponse{}
-		time.Sleep(1 * time.Second)
 	}()
 	return respChan, errChan
 }
