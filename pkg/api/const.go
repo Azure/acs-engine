@@ -63,6 +63,8 @@ const (
 	Kubernetes166 OrchestratorVersion = "1.6.6"
 	// Kubernetes166 is the string constant for Kubernetes 1.7.0
 	Kubernetes170 OrchestratorVersion = "1.7.0"
+	// Kubernetes166 is the string constant for Kubernetes 1.7.1
+	Kubernetes171 OrchestratorVersion = "1.7.1"
 	// KubernetesDefaultVersion is the string constant for current Kubernetes version
 	KubernetesDefaultVersion OrchestratorVersion = Kubernetes166
 )

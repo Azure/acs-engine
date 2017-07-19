@@ -91,7 +91,17 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.14.4",
 		"pause":           "pause-amd64:3.0",
 		"windowszip":      "v1.7.1intwinnat.zip",
-
+		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
+		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
+		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
+		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
+		"backoffretries":  strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
+		"backoffjitter":   strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
+		"backoffduration": strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
+		"backoffexponent": strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
+		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
+		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
+	},
 	api.Kubernetes170: {
 		"hyperkube":    "hyperkube-amd64:v1.7.0",
 		"dashboard":    "kubernetes-dashboard-amd64:v1.6.1",
@@ -103,7 +113,6 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.14.4",
 		"pause":        "pause-amd64:3.0",
 		"windowszip":   "v1.7.0intwinnat.zip",
-
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
