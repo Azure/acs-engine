@@ -94,7 +94,7 @@ var KubeImages = map[api.OrchestratorVersion]map[string]string{
 		"addonresizer": "addon-resizer:2.0",
 		"heapster":     "heapster:v1.4.0",
 		"dns":          "k8s-dns-kube-dns-amd64:1.14.4",
-		"addonmanager": "kube-addon-manager-amd64:v6.1.2",
+		"addonmanager": "kube-addon-manager-amd64:v6.4-beta.2",
 		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.14.4",
 >>>>>>> master
 		"pause":        "pause-amd64:3.0",
