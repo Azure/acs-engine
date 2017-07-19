@@ -462,7 +462,6 @@ func convertLinuxProfileToVLabs(obj *LinuxProfile, vlabsProfile *vlabs.LinuxProf
 		vlabsProfile.Secrets = append(vlabsProfile.Secrets, *secret)
 	}
 }
-
 func convertWindowsProfileToV20160930(api *WindowsProfile, v20160930 *v20160930.WindowsProfile) {
 	v20160930.AdminUsername = api.AdminUsername
 	v20160930.AdminPassword = api.AdminPassword

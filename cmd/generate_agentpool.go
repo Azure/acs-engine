@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/interpolator/agentpool"
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -33,7 +34,11 @@ func NewGenerateAgentpoolCmd() *cobra.Command {
 				log.Fatal(err)
 			}
 			genOptions.Validate(cmd, args)
-			return genOptions.Run()
+			err = genOptions.Run()
+			if err != nil {
+				log.Fatal(err)
+			}
+			return nil
 		},
 	}
 
@@ -49,7 +54,6 @@ func NewGenerateAgentpoolCmd() *cobra.Command {
 }
 
 func (gc *GenerateOptions) Init(cmd *cobra.Command, args []string) error {
-
 
 	if gc.ApiModelPath == "" {
 		if len(args) > 0 {
@@ -68,7 +72,6 @@ func (gc *GenerateOptions) Init(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("error parsing the api model: %v", err)
 	}
-
 
 	return nil
 }
@@ -130,7 +133,11 @@ func (gc *GenerateOptions) Validate(cmd *cobra.Command, args []string) {
 func (gc *GenerateOptions) Run() error {
 	//log.Infoln("Generating assets...")
 
-	fmt.Println(gc.ContainerService)
+	interpolator := agentpool.NewAgentPoolInterpolator(gc.ContainerService)
+	err := interpolator.Interpolate()
+	if err != nil {
+		return fmt.Errorf("Major error on interpolate: %v", err)
+	}
 
 	//templateGenerator, err := acsengine.InitializeTemplateGenerator(gc.classicMode)
 	//if err != nil {
@@ -156,6 +163,8 @@ func (gc *GenerateOptions) Run() error {
 	//if err = acsengine.WriteArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
 	//	log.Fatalf("error writing artifacts: %s \n", err.Error())
 	//}
+
+	fmt.Println(interpolator.GetTemplate())
 
 	return nil
 }

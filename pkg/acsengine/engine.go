@@ -17,7 +17,6 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/ghodss/yaml"
-	"os"
 )
 
 const (
@@ -231,25 +230,6 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 		return "", "", false, e
 	}
 
-	fmt.Println(containerService)
-	os.Exit(1)
-
-	// ----------------------
-	//agentoutputs.t
-	//agentparams.t
-	//classicparams.t
-	//masteroutputs.t
-	//masterparams.t
-	//windowsparams.t
-	//kubernetesbase.t
-	//kubernetesagentresourcesvmas.t
-	//kubernetesagentvars.t
-	//kubernetesmasterresources.t
-	//kubernetesmastervars.t
-	//kubernetesparams.t
-	//kuberneteswinagentresourcesvmas.t
-	// ----------------------
-
 	for _, file := range files {
 		bytes, e := Asset(file)
 		if e != nil {
@@ -323,7 +303,6 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
 	var files []string
 	var baseFile string
-
 	if properties.OrchestratorProfile.OrchestratorType == api.DCOS {
 		files = append(commonTemplateFiles, dcosTemplateFiles...)
 		baseFile = dcosBaseFile
@@ -350,7 +329,7 @@ func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
 	switch GetCloudTargetEnv(location) {
 	case azureChinaCloud:
 		return AzureChinaCloudSpec
-	//TODO - add cloud specs for germany and usgov
+		//TODO - add cloud specs for germany and usgov
 	default:
 		return AzureCloudSpec
 	}
