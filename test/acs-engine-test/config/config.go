@@ -10,6 +10,7 @@ import (
 type Deployment struct {
 	ClusterDefinition string `json:"cluster_definition"`
 	Location          string `json:"location"`
+	TestCategory      string `json:"category,omitempty"`
 	SkipValidation    bool   `json:"skip_validation,omitempty"`
 }
 
