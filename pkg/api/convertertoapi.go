@@ -858,6 +858,7 @@ func convertVLabsCertificateProfile(vlabs *vlabs.CertificateProfile, api *Certif
 }
 
 func convertVLabsAadProfile(vlabs *vlabs.AadProfile, api *AadProfile) {
+	api.ClientAppID = vlabs.ClientAppID
 	api.ServerAppID = vlabs.ServerAppID
 	api.TenantID = vlabs.TenantID
 }
