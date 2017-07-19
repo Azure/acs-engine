@@ -109,12 +109,12 @@ func (i *Interpolator) GetTemplate() ([]byte, error) {
 	if i.interpolated == false {
 		return []byte(""), fmt.Errorf("Unable to get template before calling Interpolate()")
 	}
-	return []byte(""), nil
+	return i.template, nil
 }
 
 func (i *Interpolator) GetParameters() ([]byte, error) {
 	if i.interpolated == false {
 		return []byte(""), fmt.Errorf("Unable to get template before calling Interpolate()")
 	}
-	return []byte(""), nil
+	return i.parameters, nil
 }

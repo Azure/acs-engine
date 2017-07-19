@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
 	"github.com/Azure/acs-engine/pkg/interpolator/agentpool"
+	"github.com/Azure/acs-engine/pkg/interpolatorwriter"
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -164,7 +165,11 @@ func (gc *GenerateOptions) Run() error {
 	//	log.Fatalf("error writing artifacts: %s \n", err.Error())
 	//}
 
-	fmt.Println(interpolator.GetTemplate())
-
+	iw := interpolatorwriter.NewInterpolatorWriter("./_output", "azuredeploy.json", "azuredeploy.params.json", interpolator)
+	err = iw.Write()
+	if err != nil {
+		return fmt.Errorf("Unable to write template: %v", err)
+	}
 	return nil
+
 }
