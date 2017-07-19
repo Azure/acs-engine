@@ -30,6 +30,7 @@ metadata:
     k8s-app: heapster
     version: v1.4.0
     kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
   namespace: kube-system
   name: heapster-v1.4.0
 spec:
@@ -57,13 +58,6 @@ spec:
         - "/heapster"
         - "--source=kubernetes.summary_api:\"\""
         name: heapster
-        resources:
-          requests:
-            cpu: 80m
-            memory: 140Mi
-          limits:
-            cpu: 80m
-            memory: 140Mi
       - image: <kubernetesAddonResizerSpec>
         command:
         - "/pod_nanny"
