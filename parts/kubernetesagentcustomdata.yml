@@ -138,6 +138,20 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionScript"}}
 
+- path: "/opt/azure/containers/kubelet-restart.sh"
+  permissions: "0744"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "kubeletRestartScript"}}
+
+- path: "/opt/azure/containers/kubelet-restart-cancel.sh"
+  permissions: "0744"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "kubeletRestartCancelScript"}}
+
 runcmd:
 - apt-get update
 - apt-get install -y apt-transport-https ca-certificates nfs-common

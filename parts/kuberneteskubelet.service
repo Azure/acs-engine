@@ -13,6 +13,8 @@ ExecStartPre=/bin/bash -c "if [ $(mount | grep \"/var/lib/kubelet\" | wc -l) -le
 ExecStartPre=/bin/mount --make-shared /var/lib/kubelet
 ExecStartPre=-/sbin/ebtables -t nat --list
 ExecStartPre=-/sbin/iptables -t nat --list
+ExecStartPre=/opt/azure/containers/kubelet-restart-cancel.sh
+ExecStartPost=/usr/bin/systemd-run --on-active=40 --on-unit-active=20 --unit=kubelet-restart /opt/azure/containers/kubelet-restart.sh
 ExecStart=/usr/bin/docker run \
   --net=host \
   --pid=host \
