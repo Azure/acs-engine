@@ -181,9 +181,13 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
     if ($global:KubeBinariesVersion -ge "1.6.0")
     {
         # stop using container runtime interface from 1.6.0+ (officially deprecated from 1.7.0)
-        $KubeletArgList += "--enable-cri=false"
+        if ($global:KubeBinariesVersion -lt "1.7.0")
+        {
+            $KubeletArgList += "--enable-cri=false"
+            $KubeletCommandLine += " --enable-cri=false"
+        }
         # more time is needed to pull windows server images (flag supported from 1.6.0)
-        $KubeletCommandLine += " --enable-cri=false --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
+        $KubeletCommandLine += " --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
     }
     $KubeletArgListStr = "`"" + ($KubeletArgList -join "`",`"") + "`""
 
