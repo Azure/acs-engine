@@ -227,6 +227,7 @@
       ],
       "type": "string"
     },
+{{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {
         "description": "Client ID (used by cloudprovider)"
@@ -239,6 +240,7 @@
       },
       "type": "securestring"
     },
+{{ end }}
     "masterOffset": {
       "defaultValue": 0,
       "allowedValues": [

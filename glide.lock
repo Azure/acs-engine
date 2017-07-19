@@ -1,6 +1,8 @@
 hash: 47bdadf4225410bca8b7b7ad7e6512555c80a60db5ec90d874a0ea2ca876b3e5
 updated: 2017-07-15T01:36:15.006608-07:00
 imports:
+- name: github.com/alexcesaro/statsd
+  version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
 - name: github.com/Azure/azure-sdk-for-go
   version: 59c277f1b488b81b1a5f944212f25b69bea8ece3
   subpackages:
