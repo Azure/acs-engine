@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
 	"github.com/Azure/acs-engine/pkg/interpolator/agentpool"
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -17,8 +17,8 @@ type GenerateOptions struct {
 	//NoPrettyPrint     bool
 	//ParametersOnly    bool
 
-	ContainerService *api.ContainerService
-	ApiVersion       string
+	AgentPool  *kubernetesagentpool.AgentPool
+	ApiVersion string
 }
 
 func NewGenerateAgentpoolCmd() *cobra.Command {
@@ -68,7 +68,7 @@ func (gc *GenerateOptions) Init(cmd *cobra.Command, args []string) error {
 	}
 
 	var err error
-	gc.ContainerService, gc.ApiVersion, err = api.LoadContainerServiceFromFile(gc.ApiModelPath)
+	gc.AgentPool, gc.ApiVersion, err = kubernetesagentpool.LoadAgentPoolFromFile(gc.ApiModelPath)
 	if err != nil {
 		return fmt.Errorf("error parsing the api model: %v", err)
 	}
@@ -133,7 +133,7 @@ func (gc *GenerateOptions) Validate(cmd *cobra.Command, args []string) {
 func (gc *GenerateOptions) Run() error {
 	//log.Infoln("Generating assets...")
 
-	interpolator := agentpool.NewAgentPoolInterpolator(gc.ContainerService)
+	interpolator := agentpool.NewAgentPoolInterpolator(gc.AgentPool, "kubernetes/agentpool")
 	err := interpolator.Interpolate()
 	if err != nil {
 		return fmt.Errorf("Major error on interpolate: %v", err)

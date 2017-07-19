@@ -4,7 +4,7 @@ const (
 	APIVersion = "kubernetesagentpool"
 )
 
-type ContainerService struct {
+type AgentPool struct {
 	ID       string                `json:"id,omitempty"`
 	Location string                `json:"location,omitempty"`
 	Name     string                `json:"name,omitempty"`
@@ -16,6 +16,7 @@ type ContainerService struct {
 }
 
 type Properties struct {
+	KubernetesVersion       string                   `json:"kubernetesEndpoint"`
 	KubernetesEndpoint      string                   `json:"kubernetesEndpoint"`
 	DnsPrefix               string                   `json:"dnsPrefix,omitempty"`
 	Version                 string                   `json:"version,omitempty"`
