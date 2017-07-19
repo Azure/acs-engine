@@ -36,11 +36,6 @@ spec:
         kubernetes.io/cluster-service: "true"
         version: v20
     spec:
-<<<<<<< HEAD
-      tolerations:
-      - key: "CriticalAddonsOnly"
-        operator: "Exists"
-=======
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -53,7 +48,9 @@ spec:
                   values:
                   - kube-dns
               topologyKey: kubernetes.io/hostname
->>>>>>> master
+      tolerations:
+      - key: "CriticalAddonsOnly"
+        operator: "Exists"
       volumes:
       - name: kube-dns-config
         configMap:
@@ -143,6 +140,10 @@ spec:
             cpu: 10m
             memory: 50Mi
       dnsPolicy: Default
+<<<<<<< HEAD
       serviceAccountName: kube-dns      
+=======
+      serviceAccountName: kube-dns
+>>>>>>> 9b607d3ca927c1f75e2b8a991424d8e304217455
       nodeSelector:
         beta.kubernetes.io/os: linux
