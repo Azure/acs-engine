@@ -235,12 +235,14 @@ type AgentPoolProfile struct {
 
 // AadProfile specifies attributes for AAD integration
 type AadProfile struct {
+	// The client AAD application ID.
+	ClientAppID string `json:"clientAppID,omitempty"`
 	// The server AAD application ID.
 	ServerAppID string `json:"serverAppID,omitempty"`
 	// The AAD tenant ID to use for authentication.
 	// If not specified, will use the tenant of the deployment subscription.
 	// Optional
-	TenantID string `json:"tenantId,omitempty"`
+	TenantID string `json:"tenantID,omitempty"`
 }
 
 // KeyVaultSecrets specifies certificates to install on the pool
