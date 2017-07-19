@@ -134,6 +134,7 @@ type KubernetesConfig struct {
 	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
 	NetworkPolicy       string `json:"networkPolicy,omitempty"`
 	DockerBridgeSubnet  string `json:"DockerBridgeSubnet,omitempty"`
+	EnableRbac          bool   `json:"enableRbac,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
