@@ -99,6 +99,62 @@
             }
           }
         ]
+{{if .MasterProfile.OAuthEnabled}}
+        ,"loadBalancingRules": [
+	        {
+            "name": "LBRule443",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('masterLbIPConfigID')]"
+              },
+              "frontendPort": 443,
+              "backendPort": 443,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4,
+              "protocol": "Tcp",
+              "loadDistribution": "Default",
+              "backendAddressPool": {
+                "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
+              },
+              "probe": {
+                "id": "[concat(variables('masterLbID'),'/probes/dcosMasterProbe')]"
+              }
+            }
+          },
+          {
+            "name": "LBRule80",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('masterLbIPConfigID')]"
+              },
+              "frontendPort": 80,
+              "backendPort": 80,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4,
+              "protocol": "Tcp",
+              "loadDistribution": "Default",
+              "backendAddressPool": {
+                "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
+              },
+              "probe": {
+                "id": "[concat(variables('masterLbID'),'/probes/dcosMasterProbe')]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "dcosMasterProbe",
+            "properties": {
+              "protocol": "Http",
+              "port": 5050,
+              "requestPath": "/health",
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ]
+{{end}}
       },
       "type": "Microsoft.Network/loadBalancers"
     },
@@ -166,6 +222,34 @@
                 },
                 "name": "sshPort22"
             },
+{{if .MasterProfile.OAuthEnabled}}
+            {
+                "name": "http",
+                "properties": {
+                    "protocol": "TCP",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "80",
+                    "sourceAddressPrefix": "[variables('masterHttpSourceAddressPrefix')]",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 202,
+                    "direction": "Inbound"
+                }
+            },
+            {
+                "name": "https",
+                "properties": {
+                    "protocol": "TCP",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "443",
+                    "sourceAddressPrefix": "[variables('masterHttpSourceAddressPrefix')]",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 203,
+                    "direction": "Inbound"
+                }
+            },
+{{end}}
 {{end}}
             {
                 "properties": {

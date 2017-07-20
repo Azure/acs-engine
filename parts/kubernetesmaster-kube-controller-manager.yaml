@@ -21,6 +21,8 @@ spec:
         - "--cloud-provider=azure"
         - "--cloud-config=/etc/kubernetes/azure.json"
         - "--root-ca-file=/etc/kubernetes/certs/ca.crt"
+        - "--cluster-signing-cert-file=/etc/kubernetes/certs/ca.crt"
+        - "--cluster-signing-key-file=/etc/kubernetes/certs/ca.key"
         - "--service-account-private-key-file=/etc/kubernetes/certs/apiserver.key"
         - "--leader-elect=true"
         - "<kubernetesEnableRbac>"

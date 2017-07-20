@@ -27,6 +27,7 @@
     "cloudProviderRatelimitQPS": "[parameters('cloudProviderRatelimitQPS')]",
     "cloudProviderRatelimitBucket": "[parameters('cloudProviderRatelimitBucket')]",
     "useManagedIdentityExtension": "{{ UseManagedIdentity }}",
+    "useInstanceMetadata": "{{ UseInstanceMetadata }}",
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
     "networkPolicy": "[parameters('networkPolicy')]",

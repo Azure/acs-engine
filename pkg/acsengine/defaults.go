@@ -163,6 +163,10 @@ func setMasterNetworkDefaults(a *api.Properties) {
 			a.MasterProfile.IPAddressCount = DefaultAgentIPAddressCount
 		}
 	}
+
+	if a.MasterProfile.HttpSourceAddressPrefix == "" {
+		a.MasterProfile.HttpSourceAddressPrefix = "*"
+	}
 }
 
 // SetAgentNetworkDefaults for agents

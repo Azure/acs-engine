@@ -139,7 +139,7 @@ type KubernetesConfig struct {
 	ClusterSubnet                    string  `json:"clusterSubnet,omitempty"`
 	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
 	DockerBridgeSubnet               string  `json:"DockerBridgeSubnet,omitempty"`
-	EnableRbac          			 bool    `json:"enableRbac,omitempty"`
+	EnableRbac                       bool    `json:"enableRbac,omitempty"`
 	NodeStatusUpdateFrequency        string  `json:"nodeStatusUpdateFrequency,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string  `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string  `json:"ctrlMgrPodEvictionTimeout,omitempty"`
@@ -154,7 +154,7 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitBucket     int     `json:"cloudProviderRateLimitBucket,omitempty"`
 	UseManagedIdentity               bool    `json:"useManagedIdentity,omitempty"`
 	CustomHyperkubeImage             string  `json:"customHyperkubeImage,omitempty"`
-	EnableRbac          bool   `json:"enableRbac,omitempty"`
+	UseInstanceMetadata              bool    `json:"useInstanceMetadata,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -167,6 +167,8 @@ type MasterProfile struct {
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
 	StorageProfile           string `json:"storageProfile,omitempty"`
+	HttpSourceAddressPrefix  string `json:"httpSourceAddressPrefix,omitempty"`
+	OAuthEnabled             bool   `json:"oauthEnabled"`
 
 	// subnet is internal
 	subnet string
