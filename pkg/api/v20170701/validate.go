@@ -25,7 +25,6 @@ func (o *OrchestratorProfile) Validate() error {
 	// Don't need to call validate.Struct(o)
 	// It is handled by Properties.Validate()
 	switch o.OrchestratorType {
-	case Swarm:
 	case DCOS:
 		switch o.OrchestratorVersion {
 		case DCOS187:

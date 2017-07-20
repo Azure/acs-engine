@@ -11,7 +11,6 @@ type UpgradeContainerService struct {
 func (ucs *UpgradeContainerService) Validate() error {
 	switch ucs.OrchestratorProfile.OrchestratorType {
 	case DCOS:
-	case Swarm:
 	case SwarmMode:
 		return fmt.Errorf("Upgrade is not supported for orchestrator: %s", ucs.OrchestratorProfile.OrchestratorType)
 	case Kubernetes:

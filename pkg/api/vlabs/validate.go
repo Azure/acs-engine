@@ -30,7 +30,6 @@ func (o *OrchestratorProfile) Validate() error {
 			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
 		}
 
-	case Swarm:
 	case SwarmMode:
 
 	case Kubernetes:
@@ -281,7 +280,6 @@ func (a *Properties) Validate() error {
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
-			case Swarm:
 			case Kubernetes:
 			case SwarmMode:
 			default:
@@ -308,7 +306,6 @@ func (a *Properties) Validate() error {
 				return fmt.Errorf("missing WindowsProfile")
 			}
 			switch a.OrchestratorProfile.OrchestratorType {
-			case Swarm:
 			case SwarmMode:
 			case Kubernetes:
 			default:
