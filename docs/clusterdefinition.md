@@ -154,3 +154,13 @@ For apiVersion "2016-03-30", a cluster may have only 1 agent pool profiles.
 |---|---|---|
 |adminUsername|yes|describes the username to be used on all linux clusters|
 |ssh.publicKeys[0].keyData|yes|The public SSH key used for authenticating access to all Linux nodes in the cluster.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation).|
+
+### aadProfile
+
+`linuxProfile` provides [AAD integration](kubernetes.aad.md) configuration for the cluster, currently only available for Kubernetes orchestrator.
+
+|Name|Required|Description|
+|---|---|---|
+|clientAppID|yes|describes the client AAD application ID|
+|serverAppID|yes|describes the server AAD application ID|
+|tenantID|no|describes the AAD tenant ID to use for authentication. If not specified, will use the tenant of the deployment subscription.|
