@@ -81,7 +81,7 @@
       "location": "westus"
     },
     {
-      "cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
+      "cluster_definition": "kubernetesversions/kubernetes1.7.1.json",
       "category": "version",
       "location": "westus2"
     },

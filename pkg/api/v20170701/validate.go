@@ -39,7 +39,7 @@ func (o *OrchestratorProfile) Validate() error {
 	case Kubernetes:
 		switch o.OrchestratorVersion {
 		case Kubernetes166:
-		case Kubernetes157:
+		case Kubernetes171:
 		case "":
 		default:
 			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
