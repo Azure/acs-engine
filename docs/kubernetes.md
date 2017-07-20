@@ -203,6 +203,13 @@ read and **write** permissions to the target Subscription.
 
 While [Managed disks](../examples/disks-managed/README.md) are supported for the node OS disks, they are currently not supported for persistent volumes. See https://github.com/kubernetes/kubernetes/pull/46360 for details.
 
+## Known issues and mitigations
+
+### Node "NotReady" due to lost TCP connection
+
+Nodes might appear in the "NotReady" state for approx. 15 minutes if master stops receiving updates from agents. This is a known upstream kubernetes [issue #41916] (https://github.com/kubernetes/kubernetes/issues/41916#issuecomment-312428731). This fixing PR is currently under review.
+To mitigate this problem in ACS-Engine, we implemented the fix in the kubelet service by setting net.ipv4.tcp_retries2=8.
+
 ## Learning More
 
 Here are recommended links to learn more about Kubernetes:
