@@ -179,7 +179,7 @@ updateDockerDaemonOptions()
     # also have it bind to the unix socket at /var/run/docker.sock
     sudo bash -c 'echo "[Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
+    ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
   " > /etc/systemd/system/docker.service.d/override.conf'
 }
 time updateDockerDaemonOptions

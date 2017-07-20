@@ -105,7 +105,7 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 			Locale: uc.locale,
 		},
 	}
-	uc.containerService, uc.apiVersion, err = apiloader.LoadContainerServiceFromFile(apiModelPath)
+	uc.containerService, uc.apiVersion, err = apiloader.LoadContainerServiceFromFile(apiModelPath, true)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}

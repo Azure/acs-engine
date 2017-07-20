@@ -49,6 +49,9 @@ type UpgradeCluster struct {
 	UpgradeModel *api.UpgradeContainerService
 }
 
+// MasterVMNamePrefix is the prefix for all master VM names for Kubernetes clusters
+const MasterVMNamePrefix = "k8s-master-"
+
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
 // UpgradeContainerService contains target state of the cluster that
 // the operation will drive towards.
@@ -109,7 +112,7 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 
 		vmOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
 		if vmOrchestratorTypeAndVersion == orchestratorTypeVersion {
-			if strings.Contains(*(vm.Name), "k8s-master-") {
+			if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
 				if !strings.Contains(*(vm.Name), uc.NameSuffix) {
 					log.Infoln(fmt.Sprintf("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s",
 						*vm.Name, uc.NameSuffix))
@@ -126,7 +129,7 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 					*vm.Name, uc.NameSuffix))
 				continue
 			}
-			if strings.Contains(*(vm.Name), "k8s-master-") {
+			if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
 				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (UpgradedMasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
 				*uc.UpgradedMasterVMs = append(*uc.UpgradedMasterVMs, vm)
 			} else {

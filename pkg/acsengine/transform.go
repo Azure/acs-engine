@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Sirupsen/logrus"
 )
 
@@ -26,6 +27,7 @@ const (
 	dataDisksFieldName             = "dataDisks"
 	createOptionFieldName          = "createOption"
 	tagsFieldName                  = "tags"
+	managedDiskFieldName           = "managedDisk"
 
 	// ARM resource Types
 	nsgResourceType  = "Microsoft.Network/networkSecurityGroups"
@@ -205,7 +207,7 @@ func (t *Transformer) removeImageReference(logger *logrus.Entry, resourcePropert
 }
 
 // NormalizeResourcesForK8sMasterUpgrade takes a template and removes elements that are unwanted in any scale up/down case
-func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, agentPoolsToPreserve map[string]bool) error {
+func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, isMasterManagedDisk bool, agentPoolsToPreserve map[string]bool) error {
 	resources := templateMap[resourcesFieldName].([]interface{})
 	logger.Infoln(fmt.Sprintf("Resource count before running NormalizeResourcesForK8sMasterUpgrade: %d", len(resources)))
 
@@ -252,6 +254,15 @@ func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry
 			dataDisks := storageProfile[dataDisksFieldName].([]interface{})
 			dataDisk, ok := dataDisks[0].(map[string]interface{})
 			dataDisk[createOptionFieldName] = "attach"
+
+			if isMasterManagedDisk {
+				managedDisk := compute.ManagedDiskParameters{}
+				id := "[concat('/subscriptions/', variables('subscriptionId'), '/resourceGroups/', variables('resourceGroup'),'/providers/Microsoft.Compute/disks/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
+				managedDisk.ID = &id
+				var diskInterface interface{}
+				diskInterface = &managedDisk
+				dataDisk[managedDiskFieldName] = diskInterface
+			}
 		}
 
 		tags, ok := resourceMap[tagsFieldName].(map[string]interface{})
@@ -304,9 +315,9 @@ func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry
 }
 
 // NormalizeResourcesForK8sAgentUpgrade takes a template and removes elements that are unwanted in any scale up/down case
-func (t *Transformer) NormalizeResourcesForK8sAgentUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, agentPoolsToPreserve map[string]bool) error {
+func (t *Transformer) NormalizeResourcesForK8sAgentUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, isMasterManagedDisk bool, agentPoolsToPreserve map[string]bool) error {
 	logger.Infoln(fmt.Sprintf("Running NormalizeResourcesForK8sMasterUpgrade...."))
-	if err := t.NormalizeResourcesForK8sMasterUpgrade(logger, templateMap, agentPoolsToPreserve); err != nil {
+	if err := t.NormalizeResourcesForK8sMasterUpgrade(logger, templateMap, isMasterManagedDisk, agentPoolsToPreserve); err != nil {
 		log.Fatalln(err)
 		return err
 	}

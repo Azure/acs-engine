@@ -1,7 +1,10 @@
 package armhelpers
 
 import (
+	"github.com/Azure/azure-sdk-for-go/arm/authorization"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Azure/azure-sdk-for-go/arm/disk"
+	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest"
 )
@@ -49,6 +52,24 @@ type ACSEngineClient interface {
 
 	// DeleteNetworkInterface deletes the specified network interface.
 	DeleteNetworkInterface(resourceGroup, nicName string, cancel <-chan struct{}) (<-chan autorest.Response, <-chan error)
+
+	//
+	// GRAPH
+
+	// CreateGraphAppliction creates an application via the graphrbac client
+	CreateGraphApplication(applicationCreateParameters graphrbac.ApplicationCreateParameters) (graphrbac.Application, error)
+
+	// CreateGraphPrincipal creates a service principal via the graphrbac client
+	CreateGraphPrincipal(servicePrincipalCreateParameters graphrbac.ServicePrincipalCreateParameters) (graphrbac.ServicePrincipal, error)
+	CreateApp(applicationName, applicationURL string) (applicationID, servicePrincipalObjectID, secret string, err error)
+
+	// RBAC
+	CreateRoleAssignment(scope string, roleAssignmentName string, parameters authorization.RoleAssignmentCreateParameters) (authorization.RoleAssignment, error)
+	CreateRoleAssignmentSimple(applicationID, roleID string) error
+
+	// MANAGED DISKS
+	DeleteManagedDisk(resourceGroupName string, diskName string, cancel <-chan struct{}) (<-chan disk.OperationStatusResponse, <-chan error)
+	ListManagedDisksByResourceGroup(resourceGroupName string) (result disk.ListType, err error)
 }
 
 // ACSStorageClient interface models the azure storage client

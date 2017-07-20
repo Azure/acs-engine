@@ -8,6 +8,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	log "github.com/Sirupsen/logrus"
 )
 
 // ArtifactWriter represents the object that writes artifacts
@@ -115,7 +116,7 @@ func (w *ArtifactWriter) saveFile(dir string, file string, data []byte) error {
 		return err
 	}
 
-	fmt.Fprintf(os.Stderr, "wrote %s\n", path)
+	log.Debugf("output: wrote %s", path)
 
 	return nil
 }

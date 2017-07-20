@@ -1,6 +1,7 @@
 package v20170701
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -43,8 +44,9 @@ type Properties struct {
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
-// The 'Secret' parameter could be either a plain text, or referenced to a secret in a keyvault.
-// In the latter case, the format of the parameter's value should be
+// The 'Secret' parameter should be a secret in plain text.
+// The 'KeyvaultSecretRef' parameter is a reference to a secret in a keyvault.
+// The format of the parameter's value should be
 // "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
 // where:
 //    <SUB_ID> is the subscription ID of the keyvault
@@ -53,8 +55,9 @@ type Properties struct {
 //    <NAME> is the name of the secret.
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
-	ClientID string `json:"clientId,omitempty" validate:"required"`
-	Secret   string `json:"secret,omitempty" validate:"required"`
+	ClientID          string `json:"clientId,omitempty" validate:"required"`
+	Secret            string `json:"secret,omitempty"`
+	KeyvaultSecretRef string `json:"keyvaultSecretRef,omitempty"`
 }
 
 // CustomProfile specifies custom properties that are used for
@@ -68,10 +71,13 @@ type LinuxProfile struct {
 	AdminUsername string `json:"adminUsername" validate:"required"`
 
 	SSH struct {
-		PublicKeys []struct {
-			KeyData string `json:"keyData"`
-		} `json:"publicKeys" validate:"required,len=1"`
+		PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
 	} `json:"ssh" validate:"required"`
+}
+
+// PublicKey represents an SSH key for LinuxProfile
+type PublicKey struct {
+	KeyData string `json:"keyData"`
 }
 
 // WindowsProfile represents the Windows configuration passed to the cluster
@@ -123,6 +129,36 @@ type MasterProfile struct {
 	FQDN string `json:"fqdn,omitempty"`
 }
 
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (m *MasterProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasMasterProfile MasterProfile
+	mm := aliasMasterProfile{}
+	if e := json.Unmarshal(b, &mm); e != nil {
+		return e
+	}
+	*m = MasterProfile(mm)
+	if m.Count == 0 {
+		// if MasterProfile.Count is missing or 0, set to default 1
+		m.Count = 1
+	}
+
+	if m.FirstConsecutiveStaticIP == "" {
+		// if FirstConsecutiveStaticIP is missing, set to default 10.240.255.5
+		m.FirstConsecutiveStaticIP = "10.240.255.5"
+	}
+
+	if m.StorageProfile == "" {
+		// if StorageProfile is missing, set to default StorageAccount
+		m.StorageProfile = StorageAccount
+	}
+
+	// OSDiskSizeGB is an override value. vm sizes have default OS disk sizes.
+	// If it is not set. The user should get the default for the vm size
+	return nil
+}
+
 // AgentPoolProfile represents configuration of VMs running agent
 // daemons that register with the master and offer resources to
 // host applications in containers.
@@ -144,6 +180,39 @@ type AgentPoolProfile struct {
 
 	// subnet is internal
 	subnet string
+}
+
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasAgentPoolProfile AgentPoolProfile
+	aa := aliasAgentPoolProfile{}
+	if e := json.Unmarshal(b, &aa); e != nil {
+		return e
+	}
+	*a = AgentPoolProfile(aa)
+	if a.Count == 0 {
+		// if AgentPoolProfile.Count is missing or 0, set it to default 1
+		a.Count = 1
+	}
+
+	if a.StorageProfile == "" {
+		// if StorageProfile is missing, set to default StorageAccount
+		a.StorageProfile = StorageAccount
+	}
+
+	if string(a.OSType) == "" {
+		// OSType is the operating system type for agents
+		// Set as nullable to support backward compat because
+		// this property was added later.
+		// If the value is null or not set, it defaulted to Linux.
+		a.OSType = Linux
+	}
+
+	// OSDiskSizeGB is an override value. vm sizes have default OS disk sizes.
+	// If it is not set. The user should get the default for the vm size
+	return nil
 }
 
 // OrchestratorType defines orchestrators supported by ACS

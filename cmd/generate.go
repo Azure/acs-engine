@@ -1,18 +1,16 @@
 package cmd
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
-
-	log "github.com/Sirupsen/logrus"
-	"github.com/spf13/cobra"
-
-	"io/ioutil"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	log "github.com/Sirupsen/logrus"
 	"github.com/leonelquinteros/gotext"
+	"github.com/spf13/cobra"
 )
 
 const (
@@ -92,8 +90,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 			Locale: gc.locale,
 		},
 	}
-	gc.containerService, gc.apiVersion, err = apiloader.LoadContainerServiceFromFile(gc.apimodelPath)
-
+	gc.containerService, gc.apiVersion, err = apiloader.LoadContainerServiceFromFile(gc.apimodelPath, true)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}

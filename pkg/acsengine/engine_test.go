@@ -39,7 +39,7 @@ func TestExpected(t *testing.T) {
 	}
 
 	for _, tuple := range *apiModelTestFiles {
-		containerService, version, err := apiloader.LoadContainerServiceFromFile(tuple.APIModelFilename)
+		containerService, version, err := apiloader.LoadContainerServiceFromFile(tuple.APIModelFilename, true)
 		if err != nil {
 			t.Errorf("Loading file %s got error: %s", tuple.APIModelFilename, err.Error())
 			continue
@@ -105,9 +105,8 @@ func TestExpected(t *testing.T) {
 			}
 			generatedPpArmTemplate, e1 := PrettyPrintArmTemplate(armTemplate)
 			if e1 != nil {
-				t.Error(armTemplate)
 				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e1.Error()))
-				break
+				continue
 			}
 
 			generatedPpParams, e2 := PrettyPrintJSON(params)
@@ -140,7 +139,7 @@ func TestExpected(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			containerService, version, err = apiloader.DeserializeContainerService(b)
+			containerService, version, err = apiloader.DeserializeContainerService(b, true)
 			if err != nil {
 				t.Error(err)
 			}
@@ -216,12 +215,16 @@ func addTestCertificateProfile(api *api.CertificateProfile) {
 
 func TestVersionOrdinal(t *testing.T) {
 	RegisterTestingT(t)
+	v171 := api.OrchestratorVersion("1.7.1")
+	v170 := api.OrchestratorVersion("1.7.0")
 	v166 := api.OrchestratorVersion("1.6.6")
 	v162 := api.OrchestratorVersion("1.6.2")
 	v160 := api.OrchestratorVersion("1.6.0")
 	v153 := api.OrchestratorVersion("1.5.3")
 	v16 := api.OrchestratorVersion("1.6")
 
+	Expect(v170 < v171).To(BeTrue())
+	Expect(v166 < v170).To(BeTrue())
 	Expect(v166 > v162).To(BeTrue())
 	Expect(v162 < v166).To(BeTrue())
 	Expect(v162 > v160).To(BeTrue())
@@ -229,6 +232,7 @@ func TestVersionOrdinal(t *testing.T) {
 	Expect(v153 < v160).To(BeTrue())
 
 	//testing with different version length
+	Expect(v171 > v162).To(BeTrue())
 	Expect(v16 < v162).To(BeTrue())
 	Expect(v16 > v153).To(BeTrue())
 

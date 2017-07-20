@@ -42,8 +42,8 @@ while (( $count > 0 )); do
   count=$((count-1))
 done
 if [[ "$retval" != "0" ]]; then
-  log "gave up waiting for network to be created"
-  exit -1
+  log "DockerCE: gave up waiting for network to be created"
+  exit 1
 fi
 
 log "Creating service"
@@ -59,8 +59,8 @@ while (( $count > 0 )); do
   count=$((count-1))
 done
 if [[ "$retval" != "0" ]]; then
-  log "gave up waiting for service to be created"
-  exit -1
+  log "DockerCE: gave up waiting for service to be created"
+  exit 1
 fi
 
 sleep 10
@@ -76,6 +76,6 @@ while (( $count > 0 )); do
   count=$((count-1))
 done
 if [[ "$retval" != "0" ]]; then
-  log "gave up waiting for service to be externally reachable"
-  exit -1
+  log "DockerCE: gave up waiting for service to be externally reachable"
+  exit 1
 fi
