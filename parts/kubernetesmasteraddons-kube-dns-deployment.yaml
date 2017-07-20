@@ -38,10 +38,6 @@ metadata:
   name: kube-dns-v20
   namespace: kube-system
 spec:
-  strategy:
-    rollingUpdate:
-      maxSurge: 10%
-      maxUnavailable: 0
   replicas: 2
   selector:
     matchLabels:
