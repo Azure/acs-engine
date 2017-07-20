@@ -31,6 +31,7 @@ spec:
         - "--service-account-key-file=/etc/kubernetes/certs/apiserver.key"
         - "--storage-backend=etcd2"
         - "--v=4"
+        - "<kubernetesEnableRbac>"
       volumeMounts:
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"
