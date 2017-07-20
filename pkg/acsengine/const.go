@@ -81,24 +81,16 @@ const (
 // KubeImages represents Docker images used for Kubernetes components based on Kubernetes version
 var KubeImages = map[api.OrchestratorVersion]map[string]string{
 	api.Kubernetes170: {
-		"hyperkube":    "hyperkube-amd64:v1.7.0",
-		"dashboard":    "kubernetes-dashboard-amd64:v1.6.1",
-		"exechealthz":  "exechealthz-amd64:1.2",
-<<<<<<< HEAD
-		"addonresizer": "addon-resizer:1.7",
-		"heapster":     "heapster:v1.3.0",
-		"dns":          "k8s-dns-kube-dns-amd64:1.14.2",
-		"addonmanager": "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.13.0",
-=======
-		"addonresizer": "addon-resizer:2.0",
-		"heapster":     "heapster:v1.4.0",
-		"dns":          "k8s-dns-kube-dns-amd64:1.14.4",
-		"addonmanager": "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.14.4",
->>>>>>> master
-		"pause":        "pause-amd64:3.0",
-		"windowszip":   "v1.7.0intwinnat.zip",
+		"hyperkube":       "hyperkube-amd64:v1.7.0",
+		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
+		"exechealthz":     "exechealthz-amd64:1.2",
+		"addonresizer":    "addon-resizer:2.0",
+		"heapster":        "heapster:v1.4.0",
+		"dns":             "k8s-dns-kube-dns-amd64:1.14.4",
+		"addonmanager":    "kube-addon-manager-amd64:v6.1.2",
+		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.14.4",
+		"pause":           "pause-amd64:3.0",
+		"windowszip":      "v1.7.0intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
