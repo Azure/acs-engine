@@ -21,25 +21,33 @@ const ExampleAPIModel = `{
     "windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
     "linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
     },
-    "servicePrincipalProfile": { "servicePrincipalClientID": "", "servicePrincipalClientSecret": "" }
+    "servicePrincipalProfile": { "servicePrincipalClientID": "%s", "servicePrincipalClientSecret": "%s" }
   }
 }
 `
 
-func getExampleAPIModel(useManagedIdentity bool) string {
-	return fmt.Sprintf(ExampleAPIModel, strconv.FormatBool(useManagedIdentity))
+func getExampleAPIModel(useManagedIdentity bool, clientID, clientSecret string) string {
+	return fmt.Sprintf(
+		ExampleAPIModel,
+		strconv.FormatBool(useManagedIdentity),
+		clientID,
+		clientSecret)
 }
 
 func TestAutofillApimodelWithoutManagedIdentityCreatesCreds(t *testing.T) {
-	testMSIPopulatedInternal(t, false)
+	testAutodeployCredentialHandling(t, false, "", "")
 }
 
 func TestAutofillApimodelWithManagedIdentitySkipsCreds(t *testing.T) {
-	testMSIPopulatedInternal(t, true)
+	testAutodeployCredentialHandling(t, true, "", "")
 }
 
-func testMSIPopulatedInternal(t *testing.T, useManagedIdentity bool) {
-	apimodel := getExampleAPIModel(useManagedIdentity)
+func TestAutofillApimodelAllowsPrespecifiedCreds(t *testing.T) {
+	testAutodeployCredentialHandling(t, false, "clientID", "clientSecret")
+}
+
+func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, clientID, clientSecret string) {
+	apimodel := getExampleAPIModel(useManagedIdentity, clientID, clientSecret)
 	cs, ver, err := api.DeserializeContainerService([]byte(apimodel), false)
 	if err != nil {
 		t.Fatalf("unexpected error deserializing the example apimodel: %s", err)
@@ -51,7 +59,7 @@ func testMSIPopulatedInternal(t *testing.T, useManagedIdentity bool) {
 	deployCmd := &deployCmd{
 		apimodelPath:    "./this/is/unused.json",
 		dnsPrefix:       "dnsPrefix1",
-		outputDirectory: "dummy/path/",
+		outputDirectory: "_test_output",
 		location:        "westus",
 
 		containerService: cs,
@@ -61,6 +69,9 @@ func testMSIPopulatedInternal(t *testing.T, useManagedIdentity bool) {
 	}
 
 	autofillApimodel(deployCmd)
+
+	// cleanup, since auto-populations creates dirs and saves the SSH private key that it might create
+	defer os.RemoveAll(deployCmd.outputDirectory)
 
 	cs, ver, err = revalidateApimodel(cs, ver)
 	if err != nil {
@@ -78,7 +89,4 @@ func testMSIPopulatedInternal(t *testing.T, useManagedIdentity bool) {
 			log.Fatalf("Credentials were missing even though MSI was not active.")
 		}
 	}
-
-	// cleanup, since auto-populations creates dirs and saves the SSH private key that it might create
-	os.RemoveAll(deployCmd.outputDirectory)
 }
