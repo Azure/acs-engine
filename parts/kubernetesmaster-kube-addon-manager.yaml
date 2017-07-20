@@ -19,7 +19,6 @@ spec:
     - name: msi
       mountPath: "/var/lib/waagent/ManagedIdentity-Settings"
       readOnly: true
-  serviceAccountName: kube-addon-manager
   volumes:
   - name: addons
     hostPath:
