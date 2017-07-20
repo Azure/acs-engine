@@ -2,6 +2,7 @@
 
 * [Kubernetes Windows Walkthrough](kubernetes.windows.md) - shows how to create a Kubernetes cluster on Windows.
 * [Kubernetes with GPU support Walkthrough](kubernetes.gpu.md) - shows how to create a Kubernetes cluster with GPU support.
+* [Kubernetes Kubernetes AAD integration Walkthrough](kubernetes.aad.md) - shows how to create a Kubernetes cluster with AAD as authentication provider.
 
 ## Deployment
 
