@@ -73,7 +73,6 @@ spec:
   template:
     metadata:
       labels:
-        task: monitoring
         k8s-app: heapster
         version: v1.4.0
       annotations:
