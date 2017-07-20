@@ -469,7 +469,7 @@ func convertVLabsWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile
 func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = OrchestratorType(v20160930.OrchestratorType)
 	if api.OrchestratorType == Kubernetes {
-		api.OrchestratorVersion = Kubernetes153
+		api.OrchestratorVersion = KubernetesDefaultVersion
 	} else if api.OrchestratorType == DCOS {
 		api.OrchestratorVersion = DCOS190
 	}
@@ -503,8 +503,8 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 		switch v20170701cs.OrchestratorVersion {
 		case v20170701.Kubernetes166:
 			api.OrchestratorVersion = Kubernetes166
-		case v20170701.Kubernetes157:
-			api.OrchestratorVersion = Kubernetes157
+		case v20170701.Kubernetes171:
+			api.OrchestratorVersion = Kubernetes171
 		default:
 			api.OrchestratorVersion = KubernetesDefaultVersion
 		}
@@ -541,10 +541,6 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 			api.OrchestratorVersion = Kubernetes162
 		case vlabs.Kubernetes160:
 			api.OrchestratorVersion = Kubernetes160
-		case vlabs.Kubernetes157:
-			api.OrchestratorVersion = Kubernetes157
-		case vlabs.Kubernetes153:
-			api.OrchestratorVersion = Kubernetes153
 		default:
 			api.OrchestratorVersion = KubernetesDefaultVersion
 		}
