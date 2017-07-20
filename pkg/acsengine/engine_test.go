@@ -211,11 +211,9 @@ func TestVersionOrdinal(t *testing.T) {
 	Expect(v162 < v166).To(BeTrue())
 	Expect(v162 > v160).To(BeTrue())
 	Expect(v160 < v162).To(BeTrue())
-	Expect(v153 < v160).To(BeTrue())
 
 	//testing with different version length
 	Expect(v171 > v162).To(BeTrue())
 	Expect(v16 < v162).To(BeTrue())
-	Expect(v16 > v153).To(BeTrue())
 
 }

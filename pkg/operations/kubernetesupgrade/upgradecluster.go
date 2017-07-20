@@ -38,7 +38,7 @@ type AgentPoolTopology struct {
 }
 
 // UpgradeCluster upgrades a cluster with Orchestrator version X
-// (or X.X or X.X.X) to version y (or Y.Y or X.X.X). RIght now
+// (or X.X or X.X.X) to version y (or Y.Y or X.X.X). Right now
 // upgrades are supported for Kubernetes cluster only.
 type UpgradeCluster struct {
 	ClusterTopology
@@ -70,9 +70,9 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	}
 
 	switch ucs.OrchestratorProfile.OrchestratorVersion {
-	case api.Kubernetes162:
-		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes 1.6.2"))
-		upgrader := Kubernetes162upgrader{}
+	case api.Kubernetes171:
+		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes 1.7.1"))
+		upgrader := Kubernetes171upgrader{}
 		upgrader.ClusterTopology = uc.ClusterTopology
 		upgrader.Client = uc.Client
 		if err := upgrader.RunUpgrade(); err != nil {
