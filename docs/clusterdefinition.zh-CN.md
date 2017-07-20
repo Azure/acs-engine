@@ -21,9 +21,8 @@
 可选的编排引擎如下所示：
 
 1. `DCOS` - 指定编排引擎为 [DC/OS编排引擎](dcos.md).  [可以指定DCOS的旧版本，比如DCOS173，DCOS184等。](../examples/dcos-versions)
-2. `Kubernetes` - 指定编排引擎为 [Kubernetes编排引擎](kubernetes.md)。
-3. `Swarm` - 指定编排引擎为 [Swarm编排引擎](swarm.md)。
-4. `Swarm Mode` - 指定编排引擎为 [Swarm Mode编排引擎](swarmmode.md)。
+1. `Kubernetes` - 指定编排引擎为 [Kubernetes编排引擎](kubernetes.md)。
+1. `Swarm Mode` - 指定编排引擎为 [Swarm Mode编排引擎](swarmmode.md)。
 
 ### masterProfile
 `masterProfile` 指定了集群中master节点的各种配置。
@@ -108,9 +107,8 @@
 可选的编排引擎如下所示：
 
 1. `DCOS` - 指定编排引擎为 [DC/OS编排引擎](dcos.md)。
-2. `Swarm` - 指定编排引擎为 [Swarm编排引擎](swarm.md)。
-3. `Kubernetes` - 指定编排引擎为 [Kubernetes编排引擎](kubernetes.md)。
-4. `Swarm Mode` - 指定编排引擎为 [Swarm Mode编排引擎](swarmmode.md)。
+1. `Kubernetes` - 指定编排引擎为 [Kubernetes编排引擎](kubernetes.md)。
+1. `Swarm Mode` - 指定编排引擎为 [Swarm Mode编排引擎](swarmmode.md)。
 
 ### masterProfile
 `masterProfile` 指定了集群中master节点的各种配置。
