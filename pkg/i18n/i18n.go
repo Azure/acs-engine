@@ -111,11 +111,17 @@ type Translator struct {
 
 // T translates a text string, based on GNU's gettext library.
 func (t *Translator) T(msgid string, vars ...interface{}) string {
+	if t.Locale == nil {
+		return fmt.Sprintf(msgid, vars...)
+	}
 	return t.Locale.GetD(defaultDomain, msgid, vars...)
 }
 
 // NT translates a text string into the appropriate plural form, based on GNU's gettext library.
 func (t *Translator) NT(msgid, msgidPlural string, n int, vars ...interface{}) string {
+	if t.Locale == nil {
+		return fmt.Sprintf(msgidPlural, vars...)
+	}
 	return t.Locale.GetND(defaultDomain, msgid, msgidPlural, n, vars...)
 }
 

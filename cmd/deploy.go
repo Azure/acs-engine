@@ -125,7 +125,7 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 	// autofillApimodel calls log.Fatal() directly and does not return errors
 	autofillApimodel(dc)
 
-	_, _, err = revalidateApimodel(dc.containerService, dc.apiVersion)
+	_, _, err = revalidateApimodel(apiloader, dc.containerService, dc.apiVersion)
 	if err != nil {
 		log.Fatalf("Failed to validate the apimodel after populating values: %s", err)
 	}
@@ -175,7 +175,12 @@ func autofillApimodel(dc *deployCmd) {
 	if dc.containerService.Properties.LinuxProfile.SSH.PublicKeys == nil ||
 		len(dc.containerService.Properties.LinuxProfile.SSH.PublicKeys) == 0 ||
 		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData == "" {
-		_, publicKey, err := acsengine.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory)
+		creator := &acsengine.SSHCreator{
+			Translator: &i18n.Translator{
+				Locale: dc.locale,
+			},
+		}
+		_, publicKey, err := creator.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory)
 		if err != nil {
 			log.Fatal("Failed to generate SSH Key")
 		}
@@ -230,13 +235,13 @@ func autofillApimodel(dc *deployCmd) {
 	}
 }
 
-func revalidateApimodel(containerService *api.ContainerService, apiVersion string) (*api.ContainerService, string, error) {
+func revalidateApimodel(apiloader *api.Apiloader, containerService *api.ContainerService, apiVersion string) (*api.ContainerService, string, error) {
 	// This isn't terribly elegant, but it's the easiest way to go for now w/o duplicating a bunch of code
-	rawVersionedAPIModel, err := api.SerializeContainerService(containerService, apiVersion)
+	rawVersionedAPIModel, err := apiloader.SerializeContainerService(containerService, apiVersion)
 	if err != nil {
 		return nil, "", err
 	}
-	return api.DeserializeContainerService(rawVersionedAPIModel, true)
+	return apiloader.DeserializeContainerService(rawVersionedAPIModel, true)
 }
 
 func (dc *deployCmd) run() error {

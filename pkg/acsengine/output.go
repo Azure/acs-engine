@@ -2,13 +2,10 @@ package acsengine
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
 	"path"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
-	log "github.com/Sirupsen/logrus"
 )
 
 // ArtifactWriter represents the object that writes artifacts
@@ -20,6 +17,10 @@ func (w *ArtifactWriter) WriteArtifacts(containerService *api.ContainerService, 
 	if len(artifactsDir) == 0 {
 		artifactsDir = fmt.Sprintf("%s-%s", containerService.Properties.OrchestratorProfile.OrchestratorType, GenerateClusterID(containerService.Properties))
 		artifactsDir = path.Join("_output", artifactsDir)
+	}
+
+	f := &FileSaver{
+		Translator: w.Translator,
 	}
 
 	// convert back the API object, and write it
@@ -35,16 +36,16 @@ func (w *ArtifactWriter) WriteArtifacts(containerService *api.ContainerService, 
 			return err
 		}
 
-		if e := w.saveFile(artifactsDir, "apimodel.json", b); e != nil {
+		if e := f.SaveFile(artifactsDir, "apimodel.json", b); e != nil {
 			return e
 		}
 
-		if e := w.saveFileString(artifactsDir, "azuredeploy.json", template); e != nil {
+		if e := f.SaveFileString(artifactsDir, "azuredeploy.json", template); e != nil {
 			return e
 		}
 	}
 
-	if e := w.saveFileString(artifactsDir, "azuredeploy.parameters.json", parameters); e != nil {
+	if e := f.SaveFileString(artifactsDir, "azuredeploy.parameters.json", parameters); e != nil {
 		return e
 	}
 
@@ -64,59 +65,38 @@ func (w *ArtifactWriter) WriteArtifacts(containerService *api.ContainerService, 
 				if gkcerr != nil {
 					return gkcerr
 				}
-				if e := w.saveFileString(directory, fmt.Sprintf("kubeconfig.%s.json", location), b); e != nil {
+				if e := f.SaveFileString(directory, fmt.Sprintf("kubeconfig.%s.json", location), b); e != nil {
 					return e
 				}
 			}
 
 		}
 
-		if e := w.saveFileString(artifactsDir, "ca.key", properties.CertificateProfile.CaPrivateKey); e != nil {
+		if e := f.SaveFileString(artifactsDir, "ca.key", properties.CertificateProfile.CaPrivateKey); e != nil {
 			return e
 		}
-		if e := w.saveFileString(artifactsDir, "ca.crt", properties.CertificateProfile.CaCertificate); e != nil {
+		if e := f.SaveFileString(artifactsDir, "ca.crt", properties.CertificateProfile.CaCertificate); e != nil {
 			return e
 		}
-		if e := w.saveFileString(artifactsDir, "apiserver.key", properties.CertificateProfile.APIServerPrivateKey); e != nil {
+		if e := f.SaveFileString(artifactsDir, "apiserver.key", properties.CertificateProfile.APIServerPrivateKey); e != nil {
 			return e
 		}
-		if e := w.saveFileString(artifactsDir, "apiserver.crt", properties.CertificateProfile.APIServerCertificate); e != nil {
+		if e := f.SaveFileString(artifactsDir, "apiserver.crt", properties.CertificateProfile.APIServerCertificate); e != nil {
 			return e
 		}
-		if e := w.saveFileString(artifactsDir, "client.key", properties.CertificateProfile.ClientPrivateKey); e != nil {
+		if e := f.SaveFileString(artifactsDir, "client.key", properties.CertificateProfile.ClientPrivateKey); e != nil {
 			return e
 		}
-		if e := w.saveFileString(artifactsDir, "client.crt", properties.CertificateProfile.ClientCertificate); e != nil {
+		if e := f.SaveFileString(artifactsDir, "client.crt", properties.CertificateProfile.ClientCertificate); e != nil {
 			return e
 		}
-		if e := w.saveFileString(artifactsDir, "kubectlClient.key", properties.CertificateProfile.KubeConfigPrivateKey); e != nil {
+		if e := f.SaveFileString(artifactsDir, "kubectlClient.key", properties.CertificateProfile.KubeConfigPrivateKey); e != nil {
 			return e
 		}
-		if e := w.saveFileString(artifactsDir, "kubectlClient.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
+		if e := f.SaveFileString(artifactsDir, "kubectlClient.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
 			return e
 		}
 	}
-
-	return nil
-}
-
-func (w *ArtifactWriter) saveFileString(dir string, file string, data string) error {
-	return w.saveFile(dir, file, []byte(data))
-}
-
-func (w *ArtifactWriter) saveFile(dir string, file string, data []byte) error {
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		if e := os.MkdirAll(dir, 0700); e != nil {
-			return w.Translator.Errorf("error creating directory '%s': %s", dir, e.Error())
-		}
-	}
-
-	path := path.Join(dir, file)
-	if err := ioutil.WriteFile(path, []byte(data), 0600); err != nil {
-		return err
-	}
-
-	log.Debugf("output: wrote %s", path)
 
 	return nil
 }
