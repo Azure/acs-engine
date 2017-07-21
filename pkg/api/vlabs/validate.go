@@ -257,6 +257,7 @@ func (a *Properties) Validate() error {
 				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}
 			switch a.OrchestratorProfile.OrchestratorType {
+			case DCOS:
 			case Swarm:
 			case SwarmMode:
 			case Kubernetes:

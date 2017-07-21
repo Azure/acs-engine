@@ -33,7 +33,13 @@ const (
 	dcosCustomData187 = "dcoscustomdata187.t"
 	dcosCustomData188 = "dcoscustomdata188.t"
 	dcosCustomData190 = "dcoscustomdata190.t"
-	dcosProvision     = "dcosprovision.sh"
+	dcosWindowsCustomData173 = "dcoswindowscustomdata173.t"
+	dcosWindowsCustomData184 = "dcoswindowscustomdata184.t"
+	dcosWindowsCustomData187 = "dcoswindowscustomdata187.t"
+	dcosWindowsCustomData188 = "dcoswindowscustomdata188.t"
+	dcosWindowsCustomData190 = "dcoswindowscustomdata190.t"
+	dcosProvision            = "dcosprovision.sh"
+	dcosWindowsProvision     = "dcosWindowsProvision.ps1"
 )
 
 const (
@@ -49,8 +55,11 @@ const (
 	agentParams                  = "agentparams.t"
 	classicParams                = "classicparams.t"
 	dcosAgentResourcesVMAS       = "dcosagentresourcesvmas.t"
+	dcosWindowsAgentResourcesVMAS= "dcosWindowsAgentResourcesVmas.t"
 	dcosAgentResourcesVMSS       = "dcosagentresourcesvmss.t"
+	dcosWindowsAgentResourcesVMSS = "dcosWindowsAgentResourcesVmss.t"
 	dcosAgentVars                = "dcosagentvars.t"
+	dcosWindowsAgentVars         = "dcosWindowsAgentVars.t"
 	dcosBaseFile                 = "dcosbase.t"
 	dcosParams                   = "dcosparams.t"
 	dcosMasterResources          = "dcosmasterresources.t"
@@ -124,7 +133,7 @@ var calicoAddonYamls = map[string]string{
 }
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams, windowsParams}
-var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars, dcosParams}
+var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS, dcosWindowsAgentVars }
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
@@ -642,7 +651,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			agentProvisionScript := getDCOSAgentProvisionScript(profile)
+		    agentProvisionScript := getDCOSAgentProvisionScript(profile)
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
 			str := getSingleLineDCOSCustomData(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion, cs.Properties.MasterProfile.Count, agentProvisionScript, attributeContents)
 
@@ -1230,7 +1239,15 @@ func getBase64CustomScriptFromStr(str string) string {
 
 func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 	// add the provision script
-	bp, err1 := Asset(dcosProvision)
+
+    var scriptname string
+    if profile.OSType == api.Windows  {
+	    scriptname = dcosWindowsProvision
+    } else {
+	    scriptname = dcosProvision
+    }
+
+	bp, err1 := Asset(scriptname)
 	if err1 != nil {
 		panic(fmt.Sprintf("BUG: %s", err1.Error()))
 	}
