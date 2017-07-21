@@ -487,12 +487,16 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	return parametersMap, nil
 }
 
+func AddValue(m map[string]interface{}, k string, v interface{}) { addValue(m, k, v) }
 func addValue(m map[string]interface{}, k string, v interface{}) {
 	m[k] = map[string]interface{}{
 		"value": v,
 	}
 }
 
+func AddSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
+	addSecret(m, k, v, encode)
+}
 func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
 	str, ok := v.(string)
 	if !ok {
