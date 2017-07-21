@@ -50,7 +50,7 @@ func (i *Interpolator) Interpolate() error {
 	}
 
 	var b bytes.Buffer
-	if err = templ.ExecuteTemplate(&b, "azuredeploy.json.template", i.agentPool.Properties); err != nil {
+	if err = templ.ExecuteTemplate(&b, "azuredeploy.json", i.agentPool.Properties); err != nil {
 		return fmt.Errorf("Unable to execute template: %v", err)
 	}
 
@@ -61,6 +61,14 @@ func (i *Interpolator) Interpolate() error {
 	}
 	var parameterBytes []byte
 	parameterBytes, err = json.Marshal(parametersMap)
+	var out bytes.Buffer
+	err = json.Indent(&out, parameterBytes, "", "  ")
+	if err != nil {
+		return fmt.Errorf("Unable to pretty print json: %v", err)
+	}
+	parameterBytes = out.Bytes()
+
+
 	if err != nil {
 		return fmt.Errorf("Unable to marshal parameters map: %v", err)
 	}
@@ -70,4 +78,18 @@ func (i *Interpolator) Interpolate() error {
 	i.parameters = parameterBytes
 	i.interpolated = true
 	return nil
+}
+
+func (i *Interpolator) GetTemplate() ([]byte, error) {
+	if i.interpolated == false {
+		return []byte(""), fmt.Errorf("Unable to get template before calling Interpolate()")
+	}
+	return i.template, nil
+}
+
+func (i *Interpolator) GetParameters() ([]byte, error) {
+	if i.interpolated == false {
+		return []byte(""), fmt.Errorf("Unable to get template before calling Interpolate()")
+	}
+	return i.parameters, nil
 }
