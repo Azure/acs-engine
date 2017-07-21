@@ -11,6 +11,7 @@ import (
 	txttemplate "text/template"
 )
 
+// Interpolator is the Agent Pool implementation of the Interpolator interface. This can be used with the InterpolatorWriter
 type Interpolator struct {
 	agentPool         *kubernetesagentpool.AgentPool
 	interpolated      bool
@@ -19,6 +20,10 @@ type Interpolator struct {
 	templateDirectory string
 }
 
+// NewAgentPoolInterpolator will create a new Agent Pool interpolator
+// agentpool         is the agent pool object
+// templateDirectory is the name of the directory within /parts where this interpolator will find resources
+//			              By design the template directory will have no other access to any other parts.
 func NewAgentPoolInterpolator(agentPool *kubernetesagentpool.AgentPool, templateDirectory string) interpolator.Interpolator {
 	return &Interpolator{
 		agentPool:         agentPool,
@@ -26,8 +31,8 @@ func NewAgentPoolInterpolator(agentPool *kubernetesagentpool.AgentPool, template
 	}
 }
 
+// Interpolate will interpolate the minimal amount of values necessary into this specific directory.
 func (i *Interpolator) Interpolate() error {
-
 	// Init template
 	templ := txttemplate.New("agentpool").Funcs(getTemplateFuncMap(i.agentPool))
 
@@ -80,6 +85,8 @@ func (i *Interpolator) Interpolate() error {
 	return nil
 }
 
+// GetTemplate is an Interpolator interface method, and is used by the InterpolatorWriter. This method
+// returns the template []byte data or an error
 func (i *Interpolator) GetTemplate() ([]byte, error) {
 	if i.interpolated == false {
 		return []byte(""), fmt.Errorf("Unable to get template before calling Interpolate()")
@@ -87,6 +94,8 @@ func (i *Interpolator) GetTemplate() ([]byte, error) {
 	return i.template, nil
 }
 
+// GetParameters is an Interpolator interface method, and is used by the InterpolatorWriter. This method
+// returns the parameters []byte data or an error
 func (i *Interpolator) GetParameters() ([]byte, error) {
 	if i.interpolated == false {
 		return []byte(""), fmt.Errorf("Unable to get template before calling Interpolate()")

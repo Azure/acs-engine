@@ -16,12 +16,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// GenerateOptions defines the options a user can define to work with the Agent Pool API
 type GenerateOptions struct {
-	ApiModelPath string
-	AgentPool    *kubernetesagentpool.AgentPool
-	ApiVersion   string
+	ApiModelPath string // The path on the local filesystem where the input object is
+	agentPool    *kubernetesagentpool.AgentPool
+	apiVersion   string
 }
 
+// NewGenerateAgentpoolCmd will create a new Agent Pool cobra command
 func NewGenerateAgentpoolCmd() *cobra.Command {
 	genOptions := GenerateOptions{}
 
@@ -44,6 +46,7 @@ func NewGenerateAgentpoolCmd() *cobra.Command {
 	return genAgentpoolCmd
 }
 
+// Init will initialize the GenerateOptions struct, and calculate runtime configuration
 func (gc *GenerateOptions) Init(cmd *cobra.Command, args []string) error {
 
 
@@ -60,7 +63,7 @@ func (gc *GenerateOptions) Init(cmd *cobra.Command, args []string) error {
 	}
 
 	var err error
-	gc.AgentPool, gc.ApiVersion, err = kubernetesagentpool.LoadAgentPoolFromFile(gc.ApiModelPath)
+	gc.agentPool, gc.apiVersion, err = kubernetesagentpool.LoadAgentPoolFromFile(gc.ApiModelPath)
 	if err != nil {
 		return fmt.Errorf("error parsing the api model: %v", err)
 	}
@@ -69,17 +72,23 @@ func (gc *GenerateOptions) Init(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// Validate will validate that the input object is sane and valid
 func (gc *GenerateOptions) Validate(cmd *cobra.Command, args []string) {
-	// todo validate
+	// TODO (@kris-nova) We need to figure out what we want to validate on and code it here
 }
 
+// Run will run the GenerateOptions struct. This will interpolate the ARM template, and atomically commit to disk
 func (gc *GenerateOptions) Run() error {
+<<<<<<< HEAD
 	//log.Infoln("Generating assets...")
 
 <<<<<<< HEAD
 	fmt.Println(gc.ContainerService)
 =======
 	interpolator := agentpool.NewAgentPoolInterpolator(gc.AgentPool, "kubernetes/agentpool")
+=======
+	interpolator := agentpool.NewAgentPoolInterpolator(gc.agentPool, "kubernetes/agentpool")
+>>>>>>> Docs, docs, docs
 	err := interpolator.Interpolate()
 	if err != nil {
 		return fmt.Errorf("Major error on interpolate: %v", err)
@@ -113,16 +122,19 @@ func (gc *GenerateOptions) Run() error {
 	//}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	iw := interpolatorwriter.NewInterpolatorWriter("./_output", "azuredeploy.json", "azuredeploy.params.json", interpolator)
 =======
 	iw := interpolatorwriter.NewInterpolatorWriter(fmt.Sprintf("./_output/%s", gc.AgentPool.Name), "azuredeploy.json", "azuredeploy.parameterss.json", interpolator)
 >>>>>>> Adding work
+=======
+	iw := interpolatorwriter.NewInterpolatorWriter(fmt.Sprintf("./_output/%s", gc.agentPool.Name), "azuredeploy.json", "azuredeploy.parameterss.json", interpolator)
+>>>>>>> Docs, docs, docs
 	err = iw.Write()
 	if err != nil {
 		return fmt.Errorf("Unable to write template: %v", err)
 	}
 >>>>>>> Clean. Simple. Go.
 	return nil
-
 }
