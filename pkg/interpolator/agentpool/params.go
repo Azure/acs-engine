@@ -6,6 +6,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
 )
 
+// getParameters is an unexported function that will create the parameters for the azuredeploy.parameters.json file
+// This was intentionally pulled out of acsenging so we can have a unique and decoupled grouping of parameters for agent pools only.
 func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interface{}, error) {
 	properties := agentPool.Properties
 	location := agentPool.Location
