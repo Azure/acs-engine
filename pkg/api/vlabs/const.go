@@ -96,6 +96,8 @@ const (
 	Kubernetes170 OrchestratorVersion = "1.7.0"
 	// Kubernetes171 is the string constant for Kubernetes 1.7.1
 	Kubernetes171 OrchestratorVersion = "1.7.1"
+	// Kubernetes172 is the string constant for Kubernetes 1.7.2
+	Kubernetes172 OrchestratorVersion = "1.7.2"
 	// KubernetesLatest is the string constant for latest Kubernetes version
 	KubernetesLatest OrchestratorVersion = Kubernetes166
 	// KubernetesDefaultVersion is the string constant for current Kubernetes version
