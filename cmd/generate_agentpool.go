@@ -11,15 +11,8 @@ import (
 
 type GenerateOptions struct {
 	ApiModelPath string
-	//OutputDirectory   string
-	//CaCertificatePath string
-	//CaPrivateKeyPath  string
-	//ClassicMode       bool
-	//NoPrettyPrint     bool
-	//ParametersOnly    bool
-
-	AgentPool  *kubernetesagentpool.AgentPool
-	ApiVersion string
+	AgentPool    *kubernetesagentpool.AgentPool
+	ApiVersion   string
 }
 
 func NewGenerateAgentpoolCmd() *cobra.Command {
@@ -45,12 +38,6 @@ func NewGenerateAgentpoolCmd() *cobra.Command {
 
 	f := genAgentpoolCmd.Flags()
 	f.StringVar(&genOptions.ApiModelPath, "api-model", "", "Define the API model to use")
-	//f.StringVar(&gc.outputDirectory, "output-directory", "", "output directory (derived from FQDN if absent)")
-	//f.StringVar(&gc.caCertificatePath, "ca-certificate-path", "", "path to the CA certificate to use for Kubernetes PKI assets")
-	//f.StringVar(&gc.caPrivateKeyPath, "ca-private-key-path", "", "path to the CA private key to use for Kubernetes PKI assets")
-	//f.BoolVar(&gc.classicMode, "classic-mode", false, "enable classic parameters and outputs")
-	//f.BoolVar(&gc.noPrettyPrint, "no-pretty-print", false, "skip pretty printing the output")
-	//f.BoolVar(&gc.parametersOnly, "parameters-only", false, "only output parameters files")
 	return genAgentpoolCmd
 }
 
@@ -78,57 +65,7 @@ func (gc *GenerateOptions) Init(cmd *cobra.Command, args []string) error {
 }
 
 func (gc *GenerateOptions) Validate(cmd *cobra.Command, args []string) {
-	//var caCertificateBytes []byte
-	//var caKeyBytes []byte
-	//var err error
-	//
-
-	//
-	//if _, err := os.Stat(gc.apimodelPath); os.IsNotExist(err) {
-	//	log.Fatalf("specified api model does not exist (%s)", gc.apimodelPath)
-	//}
-	//
-	//gc.containerService, gc.apiVersion, err = api.LoadContainerServiceFromFile(gc.apimodelPath)
-	//if err != nil {
-	//	log.Fatalf("error parsing the api model: %s", err.Error())
-	//}
-	//
-	//// ------------------------------------------------------------------------------------------
-	////
-	//// TODO (@kris-nova) Here we need to actually validate the API model.
-	//// TODO (@kris-nova) Let's code this after we know what the API is going to look like and
-	//// TODO (@kris-nova) how it's supposed to behave
-	//if gc.apiVersion == kubernetesagentpool.APIVersion {
-	//	log.Infof("Bypassing validation for API: [%s]", kubernetesagentpool.APIVersion)
-	//	return
-	//}
-	////
-	//// ------------------------------------------------------------------------------------------
-	//
-	//if gc.outputDirectory == "" {
-	//	gc.outputDirectory = path.Join("_output", gc.containerService.Properties.MasterProfile.DNSPrefix)
-	//}
-	//
-	//// consume gc.caCertificatePath and gc.caPrivateKeyPath
-	//
-	//if (gc.caCertificatePath != "" && gc.caPrivateKeyPath == "") || (gc.caCertificatePath == "" && gc.caPrivateKeyPath != "") {
-	//	log.Fatal("--ca-certificate-path and --ca-private-key-path must be specified together")
-	//}
-	//if gc.caCertificatePath != "" {
-	//	if caCertificateBytes, err = ioutil.ReadFile(gc.caCertificatePath); err != nil {
-	//		log.Fatal("failed to read CA certificate file:", err)
-	//	}
-	//	if caKeyBytes, err = ioutil.ReadFile(gc.caPrivateKeyPath); err != nil {
-	//		log.Fatal("failed to read CA private key file:", err)
-	//	}
-	//
-	//	prop := gc.containerService.Properties
-	//	if prop.CertificateProfile == nil {
-	//		prop.CertificateProfile = &api.CertificateProfile{}
-	//	}
-	//	prop.CertificateProfile.CaCertificate = string(caCertificateBytes)
-	//	prop.CertificateProfile.CaPrivateKey = string(caKeyBytes)
-	//}
+	// todo validate
 }
 
 func (gc *GenerateOptions) Run() error {
@@ -140,32 +77,7 @@ func (gc *GenerateOptions) Run() error {
 		return fmt.Errorf("Major error on interpolate: %v", err)
 	}
 
-	//templateGenerator, err := acsengine.InitializeTemplateGenerator(gc.classicMode)
-	//if err != nil {
-	//	log.Fatalln("failed to initialize template generator: %s", err.Error())
-	//}
-	//
-	//certsGenerated := false
-	//template, parameters, certsGenerated, err := templateGenerator.GenerateTemplate(gc.containerService)
-	//if err != nil {
-	//	log.Fatalf("error generating template %s: %s", gc.apimodelPath, err.Error())
-	//	os.Exit(1)
-	//}
-	//
-	//if !gc.noPrettyPrint {
-	//	if template, err = acsengine.PrettyPrintArmTemplate(template); err != nil {
-	//		log.Fatalf("error pretty printing template: %s \n", err.Error())
-	//	}
-	//	if parameters, err = acsengine.BuildAzureParametersFile(parameters); err != nil {
-	//		log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
-	//	}
-	//}
-	//
-	//if err = acsengine.WriteArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
-	//	log.Fatalf("error writing artifacts: %s \n", err.Error())
-	//}
-
-	iw := interpolatorwriter.NewInterpolatorWriter("./_output", "azuredeploy.json", "azuredeploy.params.json", interpolator)
+	iw := interpolatorwriter.NewInterpolatorWriter(fmt.Sprintf("./_output/%s", gc.AgentPool.Name), "azuredeploy.json", "azuredeploy.parameterss.json", interpolator)
 	err = iw.Write()
 	if err != nil {
 		return fmt.Errorf("Unable to write template: %v", err)

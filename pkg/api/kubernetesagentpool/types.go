@@ -55,6 +55,8 @@ type ServicePrincipalProfile struct {
 
 type JumpBoxProfile struct {
 	PublicIpAddressId string `json:"publicIpAddressId,omitempty"`
+	VMSize            string `json:"vmSize,omitempty"`
+	Count             int    `json:"count,omitempty"`
 }
 
 type NetworkProfile struct {
