@@ -36,7 +36,7 @@ build: generate
 .PHONY: build-cross
 build-cross: LDFLAGS += -extldflags "-static"
 build-cross:
-	CGO_ENABLED=0 gox -output="_dist/{{.OS}}-{{.Arch}}/{{.Dir}}" -osarch='$(TARGETS)' $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)'
+	CGO_ENABLED=0 gox -output="_dist/acs-engine-${VERSION}-{{.OS}}-{{.Arch}}/{{.Dir}}" -osarch='$(TARGETS)' $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)'
 
 .PHONY: dist
 dist:
@@ -44,8 +44,8 @@ dist:
 		cd _dist && \
 		$(DIST_DIRS) cp ../LICENSE {} \; && \
 		$(DIST_DIRS) cp ../README.md {} \; && \
-		$(DIST_DIRS) tar -zcf acs-engine-${VERSION}-{}.tar.gz {} \; && \
-		$(DIST_DIRS) zip -r acs-engine-${VERSION}-{}.zip {} \; \
+		$(DIST_DIRS) tar -zcf {}.tar.gz {} \; && \
+		$(DIST_DIRS) zip -r {}.zip {} \; \
 	)
 
 .PHONY: checksum
