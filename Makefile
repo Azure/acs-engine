@@ -1,9 +1,19 @@
+TARGETS           = darwin/amd64 linux/amd64 linux/386 linux/arm linux/arm64 linux/ppc64le windows/amd64
+
 .NOTPARALLEL:
 
 .PHONY: bootstrap build test test_fmt validate-generated fmt lint ci devenv
 
 VERSION=`git describe --always --long --dirty`
 BUILD=`date +%FT%T%z`
+
+# go option
+GO        ?= go
+PKG       := $(shell glide novendor)
+LDFLAGS   :=
+GOFLAGS   :=
+BINDIR    := $(CURDIR)/bin
+BINARIES  := acs-engine
 
 # this isn't particularly pleasant, but it works with the least amount
 # of requirements around $GOPATH. The extra sed is needed because `gofmt`
@@ -12,6 +22,28 @@ BUILD=`date +%FT%T%z`
 GOFILES=`go list ./... | grep -v "github.com/Azure/acs-engine/vendor" | sed 's|github.com/Azure/acs-engine|.|g' | grep -v -w '^.$$'`
 
 all: build
+
+.PHONE: generate
+generate:
+	go generate -v $(GOFILES)
+
+.PHONY: build
+build: generate
+	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/Azure/acs-engine/cmd/...
+	cd test/acs-engine-test; go build -v
+
+.PHONY: clean
+clean:
+	@rm -rf $(BINDIR)
+
+test: test_fmt
+	go test -v $(GOFILES)
+
+.PHONY: test-style
+test-style:
+	@scripts/validate-go.sh
+
+ci: bootstrap build test lint
 
 HAS_GLIDE := $(shell command -v glide;)
 HAS_GOX := $(shell command -v gox;)
@@ -34,19 +66,7 @@ ifndef HAS_GIT
 endif
 	glide install
 
-build:
-	go generate -v $(GOFILES)
-	go build -v -ldflags="-X github.com/Azure/acs-engine/cmd.BuildSHA=${VERSION} -X github.com/Azure/acs-engine/cmd.BuildTime=${BUILD}"
-	cd test/acs-engine-test; go build -v
-
-test: test_fmt
-	go test -v $(GOFILES)
-
-.PHONY: test-style
-test-style:
-	@scripts/validate-go.sh
-
-ci: bootstrap build test lint
-
 devenv:
 	./scripts/devenv.sh
+
+include versioning.mk
