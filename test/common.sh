@@ -18,6 +18,7 @@ function jqi() { filename="${1}"; jqexpr="${2}"; jq "${jqexpr}" "${filename}" > 
 function generate_template() {
 	# Check pre-requisites
 	[[ ! -z "${INSTANCE_NAME:-}" ]] || (echo "Must specify INSTANCE_NAME" && exit -1)
+	[[ ! -z "${LOCATION:-}" ]] || (echo "Must specify LOCATION" && exit -1)
 	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
 	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || [[ ! -z "${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_ID" && exit -1)
 	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || [[ ! -z "${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_SECRET" && exit -1)
@@ -39,6 +40,7 @@ function generate_template() {
 	export FINAL_CLUSTER_DEFINITION="${OUTPUT}/clusterdefinition.json"
 	cp "${CLUSTER_DEFINITION}" "${FINAL_CLUSTER_DEFINITION}"
 	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.masterProfile.dnsPrefix = \"${INSTANCE_NAME}\""
+	jqi "${FINAL_CLUSTER_DEFINITION}" ".location = \"${LOCATION}\""
 	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.agentPoolProfiles |= map(if .name==\"agentpublic\" then .dnsPrefix = \"${INSTANCE_NAME}0\" else . end)"
 	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.linuxProfile.ssh.publicKeys[0].keyData = \"${SSH_KEY_DATA}\""
 
@@ -89,6 +91,12 @@ function set_azure_account() {
 	which az || (echo "az must be on PATH" && exit -1)
 
 	# Login to Azure-Cli
+	# Set cli to target cloud, if CLOUD environment variable is empty then use AzureCloud by Default, which is for public Azure
+	if [[ -z "${TARGET_ENVIRONMENT:-}" ]]; then
+		az cloud set -n AzureCloud
+	else 
+		az cloud set -n "${TARGET_ENVIRONMENT}"
+	fi
 	az login --service-principal \
 		--username "${SERVICE_PRINCIPAL_CLIENT_ID}" \
 		--password "${SERVICE_PRINCIPAL_CLIENT_SECRET}" \
