@@ -1,7 +1,7 @@
 {
   "deployments": [
     {
-      "cluster_definition": "swarmmode.json",
+      "cluster_definition": "swarmmode-D2.json",
       "category": "service-availability",
       "location": "australiaeast"
     },
@@ -106,7 +106,7 @@
       "location": "japaneast"
     },
     {
-      "cluster_definition": "dcos-D2.json",
+      "cluster_definition": "swarmmode-D2.json",
       "category": "service-availability",
       "location": "japanwest"
     },
