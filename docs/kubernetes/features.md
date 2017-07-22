@@ -43,3 +43,7 @@ Per default Calico still allows all communication within the cluster. Using Kube
 * [NetworkPolicy User Guide](https://kubernetes.io/docs/user-guide/networkpolicies/)
 * [NetworkPolicy Example Walkthrough](https://kubernetes.io/docs/getting-started-guides/network-policy/walkthrough/)
 * [Calico Kubernetes](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/)
+
+### Managed Disks
+
+While [Managed disks](../examples/disks-managed/README.md) are supported for the node OS disks, they are currently not supported for persistent volumes. See https://github.com/kubernetes/kubernetes/pull/46360 for details.
