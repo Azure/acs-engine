@@ -1,4 +1,4 @@
-function test_linux_deployment {
+function test_linux_deployment() {
   ###### Testing an nginx deployment
   log "Testing deployments"
   kubectl create namespace ${namespace}
@@ -65,6 +65,6 @@ function test_linux_deployment {
   fi
 }
 
-function test_windows_deployment {
-
+function test_windows_deployment() {
+  echo "coming soon"
 }

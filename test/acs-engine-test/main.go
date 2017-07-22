@@ -232,7 +232,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 			}
 			env = append(env, fmt.Sprintf("EXPECTED_NODE_COUNT=%s", nodesCount[0]))
 			env = append(env, fmt.Sprintf("EXPECTED_LINUX_AGENTS=%s", nodesCount[1]))
-			env = append(env, fmt.Sprintf("EXPECTED_WINDOWS_AGENTS=%s", nodesCount[1]))
+			env = append(env, fmt.Sprintf("EXPECTED_WINDOWS_AGENTS=%s", nodesCount[2]))
 		}
 	}
 	// clean up
