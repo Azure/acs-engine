@@ -4,7 +4,7 @@
 
 Here are the steps to deploy a simple Kubernetes cluster with multi-GPU support:
 
-1. [Install a Kubernetes cluster][Kubernetes Walkthrough](kubernetes.md) - shows how to create a Kubernetes cluster.
+1. [Install a Kubernetes cluster][Kubernetes Walkthrough](deploy.md) - shows how to create a Kubernetes cluster.
   > NOTE: Make sure to configure the agent nodes with vm size `Standard_NC12` or above to utilize the GPUs
 
 2. Install drivers:
