@@ -225,13 +225,14 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 				break
 			}
 			nodesCount := strings.Split(strings.TrimSpace(string(out)), ":")
-			if len(nodesCount) != 2 {
+			if len(nodesCount) != 3 {
 				wrileLog(logFile, "get_node_count: unexpected output '%s'", string(out))
 				errorInfo = report.NewErrorInfo(testName, "NodeCountParsingError", "PreRun", d.Location)
 				break
 			}
 			env = append(env, fmt.Sprintf("EXPECTED_NODE_COUNT=%s", nodesCount[0]))
-			env = append(env, fmt.Sprintf("EXPECTED_LINUX_NODE_COUNT=%s", nodesCount[1]))
+			env = append(env, fmt.Sprintf("EXPECTED_LINUX_AGENTS=%s", nodesCount[1]))
+			env = append(env, fmt.Sprintf("EXPECTED_WINDOWS_AGENTS=%s", nodesCount[1]))
 		}
 	}
 	// clean up

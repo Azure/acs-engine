@@ -10,7 +10,8 @@ function shunittest_validate_deployment {
     nodes=$(${HOME}/test/step.sh get_node_count)
     IFS=':' read -a narr <<< "${nodes}"
     export EXPECTED_NODE_COUNT=${narr[0]}
-    export EXPECTED_LINUX_NODE_COUNT=${narr[1]}
+    export EXPECTED_LINUX_AGENTS=${narr[1]}
+    export EXPECTED_WINDOWS_AGENTS=${narr[1]}
     export EXPECTED_ORCHESTRATOR_VERSION=$(${HOME}/test/step.sh get_orchestrator_version)
   fi
 
