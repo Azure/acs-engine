@@ -18,6 +18,7 @@ set -u
 set -x
 
 source "$DIR/../utils.sh"
+source "$DIR/k8s-utils.sh"
 
 ENV_FILE="${CLUSTER_DEFINITION}.env"
 if [ -e "${ENV_FILE}" ]; then
@@ -25,10 +26,13 @@ if [ -e "${ENV_FILE}" ]; then
 fi
 
 EXPECTED_NODE_COUNT="${EXPECTED_NODE_COUNT:-4}"
-EXPECTED_LINUX_NODE_COUNT="${EXPECTED_LINUX_NODE_COUNT:-4}"
+EXPECTED_LINUX_AGENTS="${EXPECTED_LINUX_AGENTS:-3}"
+EXPECTED_WINDOWS_AGENTS="${EXPECTED_WINDOWS_AGENTS:-0}"
 EXPECTED_DNS="${EXPECTED_DNS:-2}"
 EXPECTED_DASHBOARD="${EXPECTED_DASHBOARD:-1}"
 EXPECTED_ORCHESTRATOR_VERSION="${EXPECTED_ORCHESTRATOR_VERSION:-}"
+
+KUBE_PROXY_COUNT=$((EXPECTED_NODE_COUNT-$EXPECTED_WINDOWS_AGENTS))
 
 # set TEST_ACR to "y" for ACR testing
 TEST_ACR="${TEST_ACR:-n}"
@@ -152,10 +156,10 @@ count=12
 while (( $count > 0 )); do
   log "  ... counting down $count"
   running=$(kubectl get pods --namespace=kube-system | grep kube-proxy | grep Running | wc | awk '{print $1}')
-  if (( ${running} == ${EXPECTED_LINUX_NODE_COUNT} )); then break; fi
+  if (( ${running} == ${KUBE_PROXY_COUNT} )); then break; fi
   sleep 5; count=$((count-1))
 done
-if (( ${running} != ${EXPECTED_LINUX_NODE_COUNT} )); then
+if (( ${running} != ${KUBE_PROXY_COUNT} )); then
   log "K8S: gave up waiting for kube-proxy"; exit 1
 fi
 
@@ -184,69 +188,12 @@ for ip in $ips; do
   fi
 done
 
-###### Testing an nginx deployment
-log "Testing deployments"
-kubectl create namespace ${namespace}
-
-NGINX="docker.io/library/nginx:latest"
-IMAGE="${NGINX}" # default to the library image unless we're in TEST_ACR mode
-if [[ "${TEST_ACR}" == "y" ]]; then
-	# force it to pull from ACR
-	IMAGE="${ACR_REGISTRY}/test/nginx:latest"
-	# wait for acr
-	wait
-	# TODO: how to do this without polluting user home dir?
-	docker login --username="${SERVICE_PRINCIPAL_CLIENT_ID}" --password="${SERVICE_PRINCIPAL_CLIENT_SECRET}" "${ACR_REGISTRY}"
-	docker pull "${NGINX}"
-	docker tag "${NGINX}" "${IMAGE}"
-	docker push "${IMAGE}"
+if [ $EXPECTED_LINUX_AGENTS -gt 0 ] ; then
+  test_linux_deployment
 fi
 
-kubectl run --image="${IMAGE}" nginx --namespace=${namespace} --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
-count=12
-while (( $count > 0 )); do
-  log "  ... counting down $count"
-  running=$(kubectl get pods --namespace=${namespace} | grep nginx | grep Running | wc | awk '{print $1}')
-  if (( ${running} == 1 )); then break; fi
-  sleep 5; count=$((count-1))
-done
-if (( ${running} != 1 )); then
-  log "K8S: gave up waiting for deployment"
-  kubectl get all --namespace=${namespace}
-  exit 1
-fi
-
-kubectl expose deployments/nginx --type=LoadBalancer --namespace=${namespace} --port=80
-
-log "Checking Service External IP"
-count=60
-external_ip=""
-while (( $count > 0 )); do
-  log "  ... counting down $count"
-	external_ip=$(kubectl get svc --namespace ${namespace} nginx --template="{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}" || echo "")
-	[[ ! -z "${external_ip}" ]] && break
-	sleep 10; count=$((count-1))
-done
-if [[ -z "${external_ip}" ]]; then
-  log "K8S: gave up waiting for loadbalancer to get an ingress ip"
-  exit 1
-fi
-
-log "Checking Service"
-count=5
-success="n"
-while (( $count > 0 )); do
-  log "  ... counting down $count"
-  ret=$(curl -f --max-time 60 "http://${external_ip}" | grep 'Welcome to nginx!' || echo "curl_error")
-  if [[ $ret =~ .*'Welcome to nginx!'.* ]]; then
-    success="y"
-    break
-	fi
-  sleep 5; count=$((count-1))
-done
-if [[ "${success}" != "y" ]]; then
-  log "K8S: failed to get expected response from nginx through the loadbalancer"
-  exit 1
+if [ $EXPECTED_WINDOWS_AGENTS -gt 0 ] ; then
+  test_windows_deployment
 fi
 
 check_node_count
