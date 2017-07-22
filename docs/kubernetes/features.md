@@ -2,7 +2,7 @@
 
 |Feature|Status|API Version|Example|Description|
 |---|---|---|---|---|
-|Managed Identity|Alpha|`vlabs`|[kubernetes-msi.json](../examples/managed-identity/kubernetes-msi.json)|[Description](#feat-kubernetes-msi)|
+|Managed Identity|Alpha|`vlabs`|[kubernetes-msi.json](../../examples/managed-identity/kubernetes-msi.json)|[Description](#feat-kubernetes-msi)|
 
 <a name="feat-kubernetes-msi"></a>
 ### Managed Identity
