@@ -66,5 +66,81 @@ function test_linux_deployment() {
 }
 
 function test_windows_deployment() {
-  echo "coming soon"
+  ###### Testing a simpleweb windows deployment
+  log "Testing Windows deployments"
+
+  log "Creating simpleweb service"
+  kubectl apply -f "$DIR/simpleweb-windows.yaml"
+  count=90
+  while (( $count > 0 )); do
+    log "  ... counting down $count"
+    running=$(kubectl get pods --namespace=default | grep win-webserver | grep Running | wc | awk '{print $1}')
+    if (( ${running} == 1 )); then break; fi
+    sleep 10; count=$((count-1))
+  done
+  if (( ${running} != 1 )); then
+    log "K8S: gave up waiting for deployment"
+    kubectl get all --namespace=default
+    exit 1
+  fi
+
+  log "Checking Service External IP"
+  count=60
+  external_ip=""
+  while (( $count > 0 )); do
+    log "  ... counting down $count"
+    external_ip=$(kubectl get svc --namespace default win-webserver --template="{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}" || echo "")
+    [[ ! -z "${external_ip}" ]] && break
+    sleep 10; count=$((count-1))
+  done
+  if [[ -z "${external_ip}" ]]; then
+    log "K8S: gave up waiting for loadbalancer to get an ingress ip"
+    exit 1
+  fi
+
+  log "Checking Service"
+  count=5
+  success="n"
+  while (( $count > 0 )); do
+    log "  ... counting down $count"
+    ret=$(curl -f --max-time 60 "http://${external_ip}" | grep 'Windows Container Web Server' || echo "curl_error")
+    if [[ $ret =~ .*'Windows Container Web Server'.* ]]; then
+      success="y"
+      break
+    fi
+    sleep 10; count=$((count-1))
+  done
+  if [[ "${success}" != "y" ]]; then
+    log "K8S: failed to get expected response from simpleweb through the loadbalancer"
+    exit 1
+  fi
+
+  log "Checking outbound connection"
+  count=10
+  while (( $count > 0 )); do
+    log "  ... counting down $count"
+    winpodname=$(kubectl get pods --namespace=default | grep win-webserver | awk '{print $1}')
+    [[ ! -z "${winpodname}" ]] && break
+    sleep 10; count=$((count-1))
+  done
+  if [[ -z "${winpodname}" ]]; then
+    log "K8S: failed to get expected pod name for simpleweb"
+    exit 1
+  fi
+
+  count=10
+  success="n"
+  while (( $count > 0 )); do
+    log "  ... counting down $count"
+    statuscode=$(kubectl exec $winpodname -- powershell iwr -UseBasicParsing www.bing.com | grep StatusCode)
+    if [[ $(echo ${statuscode} | grep 200 | awk '{print $3}' | tr -d '\r') -eq "200" ]]; then 
+      success="y"
+      break 
+    fi
+    sleep 10; count=$((count-1))
+  done
+  if [[ "${success}" != "y" ]]; then
+    log "K8S: failed to get outbound internet connection inside simpleweb container"
+    exit 1
+  fi
 }
