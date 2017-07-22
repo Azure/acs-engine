@@ -31,6 +31,11 @@ test-style:
 	@scripts/validate-go.sh
 
 ci: prereqs build test lint
+	./scripts/coverage.sh --coveralls
+
+.PHONY: coverage
+coverage:
+	@scripts/coverage.sh
 
 devenv:
 	./scripts/devenv.sh
