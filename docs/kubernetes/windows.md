@@ -4,11 +4,11 @@
 
 Here are the steps to deploy a simple Kubernetes cluster with Windows:
 
-1. [install acs-engine](acsengine.md#downloading-and-building-acs-engine)
-2. [generate your ssh key](ssh.md#ssh-key-generation)
-3. [generate your service principal](serviceprincipal.md)
+1. [install acs-engine](../acsengine.md#downloading-and-building-acs-engine)
+2. [generate your ssh key](../ssh.md#ssh-key-generation)
+3. [generate your service principal](../serviceprincipal.md)
 4. edit the [Kubernetes windows example](../examples/windows/kubernetes.json) and fill in the blank strings
-5. [generate the template](acsengine.md#generating-a-template)
+5. [generate the template](../acsengine.md#generating-a-template)
 6. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../README.md#deployment-usage)
 7. Temporary workaround when deploying a cluster in a custom VNET with Kubernetes 1.6.0:
     1. After a cluster has been created in step 6 get id of the route table resource from Microsoft.Network provider in your resource group. 
@@ -46,13 +46,13 @@ Once your Kubernetes cluster has been created you will have a resource group con
 
 1. 1 master accessible by SSH on port 22 or kubectl on port 443
 
-2. a set of windows and linux nodes.  The windows nodes can be accessed through an RDP SSH tunnel via the master node.  To do this, follow these [instructions](ssh.md#create-port-80-tunnel-to-the-master), replacing port 80 with 3389.  Since your windows machine is already using port 3389, it is recommended to use 3390 to Windows Node 0, 10.240.245.5, 3391 to Windows Node 1, 10.240.245.6, and so on as shown in the following image:
+2. a set of windows and linux nodes.  The windows nodes can be accessed through an RDP SSH tunnel via the master node.  To do this, follow these [instructions](../ssh.md#create-port-80-tunnel-to-the-master), replacing port 80 with 3389.  Since your windows machine is already using port 3389, it is recommended to use 3390 to Windows Node 0, 10.240.245.5, 3391 to Windows Node 1, 10.240.245.6, and so on as shown in the following image:
 
-![Image of Windows RDP tunnels](images/rdptunnels.png)
+![Image of Windows RDP tunnels](../images/rdptunnels.png)
 
 The following image shows the architecture of a container service cluster with 1 master, and 2 agents:
 
-![Image of Kubernetes cluster on azure with Windows](images/kubernetes-windows.png)
+![Image of Kubernetes cluster on azure with Windows](../images/kubernetes-windows.png)
 
 In the image above, you can see the following parts:
 
@@ -80,7 +80,7 @@ After completing this walkthrough you will know how to:
      4. then click on the "Microsoft.Template"
      5. now you can copy the output FQDNs and sample SSH commands
 
-   ![Image of docker scaling](images/portal-kubernetes-outputs.png)
+   ![Image of docker scaling](../images/portal-kubernetes-outputs.png)
 
 2. SSH to the master FQDN obtained in step 1.
 
@@ -219,7 +219,7 @@ After completing this walkthrough you will know how to:
 
 8. Type `watch kubectl get pods` to watch the deployment of the service that takes about 10 minutes.  Once running, type `kubectl get svc` and for the app names `aspnet-webapi-todo` copy the external address and open in your webbrowser.  As shown in the following image, the traffic flows from your webbrowser to the ASP.Net WebAPI frontend and then to the hybrid container.
 
-   ![Image of hybrid traffic flow](images/hybrid-trafficflow.png)
+   ![Image of hybrid traffic flow](../images/hybrid-trafficflow.png)
 
 ## Troubleshooting
 
