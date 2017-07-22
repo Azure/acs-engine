@@ -1,4 +1,5 @@
 # Microsoft Azure Container Service Engine - Builds Docker Enabled Clusters
+[![Coverage Status](https://coveralls.io/repos/github/Azure/acs-engine/badge.svg?branch=master)](https://coveralls.io/github/Azure/acs-engine?branch=master)
 
 ## Overview
 
@@ -10,7 +11,7 @@ The cluster definition file enables the following customizations to your Docker 
  * standard or premium VM Sizes,
  * node count,
  * Virtual Machine ScaleSets or Availability Sets,
- * Storage Account Disks or Managed Disks (under private preview),
+ * Storage Account Disks or Managed Disks (under private preview)
 * Docker cluster sizes of 1200
 * Custom VNET
 
