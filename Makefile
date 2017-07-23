@@ -13,7 +13,7 @@ LDFLAGS   :=
 GOFLAGS   :=
 BINDIR    := $(CURDIR)/bin
 BINARIES  := acs-engine
-VERSION		:= $(shell git rev-parse HEAD)
+VERSION   := $(shell git rev-parse HEAD)
 
 # this isn't particularly pleasant, but it works with the least amount
 # of requirements around $GOPATH. The extra sed is needed because `gofmt`
@@ -29,7 +29,7 @@ generate:
 
 .PHONY: build
 build: generate
-	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/Azure/acs-engine/cmd/...
+	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -ldflags '$(LDFLAGS)'
 	cd test/acs-engine-test; go build
 
 # usage: make clean build-cross dist VERSION=v0.4.0
