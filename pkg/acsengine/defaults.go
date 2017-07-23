@@ -203,17 +203,13 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		a.CertificateProfile.SetCAPrivateKey(caPair.PrivateKeyPem)
 	}
 
-	apiServerPair, etcdPair, etcdClientPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
+	apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
 	if err != nil {
 		return false, err
 	}
 
 	a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
 	a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
-	a.CertificateProfile.EtcdCertificate = etcdPair.CertificatePem
-	a.CertificateProfile.EtcdPrivateKey = etcdPair.PrivateKeyPem
-	a.CertificateProfile.EtcdClientCertificate = etcdClientPair.CertificatePem
-	a.CertificateProfile.EtcdClientPrivateKey = etcdClientPair.PrivateKeyPem
 	a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
 	a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
 	a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem

@@ -51,20 +51,6 @@ write_files:
   content: |
     {{{apiserverCertificate}}}
 
-- path: "/etc/kubernetes/certs/etcd.crt"
-  permissions: "0644"
-  encoding: "base64"
-  owner: "root"
-  content: |
-    {{{etcdCertificate}}}
-
-- path: "/etc/kubernetes/certs/etcdclient.crt"
-  permissions: "0644"
-  encoding: "base64"
-  owner: "root"
-  content: |
-    {{{etcdClientCertificate}}}
-
 - path: "/etc/kubernetes/certs/client.crt"
   permissions: "0644"
   encoding: "base64"

@@ -72,20 +72,6 @@ write_files:
   content: |
     {{{apiServerCertificate}}}
 
-- path: "/etc/kubernetes/certs/etcd.crt"
-  permissions: "0644"
-  encoding: "base64"
-  owner: "root"
-  content: |
-    {{{etcdCertificate}}}
-
-- path: "/etc/kubernetes/certs/etcdclient.crt"
-  permissions: "0644"
-  encoding: "base64"
-  owner: "root"
-  content: |
-    {{{etcdClientCertificate}}}
-
 - path: "/etc/kubernetes/certs/client.crt"
   permissions: "0644"
   encoding: "base64"
@@ -256,7 +242,7 @@ write_files:
     iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443
 
     sed -i "s|<kubernetesAddonManagerSpec>|{{{kubernetesAddonManagerSpec}}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
-    sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<kubeServiceCidr>|{{{kubeServiceCidr}}}|g; s|<masterCount>|{{{masterCount}}}|g; s|<masterEtcdClientUrl>|<<<concat('https://', variables('masterPrivateIpAddrs')[copyIndex()], ':', variables('masterEtcdClientPort'))>>>|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<kubeServiceCidr>|{{{kubeServiceCidr}}}|g; s|<masterEtcdClientPort>|{{{masterEtcdClientPort}}}|g; s|<masterCount>|{{{masterCount}}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g; s|<masterFqdnPrefix>|{{{masterFqdnPrefix}}}|g; s|<allocateNodeCidrs>|{{{allocateNodeCidrs}}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{{kubernetesHyperkubeSpec}}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
@@ -272,13 +258,13 @@ write_files:
     {{{provisionScript}}}
 
 runcmd:
-- /bin/echo DAEMON_ARGS=--name "<<<variables('masterVMNames')[copyIndex()]>>>" --client-cert-auth --trusted-ca-file="/etc/kubernetes/certs/ca.crt" --ca-file="/etc/kubernetes/certs/ca.crt" --cert-file="/etc/kubernetes/certs/etcd.crt" --key-file="/etc/kubernetes/certs/etcd.key" --peer-cert-file="/etc/kubernetes/certs/etcd.crt" --peer-key-file="/etc/kubernetes/certs/etcd.key"  --initial-advertise-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --listen-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --advertise-client-urls "<<<variables('masterEtcdClientURLs')[copyIndex()]>>>" --listen-client-urls "<<<concat(variables('masterEtcdClientURLs')[copyIndex()], ',https://127.0.0.1:', variables('masterEtcdClientPort'))>>>" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "<<<variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]>>>" --initial-cluster-state "new" | tee -a /etc/default/etcd
+- /bin/echo DAEMON_ARGS=--name "<<<variables('masterVMNames')[copyIndex()]>>>" --initial-advertise-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --listen-peer-urls "<<<variables('masterEtcdPeerURLs')[copyIndex()]>>>" --advertise-client-urls "<<<variables('masterEtcdClientURLs')[copyIndex()]>>>" --listen-client-urls "<<<concat(variables('masterEtcdClientURLs')[copyIndex()], ',http://127.0.0.1:', variables('masterEtcdClientPort'))>>>" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "<<<variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]>>> --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
 - sudo /bin/chown -R etcd:etcd /var/lib/etcd/default
 - sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
 - systemctl stop etcd
 - sudo -u etcd rm -rf /var/lib/etcd/default
 - systemctl restart etcd
-- for i in $(seq 1 20); do curl --max-time 60 "<<<variables('masterEtcdClientURLs')[copyIndex()]>>>"/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
+- for i in $(seq 1 20); do curl --max-time 60 http://127.0.0.1:2379/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
 - apt-get update
 - apt-get install -y apt-transport-https ca-certificates
 - for i in 1 2 3 4 5; do curl --max-time 60 -fsSL https://aptdocker.azureedge.net/gpg | apt-key add -; [ $? -eq 0 ] && break || sleep 5; done

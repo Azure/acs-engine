@@ -41,18 +41,6 @@
   "dockerEngineDownloadRepo": {
     "value": "https://apt.dockerproject.org/repo"
   },
-  "etcdCertificate": {
-    "value": ""
-  },
-  "etcdClientCertificate": {
-    "value": ""
-  },
-  "etcdClientPrivateKey": {
-    "value": ""
-  },
-  "etcdPrivateKey": {
-    "value": ""
-  },
   "firstConsecutiveStaticIP": {
     "value": "10.240.255.5"
   },
