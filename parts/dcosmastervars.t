@@ -1,14 +1,7 @@
     "adminUsername": "[parameters('linuxAdminUsername')]",
     "targetEnvironment": "[parameters('targetEnvironment')]",
     "maxVMsPerPool": 100,
-    "maxVMsPerStorageAccount": 20,
-    "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
-    "dataStorageAccountPrefixSeed": 97, 
     "apiVersionDefault": "2016-03-30", 
-    "apiVersionStorage": "2015-06-15",
-{{if .HasManagedDisks}}
-    "apiVersionStorageManagedDisks": "2016-04-30-preview",
-{{end}}
 {{if .LinuxProfile.HasSecrets}}
     "linuxProfileSecrets" :
       [
@@ -33,6 +26,7 @@
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]", 
     "masterCount": {{.MasterProfile.Count}}, 
     "masterEndpointDNSNamePrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
+    "masterHttpSourceAddressPrefix": "{{.MasterProfile.HttpSourceAddressPrefix}}",
     "masterLbBackendPoolName": "[concat(variables('orchestratorName'), '-master-pool-', variables('nameSuffix'))]", 
     "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]", 
     "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]", 
@@ -41,8 +35,26 @@
     "masterNSGID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('masterNSGName'))]", 
     "masterNSGName": "[concat(variables('orchestratorName'), '-master-nsg-', variables('nameSuffix'))]", 
     "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]", 
+    "apiVersionStorage": "2015-06-15",
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),variables('location'),variables('orchestratorName')))]", 
     "masterStorageAccountExhibitorName": "[concat(variables('storageAccountBaseName'), 'exhb0')]", 
+    "storageAccountType": "Standard_LRS",
+{{if .HasStorageAccountDisks}}
+    "maxVMsPerStorageAccount": 20,
+    "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
+    "dataStorageAccountPrefixSeed": 97, 
+    "storageAccountPrefixes": [ "0", "6", "c", "i", "o", "u", "1", "7", "d", "j", "p", "v", "2", "8", "e", "k", "q", "w", "3", "9", "f", "l", "r", "x", "4", "a", "g", "m", "s", "y", "5", "b", "h", "n", "t", "z" ], 
+    "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]", 
+    {{GetSizeMap}},
+{{else}}
+    "storageAccountPrefixes": [],
+{{end}}
+{{if .HasManagedDisks}}
+    "apiVersionStorageManagedDisks": "2016-04-30-preview",
+{{end}}
+{{if .MasterProfile.IsStorageAccount}}
     "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
+{{end}}
 {{if .MasterProfile.IsCustomVNET}}
     "masterVnetSubnetID": "[parameters('masterVnetSubnetID')]",
 {{else}}
@@ -67,12 +79,12 @@
     ], 
     "masterVMSize": "[parameters('masterVMSize')]", 
     "nameSuffix": "[parameters('nameSuffix')]", 
-    "oauthEnabled": "false", 
+    "oauthEnabled": "{{.MasterProfile.OAuthEnabled}}", 
     "orchestratorName": "dcos", 
     "osImageOffer": "UbuntuServer", 
     "osImagePublisher": "Canonical", 
     "osImageSKU": "16.04-LTS", 
-    "osImageVersion": "16.04.201703070",
+    "osImageVersion": "16.04.201706191",
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]", 
     "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
     "locations": [
@@ -80,10 +92,6 @@
          "[parameters('location')]"
     ],
     "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),variables('location'),variables('orchestratorName')))]", 
-    "storageAccountPrefixes": [ "0", "6", "c", "i", "o", "u", "1", "7", "d", "j", "p", "v", "2", "8", "e", "k", "q", "w", "3", "9", "f", "l", "r", "x", "4", "a", "g", "m", "s", "y", "5", "b", "h", "n", "t", "z" ], 
-    "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]", 
-    "storageAccountType": "Standard_LRS",
 {{if IsDCOS190}}
     "masterSshInboundNatRuleIdPrefix": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'))]",
     "masterSshPort22InboundNatRuleIdPrefix": "[concat(variables('masterLbID'),'/inboundNatRules/SSHPort22-',variables('masterVMNamePrefix'))]",

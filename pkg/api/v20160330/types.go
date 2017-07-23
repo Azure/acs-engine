@@ -1,6 +1,7 @@
 package v20160330
 
 import (
+	"encoding/json"
 	"fmt"
 	neturl "net/url"
 	"strings"
@@ -41,7 +42,7 @@ type Properties struct {
 	DiagnosticsProfile *DiagnosticsProfile `json:"diagnosticsProfile,omitempty"`
 
 	// JumpboxProfile has made it into the new ACS RP stack for
-	// backward compability.
+	// backward compatibility.
 	// TODO: Version this field so that newer versions don't
 	// allow jumpbox creation
 	JumpboxProfile *JumpboxProfile `json:"jumpboxProfile,omitempty"`
@@ -52,10 +53,13 @@ type LinuxProfile struct {
 	AdminUsername string `json:"adminUsername"`
 
 	SSH struct {
-		PublicKeys []struct {
-			KeyData string `json:"keyData"`
-		} `json:"publicKeys"`
+		PublicKeys []PublicKey `json:"publicKeys"`
 	} `json:"ssh"`
+}
+
+// PublicKey represents an SSH key for LinuxProfile
+type PublicKey struct {
+	KeyData string `json:"keyData"`
 }
 
 // WindowsProfile represents the Windows configuration passed to the cluster
@@ -102,6 +106,23 @@ type MasterProfile struct {
 	subnet string
 }
 
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (m *MasterProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasMasterProfile MasterProfile
+	mm := aliasMasterProfile{}
+	if e := json.Unmarshal(b, &mm); e != nil {
+		return e
+	}
+	*m = MasterProfile(mm)
+	if m.Count == 0 {
+		// if MasterProfile.Count is missing or 0, set to default 1
+		m.Count = 1
+	}
+	return nil
+}
+
 // AgentPoolProfile represents configuration of VMs running agent
 // daemons that register with the master and offer resources to
 // host applications in containers.
@@ -110,10 +131,35 @@ type AgentPoolProfile struct {
 	Count     int    `json:"count"`
 	VMSize    string `json:"vmSize"`
 	DNSPrefix string `json:"dnsPrefix"`
-	FQDN      string `json:"fqdn,omitempty"`
+	FQDN      string `json:"fqdn"`
 	OSType    OSType `json:"osType"` // TODO: This field is versioned to "2016-03-30"
 	// subnet is internal
 	subnet string
+}
+
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasAgentPoolProfile AgentPoolProfile
+	aa := aliasAgentPoolProfile{}
+	if e := json.Unmarshal(b, &aa); e != nil {
+		return e
+	}
+	*a = AgentPoolProfile(aa)
+	if a.Count == 0 {
+		// if AgentPoolProfile.Count is missing or 0, set it to default 1
+		a.Count = 1
+	}
+
+	if string(a.OSType) == "" {
+		// OSType is the operating system type for agents
+		// Set as nullable to support backward compat because
+		// this property was added later.
+		// If the value is null or not set, it defaulted to Linux.
+		a.OSType = Linux
+	}
+	return nil
 }
 
 // JumpboxProfile dscribes properties of the jumpbox setup
@@ -200,6 +246,11 @@ func (a *AgentPoolProfile) IsWindows() bool {
 // IsLinux returns true if the agent pool is linux
 func (a *AgentPoolProfile) IsLinux() bool {
 	return a.OSType == Linux
+}
+
+// IsDCOS returns true if this template is for DCOS orchestrator
+func (o *OrchestratorProfile) IsDCOS() bool {
+	return o.OrchestratorType == DCOS
 }
 
 // GetSubnet returns the read-only subnet for the agent pool

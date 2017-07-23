@@ -16,7 +16,8 @@ echo "starting Swarm Mode cluster configuration"
 date
 ps ax
 
-DOCKER_COMPOSE_VERSION="1.12.0"
+DOCKER_CE_VERSION="17.03.*"
+DOCKER_COMPOSE_VERSION="1.14.0"
 #############
 # Parameters
 #############
@@ -63,7 +64,7 @@ ensureAzureNetwork()
     echo "the network is not healthy, aborting install"
     ifconfig
     ip a
-    exit 2
+    exit 1
   fi
   # ensure the host ip can resolve
   networkHealthy=1
@@ -78,6 +79,20 @@ ensureAzureNetwork()
     fi
     sleep 1
   done
+  # attempt to fix hostname, in case dns is not resolving Azure IPs (but can resolve public ips)
+  if [ $networkHealthy -ne 0 ]
+  then
+    HOSTNAME=`hostname`
+    HOSTADDR=`ip address show dev eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*'`
+    echo $HOSTADDR $HOSTNAME >> /etc/hosts
+    hostname -i
+    if [ $? -eq 0 ]
+    then
+      # hostname has been found continue
+      networkHealthy=0
+      echo "the network is healthy by updating /etc/hosts"
+    fi
+  fi
   if [ $networkHealthy -ne 0 ]
   then
     echo "the network is not healthy, cannot resolve ip address, aborting install"
@@ -88,6 +103,9 @@ ensureAzureNetwork()
 }
 ensureAzureNetwork
 HOSTADDR=`hostname -i`
+
+# apply all Canonical security updates during provisioning
+/usr/lib/apt/apt.systemd.daily
 
 ismaster ()
 {
@@ -120,7 +138,9 @@ MASTER0IPADDR="${BASESUBNET}${MASTERFIRSTADDR}"
 # resolve self in DNS
 ######################
 
-echo "$HOSTADDR $VMNAME" | sudo tee -a /etc/hosts
+if [ -z "$(grep "$HOSTADDR $VMNAME" /etc/hosts)" ]; then
+    echo "$HOSTADDR $VMNAME" | sudo tee -a /etc/hosts
+fi
 
 ################
 # Install Docker
@@ -131,9 +151,14 @@ echo "Installing and configuring Docker"
 installDocker()
 {
   for i in {1..10}; do
-    wget --tries 4 --retry-connrefused --waitretry=15 -qO- https://get.docker.com | sh
+    apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+    curl --max-time 60 -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - 
+    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    apt-get update
+    apt-get install -y docker-ce=${DOCKER_CE_VERSION}
     if [ $? -eq 0 ]
     then
+      systemctl restart docker
       # hostname has been found continue
       echo "Docker installed successfully"
       break
@@ -154,7 +179,7 @@ updateDockerDaemonOptions()
     # also have it bind to the unix socket at /var/run/docker.sock
     sudo bash -c 'echo "[Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
+    ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
   " > /etc/systemd/system/docker.service.d/override.conf'
 }
 time updateDockerDaemonOptions
@@ -227,7 +252,7 @@ if ismaster ; then
         if [ $swarmmodetokenAcquired -ne 0 ]
         then
             echo "Secondary master couldn't connect to Swarm, aborting install"
-            exit 2
+            exit 3
         fi
         docker swarm join --token $swarmmodetoken $MASTER0IPADDR:2377
     fi
@@ -258,7 +283,7 @@ if isagent ; then
     if [ $swarmmodetokenAcquired -ne 0 ]
     then
         echo "Agent couldn't join Swarm, aborting install"
-        exit 2
+        exit 4
     fi
     docker swarm join --token $swarmmodetoken $MASTER0IPADDR:2377
 fi
@@ -268,6 +293,10 @@ then
   echo "downloading, and kicking off post install script"
   /bin/bash -c "wget --tries 20 --retry-connrefused --waitretry=15 -qO- $POSTINSTALLSCRIPTURI | nohup /bin/bash >> /var/log/azure/cluster-bootstrap-postinstall.log 2>&1 &"
 fi
+
+# mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
+echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
+sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
 echo "processes at end of script"
 ps ax

@@ -6,6 +6,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
+	"github.com/Azure/acs-engine/pkg/api/v20170701"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -54,14 +55,17 @@ type Properties struct {
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
 type ServicePrincipalProfile struct {
-	ClientID string `json:"servicePrincipalClientID,omitempty"`
-	Secret   string `json:"servicePrincipalClientSecret,omitempty"`
+	ClientID          string `json:"servicePrincipalClientID,omitempty"`
+	Secret            string `json:"servicePrincipalClientSecret,omitempty"`
+	KeyvaultSecretRef string `json:"keyvaultSecretRef,omitempty"`
 }
 
 // CertificateProfile represents the definition of the master cluster
 type CertificateProfile struct {
 	// CaCertificate is the certificate authority certificate.
 	CaCertificate string `json:"caCertificate,omitempty"`
+	// CaPrivateKey is the certificate authority key.
+	CaPrivateKey string `json:"caPrivateKey,omitempty"`
 	// ApiServerCertificate is the rest api server certificate, and signed by the CA
 	APIServerCertificate string `json:"apiServerCertificate,omitempty"`
 	// ApiServerPrivateKey is the rest api server private key, and signed by the CA
@@ -74,19 +78,20 @@ type CertificateProfile struct {
 	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty"`
 	// KubeConfigPrivateKey is the client private key used for kubectl cli and signed by the CA
 	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
-	// caPrivateKey is an internal field only set if generation required
-	caPrivateKey string
 }
 
 // LinuxProfile represents the linux parameters passed to the cluster
 type LinuxProfile struct {
 	AdminUsername string `json:"adminUsername"`
 	SSH           struct {
-		PublicKeys []struct {
-			KeyData string `json:"keyData"`
-		} `json:"publicKeys"`
+		PublicKeys []PublicKey `json:"publicKeys"`
 	} `json:"ssh"`
 	Secrets []KeyVaultSecrets `json:"secrets,omitempty"`
+}
+
+// PublicKey represents an SSH key for LinuxProfile
+type PublicKey struct {
+	KeyData string `json:"keyData"`
 }
 
 // WindowsProfile represents the windows parameters passed to the cluster
@@ -125,8 +130,25 @@ type OrchestratorProfile struct {
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
-	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
-	NetworkPolicy       string `json:"networkPolicy,omitempty"`
+	KubernetesImageBase              string  `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet                    string  `json:"clusterSubnet,omitempty"`
+	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
+	DockerBridgeSubnet               string  `json:"dockerBridgeSubnet,omitempty"`
+	NodeStatusUpdateFrequency        string  `json:"nodeStatusUpdateFrequency,omitempty"`
+	CtrlMgrNodeMonitorGracePeriod    string  `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
+	CtrlMgrPodEvictionTimeout        string  `json:"ctrlMgrPodEvictionTimeout,omitempty"`
+	CtrlMgrRouteReconciliationPeriod string  `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
+	CloudProviderBackoff             bool    `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries      int     `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter       float64 `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration     int     `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent     float64 `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit           bool    `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS        float64 `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket     int     `json:"cloudProviderRateLimitBucket,omitempty"`
+	UseManagedIdentity               bool    `json:"useManagedIdentity,omitempty"`
+	CustomHyperkubeImage             string  `json:"customHyperkubeImage,omitempty"`
+	UseInstanceMetadata		 bool    `json:"useInstanceMetadata,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -134,11 +156,15 @@ type MasterProfile struct {
 	Count                    int    `json:"count"`
 	DNSPrefix                string `json:"dnsPrefix"`
 	VMSize                   string `json:"vmSize"`
+	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string `json:"subnet"`
 	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
-
+	StorageProfile           string `json:"storageProfile,omitempty"`
+	HttpSourceAddressPrefix  string `json:"httpSourceAddressPrefix,omitempty"`
+	OAuthEnabled             bool   `json:"oauthEnabled"`
+	
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
 	// Not used during PUT, returned as part of GET
@@ -150,6 +176,7 @@ type AgentPoolProfile struct {
 	Name                string `json:"name"`
 	Count               int    `json:"count"`
 	VMSize              string `json:"vmSize"`
+	OSDiskSizeGB        int    `json:"osDiskSizeGB,omitempty"`
 	DNSPrefix           string `json:"dnsPrefix,omitempty"`
 	OSType              OSType `json:"osType,omitempty"`
 	Ports               []int  `json:"ports,omitempty"`
@@ -266,6 +293,27 @@ type V20170131ARMContainerService struct {
 	*v20170131.ContainerService
 }
 
+// V20170701ARMContainerService is the type we read and write from file
+// needed because the json that is sent to ARM and acs-engine
+// is different from the json that the ACS RP Api gets from ARM
+type V20170701ARMContainerService struct {
+	TypeMeta
+	*v20170701.ContainerService
+}
+
+// VlabsUpgradeContainerService is the type we read and write from file
+// needed because the json that is sent to ARM and acs-engine
+// is different from the json that the ACS RP Api gets from ARM
+type VlabsUpgradeContainerService struct {
+	TypeMeta
+	*vlabs.UpgradeContainerService
+}
+
+// UpgradeContainerService API model
+type UpgradeContainerService struct {
+	OrchestratorProfile *OrchestratorProfile `json:"orchestratorProfile,omitempty"`
+}
+
 // HasWindows returns true if the cluster contains windows
 func (p *Properties) HasWindows() bool {
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
@@ -278,6 +326,9 @@ func (p *Properties) HasWindows() bool {
 
 // HasManagedDisks returns true if the cluster contains Managed Disks
 func (p *Properties) HasManagedDisks() bool {
+	if p.MasterProfile.StorageProfile == ManagedDisks {
+		return true
+	}
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			return true
@@ -286,19 +337,32 @@ func (p *Properties) HasManagedDisks() bool {
 	return false
 }
 
-// GetCAPrivateKey returns the ca private key
-func (c *CertificateProfile) GetCAPrivateKey() string {
-	return c.caPrivateKey
-}
-
-// SetCAPrivateKey sets the ca private key
-func (c *CertificateProfile) SetCAPrivateKey(caPrivateKey string) {
-	c.caPrivateKey = caPrivateKey
+// HasStorageAccountDisks returns true if the cluster contains Storage Account Disks
+func (p *Properties) HasStorageAccountDisks() bool {
+	if p.MasterProfile.StorageProfile == StorageAccount {
+		return true
+	}
+	for _, agentPoolProfile := range p.AgentPoolProfiles {
+		if agentPoolProfile.StorageProfile == StorageAccount {
+			return true
+		}
+	}
+	return false
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
 func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
+}
+
+// IsManagedDisks returns true if the master specified managed disks
+func (m *MasterProfile) IsManagedDisks() bool {
+	return m.StorageProfile == ManagedDisks
+}
+
+// IsStorageAccount returns true if the master specified storage account
+func (m *MasterProfile) IsStorageAccount() bool {
+	return m.StorageProfile == StorageAccount
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
@@ -354,6 +418,11 @@ func (o *OrchestratorProfile) IsSwarmMode() bool {
 // IsKubernetes returns true if this template is for Kubernetes orchestrator
 func (o *OrchestratorProfile) IsKubernetes() bool {
 	return o.OrchestratorType == Kubernetes
+}
+
+// IsDCOS returns true if this template is for DCOS orchestrator
+func (o *OrchestratorProfile) IsDCOS() bool {
+	return o.OrchestratorType == DCOS
 }
 
 // IsVNETIntegrated returns true if Azure VNET integration is enabled

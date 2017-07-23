@@ -17,7 +17,13 @@ spec:
     - name: addons
       mountPath: "/etc/kubernetes/addons"
       readOnly: true
+    - name: msi
+      mountPath: "/var/lib/waagent/ManagedIdentity-Settings"
+      readOnly: true
   volumes:
   - name: addons
     hostPath:
       path: "/etc/kubernetes/addons"
+  - name: msi
+    hostPath:
+      path: "/var/lib/waagent/ManagedIdentity-Settings"

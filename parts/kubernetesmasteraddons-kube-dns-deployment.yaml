@@ -4,14 +4,14 @@ metadata:
   labels:
     kubernetes.io/cluster-service: "true"
     k8s-app: kube-dns
-    version: v19
-  name: kube-dns-v19
+    version: v20
+  name: kube-dns-v20
   namespace: kube-system
 spec:
   replicas: 2
   selector:
     k8s-app: kube-dns
-    version: v19
+    version: v20
   template:
     metadata:
       annotations:
@@ -20,12 +20,31 @@ spec:
       labels:
         k8s-app: kube-dns
         kubernetes.io/cluster-service: "true"
-        version: v19
+        version: v20
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: k8s-app
+                  operator: In
+                  values:
+                  - kube-dns
+              topologyKey: kubernetes.io/hostname
+      volumes:
+      - name: kube-dns-config
+        configMap:
+          name: kube-dns
+          optional: true
       containers:
       - args:
         - "--domain=cluster.local."
         - "--dns-port=10053"
+        - "--v=2"
+        - "--config-dir=/kube-dns-config"
         image: <kubernetesKubeDNSSpec>
         livenessProbe:
           failureThreshold: 5
@@ -57,10 +76,15 @@ spec:
           requests:
             cpu: 100m
             memory: 70Mi
+        volumeMounts:
+        - name: kube-dns-config
+          mountPath: /kube-dns-config
       - args:
         - "--cache-size=1000"
         - "--no-resolv"
         - "--server=127.0.0.1#10053"
+        - "--server=/in-addr.arpa/127.0.0.1#10053"
+        - "--server=/ip6.arpa/127.0.0.1#10053"
         - "--log-facility=-"
         image: <kubernetesDNSMasqSpec>
         name: dnsmasq

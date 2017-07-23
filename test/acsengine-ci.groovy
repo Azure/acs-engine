@@ -71,11 +71,8 @@ node {
 
             archiveArtifacts(allowEmptyArchive: true, artifacts: "${log_dir}/**/*.log")
 
-            // Final clean up
-            sh("rm -rf ${log_dir}")
-            sh("rm -rf ${clone_dir}/_output")
-            sh("rm -rf ${clone_dir}/.azure")
-            sh("rm -rf ${clone_dir}/.kube")
+            // Allow for future removal from the host
+            sh("chmod -R a+rwx ${WORKSPACE}")
 
             if(!success) {
               currentBuild.result = "FAILURE"

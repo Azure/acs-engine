@@ -21,11 +21,11 @@ var (
 		},
 
 		DCOSSpecConfig: DCOSSpecConfig{
-			DCOS173_BootstrapDownloadURL: fmt.Sprintf(MsecndDCOSBootstrapDownloadURL, "testing", "df308b6fc3bd91e1277baa5a3db928ae70964722"),
-			DCOS184_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "testing", "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
-			DCOS187_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
-			DCOS188_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "5df43052907c021eeb5de145419a3da1898c58a5"),
-			DCOS190_BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "58fd0833ce81b6244fc73bf65b5deb43217b0bd7"),
+			DCOS173BootstrapDownloadURL: fmt.Sprintf(MsecndDCOSBootstrapDownloadURL, "testing", "df308b6fc3bd91e1277baa5a3db928ae70964722"),
+			DCOS184BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "testing", "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
+			DCOS187BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
+			DCOS188BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "5df43052907c021eeb5de145419a3da1898c58a5"),
+			DCOS190BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "58fd0833ce81b6244fc73bf65b5deb43217b0bd7"),
 		},
 	}
 
@@ -41,10 +41,10 @@ var (
 			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
-			DCOS173_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
-			DCOS184_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
-			DCOS187_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
-			DCOS188_BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),
+			DCOS173BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
+			DCOS184BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
+			DCOS187BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
+			DCOS188BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),
 		},
 	}
 )
@@ -75,12 +75,60 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+		k8sVersion := a.OrchestratorProfile.OrchestratorVersion
 		if a.OrchestratorProfile.KubernetesConfig == nil {
 			a.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
 		}
 		a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
 		if a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "" {
 			a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+		}
+		if a.OrchestratorProfile.KubernetesConfig.ClusterSubnet == "" {
+			if a.OrchestratorProfile.IsVNETIntegrated() {
+				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
+				a.OrchestratorProfile.KubernetesConfig.ClusterSubnet = DefaultKubernetesSubnet
+			} else {
+				a.OrchestratorProfile.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
+			}
+		}
+		if a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet == "" {
+			a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
+		}
+		if a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency == "" {
+			a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency = KubeImages[k8sVersion]["nodestatusfreq"]
+		}
+		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeImages[k8sVersion]["nodegraceperiod"]
+		}
+		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout == "" {
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout = KubeImages[k8sVersion]["podeviction"]
+		}
+		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod == "" {
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod = KubeImages[k8sVersion]["routeperiod"]
+		}
+		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
+		if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff == true {
+			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration == 0 {
+				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
+			}
+			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent == 0 {
+				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
+			}
+			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter == 0 {
+				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
+			}
+			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries == 0 {
+				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
+			}
+		}
+		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
+		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && (k8sVersion == api.Kubernetes171 || k8sVersion == api.Kubernetes170 || k8sVersion == api.Kubernetes166) {
+			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
+				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
+			}
+			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket == 0 {
+				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
+			}
 		}
 	}
 }
@@ -90,12 +138,13 @@ func setMasterNetworkDefaults(a *api.Properties) {
 	if !a.MasterProfile.IsCustomVNET() {
 		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 			if a.OrchestratorProfile.IsVNETIntegrated() {
-				// Use a single large subnet for all masters, agents and pods.
-				a.MasterProfile.Subnet = DefaultKubernetesSubnet
+				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
+				a.MasterProfile.Subnet = a.OrchestratorProfile.KubernetesConfig.ClusterSubnet
+				a.MasterProfile.FirstConsecutiveStaticIP = getFirstConsecutiveStaticIPAddress(a.MasterProfile.Subnet)
 			} else {
 				a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
+				a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
 			}
-			a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
 		} else if a.HasWindows() {
 			a.MasterProfile.Subnet = DefaultSwarmWindowsMasterSubnet
 			a.MasterProfile.FirstConsecutiveStaticIP = DefaultSwarmWindowsFirstConsecutiveStaticIP
@@ -113,6 +162,10 @@ func setMasterNetworkDefaults(a *api.Properties) {
 		} else {
 			a.MasterProfile.IPAddressCount = DefaultAgentIPAddressCount
 		}
+	}
+
+	if a.MasterProfile.HttpSourceAddressPrefix == "" {
+		a.MasterProfile.HttpSourceAddressPrefix = "*"
 	}
 }
 
@@ -152,6 +205,9 @@ func setAgentNetworkDefaults(a *api.Properties) {
 
 // setStorageDefaults for agents
 func setStorageDefaults(a *api.Properties) {
+	if len(a.MasterProfile.StorageProfile) == 0 {
+		a.MasterProfile.StorageProfile = api.StorageAccount
+	}
 	for _, profile := range a.AgentPoolProfiles {
 		if len(profile.StorageProfile) == 0 {
 			profile.StorageProfile = api.StorageAccount
@@ -191,8 +247,8 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 
 	// use the specified Certificate Authority pair, or generate a new pair
 	var caPair *PkiKeyCertPair
-	if len(a.CertificateProfile.CaCertificate) != 0 && len(a.CertificateProfile.GetCAPrivateKey()) != 0 {
-		caPair = &PkiKeyCertPair{CertificatePem: a.CertificateProfile.CaCertificate, PrivateKeyPem: a.CertificateProfile.GetCAPrivateKey()}
+	if len(a.CertificateProfile.CaCertificate) != 0 && len(a.CertificateProfile.CaPrivateKey) != 0 {
+		caPair = &PkiKeyCertPair{CertificatePem: a.CertificateProfile.CaCertificate, PrivateKeyPem: a.CertificateProfile.CaPrivateKey}
 	} else {
 		caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, nil, nil)
 		if err != nil {
@@ -200,7 +256,7 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		}
 		caPair = &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))}
 		a.CertificateProfile.CaCertificate = caPair.CertificatePem
-		a.CertificateProfile.SetCAPrivateKey(caPair.PrivateKeyPem)
+		a.CertificateProfile.CaPrivateKey = caPair.PrivateKeyPem
 	}
 
 	apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
@@ -237,4 +293,28 @@ func certGenerationRequired(a *api.Properties) bool {
 	default:
 		return false
 	}
+}
+
+// getFirstConsecutiveStaticIPAddress returns the first static IP address of the given subnet.
+func getFirstConsecutiveStaticIPAddress(subnetStr string) string {
+	_, subnet, err := net.ParseCIDR(subnetStr)
+	if err != nil {
+		return DefaultFirstConsecutiveKubernetesStaticIP
+	}
+
+	// Round up the prefix length to the nearest octet boundary.
+	ones, bits := subnet.Mask.Size()
+	if ones%8 != 0 {
+		ones += 8 - ones%8
+	}
+
+	// Fill the intermediate octets with 1s and last octet with offset. This is done so to match
+	// the existing behavior of allocating static IP addresses from the last /24 of the subnet.
+	lastOctet := bits/8 - 1
+	for i := ones / 8; i < lastOctet; i++ {
+		subnet.IP[i] = 255
+	}
+	subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffset
+
+	return subnet.IP.String()
 }

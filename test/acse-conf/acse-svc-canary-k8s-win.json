@@ -1,0 +1,14 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "windows/kubernetes-master-sa.json",
+      "category": "canary",
+      "location": "centraluseuap"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json",
+      "category": "canary",
+      "location": "eastus2euap"
+    }
+  ]
+}

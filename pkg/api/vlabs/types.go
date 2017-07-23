@@ -40,8 +40,9 @@ type Properties struct {
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
-// The 'Secret' parameter could be either a plain text, or referenced to a secret in a keyvault.
-// In the latter case, the format of the parameter's value should be
+// The 'Secret' parameter should be a secret in plain text.
+// The 'KeyvaultSecretRef' parameter is a reference to a secret in a keyvault.
+// The format of the parameter's value should be
 // "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
 // where:
 //    <SUB_ID> is the subscription ID of the keyvault
@@ -50,8 +51,9 @@ type Properties struct {
 //    <NAME> is the name of the secret.
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
-	ClientID string `json:"servicePrincipalClientID,omitempty"`
-	Secret   string `json:"servicePrincipalClientSecret,omitempty"`
+	ClientID          string `json:"servicePrincipalClientID,omitempty"`
+	Secret            string `json:"servicePrincipalClientSecret,omitempty"`
+	KeyvaultSecretRef string `json:"servicePrincipalClientKeyvaultSecretRef,omitempty"`
 }
 
 // CertificateProfile represents the definition of the master cluster
@@ -67,6 +69,8 @@ type ServicePrincipalProfile struct {
 type CertificateProfile struct {
 	// CaCertificate is the certificate authority certificate.
 	CaCertificate string `json:"caCertificate,omitempty"`
+	// CaPrivateKey is the certificate authority key.
+	CaPrivateKey string `json:"caPrivateKey,omitempty"`
 	// ApiServerCertificate is the rest api server certificate, and signed by the CA
 	APIServerCertificate string `json:"apiServerCertificate,omitempty"`
 	// ApiServerPrivateKey is the rest api server private key, and signed by the CA
@@ -79,19 +83,20 @@ type CertificateProfile struct {
 	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty"`
 	// KubeConfigPrivateKey is the client private key used for kubectl cli and signed by the CA
 	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
-	// caPrivateKey is an internal field only set if generation required
-	caPrivateKey string
 }
 
 // LinuxProfile represents the linux parameters passed to the cluster
 type LinuxProfile struct {
 	AdminUsername string `json:"adminUsername"`
 	SSH           struct {
-		PublicKeys []struct {
-			KeyData string `json:"keyData"`
-		} `json:"publicKeys"`
+		PublicKeys []PublicKey `json:"publicKeys"`
 	} `json:"ssh"`
 	Secrets []KeyVaultSecrets `json:"secrets,omitempty"`
+}
+
+// PublicKey represents an SSH key for LinuxProfile
+type PublicKey struct {
+	KeyData string `json:"keyData"`
 }
 
 // WindowsProfile represents the windows parameters passed to the cluster
@@ -130,8 +135,25 @@ type OrchestratorProfile struct {
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
-	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
-	NetworkPolicy       string `json:"networkPolicy,omitempty"`
+	KubernetesImageBase              string  `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet                    string  `json:"clusterSubnet,omitempty"`
+	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
+	DockerBridgeSubnet               string  `json:"DockerBridgeSubnet,omitempty"`
+	NodeStatusUpdateFrequency        string  `json:"nodeStatusUpdateFrequency,omitempty"`
+	CtrlMgrNodeMonitorGracePeriod    string  `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
+	CtrlMgrPodEvictionTimeout        string  `json:"ctrlMgrPodEvictionTimeout,omitempty"`
+	CtrlMgrRouteReconciliationPeriod string  `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
+	CloudProviderBackoff             bool    `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries      int     `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter       float64 `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration     int     `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent     float64 `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit           bool    `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS        float64 `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket     int     `json:"cloudProviderRateLimitBucket,omitempty"`
+	UseManagedIdentity               bool    `json:"useManagedIdentity,omitempty"`
+	CustomHyperkubeImage             string  `json:"customHyperkubeImage,omitempty"`
+	UseInstanceMetadata              bool    `json:"useInstanceMetadata,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -139,10 +161,13 @@ type MasterProfile struct {
 	Count                    int    `json:"count"`
 	DNSPrefix                string `json:"dnsPrefix"`
 	VMSize                   string `json:"vmSize"`
+	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
 	StorageProfile           string `json:"storageProfile,omitempty"`
+	HttpSourceAddressPrefix  string `json:"httpSourceAddressPrefix,omitempty"`
+	OAuthEnabled             bool   `json:"oauthEnabled"`
 
 	// subnet is internal
 	subnet string
@@ -161,6 +186,7 @@ type AgentPoolProfile struct {
 	Name                string `json:"name"`
 	Count               int    `json:"count"`
 	VMSize              string `json:"vmSize"`
+	OSDiskSizeGB        int    `json:"osDiskSizeGB,omitempty"`
 	DNSPrefix           string `json:"dnsPrefix,omitempty"`
 	OSType              OSType `json:"osType,omitempty"`
 	Ports               []int  `json:"ports,omitempty"`
@@ -173,7 +199,7 @@ type AgentPoolProfile struct {
 	// subnet is internal
 	subnet string
 
-	FQDN             string            `json:"fqdn,omitempty"`
+	FQDN             string            `json:"fqdn"`
 	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
 }
 
@@ -239,16 +265,6 @@ func (p *Properties) HasWindows() bool {
 	return false
 }
 
-// GetCAPrivateKey returns the ca private key
-func (c *CertificateProfile) GetCAPrivateKey() string {
-	return c.caPrivateKey
-}
-
-// SetCAPrivateKey sets the ca private key
-func (c *CertificateProfile) SetCAPrivateKey(caPrivateKey string) {
-	c.caPrivateKey = caPrivateKey
-}
-
 // IsCustomVNET returns true if the customer brought their own VNET
 func (m *MasterProfile) IsCustomVNET() bool {
 	return len(m.VnetSubnetID) > 0
@@ -262,6 +278,16 @@ func (m *MasterProfile) GetSubnet() string {
 // SetSubnet sets the read-only subnet for the master
 func (m *MasterProfile) SetSubnet(subnet string) {
 	m.subnet = subnet
+}
+
+// IsManagedDisks returns true if the master specified managed disks
+func (m *MasterProfile) IsManagedDisks() bool {
+	return m.StorageProfile == ManagedDisks
+}
+
+// IsStorageAccount returns true if the master specified storage account
+func (m *MasterProfile) IsStorageAccount() bool {
+	return m.StorageProfile == StorageAccount
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET

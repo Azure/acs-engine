@@ -1,9 +1,8 @@
     "maxVMsPerPool": 100,
-    "maxVMsPerStorageAccount": 20,
-    "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
     "apiServerPrivateKey": "[parameters('apiServerPrivateKey')]",
     "caCertificate": "[parameters('caCertificate')]",
+    "caPrivateKey": "[parameters('caPrivateKey')]",
     "clientCertificate": "[parameters('clientCertificate')]",
     "clientPrivateKey": "[parameters('clientPrivateKey')]",
     "kubeConfigCertificate": "[parameters('kubeConfigCertificate')]",
@@ -15,11 +14,30 @@
     "kubernetesExecHealthzSpec": "[parameters('kubernetesExecHealthzSpec')]",
     "kubernetesHeapsterSpec": "[parameters('kubernetesHeapsterSpec')]",
     "kubernetesPodInfraContainerSpec": "[parameters('kubernetesPodInfraContainerSpec')]",
+    "kubernetesNodeStatusUpdateFrequency": "[parameters('kubernetesNodeStatusUpdateFrequency')]",
+    "kubernetesCtrlMgrNodeMonitorGracePeriod": "[parameters('kubernetesCtrlMgrNodeMonitorGracePeriod')]",
+    "kubernetesCtrlMgrPodEvictionTimeout": "[parameters('kubernetesCtrlMgrPodEvictionTimeout')]",
+    "kubernetesCtrlMgrRouteReconciliationPeriod": "[parameters('kubernetesCtrlMgrRouteReconciliationPeriod')]",
+    "cloudProviderBackoff": "[parameters('cloudProviderBackoff')]",
+    "cloudProviderBackoffRetries": "[parameters('cloudProviderBackoffRetries')]",
+    "cloudProviderBackoffExponent": "[parameters('cloudProviderBackoffExponent')]",
+    "cloudProviderBackoffDuration": "[parameters('cloudProviderBackoffDuration')]",
+    "cloudProviderBackoffJitter": "[parameters('cloudProviderBackoffJitter')]",
+    "cloudProviderRatelimit": "[parameters('cloudProviderRatelimit')]",
+    "cloudProviderRatelimitQPS": "[parameters('cloudProviderRatelimitQPS')]",
+    "cloudProviderRatelimitBucket": "[parameters('cloudProviderRatelimitBucket')]",
+    "useManagedIdentityExtension": "{{ UseManagedIdentity }}",
+    "useInstanceMetadata": "{{ UseInstanceMetadata }}",
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
     "networkPolicy": "[parameters('networkPolicy')]",
+{{ if UseManagedIdentity }}
+    "servicePrincipalClientId": "msi",
+    "servicePrincipalClientSecret": "msi",
+{{ else }}
     "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
     "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
+{{ end }}
     "username": "[parameters('linuxAdminUsername')]",
     "masterFqdnPrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
     "masterPrivateIp": "[parameters('firstConsecutiveStaticIP')]",
@@ -28,42 +46,50 @@
 {{if  GetClassicMode}}
     "masterCount": "[parameters('masterCount')]",
 {{else}}
-    "masterCount": {{.MasterProfile.Count}}, 
-{{end}}    
-    "apiVersionDefault": "2016-03-30",
-    "apiVersionStorage": "2015-06-15",
-{{if .HasManagedDisks}}
-    "apiVersionStorageManagedDisks": "2016-04-30-preview",
+    "masterCount": {{.MasterProfile.Count}},
 {{end}}
-    "location": "[resourceGroup().location]", 
+    "masterOffset": "[parameters('masterOffset')]",
+    "apiVersionDefault": "2016-03-30",
     "locations": [
          "[resourceGroup().location]",
          "[parameters('location')]"
     ],
     "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
     "masterAvailabilitySet": "[concat('master-availabilityset-', variables('nameSuffix'))]",
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),variables('location'),variables('orchestratorName')))]",
-    "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
-    "nameSuffix": "[parameters('nameSuffix')]", 
-    "orchestratorName": "k8s",  
-    "osImageOffer": "UbuntuServer", 
-    "osImagePublisher": "Canonical", 
-    "osImageSKU": "16.04-LTS", 
-    "osImageVersion": "16.04.201703070",
-    "resourceGroup": "[resourceGroup().name]", 
+    "nameSuffix": "[parameters('nameSuffix')]",
+    "orchestratorName": "k8s",
+    "osImageOffer": "UbuntuServer",
+    "osImagePublisher": "Canonical",
+    "osImageSKU": "16.04-LTS",
+    "osImageVersion": "16.04.201706191",
+    "resourceGroup": "[resourceGroup().name]",
     "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
     "routeTableID": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]",
     "sshNatPorts": [22,2201,2202,2203,2204],
-    "sshKeyPath": "[concat('/home/',variables('username'),'/.ssh/authorized_keys')]", 
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),variables('location')))]", 
-    "storageAccountPrefixes": [ "0", "6", "c", "i", "o", "u", "1", "7", "d", "j", "p", "v", "2", "8", "e", "k", "q", "w", "3", "9", "f", "l", "r", "x", "4", "a", "g", "m", "s", "y", "5", "b", "h", "n", "t", "z" ], 
+    "sshKeyPath": "[concat('/home/',variables('username'),'/.ssh/authorized_keys')]",
+
+{{if .HasStorageAccountDisks}}
+    "apiVersionStorage": "2015-06-15",
+    "maxVMsPerStorageAccount": 20,
+    "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
+    "dataStorageAccountPrefixSeed": 97,
+    "storageAccountPrefixes": [ "0", "6", "c", "i", "o", "u", "1", "7", "d", "j", "p", "v", "2", "8", "e", "k", "q", "w", "3", "9", "f", "l", "r", "x", "4", "a", "g", "m", "s", "y", "5", "b", "h", "n", "t", "z" ],
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]",
     "vmsPerStorageAccount": 20,
-    "provisionScript": "{{GetKubernetesB64Provision}}",
-    "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",  
-{{if AnyAgentHasDisks}}
-    "dataStorageAccountPrefixSeed": 97,
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterFqdnPrefix'),variables('location')))]",
+    {{GetSizeMap}},
+{{else}}
+    "storageAccountPrefixes": [],
+    "storageAccountBaseName": "",
 {{end}}
+{{if .HasManagedDisks}}
+    "apiVersionStorageManagedDisks": "2016-04-30-preview",
+{{end}}
+{{if .MasterProfile.IsStorageAccount}}
+    "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
+{{end}}
+    "provisionScript": "{{GetKubernetesB64Provision}}",
+    "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
 {{if IsVNETIntegrated}}
     "allocateNodeCidrs": false,
 {{else}}
@@ -83,8 +109,10 @@
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "vnetCidr": "10.0.0.0/8",
 {{end}}
-    "kubeDnsServiceIp": "10.0.0.10", 
+    "kubeDnsServiceIp": "10.0.0.10",
     "kubeServiceCidr": "10.0.0.0/16",
+    "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
+    "dockerBridgeCidr": "[parameters('dockerBridgeCidr')]",
 {{if HasLinuxAgents}}
     "registerSchedulable": "false",
 {{else}}
@@ -94,16 +122,20 @@
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
     "primaryAvailablitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',variables('nameSuffix'))]",
     "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterFqdnPrefix'), '-', variables('nameSuffix'))]",
-    "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]", 
-    "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]", 
+    "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]",
+    "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]",
     "masterLbIPConfigName": "[concat(variables('orchestratorName'), '-master-lbFrontEnd-', variables('nameSuffix'))]",
     "masterLbName": "[concat(variables('orchestratorName'), '-master-lb-', variables('nameSuffix'))]",
+{{if gt .MasterProfile.Count 1}}
     "masterInternalLbName": "[concat(variables('orchestratorName'), '-master-internal-lb-', variables('nameSuffix'))]",
     "masterInternalLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterInternalLbName'))]",
     "masterInternalLbIPConfigName": "[concat(variables('orchestratorName'), '-master-internal-lbFrontEnd-', variables('nameSuffix'))]",
     "masterInternalLbIPConfigID": "[concat(variables('masterInternalLbID'),'/frontendIPConfigurations/', variables('masterInternalLbIPConfigName'))]",
     "masterInternalLbIPOffset": {{GetDefaultInternalLbStaticIPOffset}},
-    "masterInternalLbIp": "[concat(variables('masterFirstAddrPrefix'), add(variables('masterInternalLbIPOffset'), int(variables('masterFirstAddrOctet4'))))]",
+    "kubernetesAPIServerIP": "[concat(variables('masterFirstAddrPrefix'), add(variables('masterInternalLbIPOffset'), int(variables('masterFirstAddrOctet4'))))]",
+{{else}}
+    "kubernetesAPIServerIP": "[parameters('firstConsecutiveStaticIP')]",
+{{end}}
     "masterLbBackendPoolName": "[concat(variables('orchestratorName'), '-master-pool-', variables('nameSuffix'))]",
     "masterFirstAddrComment": "these MasterFirstAddrComment are used to place multiple masters consecutively in the address space",
     "masterFirstAddrOctets": "[split(parameters('firstConsecutiveStaticIP'),'.')]",
@@ -138,7 +170,7 @@
       "[concat('http://', variables('masterPrivateIpAddrs')[1], ':', variables('masterEtcdClientPort'))]",
       "[concat('http://', variables('masterPrivateIpAddrs')[2], ':', variables('masterEtcdClientPort'))]",
       "[concat('http://', variables('masterPrivateIpAddrs')[3], ':', variables('masterEtcdClientPort'))]",
-      "[concat('http://', variables('masterPrivateIpAddrs')[4], ':', variables('masterEtcdClientPort'))]"    
+      "[concat('http://', variables('masterPrivateIpAddrs')[4], ':', variables('masterEtcdClientPort'))]"
     ],
     "masterEtcdClusterStates": [
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0])]",
@@ -146,6 +178,9 @@
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdPeerURLs')[2], ',', variables('masterVMNames')[3], '=', variables('masterEtcdPeerURLs')[3], ',', variables('masterVMNames')[4], '=', variables('masterEtcdPeerURLs')[4])]"
     ],
     "subscriptionId": "[subscription().subscriptionId]",
+    "contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+    "readerRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+    "scope": "[resourceGroup().id]",
     "tenantId": "[subscription().tenantId]",
     "targetEnvironment": "[parameters('targetEnvironment')]",
     "dockerEngineDownloadRepo": "[parameters('dockerEngineDownloadRepo')]",
@@ -169,7 +204,7 @@
                 ]
               }
         {{end}}
-      ] 
+      ]
 {{end}}
 {{if .HasWindows}}
     ,"windowsAdminUsername": "[parameters('windowsAdminUsername')]",
@@ -179,10 +214,7 @@
     "agentWindowsPublisher": "MicrosoftWindowsServer",
     "agentWindowsOffer": "WindowsServer",
     "agentWindowsSku": "2016-Datacenter-with-Containers",
-    "agentWindowsVersion": "2016.0.20170127",
+    "agentWindowsVersion": "latest",
     "singleQuote": "'",
     "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Copy-Item $inputFile $outputFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
 {{end}}
-
-    
- 

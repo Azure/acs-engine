@@ -1,0 +1,20 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "kubernetes.json",
+      "location": "westus"
+    },
+    {
+      "cluster_definition": "dcos.json",
+      "location": "eastus"
+    },
+    {
+      "cluster_definition": "swarm.json",
+      "location": "southcentralus"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "westus2"
+    }
+  ]
+}

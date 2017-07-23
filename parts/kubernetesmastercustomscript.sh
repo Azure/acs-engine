@@ -20,13 +20,52 @@ KUBELET_PRIVATE_KEY="${12}"
 TARGET_ENVIRONMENT="${13}"
 NETWORK_POLICY="${14}"
 
+# Default values for backoff configuration
+CLOUDPROVIDER_BACKOFF="${15}"
+CLOUDPROVIDER_BACKOFF_RETRIES="${16}"
+CLOUDPROVIDER_BACKOFF_EXPONENT="${17}"
+CLOUDPROVIDER_BACKOFF_DURATION="${18}"
+CLOUDPROVIDER_BACKOFF_JITTER="${19}"
+# Default values for rate limit configuration
+CLOUDPROVIDER_RATELIMIT="${20}"
+CLOUDPROVIDER_RATELIMIT_QPS="${21}"
+CLOUDPROVIDER_RATELIMIT_BUCKET="${22}"
+
+USE_MANAGED_IDENTITY_EXTENSION="${23}"
+USE_INSTANCE_METADATA="${24}"
+
 # Master only secrets
-APISERVER_PRIVATE_KEY="${15}"
-CA_CERTIFICATE="${16}"
-MASTER_FQDN="${17}"
-KUBECONFIG_CERTIFICATE="${18}"
-KUBECONFIG_KEY="${19}"
-ADMINUSER="${20}"
+APISERVER_PRIVATE_KEY="${25}"
+CA_CERTIFICATE="${26}"
+CA_PRIVATE_KEY="${27}"
+MASTER_FQDN="${28}"
+KUBECONFIG_CERTIFICATE="${29}"
+KUBECONFIG_KEY="${30}"
+ADMINUSER="${31}"
+
+# cloudinit runcmd and the extension will run in parallel, this is to ensure
+# runcmd finishes
+ensureRunCommandCompleted()
+{
+    echo "waiting for runcmd to finish"
+    for i in {1..900}; do
+        if [ -e /opt/azure/containers/runcmd.complete ]; then
+            echo "runcmd finished"
+            break
+        fi
+        sleep 1
+    done
+}
+ensureRunCommandCompleted
+
+# A delay to start the kubernetes processes is necessary
+# if a reboot is required.  Otherwise, the agents will encounter issue: 
+# https://github.com/kubernetes/kubernetes/issues/41185
+if [ -f /var/run/reboot-required ]; then
+    REBOOTREQUIRED=true
+else
+    REBOOTREQUIRED=false
+fi
 
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
@@ -34,22 +73,35 @@ if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
 
     APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
     touch "${APISERVER_PRIVATE_KEY_PATH}"
-    chmod 0644 "${APISERVER_PRIVATE_KEY_PATH}"
+    chmod 0600 "${APISERVER_PRIVATE_KEY_PATH}"
     chown root:root "${APISERVER_PRIVATE_KEY_PATH}"
     echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
 else
     echo "APISERVER_PRIVATE_KEY is empty, assuming worker node"
 fi
 
+# If CA_PRIVATE_KEY is empty, then we are not on the master
+if [[ ! -z "${CA_PRIVATE_KEY}" ]]; then
+    echo "CA_KEY is non-empty, assuming master node"
+
+    CA_PRIVATE_KEY_PATH="/etc/kubernetes/certs/ca.key"
+    touch "${CA_PRIVATE_KEY_PATH}"
+    chmod 0600 "${CA_PRIVATE_KEY_PATH}"
+    chown root:root "${CA_PRIVATE_KEY_PATH}"
+    echo "${CA_PRIVATE_KEY}" | base64 --decode > "${CA_PRIVATE_KEY_PATH}"
+else
+    echo "CA_PRIVATE_KEY is empty, assuming worker node"
+fi
+
 KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
 touch "${KUBELET_PRIVATE_KEY_PATH}"
-chmod 0644 "${KUBELET_PRIVATE_KEY_PATH}"
+chmod 0600 "${KUBELET_PRIVATE_KEY_PATH}"
 chown root:root "${KUBELET_PRIVATE_KEY_PATH}"
 echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
 
 AZURE_JSON_PATH="/etc/kubernetes/azure.json"
 touch "${AZURE_JSON_PATH}"
-chmod 0644 "${AZURE_JSON_PATH}"
+chmod 0600 "${AZURE_JSON_PATH}"
 chown root:root "${AZURE_JSON_PATH}"
 cat << EOF > "${AZURE_JSON_PATH}"
 {
@@ -64,7 +116,17 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "securityGroupName": "${NETWORK_SECURITY_GROUP}",
     "vnetName": "${VIRTUAL_NETWORK}",
     "routeTableName": "${ROUTE_TABLE}",
-    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}"
+    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
+    "cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
+    "cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
+    "cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
+    "cloudProviderBackoffDuration": ${CLOUDPROVIDER_BACKOFF_DURATION},
+    "cloudProviderBackoffJitter": ${CLOUDPROVIDER_BACKOFF_JITTER},
+    "cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
+    "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
+    "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
+    "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
+    "useInstanceMetadata": ${USE_INSTANCE_METADATA}
 }
 EOF
 
@@ -76,6 +138,9 @@ set -x
 
 # wait for kubectl to report successful cluster health
 function ensureKubectl() {
+    if $REBOOTREQUIRED; then
+        return
+    fi
     kubectlfound=1
     for i in {1..600}; do
         if [ -e /usr/local/bin/kubectl ]
@@ -129,7 +194,7 @@ function configAzureNetworkPolicy() {
 
     # Copy config file
     mv $CNI_BIN_DIR/10-azure.conf $CNI_CONFIG_DIR/
-    chmod 644 $CNI_CONFIG_DIR/10-azure.conf
+    chmod 600 $CNI_CONFIG_DIR/10-azure.conf
 
     # Dump ebtables rules.
     /sbin/ebtables -t nat --list
@@ -139,22 +204,12 @@ function configAzureNetworkPolicy() {
     setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
+# Configures Kubelet to use CNI and mount the appropriate hostpaths
 function configCalicoNetworkPolicy() {
-    if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
-        # on masters
-        ADDONS="calico-configmap.yaml calico-daemonset.yaml"
-        ADDONS_PATH=/etc/kubernetes/addons
-        CALICO_URL="https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager"
 
-        # download calico yamls
-        for addon in ${ADDONS}; do
-            downloadUrl "${CALICO_URL}/${addon}" > "${ADDONS_PATH}/${addon}"
-        done
-    else
-        # on agents
         setNetworkPlugin cni
         setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
-    fi
+
 }
 
 function configNetworkPolicy() {
@@ -171,43 +226,58 @@ function configNetworkPolicy() {
 
 function ensureDocker() {
     systemctl enable docker
-    systemctl restart docker
-    dockerStarted=1
-    for i in {1..900}; do
-        if ! /usr/bin/docker info; then
-            echo "status $?"
-            /bin/systemctl restart docker
-        else
-            echo "docker started"
-            dockerStarted=0
-            break
+    # only start if a reboot is not required
+    if ! $REBOOTREQUIRED; then
+        systemctl restart docker
+        dockerStarted=1
+        for i in {1..900}; do
+            if ! /usr/bin/docker info; then
+                echo "status $?"
+                /bin/systemctl restart docker
+            else
+                echo "docker started"
+                dockerStarted=0
+                break
+            fi
+            sleep 1
+        done
+        if [ $dockerStarted -ne 0 ]
+        then
+            echo "docker did not start"
+            exit 2
         fi
-        sleep 1
-    done
-    if [ $dockerStarted -ne 0 ]
-    then
-        echo "docker did not start"
-        exit 1
     fi
 }
 
 function ensureKubelet() {
     systemctl enable kubelet
-    systemctl restart kubelet
+    # only start if a reboot is not required
+    if ! $REBOOTREQUIRED; then
+        systemctl restart kubelet
+    fi
 }
 
 function extractKubectl(){
     systemctl enable kubectl-extract
-    systemctl restart kubectl-extract
+    # only start if a reboot is not required
+    if ! $REBOOTREQUIRED; then
+        systemctl restart kubectl-extract
+    fi
 }
 
 function ensureJournal(){
     systemctl daemon-reload
     systemctl enable systemd-journald.service
-    systemctl restart systemd-journald.service
+    # only start if a reboot is not required
+    if ! $REBOOTREQUIRED; then
+        systemctl restart systemd-journald.service
+    fi
 }
 
 function ensureApiserver() {
+    if $REBOOTREQUIRED; then
+        return
+    fi
     kubernetesStarted=1
     for i in {1..600}; do
         if [ -e /usr/local/bin/kubectl ]
@@ -233,7 +303,7 @@ function ensureApiserver() {
     if [ $kubernetesStarted -ne 0 ]
     then
         echo "kubernetes did not start"
-        exit 1
+        exit 3
     fi
 }
 
@@ -247,6 +317,29 @@ function ensureEtcd() {
         fi
         sleep 5
     done
+}
+
+function ensureEtcdDataDir() {
+    mount | grep /dev/sdc1 | grep /var/lib/etcddisk
+    if [ "$?" = "0" ]
+    then
+        echo "Etcd is running with data dir at: /var/lib/etcddisk"
+        return
+    else
+        echo "/var/lib/etcddisk was not found at /dev/sdc1. Trying to mount all devices."
+        for i in {1..60}; do
+            sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
+            if [ "$?" = "0" ]
+            then
+                echo "/var/lib/etcddisk mounted at: /dev/sdc1"
+                return
+            fi
+            sleep 5
+        done
+    fi
+
+   echo "Etcd data dir was not found at: /var/lib/etcddisk"
+   exit 4
 }
 
 function writeKubeConfig() {
@@ -298,14 +391,29 @@ ensureKubelet
 extractKubectl
 ensureJournal
 
-# master only 
+# master only
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     writeKubeConfig
     ensureKubectl
+    ensureEtcdDataDir
     ensureEtcd
     ensureApiserver
 fi
 
+# mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
+echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
+sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
+
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 echo "Install complete successfully"
 
+if $REBOOTREQUIRED; then
+  if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
+    # wait 1 minute to restart master
+    echo 'reboot required, rebooting master in 1 minute'
+    /bin/bash -c "shutdown -r 1 &"
+  else
+    echo 'reboot required, rebooting agent in 1 minute'
+    shutdown -r now
+  fi
+fi

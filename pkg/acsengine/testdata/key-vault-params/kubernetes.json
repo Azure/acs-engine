@@ -20,9 +20,14 @@
         "name": "agentpool2",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
+        "availabilityProfile": "AvailabilitySet",
+        "osType": "Windows"
       }
     ],
+    "windowsProfile": {
+      "adminUsername": "azureuser",
+      "adminPassword": "/subscriptions/my-sub/resourceGroups/my-rg/providers/Microsoft.KeyVault/vaults/my-kv/secrets/adminPassword"
+    },
     "linuxProfile": {
       "adminUsername": "azureuser",
       "ssh": {
@@ -35,7 +40,7 @@
     },
     "servicePrincipalProfile": {
       "servicePrincipalClientID": "ServicePrincipalClientID",
-      "servicePrincipalClientSecret": "/subscriptions/my-sub/resourceGroups/my-rg/providers/Microsoft.KeyVault/vaults/my-kv/secrets/my-secret2"
+      "servicePrincipalClientKeyvaultSecretRef": "/subscriptions/my-sub/resourceGroups/my-rg/providers/Microsoft.KeyVault/vaults/my-kv/secrets/my-secret2"
     },
     "certificateProfile": {
       "caCertificate": "caCertificate",

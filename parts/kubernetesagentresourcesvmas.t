@@ -50,9 +50,9 @@
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "properties":
         {
-            "platformFaultDomainCount": "3",
+            "platformFaultDomainCount": "2",
             "platformUpdateDomainCount": "3",
-		        "managed" : "true"
+		"managed" : "true"
         },
   
       "type": "Microsoft.Compute/availabilitySets"
@@ -125,10 +125,16 @@
       {
         "creationSource" : "[concat('acsengine-', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
         "resourceNameSuffix" : "[variables('nameSuffix')]",
-        "orchestrator" : "[variables('orchestratorNameVersionTag')]"
+        "orchestrator" : "[variables('orchestratorNameVersionTag')]",
+        "poolName" : "{{.Name}}"
       },
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
+      {{if UseManagedIdentity}}
+      "identity": {
+        "type": "systemAssigned"
+      },
+      {{end}}
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('{{.Name}}AvailabilitySet'))]"
@@ -146,7 +152,7 @@
         "osProfile": {
           "adminUsername": "[variables('username')]",
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
-          {{GetKubernetesAgentCustomData}}
+          {{GetKubernetesAgentCustomData .}}
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true",
               "ssh": {
@@ -170,30 +176,75 @@
             "publisher": "[variables('osImagePublisher')]",
             "sku": "[variables('osImageSKU')]",
             "version": "[variables('osImageVersion')]"
-          }
-          {{if .IsStorageAccount}}
-          ,
+          },
           "osDisk": {
-            "caching": "ReadWrite",
-            "createOption": "FromImage",
-            "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'-osdisk')]",
-            "vhd": {
+            "createOption": "FromImage"
+            ,"caching": "ReadWrite"
+          {{if .IsStorageAccount}}
+            ,"name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')),'-osdisk')]"
+            ,"vhd": {
               "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(div(copyIndex(variables('{{.Name}}Offset')),variables('maxVMsPerStorageAccount')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'osdisk/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '-osdisk.vhd')]"
             }
-          }
           {{end}}
+          {{if ne .OSDiskSizeGB 0}}
+            ,"diskSizeGB": {{.OSDiskSizeGB}}
+          {{end}}
+          }
         }
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
+    {{if UseManagedIdentity}}
     {
+      "apiVersion": "2014-10-01-preview",
+      "copy": {
+         "count": "[variables('{{.Name}}Count')]",
+         "name": "vmLoopNode"
+       },
+      "name": "[guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), 'vmidentity'))]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "properties": {
+        "roleDefinitionId": "[variables('readerRoleDefinitionId')]",
+        "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex()), '2017-03-30', 'Full').identity.principalId]"
+      }
+    },
+     {
+       "type": "Microsoft.Compute/virtualMachines/extensions",
+       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(), '/ManagedIdentityExtension')]",
+       "copy": {
+         "count": "[variables('{{.Name}}Count')]",
+         "name": "vmLoopNode"
+       },
+       "apiVersion": "2015-05-01-preview",
+       "location": "[resourceGroup().location]",
+       "dependsOn": [
+         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex())]",
+         "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), 'vmidentity')))]"
+       ],
+       "properties": {
+         "publisher": "Microsoft.ManagedIdentity",
+         "type": "ManagedIdentityExtensionForLinux",
+         "typeHandlerVersion": "1.0",
+         "autoUpgradeMinorVersion": true,
+         "settings": {
+           "port": 50343
+         },
+         "protectedSettings": {}
+       }
+     },
+     {{end}}
+     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
+        {{if UseManagedIdentity}}
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), '/extensions/ManagedIdentityExtension')]"
+        {{else}}
         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
+        {{end}}
       ],
       "location": "[variables('location')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
@@ -205,7 +256,7 @@
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
-          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailablitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('targetEnvironment'),' ',variables('networkPolicy'),' >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
+          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailablitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('targetEnvironment'),' ',variables('networkPolicy'),' ',variables('cloudProviderBackoff'),' ',variables('cloudProviderBackoffRetries'),' ',variables('cloudProviderBackoffExponent'),' ',variables('cloudProviderBackoffDuration'),' ',variables('cloudProviderBackoffJitter'),' ',variables('cloudProviderRatelimit'),' ',variables('cloudProviderRatelimitQPS'),' ',variables('cloudProviderRatelimitBucket'),' ', variables('useManagedIdentityExtension'),' ',variables('useInstanceMetadata'),' >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
         }
       }
     }

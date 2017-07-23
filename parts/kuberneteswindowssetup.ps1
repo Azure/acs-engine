@@ -40,27 +40,30 @@ param(
     $AADClientSecret
 )
 
-$global:CACertificate = "{{{caCertificate}}}"
-$global:AgentCertificate = "{{{clientCertificate}}}"
+$global:CACertificate = "{{WrapAsVariable "caCertificate"}}"
+$global:AgentCertificate = "{{WrapAsVariable "clientCertificate"}}"
 $global:DockerServiceName = "Docker"
 $global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
-$global:KubeBinariesSASURL = "{{{kubeBinariesSASURL}}}"
-$global:KubeBinariesVersion = "{{{kubeBinariesVersion}}}"
+$global:KubeBinariesSASURL = "{{WrapAsVariable "kubeBinariesSASURL"}}"
+$global:KubeBinariesVersion = "{{WrapAsVariable "kubeBinariesVersion"}}"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
 $global:NatNetworkName="nat"
 $global:TransparentNetworkName="transparentNet"
 
-$global:TenantId = "{{{tenantID}}}"
-$global:SubscriptionId = "{{{subscriptionId}}}"
-$global:ResourceGroup = "{{{resourceGroup}}}"
-$global:SubnetName = "{{{subnetName}}}"
-$global:SecurityGroupName = "{{{nsgName}}}"
-$global:VNetName = "{{{virtualNetworkName}}}"
-$global:RouteTableName = "{{{routeTableName}}}"
-$global:PrimaryAvailabilitySetName = "{{{primaryAvailablitySetName}}}"
+$global:TenantId = "{{WrapAsVariable "tenantID"}}"
+$global:SubscriptionId = "{{WrapAsVariable "subscriptionId"}}"
+$global:ResourceGroup = "{{WrapAsVariable "resourceGroup"}}"
+$global:SubnetName = "{{WrapAsVariable "subnetName"}}"
+$global:SecurityGroupName = "{{WrapAsVariable "nsgName"}}"
+$global:VNetName = "{{WrapAsVariable "virtualNetworkName"}}"
+$global:RouteTableName = "{{WrapAsVariable "routeTableName"}}"
+$global:PrimaryAvailabilitySetName = "{{WrapAsVariable "primaryAvailablitySetName"}}"
 $global:NeedPatchWinNAT = $false
+
+$global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
+$global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
 
 filter Timestamp {"$(Get-Date -Format o): $_"}
 
@@ -123,7 +126,9 @@ Write-AzureConfig()
     "securityGroupName": "$global:SecurityGroupName",
     "vnetName": "$global:VNetName",
     "routeTableName": "$global:RouteTableName",
-    "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName"
+    "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName",
+    "useManagedIdentityExtension": $global:UseManagedIdentityExtension,
+    "useInstanceMetadata": $global:UseInstanceMetadata
 }
 "@
 
@@ -172,13 +177,19 @@ Write-KubernetesStartFiles($podCIDR)
 {
     $KubeletArgList = @("--hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--api-servers=https://`${global:MasterIP}:443","--kubeconfig=c:\k\config")
     $KubeletCommandLine = @"
-c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://`${global:MasterIP}:443 --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json
+c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://`${global:MasterIP}:443 --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m
 "@
 
-    if ($global:KubeBinariesVersion -ne "1.5.3")
+    if ($global:KubeBinariesVersion -ge "1.6.0")
     {
-        $KubeletArgList += "--enable-cri=false"
-        $KubeletCommandLine += " --enable-cri=false --image-pull-progress-deadline=20m"
+        # stop using container runtime interface from 1.6.0+ (officially deprecated from 1.7.0)
+        if ($global:KubeBinariesVersion -lt "1.7.0")
+        {
+            $KubeletArgList += "--enable-cri=false"
+            $KubeletCommandLine += " --enable-cri=false"
+        }
+        # more time is needed to pull windows server images (flag supported from 1.6.0)
+        $KubeletCommandLine += " --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
     }
     $KubeletArgListStr = "`"" + ($KubeletArgList -join "`",`"") + "`""
 
@@ -212,8 +223,10 @@ Set-DockerNetwork(`$podCIDR)
         # create new transparent network
         docker network create --driver=transparent --subnet=`$podCIDR --gateway=`$podGW `$global:TransparentNetworkName
 
+        
+        `$vmswitch = get-vmSwitch  | ? SwitchType -EQ External
         # create host vnic for gateway ip to forward the traffic and kubeproxy to listen over VIP
-        Add-VMNetworkAdapter -ManagementOS -Name forwarder -SwitchName "Layered Ethernet 3"
+        Add-VMNetworkAdapter -ManagementOS -Name forwarder -SwitchName `$vmswitch.Name
 
         # Assign gateway IP to new adapter and enable forwarding on host adapters:
         netsh interface ipv4 add address "vEthernet (forwarder)" `$podGW 255.255.255.0
