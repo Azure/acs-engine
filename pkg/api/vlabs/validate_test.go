@@ -35,7 +35,7 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 
 func Test_KubernetesConfig_Validate(t *testing.T) {
 	// Tests that should pass across all versions
-	for _, k8sVersion := range []OrchestratorVersion{Kubernetes153, Kubernetes157, Kubernetes160, Kubernetes162, Kubernetes166, Kubernetes170, Kubernetes171} {
+	for _, k8sVersion := range []string{Kubernetes153, Kubernetes157, Kubernetes160, Kubernetes162, Kubernetes166, Kubernetes170, Kubernetes171} {
 		c := KubernetesConfig{}
 		if err := c.Validate(k8sVersion); err != nil {
 			t.Errorf("should not error on empty KubernetesConfig: %v, version %s", err, k8sVersion)
@@ -113,7 +113,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	}
 
 	// Tests that apply to pre-1.6.6 versions
-	for _, k8sVersion := range []OrchestratorVersion{Kubernetes153, Kubernetes157, Kubernetes160, Kubernetes162} {
+	for _, k8sVersion := range []string{Kubernetes153, Kubernetes157, Kubernetes160, Kubernetes162} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
@@ -124,7 +124,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	}
 
 	// Tests that apply to 1.6.6 and later versions
-	for _, k8sVersion := range []OrchestratorVersion{Kubernetes166, Kubernetes170, Kubernetes171} {
+	for _, k8sVersion := range []string{Kubernetes166, Kubernetes170, Kubernetes171} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,

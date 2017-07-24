@@ -521,7 +521,7 @@ func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
 }
 
 // https://stackoverflow.com/a/18411978
-func VersionOrdinal(version api.OrchestratorVersion) string {
+func VersionOrdinal(version string) string {
 	// ISO/IEC 14651:2011
 	const maxByte = 1<<8 - 1
 	vo := make([]byte, 0, len(version)+8)
@@ -574,7 +574,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOS190
 		},
 		"IsKubernetesVersionGe": func(version string) bool {
-			targetVersion := api.OrchestratorVersion(version)
+			targetVersion := version
 			targetVersionOrdinal := VersionOrdinal(targetVersion)
 			orchestratorVersionOrdinal := VersionOrdinal(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes &&
@@ -607,7 +607,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 		},
-                "UseInstanceMetadata": func() bool {
+		"UseInstanceMetadata": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata
 		},
 		"GetVNETSubnetDependencies": func() string {
@@ -910,7 +910,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 	}
 }
 
-func getPackageGUID(orchestratorType api.OrchestratorType, orchestratorVersion api.OrchestratorVersion, masterCount int) string {
+func getPackageGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
 	if orchestratorType == api.DCOS && orchestratorVersion == api.DCOS190 {
 		switch masterCount {
 		case 1:
@@ -960,7 +960,7 @@ func getPackageGUID(orchestratorType api.OrchestratorType, orchestratorVersion a
 	return ""
 }
 
-func getDCOSCustomDataPublicIPStr(orchestratorType api.OrchestratorType, masterCount int) string {
+func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) string {
 	if orchestratorType == api.DCOS {
 		var buf bytes.Buffer
 		for i := 0; i < masterCount; i++ {
@@ -1275,7 +1275,7 @@ touch /etc/mesosphere/roles/azure_master`
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, orchestratorVersion api.OrchestratorVersion, masterCount int, provisionContent string, attributeContents string) string {
+func getSingleLineDCOSCustomData(orchestratorType string, orchestratorVersion string, masterCount int, provisionContent string, attributeContents string) string {
 	yamlFilename := ""
 	switch orchestratorType {
 	case api.DCOS:
