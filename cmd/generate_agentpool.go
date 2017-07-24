@@ -123,6 +123,7 @@ func (gc *GenerateOptions) Run() error {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	iw := interpolatorwriter.NewInterpolatorWriter("./_output", "azuredeploy.json", "azuredeploy.params.json", interpolator)
 =======
@@ -131,6 +132,9 @@ func (gc *GenerateOptions) Run() error {
 =======
 	iw := interpolatorwriter.NewInterpolatorWriter(fmt.Sprintf("./_output/%s", gc.agentPool.Name), "azuredeploy.json", "azuredeploy.parameterss.json", interpolator)
 >>>>>>> Docs, docs, docs
+=======
+	iw := interpolatorwriter.NewInterpolatorWriter(fmt.Sprintf("./_output/%s", gc.agentPool.Name), "azuredeploy.json", "azuredeploy.parameters.json", interpolator)
+>>>>>>> Validation is now passing - just dialing in the arm template
 	err = iw.Write()
 	if err != nil {
 		return fmt.Errorf("Unable to write template: %v", err)
