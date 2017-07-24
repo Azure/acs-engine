@@ -26,7 +26,7 @@ function test_linux_deployment() {
       sleep 5; count=$((count-1))
   done
   if (( ${running} != 1 )); then
-    log "K8S: gave up waiting for deployment"
+    log "K8S-Linux: gave up waiting for deployment"
     kubectl get all --namespace=${namespace}
     exit 1
   fi
@@ -43,7 +43,7 @@ function test_linux_deployment() {
     sleep 10; count=$((count-1))
   done
   if [[ -z "${external_ip}" ]]; then
-    log "K8S: gave up waiting for loadbalancer to get an ingress ip"
+    log "K8S-Linux: gave up waiting for loadbalancer to get an ingress ip"
     exit 1
   fi
 
@@ -60,7 +60,7 @@ function test_linux_deployment() {
     sleep 5; count=$((count-1))
   done
   if [[ "${success}" != "y" ]]; then
-    log "K8S: failed to get expected response from nginx through the loadbalancer"
+    log "K8S-Linux: failed to get expected response from nginx through the loadbalancer"
     exit 1
   fi
 }
@@ -79,7 +79,7 @@ function test_windows_deployment() {
     sleep 10; count=$((count-1))
   done
   if (( ${running} != 1 )); then
-    log "K8S: gave up waiting for deployment"
+    log "K8S-Windows: gave up waiting for deployment"
     kubectl get all --namespace=default
     exit 1
   fi
@@ -94,7 +94,7 @@ function test_windows_deployment() {
     sleep 10; count=$((count-1))
   done
   if [[ -z "${external_ip}" ]]; then
-    log "K8S: gave up waiting for loadbalancer to get an ingress ip"
+    log "K8S-Windows: gave up waiting for loadbalancer to get an ingress ip"
     exit 1
   fi
 
@@ -111,7 +111,7 @@ function test_windows_deployment() {
     sleep 10; count=$((count-1))
   done
   if [[ "${success}" != "y" ]]; then
-    log "K8S: failed to get expected response from simpleweb through the loadbalancer"
+    log "K8S-Windows: failed to get expected response from simpleweb through the loadbalancer"
     exit 1
   fi
 
@@ -124,7 +124,7 @@ function test_windows_deployment() {
     sleep 10; count=$((count-1))
   done
   if [[ -z "${winpodname}" ]]; then
-    log "K8S: failed to get expected pod name for simpleweb"
+    log "K8S-Windows: failed to get expected pod name for simpleweb"
     exit 1
   fi
 
@@ -140,7 +140,7 @@ function test_windows_deployment() {
     sleep 10; count=$((count-1))
   done
   if [[ "${success}" != "y" ]]; then
-    log "K8S: failed to get outbound internet connection inside simpleweb container"
+    log "K8S-Windows: failed to get outbound internet connection inside simpleweb container"
     exit 1
   fi
 }
