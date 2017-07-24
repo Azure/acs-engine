@@ -1,62 +1,49 @@
 # Microsoft Azure Container Service Engine
 
-The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DCOS, Kubernetes, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
+The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DCOS, Kubernetes, or Swarm orchestrators. The input to acs-engine is a cluster definition file which describes the desired cluster, including orchestrator, features, and agents. The structure of the input files is very similar to the public API for Azure Container Service.
 
-# Development in Docker
+## Install
 
-The easiest way to get started developing on `acs-engine` is to use Docker. If you already have Docker or "Docker for {Windows,Mac}" then you can get started without needing to install anything extra.
+Binary downloads for the latest verison of acs-engine are available here:
 
-* Windows (PowerShell): `.\scripts\devenv.ps1`
-* Linux/OSX (bash): `./scripts/devenv.sh`
+* [OSX](https://github.com/Azure/acs-engine/releases/download/v0.4.0/acs-engine-v0.4.0-darwin-amd64.tar.gz)
+* [Linux 64bit](https://github.com/Azure/acs-engine/releases/download/v0.4.0/acs-engine-v0.4.0-linux-amd64.tar.gz)
+* [Windows 64bit](https://github.com/Azure/acs-engine/releases/download/v0.4.0/acs-engine-v0.4.0-windows-amd64.zip)
 
-This setup mounts the `acs-engine` source directory as a volume into the Docker container.
-This means that you can edit your source code normally in your favorite editor on your
-machine, while still being able to compile and test inside of the Docker container (the
-same environment used in our Continuous Integration system).
+Download `acs-engine` for your operating system. Extract the binary and copy it to your `$PATH`.
 
-When the execution of `devenv.{ps1,sh}` completes, you should find the console logged into the container. 
+If would prefer to build `acs-engine` from source or are you are interested in contributing to `acs-engine` see [building from source](#build-from-source) below.
 
-Now we need to do a one-time call to setup the prerequisites.
+## Usage
 
-```
-make prereqs
-```
+### Overview
 
-As a final step, in order to get the `acs-engine` tool ready, you should build the sources with:
+`acs-engine` reads a JSON [cluster definition](../clusterdefinition.md) and generates a number of files that may be submitted to Azure Resource Manager (ARM). The possible outputs include:
 
-```
-make build
-```
+1. **apimodel.json**: is an expanded version of the cluster definition provided to the generate command. All default or computed values will be expanded during the generate phase.
+2. **azuredeploy.json**: represents a complete description of all Azure resources required to fulfill the cluster definition from `apimodel.json`.
+3. **azuredeploy.parameters.json**: the parameters file holds a series of custom variables which are used in various locations throughout `azuredeploy.json`.
+4. **certificate and access config files**: orchestrators like Kubernetes require certificates and additional configuration files (e.g. Kubernetes apiserver certificates and kubeconfig).
 
-When the build process completes, verify that `acs-engine` is available, invoking the command without parameters. 
-You should see something like this:
+If you want to customize cluster configuaration after the `generate` step, make sure to modify `apimodel.json`. This ensures that any computed settings and certificates are correctly preserved. For example, if you want to add a second agent pool, you would edit `apimodel.json` and then run `acs-engine` against that file to generate the new ARM templates. This ensures that during the deploy steps resources remain untouched and only the new agent pools are created.
 
-```
-# ./acs-engine 
-ACS-Engine deploys and manages Kubernetes, Swarm Mode, and DC/OS clusters in Azure
+### Generating a template
 
-Usage:
-  acs-engine [command]
+Here is an example of how to generate a new deployment. This example assumes you are using [examples/kubernetes.json](../examples/kubernetes.json).
 
-Available Commands:
-  generate    Generate an Azure Resource Manager template
-  help        Help about any command
-  version     Print the version of ACS-Engine
+1. Before starting ensure you have generated a valid [SSH Public/Private key pair](ssh.md#ssh-key-generation).
+2. edit [examples/kubernetes.json](../examples/kubernetes.json) and fill in the blanks.
+3. run `./acs-engine generate examples/kubernetes.json` to generate the templates in the _output/Kubernetes-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
+4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [deployment usage](../README.md#deployment-usage).
 
-Flags:
-      --debug   enable verbose debug logs
-  -h, --help    help for acs-engine
+### Deploying a template
 
-Use "acs-engine [command] --help" for more information about a command.
-```
+For deployment see [deployment usage](../README.md#deployment-usage).
 
-[Here's a quick demo video showing the dev/build/test cycle with this setup.](https://www.youtube.com/watch?v=lc6UZmqxQMs)
+<a href="#build-from-source"></a>
+## Build ACS Engine from Source
 
-# Downloading and Building ACS Engine Locally 
-
-ACS Engine can also be built and run natively on Windows, OS X, and Linux. Instructions below: 
-
-## Windows
+### Windows
 
 Requirements:
 - Git for Windows. Download and install [here](https://git-scm.com/download/win)
@@ -82,7 +69,7 @@ Build acs-engine:
   8. `go build` to build the project
 3. `acs-engine` to see the command line parameters
 
-## OS X
+### OS X
 
 Requirements:
 - Go for OS X. Download and install [here](https://golang.org/dl/)
@@ -104,7 +91,7 @@ Build acs-engine:
   4. `go build` to build the project
   5. `./acs-engine` to see the command line parameters
 
-## Linux
+### Linux
 
 Requirements:
 - Go for Linux
@@ -130,27 +117,46 @@ Build acs-engine:
   4. `go build` to build the project
   5. `./acs-engine` to see the command line parameters
 
+## Docker Development Environment
 
-# Template Generation
+The easiest way to start hacking on `acs-engine` is to use a Docker-based environment. If you already have Docker installed then you can get started with a few commands.
 
-The `acs-engine` takes a json [cluster definition file](clusterdefinition.md) as a parameter and generates 3 or more of the following files:
+* Windows (PowerShell): `.\scripts\devenv.ps1`
+* Linux/OSX (bash): `./scripts/devenv.sh`
 
-1. **apimodel.json** - this is the cluster configuration file used for generation
-2. **azuredeploy.json** - this is the main ARM (Azure Resource Model) template used to deploy a full Docker enabled cluster
-3. **azuredeploy.parameters.json** - this is the parameters file used along with azurdeploy.json during deployment and contains configurable parameters
-4. **certificate and access config files** - some orchestrators like Kubernetes require certificate generation, and these generated files and access files like the kube config files are stored along side the model and ARM template files.
+This script mounts the `acs-engine` source directory as a volume into the Docker container, which means you can edit your source code in your favorite editor on your machine, while still being able to compile and test inside of the Docker container. This environment mirrors the environment used in the acs-engine continuous integration (CI) system.
 
-As a rule of thumb you should always work with the `apimodel.json` when modifying an existing running deployment.  This ensures that all the same settings and certificates are correctly preserved.  For example, if you want to add a second agent pool, you would edit `apimodel.json` and then run `acs-engine` against that file to generate the new ARM templates. Then during deployment all existing deployments remain untouched, and only the new agent pools resources are created.
+When the script `devenv.ps1` or `devenv.sh` completes, you will be left at a command prompt.
 
-# Generating a template
+Run the following commands to pull the latest dependencies and build the `acs-engine` tool.
 
-Here is an example of how to generate a new deployment.  This example assumes you are using [examples/kubernetes.json](../examples/kubernetes.json).
+```
+# install and download build dependencies
+make prereqs
+# build the `acs-engine` binary
+make build
+```
 
-1. Before starting ensure you have generated a valid [SSH Public/Private key pair](ssh.md#ssh-key-generation).
-2. edit [examples/kubernetes.json](../examples/kubernetes.json) and fill in the blanks.
-3. run `./acs-engine generate examples/kubernetes.json` to generate the templates in the _output/Kubernetes-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
-4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [deployment usage](../README.md#deployment-usage).
+Th build process leaves the compiled `acs-engine` binary in the current directly. Make sure everything completed successfully bu running `acs-engine` without any arguments:
 
-# Deploying templates
+```
+# ./acs-engine
+ACS-Engine deploys and manages Kubernetes, Swarm Mode, and DC/OS clusters in Azure
 
-For deployment see [deployment usage](../README.md#deployment-usage).
+Usage:
+  acs-engine [command]
+
+Available Commands:
+  deploy      deploy an Azure Resource Manager template
+  generate    Generate an Azure Resource Manager template
+  help        Help about any command
+  version     Print the version of ACS-Engine
+
+Flags:
+      --debug   enable verbose debug logs
+  -h, --help    help for acs-engine
+
+Use "acs-engine [command] --help" for more information about a command.
+```
+
+[Here's a quick demo video showing the dev/build/test cycle with this setup.](https://www.youtube.com/watch?v=lc6UZmqxQMs)
