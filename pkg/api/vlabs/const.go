@@ -67,6 +67,13 @@ var (
 )
 
 const (
+	DCOSHint19     string = "1.9"
+	DCOSHint18     string = "1.8"
+	DCOSHint17     string = "1.7"
+	DCOSHintLatest string = DCOSHint19
+)
+
+const (
 	// DCOS190 is the string constant for DCOS 1.9.0
 	DCOS190 string = "1.9.0"
 	// DCOS188 is the string constant for DCOS 1.8.8
@@ -79,6 +86,13 @@ const (
 	DCOS173 string = "1.7.3"
 	// DCOSLatest is the string constant for latest DCOS version
 	DCOSLatest string = DCOS190
+)
+
+const (
+	KubernetesHint17     string = "1.7"
+	KubernetesHint16     string = "1.6"
+	KubernetesHint15     string = "1.5"
+	KubernetesHintLatest string = KubernetesHint17
 )
 
 const (

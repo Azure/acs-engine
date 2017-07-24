@@ -122,9 +122,10 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType    string            `json:"orchestratorType"`
-	OrchestratorVersion string            `json:"orchestratorVersion"`
-	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	OrchestratorType        string            `json:"orchestratorType"`
+	OrchestratorVersionHint string            `json:"orchestratorVersionHint"`
+	OrchestratorVersion     string            `json:"orchestratorVersion"`
+	KubernetesConfig        *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 }
 
 // KubernetesConfig contains the Kubernetes config structure, containing
