@@ -114,10 +114,11 @@ func handleValidationErrors(e validator.ValidationErrors) error {
 	err := e[0]
 	ns := err.Namespace()
 	switch ns {
-	case "Properties.OrchestratorProfile", "Properties.MasterProfile",
+	case "Properties.OrchestratorProfile", "Properties.OrchestratorProfile.OrchestratorType",
+		"Properties.MasterProfile",
 		"Properties.MasterProfile.DNSPrefix", "Properties.MasterProfile.VMSize",
 		"Properties.LinuxProfile", "Properties.ServicePrincipalProfile.ClientID",
-		"Properties.ServicePrincipalProfile.Secret", "Properties.WindowsProfile.AdminUsername",
+		"Properties.WindowsProfile.AdminUsername",
 		"Properties.WindowsProfile.AdminPassword":
 		return fmt.Errorf("missing %s", ns)
 	case "Properties.MasterProfile.Count":
