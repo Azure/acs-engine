@@ -172,7 +172,7 @@
         "storageProfile": {
           {{GetDataDisks .}}
           "imageReference": {
-                        {{if .IsNotUbuntu}}
+            {{if .IsNotUbuntu}}
 				"offer": "[variables('{{.Name}}kubeAgentOsImageOffer')]"
 				,"publisher": "[variables('{{.Name}}kubeAgentOsImagePublisher')]"
 				,"sku": "[variables('{{.Name}}kubeAgetntOsImageSKU')]"
