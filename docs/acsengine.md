@@ -16,7 +16,7 @@ If would prefer to build `acs-engine` from source or are you are interested in c
 
 ## Usage
 
-`acs-engine` reads a JSON [cluster definition](../clusterdefinition.md) and generates a number of files that may be submitted to Azure Resource Manager (ARM). The possible outputs include:
+`acs-engine` reads a JSON [cluster definition](../clusterdefinition.md) and generates a number of files that may be submitted to Azure Resource Manager (ARM). The generated files include:
 
 1. **apimodel.json**: is an expanded version of the cluster definition provided to the generate command. All default or computed values will be expanded during the generate phase.
 2. **azuredeploy.json**: represents a complete description of all Azure resources required to fulfill the cluster definition from `apimodel.json`.
@@ -41,7 +41,7 @@ Here is an example of how to generate a new deployment. This example assumes you
 
 Generated templates can be deployed using [the Azure CLI 2.0](https://github.com/Azure/azure-cli) or [Powershell](https://github.com/Azure/azure-powershell).
 
-### Deploying with Azure CLI 2.0
+#### Deploying with Azure CLI 2.0
 
 Azure CLI 2.0 is the latest CLI maintained and supported by Microsoft. For installation instructions see [the Azure CLI GitHub repository](https://github.com/Azure/azure-cli#installation) for the latest release.
 
@@ -61,7 +61,7 @@ $ az group deployment create \
     --parameters "./_output/<INSTANCE>/azuredeploy.parameters.json"
 ```
 
-### Deploying with Powershell
+#### Deploying with Powershell
 
 ```powershell
 Add-AzureRmAccount
@@ -82,52 +82,6 @@ New-AzureRmResourceGroupDeployment `
 <a href="#build-from-source"></a>
 
 ## Build ACS Engine from Source
-
-Building ACS Engine from source has a few requirements for each of the platforms. Download and install the pre-reqs for your platform, Windows, Linux, or Mac:
-
-1. Go version 1.8 [installation instructions](https://golang.org/doc/install)
-2. Git Version Control [installation instructions](https://git-scm.com/download/)
-
-### Windows
-
-Setup steps:
- 
-1. Setup your go workspace. This guide assumes you are using `c:\gopath` as your Go workspace:
-  1. Type Windows key-R to open the run prompt
-  2. Type `rundll32 sysdm.cpl,EditEnvironmentVariables` to open the system variables
-  3. Add `c:\go\bin` to your PATH variables
-  4. Click "new" and add new environment variable named `GOPATH` and set the value to `c:\gopath`
-
-Build acs-engine:
-  1. Type Windows key-R to open the run prompt
-  2. Type `cmd` to open a command prompt
-  3. Type `mkdir %GOPATH%` to create your gopath
-  4. Type `cd %GOPATH%`
-  5. Type `go get github.com/Azure/acs-engine` to download acs-engine from GitHub
-  6. Type `go get all` to get the supporting components
-  7. Type `cd %GOPATH%\src\github.com\Azure\acs-engine`
-  8. Type `go build` to build the project
-  9. Run `acs-engine` to see the command line parameters
-
-### OS X and Linux
-
-Setup steps:
-
-  1. Open a command prompt to setup your gopath:
-  2. `mkdir $HOME/go`
-  3. edit `$HOME/.bash_profile` and add the following lines to setup your go path
-  ```
-  export PATH=$PATH:/usr/local/go/bin
-  export GOPATH=$HOME/go
-  ```
-  4. `source $HOME/.bash_profile`
-
-Build acs-engine:
-  1. Type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
-  2. Type `cd $GOPATH/src/github.com/Azure/acs-engine` to change to the source directory
-  3. Type `make rereqs` to install supporting components
-  4. Type `make build` to build the project
-  5. Type `./acs-engine` to see the command line parameters
 
 ## Docker Development Environment
 
@@ -172,3 +126,51 @@ Use "acs-engine [command] --help" for more information about a command.
 ```
 
 [Here's a quick demo video showing the dev/build/test cycle with this setup.](https://www.youtube.com/watch?v=lc6UZmqxQMs)
+
+## Building on Windows, OSX, and Linux
+
+Building ACS Engine from source has a few requirements for each of the platforms. Download and install the pre-reqs for your platform, Windows, Linux, or Mac:
+
+1. Go version 1.8 [installation instructions](https://golang.org/doc/install)
+2. Git Version Control [installation instructions](https://git-scm.com/download/)
+
+### Windows
+
+Setup steps:
+
+1. Setup your go workspace. This guide assumes you are using `c:\gopath` as your Go workspace:
+  1. Type Windows key-R to open the run prompt
+  2. Type `rundll32 sysdm.cpl,EditEnvironmentVariables` to open the system variables
+  3. Add `c:\go\bin` to your PATH variables
+  4. Click "new" and add new environment variable named `GOPATH` and set the value to `c:\gopath`
+
+Build acs-engine:
+  1. Type Windows key-R to open the run prompt
+  2. Type `cmd` to open a command prompt
+  3. Type `mkdir %GOPATH%` to create your gopath
+  4. Type `cd %GOPATH%`
+  5. Type `go get github.com/Azure/acs-engine` to download acs-engine from GitHub
+  6. Type `go get all` to get the supporting components
+  7. Type `cd %GOPATH%\src\github.com\Azure\acs-engine`
+  8. Type `go build` to build the project
+  9. Run `acs-engine` to see the command line parameters
+
+### OS X and Linux
+
+Setup steps:
+
+  1. Open a command prompt to setup your gopath:
+  2. `mkdir $HOME/go`
+  3. edit `$HOME/.bash_profile` and add the following lines to setup your go path
+  ```
+  export PATH=$PATH:/usr/local/go/bin
+  export GOPATH=$HOME/go
+  ```
+  4. `source $HOME/.bash_profile`
+
+Build acs-engine:
+  1. Type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
+  2. Type `cd $GOPATH/src/github.com/Azure/acs-engine` to change to the source directory
+  3. Type `make rereqs` to install supporting components
+  4. Type `make build` to build the project
+  5. Type `./acs-engine` to see the command line parameters
