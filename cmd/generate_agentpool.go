@@ -80,7 +80,7 @@ func (gc *GenerateOptions) Run() error {
 		return fmt.Errorf("Major error on interpolate: %v", err)
 	}
 
-	iw := interpolatorwriter.NewInterpolatorWriter(fmt.Sprintf("./_output/%s", gc.agentPool.Name), "azuredeploy.json", "azuredeploy.parameterss.json", interpolator)
+	iw := interpolatorwriter.NewInterpolatorWriter(fmt.Sprintf("./_output/%s", gc.agentPool.Name), "azuredeploy.json", "azuredeploy.parameters.json", interpolator)
 	err = iw.Write()
 	if err != nil {
 		return fmt.Errorf("Unable to write template: %v", err)

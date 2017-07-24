@@ -38,10 +38,10 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 	acsengine.AddValue(parametersMap, "jumpboxEndpointDNSNamePrefix", properties.DnsPrefix)
 
 	// Certificate information
-	//acsengine.AddSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
-	//acsengine.AddSecret(parametersMap, "apiServerPrivateKey", properties.CertificateProfile.APIServerPrivateKey, true)
-	//acsengine.AddSecret(parametersMap, "caCertificate", properties.CertificateProfile.CaCertificate, true)
-	//acsengine.AddSecret(parametersMap, "caPrivateKey", properties.CertificateProfile.CaPrivateKey, true)
+	acsengine.AddSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
+	acsengine.AddSecret(parametersMap, "apiServerPrivateKey", properties.CertificateProfile.APIServerPrivateKey, true)
+	acsengine.AddSecret(parametersMap, "caCertificate", properties.CertificateProfile.CaCertificate, true)
+	acsengine.AddSecret(parametersMap, "caPrivateKey", properties.CertificateProfile.CaPrivateKey, true)
 	acsengine.AddSecret(parametersMap, "clientCertificate", properties.CertificateProfile.ClientCertificate, true)
 	acsengine.AddSecret(parametersMap, "clientPrivateKey", properties.CertificateProfile.ClientPrivateKey, true)
 	acsengine.AddSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
@@ -69,11 +69,11 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 	//acsengine.AddValue(parametersMap, "cloudProviderRatelimit", acsengine.KubeImages[KubernetesVersion]["ratelimit"])
 	//acsengine.AddValue(parametersMap, "cloudProviderRatelimitQPS", acsengine.KubeImages[KubernetesVersion]["ratelimitqps"])
 	//acsengine.AddValue(parametersMap, "cloudProviderRatelimitBucket", acsengine.KubeImages[KubernetesVersion]["ratelimitbucket"])
-	////acsengine.AddValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
+	acsengine.AddValue(parametersMap, "jumpboxSubnet", properties.NetworkProfile.ServiceCIDR)
 	////acsengine.AddValue(parametersMap, "dockerBridgeCidr", properties.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet)
 	////acsengine.AddValue(parametersMap, "networkPolicy", properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
-	//acsengine.AddValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
-	//acsengine.AddSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
+	acsengine.AddValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
+	acsengine.AddSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
 
 	return parametersMap, nil
 }

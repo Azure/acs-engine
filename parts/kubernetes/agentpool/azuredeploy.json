@@ -347,6 +347,30 @@
       },
       "type": "string"
     },
+    "apiServerCertificate": {
+      "metadata": {
+        "description": "The base 64 client certificate used on the API server"
+      },
+      "type": "string"
+    },
+    "apiServerPrivateKey": {
+      "metadata": {
+        "description": "The base 64 client certificate used on the API server"
+      },
+      "type": "securestring"
+    },
+    "caCertificate": {
+      "metadata": {
+        "description": "The base 64 client certificate used as the CA"
+      },
+      "type": "string"
+    },
+    "caPrivateKey": {
+      "metadata": {
+        "description": "The base 64 client certificate used as the CA"
+      },
+      "type": "securestring"
+    },
     "clientCertificate": {
       "metadata": {
         "description": "The base 64 client certificate used to communicate with the master"
@@ -442,6 +466,12 @@
         "description": "The size of the jumpbox"
       },
       "type": "int"
+    },
+    "jumpboxSubnet": {
+      "metadata": {
+        "description": "The subnet of the jumpbox"
+      },
+      "type": "string"
     },
     "jumpboxVmSize": {
       "defaultValue": "Standard_D2_v2",
@@ -659,7 +689,7 @@
     "dockerBridgeCidr": "[parameters('dockerBridgeCidr')]",
     "dockerEngineDownloadRepo": "[parameters('dockerEngineDownloadRepo')]",
     "dockerEngineVersion": "1.12.*",
-    "jumpboxVmSize": "[parameters('jumpboxSize')]",
+    "jumpboxVmSize": "[parameters('jumpboxVmSize')]",
     "jumpboxCount": "[parameters('jumpboxCount')]",
     "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
     "kubeConfigCertificate": "[parameters('kubeConfigCertificate')]",
@@ -688,9 +718,9 @@
     "jumpboxAvailabilitySet": "[concat('jumpbox-availabilityset-', variables('nameSuffix'))]",
     "jumpboxCount": 1,
     "jumpboxFirstAddrComment": "these JumpboxFirstAddrComment are used to place multiple jumpboxes consecutively in the address space",
-    "jumpboxFirstAddrOctet4": "[variables('masterFirstAddrOctets')[3]]",
+    "jumpboxFirstAddrOctet4": "[variables('jumpboxFirstAddrOctets')[3]]",
     "jumpboxFirstAddrOctets": "[split(parameters('firstConsecutiveStaticIP'),'.')]",
-    "jumpboxFirstAddrPrefix": "[concat(variables('masterFirstAddrOctets')[0],'.',variables('masterFirstAddrOctets')[1],'.',variables('masterFirstAddrOctets')[2],'.')]",
+    "jumpboxFirstAddrPrefix": "[concat(variables('jumpboxFirstAddrOctets')[0],'.',variables('jumpboxFirstAddrOctets')[1],'.',variables('jumpboxFirstAddrOctets')[2],'.')]",
     "jumpboxFqdnPrefix": "[tolower(parameters('jumpboxEndpointDNSNamePrefix'))]",
     "jumpboxLbBackendPoolName": "[concat(variables('orchestratorName'), '-jumpbox-pool-', variables('nameSuffix'))]",
     "jumpboxLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('jumpboxLbName'))]",
@@ -1461,7 +1491,7 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
-        "count": "1",
+        "count": "[sub(variables('jumpboxCount'), variables('jumpboxOffset'))]",
         "name": "nicLoopNode"
       },
       "dependsOn": [
@@ -1501,7 +1531,7 @@
     {
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
       "copy": {
-        "count": "1",
+        "count": "[sub(variables('jumpboxCount'), variables('jumpboxOffset'))]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
@@ -1509,7 +1539,7 @@
         "[concat('Microsoft.Compute/availabilitySets/',variables('jumpboxAvailabilitySet'))]"
       ],
       "location": "[variables('location')]",
-      "name": "jumpbox",
+      "name": "[concat(variables('jumpboxVMNamePrefix'), copyIndex(variables('jumpboxOffset')))]",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('jumpboxAvailabilitySet'))]"
