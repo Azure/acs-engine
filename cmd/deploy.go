@@ -180,7 +180,7 @@ func autofillApimodel(dc *deployCmd) {
 
 	if !useManagedIdentity {
 		spp := dc.containerService.Properties.ServicePrincipalProfile
-		if spp != nil && (spp.ClientID == "" || spp.Secret == "") {
+		if spp != nil && spp.KeyvaultSecretRef == "" && (spp.ClientID == "" || spp.Secret == "") {
 			// they didn't specify one or the other
 			if spp != nil && !(spp.ClientID == "" && spp.Secret == "") {
 				// they didn't specify just one
