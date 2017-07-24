@@ -12,6 +12,14 @@
     "{{.Name}}VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'), '-')]", 
 {{end}}
     "{{.Name}}VMSize": "[parameters('{{.Name}}VMSize')]",
+	
+{{if .IsNotUbuntu}}	
+	"{{.Name}}kubeAgentOsImageOffer": "[parameters('{{.Name}}OsImageOffer')]",
+	"{{.Name}}kubeAgentOsImagePublisher": "[parameters('{{.Name}}OsImagePublisher')]",
+	"{{.Name}}kubeAgetntOsImageSKU": "[parameters('{{.Name}}OsImageSKU')]",
+	"{{.Name}}kubeAgentOsImageVersion": "[parameters('{{.Name}}OsImageVersion')]",
+{{end}}
+
 {{if .IsCustomVNET}}
     "{{.Name}}VnetSubnetID": "[parameters('{{.Name}}VnetSubnetID')]",
     "{{.Name}}SubnetName": "[parameters('{{.Name}}VnetSubnetID')]",

@@ -24,6 +24,35 @@
       }, 
       "type": "string"
     },
+	
+	"{{.Name}}osImageOffer": {
+      "metadata": {
+        "description": "osImageOffer '{{.Name}}'."
+      }, 
+	   "defaultValue": "UbuntuServer",
+      "type": "string"
+    },
+	"{{.Name}}osImagePublisher": {
+      "metadata": {
+        "description": "osImagePublisher '{{.Name}}'."
+      }, 
+	  "defaultValue": "Canonical",
+      "type": "string"
+    },
+	"{{.Name}}osImageSKU": {
+      "metadata": {
+        "description": "osImageSKU '{{.Name}}'."
+      }, 
+	  "defaultValue": "16.04-LTS",
+      "type": "string"
+    },"{{.Name}}osImageVersion": {
+      "metadata": {
+        "description": "osImageVersion '{{.Name}}'."
+      }, 
+	  "defaultValue": "16.04.201706191",
+      "type": "string"
+    },
+
 {{if .IsCustomVNET}}
     "{{.Name}}VnetSubnetID": {
       "metadata": {

@@ -42,9 +42,18 @@ CLOUDPROVIDER_RATELIMIT_BUCKET="${29}"
 
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
+
+OS=$(cat /etc/*release | grep ^NAME | tr -d 'NAME="')
 ensureRunCommandCompleted()
 {
     echo "waiting for runcmd to finish"
+	
+	
+	if [[ $OS == *"CoreOS"* ]]; then
+		echo "It's CoreOS."
+		return 0
+	fi
+
     for i in {1..900}; do
         if [ -e /opt/azure/containers/runcmd.complete ]; then
             echo "runcmd finished"
@@ -379,36 +388,52 @@ users:
     set -x
 }
 
-# master and node
-ensureDocker
-configNetworkPolicy
-ensureKubelet
-extractKubectl
-ensureJournal
 
-# master only
-if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
-    writeKubeConfig
-    ensureKubectl
-    ensureEtcdDataDir
-    ensureEtcd
-    ensureApiserver
-fi
+if [[ $OS == *"CoreOS"* ]]; 
+then
+   echo "It's CoreOS."
+   
+   #Keeping it conditional for CoreOS here to overrride specifics later when moving to Ignition
+   
+   ensureDocker
+   ensureKubelet
+   extractKubectl
+   ensureJournal
+   configNetworkPolicy
+   
+   exit 0
+else
+	# master and node
+	ensureDocker
+	configNetworkPolicy
+	ensureKubelet
+	extractKubectl
+	ensureJournal
 
-# mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
-echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
-sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
+	# master only
+	if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
+		writeKubeConfig
+		ensureKubectl
+		ensureEtcdDataDir
+		ensureEtcd
+		ensureApiserver
+	fi
 
-# If APISERVER_PRIVATE_KEY is empty, then we are not on the master
-echo "Install complete successfully"
+	# mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
+	echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
+	sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
-if $REBOOTREQUIRED; then
-  if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
-    # wait 1 minute to restart master
-    echo 'reboot required, rebooting master in 1 minute'
-    /bin/bash -c "shutdown -r 1 &"
-  else
-    echo 'reboot required, rebooting agent in 1 minute'
-    shutdown -r now
-  fi
+	# If APISERVER_PRIVATE_KEY is empty, then we are not on the master
+	echo "Install complete successfully"
+
+	if $REBOOTREQUIRED; then
+	  if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
+		# wait 1 minute to restart master
+		echo 'reboot required, rebooting master in 1 minute'
+		/bin/bash -c "shutdown -r 1 &"
+	  else
+		echo 'reboot required, rebooting agent in 1 minute'
+		shutdown -r now
+	  fi
+	fi
 fi

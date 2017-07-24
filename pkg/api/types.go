@@ -165,7 +165,10 @@ type AgentPoolProfile struct {
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 	Subnet              string `json:"subnet"`
 	IPAddressCount      int    `json:"ipAddressCount,omitempty"`
-
+	OsImageOffer      	string `json:"osImageOffer,omitempty"`
+	OsImagePublisher    string `json:"osImagePublisher,omitempty"`
+	OsImageSKU          string `json:"osImageSKU,omitempty"`
+	OsImageVersion      string `json:"osImageVersion,omitempty"`
 	FQDN             string            `json:"fqdn,omitempty"`
 	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
 }
@@ -349,6 +352,7 @@ func (a *AgentPoolProfile) IsCustomVNET() bool {
 	return len(a.VnetSubnetID) > 0
 }
 
+
 // IsWindows returns true if the agent pool is windows
 func (a *AgentPoolProfile) IsWindows() bool {
 	return a.OSType == Windows
@@ -357,6 +361,11 @@ func (a *AgentPoolProfile) IsWindows() bool {
 // IsLinux returns true if the agent pool is linux
 func (a *AgentPoolProfile) IsLinux() bool {
 	return a.OSType == Linux
+}
+
+// IsUbuntu returns true if OSImagePublisher is Canonical
+func (a *AgentPoolProfile) IsNotUbuntu() bool {
+	return a.OsImagePublisher == "CoreOS"
 }
 
 // IsAvailabilitySets returns true if the customer specified disks

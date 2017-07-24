@@ -96,6 +96,7 @@ func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
 		return e
 	}
+	
 	if a.OSDiskSizeGB != 0 && (a.OSDiskSizeGB < MinDiskSizeGB || a.OSDiskSizeGB > MaxDiskSizeGB) {
 		return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", a.OSDiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
 	}
@@ -126,6 +127,13 @@ func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 		if e := validateNameEmpty(a.DNSPrefix, "AgentPoolProfile.DNSPrefix"); e != nil {
 			return e
 		}
+	}
+	
+	//CoreOS is only applicable for Kubernetes
+	if orchestratorType == Kubernetes {
+		
+	
+		
 	}
 
 	if len(a.DiskSizesGB) > 0 {
@@ -333,6 +341,8 @@ func (a *KubernetesConfig) Validate() error {
 
 	return nil
 }
+
+
 
 func (a *Properties) validateNetworkPolicy() error {
 	var networkPolicy string
