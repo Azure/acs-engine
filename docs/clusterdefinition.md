@@ -20,9 +20,8 @@ Here are the cluster definitions for apiVersion "vlabs"
 Here are the valid values for the orchestrator types:
 
 1. `DCOS` - this represents the [DC/OS orchestrator](dcos.md).  [Older versions of DCOS173 and DCOS184 may be specified](../examples/dcos-versions).
-2. `Kubernetes` - this represents the [Kubernetes orchestrator](kubernetes.md).
-3. `Swarm` - this represents the [Swarm orchestrator](swarm.md).
-4. `Swarm Mode` - this represents the [Swarm Mode orchestrator](swarmmode.md).
+1. `Kubernetes` - this represents the [Kubernetes orchestrator](kubernetes.md).
+1. `Swarm Mode` - this represents the [Swarm Mode orchestrator](swarmmode.md).
 
 ### kubernetesConfig
 
@@ -121,9 +120,8 @@ Here are the cluster definitions for apiVersion "2016-03-30".  This matches the 
 Here are the valid values for the orchestrator types:
 
 1. `DCOS` - this represents the [DC/OS orchestrator](dcos.md).
-2. `Swarm` - this represents the [Swarm orchestrator](swarm.md).
-3. `Kubernetes` - this represents the [Kubernetes orchestrator](kubernetes.md).
-4. `Swarm Mode` - this represents the [Swarm Mode orchestrator](swarmmode.md).
+1. `Kubernetes` - this represents the [Kubernetes orchestrator](kubernetes.md).
+1. `Swarm Mode` - this represents the [Swarm Mode orchestrator](swarmmode.md).
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.

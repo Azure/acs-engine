@@ -9,8 +9,6 @@ const (
 const (
 	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS187
 	DCOS OrchestratorType = "DCOS"
-	// Swarm is the string constant for the Swarm orchestrator type
-	Swarm OrchestratorType = "Swarm"
 	// Kubernetes is the string constant for the Kubernetes orchestrator type
 	Kubernetes OrchestratorType = "Kubernetes"
 	// DockerCE is the string constant for the Docker CE orchestrator type
