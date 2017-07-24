@@ -6,7 +6,14 @@ import (
 	"net"
 	"net/url"
 	"regexp"
+	"time"
 )
+
+var keyvaultSecretPathRegex *regexp.Regexp
+
+func init() {
+	keyvaultSecretPathRegex = regexp.MustCompile(`^(/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/\S+)/secrets/([^/\s]+)(/(\S+))?$`)
+}
 
 // Validate implements APIObject
 func (o *OrchestratorProfile) Validate() error {
@@ -28,6 +35,8 @@ func (o *OrchestratorProfile) Validate() error {
 
 	case Kubernetes:
 		switch o.OrchestratorVersion {
+		case Kubernetes171:
+		case Kubernetes170:
 		case Kubernetes166:
 		case Kubernetes162:
 		case Kubernetes160:
@@ -39,7 +48,7 @@ func (o *OrchestratorProfile) Validate() error {
 		}
 
 		if o.KubernetesConfig != nil {
-			err := o.KubernetesConfig.Validate()
+			err := o.KubernetesConfig.Validate(o.OrchestratorVersion)
 			if err != nil {
 				return err
 			}
@@ -230,12 +239,28 @@ func (a *Properties) Validate() error {
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
 		return e
 	}
-	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.ClientID) == 0 {
-		return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
-	}
 
-	if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(a.ServicePrincipalProfile.Secret) == 0 {
-		return fmt.Errorf("the service principal client secrect must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		useManagedIdentity := (a.OrchestratorProfile.KubernetesConfig != nil &&
+			a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity)
+
+		if !useManagedIdentity {
+			if len(a.ServicePrincipalProfile.ClientID) == 0 {
+				return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+
+			if (len(a.ServicePrincipalProfile.Secret) == 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) == 0) ||
+				(len(a.ServicePrincipalProfile.Secret) != 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0) {
+				return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+
+			if len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0 {
+				parts := keyvaultSecretPathRegex.FindStringSubmatch(a.ServicePrincipalProfile.KeyvaultSecretRef)
+				if len(parts) != 5 {
+					return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
+				}
+			}
+		}
 	}
 
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
@@ -324,7 +349,18 @@ func (a *Properties) Validate() error {
 }
 
 // Validate validates the KubernetesConfig.
-func (a *KubernetesConfig) Validate() error {
+func (a *KubernetesConfig) Validate(k8sVersion OrchestratorVersion) error {
+	// number of minimum retries allowed for kubelet to post node status
+	const minKubeletRetries = 4
+	// k8s versions that have cloudprovider backoff enabled
+	var backoffEnabledVersions = map[OrchestratorVersion]bool{
+		Kubernetes171: true,
+		Kubernetes166: true,
+		Kubernetes170: true,
+	}
+	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
+	ratelimitEnabledVersions := backoffEnabledVersions
+
 	if a.ClusterSubnet != "" {
 		_, _, err := net.ParseCIDR(a.ClusterSubnet)
 		if err != nil {
@@ -336,6 +372,61 @@ func (a *KubernetesConfig) Validate() error {
 		_, _, err := net.ParseCIDR(a.DockerBridgeSubnet)
 		if err != nil {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet '%s' is an invalid subnet", a.DockerBridgeSubnet)
+		}
+	}
+
+	if a.NodeStatusUpdateFrequency != "" {
+		_, err := time.ParseDuration(a.NodeStatusUpdateFrequency)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency '%s' is not a valid duration", a.NodeStatusUpdateFrequency)
+		}
+		if a.CtrlMgrNodeMonitorGracePeriod == "" {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency was set to '%s' but OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod was not set", a.NodeStatusUpdateFrequency)
+		}
+	}
+
+	if a.CtrlMgrNodeMonitorGracePeriod != "" {
+		_, err := time.ParseDuration(a.CtrlMgrNodeMonitorGracePeriod)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod '%s' is not a valid duration", a.CtrlMgrNodeMonitorGracePeriod)
+		}
+		if a.NodeStatusUpdateFrequency == "" {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod was set to '%s' but OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency was not set", a.NodeStatusUpdateFrequency)
+		}
+	}
+
+	if a.NodeStatusUpdateFrequency != "" && a.CtrlMgrNodeMonitorGracePeriod != "" {
+		nodeStatusUpdateFrequency, _ := time.ParseDuration(a.NodeStatusUpdateFrequency)
+		ctrlMgrNodeMonitorGracePeriod, _ := time.ParseDuration(a.CtrlMgrNodeMonitorGracePeriod)
+		kubeletRetries := ctrlMgrNodeMonitorGracePeriod.Seconds() / nodeStatusUpdateFrequency.Seconds()
+		if kubeletRetries < minKubeletRetries {
+			return fmt.Errorf("acs-engine requires that ctrlMgrNodeMonitorGracePeriod(%f)s be larger than nodeStatusUpdateFrequency(%f)s by at least a factor of %d; ", ctrlMgrNodeMonitorGracePeriod.Seconds(), nodeStatusUpdateFrequency.Seconds(), minKubeletRetries)
+		}
+	}
+
+	if a.CtrlMgrPodEvictionTimeout != "" {
+		_, err := time.ParseDuration(a.CtrlMgrPodEvictionTimeout)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout '%s' is not a valid duration", a.CtrlMgrPodEvictionTimeout)
+		}
+	}
+
+	if a.CtrlMgrRouteReconciliationPeriod != "" {
+		_, err := time.ParseDuration(a.CtrlMgrRouteReconciliationPeriod)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod '%s' is not a valid duration", a.CtrlMgrRouteReconciliationPeriod)
+		}
+	}
+
+	if a.CloudProviderBackoff {
+		if !backoffEnabledVersions[k8sVersion] {
+			return fmt.Errorf("cloudprovider backoff functionality not available in kubernetes version %s", k8sVersion)
+		}
+	}
+
+	if a.CloudProviderRateLimit {
+		if !ratelimitEnabledVersions[k8sVersion] {
+			return fmt.Errorf("cloudprovider rate limiting functionality not available in kubernetes version %s", k8sVersion)
 		}
 	}
 
