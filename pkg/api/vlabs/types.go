@@ -307,7 +307,7 @@ func (a *AgentPoolProfile) IsLinux() bool {
 	return a.OSType == Linux
 }
 
-// IsUbuntu returns true if OSImagePublisher is Canonical
+// IsUbuntu returns true if OSImagePublisher is anything but Canonical.
 func (a *AgentPoolProfile) IsNotUbuntu() bool {
 	
 	return a.OsImagePublisher == "CoreOS"
