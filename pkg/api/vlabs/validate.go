@@ -354,9 +354,14 @@ func (a *KubernetesConfig) Validate(k8sVersion OrchestratorVersion) error {
 	ratelimitEnabledVersions := backoffEnabledVersions
 
 	if a.ClusterSubnet != "" {
-		_, _, err := net.ParseCIDR(a.ClusterSubnet)
+		_, subnet, err := net.ParseCIDR(a.ClusterSubnet)
 		if err != nil {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' is an invalid subnet", a.ClusterSubnet)
+		}
+
+		ones, bits := subnet.Mask.Size()
+		if bits-ones <= 8 {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' must reserve at least 9 bits for nodes", a.ClusterSubnet)
 		}
 	}
 
