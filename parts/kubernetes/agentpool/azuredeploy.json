@@ -447,7 +447,8 @@
       "defaultValue": "Standard_D2_v2",
       "metadata": {
         "description": "The size of the jumpbox"
-      }
+      },
+      "type": "string"
     },
     "kubeClusterCidr": {
       "defaultValue": "",
