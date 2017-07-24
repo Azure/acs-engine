@@ -38,7 +38,9 @@ Please follow these instructions before submitting a PR:
    should deploy the relevant example cluster definitions to ensure you're not
    introducing any sort of regression.
 
-## Usage (Template Generation)
+## Usage
+
+### Generate Templates
 
 Usage is best demonstrated with an example:
 
@@ -54,49 +56,6 @@ $ ./acs-engine generate examples/kubernetes.classic.json
 This produces a new directory inside `_output/` that contains an ARM template
 for deploying Kubernetes into Azure. (In the case of Kubernetes, some additional
 needed assets are generated and placed in the output directory.)
-
-## Deployment Usage
-
-Generated templates can be deployed using
-[the Azure CLI 2.0](https://github.com/Azure/azure-cli) or
-[Powershell](https://github.com/Azure/azure-powershell).
-
-### Deploying with Azure CLI 2.0
-Azure CLI 2.0 is actively improved, so please see [the Azure CLI 2.0 GitHub Repo](https://github.com/Azure/azure-cli) for the latest release and documentation.
-
-```bash
-$ az login
-
-$ az account set --subscription "<SUBSCRIPTION NAME OR ID>"
-
-$ az group create \
-    --name "<RESOURCE_GROUP_NAME>" \
-    --location "<LOCATION>"
-
-$ az group deployment create \
-    --name "<DEPLOYMENT NAME>" \
-    --resource-group "<RESOURCE_GROUP_NAME>" \
-    --template-file "./_output/<INSTANCE>/azuredeploy.json" \
-    --parameters "./_output/<INSTANCE>/azuredeploy.parameters.json"
-```
-
-### Deploying with Powershell
-
-```powershell
-Add-AzureRmAccount
-
-Select-AzureRmSubscription -SubscriptionID <SUBSCRIPTION_ID>
-
-New-AzureRmResourceGroup `
-    -Name <RESOURCE_GROUP_NAME> `
-    -Location <LOCATION>
-
-New-AzureRmResourceGroupDeployment `
-    -Name <DEPLOYMENT_NAME> `
-    -ResourceGroupName <RESOURCE_GROUP_NAME> `
-    -TemplateFile _output\<INSTANCE>\azuredeploy.json `
-    -TemplateParameterFile _output\<INSTANCE>\azuredeploy.parameters.json
-```
 
 ## Code of conduct
 

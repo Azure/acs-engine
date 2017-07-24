@@ -7,7 +7,7 @@ Here are the steps to deploy a simple Kubernetes cluster:
 3. [generate your service principal](../serviceprincipal.md)
 4. edit the [Kubernetes example](../examples/kubernetes.json) and fill in the blank strings
 5. [generate the template](../acsengine.md#generating-a-template)
-6. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../README.md#deployment-usage)
+6. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../acsengine.md#deployment-usage)
   * To enable the optional network policy enforcement using calico, you have to
     set the parameter during this step according to this [guide](../kuberntes.md#optional-enable-network-policy-enforcement-using-calico)
 7. Temporary workaround when deploying a cluster in a custom VNET with

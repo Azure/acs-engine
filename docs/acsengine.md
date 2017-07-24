@@ -34,13 +34,56 @@ Here is an example of how to generate a new deployment. This example assumes you
 1. Before starting ensure you have generated a valid [SSH Public/Private key pair](ssh.md#ssh-key-generation).
 2. edit [examples/kubernetes.json](../examples/kubernetes.json) and fill in the blanks.
 3. run `./acs-engine generate examples/kubernetes.json` to generate the templates in the _output/Kubernetes-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
-4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [deployment usage](../README.md#deployment-usage).
+4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [deployment usage](../acsengine.md#deployment-usage).
 
-### Deploying a template
+<a href="#deployment-usage"></a>
 
-For deployment see [deployment usage](../README.md#deployment-usage).
+### Deployment Usage
+
+Generated templates can be deployed using [the Azure CLI 2.0](https://github.com/Azure/azure-cli) or [Powershell](https://github.com/Azure/azure-powershell).
+
+### Deploying with Azure CLI 2.0
+
+Azure CLI 2.0 is actively improved, so please see [the Azure CLI 2.0 GitHub Repo](https://github.com/Azure/azure-cli) for the latest release and documentation.
+
+```bash
+$ az login
+
+$ az account set --subscription "<SUBSCRIPTION NAME OR ID>"
+
+$ az group create \
+    --name "<RESOURCE_GROUP_NAME>" \
+    --location "<LOCATION>"
+
+$ az group deployment create \
+    --name "<DEPLOYMENT NAME>" \
+    --resource-group "<RESOURCE_GROUP_NAME>" \
+    --template-file "./_output/<INSTANCE>/azuredeploy.json" \
+    --parameters "./_output/<INSTANCE>/azuredeploy.parameters.json"
+```
+
+### Deploying with Powershell
+
+```powershell
+Add-AzureRmAccount
+
+Select-AzureRmSubscription -SubscriptionID <SUBSCRIPTION_ID>
+
+New-AzureRmResourceGroup `
+    -Name <RESOURCE_GROUP_NAME> `
+    -Location <LOCATION>
+
+New-AzureRmResourceGroupDeployment `
+    -Name <DEPLOYMENT_NAME> `
+    -ResourceGroupName <RESOURCE_GROUP_NAME> `
+    -TemplateFile _output\<INSTANCE>\azuredeploy.json `
+    -TemplateParameterFile _output\<INSTANCE>\azuredeploy.parameters.json
+```
+
+
 
 <a href="#build-from-source"></a>
+
 ## Build ACS Engine from Source
 
 ### Windows
