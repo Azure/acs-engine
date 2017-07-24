@@ -19,6 +19,8 @@ func HandleValidationErrors(e validator.ValidationErrors) error {
 		"Properties.WindowsProfile.AdminUsername",
 		"Properties.WindowsProfile.AdminPassword":
 		return fmt.Errorf("missing %s", ns)
+	case "Properties.OrchestratorProfile.OrchestratorVersion":
+		return fmt.Errorf("OrchestratorVersion is a readyonly field, leave it empty")
 	case "Properties.MasterProfile.Count":
 		return fmt.Errorf("MasterProfile count needs to be 1, 3, or 5")
 	case "Properties.MasterProfile.OSDiskSizeGB":
