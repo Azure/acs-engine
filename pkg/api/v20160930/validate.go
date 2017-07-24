@@ -35,7 +35,7 @@ func (m *MasterProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
+func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 	if e := validateName(a.Name, "AgentPoolProfile.Name"); e != nil {
 		return e
 	}
