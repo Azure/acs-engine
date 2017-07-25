@@ -552,6 +552,15 @@ func VersionOrdinal(version string) string {
 	return string(vo)
 }
 
+// getStorageAccountType returns the support managed disk storage tier for a give VM size
+func getStorageAccountType (size string) string {
+	capability := strings.Split(size, "_")
+	if strings.Contains(strings.ToLower(capability[1]), "s") {
+		return "Premium_LRS"
+	}
+	return "Standard_LRS"
+}
+
 // getTemplateFuncMap returns all functions used in template generation
 func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[string]interface{} {
 	return template.FuncMap{
@@ -586,7 +595,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			var buf bytes.Buffer
 			buf.WriteString(fmt.Sprintf("role=agent,agentpool=%s", profile.Name))
 			if profile.StorageProfile == api.ManagedDisks {
-				buf.WriteString(fmt.Sprint(",storageprofile=managed"))
+				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", strings.ToLower(getStorageAccountType(profile.VMSize))))
 			}
 			for k, v := range profile.CustomNodeLabels {
 				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))

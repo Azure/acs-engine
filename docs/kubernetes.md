@@ -116,6 +116,13 @@ Non-managed persistent volume types are available on all VM sizes.
 
 As part of cluster bootstrapping, two storage classes will be created to provide access to create Kubernetes persistent volumes using Azure managed disks.
 
+Nodes will be labelled as follows if they support managed disks:
+
+```
+storageprofile=managed
+storagetier=<Standard_LRS|Premium_LRS>
+```
+
 They are managed-premium and managed-standard and map to Standard_LRS and Premium_LRS managed disk types respectively.
 
 In order to use these storage classes the following conditions must be met.
