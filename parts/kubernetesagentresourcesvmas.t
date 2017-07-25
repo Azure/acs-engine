@@ -172,10 +172,17 @@
         "storageProfile": {
           {{GetDataDisks .}}
           "imageReference": {
-            "offer": "[variables('osImageOffer')]",
-            "publisher": "[variables('osImagePublisher')]",
-            "sku": "[variables('osImageSKU')]",
-            "version": "[variables('osImageVersion')]"
+            {{if .IsNotUbuntu}}
+				"offer": "[variables('{{.Name}}kubeAgentOsImageOffer')]"
+				,"publisher": "[variables('{{.Name}}kubeAgentOsImagePublisher')]"
+				,"sku": "[variables('{{.Name}}kubeAgetntOsImageSKU')]"
+				,"version": "[variables('{{.Name}}kubeAgentOsImageVersion')]"
+			{{else}}
+				"offer": "[variables('osImageOffer')]"
+				,"publisher": "[variables('osImagePublisher')]"
+				,"sku": "[variables('osImageSku')]"
+				,"version": "[variables('osImageVersion')]"
+			{{end}}
           },
           "osDisk": {
             "createOption": "FromImage"

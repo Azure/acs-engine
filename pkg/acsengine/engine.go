@@ -20,11 +20,12 @@ import (
 )
 
 const (
-	kubernetesMasterCustomDataYaml      = "kubernetesmastercustomdata.yml"
-	kubernetesMasterCustomScript        = "kubernetesmastercustomscript.sh"
-	kubernetesAgentCustomDataYaml       = "kubernetesagentcustomdata.yml"
-	kubeConfigJSON                      = "kubeconfig.json"
-	kubernetesWindowsAgentCustomDataPS1 = "kuberneteswindowssetup.ps1"
+	kubernetesMasterCustomDataYaml         = "kubernetesmastercustomdata.yml"
+	kubernetesMasterCustomScript           = "kubernetesmastercustomscript.sh"
+	kubernetesAgentCustomDataYaml          = "kubernetesagentcustomdata.yml"
+	kubernetesAgentCustomDataForCoreOSYaml = "kubernetesagentcustomdataforcoreos.yml"
+	kubeConfigJSON                         = "kubeconfig.json"
+	kubernetesWindowsAgentCustomDataPS1    = "kuberneteswindowssetup.ps1"
 )
 
 const (
@@ -456,6 +457,12 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	for _, agentProfile := range properties.AgentPoolProfiles {
 		addValue(parametersMap, fmt.Sprintf("%sCount", agentProfile.Name), agentProfile.Count)
 		addValue(parametersMap, fmt.Sprintf("%sVMSize", agentProfile.Name), agentProfile.VMSize)
+
+		addValue(parametersMap, fmt.Sprintf("%sosImageOffer", agentProfile.Name), agentProfile.OsImageOffer)
+		addValue(parametersMap, fmt.Sprintf("%sosImagePublisher", agentProfile.Name), agentProfile.OsImagePublisher)
+		addValue(parametersMap, fmt.Sprintf("%sosImageSKU", agentProfile.Name), agentProfile.OsImageSKU)
+		addValue(parametersMap, fmt.Sprintf("%sosImageVersion", agentProfile.Name), agentProfile.OsImageVersion)
+
 		if agentProfile.IsCustomVNET() {
 			addValue(parametersMap, fmt.Sprintf("%sVnetSubnetID", agentProfile.Name), agentProfile.VnetSubnetID)
 		} else {
@@ -723,7 +730,16 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
+
+			var str string
+			var e error
+
+			if profile.OsImagePublisher == "CoreOS" {
+				str, e = t.getSingleLineForTemplate(kubernetesAgentCustomDataForCoreOSYaml, cs, profile)
+			} else {
+				str, e = t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
+			}
+
 			if e != nil {
 				return ""
 			}

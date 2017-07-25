@@ -137,6 +137,15 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		}
 	}
 
+	//CoreOS is only applicable for Kubernetes
+	if orchestratorType == Kubernetes {
+
+		if a.OsImagePublisher != "" && a.OsImagePublisher != "CoreOS" && a.OsImagePublisher != "Canonical" {
+			return fmt.Errorf("Image Publisher CoreOS is only supported for Kubernetes. Orchestrator  used: %s Image Publisher Specified: %s", orchestratorType, a.OsImagePublisher)
+		}
+
+	}
+
 	if len(a.DiskSizesGB) > 0 {
 		if len(a.StorageProfile) == 0 {
 			return fmt.Errorf("property 'StorageProfile' must be set to either '%s' or '%s' when attaching disks", StorageAccount, ManagedDisks)
