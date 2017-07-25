@@ -197,7 +197,7 @@
           ]
         },
         "osProfile": {
-          {{GetDCOSWindowsAgentCustomData .}}
+          {{GetDCOSAgentCustomData .}}
           "adminUsername": "[variables('windowsAdminUsername')]",
           "adminPassword": "[variables('windowsAdminPassword')]"
         },

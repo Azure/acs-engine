@@ -1,6 +1,5 @@
 bootcmd:
-- bash -c "if [ ! -f /var/lib/sdb-gpt ];then echo DCOS-5890;parted -s /dev/sdb mklabel
-  gpt;touch /var/lib/sdb-gpt;fi"
+- bash -c "if [ ! -f /var/lib/sdb-gpt ];then echo DCOS-5890;parted -s /dev/sdb mklabel gpt;touch /var/lib/sdb-gpt;fi"
 disk_setup:
   ephemeral0:
     layout:
@@ -119,9 +118,7 @@ runcmd:
   - start
   - dcos-setup.service
 write_files:
-- content: 'https://dcosio.azureedge.net/dcos/stable
-
-'
+- content: 'https://dcosio.azureedge.net/dcos/stable'
   owner: root
   path: /etc/mesosphere/setup-flags/repository-url
   permissions: '0644'

@@ -197,17 +197,19 @@
           ]
         },
         "osProfile": {
-          {{GetDCOSAgentCustomData .}}
+          "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
           "adminUsername": "[variables('windowsAdminUsername')]",
-          "adminPassword": "[variables('windowsAdminPassword')]"
+          "adminPassword": "[variables('windowsAdminPassword')]",
+          {{GetDCOSWindowsAgentCustomData .}}
+
         },
         "storageProfile": {
           {{GetDataDisks .}}
           "imageReference": {
-            "offer": "[variables('agentWindowsOffer')]",
-            "publisher": "[variables('agentWindowsPublisher')]",
-            "sku": "[variables('agentWindowsSku')]",
-            "version": "[variables('agentWindowsVersion')]"
+            "offer": "[variables('osImageOffer')]",
+            "publisher": "[variables('osImagePublisher')]",
+            "sku": "[variables('osImageSKU')]",
+            "version": "[variables('osImageVersion')]"
           }
           ,"osDisk": {
             "caching": "ReadOnly"
@@ -226,15 +228,4 @@
         }
       },
       "type": "Microsoft.Compute/virtualMachines"
-      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/cse')]",
-      "properties": {
-        "publisher": "Microsoft.Compute",
-        "type": "CustomScriptExtension",
-        "typeHandlerVersion": "1.8",
-        "autoUpgradeMinorVersion": true,
-        "settings": {},
-        "protectedSettings": {
-          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -command \"', '$arguments = ', variables('singleQuote'),'-MasterIP ',' -MasterFQDNPrefix ',variables('masterFqdnPrefix'),' -Location ',variables('location'),' -AgentKey ',variables('clientPrivateKey'),' -AzureHostname ',variables('{{.Name}}VMNamePrefix'),copyIndex(variables('{{.Name}}Offset')),' -AADClientId ',variables('servicePrincipalClientId'),' -AADClientSecret ',variables('servicePrincipalClientSecret'),variables('singleQuote'), ' ; ', variables('windowsCustomScriptSuffix'), '\" > %SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.log 2>&1')]"
-        }
-      }
     }

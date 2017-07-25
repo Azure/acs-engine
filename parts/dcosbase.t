@@ -3,6 +3,9 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     {{range .AgentPoolProfiles}}{{template "agentparams.t" .}},{{end}}
+    {{if .HasWindows}}
+      {{template "windowsparams.t"}},
+    {{end}}
     {{template "dcosparams.t" .}}
     {{template "masterparams.t" .}}
   },
@@ -22,10 +25,18 @@
   },
   "resources": [
     {{range .AgentPoolProfiles}}
-      {{if .IsAvailabilitySets}}
-        {{template "dcosagentresourcesvmas.t" .}},
+      {{if .IsWindows}}
+        {{if .IsAvailabilitySets}}
+          {{template "dcosWindowsAgentResourcesVmas.t" .}},
+        {{else}}
+          {{template "dcosWindowsAgentResourcesVmss.t" .}},
+        {{end}}
       {{else}}
-        {{template "dcosagentresourcesvmss.t" .}},
+        {{if .IsAvailabilitySets}}
+          {{template "dcosagentresourcesvmas.t" .}},
+        {{else}}
+          {{template "dcosagentresourcesvmss.t" .}},
+        {{end}}
       {{end}}
     {{end}}
     {{template "dcosmasterresources.t" .}}

@@ -15,6 +15,7 @@ import (
 	"strings"
 	"text/template"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/ghodss/yaml"
 )
@@ -653,9 +654,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
 		    agentProvisionScript := getDCOSAgentProvisionScript(profile)
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
+log.Info("GetDCOSAgentCustomData2\n");
 			str := getSingleLineDCOSCustomData(cs.Properties.OrchestratorProfile.OrchestratorType, cs.Properties.OrchestratorProfile.OrchestratorVersion, cs.Properties.MasterProfile.Count, agentProvisionScript, attributeContents)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
+		},
+		"GetDCOSWindowsAgentCustomData": func(profile *api.AgentPoolProfile) string {
+			str := getBase64CustomScript(swarmModeWindowsProvision)
+			return fmt.Sprintf("\"customData\": \"%s\"", str)
 		},
 		"GetMasterAllowedSizes": func() string {
 			if t.ClassicMode {
@@ -1242,8 +1248,10 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 
     var scriptname string
     if profile.OSType == api.Windows  {
+fmt.Errorf("provisioning sript name = %s\n", dcosWindowsProvision);
 	    scriptname = dcosWindowsProvision
     } else {
+fmt.Errorf("provisioning sript name = %s\n", dcosProvision);
 	    scriptname = dcosProvision
     }
 

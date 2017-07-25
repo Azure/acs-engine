@@ -26,6 +26,7 @@ all: build
 .PHONE: generate
 generate:
 	go generate -v $(GOFILES)
+<<<<<<< HEAD
 
 .PHONY: build
 build: generate
@@ -57,6 +58,8 @@ checksum:
 .PHONY: clean
 clean:
 	@rm -rf $(BINDIR) ./_dist
+	go build -v -gcflags="-N -l" -ldflags="-X github.com/Azure/acs-engine/cmd.BuildSHA=${VERSION} -X github.com/Azure/acs-engine/cmd.BuildTime=${BUILD}"
+	cd test/acs-engine-test; go build -v
 
 test: test_fmt
 	go test -v $(GOFILES)
