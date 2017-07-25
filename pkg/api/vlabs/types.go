@@ -1,6 +1,7 @@
 package vlabs
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -127,9 +128,36 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType    OrchestratorType    `json:"orchestratorType"`
-	OrchestratorVersion OrchestratorVersion `json:"orchestratorVersion"`
-	KubernetesConfig    *KubernetesConfig   `json:"kubernetesConfig,omitempty"`
+	OrchestratorType    string            `json:"orchestratorType"`
+	OrchestratorVersion string            `json:"orchestratorVersion"`
+	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+}
+
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasOrchestratorProfile OrchestratorProfile
+	op := aliasOrchestratorProfile{}
+	if e := json.Unmarshal(b, &op); e != nil {
+		return e
+	}
+	*o = OrchestratorProfile(op)
+	// Unmarshal OrchestratorType, format it as well
+	orchestratorType := o.OrchestratorType
+	switch {
+	case strings.EqualFold(orchestratorType, string(DCOS)):
+		o.OrchestratorType = DCOS
+	case strings.EqualFold(orchestratorType, string(Swarm)):
+		o.OrchestratorType = Swarm
+	case strings.EqualFold(orchestratorType, string(Kubernetes)):
+		o.OrchestratorType = Kubernetes
+	case strings.EqualFold(orchestratorType, string(SwarmMode)):
+		o.OrchestratorType = SwarmMode
+	default:
+		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
+	}
+	return nil
 }
 
 // KubernetesConfig contains the Kubernetes config structure, containing
@@ -224,32 +252,6 @@ type KeyVaultID struct {
 type KeyVaultCertificate struct {
 	CertificateURL   string `json:"certificateUrl,omitempty"`
 	CertificateStore string `json:"certificateStore,omitempty"`
-}
-
-// OrchestratorType defines orchestrators supported by ACS
-type OrchestratorType string
-
-// OrchestratorVersion defines the version for orchestratorType
-type OrchestratorVersion string
-
-// UnmarshalText decodes OrchestratorType text, do a case insensitive comparison with
-// the defined OrchestratorType constant and set to it if they equal
-func (o *OrchestratorType) UnmarshalText(text []byte) error {
-	s := string(text)
-	switch {
-	case strings.EqualFold(s, string(DCOS)):
-		*o = DCOS
-	case strings.EqualFold(s, string(Swarm)):
-		*o = Swarm
-	case strings.EqualFold(s, string(Kubernetes)):
-		*o = Kubernetes
-	case strings.EqualFold(s, string(SwarmMode)):
-		*o = SwarmMode
-	default:
-		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", s)
-	}
-
-	return nil
 }
 
 // OSType represents OS types of agents

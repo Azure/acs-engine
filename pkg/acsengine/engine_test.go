@@ -198,15 +198,14 @@ func addTestCertificateProfile(api *api.CertificateProfile) {
 
 func TestVersionOrdinal(t *testing.T) {
 	RegisterTestingT(t)
-	v172 := api.OrchestratorVersion("1.7.2")
-	v171 := api.OrchestratorVersion("1.7.1")
-	v170 := api.OrchestratorVersion("1.7.0")
-	v166 := api.OrchestratorVersion("1.6.6")
-	v162 := api.OrchestratorVersion("1.6.2")
-	v160 := api.OrchestratorVersion("1.6.0")
-	v153 := api.OrchestratorVersion("1.5.3")
-	v16 := api.OrchestratorVersion("1.6")
-
+	v172 := "1.7.2"
+	v171 := "1.7.1"
+	v170 := "1.7.0"
+	v166 := "1.6.6"
+	v162 := "1.6.2"
+	v160 := "1.6.0"
+	v153 := "1.5.3"
+	v16 := "1.6"
 
 	Expect(v171 < v172).To(BeTrue())
 	Expect(v170 < v171).To(BeTrue())

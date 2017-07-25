@@ -495,26 +495,26 @@ func convertWindowsProfileToVLabs(api *WindowsProfile, vlabsProfile *vlabs.Windo
 }
 
 func convertOrchestratorProfileToV20160930(api *OrchestratorProfile, o *v20160930.OrchestratorProfile) {
-	if strings.HasPrefix(string(api.OrchestratorType), string(v20160930.DCOS)) {
-		o.OrchestratorType = v20160930.OrchestratorType(v20160930.DCOS)
+	if strings.HasPrefix(api.OrchestratorType, v20160930.DCOS) {
+		o.OrchestratorType = v20160930.DCOS
 	} else {
-		o.OrchestratorType = v20160930.OrchestratorType(api.OrchestratorType)
+		o.OrchestratorType = api.OrchestratorType
 	}
 }
 
 func convertOrchestratorProfileToV20160330(api *OrchestratorProfile, o *v20160330.OrchestratorProfile) {
-	if strings.HasPrefix(string(api.OrchestratorType), string(v20160330.DCOS)) {
-		o.OrchestratorType = v20160330.OrchestratorType(v20160930.DCOS)
+	if strings.HasPrefix(api.OrchestratorType, v20160330.DCOS) {
+		o.OrchestratorType = v20160330.DCOS
 	} else {
-		o.OrchestratorType = v20160330.OrchestratorType(api.OrchestratorType)
+		o.OrchestratorType = api.OrchestratorType
 	}
 }
 
 func convertOrchestratorProfileToV20170131(api *OrchestratorProfile, o *v20170131.OrchestratorProfile) {
-	if strings.HasPrefix(string(api.OrchestratorType), string(v20170131.DCOS)) {
-		o.OrchestratorType = v20170131.OrchestratorType(v20170131.DCOS)
+	if strings.HasPrefix(api.OrchestratorType, v20170131.DCOS) {
+		o.OrchestratorType = v20170131.DCOS
 	} else {
-		o.OrchestratorType = v20170131.OrchestratorType(api.OrchestratorType)
+		o.OrchestratorType = api.OrchestratorType
 	}
 }
 
@@ -522,19 +522,19 @@ func convertOrchestratorProfileToV20170701(api *OrchestratorProfile, o *v2017070
 	if api.OrchestratorType == SwarmMode {
 		o.OrchestratorType = v20170701.DockerCE
 	} else {
-		o.OrchestratorType = v20170701.OrchestratorType(api.OrchestratorType)
+		o.OrchestratorType = api.OrchestratorType
 	}
 
 	if api.OrchestratorVersion != "" {
-		o.OrchestratorVersion = v20170701.OrchestratorVersion(api.OrchestratorVersion)
+		o.OrchestratorVersion = api.OrchestratorVersion
 	}
 }
 
 func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.OrchestratorProfile) {
-	o.OrchestratorType = vlabs.OrchestratorType(api.OrchestratorType)
+	o.OrchestratorType = api.OrchestratorType
 
 	if api.OrchestratorVersion != "" {
-		o.OrchestratorVersion = vlabs.OrchestratorVersion(api.OrchestratorVersion)
+		o.OrchestratorVersion = api.OrchestratorVersion
 	}
 
 	if api.KubernetesConfig != nil {
