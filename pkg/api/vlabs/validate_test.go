@@ -242,7 +242,7 @@ func getK8sDefaultProperties() *Properties {
 		LinuxProfile: &LinuxProfile{
 			AdminUsername: "azureuser",
 			SSH: struct {
-				PublicKeys []PublicKey `json:"publicKeys"`
+				PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
 			}{
 				PublicKeys: []PublicKey{{
 					KeyData: "publickeydata",
