@@ -97,7 +97,7 @@ const (
 	// Kubernetes171 is the string constant for Kubernetes 1.7.1
 	Kubernetes171 string = "1.7.1"
 	// Kubernetes172 is the string constant for Kubernetes 1.7.2
-	Kubernetes171 string = "1.7.2"
+	Kubernetes172 string = "1.7.2"
 	// KubernetesLatest is the string constant for latest Kubernetes version
 	KubernetesLatest string = Kubernetes166
 	// KubernetesDefaultVersion is the string constant for current Kubernetes version
