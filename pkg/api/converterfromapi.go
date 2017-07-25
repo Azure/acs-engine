@@ -525,6 +525,10 @@ func convertOrchestratorProfileToV20170701(api *OrchestratorProfile, o *v2017070
 		o.OrchestratorType = api.OrchestratorType
 	}
 
+	if api.OrchestratorVersionHint != "" {
+		o.OrchestratorVersionHint = api.OrchestratorVersionHint
+	}
+
 	if api.OrchestratorVersion != "" {
 		o.OrchestratorVersion = api.OrchestratorVersion
 	}
@@ -532,6 +536,10 @@ func convertOrchestratorProfileToV20170701(api *OrchestratorProfile, o *v2017070
 
 func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.OrchestratorProfile) {
 	o.OrchestratorType = api.OrchestratorType
+
+	if api.OrchestratorVersionHint != "" {
+		o.OrchestratorVersionHint = api.OrchestratorVersionHint
+	}
 
 	if api.OrchestratorVersion != "" {
 		o.OrchestratorVersion = api.OrchestratorVersion
