@@ -302,16 +302,17 @@ func getFirstConsecutiveStaticIPAddress(subnetStr string) string {
 		return DefaultFirstConsecutiveKubernetesStaticIP
 	}
 
-	// Round up the prefix length to the nearest octet boundary.
+	// Find the first and last octet of the host bits.
 	ones, bits := subnet.Mask.Size()
-	if ones%8 != 0 {
-		ones += 8 - ones%8
-	}
+	firstOctet := ones / 8
+	lastOctet := bits/8 - 1
+
+	// Set the remaining host bits in the first octet.
+	subnet.IP[firstOctet] |= (1 << byte((8 - (ones % 8)))) - 1
 
 	// Fill the intermediate octets with 1s and last octet with offset. This is done so to match
 	// the existing behavior of allocating static IP addresses from the last /24 of the subnet.
-	lastOctet := bits/8 - 1
-	for i := ones / 8; i < lastOctet; i++ {
+	for i := firstOctet + 1; i < lastOctet; i++ {
 		subnet.IP[i] = 255
 	}
 	subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffset

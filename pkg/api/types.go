@@ -122,9 +122,9 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType    OrchestratorType    `json:"orchestratorType"`
-	OrchestratorVersion OrchestratorVersion `json:"orchestratorVersion"`
-	KubernetesConfig    *KubernetesConfig   `json:"kubernetesConfig,omitempty"`
+	OrchestratorType    string            `json:"orchestratorType"`
+	OrchestratorVersion string            `json:"orchestratorVersion"`
+	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 }
 
 // KubernetesConfig contains the Kubernetes config structure, containing
@@ -149,7 +149,7 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitBucket     int     `json:"cloudProviderRateLimitBucket,omitempty"`
 	UseManagedIdentity               bool    `json:"useManagedIdentity,omitempty"`
 	CustomHyperkubeImage             string  `json:"customHyperkubeImage,omitempty"`
-	UseInstanceMetadata		 bool    `json:"useInstanceMetadata,omitempty"`
+	UseInstanceMetadata              bool    `json:"useInstanceMetadata,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -165,7 +165,7 @@ type MasterProfile struct {
 	StorageProfile           string `json:"storageProfile,omitempty"`
 	HttpSourceAddressPrefix  string `json:"httpSourceAddressPrefix,omitempty"`
 	OAuthEnabled             bool   `json:"oauthEnabled"`
-	
+
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
 	// Not used during PUT, returned as part of GET
@@ -211,12 +211,6 @@ type VMDiagnostics struct {
 	// for the customer.
 	StorageURL *neturl.URL `json:"storageUrl"`
 }
-
-// OrchestratorType defines orchestrators supported by ACS
-type OrchestratorType string
-
-// OrchestratorVersion defines the version for orchestratorType
-type OrchestratorVersion string
 
 // JumpboxProfile dscribes properties of the jumpbox setup
 // in the ACS container cluster.
