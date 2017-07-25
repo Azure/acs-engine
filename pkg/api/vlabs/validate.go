@@ -92,7 +92,7 @@ func (m *MasterProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
+func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 	if e := validateName(a.Name, "AgentPoolProfile.Name"); e != nil {
 		return e
 	}
@@ -341,11 +341,11 @@ func (a *Properties) Validate() error {
 }
 
 // Validate validates the KubernetesConfig.
-func (a *KubernetesConfig) Validate(k8sVersion OrchestratorVersion) error {
+func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	// number of minimum retries allowed for kubelet to post node status
 	const minKubeletRetries = 4
 	// k8s versions that have cloudprovider backoff enabled
-	var backoffEnabledVersions = map[OrchestratorVersion]bool{
+	var backoffEnabledVersions = map[string]bool{
 		Kubernetes171: true,
 		Kubernetes166: true,
 		Kubernetes170: true,
@@ -354,9 +354,14 @@ func (a *KubernetesConfig) Validate(k8sVersion OrchestratorVersion) error {
 	ratelimitEnabledVersions := backoffEnabledVersions
 
 	if a.ClusterSubnet != "" {
-		_, _, err := net.ParseCIDR(a.ClusterSubnet)
+		_, subnet, err := net.ParseCIDR(a.ClusterSubnet)
 		if err != nil {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' is an invalid subnet", a.ClusterSubnet)
+		}
+
+		ones, bits := subnet.Mask.Size()
+		if bits-ones <= 8 {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' must reserve at least 9 bits for nodes", a.ClusterSubnet)
 		}
 	}
 
