@@ -60,10 +60,13 @@ type LinuxProfile struct {
 	AdminUsername string `json:"adminUsername"`
 
 	SSH struct {
-		PublicKeys []struct {
-			KeyData string `json:"keyData"`
-		} `json:"publicKeys"`
+		PublicKeys []PublicKey `json:"publicKeys"`
 	} `json:"ssh"`
+}
+
+// PublicKey represents an SSH key for LinuxProfile
+type PublicKey struct {
+	KeyData string `json:"keyData"`
 }
 
 // WindowsProfile represents the Windows configuration passed to the cluster
@@ -93,7 +96,7 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType OrchestratorType `json:"orchestratorType"`
+	OrchestratorType string `json:"orchestratorType"`
 }
 
 // MasterProfile represents the definition of master cluster
@@ -204,28 +207,33 @@ type VMDiagnostics struct {
 	StorageURL *neturl.URL `json:"storageUrl"`
 }
 
-// OrchestratorType defines orchestrators supported by ACS
-type OrchestratorType string
-
-// UnmarshalText decodes OrchestratorType text, do a case insensitive comparison with
-// the defined OrchestratorType constant and set to it if they equal
-func (o *OrchestratorType) UnmarshalText(text []byte) error {
-	s := string(text)
-	switch {
-	case strings.EqualFold(s, string(DCOS)):
-		*o = DCOS
-	case strings.EqualFold(s, string(Mesos)):
-		*o = Mesos
-	case strings.EqualFold(s, string(Swarm)):
-		*o = Swarm
-	case strings.EqualFold(s, string(Kubernetes)):
-		*o = Kubernetes
-	case strings.EqualFold(s, string(SwarmMode)):
-		*o = SwarmMode
-	default:
-		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", s)
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasOrchestratorProfile OrchestratorProfile
+	op := aliasOrchestratorProfile{}
+	if e := json.Unmarshal(b, &op); e != nil {
+		return e
 	}
+	*o = OrchestratorProfile(op)
 
+	// Unmarshal OrchestratorType, format it as well
+	orchestratorType := o.OrchestratorType
+	switch {
+	case strings.EqualFold(orchestratorType, DCOS):
+		o.OrchestratorType = DCOS
+	case strings.EqualFold(orchestratorType, Swarm):
+		o.OrchestratorType = Swarm
+	case strings.EqualFold(orchestratorType, Kubernetes):
+		o.OrchestratorType = Kubernetes
+	case strings.EqualFold(orchestratorType, Mesos):
+		o.OrchestratorType = Mesos
+	case strings.EqualFold(orchestratorType, SwarmMode):
+		o.OrchestratorType = SwarmMode
+	default:
+		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
+	}
 	return nil
 }
 

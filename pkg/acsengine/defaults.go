@@ -75,6 +75,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+		k8sVersion := a.OrchestratorProfile.OrchestratorVersion
 		if a.OrchestratorProfile.KubernetesConfig == nil {
 			a.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
 		}
@@ -92,6 +93,42 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 		if a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet == "" {
 			a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
+		}
+		if a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency == "" {
+			a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency = KubeImages[k8sVersion]["nodestatusfreq"]
+		}
+		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeImages[k8sVersion]["nodegraceperiod"]
+		}
+		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout == "" {
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout = KubeImages[k8sVersion]["podeviction"]
+		}
+		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod == "" {
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod = KubeImages[k8sVersion]["routeperiod"]
+		}
+		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
+		if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff == true {
+			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration == 0 {
+				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
+			}
+			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent == 0 {
+				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
+			}
+			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter == 0 {
+				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
+			}
+			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries == 0 {
+				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
+			}
+		}
+		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
+		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && (k8sVersion == api.Kubernetes171 || k8sVersion == api.Kubernetes170 || k8sVersion == api.Kubernetes166) {
+			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
+				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
+			}
+			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket == 0 {
+				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
+			}
 		}
 	}
 }
@@ -125,6 +162,10 @@ func setMasterNetworkDefaults(a *api.Properties) {
 		} else {
 			a.MasterProfile.IPAddressCount = DefaultAgentIPAddressCount
 		}
+	}
+
+	if a.MasterProfile.HttpSourceAddressPrefix == "" {
+		a.MasterProfile.HttpSourceAddressPrefix = "*"
 	}
 }
 
@@ -261,16 +302,17 @@ func getFirstConsecutiveStaticIPAddress(subnetStr string) string {
 		return DefaultFirstConsecutiveKubernetesStaticIP
 	}
 
-	// Round up the prefix length to the nearest octet boundary.
+	// Find the first and last octet of the host bits.
 	ones, bits := subnet.Mask.Size()
-	if ones%8 != 0 {
-		ones += 8 - ones%8
-	}
+	firstOctet := ones / 8
+	lastOctet := bits/8 - 1
+
+	// Set the remaining host bits in the first octet.
+	subnet.IP[firstOctet] |= (1 << byte((8 - (ones % 8)))) - 1
 
 	// Fill the intermediate octets with 1s and last octet with offset. This is done so to match
 	// the existing behavior of allocating static IP addresses from the last /24 of the subnet.
-	lastOctet := bits/8 - 1
-	for i := ones / 8; i < lastOctet; i++ {
+	for i := firstOctet + 1; i < lastOctet; i++ {
 		subnet.IP[i] = 255
 	}
 	subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffset

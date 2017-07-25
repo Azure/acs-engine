@@ -30,10 +30,12 @@ test: test_fmt
 test-style:
 	@scripts/validate-go.sh
 
-validate-generated:
-	./scripts/validate-generated.sh
+ci: prereqs build test lint
+	./scripts/coverage.sh --coveralls
 
-ci: prereqs validate-generated build test lint
+.PHONY: coverage
+coverage:
+	@scripts/coverage.sh
 
 devenv:
 	./scripts/devenv.sh

@@ -10,6 +10,8 @@ import (
 	"hash/fnv"
 	"math/rand"
 	"regexp"
+	"runtime/debug"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -242,7 +244,9 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	// and ensures the panic is returned as an error
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
+			s := debug.Stack()
+			err = fmt.Errorf("%v - %s", r, s)
+
 			// invalidate the template and the parameters
 			templateRaw = ""
 			parametersRaw = ""
@@ -377,6 +381,12 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	// Kubernetes Parameters
 	if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		KubernetesVersion := properties.OrchestratorProfile.OrchestratorVersion
+
+		kubernetesHyperkubeSpec := properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeImages[KubernetesVersion]["hyperkube"]
+		if properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage != "" {
+			kubernetesHyperkubeSpec = properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage
+		}
+
 		addSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
 		addSecret(parametersMap, "apiServerPrivateKey", properties.CertificateProfile.APIServerPrivateKey, true)
 		addSecret(parametersMap, "caCertificate", properties.CertificateProfile.CaCertificate, true)
@@ -386,7 +396,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
 		addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
-		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["hyperkube"])
+		addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["addonmanager"])
 		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["addonresizer"])
 		addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dashboard"])
@@ -395,23 +405,31 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["heapster"])
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["pause"])
-		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", KubeImages[KubernetesVersion]["nodestatusfreq"])
-		addValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", KubeImages[KubernetesVersion]["nodegraceperiod"])
-		addValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", KubeImages[KubernetesVersion]["podeviction"])
-		addValue(parametersMap, "kubernetesCtrlMgrRouteReconciliationPeriod", KubeImages[KubernetesVersion]["routeperiod"])
-		addValue(parametersMap, "cloudProviderBackoff", KubeImages[KubernetesVersion]["backoff"])
-		addValue(parametersMap, "cloudProviderBackoffRetries", KubeImages[KubernetesVersion]["backoffretries"])
-		addValue(parametersMap, "cloudProviderBackoffExponent", KubeImages[KubernetesVersion]["backoffexponent"])
-		addValue(parametersMap, "cloudProviderBackoffDuration", KubeImages[KubernetesVersion]["backoffduration"])
-		addValue(parametersMap, "cloudProviderBackoffJitter", KubeImages[KubernetesVersion]["backoffjitter"])
-		addValue(parametersMap, "cloudProviderRatelimit", KubeImages[KubernetesVersion]["ratelimit"])
-		addValue(parametersMap, "cloudProviderRatelimitQPS", KubeImages[KubernetesVersion]["ratelimitqps"])
-		addValue(parametersMap, "cloudProviderRatelimitBucket", KubeImages[KubernetesVersion]["ratelimitbucket"])
+		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
+		addValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod)
+		addValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout)
+		addValue(parametersMap, "kubernetesCtrlMgrRouteReconciliationPeriod", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod)
+		addValue(parametersMap, "cloudProviderBackoff", strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff))
+		addValue(parametersMap, "cloudProviderBackoffRetries", strconv.Itoa(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries))
+		addValue(parametersMap, "cloudProviderBackoffExponent", strconv.FormatFloat(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent, 'f', -1, 64))
+		addValue(parametersMap, "cloudProviderBackoffDuration", strconv.Itoa(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration))
+		addValue(parametersMap, "cloudProviderBackoffJitter", strconv.FormatFloat(properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter, 'f', -1, 64))
+		addValue(parametersMap, "cloudProviderRatelimit", strconv.FormatBool(properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit))
+		addValue(parametersMap, "cloudProviderRatelimitQPS", strconv.FormatFloat(properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS, 'f', -1, 64))
+		addValue(parametersMap, "cloudProviderRatelimitBucket", strconv.Itoa(properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket))
 		addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
 		addValue(parametersMap, "dockerBridgeCidr", properties.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet)
 		addValue(parametersMap, "networkPolicy", properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
-		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
-		addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
+		if properties.OrchestratorProfile.KubernetesConfig != nil &&
+			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
+			addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
+
+			if properties.ServicePrincipalProfile.KeyvaultSecretRef != "" {
+				addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.KeyvaultSecretRef, false)
+			} else {
+				addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
+			}
+		}
 	}
 
 	if strings.HasPrefix(string(properties.OrchestratorProfile.OrchestratorType), string(api.DCOS)) {
@@ -503,7 +521,7 @@ func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
 }
 
 // https://stackoverflow.com/a/18411978
-func VersionOrdinal(version api.OrchestratorVersion) string {
+func VersionOrdinal(version string) string {
 	// ISO/IEC 14651:2011
 	const maxByte = 1<<8 - 1
 	vo := make([]byte, 0, len(version)+8)
@@ -556,7 +574,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOS190
 		},
 		"IsKubernetesVersionGe": func(version string) bool {
-			targetVersion := api.OrchestratorVersion(version)
+			targetVersion := version
 			targetVersionOrdinal := VersionOrdinal(targetVersion)
 			orchestratorVersionOrdinal := VersionOrdinal(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes &&
@@ -585,6 +603,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		},
 		"IsVNETIntegrated": func() bool {
 			return cs.Properties.OrchestratorProfile.IsVNETIntegrated()
+		},
+		"UseManagedIdentity": func() bool {
+			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
+		},
+		"UseInstanceMetadata": func() bool {
+			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata
 		},
 		"GetVNETSubnetDependencies": func() string {
 			return getVNETSubnetDependencies(cs.Properties)
@@ -807,6 +831,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["hyperkube"]
+					if cs.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage != "" {
+						val = cs.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage
+					}
 				case "kubernetesAddonManagerSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["addonmanager"]
 				case "kubernetesAddonResizerSpec":
@@ -824,35 +851,35 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				case "kubernetesPodInfraContainerSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["pause"]
 				case "kubernetesNodeStatusUpdateFrequency":
-					val = KubeImages[kubernetesVersion]["nodestatusfreq"]
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency
 				case "kubernetesCtrlMgrNodeMonitorGracePeriod":
-					val = KubeImages[kubernetesVersion]["nodegraceperiod"]
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod
 				case "kubernetesCtrlMgrPodEvictionTimeout":
-					val = KubeImages[kubernetesVersion]["podeviction"]
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout
 				case "kubernetesCtrlMgrRouteReconciliationPeriod":
-					val = KubeImages[kubernetesVersion]["routeperiod"]
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod
 				case "cloudProviderBackoff":
-					val = KubeImages[kubernetesVersion]["backoff"]
+					val = strconv.FormatBool(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff)
 				case "cloudProviderBackoffRetries":
-					val = KubeImages[kubernetesVersion]["backoffretries"]
+					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries)
 				case "cloudProviderBackoffExponent":
-					val = KubeImages[kubernetesVersion]["backoffexponent"]
+					val = strconv.FormatFloat(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent, 'f', -1, 64)
 				case "cloudProviderBackoffDuration":
-					val = KubeImages[kubernetesVersion]["backoffduration"]
+					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration)
 				case "cloudProviderBackoffJitter":
-					val = KubeImages[kubernetesVersion]["backoffjitter"]
+					val = strconv.FormatFloat(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter, 'f', -1, 64)
 				case "cloudProviderRatelimit":
-					val = KubeImages[kubernetesVersion]["ratelimit"]
+					val = strconv.FormatBool(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit)
 				case "cloudProviderRatelimitQPS":
-					val = KubeImages[kubernetesVersion]["ratelimitqps"]
+					val = strconv.FormatFloat(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS, 'f', -1, 64)
 				case "cloudProviderRatelimitBucket":
-					val = KubeImages[kubernetesVersion]["ratelimitbucket"]
+					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket)
 				case "kubeBinariesSASURL":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeImages[kubernetesVersion]["windowszip"]
 				case "kubeClusterCidr":
 					val = "10.244.0.0/16"
 				case "kubeBinariesVersion":
-					val = string(api.KubernetesLatest)
+					val = string(api.KubernetesDefaultVersion)
 				case "caPrivateKey":
 					// The base64 encoded "NotAvailable"
 					val = "Tm90QXZhaWxhYmxlCg=="
@@ -889,7 +916,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 	}
 }
 
-func getPackageGUID(orchestratorType api.OrchestratorType, orchestratorVersion api.OrchestratorVersion, masterCount int) string {
+func getPackageGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
 	if orchestratorType == api.DCOS && orchestratorVersion == api.DCOS190 {
 		switch masterCount {
 		case 1:
@@ -939,7 +966,7 @@ func getPackageGUID(orchestratorType api.OrchestratorType, orchestratorVersion a
 	return ""
 }
 
-func getDCOSCustomDataPublicIPStr(orchestratorType api.OrchestratorType, masterCount int) string {
+func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) string {
 	if orchestratorType == api.DCOS {
 		var buf bytes.Buffer
 		for i := 0; i < masterCount; i++ {
@@ -1254,7 +1281,7 @@ touch /etc/mesosphere/roles/azure_master`
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, orchestratorVersion api.OrchestratorVersion, masterCount int, provisionContent string, attributeContents string) string {
+func getSingleLineDCOSCustomData(orchestratorType string, orchestratorVersion string, masterCount int, provisionContent string, attributeContents string) string {
 	yamlFilename := ""
 	switch orchestratorType {
 	case api.DCOS:

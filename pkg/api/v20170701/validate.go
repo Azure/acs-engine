@@ -10,10 +10,14 @@ import (
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
-var validate *validator.Validate
+var (
+	validate                *validator.Validate
+	keyvaultSecretPathRegex *regexp.Regexp
+)
 
 func init() {
 	validate = validator.New()
+	keyvaultSecretPathRegex = regexp.MustCompile(`^(/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/\S+)/secrets/([^/\s]+)(/(\S+))?$`)
 }
 
 // Validate implements APIObject
@@ -59,18 +63,22 @@ func (m *MasterProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
+func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 	// Don't need to call validate.Struct(a)
 	// It is handled by Properties.Validate()
 	if e := validatePoolName(a.Name); e != nil {
 		return e
 	}
-	// Kubernetes don't allow agent DNSPrefix
+	// Kubernetes don't allow agent DNSPrefix and ports
 	if orchestratorType == Kubernetes {
-		// The line below need to be removed after June 2017
+		// The two lines below need to be removed after August 2017
 		a.DNSPrefix = ""
+		a.Ports = []int{}
 		if e := validate.Var(a.DNSPrefix, "len=0"); e != nil {
-			return e
+			return fmt.Errorf("AgentPoolProfile.DNSPrefix must be empty for Kubernetes")
+		}
+		if e := validate.Var(a.Ports, "len=0"); e != nil {
+			return fmt.Errorf("AgentPoolProfile.Ports must be empty for Kubernetes")
 		}
 	}
 	if a.DNSPrefix != "" {
@@ -85,8 +93,8 @@ func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 			a.Ports = []int{80, 443, 8080}
 		}
 	} else {
-		if len(a.Ports) > 0 {
-			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty")
+		if e := validate.Var(a.Ports, "len=0"); e != nil {
+			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty for Orchestrator: %s", string(orchestratorType))
 		}
 	}
 	return nil
@@ -153,9 +161,18 @@ func (a *Properties) Validate() error {
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
 		return e
 	}
+
 	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
-		if a.ServicePrincipalProfile == nil {
-			return fmt.Errorf("missing ServicePrincipalProfile")
+		if (len(a.ServicePrincipalProfile.Secret) == 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) == 0) ||
+			(len(a.ServicePrincipalProfile.Secret) != 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0) {
+			return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+		}
+
+		if len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0 {
+			parts := keyvaultSecretPathRegex.FindStringSubmatch(a.ServicePrincipalProfile.KeyvaultSecretRef)
+			if len(parts) != 5 {
+				return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
+			}
 		}
 	}
 
