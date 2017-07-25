@@ -13,7 +13,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	log "github.com/Sirupsen/logrus"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 // ClusterTopology contains resources of the cluster the upgrade operation
@@ -70,7 +70,7 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	}
 
 	switch ucs.OrchestratorProfile.OrchestratorVersion {
-	case api.Kubernetes162:
+	case "1.6.2":
 		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes 1.6.2"))
 		upgrader := Kubernetes162upgrader{}
 		upgrader.ClusterTopology = uc.ClusterTopology

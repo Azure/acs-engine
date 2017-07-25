@@ -1,10 +1,10 @@
-hash: 47bdadf4225410bca8b7b7ad7e6512555c80a60db5ec90d874a0ea2ca876b3e5
-updated: 2017-07-15T01:36:15.006608-07:00
+hash: 2d0555de8e8d23202cb1e16d820cfe1f7c66a106c158a709223f77e7fabdb1f5
+updated: 2017-07-25T16:02:27.443383131-07:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
 - name: github.com/Azure/azure-sdk-for-go
-  version: 59c277f1b488b81b1a5f944212f25b69bea8ece3
+  version: 5b6066bbd213e47c49a5fa2be2b29529bbcb6704
   subpackages:
   - arm/authorization
   - arm/compute
@@ -34,6 +34,8 @@ imports:
   - currency
 - name: github.com/go-playground/universal-translator
   version: b32fa301c9fe55953584134cb6853a13c87ec0a1
+- name: github.com/hashicorp/go-version
+  version: 03c5bf6be031b6dd45afec16b1cf94fc8938bc77
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/mitchellh/go-homedir
@@ -72,7 +74,7 @@ imports:
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
 testImports:
 - name: github.com/onsi/ginkgo
-  version: 77a8c1e5c40d6bb6c5eb4dd4bdce9763564f6298
+  version: 9eda700730cba42af70d53180f9dcce9266bc2bc
   subpackages:
   - config
   - internal/codelocation
@@ -92,7 +94,7 @@ testImports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 334b8f472b3af5d541c5642701c1e29e2126f486
+  version: c893efa28eb45626cdaa76c9f653b62488858837
   subpackages:
   - format
   - internal/assertion
@@ -105,3 +107,33 @@ testImports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: golang.org/x/net
+  version: ab5485076ff3407ad2d02db054635913f017b0ed
+  repo: https://github.com/golang/net.git
+  vcs: git
+  subpackages:
+  - .
+  - html
+  - html/atom
+  - html/charset
+- name: golang.org/x/text
+  version: 836efe42bb4aa16aaa17b9c155d8813d336ed720
+  repo: https://github.com/golang/text.git
+  vcs: git
+  subpackages:
+  - .
+  - encoding
+  - encoding/charmap
+  - encoding/htmlindex
+  - encoding/internal
+  - encoding/internal/identifier
+  - encoding/japanese
+  - encoding/korean
+  - encoding/simplifiedchinese
+  - encoding/traditionalchinese
+  - encoding/unicode
+  - internal/tag
+  - internal/utf8internal
+  - language
+  - runes
+  - transform

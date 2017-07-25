@@ -33,8 +33,6 @@ type DockerSpecConfig struct {
 //DCOSSpecConfig is the configurations of DCOS
 type DCOSSpecConfig struct {
 	DCOS173BootstrapDownloadURL string
-	DCOS184BootstrapDownloadURL string
-	DCOS187BootstrapDownloadURL string
 	DCOS188BootstrapDownloadURL string
 	DCOS190BootstrapDownloadURL string
 }
