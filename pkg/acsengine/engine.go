@@ -134,7 +134,7 @@ var calicoAddonYamls = map[string]string{
 }
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams, windowsParams}
-var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS, dcosWindowsAgentVars }
+var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS, dcosWindowsAgentVars }
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}

@@ -261,9 +261,11 @@ type OSType string
 func (p *Properties) HasWindows() bool {
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.OSType == Windows {
+fmt.Printf("has windows\n");
 			return true
 		}
 	}
+fmt.Printf("does not have windows\n");
 	return false
 }
 

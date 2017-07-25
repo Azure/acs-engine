@@ -1,6 +1,7 @@
 package api
 
 import (
+    "fmt"
 	neturl "net/url"
 
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
@@ -321,9 +322,11 @@ type UpgradeContainerService struct {
 func (p *Properties) HasWindows() bool {
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.OSType == Windows {
+fmt.Printf("Has Windows\n");
 			return true
 		}
 	}
+fmt.Printf("not Has Windows\n");
 	return false
 }
 

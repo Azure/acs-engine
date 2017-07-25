@@ -23,6 +23,10 @@
         {{end}}
       ], 
 {{end}}
+{{if .HasWindows}}
+    "windowsAdminUsername": "[parameters('windowsAdminUsername')]",
+    "windowsAdminPassword": "[parameters('windowsAdminPassword')]",
+{{end}}
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]", 
     "masterCount": {{.MasterProfile.Count}}, 
     "masterEndpointDNSNamePrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
