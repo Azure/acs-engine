@@ -61,6 +61,13 @@ const (
 	KubernetesDefaultVersionHint string = KubernetesVersionHint16
 )
 
+// KubeHintToVersion is the hint to actual version map
+var KubeHintToVersion = map[string]string{
+	KubernetesVersionHint17: "1.7.1",
+	KubernetesVersionHint16: "1.6.6",
+	KubernetesVersionHint15: "1.5.3",
+}
+
 const (
 	// DCOSVersionHint19 is the major.minor string prefix for 1.9 versions of DCOS
 	DCOSVersionHint19 string = "1.9"
@@ -71,6 +78,13 @@ const (
 	// DCOSDefaultVersionHint is the default version hint for DCOS
 	DCOSDefaultVersionHint string = DCOSVersionHint19
 )
+
+// DCOSHintToVersion is the hint to actual version map
+var DCOSHintToVersion = map[string]string{
+	DCOSVersionHint19: "1.9.0",
+	DCOSVersionHint18: "1.8.8",
+	DCOSVersionHint17: "1.7.3",
+}
 
 // To identify programmatically generated public agent pools
 const publicAgentPoolSuffix = "-public"

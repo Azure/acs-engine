@@ -888,7 +888,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				case "kubeClusterCidr":
 					val = "10.244.0.0/16"
 				case "kubeBinariesVersion":
-					val = KubeImages[cs.Properties.OrchestratorProfile.OrchestratorVersionHint]["version"]
+					val = api.KubeHintToVersion[cs.Properties.OrchestratorProfile.OrchestratorVersionHint]
 				case "caPrivateKey":
 					// The base64 encoded "NotAvailable"
 					val = "Tm90QXZhaWxhYmxlCg=="

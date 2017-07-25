@@ -470,8 +470,10 @@ func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfil
 	api.OrchestratorType = v20160930.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
 		api.OrchestratorVersionHint = KubernetesDefaultVersionHint
+		api.OrchestratorVersion = KubeHintToVersion[KubernetesDefaultVersionHint]
 	} else if api.OrchestratorType == DCOS {
 		api.OrchestratorVersionHint = DCOSDefaultVersionHint
+		api.OrchestratorVersion = DCOSHintToVersion[DCOSDefaultVersionHint]
 	}
 }
 
@@ -479,6 +481,7 @@ func convertV20160330OrchestratorProfile(v20160330 *v20160330.OrchestratorProfil
 	api.OrchestratorType = v20160330.OrchestratorType
 	if api.OrchestratorType == DCOS {
 		api.OrchestratorVersionHint = DCOSDefaultVersionHint
+		api.OrchestratorVersion = DCOSHintToVersion[DCOSDefaultVersionHint]
 	}
 }
 
@@ -486,8 +489,10 @@ func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfil
 	api.OrchestratorType = v20170131.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
 		api.OrchestratorVersionHint = KubernetesDefaultVersionHint
+		api.OrchestratorVersion = KubeHintToVersion[KubernetesDefaultVersionHint]
 	} else if api.OrchestratorType == DCOS {
 		api.OrchestratorVersionHint = DCOSDefaultVersionHint
+		api.OrchestratorVersion = DCOSHintToVersion[DCOSDefaultVersionHint]
 	}
 }
 
@@ -506,6 +511,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 		default:
 			api.OrchestratorVersionHint = KubernetesDefaultVersionHint
 		}
+		api.OrchestratorVersion = KubeHintToVersion[api.OrchestratorVersionHint]
 	case DCOS:
 		switch v20170701cs.OrchestratorVersionHint {
 		case DCOSVersionHint19, DCOSVersionHint18:
@@ -513,6 +519,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 		default:
 			api.OrchestratorVersionHint = DCOSDefaultVersionHint
 		}
+		api.OrchestratorVersion = DCOSHintToVersion[api.OrchestratorVersionHint]
 	default:
 		break
 	}
@@ -533,6 +540,7 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		default:
 			api.OrchestratorVersionHint = KubernetesDefaultVersionHint
 		}
+		api.OrchestratorVersion = KubeHintToVersion[api.OrchestratorVersionHint]
 	case DCOS:
 		switch vlabscs.OrchestratorVersionHint {
 		case DCOSVersionHint19, DCOSVersionHint18, DCOSVersionHint17:
@@ -540,6 +548,7 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		default:
 			api.OrchestratorVersionHint = DCOSDefaultVersionHint
 		}
+		api.OrchestratorVersion = DCOSHintToVersion[api.OrchestratorVersionHint]
 	}
 }
 
