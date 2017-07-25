@@ -79,7 +79,7 @@ const (
 )
 
 // KubeImages represents Docker images used for Kubernetes components based on Kubernetes version
-var KubeImages = map[api.OrchestratorVersion]map[string]string{
+var KubeImages = map[string]map[string]string{
 	api.Kubernetes171: {
 		"hyperkube":       "hyperkube-amd64:v1.7.1",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",

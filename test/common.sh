@@ -160,7 +160,8 @@ function get_node_count() {
 	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
 
 	count=$(jq '.properties.masterProfile.count' ${CLUSTER_DEFINITION})
-	linux_count=$count
+	linux_agents=0
+	windows_agents=0
 
 	nodes=$(jq -r '.properties.agentPoolProfiles[].count' ${CLUSTER_DEFINITION})
 	osTypes=$(jq -r '.properties.agentPoolProfiles[].osType' ${CLUSTER_DEFINITION})
@@ -170,12 +171,14 @@ function get_node_count() {
 	indx=0
 	for n in "${nArr[@]}"; do
 		count=$((count+n))
-		if [ "${oArr[$indx]}" != "Windows" ]; then
-			linux_count=$((linux_count+n))
+		if [ "${oArr[$indx]}" = "Windows" ]; then
+			windows_agents=$((windows_agents+n))
+		else
+			linux_agents=$((linux_agents+n))
 		fi
 		indx=$((indx+1))
 	done
-	echo "${count}:${linux_count}"
+	echo "${count}:${linux_agents}:${windows_agents}"
 }
 
 function get_orchestrator_type() {

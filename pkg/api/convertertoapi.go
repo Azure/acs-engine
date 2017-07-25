@@ -467,7 +467,7 @@ func convertVLabsWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile
 }
 
 func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfile, api *OrchestratorProfile) {
-	api.OrchestratorType = OrchestratorType(v20160930.OrchestratorType)
+	api.OrchestratorType = v20160930.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
 		api.OrchestratorVersion = Kubernetes153
 	} else if api.OrchestratorType == DCOS {
@@ -476,14 +476,14 @@ func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfil
 }
 
 func convertV20160330OrchestratorProfile(v20160330 *v20160330.OrchestratorProfile, api *OrchestratorProfile) {
-	api.OrchestratorType = OrchestratorType(v20160330.OrchestratorType)
+	api.OrchestratorType = v20160330.OrchestratorType
 	if api.OrchestratorType == DCOS {
 		api.OrchestratorVersion = DCOS190
 	}
 }
 
 func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfile, api *OrchestratorProfile) {
-	api.OrchestratorType = OrchestratorType(v20170131.OrchestratorType)
+	api.OrchestratorType = v20170131.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
 		api.OrchestratorVersion = KubernetesDefaultVersion
 	} else if api.OrchestratorType == DCOS {
@@ -495,7 +495,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 	if v20170701cs.OrchestratorType == v20170701.DockerCE {
 		api.OrchestratorType = SwarmMode
 	} else {
-		api.OrchestratorType = OrchestratorType(v20170701cs.OrchestratorType)
+		api.OrchestratorType = v20170701cs.OrchestratorType
 	}
 
 	if api.OrchestratorType == Kubernetes {
@@ -523,7 +523,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 }
 
 func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *OrchestratorProfile) {
-	api.OrchestratorType = OrchestratorType(vlabscs.OrchestratorType)
+	api.OrchestratorType = vlabscs.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
 		if vlabscs.KubernetesConfig != nil {
 			api.KubernetesConfig = &KubernetesConfig{}

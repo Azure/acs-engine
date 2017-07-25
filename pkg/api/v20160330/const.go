@@ -7,9 +7,9 @@ const (
 
 // v20160330 supports orchestrators Mesos, Swarm, DCOS
 const (
-	Mesos OrchestratorType = "Mesos"
-	Swarm OrchestratorType = "Swarm"
-	DCOS  OrchestratorType = "DCOS"
+	Mesos string = "Mesos"
+	Swarm string = "Swarm"
+	DCOS  string = "DCOS"
 )
 
 // v20160330 supports OSTypes Windows and Linux
