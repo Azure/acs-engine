@@ -41,7 +41,7 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 	}
 
 	ku.GoalStateDataModel = ku.ClusterTopology.DataModel
-	ku.GoalStateDataModel.Properties.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
+	ku.GoalStateDataModel.Properties.OrchestratorProfile.OrchestratorVersion = "1.6.2"
 
 	if err := ku.upgradeMasterNodes(); err != nil {
 		return err
