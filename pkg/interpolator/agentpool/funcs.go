@@ -16,7 +16,6 @@ import (
 func getTemplateFuncMap(agentPool *kubernetesagentpool.AgentPool) map[string]interface{} {
 	return template.FuncMap{
 		"GetCustomAgentPoolData": func() string {
-
 			customDataBytes, err := acsengine.Asset("kubernetes/agentpool/customData")
 			if err != nil {
 				log.Warnf("Unable to get customData: %v", err)
@@ -29,6 +28,13 @@ func getTemplateFuncMap(agentPool *kubernetesagentpool.AgentPool) map[string]int
 			}
 			base64KubeletService := base64.StdEncoding.EncodeToString(kubeletServiceBytes)
 			fullStr := strings.Replace(string(customDataBytes), "KUBELET_SERVICE_BASE64", 	base64KubeletService, 1)
+			provisionScriptBytes, err := acsengine.Asset("kubernetes/agentpool/provisionScript")
+			if err != nil {
+				log.Warnf("Unable to get provisionScript: %v", err)
+				return ""
+			}
+			base64ProvisionScript := base64.StdEncoding.EncodeToString(provisionScriptBytes)
+			fullStr = strings.Replace(string(customDataBytes), "PROVISION_SCRIPT_BASE64", 	base64ProvisionScript, 1)
 			str, err := formatJsonNewlineBytes(fullStr)
 			if err != nil {
 				log.Warnf("Unable to format bytes for ARM: %v", err)
