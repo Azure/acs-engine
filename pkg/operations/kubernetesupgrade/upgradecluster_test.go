@@ -9,9 +9,9 @@ import (
 	"github.com/Azure/acs-engine/pkg/i18n"
 	. "github.com/Azure/acs-engine/pkg/test"
 	. "github.com/onsi/gomega"
-	"github.com/satori/go.uuid"
 
 	. "github.com/onsi/ginkgo"
+	uuid "github.com/satori/go.uuid"
 )
 
 func TestUpgradeCluster(t *testing.T) {
@@ -55,7 +55,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
+		ucs.OrchestratorProfile.OrchestratorVersion = "1.6.2"
 
 		uc := UpgradeCluster{}
 
@@ -76,7 +76,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
+		ucs.OrchestratorProfile.OrchestratorVersion = "1.6.2"
 
 		uc := UpgradeCluster{}
 
@@ -97,7 +97,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
+		ucs.OrchestratorProfile.OrchestratorVersion = "1.6.2"
 
 		uc := UpgradeCluster{}
 
@@ -118,7 +118,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
+		ucs.OrchestratorProfile.OrchestratorVersion = "1.6.2"
 
 		uc := UpgradeCluster{}
 
@@ -139,7 +139,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
+		ucs.OrchestratorProfile.OrchestratorVersion = "1.6.2"
 
 		uc := UpgradeCluster{}
 
@@ -196,7 +196,7 @@ func createContainerService(containerServiceName string, masterCount int, agentC
 
 	cs.Properties.OrchestratorProfile = &api.OrchestratorProfile{}
 	cs.Properties.OrchestratorProfile.OrchestratorType = api.Kubernetes
-	cs.Properties.OrchestratorProfile.OrchestratorVersion = api.Kubernetes153
+	cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.5.3"
 
 	return &cs
 }
