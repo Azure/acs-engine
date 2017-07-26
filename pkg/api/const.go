@@ -62,7 +62,7 @@ const (
 var KubeHintToVersion = map[string]string{
 	KubernetesVersionHint17: "1.7.1",
 	KubernetesVersionHint16: "1.6.6",
-	KubernetesVersionHint15: "1.5.3",
+	KubernetesVersionHint15: "1.5.7",
 }
 
 const (

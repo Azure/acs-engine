@@ -1,6 +1,10 @@
 package vlabs
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/Azure/acs-engine/pkg/api/common"
+)
 
 const (
 	ValidKubernetesNodeStatusUpdateFrequency        = "10s"
@@ -124,12 +128,12 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	}
 
 	// Tests that apply to 1.6.6 and later versions
-	for _, k8sVersion := range []string{Kubernetes166, Kubernetes170, Kubernetes171} {
+	for _, k8sVersionHint := range []string{common.KubernetesVersionHint16, common.KubernetesVersionHint17} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
 		}
-		if err := c.Validate(k8sVersion); err != nil {
+		if err := c.Validate(k8sVersionHint); err != nil {
 			t.Error("should not error when basic backoff and rate limiting are set to true with no options")
 		}
 	}

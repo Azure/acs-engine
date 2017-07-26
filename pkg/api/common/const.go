@@ -37,3 +37,32 @@ const (
 	// ManagedDisks means that the nodes use managed disks for their os and attached volumes
 	ManagedDisks = "ManagedDisks"
 )
+
+const (
+	KubernetesVersionHint17 string = "1.7"
+	KubernetesVersionHint16 string = "1.6"
+	KubernetesVersionHint15 string = "1.5"
+	// Why not 1.7?
+	KubernetesDefaultVersionHint string = KubernetesVersionHint16
+)
+
+// KubeHintToVersion is the hint to actual version map
+var KubeHintToVersion = map[string]string{
+	KubernetesVersionHint17: "1.7.1",
+	KubernetesVersionHint16: "1.6.6",
+	KubernetesVersionHint15: "1.5.7",
+}
+
+const (
+	DCOSVersionHint19      string = "1.9"
+	DCOSVersionHint18      string = "1.8"
+	DCOSVersionHint17      string = "1.7"
+	DCOSDefaultVersionHint string = DCOSVersionHint19
+)
+
+// DCOSHintToVersion is the hint to actual version map
+var DCOSHintToVersion = map[string]string{
+	DCOSVersionHint19: "1.9.0",
+	DCOSVersionHint18: "1.8.8",
+	DCOSVersionHint17: "1.7.3",
+}

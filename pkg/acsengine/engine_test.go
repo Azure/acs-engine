@@ -118,6 +118,10 @@ func TestExpected(t *testing.T) {
 				t.Errorf("generated parameters different from expected for model %s: '%s'", tuple.APIModelFilename, diffstr)
 			}
 
+			// containerService.Properties.OrchestratorProfile.OrchestratorVersion is ready only field
+			// validation expect it to be empty, it will be auto populated according to OrchestratorVersionHint
+			// so here, reset it to empty
+			containerService.Properties.OrchestratorProfile.OrchestratorVersion = ""
 			b, err := api.SerializeContainerService(containerService, version)
 			if err != nil {
 				t.Error(err)

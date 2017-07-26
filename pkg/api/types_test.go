@@ -28,15 +28,15 @@ const exampleAPIModel = `{
 
 func TestIsDCOS(t *testing.T) {
 	dCOSProfile := &OrchestratorProfile{
-		OrchestratorType:    "DCOS",
-		OrchestratorVersion: "vlabs",
+		OrchestratorType:        "DCOS",
+		OrchestratorVersionHint: "vlabs",
 	}
 	if !dCOSProfile.IsDCOS() {
 		t.Fatalf("unable to detect DCOS orchestrator profile from OrchestratorType=%s", dCOSProfile.OrchestratorType)
 	}
 	kubernetesProfile := &OrchestratorProfile{
-		OrchestratorType:    "Kubernetes",
-		OrchestratorVersion: "vlabs",
+		OrchestratorType:        "Kubernetes",
+		OrchestratorVersionHint: "vlabs",
 	}
 	if kubernetesProfile.IsDCOS() {
 		t.Fatalf("unexpectedly detected DCOS orchestrator profile from OrchestratorType=%s", kubernetesProfile.OrchestratorType)

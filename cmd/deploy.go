@@ -212,6 +212,10 @@ func autofillApimodel(dc *deployCmd) {
 }
 
 func revalidateApimodel(containerService *api.ContainerService, apiVersion string) (*api.ContainerService, string, error) {
+	// cs.Properties.OrchestratorProfile.OrchestratorVersion is a readonly field
+	// it is auto populated based on the OrchestratorVersionHint, when validate, it is expected to be empty
+	// we need to manually set it to empty, if we want re-validation pass
+	containerService.Properties.OrchestratorProfile.OrchestratorVersion = ""
 	// This isn't terribly elegant, but it's the easiest way to go for now w/o duplicating a bunch of code
 	rawVersionedAPIModel, err := api.SerializeContainerService(containerService, apiVersion)
 	if err != nil {
