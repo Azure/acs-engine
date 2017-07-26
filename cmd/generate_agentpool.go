@@ -16,6 +16,19 @@ type GenerateOptions struct {
 	apiVersion   string
 }
 
+
+
+//    LoadHostedControlPlane is a method in ACS Engine
+//      api.LoadHostedControlPlane is a helper function in ACS Engine to convert versioned API model to unversioned internal
+//      representation.
+//      rawBody: is the versioned HostedControl API model received from the caller: github.com\Azure\acs-engine\pkg\agentPoolOnlyApi\v20170831\types.go
+//    unversionedHostedControlPlane: is the unversioned internal model saveb  by ACS RP and used to generate ARM template
+//unversionedHostedControlPlane, err := api.LoadHostedControlPlane(rawBody, apiVersion) // apiVersion = "2017-08-31"
+
+// InitializeTemplateGenerator and GenerateAgentPoolTemplate are methods in ACS Engine to generate agent pool template
+//templateGenerator, e := acsengine.InitializeTemplateGenerator(false /*classicMode*/)
+//templateJSON, parametersJSON, _, e = templateGenerator.GenerateAgentPoolTemplate(unversionedHostedControlPlane)
+
 // NewGenerateAgentpoolCmd will create a new Agent Pool cobra command
 func NewGenerateAgentpoolCmd() *cobra.Command {
 	genOptions := GenerateOptions{}
