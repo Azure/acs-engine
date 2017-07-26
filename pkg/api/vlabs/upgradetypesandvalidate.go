@@ -16,8 +16,8 @@ func (ucs *UpgradeContainerService) Validate() error {
 		return fmt.Errorf("Upgrade is not supported for orchestrator: %s", ucs.OrchestratorProfile.OrchestratorType)
 	case Kubernetes:
 		switch ucs.OrchestratorProfile.OrchestratorVersion {
-		case Kubernetes162:
-		case Kubernetes160:
+		case "1.6.2":
+		case "1.6.0":
 		default:
 			return fmt.Errorf("Invalid orchestrator version: %s", ucs.OrchestratorProfile.OrchestratorVersion)
 		}
