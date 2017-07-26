@@ -80,9 +80,9 @@ const (
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
 
-// KubeImages represents Docker images used for Kubernetes components based on Kubernetes version hint
+// KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes version hint
 // version hint here is the major and minor part of the version. For instance, version 1.6.6 has version hint 1.6
-var KubeImages = map[string]map[string]string{
+var KubeConfigs = map[string]map[string]string{
 	api.KubernetesVersionHint17: {
 		"version":         "1.7.2",
 		"hyperkube":       "hyperkube-amd64:v1.7.2",
