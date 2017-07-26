@@ -454,7 +454,7 @@
       "type": "string"
     },
     "firstConsecutiveStaticIP": {
-      "defaultValue": "10.0.0.5",
+      "defaultValue": "10.0.0.254",
       "metadata": {
         "description": "Sets the static IP of the first master"
       },
@@ -498,6 +498,13 @@
         "description": "The base 64 private key used by cli to communicate with the master"
       },
       "type": "securestring"
+    },
+    "kubernetesApiServer": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The API server for the Kubernetes master"
+      },
+      "type": "string"
     },
     "kubernetesAddonManagerSpec": {
       "defaultValue": "",
@@ -696,7 +703,7 @@
     "kubeConfigPrivateKey": "[parameters('kubeConfigPrivateKey')]",
     "kubeDnsServiceIp": "10.0.0.10",
     "kubeServiceCidr": "10.0.0.0/16",
-    "kubernetesAPIServerIP": "[parameters('firstConsecutiveStaticIP')]",
+    "kubernetesAPIServerIP": "[parameters('kubernetesApiServer')]",
     "kubernetesAddonManagerSpec": "[parameters('kubernetesAddonManagerSpec')]",
     "kubernetesAddonResizerSpec": "[parameters('kubernetesAddonResizerSpec')]",
     "kubernetesCtrlMgrNodeMonitorGracePeriod": "[parameters('kubernetesCtrlMgrNodeMonitorGracePeriod')]",
