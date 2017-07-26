@@ -16,7 +16,7 @@ type AgentPool struct {
 }
 
 type Properties struct {
-	KubernetesVersion       string                   `json:"kubernetesEndpoint"`
+	KubernetesVersion       string                   `json:"kubernetesVersion"`
 	KubernetesEndpoint      string                   `json:"kubernetesEndpoint"`
 	DnsPrefix               string                   `json:"dnsPrefix,omitempty"`
 	Version                 string                   `json:"version,omitempty"`
