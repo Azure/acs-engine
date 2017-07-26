@@ -118,10 +118,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
 			}
 		}
-		k8sVersonHintVO, _ := version.NewVersion(k8sVersionHint)
+		k8sVersion, _ := version.NewVersion(api.KubeHintToVersion[k8sVersionHint])
 		minVersionK8sVersionForCloudProviderRateLimit, _ := version.NewVersion("1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
-		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && k8sVersonHintVO.Compare(minVersionK8sVersionForCloudProviderRateLimit) != -1 {
+		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
+		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && k8sVersion.Compare(minVersionK8sVersionForCloudProviderRateLimit) != -1 {
 			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
 			}
