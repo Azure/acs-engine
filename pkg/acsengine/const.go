@@ -82,7 +82,6 @@ const (
 // version hint here is the major and minor part of the version. For instance, version 1.6.6 has version hint 1.6
 var KubeImages = map[string]map[string]string{
 	api.KubernetesVersionHint17: {
-		"version":         "1.7.1",
 		"hyperkube":       "hyperkube-amd64:v1.7.1",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
 		"exechealthz":     "exechealthz-amd64:1.2",
@@ -105,7 +104,6 @@ var KubeImages = map[string]map[string]string{
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 	},
 	api.KubernetesVersionHint16: {
-		"version":         "1.6.6",
 		"hyperkube":       "hyperkube-amd64:v1.6.6",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
 		"exechealthz":     "exechealthz-amd64:1.2",
@@ -128,7 +126,6 @@ var KubeImages = map[string]map[string]string{
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 	},
 	api.KubernetesVersionHint15: {
-		"version":         "1.5.7",
 		"hyperkube":       "hyperkube-amd64:v1.5.7",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.5.1",
 		"exechealthz":     "exechealthz-amd64:1.2",
