@@ -252,7 +252,7 @@ func TestGetStorageAccountType(t *testing.T) {
 
 	// test invalid VMSize
 	result, err := getStorageAccountType(invalidVMSize)
-	    if err == nil {
+	if err == nil {
         t.Errorf("getStorageAccountType() = (%s, nil), want error", result)
     }
 }
