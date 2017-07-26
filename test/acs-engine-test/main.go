@@ -425,6 +425,8 @@ func mainInternal() error {
 		fmt.Println("Warning: BUILD_NUMBER is not set or invalid. Assuming 0")
 		buildNum = 0
 	}
+	// set environment variable SKIP_METRICS=y to disable sending the metrics.
+	// sending the metrics is enabled by default.
 	if os.Getenv("SKIP_METRICS") == "y" {
 		skipMetrics = true
 	}
