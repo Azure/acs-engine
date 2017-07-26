@@ -1557,7 +1557,6 @@
         "osProfile": {
           "adminUsername": "[variables('username')]",
           "computername": "jumpbox",
-          "customData": "",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
             "ssh": {
