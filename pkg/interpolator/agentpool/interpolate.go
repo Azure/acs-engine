@@ -44,7 +44,7 @@ func (i *Interpolator) Interpolate() error {
 
 	// Parse files
 	for _, file := range files {
-		log.Infof("Loading file [%s]", file)
+		log.Infof("Loading file [kubernetes/agentpool/%s]", file)
 		bytes, err := acsengine.Asset(fmt.Sprintf("%s/%s", i.templateDirectory, file))
 		if err != nil {
 			return fmt.Errorf("Error reading file %s, Error: %s", file, err.Error())
