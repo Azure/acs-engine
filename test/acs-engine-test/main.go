@@ -24,12 +24,24 @@ import (
 const (
 	script = "test/step.sh"
 
+	stepInitAzure        = "set_azure_account"
+	stepCreateRG         = "create_resource_group"
+	stepPredeploy        = "predeploy"
+	stepGenerateTemplate = "generate_template"
+	stepDeployTemplate   = "deploy_template"
+	stepPostDeploy       = "postdeploy"
+	stepValidate         = "validate"
+	stepCleanup          = "cleanup"
+
 	testReport     = "TestReport.json"
 	combinedReport = "CombinedReport.json"
 
 	metricsEndpoint = ":8125"
 	metricsNS       = "ACSEngine"
-	metricName      = "Error"
+
+	metricError              = "Error"
+	metricDeploymentDuration = "DeploymentDuration"
+	metricValidationDuration = "ValidationDuration"
 )
 
 const usage = `Usage:
@@ -43,6 +55,7 @@ const usage = `Usage:
 
 var logDir string
 var orchestratorRe *regexp.Regexp
+var skipMetrics bool
 
 func init() {
 	orchestratorRe = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
@@ -82,7 +95,7 @@ func (m *TestManager) Run() error {
 		retries = 1
 	}
 	// login to Azure
-	if _, err := m.runStep("init", "set_azure_account", os.Environ(), timeout); err != nil {
+	if _, _, err := m.runStep("init", stepInitAzure, os.Environ(), timeout); err != nil {
 		return err
 	}
 
@@ -108,7 +121,7 @@ func (m *TestManager) Run() error {
 					errorStat.count++
 				}
 			}
-			sendMetrics(resMap)
+			sendErrorMetrics(resMap)
 		}(index, dep)
 	}
 	m.wg.Wait()
@@ -179,20 +192,21 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	}
 
 	var errorInfo *report.ErrorInfo
-	steps := []string{"create_resource_group", "predeploy", "generate_template", "deploy_template", "postdeploy"}
+	steps := []string{stepCreateRG, stepPredeploy, stepGenerateTemplate, stepDeployTemplate, stepPostDeploy}
 
 	// determine validation script
 	if !d.SkipValidation {
 		validate := fmt.Sprintf("test/cluster-tests/%s/test.sh", orchestrator)
 		if _, err = os.Stat(fmt.Sprintf("%s/%s", m.rootDir, validate)); err == nil {
 			env = append(env, fmt.Sprintf("VALIDATE=%s", validate))
-			steps = append(steps, "validate")
+			steps = append(steps, stepValidate)
 		}
 	}
 	for _, step := range steps {
-		txt, err := m.runStep(resourceGroup, step, env, timeout)
+		txt, duration, err := m.runStep(resourceGroup, step, env, timeout)
 		if err != nil {
 			errorInfo = m.reportMgr.Process(txt, testName, d.Location)
+			sendDurationMetrics(step, d.Location, duration, errorInfo.ErrName)
 			wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, resourceGroup, err, txt)
 			// check AUTOCLEAN flag: if set to 'n', don't remove deployment
 			if os.Getenv("AUTOCLEAN") == "n" {
@@ -200,8 +214,9 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 			}
 			break
 		}
+		sendDurationMetrics(step, d.Location, duration, report.ErrSuccess)
 		wrileLog(logFile, txt)
-		if step == "generate_template" {
+		if step == stepGenerateTemplate {
 			// set up extra environment variables available after template generation
 			validateLogFile = fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
 			env = append(env, fmt.Sprintf("LOGFILE=%s", validateLogFile))
@@ -236,7 +251,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		}
 	}
 	// clean up
-	if txt, err := m.runStep(resourceGroup, "cleanup", env, timeout); err != nil {
+	if txt, _, err := m.runStep(resourceGroup, stepCleanup, env, timeout); err != nil {
 		wrileLog(logFile, "Error: %v\nOutput: %s", err, txt)
 	}
 	if errorInfo == nil {
@@ -272,14 +287,14 @@ func isValidEnv() bool {
 	return valid
 }
 
-func (m *TestManager) runStep(name, step string, env []string, timeout time.Duration) (string, error) {
+func (m *TestManager) runStep(name, step string, env []string, timeout time.Duration) (string, time.Duration, error) {
 	// prevent ARM throttling
 	m.lock.Lock()
 	go func() {
 		time.Sleep(2 * time.Second)
 		m.lock.Unlock()
 	}()
-
+	start := time.Now()
 	cmd := exec.Command("/bin/bash", "-c", fmt.Sprintf("%s %s", script, step))
 	cmd.Dir = m.rootDir
 	cmd.Env = env
@@ -289,7 +304,7 @@ func (m *TestManager) runStep(name, step string, env []string, timeout time.Dura
 	cmd.Stderr = &out
 
 	if err := cmd.Start(); err != nil {
-		return "", err
+		return "", time.Since(start), err
 	}
 	timer := time.AfterFunc(timeout, func() {
 		cmd.Process.Kill()
@@ -300,10 +315,10 @@ func (m *TestManager) runStep(name, step string, env []string, timeout time.Dura
 	now := time.Now().Format("15:04:05")
 	if err != nil {
 		fmt.Printf("ERROR [%s] [%s %s]\n", now, step, name)
-		return out.String(), err
+		return out.String(), time.Since(start), err
 	}
 	fmt.Printf("SUCCESS [%s] [%s %s]\n", now, step, name)
-	return out.String(), nil
+	return out.String(), time.Since(start), nil
 }
 
 func wrileLog(fname string, format string, args ...interface{}) {
@@ -321,7 +336,10 @@ func wrileLog(fname string, format string, args ...interface{}) {
 	}
 }
 
-func sendMetrics(resMap map[string]*ErrorStat) {
+func sendErrorMetrics(resMap map[string]*ErrorStat) {
+	if skipMetrics {
+		return
+	}
 	for _, errorStat := range resMap {
 		var severity string
 		if errorStat.count > 1 {
@@ -342,10 +360,37 @@ func sendMetrics(resMap map[string]*ErrorStat) {
 			"Class":        errorStat.errorInfo.ErrClass,
 			"Severity":     severity,
 		}
-		err := metrics.AddMetric(metricsEndpoint, metricsNS, metricName, errorStat.count, dims)
+		err := metrics.AddMetric(metricsEndpoint, metricsNS, metricError, errorStat.count, dims)
 		if err != nil {
 			fmt.Printf("Failed to send metric: %v\n", err)
 		}
+	}
+}
+
+func sendDurationMetrics(step, location string, duration time.Duration, errorName string) {
+	if skipMetrics {
+		return
+	}
+	var metricName string
+
+	switch step {
+	case stepDeployTemplate:
+		metricName = metricDeploymentDuration
+	case stepValidate:
+		metricName = metricValidationDuration
+	default:
+		return
+	}
+
+	durationSec := int64(duration / time.Second)
+	// add metrics
+	dims := map[string]string{
+		"Location": location,
+		"Error":    errorName,
+	}
+	err := metrics.AddMetric(metricsEndpoint, metricsNS, metricName, durationSec, dims)
+	if err != nil {
+		fmt.Printf("Failed to send metric: %v\n", err)
 	}
 }
 
@@ -379,6 +424,11 @@ func mainInternal() error {
 	if err != nil {
 		fmt.Println("Warning: BUILD_NUMBER is not set or invalid. Assuming 0")
 		buildNum = 0
+	}
+	// set environment variable SKIP_METRICS=y to disable sending the metrics.
+	// sending the metrics is enabled by default.
+	if os.Getenv("SKIP_METRICS") == "y" {
+		skipMetrics = true
 	}
 	// initialize report manager
 	testManager.reportMgr = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments))
