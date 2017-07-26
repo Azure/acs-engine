@@ -78,20 +78,10 @@ const (
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
 
-// KubeImages represents Docker images used for Kubernetes components based on Kubernetes version hint
+// KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes version hint
 // version hint here is the major and minor part of the version. For instance, version 1.6.6 has version hint 1.6
-var KubeImages = map[string]map[string]string{
+var KubeConfigs = map[string]map[string]string{
 	api.KubernetesVersionHint17: {
-		"hyperkube":       "hyperkube-amd64:v1.7.1",
-		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
-		"exechealthz":     "exechealthz-amd64:1.2",
-		"addonresizer":    "addon-resizer:2.0",
-		"heapster":        "heapster:v1.4.0",
-		"dns":             "k8s-dns-kube-dns-amd64:1.14.4",
-		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.14.4",
-		"pause":           "pause-amd64:3.0",
-		"windowszip":      "v1.7.1intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
@@ -104,16 +94,6 @@ var KubeImages = map[string]map[string]string{
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 	},
 	api.KubernetesVersionHint16: {
-		"hyperkube":       "hyperkube-amd64:v1.6.6",
-		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
-		"exechealthz":     "exechealthz-amd64:1.2",
-		"addonresizer":    "addon-resizer:1.7",
-		"heapster":        "heapster:v1.3.0",
-		"dns":             "k8s-dns-kube-dns-amd64:1.14.4",
-		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.13.0",
-		"pause":           "pause-amd64:3.0",
-		"windowszip":      "v1.6.6intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
@@ -126,16 +106,6 @@ var KubeImages = map[string]map[string]string{
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 	},
 	api.KubernetesVersionHint15: {
-		"hyperkube":       "hyperkube-amd64:v1.5.7",
-		"dashboard":       "kubernetes-dashboard-amd64:v1.5.1",
-		"exechealthz":     "exechealthz-amd64:1.2",
-		"addonresizer":    "addon-resizer:1.6",
-		"heapster":        "heapster:v1.2.0",
-		"dns":             "kubedns-amd64:1.7",
-		"addonmanager":    "kube-addon-manager-amd64:v6.2",
-		"dnsmasq":         "kube-dnsmasq-amd64:1.3",
-		"pause":           "pause-amd64:3.0",
-		"windowszip":      "v1.5.7intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
