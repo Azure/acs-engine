@@ -6,8 +6,9 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/prometheus/common/log"
 	"strings"
-	//"encoding/base64"
 	"encoding/base64"
+	"bytes"
+	"compress/gzip"
 )
 
 // getTemplateFuncMap is where we can define functions used interpolating our code. Please try
@@ -26,15 +27,15 @@ func getTemplateFuncMap(agentPool *kubernetesagentpool.AgentPool) map[string]int
 				log.Warnf("Unable to get kubelet.service: %v", err)
 				return ""
 			}
-			base64KubeletService := base64.StdEncoding.EncodeToString(kubeletServiceBytes)
+			base64KubeletService := base64GzipStr(string(kubeletServiceBytes))
 			fullStr := strings.Replace(string(customDataBytes), "KUBELET_SERVICE_BASE64", 	base64KubeletService, 1)
 			provisionScriptBytes, err := acsengine.Asset("kubernetes/agentpool/provisionScript")
 			if err != nil {
 				log.Warnf("Unable to get provisionScript: %v", err)
 				return ""
 			}
-			base64ProvisionScript := base64.StdEncoding.EncodeToString(provisionScriptBytes)
-			fullStr = strings.Replace(string(customDataBytes), "PROVISION_SCRIPT_BASE64", 	base64ProvisionScript, 1)
+			base64ProvisionScript := base64GzipStr(string(provisionScriptBytes))
+			fullStr = strings.Replace(fullStr, "PROVISION_SCRIPT_BASE64", 	base64ProvisionScript, 1)
 			str, err := formatJsonNewlineBytes(fullStr)
 			if err != nil {
 				log.Warnf("Unable to format bytes for ARM: %v", err)
@@ -48,10 +49,17 @@ func getTemplateFuncMap(agentPool *kubernetesagentpool.AgentPool) map[string]int
 
 func formatJsonNewlineBytes(str string) (string, error) {
 	str = strings.Replace(str, "\n", "\\n", -1)
-	//str = base64.StdEncoding.EncodeToString([]byte(str))
 	return str, nil
 }
 
+
+func base64GzipStr(str string) string {
+	var gzipB bytes.Buffer
+	w := gzip.NewWriter(&gzipB)
+	w.Write([]byte(str))
+	w.Close()
+	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
+}
 
 
 
