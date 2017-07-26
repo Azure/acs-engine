@@ -254,5 +254,15 @@
         "description": "The offset into the master pool where to start creating master VMs.  This value can be from 0 to 4, but must be less than masterCount."
       },
       "type": "int"
+    },
+    "clusterKeyVaultSku": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "allowedValues": [
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "SKU for the key vault used by the cluster"
+      }
     }
-
