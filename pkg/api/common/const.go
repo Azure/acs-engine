@@ -39,10 +39,9 @@ const (
 )
 
 const (
-	KubernetesVersionHint17 string = "1.7"
-	KubernetesVersionHint16 string = "1.6"
-	KubernetesVersionHint15 string = "1.5"
-	// Why not 1.7?
+	KubernetesVersionHint17      string = "1.7"
+	KubernetesVersionHint16      string = "1.6"
+	KubernetesVersionHint15      string = "1.5"
 	KubernetesDefaultVersionHint string = KubernetesVersionHint16
 )
 

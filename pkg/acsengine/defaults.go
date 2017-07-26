@@ -93,16 +93,16 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 		}
 		if a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency == "" {
-			a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency = KubeImages[k8sVersionHint]["nodestatusfreq"]
+			a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sVersionHint]["nodestatusfreq"]
 		}
 		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeImages[k8sVersionHint]["nodegraceperiod"]
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sVersionHint]["nodegraceperiod"]
 		}
 		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout = KubeImages[k8sVersionHint]["podeviction"]
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout = KubeConfigs[k8sVersionHint]["podeviction"]
 		}
 		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod = KubeImages[k8sVersionHint]["routeperiod"]
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod = KubeConfigs[k8sVersionHint]["routeperiod"]
 		}
 		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
 		if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff == true {
@@ -119,7 +119,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
 			}
 		}
-		k8sVersion, _ := version.NewVersion(api.KubeHintToVersion[k8sVersionHint])
+		k8sVersion, _ := version.NewVersion(api.KubeImages[k8sVersionHint]["version"])
 		minVersionK8sVersionForCloudProviderRateLimit, _ := version.NewVersion("1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
 		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
