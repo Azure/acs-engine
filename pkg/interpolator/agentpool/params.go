@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
+	"github.com/Azure/acs-engine/pkg/api"
 )
 
 // getParameters is an unexported function that will create the parameters for the azuredeploy.parameters.json file
@@ -23,7 +24,9 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 		}
 	}
 	//var KubernetesVersion api.OrchestratorVersion
-	//KubernetesVersion = api.OrchestratorVersion(properties.KubernetesVersion)
+	KubernetesVersion := api.OrchestratorVersion(properties.KubernetesVersion)
+
+
 	cloudSpecConfig := acsengine.GetCloudSpecConfig(location)
 
 	// Agentpool parameters
@@ -48,7 +51,7 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 	acsengine.AddSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 
 	acsengine.AddValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
-	////acsengine.AddValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["hyperkube"])
+	acsengine.AddValue(parametersMap, "kubernetesHyperkubeSpec", "gcrio.azureedge.net/google_containers/"+acsengine.KubeImages[KubernetesVersion]["hyperkube"])
 	//acsengine.AddValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["addonmanager"])
 	//acsengine.AddValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["addonresizer"])
 	//acsengine.AddValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["dashboard"])
@@ -56,11 +59,11 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 	//acsengine.AddValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["exechealthz"])
 	//acsengine.AddValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["heapster"])
 	//acsengine.AddValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["dns"])
-	//acsengine.AddValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["pause"])
-	//acsengine.AddValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", acsengine.KubeImages[KubernetesVersion]["nodestatusfreq"])
-	//acsengine.AddValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", acsengine.KubeImages[KubernetesVersion]["nodegraceperiod"])
-	//acsengine.AddValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", acsengine.KubeImages[KubernetesVersion]["podeviction"])
-	//acsengine.AddValue(parametersMap, "kubernetesCtrlMgrRouteReconciliationPeriod", acsengine.KubeImages[KubernetesVersion]["routeperiod"])
+	acsengine.AddValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["pause"])
+	acsengine.AddValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", acsengine.KubeImages[KubernetesVersion]["nodestatusfreq"])
+	acsengine.AddValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", acsengine.KubeImages[KubernetesVersion]["nodegraceperiod"])
+	acsengine.AddValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", acsengine.KubeImages[KubernetesVersion]["podeviction"])
+	acsengine.AddValue(parametersMap, "kubernetesCtrlMgrRouteReconciliationPeriod", acsengine.KubeImages[KubernetesVersion]["routeperiod"])
 	//acsengine.AddValue(parametersMap, "cloudProviderBackoff", acsengine.KubeImages[KubernetesVersion]["backoff"])
 	//acsengine.AddValue(parametersMap, "cloudProviderBackoffRetries", acsengine.KubeImages[KubernetesVersion]["backoffretries"])
 	//acsengine.AddValue(parametersMap, "cloudProviderBackoffExponent", acsengine.KubeImages[KubernetesVersion]["backoffexponent"])
