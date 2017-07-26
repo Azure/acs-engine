@@ -379,6 +379,10 @@ function writeKubeConfig() {
     then
         FQDNSuffix="cloudapp.chinacloudapi.cn"
     fi
+    if [ "$TARGET_ENVIRONMENT" = "AzureStack" ]
+    then
+        FQDNSuffix="cloudapp.azurestack.external"
+    fi
     # disable logging after secret output
     set +x
     echo "

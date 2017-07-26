@@ -9,6 +9,8 @@ const (
 	AzurePublicProdFQDNFormat = "%s.%s.cloudapp.azure.com"
 	//AzureChinaProdFQDNFormat specify the endpoint of Azure China Cloud
 	AzureChinaProdFQDNFormat = "%s.%s.cloudapp.chinacloudapi.cn"
+	//AzureStackProdFQDNFormat specify the endpoint of Azure Stack
+	AzureStackProdFQDNFormat = "%s.%s.cloudapp.azurestack.external"
 )
 
 // AzureLocations provides all azure regions in prod.
@@ -45,6 +47,7 @@ var AzureLocations = []string{
 	"westindia",
 	"westus",
 	"westus2",
+	"local",
 }
 
 // FormatAzureProdFQDNs constructs all possible Azure prod fqdn
@@ -61,6 +64,9 @@ func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
 	FQDNFormat := AzurePublicProdFQDNFormat
 	if location == "chinaeast" || location == "chinanorth" {
 		FQDNFormat = AzureChinaProdFQDNFormat
+	}
+	if location == "local" {
+		FQDNFormat = AzureStackProdFQDNFormat
 	}
 	return fmt.Sprintf(FQDNFormat, fqdnPrefix, location)
 }

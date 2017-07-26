@@ -69,6 +69,8 @@ def getLocations():
     # Adding two Canary locations
     locationList.append('centraluseuap')
     locationList.append('eastus2euap')
+    #add azure stack location
+    locationList.append('local')
 
     locationList = sorted(locationList)
     return locationList    
