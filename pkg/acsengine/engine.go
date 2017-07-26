@@ -17,6 +17,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/ghodss/yaml"
+	goversion "github.com/hashicorp/go-version"
 )
 
 const (
@@ -516,36 +517,6 @@ func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
 	}
 }
 
-// https://stackoverflow.com/a/18411978
-func VersionOrdinal(version string) string {
-	// ISO/IEC 14651:2011
-	const maxByte = 1<<8 - 1
-	vo := make([]byte, 0, len(version)+8)
-	j := -1
-	for i := 0; i < len(version); i++ {
-		b := version[i]
-		if '0' > b || b > '9' {
-			vo = append(vo, b)
-			j = -1
-			continue
-		}
-		if j == -1 {
-			vo = append(vo, 0x00)
-			j = len(vo) - 1
-		}
-		if vo[j] == 1 && vo[j+1] == '0' {
-			vo[j+1] = b
-			continue
-		}
-		if vo[j]+1 > maxByte {
-			panic("VersionOrdinal: invalid version")
-		}
-		vo = append(vo, b)
-		vo[j]++
-	}
-	return string(vo)
-}
-
 // getTemplateFuncMap returns all functions used in template generation
 func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[string]interface{} {
 	return template.FuncMap{
@@ -554,11 +525,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				cs.Properties.OrchestratorProfile.OrchestratorVersionHint == api.DCOSVersionHint19
 		},
 		"IsKubernetesVersionGe": func(version string) bool {
-			targetVersion := version
-			targetVersionOrdinal := VersionOrdinal(targetVersion)
-			orchestratorVersionOrdinal := VersionOrdinal(cs.Properties.OrchestratorProfile.OrchestratorVersion)
+			targetVersion, _ := goversion.NewVersion(version)
+			orchestratorVersion, _ := goversion.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes &&
-				orchestratorVersionOrdinal >= targetVersionOrdinal
+				orchestratorVersion.Compare(targetVersion) != -1
 		},
 		"GetKubernetesLabels": func(profile *api.AgentPoolProfile) string {
 			var buf bytes.Buffer
