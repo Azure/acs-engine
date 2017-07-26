@@ -93,8 +93,8 @@ spec:
         scheduler.alpha.kubernetes.io/tolerations: "[{\"key\":\"CriticalAddonsOnly\",\"operator\":\"Exists\"}]"
     spec:
       tolerations:
-      - key: "CriticalAddonsOnly"
-        operator: "Exists"
+      - key: CriticalAddonsOnly
+        operator: Exists
       serviceAccountName: heapster
       containers:
       - image: <kubernetesHeapsterSpec>
@@ -102,6 +102,13 @@ spec:
         - "/heapster"
         - "--source=kubernetes.summary_api:\"\""
         name: heapster
+        resources:
+          requests:
+            cpu: 80m
+            memory: 140Mi
+          limits:
+            cpu: 80m
+            memory: 140Mi
       - image: <kubernetesAddonResizerSpec>
         command:
         - "/pod_nanny"
