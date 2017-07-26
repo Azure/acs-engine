@@ -3,8 +3,12 @@ package agentpool
 import (
 	"fmt"
 	"github.com/Azure/acs-engine/pkg/acsengine"
-	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
+)
+
+const (
+	KubernetesImagebase = "gcrio.azureedge.net/google_containers/"
 )
 
 // getParameters is an unexported function that will create the parameters for the azuredeploy.parameters.json file
@@ -25,7 +29,6 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 	}
 	//var KubernetesVersion api.OrchestratorVersion
 	KubernetesVersion := api.OrchestratorVersion(properties.KubernetesVersion)
-
 
 	cloudSpecConfig := acsengine.GetCloudSpecConfig(location)
 
@@ -51,7 +54,7 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 	acsengine.AddSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 
 	acsengine.AddValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
-	acsengine.AddValue(parametersMap, "kubernetesHyperkubeSpec", "gcrio.azureedge.net/google_containers/"+acsengine.KubeImages[KubernetesVersion]["hyperkube"])
+	acsengine.AddValue(parametersMap, "kubernetesHyperkubeSpec", KubernetesImagebase+acsengine.KubeImages[KubernetesVersion]["hyperkube"])
 	//acsengine.AddValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["addonmanager"])
 	//acsengine.AddValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["addonresizer"])
 	//acsengine.AddValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["dashboard"])
