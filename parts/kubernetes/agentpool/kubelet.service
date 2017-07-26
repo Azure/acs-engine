@@ -46,7 +46,7 @@ ExecStart=/usr/bin/docker run \
         --hairpin-mode=promiscuous-bridge \
         --network-plugin=${KUBELET_NETWORK_PLUGIN} \
         --node-status-update-frequency=${KUBELET_NODE_STATUS_UPDATE_FREQUENCY} \
-        --v=2 ${KUBELET_FEATURE_GATES}
+        --v=2 ${KUBELET_FEATURE_GATES} \
         --pod-cidr=10.0.0.24/
 
 [Install]

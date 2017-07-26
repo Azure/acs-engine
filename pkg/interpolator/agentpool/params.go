@@ -75,5 +75,7 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 	acsengine.AddValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 	acsengine.AddSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
 
+	acsengine.AddValue(parametersMap, "kubernetesApiServer", properties.KubernetesEndpoint)
+
 	return parametersMap, nil
 }
