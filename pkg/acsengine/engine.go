@@ -18,6 +18,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/ghodss/yaml"
+	goversion "github.com/hashicorp/go-version"
 )
 
 const (
@@ -389,9 +390,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	// Kubernetes Parameters
 	if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-		KubernetesVersion := properties.OrchestratorProfile.OrchestratorVersion
+		KubernetesVersionHint := properties.OrchestratorProfile.OrchestratorVersionHint
 
-		kubernetesHyperkubeSpec := properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeImages[KubernetesVersion]["hyperkube"]
+		kubernetesHyperkubeSpec := properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + api.KubeImages[KubernetesVersionHint]["hyperkube"]
 		if properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage != "" {
 			kubernetesHyperkubeSpec = properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage
 		}
@@ -406,15 +407,15 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
-		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["addonmanager"])
-		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["addonresizer"])
-		addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dashboard"])
-		addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dnsmasq"])
-		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["exechealthz"])
-		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["heapster"])
+		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["addonmanager"])
+		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["addonresizer"])
+		addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["dashboard"])
+		addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["dnsmasq"])
+		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["exechealthz"])
+		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["heapster"])
 		addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeImages[KubernetesVersion]["tiller"])
-		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dns"])
-		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["pause"])
+		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["dns"])
+		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["pause"])
 		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
 		addValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod)
 		addValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout)
@@ -477,9 +478,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		addValue(parametersMap, "windowsAdminUsername", properties.WindowsProfile.AdminUsername)
 		addSecret(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword, false)
 		if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-			KubernetesVersion := properties.OrchestratorProfile.OrchestratorVersion
-			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+KubeImages[KubernetesVersion]["windowszip"])
-			addValue(parametersMap, "kubeBinariesVersion", KubernetesVersion)
+			KubernetesVersionHint := properties.OrchestratorProfile.OrchestratorVersionHint
+			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+api.KubeImages[KubernetesVersionHint]["windowszip"])
+			addValue(parametersMap, "kubeBinariesVersion", api.KubeImages[KubernetesVersionHint]["version"])
 		}
 		for i, s := range properties.WindowsProfile.Secrets {
 			addValue(parametersMap, fmt.Sprintf("windowsKeyVaultID%d", i), s.SourceVault.ID)
@@ -526,36 +527,6 @@ func addSecret(m paramsMap, k string, v interface{}, encode bool) {
 	}
 }
 
-// VersionOrdinal checks equality between two orchestrator version numbers
-func VersionOrdinal(version string) string {
-	// ISO/IEC 14651:2011
-	const maxByte = 1<<8 - 1
-	vo := make([]byte, 0, len(version)+8)
-	j := -1
-	for i := 0; i < len(version); i++ {
-		b := version[i]
-		if '0' > b || b > '9' {
-			vo = append(vo, b)
-			j = -1
-			continue
-		}
-		if j == -1 {
-			vo = append(vo, 0x00)
-			j = len(vo) - 1
-		}
-		if vo[j] == 1 && vo[j+1] == '0' {
-			vo[j+1] = b
-			continue
-		}
-		if vo[j]+1 > maxByte {
-			panic("VersionOrdinal: invalid version")
-		}
-		vo = append(vo, b)
-		vo[j]++
-	}
-	return string(vo)
-}
-
 // getStorageAccountType returns the support managed disk storage tier for a give VM size
 func getStorageAccountType(sizeName string) (string, error) {
 	spl := strings.Split(sizeName, "_")
@@ -577,11 +548,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				cs.Properties.OrchestratorProfile.OrchestratorVersionHint == api.DCOSVersionHint19
 		},
 		"IsKubernetesVersionGe": func(version string) bool {
-			targetVersion := version
-			targetVersionOrdinal := VersionOrdinal(targetVersion)
-			orchestratorVersionOrdinal := VersionOrdinal(cs.Properties.OrchestratorProfile.OrchestratorVersion)
+			targetVersion, _ := goversion.NewVersion(version)
+			orchestratorVersion, _ := goversion.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes &&
-				orchestratorVersionOrdinal >= targetVersionOrdinal
+				orchestratorVersion.Compare(targetVersion) != -1
 		},
 		"GetKubernetesLabels": func(profile *api.AgentPoolProfile) string {
 			var buf bytes.Buffer
@@ -840,28 +810,28 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				cloudSpecConfig := GetCloudSpecConfig(cs.Location)
 				switch attr {
 				case "kubernetesHyperkubeSpec":
-					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["hyperkube"]
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + api.KubeImages[kubernetesVersion]["hyperkube"]
 					if cs.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage != "" {
 						val = cs.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage
 					}
 				case "kubernetesAddonManagerSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["addonmanager"]
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + api.KubeImages[kubernetesVersion]["addonmanager"]
 				case "kubernetesAddonResizerSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["addonresizer"]
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + api.KubeImages[kubernetesVersion]["addonresizer"]
 				case "kubernetesDashboardSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dashboard"]
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + api.KubeImages[kubernetesVersion]["dashboard"]
 				case "kubernetesDNSMasqSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dnsmasq"]
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + api.KubeImages[kubernetesVersion]["dnsmasq"]
 				case "kubernetesExecHealthzSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["exechealthz"]
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + api.KubeImages[kubernetesVersion]["exechealthz"]
 				case "kubernetesHeapsterSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["heapster"]
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + api.KubeImages[kubernetesVersion]["heapster"]
 				case "kubernetesTillerSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeImages[kubernetesVersion]["tiller"]
 				case "kubernetesKubeDNSSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dns"]
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + api.KubeImages[kubernetesVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["pause"]
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + api.KubeImages[kubernetesVersion]["pause"]
 				case "kubernetesNodeStatusUpdateFrequency":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency
 				case "kubernetesCtrlMgrNodeMonitorGracePeriod":
@@ -887,11 +857,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				case "cloudProviderRatelimitBucket":
 					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket)
 				case "kubeBinariesSASURL":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeImages[kubernetesVersion]["windowszip"]
+					val = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + api.KubeImages[kubernetesVersion]["windowszip"]
 				case "kubeClusterCidr":
 					val = "10.244.0.0/16"
 				case "kubeBinariesVersion":
-					val = api.KubeHintToVersion[cs.Properties.OrchestratorProfile.OrchestratorVersionHint]
+					val = api.KubeImages[cs.Properties.OrchestratorProfile.OrchestratorVersionHint]["version"]
 				case "caPrivateKey":
 					// The base64 encoded "NotAvailable"
 					val = "Tm90QXZhaWxhYmxlCg=="
