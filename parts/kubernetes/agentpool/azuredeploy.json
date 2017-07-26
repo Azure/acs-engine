@@ -454,7 +454,7 @@
       "type": "string"
     },
     "firstConsecutiveStaticIP": {
-      "defaultValue": "10.240.255.5",
+      "defaultValue": "10.0.0.5",
       "metadata": {
         "description": "Sets the static IP of the first master"
       },
