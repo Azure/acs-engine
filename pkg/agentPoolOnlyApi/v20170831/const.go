@@ -6,8 +6,10 @@ const (
 )
 
 const (
+	// Windows OSType
 	Windows OSType = "Windows"
-	Linux   OSType = "Linux"
+	// Linux OSType
+	Linux OSType = "Linux"
 )
 
 // validation values

@@ -152,7 +152,7 @@ func validateVNET(a *Properties) error {
 	}
 
 	if !(customVNETCount == 0 || customVNETCount == len(a.AgentPoolProfiles)) {
-		return fmt.Errorf("Multiple VNET Subnet configurations specified.  Each agent pool profile must all specify a custom VNET Subnet, or none at all.")
+		return fmt.Errorf("multiple VNET Subnet configurations specified.  Each agent pool profile must all specify a custom VNET Subnet, or none at all")
 	}
 
 	subIDMap := make(map[string]int)
