@@ -149,10 +149,9 @@ func (m *MasterProfile) UnmarshalJSON(b []byte) error {
 		m.FirstConsecutiveStaticIP = "10.240.255.5"
 	}
 
-	if m.StorageProfile == "" {
-		// if StorageProfile is missing, set to default StorageAccount
-		m.StorageProfile = StorageAccount
-	}
+	// StorageProfile
+	// DockerCE is default to ManagedDisks
+	// Other Orchestrator is default to StorageAccount
 
 	// OSDiskSizeGB is an override value. vm sizes have default OS disk sizes.
 	// If it is not set. The user should get the default for the vm size
@@ -197,10 +196,9 @@ func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
 		a.Count = 1
 	}
 
-	if a.StorageProfile == "" {
-		// if StorageProfile is missing, set to default StorageAccount
-		a.StorageProfile = StorageAccount
-	}
+	// StorageProfile
+	// DockerCE is default to ManagedDisks
+	// Other Orchestrator is default to StorageAccount
 
 	if string(a.OSType) == "" {
 		// OSType is the operating system type for agents
