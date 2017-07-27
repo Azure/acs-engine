@@ -30,7 +30,6 @@ generate:
 .PHONY: build
 build: generate
 	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -ldflags '$(LDFLAGS)'
-	cd test/acs-engine-test; go build
 
 # usage: make clean build-cross dist VERSION=v0.4.0
 .PHONY: build-cross
