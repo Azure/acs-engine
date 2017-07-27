@@ -643,7 +643,7 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
 	api.StorageProfile = vlabs.StorageProfile
-	api.HttpSourceAddressPrefix = vlabs.HttpSourceAddressPrefix
+	api.HTTPSourceAddressPrefix = vlabs.HTTPSourceAddressPrefix
 	api.OAuthEnabled = vlabs.OAuthEnabled
 	// by default vlabs will use managed disks as it has encryption at rest
 	if len(api.StorageProfile) == 0 {
