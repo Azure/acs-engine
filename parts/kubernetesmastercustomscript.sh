@@ -186,7 +186,7 @@ function configAzureNetworkPolicy() {
     mkdir -p $CNI_BIN_DIR
 
     # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
-    downloadUrl https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz | tar -xz -C $CNI_BIN_DIR
+    downloadUrl https://github.com/ofiliz/hello/releases/download/pre-release/azure-vnet-cni-linux-bridge-amd64-v0.8-5-g21beed5.tar.gz | tar -xz -C $CNI_BIN_DIR
     # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
     downloadUrl https://acs-mirror.azureedge.net/cni/cni-amd64-latest.tgz | tar -xz -C $CNI_BIN_DIR ./loopback
     chown -R root:root $CNI_BIN_DIR
