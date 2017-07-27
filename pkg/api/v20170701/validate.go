@@ -249,7 +249,7 @@ func validateVNET(a *Properties) error {
 			if agentSubID != subscription ||
 				agentRG != resourcegroup ||
 				agentVNET != vnetname {
-				return errors.New("Multipe VNETS specified.  The master profile and each agent pool must reference the same VNET (but it is ok to reference different subnets on that VNET)")
+				return errors.New("Multiple VNETS specified.  The master profile and each agent pool must reference the same VNET (but it is ok to reference different subnets on that VNET)")
 			}
 		}
 

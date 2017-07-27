@@ -173,7 +173,7 @@ func validateVNET(a *Properties) error {
 		// TODO: Add more validation to ensure all agent pools belong to the same VNET, subscription, and resource group
 		// 	if(len(subIDMap) != len(a.AgentPoolProfiles))
 
-		// 	return errors.New("Multipe VNETS specified.  Each agent pool must reference the same VNET (but it is ok to reference different subnets on that VNET)")
+		// 	return errors.New("Multiple VNETS specified.  Each agent pool must reference the same VNET (but it is ok to reference different subnets on that VNET)")
 		// }
 	}
 
