@@ -3,6 +3,7 @@ package kubernetesupgrade
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
@@ -11,21 +12,22 @@ import (
 )
 
 // Compiler to verify QueueMessageProcessor implements OperationsProcessor
-var _ UpgradeWorkFlow = &Kubernetes162upgrader{}
+var _ UpgradeWorkFlow = &Kubernetes16upgrader{}
 
-// Kubernetes162upgrader upgrades a Kubernetes 1.5.3 cluster to 1.6.2
-type Kubernetes162upgrader struct {
+// Kubernetes16upgrader upgrades a Kubernetes 1.5.x cluster to 1.6.x
+// 1.6.x would be the latest patch we supported on the time
+type Kubernetes16upgrader struct {
 	ClusterTopology
+	UpgradeModel       *api.UpgradeContainerService
 	GoalStateDataModel *api.ContainerService
-
-	Client armhelpers.ACSEngineClient
+	Client             armhelpers.ACSEngineClient
 }
 
 // ClusterPreflightCheck does preflight check
-func (ku *Kubernetes162upgrader) ClusterPreflightCheck() error {
-	// Check that current cluster is 1.5.3
-	if ku.DataModel.Properties.OrchestratorProfile.OrchestratorVersion != "1.5.3" {
-		return fmt.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s",
+func (ku *Kubernetes16upgrader) ClusterPreflightCheck() error {
+	// Check that current cluster is 1.5.x
+	if !strings.HasPrefix(ku.DataModel.Properties.OrchestratorProfile.OrchestratorVersion, api.KubernetesVersionHint15) {
+		return fmt.Errorf("Upgrade to Kubernetes 1.6.x is not supported from version: %s",
 			ku.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
@@ -33,13 +35,14 @@ func (ku *Kubernetes162upgrader) ClusterPreflightCheck() error {
 }
 
 // RunUpgrade runs the upgrade pipeline
-func (ku *Kubernetes162upgrader) RunUpgrade() error {
+func (ku *Kubernetes16upgrader) RunUpgrade() error {
 	if err := ku.ClusterPreflightCheck(); err != nil {
 		return err
 	}
 
 	ku.GoalStateDataModel = ku.ClusterTopology.DataModel
-	ku.GoalStateDataModel.Properties.OrchestratorProfile.OrchestratorVersion = "1.6.2"
+	ku.GoalStateDataModel.Properties.OrchestratorProfile.OrchestratorVersionHint = ku.UpgradeModel.OrchestratorProfile.OrchestratorVersionHint
+	ku.GoalStateDataModel.Properties.OrchestratorProfile.OrchestratorVersion = ku.UpgradeModel.OrchestratorProfile.OrchestratorVersion
 
 	if err := ku.upgradeMasterNodes(); err != nil {
 		return err
@@ -53,11 +56,11 @@ func (ku *Kubernetes162upgrader) RunUpgrade() error {
 }
 
 // Validate will run validation post upgrade
-func (ku *Kubernetes162upgrader) Validate() error {
+func (ku *Kubernetes16upgrader) Validate() error {
 	return nil
 }
 
-func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
+func (ku *Kubernetes16upgrader) upgradeMasterNodes() error {
 	log.Infoln(fmt.Sprintf("Master nodes StorageProfile: %s", ku.GoalStateDataModel.Properties.MasterProfile.StorageProfile))
 	// Upgrade Master VMs
 	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.GoalStateDataModel)
@@ -167,7 +170,7 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 	return nil
 }
 
-func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
+func (ku *Kubernetes16upgrader) upgradeAgentPools() error {
 	for _, agentPool := range ku.ClusterTopology.AgentPools {
 		// Upgrade Agent VMs
 		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.GoalStateDataModel)
@@ -267,7 +270,7 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 	return nil
 }
 
-func (ku *Kubernetes162upgrader) generateUpgradeTemplate(upgradeContainerService *api.ContainerService) (map[string]interface{}, map[string]interface{}, error) {
+func (ku *Kubernetes16upgrader) generateUpgradeTemplate(upgradeContainerService *api.ContainerService) (map[string]interface{}, map[string]interface{}, error) {
 	var err error
 	templateGenerator, err := acsengine.InitializeTemplateGenerator(false)
 	if err != nil {

@@ -69,11 +69,12 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 		return fmt.Errorf("Error while querying ARM for resources: %+v", err)
 	}
 
-	switch ucs.OrchestratorProfile.OrchestratorVersion {
-	case "1.6.2":
-		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes 1.6.2"))
-		upgrader := Kubernetes162upgrader{}
+	log.Infoln(fmt.Sprintf("Upgrading to Kubernetes to %s", ucs.OrchestratorProfile.OrchestratorVersion))
+	switch ucs.OrchestratorProfile.OrchestratorVersionHint {
+	case api.KubernetesVersionHint16:
+		upgrader := Kubernetes16upgrader{}
 		upgrader.ClusterTopology = uc.ClusterTopology
+		upgrader.UpgradeModel = uc.UpgradeModel
 		upgrader.Client = uc.Client
 		if err := upgrader.RunUpgrade(); err != nil {
 			return err

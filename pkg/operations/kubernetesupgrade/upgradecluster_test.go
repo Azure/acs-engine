@@ -48,7 +48,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = "1.6.2"
+		ucs.OrchestratorProfile.OrchestratorVersionHint = api.KubernetesVersionHint16
+		ucs.OrchestratorProfile.OrchestratorVersion = api.KubeImages[api.KubernetesVersionHint16]["version"]
 
 		uc := UpgradeCluster{}
 
@@ -69,7 +70,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = "1.6.2"
+		ucs.OrchestratorProfile.OrchestratorVersionHint = api.KubernetesVersionHint16
+		ucs.OrchestratorProfile.OrchestratorVersion = api.KubeImages[api.KubernetesVersionHint16]["version"]
 
 		uc := UpgradeCluster{}
 
@@ -90,7 +92,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = "1.6.2"
+		ucs.OrchestratorProfile.OrchestratorVersionHint = api.KubernetesVersionHint16
+		ucs.OrchestratorProfile.OrchestratorVersion = api.KubeImages[api.KubernetesVersionHint16]["version"]
 
 		uc := UpgradeCluster{}
 
@@ -111,7 +114,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = "1.6.2"
+		ucs.OrchestratorProfile.OrchestratorVersionHint = api.KubernetesVersionHint16
+		ucs.OrchestratorProfile.OrchestratorVersion = api.KubeImages[api.KubernetesVersionHint16]["version"]
 
 		uc := UpgradeCluster{}
 
@@ -132,7 +136,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = "1.6.2"
+		ucs.OrchestratorProfile.OrchestratorVersionHint = api.KubernetesVersionHint16
+		ucs.OrchestratorProfile.OrchestratorVersion = api.KubeImages[api.KubernetesVersionHint16]["version"]
 
 		uc := UpgradeCluster{}
 

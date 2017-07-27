@@ -20,7 +20,9 @@ func ConvertUpgradeContainerServiceToVLabs(api *UpgradeContainerService) *vlabs.
 
 func convertUpgradeOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.OrchestratorProfile) {
 	o.OrchestratorType = api.OrchestratorType
-
+	if api.OrchestratorVersionHint != "" {
+		o.OrchestratorVersionHint = api.OrchestratorVersionHint
+	}
 	if api.OrchestratorVersion != "" {
 		o.OrchestratorVersion = api.OrchestratorVersion
 	}

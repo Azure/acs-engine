@@ -14,7 +14,7 @@ import (
 // Compiler to verify QueueMessageProcessor implements OperationsProcessor
 var _ UpgradeNode = &UpgradeMasterNode{}
 
-// UpgradeMasterNode upgrades a Kubernetes 1.5.3 master node to 1.6.2
+// UpgradeMasterNode upgrades a Kubernetes 1.5.x master node to 1.6.x
 type UpgradeMasterNode struct {
 	TemplateMap             map[string]interface{}
 	ParametersMap           map[string]interface{}
