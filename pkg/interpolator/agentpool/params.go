@@ -17,7 +17,6 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 	location := agentPool.Location
 	parametersMap := map[string]interface{}{}
 	acsengine.AddValue(parametersMap, "location", location)
-	//acsengine.AddValue(parametersMap, "targetEnvironment", acsengine.GetCloudTargetEnv(location))
 	acsengine.AddValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
 	acsengine.AddValue(parametersMap, "sshRSAPublicKey", properties.LinuxProfile.SSH.PublicKeys[0].KeyData)
 	for i, s := range properties.LinuxProfile.Secrets {
@@ -26,7 +25,6 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 			acsengine.AddValue(parametersMap, fmt.Sprintf("linuxKeyVaultID%dCertificateURL%d", i, j), c.CertificateURL)
 		}
 	}
-	//var KubernetesVersion api.OrchestratorVersion
 	KubernetesVersion := agentPool.Properties.KubernetesVersion
 
 	cloudSpecConfig := acsengine.GetCloudSpecConfig(location)
@@ -52,34 +50,18 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 	acsengine.AddSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
 	acsengine.AddSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 
+
+	// Kubernetes
 	acsengine.AddValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
 	acsengine.AddValue(parametersMap, "kubernetesHyperkubeSpec", KubernetesImagebase+acsengine.KubeImages[KubernetesVersion]["hyperkube"])
-	//acsengine.AddValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["addonmanager"])
-	//acsengine.AddValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["addonresizer"])
-	//acsengine.AddValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["dashboard"])
-	//acsengine.AddValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["dnsmasq"])
-	//acsengine.AddValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["exechealthz"])
-	//acsengine.AddValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["heapster"])
-	//acsengine.AddValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["dns"])
 	acsengine.AddValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+acsengine.KubeImages[KubernetesVersion]["pause"])
 	acsengine.AddValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", acsengine.KubeImages[KubernetesVersion]["nodestatusfreq"])
 	acsengine.AddValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", acsengine.KubeImages[KubernetesVersion]["nodegraceperiod"])
 	acsengine.AddValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", acsengine.KubeImages[KubernetesVersion]["podeviction"])
 	acsengine.AddValue(parametersMap, "kubernetesCtrlMgrRouteReconciliationPeriod", acsengine.KubeImages[KubernetesVersion]["routeperiod"])
-	//acsengine.AddValue(parametersMap, "cloudProviderBackoff", acsengine.KubeImages[KubernetesVersion]["backoff"])
-	//acsengine.AddValue(parametersMap, "cloudProviderBackoffRetries", acsengine.KubeImages[KubernetesVersion]["backoffretries"])
-	//acsengine.AddValue(parametersMap, "cloudProviderBackoffExponent", acsengine.KubeImages[KubernetesVersion]["backoffexponent"])
-	//acsengine.AddValue(parametersMap, "cloudProviderBackoffDuration", acsengine.KubeImages[KubernetesVersion]["backoffduration"])
-	//acsengine.AddValue(parametersMap, "cloudProviderBackoffJitter", acsengine.KubeImages[KubernetesVersion]["backoffjitter"])
-	//acsengine.AddValue(parametersMap, "cloudProviderRatelimit", acsengine.KubeImages[KubernetesVersion]["ratelimit"])
-	//acsengine.AddValue(parametersMap, "cloudProviderRatelimitQPS", acsengine.KubeImages[KubernetesVersion]["ratelimitqps"])
-	//acsengine.AddValue(parametersMap, "cloudProviderRatelimitBucket", acsengine.KubeImages[KubernetesVersion]["ratelimitbucket"])
 	acsengine.AddValue(parametersMap, "jumpboxSubnet", properties.NetworkProfile.ServiceCIDR)
-	////acsengine.AddValue(parametersMap, "dockerBridgeCidr", properties.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet)
-	////acsengine.AddValue(parametersMap, "networkPolicy", properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
 	acsengine.AddValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 	acsengine.AddSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
-
 	acsengine.AddValue(parametersMap, "kubernetesApiServer", properties.KubernetesEndpoint)
 	acsengine.AddValue(parametersMap, "kubeletPodCidr", properties.NetworkProfile.PodCIDR)
 
