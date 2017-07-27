@@ -132,7 +132,7 @@ func (gc *generateCmd) run() error {
 		}
 	}
 
-	if err = acsengine.WriteArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
+	if err = acsengine.WriteTLSArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 
