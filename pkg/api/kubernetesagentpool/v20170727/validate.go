@@ -17,11 +17,11 @@ func (p *AgentPool) Validate() error {
 	}
 
 	// -------------------------------
-	// Kubernetes Version
+	// Kubernetes Endpoint
 	if p.Properties.KubernetesEndpoint == "" {
 		return fmt.Errorf("Empty Kubernetes endpoint")
 	}
-	if !strings.Contains(p.Properties.KubernetesVersion, ".") {
+	if !strings.Contains(p.Properties.KubernetesEndpoint, ".") {
 		return fmt.Errorf("Invalid Kubernetes endpoint")
 	}
 
@@ -35,7 +35,7 @@ func (p *AgentPool) Validate() error {
 			return fmt.Errorf("Must using a value greater than 0 for agent pool count")
 		}
 		if agentPool.OSDiskSizeGb != 0 && agentPool.OSDiskSizeGb < 2 {
-			return fmt.Errorf("Must use a disk size greater than 2gb for agent pool")
+			return fmt.Errorf("Must use a disk size greater than or equal to 2gb for agent pool")
 		}
 		if agentPool.Name == "" {
 			return fmt.Errorf("Empty name for agent pool")
