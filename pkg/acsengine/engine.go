@@ -867,7 +867,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				case "kubernetesHeapsterSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["heapster"]
 				case "kubernetesTillerSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["tiller"]
+					val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeImages[kubernetesVersion]["tiller"]
 				case "kubernetesKubeDNSSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":
