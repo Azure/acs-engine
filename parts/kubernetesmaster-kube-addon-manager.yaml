@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kube-addon-manager
+  namespace: kube-system
+  version: v1
+spec:
+  hostNetwork: true
+  containers:
+  - name: kube-addon-manager
+    image: <kubernetesAddonManagerSpec>
+    resources:
+      requests:
+        cpu: 5m
+        memory: 50Mi
+    volumeMounts:
+    - name: addons
+      mountPath: "/etc/kubernetes/addons"
+      readOnly: true
+    - name: msi
+      mountPath: "/var/lib/waagent/ManagedIdentity-Settings"
+      readOnly: true
+  volumes:
+  - name: addons
+    hostPath:
+      path: "/etc/kubernetes/addons"
+  - name: msi
+    hostPath:
+      path: "/var/lib/waagent/ManagedIdentity-Settings"

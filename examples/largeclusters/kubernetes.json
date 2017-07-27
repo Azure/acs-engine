@@ -2,84 +2,57 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "Kubernetes"
+      "orchestratorType": "Kubernetes",
+      "orchestratorVersion": "1.6.6",
+      "kubernetesConfig": {
+        "nodeStatusUpdateFrequency": "1m",
+        "ctrlMgrNodeMonitorGracePeriod": "5m",
+        "ctrlMgrPodEvictionTimeout": "1m",
+        "ctrlMgrRouteReconciliationPeriod": "1m",
+        "cloudProviderBackoff": true,
+        "cloudProviderBackoffRetries": 6,
+        "cloudProviderBackoffJitter": 1,
+        "cloudProviderBackoffDuration": 6,
+        "cloudProviderBackoffExponent": 1.5,
+        "cloudProviderRateLimit": true,
+        "cloudProviderRateLimitQPS": 3,
+        "cloudProviderRateLimitBucket": 10
+      }
     },
     "masterProfile": {
       "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2"
+      "vmSize": "Standard_D5_v2"
     },
     "agentPoolProfiles": [
       {
-        "name": "agentpool1",
-        "count": 100,
-        "vmSize": "Standard_D2_v2",
+        "name": "pool1",
+        "count": 20,
+        "vmSize": "Standard_D3_v2",
         "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentpool2",
-        "count": 100,
-        "vmSize": "Standard_D2_v2",
+        "name": "pool2",
+        "count": 20,
+        "vmSize": "Standard_D3_v2",
         "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentpool3",
-        "count": 100,
-        "vmSize": "Standard_D2_v2",
+        "name": "pool3",
+        "count": 20,
+        "vmSize": "Standard_D3_v2",
         "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentpool4",
-        "count": 100,
-        "vmSize": "Standard_D2_v2",
+        "name": "pool4",
+        "count": 20,
+        "vmSize": "Standard_D3_v2",
         "availabilityProfile": "AvailabilitySet"
       },
       {
-        "name": "agentpool5",
-        "count": 100,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool6",
-        "count": 100,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool7",
-        "count": 100,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool8",
-        "count": 100,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool9",
-        "count": 100,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool10",
-        "count": 100,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool11",
-        "count": 100,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool12",
-        "count": 100,
-        "vmSize": "Standard_D2_v2",
+        "name": "pool5",
+        "count": 20,
+        "vmSize": "Standard_D3_v2",
         "availabilityProfile": "AvailabilitySet"
       }
     ],

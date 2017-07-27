@@ -7,28 +7,15 @@ const (
 
 // v20160330 supports orchestrators Mesos, Swarm, DCOS
 const (
-	Mesos OrchestratorType = "Mesos"
-	Swarm OrchestratorType = "Swarm"
-	DCOS  OrchestratorType = "DCOS"
+	Mesos string = "Mesos"
+	Swarm string = "Swarm"
+	DCOS  string = "DCOS"
 )
 
+// v20160330 supports OSTypes Windows and Linux
 const (
 	Windows OSType = "Windows"
 	Linux   OSType = "Linux"
-)
-
-// subscription states
-const (
-	// Registered means the subscription is entitled to use the namespace
-	Registered SubscriptionState = iota
-	// Unregistered means the subscription is not entitled to use the namespace
-	Unregistered
-	// Suspended means the subscription has been suspended from the system
-	Suspended
-	// Deleted means the subscription has been deleted
-	Deleted
-	// Warned means the subscription has been warned
-	Warned
 )
 
 // validation values

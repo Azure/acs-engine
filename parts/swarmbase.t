@@ -10,6 +10,7 @@
   },
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}
+        "{{.Name}}Index": {{$index}},
         {{template "swarmagentvars.t" .}}
         {{if .IsStorageAccount}}
           "{{.Name}}StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),{{$index}})]",
@@ -20,9 +21,7 @@
         {{end}}
     {{end}}
 
-    {{template "swarmmastervars.t" .}},
-    
-    {{GetSizeMap}}
+    {{template "swarmmastervars.t" .}}
   },
   "resources": [
     {{range .AgentPoolProfiles}}

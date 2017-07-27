@@ -10,75 +10,209 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 ####################################################
 
-set -eu -o pipefail
-set -x
+ROOT="${DIR}/.."
 
-# see: https://github.com/stedolan/jq/issues/105
-# and: https://github.com/stedolan/jq/wiki/FAQ#general-questions
-function jqi() {
-	filename="${1}"
-	jqexpr="${2}"
-	jq "${jqexpr}" "${filename}" > "${filename}.tmp" && mv "${filename}.tmp" "${filename}"
-}
+# see: https://github.com/stedolan/jq/issues/105 & https://github.com/stedolan/jq/wiki/FAQ#general-questions
+function jqi() { filename="${1}"; jqexpr="${2}"; jq "${jqexpr}" "${filename}" > "${filename}.tmp" && mv "${filename}.tmp" "${filename}"; }
 
-function deploy() {
+function generate_template() {
 	# Check pre-requisites
 	[[ ! -z "${INSTANCE_NAME:-}" ]] || (echo "Must specify INSTANCE_NAME" && exit -1)
-	[[ ! -z "${LOCATION:-}" ]] || (echo "Must specify LOCATION" && exit -1)
 	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
-	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_ID" && exit -1)
-	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_SECRET" && exit -1)
-	which kubectl || (echo "kubectl must be on PATH" && exit -1)
-	which az || (echo "az must be on PATH" && exit -1)
-	
+	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || [[ ! -z "${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_ID" && exit -1)
+	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || [[ ! -z "${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_SECRET" && exit -1)
+	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
+
 	# Set output directory
-	export OUTPUT="$(pwd)/_output/${INSTANCE_NAME}"
 	mkdir -p "${OUTPUT}"
 
 	# Prep SSH Key
-	# (can't use ssh-keygen, no user info inside Jenkins build container env)
-	openssl genpkey -algorithm RSA -out "${OUTPUT}/id_rsa" -pkeyopt rsa_keygen_bits:2048
-	echo -n "ssh-rsa " > "${OUTPUT}/id_rsa.pub"
-	grep -v -- ----- "${OUTPUT}/id_rsa" | base64 -d | dd bs=1 skip=32 count=257 status=none | xxd -p -c257 | sed s/^/00000007\ 7373682d727361\ 00000003\ 010001\ 00000101\ / | xxd -p -r | base64 -w0 >> "${OUTPUT}/id_rsa.pub"
-	echo >> "${OUTPUT}/id_rsa.pub"
+	ssh-keygen -b 2048 -t rsa -f "${OUTPUT}/id_rsa" -q -N ""
+	ssh-keygen -y -f "${OUTPUT}/id_rsa" > "${OUTPUT}/id_rsa.pub"
 	export SSH_KEY_DATA="$(cat "${OUTPUT}/id_rsa.pub")"
+
+	# Allow different credentials for cluster vs the deployment
+	export CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID:-${SERVICE_PRINCIPAL_CLIENT_ID}}"
+	export CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET="${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET:-${SERVICE_PRINCIPAL_CLIENT_SECRET}}"
 
 	# Form the final cluster_definition file
 	export FINAL_CLUSTER_DEFINITION="${OUTPUT}/clusterdefinition.json"
 	cp "${CLUSTER_DEFINITION}" "${FINAL_CLUSTER_DEFINITION}"
 	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.masterProfile.dnsPrefix = \"${INSTANCE_NAME}\""
-	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.linuxProfile.ssh.publicKeys[0].keyData = \"${SSH_KEY_DATA}\"" t "${FINAL_CLUSTER_DEFINITION}" 
-	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientID = \"${SERVICE_PRINCIPAL_CLIENT_ID}\""
-	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret = \"${SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.agentPoolProfiles |= map(if .name==\"agentpublic\" then .dnsPrefix = \"${INSTANCE_NAME}0\" else . end)"
+	jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.linuxProfile.ssh.publicKeys[0].keyData = \"${SSH_KEY_DATA}\""
 
+	k8sServicePrincipal=$(jq 'getpath(["properties","servicePrincipalProfile"])' ${FINAL_CLUSTER_DEFINITION})
+	if [[ "${k8sServicePrincipal}" != "null" ]]; then
+	    apiVersion=$(get_api_version)
+		if [[ "$apiVersion" == "vlabs" ]]; then
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientID = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientKeyvaultSecretRef  = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+		else
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.clientId = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+		fi
+	fi
+
+	secrets=$(jq 'getpath(["properties","linuxProfile","secrets"])' ${FINAL_CLUSTER_DEFINITION})
+	if [[ "${secrets}" != "null" ]]; then
+		[[ ! -z "${CERT_KEYVAULT_ID:-}" ]] || (echo "Must specify CERT_KEYVAULT_ID" && exit -1)
+		[[ ! -z "${CERT_SECRET_URL:-}" ]] || (echo "Must specify CERT_SECRET_URL" && exit -1)
+		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.linuxProfile.secrets[0].sourceVault.id = \"${CERT_KEYVAULT_ID}\""
+		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.linuxProfile.secrets[0].vaultCertificates[0].certificateUrl = \"${CERT_SECRET_URL}\""
+	fi
+	secrets=$(jq 'getpath(["properties","windowsProfile","secrets"])' ${FINAL_CLUSTER_DEFINITION})
+	if [[ "${secrets}" != "null" ]]; then
+		[[ ! -z "${CERT_KEYVAULT_ID:-}" ]] || (echo "Must specify CERT_KEYVAULT_ID" && exit -1)
+		[[ ! -z "${CERT_SECRET_URL:-}" ]] || (echo "Must specify CERT_SECRET_URL" && exit -1)
+		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.windowsProfile.secrets[0].sourceVault.id = \"${CERT_KEYVAULT_ID}\""
+		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.windowsProfile.secrets[0].vaultCertificates[0].certificateUrl = \"${CERT_SECRET_URL}\""
+		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.windowsProfile.secrets[0].vaultCertificates[0].certificateStore = \"My\""
+	fi
 	# Generate template
-	"${DIR}/../acs-engine" -artifacts "${OUTPUT}" "${FINAL_CLUSTER_DEFINITION}"
+	"${DIR}/../bin/acs-engine" generate --output-directory "${OUTPUT}" "${FINAL_CLUSTER_DEFINITION}" --debug
 
 	# Fill in custom hyperkube spec, if it was set
 	if [[ ! -z "${CUSTOM_HYPERKUBE_SPEC:-}" ]]; then
-		jqi "${OUTPUT}/azuredeploy.parameters.json" ".kubernetesHyperkubeSpec.value = \"${CUSTOM_HYPERKUBE_SPEC}\""
+		# TODO: plumb hyperkube into the apimodel
+		jqi "${OUTPUT}/azuredeploy.parameters.json" ".parameters.kubernetesHyperkubeSpec.value = \"${CUSTOM_HYPERKUBE_SPEC}\""
 	fi
+}
+
+function set_azure_account() {
+	# Check pre-requisites
+	[[ ! -z "${SUBSCRIPTION_ID:-}" ]] || (echo "Must specify SUBSCRIPTION_ID" && exit -1)
+	[[ ! -z "${TENANT_ID:-}" ]] || (echo "Must specify TENANT_ID" && exit -1)
+	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_ID:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_ID" && exit -1)
+	[[ ! -z "${SERVICE_PRINCIPAL_CLIENT_SECRET:-}" ]] || (echo "Must specify SERVICE_PRINCIPAL_CLIENT_SECRET" && exit -1)
+	which kubectl || (echo "kubectl must be on PATH" && exit -1)
+	which az || (echo "az must be on PATH" && exit -1)
 
 	# Login to Azure-Cli
 	az login --service-principal \
 		--username "${SERVICE_PRINCIPAL_CLIENT_ID}" \
 		--password "${SERVICE_PRINCIPAL_CLIENT_SECRET}" \
-		--tenant "${TENANT_ID}"
+		--tenant "${TENANT_ID}" &>/dev/null
 
-	az account set --name "${SUBSCRIPTION_ID}"
+	az account set --subscription "${SUBSCRIPTION_ID}"
+}
+
+function create_resource_group() {
+	[[ ! -z "${LOCATION:-}" ]] || (echo "Must specify LOCATION" && exit -1)
+	[[ ! -z "${RESOURCE_GROUP:-}" ]] || (echo "Must specify RESOURCE_GROUP" && exit -1)
+
+	# Create resource group if doesn't exist
+	rg=$(az group show --name="${RESOURCE_GROUP}")
+	if [ -z "$rg" ]; then
+		az group create --name="${RESOURCE_GROUP}" --location="${LOCATION}"
+		sleep 3 # TODO: investigate why this is needed (eventual consistency in ARM)
+	fi
+}
+
+function deploy_template() {
+	# Check pre-requisites
+	[[ ! -z "${DEPLOYMENT_NAME:-}" ]] || (echo "Must specify DEPLOYMENT_NAME" && exit -1)
+	[[ ! -z "${LOCATION:-}" ]] || (echo "Must specify LOCATION" && exit -1)
+	[[ ! -z "${RESOURCE_GROUP:-}" ]] || (echo "Must specify RESOURCE_GROUP" && exit -1)
+	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
+
+	which kubectl || (echo "kubectl must be on PATH" && exit -1)
+	which az || (echo "az must be on PATH" && exit -1)
+
+	create_resource_group
 
 	# Deploy the template
-	az resource group create --name="${INSTANCE_NAME}" --location="${LOCATION}"
-	sleep 10 # TODO: investigate why this is needed (eventual consistency in ARM)
-	az resource group deployment create \
-		--verbose \
-		--name "${INSTANCE_NAME}" \
-		--resource-group "${INSTANCE_NAME}" \
+	az group deployment create \
+		--name "${DEPLOYMENT_NAME}" \
+		--resource-group "${RESOURCE_GROUP}" \
 		--template-file "${OUTPUT}/azuredeploy.json" \
-		--parameters "@${OUTPUT}/azuredeploy.parameters.json" \
-			2>&1 > "${OUTPUT}/deployment-debug.log"
+		--parameters "@${OUTPUT}/azuredeploy.parameters.json"
+}
+
+function scale_agent_pool() {
+	# Check pre-requisites
+	[[ ! -z "${AGENT_POOL_SIZE:-}" ]] || (echo "Must specify AGENT_POOL_SIZE" && exit -1)
+	[[ ! -z "${DEPLOYMENT_NAME:-}" ]] || (echo "Must specify DEPLOYMENT_NAME" && exit -1)
+	[[ ! -z "${LOCATION:-}" ]] || (echo "Must specify LOCATION" && exit -1)
+	[[ ! -z "${RESOURCE_GROUP:-}" ]] || (echo "Must specify RESOURCE_GROUP" && exit -1)
+	[[ ! -z "${OUTPUT:-}" ]] || (echo "Must specify OUTPUT" && exit -1)
+
+	which az || (echo "az must be on PATH" && exit -1)
+
+	APIMODEL="${OUTPUT}/apimodel.json"
+	DEPLOYMENT_PARAMS="${OUTPUT}/azuredeploy.parameters.json"
+
+	for poolname in `jq '.properties.agentPoolProfiles[].name' "${APIMODEL}" | tr -d '\"'`; do
+	  offset=$(jq "getpath([\"parameters\", \"${poolname}Count\", \"value\"])" ${DEPLOYMENT_PARAMS})
+	  echo "$poolname : offset=$offset count=$AGENT_POOL_SIZE"
+	  jqi "${DEPLOYMENT_PARAMS}" ".${poolname}Count.value = $AGENT_POOL_SIZE"
+	  jqi "${DEPLOYMENT_PARAMS}" ".${poolname}Offset.value = $offset"
+	done
+
+	az group deployment create \
+		--name "${DEPLOYMENT_NAME}" \
+		--resource-group "${RESOURCE_GROUP}" \
+		--template-file "${OUTPUT}/azuredeploy.json" \
+		--parameters "@${OUTPUT}/azuredeploy.parameters.json"
+}
+
+function get_node_count() {
+	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
+
+	count=$(jq '.properties.masterProfile.count' ${CLUSTER_DEFINITION})
+	linux_agents=0
+	windows_agents=0
+
+	nodes=$(jq -r '.properties.agentPoolProfiles[].count' ${CLUSTER_DEFINITION})
+	osTypes=$(jq -r '.properties.agentPoolProfiles[].osType' ${CLUSTER_DEFINITION})
+
+	nArr=( $nodes )
+	oArr=( $osTypes )
+	indx=0
+	for n in "${nArr[@]}"; do
+		count=$((count+n))
+		if [ "${oArr[$indx]}" = "Windows" ]; then
+			windows_agents=$((windows_agents+n))
+		else
+			linux_agents=$((linux_agents+n))
+		fi
+		indx=$((indx+1))
+	done
+	echo "${count}:${linux_agents}:${windows_agents}"
+}
+
+function get_orchestrator_type() {
+	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
+
+	orchestratorType=$(jq -r 'getpath(["properties","orchestratorProfile","orchestratorType"])' ${CLUSTER_DEFINITION} | tr '[:upper:]' '[:lower:]')
+
+	echo $orchestratorType
+}
+
+function get_orchestrator_version() {
+	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
+
+	orchestratorVersion=$(jq -r 'getpath(["properties","orchestratorProfile","orchestratorVersion"])' ${CLUSTER_DEFINITION})
+	if [[ "$orchestratorVersion" == "null" ]]; then
+		orchestratorVersion=""
+	fi
+
+	echo $orchestratorVersion
+}
+
+function get_api_version() {
+	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
+
+	apiVersion=$(jq -r 'getpath(["apiVersion"])' ${CLUSTER_DEFINITION})
+	if [[ "$apiVersion" == "null" ]]; then
+		apiVersion=""
+	fi
+
+	echo $apiVersion
 }
 
 function cleanup() {
-	timeout 10s az resource group delete --name="${INSTANCE_NAME}" || true
+	if [[ "${CLEANUP:-}" == "y" ]]; then
+		az group delete --no-wait --name="${RESOURCE_GROUP}" --yes || true
+	fi
 }

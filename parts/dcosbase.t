@@ -3,6 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     {{range .AgentPoolProfiles}}{{template "agentparams.t" .}},{{end}}
+    {{template "dcosparams.t" .}}
     {{template "masterparams.t" .}}
   },
   "variables": {
@@ -17,9 +18,7 @@
         {{end}}
     {{end}}
     
-    {{template "dcosmastervars.t" .}},
-    
-    {{GetSizeMap}}
+    {{template "dcosmastervars.t" .}}
   },
   "resources": [
     {{range .AgentPoolProfiles}}

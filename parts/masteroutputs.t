@@ -3,8 +3,9 @@
       "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn]"
     }
 {{if  GetClassicMode}}
+    ,
     {{if RequiresFakeAgentOutput}}
-    ,"agentFQDN": {
+    "agentFQDN": {
       "type": "string",
       "value": ""
     },
@@ -16,5 +17,16 @@
     "jumpboxFQDN": {
       "type": "string",
       "value": ""
+    }
+{{end}}
+{{if AnyAgentUsesAvailablilitySets}}
+    ,
+    "agentStorageAccountSuffix": {
+      "type": "string",
+      "value": "[variables('storageAccountBaseName')]"
+    },
+    "agentStorageAccountPrefixes": {
+      "type": "array",
+      "value": "[variables('storageAccountPrefixes')]"
     }
 {{end}}

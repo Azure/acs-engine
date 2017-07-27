@@ -3,23 +3,22 @@ kind: Deployment
 metadata:
   labels:
     kubernetes.io/cluster-service: "true"
-    app: kubernetes-dashboard
-    version: v1.4.2
+    k8s-app: kubernetes-dashboard
   name: kubernetes-dashboard
   namespace: kube-system
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kubernetes-dashboard
+      k8s-app: kubernetes-dashboard
   template:
     metadata:
       labels:
-        app: kubernetes-dashboard
+        k8s-app: kubernetes-dashboard
     spec:
       containers:
       - args: 
-        image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.4.2
+        image: <kubernetesDashboardSpec>
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -31,3 +30,5 @@ spec:
         ports:
         - containerPort: 9090
           protocol: TCP
+      nodeSelector:
+        beta.kubernetes.io/os: linux 

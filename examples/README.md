@@ -2,7 +2,7 @@
 
 ## Overview
 
-This cluster definition examples demonstrate how to create a customized Docker Enabled Cluster on Microsoft Azure.
+These cluster definition examples demonstrate how to create a customized Docker Enabled Cluster on Microsoft Azure.
 
 ## Walkthroughs
 
@@ -11,8 +11,9 @@ This cluster definition examples demonstrate how to create a customized Docker E
 * [DC/OS Walkthrough](../docs/dcos.md) - shows how to create a DC/OS enabled Docker cluster on Azure
 * [Kubernetes Walkthrough](../docs/kubernetes.md) - shows how to create a Kubernetes enabled Docker cluster on Azure
 * [Swarm Walkthrough](../docs/swarm.md) - shows how to create a Swarm enabled Docker cluster on Azure
+* [Swarm Mode Walkthrough](../docs/swarmmode.md) - shows how to create a Swarm Mode cluster on Azure
 * [Custom VNET](vnet) - shows how to use a custom VNET 
 * [Attached Disks](disks-storageaccount) - shows how to attach up to 4 disks per node
 * [Managed Disks](disks-managed) (under private preview) - shows how to use managed disks 
 * [Large Clusters](largeclusters) - shows how to create cluster sizes of up to 1200 nodes
-* [Windows Clusters](windows) - shows how to create windows or mixed Microsoft Windows and Linux Docker clusters on Microsoft Azure
+* [Windows Clusters](windows) - shows how to create mixed Microsoft Windows and Linux Docker clusters on Microsoft Azure

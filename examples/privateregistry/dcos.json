@@ -1,0 +1,44 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "DCOS",
+      "Registry" : "xtophregistry.azurecr.io",
+      "RegistryUser" : "xtophregistry",
+      "RegistryPassword" : "aN//=+l==Z+/A=3hXhA+mSX=rXwB/UgW"
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "xtophregdcos5",
+      "vmSize": "Standard_D2_v2"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentprivate",
+        "count": 1,
+        "vmSize": "Standard_D2_v2"
+      },
+      {
+        "name": "agentpublic",
+        "count": 1,
+        "vmSize": "Standard_D2_v2",
+        "dnsPrefix": "xtophregdcosa5",
+        "ports": [
+          80,
+          443,
+          8080
+        ]
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCzd8dQC01hwjfoKNiXoZeDR2oZ0GZdRAgxR7H7YjDlKi8Rqx4C0fUvMdpJxir1qcWQMd3lxCsBo8sS+GPzC14bMFZpJXof8dSsyAmhj0apFvrrVl/Uc6mJLLWd55dhOmovTyqNKYljKr5842QG6F+4f2Qf5kCnaCm1qczTE1plCNafhEM/kZUa2gnRfkcCFbA1vQ9L3VrH7FWx2Um/uNoqIw6RExiv9wbNpZOLl3fXJNeu8LAn+sUNYbcOgeRoHK1hc1n7Tl+Jjuf3JHiIlo6hS5SR9Lb6dG2W5tFXn9rVK5Uqs7Lvt0zLs7IgH2UAmlpD7T8UEunkOkPblh1KfktJ root@462437e47595"
+          }
+        ]
+      }
+    }
+  }
+}

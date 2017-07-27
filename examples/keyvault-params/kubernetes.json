@@ -1,0 +1,50 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes"
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "masterdns1",
+      "vmSize": "Standard_D2_v2"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet"
+      },
+      {
+        "name": "agentpool2",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "servicePrincipalClientID": "ServicePrincipalClientID",
+      "servicePrincipalClientKeyvaultSecretRef": "/subscriptions/my-sub/resourceGroups/my-rg/providers/Microsoft.KeyVault/vaults/my-kv/secrets/my-secret2"
+    },
+    "certificateProfile": {
+      "caCertificate": "<caCertificate>",
+      "apiServerCertificate": "/subscriptions/my-sub/resourceGroups/my-rg/providers/Microsoft.KeyVault/vaults/my-kv/secrets/my-secret1/ver1",
+      "apiServerPrivateKey": "<apiServerPrivateKey>",
+      "clientCertificate": "<clientCertificate>",
+      "clientPrivateKey": "<clientPrivateKey>",
+      "kubeConfigCertificate": "<kubeConfigCertificate>",
+      "kubeConfigPrivateKey": "<kubeConfigPrivateKey>"
+    }
+  }
+}

@@ -1,4 +1,17 @@
 acs-engine.exe
 acs-engine
 _output/
+_input/
 .vscode
+.DS_Store
+test/user.env
+user.env
+test/acs-engine-test/acs-engine-test
+.editorconfig
+_dist/
+bin/
+
+test/acs-engine-test/acs-engine-test.exe
+pkg/operations/junit.xml
+pkg/operations/kubernetesupgrade/junit.xml
+pkg/acsengine/templates.go

@@ -14,13 +14,15 @@
         "name": "agentpool1",
         "count": 3,
         "vmSize": "Standard_D2_v2",
+        "OSDiskSizeGB": 200,
         "availabilityProfile": "AvailabilitySet",
         "storageProfile": "ManagedDisks"
       },
       {
-          "name": "agentpool2",
+          "name": "agentpublic",
           "count": 3,
           "vmSize": "Standard_D2_v2",
+          "OSDiskSizeGB": 200,
           "availabilityProfile": "AvailabilitySet",
           "storageProfile": "ManagedDisks",
           "dnsPrefix": "",
@@ -31,10 +33,6 @@
           ]
         }
     ],
-    "windowsProfile": {
-      "adminUsername": "azureuser",
-      "adminPassword": "replacepassword1234$"
-    },
     "linuxProfile": {
       "adminUsername": "azureuser",
       "ssh": {
