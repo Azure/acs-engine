@@ -183,7 +183,7 @@ write_files:
   content: !!binary |
     MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR
 
-- path: /etc/kubernetes/addons/kubernetesmasteraddons-tiller-service.yaml
+- path: /etc/kubernetes/addons/kube-tiller-service.yaml
   permissions: "0644"
   encoding: gzip
   owner: "root"
