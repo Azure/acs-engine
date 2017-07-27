@@ -62,6 +62,16 @@ An example is below:
 }
 ```
 
+Then you can run `acs-engine generate agentpool ~/config.json` where `~/config.json` is the structure above, but filled in with your own parameters.
+
 After the ARM template has been created it will be written to disk in the `_output/$clustername` directory relative to the path you ran the command from.
 
 The ARM template can now be deployed using any avenue the user chooses.
+
+### Handy one liners
+
+If you are manually building your config file you can use the following command to substitute newlines with literal `\n`'s
+
+```bash
+$ awk '{printf "%s/n", $0}' /path/to/cert.pem
+```
