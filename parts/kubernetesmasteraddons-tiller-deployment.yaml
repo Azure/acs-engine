@@ -57,6 +57,12 @@ spec:
             port: 44135
           initialDelaySeconds: 1
           timeoutSeconds: 1
-        resources: {}
+        resources:
+          requests:
+            cpu: 50m
+            memory: 150Mi
+          limits:
+            cpu: 50m
+            memory: 150Mi
       nodeSelector:
         beta.kubernetes.io/os: linux
