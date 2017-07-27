@@ -1,7 +1,7 @@
 package v20170727
 
 const (
-	APIVersion = "kubernetesagentpool"
+	APIVersion = "v20170727"
 )
 
 type AgentPool struct {

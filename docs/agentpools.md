@@ -8,7 +8,7 @@ An example is below:
 
 ```json
 {
-  "apiVersion": "kubernetesagentpool",
+  "apiVersion": "v20170727",
   "location": "eastus",
   "name": "my-k8s-agentpools",
   "properties": {

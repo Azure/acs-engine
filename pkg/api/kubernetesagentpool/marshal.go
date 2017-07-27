@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool/v20170727"
 	"io/ioutil"
 )
 
@@ -21,19 +22,25 @@ func DeserializeAgentPool(contents []byte) (*AgentPool, string, error) {
 	if err := json.Unmarshal(contents, &m); err != nil {
 		return nil, "", err
 	}
-	version := m.APIVersion
-	agentPool := &AgentPool{}
-	if err := json.Unmarshal(contents, &agentPool); err != nil {
+	agentPool, err := LoadAgentPool(contents, m.APIVersion)
+	if err != nil {
 		return nil, "", err
 	}
-	//service, err := LoadAgentPool(contents, version)
-	return agentPool, version, nil
+	return agentPool, m.APIVersion, nil
 }
 
-//func LoadAgentPool(contents []byte, version string) (*AgentPool, error) {
-//
-//	fmt.Println(string(contents))
-//	fmt.Println(version)
-//	os.Exit(1)
-//	return nil, nil
-//}
+// LoadAgentPool will attempt to load the versioned API and then convert to the AgentPool struct (if necessary)
+func LoadAgentPool(contents []byte, version string) (*AgentPool, error) {
+	switch version {
+	case v20170727.APIVersion:
+		// We know this is a 1:1 so this should marshal, otherwise err
+		agentPool := &AgentPool{}
+		if err := json.Unmarshal(contents, &agentPool); err != nil {
+			return nil, fmt.Errorf("Unable to marshal on AgentPool: %v", err)
+		}
+		return agentPool, nil
+	default:
+		return nil, fmt.Errorf("Invalid API version: %s", version)
+	}
+	return nil, nil
+}
