@@ -3,7 +3,6 @@ package agentpool
 import (
 	"fmt"
 	"github.com/Azure/acs-engine/pkg/acsengine"
-	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
 )
 
@@ -28,7 +27,7 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 		}
 	}
 	//var KubernetesVersion api.OrchestratorVersion
-	KubernetesVersion := api.OrchestratorVersion(properties.KubernetesVersion)
+	KubernetesVersion := agentPool.Properties.KubernetesVersion
 
 	cloudSpecConfig := acsengine.GetCloudSpecConfig(location)
 
