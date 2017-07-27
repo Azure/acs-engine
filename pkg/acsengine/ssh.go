@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	// SshKeySize is the size of SSH key to create
+	// SSHKeySize is the size (in bytes) of SSH key to create
 	SSHKeySize = 4096
 )
 

@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// ErrorInfo represents the CI error
 type ErrorInfo struct {
 	TestName string
 	ErrName  string
@@ -18,12 +19,14 @@ type ErrorInfo struct {
 	Location string
 }
 
+// ErrorStat represents the aggregate error count and region
 type ErrorStat struct {
 	Count     int            `json:"count"`
 	Locations map[string]int `json:"locations"`
 }
 
-type ReportMgr struct {
+// Manager represents the details about a build and errors in that build
+type Manager struct {
 	lock        sync.Mutex
 	JobName     string    `json:"job"`
 	BuildNum    int       `json:"build"`
@@ -42,12 +45,18 @@ type logError struct {
 }
 
 const (
+	// ErrClassDeployment represents an error during deployment
 	ErrClassDeployment = "Deployment"
+	// ErrClassValidation represents an error during validation (tests)
 	ErrClassValidation = "Validation"
-	ErrClassAzcli      = "AzCLI"
-	ErrClassNone       = "None"
+	// ErrClassAzcli represents an error with Azure CLI
+	ErrClassAzcli = "AzCLI"
+	// ErrClassNone represents absence of error
+	ErrClassNone = "None"
 
+	// ErrSuccess represents a success, for some reason
 	ErrSuccess = "Success"
+	// ErrUnknown represents an unknown error
 	ErrUnknown = "UnspecifiedError"
 )
 
@@ -100,8 +109,9 @@ func init() {
 	}
 }
 
-func New(jobName string, buildNum int, nDeploys int) *ReportMgr {
-	h := &ReportMgr{}
+// New creates a new error report
+func New(jobName string, buildNum int, nDeploys int) *Manager {
+	h := &Manager{}
 	h.JobName = jobName
 	h.BuildNum = buildNum
 	h.Deployments = nDeploys
@@ -111,7 +121,8 @@ func New(jobName string, buildNum int, nDeploys int) *ReportMgr {
 	return h
 }
 
-func (h *ReportMgr) Copy() *ReportMgr {
+// TBD
+func (h *Manager) Copy() *Manager {
 	n := New(h.JobName, h.BuildNum, h.Deployments)
 	n.Errors = h.Errors
 	n.StartTime = h.StartTime
@@ -125,7 +136,8 @@ func (h *ReportMgr) Copy() *ReportMgr {
 	return n
 }
 
-func (h *ReportMgr) Process(txt, testName, location string) *ErrorInfo {
+// TBD
+func (h *Manager) Process(txt, testName, location string) *ErrorInfo {
 	for _, logErr := range logErrors {
 		if match, _ := regexp.MatchString(logErr.regex, txt); match {
 			h.addFailure(logErr.name, map[string]int{location: 1})
@@ -136,7 +148,7 @@ func (h *ReportMgr) Process(txt, testName, location string) *ErrorInfo {
 	return NewErrorInfo(testName, ErrUnknown, ErrClassNone, location)
 }
 
-func (h *ReportMgr) addFailure(key string, locations map[string]int) {
+func (h *Manager) addFailure(key string, locations map[string]int) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
@@ -162,7 +174,8 @@ func (h *ReportMgr) addFailure(key string, locations map[string]int) {
 	h.Errors += cnt
 }
 
-func (h *ReportMgr) CreateTestReport(filepath string) error {
+// TBD
+func (h *Manager) CreateTestReport(filepath string) error {
 	h.Duration = time.Now().UTC().Sub(h.StartTime).String()
 	data, err := json.MarshalIndent(h, "", "  ")
 	if err != nil {
@@ -180,7 +193,8 @@ func (h *ReportMgr) CreateTestReport(filepath string) error {
 	return nil
 }
 
-func (h *ReportMgr) CreateCombinedReport(filepath, testReportFname string) error {
+// TBD
+func (h *Manager) CreateCombinedReport(filepath, testReportFname string) error {
 	// "COMBINED_PAST_REPORTS" is the number of recent reports in the combined report
 	reports, err := strconv.Atoi(os.Getenv("COMBINED_PAST_REPORTS"))
 	if err != nil || reports <= 0 {
@@ -194,7 +208,7 @@ func (h *ReportMgr) CreateCombinedReport(filepath, testReportFname string) error
 		if err != nil {
 			break
 		}
-		testReport := &ReportMgr{}
+		testReport := &Manager{}
 		if err := json.Unmarshal(data, &testReport); err != nil {
 			break
 		}
@@ -208,6 +222,7 @@ func (h *ReportMgr) CreateCombinedReport(filepath, testReportFname string) error
 	return combinedReport.CreateTestReport(filepath)
 }
 
+// TBD
 func NewErrorInfo(testName, errName, errClass, location string) *ErrorInfo {
 	return &ErrorInfo{TestName: testName, ErrName: errName, ErrClass: errClass, Location: location}
 }
