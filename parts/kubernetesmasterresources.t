@@ -365,6 +365,7 @@
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
+{{if EnableExternalKms}}
     {
       "type": "Microsoft.KeyVault/vaults",
       "name": "[variables('clusterKeyVaultName')]",
@@ -394,6 +395,7 @@
         }
       }
     },
+{{end}}
     {
     {{if .MasterProfile.IsManagedDisks}}
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
@@ -406,8 +408,10 @@
       },
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]",
-        "[concat('Microsoft.Compute/availabilitySets/', variables('masterAvailabilitySet'))]",
-        "[concat('Microsoft.KeyVault/vaults/', variables('clusterKeyVaultName'))]"
+        "[concat('Microsoft.Compute/availabilitySets/', variables('masterAvailabilitySet'))]"
+{{if EnableExternalKms}}
+        ,"[concat('Microsoft.KeyVault/vaults/', variables('clusterKeyVaultName'))]"
+{{end}}
 {{if .MasterProfile.IsStorageAccount}}
         ,"[variables('masterStorageAccountName')]"
 {{end}}

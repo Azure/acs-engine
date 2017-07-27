@@ -65,8 +65,10 @@
         "name": "loop"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]",
-        "[concat('Microsoft.KeyVault/vaults/', variables('clusterKeyVaultName'))]"
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
+{{if EnableExternalKms}}
+        ,"[concat('Microsoft.KeyVault/vaults/', variables('clusterKeyVaultName'))]"
+{{end}}
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
