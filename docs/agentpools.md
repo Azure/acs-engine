@@ -1,3 +1,12 @@
+# Deploying Agent Pools Only
+
+If you chose to deploy agent pools for Kubernetes in Azure you can use the `acs-engine generate agentpool` command.
+
+The command's only required input paramter is a path to an `kubernetesagentpool` JSON file to read from
+
+An example is below:
+
+```json
 {
   "apiVersion": "kubernetesagentpool",
   "location": "eastus",
@@ -51,3 +60,8 @@
     }
   }
 }
+```
+
+After the ARM template has been created it will be written to disk in the `_output/$clustername` directory relative to the path you ran the command from.
+
+The ARM template can now be deployed using any avenue the user chooses.
