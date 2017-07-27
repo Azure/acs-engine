@@ -1,29 +1,18 @@
-# Produced by 'helm init --dry-run --debug'
 apiVersion: v1
 kind: Service
-Spec:
-  ClusterIP: ""
-  ExternalIPs: null
-  ExternalName: ""
-  LoadBalancerIP: ""
-  LoadBalancerSourceRanges: null
-  Ports:
-  - Name: tiller
-    NodePort: 0
-    Port: 44134
-    Protocol: ""
-    TargetPort: tiller
-  Selector:
+metadata:
+  name: tiller-deploy
+  namespace: kube-system
+  labels:
     app: helm
     name: tiller
-  SessionAffinity: ""
-  Type: ClusterIP
-Status:
-  LoadBalancer:
-    Ingress: null
-creationTimestamp: null
-labels:
-  app: helm
-  name: tiller
-name: tiller-deploy
-namespace: kube-system
+    kubernetes.io/cluster-service: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app: helm
+    name: tiller
+  ports:
+  - name: tiller
+    port: 44134
+    TargetPort: tiller
