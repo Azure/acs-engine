@@ -17,7 +17,7 @@ var (
 		//KubernetesSpecConfig is the default kubernetes container image url.
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase:    "gcrio.azureedge.net/google_containers/",
-			TillerImageBase:		"gcrio.azureedge.net/kubernetes-helm/",
+			TillerImageBase:        "gcrio.azureedge.net/kubernetes-helm/",
 			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
 		},
 
