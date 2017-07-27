@@ -149,11 +149,6 @@ func (m *MasterProfile) UnmarshalJSON(b []byte) error {
 		m.FirstConsecutiveStaticIP = "10.240.255.5"
 	}
 
-	if m.StorageProfile == "" {
-		// if StorageProfile is missing, set to default StorageAccount
-		m.StorageProfile = StorageAccount
-	}
-
 	// OSDiskSizeGB is an override value. vm sizes have default OS disk sizes.
 	// If it is not set. The user should get the default for the vm size
 	return nil
@@ -195,11 +190,6 @@ func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
 	if a.Count == 0 {
 		// if AgentPoolProfile.Count is missing or 0, set it to default 1
 		a.Count = 1
-	}
-
-	if a.StorageProfile == "" {
-		// if StorageProfile is missing, set to default StorageAccount
-		a.StorageProfile = StorageAccount
 	}
 
 	if string(a.OSType) == "" {
