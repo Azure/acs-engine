@@ -26,7 +26,6 @@ all: build
 .PHONE: generate
 generate:
 	go generate -v $(GOFILES)
-<<<<<<< HEAD
 
 .PHONY: build
 build: generate
