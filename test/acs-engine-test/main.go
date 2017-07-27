@@ -70,11 +70,11 @@ type ErrorStat struct {
 
 // TestManager is object that contains test runner functions
 type TestManager struct {
-	config    *config.TestConfig
+	config  *config.TestConfig
 	Manager *report.Manager
-	lock      sync.Mutex
-	wg        sync.WaitGroup
-	rootDir   string
+	lock    sync.Mutex
+	wg      sync.WaitGroup
+	rootDir string
 }
 
 // Run begins the test run process

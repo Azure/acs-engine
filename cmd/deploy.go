@@ -167,7 +167,7 @@ func autofillApimodel(dc *deployCmd) {
 			log.Fatal("Failed to generate SSH Key")
 		}
 
-		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{api.PublicKey{KeyData: publicKey}}
+		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{{KeyData: publicKey}}
 	}
 
 	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location)

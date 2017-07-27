@@ -54,7 +54,7 @@ func (az *AzureClient) CreateApp(appName, appURL string) (applicationID, service
 		Homepage:                to.StringPtr(appURL),
 		IdentifierUris:          to.StringSlicePtr([]string{appURL}),
 		PasswordCredentials: &[]graphrbac.PasswordCredential{
-			graphrbac.PasswordCredential{
+			{
 				KeyID:     to.StringPtr(uuid.NewV4().String()),
 				StartDate: &startDate,
 				EndDate:   &endDate,

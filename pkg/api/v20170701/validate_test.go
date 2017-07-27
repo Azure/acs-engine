@@ -63,7 +63,7 @@ func getK8sDefaultProperties() *Properties {
 			VMSize:    "Standard_DS2_v2",
 		},
 		AgentPoolProfiles: []*AgentPoolProfile{
-			&AgentPoolProfile{
+			{
 				Name:   "agentpool",
 				VMSize: "Standard_D2_v2",
 				Count:  1,
