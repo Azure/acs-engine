@@ -2,13 +2,22 @@ package api
 
 import (
 	"encoding/json"
+<<<<<<< HEAD
 	"io/ioutil"
+=======
+	"fmt"
+	"io/ioutil"
+
+>>>>>>> Fixing go imports
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+<<<<<<< HEAD
 	"github.com/Azure/acs-engine/pkg/i18n"
+=======
+>>>>>>> Fixing go imports
 )
 
 // Apiloader represents the object that loads api model
