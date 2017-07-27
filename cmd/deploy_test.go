@@ -73,7 +73,7 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 	// cleanup, since auto-populations creates dirs and saves the SSH private key that it might create
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
-	cs, ver, err = revalidateApimodel(cs, ver)
+	cs, _, err = revalidateApimodel(cs, ver)
 	if err != nil {
 		log.Fatalf("unexpected error validating apimodel after populating defaults: %s", err)
 	}

@@ -226,7 +226,6 @@ func (dc *deployCmd) run() error {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}
 
-	certsgenerated := false
 	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", dc.apimodelPath, err.Error())

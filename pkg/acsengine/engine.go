@@ -222,7 +222,6 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	// named return values are used in order to set err in case of a panic
 	templateRaw = ""
 	parametersRaw = ""
-	certsGenerated = false
 	err = nil
 
 	var templ *template.Template
@@ -1274,7 +1273,7 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 	}
 
 	// the embedded roleFileContents
-	roleFileContents := ""
+	var roleFileContents string
 	if len(profile.Ports) > 0 {
 		// public agents
 		roleFileContents = "touch /etc/mesosphere/roles/slave_public"

@@ -246,7 +246,7 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 			}
 
 			dataDisks := storageProfile[dataDisksFieldName].([]interface{})
-			dataDisk, ok := dataDisks[0].(map[string]interface{})
+			dataDisk, _ := dataDisks[0].(map[string]interface{})
 			dataDisk[createOptionFieldName] = "attach"
 
 			if isMasterManagedDisk {
@@ -259,7 +259,7 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 			}
 		}
 
-		tags, ok := resourceMap[tagsFieldName].(map[string]interface{})
+		tags, _ := resourceMap[tagsFieldName].(map[string]interface{})
 		poolName := fmt.Sprint(tags["poolName"]) // poolName tag exists on agents only
 
 		if resourceType == vmResourceType {

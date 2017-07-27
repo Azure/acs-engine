@@ -137,7 +137,7 @@ func createCertificate(commonName string, caCertificate *x509.Certificate, caPri
 		return nil, nil, err
 	}
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, PkiKeySize)
+	privateKey, _ := rsa.GenerateKey(rand.Reader, PkiKeySize)
 
 	var privateKeyToUse *rsa.PrivateKey
 	var certificateToUse *x509.Certificate

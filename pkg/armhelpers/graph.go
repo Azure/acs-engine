@@ -39,8 +39,7 @@ func (az *AzureClient) CreateRoleAssignment(scope string, roleAssignmentName str
 // CreateApp is a simpler method for creating an application
 func (az *AzureClient) CreateApp(appName, appURL string) (applicationID, servicePrincipalObjectID, servicePrincipalClientSecret string, err error) {
 	notBefore := time.Now()
-	notAfter := time.Now().Add(5 * 365 * 24 * time.Hour)
-	notAfter = time.Now().Add(10000 * 24 * time.Hour)
+	notAfter := time.Now().Add(10000 * 24 * time.Hour)
 
 	startDate := date.Time{Time: notBefore}
 	endDate := date.Time{Time: notAfter}
