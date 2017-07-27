@@ -196,7 +196,7 @@ func WriteTemplate(upgradeContainerService *api.ContainerService,
 		log.Fatalf("error pretty printing template parameters: %s \n", e.Error())
 	}
 	outputDirectory := path.Join("_output", upgradeContainerService.Properties.MasterProfile.DNSPrefix, "Upgrade")
-	if err := acsengine.WriteArtifacts(upgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
+	if err := acsengine.WriteTLSArtifacts(upgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 }

@@ -33,7 +33,7 @@ func (o *OrchestratorProfile) Validate() error {
 		case DCOS190:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
 		}
 	case DockerCE:
 	case Kubernetes:
@@ -42,7 +42,7 @@ func (o *OrchestratorProfile) Validate() error {
 		case Kubernetes157:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
 		}
 
 	default:
@@ -232,7 +232,7 @@ func validateVNET(a *Properties) error {
 	isCustomVNET := a.MasterProfile.IsCustomVNET()
 	for _, agentPool := range a.AgentPoolProfiles {
 		if agentPool.IsCustomVNET() != isCustomVNET {
-			return fmt.Errorf("Multiple VNET Subnet configurations specified.  The master profile and each agent pool profile must all specify a custom VNET Subnet, or none at all.")
+			return fmt.Errorf("Multiple VNET Subnet configurations specified.  The master profile and each agent pool profile must all specify a custom VNET Subnet, or none at all")
 		}
 	}
 	if isCustomVNET {

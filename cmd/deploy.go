@@ -241,7 +241,7 @@ func (dc *deployCmd) run() error {
 		log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
 	}
 
-	if err = acsengine.WriteArtifacts(dc.containerService, dc.apiVersion, template, parametersFile, dc.outputDirectory, certsgenerated, dc.parametersOnly); err != nil {
+	if err = acsengine.WriteTLSArtifacts(dc.containerService, dc.apiVersion, template, parametersFile, dc.outputDirectory, certsgenerated, dc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 

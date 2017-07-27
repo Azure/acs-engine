@@ -61,12 +61,14 @@ func init() {
 	orchestratorRe = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
 }
 
+// ErrorStat represents an error status that will be reported
 type ErrorStat struct {
 	errorInfo    *report.ErrorInfo
 	testCategory string
 	count        int64
 }
 
+// TestManager is object that contains test runner functions
 type TestManager struct {
 	config    *config.TestConfig
 	reportMgr *report.ReportMgr
@@ -75,6 +77,7 @@ type TestManager struct {
 	rootDir   string
 }
 
+// Run begins the test run process
 func (m *TestManager) Run() error {
 	n := len(m.config.Deployments)
 	if n == 0 {
