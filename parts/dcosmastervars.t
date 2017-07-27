@@ -26,6 +26,11 @@
 {{if .HasWindows}}
     "windowsAdminUsername": "[parameters('windowsAdminUsername')]",
     "windowsAdminPassword": "[parameters('windowsAdminPassword')]",
+    "agentWindowsBackendPort": 3389,
+    "agentWindowsPublisher": "MicrosoftWindowsServer",
+    "agentWindowsOffer": "WindowsServer",
+    "agentWindowsSku": "2016-Datacenter-with-Containers",
+    "agentWindowsVersion": "latest",
 {{end}}
     "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-master-availabilitySet-', variables('nameSuffix'))]", 
     "masterCount": {{.MasterProfile.Count}}, 

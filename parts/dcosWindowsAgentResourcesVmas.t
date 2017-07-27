@@ -42,6 +42,11 @@
 		        {
 		      	  "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('{{.Name}}LbName'), '/backendAddressPools/',variables('{{.Name}}LbBackendPoolName'))]"
 		        }
+              ],
+              "loadBalancerInboundNatPools": [
+                {
+                  "id": "[concat(variables('{{.Name}}LbID'), '/inboundNatPools/', 'RDP-', variables('{{.Name}}VMNamePrefix'))]"
+                }
 		      ],
 {{end}}
               "privateIPAllocationMethod": "Dynamic",
@@ -145,12 +150,25 @@
             }
           }
         ],
-        "inboundNatRules": [],
+        "inboundNatPools": [
+          {
+            "name": "[concat('RDP-', variables('{{.Name}}VMNamePrefix'))]",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('{{.Name}}LbIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPortRangeStart": "[variables('{{.Name}}WindowsRDPNatRangeStart')]",
+              "frontendPortRangeEnd": "[variables('{{.Name}}WindowsRDPEndRangeStop')]",
+              "backendPort": "[variables('agentWindowsBackendPort')]"
+            }
+          }
+        ],
         "loadBalancingRules": [
-            {{(GetLBRules .Name .Ports)}}
+          {{(GetLBRules .Name .Ports)}}
         ],
         "probes": [
-            {{(GetProbes .Ports)}}
+          {{(GetProbes .Ports)}}
         ]
       },
       "type": "Microsoft.Network/loadBalancers"
@@ -206,10 +224,10 @@
         "storageProfile": {
           {{GetDataDisks .}}
           "imageReference": {
-            "offer": "[variables('osImageOffer')]",
-            "publisher": "[variables('osImagePublisher')]",
-            "sku": "[variables('osImageSKU')]",
-            "version": "[variables('osImageVersion')]"
+            "offer": "[variables('agentWindowsOffer')]",
+            "publisher": "[variables('agentWindowsPublisher')]",
+            "sku": "[variables('agentWindowsSKU')]",
+            "version": "[variables('agentWindowsVersion')]"
           }
           ,"osDisk": {
             "caching": "ReadOnly"

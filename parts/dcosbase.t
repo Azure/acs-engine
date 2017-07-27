@@ -25,6 +25,7 @@
   },
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}
+        "{{.Name}}Index": {{$index}},
         {{template "dcosagentvars.t" .}}
         {{if .IsStorageAccount}}
           "{{.Name}}StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),{{$index}})]",

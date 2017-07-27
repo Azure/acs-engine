@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net"
 	"regexp"
-	"strings"
 
+	"github.com/Azure/acs-engine/pkg/api/common"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -63,7 +63,7 @@ func (m *MasterProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
+func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 	// Don't need to call validate.Struct(a)
 	// It is handled by Properties.Validate()
 	if e := validatePoolName(a.Name); e != nil {
@@ -111,40 +111,10 @@ func (l *LinuxProfile) Validate() error {
 }
 
 func handleValidationErrors(e validator.ValidationErrors) error {
-	err := e[0]
-	ns := err.Namespace()
-	switch ns {
-	case "Properties.OrchestratorProfile", "Properties.MasterProfile",
-		"Properties.MasterProfile.DNSPrefix", "Properties.MasterProfile.VMSize",
-		"Properties.LinuxProfile", "Properties.ServicePrincipalProfile.ClientID",
-		"Properties.ServicePrincipalProfile.Secret", "Properties.WindowsProfile.AdminUsername",
-		"Properties.WindowsProfile.AdminPassword":
-		return fmt.Errorf("missing %s", ns)
-	case "Properties.MasterProfile.Count":
-		return fmt.Errorf("MasterProfile count needs to be 1, 3, or 5")
-	case "Properties.MasterProfile.OSDiskSizeGB":
-		return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", err.Value().(int), MinDiskSizeGB, MaxDiskSizeGB)
-	case "Properties.MasterProfile.StorageProfile":
-		return fmt.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", err.Value().(string), StorageAccount, ManagedDisks)
-	default:
-		if strings.HasPrefix(ns, "Properties.AgentPoolProfiles") {
-			switch {
-			case strings.HasSuffix(ns, ".Name") || strings.HasSuffix(ns, "VMSize"):
-				return fmt.Errorf("missing %s", ns)
-			case strings.HasSuffix(ns, ".Count"):
-				return fmt.Errorf("AgentPoolProfile count needs to be in the range [%d,%d]", MinAgentCount, MaxAgentCount)
-			case strings.HasSuffix(ns, ".OSDiskSizeGB"):
-				return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", err.Value().(int), MinDiskSizeGB, MaxDiskSizeGB)
-			case strings.Contains(ns, ".Ports"):
-				return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
-			case strings.HasSuffix(ns, ".StorageProfile"):
-				return fmt.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", err.Value().(string), StorageAccount, ManagedDisks)
-			default:
-				break
-			}
-		}
-	}
-	return fmt.Errorf("Namespace %s is not caught, %+v", ns, e)
+	// Override any version specific validation error message
+
+	// common.HandleValidationErrors if the validation error message is general
+	return common.HandleValidationErrors(e)
 }
 
 // Validate implements APIObject
@@ -186,7 +156,7 @@ func (a *Properties) Validate() error {
 				return fmt.Errorf("missing WindowsProfile")
 			}
 			switch a.OrchestratorProfile.OrchestratorType {
-	        case DCOS:
+            case DCOS:
 			case Kubernetes:
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)

@@ -614,7 +614,7 @@ func convertV20170801OrchestratorProfile(v20170801cs *v20170801.OrchestratorProf
 	if v20170801cs.OrchestratorType == v20170801.DockerCE {
 		api.OrchestratorType = SwarmMode
 	} else {
-		api.OrchestratorType = OrchestratorType(v20170801cs.OrchestratorType)
+		api.OrchestratorType = v20170801cs.OrchestratorType
 	}
 
 	if api.OrchestratorType == Kubernetes {
