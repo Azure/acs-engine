@@ -90,6 +90,9 @@ runcmd:
   - -C
   - /tmp/xtoph
   - .docker
+- - rm 
+  - -rf 
+  - /tmp/xtoph
 - /opt/azure/containers/provision.sh
 - - cp
   - -p
