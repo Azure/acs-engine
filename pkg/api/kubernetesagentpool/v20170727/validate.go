@@ -1,4 +1,4 @@
-package kubernetesagentpool
+package v20170727
 
 import (
 	"fmt"

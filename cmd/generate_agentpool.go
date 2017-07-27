@@ -29,7 +29,10 @@ func NewGenerateAgentpoolCmd() *cobra.Command {
 			if err != nil {
 				log.Fatal(err)
 			}
-			genOptions.Validate(cmd, args)
+			err = genOptions.Validate(cmd, args)
+			if err != nil {
+				log.Fatal(err)
+			}
 			err = genOptions.Run()
 			if err != nil {
 				log.Fatal(err)
@@ -68,8 +71,8 @@ func (gc *GenerateOptions) Init(cmd *cobra.Command, args []string) error {
 }
 
 // Validate will validate that the input object is sane and valid
-func (gc *GenerateOptions) Validate(cmd *cobra.Command, args []string) {
-	// TODO (@kris-nova) We need to figure out what we want to validate on and code it here
+func (gc *GenerateOptions) Validate(cmd *cobra.Command, args []string) error {
+	return gc.agentPool.Validate()
 }
 
 // Run will run the GenerateOptions struct. This will interpolate the ARM template, and atomically commit to disk
