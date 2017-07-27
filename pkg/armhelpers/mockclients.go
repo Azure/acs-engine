@@ -11,7 +11,7 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 )
 
-//MockACSEngineClient is an implementations of ACSEngineClient where all requests error out
+//MockACSEngineClient is an implementation of ACSEngineClient where all requests error out
 type MockACSEngineClient struct {
 	FailDeployTemplate              bool
 	FailEnsureResourceGroup         bool

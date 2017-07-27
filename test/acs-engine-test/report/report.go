@@ -121,7 +121,7 @@ func New(jobName string, buildNum int, nDeploys int) *Manager {
 	return h
 }
 
-// TBD
+// Copy TBD needs definition
 func (h *Manager) Copy() *Manager {
 	n := New(h.JobName, h.BuildNum, h.Deployments)
 	n.Errors = h.Errors
@@ -136,7 +136,7 @@ func (h *Manager) Copy() *Manager {
 	return n
 }
 
-// TBD
+// Process TBD needs definition
 func (h *Manager) Process(txt, testName, location string) *ErrorInfo {
 	for _, logErr := range logErrors {
 		if match, _ := regexp.MatchString(logErr.regex, txt); match {
@@ -174,7 +174,7 @@ func (h *Manager) addFailure(key string, locations map[string]int) {
 	h.Errors += cnt
 }
 
-// TBD
+// CreateTestReport TBD needs definition
 func (h *Manager) CreateTestReport(filepath string) error {
 	h.Duration = time.Now().UTC().Sub(h.StartTime).String()
 	data, err := json.MarshalIndent(h, "", "  ")
@@ -193,7 +193,7 @@ func (h *Manager) CreateTestReport(filepath string) error {
 	return nil
 }
 
-// TBD
+// CreateCombinedReport TBD needs definition
 func (h *Manager) CreateCombinedReport(filepath, testReportFname string) error {
 	// "COMBINED_PAST_REPORTS" is the number of recent reports in the combined report
 	reports, err := strconv.Atoi(os.Getenv("COMBINED_PAST_REPORTS"))
@@ -221,7 +221,7 @@ func (h *Manager) CreateCombinedReport(filepath, testReportFname string) error {
 	return combinedReport.CreateTestReport(filepath)
 }
 
-// TBD
+// NewErrorInfo TBD needs definition
 func NewErrorInfo(testName, errName, errClass, location string) *ErrorInfo {
 	return &ErrorInfo{TestName: testName, ErrName: errName, ErrClass: errClass, Location: location}
 }
