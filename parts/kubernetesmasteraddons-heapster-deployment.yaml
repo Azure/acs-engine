@@ -4,6 +4,7 @@ metadata:
   labels:
     k8s-app: heapster
     kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: EnsureExists
   namespace: kube-system
   name: heapster
 spec:
