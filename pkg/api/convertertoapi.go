@@ -531,6 +531,8 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		}
 
 		switch vlabscs.OrchestratorVersion {
+		case vlabs.Kubernetes172:
+			api.OrchestratorVersion = Kubernetes172
 		case vlabs.Kubernetes171:
 			api.OrchestratorVersion = Kubernetes171
 		case vlabs.Kubernetes170:
@@ -571,7 +573,6 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.ClusterSubnet = vlabs.ClusterSubnet
 	api.NetworkPolicy = vlabs.NetworkPolicy
 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
-	api.EnableRbac = vlabs.EnableRbac
 	api.NodeStatusUpdateFrequency = vlabs.NodeStatusUpdateFrequency
 	api.CtrlMgrNodeMonitorGracePeriod = vlabs.CtrlMgrNodeMonitorGracePeriod
 	api.CtrlMgrPodEvictionTimeout = vlabs.CtrlMgrPodEvictionTimeout
@@ -587,6 +588,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.UseManagedIdentity = vlabs.UseManagedIdentity
 	api.CustomHyperkubeImage = vlabs.CustomHyperkubeImage
 	api.UseInstanceMetadata = vlabs.UseInstanceMetadata
+	api.EnableRbac = vlabs.EnableRbac
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {

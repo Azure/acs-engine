@@ -6,7 +6,6 @@ metadata:
   labels:
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: Reconcile
-
 ---
 apiVersion: apps/v1beta1
 kind: Deployment
@@ -45,8 +44,8 @@ spec:
                   - kube-dns
               topologyKey: kubernetes.io/hostname
       tolerations:
-      - key: "CriticalAddonsOnly"
-        operator: "Exists"
+      - key: CriticalAddonsOnly
+        operator: Exists
       volumes:
       - name: kube-dns-config
         configMap:
