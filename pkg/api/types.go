@@ -1,14 +1,12 @@
 package api
 
 import (
-    "fmt"
 	neturl "net/url"
 
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
-	"github.com/Azure/acs-engine/pkg/api/v20170801"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -297,14 +295,6 @@ type V20170701ARMContainerService struct {
 	*v20170701.ContainerService
 }
 
-// V20170801ARMContainerService is the type we read and write from file
-// needed because the json that is sent to ARM and acs-engine
-// is different from the json that the ACS RP Api gets from ARM
-type V20170801ARMContainerService struct {
-	TypeMeta
-	*v20170801.ContainerService
-}
-
 // VlabsUpgradeContainerService is the type we read and write from file
 // needed because the json that is sent to ARM and acs-engine
 // is different from the json that the ACS RP Api gets from ARM
@@ -322,11 +312,9 @@ type UpgradeContainerService struct {
 func (p *Properties) HasWindows() bool {
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
 		if agentPoolProfile.OSType == Windows {
-fmt.Printf("Has Windows\n");
 			return true
 		}
 	}
-fmt.Printf("not Has Windows\n");
 	return false
 }
 

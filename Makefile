@@ -5,12 +5,17 @@ DIST_DIRS         = find * -type d -exec
 
 .PHONY: bootstrap build test test_fmt validate-generated fmt lint ci devenv
 
+ifdef DEBUG
+GOFLAGS   := -gcflags="-N -l"
+else
+GOFLAGS   := 
+endif
+
 # go option
 GO        ?= go
 PKG       := $(shell glide novendor)
 TAGS      :=
-LDFLAGS   :=
-GOFLAGS   :=
+LDFLAGS   := 
 BINDIR    := $(CURDIR)/bin
 BINARIES  := acs-engine
 VERSION   := $(shell git rev-parse HEAD)
@@ -57,8 +62,6 @@ checksum:
 .PHONY: clean
 clean:
 	@rm -rf $(BINDIR) ./_dist
-	go build -v -gcflags="-N -l" -ldflags="-X github.com/Azure/acs-engine/cmd.BuildSHA=${VERSION} -X github.com/Azure/acs-engine/cmd.BuildTime=${BUILD}"
-	cd test/acs-engine-test; go build -v
 
 test: test_fmt
 	go test -v $(GOFILES)

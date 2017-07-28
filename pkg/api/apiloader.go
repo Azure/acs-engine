@@ -9,7 +9,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
-	"github.com/Azure/acs-engine/pkg/api/v20170801"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -79,16 +78,6 @@ func LoadContainerService(contents []byte, version string, validate bool) (*Cont
 			return nil, e
 		}
 		return ConvertV20170701ContainerService(containerService), nil
-
-	case v20170801.APIVersion:
-		containerService := &v20170801.ContainerService{}
-		if e := json.Unmarshal(contents, &containerService); e != nil {
-			return nil, e
-		}
-		if e := containerService.Properties.Validate(); validate && e != nil {
-			return nil, e
-		}
-		return ConvertV20170801ContainerService(containerService), nil
 
 	case vlabs.APIVersion:
 		containerService := &vlabs.ContainerService{}

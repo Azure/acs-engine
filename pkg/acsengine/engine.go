@@ -1247,10 +1247,8 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 
     var scriptname string
     if profile.OSType == api.Windows  {
-fmt.Errorf("provisioning sript name = %s\n", dcosWindowsProvision);
 	    scriptname = dcosWindowsProvision
     } else {
-fmt.Errorf("provisioning sript name = %s\n", dcosProvision);
 	    scriptname = dcosProvision
     }
 

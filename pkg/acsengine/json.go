@@ -1,8 +1,6 @@
 package acsengine
 
 import (
-	//"fmt"
-	log "github.com/Sirupsen/logrus"
 	"encoding/json"
 	"strings"
 )
@@ -33,18 +31,13 @@ func PrettyPrintArmTemplate(template string) (string, error) {
 // PrettyPrintJSON will pretty print the json into
 func PrettyPrintJSON(content string) (string, error) {
 	var data map[string]interface{}
-log.Info("ppj1 content = %s\n", content);
 	if err := json.Unmarshal([]byte(content), &data); err != nil {
-log.Info("ppj2 err = ", err.Error());
 		return "", err
 	}
-log.Info("ppj3\n");
 	prettyprint, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
-log.Info("ppj4\n");
 		return "", err
 	}
-log.Info("ppj5\n");
 	return string(prettyprint), nil
 }
 
