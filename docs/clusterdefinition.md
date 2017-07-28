@@ -1,6 +1,6 @@
 # Microsoft Azure Container Service Engine - Cluster Definition
 
-##Cluster Defintions for apiVersion "vlabs"
+## Cluster Defintions for apiVersion "vlabs"
 
 Here are the cluster definitions for apiVersion "vlabs"
 
@@ -101,7 +101,7 @@ https://{keyvaultname}.vault.azure.net:443/secrets/{secretName}/{version}
 |servicePrincipalClientID|yes, for Kubernetes clusters|describes the Azure client id.  It is recommended to use a separate client ID per cluster|
 |servicePrincipalClientSecret|yes, for Kubernetes clusters|describes the Azure client secret.  It is recommended to use a separate client secret per client id|
 
-##Cluster Defintions for apiVersion "2016-03-30"
+## Cluster Defintions for apiVersion "2016-03-30"
 
 Here are the cluster definitions for apiVersion "2016-03-30".  This matches the api version of the Azure Container Service Engine.
 
