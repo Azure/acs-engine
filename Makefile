@@ -23,7 +23,7 @@ GOFILES=`go list ./... | grep -v "github.com/Azure/acs-engine/vendor" | sed 's|g
 
 all: build
 
-.PHONE: generate
+.PHONY: generate
 generate:
 	go generate -v $(GOFILES)
 
