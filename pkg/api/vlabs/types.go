@@ -128,9 +128,12 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType    string            `json:"orchestratorType" validate:"required"`
+	OrchestratorType    string            `json:"orchestratorType"`
 	OrchestratorVersion string            `json:"orchestratorVersion"`
 	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	Registry            string            `json:"registry,omitempty"`
+	RegistryUser        string            `json:"registryUser,omitempty"`
+	RegistryPass        string            `json:"registryPassword,omitempty"`
 }
 
 // UnmarshalJSON unmarshal json using the default behavior

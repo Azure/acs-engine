@@ -565,6 +565,10 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		default:
 			api.OrchestratorVersion = DCOSLatest
 		}
+
+		api.Registry = vlabscs.Registry
+		api.RegistryUser = vlabscs.RegistryUser
+		api.RegistryPass = vlabscs.RegistryPass
 	}
 }
 
@@ -730,6 +734,7 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 	api.Subnet = vlabs.GetSubnet()
 	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
+
 	api.CustomNodeLabels = map[string]string{}
 	for k, v := range vlabs.CustomNodeLabels {
 		api.CustomNodeLabels[k] = v

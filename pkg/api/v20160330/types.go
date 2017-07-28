@@ -134,7 +134,8 @@ type AgentPoolProfile struct {
 	FQDN      string `json:"fqdn"`
 	OSType    OSType `json:"osType"` // TODO: This field is versioned to "2016-03-30"
 	// subnet is internal
-	subnet string
+	subnet     string
+	Attributes map[string]string `json:"attributes,omitempty"`
 }
 
 // UnmarshalJSON unmarshal json using the default behavior
