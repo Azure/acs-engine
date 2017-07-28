@@ -184,7 +184,6 @@ func (h *ReportMgr) CreateCombinedReport(filepath, testReportFname string) error
 	// "COMBINED_PAST_REPORTS" is the number of recent reports in the combined report
 	reports, err := strconv.Atoi(os.Getenv("COMBINED_PAST_REPORTS"))
 	if err != nil || reports <= 0 {
-		fmt.Println("Warning: COMBINED_PAST_REPORTS is not set or invalid. Ignoring")
 		return nil
 	}
 	combinedReport := h.Copy()
