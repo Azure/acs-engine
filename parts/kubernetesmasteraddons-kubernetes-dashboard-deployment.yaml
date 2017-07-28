@@ -4,7 +4,6 @@ metadata:
   labels:
     kubernetes.io/cluster-service: "true"
     k8s-app: kubernetes-dashboard
-    version: v1.5.1
   name: kubernetes-dashboard
   namespace: kube-system
 spec:
@@ -19,7 +18,7 @@ spec:
     spec:
       containers:
       - args: 
-        image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.5.1
+        image: <kubernetesDashboardSpec>
         imagePullPolicy: Always
         livenessProbe:
           httpGet:

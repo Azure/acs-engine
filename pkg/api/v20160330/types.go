@@ -1,17 +1,11 @@
 package v20160330
 
 import (
+	"encoding/json"
+	"fmt"
 	neturl "net/url"
+	"strings"
 )
-
-// SubscriptionState represents the state of the subscription
-type SubscriptionState int
-
-// Subscription represents the customer subscription
-type Subscription struct {
-	ID    string
-	State SubscriptionState
-}
 
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
@@ -25,37 +19,33 @@ type ResourcePurchasePlan struct {
 // ContainerService complies with the ARM model of
 // resource definition in a JSON template.
 type ContainerService struct {
-	ID       string               `json:"id,omitempty"`
-	Location string               `json:"location,omitempty"`
-	Name     string               `json:"name,omitempty"`
-	Plan     ResourcePurchasePlan `json:"plan,omitempty"`
-	Tags     map[string]string    `json:"tags,omitempty"`
-	Type     string               `json:"type,omitempty"`
+	ID       string                `json:"id,omitempty"`
+	Location string                `json:"location,omitempty"`
+	Name     string                `json:"name,omitempty"`
+	Plan     *ResourcePurchasePlan `json:"plan,omitempty"`
+	Tags     map[string]string     `json:"tags,omitempty"`
+	Type     string                `json:"type,omitempty"`
 
-	Properties Properties `json:"properties"`
+	Properties *Properties `json:"properties"`
 }
 
 // Properties is currently incomplete. More fields will be added later.
 type Properties struct {
-	ProvisioningState   ProvisioningState   `json:"provisioningState"`
-	OrchestratorProfile OrchestratorProfile `json:"orchestratorProfile"`
-
-	MasterProfile MasterProfile `json:"masterProfile"`
-
-	AgentPoolProfiles []AgentPoolProfile `json:"agentPoolProfiles"`
-
-	LinuxProfile LinuxProfile `json:"linuxProfile"`
-
-	WindowsProfile WindowsProfile `json:"windowsProfile"`
+	ProvisioningState   ProvisioningState    `json:"provisioningState,omitempty"`
+	OrchestratorProfile *OrchestratorProfile `json:"orchestratorProfile,omitempty"`
+	MasterProfile       *MasterProfile       `json:"masterProfile,omitempty"`
+	AgentPoolProfiles   []*AgentPoolProfile  `json:"agentPoolProfiles,omitempty"`
+	LinuxProfile        *LinuxProfile        `json:"linuxProfile,omitempty"`
+	WindowsProfile      *WindowsProfile      `json:"windowsProfile,omitempty"`
 
 	// TODO: This field is versioned to "2016-03-30"
-	DiagnosticsProfile DiagnosticsProfile `json:"diagnosticsProfile"`
+	DiagnosticsProfile *DiagnosticsProfile `json:"diagnosticsProfile,omitempty"`
 
 	// JumpboxProfile has made it into the new ACS RP stack for
-	// backward compability.
+	// backward compatibility.
 	// TODO: Version this field so that newer versions don't
 	// allow jumpbox creation
-	JumpboxProfile JumpboxProfile `json:"jumpboxProfile"`
+	JumpboxProfile *JumpboxProfile `json:"jumpboxProfile,omitempty"`
 }
 
 // LinuxProfile represents the Linux configuration passed to the cluster
@@ -63,16 +53,18 @@ type LinuxProfile struct {
 	AdminUsername string `json:"adminUsername"`
 
 	SSH struct {
-		PublicKeys []struct {
-			KeyData string `json:"keyData"`
-		} `json:"publicKeys"`
+		PublicKeys []PublicKey `json:"publicKeys"`
 	} `json:"ssh"`
+}
+
+// PublicKey represents an SSH key for LinuxProfile
+type PublicKey struct {
+	KeyData string `json:"keyData"`
 }
 
 // WindowsProfile represents the Windows configuration passed to the cluster
 type WindowsProfile struct {
 	AdminUsername string `json:"adminUsername"`
-
 	AdminPassword string `json:"adminPassword"`
 }
 
@@ -97,7 +89,7 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType OrchestratorType `json:"orchestratorType"`
+	OrchestratorType string `json:"orchestratorType"`
 }
 
 // MasterProfile represents the definition of master cluster
@@ -114,6 +106,23 @@ type MasterProfile struct {
 	subnet string
 }
 
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (m *MasterProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasMasterProfile MasterProfile
+	mm := aliasMasterProfile{}
+	if e := json.Unmarshal(b, &mm); e != nil {
+		return e
+	}
+	*m = MasterProfile(mm)
+	if m.Count == 0 {
+		// if MasterProfile.Count is missing or 0, set to default 1
+		m.Count = 1
+	}
+	return nil
+}
+
 // AgentPoolProfile represents configuration of VMs running agent
 // daemons that register with the master and offer resources to
 // host applications in containers.
@@ -122,10 +131,35 @@ type AgentPoolProfile struct {
 	Count     int    `json:"count"`
 	VMSize    string `json:"vmSize"`
 	DNSPrefix string `json:"dnsPrefix"`
-	FQDN      string `json:"fqdn,omitempty"`
+	FQDN      string `json:"fqdn"`
 	OSType    OSType `json:"osType"` // TODO: This field is versioned to "2016-03-30"
 	// subnet is internal
 	subnet string
+}
+
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasAgentPoolProfile AgentPoolProfile
+	aa := aliasAgentPoolProfile{}
+	if e := json.Unmarshal(b, &aa); e != nil {
+		return e
+	}
+	*a = AgentPoolProfile(aa)
+	if a.Count == 0 {
+		// if AgentPoolProfile.Count is missing or 0, set it to default 1
+		a.Count = 1
+	}
+
+	if string(a.OSType) == "" {
+		// OSType is the operating system type for agents
+		// Set as nullable to support backward compat because
+		// this property was added later.
+		// If the value is null or not set, it defaulted to Linux.
+		a.OSType = Linux
+	}
+	return nil
 }
 
 // JumpboxProfile dscribes properties of the jumpbox setup
@@ -143,7 +177,7 @@ type JumpboxProfile struct {
 // DiagnosticsProfile setting to enable/disable capturing
 // diagnostics for VMs hosting container cluster.
 type DiagnosticsProfile struct {
-	VMDiagnostics VMDiagnostics `json:"vmDiagnostics"`
+	VMDiagnostics *VMDiagnostics `json:"vmDiagnostics"`
 }
 
 // VMDiagnostics contains settings to on/off boot diagnostics collection
@@ -157,11 +191,34 @@ type VMDiagnostics struct {
 	// blob domain. i.e. https://storageaccount.blob.core.windows.net/
 	// This field is readonly as ACS RP will create a storage account
 	// for the customer.
-	StorageURL neturl.URL `json:"storageUrl"`
+	StorageURL *neturl.URL `json:"storageUrl"`
 }
 
-// OrchestratorType defines orchestrators supported by ACS
-type OrchestratorType string
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasOrchestratorProfile OrchestratorProfile
+	op := aliasOrchestratorProfile{}
+	if e := json.Unmarshal(b, &op); e != nil {
+		return e
+	}
+	*o = OrchestratorProfile(op)
+
+	// Unmarshal OrchestratorType, format it as well
+	orchestratorType := o.OrchestratorType
+	switch {
+	case strings.EqualFold(orchestratorType, DCOS):
+		o.OrchestratorType = DCOS
+	case strings.EqualFold(orchestratorType, Swarm):
+		o.OrchestratorType = Swarm
+	case strings.EqualFold(orchestratorType, Mesos):
+		o.OrchestratorType = Mesos
+	default:
+		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
+	}
+	return nil
+}
 
 // OSType represents OS types of agents
 type OSType string
@@ -189,6 +246,16 @@ func (m *MasterProfile) SetSubnet(subnet string) {
 // IsWindows returns true if the agent pool is windows
 func (a *AgentPoolProfile) IsWindows() bool {
 	return a.OSType == Windows
+}
+
+// IsLinux returns true if the agent pool is linux
+func (a *AgentPoolProfile) IsLinux() bool {
+	return a.OSType == Linux
+}
+
+// IsDCOS returns true if this template is for DCOS orchestrator
+func (o *OrchestratorProfile) IsDCOS() bool {
+	return o.OrchestratorType == DCOS
 }
 
 // GetSubnet returns the read-only subnet for the agent pool

@@ -1,13 +1,6 @@
     "adminUsername": "[parameters('linuxAdminUsername')]",
     "maxVMsPerPool": 100,
-    "maxVMsPerStorageAccount": 20,
-    "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
-    "dataStorageAccountPrefixSeed": 97, 
     "apiVersionDefault": "2016-03-30", 
-    "apiVersionStorage": "2015-06-15",
-{{if .HasManagedDisks}}
-    "apiVersionStorageManagedDisks": "2016-04-30-preview",
-{{end}}
 {{if .OrchestratorProfile.IsSwarmMode}}
     "configureClusterScriptFile": "configure-swarmmode-cluster.sh",
 {{else}}
@@ -53,12 +46,6 @@
     "masterLbIPConfigName": "[concat(variables('orchestratorName'), '-master-lbFrontEnd-', variables('nameSuffix'))]", 
     "masterLbName": "[concat(variables('orchestratorName'), '-master-lb-', variables('nameSuffix'))]", 
     "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterEndpointDNSNamePrefix'), '-', variables('nameSuffix'))]",
-{{if .MasterProfile.IsClassicStorageAccount}}
-    "storageAccountBaseClassicName": "[concat(uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location)), variables('orchestratorName'))]",
-    "masterStorageAccountName": "[concat(variables('storageAccountBaseClassicName'), '0')]",
-{{else}}
-    "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), '0')]",
-{{end}} 
 {{if .MasterProfile.IsCustomVNET}}
     "masterVnetSubnetID": "[parameters('masterVnetSubnetID')]",
 {{else}}
@@ -111,19 +98,41 @@
     "osImagePublisher": "Canonical", 
 {{if .OrchestratorProfile.IsSwarmMode}}
     "orchestratorName": "swarmm", 
-    "osImageSKU": "16.04.0-LTS", 
+    "osImageSKU": "16.04-LTS", 
+    "osImageVersion": "16.04.201706191",
 {{else}}
     "orchestratorName": "swarm", 
-    "osImageSKU": "14.04.4-LTS", 
+    "osImageSKU": "14.04.5-LTS",
+    "osImageVersion": "14.04.201706190",  
 {{end}}
-    "osImageVersion": "latest", 
+    "locations": [
+         "[resourceGroup().location]",
+         "[parameters('location')]"
+    ],
+    "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
     "postInstallScriptURI": "disabled", 
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]", 
-    "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
-    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),resourceGroup().location))]",
+{{if .HasStorageAccountDisks}}
+    "apiVersionStorage": "2015-06-15",
+    "maxVMsPerStorageAccount": 20,
+    "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
+    "dataStorageAccountPrefixSeed": 97, 
     "storageAccountPrefixes": [ "0", "6", "c", "i", "o", "u", "1", "7", "d", "j", "p", "v", "2", "8", "e", "k", "q", "w", "3", "9", "f", "l", "r", "x", "4", "a", "g", "m", "s", "y", "5", "b", "h", "n", "t", "z" ],
     "storageAccountPrefixesCount": "[length(variables('storageAccountPrefixes'))]", 
-    "vmsPerStorageAccount": 20
+    "vmsPerStorageAccount": 20,
+    "storageAccountBaseName": "[uniqueString(concat(variables('masterEndpointDNSNamePrefix'),variables('location')))]",
+    {{GetSizeMap}},
+{{else}}
+    "storageAccountPrefixes": [],
+    "storageAccountBaseName": "",
+{{end}}
+{{if .HasManagedDisks}}
+    "apiVersionStorageManagedDisks": "2016-04-30-preview",
+{{end}}
+{{if .MasterProfile.IsStorageAccount}}
+    "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), '0')]",
+{{end}}
+    "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]"
 {{if .HasWindows}}
     ,"windowsAdminUsername": "[parameters('windowsAdminUsername')]",
     "windowsAdminPassword": "[parameters('windowsAdminPassword')]",

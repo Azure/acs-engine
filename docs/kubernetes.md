@@ -1,5 +1,8 @@
 # Microsoft Azure Container Service Engine - Kubernetes Walkthrough
 
+* [Kubernetes Windows Walkthrough](kubernetes.windows.md) - shows how to create a Kubernetes cluster on Windows.
+* [Kubernetes with GPU support Walkthrough](kubernetes.gpu.md) - shows how to create a Kubernetes cluster with GPU support.
+
 ## Deployment
 
 Here are the steps to deploy a simple Kubernetes cluster:
@@ -10,6 +13,38 @@ Here are the steps to deploy a simple Kubernetes cluster:
 4. edit the [Kubernetes example](../examples/kubernetes.json) and fill in the blank strings
 5. [generate the template](acsengine.md#generating-a-template)
 6. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../README.md#deployment-usage)
+  * To enable the optional network policy enforcement using calico, you have to
+    set the parameter during this step according to this [guide](#optional-enable-network-policy-enforcement-using-calico)
+7. Temporary workaround when deploying a cluster in a custom VNET with
+   Kubernetes 1.6.0:
+    1. After a cluster has been created in step 6 get id of the route table resource from Microsoft.Network provider in your resource group. 
+       The route table resource id is of the format:
+       `/subscriptions/SUBSCRIPTIONID/resourceGroups/RESOURCEGROUPNAME/providers/Microsoft.Network/routeTables/ROUTETABLENAME`
+    2. Update properties of all subnets in the newly created VNET that are used by Kubernetes cluster to refer to the route table resource by appending the following to subnet properties:
+        ```shell
+        "routeTable": {
+                "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/<RouteTableResourceName>"
+              }
+        ```
+
+        E.g.:
+        ```shell
+        "subnets": [
+            {
+              "name": "subnetname",
+              "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/virtualNetworks/<VirtualNetworkName>/subnets/<SubnetName>",
+              "properties": {
+                "provisioningState": "Succeeded",
+                "addressPrefix": "10.240.0.0/16",
+                "routeTable": {
+                  "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/<RouteTableResourceName>"
+                }
+              ....
+              }
+              ....
+            }
+        ]
+        ```
 
 ## Walkthrough
 
@@ -32,6 +67,93 @@ In the image above, you can see the following parts:
 
 All VMs are in the same private VNET and are fully accessible to each other.
 
+
+## Optional: Enable network policy enforcement using Calico
+
+Using the default configuration, Kubernetes allows communication between all
+Pods within a cluster. To ensure that Pods can only be accessed by authorized
+Pods, a policy enforcement is needed. To enable policy enforcement using Calico refer to the [cluster definition](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig) document under networkPolicy. There is also a reference cluster definition available [here](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy/kubernetes-calico.json).
+
+This will deploy a Calico node controller to every instance of the cluster
+using a Kubernetes DaemonSet. After a successful deployment you should be able
+to see these Pods running in your cluster:
+
+```
+kubectl get pods --namespace kube-system -l k8s-app=calico-node -o wide
+NAME                READY     STATUS    RESTARTS   AGE       IP             NODE
+calico-node-034zh   2/2       Running   0          2h        10.240.255.5   k8s-master-30179930-0
+calico-node-qmr7n   2/2       Running   0          2h        10.240.0.4     k8s-agentpool1-30179930-1
+calico-node-z3p02   2/2       Running   0          2h        10.240.0.5     k8s-agentpool1-30179930-0
+```
+
+Per default Calico still allows all communication within the cluster. Using Kubernetes' NetworkPolicy API, you can define stricter policies. Good resources to get information about that are:
+
+* [NetworkPolicy User Guide](https://kubernetes.io/docs/user-guide/networkpolicies/)
+* [NetworkPolicy Example Walkthrough](https://kubernetes.io/docs/getting-started-guides/network-policy/walkthrough/)
+* [Calico Kubernetes](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/)
+
+## Managed Disks
+
+[Managed disks](../examples/disks-managed/README.md) are supported for both node OS disks and Kubernetes persistent volumes. 
+
+Related [upstream PR](https://github.com/kubernetes/kubernetes/pull/46360) for details.
+
+### Using Kubernetes Persistent Volumes
+
+By default, each ACS-Engine cluster is bootstrapped with several StorageClass resources. This bootstrapping is handled by the addon-manager pod that creates resources defined under /etc/kubernetes/addons directory on master VMs.
+
+#### Non-managed Disks
+
+The default storage class has been set via the Kubernetes admission controller `DefaultStorageClass`.
+
+The default storage class will be used if persistent volume resources don't specify a storage class as part of the resource definition.
+
+The default storage class uses non-managed blob storage and will provision the blob within an existing storage account present in the resource group or provision a new storage account.
+
+Non-managed persistent volume types are available on all VM sizes.
+
+#### Managed Disks
+
+As part of cluster bootstrapping, two storage classes will be created to provide access to create Kubernetes persistent volumes using Azure managed disks.
+
+Nodes will be labelled as follows if they support managed disks:
+
+```
+storageprofile=managed
+storagetier=<Standard_LRS|Premium_LRS>
+```
+
+They are managed-premium and managed-standard and map to Standard_LRS and Premium_LRS managed disk types respectively.
+
+In order to use these storage classes the following conditions must be met.
+
+* The cluster must be running Kubernetes version 1.7.2 or greater. Refer to this [example](../examples/kubernetesversions/kubernetes1.7.1.json) for how to provision a Kubernetes cluster of a specific version.
+* The node must support managed disks. See this [example](../examples/disks-managed/kubernetes-vmas.json) to provision nodes with managed disks. You can also confirm if a node has managed disks using kubectl.
+
+```console
+kubectl get nodes -l storageprofile=managed
+NAME                    STATUS    AGE       VERSION
+k8s-agent1-23731866-0   Ready     24m       v1.7.2
+``` 
+
+* The VM size must support the type of managed disk type requested. For example, Premium VM sizes with managed OS disks support both managed-standard and managed-premium storage classes whereas Standard VM sizes with managed OS disks only support managed-standard storage class.
+
+* If you have mixed node cluster (both non-managed and managed disk types). You must use [affinity or nodeSelectors](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/) on your resource definitions in order to ensure that workloads are scheduled to VMs that support the underlying disk requirements.
+
+For example
+```
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: storageprofile
+            operator: In
+            values:
+            - managed
+````
+
 ## Create your First Kubernetes Service
 
 After completing this walkthrough you will know how to:
@@ -44,13 +166,12 @@ After completing this walkthrough you will know how to:
 1. After successfully deploying the template write down the master FQDNs (Fully Qualified Domain Name).
    1. If using Powershell or CLI, the output parameter is in the OutputsString section named 'masterFQDN'
    2. If using Portal, to get the output you need to:
-     1. navigate to "resource group"
-     2. click on the resource group you just created
-     3. then click on "Succeeded" under *last deployment*
-     4. then click on the "Microsoft.Template"
-     5. now you can copy the output FQDNs and sample SSH commands
-
-   ![Image of docker scaling](images/portal-kubernetes-outputs.png)
+      1. navigate to "resource group"
+      2. click on the resource group you just created
+      3. then click on "Succeeded" under *last deployment*
+      4. then click on the "Microsoft.Template"
+      5. now you can copy the output FQDNs and sample SSH commands
+      ![Image of docker scaling](images/portal-kubernetes-outputs.png)
 
 2. SSH to the master FQDN obtained in step 1.
 
@@ -83,9 +204,9 @@ After completing this walkthrough you will know how to:
   ![Image of browsing to nginx](images/kubernetes-nginx4.png)  
 
 8. The next step in this walkthrough is to show you how to remotely manage your Kubernetes cluster.  First download Kubectl to your machine and put it in your path:
-  * [Windows Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.5.1/bin/windows/amd64/kubectl.exe)
-  * [OSX Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.5.1/bin/darwin/amd64/kubectl)
-  * [Linux](https://storage.googleapis.com/kubernetes-release/release/v1.5.1/bin/linux/amd64/kubectl)
+  * [Windows Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/windows/amd64/kubectl.exe)
+  * [OSX Kubectl](https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/darwin/amd64/kubectl)
+  * [Linux](https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/linux/amd64/kubectl)
 
 9. The Kubernetes master contains the kube config file for remote access under the home directory ~/.kube/config.  Download this file to your machine, set the KUBECONFIG environment variable, and run kubectl to verify you can connect to cluster:
   * Windows to use pscp from [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html).  Ensure you have your certificate exposed through [pageant](ssh.md#key-management-and-agent-forwarding-with-windows-pageant):
@@ -117,6 +238,10 @@ After completing this walkthrough you will know how to:
 
 ## Troubleshooting
 
+### Scaling up or down
+
+Scaling your cluster up or down requires different parameters and template than the create. More details here [Scale up](../examples/scale-up/README.md)
+
 If your cluster is not reachable, you can run the following command to check for common failures.
 
 ### Misconfigured Service Principal
@@ -133,6 +258,17 @@ You may need to check to ensure the credentials were provided accurately, and th
 read and **write** permissions to the target Subscription.
 
 `Nov 10 16:35:22 k8s-master-43D6F832-0 docker[3177]: E1110 16:35:22.840688    3201 kubelet_node_status.go:69] Unable to construct api.Node object for kubelet: failed to get external ID from cloud provider: autorest#WithErrorUnlessStatusCode: POST https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/oauth2/token?api-version=1.0 failed with 400 Bad Request: StatusCode=400`
+
+3. [Link](serviceprincipal.md) to documentation on how to create/configure a service principal for an ACS-Engine Kubernetes cluster.
+
+## Known issues and mitigations
+
+### Node "NotReady" due to lost TCP connection
+
+Nodes might appear in the "NotReady" state for approx. 15 minutes if master stops receiving updates from agents.
+This is a known upstream kubernetes [issue #41916](https://github.com/kubernetes/kubernetes/issues/41916#issuecomment-312428731). This fixing PR is currently under review.
+
+ACS-Engine partially mitigates this issue on Linux by detecting dead TCP connections more quickly via **net.ipv4.tcp_retries2=8**.
 
 ## Learning More
 

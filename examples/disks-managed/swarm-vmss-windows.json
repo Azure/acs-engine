@@ -19,7 +19,7 @@
         "osType": "Windows"
       },
       {
-          "name": "agentpool2",
+          "name": "agentpublic",
           "count": 3,
           "vmSize": "Standard_D4_v2",
           "availabilityProfile": "VirtualMachineScaleSets",

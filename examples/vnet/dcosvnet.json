@@ -8,7 +8,7 @@
       "count": 3,
       "dnsPrefix": "",
       "vmSize": "Standard_D2_v2",
-      "vnetSubnetId": "/subscriptions/b52fce95-de5f-4b37-afca-db203a5d0b6a/resourceGroups/anhoweExampleRG/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/ExampleMasterSubnet",
+      "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/MASTER_SUBNET_NAME",
       "firstConsecutiveStaticIP": "10.100.0.5" 
     },
     "agentPoolProfiles": [
@@ -17,14 +17,14 @@
         "count": 3,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet",
-        "vnetSubnetId": "/subscriptions/b52fce95-de5f-4b37-afca-db203a5d0b6a/resourceGroups/anhoweExampleRG/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/ExampleAgentSubnet"
+        "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/AGENT_SUBNET_NAME"
       },
       {
         "name": "agentpublic",
         "count": 3,
         "vmSize": "Standard_D2_v2",
         "dnsPrefix": "",
-        "vnetSubnetId": "/subscriptions/b52fce95-de5f-4b37-afca-db203a5d0b6a/resourceGroups/anhoweExampleRG/providers/Microsoft.Network/virtualNetworks/ExampleCustomVNET/subnets/ExampleAgentSubnet",
+        "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/AGENT_SUBNET_NAME",
         "ports": [
           80,
           443,

@@ -8,7 +8,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ], 
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]", 
       "name": "[concat(variables('storageAccountPrefixes')[mod(copyIndex(),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(copyIndex(),variables('storageAccountPrefixesCount'))],variables('storageAccountBaseClassicName'),copyIndex(1))]", 
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
@@ -19,7 +19,7 @@
 {{if IsPublic .Ports}}
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]", 
       "name": "[variables('{{.Name}}IPAddressName')]", 
       "properties": {
         "dnsSettings": {
@@ -34,7 +34,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('{{.Name}}IPAddressName'))]"
       ], 
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]", 
       "name": "[variables('{{.Name}}LbName')]", 
       "properties": {
         "backendAddressPools": [
@@ -90,7 +90,7 @@
       {
         "creationSource" : "[concat('acsengine-', variables('{{.Name}}VMNamePrefix'), '-vmss')]"
       },
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]", 
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), '-vmss')]", 
       "properties": {
         "upgradePolicy": {
@@ -153,17 +153,20 @@
             },
             {{GetDataDisks .}}
             "osDisk": {
-              "caching": "ReadWrite", 
-              "createOption": "FromImage"
+              "caching": "ReadWrite"
+              ,"createOption": "FromImage"
 {{if .IsStorageAccount}}
-              ,"name": "vmssosdisk", 
-              "vhdContainers": [
+              ,"name": "vmssosdisk"
+              ,"vhdContainers": [
                "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(0,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(0,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseClassicName'),1), variables('apiVersionStorage') ).primaryEndpoints.blob, 'osdisk')]",
                "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(1,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(1,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseClassicName'),2), variables('apiVersionStorage')).primaryEndpoints.blob, 'osdisk')]",
                "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(2,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(2,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseClassicName'),3), variables('apiVersionStorage')).primaryEndpoints.blob, 'osdisk')]",
                "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(3,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(3,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseClassicName'),4), variables('apiVersionStorage')).primaryEndpoints.blob, 'osdisk')]",
                "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(4,variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(4,variables('storageAccountPrefixesCount'))],variables('storageAccountBaseClassicName'),5), variables('apiVersionStorage')).primaryEndpoints.blob, 'osdisk')]"
               ]
+{{end}}
+{{if ne .OSDiskSizeGB 0}}
+            ,"diskSizeGB": {{.OSDiskSizeGB}}
 {{end}}
             }
           }
@@ -172,7 +175,7 @@
       "sku": {
         "capacity": "[variables('{{.Name}}Count')]", 
         "name": "[variables('{{.Name}}VMSize')]", 
-        "tier": "Standard"
+        "tier": "[variables('{{.Name}}VMSizeTier')]"
       }, 
       "type": "Microsoft.Compute/virtualMachineScaleSets"
     }

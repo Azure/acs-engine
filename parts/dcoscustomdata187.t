@@ -21,6 +21,9 @@ mounts:
 - - ephemeral0.2
   - /var/lib/docker
 runcmd:
+- /usr/lib/apt/apt.systemd.daily
+- echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
+- sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
 - - ln
   - -s
   - /bin/rm
@@ -111,6 +114,12 @@ write_files:
     '
   owner: root
   path: /etc/mesosphere/setup-flags/cluster-packages.json
+  permissions: '0644'
+- content: 'DCOS_ENVIRONMENT={{{targetEnvironment}}}
+
+    '
+  owner: root
+  path: /etc/mesosphere/setup-flags/dcos-deploy-environment
   permissions: '0644'
 - content: '[Journal]
 
@@ -293,7 +302,7 @@ write_files:
 
     StandardError=journal+console
 
-    ExecStartPre=/usr/bin/curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 -o /var/lib/mesos/dl/bootstrap.tar.xz https://dcosio.azureedge.net/dcos/stable/bootstrap/e73ba2b1cd17795e4dcb3d6647d11a29b9c35084.bootstrap.tar.xz
+    ExecStartPre=/usr/bin/curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 -o /var/lib/mesos/dl/bootstrap.tar.xz {{{dcosBootstrapURL}}}
 
     ExecStartPre=/usr/bin/mkdir -p /opt/mesosphere
 
@@ -338,4 +347,10 @@ write_files:
   permissions: "0744"
   owner: "root"
 - path: /var/lib/dcos/mesos-slave-common
+<<<<<<< HEAD
   content: 'ATTRIBUTES_STR'
+=======
+  content: 'ATTRIBUTES_STR'
+  permissions: "0644"
+  owner: "root"
+>>>>>>> upstream/master

@@ -1,13 +1,10 @@
 package vlabs
 
-// SubscriptionState represents the state of the subscription
-type SubscriptionState int
-
-// Subscription represents the customer subscription
-type Subscription struct {
-	ID    string
-	State SubscriptionState
-}
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+)
 
 // ResourcePurchasePlan defines resource plan as required by ARM
 // for billing purposes.
@@ -21,31 +18,32 @@ type ResourcePurchasePlan struct {
 // ContainerService complies with the ARM model of
 // resource definition in a JSON template.
 type ContainerService struct {
-	ID       string               `json:"id,omitempty"`
-	Location string               `json:"location,omitempty"`
-	Name     string               `json:"name,omitempty"`
-	Plan     ResourcePurchasePlan `json:"plan,omitempty"`
-	Tags     map[string]string    `json:"tags,omitempty"`
-	Type     string               `json:"type,omitempty"`
+	ID       string                `json:"id,omitempty"`
+	Location string                `json:"location,omitempty"`
+	Name     string                `json:"name,omitempty"`
+	Plan     *ResourcePurchasePlan `json:"plan,omitempty"`
+	Tags     map[string]string     `json:"tags,omitempty"`
+	Type     string                `json:"type,omitempty"`
 
-	Properties Properties `json:"properties"`
+	Properties *Properties `json:"properties"`
 }
 
 // Properties represents the ACS cluster definition
 type Properties struct {
-	ProvisioningState       ProvisioningState       `json:"provisioningState"`
-	OrchestratorProfile     OrchestratorProfile     `json:"orchestratorProfile"`
-	MasterProfile           MasterProfile           `json:"masterProfile"`
-	AgentPoolProfiles       []AgentPoolProfile      `json:"agentPoolProfiles"`
-	LinuxProfile            LinuxProfile            `json:"linuxProfile"`
-	WindowsProfile          WindowsProfile          `json:"windowsProfile,omitempty"`
-	ServicePrincipalProfile ServicePrincipalProfile `json:"servicePrincipalProfile"`
-	CertificateProfile      CertificateProfile      `json:"certificateProfile"`
+	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
+	OrchestratorProfile     *OrchestratorProfile     `json:"orchestratorProfile,omitempty" validate:"required"`
+	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty" validate:"required"`
+	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
+	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`
+	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
+	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
+	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
-// The 'Secret' parameter could be either a plain text, or referenced to a secret in a keyvault.
-// In the latter case, the format of the parameter's value should be
+// The 'Secret' parameter should be a secret in plain text.
+// The 'KeyvaultSecretRef' parameter is a reference to a secret in a keyvault.
+// The format of the parameter's value should be
 // "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
 // where:
 //    <SUB_ID> is the subscription ID of the keyvault
@@ -54,8 +52,9 @@ type Properties struct {
 //    <NAME> is the name of the secret.
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
-	ClientID string `json:"servicePrincipalClientID,omitempty"`
-	Secret   string `json:"servicePrincipalClientSecret,omitempty"`
+	ClientID          string `json:"servicePrincipalClientID,omitempty"`
+	Secret            string `json:"servicePrincipalClientSecret,omitempty"`
+	KeyvaultSecretRef string `json:"servicePrincipalClientKeyvaultSecretRef,omitempty"`
 }
 
 // CertificateProfile represents the definition of the master cluster
@@ -71,6 +70,8 @@ type ServicePrincipalProfile struct {
 type CertificateProfile struct {
 	// CaCertificate is the certificate authority certificate.
 	CaCertificate string `json:"caCertificate,omitempty"`
+	// CaPrivateKey is the certificate authority key.
+	CaPrivateKey string `json:"caPrivateKey,omitempty"`
 	// ApiServerCertificate is the rest api server certificate, and signed by the CA
 	APIServerCertificate string `json:"apiServerCertificate,omitempty"`
 	// ApiServerPrivateKey is the rest api server private key, and signed by the CA
@@ -83,19 +84,20 @@ type CertificateProfile struct {
 	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty"`
 	// KubeConfigPrivateKey is the client private key used for kubectl cli and signed by the CA
 	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
-	// caPrivateKey is an internal field only set if generation required
-	caPrivateKey string
 }
 
 // LinuxProfile represents the linux parameters passed to the cluster
 type LinuxProfile struct {
-	AdminUsername string `json:"adminUsername"`
+	AdminUsername string `json:"adminUsername" validate:"required"`
 	SSH           struct {
-		PublicKeys []struct {
-			KeyData string `json:"keyData"`
-		} `json:"publicKeys"`
-	} `json:"ssh"`
+		PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
+	} `json:"ssh" validate:"required"`
 	Secrets []KeyVaultSecrets `json:"secrets,omitempty"`
+}
+
+// PublicKey represents an SSH key for LinuxProfile
+type PublicKey struct {
+	KeyData string `json:"keyData"`
 }
 
 // WindowsProfile represents the windows parameters passed to the cluster
@@ -126,17 +128,74 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType OrchestratorType `json:"orchestratorType"`
+	OrchestratorType    string            `json:"orchestratorType" validate:"required"`
+	OrchestratorVersion string            `json:"orchestratorVersion"`
+	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+}
+
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasOrchestratorProfile OrchestratorProfile
+	op := aliasOrchestratorProfile{}
+	if e := json.Unmarshal(b, &op); e != nil {
+		return e
+	}
+	*o = OrchestratorProfile(op)
+	// Unmarshal OrchestratorType, format it as well
+	orchestratorType := o.OrchestratorType
+	switch {
+	case strings.EqualFold(orchestratorType, string(DCOS)):
+		o.OrchestratorType = DCOS
+	case strings.EqualFold(orchestratorType, string(Swarm)):
+		o.OrchestratorType = Swarm
+	case strings.EqualFold(orchestratorType, string(Kubernetes)):
+		o.OrchestratorType = Kubernetes
+	case strings.EqualFold(orchestratorType, string(SwarmMode)):
+		o.OrchestratorType = SwarmMode
+	default:
+		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
+	}
+	return nil
+}
+
+// KubernetesConfig contains the Kubernetes config structure, containing
+// Kubernetes specific configuration
+type KubernetesConfig struct {
+	KubernetesImageBase              string  `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet                    string  `json:"clusterSubnet,omitempty"`
+	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
+	DockerBridgeSubnet               string  `json:"DockerBridgeSubnet,omitempty"`
+	NodeStatusUpdateFrequency        string  `json:"nodeStatusUpdateFrequency,omitempty"`
+	CtrlMgrNodeMonitorGracePeriod    string  `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
+	CtrlMgrPodEvictionTimeout        string  `json:"ctrlMgrPodEvictionTimeout,omitempty"`
+	CtrlMgrRouteReconciliationPeriod string  `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
+	CloudProviderBackoff             bool    `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries      int     `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter       float64 `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration     int     `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent     float64 `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit           bool    `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS        float64 `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket     int     `json:"cloudProviderRateLimitBucket,omitempty"`
+	UseManagedIdentity               bool    `json:"useManagedIdentity,omitempty"`
+	CustomHyperkubeImage             string  `json:"customHyperkubeImage,omitempty"`
+	UseInstanceMetadata              bool    `json:"useInstanceMetadata,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int    `json:"count"`
-	DNSPrefix                string `json:"dnsPrefix"`
-	VMSize                   string `json:"vmSize"`
+	Count                    int    `json:"count" validate:"required,eq=1|eq=3|eq=5"`
+	DNSPrefix                string `json:"dnsPrefix" validate:"required"`
+	VMSize                   string `json:"vmSize" validate:"required"`
+	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	StorageProfile           string `json:"storageProfile,omitempty"`
+	IPAddressCount           int    `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
+	StorageProfile           string `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	HttpSourceAddressPrefix  string `json:"httpSourceAddressPrefix,omitempty"`
+	OAuthEnabled             bool   `json:"oauthEnabled"`
 
 	// subnet is internal
 	subnet string
@@ -152,21 +211,23 @@ type ClassicAgentPoolProfileType string
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                string `json:"name"`
-	Count               int    `json:"count"`
-	VMSize              string `json:"vmSize"`
+	Name                string `json:"name" validate:"required"`
+	Count               int    `json:"count" validate:"required,min=1,max=100"`
+	VMSize              string `json:"vmSize" validate:"required"`
+	OSDiskSizeGB        int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	DNSPrefix           string `json:"dnsPrefix,omitempty"`
 	OSType              OSType `json:"osType,omitempty"`
-	Ports               []int  `json:"ports,omitempty"`
+	Ports               []int  `json:"ports,omitempty" validate:"dive,min=1,max=65535"`
 	AvailabilityProfile string `json:"availabilityProfile"`
-	StorageProfile      string `json:"storageProfile"`
-	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
+	StorageProfile      string `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	DiskSizesGB         []int  `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
+	IPAddressCount      int    `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
 
 	// subnet is internal
 	subnet string
 
-	FQDN       string            `json:"fqdn,omitempty"`
+	FQDN             string            `json:"fqdn"`
 	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
 }
 
@@ -174,7 +235,7 @@ type AgentPoolProfile struct {
 // of machines from a given key vault
 // the key vault specified must have been granted read permissions to CRP
 type KeyVaultSecrets struct {
-	SourceVault       KeyVaultID            `json:"sourceVault,omitempty"`
+	SourceVault       *KeyVaultID           `json:"sourceVault,omitempty"`
 	VaultCertificates []KeyVaultCertificate `json:"vaultCertificates,omitempty"`
 }
 
@@ -193,9 +254,6 @@ type KeyVaultCertificate struct {
 	CertificateStore string `json:"certificateStore,omitempty"`
 }
 
-// OrchestratorType defines orchestrators supported by ACS
-type OrchestratorType string
-
 // OSType represents OS types of agents
 type OSType string
 
@@ -207,16 +265,6 @@ func (p *Properties) HasWindows() bool {
 		}
 	}
 	return false
-}
-
-// GetCAPrivateKey returns the ca private key
-func (c *CertificateProfile) GetCAPrivateKey() string {
-	return c.caPrivateKey
-}
-
-// SetCAPrivateKey sets the ca private key
-func (c *CertificateProfile) SetCAPrivateKey(caPrivateKey string) {
-	c.caPrivateKey = caPrivateKey
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
@@ -234,6 +282,16 @@ func (m *MasterProfile) SetSubnet(subnet string) {
 	m.subnet = subnet
 }
 
+// IsManagedDisks returns true if the master specified managed disks
+func (m *MasterProfile) IsManagedDisks() bool {
+	return m.StorageProfile == ManagedDisks
+}
+
+// IsStorageAccount returns true if the master specified storage account
+func (m *MasterProfile) IsStorageAccount() bool {
+	return m.StorageProfile == StorageAccount
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (a *AgentPoolProfile) IsCustomVNET() bool {
 	return len(a.VnetSubnetID) > 0
@@ -242,6 +300,11 @@ func (a *AgentPoolProfile) IsCustomVNET() bool {
 // IsWindows returns true if the agent pool is windows
 func (a *AgentPoolProfile) IsWindows() bool {
 	return a.OSType == Windows
+}
+
+// IsLinux returns true if the agent pool is linux
+func (a *AgentPoolProfile) IsLinux() bool {
+	return a.OSType == Linux
 }
 
 // IsAvailabilitySets returns true if the customer specified disks
@@ -256,7 +319,7 @@ func (a *AgentPoolProfile) IsManagedDisks() bool {
 
 // IsStorageAccount returns true if the customer specified storage account
 func (a *AgentPoolProfile) IsStorageAccount() bool {
-	return a.StorageProfile == StorageAccountClassic || a.StorageProfile == StorageAccount
+	return a.StorageProfile == StorageAccount
 }
 
 // HasDisks returns true if the customer specified disks
@@ -276,5 +339,5 @@ func (a *AgentPoolProfile) SetSubnet(subnet string) {
 
 // IsSwarmMode returns true if this template is for Swarm Mode orchestrator
 func (o *OrchestratorProfile) IsSwarmMode() bool {
-	return o.OrchestratorType == DockerCE
+	return o.OrchestratorType == SwarmMode
 }

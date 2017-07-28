@@ -19,3 +19,14 @@
       "value": ""
     }
 {{end}}
+{{if AnyAgentUsesAvailablilitySets}}
+    ,
+    "agentStorageAccountSuffix": {
+      "type": "string",
+      "value": "[variables('storageAccountBaseName')]"
+    },
+    "agentStorageAccountPrefixes": {
+      "type": "array",
+      "value": "[variables('storageAccountPrefixes')]"
+    }
+{{end}}

@@ -20,7 +20,7 @@
         "osType": "Windows"
       },
       {
-          "name": "agentpool2",
+          "name": "agentpublic",
           "count": 3,
           "dnsPrefix": "",
           "vmSize": "Standard_D2_v2",

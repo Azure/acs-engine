@@ -8,7 +8,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ], 
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]", 
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]", 
       "properties": {
         "accountType": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
@@ -19,7 +19,7 @@
 {{if IsPublic .Ports}}
     {
       "apiVersion": "[variables('apiVersionDefault')]", 
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]", 
       "name": "[variables('{{.Name}}IPAddressName')]", 
       "properties": {
         "dnsSettings": {
@@ -34,7 +34,7 @@
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('{{.Name}}IPAddressName'))]"
       ], 
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]", 
       "name": "[variables('{{.Name}}LbName')]", 
       "properties": {
         "backendAddressPools": [
@@ -103,7 +103,7 @@
       {
         "creationSource" : "[concat('acsengine-', variables('{{.Name}}VMNamePrefix'), '-vmss')]"
       },
-      "location": "[resourceGroup().location]", 
+      "location": "[variables('location')]", 
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), '-vmss')]", 
       "properties": {
         "upgradePolicy": {
@@ -164,17 +164,20 @@
               "version": "latest"
             }, 
             "osDisk": {
-              "caching": "ReadWrite", 
-              "createOption": "FromImage"
+              "caching": "ReadWrite"
+              ,"createOption": "FromImage"
 {{if .IsStorageAccount}} 
-              ,"name": "vmssosdisk", 
-              "vhdContainers": [
+              ,"name": "vmssosdisk"
+              ,"vhdContainers": [
                 "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(0,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(0,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName')), variables('apiVersionStorage') ).primaryEndpoints.blob, 'osdisk')]", 
                 "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(1,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(1,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName')), variables('apiVersionStorage')).primaryEndpoints.blob, 'osdisk')]", 
                 "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(2,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(2,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName')), variables('apiVersionStorage')).primaryEndpoints.blob, 'osdisk')]", 
                 "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(3,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(3,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName')), variables('apiVersionStorage')).primaryEndpoints.blob, 'osdisk')]", 
                 "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('storageAccountPrefixes')[mod(add(4,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(4,variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName')), variables('apiVersionStorage')).primaryEndpoints.blob, 'osdisk')]"
               ]
+{{end}}
+{{if ne .OSDiskSizeGB 0}}
+            ,"diskSizeGB": {{.OSDiskSizeGB}}
 {{end}}
             }
           },
@@ -199,7 +202,7 @@
       "sku": {
         "capacity": "[variables('{{.Name}}Count')]", 
         "name": "[variables('{{.Name}}VMSize')]", 
-        "tier": "Standard"
+        "tier": "[variables('{{.Name}}VMSizeTier')]"
       }, 
       "type": "Microsoft.Compute/virtualMachineScaleSets"
     }

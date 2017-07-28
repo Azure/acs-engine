@@ -1,18 +1,18 @@
-# Microsoft Azure Container Service Engine - DockerCE/Swarm Mode Walkthrough
+# Microsoft Azure Container Service Engine - Swarm Mode Walkthrough
 
 ## Deployment
 
-Here are the steps to deploy a simple DockerCE cluster:
+Here are the steps to deploy a simple Swarm Mode cluster:
 
 1. [install acs-engine](acsengine.md#downloading-and-building-acs-engine)
 2. [generate your ssh key](ssh.md#ssh-key-generation)
-3. edit the [DockerCE/Swarm Mode example](../examples/swarmmode.json) and fill in the blank strings
+3. edit the [Swarm Mode example](../examples/swarmmode.json) and fill in the blank strings
 4. [generate the template](acsengine.md#generating-a-template)
 5. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../README.md#deployment-usage)
 
 ## Walkthrough
 
-Once your DockerCE/Swarm Mode cluster has been deployed you will have a resource group containing:
+Once your Swarm Mode cluster has been deployed you will have a resource group containing:
 
 1. a set of 1,3, or 5 masters in a master availability set.  Each master's SSH can be accessed via the public dns address at ports 2200..2204. First master's SSH can also be accessed via public dns address on port 22.
 
@@ -24,7 +24,7 @@ The following image shows the architecture of a container service cluster with 3
 
  All VMs are in the same VNET where the masters are on private subnet 172.16.0.0/24 and the agents are on the private subnet, 10.0.0.0/16, and fully accessible to each other.
 
-## Create your First Two DockerCE/Swarm Mode Docker services: hello-world, and Docker web app
+## Create your First Two Swarm Mode Docker services: hello-world, and Docker web app
 
 After completing this walkthrough you will know how to:
  * display information from Swarm Mode,
@@ -33,15 +33,15 @@ After completing this walkthrough you will know how to:
 
 
  1. After successfully deploying the template write down the two output master and agent FQDNs (Fully Qualified Domain Name).
-  1. If using Powershell or CLI, the output parameters are the last values printed.
-  2. If using Portal, to get the output you need to:
-    1. navigate to "resource group"
-    2. click on the resource group you just created
-    3. then click on "Succeeded" under *last deployment*
-    4. then click on the "Microsoft.Template"
-    5. now you can copy the output FQDNs and sample SSH commands
-
-    ![Image of docker scaling](images/findingoutputs.png)
+    1. If using Powershell or CLI, the output parameters are the last values printed.
+    2. If using Portal, to get the output you need to:
+        1. navigate to "resource group"
+        2. click on the resource group you just created
+        3. then click on "Succeeded" under *last deployment*
+        4. then click on the "Microsoft.Template"
+        5. now you can copy the output FQDNs and sample SSH commands
+        
+        ![Image of docker scaling](images/findingoutputs.png)
 
  2. SSH to port 2200 of the master FQDN (or first master's SSH can also be accessed via public dns address on port 22.). See [agent forwarding](ssh.md#key-management-and-agent-forwarding-with-windows-pageant) for an example of how to do this.
 

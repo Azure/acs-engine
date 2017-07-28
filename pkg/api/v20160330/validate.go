@@ -47,6 +47,11 @@ func (a *AgentPoolProfile) Validate() error {
 	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
 		return e
 	}
+	if a.DNSPrefix != "" {
+		if e := validateDNSName(a.DNSPrefix); e != nil {
+			return e
+		}
+	}
 	return nil
 }
 
@@ -66,6 +71,15 @@ func (l *LinuxProfile) Validate() error {
 
 // Validate implements APIObject
 func (a *Properties) Validate() error {
+	if a.OrchestratorProfile == nil {
+		return fmt.Errorf("missing OrchestratorProfile")
+	}
+	if a.MasterProfile == nil {
+		return fmt.Errorf("missing MasterProfile")
+	}
+	if a.LinuxProfile == nil {
+		return fmt.Errorf("missing LinuxProfile")
+	}
 	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
 	}
@@ -81,6 +95,9 @@ func (a *Properties) Validate() error {
 			return e
 		}
 		if agentPoolProfile.OSType == Windows {
+			if a.WindowsProfile == nil {
+				return fmt.Errorf("missing WindowsProfile")
+			}
 			switch a.OrchestratorProfile.OrchestratorType {
 			case Swarm:
 			default:
@@ -122,7 +139,7 @@ func validatePoolName(poolName string) error {
 }
 
 func validateDNSName(dnsName string) error {
-	dnsNameRegex := `^([a-z][a-z0-9-]{1,45}[a-z0-9])$`
+	dnsNameRegex := `^([A-Za-z][A-Za-z0-9-]{1,43}[A-Za-z0-9])$`
 	re, err := regexp.Compile(dnsNameRegex)
 	if err != nil {
 		return err
@@ -133,24 +150,13 @@ func validateDNSName(dnsName string) error {
 	return nil
 }
 
-func validateUniqueProfileNames(profiles []AgentPoolProfile) error {
+func validateUniqueProfileNames(profiles []*AgentPoolProfile) error {
 	profileNames := make(map[string]bool)
 	for _, profile := range profiles {
 		if _, ok := profileNames[profile.Name]; ok {
 			return fmt.Errorf("profile name '%s' already exists, profile names must be unique across pools", profile.Name)
 		}
 		profileNames[profile.Name] = true
-	}
-	return nil
-}
-
-func validateUniquePorts(ports []int, name string) error {
-	portMap := make(map[int]bool)
-	for _, port := range ports {
-		if _, ok := portMap[port]; ok {
-			return fmt.Errorf("agent profile '%s' has duplicate port '%d', ports must be unique", name, port)
-		}
-		portMap[port] = true
 	}
 	return nil
 }

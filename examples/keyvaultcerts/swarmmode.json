@@ -2,7 +2,7 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "DockerCE"
+      "orchestratorType": "SwarmMode"
     },
     "masterProfile": {
       "count": 3,
@@ -19,7 +19,7 @@
         "diskSizesGB": [128, 128, 128, 128]
       },
       {
-        "name": "agent1public",
+        "name": "agentpublic",
         "count": 3,
         "vmSize": "Standard_D2_v2",
         "dnsPrefix": "",
@@ -41,7 +41,19 @@
             "keyData": ""
           }
         ]
-      }
+      },
+      "secrets":[
+        {
+          "sourceVault":{
+            "id":""
+          },
+          "vaultCertificates":[
+            {
+              "certificateUrl" :""
+            }
+          ]
+        }
+	    ]
     }
   }
 }

@@ -2,7 +2,7 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "DockerCE"
+      "orchestratorType": "SwarmMode"
     },
     "masterProfile": {
       "count": 3,

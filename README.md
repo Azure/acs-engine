@@ -1,16 +1,17 @@
 # Microsoft Azure Container Service Engine - Builds Docker Enabled Clusters
+[![Coverage Status](https://coveralls.io/repos/github/Azure/acs-engine/badge.svg?branch=master)](https://coveralls.io/github/Azure/acs-engine?branch=master)
 
 ## Overview
 
-The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DC/OS, Kubernetes, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
+The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DC/OS, Kubernetes, Swarm Mode, or Swarm orchestrators. The input to the tool is a cluster definition. The cluster definition is very similar to (in many cases the same as) the ARM template syntax used to deploy a Microsoft Azure Container Service cluster.
 
 The cluster definition file enables the following customizations to your Docker enabled cluster:
-* choice of DC/OS, Kubernetes, or Swarm orchestrators
+* choice of DC/OS, Kubernetes, Swarm Mode, or Swarm orchestrators
 * multiple agent pools where each agent pool can specify:
  * standard or premium VM Sizes,
- * node count, 
+ * node count,
  * Virtual Machine ScaleSets or Availability Sets,
- * Storage Account Disks or Managed Disks (under private preview),
+ * Storage Account Disks or Managed Disks (under private preview)
 * Docker cluster sizes of 1200
 * Custom VNET
 
@@ -21,10 +22,10 @@ The cluster definition file enables the following customizations to your Docker 
 * [DC/OS Walkthrough](docs/dcos.md) - shows how to create a DC/OS enabled Docker cluster on Azure
 * [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Kubernetes enabled Docker cluster on Azure
 * [Swarm Walkthrough](docs/swarm.md) - shows how to create a Swarm enabled Docker cluster on Azure
-* [DockerCE/Swarm Mode Walkthrough](docs/swarmmode.md) - shows how to create a DockerCE cluster on Azure
-* [Custom VNET](examples/vnet) - shows how to use a custom VNET 
+* [Swarm Mode Walkthrough](docs/swarmmode.md) - shows how to create a Swarm Mode cluster on Azure
+* [Custom VNET](examples/vnet) - shows how to use a custom VNET
 * [Attached Disks](examples/disks-storageaccount) - shows how to attach up to 4 disks per node
-* [Managed Disks](examples/disks-managed) (under private preview) - shows how to use managed disks 
+* [Managed Disks](examples/disks-managed) (under private preview) - shows how to use managed disks
 * [Large Clusters](examples/largeclusters) - shows how to create cluster sizes of up to 1200 nodes
 
 ## Contributing
@@ -48,7 +49,7 @@ $ vim examples/kubernetes.classic.json
 # insert your preferred, unique DNS prefix
 # insert your SSH public key
 
-$ ./acs-engine examples/kubernetes.classic.json
+$ ./acs-engine generate examples/kubernetes.classic.json
 ```
 
 This produces a new directory inside `_output/` that contains an ARM template
@@ -85,9 +86,7 @@ $ azure group deployment create \
 ```
 
 ### Deploying with Azure CLI 2.0
-**NOTE:** Azure CLI 2.0 is still in preview, so changes may occur.
-Please reference [the Azure CLI 2.0 GitHub Repo](https://github.com/Azure/azure-cli) for updated commands and please
-ensure that your installation is up to date with the latest release. (Releases occur weekly!)
+Azure CLI 2.0 is actively improved, so please see [the Azure CLI 2.0 GitHub Repo](https://github.com/Azure/azure-cli) for the latest release and documentation.
 
 ```bash
 $ az login
@@ -102,7 +101,7 @@ $ az group deployment create \
     --name "<DEPLOYMENT NAME>" \
     --resource-group "<RESOURCE_GROUP_NAME>" \
     --template-file "./_output/<INSTANCE>/azuredeploy.json" \
-    --parameters "@./_output/<INSTANCE>/azuredeploy.parameters.json"
+    --parameters "./_output/<INSTANCE>/azuredeploy.parameters.json"
 ```
 
 ### Deploying with Powershell
