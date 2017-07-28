@@ -122,7 +122,7 @@ var kubernetesAddonYamls15 = map[string]string{
 	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR":  "kubernetesmasteraddons-managed-standard-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR":   "kubernetesmasteraddons-managed-premium-storage-class.yaml",
-	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment.yaml",
+	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment1.5.yaml",
 	"MASTER_ADDON_TILLER_SERVICE_B64_GZIP_STR":                  "kubernetesmasteraddons-tiller-service.yaml",
 }
 
@@ -560,7 +560,7 @@ func VersionOrdinal(version string) string {
 }
 
 // getStorageAccountType returns the support managed disk storage tier for a give VM size
-func getStorageAccountType (sizeName string) (string, error) {
+func getStorageAccountType(sizeName string) (string, error) {
 	spl := strings.Split(sizeName, "_")
 	if len(spl) < 2 {
 		return "", fmt.Errorf("Invalid sizeName: %s", sizeName)

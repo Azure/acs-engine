@@ -176,7 +176,7 @@ write_files:
   content: !!binary |
     MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR
 
-- path: /etc/kubernetes/addons/kubernetesmasteraddons-tiller-deployment.yaml
+- path: /etc/kubernetes/addons/kube-tiller-deployment.yaml
   permissions: "0644"
   encoding: gzip
   owner: "root"
