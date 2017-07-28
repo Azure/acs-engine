@@ -21,7 +21,7 @@ Let's provision a DC/OS cluster with credentials to an [Azure Container Registry
 - First, [provision an Azure Container Registry](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-managed-get-started-portal).  
 
 - Enable Admin Access and note the registry credentials
-![ACR Blade with Admin Access enabled](../../docs/images/acrblade.png)
+<img src="../../docs/images/acrblade.png" alt="ACR Blade with Admin Access enabled" style="width: 50%; height: 50%;"/>
 
 - Clone [acs-engine](http://github.com/azure/acs-engine) and [start the container with the dev environment](https://github.com/Azure/acs-engine/blob/master/docs/acsengine.md).
 
@@ -48,16 +48,16 @@ az group deployment create -g cluster-rg --template-file _output/dcoscluster/azu
 ```
 
 - Create a Service to deploy a container from the ACR
-![Service Creation from Registry](../../docs/images/dcos-create-service-from-reg.png)
+<img src="../../docs/images/dcos-create-service-from-reg.png" alt="Service Creation from Registry" style="width: 50%; height: 50%;"/>
 
 - Add the credential path on the agent using the JSON editor
-![](../../docs/images/dcos-create-service-json.png)
+<img src="../../docs/images/dcos-create-service-json.png" alt="JSON editor with credential path" style="width: 50%; height: 50%;"/>
 
 - See the Service running
-![Running Service](../../docs/images/dcos-running-service-from-reg.png)
+<img src="../../docs/images/dcos-running-service-from-reg.png" alt="Running Service" style="width: 50%; height: 50%;"/>
 
 - Check the credential deployment
-![Deployed Files](../../docs/images/dcos-running-service-from-reg-files.png)
+<img src="../../docs/images/dcos-running-service-from-reg-files.png" alt="Running Service" style="width: 50%; height: 50%;"/>
 
 ## Limitations
 - The API model currenlty only supports credentials to a single registry.
