@@ -162,6 +162,20 @@ write_files:
   content: !!binary |
     MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR
 
+- path: /etc/kubernetes/addons/managed-standard-storage-class.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/managed-premium-storage-class.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR
+
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
 - path: /etc/kubernetes/addons/calico-configmap.yaml
   permissions: "0644"

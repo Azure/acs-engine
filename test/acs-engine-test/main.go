@@ -55,7 +55,7 @@ const usage = `Usage:
 
 var logDir string
 var orchestratorRe *regexp.Regexp
-var skipMetrics bool
+var enableMetrics bool
 
 func init() {
 	orchestratorRe = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
@@ -337,7 +337,7 @@ func wrileLog(fname string, format string, args ...interface{}) {
 }
 
 func sendErrorMetrics(resMap map[string]*ErrorStat) {
-	if skipMetrics {
+	if !enableMetrics {
 		return
 	}
 	for _, errorStat := range resMap {
@@ -368,7 +368,7 @@ func sendErrorMetrics(resMap map[string]*ErrorStat) {
 }
 
 func sendDurationMetrics(step, location string, duration time.Duration, errorName string) {
-	if skipMetrics {
+	if !enableMetrics {
 		return
 	}
 	var metricName string
@@ -425,10 +425,9 @@ func mainInternal() error {
 		fmt.Println("Warning: BUILD_NUMBER is not set or invalid. Assuming 0")
 		buildNum = 0
 	}
-	// set environment variable SKIP_METRICS=y to disable sending the metrics.
-	// sending the metrics is enabled by default.
-	if os.Getenv("SKIP_METRICS") == "y" {
-		skipMetrics = true
+	// set environment variable ENABLE_METRICS=y to enable sending the metrics (disabled by default)
+	if os.Getenv("ENABLE_METRICS") == "y" {
+		enableMetrics = true
 	}
 	// initialize report manager
 	testManager.reportMgr = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments))
