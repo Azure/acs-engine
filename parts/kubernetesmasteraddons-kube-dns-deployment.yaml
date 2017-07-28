@@ -43,7 +43,6 @@ spec:
                   values:
                   - kube-dns
               topologyKey: kubernetes.io/hostname
-      strategy:
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
