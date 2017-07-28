@@ -1,0 +1,60 @@
+{
+    "apiVersion":  "vlabs",
+    "properties":  {
+                       "orchestratorProfile":  {
+                                                   "orchestratorType":  "Kubernetes",
+                                                   "orchestratorVersion":  "1.6.6"
+                                               },
+                       "masterProfile":  {
+                                             "count":  1,
+                                             "dnsPrefix":  "udayk8s19",
+                                             "vmSize":  "Standard_DS2_v2"
+                                         },
+                       "agentPoolProfiles":  [
+                                                 {
+                                                     "name":  "agentpool1",
+                                                     "count":  1,
+                                                     "vmSize":  "Standard_DS2_v2",
+                                                     "availabilityProfile":  "AvailabilitySet",
+													 "distro": "coreos"
+													
+                                                 },
+                                                 {
+                                                     "name":  "agentpool2",
+                                                     "count":  1,
+                                                     "vmSize":  "Standard_DS2_v2",
+                                                     "availabilityProfile":  "AvailabilitySet",
+													 "distro": "Ubuntu"
+													 
+                                                 },
+												 {
+                                                     "name":  "apnotsp",
+                                                     "count":  1,
+                                                     "vmSize":  "Standard_DS2_v2",
+                                                     "availabilityProfile":  "AvailabilitySet"
+													 
+													
+                                                 }
+												
+											],
+    "windowsProfile": {
+      "adminUsername": "azureuser",
+      "adminPassword": "replacepassword1234$"
+    },
+                                           
+                       "linuxProfile":  {
+                                            "adminUsername":  "azureuser",
+                                            "ssh":  {
+                                                        "publicKeys":  [
+                                                                           {
+                                                                               "keyData":  "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAtzAh3fsyqQrQeObJl9K6G+Hx7tnVTG1eMMHxfQyt6+Cua30S0g3TWKNT2urlAvB4G+eWUvu6GQx22iVFDd45LG9qMdVAMs0DV1eMTaNs7bSG7cdAlgRPhZqlnoD5XSQVifkfjV9kLhEyKzbkxr1iaiTDyqhHskXURJ6RTCiMhH5rq1SRNLmHdJ9i2jNFTH7CxtvoG2962N+NRo7a32V9hxn3lOmQVBnVivQkseME87km6uOneRwgi3NBUafT1FwXgRKaoDPvXxYROGfn1hSGjQFLUnaw7d/96R/K2uq8O83AanQJ1sucTfv8Tjxw+N+IHrwHiiiLMylQy7ot855iqQ=="
+                                                                           }
+                                                                       ]
+                                                    }
+                                        },
+                       "servicePrincipalProfile":  {
+                                                       "servicePrincipalClientID":  "6ce3e273-9370-47b6-a2fa-403fa02b66a6",
+                                                       "servicePrincipalClientSecret":  "1e455b16-06ea-478a-82f1-655be4535f2e"
+                                                   }
+                   }
+}

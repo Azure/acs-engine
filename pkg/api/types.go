@@ -2,7 +2,7 @@ package api
 
 import (
 	neturl "net/url"
-
+	"strings"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -173,22 +173,22 @@ type MasterProfile struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                string `json:"name"`
-	Count               int    `json:"count"`
-	VMSize              string `json:"vmSize"`
-	OSDiskSizeGB        int    `json:"osDiskSizeGB,omitempty"`
-	DNSPrefix           string `json:"dnsPrefix,omitempty"`
-	OSType              OSType `json:"osType,omitempty"`
-	Ports               []int  `json:"ports,omitempty"`
-	AvailabilityProfile string `json:"availabilityProfile"`
-	StorageProfile      string `json:"storageProfile,omitempty"`
-	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
-	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
-	Subnet              string `json:"subnet"`
-	IPAddressCount      int    `json:"ipAddressCount,omitempty"`
-
-	FQDN             string            `json:"fqdn,omitempty"`
-	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
+	Name                string            `json:"name"`
+	Count               int               `json:"count"`
+	VMSize              string            `json:"vmSize"`
+	OSDiskSizeGB        int               `json:"osDiskSizeGB,omitempty"`
+	DNSPrefix           string            `json:"dnsPrefix,omitempty"`
+	OSType              OSType            `json:"osType,omitempty"`
+	Ports               []int             `json:"ports,omitempty"`
+	AvailabilityProfile string            `json:"availabilityProfile"`
+	StorageProfile      string            `json:"storageProfile,omitempty"`
+	DiskSizesGB         []int             `json:"diskSizesGB,omitempty"`
+	VnetSubnetID        string            `json:"vnetSubnetID,omitempty"`
+	Subnet              string            `json:"subnet"`
+	IPAddressCount      int               `json:"ipAddressCount,omitempty"`
+	Distro              string            `json:"distro,omitempty"`
+	FQDN                string            `json:"fqdn,omitempty"`
+	CustomNodeLabels    map[string]string `json:"customNodeLabels,omitempty"`
 }
 
 // DiagnosticsProfile setting to enable/disable capturing
@@ -372,6 +372,18 @@ func (a *AgentPoolProfile) IsWindows() bool {
 // IsLinux returns true if the agent pool is linux
 func (a *AgentPoolProfile) IsLinux() bool {
 	return a.OSType == Linux
+}
+
+// IsDistroCoreOS returns true if distro is coreos
+func (a *AgentPoolProfile) IsDistroCoreOS() bool {
+	return strings.EqualFold(a.Distro, "coreos")
+}
+
+// IsDistroUbuntu returns true if distro is ubuntu or not specified.
+//IsDistroUbuntu returns treue if Distro in the agentppol is Ubuntu or Not spefcified
+func (a *AgentPoolProfile) IsDistroUbuntu() bool {
+
+	return (strings.EqualFold(a.Distro, "ubuntu") || a.Distro == "")
 }
 
 // IsAvailabilitySets returns true if the customer specified disks

@@ -1,6 +1,7 @@
 package vlabs
 
 import (
+	"strings"
 	"errors"
 	"fmt"
 	"net"
@@ -112,6 +113,30 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 	} else {
 		if e := validate.Var(a.Ports, "len=0"); e != nil {
 			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty for Orchestrator: %s", string(orchestratorType))
+		}
+	}
+
+	//Distro is only applicable for Kubernetes and OSType Linux Only. Distro should be either CoreOS or Ubuntu or Empty to use Ubuntu as default
+	if orchestratorType == Kubernetes {
+		if a.IsWindows() {
+			if e := validate.Var(a.Distro, "len=0"); e != nil {
+				return fmt.Errorf("Distro is not suppored for OSType Windows. OSType determeid was: %s and Distro was: %s", a.OSType, a.Distro)
+			}
+		}
+
+		switch strings.ToLower(a.Distro) {
+			case "coreos":
+			case "ubuntu":
+			case "": 
+			default:
+				return fmt.Errorf("Unsupported Distro is specified for OSType Linux. OSType determeid was: %s and Distro was: %s", a.OSType, a.Distro)
+			}
+
+		
+	} else {
+		//Not Kubernetes
+		if e := validateNameEmpty(a.Distro, "AgentPoolProfile.distro"); e != nil {
+				return fmt.Errorf("Distro is suppored for Orchestrator Type Kubernetes only. orchestratorType determeid was: %s and Distro was: %s", orchestratorType, a.Distro)
 		}
 	}
 

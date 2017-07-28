@@ -223,10 +223,9 @@ type AgentPoolProfile struct {
 	DiskSizesGB         []int  `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 	IPAddressCount      int    `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
-
+	Distro              string `json:"distro,omitempty"`
 	// subnet is internal
-	subnet string
-
+	subnet           string
 	FQDN             string            `json:"fqdn"`
 	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
 }
@@ -306,6 +305,19 @@ func (a *AgentPoolProfile) IsWindows() bool {
 func (a *AgentPoolProfile) IsLinux() bool {
 	return a.OSType == Linux
 }
+
+
+// IsDistroCoreOS returns true if distro is coreos
+func (a *AgentPoolProfile) IsDistroCoreOS() bool {
+	return strings.EqualFold(a.Distro, "coreos")
+}
+
+//IsDistroUbuntu returns treue if Distro in the agentppol is Ubuntu or Not spefcified
+func (a *AgentPoolProfile) IsDistroUbuntu() bool {
+
+	return (strings.EqualFold(a.Distro, "ubuntu") || a.Distro == "")
+}
+
 
 // IsAvailabilitySets returns true if the customer specified disks
 func (a *AgentPoolProfile) IsAvailabilitySets() bool {
