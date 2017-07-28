@@ -214,7 +214,7 @@ func autofillApimodel(dc *deployCmd) {
 			for {
 				err = dc.client.CreateRoleAssignmentSimple(dc.resourceGroup, servicePrincipalObjectID)
 				if err != nil {
-					log.Warnf("Failed to create role assignment (will retry): %q", err)
+					log.Debugf("Failed to create role assignment (will retry): %q", err)
 					time.Sleep(3 * time.Second)
 					continue
 				}
