@@ -122,7 +122,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
-		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && (k8sVersion == api.Kubernetes171 || k8sVersion == api.Kubernetes170 || k8sVersion == api.Kubernetes166) {
+		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && (k8sVersion == api.Kubernetes172 || k8sVersion == api.Kubernetes171 || k8sVersion == api.Kubernetes170 || k8sVersion == api.Kubernetes166) {
 			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
 			}

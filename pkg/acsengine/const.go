@@ -80,6 +80,28 @@ const (
 
 // KubeImages represents Docker images used for Kubernetes components based on Kubernetes version
 var KubeImages = map[string]map[string]string{
+  api.Kubernetes172: {
+		"hyperkube":       "hyperkube-amd64:v1.7.2",
+		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
+		"exechealthz":     "exechealthz-amd64:1.2",
+		"addonresizer":    "addon-resizer:1.7",
+		"heapster":        "heapster:v1.4.0",
+		"dns":             "k8s-dns-kube-dns-amd64:1.14.4",
+		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
+		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.14.4",
+		"pause":           "pause-amd64:3.0",
+		"windowszip":      "v1.7.2intwinnat.zip",
+		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
+		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
+		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
+		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
+		"backoffretries":  strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
+		"backoffjitter":   strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
+		"backoffduration": strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
+		"backoffexponent": strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
+		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
+		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
+	},
 	api.Kubernetes171: {
 		"hyperkube":       "hyperkube-amd64:v1.7.1",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
