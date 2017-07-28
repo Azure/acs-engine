@@ -105,6 +105,8 @@ var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR":    "kubernetesmasteraddons-kubernetes-dashboard-service.yaml",
 	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
+	"MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR":  "kubernetesmasteraddons-managed-standard-storage-class.yaml",
+	"MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR":   "kubernetesmasteraddons-managed-premium-storage-class.yaml",
 }
 
 var kubernetesAddonYamls15 = map[string]string{
@@ -116,6 +118,8 @@ var kubernetesAddonYamls15 = map[string]string{
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR":    "kubernetesmasteraddons-kubernetes-dashboard-service.yaml",
 	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
+	"MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR":  "kubernetesmasteraddons-managed-standard-storage-class.yaml",
+	"MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR":   "kubernetesmasteraddons-managed-premium-storage-class.yaml",
 }
 
 var calicoAddonYamls = map[string]string{
@@ -556,6 +560,19 @@ func VersionOrdinal(version string) string {
 	return string(vo)
 }
 
+// getStorageAccountType returns the support managed disk storage tier for a give VM size
+func getStorageAccountType (sizeName string) (string, error) {
+	spl := strings.Split(sizeName, "_")
+	if len(spl) < 2 {
+		return "", fmt.Errorf("Invalid sizeName: %s", sizeName)
+	}
+	capability := spl[1]
+	if strings.Contains(strings.ToLower(capability), "s") {
+		return "Premium_LRS", nil
+	}
+	return "Standard_LRS", nil
+}
+
 // getTemplateFuncMap returns all functions used in template generation
 func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[string]interface{} {
 	return template.FuncMap{
@@ -589,6 +606,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"GetKubernetesLabels": func(profile *api.AgentPoolProfile) string {
 			var buf bytes.Buffer
 			buf.WriteString(fmt.Sprintf("role=agent,agentpool=%s", profile.Name))
+			if profile.StorageProfile == api.ManagedDisks {
+				storagetier, _ := getStorageAccountType(profile.VMSize)
+				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
+			}
 			for k, v := range profile.CustomNodeLabels {
 				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
 			}

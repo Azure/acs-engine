@@ -16,10 +16,6 @@ func TestMasterProfile(t *testing.T) {
 		t.Fatalf("unexpectedly detected MasterProfile.Count != 1 after unmarshal")
 	}
 
-	if !mp.IsStorageAccount() {
-		t.Fatalf("unexpectedly detected MasterProfile.StorageProfile != StorageAccount after unmarshal")
-	}
-
 	if mp.FirstConsecutiveStaticIP != "10.240.255.5" {
 		t.Fatalf("unexpectedly detected MasterProfile.FirstConsecutiveStaticIP != 10.240.255.5 after unmarshal")
 	}
@@ -39,9 +35,5 @@ func TestAgentPoolProfile(t *testing.T) {
 
 	if ap.OSType != Linux {
 		t.Fatalf("unexpectedly detected AgentPoolProfile.OSType != Linux after unmarshal")
-	}
-
-	if !ap.IsStorageAccount() {
-		t.Fatalf("unexpectedly detected AgentPoolProfile.StorageProfile != StorageAccount after unmarshal")
 	}
 }

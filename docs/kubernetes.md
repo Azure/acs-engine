@@ -92,6 +92,68 @@ Per default Calico still allows all communication within the cluster. Using Kube
 * [NetworkPolicy Example Walkthrough](https://kubernetes.io/docs/getting-started-guides/network-policy/walkthrough/)
 * [Calico Kubernetes](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/)
 
+## Managed Disks
+
+[Managed disks](../examples/disks-managed/README.md) are supported for both node OS disks and Kubernetes persistent volumes. 
+
+Related [upstream PR](https://github.com/kubernetes/kubernetes/pull/46360) for details.
+
+### Using Kubernetes Persistent Volumes
+
+By default, each ACS-Engine cluster is bootstrapped with several StorageClass resources. This bootstrapping is handled by the addon-manager pod that creates resources defined under /etc/kubernetes/addons directory on master VMs.
+
+#### Non-managed Disks
+
+The default storage class has been set via the Kubernetes admission controller `DefaultStorageClass`.
+
+The default storage class will be used if persistent volume resources don't specify a storage class as part of the resource definition.
+
+The default storage class uses non-managed blob storage and will provision the blob within an existing storage account present in the resource group or provision a new storage account.
+
+Non-managed persistent volume types are available on all VM sizes.
+
+#### Managed Disks
+
+As part of cluster bootstrapping, two storage classes will be created to provide access to create Kubernetes persistent volumes using Azure managed disks.
+
+Nodes will be labelled as follows if they support managed disks:
+
+```
+storageprofile=managed
+storagetier=<Standard_LRS|Premium_LRS>
+```
+
+They are managed-premium and managed-standard and map to Standard_LRS and Premium_LRS managed disk types respectively.
+
+In order to use these storage classes the following conditions must be met.
+
+* The cluster must be running Kubernetes version 1.7.2 or greater. Refer to this [example](../examples/kubernetesversions/kubernetes1.7.1.json) for how to provision a Kubernetes cluster of a specific version.
+* The node must support managed disks. See this [example](../examples/disks-managed/kubernetes-vmas.json) to provision nodes with managed disks. You can also confirm if a node has managed disks using kubectl.
+
+```console
+kubectl get nodes -l storageprofile=managed
+NAME                    STATUS    AGE       VERSION
+k8s-agent1-23731866-0   Ready     24m       v1.7.2
+``` 
+
+* The VM size must support the type of managed disk type requested. For example, Premium VM sizes with managed OS disks support both managed-standard and managed-premium storage classes whereas Standard VM sizes with managed OS disks only support managed-standard storage class.
+
+* If you have mixed node cluster (both non-managed and managed disk types). You must use [affinity or nodeSelectors](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/) on your resource definitions in order to ensure that workloads are scheduled to VMs that support the underlying disk requirements.
+
+For example
+```
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: storageprofile
+            operator: In
+            values:
+            - managed
+````
+
 ## Create your First Kubernetes Service
 
 After completing this walkthrough you will know how to:
@@ -198,10 +260,6 @@ read and **write** permissions to the target Subscription.
 `Nov 10 16:35:22 k8s-master-43D6F832-0 docker[3177]: E1110 16:35:22.840688    3201 kubelet_node_status.go:69] Unable to construct api.Node object for kubelet: failed to get external ID from cloud provider: autorest#WithErrorUnlessStatusCode: POST https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/oauth2/token?api-version=1.0 failed with 400 Bad Request: StatusCode=400`
 
 3. [Link](serviceprincipal.md) to documentation on how to create/configure a service principal for an ACS-Engine Kubernetes cluster.
-
-### Managed Disks
-
-While [Managed disks](../examples/disks-managed/README.md) are supported for the node OS disks, they are currently not supported for persistent volumes. See https://github.com/kubernetes/kubernetes/pull/46360 for details.
 
 ## Known issues and mitigations
 

@@ -198,6 +198,7 @@ func addTestCertificateProfile(api *api.CertificateProfile) {
 
 func TestVersionOrdinal(t *testing.T) {
 	RegisterTestingT(t)
+	v172 := "1.7.2"
 	v171 := "1.7.1"
 	v170 := "1.7.0"
 	v166 := "1.6.6"
@@ -206,6 +207,7 @@ func TestVersionOrdinal(t *testing.T) {
 	v153 := "1.5.3"
 	v16 := "1.6"
 
+	Expect(v171 < v172).To(BeTrue())
 	Expect(v170 < v171).To(BeTrue())
 	Expect(v166 < v170).To(BeTrue())
 	Expect(v166 > v162).To(BeTrue())
@@ -219,4 +221,38 @@ func TestVersionOrdinal(t *testing.T) {
 	Expect(v16 < v162).To(BeTrue())
 	Expect(v16 > v153).To(BeTrue())
 
+}
+
+func TestGetStorageAccountType(t *testing.T) {
+	validPremiumVMSize := "Standard_DS2_v2"
+	validStandardVMSize := "Standard_D2_v2"
+	expectedPremiumTier := "Premium_LRS"
+	expectedStandardTier := "Standard_LRS" 
+	invalidVMSize := "D2v2"
+ 
+	// test premium VMSize returns premium managed disk tier
+	premiumTier, err := getStorageAccountType(validPremiumVMSize)
+	if err != nil {
+		t.Fatalf("Invalid sizeName: %s", err)
+	}
+
+	if premiumTier != expectedPremiumTier {
+		t.Fatalf("premium VM did no match premium managed storage tier")
+	}
+
+	// test standard VMSize returns standard managed disk tier
+	standardTier, err := getStorageAccountType(validStandardVMSize)
+	if err != nil {
+		t.Fatalf("Invalid sizeName: %s", err)
+	}
+
+	if standardTier != expectedStandardTier {
+		t.Fatalf("standard VM did no match standard managed storage tier")
+	}
+
+	// test invalid VMSize
+	result, err := getStorageAccountType(invalidVMSize)
+	if err == nil {
+        t.Errorf("getStorageAccountType() = (%s, nil), want error", result)
+    }
 }
