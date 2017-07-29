@@ -48,3 +48,17 @@
       "type": "string"
     }
 {{end}} 
+{{if HasPrivateRegistry}}
+  ,"registry": {
+      "metadata": {
+        "description": "Private Container Registry"
+      }, 
+      "type": "string"
+    },
+  "registryKey": {
+      "metadata": {
+        "description": "base64 encoded key to the Private Container Registry"
+      }, 
+      "type": "string"
+    }
+  {{end}}

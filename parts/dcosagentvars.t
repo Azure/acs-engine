@@ -52,3 +52,10 @@
 
     {{end}}
 {{end}}
+{{if HasPrivateRegistry}}
+    "registry" : "[tolower(parameters('registry'))]",
+    "registryKey" : "[parameters('registryKey')]",
+{{else}}
+    "registry" : "",
+    "registryKey" : "",
+{{end}}

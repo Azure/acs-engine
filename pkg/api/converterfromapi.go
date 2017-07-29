@@ -540,6 +540,9 @@ func convertOrchestratorProfileToV20170701(api *OrchestratorProfile, o *v2017070
 
 func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.OrchestratorProfile) {
 	o.OrchestratorType = api.OrchestratorType
+	o.RegistryUser = api.RegistryUser
+	o.RegistryPass = api.RegistryPass
+	o.Registry = api.Registry
 
 	if api.OrchestratorRelease != "" {
 		o.OrchestratorRelease = api.OrchestratorRelease
@@ -547,6 +550,18 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 
 	if api.OrchestratorVersion != "" {
 		o.OrchestratorVersion = api.OrchestratorVersion
+	}
+
+	if api.Registry != "" {
+		o.Registry = api.Registry
+	}
+
+	if api.RegistryUser != "" {
+		o.RegistryUser = api.RegistryUser
+	}
+
+	if api.RegistryPass != "" {
+		o.RegistryPass = api.RegistryPass
 	}
 
 	if api.KubernetesConfig != nil {

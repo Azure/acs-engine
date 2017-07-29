@@ -141,6 +141,9 @@ type OrchestratorProfile struct {
 	OrchestratorRelease string            `json:"orchestratorRelease"`
 	OrchestratorVersion string            `json:"orchestratorVersion" validate:"len=0"`
 	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	Registry            string            `json:"registry,omitempty"`
+	RegistryUser        string            `json:"registryUser,omitempty"`
+	RegistryPass        string            `json:"registryPassword,omitempty"`
 }
 
 // UnmarshalJSON unmarshal json using the default behavior

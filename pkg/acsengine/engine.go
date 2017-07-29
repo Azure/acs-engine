@@ -575,6 +575,12 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		if len(agentProfile.Ports) > 0 {
 			addValue(parametersMap, fmt.Sprintf("%sEndpointDNSNamePrefix", agentProfile.Name), agentProfile.DNSPrefix)
 		}
+
+	}
+
+	if len(properties.OrchestratorProfile.Registry) > 0 {
+		addValue(parametersMap, "registry", properties.OrchestratorProfile.Registry)
+		addValue(parametersMap, "registryKey", base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", properties.OrchestratorProfile.RegistryUser, properties.OrchestratorProfile.RegistryPass))))
 	}
 
 	// Windows parameters
@@ -675,6 +681,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			return buf.String()
 		},
+		"HasPrivateRegistry": func() bool {
+			return len(cs.Properties.OrchestratorProfile.Registry) > 0
+		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
 		},
@@ -721,17 +730,18 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return getDataDisks(profile)
 		},
 		"GetDCOSMasterCustomData": func() string {
-			masterProvisionScript := getDCOSMasterProvisionScript()
+			masterProvisionScript := getDCOSMasterProvisionScript(*cs.Properties.OrchestratorProfile)
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
-			str := getSingleLineDCOSCustomData(
-				cs.Properties.OrchestratorProfile.OrchestratorType,
+			str := getSingleLineDCOSCustomData(cs.Properties.OrchestratorProfile.OrchestratorType,
 				cs.Properties.OrchestratorProfile.OrchestratorRelease,
-				cs.Properties.MasterProfile.Count, masterProvisionScript, masterAttributeContents)
+				cs.Properties.MasterProfile.Count,
+				masterProvisionScript,
+				masterAttributeContents)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			agentProvisionScript := getDCOSAgentProvisionScript(profile)
+			agentProvisionScript := getDCOSAgentProvisionScript(profile, *cs.Properties.OrchestratorProfile)
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
@@ -1347,7 +1357,7 @@ func getBase64CustomScriptFromStr(str string) string {
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }
 
-func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
+func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile, orchProfile api.OrchestratorProfile) string {
 	// add the provision script
 
 	var scriptname string
@@ -1375,13 +1385,20 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 	} else {
 		roleFileContents = "touch /etc/mesosphere/roles/slave"
 	}
-
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
 
-	return provisionScript
+	var b bytes.Buffer
+	b.WriteString(provisionScript)
+	b.WriteString("\n")
+
+	if len(orchProfile.Registry) == 0 {
+		b.WriteString("rm /etc/docker.tar.gz\n")
+	}
+
+	return b.String()
 }
 
-func getDCOSMasterProvisionScript() string {
+func getDCOSMasterProvisionScript(orchProfile api.OrchestratorProfile) string {
 	// add the provision script
 	bp, err1 := Asset(dcosProvision)
 	if err1 != nil {
@@ -1397,8 +1414,17 @@ func getDCOSMasterProvisionScript() string {
 	roleFileContents := `touch /etc/mesosphere/roles/master
 touch /etc/mesosphere/roles/azure_master`
 	provisionScript = strings.Replace(provisionScript, "ROLESFILECONTENTS", roleFileContents, -1)
+	var b bytes.Buffer
+	b.WriteString(provisionScript)
+	b.WriteString("\n")
 
-	return provisionScript
+	if len(orchProfile.Registry) == 0 {
+
+		b.WriteString("rm /etc/docker.tar.gz\n")
+	}
+
+	return b.String()
+
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
@@ -1413,6 +1439,9 @@ func getSingleLineDCOSCustomData(orchestratorType string, orchestratorRelease st
 			yamlFilename = dcosCustomData188
 		case api.DCOSRelease1Dot9:
 			yamlFilename = dcosCustomData190
+		default:
+			// it is a bug to get here
+			panic(fmt.Sprintf("BUG: invalid orchestrator release %s", orchestratorRelease))
 		}
 	default:
 		// it is a bug to get here
@@ -1421,7 +1450,7 @@ func getSingleLineDCOSCustomData(orchestratorType string, orchestratorRelease st
 
 	b, err := Asset(yamlFilename)
 	if err != nil {
-		panic(fmt.Sprintf("BUG: %s", err.Error()))
+		panic(fmt.Sprintf("BUG getting yaml custom data file: %s", err.Error()))
 	}
 
 	// transform the provision script content
