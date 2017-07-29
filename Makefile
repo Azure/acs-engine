@@ -65,6 +65,10 @@ test: test-style
 test-style:
 	@scripts/validate-go.sh
 
+.PHONY: test-e2e
+test-e2e:
+	@test/e2e.sh
+
 HAS_GLIDE := $(shell command -v glide;)
 HAS_GOX := $(shell command -v gox;)
 HAS_GIT := $(shell command -v git;)
