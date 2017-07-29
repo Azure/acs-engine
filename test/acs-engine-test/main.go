@@ -61,20 +61,23 @@ func init() {
 	orchestratorRe = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
 }
 
+// ErrorStat represents an error status that will be reported
 type ErrorStat struct {
 	errorInfo    *report.ErrorInfo
 	testCategory string
 	count        int64
 }
 
+// TestManager is object that contains test runner functions
 type TestManager struct {
-	config    *config.TestConfig
-	reportMgr *report.ReportMgr
-	lock      sync.Mutex
-	wg        sync.WaitGroup
-	rootDir   string
+	config  *config.TestConfig
+	Manager *report.Manager
+	lock    sync.Mutex
+	wg      sync.WaitGroup
+	rootDir string
 }
 
+// Run begins the test run process
 func (m *TestManager) Run() error {
 	n := len(m.config.Deployments)
 	if n == 0 {
@@ -126,10 +129,10 @@ func (m *TestManager) Run() error {
 	}
 	m.wg.Wait()
 	//create reports
-	if err = m.reportMgr.CreateTestReport(fmt.Sprintf("%s/%s", logDir, testReport)); err != nil {
+	if err = m.Manager.CreateTestReport(fmt.Sprintf("%s/%s", logDir, testReport)); err != nil {
 		fmt.Printf("Failed to create %s: %v\n", testReport, err)
 	}
-	if err = m.reportMgr.CreateCombinedReport(fmt.Sprintf("%s/%s", logDir, combinedReport), testReport); err != nil {
+	if err = m.Manager.CreateCombinedReport(fmt.Sprintf("%s/%s", logDir, combinedReport), testReport); err != nil {
 		fmt.Printf("Failed to create %s: %v\n", combinedReport, err)
 	}
 	// fail the test on error
@@ -205,7 +208,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	for _, step := range steps {
 		txt, duration, err := m.runStep(resourceGroup, step, env, timeout)
 		if err != nil {
-			errorInfo = m.reportMgr.Process(txt, testName, d.Location)
+			errorInfo = m.Manager.Process(txt, testName, d.Location)
 			sendDurationMetrics(step, d.Location, duration, errorInfo.ErrName)
 			wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, resourceGroup, err, txt)
 			// check AUTOCLEAN flag: if set to 'n', don't remove deployment
@@ -430,7 +433,7 @@ func mainInternal() error {
 		enableMetrics = true
 	}
 	// initialize report manager
-	testManager.reportMgr = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments))
+	testManager.Manager = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments))
 	// check root directory
 	if rootDir == "" {
 		return fmt.Errorf("acs-engine root directory is not provided")

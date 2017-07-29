@@ -116,7 +116,6 @@ func (gc *generateCmd) run() error {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}
 
-	certsGenerated := false
 	template, parameters, certsGenerated, err := templateGenerator.GenerateTemplate(gc.containerService)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", gc.apimodelPath, err.Error())
@@ -132,7 +131,7 @@ func (gc *generateCmd) run() error {
 		}
 	}
 
-	if err = acsengine.WriteArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
+	if err = acsengine.WriteTLSArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 

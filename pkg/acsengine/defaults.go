@@ -165,8 +165,8 @@ func setMasterNetworkDefaults(a *api.Properties) {
 		}
 	}
 
-	if a.MasterProfile.HttpSourceAddressPrefix == "" {
-		a.MasterProfile.HttpSourceAddressPrefix = "*"
+	if a.MasterProfile.HTTPSourceAddressPrefix == "" {
+		a.MasterProfile.HTTPSourceAddressPrefix = "*"
 	}
 }
 

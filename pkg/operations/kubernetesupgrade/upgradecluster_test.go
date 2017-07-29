@@ -180,7 +180,8 @@ func createContainerService(containerServiceName string, masterCount int, agentC
 	}
 
 	cs.Properties.LinuxProfile.AdminUsername = "azureuser"
-	cs.Properties.LinuxProfile.SSH.PublicKeys = append(cs.Properties.LinuxProfile.SSH.PublicKeys, api.PublicKey{"test"})
+	cs.Properties.LinuxProfile.SSH.PublicKeys = append(
+		cs.Properties.LinuxProfile.SSH.PublicKeys, api.PublicKey{KeyData: "test"})
 
 	cs.Properties.ServicePrincipalProfile = &api.ServicePrincipalProfile{}
 	cs.Properties.ServicePrincipalProfile.ClientID = "DEC923E3-1EF1-4745-9516-37906D56DEC4"
