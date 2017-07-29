@@ -58,4 +58,10 @@ workflows:
   build_and_test:
     jobs:
       - test
-      - e2e
+      - e2e-hold:
+          type: approval
+          requires:
+            - test
+      - e2e:
+          requires:
+            - e2e-hold
