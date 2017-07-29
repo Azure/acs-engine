@@ -34,7 +34,10 @@ RUN git clone https://github.com/akesterson/cmdarg.git /tmp/cmdarg \
 RUN git clone https://github.com/akesterson/shunit.git /tmp/shunit \
     && cd /tmp/shunit && make install && rm -rf /tmp/shunit
 
-# Used by some CI jobs
-ADD ./test/bootstrap/checkout-pr.sh /tmp/checkout-pr.sh
-
 WORKDIR /gopath/src/github.com/Azure/acs-engine
+
+# Cache vendor layer
+ADD Makefile versioning.mk glide.yaml glide.lock /gopath/src/github.com/Azure/acs-engine/
+RUN make bootstrap
+
+ADD . /gopath/src/github.com/Azure/acs-engine
