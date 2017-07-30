@@ -38,8 +38,6 @@ WARN[0005] --resource-group was not specified. Using the DNS prefix from the api
 WARN[0008] apimodel: ServicePrincipalProfile was empty, creating application...
 WARN[0017] created application with applicationID (7e2d433f-d039-48b8-87dc-83fa4dfa38d4) and servicePrincipalObjectID (db6167e1-aeed-407a-b218-086589759442).
 WARN[0017] apimodel: ServicePrincipalProfile was empty, assigning role to application...
-WARN[0017] Failed to create role assignment (will retry): "authorization.RoleAssignmentsClient#Create: Failure responding to request: StatusCode=400 -- Original Error: autorest/azure: Service returned an error. Status=400 Code=\"PrincipalNotFound\" Message=\"Principal db6167e1aeed407ab218086589759442 does not exist in the directory 72f988bf-86f1-41af-91ab-2d7cd011db47.\""
-WARN[0020] Failed to create role assignment (will retry): "authorization.RoleAssignmentsClient#Create: Failure responding to request: StatusCode=400 -- Original Error: autorest/azure: Service returned an error. Status=400 Code=\"PrincipalNotFound\" Message=\"Principal db6167e1aeed407ab218086589759442 does not exist in the directory 72f988bf-86f1-41af-91ab-2d7cd011db47.\""
 INFO[0034] Starting ARM Deployment (contoso-apple-59769a59-1423145182). This will take some time...
 INFO[0393] Finished ARM Deployment (contoso-apple-59769a59-1423145182).
 ```
@@ -80,7 +78,7 @@ ACS Engine consumes a cluster definition which outlines the desired shape, size,
 
 Edit the [simple Kubernetes cluster definition](../examples/kubernetes.json) and fill out the required values:
 
-* `dnsPrefix`: must be a globally unique name and will form part of the hostname (e.g. myprod1, staging, leapinglama), be unique!
+* `dnsPrefix`: must be a region-unique name and will form part of the hostname (e.g. myprod1, staging, leapinglama), be unique!
 * `keyData`: must contain the public portion of an SSH key, this will be associated with the `adminUsername` value found in the same section of the cluster definition (e.g. 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABA....')
 * `servicePrincipalClientID`: this is the appId uuid or name from step 3
 * `servicePrincipalClientSecret`: this is the password or randomly-generated password from step 3

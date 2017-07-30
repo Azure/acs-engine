@@ -100,7 +100,7 @@ Run the following commands to pull the latest dependencies and build the `acs-en
 
 ```
 # install and download build dependencies
-make prereqs
+make bootstrap
 # build the `acs-engine` binary
 make build
 ```
@@ -173,6 +173,6 @@ Setup steps:
 Build acs-engine:
   1. Type `go get github.com/Azure/acs-engine` to get the acs-engine Github project
   2. Type `cd $GOPATH/src/github.com/Azure/acs-engine` to change to the source directory
-  3. Type `make rereqs` to install supporting components
+  3. Type `make bootstrap` to install supporting components
   4. Type `make build` to build the project
   5. Type `./bin/acs-engine` to see the command line parameters
