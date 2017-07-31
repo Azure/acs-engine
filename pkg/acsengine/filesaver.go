@@ -14,10 +14,12 @@ type FileSaver struct {
 	Translator *i18n.Translator
 }
 
+// SaveFileString saves string to file
 func (f *FileSaver) SaveFileString(dir string, file string, data string) error {
 	return f.SaveFile(dir, file, []byte(data))
 }
 
+// SaveFile saves binary data to file
 func (f *FileSaver) SaveFile(dir string, file string, data []byte) error {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		if e := os.MkdirAll(dir, 0700); e != nil {

@@ -88,7 +88,7 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 			uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
-	log.Infoln(fmt.Sprintf("Cluster upraded sucessfully to Kubernetes version: %s",
+	log.Infoln(fmt.Sprintf("Cluster upraded successfully to Kubernetes version: %s",
 		ucs.OrchestratorProfile.OrchestratorVersion))
 	return nil
 }
@@ -205,7 +205,7 @@ func WriteTemplate(
 	writer := &acsengine.ArtifactWriter{
 		Translator: translator,
 	}
-	if err := writer.WriteArtifacts(upgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
+	if err := writer.WriteTLSArtifacts(upgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 }

@@ -194,7 +194,7 @@ type MasterProfile struct {
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	IPAddressCount           int    `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
 	StorageProfile           string `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
-	HttpSourceAddressPrefix  string `json:"httpSourceAddressPrefix,omitempty"`
+	HTTPSourceAddressPrefix  string `json:"HTTPSourceAddressPrefix,omitempty"`
 	OAuthEnabled             bool   `json:"oauthEnabled"`
 
 	// subnet is internal

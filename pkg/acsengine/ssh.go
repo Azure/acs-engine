@@ -17,7 +17,7 @@ type SSHCreator struct {
 }
 
 const (
-	// SSHKeySize is the size of SSH key to create
+	// SSHKeySize is the size (in bytes) of SSH key to create
 	SSHKeySize = 4096
 )
 
@@ -33,6 +33,7 @@ func (s *SSHCreator) CreateSaveSSH(username, outputDirectory string) (privateKey
 	f := &FileSaver{
 		Translator: s.Translator,
 	}
+
 	err = f.SaveFile(outputDirectory, fmt.Sprintf("%s_rsa", username), privateKeyPem)
 	if err != nil {
 		return nil, "", err

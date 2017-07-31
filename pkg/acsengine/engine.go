@@ -108,6 +108,8 @@ var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR":  "kubernetesmasteraddons-managed-standard-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR":   "kubernetesmasteraddons-managed-premium-storage-class.yaml",
+	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment.yaml",
+	"MASTER_ADDON_TILLER_SERVICE_B64_GZIP_STR":                  "kubernetesmasteraddons-tiller-service.yaml",
 }
 
 var kubernetesAddonYamls15 = map[string]string{
@@ -121,6 +123,8 @@ var kubernetesAddonYamls15 = map[string]string{
 	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR":  "kubernetesmasteraddons-managed-standard-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR":   "kubernetesmasteraddons-managed-premium-storage-class.yaml",
+	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment1.5.yaml",
+	"MASTER_ADDON_TILLER_SERVICE_B64_GZIP_STR":                  "kubernetesmasteraddons-tiller-service.yaml",
 }
 
 var calicoAddonYamls = map[string]string{
@@ -166,10 +170,12 @@ var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, sw
 }
 **/
 
+// KeyVaultID represents a KeyVault instance on Azure
 type KeyVaultID struct {
 	ID string `json:"id"`
 }
 
+// KeyVaultRef represents a reference to KeyVault instance on Azure
 type KeyVaultRef struct {
 	KeyVault      KeyVaultID `json:"keyVault"`
 	SecretName    string     `json:"secretName"`
@@ -219,7 +225,6 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	// named return values are used in order to set err in case of a panic
 	templateRaw = ""
 	parametersRaw = ""
-	certsGenerated = false
 	err = nil
 
 	var templ *template.Template
@@ -342,6 +347,9 @@ func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
 	}
 }
 
+// GetCloudTargetEnv determines and returns whether the region is a sovereign cloud which
+// have their own data compliance regulations (China/Germany/USGov) or standard
+//  Azure public cloud
 func GetCloudTargetEnv(location string) string {
 	loc := strings.ToLower(strings.Join(strings.Fields(location), ""))
 	switch {
@@ -410,6 +418,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dnsmasq"])
 		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["exechealthz"])
 		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["heapster"])
+		addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeImages[KubernetesVersion]["tiller"])
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["pause"])
 		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
@@ -527,7 +536,7 @@ func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
 	}
 }
 
-// https://stackoverflow.com/a/18411978
+// VersionOrdinal checks equality between two orchestrator version numbers
 func VersionOrdinal(version string) string {
 	// ISO/IEC 14651:2011
 	const maxByte = 1<<8 - 1
@@ -558,7 +567,7 @@ func VersionOrdinal(version string) string {
 }
 
 // getStorageAccountType returns the support managed disk storage tier for a give VM size
-func getStorageAccountType (sizeName string) (string, error) {
+func getStorageAccountType(sizeName string) (string, error) {
 	spl := strings.Split(sizeName, "_")
 	if len(spl) < 2 {
 		return "", fmt.Errorf("Invalid sizeName: %s", sizeName)
@@ -864,6 +873,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["exechealthz"]
 				case "kubernetesHeapsterSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["heapster"]
+				case "kubernetesTillerSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeImages[kubernetesVersion]["tiller"]
 				case "kubernetesKubeDNSSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":
@@ -1265,7 +1276,7 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 	}
 
 	// the embedded roleFileContents
-	roleFileContents := ""
+	var roleFileContents string
 	if len(profile.Ports) > 0 {
 		// public agents
 		roleFileContents = "touch /etc/mesosphere/roles/slave_public"
