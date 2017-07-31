@@ -3,6 +3,7 @@ kind: Pod
 metadata:
   name: kube-addon-manager
   namespace: kube-system
+  version: v1
 spec:
   hostNetwork: true
   containers:
