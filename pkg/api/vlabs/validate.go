@@ -51,7 +51,7 @@ func (o *OrchestratorProfile) Validate() error {
 		}
 
 		if o.KubernetesConfig != nil {
-			err := o.KubernetesConfig.Validate(o.OrchestratorVersion)
+			err := o.KubernetesConfig.Validate(o.OrchestratorVersionHint)
 			if err != nil {
 				return err
 			}
