@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -11,6 +12,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/leonelquinteros/gotext"
 	. "github.com/onsi/gomega"
 )
 
@@ -19,6 +22,15 @@ const (
 )
 
 func TestExpected(t *testing.T) {
+	// Initialize locale for translation
+	locale := gotext.NewLocale(path.Join("..", "..", "translations"), "en_US")
+	i18n.Initialize(locale)
+
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: locale,
+		},
+	}
 	// iterate the test data directory
 	apiModelTestFiles := &[]APIModelTestFile{}
 	if e := IterateTestFilesDirectory(TestDataDir, apiModelTestFiles); e != nil {
@@ -27,7 +39,7 @@ func TestExpected(t *testing.T) {
 	}
 
 	for _, tuple := range *apiModelTestFiles {
-		containerService, version, err := api.LoadContainerServiceFromFile(tuple.APIModelFilename, true)
+		containerService, version, err := apiloader.LoadContainerServiceFromFile(tuple.APIModelFilename, true)
 		if err != nil {
 			t.Errorf("Loading file %s got error: %s", tuple.APIModelFilename, err.Error())
 			continue
@@ -51,7 +63,12 @@ func TestExpected(t *testing.T) {
 		// 1. first time tests loaded containerService
 		// 2. second time tests generated containerService
 		// 3. third time tests the generated containerService from the generated containerService
-		templateGenerator, e3 := InitializeTemplateGenerator(isClassicMode)
+		ctx := Context{
+			Translator: &i18n.Translator{
+				Locale: locale,
+			},
+		}
+		templateGenerator, e3 := InitializeTemplateGenerator(ctx, isClassicMode)
 		if e3 != nil {
 			t.Error(e3.Error())
 			continue
@@ -118,11 +135,11 @@ func TestExpected(t *testing.T) {
 				t.Errorf("generated parameters different from expected for model %s: '%s'", tuple.APIModelFilename, diffstr)
 			}
 
-			b, err := api.SerializeContainerService(containerService, version)
+			b, err := apiloader.SerializeContainerService(containerService, version)
 			if err != nil {
 				t.Error(err)
 			}
-			containerService, version, err = api.DeserializeContainerService(b, true)
+			containerService, version, err = apiloader.DeserializeContainerService(b, true)
 			if err != nil {
 				t.Error(err)
 			}

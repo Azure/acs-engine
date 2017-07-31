@@ -2,7 +2,7 @@ FROM buildpack-deps:xenial
 
 RUN apt-get update \
     && apt-get -y upgrade \
-    && apt-get -y install python-pip make build-essential curl openssl vim jq \
+    && apt-get -y install python-pip make build-essential curl openssl vim jq gettext \
     && rm -rf /var/lib/apt/lists/*
 
 ENV GO_VERSION 1.8
@@ -33,6 +33,10 @@ RUN git clone https://github.com/akesterson/cmdarg.git /tmp/cmdarg \
     && cd /tmp/cmdarg && make install && rm -rf /tmp/cmdarg
 RUN git clone https://github.com/akesterson/shunit.git /tmp/shunit \
     && cd /tmp/shunit && make install && rm -rf /tmp/shunit
+
+# Go tool for internationalization and localization
+RUN go get github.com/JiangtianLi/gettext/... \
+    && go install github.com/JiangtianLi/gettext/...
 
 # Used by some CI jobs
 ADD ./test/bootstrap/checkout-pr.sh /tmp/checkout-pr.sh

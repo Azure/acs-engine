@@ -2,35 +2,40 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
+// UpgradeApiloader represents the object that loads api model
+type UpgradeApiloader struct {
+	Translator *i18n.Translator
+}
+
 // LoadUpgradeContainerServiceFromFile loads an ACS Cluster API Model from a JSON file
-func LoadUpgradeContainerServiceFromFile(jsonFile string) (*UpgradeContainerService, string, error) {
+func (ua *UpgradeApiloader) LoadUpgradeContainerServiceFromFile(jsonFile string) (*UpgradeContainerService, string, error) {
 	contents, e := ioutil.ReadFile(jsonFile)
 	if e != nil {
-		return nil, "", fmt.Errorf("error reading file %s: %s", jsonFile, e.Error())
+		return nil, "", ua.Translator.Errorf("error reading file %s: %s", jsonFile, e.Error())
 	}
-	return DeserializeUpgradeContainerService(contents)
+	return ua.DeserializeUpgradeContainerService(contents)
 }
 
 // DeserializeUpgradeContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
-func DeserializeUpgradeContainerService(contents []byte) (*UpgradeContainerService, string, error) {
+func (ua *UpgradeApiloader) DeserializeUpgradeContainerService(contents []byte) (*UpgradeContainerService, string, error) {
 	m := &TypeMeta{}
 	if err := json.Unmarshal(contents, &m); err != nil {
 		return nil, "", err
 	}
 	version := m.APIVersion
-	upgradecontainerservice, err := LoadUpgradeContainerService(contents, version)
+	upgradecontainerservice, err := ua.LoadUpgradeContainerService(contents, version)
 
 	return upgradecontainerservice, version, err
 }
 
 // LoadUpgradeContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
-func LoadUpgradeContainerService(contents []byte, version string) (*UpgradeContainerService, error) {
+func (ua *UpgradeApiloader) LoadUpgradeContainerService(contents []byte, version string) (*UpgradeContainerService, error) {
 	switch version {
 	case vlabs.APIVersion:
 		upgradecontainerService := &vlabs.UpgradeContainerService{}
@@ -43,12 +48,12 @@ func LoadUpgradeContainerService(contents []byte, version string) (*UpgradeConta
 		return ConvertVLabsUpgradeContainerService(upgradecontainerService), nil
 
 	default:
-		return nil, fmt.Errorf("unrecognized APIVersion '%s'", version)
+		return nil, ua.Translator.Errorf("unrecognized APIVersion '%s'", version)
 	}
 }
 
 // SerializeUpgradeContainerService takes an unversioned container service and returns the bytes
-func SerializeUpgradeContainerService(upgradeContainerService *UpgradeContainerService, version string) ([]byte, error) {
+func (ua *UpgradeApiloader) SerializeUpgradeContainerService(upgradeContainerService *UpgradeContainerService, version string) ([]byte, error) {
 	switch version {
 	case vlabs.APIVersion:
 		vlabsUpgradeContainerService := ConvertUpgradeContainerServiceToVLabs(upgradeContainerService)
@@ -62,6 +67,6 @@ func SerializeUpgradeContainerService(upgradeContainerService *UpgradeContainerS
 		return b, nil
 
 	default:
-		return nil, fmt.Errorf("invalid version %s for conversion back from unversioned object", version)
+		return nil, ua.Translator.Errorf("invalid version %s for conversion back from unversioned object", version)
 	}
 }

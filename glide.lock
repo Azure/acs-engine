@@ -36,6 +36,14 @@ imports:
   version: b32fa301c9fe55953584134cb6853a13c87ec0a1
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/leonelquinteros/gotext
+  version: a735812a72672008b3902f8b2bc1302166a9a8ea
+- name: github.com/mattn/anko
+  version: a8c68fa2983e7dd5d3472992b1fbe2f7c44261f0
+  subpackages:
+  - ast
+  - parser
+  - vm
 - name: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - name: github.com/prometheus/common
