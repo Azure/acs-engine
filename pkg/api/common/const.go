@@ -39,9 +39,13 @@ const (
 )
 
 const (
-	KubernetesVersionHint17      string = "1.7"
-	KubernetesVersionHint16      string = "1.6"
-	KubernetesVersionHint15      string = "1.5"
+	// KubernetesVersionHint17 is the major.minor string prefix for 1.7 versions of kubernetes
+	KubernetesVersionHint17 string = "1.7"
+	// KubernetesVersionHint16 is the major.minor string prefix for 1.6 versions of kubernetes
+	KubernetesVersionHint16 string = "1.6"
+	// KubernetesVersionHint15 is the major.minor string prefix for 1.5 versions of kubernetes
+	KubernetesVersionHint15 string = "1.5"
+	// KubernetesDefaultVersionHint is the default version hint for kubernetes
 	KubernetesDefaultVersionHint string = KubernetesVersionHint16
 )
 
@@ -53,9 +57,13 @@ var KubeHintToVersion = map[string]string{
 }
 
 const (
-	DCOSVersionHint19      string = "1.9"
-	DCOSVersionHint18      string = "1.8"
-	DCOSVersionHint17      string = "1.7"
+	// DCOSVersionHint19 is the major.minor string prefix for 1.9 versions of DCOS
+	DCOSVersionHint19 string = "1.9"
+	// DCOSVersionHint18 is the major.minor string prefix for 1.8 versions of DCOS
+	DCOSVersionHint18 string = "1.8"
+	// DCOSVersionHint17 is the major.minor string prefix for 1.7 versions of DCOS
+	DCOSVersionHint17 string = "1.7"
+	// DCOSDefaultVersionHint is the default version hint for DCOS
 	DCOSDefaultVersionHint string = DCOSVersionHint19
 )
 

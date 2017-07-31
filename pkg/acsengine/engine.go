@@ -31,8 +31,6 @@ const (
 
 const (
 	dcosCustomData173 = "dcoscustomdata173.t"
-	dcosCustomData184 = "dcoscustomdata184.t"
-	dcosCustomData187 = "dcoscustomdata187.t"
 	dcosCustomData188 = "dcoscustomdata188.t"
 	dcosCustomData190 = "dcoscustomdata190.t"
 	dcosProvision     = "dcosprovision.sh"
