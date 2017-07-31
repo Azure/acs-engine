@@ -1,14 +1,12 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: rescheduler-v0.3.0
+  name: rescheduler
   namespace: kube-system
   labels:
     k8s-app: rescheduler
-    version: v0.3.0
     kubernetes.io/cluster-service: "true"
-    kubernetes.io/name: "Rescheduler"
-    addonmanager.kubernetes.io/mode: "Reconcile"
+    addonmanager.kubernetes.io/mode: Reconcile
 spec:
   replicas: 1
   selector:
@@ -31,13 +29,4 @@ spec:
         command:
         - sh
         - -c
-        - '/rescheduler 2>&1'
-        volumeMounts:
-        - mountPath: /var/log/rescheduler.log
-          name: logfile
-          readOnly: false
-        # TODO: Make resource requirements depend on the size of the cluster
-      volumes:
-      - hostPath:
-          path: /var/log/rescheduler.log
-        name: logfile
+        - '/rescheduler'
