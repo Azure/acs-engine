@@ -67,6 +67,15 @@ In the image above, you can see the following parts:
 
 All VMs are in the same private VNET and are fully accessible to each other.
 
+## Optional: Enable Kubernetes Role-Based Access Control (RBAC)
+
+By default, the cluster will be provisioned without [Role-Based Access Control](https://kubernetes.io/docs/admin/authorization/rbac/) enabled. RBAC can be enabled by adding the following configuration to the cluster api-model. See [cluster definition](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig) for further detail.
+
+```console
+      "kubernetesConfig": {
+        "enableRbac": true
+      }
+```
 
 ## Optional: Enable network policy enforcement using Calico
 
