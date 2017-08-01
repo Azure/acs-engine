@@ -80,10 +80,10 @@ const (
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
 
-// KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes version hint
-// version hint here is the major and minor part of the version. For instance, version 1.6.6 has version hint 1.6
+// KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes releases (major.minor)
+// For instance, Kubernetes release "1.7" would contain the version "1.7.2"
 var KubeConfigs = map[string]map[string]string{
-	api.KubernetesVersionHint17: {
+	api.KubernetesRelease1Dot7: {
 		"version":         "1.7.2",
 		"hyperkube":       "hyperkube-amd64:v1.7.2",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
@@ -107,7 +107,7 @@ var KubeConfigs = map[string]map[string]string{
 		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 	},
-	api.KubernetesVersionHint16: {
+	api.KubernetesRelease1Dot6: {
 		"hyperkube":       "hyperkube-amd64:v1.6.6",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
 		"exechealthz":     "exechealthz-amd64:1.2",
@@ -130,7 +130,7 @@ var KubeConfigs = map[string]map[string]string{
 		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 	},
-	api.KubernetesVersionHint15: {
+	api.KubernetesRelease1Dot5: {
 		"hyperkube":       "hyperkube-amd64:v1.5.7",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.5.1",
 		"exechealthz":     "exechealthz-amd64:1.2",

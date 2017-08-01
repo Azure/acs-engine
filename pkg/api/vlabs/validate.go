@@ -28,30 +28,30 @@ func (o *OrchestratorProfile) Validate() error {
 	// It is handled by Properties.Validate()
 	switch o.OrchestratorType {
 	case DCOS:
-		switch o.OrchestratorVersionHint {
-		case common.DCOSVersionHint17:
-		case common.DCOSVersionHint18:
-		case common.DCOSVersionHint19:
+		switch o.OrchestratorRelease {
+		case common.DCOSRelease1Dot7:
+		case common.DCOSRelease1Dot8:
+		case common.DCOSRelease1Dot9:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version hint: %s", o.OrchestratorVersionHint)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
 		}
 
 	case Swarm:
 	case SwarmMode:
 
 	case Kubernetes:
-		switch o.OrchestratorVersionHint {
-		case common.KubernetesVersionHint17:
-		case common.KubernetesVersionHint16:
-		case common.KubernetesVersionHint15:
+		switch o.OrchestratorRelease {
+		case common.KubernetesRelease1Dot7:
+		case common.KubernetesRelease1Dot6:
+		case common.KubernetesRelease1Dot5:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version hint: %s", o.OrchestratorVersionHint)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
 		}
 
 		if o.KubernetesConfig != nil {
-			err := o.KubernetesConfig.Validate(o.OrchestratorVersionHint)
+			err := o.KubernetesConfig.Validate(o.OrchestratorRelease)
 			if err != nil {
 				return err
 			}
@@ -280,16 +280,16 @@ func (a *Properties) Validate() error {
 }
 
 // Validate validates the KubernetesConfig.
-func (a *KubernetesConfig) Validate(k8sVersionHint string) error {
+func (a *KubernetesConfig) Validate(k8sRelease string) error {
 	// number of minimum retries allowed for kubelet to post node status
 	const minKubeletRetries = 4
-	// k8s versions that have cloudprovider backoff enabled
-	var backoffEnabledVersionHints = map[string]bool{
-		common.KubernetesVersionHint17: true,
-		common.KubernetesVersionHint16: true,
+	// k8s releases that have cloudprovider backoff enabled
+	var backoffEnabledReleases = map[string]bool{
+		common.KubernetesRelease1Dot7: true,
+		common.KubernetesRelease1Dot6: true,
 	}
-	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
-	ratelimitEnabledVersionHints := backoffEnabledVersionHints
+	// k8s releases that have cloudprovider rate limiting enabled (currently identical with backoff enabled releases)
+	ratelimitEnabledReleases := backoffEnabledReleases
 
 	if a.ClusterSubnet != "" {
 		_, subnet, err := net.ParseCIDR(a.ClusterSubnet)
@@ -354,14 +354,14 @@ func (a *KubernetesConfig) Validate(k8sVersionHint string) error {
 	}
 
 	if a.CloudProviderBackoff {
-		if !backoffEnabledVersionHints[k8sVersionHint] {
-			return fmt.Errorf("cloudprovider backoff functionality not available in kubernetes version hint %s", k8sVersionHint)
+		if !backoffEnabledReleases[k8sRelease] {
+			return fmt.Errorf("cloudprovider backoff functionality not available in kubernetes release %s", k8sRelease)
 		}
 	}
 
 	if a.CloudProviderRateLimit {
-		if !ratelimitEnabledVersionHints[k8sVersionHint] {
-			return fmt.Errorf("cloudprovider rate limiting functionality not available in kubernetes version hint %s", k8sVersionHint)
+		if !ratelimitEnabledReleases[k8sRelease] {
+			return fmt.Errorf("cloudprovider rate limiting functionality not available in kubernetes release %s", k8sRelease)
 		}
 	}
 
