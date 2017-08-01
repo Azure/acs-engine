@@ -28,6 +28,9 @@ jobs:
       - checkout
       - run: |
           echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
+          echo 'export BUILD_NUMBER=${CIRCLE_BUILD_NUM}' >> $BASH_ENV
+          echo 'export RESOURCE_GROUP_PREFIX=y' >> $BASH_ENV
+          echo 'export SKIP_METRICS=y' >> $BASH_ENV
           echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
           echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
           echo 'export TEST_CONFIG=test/acse-conf/acse-pr.json' >> $BASH_ENV
