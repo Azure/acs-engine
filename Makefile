@@ -58,12 +58,16 @@ checksum:
 clean:
 	@rm -rf $(BINDIR) ./_dist
 
-test: test_fmt
+test: test-style
 	go test -v $(GOFILES)
 
 .PHONY: test-style
 test-style:
 	@scripts/validate-go.sh
+
+.PHONY: test-e2e
+test-e2e:
+	@test/e2e.sh
 
 HAS_GLIDE := $(shell command -v glide;)
 HAS_GOX := $(shell command -v gox;)

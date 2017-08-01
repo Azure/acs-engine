@@ -1,0 +1,72 @@
+version: 2
+jobs:
+  test:
+    working_directory: /go/src/github.com/Azure/acs-engine
+    docker:
+      - image: microsoft/acs-engine:latest
+    steps:
+      - setup_remote_docker:
+          reusable: true
+      - checkout
+      - run:
+          name: Build current image
+          command: |
+            TAG="0.1.${CIRCLE_BUILD_NUM}"
+            docker build -t microsoft/acs-engine:$TAG .
+      - run:
+          name: Run style and unit tests
+          command: docker run --rm microsoft/acs-engine:$TAG make test-style build test
+      - run:
+          name: Generate test coverage results
+          command: make bootstrap build coverage
+          command: docker run --rm microsoft/acs-engine:$TAG make build coverage
+  e2e:
+    working_directory: /go/src/github.com/Azure/acs-engine
+    docker:
+      - image: microsoft/acs-engine:latest
+    steps:
+      - setup_remote_docker:
+          reusable: true
+      - checkout
+      - run:
+          name: Build current image
+          command: |
+            TAG="0.1.${CIRCLE_BUILD_NUM}"
+            docker build -t microsoft/acs-engine:$TAG .
+      - run:
+          name: e2e tests
+          command: |
+            TAG="0.1.${CIRCLE_BUILD_NUM}"
+            cat > ./env.list <<END
+            BUILD_NUMBER=${CIRCLE_BUILD_NUM}
+            RESOURCE_GROUP_PREFIX=y
+            SKIP_METRICS=y
+
+            SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID}
+            SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET}
+            TENANT_ID=${TENANT_ID}
+            SUBSCRIPTION_ID=${SUBSCRIPTION_ID}
+            CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}
+            CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}
+            CERT_KEYVAULT_ID=${CERT_KEYVAULT_ID}
+            CERT_SECRET_URL=${CERT_SECRET_URL}
+            COVERALLS_TOKEN=${COVERALLS_TOKEN}
+
+            STAGE_TIMEOUT_MIN=30
+            NUM_OF_RETRIES=2
+            TEST_CONFIG=test/acse-conf/acse-pr.json
+            END
+            docker run --rm --env-file ./env.list microsoft/acs-engine:$TAG make build test-e2e
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - test
+      - e2e-hold:
+          type: approval
+          requires:
+            - test
+      - e2e:
+          requires:
+            - e2e-hold
