@@ -388,9 +388,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	// Kubernetes Parameters
 	if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-		KubernetesVersionHint := properties.OrchestratorProfile.OrchestratorVersionHint
+		KubernetesRelease := properties.OrchestratorProfile.OrchestratorRelease
 
-		kubernetesHyperkubeSpec := properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + api.KubeImages[KubernetesVersionHint]["hyperkube"]
+		kubernetesHyperkubeSpec := properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + api.KubeImages[KubernetesRelease]["hyperkube"]
 		if properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage != "" {
 			kubernetesHyperkubeSpec = properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage
 		}
@@ -405,15 +405,15 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
-		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["addonmanager"])
-		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["addonresizer"])
-		addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["dashboard"])
-		addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["dnsmasq"])
-		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["exechealthz"])
-		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["heapster"])
-		addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+api.KubeImages[KubernetesVersionHint]["tiller"])
-		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["dns"])
-		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesVersionHint]["pause"])
+		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesRelease]["addonmanager"])
+		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesRelease]["addonresizer"])
+		addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesRelease]["dashboard"])
+		addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesRelease]["dnsmasq"])
+		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesRelease]["exechealthz"])
+		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesRelease]["heapster"])
+		addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+api.KubeImages[KubernetesRelease]["tiller"])
+		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesRelease]["dns"])
+		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+api.KubeImages[KubernetesRelease]["pause"])
 		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
 		addValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod)
 		addValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout)
@@ -445,12 +445,12 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		dcosBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOS188BootstrapDownloadURL
 		switch properties.OrchestratorProfile.OrchestratorType {
 		case api.DCOS:
-			switch properties.OrchestratorProfile.OrchestratorVersionHint {
-			case api.DCOSVersionHint17:
+			switch properties.OrchestratorProfile.OrchestratorRelease {
+			case api.DCOSRelease1Dot7:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS173BootstrapDownloadURL
-			case api.DCOSVersionHint18:
+			case api.DCOSRelease1Dot8:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188BootstrapDownloadURL
-			case api.DCOSVersionHint19:
+			case api.DCOSRelease1Dot9:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190BootstrapDownloadURL
 			}
 		}
@@ -476,9 +476,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		addValue(parametersMap, "windowsAdminUsername", properties.WindowsProfile.AdminUsername)
 		addSecret(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword, false)
 		if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-			KubernetesVersionHint := properties.OrchestratorProfile.OrchestratorVersionHint
-			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+api.KubeImages[KubernetesVersionHint]["windowszip"])
-			addValue(parametersMap, "kubeBinariesVersion", api.KubeImages[KubernetesVersionHint]["version"])
+			KubernetesRelease := properties.OrchestratorProfile.OrchestratorRelease
+			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+api.KubeImages[KubernetesRelease]["windowszip"])
+			addValue(parametersMap, "kubeBinariesVersion", api.KubeImages[KubernetesRelease]["version"])
 		}
 		for i, s := range properties.WindowsProfile.Secrets {
 			addValue(parametersMap, fmt.Sprintf("windowsKeyVaultID%d", i), s.SourceVault.ID)
@@ -543,7 +543,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 	return template.FuncMap{
 		"IsDCOS19": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
-				cs.Properties.OrchestratorProfile.OrchestratorVersionHint == api.DCOSVersionHint19
+				cs.Properties.OrchestratorProfile.OrchestratorRelease == api.DCOSRelease1Dot9
 		},
 		"IsKubernetesVersionGe": func(version string) bool {
 			targetVersion, _ := goversion.NewVersion(version)
@@ -614,7 +614,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
-				cs.Properties.OrchestratorProfile.OrchestratorVersionHint,
+				cs.Properties.OrchestratorProfile.OrchestratorRelease,
 				cs.Properties.MasterProfile.Count, masterProvisionScript, masterAttributeContents)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
@@ -624,7 +624,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
-				cs.Properties.OrchestratorProfile.OrchestratorVersionHint,
+				cs.Properties.OrchestratorProfile.OrchestratorRelease,
 				cs.Properties.MasterProfile.Count, agentProvisionScript, attributeContents)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
@@ -681,7 +681,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 
 			var addonYamls map[string]string
-			if profile.OrchestratorProfile.OrchestratorVersionHint == api.KubernetesVersionHint15 {
+			if profile.OrchestratorProfile.OrchestratorRelease == api.KubernetesRelease1Dot5 {
 				addonYamls = kubernetesAddonYamls15
 			} else {
 				addonYamls = kubernetesAddonYamls
@@ -859,7 +859,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				case "kubeClusterCidr":
 					val = "10.244.0.0/16"
 				case "kubeBinariesVersion":
-					val = api.KubeImages[cs.Properties.OrchestratorProfile.OrchestratorVersionHint]["version"]
+					val = api.KubeImages[cs.Properties.OrchestratorProfile.OrchestratorRelease]["version"]
 				case "caPrivateKey":
 					// The base64 encoded "NotAvailable"
 					val = "Tm90QXZhaWxhYmxlCg=="
@@ -896,10 +896,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 	}
 }
 
-func getPackageGUID(orchestratorType string, orchestratorVersionHint string, masterCount int) string {
+func getPackageGUID(orchestratorType string, orchestratorRelease string, masterCount int) string {
 	if orchestratorType == api.DCOS {
-		switch orchestratorVersionHint {
-		case api.DCOSVersionHint19:
+		switch orchestratorRelease {
+		case api.DCOSRelease1Dot9:
 			switch masterCount {
 			case 1:
 				return "bcc883b7a3191412cf41824bdee06c1142187a0b"
@@ -908,7 +908,7 @@ func getPackageGUID(orchestratorType string, orchestratorVersionHint string, mas
 			case 5:
 				return "b41bfa84137a6374b2ff5eb1655364d7302bd257"
 			}
-		case api.DCOSVersionHint18:
+		case api.DCOSRelease1Dot8:
 			switch masterCount {
 			case 1:
 				return "441385ce2f5942df7e29075c12fb38fa5e92cbba"
@@ -917,7 +917,7 @@ func getPackageGUID(orchestratorType string, orchestratorVersionHint string, mas
 			case 5:
 				return "d9b61156dfcc9383e014851529738aa550ef57d9"
 			}
-		case api.DCOSVersionHint17:
+		case api.DCOSRelease1Dot7:
 			switch masterCount {
 			case 1:
 				return "6b604c1331c2b8b52bb23d1ea8a8d17e0f2b7428"
@@ -1246,16 +1246,16 @@ touch /etc/mesosphere/roles/azure_master`
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineDCOSCustomData(orchestratorType string, orchestratorVersionHint string, masterCount int, provisionContent string, attributeContents string) string {
+func getSingleLineDCOSCustomData(orchestratorType string, orchestratorRelease string, masterCount int, provisionContent string, attributeContents string) string {
 	yamlFilename := ""
 	switch orchestratorType {
 	case api.DCOS:
-		switch orchestratorVersionHint {
-		case api.DCOSVersionHint17:
+		switch orchestratorRelease {
+		case api.DCOSRelease1Dot7:
 			yamlFilename = dcosCustomData173
-		case api.DCOSVersionHint18:
+		case api.DCOSRelease1Dot8:
 			yamlFilename = dcosCustomData188
-		case api.DCOSVersionHint19:
+		case api.DCOSRelease1Dot9:
 			yamlFilename = dcosCustomData190
 		}
 	default:
@@ -1297,7 +1297,7 @@ func getSingleLineDCOSCustomData(orchestratorType string, orchestratorVersionHin
 	yamlStr = rVariable.ReplaceAllString(yamlStr, "',variables('$1'),'")
 
 	// replace the internal values
-	guid := getPackageGUID(orchestratorType, orchestratorVersionHint, masterCount)
+	guid := getPackageGUID(orchestratorType, orchestratorRelease, masterCount)
 	yamlStr = strings.Replace(yamlStr, "DCOSGUID", guid, -1)
 	publicIPStr := getDCOSCustomDataPublicIPStr(orchestratorType, masterCount)
 	yamlStr = strings.Replace(yamlStr, "DCOSCUSTOMDATAPUBLICIPSTR", publicIPStr, -1)

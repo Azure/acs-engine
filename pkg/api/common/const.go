@@ -39,37 +39,37 @@ const (
 )
 
 const (
-	// KubernetesVersionHint17 is the major.minor string prefix for 1.7 versions of kubernetes
-	KubernetesVersionHint17 string = "1.7"
-	// KubernetesVersionHint16 is the major.minor string prefix for 1.6 versions of kubernetes
-	KubernetesVersionHint16 string = "1.6"
-	// KubernetesVersionHint15 is the major.minor string prefix for 1.5 versions of kubernetes
-	KubernetesVersionHint15 string = "1.5"
-	// KubernetesDefaultVersionHint is the default version hint for kubernetes
-	KubernetesDefaultVersionHint string = KubernetesVersionHint16
+	// KubernetesRelease1Dot7 is the major.minor string prefix for 1.7 versions of kubernetes
+	KubernetesRelease1Dot7 string = "1.7"
+	// KubernetesRelease1Dot6 is the major.minor string prefix for 1.6 versions of kubernetes
+	KubernetesRelease1Dot6 string = "1.6"
+	// KubernetesRelease1Dot5 is the major.minor string prefix for 1.5 versions of kubernetes
+	KubernetesRelease1Dot5 string = "1.5"
+	// KubernetesDefaultRelease is the default major.minor version for kubernetes
+	KubernetesDefaultRelease string = KubernetesRelease1Dot6
 )
 
-// KubeHintToVersion is the hint to actual version map
-var KubeHintToVersion = map[string]string{
-	KubernetesVersionHint17: "1.7.1",
-	KubernetesVersionHint16: "1.6.6",
-	KubernetesVersionHint15: "1.5.7",
+// KubeReleaseToVersion maps a major.minor release to an full major.minor.patch version
+var KubeReleaseToVersion = map[string]string{
+	KubernetesRelease1Dot7: "1.7.1",
+	KubernetesRelease1Dot6: "1.6.6",
+	KubernetesRelease1Dot5: "1.5.7",
 }
 
 const (
-	// DCOSVersionHint19 is the major.minor string prefix for 1.9 versions of DCOS
-	DCOSVersionHint19 string = "1.9"
-	// DCOSVersionHint18 is the major.minor string prefix for 1.8 versions of DCOS
-	DCOSVersionHint18 string = "1.8"
-	// DCOSVersionHint17 is the major.minor string prefix for 1.7 versions of DCOS
-	DCOSVersionHint17 string = "1.7"
-	// DCOSDefaultVersionHint is the default version hint for DCOS
-	DCOSDefaultVersionHint string = DCOSVersionHint19
+	// DCOSRelease1Dot9 is the major.minor string prefix for 1.9 versions of DCOS
+	DCOSRelease1Dot9 string = "1.9"
+	// DCOSRelease1Dot8 is the major.minor string prefix for 1.8 versions of DCOS
+	DCOSRelease1Dot8 string = "1.8"
+	// DCOSRelease1Dot7 is the major.minor string prefix for 1.7 versions of DCOS
+	DCOSRelease1Dot7 string = "1.7"
+	// DCOSDefaultRelease is the default major.minor version for DCOS
+	DCOSDefaultRelease string = DCOSRelease1Dot9
 )
 
-// DCOSHintToVersion is the hint to actual version map
-var DCOSHintToVersion = map[string]string{
-	DCOSVersionHint19: "1.9.0",
-	DCOSVersionHint18: "1.8.8",
-	DCOSVersionHint17: "1.7.3",
+// DCOSReleaseToVersion maps a major.minor release to an full major.minor.patch version
+var DCOSReleaseToVersion = map[string]string{
+	DCOSRelease1Dot9: "1.9.0",
+	DCOSRelease1Dot8: "1.8.8",
+	DCOSRelease1Dot7: "1.7.3",
 }

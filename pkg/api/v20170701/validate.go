@@ -27,22 +27,22 @@ func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case Swarm:
 	case DCOS:
-		switch o.OrchestratorVersionHint {
-		case common.DCOSVersionHint18:
-		case common.DCOSVersionHint19:
+		switch o.OrchestratorRelease {
+		case common.DCOSRelease1Dot8:
+		case common.DCOSRelease1Dot9:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version hint: %s", o.OrchestratorVersionHint)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
 		}
 	case DockerCE:
 	case Kubernetes:
-		switch o.OrchestratorVersionHint {
-		case common.KubernetesVersionHint17:
-		case common.KubernetesVersionHint16:
-		case common.KubernetesVersionHint15:
+		switch o.OrchestratorRelease {
+		case common.KubernetesRelease1Dot7:
+		case common.KubernetesRelease1Dot6:
+		case common.KubernetesRelease1Dot5:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version hint: %s", o.OrchestratorVersionHint)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
 		}
 
 	default:
