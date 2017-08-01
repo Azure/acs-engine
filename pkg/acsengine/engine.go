@@ -16,6 +16,7 @@ import (
 	"text/template"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/ghodss/yaml"
 )
 
@@ -108,6 +109,8 @@ var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR":  "kubernetesmasteraddons-managed-standard-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR":   "kubernetesmasteraddons-managed-premium-storage-class.yaml",
+	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment.yaml",
+	"MASTER_ADDON_TILLER_SERVICE_B64_GZIP_STR":                  "kubernetesmasteraddons-tiller-service.yaml",
 }
 
 var kubernetesAddonYamls15 = map[string]string{
@@ -121,6 +124,8 @@ var kubernetesAddonYamls15 = map[string]string{
 	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR":  "kubernetesmasteraddons-managed-standard-storage-class.yaml",
 	"MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR":   "kubernetesmasteraddons-managed-premium-storage-class.yaml",
+	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment1.5.yaml",
+	"MASTER_ADDON_TILLER_SERVICE_B64_GZIP_STR":                  "kubernetesmasteraddons-tiller-service.yaml",
 }
 
 var calicoAddonYamls = map[string]string{
@@ -166,10 +171,12 @@ var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, sw
 }
 **/
 
+// KeyVaultID represents a KeyVault instance on Azure
 type KeyVaultID struct {
 	ID string `json:"id"`
 }
 
+// KeyVaultRef represents a reference to KeyVault instance on Azure
 type KeyVaultRef struct {
 	KeyVault      KeyVaultID `json:"keyVault"`
 	SecretName    string     `json:"secretName"`
@@ -188,7 +195,7 @@ func (t *TemplateGenerator) verifyFiles() error {
 	allFiles = append(allFiles, swarmTemplateFiles...)
 	for _, file := range allFiles {
 		if _, err := Asset(file); err != nil {
-			return fmt.Errorf("template file %s does not exist", file)
+			return t.Translator.Errorf("template file %s does not exist", file)
 		}
 	}
 	return nil
@@ -197,12 +204,14 @@ func (t *TemplateGenerator) verifyFiles() error {
 // TemplateGenerator represents the object that performs the template generation.
 type TemplateGenerator struct {
 	ClassicMode bool
+	Translator  *i18n.Translator
 }
 
 // InitializeTemplateGenerator creates a new template generator object
-func InitializeTemplateGenerator(classicMode bool) (*TemplateGenerator, error) {
+func InitializeTemplateGenerator(ctx Context, classicMode bool) (*TemplateGenerator, error) {
 	t := &TemplateGenerator{
 		ClassicMode: classicMode,
+		Translator:  ctx.Translator,
 	}
 
 	if err := t.verifyFiles(); err != nil {
@@ -217,7 +226,6 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	// named return values are used in order to set err in case of a panic
 	templateRaw = ""
 	parametersRaw = ""
-	certsGenerated = false
 	err = nil
 
 	var templ *template.Template
@@ -230,7 +238,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 
 	templ = template.New("acs template").Funcs(t.getTemplateFuncMap(containerService))
 
-	files, baseFile, e := prepareTemplateFiles(properties)
+	files, baseFile, e := t.prepareTemplateFiles(properties)
 	if e != nil {
 		return "", "", false, e
 	}
@@ -238,7 +246,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	for _, file := range files {
 		bytes, e := Asset(file)
 		if e != nil {
-			err = fmt.Errorf("Error reading file %s, Error: %s", file, e.Error())
+			err = t.Translator.Errorf("Error reading file %s, Error: %s", file, e.Error())
 			return templateRaw, parametersRaw, certsGenerated, err
 		}
 		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
@@ -305,7 +313,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	return kubeconfig, nil
 }
 
-func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
+func (t *TemplateGenerator) prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
 	var files []string
 	var baseFile string
 	if properties.OrchestratorProfile.OrchestratorType == api.DCOS {
@@ -321,7 +329,7 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 		files = append(commonTemplateFiles, swarmModeTemplateFiles...)
 		baseFile = swarmBaseFile
 	} else {
-		return nil, "", fmt.Errorf("orchestrator '%s' is unsupported", properties.OrchestratorProfile.OrchestratorType)
+		return nil, "", t.Translator.Errorf("orchestrator '%s' is unsupported", properties.OrchestratorProfile.OrchestratorType)
 	}
 
 	return files, baseFile, nil
@@ -340,6 +348,9 @@ func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
 	}
 }
 
+// GetCloudTargetEnv determines and returns whether the region is a sovereign cloud which
+// have their own data compliance regulations (China/Germany/USGov) or standard
+//  Azure public cloud
 func GetCloudTargetEnv(location string) string {
 	loc := strings.ToLower(strings.Join(strings.Fields(location), ""))
 	switch {
@@ -408,6 +419,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dnsmasq"])
 		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["exechealthz"])
 		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["heapster"])
+		addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeImages[KubernetesVersion]["tiller"])
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["pause"])
 		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
@@ -525,7 +537,7 @@ func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
 	}
 }
 
-// https://stackoverflow.com/a/18411978
+// VersionOrdinal checks equality between two orchestrator version numbers
 func VersionOrdinal(version string) string {
 	// ISO/IEC 14651:2011
 	const maxByte = 1<<8 - 1
@@ -556,7 +568,7 @@ func VersionOrdinal(version string) string {
 }
 
 // getStorageAccountType returns the support managed disk storage tier for a give VM size
-func getStorageAccountType (sizeName string) (string, error) {
+func getStorageAccountType(sizeName string) (string, error) {
 	spl := strings.Split(sizeName, "_")
 	if len(spl) < 2 {
 		return "", fmt.Errorf("Invalid sizeName: %s", sizeName)
@@ -872,6 +884,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["exechealthz"]
 				case "kubernetesHeapsterSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["heapster"]
+				case "kubernetesTillerSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeImages[kubernetesVersion]["tiller"]
 				case "kubernetesKubeDNSSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":
@@ -1209,18 +1223,18 @@ func getSecurityRules(ports []int) string {
 func (t *TemplateGenerator) getSingleLineForTemplate(textFilename string, cs *api.ContainerService, profile interface{}) (string, error) {
 	b, err := Asset(textFilename)
 	if err != nil {
-		return "", fmt.Errorf("yaml file %s does not exist", textFilename)
+		return "", t.Translator.Errorf("yaml file %s does not exist", textFilename)
 	}
 
 	// use go templates to process the text filename
 	templ := template.New("customdata template").Funcs(t.getTemplateFuncMap(cs))
 	if _, err = templ.New(textFilename).Parse(string(b)); err != nil {
-		return "", fmt.Errorf("error parsing file %s: %v", textFilename, err)
+		return "", t.Translator.Errorf("error parsing file %s: %v", textFilename, err)
 	}
 
 	var buffer bytes.Buffer
 	if err = templ.ExecuteTemplate(&buffer, textFilename, profile); err != nil {
-		return "", fmt.Errorf("error executing template for file %s: %v", textFilename, err)
+		return "", t.Translator.Errorf("error executing template for file %s: %v", textFilename, err)
 	}
 	expandedTemplate := buffer.String()
 
@@ -1273,7 +1287,7 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 	}
 
 	// the embedded roleFileContents
-	roleFileContents := ""
+	var roleFileContents string
 	if len(profile.Ports) > 0 {
 		// public agents
 		roleFileContents = "touch /etc/mesosphere/roles/slave_public"

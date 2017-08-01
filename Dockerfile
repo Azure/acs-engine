@@ -2,7 +2,7 @@ FROM buildpack-deps:xenial
 
 RUN apt-get update \
     && apt-get -y upgrade \
-    && apt-get -y install python-pip make build-essential curl openssl vim jq \
+    && apt-get -y install python-pip make build-essential curl openssl vim jq gettext \
     && rm -rf /var/lib/apt/lists/*
 
 ENV GO_VERSION 1.8

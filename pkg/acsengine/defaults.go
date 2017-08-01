@@ -17,6 +17,7 @@ var (
 		//KubernetesSpecConfig is the default kubernetes container image url.
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase:    "gcrio.azureedge.net/google_containers/",
+			TillerImageBase:        "gcrio.azureedge.net/kubernetes-helm/",
 			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
 		},
 
@@ -164,8 +165,8 @@ func setMasterNetworkDefaults(a *api.Properties) {
 		}
 	}
 
-	if a.MasterProfile.HttpSourceAddressPrefix == "" {
-		a.MasterProfile.HttpSourceAddressPrefix = "*"
+	if a.MasterProfile.HTTPSourceAddressPrefix == "" {
+		a.MasterProfile.HTTPSourceAddressPrefix = "*"
 	}
 }
 

@@ -36,6 +36,7 @@ gometalinter \
   --tests \
   --vendor \
   --deadline 60s \
+  --skip test/i18n \
   ./... || exit_code=1
 
 echo

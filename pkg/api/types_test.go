@@ -45,7 +45,10 @@ func TestIsDCOS(t *testing.T) {
 
 func TestCustomHyperkubeImageField(t *testing.T) {
 	log.Println(exampleAPIModel)
-	apimodel, _, err := DeserializeContainerService([]byte(exampleAPIModel), false)
+	apiloader := &Apiloader{
+		Translator: nil,
+	}
+	apimodel, _, err := apiloader.DeserializeContainerService([]byte(exampleAPIModel), false)
 	if err != nil {
 		t.Fatalf("unexpectedly error deserializing the example apimodel: %s", err)
 	}

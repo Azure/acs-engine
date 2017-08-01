@@ -47,8 +47,12 @@ func TestAutofillApimodelAllowsPrespecifiedCreds(t *testing.T) {
 }
 
 func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, clientID, clientSecret string) {
+	apiloader := &api.Apiloader{
+		Translator: nil,
+	}
+
 	apimodel := getExampleAPIModel(useManagedIdentity, clientID, clientSecret)
-	cs, ver, err := api.DeserializeContainerService([]byte(apimodel), false)
+	cs, ver, err := apiloader.DeserializeContainerService([]byte(apimodel), false)
 	if err != nil {
 		t.Fatalf("unexpected error deserializing the example apimodel: %s", err)
 	}
@@ -73,7 +77,7 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 	// cleanup, since auto-populations creates dirs and saves the SSH private key that it might create
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
-	cs, ver, err = revalidateApimodel(cs, ver)
+	cs, _, err = revalidateApimodel(apiloader, cs, ver)
 	if err != nil {
 		log.Fatalf("unexpected error validating apimodel after populating defaults: %s", err)
 	}

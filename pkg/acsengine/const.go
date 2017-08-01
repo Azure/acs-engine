@@ -67,6 +67,8 @@ const (
 	DefaultKubernetesCloudProviderRateLimitQPS = 3.0
 	// DefaultKubernetesCloudProviderRateLimitBucket is 10, takes effect if DefaultKubernetesCloudProviderRateLimit is true
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
+	// DefaultTillerImage defines the Helm Tiller deployment version on Kubernetes Clusters
+	DefaultTillerImage = "tiller:v2.5.1"
 )
 
 const (
@@ -80,7 +82,7 @@ const (
 
 // KubeImages represents Docker images used for Kubernetes components based on Kubernetes version
 var KubeImages = map[string]map[string]string{
-  api.Kubernetes172: {
+	api.Kubernetes172: {
 		"hyperkube":       "hyperkube-amd64:v1.7.2",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
 		"exechealthz":     "exechealthz-amd64:1.2",
@@ -90,6 +92,7 @@ var KubeImages = map[string]map[string]string{
 		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.14.4",
 		"pause":           "pause-amd64:3.0",
+		"tiller":          DefaultTillerImage,
 		"windowszip":      "v1.7.2intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
@@ -112,6 +115,7 @@ var KubeImages = map[string]map[string]string{
 		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.14.4",
 		"pause":           "pause-amd64:3.0",
+		"tiller":          DefaultTillerImage,
 		"windowszip":      "v1.7.1intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
@@ -125,16 +129,17 @@ var KubeImages = map[string]map[string]string{
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 	},
 	api.Kubernetes170: {
-		"hyperkube":    "hyperkube-amd64:v1.7.0",
-		"dashboard":    "kubernetes-dashboard-amd64:v1.6.1",
-		"exechealthz":  "exechealthz-amd64:1.2",
-		"addonresizer": "addon-resizer:1.7",
-		"heapster":     "heapster:v1.4.0",
-		"dns":          "k8s-dns-kube-dns-amd64:1.14.4",
-		"addonmanager": "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.14.4",
-		"pause":        "pause-amd64:3.0",
-		"windowszip":   "v1.7.0intwinnat.zip",
+		"hyperkube":       "hyperkube-amd64:v1.7.0",
+		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
+		"exechealthz":     "exechealthz-amd64:1.2",
+		"addonresizer":    "addon-resizer:1.7",
+		"heapster":        "heapster:v1.4.0",
+		"dns":             "k8s-dns-kube-dns-amd64:1.14.4",
+		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
+		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.14.4",
+		"pause":           "pause-amd64:3.0",
+		"tiller":          DefaultTillerImage,
+		"windowszip":      "v1.7.0intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
@@ -156,6 +161,7 @@ var KubeImages = map[string]map[string]string{
 		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":           "pause-amd64:3.0",
+		"tiller":          DefaultTillerImage,
 		"windowszip":      "v1.6.6intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
@@ -178,6 +184,7 @@ var KubeImages = map[string]map[string]string{
 		"addonmanager":    "kube-addon-manager-amd64:v6.4",
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":           "pause-amd64:3.0",
+		"tiller":          DefaultTillerImage,
 		"windowszip":      "v1.6.2intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
@@ -195,6 +202,7 @@ var KubeImages = map[string]map[string]string{
 		"addonmanager":    "kube-addon-manager-amd64:v6.4",
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":           "pause-amd64:3.0",
+		"tiller":          DefaultTillerImage,
 		"windowszip":      "v1.6.0intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
@@ -212,6 +220,7 @@ var KubeImages = map[string]map[string]string{
 		"addonmanager":    "kube-addon-manager-amd64:v6.2",
 		"dnsmasq":         "kube-dnsmasq-amd64:1.3",
 		"pause":           "pause-amd64:3.0",
+		"tiller":          DefaultTillerImage,
 		"windowszip":      "v1.5.7intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
@@ -230,6 +239,7 @@ var KubeImages = map[string]map[string]string{
 		"dnsmasq":         "kube-dnsmasq-amd64:1.3",
 		"pause":           "pause-amd64:3.0",
 		"windowszip":      "v1.5.3intwinnat.zip",
+		"tiller":          DefaultTillerImage,
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,

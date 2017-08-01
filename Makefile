@@ -23,7 +23,7 @@ GOFILES=`go list ./... | grep -v "github.com/Azure/acs-engine/vendor" | sed 's|g
 
 all: build
 
-.PHONE: generate
+.PHONY: generate
 generate:
 	go generate -v $(GOFILES)
 
@@ -86,7 +86,7 @@ ifndef HAS_GIT
 endif
 	glide install
 
-ci: bootstrap build test lint
+ci: bootstrap test-style build test lint
 	./scripts/coverage.sh --coveralls
 
 .PHONY: coverage

@@ -9,7 +9,9 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations/kubernetesupgrade"
+	"github.com/leonelquinteros/gotext"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -35,6 +37,7 @@ type upgradeCmd struct {
 	upgradeContainerService *api.UpgradeContainerService
 	upgradeAPIVersion       string
 	client                  armhelpers.ACSEngineClient
+	locale                  *gotext.Locale
 	nameSuffix              string
 }
 
@@ -65,6 +68,11 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 
 	var err error
 
+	uc.locale, err = i18n.LoadTranslations()
+	if err != nil {
+		log.Fatalf("error loading translation files: %s", err.Error())
+	}
+
 	if uc.resourceGroupName == "" {
 		cmd.Usage()
 		log.Fatal("--resource-group must be specified")
@@ -92,7 +100,12 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("specified api model does not exist (%s)", apiModelPath)
 	}
 
-	uc.containerService, uc.apiVersion, err = api.LoadContainerServiceFromFile(apiModelPath, true)
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: uc.locale,
+		},
+	}
+	uc.containerService, uc.apiVersion, err = apiloader.LoadContainerServiceFromFile(apiModelPath, true)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
@@ -101,7 +114,12 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("specified upgrade model file does not exist (%s)", uc.upgradeModelFile)
 	}
 
-	uc.upgradeContainerService, uc.upgradeAPIVersion, err = api.LoadUpgradeContainerServiceFromFile(uc.upgradeModelFile)
+	upgradeapiloader := &api.UpgradeApiloader{
+		Translator: &i18n.Translator{
+			Locale: uc.locale,
+		},
+	}
+	uc.upgradeContainerService, uc.upgradeAPIVersion, err = upgradeapiloader.LoadUpgradeContainerServiceFromFile(uc.upgradeModelFile)
 	if err != nil {
 		log.Fatalf("error parsing the upgrade api model: %s", err.Error())
 	}
@@ -134,6 +152,9 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	uc.validate(cmd, args)
 
 	upgradeCluster := kubernetesupgrade.UpgradeCluster{
+		Translator: &i18n.Translator{
+			Locale: uc.locale,
+		},
 		Client: uc.client,
 	}
 

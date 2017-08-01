@@ -6,6 +6,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 	"github.com/satori/go.uuid"
@@ -29,7 +30,12 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs := api.ContainerService{}
 		ucs := api.UpgradeContainerService{}
 
-		uc := UpgradeCluster{}
+		locale, _ := i18n.LoadTranslations()
+		uc := UpgradeCluster{
+			Translator: &i18n.Translator{
+				Locale: locale,
+			},
+		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
 		mockClient.FailListVirtualMachines = true
@@ -40,6 +46,9 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		err := uc.UpgradeCluster(subID, "TestRg", &cs, &ucs, "12345678")
 
 		Expect(err.Error()).To(Equal("Error while querying ARM for resources: ListVirtualMachines failed"))
+
+		// Clean up
+		os.RemoveAll("./translations")
 	})
 
 	It("Should return error message when failing to detete VMs during upgrade operation", func() {
@@ -180,7 +189,8 @@ func createContainerService(containerServiceName string, masterCount int, agentC
 	}
 
 	cs.Properties.LinuxProfile.AdminUsername = "azureuser"
-	cs.Properties.LinuxProfile.SSH.PublicKeys = append(cs.Properties.LinuxProfile.SSH.PublicKeys, api.PublicKey{"test"})
+	cs.Properties.LinuxProfile.SSH.PublicKeys = append(
+		cs.Properties.LinuxProfile.SSH.PublicKeys, api.PublicKey{KeyData: "test"})
 
 	cs.Properties.ServicePrincipalProfile = &api.ServicePrincipalProfile{}
 	cs.Properties.ServicePrincipalProfile.ClientID = "DEC923E3-1EF1-4745-9516-37906D56DEC4"

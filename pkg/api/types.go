@@ -162,7 +162,7 @@ type MasterProfile struct {
 	Subnet                   string `json:"subnet"`
 	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
 	StorageProfile           string `json:"storageProfile,omitempty"`
-	HttpSourceAddressPrefix  string `json:"httpSourceAddressPrefix,omitempty"`
+	HTTPSourceAddressPrefix  string `json:"HTTPSourceAddressPrefix,omitempty"`
 	OAuthEnabled             bool   `json:"oauthEnabled"`
 
 	// Master LB public endpoint/FQDN with port

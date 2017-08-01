@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
 
 	log "github.com/Sirupsen/logrus"
@@ -17,6 +18,7 @@ var _ UpgradeNode = &UpgradeAgentNode{}
 
 // UpgradeAgentNode upgrades a Kubernetes 1.5.3 agent node to 1.6.2
 type UpgradeAgentNode struct {
+	Translator              *i18n.Translator
 	TemplateMap             map[string]interface{}
 	ParametersMap           map[string]interface{}
 	UpgradeContainerService *api.ContainerService
@@ -47,7 +49,7 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 	templateVariables := kan.TemplateMap["variables"].(map[string]interface{})
 	templateVariables[poolOffsetVarName] = agentNo
 
-	WriteTemplate(kan.UpgradeContainerService, kan.TemplateMap, kan.ParametersMap)
+	WriteTemplate(kan.Translator, kan.UpgradeContainerService, kan.TemplateMap, kan.ParametersMap)
 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	deploymentSuffix := random.Int31()

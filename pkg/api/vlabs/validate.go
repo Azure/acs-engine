@@ -432,13 +432,6 @@ func (a *Properties) validateNetworkPolicy() error {
 	return nil
 }
 
-func validateNameEmpty(name string, label string) error {
-	if name != "" {
-		return fmt.Errorf("%s must be an empty value", label)
-	}
-	return nil
-}
-
 func validateName(name string, label string) error {
 	if name == "" {
 		return fmt.Errorf("%s must be a non-empty value", label)
