@@ -47,10 +47,10 @@ function generate_template() {
 	    apiVersion=$(get_api_version)
 		if [[ "$apiVersion" == "vlabs" ]]; then
 			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientID = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
-			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientKeyvaultSecretRef  = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret  = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
 		else
 			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.clientId = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
-			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
 		fi
 	fi
 
