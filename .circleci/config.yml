@@ -25,18 +25,37 @@ jobs:
         environment:
           GOPATH: /go
     steps:
+      - setup_remote_docker:
+          reusable: true
       - checkout
       - run: |
           echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
-          echo 'export BUILD_NUMBER=${CIRCLE_BUILD_NUM}' >> $BASH_ENV
-          echo 'export RESOURCE_GROUP_PREFIX=y' >> $BASH_ENV
-          echo 'export SKIP_METRICS=y' >> $BASH_ENV
-          echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
-          echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
-          echo 'export TEST_CONFIG=test/acse-conf/acse-pr.json' >> $BASH_ENV
+          echo 'export IMAGE_TAG=${CIRCLE_BUILD_NUM}' >> $BASH_ENV
+      - run:
+          name: Build current image
+          command: |
+            docker build -t microsoft/acs-engine:$IMAGE_TAG .
       - run:
           name: e2e tests
-          command: make bootstrap build test-e2e
+          command: |
+            cat > ./env.list <<END
+              CIRCLE_BUILD_NUM=${CIRCLE_BUILD_NUM}
+              SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID}
+              SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET}
+              TENANT_ID=${TENANT_ID}
+              SUBSCRIPTION_ID=${SUBSCRIPTION_ID}
+              CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}
+              CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}
+              CERT_KEYVAULT_ID=${CERT_KEYVAULT_ID}
+              CERT_SECRET_URL=${CERT_SECRET_URL}
+              COVERALLS_TOKEN=${COVERALLS_TOKEN}
+              RESOURCE_GROUP_PREFIX=y
+              SKIP_METRICS=y
+              STAGE_TIMEOUT_MIN=30
+              NUM_OF_RETRIES=2
+              TEST_CONFIG=test/acse-conf/acse-pr.json
+            END
+            docker run --rm --env-file ./env.list microsoft/acs-engine:${IMAGE_TAG} make build test-e2e
 
 workflows:
   version: 2
