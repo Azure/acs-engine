@@ -1,10 +1,10 @@
-hash: 47bdadf4225410bca8b7b7ad7e6512555c80a60db5ec90d874a0ea2ca876b3e5
-updated: 2017-07-15T01:36:15.006608-07:00
+hash: 8473d8ab8413c505104fa1abbf2dedb9464b7206cfe466cf793d29496776b216
+updated: 2017-07-31T18:11:55.156633291-07:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
 - name: github.com/Azure/azure-sdk-for-go
-  version: 59c277f1b488b81b1a5f944212f25b69bea8ece3
+  version: 5b6066bbd213e47c49a5fa2be2b29529bbcb6704
   subpackages:
   - arm/authorization
   - arm/compute
@@ -16,7 +16,7 @@ imports:
   - arm/storage
   - storage
 - name: github.com/Azure/go-autorest
-  version: 10791a4516e77c53ab10f198f144804cca3d5b43
+  version: f6e08fe5e4d45c9a66e40196d3fed5f37331d224
   subpackages:
   - autorest
   - autorest/adal
@@ -36,6 +36,8 @@ imports:
   version: b32fa301c9fe55953584134cb6853a13c87ec0a1
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/JiangtianLi/gettext
+  version: a8983c062be4b565d723c478922d7736e04fdba4
 - name: github.com/leonelquinteros/gotext
   version: a735812a72672008b3902f8b2bc1302166a9a8ea
 - name: github.com/mattn/anko

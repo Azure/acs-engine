@@ -34,10 +34,6 @@ RUN git clone https://github.com/akesterson/cmdarg.git /tmp/cmdarg \
 RUN git clone https://github.com/akesterson/shunit.git /tmp/shunit \
     && cd /tmp/shunit && make install && rm -rf /tmp/shunit
 
-# Go tool for internationalization and localization
-RUN go get github.com/JiangtianLi/gettext/... \
-    && go install github.com/JiangtianLi/gettext/...
-
 # Used by some CI jobs
 ADD ./test/bootstrap/checkout-pr.sh /tmp/checkout-pr.sh
 
