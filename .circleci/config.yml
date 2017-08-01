@@ -4,6 +4,8 @@ jobs:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: microsoft/acs-engine:latest
+        environment:
+          GOPATH: /go
     steps:
       - checkout
       - run:
@@ -17,6 +19,7 @@ jobs:
     docker:
       - image: microsoft/acs-engine:latest
         environment:
+          GOPATH: /go
           BUILD_NUMBER: $CIRCLE_BUILD_NUM
           RESOURCE_GROUP_PREFIX: y
           SKIP_METRICS: y
