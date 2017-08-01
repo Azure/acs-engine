@@ -14,7 +14,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/leonelquinteros/gotext"
-	. "github.com/onsi/gomega"
 )
 
 const (
