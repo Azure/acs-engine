@@ -28,9 +28,9 @@ jobs:
       - checkout
       - run: |
           echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
-          echo 'export STAGE_TIMEOUT_MIN=30 >> $BASH_ENV
-          echo 'export NUM_OF_RETRIES=2 >> $BASH_ENV
-          echo 'export TEST_CONFIG=test/acse-conf/acse-pr.json >> $BASH_ENV
+          echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
+          echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
+          echo 'export TEST_CONFIG=test/acse-conf/acse-pr.json' >> $BASH_ENV
       - run:
           name: e2e tests
           command: make bootstrap build test-e2e
@@ -42,8 +42,6 @@ workflows:
       - test
       - e2e-hold:
           type: approval
-          requires:
-            - test
       - e2e:
           requires:
             - e2e-hold
