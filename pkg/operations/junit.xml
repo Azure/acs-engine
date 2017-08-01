@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <testsuite tests="2" failures="0" time="0.0006267">
+      <testcase name="Scale down vms operation tests Should return error messages for failing vms" classname="Server Suite" time="0.0002419"></testcase>
+      <testcase name="Scale down vms operation tests Should return nil for errors if all deletes successful" classname="Server Suite" time="0.0003178"></testcase>
+  </testsuite>

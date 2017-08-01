@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <testsuite tests="6" failures="0" time="66.2917919">
+      <testcase name="Upgrade Kubernetes cluster tests Should return error message when failing to list VMs during upgrade operation" classname="Server Suite" time="0.0006936"></testcase>
+      <testcase name="Upgrade Kubernetes cluster tests Should return error message when failing to detete VMs during upgrade operation" classname="Server Suite" time="20.2862686"></testcase>
+      <testcase name="Upgrade Kubernetes cluster tests Should return error message when failing to deploy template during upgrade operation" classname="Server Suite" time="8.0281021"></testcase>
+      <testcase name="Upgrade Kubernetes cluster tests Should return error message when failing to get a virtual machine during upgrade operation" classname="Server Suite" time="13.8351165"></testcase>
+      <testcase name="Upgrade Kubernetes cluster tests Should return error message when failing to get storage client during upgrade operation" classname="Server Suite" time="15.1703118"></testcase>
+      <testcase name="Upgrade Kubernetes cluster tests Should return error message when failing to delete network interface during upgrade operation" classname="Server Suite" time="8.970837"></testcase>
+  </testsuite>

@@ -347,6 +347,10 @@ write_files:
   permissions: "0744"
   owner: "root"
 - path: /var/lib/dcos/mesos-slave-common
+<<<<<<< HEAD
+  content: 'ATTRIBUTES_STR'
+=======
   content: 'ATTRIBUTES_STR'
   permissions: "0644"
   owner: "root"
+>>>>>>> upstream/master

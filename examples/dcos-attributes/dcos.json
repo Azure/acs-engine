@@ -6,24 +6,40 @@
     },
     "masterProfile": {
       "count": 1,
+<<<<<<< HEAD
+      "dnsPrefix": "xtophm",
+=======
       "dnsPrefix": "",
+>>>>>>> upstream/master
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
+<<<<<<< HEAD
+        "name": "agentprivate",
+=======
         "name": "xtentprivate",
+>>>>>>> upstream/master
         "count": 3,
         "vmSize": "Standard_D2_v2",
         "customNodeLabels" : {
           "foo" : "bar",
+<<<<<<< HEAD
+          "att1" : "value1"
+=======
           "attribute1" : "value1"
+>>>>>>> upstream/master
         } 
       },
       {
         "name": "agentpublic",
         "count": 3,
         "vmSize": "Standard_D2_v2",
+<<<<<<< HEAD
+        "dnsPrefix": "xtopha",
+=======
         "dnsPrefix": "",
+>>>>>>> upstream/master
         "ports": [
           80,
           443,
@@ -36,7 +52,11 @@
       "ssh": {
         "publicKeys": [
           {
+<<<<<<< HEAD
+            "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCidAu8UvCei6+1ugqHw41tGtk7y8qc9Q/tcPAkxcxbVwszT/5oo7jqqe1snevJ2VpeSyqXVGRwt20bTbgcKJPOPZcs0oJWFaHN/24RdoygiKYXp83pIb3zIUMidYjgdtArYwLs13ZsWzqaIQnS0EeWKJ35kSPFhnOmTSLE2DhfldCmkMYDrjEiUrwrovrTvIq0K/UkpQj8yczFS+fBi7F3oGkYCdPzE6HAAg6nAlsrWSXpdkcDWebMGwE9UK5+CP9lm7bOHHjOW/2PKr23bB5P5Kzlg11zgZGozG82Oq3hbnolSnA4jvzLW/xR76fdpuMZckn4o/7k2yfmswaiudfodC4JylXlhA+6EvCSOf6o45u67AdUKLGpQzw7Fmao0yQwZtEQoeNtdSMukTKOP45EhIL0BcEPvuMZRuKgw6vD0yUB/59DQuVks9zJen/owacvzguvrQ8YxXhe5qMJeBl89VWDOLQYbj6jB5tYTiXHlnBC0J3Vvv4iHX01RwMGWmZrwNiKxGCUCcVU0rOFed3EXpTHf12LeD/+RDGaZu6ReOxdSTew1vMNWbieC7yim5IFxYzBSIpWLihxhomQV4/bu3NG3CQ2AAMvF+Pd51cOxCQcgM/RF3bzzHPoKlBv4f9rplW+qAvrpopC7dyvtpKIT3dUKcHKRqLOyV4/R4wU7w== christoph@bracketangles.net"
+=======
             "keyData": ""
+>>>>>>> upstream/master
           }
         ]
       }
