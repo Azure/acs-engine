@@ -26,7 +26,7 @@ type Kubernetes162upgrader struct {
 // ClusterPreflightCheck does preflight check
 func (ku *Kubernetes162upgrader) ClusterPreflightCheck() error {
 	// Check that current cluster is 1.5.3
-	if ku.DataModel.Properties.OrchestratorProfile.OrchestratorVersion != api.Kubernetes153 {
+	if ku.DataModel.Properties.OrchestratorProfile.OrchestratorVersion != "1.5.3" {
 		return ku.Translator.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s",
 			ku.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
