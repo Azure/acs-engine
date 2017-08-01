@@ -79,6 +79,7 @@ func (a *Apiloader) LoadContainerService(contents []byte, version string, valida
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
+		setContainerServiceDefaultsv20170701(containerService)
 		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
@@ -89,6 +90,7 @@ func (a *Apiloader) LoadContainerService(contents []byte, version string, valida
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
+		setContainerServiceDefaultsvlabs(containerService)
 		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
@@ -186,5 +188,19 @@ func setContainerServiceDefaultsv20170131(c *v20170131.ContainerService) {
 		c.Properties.OrchestratorProfile = &v20170131.OrchestratorProfile{
 			OrchestratorType: v20170131.DCOS,
 		}
+	}
+}
+
+// Sets default container service property values for any appropriate zero values
+func setContainerServiceDefaultsv20170701(c *v20170701.ContainerService) {
+	if c.Properties.OrchestratorProfile != nil {
+		c.Properties.OrchestratorProfile.OrchestratorVersion = ""
+	}
+}
+
+// Sets default container service property values for any appropriate zero values
+func setContainerServiceDefaultsvlabs(c *vlabs.ContainerService) {
+	if c.Properties.OrchestratorProfile != nil {
+		c.Properties.OrchestratorProfile.OrchestratorVersion = ""
 	}
 }
