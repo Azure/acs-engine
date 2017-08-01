@@ -73,6 +73,7 @@ HAS_GLIDE := $(shell command -v glide;)
 HAS_GOX := $(shell command -v gox;)
 HAS_GIT := $(shell command -v git;)
 HAS_GOBINDATA := $(shell command -v go-bindata;)
+HAS_GOMETALINTER := $(shell command -v gometalinter;)
 
 .PHONY: bootstrap
 bootstrap:
@@ -87,6 +88,10 @@ ifndef HAS_GOBINDATA
 endif
 ifndef HAS_GIT
 	$(error You must install Git)
+endif
+ifndef HAS_GOMETALINTER
+	go get -u github.com/alecthomas/gometalinter
+	gometalinter --install
 endif
 	glide install
 
