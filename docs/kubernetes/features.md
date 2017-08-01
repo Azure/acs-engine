@@ -5,6 +5,7 @@
 |Managed Disks|Beta|`vlabs`|[kubernetes-vmas.json](../../examples/disks-managed/kubernetes-vmss.json)|[Description](#feat-managed-disks)|
 |Managed Identity|Alpha|`vlabs`|[kubernetes-msi.json](../../examples/managed-identity/kubernetes-msi.json)|[Description](#feat-kubernetes-msi)|
 |Calico Network Policy|Alpha|`vlabs`|[kubernetes-calico.json](../../examples/networkpolicy/kubernetes-calico.json)|[Description](#feat-calico)|
+|Custom VNET|Beta|`vlabs`|[kubernetesvnet.json](../../examples/vnet/kubernetesvnet.json)|[Description](#feat-custom-vnet)|
 
 <a name="feat-kubernetes-msi"></a>
 
@@ -112,3 +113,61 @@ Per default Calico still allows all communication within the cluster. Using Kube
 * [NetworkPolicy User Guide](https://kubernetes.io/docs/user-guide/networkpolicies/)
 * [NetworkPolicy Example Walkthrough](https://kubernetes.io/docs/getting-started-guides/network-policy/walkthrough/)
 * [Calico Kubernetes](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/)
+
+<a name="feat-custom-vnet"></a>
+
+## Custom VNET
+
+ACS Engine supports deploying into an existing VNET. Operators must specify the ARM path/id of Subnets for the `masterProfile` and  any `agentPoolProfiles`. After the cluster is provisioned there are some required modifications to VNET Route Tables.
+
+Before provisioning, modify the `masterProfile` and `agentPoolProfiles` sections in the cluster definition to place masters and agents into your desired subnets:
+
+```json
+"masterProfile": {
+  ...
+  "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/MASTER_SUBNET_NAME",
+  "firstConsecutiveStaticIP": "10.239.255.239"
+  ...
+},
+...
+"agentPoolProfiles": [
+  {
+    ...
+    "name": "agentpri",
+    "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/AGENT_SUBNET_NAME",
+    ...
+  },
+```
+
+After a cluster finishes provisioning, fetch the id of the Route Table resource from `Microsoft.Network` provider in your new cluster's Resource Group.
+
+The route table resource id is of the format: `/subscriptions/SUBSCRIPTIONID/resourceGroups/RESOURCEGROUPNAME/providers/Microsoft.Network/routeTables/ROUTETABLENAME`
+
+Existing subnets will need to use the Kubernetes-based Route Table so that machines can route to Kubernetes-based workloads.
+
+Update properties of all subnets in the existing VNET he route table resource by appending the following to subnet properties:
+
+```json
+"routeTable": {
+        "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/k8s-master-<SOMEID>-routetable>"
+      }
+```
+
+E.g.:
+```json
+"subnets": [
+    {
+      "name": "subnetname",
+      "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/virtualNetworks/<VirtualNetworkName>/subnets/<SubnetName>",
+      "properties": {
+        "provisioningState": "Succeeded",
+        "addressPrefix": "10.240.0.0/16",
+        "routeTable": {
+          "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/k8s-master-<SOMEID>-routetable"
+        }
+      ...
+      }
+      ...
+    }
+]
+```
