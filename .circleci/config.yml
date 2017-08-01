@@ -7,14 +7,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: make bootstrap
-      - run:
           name: Run style and unit tests
-          command: make test-style build test
+          command: make bootstrap test-style build test
       - run:
           name: Generate test coverage results
-          command:  make build coverage
+          command:  make bootstrap build coverage
   e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
@@ -29,11 +26,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: make bootstrap
-      - run:
           name: e2e tests
-          command: make build test-e2e
+          command: make bootstrap build test-e2e
 
 workflows:
   version: 2
