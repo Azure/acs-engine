@@ -24,15 +24,13 @@ jobs:
       - image: microsoft/acs-engine:latest
         environment:
           GOPATH: /go
-          BUILD_NUMBER: $CIRCLE_BUILD_NUM
-          RESOURCE_GROUP_PREFIX: y
-          SKIP_METRICS: y
-          STAGE_TIMEOUT_MIN: 30
-          NUM_OF_RETRIES: 2
-          TEST_CONFIG: test/acse-conf/acse-pr.json
     steps:
       - checkout
-      - run: echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
+      - run: |
+          echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
+          echo 'export STAGE_TIMEOUT_MIN=30 >> $BASH_ENV
+          echo 'export NUM_OF_RETRIES=2 >> $BASH_ENV
+          echo 'export TEST_CONFIG=test/acse-conf/acse-pr.json >> $BASH_ENV
       - run:
           name: e2e tests
           command: make bootstrap build test-e2e

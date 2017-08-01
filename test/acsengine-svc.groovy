@@ -63,7 +63,7 @@ uksouth ukwest"
 
               for (i = 0; i <locations.size(); i++) {
                 env.LOCATION = locations[i]
-                env.RESOURCE_GROUP = "test-acs-svc-${canonicalName}-${env.LOCATION}-${env.BUILD_NUMBER}"
+                env.RESOURCE_GROUP = "test-acs-svc-${canonicalName}-${env.LOCATION}-${env.CIRCLE_BUILD_NUM}"
                 env.DEPLOYMENT_NAME = "${env.RESOURCE_GROUP}"
                 env.LOGFILE = pwd()+"/${junit_dir}/${canonicalName}.${env.LOCATION}.log"
                 env.CLEANUP = "y"
@@ -123,7 +123,7 @@ uksouth ukwest"
                   if(sendTo != "") {
                     emailext(
                       to: "${sendTo}",
-                      subject: "[ACS Engine Jenkins Failure] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                      subject: "[ACS Engine Jenkins Failure] ${env.JOB_NAME} #${env.CIRCLE_BUILD_NUM}",
                       body: "${env.BUILD_URL}testReport")
                   }
                 }

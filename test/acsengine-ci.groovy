@@ -42,7 +42,7 @@ node {
                   env.LOGFILE = "${log_dir}/${LOCATION}.log"
                   env.CLEANUP = "${CLEANUP}"
 
-                  env.INSTANCE_NAME = "test-acs-ci-${ORCHESTRATOR}-${env.LOCATION}-${env.BUILD_NUMBER}"
+                  env.INSTANCE_NAME = "test-acs-ci-${ORCHESTRATOR}-${env.LOCATION}-${env.CIRCLE_BUILD_NUM}"
                   env.INSTANCE_NAME_PREFIX = "test-acs-ci"
                   env.ORCHESTRATOR = "${ORCHESTRATOR}"
                   env.CLUSTER_DEFINITION="examples/${ORCHESTRATOR}.json"
@@ -93,7 +93,7 @@ node {
                 gitCommit = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
                 emailext(
                   to: to,
-                  subject: "[ACS Engine is BROKEN] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                  subject: "[ACS Engine is BROKEN] ${env.JOB_NAME} #${env.CIRCLE_BUILD_NUM}",
                   body: "Commit: ${gitCommit}\n\n${url}${errorMsg}"
                 )
               }
