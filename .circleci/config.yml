@@ -37,6 +37,8 @@ jobs:
       - run:
           name: e2e tests
           command: make bootstrap build test-e2e
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_logs
   master:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
@@ -61,6 +63,8 @@ jobs:
       - run:
           name: Feature validation tests
           command: make bootstrap build test-e2e
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_logs
 
 workflows:
   version: 2
