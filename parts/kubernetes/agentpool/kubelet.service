@@ -46,8 +46,7 @@ ExecStart=/usr/bin/docker run \
         --hairpin-mode=promiscuous-bridge \
         --network-plugin=${KUBELET_NETWORK_PLUGIN} \
         --node-status-update-frequency=${KUBELET_NODE_STATUS_UPDATE_FREQUENCY} \
-        --v=2 ${KUBELET_FEATURE_GATES} \
-        --pod-cidr=${KUBELET_POD_CIDR}
+        --v=2 ${KUBELET_FEATURE_GATES}
 
 [Install]
 WantedBy=multi-user.target

@@ -60,7 +60,6 @@ type JumpBoxProfile struct {
 }
 
 type NetworkProfile struct {
-	PodCIDR          string `json:"podCidr,omitempty"`
 	ServiceCIDR      string `json:"serviceCidr,omitempty"`
 	VnetSubnetId     string `json:"vnetSubnetID,omitempty"`
 	KubeDnsServiceIp string `json:"kubeDnsServiceIP,omitempty"`

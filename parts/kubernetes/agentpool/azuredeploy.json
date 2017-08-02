@@ -499,12 +499,6 @@
       },
       "type": "securestring"
     },
-    "kubeletPodCidr": {
-      "metadata": {
-        "description": "Pod CIDR range for the kubelet"
-      },
-      "type": "string"
-    },
     "kubernetesApiServer": {
       "defaultValue": "",
       "metadata": {
@@ -707,7 +701,6 @@
     "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
     "kubeConfigCertificate": "[parameters('kubeConfigCertificate')]",
     "kubeConfigPrivateKey": "[parameters('kubeConfigPrivateKey')]",
-    "kubeletPodCidr": "[parameters('kubeletPodCidr')]",
     "kubeDnsServiceIp": "10.0.0.10",
     "kubeServiceCidr": "10.0.0.0/16",
     "kubernetesAPIServerIP": "[parameters('kubernetesApiServer')]",

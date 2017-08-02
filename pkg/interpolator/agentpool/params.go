@@ -2,6 +2,7 @@ package agentpool
 
 import (
 	"fmt"
+
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
 )
@@ -50,7 +51,6 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 	acsengine.AddSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
 	acsengine.AddSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 
-
 	// Kubernetes
 	acsengine.AddValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
 	acsengine.AddValue(parametersMap, "kubernetesHyperkubeSpec", KubernetesImagebase+acsengine.KubeImages[KubernetesVersion]["hyperkube"])
@@ -63,7 +63,6 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 	acsengine.AddValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 	acsengine.AddSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
 	acsengine.AddValue(parametersMap, "kubernetesApiServer", properties.KubernetesEndpoint)
-	acsengine.AddValue(parametersMap, "kubeletPodCidr", properties.NetworkProfile.PodCIDR)
 
 	return parametersMap, nil
 }
