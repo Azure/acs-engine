@@ -14,23 +14,23 @@
     },
     {
       "cluster_definition": "disks-managed/dcos-preAttachedDisks-vmas.json",
-      "location": "eastus2"
+      "location": "eastus"
     },
     {
       "cluster_definition": "disks-managed/dcos-vmss.json",
-      "location": "eastus2"
+      "location": "eastus"
     },
     {
       "cluster_definition": "disks-managed/kubernetes-preAttachedDisks-vmas.json",
-      "location": "eastus2"
+      "location": "eastus"
     },
     {
       "cluster_definition": "disks-managed/kubernetes-vmas.json",
-      "location": "eastus2"
+      "location": "eastus"
     },
     {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmas-windows.json",
-      "location": "eastus2"
+      "location": "eastus"
     },
     {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json",
@@ -46,23 +46,23 @@
     },
     {
       "cluster_definition": "disks-storageaccount/dcos.json",
-      "location": "westus"
+      "location": "westcentralus"
     },
     {
       "cluster_definition": "disks-storageaccount/kubernetes.json",
-      "location": "westus"
+      "location": "westcentralus"
     },
     {
       "cluster_definition": "disks-storageaccount/swarmmode.json",
-      "location": "centralus"
+      "location": "southcentralus"
     },
     {
       "cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
-      "location": "centralus"
+      "location": "southcentralus"
     },
     {
       "cluster_definition": "networkpolicy/kubernetes-calico.json",
-      "location": "centralus"
+      "location": "southcentralus"
     },
     {
       "cluster_definition": "custom-pod-cidr/kubernetes.json",
