@@ -139,7 +139,7 @@ write_files:
   encoding: gzip
   owner: "root"
   content: !!binary |
-    MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR
+    MASTER_ADDON_AZURE_STORAGE_CLASSES_B64_GZIP_STR
 
 - path: /etc/kubernetes/addons/kube-tiller-deployment.yaml
   permissions: "0644"
