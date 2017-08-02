@@ -757,27 +757,21 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
-
 			var str string
-			var e error
-
-			
+			var e error			
 			if profile.IsDistroCoreOS() {
 				str, e = t.getSingleLineForTemplate(kubernetesAgentCustomDataForCoreOSYaml, cs, profile)
 			} else {
 				str, e = t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
 			}
-
 			if e != nil {
 				return ""
 			}
-
 			// add artifacts
 			for placeholder, filename := range kubernetesAritfacts {
 				addonTextContents := getBase64CustomScript(filename)
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
 			}
-
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesB64Provision": func() string {

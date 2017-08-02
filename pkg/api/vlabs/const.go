@@ -23,6 +23,12 @@ const (
 	Linux   OSType = "Linux"
 )
 
+// the Distros supported by vlabs
+const (
+	CoreOS Distro = "CoreOS"
+	Ubuntu  Distro  = "Ubuntu"
+)
+
 // validation values
 const (
 	// MinAgentCount are the minimum number of agents per agent pool

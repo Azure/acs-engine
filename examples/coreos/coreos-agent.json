@@ -15,7 +15,7 @@
 				"count": 1,
 				"vmSize": "Standard_DS2_v2",
 				"availabilityProfile": "AvailabilitySet",
-				"distro": "coreos"
+				"distro": "CoreOS"
 			},
 			{
 				"name": "agentpool2",

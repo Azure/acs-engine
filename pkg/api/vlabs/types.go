@@ -223,7 +223,7 @@ type AgentPoolProfile struct {
 	DiskSizesGB         []int  `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 	IPAddressCount      int    `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
-	Distro              string `json:"distro,omitempty"`
+	Distro              Distro `json:"distro,omitempty"`
 	// subnet is internal
 	subnet           string
 	FQDN             string            `json:"fqdn"`
@@ -255,6 +255,9 @@ type KeyVaultCertificate struct {
 
 // OSType represents OS types of agents
 type OSType string
+
+// Distro represents Distro of OS of agents
+type Distro string
 
 // HasWindows returns true if the cluster contains windows
 func (p *Properties) HasWindows() bool {
@@ -309,13 +312,15 @@ func (a *AgentPoolProfile) IsLinux() bool {
 
 // IsDistroCoreOS returns true if distro is coreos
 func (a *AgentPoolProfile) IsDistroCoreOS() bool {
-	return strings.EqualFold(a.Distro, "coreos")
+	return a.Distro ==  CoreOS
 }
 
 //IsDistroUbuntu returns treue if Distro in the agentppol is Ubuntu or Not spefcified
 func (a *AgentPoolProfile) IsDistroUbuntu() bool {
-
-	return (strings.EqualFold(a.Distro, "ubuntu") || a.Distro == "")
+	if a.OSType == Windows {
+		return false
+	}
+	return a.Distro ==  Ubuntu || a.Distro == ""
 }
 
 

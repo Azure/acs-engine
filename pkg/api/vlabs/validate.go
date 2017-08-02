@@ -1,7 +1,6 @@
 package vlabs
 
 import (
-	"strings"
 	"errors"
 	"fmt"
 	"net"
@@ -121,23 +120,23 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 	if orchestratorType == Kubernetes {
 		if a.IsWindows() {
 			if e := validate.Var(a.Distro, "len=0"); e != nil {
-				return fmt.Errorf("Distro is not suppored for OSType Windows. OSType determeid was: %s and Distro was: %s", a.OSType, a.Distro)
+				return fmt.Errorf("Distro is not suppored for OSType Windows. OSType determined  was: %s and Distro was: %s", a.OSType, a.Distro)
 			}
 		}
 
-		switch strings.ToLower(a.Distro) {
-			case "coreos":
-			case "ubuntu":
+		switch a.Distro {
+			case "CoreOS":
+			case "Ubuntu":
 			case "": 
 			default:
-				return fmt.Errorf("Unsupported Distro is specified for OSType Linux. OSType determeid was: %s and Distro was: %s", a.OSType, a.Distro)
+				return fmt.Errorf("Unsupported Distro is specified for OSType Linux. OSType determined  was: %s and Distro was: %s", a.OSType, a.Distro)
 			}
 
 		
 	} else {
 		//Not Kubernetes
-		if e := validateNameEmpty(a.Distro, "AgentPoolProfile.distro"); e != nil {
-				return fmt.Errorf("Distro is suppored for Orchestrator Type Kubernetes only. orchestratorType determeid was: %s and Distro was: %s", orchestratorType, a.Distro)
+		if e := validateDistroEmpty(a.Distro, "AgentPoolProfile.distro"); e != nil {
+				return fmt.Errorf("Distro is suppored for Orchestrator Type Kubernetes only. orchestratorType determined   was: %s and Distro was: %s", orchestratorType, a.Distro)
 		}
 	}
 
@@ -429,6 +428,13 @@ func (a *Properties) validateNetworkPolicy() error {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 
+	return nil
+}
+
+func validateDistroEmpty(name Distro, label string) error {
+	if name != "" {
+		return fmt.Errorf("%s must be an empty value", label)
+	}
 	return nil
 }
 

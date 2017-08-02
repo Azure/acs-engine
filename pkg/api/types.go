@@ -2,7 +2,6 @@ package api
 
 import (
 	neturl "net/url"
-	"strings"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -186,7 +185,7 @@ type AgentPoolProfile struct {
 	VnetSubnetID        string            `json:"vnetSubnetID,omitempty"`
 	Subnet              string            `json:"subnet"`
 	IPAddressCount      int               `json:"ipAddressCount,omitempty"`
-	Distro              string            `json:"distro,omitempty"`
+	Distro              Distro            `json:"distro,omitempty"`
 	FQDN                string            `json:"fqdn,omitempty"`
 	CustomNodeLabels    map[string]string `json:"customNodeLabels,omitempty"`
 }
@@ -248,6 +247,9 @@ type KeyVaultCertificate struct {
 
 // OSType represents OS types of agents
 type OSType string
+
+// Distro represents Distro of OS
+type Distro string
 
 // CustomProfile specifies custom properties that are used for
 // cluster instantiation.  Should not be used by most users.
@@ -376,14 +378,15 @@ func (a *AgentPoolProfile) IsLinux() bool {
 
 // IsDistroCoreOS returns true if distro is coreos
 func (a *AgentPoolProfile) IsDistroCoreOS() bool {
-	return strings.EqualFold(a.Distro, "coreos")
+	return a.Distro ==  CoreOS
 }
 
-// IsDistroUbuntu returns true if distro is ubuntu or not specified.
 //IsDistroUbuntu returns treue if Distro in the agentppol is Ubuntu or Not spefcified
 func (a *AgentPoolProfile) IsDistroUbuntu() bool {
-
-	return (strings.EqualFold(a.Distro, "ubuntu") || a.Distro == "")
+	if a.OSType == Windows {
+		return false
+	}
+	return a.Distro ==  Ubuntu || a.Distro == ""
 }
 
 // IsAvailabilitySets returns true if the customer specified disks
