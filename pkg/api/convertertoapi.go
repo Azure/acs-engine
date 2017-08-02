@@ -467,7 +467,7 @@ func convertVLabsWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile
 }
 
 func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfile, api *OrchestratorProfile) {
-	api.OrchestratorType = OrchestratorType(v20160930.OrchestratorType)
+	api.OrchestratorType = v20160930.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
 		api.OrchestratorVersion = Kubernetes153
 	} else if api.OrchestratorType == DCOS {
@@ -476,16 +476,16 @@ func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfil
 }
 
 func convertV20160330OrchestratorProfile(v20160330 *v20160330.OrchestratorProfile, api *OrchestratorProfile) {
-	api.OrchestratorType = OrchestratorType(v20160330.OrchestratorType)
+	api.OrchestratorType = v20160330.OrchestratorType
 	if api.OrchestratorType == DCOS {
 		api.OrchestratorVersion = DCOS190
 	}
 }
 
 func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfile, api *OrchestratorProfile) {
-	api.OrchestratorType = OrchestratorType(v20170131.OrchestratorType)
+	api.OrchestratorType = v20170131.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
-		api.OrchestratorVersion = KubernetesLatest
+		api.OrchestratorVersion = KubernetesDefaultVersion
 	} else if api.OrchestratorType == DCOS {
 		api.OrchestratorVersion = DCOS190
 	}
@@ -495,7 +495,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 	if v20170701cs.OrchestratorType == v20170701.DockerCE {
 		api.OrchestratorType = SwarmMode
 	} else {
-		api.OrchestratorType = OrchestratorType(v20170701cs.OrchestratorType)
+		api.OrchestratorType = v20170701cs.OrchestratorType
 	}
 
 	if api.OrchestratorType == Kubernetes {
@@ -506,7 +506,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 		case v20170701.Kubernetes157:
 			api.OrchestratorVersion = Kubernetes157
 		default:
-			api.OrchestratorVersion = KubernetesLatest
+			api.OrchestratorVersion = KubernetesDefaultVersion
 		}
 	} else if api.OrchestratorType == DCOS {
 		switch v20170701cs.OrchestratorVersion {
@@ -523,7 +523,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 }
 
 func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *OrchestratorProfile) {
-	api.OrchestratorType = OrchestratorType(vlabscs.OrchestratorType)
+	api.OrchestratorType = vlabscs.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
 		if vlabscs.KubernetesConfig != nil {
 			api.KubernetesConfig = &KubernetesConfig{}
@@ -531,6 +531,12 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		}
 
 		switch vlabscs.OrchestratorVersion {
+		case vlabs.Kubernetes172:
+			api.OrchestratorVersion = Kubernetes172
+		case vlabs.Kubernetes171:
+			api.OrchestratorVersion = Kubernetes171
+		case vlabs.Kubernetes170:
+			api.OrchestratorVersion = Kubernetes170
 		case vlabs.Kubernetes166:
 			api.OrchestratorVersion = Kubernetes166
 		case vlabs.Kubernetes162:
@@ -542,7 +548,7 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		case vlabs.Kubernetes153:
 			api.OrchestratorVersion = Kubernetes153
 		default:
-			api.OrchestratorVersion = KubernetesLatest
+			api.OrchestratorVersion = KubernetesDefaultVersion
 		}
 	} else if api.OrchestratorType == DCOS {
 		switch vlabscs.OrchestratorVersion {
@@ -580,6 +586,8 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.CloudProviderRateLimitBucket = vlabs.CloudProviderRateLimitBucket
 	api.CloudProviderRateLimitQPS = vlabs.CloudProviderRateLimitQPS
 	api.UseManagedIdentity = vlabs.UseManagedIdentity
+	api.CustomHyperkubeImage = vlabs.CustomHyperkubeImage
+	api.UseInstanceMetadata = vlabs.UseInstanceMetadata
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {
@@ -637,6 +645,8 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
 	api.StorageProfile = vlabs.StorageProfile
+	api.HTTPSourceAddressPrefix = vlabs.HTTPSourceAddressPrefix
+	api.OAuthEnabled = vlabs.OAuthEnabled
 	// by default vlabs will use managed disks as it has encryption at rest
 	if len(api.StorageProfile) == 0 {
 		api.StorageProfile = ManagedDisks
@@ -804,11 +814,13 @@ func convertV20170131ServicePrincipalProfile(v20170131 *v20170131.ServicePrincip
 func convertV20170701ServicePrincipalProfile(v20170701 *v20170701.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 	api.ClientID = v20170701.ClientID
 	api.Secret = v20170701.Secret
+	api.KeyvaultSecretRef = v20170701.KeyvaultSecretRef
 }
 
 func convertVLabsServicePrincipalProfile(vlabs *vlabs.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 	api.ClientID = vlabs.ClientID
 	api.Secret = vlabs.Secret
+	api.KeyvaultSecretRef = vlabs.KeyvaultSecretRef
 }
 
 func convertV20160930CustomProfile(v20160930 *v20160930.CustomProfile, api *CustomProfile) {

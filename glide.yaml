@@ -1,16 +1,17 @@
 package: github.com/Azure/acs-engine
 import:
 - package: github.com/Azure/azure-sdk-for-go
-  version: ^10.0.2-beta
+  version: ~v10.1.0-beta
   subpackages:
   - arm/compute
   - arm/network
   - arm/resources/resources
   - arm/resources/subscriptions
   - arm/storage
+  - arm/disk
   - storage
 - package: github.com/Azure/go-autorest
-  version: ^8.0.0
+  version: ~8.1.0
   subpackages:
   - autorest
   - autorest/adal
@@ -18,20 +19,21 @@ import:
   - autorest/to
   - autorest/date
 - package: github.com/Sirupsen/logrus
-  version: ^0.11.5
+  version: v0.11.5
 - package: github.com/ghodss/yaml
-  version: ^1.0.0
+  version: v1.0.0
 - package: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - package: github.com/prometheus/common
   subpackages:
   - log
 - package: github.com/satori/go.uuid
-  version: ^1.1.0
+  version: v1.1.0
 - package: github.com/spf13/cobra
   version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
 - package: github.com/spf13/pflag
-  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
+- package: github.com/leonelquinteros/gotext
+  version: a735812a72672008b3902f8b2bc1302166a9a8ea
 - package: gopkg.in/go-playground/validator.v9
   version: v9.4.0
 - package: github.com/go-playground/universal-translator
@@ -39,8 +41,12 @@ import:
 - package: golang.org/x/crypto
   subpackages:
   - ssh
+- package: github.com/alexcesaro/statsd
+  version: v2.0.0
+- package: github.com/JiangtianLi/gettext
+  version: a8983c062be4b565d723c478922d7736e04fdba4
 testImport:
 - package: github.com/onsi/gomega
-  version: ^1.1.0
+  version: v1.1.0
 - package: github.com/onsi/ginkgo
-  version: ^1.3.1
+  version: v1.3.1

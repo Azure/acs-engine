@@ -13,6 +13,7 @@
     "kubernetesDashboardSpec": "[parameters('kubernetesDashboardSpec')]",
     "kubernetesExecHealthzSpec": "[parameters('kubernetesExecHealthzSpec')]",
     "kubernetesHeapsterSpec": "[parameters('kubernetesHeapsterSpec')]",
+    "kubernetesTillerSpec": "[parameters('kubernetesTillerSpec')]",
     "kubernetesPodInfraContainerSpec": "[parameters('kubernetesPodInfraContainerSpec')]",
     "kubernetesNodeStatusUpdateFrequency": "[parameters('kubernetesNodeStatusUpdateFrequency')]",
     "kubernetesCtrlMgrNodeMonitorGracePeriod": "[parameters('kubernetesCtrlMgrNodeMonitorGracePeriod')]",
@@ -27,11 +28,17 @@
     "cloudProviderRatelimitQPS": "[parameters('cloudProviderRatelimitQPS')]",
     "cloudProviderRatelimitBucket": "[parameters('cloudProviderRatelimitBucket')]",
     "useManagedIdentityExtension": "{{ UseManagedIdentity }}",
+    "useInstanceMetadata": "{{ UseInstanceMetadata }}",
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
     "networkPolicy": "[parameters('networkPolicy')]",
+{{ if UseManagedIdentity }}
+    "servicePrincipalClientId": "msi",
+    "servicePrincipalClientSecret": "msi",
+{{ else }}
     "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
     "servicePrincipalClientSecret": "[parameters('servicePrincipalClientSecret')]",
+{{ end }}
     "username": "[parameters('linuxAdminUsername')]",
     "masterFqdnPrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
     "masterPrivateIp": "[parameters('firstConsecutiveStaticIP')]",

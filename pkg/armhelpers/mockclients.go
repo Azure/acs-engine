@@ -2,16 +2,16 @@ package armhelpers
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/arm/authorization"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Azure/azure-sdk-for-go/arm/disk"
 	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest"
 )
 
-//MockACSEngineClient is an implemetnation of ACSEngineClient where all requests error out
+//MockACSEngineClient is an implementation of ACSEngineClient where all requests error out
 type MockACSEngineClient struct {
 	FailDeployTemplate              bool
 	FailEnsureResourceGroup         bool
@@ -167,7 +167,6 @@ func (mc *MockACSEngineClient) DeleteVirtualMachine(resourceGroup, name string, 
 				close(respChan)
 			}()
 			errChan <- fmt.Errorf("DeleteVirtualMachine failed")
-			time.Sleep(1 * time.Second)
 		}()
 		return respChan, errChan
 	}
@@ -183,7 +182,6 @@ func (mc *MockACSEngineClient) DeleteVirtualMachine(resourceGroup, name string, 
 		}()
 		errChan <- nil
 		respChan <- compute.OperationStatusResponse{}
-		time.Sleep(1 * time.Second)
 	}()
 	return respChan, errChan
 }
@@ -210,7 +208,6 @@ func (mc *MockACSEngineClient) DeleteNetworkInterface(resourceGroup, nicName str
 				close(respChan)
 			}()
 			errChan <- fmt.Errorf("DeleteNetworkInterface failed")
-			time.Sleep(1 * time.Second)
 		}()
 		return respChan, errChan
 	}
@@ -226,7 +223,6 @@ func (mc *MockACSEngineClient) DeleteNetworkInterface(resourceGroup, nicName str
 		}()
 		errChan <- nil
 		respChan <- autorest.Response{}
-		time.Sleep(1 * time.Second)
 	}()
 	return respChan, errChan
 }
@@ -264,4 +260,26 @@ func (mc *MockACSEngineClient) CreateRoleAssignment(scope string, roleAssignment
 // CreateRoleAssignmentSimple is a wrapper around RoleAssignmentsClient.Create
 func (mc *MockACSEngineClient) CreateRoleAssignmentSimple(applicationID, roleID string) error {
 	return nil
+}
+
+// DeleteManagedDisk is a wrapper around disksClient.Delete
+func (mc *MockACSEngineClient) DeleteManagedDisk(resourceGroupName string, diskName string, cancel <-chan struct{}) (<-chan disk.OperationStatusResponse, <-chan error) {
+	errChan := make(chan error)
+	respChan := make(chan disk.OperationStatusResponse)
+	go func() {
+		defer func() {
+			close(errChan)
+		}()
+		defer func() {
+			close(respChan)
+		}()
+		errChan <- nil
+		respChan <- disk.OperationStatusResponse{}
+	}()
+	return respChan, errChan
+}
+
+// ListManagedDisksByResourceGroup is a wrapper around disksClient.ListManagedDisksByResourceGroup
+func (mc *MockACSEngineClient) ListManagedDisksByResourceGroup(resourceGroupName string) (result disk.ListType, err error) {
+	return disk.ListType{}, nil
 }

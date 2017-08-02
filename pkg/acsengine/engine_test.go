@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -11,6 +12,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/leonelquinteros/gotext"
 	. "github.com/onsi/gomega"
 )
 
@@ -19,6 +22,15 @@ const (
 )
 
 func TestExpected(t *testing.T) {
+	// Initialize locale for translation
+	locale := gotext.NewLocale(path.Join("..", "..", "translations"), "en_US")
+	i18n.Initialize(locale)
+
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: locale,
+		},
+	}
 	// iterate the test data directory
 	apiModelTestFiles := &[]APIModelTestFile{}
 	if e := IterateTestFilesDirectory(TestDataDir, apiModelTestFiles); e != nil {
@@ -27,7 +39,7 @@ func TestExpected(t *testing.T) {
 	}
 
 	for _, tuple := range *apiModelTestFiles {
-		containerService, version, err := api.LoadContainerServiceFromFile(tuple.APIModelFilename, true)
+		containerService, version, err := apiloader.LoadContainerServiceFromFile(tuple.APIModelFilename, true)
 		if err != nil {
 			t.Errorf("Loading file %s got error: %s", tuple.APIModelFilename, err.Error())
 			continue
@@ -51,7 +63,12 @@ func TestExpected(t *testing.T) {
 		// 1. first time tests loaded containerService
 		// 2. second time tests generated containerService
 		// 3. third time tests the generated containerService from the generated containerService
-		templateGenerator, e3 := InitializeTemplateGenerator(isClassicMode)
+		ctx := Context{
+			Translator: &i18n.Translator{
+				Locale: locale,
+			},
+		}
+		templateGenerator, e3 := InitializeTemplateGenerator(ctx, isClassicMode)
 		if e3 != nil {
 			t.Error(e3.Error())
 			continue
@@ -118,11 +135,11 @@ func TestExpected(t *testing.T) {
 				t.Errorf("generated parameters different from expected for model %s: '%s'", tuple.APIModelFilename, diffstr)
 			}
 
-			b, err := api.SerializeContainerService(containerService, version)
+			b, err := apiloader.SerializeContainerService(containerService, version)
 			if err != nil {
 				t.Error(err)
 			}
-			containerService, version, err = api.DeserializeContainerService(b, true)
+			containerService, version, err = apiloader.DeserializeContainerService(b, true)
 			if err != nil {
 				t.Error(err)
 			}
@@ -198,12 +215,18 @@ func addTestCertificateProfile(api *api.CertificateProfile) {
 
 func TestVersionOrdinal(t *testing.T) {
 	RegisterTestingT(t)
-	v166 := api.OrchestratorVersion("1.6.6")
-	v162 := api.OrchestratorVersion("1.6.2")
-	v160 := api.OrchestratorVersion("1.6.0")
-	v153 := api.OrchestratorVersion("1.5.3")
-	v16 := api.OrchestratorVersion("1.6")
+	v172 := "1.7.2"
+	v171 := "1.7.1"
+	v170 := "1.7.0"
+	v166 := "1.6.6"
+	v162 := "1.6.2"
+	v160 := "1.6.0"
+	v153 := "1.5.3"
+	v16 := "1.6"
 
+	Expect(v171 < v172).To(BeTrue())
+	Expect(v170 < v171).To(BeTrue())
+	Expect(v166 < v170).To(BeTrue())
 	Expect(v166 > v162).To(BeTrue())
 	Expect(v162 < v166).To(BeTrue())
 	Expect(v162 > v160).To(BeTrue())
@@ -211,7 +234,42 @@ func TestVersionOrdinal(t *testing.T) {
 	Expect(v153 < v160).To(BeTrue())
 
 	//testing with different version length
+	Expect(v171 > v162).To(BeTrue())
 	Expect(v16 < v162).To(BeTrue())
 	Expect(v16 > v153).To(BeTrue())
 
+}
+
+func TestGetStorageAccountType(t *testing.T) {
+	validPremiumVMSize := "Standard_DS2_v2"
+	validStandardVMSize := "Standard_D2_v2"
+	expectedPremiumTier := "Premium_LRS"
+	expectedStandardTier := "Standard_LRS"
+	invalidVMSize := "D2v2"
+
+	// test premium VMSize returns premium managed disk tier
+	premiumTier, err := getStorageAccountType(validPremiumVMSize)
+	if err != nil {
+		t.Fatalf("Invalid sizeName: %s", err)
+	}
+
+	if premiumTier != expectedPremiumTier {
+		t.Fatalf("premium VM did no match premium managed storage tier")
+	}
+
+	// test standard VMSize returns standard managed disk tier
+	standardTier, err := getStorageAccountType(validStandardVMSize)
+	if err != nil {
+		t.Fatalf("Invalid sizeName: %s", err)
+	}
+
+	if standardTier != expectedStandardTier {
+		t.Fatalf("standard VM did no match standard managed storage tier")
+	}
+
+	// test invalid VMSize
+	result, err := getStorageAccountType(invalidVMSize)
+	if err == nil {
+		t.Errorf("getStorageAccountType() = (%s, nil), want error", result)
+	}
 }

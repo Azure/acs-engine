@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
 	log "github.com/Sirupsen/logrus"
 )
@@ -16,6 +17,7 @@ var _ UpgradeNode = &UpgradeMasterNode{}
 
 // UpgradeMasterNode upgrades a Kubernetes 1.5.3 master node to 1.6.2
 type UpgradeMasterNode struct {
+	Translator              *i18n.Translator
 	TemplateMap             map[string]interface{}
 	ParametersMap           map[string]interface{}
 	UpgradeContainerService *api.ContainerService
@@ -46,7 +48,7 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 	masterOffset, _ := templateVariables["masterCount"]
 	log.Infoln(fmt.Sprintf("Master pool set count to: %v temporarily during upgrade...", masterOffset))
 
-	WriteTemplate(kmn.UpgradeContainerService, kmn.TemplateMap, kmn.ParametersMap)
+	WriteTemplate(kmn.Translator, kmn.UpgradeContainerService, kmn.TemplateMap, kmn.ParametersMap)
 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	deploymentSuffix := random.Int31()

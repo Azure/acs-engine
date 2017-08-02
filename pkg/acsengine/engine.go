@@ -10,11 +10,13 @@ import (
 	"hash/fnv"
 	"math/rand"
 	"regexp"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"text/template"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/ghodss/yaml"
 )
 
@@ -104,6 +106,10 @@ var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR":    "kubernetesmasteraddons-kubernetes-dashboard-service.yaml",
 	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
+	"MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR":  "kubernetesmasteraddons-managed-standard-storage-class.yaml",
+	"MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR":   "kubernetesmasteraddons-managed-premium-storage-class.yaml",
+	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment.yaml",
+	"MASTER_ADDON_TILLER_SERVICE_B64_GZIP_STR":                  "kubernetesmasteraddons-tiller-service.yaml",
 }
 
 var kubernetesAddonYamls15 = map[string]string{
@@ -115,6 +121,10 @@ var kubernetesAddonYamls15 = map[string]string{
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR":    "kubernetesmasteraddons-kubernetes-dashboard-service.yaml",
 	"MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR":           "kubernetesmasteraddons-default-storage-class.yaml",
+	"MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR":  "kubernetesmasteraddons-managed-standard-storage-class.yaml",
+	"MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR":   "kubernetesmasteraddons-managed-premium-storage-class.yaml",
+	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment1.5.yaml",
+	"MASTER_ADDON_TILLER_SERVICE_B64_GZIP_STR":                  "kubernetesmasteraddons-tiller-service.yaml",
 }
 
 var calicoAddonYamls = map[string]string{
@@ -159,10 +169,12 @@ var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, sw
 }
 **/
 
+// KeyVaultID represents a KeyVault instance on Azure
 type KeyVaultID struct {
 	ID string `json:"id"`
 }
 
+// KeyVaultRef represents a reference to KeyVault instance on Azure
 type KeyVaultRef struct {
 	KeyVault      KeyVaultID `json:"keyVault"`
 	SecretName    string     `json:"secretName"`
@@ -181,7 +193,7 @@ func (t *TemplateGenerator) verifyFiles() error {
 	allFiles = append(allFiles, swarmTemplateFiles...)
 	for _, file := range allFiles {
 		if _, err := Asset(file); err != nil {
-			return fmt.Errorf("template file %s does not exist", file)
+			return t.Translator.Errorf("template file %s does not exist", file)
 		}
 	}
 	return nil
@@ -190,12 +202,14 @@ func (t *TemplateGenerator) verifyFiles() error {
 // TemplateGenerator represents the object that performs the template generation.
 type TemplateGenerator struct {
 	ClassicMode bool
+	Translator  *i18n.Translator
 }
 
 // InitializeTemplateGenerator creates a new template generator object
-func InitializeTemplateGenerator(classicMode bool) (*TemplateGenerator, error) {
+func InitializeTemplateGenerator(ctx Context, classicMode bool) (*TemplateGenerator, error) {
 	t := &TemplateGenerator{
 		ClassicMode: classicMode,
+		Translator:  ctx.Translator,
 	}
 
 	if err := t.verifyFiles(); err != nil {
@@ -210,7 +224,6 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	// named return values are used in order to set err in case of a panic
 	templateRaw = ""
 	parametersRaw = ""
-	certsGenerated = false
 	err = nil
 
 	var templ *template.Template
@@ -223,7 +236,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 
 	templ = template.New("acs template").Funcs(t.getTemplateFuncMap(containerService))
 
-	files, baseFile, e := prepareTemplateFiles(properties)
+	files, baseFile, e := t.prepareTemplateFiles(properties)
 	if e != nil {
 		return "", "", false, e
 	}
@@ -231,7 +244,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	for _, file := range files {
 		bytes, e := Asset(file)
 		if e != nil {
-			err = fmt.Errorf("Error reading file %s, Error: %s", file, e.Error())
+			err = t.Translator.Errorf("Error reading file %s, Error: %s", file, e.Error())
 			return templateRaw, parametersRaw, certsGenerated, err
 		}
 		if _, err = templ.New(file).Parse(string(bytes)); err != nil {
@@ -242,7 +255,9 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	// and ensures the panic is returned as an error
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
+			s := debug.Stack()
+			err = fmt.Errorf("%v - %s", r, s)
+
 			// invalidate the template and the parameters
 			templateRaw = ""
 			parametersRaw = ""
@@ -296,7 +311,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	return kubeconfig, nil
 }
 
-func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
+func (t *TemplateGenerator) prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
 	var files []string
 	var baseFile string
 	if properties.OrchestratorProfile.OrchestratorType == api.DCOS {
@@ -312,7 +327,7 @@ func prepareTemplateFiles(properties *api.Properties) ([]string, string, error) 
 		files = append(commonTemplateFiles, swarmModeTemplateFiles...)
 		baseFile = swarmBaseFile
 	} else {
-		return nil, "", fmt.Errorf("orchestrator '%s' is unsupported", properties.OrchestratorProfile.OrchestratorType)
+		return nil, "", t.Translator.Errorf("orchestrator '%s' is unsupported", properties.OrchestratorProfile.OrchestratorType)
 	}
 
 	return files, baseFile, nil
@@ -331,6 +346,9 @@ func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
 	}
 }
 
+// GetCloudTargetEnv determines and returns whether the region is a sovereign cloud which
+// have their own data compliance regulations (China/Germany/USGov) or standard
+//  Azure public cloud
 func GetCloudTargetEnv(location string) string {
 	loc := strings.ToLower(strings.Join(strings.Fields(location), ""))
 	switch {
@@ -377,6 +395,12 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	// Kubernetes Parameters
 	if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		KubernetesVersion := properties.OrchestratorProfile.OrchestratorVersion
+
+		kubernetesHyperkubeSpec := properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeImages[KubernetesVersion]["hyperkube"]
+		if properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage != "" {
+			kubernetesHyperkubeSpec = properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage
+		}
+
 		addSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
 		addSecret(parametersMap, "apiServerPrivateKey", properties.CertificateProfile.APIServerPrivateKey, true)
 		addSecret(parametersMap, "caCertificate", properties.CertificateProfile.CaCertificate, true)
@@ -386,13 +410,14 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
 		addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
-		addValue(parametersMap, "kubernetesHyperkubeSpec", properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["hyperkube"])
+		addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["addonmanager"])
 		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["addonresizer"])
 		addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dashboard"])
 		addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dnsmasq"])
 		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["exechealthz"])
 		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["heapster"])
+		addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeImages[KubernetesVersion]["tiller"])
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["pause"])
 		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
@@ -410,8 +435,16 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 		addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
 		addValue(parametersMap, "dockerBridgeCidr", properties.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet)
 		addValue(parametersMap, "networkPolicy", properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
-		addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
-		addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
+		if properties.OrchestratorProfile.KubernetesConfig != nil &&
+			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
+			addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
+
+			if properties.ServicePrincipalProfile.KeyvaultSecretRef != "" {
+				addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.KeyvaultSecretRef, false)
+			} else {
+				addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
+			}
+		}
 	}
 
 	if strings.HasPrefix(string(properties.OrchestratorProfile.OrchestratorType), string(api.DCOS)) {
@@ -502,8 +535,8 @@ func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
 	}
 }
 
-// https://stackoverflow.com/a/18411978
-func VersionOrdinal(version api.OrchestratorVersion) string {
+// VersionOrdinal checks equality between two orchestrator version numbers
+func VersionOrdinal(version string) string {
 	// ISO/IEC 14651:2011
 	const maxByte = 1<<8 - 1
 	vo := make([]byte, 0, len(version)+8)
@@ -532,6 +565,19 @@ func VersionOrdinal(version api.OrchestratorVersion) string {
 	return string(vo)
 }
 
+// getStorageAccountType returns the support managed disk storage tier for a give VM size
+func getStorageAccountType(sizeName string) (string, error) {
+	spl := strings.Split(sizeName, "_")
+	if len(spl) < 2 {
+		return "", fmt.Errorf("Invalid sizeName: %s", sizeName)
+	}
+	capability := spl[1]
+	if strings.Contains(strings.ToLower(capability), "s") {
+		return "Premium_LRS", nil
+	}
+	return "Standard_LRS", nil
+}
+
 // getTemplateFuncMap returns all functions used in template generation
 func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[string]interface{} {
 	return template.FuncMap{
@@ -556,7 +602,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				cs.Properties.OrchestratorProfile.OrchestratorVersion == api.DCOS190
 		},
 		"IsKubernetesVersionGe": func(version string) bool {
-			targetVersion := api.OrchestratorVersion(version)
+			targetVersion := version
 			targetVersionOrdinal := VersionOrdinal(targetVersion)
 			orchestratorVersionOrdinal := VersionOrdinal(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes &&
@@ -565,6 +611,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"GetKubernetesLabels": func(profile *api.AgentPoolProfile) string {
 			var buf bytes.Buffer
 			buf.WriteString(fmt.Sprintf("role=agent,agentpool=%s", profile.Name))
+			if profile.StorageProfile == api.ManagedDisks {
+				storagetier, _ := getStorageAccountType(profile.VMSize)
+				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
+			}
 			for k, v := range profile.CustomNodeLabels {
 				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
 			}
@@ -588,6 +638,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		},
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
+		},
+		"UseInstanceMetadata": func() bool {
+			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata
 		},
 		"GetVNETSubnetDependencies": func() string {
 			return getVNETSubnetDependencies(cs.Properties)
@@ -804,6 +857,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["hyperkube"]
+					if cs.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage != "" {
+						val = cs.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage
+					}
 				case "kubernetesAddonManagerSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["addonmanager"]
 				case "kubernetesAddonResizerSpec":
@@ -816,6 +872,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["exechealthz"]
 				case "kubernetesHeapsterSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["heapster"]
+				case "kubernetesTillerSpec":
+					val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeImages[kubernetesVersion]["tiller"]
 				case "kubernetesKubeDNSSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":
@@ -849,7 +907,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 				case "kubeClusterCidr":
 					val = "10.244.0.0/16"
 				case "kubeBinariesVersion":
-					val = string(api.KubernetesLatest)
+					val = string(api.KubernetesDefaultVersion)
 				case "caPrivateKey":
 					// The base64 encoded "NotAvailable"
 					val = "Tm90QXZhaWxhYmxlCg=="
@@ -886,7 +944,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 	}
 }
 
-func getPackageGUID(orchestratorType api.OrchestratorType, orchestratorVersion api.OrchestratorVersion, masterCount int) string {
+func getPackageGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
 	if orchestratorType == api.DCOS && orchestratorVersion == api.DCOS190 {
 		switch masterCount {
 		case 1:
@@ -936,7 +994,7 @@ func getPackageGUID(orchestratorType api.OrchestratorType, orchestratorVersion a
 	return ""
 }
 
-func getDCOSCustomDataPublicIPStr(orchestratorType api.OrchestratorType, masterCount int) string {
+func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) string {
 	if orchestratorType == api.DCOS {
 		var buf bytes.Buffer
 		for i := 0; i < masterCount; i++ {
@@ -1153,18 +1211,18 @@ func getSecurityRules(ports []int) string {
 func (t *TemplateGenerator) getSingleLineForTemplate(textFilename string, cs *api.ContainerService, profile interface{}) (string, error) {
 	b, err := Asset(textFilename)
 	if err != nil {
-		return "", fmt.Errorf("yaml file %s does not exist", textFilename)
+		return "", t.Translator.Errorf("yaml file %s does not exist", textFilename)
 	}
 
 	// use go templates to process the text filename
 	templ := template.New("customdata template").Funcs(t.getTemplateFuncMap(cs))
 	if _, err = templ.New(textFilename).Parse(string(b)); err != nil {
-		return "", fmt.Errorf("error parsing file %s: %v", textFilename, err)
+		return "", t.Translator.Errorf("error parsing file %s: %v", textFilename, err)
 	}
 
 	var buffer bytes.Buffer
 	if err = templ.ExecuteTemplate(&buffer, textFilename, profile); err != nil {
-		return "", fmt.Errorf("error executing template for file %s: %v", textFilename, err)
+		return "", t.Translator.Errorf("error executing template for file %s: %v", textFilename, err)
 	}
 	expandedTemplate := buffer.String()
 
@@ -1217,7 +1275,7 @@ func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 	}
 
 	// the embedded roleFileContents
-	roleFileContents := ""
+	var roleFileContents string
 	if len(profile.Ports) > 0 {
 		// public agents
 		roleFileContents = "touch /etc/mesosphere/roles/slave_public"
@@ -1251,7 +1309,7 @@ touch /etc/mesosphere/roles/azure_master`
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineDCOSCustomData(orchestratorType api.OrchestratorType, orchestratorVersion api.OrchestratorVersion, masterCount int, provisionContent string, attributeContents string) string {
+func getSingleLineDCOSCustomData(orchestratorType string, orchestratorVersion string, masterCount int, provisionContent string, attributeContents string) string {
 	yamlFilename := ""
 	switch orchestratorType {
 	case api.DCOS:

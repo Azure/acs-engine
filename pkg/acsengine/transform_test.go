@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"testing"
 
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Sirupsen/logrus"
 	. "github.com/onsi/gomega"
 )
@@ -55,9 +57,17 @@ func TestNormalizeResourcesForK8sMasterUpgrade(t *testing.T) {
 	var template interface{}
 	json.Unmarshal([]byte(templateJSON), &template)
 	templateMap := template.(map[string]interface{})
-	e = NormalizeResourcesForK8sMasterUpgrade(logger, templateMap)
+	locale, _ := i18n.LoadTranslations()
+	transformer := &Transformer{
+		Translator: i18n.Translator{
+			Locale: locale,
+		},
+	}
+	e = transformer.NormalizeResourcesForK8sMasterUpgrade(logger, templateMap)
 	Expect(e).To(BeNil())
 	ValidateTemplate(templateMap, expectedFileContents, "k8sVMASTemplate")
+	// Clean up
+	os.RemoveAll("./translations")
 }
 
 func TestNormalizeResourcesForK8sAgentUpgrade(t *testing.T) {
@@ -71,9 +81,17 @@ func TestNormalizeResourcesForK8sAgentUpgrade(t *testing.T) {
 	var template interface{}
 	json.Unmarshal([]byte(templateJSON), &template)
 	templateMap := template.(map[string]interface{})
-	e = NormalizeResourcesForK8sAgentUpgrade(logger, templateMap)
+	locale, _ := i18n.LoadTranslations()
+	transformer := &Transformer{
+		Translator: i18n.Translator{
+			Locale: locale,
+		},
+	}
+	e = transformer.NormalizeResourcesForK8sAgentUpgrade(logger, templateMap)
 	Expect(e).To(BeNil())
 	ValidateTemplate(templateMap, expectedFileContents, "k8sVMASTemplate")
+	// Clean up
+	os.RemoveAll("./translations")
 }
 
 func ValidateTemplate(templateMap map[string]interface{}, expectedFileContents []byte, testFileName string) {

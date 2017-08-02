@@ -47,10 +47,10 @@ function generate_template() {
 	    apiVersion=$(get_api_version)
 		if [[ "$apiVersion" == "vlabs" ]]; then
 			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientID = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
-			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret  = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
 		else
 			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.clientId = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
-			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.secret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
 		fi
 	fi
 
@@ -70,7 +70,7 @@ function generate_template() {
 		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.windowsProfile.secrets[0].vaultCertificates[0].certificateStore = \"My\""
 	fi
 	# Generate template
-	"${DIR}/../acs-engine" generate --output-directory "${OUTPUT}" "${FINAL_CLUSTER_DEFINITION}" --debug
+	"${DIR}/../bin/acs-engine" generate --output-directory "${OUTPUT}" "${FINAL_CLUSTER_DEFINITION}" --debug
 
 	# Fill in custom hyperkube spec, if it was set
 	if [[ ! -z "${CUSTOM_HYPERKUBE_SPEC:-}" ]]; then
@@ -104,7 +104,7 @@ function create_resource_group() {
 	# Create resource group if doesn't exist
 	rg=$(az group show --name="${RESOURCE_GROUP}")
 	if [ -z "$rg" ]; then
-		az group create --name="${RESOURCE_GROUP}" --location="${LOCATION}"
+		az group create --name="${RESOURCE_GROUP}" --location="${LOCATION}" --tags "type=${RESOURCE_GROUP_TAG_TYPE:-}" "now=$(date +%s)" "job=${JOB_BASE_NAME:-}" "buildno=${BUILD_NUM:-}"
 		sleep 3 # TODO: investigate why this is needed (eventual consistency in ARM)
 	fi
 }
@@ -160,7 +160,8 @@ function get_node_count() {
 	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
 
 	count=$(jq '.properties.masterProfile.count' ${CLUSTER_DEFINITION})
-	linux_count=$count
+	linux_agents=0
+	windows_agents=0
 
 	nodes=$(jq -r '.properties.agentPoolProfiles[].count' ${CLUSTER_DEFINITION})
 	osTypes=$(jq -r '.properties.agentPoolProfiles[].osType' ${CLUSTER_DEFINITION})
@@ -170,12 +171,14 @@ function get_node_count() {
 	indx=0
 	for n in "${nArr[@]}"; do
 		count=$((count+n))
-		if [ "${oArr[$indx]}" != "Windows" ]; then
-			linux_count=$((linux_count+n))
+		if [ "${oArr[$indx]}" = "Windows" ]; then
+			windows_agents=$((windows_agents+n))
+		else
+			linux_agents=$((linux_agents+n))
 		fi
 		indx=$((indx+1))
 	done
-	echo "${count}:${linux_count}"
+	echo "${count}:${linux_agents}:${windows_agents}"
 }
 
 function get_orchestrator_type() {

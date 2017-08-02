@@ -17,6 +17,7 @@ var (
 		//KubernetesSpecConfig is the default kubernetes container image url.
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase:    "gcrio.azureedge.net/google_containers/",
+			TillerImageBase:        "gcrio.azureedge.net/kubernetes-helm/",
 			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
 		},
 
@@ -122,7 +123,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
-		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && k8sVersion == api.Kubernetes166 {
+		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && (k8sVersion == api.Kubernetes172 || k8sVersion == api.Kubernetes171 || k8sVersion == api.Kubernetes170 || k8sVersion == api.Kubernetes166) {
 			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
 			}
@@ -162,6 +163,10 @@ func setMasterNetworkDefaults(a *api.Properties) {
 		} else {
 			a.MasterProfile.IPAddressCount = DefaultAgentIPAddressCount
 		}
+	}
+
+	if a.MasterProfile.HTTPSourceAddressPrefix == "" {
+		a.MasterProfile.HTTPSourceAddressPrefix = "*"
 	}
 }
 
@@ -298,16 +303,17 @@ func getFirstConsecutiveStaticIPAddress(subnetStr string) string {
 		return DefaultFirstConsecutiveKubernetesStaticIP
 	}
 
-	// Round up the prefix length to the nearest octet boundary.
+	// Find the first and last octet of the host bits.
 	ones, bits := subnet.Mask.Size()
-	if ones%8 != 0 {
-		ones += 8 - ones%8
-	}
+	firstOctet := ones / 8
+	lastOctet := bits/8 - 1
+
+	// Set the remaining host bits in the first octet.
+	subnet.IP[firstOctet] |= (1 << byte((8 - (ones % 8)))) - 1
 
 	// Fill the intermediate octets with 1s and last octet with offset. This is done so to match
 	// the existing behavior of allocating static IP addresses from the last /24 of the subnet.
-	lastOctet := bits/8 - 1
-	for i := ones / 8; i < lastOctet; i++ {
+	for i := firstOctet + 1; i < lastOctet; i++ {
 		subnet.IP[i] = 255
 	}
 	subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffset

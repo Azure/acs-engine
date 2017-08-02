@@ -44,8 +44,9 @@ type Properties struct {
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
-// The 'Secret' parameter could be either a plain text, or referenced to a secret in a keyvault.
-// In the latter case, the format of the parameter's value should be
+// The 'Secret' parameter should be a secret in plain text.
+// The 'KeyvaultSecretRef' parameter is a reference to a secret in a keyvault.
+// The format of the parameter's value should be
 // "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>/secrets/<NAME>[/<VERSION>]"
 // where:
 //    <SUB_ID> is the subscription ID of the keyvault
@@ -54,8 +55,9 @@ type Properties struct {
 //    <NAME> is the name of the secret.
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
-	ClientID string `json:"clientId,omitempty" validate:"required"`
-	Secret   string `json:"secret,omitempty" validate:"required"`
+	ClientID          string `json:"clientId,omitempty" validate:"required"`
+	Secret            string `json:"secret,omitempty"`
+	KeyvaultSecretRef string `json:"keyvaultSecretRef,omitempty"`
 }
 
 // CustomProfile specifies custom properties that are used for
@@ -105,8 +107,8 @@ const (
 
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
-	OrchestratorType    OrchestratorType    `json:"orchestratorType" validate:"required"`
-	OrchestratorVersion OrchestratorVersion `json:"orchestratorVersion"`
+	OrchestratorType    string `json:"orchestratorType" validate:"required"`
+	OrchestratorVersion string `json:"orchestratorVersion"`
 }
 
 // MasterProfile represents the definition of master cluster
@@ -145,11 +147,6 @@ func (m *MasterProfile) UnmarshalJSON(b []byte) error {
 	if m.FirstConsecutiveStaticIP == "" {
 		// if FirstConsecutiveStaticIP is missing, set to default 10.240.255.5
 		m.FirstConsecutiveStaticIP = "10.240.255.5"
-	}
-
-	if m.StorageProfile == "" {
-		// if StorageProfile is missing, set to default StorageAccount
-		m.StorageProfile = StorageAccount
 	}
 
 	// OSDiskSizeGB is an override value. vm sizes have default OS disk sizes.
@@ -195,11 +192,6 @@ func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
 		a.Count = 1
 	}
 
-	if a.StorageProfile == "" {
-		// if StorageProfile is missing, set to default StorageAccount
-		a.StorageProfile = StorageAccount
-	}
-
 	if string(a.OSType) == "" {
 		// OSType is the operating system type for agents
 		// Set as nullable to support backward compat because
@@ -213,29 +205,31 @@ func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// OrchestratorType defines orchestrators supported by ACS
-type OrchestratorType string
-
-// OrchestratorVersion defines the version for orchestratorType
-type OrchestratorVersion string
-
-// UnmarshalText decodes OrchestratorType text, do a case insensitive comparison with
-// the defined OrchestratorType constant and set to it if they equal
-func (o *OrchestratorType) UnmarshalText(text []byte) error {
-	s := string(text)
-	switch {
-	case strings.EqualFold(s, string(DCOS)):
-		*o = DCOS
-	case strings.EqualFold(s, string(Kubernetes)):
-		*o = Kubernetes
-	case strings.EqualFold(s, string(Swarm)):
-		*o = Swarm
-	case strings.EqualFold(s, string(DockerCE)):
-		*o = DockerCE
-	default:
-		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", s)
+// UnmarshalJSON unmarshal json using the default behavior
+// And do fields manipulation, such as populating default value
+func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
+	// Need to have a alias type to avoid circular unmarshal
+	type aliasOrchestratorProfile OrchestratorProfile
+	op := aliasOrchestratorProfile{}
+	if e := json.Unmarshal(b, &op); e != nil {
+		return e
 	}
+	*o = OrchestratorProfile(op)
 
+	// Unmarshal OrchestratorType, format it as well
+	orchestratorType := o.OrchestratorType
+	switch {
+	case strings.EqualFold(orchestratorType, DCOS):
+		o.OrchestratorType = DCOS
+	case strings.EqualFold(orchestratorType, Kubernetes):
+		o.OrchestratorType = Kubernetes
+	case strings.EqualFold(orchestratorType, Swarm):
+		o.OrchestratorType = Swarm
+	case strings.EqualFold(orchestratorType, DockerCE):
+		o.OrchestratorType = DockerCE
+	default:
+		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
+	}
 	return nil
 }
 

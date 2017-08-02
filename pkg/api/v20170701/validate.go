@@ -5,15 +5,19 @@ import (
 	"fmt"
 	"net"
 	"regexp"
-	"strings"
 
+	"github.com/Azure/acs-engine/pkg/api/common"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
-var validate *validator.Validate
+var (
+	validate                *validator.Validate
+	keyvaultSecretPathRegex *regexp.Regexp
+)
 
 func init() {
 	validate = validator.New()
+	keyvaultSecretPathRegex = regexp.MustCompile(`^(/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/\S+)/secrets/([^/\s]+)(/(\S+))?$`)
 }
 
 // Validate implements APIObject
@@ -29,7 +33,7 @@ func (o *OrchestratorProfile) Validate() error {
 		case DCOS190:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
 		}
 	case DockerCE:
 	case Kubernetes:
@@ -38,7 +42,7 @@ func (o *OrchestratorProfile) Validate() error {
 		case Kubernetes157:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
 		}
 
 	default:
@@ -59,7 +63,7 @@ func (m *MasterProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
+func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 	// Don't need to call validate.Struct(a)
 	// It is handled by Properties.Validate()
 	if e := validatePoolName(a.Name); e != nil {
@@ -107,40 +111,10 @@ func (l *LinuxProfile) Validate() error {
 }
 
 func handleValidationErrors(e validator.ValidationErrors) error {
-	err := e[0]
-	ns := err.Namespace()
-	switch ns {
-	case "Properties.OrchestratorProfile", "Properties.MasterProfile",
-		"Properties.MasterProfile.DNSPrefix", "Properties.MasterProfile.VMSize",
-		"Properties.LinuxProfile", "Properties.ServicePrincipalProfile.ClientID",
-		"Properties.ServicePrincipalProfile.Secret", "Properties.WindowsProfile.AdminUsername",
-		"Properties.WindowsProfile.AdminPassword":
-		return fmt.Errorf("missing %s", ns)
-	case "Properties.MasterProfile.Count":
-		return fmt.Errorf("MasterProfile count needs to be 1, 3, or 5")
-	case "Properties.MasterProfile.OSDiskSizeGB":
-		return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", err.Value().(int), MinDiskSizeGB, MaxDiskSizeGB)
-	case "Properties.MasterProfile.StorageProfile":
-		return fmt.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", err.Value().(string), StorageAccount, ManagedDisks)
-	default:
-		if strings.HasPrefix(ns, "Properties.AgentPoolProfiles") {
-			switch {
-			case strings.HasSuffix(ns, ".Name") || strings.HasSuffix(ns, "VMSize"):
-				return fmt.Errorf("missing %s", ns)
-			case strings.HasSuffix(ns, ".Count"):
-				return fmt.Errorf("AgentPoolProfile count needs to be in the range [%d,%d]", MinAgentCount, MaxAgentCount)
-			case strings.HasSuffix(ns, ".OSDiskSizeGB"):
-				return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", err.Value().(int), MinDiskSizeGB, MaxDiskSizeGB)
-			case strings.Contains(ns, ".Ports"):
-				return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
-			case strings.HasSuffix(ns, ".StorageProfile"):
-				return fmt.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", err.Value().(string), StorageAccount, ManagedDisks)
-			default:
-				break
-			}
-		}
-	}
-	return fmt.Errorf("Namespace %s is not caught, %+v", ns, e)
+	// Override any version specific validation error message
+
+	// common.HandleValidationErrors if the validation error message is general
+	return common.HandleValidationErrors(e)
 }
 
 // Validate implements APIObject
@@ -157,9 +131,18 @@ func (a *Properties) Validate() error {
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
 		return e
 	}
+
 	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
-		if a.ServicePrincipalProfile == nil {
-			return fmt.Errorf("missing ServicePrincipalProfile")
+		if (len(a.ServicePrincipalProfile.Secret) == 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) == 0) ||
+			(len(a.ServicePrincipalProfile.Secret) != 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0) {
+			return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+		}
+
+		if len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0 {
+			parts := keyvaultSecretPathRegex.FindStringSubmatch(a.ServicePrincipalProfile.KeyvaultSecretRef)
+			if len(parts) != 5 {
+				return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
+			}
 		}
 	}
 
@@ -249,7 +232,7 @@ func validateVNET(a *Properties) error {
 	isCustomVNET := a.MasterProfile.IsCustomVNET()
 	for _, agentPool := range a.AgentPoolProfiles {
 		if agentPool.IsCustomVNET() != isCustomVNET {
-			return fmt.Errorf("Multiple VNET Subnet configurations specified.  The master profile and each agent pool profile must all specify a custom VNET Subnet, or none at all.")
+			return fmt.Errorf("Multiple VNET Subnet configurations specified.  The master profile and each agent pool profile must all specify a custom VNET Subnet, or none at all")
 		}
 	}
 	if isCustomVNET {
@@ -266,7 +249,7 @@ func validateVNET(a *Properties) error {
 			if agentSubID != subscription ||
 				agentRG != resourcegroup ||
 				agentVNET != vnetname {
-				return errors.New("Multipe VNETS specified.  The master profile and each agent pool must reference the same VNET (but it is ok to reference different subnets on that VNET)")
+				return errors.New("Multiple VNETS specified.  The master profile and each agent pool must reference the same VNET (but it is ok to reference different subnets on that VNET)")
 			}
 		}
 

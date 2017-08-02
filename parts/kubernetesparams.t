@@ -103,6 +103,13 @@
       },
       "type": "string"
     },
+    "kubernetesTillerSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerSpec"}}
+      "metadata": {
+        "description": "The container spec for Helm Tiller."
+      },
+      "type": "string"
+    },
     "kubernetesPodInfraContainerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesPodInfraContainerSpec"}}
       "metadata": {
@@ -227,6 +234,7 @@
       ],
       "type": "string"
     },
+{{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {
         "description": "Client ID (used by cloudprovider)"
@@ -239,6 +247,7 @@
       },
       "type": "securestring"
     },
+{{ end }}
     "masterOffset": {
       "defaultValue": 0,
       "allowedValues": [

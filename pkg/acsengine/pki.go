@@ -17,15 +17,19 @@ import (
 )
 
 const (
+	// ValidityDuration specifies the duration an TLS certificate is valid
 	ValidityDuration = time.Hour * 24 * 365 * 2
-	PkiKeySize       = 4096
+	// PkiKeySize is the size in bytes of the PKI key
+	PkiKeySize = 4096
 )
 
+// PkiKeyCertPair represents an PKI public and private cert pair
 type PkiKeyCertPair struct {
 	CertificatePem string
 	PrivateKeyPem  string
 }
 
+// CreatePki creates PKI certificates
 func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
 	start := time.Now()
 	defer func(s time.Time) {
@@ -133,7 +137,7 @@ func createCertificate(commonName string, caCertificate *x509.Certificate, caPri
 		return nil, nil, err
 	}
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, PkiKeySize)
+	privateKey, _ := rsa.GenerateKey(rand.Reader, PkiKeySize)
 
 	var privateKeyToUse *rsa.PrivateKey
 	var certificateToUse *x509.Certificate

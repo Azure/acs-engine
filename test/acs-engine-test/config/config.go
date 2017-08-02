@@ -10,9 +10,11 @@ import (
 type Deployment struct {
 	ClusterDefinition string `json:"cluster_definition"`
 	Location          string `json:"location"`
+	TestCategory      string `json:"category,omitempty"`
 	SkipValidation    bool   `json:"skip_validation,omitempty"`
 }
 
+// TestConfig represents a cluster config
 type TestConfig struct {
 	Deployments []Deployment `json:"deployments"`
 }
@@ -33,6 +35,7 @@ func (c *TestConfig) validate() error {
 	return nil
 }
 
+// GetTestConfig parses a cluster config
 func GetTestConfig(fname string) (*TestConfig, error) {
 	data, err := ioutil.ReadFile(fname)
 	if err != nil {

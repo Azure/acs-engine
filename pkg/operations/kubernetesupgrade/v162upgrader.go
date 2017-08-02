@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -15,6 +16,7 @@ var _ UpgradeWorkFlow = &Kubernetes162upgrader{}
 
 // Kubernetes162upgrader upgrades a Kubernetes 1.5.3 cluster to 1.6.2
 type Kubernetes162upgrader struct {
+	Translator *i18n.Translator
 	ClusterTopology
 	GoalStateDataModel *api.ContainerService
 
@@ -25,7 +27,7 @@ type Kubernetes162upgrader struct {
 func (ku *Kubernetes162upgrader) ClusterPreflightCheck() error {
 	// Check that current cluster is 1.5.3
 	if ku.DataModel.Properties.OrchestratorProfile.OrchestratorVersion != api.Kubernetes153 {
-		return fmt.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s",
+		return ku.Translator.Errorf("Upgrade to Kubernetes 1.6.2 is not supported from version: %s",
 			ku.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
@@ -58,20 +60,26 @@ func (ku *Kubernetes162upgrader) Validate() error {
 }
 
 func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
+	log.Infoln(fmt.Sprintf("Master nodes StorageProfile: %s", ku.GoalStateDataModel.Properties.MasterProfile.StorageProfile))
 	// Upgrade Master VMs
 	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.GoalStateDataModel)
 	if err != nil {
-		return fmt.Errorf("error generating upgrade template: %s", err.Error())
+		return ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 	}
 
 	log.Infoln(fmt.Sprintf("Prepping master nodes for upgrade..."))
 
-	if err := acsengine.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), templateMap, nil); err != nil {
+	transformer := &acsengine.Transformer{
+		Translator: ku.Translator,
+	}
+	if err := transformer.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), templateMap, ku.DataModel.Properties.MasterProfile.IsManagedDisks(), nil); err != nil {
 		log.Fatalln(err)
 		return err
 	}
 
-	upgradeMasterNode := UpgradeMasterNode{}
+	upgradeMasterNode := UpgradeMasterNode{
+		Translator: ku.Translator,
+	}
 	upgradeMasterNode.TemplateMap = templateMap
 	upgradeMasterNode.ParametersMap = parametersMap
 	upgradeMasterNode.UpgradeContainerService = ku.GoalStateDataModel
@@ -91,7 +99,7 @@ func (ku *Kubernetes162upgrader) upgradeMasterNodes() error {
 	masterNodesInCluster := len(*ku.ClusterTopology.MasterVMs) + mastersUpgradedCount
 	log.Infoln(fmt.Sprintf("masterNodesInCluster: %d", masterNodesInCluster))
 	if masterNodesInCluster > expectedMasterCount {
-		return fmt.Errorf("Total count of master VMs: %d exceeded expected count: %d", masterNodesInCluster, expectedMasterCount)
+		return ku.Translator.Errorf("Total count of master VMs: %d exceeded expected count: %d", masterNodesInCluster, expectedMasterCount)
 	}
 
 	upgradedMastersIndex := make(map[int]bool)
@@ -171,13 +179,16 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 		// Upgrade Agent VMs
 		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.GoalStateDataModel)
 		if err != nil {
-			return fmt.Errorf("error generating upgrade template: %s", err.Error())
+			return ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 		}
 
 		log.Infoln(fmt.Sprintf("Prepping agent pool: %s for upgrade...", *agentPool.Name))
 
 		preservePools := map[string]bool{*agentPool.Name: true}
-		if err := acsengine.NormalizeResourcesForK8sAgentUpgrade(log.NewEntry(log.New()), templateMap, preservePools); err != nil {
+		transformer := &acsengine.Transformer{
+			Translator: ku.Translator,
+		}
+		if err := transformer.NormalizeResourcesForK8sAgentUpgrade(log.NewEntry(log.New()), templateMap, ku.DataModel.Properties.MasterProfile.IsManagedDisks(), preservePools); err != nil {
 			log.Fatalln(err)
 			return err
 		}
@@ -190,7 +201,9 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 			}
 		}
 
-		upgradeAgentNode := UpgradeAgentNode{}
+		upgradeAgentNode := UpgradeAgentNode{
+			Translator: ku.Translator,
+		}
 		upgradeAgentNode.TemplateMap = templateMap
 		upgradeAgentNode.ParametersMap = parametersMap
 		upgradeAgentNode.UpgradeContainerService = ku.GoalStateDataModel
@@ -268,15 +281,18 @@ func (ku *Kubernetes162upgrader) upgradeAgentPools() error {
 
 func (ku *Kubernetes162upgrader) generateUpgradeTemplate(upgradeContainerService *api.ContainerService) (map[string]interface{}, map[string]interface{}, error) {
 	var err error
-	templateGenerator, err := acsengine.InitializeTemplateGenerator(false)
+	ctx := acsengine.Context{
+		Translator: ku.Translator,
+	}
+	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, false)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to initialize template generator: %s", err.Error())
+		return nil, nil, ku.Translator.Errorf("failed to initialize template generator: %s", err.Error())
 	}
 
 	var templateJSON string
 	var parametersJSON string
 	if templateJSON, parametersJSON, _, err = templateGenerator.GenerateTemplate(upgradeContainerService); err != nil {
-		return nil, nil, fmt.Errorf("error generating upgrade template: %s", err.Error())
+		return nil, nil, ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 	}
 
 	var template interface{}

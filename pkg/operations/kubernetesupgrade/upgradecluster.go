@@ -11,6 +11,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	log "github.com/Sirupsen/logrus"
 	"github.com/satori/go.uuid"
@@ -41,11 +42,15 @@ type AgentPoolTopology struct {
 // (or X.X or X.X.X) to version y (or Y.Y or X.X.X). RIght now
 // upgrades are supported for Kubernetes cluster only.
 type UpgradeCluster struct {
+	Translator *i18n.Translator
 	ClusterTopology
 	Client armhelpers.ACSEngineClient
 
 	UpgradeModel *api.UpgradeContainerService
 }
+
+// MasterVMNamePrefix is the prefix for all master VM names for Kubernetes clusters
+const MasterVMNamePrefix = "k8s-master-"
 
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
 // UpgradeContainerService contains target state of the cluster that
@@ -63,25 +68,27 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	uc.UpgradeModel = ucs
 
 	if err := uc.getClusterNodeStatus(subscriptionID, resourceGroup); err != nil {
-		return fmt.Errorf("Error while querying ARM for resources: %+v", err)
+		return uc.Translator.Errorf("Error while querying ARM for resources: %+v", err)
 	}
 
 	switch ucs.OrchestratorProfile.OrchestratorVersion {
 	case api.Kubernetes162:
 		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes 1.6.2"))
-		upgrader := Kubernetes162upgrader{}
+		upgrader := Kubernetes162upgrader{
+			Translator: uc.Translator,
+		}
 		upgrader.ClusterTopology = uc.ClusterTopology
 		upgrader.Client = uc.Client
 		if err := upgrader.RunUpgrade(); err != nil {
 			return err
 		}
 	default:
-		return fmt.Errorf("Upgrade to Kubernetes version: %s is not supported from version: %s",
+		return uc.Translator.Errorf("Upgrade to Kubernetes version: %s is not supported from version: %s",
 			ucs.OrchestratorProfile.OrchestratorVersion,
 			uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 
-	log.Infoln(fmt.Sprintf("Cluster upraded sucessfully to Kubernetes version: %s",
+	log.Infoln(fmt.Sprintf("Cluster upraded successfully to Kubernetes version: %s",
 		ucs.OrchestratorProfile.OrchestratorVersion))
 	return nil
 }
@@ -105,7 +112,7 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 
 		vmOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
 		if vmOrchestratorTypeAndVersion == orchestratorTypeVersion {
-			if strings.Contains(*(vm.Name), "k8s-master-") {
+			if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
 				if !strings.Contains(*(vm.Name), uc.NameSuffix) {
 					log.Infoln(fmt.Sprintf("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s",
 						*vm.Name, uc.NameSuffix))
@@ -122,7 +129,7 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 					*vm.Name, uc.NameSuffix))
 				continue
 			}
-			if strings.Contains(*(vm.Name), "k8s-master-") {
+			if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
 				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (UpgradedMasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
 				*uc.UpgradedMasterVMs = append(*uc.UpgradedMasterVMs, vm)
 			} else {
@@ -179,7 +186,9 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 }
 
 // WriteTemplate writes upgrade template to a folder
-func WriteTemplate(upgradeContainerService *api.ContainerService,
+func WriteTemplate(
+	translator *i18n.Translator,
+	upgradeContainerService *api.ContainerService,
 	templateMap map[string]interface{}, parametersMap map[string]interface{}) {
 	updatedTemplateJSON, _ := json.Marshal(templateMap)
 	parametersJSON, _ := json.Marshal(parametersMap)
@@ -193,7 +202,10 @@ func WriteTemplate(upgradeContainerService *api.ContainerService,
 		log.Fatalf("error pretty printing template parameters: %s \n", e.Error())
 	}
 	outputDirectory := path.Join("_output", upgradeContainerService.Properties.MasterProfile.DNSPrefix, "Upgrade")
-	if err := acsengine.WriteArtifacts(upgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
+	writer := &acsengine.ArtifactWriter{
+		Translator: translator,
+	}
+	if err := writer.WriteTLSArtifacts(upgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 }

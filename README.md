@@ -1,4 +1,6 @@
 # Microsoft Azure Container Service Engine - Builds Docker Enabled Clusters
+[![Coverage Status](https://coveralls.io/repos/github/Azure/acs-engine/badge.svg?branch=master)](https://coveralls.io/github/Azure/acs-engine?branch=master)
+[![CircleCI](https://circleci.com/gh/Azure/acs-engine/tree/master.svg?style=svg)](https://circleci.com/gh/Azure/acs-engine/tree/master)
 
 ## Overview
 
@@ -8,9 +10,9 @@ The cluster definition file enables the following customizations to your Docker 
 * choice of DC/OS, Kubernetes, Swarm Mode, or Swarm orchestrators
 * multiple agent pools where each agent pool can specify:
  * standard or premium VM Sizes,
- * node count, 
+ * node count,
  * Virtual Machine ScaleSets or Availability Sets,
- * Storage Account Disks or Managed Disks (under private preview),
+ * Storage Account Disks or Managed Disks (under private preview)
 * Docker cluster sizes of 1200
 * Custom VNET
 
@@ -22,9 +24,9 @@ The cluster definition file enables the following customizations to your Docker 
 * [Kubernetes Walkthrough](docs/kubernetes.md) - shows how to create a Kubernetes enabled Docker cluster on Azure
 * [Swarm Walkthrough](docs/swarm.md) - shows how to create a Swarm enabled Docker cluster on Azure
 * [Swarm Mode Walkthrough](docs/swarmmode.md) - shows how to create a Swarm Mode cluster on Azure
-* [Custom VNET](examples/vnet) - shows how to use a custom VNET 
+* [Custom VNET](examples/vnet) - shows how to use a custom VNET
 * [Attached Disks](examples/disks-storageaccount) - shows how to attach up to 4 disks per node
-* [Managed Disks](examples/disks-managed) (under private preview) - shows how to use managed disks 
+* [Managed Disks](examples/disks-managed) (under private preview) - shows how to use managed disks
 * [Large Clusters](examples/largeclusters) - shows how to create cluster sizes of up to 1200 nodes
 
 ## Contributing
@@ -85,9 +87,7 @@ $ azure group deployment create \
 ```
 
 ### Deploying with Azure CLI 2.0
-**NOTE:** Azure CLI 2.0 is still in preview, so changes may occur.
-Please reference [the Azure CLI 2.0 GitHub Repo](https://github.com/Azure/azure-cli) for updated commands and please
-ensure that your installation is up to date with the latest release. (Releases occur weekly!)
+Azure CLI 2.0 is actively improved, so please see [the Azure CLI 2.0 GitHub Repo](https://github.com/Azure/azure-cli) for the latest release and documentation.
 
 ```bash
 $ az login

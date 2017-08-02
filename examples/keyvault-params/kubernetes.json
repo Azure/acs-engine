@@ -35,7 +35,7 @@
     },
     "servicePrincipalProfile": {
       "servicePrincipalClientID": "ServicePrincipalClientID",
-      "servicePrincipalClientSecret": "/subscriptions/my-sub/resourceGroups/my-rg/providers/Microsoft.KeyVault/vaults/my-kv/secrets/my-secret2"
+      "servicePrincipalClientKeyvaultSecretRef": "/subscriptions/my-sub/resourceGroups/my-rg/providers/Microsoft.KeyVault/vaults/my-kv/secrets/my-secret2"
     },
     "certificateProfile": {
       "caCertificate": "<caCertificate>",

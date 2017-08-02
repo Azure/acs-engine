@@ -32,15 +32,16 @@ CLOUDPROVIDER_RATELIMIT_QPS="${21}"
 CLOUDPROVIDER_RATELIMIT_BUCKET="${22}"
 
 USE_MANAGED_IDENTITY_EXTENSION="${23}"
+USE_INSTANCE_METADATA="${24}"
 
 # Master only secrets
-APISERVER_PRIVATE_KEY="${24}"
-CA_CERTIFICATE="${25}"
-CA_PRIVATE_KEY="${26}"
-MASTER_FQDN="${27}"
-KUBECONFIG_CERTIFICATE="${28}"
-KUBECONFIG_KEY="${29}"
-ADMINUSER="${30}"
+APISERVER_PRIVATE_KEY="${25}"
+CA_CERTIFICATE="${26}"
+CA_PRIVATE_KEY="${27}"
+MASTER_FQDN="${28}"
+KUBECONFIG_CERTIFICATE="${29}"
+KUBECONFIG_KEY="${30}"
+ADMINUSER="${31}"
 
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
@@ -124,7 +125,8 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
     "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
     "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
-    "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION}
+    "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
+    "useInstanceMetadata": ${USE_INSTANCE_METADATA}
 }
 EOF
 
@@ -222,8 +224,30 @@ function configNetworkPolicy() {
     fi
 }
 
+function systemctlEnableAndCheck() {
+    systemctl enable $1
+    systemctl is-enabled $1
+    enabled=$?
+    for i in {1..900}; do
+        if [ $enabled -ne 0 ]; then
+            systemctl enable $1
+            systemctl is-enabled $1
+            enabled=$?
+        else
+            break
+        fi
+        sleep 1
+    done
+    if [ $enabled -ne 0 ]
+    then
+        echo "$1 could not be enabled by systemctl"
+        exit 5
+    fi
+    systemctl enable $1
+}
+
 function ensureDocker() {
-    systemctl enable docker
+    systemctlEnableAndCheck docker
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
         systemctl restart docker
@@ -248,7 +272,7 @@ function ensureDocker() {
 }
 
 function ensureKubelet() {
-    systemctl enable kubelet
+    systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
         systemctl restart kubelet
@@ -256,7 +280,7 @@ function ensureKubelet() {
 }
 
 function extractKubectl(){
-    systemctl enable kubectl-extract
+    systemctlEnableAndCheck kubectl-extract
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
         systemctl restart kubectl-extract
@@ -265,7 +289,7 @@ function extractKubectl(){
 
 function ensureJournal(){
     systemctl daemon-reload
-    systemctl enable systemd-journald.service
+    systemctlEnableAndCheck systemd-journald.service
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
         systemctl restart systemd-journald.service

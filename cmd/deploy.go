@@ -9,6 +9,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
 
 	"encoding/json"
@@ -16,6 +17,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
 const (
@@ -40,6 +42,7 @@ type deployCmd struct {
 	// derived
 	containerService *api.ContainerService
 	apiVersion       string
+	locale           *gotext.Locale
 
 	client        armhelpers.ACSEngineClient
 	resourceGroup string
@@ -76,9 +79,12 @@ func newDeployCmd() *cobra.Command {
 }
 
 func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
-	var caCertificateBytes []byte
-	var caKeyBytes []byte
 	var err error
+
+	dc.locale, err = i18n.LoadTranslations()
+	if err != nil {
+		log.Fatalf("error loading translation files: %s", err.Error())
+	}
 
 	if dc.apimodelPath == "" {
 		if len(args) > 0 {
@@ -96,15 +102,39 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("specified api model does not exist (%s)", dc.apimodelPath)
 	}
 
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: dc.locale,
+		},
+	}
 	// skip validating the model fields for now
-	dc.containerService, dc.apiVersion, err = api.LoadContainerServiceFromFile(dc.apimodelPath, false)
+	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
 
 	if dc.location == "" {
-		log.Fatalf("--subscription-id must be specified")
+		log.Fatalf("--location must be specified")
 	}
+
+	dc.client, err = dc.authArgs.getClient()
+	if err != nil {
+		log.Fatalf("failed to get client") // TODO: cleanup
+	}
+
+	// autofillApimodel calls log.Fatal() directly and does not return errors
+	autofillApimodel(dc)
+
+	_, _, err = revalidateApimodel(apiloader, dc.containerService, dc.apiVersion)
+	if err != nil {
+		log.Fatalf("Failed to validate the apimodel after populating values: %s", err)
+	}
+
+	dc.random = rand.New(rand.NewSource(time.Now().UnixNano()))
+}
+
+func autofillApimodel(dc *deployCmd) {
+	var err error
 
 	if dc.containerService.Properties.LinuxProfile.AdminUsername == "" {
 		log.Warnf("apimodel: no linuxProfile.adminUsername was specified. Will use 'azureuser'.")
@@ -145,24 +175,17 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 	if dc.containerService.Properties.LinuxProfile.SSH.PublicKeys == nil ||
 		len(dc.containerService.Properties.LinuxProfile.SSH.PublicKeys) == 0 ||
 		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData == "" {
-		_, publicKey, err := acsengine.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory)
+		creator := &acsengine.SSHCreator{
+			Translator: &i18n.Translator{
+				Locale: dc.locale,
+			},
+		}
+		_, publicKey, err := creator.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory)
 		if err != nil {
 			log.Fatal("Failed to generate SSH Key")
 		}
 
-		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{api.PublicKey{KeyData: publicKey}}
-	}
-
-	if len(caKeyBytes) != 0 {
-		// the caKey is not in the api model, and should be stored separately from the model
-		// we put these in the model after model is deserialized
-		dc.containerService.Properties.CertificateProfile.CaCertificate = string(caCertificateBytes)
-		dc.containerService.Properties.CertificateProfile.CaPrivateKey = string(caKeyBytes)
-	}
-
-	dc.client, err = dc.authArgs.getClient()
-	if err != nil {
-		log.Fatalf("failed to get client") // TODO: cleanup
+		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{{KeyData: publicKey}}
 	}
 
 	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location)
@@ -170,61 +193,63 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalln(err)
 	}
 
-	spp := dc.containerService.Properties.ServicePrincipalProfile
-	if spp == nil || spp.ClientID == "" || spp.Secret == "" {
-		// TODO: don't do this whenever the user specifies MSI is enabled
-		if !(spp.ClientID == "" && spp.Secret == "") {
-			log.Fatal("apimodel invalid: ServicePrincipalProfile is missing either the clientid or secret.")
-		}
+	useManagedIdentity := dc.containerService.Properties.OrchestratorProfile.KubernetesConfig != nil &&
+		dc.containerService.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 
-		log.Warnln("apimodel: ServicePrincipalProfile was empty, creating application...")
+	if !useManagedIdentity {
+		spp := dc.containerService.Properties.ServicePrincipalProfile
+		if spp != nil && spp.ClientID == "" && spp.Secret == "" && spp.KeyvaultSecretRef == "" {
+			log.Warnln("apimodel: ServicePrincipalProfile was missing or empty, creating application...")
 
-		// TODO: consider caching the creds here so they persist between subsequent runs of 'deploy'
-		appName := dc.containerService.Properties.MasterProfile.DNSPrefix
-		appURL := fmt.Sprintf("https://%s/", appName)
-		applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(appName, appURL)
-		if err != nil {
-			log.Fatalf("apimodel invalid: ServicePrincipalProfile was empty, and we failed to create valid credentials: %q", err)
-		}
-		log.Warnf("created application with applicationID (%s) and servicePrincipalObjectID (%s).", applicationID, servicePrincipalObjectID)
-
-		log.Warnln("apimodel: ServicePrincipalProfile was empty, assigning role to application...")
-		for {
-			err = dc.client.CreateRoleAssignmentSimple(dc.resourceGroup, servicePrincipalObjectID)
+			// TODO: consider caching the creds here so they persist between subsequent runs of 'deploy'
+			appName := dc.containerService.Properties.MasterProfile.DNSPrefix
+			appURL := fmt.Sprintf("https://%s/", appName)
+			applicationID, servicePrincipalObjectID, secret, err := dc.client.CreateApp(appName, appURL)
 			if err != nil {
-				log.Warnf("Failed to create role assignment (will retry): %q", err)
-				time.Sleep(3 * time.Second)
-				continue
+				log.Fatalf("apimodel invalid: ServicePrincipalProfile was empty, and we failed to create valid credentials: %q", err)
 			}
-			break
-		}
+			log.Warnf("created application with applicationID (%s) and servicePrincipalObjectID (%s).", applicationID, servicePrincipalObjectID)
 
-		dc.containerService.Properties.ServicePrincipalProfile = &api.ServicePrincipalProfile{
-			ClientID: applicationID,
-			Secret:   secret,
+			log.Warnln("apimodel: ServicePrincipalProfile was empty, assigning role to application...")
+			for {
+				err = dc.client.CreateRoleAssignmentSimple(dc.resourceGroup, servicePrincipalObjectID)
+				if err != nil {
+					log.Debugf("Failed to create role assignment (will retry): %q", err)
+					time.Sleep(3 * time.Second)
+					continue
+				}
+				break
+			}
+
+			dc.containerService.Properties.ServicePrincipalProfile = &api.ServicePrincipalProfile{
+				ClientID: applicationID,
+				Secret:   secret,
+			}
 		}
 	}
+}
 
+func revalidateApimodel(apiloader *api.Apiloader, containerService *api.ContainerService, apiVersion string) (*api.ContainerService, string, error) {
 	// This isn't terribly elegant, but it's the easiest way to go for now w/o duplicating a bunch of code
-	rawVersionedAPIModel, err := api.SerializeContainerService(dc.containerService, dc.apiVersion)
+	rawVersionedAPIModel, err := apiloader.SerializeContainerService(containerService, apiVersion)
 	if err != nil {
-		log.Fatalf("Failed to serialize the apimodel to validate it after populating values: %s", err)
+		return nil, "", err
 	}
-	dc.containerService, dc.apiVersion, err = api.DeserializeContainerService(rawVersionedAPIModel, true)
-	if err != nil {
-		log.Fatalf("error parsing the api model: %s", err.Error())
-	}
-
-	dc.random = rand.New(rand.NewSource(time.Now().UnixNano()))
+	return apiloader.DeserializeContainerService(rawVersionedAPIModel, true)
 }
 
 func (dc *deployCmd) run() error {
-	templateGenerator, err := acsengine.InitializeTemplateGenerator(dc.classicMode)
+	ctx := acsengine.Context{
+		Translator: &i18n.Translator{
+			Locale: dc.locale,
+		},
+	}
+
+	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, dc.classicMode)
 	if err != nil {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}
 
-	certsgenerated := false
 	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", dc.apimodelPath, err.Error())
@@ -239,7 +264,12 @@ func (dc *deployCmd) run() error {
 		log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
 	}
 
-	if err = acsengine.WriteArtifacts(dc.containerService, dc.apiVersion, template, parametersFile, dc.outputDirectory, certsgenerated, dc.parametersOnly); err != nil {
+	writer := &acsengine.ArtifactWriter{
+		Translator: &i18n.Translator{
+			Locale: dc.locale,
+		},
+	}
+	if err = writer.WriteTLSArtifacts(dc.containerService, dc.apiVersion, template, parametersFile, dc.outputDirectory, certsgenerated, dc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 

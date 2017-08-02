@@ -1,8 +1,6 @@
 package vlabs
 
-import (
-	"testing"
-)
+import "testing"
 
 const (
 	ValidKubernetesNodeStatusUpdateFrequency        = "10s"
@@ -37,7 +35,7 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 
 func Test_KubernetesConfig_Validate(t *testing.T) {
 	// Tests that should pass across all versions
-	for _, k8sVersion := range []OrchestratorVersion{Kubernetes153, Kubernetes157, Kubernetes160, Kubernetes162, Kubernetes166} {
+	for _, k8sVersion := range []string{Kubernetes153, Kubernetes157, Kubernetes160, Kubernetes162, Kubernetes166, Kubernetes170, Kubernetes171, Kubernetes172} {
 		c := KubernetesConfig{}
 		if err := c.Validate(k8sVersion); err != nil {
 			t.Errorf("should not error on empty KubernetesConfig: %v, version %s", err, k8sVersion)
@@ -115,7 +113,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	}
 
 	// Tests that apply to pre-1.6.6 versions
-	for _, k8sVersion := range []OrchestratorVersion{Kubernetes153, Kubernetes157, Kubernetes160, Kubernetes162} {
+	for _, k8sVersion := range []string{Kubernetes153, Kubernetes157, Kubernetes160, Kubernetes162} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
@@ -126,7 +124,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	}
 
 	// Tests that apply to 1.6.6 and later versions
-	for _, k8sVersion := range []OrchestratorVersion{Kubernetes166} {
+	for _, k8sVersion := range []string{Kubernetes166, Kubernetes170, Kubernetes171, Kubernetes172} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
@@ -170,5 +168,90 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 		t.Errorf(
 			"should error on calico for windows clusters",
 		)
+	}
+}
+
+func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T) {
+
+	t.Run("ServicePrincipalProfile with secret should pass", func(t *testing.T) {
+		p := getK8sDefaultProperties()
+
+		if err := p.Validate(); err != nil {
+			t.Errorf("should not error %v", err)
+		}
+	})
+
+	t.Run("ServicePrincipalProfile with KeyvaultSecretRef (with version) should pass", func(t *testing.T) {
+		p := getK8sDefaultProperties()
+		p.ServicePrincipalProfile.Secret = ""
+		p.ServicePrincipalProfile.KeyvaultSecretRef = "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME/secrets/secret-name/version"
+
+		if err := p.Validate(); err != nil {
+			t.Errorf("should not error %v", err)
+		}
+	})
+
+	t.Run("ServicePrincipalProfile with KeyvaultSecretRef (without version) should pass", func(t *testing.T) {
+		p := getK8sDefaultProperties()
+		p.ServicePrincipalProfile.Secret = ""
+		p.ServicePrincipalProfile.KeyvaultSecretRef = "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME/secrets/secret-name>"
+
+		if err := p.Validate(); err != nil {
+			t.Errorf("should not error %v", err)
+		}
+	})
+
+	t.Run("ServicePrincipalProfile with Secret and KeyvaultSecretRef should NOT pass", func(t *testing.T) {
+		p := getK8sDefaultProperties()
+		p.ServicePrincipalProfile.KeyvaultSecretRef = "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME/secrets/secret-name/version"
+
+		if err := p.Validate(); err == nil {
+			t.Error("error should have occurred")
+		}
+	})
+
+	t.Run("ServicePrincipalProfile with incorrect KeyvaultSecretRef format should NOT pass", func(t *testing.T) {
+		p := getK8sDefaultProperties()
+		p.ServicePrincipalProfile.Secret = ""
+		p.ServicePrincipalProfile.KeyvaultSecretRef = "randomsecret"
+
+		if err := p.Validate(); err == nil || err.Error() != "service principal client keyvault secret reference is of incorrect format" {
+			t.Error("error should have occurred")
+		}
+	})
+}
+
+func getK8sDefaultProperties() *Properties {
+	return &Properties{
+		OrchestratorProfile: &OrchestratorProfile{
+			OrchestratorType: Kubernetes,
+		},
+		MasterProfile: &MasterProfile{
+			Count:     1,
+			DNSPrefix: "foo",
+			VMSize:    "Standard_DS2_v2",
+		},
+		AgentPoolProfiles: []*AgentPoolProfile{
+			{
+				Name:                "agentpool",
+				VMSize:              "Standard_D2_v2",
+				Count:               1,
+				AvailabilityProfile: AvailabilitySet,
+			},
+		},
+		LinuxProfile: &LinuxProfile{
+			AdminUsername: "azureuser",
+			SSH: struct {
+				PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
+			}{
+				PublicKeys: []PublicKey{{
+					KeyData: "publickeydata",
+				}},
+			},
+		},
+		ServicePrincipalProfile: &ServicePrincipalProfile{
+			ClientID: "clientID",
+			Secret:   "clientSecret",
+		},
 	}
 }
