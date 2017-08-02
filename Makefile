@@ -58,8 +58,13 @@ checksum:
 clean:
 	@rm -rf $(BINDIR) ./_dist
 
+GIT_BASEDIR    = $(shell git rev-parse --show-toplevel 2>/dev/null)
+ifneq ($(GIT_BASEDIR),)
+	LDFLAGS += -X github.com/Azure/acs-engine/cmd_test.JUnitOutDir=${GIT_BASEDIR}/test/junit
+endif
+
 test: test-style
-	go test -v $(GOFILES)
+	go test -v -ldflags '$(LDFLAGS)' $(GOFILES)
 
 .PHONY: test-style
 test-style:
