@@ -1,5 +1,4 @@
 # Microsoft Azure Container Service Engine - Builds Docker Enabled Clusters
-[![CircleCI](https://circleci.com/gh/Azure/acs-engine/tree/master.svg?style=svg)](https://circleci.com/gh/Azure/acs-engine/tree/master)
 
 ## Overview
 
