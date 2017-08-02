@@ -36,7 +36,7 @@ jobs:
           echo 'export TEST_CONFIG=test/acse-conf/acse-pr.json' >> $BASH_ENV
       - run:
           name: e2e tests
-          command: make bootstrap build test-e2e
+          command: make test-e2e
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
   master:

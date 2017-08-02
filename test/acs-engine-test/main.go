@@ -151,8 +151,8 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		fmt.Printf("RESOURCE_GROUP_PREFIX is not set. Using default '%s'\n", rgPrefix)
 	}
 	testName := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
-	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("CIRCLE_BUILD_NUM"), index, attempt)
-	resourceGroup := fmt.Sprintf("%s-%s-%s-%s-%d-%d", rgPrefix, strings.Replace(testName, "/", "-", -1), d.Location, os.Getenv("CIRCLE_BUILD_NUM"), index, attempt)
+	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
+	resourceGroup := fmt.Sprintf("%s-%s-%s-%s-%d-%d", rgPrefix, strings.Replace(testName, "/", "-", -1), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
 	logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
 	validateLogFile := fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
 
@@ -423,9 +423,9 @@ func mainInternal() error {
 		return err
 	}
 	// get Jenkins build number
-	buildNum, err := strconv.Atoi(os.Getenv("CIRCLE_BUILD_NUM"))
+	buildNum, err := strconv.Atoi(os.Getenv("BUILD_NUM"))
 	if err != nil {
-		fmt.Println("Warning: CIRCLE_BUILD_NUM is not set or invalid. Assuming 0")
+		fmt.Println("Warning: BUILD_NUM is not set or invalid. Assuming 0")
 		buildNum = 0
 	}
 	// set environment variable ENABLE_METRICS=y to enable sending the metrics (disabled by default)
