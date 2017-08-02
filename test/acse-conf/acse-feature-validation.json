@@ -57,14 +57,6 @@
       "location": "centralus"
     },
     {
-      "cluster_definition": "keyvaultcerts/swarm-windows.json",
-      "location": "westus"
-    },
-    {
-      "cluster_definition": "keyvaultcerts/swarmmode.json",
-      "location": "westus"
-    },
-    {
       "cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
       "location": "centralus"
     },
