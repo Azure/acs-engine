@@ -149,7 +149,6 @@ write_files:
     MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
-
 - path: /etc/kubernetes/addons/calico-daemonset.yaml
   permissions: "0644"
   encoding: gzip
@@ -241,7 +240,6 @@ write_files:
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
     # If Calico Policy enabled then update Cluster Cidr
     sed -i "s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-daemonset.yaml"
-    sed -i "s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-configmap.yaml"
 {{end}}
 
 - path: "/opt/azure/containers/provision.sh"
