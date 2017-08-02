@@ -44,13 +44,21 @@ function generate_template() {
 
 	k8sServicePrincipal=$(jq 'getpath(["properties","servicePrincipalProfile"])' ${FINAL_CLUSTER_DEFINITION})
 	if [[ "${k8sServicePrincipal}" != "null" ]]; then
-	    apiVersion=$(get_api_version)
+		apiVersion=$(get_api_version)
 		if [[ "$apiVersion" == "vlabs" ]]; then
 			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientID = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
-			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret  = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+			if [[ ${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET} =~ /subscription.* ]]; then
+				jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientKeyvaultSecretRef  = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+			else
+				jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret  = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+			fi
 		else
 			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.clientId = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
-			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+			if [[ ${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET} =~ /subscription.* ]]; then
+				jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+			else
+				jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.secret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
+			fi
 		fi
 	fi
 
