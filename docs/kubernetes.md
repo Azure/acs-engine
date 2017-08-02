@@ -74,6 +74,8 @@ Using the default configuration, Kubernetes allows communication between all
 Pods within a cluster. To ensure that Pods can only be accessed by authorized
 Pods, a policy enforcement is needed. To enable policy enforcement using Calico refer to the [cluster definition](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig) document under networkPolicy. There is also a reference cluster definition available [here](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy/kubernetes-calico.json).
 
+The current implementation of Calico uses Flanal as the network overlay via CNI. The combination of Calico with Flanal is known as [Canal](https://github.com/projectcalico/canal/). Long-term, Flanal will be replaced with [Azure CNI](https://github.com/Azure/azure-container-networking/blob/master/docs/cni.md) as the provider for networking in this configuration.
+
 This will deploy a Calico node controller to every instance of the cluster
 using a Kubernetes DaemonSet. After a successful deployment you should be able
 to see these Pods running in your cluster:
