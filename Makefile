@@ -64,7 +64,9 @@ ifneq ($(GIT_BASEDIR),)
 endif
 
 test: test-style
-	go test -v -ldflags '$(LDFLAGS)' $(GOFILES)
+	go get github.com/onsi/ginkgo/ginkgo
+	go get github.com/onsi/gomega
+	ginkgo -v -ldflags='$(LDFLAGS)' $(GOFILES)
 
 .PHONY: test-style
 test-style:
