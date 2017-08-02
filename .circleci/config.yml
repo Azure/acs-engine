@@ -67,6 +67,9 @@ workflows:
       - e2e:
           requires:
             - e2e-hold
+          filters:
+            branches:
+              ignore: /master/
       - master:
           filters:
             branches:
