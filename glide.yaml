@@ -50,3 +50,4 @@ testImport:
   version: v1.1.0
 - package: github.com/onsi/ginkgo
   version: v1.3.1
+- package: github.com/hashicorp/go-version
