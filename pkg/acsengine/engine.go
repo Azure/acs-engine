@@ -118,7 +118,6 @@ var kubernetesAddonYamls15 = map[string]string{
 }
 
 var calicoAddonYamls = map[string]string{
-	"MASTER_ADDON_CALICO_CONFIGMAP_B64_GZIP_STR": "kubernetesmasteraddons-calico-configmap.yaml",
 	"MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR": "kubernetesmasteraddons-calico-daemonset.yaml",
 }
 
