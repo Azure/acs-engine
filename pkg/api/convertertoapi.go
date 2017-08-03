@@ -470,7 +470,7 @@ func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfil
 	api.OrchestratorType = v20160930.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
 		api.OrchestratorRelease = KubernetesRelease1Dot5
-		api.OrchestratorVersion = KubeImages[api.OrchestratorRelease]["version"]
+		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
 	} else if api.OrchestratorType == DCOS {
 		api.OrchestratorRelease = DCOSRelease1Dot9
 		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
@@ -489,7 +489,7 @@ func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfil
 	api.OrchestratorType = v20170131.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
 		api.OrchestratorRelease = KubernetesDefaultRelease
-		api.OrchestratorVersion = KubeImages[api.OrchestratorRelease]["version"]
+		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
 	} else if api.OrchestratorType == DCOS {
 		api.OrchestratorRelease = DCOSRelease1Dot9
 		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
@@ -511,7 +511,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 		default:
 			api.OrchestratorRelease = KubernetesDefaultRelease
 		}
-		api.OrchestratorVersion = KubeImages[api.OrchestratorRelease]["version"]
+		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
 	case DCOS:
 		switch v20170701cs.OrchestratorRelease {
 		case DCOSRelease1Dot9, DCOSRelease1Dot8:
@@ -540,7 +540,7 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		default:
 			api.OrchestratorRelease = KubernetesDefaultRelease
 		}
-		api.OrchestratorVersion = KubeImages[api.OrchestratorRelease]["version"]
+		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
 	case DCOS:
 		switch vlabscs.OrchestratorRelease {
 		case DCOSRelease1Dot9, DCOSRelease1Dot8, DCOSRelease1Dot7:
