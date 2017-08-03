@@ -149,7 +149,6 @@ write_files:
     MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
-
 - path: /etc/kubernetes/addons/calico-daemonset.yaml
   permissions: "0644"
   encoding: gzip
