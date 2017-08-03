@@ -690,8 +690,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 
 			// add calico manifests
 			if profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "calico" {
-				if profile.OrchestratorProfile.OrchestratorVersion == api.Kubernetes153 ||
-					profile.OrchestratorProfile.OrchestratorVersion == api.Kubernetes157 {
+				if profile.OrchestratorProfile.OrchestratorRelease == api.KubernetesRelease1Dot5 {
 					calicoAddonYamls = calicoAddonYamls15
 				}
 				for placeholder, filename := range calicoAddonYamls {
