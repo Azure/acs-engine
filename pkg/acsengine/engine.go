@@ -627,6 +627,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 		},
+		"EnableExternalKms": func() bool {
+			return cs.Properties.OrchestratorProfile.KubernetesConfig.EnableExternalKms
+		},
 		"UseInstanceMetadata": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata
 		},

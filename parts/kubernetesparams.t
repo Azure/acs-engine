@@ -262,4 +262,16 @@
       },
       "type": "int"
     }
-
+{{if EnableExternalKms}}
+  ,"clusterKeyVaultSku": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "allowedValues": [
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "SKU for the key vault used by the cluster"
+      }
+    }
+{{end}}

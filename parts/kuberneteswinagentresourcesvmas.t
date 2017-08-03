@@ -119,6 +119,9 @@
 {{end}}
         "[concat('Microsoft.Network/networkInterfaces/', variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('{{.Name}}AvailabilitySet'))]"
+{{if EnableExternalKms}}
+        ,"[concat('Microsoft.KeyVault/vaults/', variables('clusterKeyVaultName'))]"
+{{end}}
       ],
       "tags":
       {

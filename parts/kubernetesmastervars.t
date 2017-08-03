@@ -185,7 +185,13 @@
     "tenantId": "[subscription().tenantId]",
     "targetEnvironment": "[parameters('targetEnvironment')]",
     "dockerEngineDownloadRepo": "[parameters('dockerEngineDownloadRepo')]",
-    "dockerEngineVersion": "1.12.*"
+    "dockerEngineVersion": "1.12.*",
+{{if EnableExternalKms}}
+    "clusterKeyVaultName": "[concat(variables('orchestratorName'), '-keyvault-', variables('masterFqdnPrefix'))]",
+    "clusterKeyVaultSku" : "[parameters('clusterKeyVaultSku')]" 
+{{else}}
+    "clusterKeyVaultName": "-"
+{{end}}
 {{if .LinuxProfile.HasSecrets}}
     , "linuxProfileSecrets" :
       [

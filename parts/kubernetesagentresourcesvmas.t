@@ -66,6 +66,9 @@
       },
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
+{{if EnableExternalKms}}
+        ,"[concat('Microsoft.KeyVault/vaults/', variables('clusterKeyVaultName'))]"
+{{end}}
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
@@ -256,7 +259,7 @@
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
-          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailablitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('targetEnvironment'),' ',variables('networkPolicy'),' ',variables('cloudProviderBackoff'),' ',variables('cloudProviderBackoffRetries'),' ',variables('cloudProviderBackoffExponent'),' ',variables('cloudProviderBackoffDuration'),' ',variables('cloudProviderBackoffJitter'),' ',variables('cloudProviderRatelimit'),' ',variables('cloudProviderRatelimitQPS'),' ',variables('cloudProviderRatelimitBucket'),' ', variables('useManagedIdentityExtension'),' ',variables('useInstanceMetadata'),' >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
+          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailablitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('targetEnvironment'),' ',variables('networkPolicy'),' ',variables('cloudProviderBackoff'),' ',variables('cloudProviderBackoffRetries'),' ',variables('cloudProviderBackoffExponent'),' ',variables('cloudProviderBackoffDuration'),' ',variables('cloudProviderBackoffJitter'),' ',variables('cloudProviderRatelimit'),' ',variables('cloudProviderRatelimitQPS'),' ',variables('cloudProviderRatelimitBucket'),' ', variables('useManagedIdentityExtension'),' ',variables('useInstanceMetadata'),' ',variables('clusterKeyVaultName'),' >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
         }
       }
     }
