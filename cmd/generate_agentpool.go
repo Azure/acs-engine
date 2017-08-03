@@ -2,16 +2,9 @@ package cmd
 
 import (
 	"fmt"
-<<<<<<< HEAD
-	"github.com/Azure/acs-engine/pkg/api"
-=======
 	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
 	"github.com/Azure/acs-engine/pkg/interpolator/agentpool"
-<<<<<<< HEAD
->>>>>>> Refactor into agentpool instead of container service
-=======
 	"github.com/Azure/acs-engine/pkg/interpolatorwriter"
->>>>>>> Clean. Simple. Go.
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -36,10 +29,6 @@ func NewGenerateAgentpoolCmd() *cobra.Command {
 			if err != nil {
 				log.Fatal(err)
 			}
-<<<<<<< HEAD
-			genOptions.Validate(cmd, args)
-			return genOptions.Run()
-=======
 			err = genOptions.Validate(cmd, args)
 			if err != nil {
 				log.Fatal(err)
@@ -49,7 +38,6 @@ func NewGenerateAgentpoolCmd() *cobra.Command {
 				log.Fatal(err)
 			}
 			return nil
->>>>>>> Cleaning up podcidr and adding version and validation
 		},
 	}
 
@@ -60,7 +48,6 @@ func NewGenerateAgentpoolCmd() *cobra.Command {
 
 // Init will initialize the GenerateOptions struct, and calculate runtime configuration
 func (gc *GenerateOptions) Init(cmd *cobra.Command, args []string) error {
-
 
 	if gc.ApiModelPath == "" {
 		if len(args) > 0 {
@@ -80,7 +67,6 @@ func (gc *GenerateOptions) Init(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("error parsing the api model: %v", err)
 	}
 
-
 	return nil
 }
 
@@ -91,66 +77,16 @@ func (gc *GenerateOptions) Validate(cmd *cobra.Command, args []string) error {
 
 // Run will run the GenerateOptions struct. This will interpolate the ARM template, and atomically commit to disk
 func (gc *GenerateOptions) Run() error {
-<<<<<<< HEAD
-	//log.Infoln("Generating assets...")
-
-<<<<<<< HEAD
-	fmt.Println(gc.ContainerService)
-=======
-	interpolator := agentpool.NewAgentPoolInterpolator(gc.AgentPool, "kubernetes/agentpool")
-=======
 	interpolator := agentpool.NewAgentPoolInterpolator(gc.agentPool, "kubernetes/agentpool")
->>>>>>> Docs, docs, docs
 	err := interpolator.Interpolate()
 	if err != nil {
 		return fmt.Errorf("Major error on interpolate: %v", err)
 	}
->>>>>>> Refactor into agentpool instead of container service
 
-<<<<<<< HEAD
-	//templateGenerator, err := acsengine.InitializeTemplateGenerator(gc.classicMode)
-	//if err != nil {
-	//	log.Fatalln("failed to initialize template generator: %s", err.Error())
-	//}
-	//
-	//certsGenerated := false
-	//template, parameters, certsGenerated, err := templateGenerator.GenerateTemplate(gc.containerService)
-	//if err != nil {
-	//	log.Fatalf("error generating template %s: %s", gc.apimodelPath, err.Error())
-	//	os.Exit(1)
-	//}
-	//
-	//if !gc.noPrettyPrint {
-	//	if template, err = acsengine.PrettyPrintArmTemplate(template); err != nil {
-	//		log.Fatalf("error pretty printing template: %s \n", err.Error())
-	//	}
-	//	if parameters, err = acsengine.BuildAzureParametersFile(parameters); err != nil {
-	//		log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
-	//	}
-	//}
-	//
-	//if err = acsengine.WriteArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
-	//	log.Fatalf("error writing artifacts: %s \n", err.Error())
-	//}
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-	iw := interpolatorwriter.NewInterpolatorWriter("./_output", "azuredeploy.json", "azuredeploy.params.json", interpolator)
-=======
-	iw := interpolatorwriter.NewInterpolatorWriter(fmt.Sprintf("./_output/%s", gc.AgentPool.Name), "azuredeploy.json", "azuredeploy.parameterss.json", interpolator)
->>>>>>> Adding work
-=======
-	iw := interpolatorwriter.NewInterpolatorWriter(fmt.Sprintf("./_output/%s", gc.agentPool.Name), "azuredeploy.json", "azuredeploy.parameterss.json", interpolator)
->>>>>>> Docs, docs, docs
-=======
 	iw := interpolatorwriter.NewInterpolatorWriter(fmt.Sprintf("./_output/%s", gc.agentPool.Name), "azuredeploy.json", "azuredeploy.parameters.json", interpolator)
->>>>>>> Validation is now passing - just dialing in the arm template
 	err = iw.Write()
 	if err != nil {
 		return fmt.Errorf("Unable to write template: %v", err)
 	}
->>>>>>> Clean. Simple. Go.
 	return nil
 }
