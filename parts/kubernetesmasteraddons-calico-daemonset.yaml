@@ -76,7 +76,7 @@ spec:
             - name: CALICO_IPV4POOL_CIDR
               value: "<kubeClusterCidr>"
             - name: CALICO_IPV4POOL_IPIP
-              value: "always"
+              value: "off"
             - name: NODENAME
               valueFrom:
                 fieldRef:
