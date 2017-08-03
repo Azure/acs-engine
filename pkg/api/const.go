@@ -79,48 +79,12 @@ var DCOSReleaseToVersion = map[string]string{
 	DCOSRelease1Dot7: "1.7.3",
 }
 
+// KubernetesReleaseToVersion maps a major.minor release to an full major.minor.patch version
+var KubernetesReleaseToVersion = map[string]string{
+	KubernetesRelease1Dot7: "1.7.2",
+	KubernetesRelease1Dot6: "1.6.6",
+	KubernetesRelease1Dot5: "1.5.7",
+}
+
 // To identify programmatically generated public agent pools
 const publicAgentPoolSuffix = "-public"
-
-// KubeImages is the map from release to corresponding artifacts
-var KubeImages = map[string]map[string]string{
-	KubernetesRelease1Dot7: {
-		"version":      "1.7.2",
-		"hyperkube":    "hyperkube-amd64:v1.7.2",
-		"dashboard":    "kubernetes-dashboard-amd64:v1.6.1",
-		"exechealthz":  "exechealthz-amd64:1.2",
-		"addonresizer": "addon-resizer:2.0",
-		"heapster":     "heapster:v1.4.0",
-		"dns":          "k8s-dns-kube-dns-amd64:1.14.4",
-		"addonmanager": "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.14.4",
-		"pause":        "pause-amd64:3.0",
-		"windowszip":   "v1.7.1intwinnat.zip",
-	},
-	KubernetesRelease1Dot6: {
-		"version":      "1.6.6",
-		"hyperkube":    "hyperkube-amd64:v1.6.6",
-		"dashboard":    "kubernetes-dashboard-amd64:v1.6.1",
-		"exechealthz":  "exechealthz-amd64:1.2",
-		"addonresizer": "addon-resizer:1.7",
-		"heapster":     "heapster:v1.3.0",
-		"dns":          "k8s-dns-kube-dns-amd64:1.14.4",
-		"addonmanager": "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":      "k8s-dns-dnsmasq-amd64:1.13.0",
-		"pause":        "pause-amd64:3.0",
-		"windowszip":   "v1.6.6intwinnat.zip",
-	},
-	KubernetesRelease1Dot5: {
-		"version":      "1.5.7",
-		"hyperkube":    "hyperkube-amd64:v1.5.7",
-		"dashboard":    "kubernetes-dashboard-amd64:v1.5.1",
-		"exechealthz":  "exechealthz-amd64:1.2",
-		"addonresizer": "addon-resizer:1.6",
-		"heapster":     "heapster:v1.2.0",
-		"dns":          "kubedns-amd64:1.7",
-		"addonmanager": "kube-addon-manager-amd64:v6.2",
-		"dnsmasq":      "kube-dnsmasq-amd64:1.3",
-		"pause":        "pause-amd64:3.0",
-		"windowszip":   "v1.5.7intwinnat.zip",
-	},
-}

@@ -119,7 +119,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
 			}
 		}
-		k8sVersion, _ := version.NewVersion(api.KubeImages[k8sRelease]["version"])
+		k8sVersion, _ := version.NewVersion(api.KubernetesReleaseToVersion[k8sRelease])
 		minVersionK8sVersionForCloudProviderRateLimit, _ := version.NewVersion("1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
 		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
