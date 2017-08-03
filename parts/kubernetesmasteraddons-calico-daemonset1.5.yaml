@@ -14,6 +14,9 @@ apiVersion: rbac.authorization.k8s.io/v1alpha1
 metadata:
   name: canal
   namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: "Reconcile"
 rules:
   - apiGroups: [""]
     resources:
@@ -94,6 +97,9 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1alpha1
 metadata:
   name: flannel
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: "Reconcile"
 rules:
   - apiGroups:
       - ""
@@ -119,6 +125,9 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1alpha1
 metadata:
   name: flannel
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: "Reconcile"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -132,6 +141,9 @@ apiVersion: rbac.authorization.k8s.io/v1alpha1
 kind: ClusterRoleBinding
 metadata:
   name: canal
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: "Reconcile"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -172,8 +184,6 @@ data:
             "kubeconfig": "__KUBECONFIG_FILEPATH__"
         }
     }
-
-  # Flannel network configuration. Mounted into the flannel container.
   net-conf.json: |
     {
       "Network": "<kubeClusterCidr>",
@@ -207,49 +217,30 @@ spec:
     spec:
       hostNetwork: true
       serviceAccountName: canal
-      tolerations:
-        # Allow the pod to run on the master.  This is required for
-        # the master to communicate with pods.
-        - key: node-role.kubernetes.io/master
-          effect: NoSchedule
-        # Mark the pod as a critical add-on for rescheduling.
-        - key: "CriticalAddonsOnly"
-          operator: "Exists"
       containers:
-        # Runs calico/node container on each Kubernetes node.  This
-        # container programs network policy and routes on each
-        # host.
         - name: calico-node
           image: quay.io/calico/node:v1.2.1
           env:
-            # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
               value: "kubernetes"
-            # Enable felix logging.
             - name: FELIX_LOGSEVERITYSYS
               value: "info"
-            # Period, in seconds, at which felix re-applies all iptables state
             - name: FELIX_IPTABLESREFRESHINTERVAL
               value: "60"
-            # Disable IPV6 support in Felix.
             - name: FELIX_IPV6SUPPORT
               value: "false"
-            # Don't enable BGP.
             - name: CALICO_NETWORKING_BACKEND
               value: "none"
-            # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
             - name: WAIT_FOR_DATASTORE
               value: "true"
-            # No IP address needed.
             - name: IP
               value: ""
             - name: HOSTNAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            # Set Felix endpoint to host default action to ACCEPT.
             - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
               value: "ACCEPT"
           securityContext:
@@ -264,13 +255,10 @@ spec:
             - mountPath: /var/run/calico
               name: var-run-calico
               readOnly: false
-        # This container installs the Calico CNI binaries
-        # and CNI network config file on each node.
         - name: install-cni
           image: quay.io/calico/cni:v1.8.3
           command: ["/install-cni.sh"]
           env:
-            # The CNI network config to install on each node.
             - name: CNI_NETWORK_CONFIG
               valueFrom:
                 configMapKeyRef:
@@ -285,8 +273,6 @@ spec:
               name: cni-bin-dir
             - mountPath: /host/etc/cni/net.d
               name: cni-net-dir
-        # This container runs flannel using the kube-subnet-mgr backend
-        # for allocating subnets.
         - name: kube-flannel
           image: quay.io/coreos/flannel:v0.8.0
           command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
@@ -317,21 +303,18 @@ spec:
           - name: flannel-cfg
             mountPath: /etc/kube-flannel/
       volumes:
-        # Used by calico/node.
         - name: lib-modules
           hostPath:
             path: /lib/modules
         - name: var-run-calico
           hostPath:
             path: /var/run/calico
-        # Used to install CNI.
         - name: cni-bin-dir
           hostPath:
             path: /opt/cni/bin
         - name: cni-net-dir
           hostPath:
             path: /etc/cni/net.d
-        # Used by flannel.
         - name: run
           hostPath:
             path: /run
