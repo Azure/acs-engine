@@ -40,11 +40,9 @@ spec:
         - "--extra-cpu=0.5m"
         - "--memory=140Mi"
         - "--extra-memory=4Mi"
-        - "--threshold=5"
         - "--deployment=heapster"
         - "--container=heapster"
         - "--poll-period=300000"
-        - "--estimator=exponential"
         name: heapster-nanny
         resources:
           requests:
