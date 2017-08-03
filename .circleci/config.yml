@@ -83,4 +83,4 @@ workflows:
       - master:
           filters:
             branches:
-              only: master
+              only: increase-feature-e2e-timeout
