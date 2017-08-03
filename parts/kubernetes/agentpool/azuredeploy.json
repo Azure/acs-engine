@@ -473,6 +473,12 @@
       },
       "type": "string"
     },
+    "jumpboxInternalAddress": {
+      "metadata": {
+        "description": "The internal Ip address of the jumpbox"
+      },
+      "type": "string"
+    },
     "jumpboxVmSize": {
       "defaultValue": "Standard_D2_v2",
       "metadata": {
@@ -724,10 +730,7 @@
     ],
     "jumpboxAvailabilitySet": "[concat('jumpbox-availabilityset-', variables('nameSuffix'))]",
     "jumpboxCount": 1,
-    "jumpboxFirstAddrComment": "these JumpboxFirstAddrComment are used to place multiple jumpboxes consecutively in the address space",
-    "jumpboxFirstAddrOctet4": "[variables('jumpboxFirstAddrOctets')[3]]",
-    "jumpboxFirstAddrOctets": "[split(parameters('firstConsecutiveStaticIP'),'.')]",
-    "jumpboxFirstAddrPrefix": "[concat(variables('jumpboxFirstAddrOctets')[0],'.',variables('jumpboxFirstAddrOctets')[1],'.',variables('jumpboxFirstAddrOctets')[2],'.')]",
+    "jumpboxInternalAddress": "[parameters('jumpboxInternalAddress')]",
     "jumpboxFqdnPrefix": "[tolower(parameters('jumpboxEndpointDNSNamePrefix'))]",
     "jumpboxLbBackendPoolName": "[concat(variables('orchestratorName'), '-jumpbox-pool-', variables('nameSuffix'))]",
     "jumpboxLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('jumpboxLbName'))]",
@@ -736,13 +739,6 @@
     "jumpboxLbName": "[concat(variables('orchestratorName'), '-jumpbox-lb-', variables('nameSuffix'))]",
     "jumpboxOffset": 0,
     "jumpboxPrivateIp": "[parameters('firstConsecutiveStaticIP')]",
-    "jumpboxPrivateIpAddrs": [
-      "[concat(variables('jumpboxFirstAddrPrefix'), add(0, int(variables('jumpboxFirstAddrOctet4'))))]",
-      "[concat(variables('jumpboxFirstAddrPrefix'), add(1, int(variables('jumpboxFirstAddrOctet4'))))]",
-      "[concat(variables('jumpboxFirstAddrPrefix'), add(2, int(variables('jumpboxFirstAddrOctet4'))))]",
-      "[concat(variables('jumpboxFirstAddrPrefix'), add(3, int(variables('jumpboxFirstAddrOctet4'))))]",
-      "[concat(variables('jumpboxFirstAddrPrefix'), add(4, int(variables('jumpboxFirstAddrOctet4'))))]"
-    ],
     "jumpboxPublicIPAddressName": "[concat(variables('orchestratorName'), '-jumpbox-ip-', variables('jumpboxFqdnPrefix'), '-', variables('nameSuffix'))]",
     "jumpboxVMNamePrefix": "[concat(variables('orchestratorName'), '-jumpbox-', variables('nameSuffix'), '-')]",
     "jumpboxVMNames": [
@@ -1524,7 +1520,7 @@
                 }
               ],
               "primary": true,
-              "privateIPAddress": "[variables('jumpboxPrivateIpAddrs')[copyIndex(variables('jumpboxOffset'))]]",
+              "privateIPAddress": "[variables('jumpboxInternalAddress')]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('vnetSubnetID')]"

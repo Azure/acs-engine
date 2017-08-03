@@ -80,6 +80,7 @@ func (p *AgentPool) Validate() error {
 	if p.Properties.JumpBoxProfile.VMSize == "" {
 		return fmt.Errorf("Empty jumpbox vm size")
 	}
+	// TODO: validate and/or default p.Properties.JumpBoxProfile.InternalAdress
 
 	// -------------------------------
 	// SSH

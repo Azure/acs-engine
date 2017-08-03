@@ -25,6 +25,7 @@
       }
     },
     "JumpboxProfile": {
+      "internalAdddress": "",
       "publicIpAddressId": "",
       "vmSize": "Standard_D2_v2",
       "count": 1
@@ -34,7 +35,6 @@
       "servicePrincipalClientSecret": "Service Principal Password"
     },
     "networkProfile": {
-      "podCidr": "10.0.0.0/24",
       "serviceCIDR": "10.0.0.0/16",
       "vnetSubnetId": "",
       "kubeDnsServiceIp": ""

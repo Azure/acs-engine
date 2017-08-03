@@ -40,6 +40,7 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 	acsengine.AddValue(parametersMap, "jumpboxVmSize", properties.JumpBoxProfile.VMSize)
 	acsengine.AddValue(parametersMap, "jumpboxCount", properties.JumpBoxProfile.Count)
 	acsengine.AddValue(parametersMap, "jumpboxEndpointDNSNamePrefix", properties.DnsPrefix)
+	acsengine.AddValue(parametersMap, "jumpboxInternalAddress", properties.JumpBoxProfile.InternalAddress)
 
 	// Certificate information
 	acsengine.AddSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
