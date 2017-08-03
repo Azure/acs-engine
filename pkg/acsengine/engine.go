@@ -18,7 +18,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/ghodss/yaml"
-	"os"
 )
 
 const (
