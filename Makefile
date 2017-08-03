@@ -64,9 +64,7 @@ ifneq ($(GIT_BASEDIR),)
 endif
 
 test: test-style
-	go get github.com/onsi/ginkgo/ginkgo
-	go get github.com/onsi/gomega
-	ginkgo -v -ldflags='$(LDFLAGS)' $(GOFILES)
+	ginkgo -r -ldflags='$(LDFLAGS)' .
 
 .PHONY: test-style
 test-style:
@@ -81,6 +79,7 @@ HAS_GOX := $(shell command -v gox;)
 HAS_GIT := $(shell command -v git;)
 HAS_GOBINDATA := $(shell command -v go-bindata;)
 HAS_GOMETALINTER := $(shell command -v gometalinter;)
+HAS_GINKGO := $(shell command -v ginkgo;)
 
 .PHONY: bootstrap
 bootstrap:
@@ -101,6 +100,10 @@ ifndef HAS_GOMETALINTER
 	gometalinter --install
 endif
 	glide install
+ifndef HAS_GINKGO
+	go get -u github.com/onsi/ginkgo/ginkgo
+endif
+
 
 ci: bootstrap test-style build test lint
 	./scripts/coverage.sh --coveralls
