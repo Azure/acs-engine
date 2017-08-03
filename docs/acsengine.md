@@ -143,7 +143,7 @@ Setup steps:
 1. Setup your go workspace. This guide assumes you are using `c:\gopath` as your Go workspace:
   1. Type Windows key-R to open the run prompt
   2. Type `rundll32 sysdm.cpl,EditEnvironmentVariables` to open the system variables
-  3. Add `c:\go\bin` to your PATH variables
+  3. Add `c:\go\bin` and `c:\gopath\bin` to your PATH variables
   4. Click "new" and add new environment variable named `GOPATH` and set the value to `c:\gopath`
 
 Build acs-engine:
@@ -165,8 +165,8 @@ Setup steps:
   2. `mkdir $HOME/go`
   3. edit `$HOME/.bash_profile` and add the following lines to setup your go path
   ```
-  export PATH=$PATH:/usr/local/go/bin
   export GOPATH=$HOME/go
+  export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
   ```
   4. `source $HOME/.bash_profile`
 
