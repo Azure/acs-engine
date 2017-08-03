@@ -35,7 +35,7 @@
       "servicePrincipalClientSecret": "Service Principal Password"
     },
     "networkProfile": {
-      "serviceCIDR": "10.0.0.0/16",
+      "agentCIDR": "10.0.0.0/16",
       "vnetSubnetId": "",
       "kubeDnsServiceIp": ""
     },

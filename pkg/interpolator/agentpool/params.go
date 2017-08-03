@@ -62,7 +62,7 @@ func getParameters(agentPool *kubernetesagentpool.AgentPool) (map[string]interfa
 	acsengine.AddValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", acsengine.KubeImages[KubernetesVersion]["nodegraceperiod"])
 	acsengine.AddValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", acsengine.KubeImages[KubernetesVersion]["podeviction"])
 	acsengine.AddValue(parametersMap, "kubernetesCtrlMgrRouteReconciliationPeriod", acsengine.KubeImages[KubernetesVersion]["routeperiod"])
-	acsengine.AddValue(parametersMap, "jumpboxSubnet", properties.NetworkProfile.ServiceCIDR)
+	acsengine.AddValue(parametersMap, "jumpboxSubnet", properties.NetworkProfile.AgentCIDR)
 	acsengine.AddValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 	acsengine.AddSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret, false)
 	acsengine.AddValue(parametersMap, "kubernetesApiServer", properties.KubernetesEndpoint)
