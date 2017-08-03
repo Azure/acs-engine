@@ -119,6 +119,10 @@ var calicoAddonYamls = map[string]string{
 	"MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR": "kubernetesmasteraddons-calico-daemonset.yaml",
 }
 
+var calicoAddonYamls15 = map[string]string{
+	"MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR": "kubernetesmasteraddons-calico-daemonset1.5.yaml",
+}
+
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars, dcosParams}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
@@ -733,6 +737,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 
 			// add calico manifests
 			if profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "calico" {
+				if profile.OrchestratorProfile.OrchestratorVersion == api.Kubernetes153 ||
+					profile.OrchestratorProfile.OrchestratorVersion == api.Kubernetes157 {
+					calicoAddonYamls = calicoAddonYamls15
+				}
 				for placeholder, filename := range calicoAddonYamls {
 					addonTextContents := getBase64CustomScript(filename)
 					str = strings.Replace(str, placeholder, addonTextContents, -1)
