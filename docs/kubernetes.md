@@ -1,7 +1,7 @@
-# Microsoft Azure Container Service Engine - Kubernetes Walkthrough
+# Microsoft Azure Container Service Engine - Kubernetes
 
-* [Kubernetes Windows Walkthrough](kubernetes.windows.md) - shows how to create a Kubernetes cluster on Windows.
-* [Kubernetes with GPU support Walkthrough](kubernetes.gpu.md) - shows how to create a Kubernetes cluster with GPU support.
+* [Create a Kubernetes Cluster](kubernetes/deploy.md) - Create a your first Kubernetes cluster. Start here!
+* [Kubernetes Next Steps](kubernetes/walkthrough.md) - You have successfully deployed a Kubernetes cluster, now what?
 
 ## Deployment
 
@@ -271,6 +271,11 @@ read and **write** permissions to the target Subscription.
 3. [Link](serviceprincipal.md) to documentation on how to create/configure a service principal for an ACS-Engine Kubernetes cluster.
 
 ## Known issues and mitigations
+  =======
+* [Troubleshooting](kubernetes/troubleshooting.md) - Running into issues? Start here to troubleshoot Kubernetes.
+* [Features](kubernetes/features.md) - Guide to alpha, beta, and stable functionality in acs-engine.
+
+## Known Issues
 
 ### Node "NotReady" due to lost TCP connection
 
@@ -279,7 +284,7 @@ This is a known upstream kubernetes [issue #41916](https://github.com/kubernetes
 
 ACS-Engine partially mitigates this issue on Linux by detecting dead TCP connections more quickly via **net.ipv4.tcp_retries2=8**.
 
-## Learning More
+## Additional Kubernetes Resources
 
 Here are recommended links to learn more about Kubernetes:
 

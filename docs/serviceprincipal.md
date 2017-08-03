@@ -34,10 +34,6 @@ There are several ways to create a Service Principal in Azure Active Directory:
    az vm list-sizes --location westus
    ```
 
-* **With the legacy [Azure XPlat CLI](https://github.com/Azure/azure-xplat-cli)**
-
-   Instructions: ["Use Azure CLI to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal-cli/)
-
 * **With [PowerShell](https://github.com/Azure/azure-powershell)**
 
    Instructions: ["Use Azure PowerShell to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal/)
