@@ -3,7 +3,7 @@ package v20170727
 const (
 
 	// APIVersion is the unique string to identify this API
-	APIVersion = "kubernetesagentpool"
+	APIVersion = "v20170727"
 )
 
 // AgentPool represents a Kubernetes Agent Pool

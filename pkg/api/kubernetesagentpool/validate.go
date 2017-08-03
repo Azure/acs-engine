@@ -45,7 +45,7 @@ func (p *AgentPool) Validate() error {
 	// -------------------------------
 	// Network Profile
 	if p.Properties.NetworkProfile.AgentCIDR == "" {
-		return fmt.Errorf("Empty service CIDR in network profile")
+		return fmt.Errorf("Empty agent CIDR in network profile")
 	}
 
 	// -------------------------------
