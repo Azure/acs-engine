@@ -26,6 +26,16 @@ Enable Managed Identity by adding `useManagedIdentity` in `kubernetesConfig`.
 
 <a name="feat-managed-disks"></a>
 
+## Optional: Enable Kubernetes Role-Based Access Control (RBAC)
+
+By default, the cluster will be provisioned without [Role-Based Access Control](https://kubernetes.io/docs/admin/authorization/rbac/) enabled. RBAC can be enabled by adding the following configuration to the cluster api-model. See [cluster definition](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig) for further detail.
+
+```console
+      "kubernetesConfig": {
+        "enableRbac": true
+      }
+```
+
 ## Managed Disks
 
 [Managed disks](../examples/disks-managed/README.md) are supported for both node OS disks and Kubernetes persistent volumes.
