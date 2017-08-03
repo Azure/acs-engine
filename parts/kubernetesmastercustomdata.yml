@@ -229,6 +229,15 @@ write_files:
     sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
     sed -i "s|<kubernetesTillerSpec>|{{WrapAsVariable "kubernetesTillerSpec"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
 
+{{if .OrchestratorProfile.KubernetesConfig.EnableRbac }}
+    # If RBAC enabled then add parameters to API server and Controller manager configuration
+    sed -i "s|<kubernetesEnableRbac>|--authorization-mode=RBAC|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesEnableRbac>|--use-service-account-credentials|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+{{else}}
+    sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+{{end}}
+
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
     # If Calico Policy enabled then update Cluster Cidr
     sed -i "s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-daemonset.yaml"
