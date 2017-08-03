@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 
-node {
+node("slave") {
   withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'AZURE_CLI_SPN_ACS_TEST',
                   passwordVariable: 'SPN_PASSWORD', usernameVariable: 'SPN_USER']]) {
     timestamps {
