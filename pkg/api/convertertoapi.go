@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/Azure/acs-engine/pkg/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -15,6 +16,23 @@ import (
 // All other functions are internal helper functions used
 // for converting.
 ///////////////////////////////////////////////////////////
+
+// ConvertV20170831AgentPool converts an AgentPool object into an in-memory container service
+func ConvertV20170831AgentPool(v20170831 *HostedMaster) *ContainerService {
+	c := &ContainerService{}
+	c.ID = v20170831.ID
+	c.Location = v20170831.Location
+	c.Name = v20170831.Name
+	if v20170831.Plan != nil {
+		c.Plan = convertv20170831ResourcePurchasePlan(v20170831.Plan)
+	}
+	c.Tags = map[string]string{}
+	for k, v := range v20170831.Tags {
+		c.Tags[k] = v
+	}
+	c.Type = v20170831.Type
+	c.Properties = convertV20170831Properties(v20170831.Properties)
+}
 
 // ConvertV20160930ContainerService converts a v20160930 ContainerService to an unversioned ContainerService
 func ConvertV20160930ContainerService(v20160930 *v20160930.ContainerService) *ContainerService {
@@ -116,6 +134,15 @@ func ConvertVLabsContainerService(vlabs *vlabs.ContainerService) *ContainerServi
 	return c
 }
 
+func convertv20170831ResourcePurchasePlan(v20170831 *v20170831.ResourcePurchasePlan) *ResourcePurchasePlan {
+	return &ResourcePurchasePlan{
+		Name:          v20170831.Name,
+		Product:       v20170831.Product,
+		PromotionCode: v20170831.PromotionCode,
+		Publisher:     v20170831.Publisher,
+	}
+}
+
 // convertV20160930ResourcePurchasePlan converts a v20160930 ResourcePurchasePlan to an unversioned ResourcePurchasePlan
 func convertV20160930ResourcePurchasePlan(v20160930 *v20160930.ResourcePurchasePlan, api *ResourcePurchasePlan) {
 	api.Name = v20160930.Name
@@ -154,6 +181,35 @@ func convertVLabsResourcePurchasePlan(vlabs *vlabs.ResourcePurchasePlan, api *Re
 	api.Product = vlabs.Product
 	api.PromotionCode = vlabs.PromotionCode
 	api.Publisher = vlabs.Publisher
+}
+
+func convertV20170831Properties(obj *v20170831.Properties) *Properties {
+	properties = &Properties{
+		ProvisioningState: obj.ProvisioningState,
+		MasterProfile:     nil,
+	}
+	properties.AgentPoolProfiles = make([]AgentPoolProfile, len(obj.AgentPoolProfiles))
+	for i := range obj.AgentPoolProfiles {
+		properties.AgentPoolProfiles[i] = convertV20170831AgentPoolProfile(obj.AgentPoolProfiles[i])
+	}
+	if obj.LinuxProfile != nil {
+		properties.LinuxProfile = convertV20170831LinuxProfile(obj.LinuxProfile)
+	}
+	if obj.WindowsProfile != nil {
+		properties.WindowsProfile = convertV20170831WindowsProfile(obj.WindowsProfile)
+	}
+	if obj.JumpboxProfile != nil {
+		properties.JumpboxProfile = convertV20170831JumpboxProfile(obj.JumpboxProfile)
+	}
+	if obj.ServicePrincipalProfile != nil {
+		properties.ServicePrincipalProfile = convertV20170831ServicePrincipalProfile(obj.ServicePrincipalProfile)
+	}
+	if obj.NetworkProfile != nil {
+		properties.NetworkProfile = convertV20170831NetworkProfile(obj.NetworkProfile)
+	}
+	if obj.ServicePrincipalProfile != nil {
+		properties.AccessProfile = convertV20170831AccessProfile(obj.AccessProfile)
+	}
 }
 
 func convertV20160930Properties(v20160930 *v20160930.Properties, api *Properties) {
@@ -636,6 +692,16 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	if len(api.StorageProfile) == 0 {
 		api.StorageProfile = ManagedDisks
 	}
+}
+
+func convertV20170831AgentPoolProfile(v20170831 *v20170831.AgentPoolProfile) *AgentPoolProfile {
+	api = &AgentPoolProfile{}
+	api.Name = v20170831.Name
+	api.Count = v20170831.Count
+	api.VMSize = v20170831.VMSize
+	api.OSType = OSType(v20170831.OSType)
+	api.Subnet = v20170831.subnet
+	return api
 }
 
 func convertV20160930AgentPoolProfile(v20160930 *v20160930.AgentPoolProfile, availabilityProfile string, api *AgentPoolProfile) {
