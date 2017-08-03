@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// Validate will validate an agent pool
 func (p *AgentPool) Validate() error {
 
 	// -------------------------------

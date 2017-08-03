@@ -9,6 +9,7 @@ import (
 	"sync"
 )
 
+// InterpolatorWriter represents a writer that will write interpolator data to disk
 type InterpolatorWriter struct {
 	outputDirectory string
 	templateName    string
@@ -17,6 +18,7 @@ type InterpolatorWriter struct {
 	otherFiles      map[string][]byte
 }
 
+// NewInterpolatorWriter will return a new InterpolatorWriter that has been initialized
 func NewInterpolatorWriter(outputDirectory, templateName, parametersName string, i interpolator.Interpolator) *InterpolatorWriter {
 	return &InterpolatorWriter{
 		outputDirectory: outputDirectory,
@@ -27,12 +29,15 @@ func NewInterpolatorWriter(outputDirectory, templateName, parametersName string,
 	}
 }
 
+// AddFile will add an arbitrary file to also write to the configured directory
 func (i *InterpolatorWriter) AddFile(name string, buffer []byte) {
 	i.otherFiles[name] = buffer
 }
 
+// InterpolatorWriterMutex will prevent concurrent disk operations with an InterpolatorWriter
 var InterpolatorWriterMutex sync.Mutex
 
+// Write will write the contents of the InterpolatorWriter to disk
 func (i *InterpolatorWriter) Write() error {
 	InterpolatorWriterMutex.Lock()
 	defer InterpolatorWriterMutex.Unlock()

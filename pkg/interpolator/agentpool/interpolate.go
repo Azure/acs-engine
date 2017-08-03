@@ -62,7 +62,7 @@ func (i *Interpolator) Interpolate() error {
 	var parametersMap map[string]interface{}
 	parametersMap, err = getParameters(i.agentPool)
 	if err != nil {
-		return fmt.Errorf("Unable to get parameteres: %v", err)
+		return fmt.Errorf("Unable to get parameters: %v", err)
 	}
 	var parameterBytes []byte
 	parameterBytes, err = json.Marshal(parametersMap)
@@ -72,7 +72,6 @@ func (i *Interpolator) Interpolate() error {
 		return fmt.Errorf("Unable to pretty print json: %v", err)
 	}
 	parameterBytes = out.Bytes()
-
 
 	if err != nil {
 		return fmt.Errorf("Unable to marshal parameters map: %v", err)

@@ -6,7 +6,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/agentPoolOnlyApi/v20170831"
 )
 
-
 // Convertv20170831ToAgentPool will convert a Convertv20170831 object into AgentPool=
 func Convertv20170831ToAgentPool(hostedMaster *v20170831.HostedMaster) (*AgentPool, error) {
 

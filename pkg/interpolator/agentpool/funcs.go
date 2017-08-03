@@ -1,14 +1,14 @@
 package agentpool
 
 import (
-	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
-	"text/template"
-	"github.com/Azure/acs-engine/pkg/acsengine"
-	"github.com/prometheus/common/log"
-	"strings"
-	"encoding/base64"
 	"bytes"
 	"compress/gzip"
+	"encoding/base64"
+	"github.com/Azure/acs-engine/pkg/acsengine"
+	"github.com/Azure/acs-engine/pkg/api/kubernetesagentpool"
+	"github.com/prometheus/common/log"
+	"strings"
+	"text/template"
 )
 
 // getTemplateFuncMap is where we can define functions used interpolating our code. Please try
@@ -28,15 +28,15 @@ func getTemplateFuncMap(agentPool *kubernetesagentpool.AgentPool) map[string]int
 				return ""
 			}
 			base64KubeletService := base64GzipStr(string(kubeletServiceBytes))
-			fullStr := strings.Replace(string(customDataBytes), "KUBELET_SERVICE_BASE64", 	base64KubeletService, 1)
+			fullStr := strings.Replace(string(customDataBytes), "KUBELET_SERVICE_BASE64", base64KubeletService, 1)
 			provisionScriptBytes, err := acsengine.Asset("kubernetes/agentpool/provisionScript")
 			if err != nil {
 				log.Warnf("Unable to get provisionScript: %v", err)
 				return ""
 			}
 			base64ProvisionScript := base64GzipStr(string(provisionScriptBytes))
-			fullStr = strings.Replace(fullStr, "PROVISION_SCRIPT_BASE64", 	base64ProvisionScript, 1)
-			str, err := formatJsonNewlineBytes(fullStr)
+			fullStr = strings.Replace(fullStr, "PROVISION_SCRIPT_BASE64", base64ProvisionScript, 1)
+			str, err := formatJSONNewlineBytes(fullStr)
 			if err != nil {
 				log.Warnf("Unable to format bytes for ARM: %v", err)
 				return ""
@@ -46,12 +46,10 @@ func getTemplateFuncMap(agentPool *kubernetesagentpool.AgentPool) map[string]int
 	}
 }
 
-
-func formatJsonNewlineBytes(str string) (string, error) {
+func formatJSONNewlineBytes(str string) (string, error) {
 	str = strings.Replace(str, "\n", "\\n", -1)
 	return str, nil
 }
-
 
 func base64GzipStr(str string) string {
 	var gzipB bytes.Buffer
@@ -60,9 +58,3 @@ func base64GzipStr(str string) string {
 	w.Close()
 	return base64.StdEncoding.EncodeToString(gzipB.Bytes())
 }
-
-
-
-
-
-

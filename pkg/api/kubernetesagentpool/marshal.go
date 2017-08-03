@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 )
 
+// LoadAgentPoolFromFile will attempt to load an AgentPool struct from a given JSON file
 func LoadAgentPoolFromFile(jsonFile string) (*AgentPool, string, error) {
 	contents, err := ioutil.ReadFile(jsonFile)
 	if err != nil {
@@ -16,7 +17,7 @@ func LoadAgentPoolFromFile(jsonFile string) (*AgentPool, string, error) {
 	return DeserializeAgentPool(contents)
 }
 
-// DeserializeContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
+// DeserializeAgentPool loads an ACS Cluster API Model, validates it, and returns the unversioned representation
 func DeserializeAgentPool(contents []byte) (*AgentPool, string, error) {
 	m := &api.TypeMeta{}
 	if err := json.Unmarshal(contents, &m); err != nil {
@@ -42,5 +43,4 @@ func LoadAgentPool(contents []byte, version string) (*AgentPool, error) {
 	default:
 		return nil, fmt.Errorf("Invalid API version: %s", version)
 	}
-	return nil, nil
 }

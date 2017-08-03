@@ -1,9 +1,12 @@
 package kubernetesagentpool
 
 const (
+
+	// APIVersion is the unique string to identify this API
 	APIVersion = "kubernetesagentpool"
 )
 
+// AgentPool represents a Kubernetes Agent Pool
 type AgentPool struct {
 	ID       string                `json:"id,omitempty"`
 	Location string                `json:"location,omitempty"`
@@ -15,10 +18,11 @@ type AgentPool struct {
 	Properties *Properties `json:"properties"`
 }
 
+// Properties represents all data needed to define agent pools for Kubernetes
 type Properties struct {
 	KubernetesVersion       string                   `json:"kubernetesVersion"`
 	KubernetesEndpoint      string                   `json:"kubernetesEndpoint"`
-	DnsPrefix               string                   `json:"dnsPrefix,omitempty"`
+	DNSPrefix               string                   `json:"dnsPrefix,omitempty"`
 	Version                 string                   `json:"version,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
@@ -29,6 +33,7 @@ type Properties struct {
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
 }
 
+// CertificateProfile represents the TLS material for connecting to the Kubernetes API server
 type CertificateProfile struct {
 	// CaCertificate is the certificate authority certificate.
 	CaCertificate string `json:"caCertificate,omitempty"`
@@ -48,25 +53,29 @@ type CertificateProfile struct {
 	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
 }
 
+// ServicePrincipalProfile represents a service principal in Azure
 type ServicePrincipalProfile struct {
 	ClientID string `json:"servicePrincipalClientID,omitempty"`
 	Secret   string `json:"servicePrincipalClientSecret,omitempty"`
 }
 
+// JumpBoxProfile represents the jumpbox that will be created with agent pools
 type JumpBoxProfile struct {
-	PublicIpAddressId string `json:"publicIpAddressId,omitempty"`
+	PublicIPAddressID string `json:"publicIpAddressId,omitempty"`
 	// internalAddress must be inside the VNET and k8s-subnet
 	InternalAddress string `json:"internalAddress,omitempty"`
 	VMSize          string `json:"vmSize,omitempty"`
 	Count           int    `json:"count,omitempty"`
 }
 
+// NetworkProfile represents the network that will be configured with agent pools
 type NetworkProfile struct {
 	ServiceCIDR      string `json:"serviceCidr,omitempty"`
-	VnetSubnetId     string `json:"vnetSubnetID,omitempty"`
-	KubeDnsServiceIp string `json:"kubeDnsServiceIP,omitempty"`
+	VnetSubnetID     string `json:"vnetSubnetID,omitempty"`
+	KubeDNSServiceIP string `json:"kubeDnsServiceIP,omitempty"`
 }
 
+// AgentPoolProfile represents a single agent pool
 type AgentPoolProfile struct {
 	Name         string `json:"name,omitempty"`
 	Count        int    `json:"count,omitempty"`
@@ -93,20 +102,24 @@ type LinuxProfile struct {
 	Secrets []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
+// KeyVaultSecrets represents key vault secrets in Azure
 type KeyVaultSecrets struct {
 	SourceVault       *KeyVaultID           `json:"sourceVault,omitempty"`
 	VaultCertificates []KeyVaultCertificate `json:"vaultCertificates,omitempty"`
 }
 
+// KeyVaultID represents the ID for a key vault in Azure
 type KeyVaultID struct {
 	ID string `json:"id,omitempty"`
 }
 
+// KeyVaultCertificate represents the TLS certificate for key vault in Azure
 type KeyVaultCertificate struct {
 	CertificateURL   string `json:"certificateUrl,omitempty"`
 	CertificateStore string `json:"certificateStore,omitempty"`
 }
 
+// ResourcePurchasePlan represents the resource purchase plan in Azure
 type ResourcePurchasePlan struct {
 	Name          string `json:"name,omitempty"`
 	Product       string `json:"product,omitempty"`

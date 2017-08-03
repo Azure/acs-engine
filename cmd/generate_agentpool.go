@@ -11,7 +11,7 @@ import (
 
 // GenerateOptions defines the options a user can define to work with the Agent Pool API
 type GenerateOptions struct {
-	ApiModelPath string // The path on the local filesystem where the input object is
+	APIModelPath string // The path on the local filesystem where the input object is
 	agentPool    *kubernetesagentpool.AgentPool
 	apiVersion   string
 }
@@ -42,16 +42,16 @@ func NewGenerateAgentpoolCmd() *cobra.Command {
 	}
 
 	f := genAgentpoolCmd.Flags()
-	f.StringVar(&genOptions.ApiModelPath, "api-model", "", "Define the API model to use")
+	f.StringVar(&genOptions.APIModelPath, "api-model", "", "Define the API model to use")
 	return genAgentpoolCmd
 }
 
 // Init will initialize the GenerateOptions struct, and calculate runtime configuration
 func (gc *GenerateOptions) Init(cmd *cobra.Command, args []string) error {
 
-	if gc.ApiModelPath == "" {
+	if gc.APIModelPath == "" {
 		if len(args) > 0 {
-			gc.ApiModelPath = args[0]
+			gc.APIModelPath = args[0]
 		} else if len(args) > 1 {
 			cmd.Usage()
 			return fmt.Errorf("too many arguments were provided to 'generate'")
@@ -62,7 +62,7 @@ func (gc *GenerateOptions) Init(cmd *cobra.Command, args []string) error {
 	}
 
 	var err error
-	gc.agentPool, gc.apiVersion, err = kubernetesagentpool.LoadAgentPoolFromFile(gc.ApiModelPath)
+	gc.agentPool, gc.apiVersion, err = kubernetesagentpool.LoadAgentPoolFromFile(gc.APIModelPath)
 	if err != nil {
 		return fmt.Errorf("error parsing the api model: %v", err)
 	}

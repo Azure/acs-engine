@@ -514,12 +514,14 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	return parametersMap, nil
 }
 
+// AddValue is a convenience function to add a value to the parameters map
 func AddValue(m map[string]interface{}, k string, v interface{}) {
 	m[k] = map[string]interface{}{
 		"value": v,
 	}
 }
 
+// AddSecret is a convenience function to add a secret to the parameters map
 func AddSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
 	str, ok := v.(string)
 	if !ok {

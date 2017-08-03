@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// Validate will validate an agent pool
 func (p *AgentPool) Validate() error {
 
 	// -------------------------------
@@ -24,7 +25,6 @@ func (p *AgentPool) Validate() error {
 	if !strings.Contains(p.Properties.KubernetesEndpoint, ".") {
 		return fmt.Errorf("Invalid Kubernetes endpoint")
 	}
-
 	// -------------------------------
 	// Agent pools
 	if len(p.Properties.AgentPoolProfiles) < 1 {
