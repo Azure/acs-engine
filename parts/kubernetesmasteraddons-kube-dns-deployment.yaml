@@ -64,10 +64,6 @@ spec:
                   values:
                   - kube-dns
               topologyKey: kubernetes.io/hostname
-      strategy:
-        rollingUpdate:
-          maxSurge: 10%
-          maxUnavailable: 0
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
