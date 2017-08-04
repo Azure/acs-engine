@@ -165,23 +165,23 @@ workflows:
             - test
           filters:
             branches:
-              only: increase-feature-e2e-timeout
+              only: master
       - master-swarm-e2e:
           requires:
             - test
           filters:
             branches:
-              only: increase-feature-e2e-timeout
+              only: master
       - master-dcos-e2e:
           requires:
             - test
           filters:
             branches:
-              only: increase-feature-e2e-timeout
+              only: master
       - master-swarmmode-e2e:
           requires:
             - test
           filters:
             branches:
-              only: increase-feature-e2e-timeout
+              only: master
 
