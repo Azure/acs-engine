@@ -39,7 +39,7 @@ jobs:
           command: make test-e2e
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-  master:
+  master-kubernetes-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     no_output_timeout: "30m"
     docker:
@@ -55,18 +55,44 @@ jobs:
           echo 'export SKIP_METRICS=y' >> $BASH_ENV
           echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
           echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
-          echo 'export TEST_CONFIG=test/acse-conf/acse-feature-validation.json' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_FEATURE_VALIDATION}' >> $BASH_ENV
           echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_FEATURE_VALIDATION}' >> $BASH_ENV
           echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_FEATURE_VALIDATION}' >> $BASH_ENV
           echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID_FEATURE_VALIDATION}' >> $BASH_ENV
           echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET_FEATURE_VALIDATION}' >> $BASH_ENV
+          echo 'export TEST_CONFIG=test/e2e/kubernetes-deployments.json' >> $BASH_ENV
       - run:
           name: Feature validation tests
           command: make bootstrap build test-e2e
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-
+  master-swarm-e2e:
+    working_directory: /go/src/github.com/Azure/acs-engine
+    no_output_timeout: "30m"
+    docker:
+      - image: microsoft/acs-engine:latest
+        environment:
+          GOPATH: /go
+    steps:
+      - checkout
+      - run: |
+          echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
+          echo 'export BUILD_NUM=${CIRCLE_BUILD_NUM}' >> $BASH_ENV
+          echo 'export RESOURCE_GROUP_PREFIX=y' >> $BASH_ENV
+          echo 'export SKIP_METRICS=y' >> $BASH_ENV
+          echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
+          echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_FEATURE_VALIDATION}' >> $BASH_ENV
+          echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_FEATURE_VALIDATION}' >> $BASH_ENV
+          echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_FEATURE_VALIDATION}' >> $BASH_ENV
+          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID_FEATURE_VALIDATION}' >> $BASH_ENV
+          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET_FEATURE_VALIDATION}' >> $BASH_ENV
+          echo 'export TEST_CONFIG=test/e2e/swarm-deployments.json' >> $BASH_ENV
+      - run:
+          name: Feature validation tests
+          command: make bootstrap build test-e2e
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_logs
 workflows:
   version: 2
   build_and_test:
@@ -80,7 +106,12 @@ workflows:
           filters:
             branches:
               ignore: /master/
-      - master:
+      - master-kubernetes-e2e:
           filters:
             branches:
               only: increase-feature-e2e-timeout
+      - master-swarm-e2e:
+          filters:
+            branches:
+              only: increase-feature-e2e-timeout
+
