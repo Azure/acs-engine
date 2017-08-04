@@ -70,7 +70,7 @@ type JumpBoxProfile struct {
 
 // NetworkProfile represents the network that will be configured with agent pools
 type NetworkProfile struct {
-	ServiceCIDR      string `json:"serviceCidr,omitempty"`
+	AgentCidr        string `json:"agentCIDR,omitempty"`
 	VnetSubnetID     string `json:"vnetSubnetID,omitempty"`
 	KubeDNSServiceIP string `json:"kubeDnsServiceIP,omitempty"`
 }
