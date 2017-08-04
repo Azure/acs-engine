@@ -20,7 +20,7 @@ jobs:
           command:  make build coverage
   e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
-    no_output_timeout: "30m"
+    no_output_timeout: "15m"
     docker:
       - image: microsoft/acs-engine:latest
         environment:
