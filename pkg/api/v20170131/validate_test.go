@@ -4,6 +4,15 @@ import "testing"
 
 func Test_ServicePrincipalProfile_ValidateSecret(t *testing.T) {
 
+	t.Run("ServicePrincipalProfile is nil should fail", func(t *testing.T) {
+		p := getK8sDefaultProperties()
+		p.ServicePrincipalProfile = nil
+
+		if err := p.Validate(); err == nil {
+			t.Errorf("should error %v", err)
+		}
+	})
+
 	t.Run("ServicePrincipalProfile with secret should pass", func(t *testing.T) {
 		p := getK8sDefaultProperties()
 
