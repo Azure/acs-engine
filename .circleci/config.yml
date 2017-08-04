@@ -20,7 +20,6 @@ jobs:
           command:  make build coverage
   e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
-    no_output_timeout: "15m"
     docker:
       - image: microsoft/acs-engine:latest
         environment:
@@ -38,11 +37,11 @@ jobs:
       - run:
           name: e2e tests
           command: make test-e2e
+          no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
   master-kubernetes-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
-    no_output_timeout: "30m"
     docker:
       - image: microsoft/acs-engine:latest
         environment:
@@ -65,11 +64,11 @@ jobs:
       - run:
           name: Kubernetes feature validation tests
           command: make bootstrap build test-e2e
+          no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
   master-swarm-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
-    no_output_timeout: "30m"
     docker:
       - image: microsoft/acs-engine:latest
         environment:
@@ -92,11 +91,11 @@ jobs:
       - run:
           name: Swarm feature validation tests
           command: make bootstrap build test-e2e
+          no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
   master-dcos-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
-    no_output_timeout: "30m"
     docker:
       - image: microsoft/acs-engine:latest
         environment:
@@ -119,11 +118,11 @@ jobs:
       - run:
           name: DC/OS feature validation tests
           command: make bootstrap build test-e2e
+          no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
   master-swarmmode-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
-    no_output_timeout: "30m"
     docker:
       - image: microsoft/acs-engine:latest
         environment:
@@ -146,6 +145,7 @@ jobs:
       - run:
           name: Swarm Mode feature validation tests
           command: make bootstrap build test-e2e
+          no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
 workflows:
