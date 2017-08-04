@@ -10,7 +10,7 @@ outages in any services running on the agent pool and/or fail the update deploym
 To get around this there is now an Offset parameter on each agent pool. If you want to scale up an existing cluster take the template 
 you deployed orignally. Update the accompanying parameters file to have the Offset == old count and the Count == new desired number of vms. 
 example: I originally deployed 5 vms in an agent pool. I want to scale up to 10. I would set Offset==5 and Count == 10. Then deploy the template 
-in incremental mode. This sadly isn't every change that is needed. We also need to remove the NSG resource and the vnet's dependency on it. The current design of ACS-engine doesn't allow for a seperate update template, so this will have to be a manual step. I have a sample update template here.
+in incremental mode. This sadly isn't every change that is needed. We also need to remove the NSG resource and the vnet's dependency on it. If this is a custom VNET/bring your own vnet case, you need to remove the dependecies from each of the agent pools and the vm master loop. The current design of ACS-engine doesn't allow for a seperate update template, so this will have to be a manual step. I have a sample update template here.
 
 Note: the Offset parameter has a default value and is not set for creation.
 Shows the use of an update template with that was created with 6 nodes and scaled up to 15
