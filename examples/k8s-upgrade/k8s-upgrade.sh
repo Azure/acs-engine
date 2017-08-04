@@ -1,9 +1,7 @@
 #!/bin/bash
 
-set -x
 set -e
 
-echo "Starting upgrade"
 export ACSENGINE_EXPERIMENTAL_FEATURES=1
 
 OUTPUT="_output/${INSTANCE_NAME}"
@@ -28,4 +26,6 @@ END
   --client-id ${SERVICE_PRINCIPAL_CLIENT_ID} \
   --client-secret ${SERVICE_PRINCIPAL_CLIENT_SECRET}
 
-echo "Upgrade completed"
+# (temp) allow 5 minutes for cluster to 'settle up'
+# TODO: ensure cluster operability by the end of the upgrade
+sleep 300
