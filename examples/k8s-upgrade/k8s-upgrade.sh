@@ -3,6 +3,7 @@
 set -x
 set -e
 
+echo "Starting upgrade"
 export ACSENGINE_EXPERIMENTAL_FEATURES=1
 
 OUTPUT="_output/${INSTANCE_NAME}"
@@ -26,3 +27,5 @@ END
   --auth-method client_secret \
   --client-id ${SERVICE_PRINCIPAL_CLIENT_ID} \
   --client-secret ${SERVICE_PRINCIPAL_CLIENT_SECRET}
+
+echo "Upgrade completed"
