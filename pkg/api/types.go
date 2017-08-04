@@ -309,6 +309,11 @@ type UpgradeContainerService struct {
 	OrchestratorProfile *OrchestratorProfile `json:"orchestratorProfile,omitempty"`
 }
 
+// HasWindows returns true if the cluster contains a master
+func (p *Properties) HasMaster() bool {
+	return p.MasterProfile != nil
+}
+
 // HasWindows returns true if the cluster contains windows
 func (p *Properties) HasWindows() bool {
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
@@ -321,7 +326,7 @@ func (p *Properties) HasWindows() bool {
 
 // HasManagedDisks returns true if the cluster contains Managed Disks
 func (p *Properties) HasManagedDisks() bool {
-	if p.MasterProfile.StorageProfile == ManagedDisks {
+	if p.MasterProfile != nil && p.MasterProfile.StorageProfile == ManagedDisks {
 		return true
 	}
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
@@ -334,7 +339,7 @@ func (p *Properties) HasManagedDisks() bool {
 
 // HasStorageAccountDisks returns true if the cluster contains Storage Account Disks
 func (p *Properties) HasStorageAccountDisks() bool {
-	if p.MasterProfile.StorageProfile == StorageAccount {
+	if p.MasterProfile != nil && p.MasterProfile.StorageProfile == StorageAccount {
 		return true
 	}
 	for _, agentPoolProfile := range p.AgentPoolProfiles {

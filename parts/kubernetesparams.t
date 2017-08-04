@@ -23,6 +23,14 @@
       },
       "type": "securestring"
     },
+{{if not .HasMaster}}
+    "firstConsecutiveStaticIp": {
+      "metadata": {
+        "description": "The first static IP address"
+      },
+      "type": "string"
+    },
+{{end}}
     "clientCertificate": {
       "metadata": {
         "description": "The base 64 client certificate used to communicate with the master"

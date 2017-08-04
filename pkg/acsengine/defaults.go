@@ -75,6 +75,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	a := cs.Properties
 
 	cloudSpecConfig := GetCloudSpecConfig(location)
+	if a.OrchestratorProfile == nil {
+		return
+	}
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		k8sVersion := a.OrchestratorProfile.OrchestratorVersion
 		if a.OrchestratorProfile.KubernetesConfig == nil {
@@ -136,6 +139,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 // SetMasterNetworkDefaults for masters
 func setMasterNetworkDefaults(a *api.Properties) {
+	if a.MasterProfile == nil {
+		return
+	}
 	if !a.MasterProfile.IsCustomVNET() {
 		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 			if a.OrchestratorProfile.IsVNETIntegrated() {
@@ -173,7 +179,7 @@ func setMasterNetworkDefaults(a *api.Properties) {
 // SetAgentNetworkDefaults for agents
 func setAgentNetworkDefaults(a *api.Properties) {
 	// configure the subnets if not in custom VNET
-	if !a.MasterProfile.IsCustomVNET() {
+	if a.MasterProfile != nil && !a.MasterProfile.IsCustomVNET() {
 		subnetCounter := 0
 		for _, profile := range a.AgentPoolProfiles {
 			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
@@ -195,7 +201,7 @@ func setAgentNetworkDefaults(a *api.Properties) {
 		// Allocate IP addresses for containers if VNET integration is enabled.
 		// A custom count specified by the user overrides this value.
 		if profile.IPAddressCount == 0 {
-			if a.OrchestratorProfile.IsVNETIntegrated() {
+			if a.OrchestratorProfile != nil && a.OrchestratorProfile.IsVNETIntegrated() {
 				profile.IPAddressCount = DefaultAgentMultiIPAddressCount
 			} else {
 				profile.IPAddressCount = DefaultAgentIPAddressCount
@@ -206,7 +212,7 @@ func setAgentNetworkDefaults(a *api.Properties) {
 
 // setStorageDefaults for agents
 func setStorageDefaults(a *api.Properties) {
-	if len(a.MasterProfile.StorageProfile) == 0 {
+	if a.MasterProfile != nil && len(a.MasterProfile.StorageProfile) == 0 {
 		a.MasterProfile.StorageProfile = api.StorageAccount
 	}
 	for _, profile := range a.AgentPoolProfiles {
@@ -279,6 +285,9 @@ func certGenerationRequired(a *api.Properties) bool {
 	if a.CertificateProfile != nil &&
 		(len(a.CertificateProfile.APIServerCertificate) > 0 || len(a.CertificateProfile.APIServerPrivateKey) > 0 ||
 			len(a.CertificateProfile.ClientCertificate) > 0 || len(a.CertificateProfile.ClientPrivateKey) > 0) {
+		return false
+	}
+	if a.MasterProfile == nil {
 		return false
 	}
 

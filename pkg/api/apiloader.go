@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
+	"github.com/Azure/acs-engine/pkg/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -41,6 +42,12 @@ func (a *Apiloader) DeserializeContainerService(contents []byte, validate bool) 
 // LoadContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
 func (a *Apiloader) LoadContainerService(contents []byte, version string, validate bool) (*ContainerService, error) {
 	switch version {
+	case v20170831.APIVersion:
+		containerService := &v20170831.HostedMaster{}
+		if e := json.Unmarshal(contents, &containerService); e != nil {
+			return nil, e
+		}
+		return ConvertV20170831AgentPool(containerService), nil
 	case v20160930.APIVersion:
 		containerService := &v20160930.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
@@ -102,6 +109,10 @@ func (a *Apiloader) LoadContainerService(contents []byte, version string, valida
 // SerializeContainerService takes an unversioned container service and returns the bytes
 func (a *Apiloader) SerializeContainerService(containerService *ContainerService, version string) ([]byte, error) {
 	switch version {
+	case v20170831.APIVersion:
+		// TODO: implement this...
+		return []byte("Implement this..."), nil
+
 	case v20160930.APIVersion:
 		v20160930ContainerService := ConvertContainerServiceToV20160930(containerService)
 		armContainerService := &V20160930ARMContainerService{}

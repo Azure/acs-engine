@@ -12,5 +12,5 @@
     "{{.Name}}StorageAccountCount": {
       "type": "int",
       "value": "[variables('{{.Name}}StorageAccountsCount')]"
-    },
+    }
 {{end}}

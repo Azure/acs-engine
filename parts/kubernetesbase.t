@@ -25,31 +25,75 @@
   },
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}
+        {{if $index}}, {{end}}
         "{{.Name}}Index": {{$index}},
         {{template "kubernetesagentvars.t" .}}
         {{if .IsStorageAccount}}
           {{if .HasDisks}}
-            "{{.Name}}DataAccountName": "[concat(variables('storageAccountBaseName'), 'data{{$index}}')]",
+            "{{.Name}}DataAccountName": "[concat(variables('storageAccountBaseName'), 'data{{$index}}')]"
           {{end}}
-          "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]", 
+          "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]"
         {{end}}
     {{end}}
-    {{template "kubernetesmastervars.t" .}}
+    , {{template "kubernetesmastervars.t" .}}
   },
   "resources": [
-    {{range .AgentPoolProfiles}}
+    {{ range $index, $element := .AgentPoolProfiles}}
+      {{if $index}}, {{end}}
       {{if .IsWindows}}
-        {{template "kuberneteswinagentresourcesvmas.t" .}},
+        {{template "kuberneteswinagentresourcesvmas.t" .}}
       {{else}}
-        {{template "kubernetesagentresourcesvmas.t" .}},
+        {{template "kubernetesagentresourcesvmas.t" .}}
       {{end}}
     {{end}}
-    {{template "kubernetesmasterresources.t" .}}
+    {{if .HasMaster}}
+      ,{{template "kubernetesmasterresources.t" .}}
+    {{else}}
+    ,{
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
+    {{if not IsVNETIntegrated}}
+        ,
+        "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
+    {{end}}
+      ],
+      "location": "[variables('location')]",
+      "name": "[variables('virtualNetworkName')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetCidr')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('subnet')]",
+              "networkSecurityGroup": {
+                "id": "[variables('nsgID')]"
+              }
+    {{if not IsVNETIntegrated}}
+              ,
+              "routeTable": {
+                "id": "[variables('routeTableID')]"
+              }
+    {{end}}
+            }
+          }
+        ]
+      },
+      "type": "Microsoft.Network/virtualNetworks"
+    }
+    {{end}}
   ],
   "outputs": {
     {{range .AgentPoolProfiles}}
       {{template "agentoutputs.t" .}}
     {{end}}
-    {{template "masteroutputs.t" .}}
+    {{if .HasMaster}}
+      , {{template "masteroutputs.t" .}}
+    {{end}}
   }
 }
