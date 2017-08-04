@@ -1,0 +1,24 @@
+{
+	"deployments": [
+		{
+			"cluster_definition": "disks-managed/swarmmode-vmas.json",
+			"location": "southcentralus"
+		},
+		{
+			"cluster_definition": "disks-managed/swarmmode-vmss.json",
+			"location": "southcentralus"
+		},
+		{
+			"cluster_definition": "disks-storageaccount/swarmmode.json",
+			"location": "southcentralus"
+		},
+		{
+			"cluster_definition": "v20170131/swarmmode.json",
+			"location": "westus2"
+		},
+		{
+			"cluster_definition": "vnet/swarmmodevnet.json",
+			"location": "westus2"
+		}
+	]
+}
