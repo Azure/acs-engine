@@ -100,6 +100,16 @@ func (a *Properties) Validate() error {
 		return e
 	}
 
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		if a.ServicePrincipalProfile == nil {
+			return fmt.Errorf("ServicePrincipalProfile must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+		}
+
+		if len(a.ServicePrincipalProfile.Secret) == 0 {
+			return fmt.Errorf("service principal client secret must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+		}
+	}
+
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
 		if e := agentPoolProfile.Validate(a.OrchestratorProfile.OrchestratorType); e != nil {
 			return e
