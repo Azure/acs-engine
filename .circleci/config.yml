@@ -161,18 +161,26 @@ workflows:
             branches:
               ignore: /master/
       - master-kubernetes-e2e:
+          requires:
+            - test
           filters:
             branches:
               only: increase-feature-e2e-timeout
       - master-swarm-e2e:
+          requires:
+            - test
           filters:
             branches:
               only: increase-feature-e2e-timeout
       - master-dcos-e2e:
+          requires:
+            - test
           filters:
             branches:
               only: increase-feature-e2e-timeout
       - master-swarmmode-e2e:
+          requires:
+            - test
           filters:
             branches:
               only: increase-feature-e2e-timeout
