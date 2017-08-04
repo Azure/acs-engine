@@ -51,7 +51,7 @@ type Properties struct {
 	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
-	AadProfile              *AadProfile              `json:"aadProfile,omitempty"`
+	AADProfile              *AADProfile              `json:"aadProfile,omitempty"`
 	CustomProfile           *CustomProfile           `json:"customProfile,omitempty"`
 	HostedMasterProfile     *HostedMasterProfile     `json:"hostedMasterProfile,omitempty"`
 }
@@ -272,8 +272,8 @@ type HostedMasterProfile struct {
 	DNSPrefix string `json:"dnsPrefix"`
 }
 
-// AadProfile specifies attributes for AAD integration
-type AadProfile struct {
+// AADProfile specifies attributes for AAD integration
+type AADProfile struct {
 	// The client AAD application ID.
 	ClientAppID string `json:"clientAppID,omitempty"`
 	// The server AAD application ID.
@@ -474,5 +474,5 @@ func (o *OrchestratorProfile) IsVNETIntegrated() bool {
 
 // HasAadProfile  returns true if the has aad profile
 func (p *Properties) HasAadProfile() bool {
-	return p.AadProfile != nil
+	return p.AADProfile != nil
 }

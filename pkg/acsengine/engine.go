@@ -317,12 +317,12 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVariable \"resourceGroup\"}}", properties.MasterProfile.DNSPrefix, -1)
 
 	var authInfo string
-	if properties.AadProfile == nil {
+	if properties.AADProfile == nil {
 		authInfo = fmt.Sprintf("{\"client-certificate-data\":\"%v\",\"client-key-data\":\"%v\"}",
 			base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)),
 			base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)))
 	} else {
-		tenantID := properties.AadProfile.TenantID
+		tenantID := properties.AADProfile.TenantID
 		if len(tenantID) == 0 {
 			tenantID = "common"
 		}
@@ -330,8 +330,8 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 		authInfo = fmt.Sprintf("{\"auth-provider\":{\"name\":\"azure\",\"config\":{\"environment\":\"%v\",\"tenant-id\":\"%v\",\"apiserver-id\":\"%v\",\"client-id\":\"%v\"}}}",
 			GetCloudTargetEnv(location),
 			tenantID,
-			properties.AadProfile.ServerAppID,
-			properties.AadProfile.ClientAppID)
+			properties.AADProfile.ServerAppID,
+			properties.AADProfile.ClientAppID)
 	}
 	kubeconfig = strings.Replace(kubeconfig, "{{authInfo}}", authInfo, -1)
 
@@ -495,9 +495,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 			}
 		}
 
-		if properties.AadProfile != nil {
-			addValue(parametersMap, "aadTenantId", properties.AadProfile.TenantID)
-			addValue(parametersMap, "aadServerAppId", properties.AadProfile.ServerAppID)
+		if properties.AADProfile != nil {
+			addValue(parametersMap, "aadTenantId", properties.AADProfile.TenantID)
+			addValue(parametersMap, "aadServerAppId", properties.AADProfile.ServerAppID)
 		}
 	}
 

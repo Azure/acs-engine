@@ -38,7 +38,7 @@ type Properties struct {
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
-	AadProfile              *AadProfile              `json:"aadProfile,omitempty"`
+	AADProfile              *AADProfile              `json:"aadProfile,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -244,8 +244,8 @@ type AgentPoolProfile struct {
 	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
 }
 
-// AadProfile specifies attributes for AAD integration
-type AadProfile struct {
+// AADProfile specifies attributes for AAD integration
+type AADProfile struct {
 	// The client AAD application ID.
 	ClientAppID string `json:"clientAppID,omitempty"`
 	// The server AAD application ID.

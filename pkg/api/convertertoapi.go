@@ -390,9 +390,9 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 		convertVLabsCertificateProfile(vlabs.CertificateProfile, api.CertificateProfile)
 	}
 
-	if vlabs.AadProfile != nil {
-		api.AadProfile = &AadProfile{}
-		convertVLabsAadProfile(vlabs.AadProfile, api.AadProfile)
+	if vlabs.AADProfile != nil {
+		api.AADProfile = &AADProfile{}
+		convertVLabsAADProfile(vlabs.AADProfile, api.AADProfile)
 	}
 }
 
@@ -857,7 +857,7 @@ func convertVLabsCertificateProfile(vlabs *vlabs.CertificateProfile, api *Certif
 	api.KubeConfigPrivateKey = vlabs.KubeConfigPrivateKey
 }
 
-func convertVLabsAadProfile(vlabs *vlabs.AadProfile, api *AadProfile) {
+func convertVLabsAADProfile(vlabs *vlabs.AADProfile, api *AADProfile) {
 	api.ClientAppID = vlabs.ClientAppID
 	api.ServerAppID = vlabs.ServerAppID
 	api.TenantID = vlabs.TenantID

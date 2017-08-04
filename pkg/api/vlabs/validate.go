@@ -173,7 +173,7 @@ func handleValidationErrors(e validator.ValidationErrors) error {
 }
 
 // Validate implements APIObject
-func (profile *AadProfile) Validate() error {
+func (profile *AADProfile) Validate() error {
 	if _, err := uuid.FromString(profile.ClientAppID); err != nil {
 		return fmt.Errorf("clientAppID '%v' is invalid", profile.ClientAppID)
 	}
@@ -303,11 +303,11 @@ func (a *Properties) Validate() error {
 		return e
 	}
 
-	if a.AadProfile != nil {
+	if a.AADProfile != nil {
 		if a.OrchestratorProfile.OrchestratorType != Kubernetes {
 			return fmt.Errorf("'aadProfile' is only supported by orchestrator '%v'", Kubernetes)
 		}
-		if e := a.AadProfile.Validate(); e != nil {
+		if e := a.AADProfile.Validate(); e != nil {
 			return e
 		}
 	}
