@@ -7,7 +7,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
-	"github.com/onsi/ginkgo/reporters"
+	. "github.com/Azure/acs-engine/pkg/test"
 	. "github.com/onsi/gomega"
 	"github.com/satori/go.uuid"
 
@@ -15,9 +15,7 @@ import (
 )
 
 func TestUpgradeCluster(t *testing.T) {
-	RegisterFailHandler(Fail)
-	junitReporter := reporters.NewJUnitReporter("junit.xml")
-	RunSpecsWithDefaultAndCustomReporters(t, "Server Suite", []Reporter{junitReporter})
+	RunSpecsWithReporters(t, "kubernetesupgrade", "Server Suite")
 }
 
 var _ = Describe("Upgrade Kubernetes cluster tests", func() {
