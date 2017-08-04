@@ -2,7 +2,7 @@
   "deployments": [
     {
       "cluster_definition": "kubernetes.json",
-      "location": "westus2"
+      "location": "southcentralus"
     },
     {
       "cluster_definition": "dcos.json",
@@ -10,7 +10,7 @@
     },
     {
       "cluster_definition": "swarm.json",
-      "location": "southcentralus"
+      "location": "westus2"
     },
     {
       "cluster_definition": "swarmmode.json",

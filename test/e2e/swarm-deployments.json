@@ -2,11 +2,11 @@
 	"deployments": [
 		{
 			"cluster_definition": "disks-managed/swarm-preAttachedDisks-vmas-windows.json",
-			"location": "eastus"
+			"location": "westus2"
 		},
 		{
 			"cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json",
-			"location": "southcentralus"
+			"location": "westus2"
 		}
 	]
 }
