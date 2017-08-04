@@ -106,13 +106,6 @@ write_files:
   content: !!binary |
     MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR
 
-- path: /etc/kubernetes/addons/kube-dns-service.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_KUBE_DNS_SERVICE_B64_GZIP_STR
-
 - path: /etc/kubernetes/addons/kube-dns-deployment.yaml
   permissions: "0644"
   encoding: gzip
@@ -134,20 +127,6 @@ write_files:
   content: !!binary |
     MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR
 
-- path: /etc/kubernetes/addons/kubernetes-dashboard-service.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR
-
-- path: /etc/kubernetes/addons/kube-heapster-service.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_HEAPSTER_SERVICE_B64_GZIP_STR
-
 - path: /etc/kubernetes/addons/kube-heapster-deployment.yaml
   permissions: "0644"
   encoding: gzip
@@ -155,26 +134,12 @@ write_files:
   content: !!binary |
     MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR
 
-- path: /etc/kubernetes/addons/default-storage-class.yaml
+- path: /etc/kubernetes/addons/azure-storage-classes.yaml
   permissions: "0644"
   encoding: gzip
   owner: "root"
   content: !!binary |
-    MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR
-
-- path: /etc/kubernetes/addons/managed-standard-storage-class.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR
-
-- path: /etc/kubernetes/addons/managed-premium-storage-class.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR
+    MASTER_ADDON_AZURE_STORAGE_CLASSES_B64_GZIP_STR
 
 - path: /etc/kubernetes/addons/kube-tiller-deployment.yaml
   permissions: "0644"
@@ -183,21 +148,7 @@ write_files:
   content: !!binary |
     MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR
 
-- path: /etc/kubernetes/addons/kube-tiller-service.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_TILLER_SERVICE_B64_GZIP_STR
-
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
-- path: /etc/kubernetes/addons/calico-configmap.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_CALICO_CONFIGMAP_B64_GZIP_STR
-
 - path: /etc/kubernetes/addons/calico-daemonset.yaml
   permissions: "0644"
   encoding: gzip
@@ -276,6 +227,15 @@ write_files:
     sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsVariable "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsVariable "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
     sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
     sed -i "s|<kubernetesTillerSpec>|{{WrapAsVariable "kubernetesTillerSpec"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+
+{{if .OrchestratorProfile.KubernetesConfig.EnableRbac }}
+    # If RBAC enabled then add parameters to API server and Controller manager configuration
+    sed -i "s|<kubernetesEnableRbac>|--authorization-mode=RBAC|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesEnableRbac>|--use-service-account-credentials|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+{{else}}
+    sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+{{end}}
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
     # If Calico Policy enabled then update Cluster Cidr

@@ -8,7 +8,7 @@ metadata:
   name: kubernetes-dashboard
   namespace: kube-system
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1alpha1
 kind: ClusterRoleBinding
 metadata:
   name: kubernetes-dashboard
@@ -61,7 +61,7 @@ spec:
         k8s-app: kubernetes-dashboard
     spec:
       containers:
-      - args: 
+      - args:
         image: <kubernetesDashboardSpec>
         imagePullPolicy: Always
         livenessProbe:
@@ -76,4 +76,4 @@ spec:
           protocol: TCP
       serviceAccountName: kubernetes-dashboard
       nodeSelector:
-        beta.kubernetes.io/os: linux 
+        beta.kubernetes.io/os: linux
