@@ -12,6 +12,7 @@ _dist/
 bin/
 .env
 
+test/junit/
 test/acs-engine-test/acs-engine-test.exe
 pkg/operations/junit.xml
 pkg/operations/kubernetesupgrade/junit.xml

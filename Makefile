@@ -58,8 +58,13 @@ checksum:
 clean:
 	@rm -rf $(BINDIR) ./_dist
 
+GIT_BASEDIR    = $(shell git rev-parse --show-toplevel 2>/dev/null)
+ifneq ($(GIT_BASEDIR),)
+	LDFLAGS += -X github.com/Azure/acs-engine/pkg/test.JUnitOutDir=${GIT_BASEDIR}/test/junit
+endif
+
 test: test-style
-	go test -v $(GOFILES)
+	ginkgo -r -ldflags='$(LDFLAGS)' .
 
 .PHONY: test-style
 test-style:
@@ -74,6 +79,7 @@ HAS_GOX := $(shell command -v gox;)
 HAS_GIT := $(shell command -v git;)
 HAS_GOBINDATA := $(shell command -v go-bindata;)
 HAS_GOMETALINTER := $(shell command -v gometalinter;)
+HAS_GINKGO := $(shell command -v ginkgo;)
 
 .PHONY: bootstrap
 bootstrap:
@@ -94,6 +100,10 @@ ifndef HAS_GOMETALINTER
 	gometalinter --install
 endif
 	glide install
+ifndef HAS_GINKGO
+	go get -u github.com/onsi/ginkgo/ginkgo
+endif
+
 
 ci: bootstrap test-style build test lint
 	./scripts/coverage.sh --coveralls
