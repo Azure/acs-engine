@@ -5,7 +5,7 @@
   },
 {{end}}
 {{if and .IsAvailabilitySets .IsStorageAccount}}
-    "{{.Name}}StorageAccountOffset": {
+  "{{.Name}}StorageAccountOffset": {
       "type": "int",
       "value": "[variables('{{.Name}}StorageAccountOffset')]"
     },
@@ -18,3 +18,7 @@
       "value": "[variables('{{.Name}}SubnetName')]"
     },
 {{end}}
+"{{.Name}}DumyAgentOut": {
+  "type": "string",
+  "value": "test"
+}

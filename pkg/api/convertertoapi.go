@@ -18,7 +18,7 @@ import (
 ///////////////////////////////////////////////////////////
 
 // ConvertV20170831AgentPool converts an AgentPool object into an in-memory container service
-func ConvertV20170831AgentPool(v20170831 *HostedMaster) *ContainerService {
+func ConvertV20170831AgentPool(v20170831 *v20170831.HostedMaster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = v20170831.ID
 	c.Location = v20170831.Location
@@ -32,6 +32,12 @@ func ConvertV20170831AgentPool(v20170831 *HostedMaster) *ContainerService {
 	}
 	c.Type = v20170831.Type
 	c.Properties = convertV20170831Properties(v20170831.Properties)
+	c.Properties.OrchestratorProfile = &OrchestratorProfile{
+		OrchestratorType: Kubernetes,
+		// This is hard coded, fix this...
+		OrchestratorVersion: KubernetesRelease1Dot7,
+	}
+	return c
 }
 
 // ConvertV20160930ContainerService converts a v20160930 ContainerService to an unversioned ContainerService
@@ -184,11 +190,11 @@ func convertVLabsResourcePurchasePlan(vlabs *vlabs.ResourcePurchasePlan, api *Re
 }
 
 func convertV20170831Properties(obj *v20170831.Properties) *Properties {
-	properties = &Properties{
-		ProvisioningState: obj.ProvisioningState,
+	properties := &Properties{
+		ProvisioningState: ProvisioningState(obj.ProvisioningState),
 		MasterProfile:     nil,
 	}
-	properties.AgentPoolProfiles = make([]AgentPoolProfile, len(obj.AgentPoolProfiles))
+	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {
 		properties.AgentPoolProfiles[i] = convertV20170831AgentPoolProfile(obj.AgentPoolProfiles[i])
 	}
@@ -198,18 +204,19 @@ func convertV20170831Properties(obj *v20170831.Properties) *Properties {
 	if obj.WindowsProfile != nil {
 		properties.WindowsProfile = convertV20170831WindowsProfile(obj.WindowsProfile)
 	}
-	if obj.JumpboxProfile != nil {
-		properties.JumpboxProfile = convertV20170831JumpboxProfile(obj.JumpboxProfile)
-	}
+	//	if obj.JumpboxProfile != nil {
+	//		properties.JumpboxProfile = convertV20170831JumpboxProfile(obj.JumpboxProfile)
+	//	}
 	if obj.ServicePrincipalProfile != nil {
 		properties.ServicePrincipalProfile = convertV20170831ServicePrincipalProfile(obj.ServicePrincipalProfile)
 	}
-	if obj.NetworkProfile != nil {
-		properties.NetworkProfile = convertV20170831NetworkProfile(obj.NetworkProfile)
-	}
-	if obj.ServicePrincipalProfile != nil {
-		properties.AccessProfile = convertV20170831AccessProfile(obj.AccessProfile)
-	}
+	//if obj.NetworkProfile != nil {
+	//	properties.NetworkProfile = convertV20170831NetworkProfile(obj.NetworkProfile)
+	//}
+	//if obj.AccessProfile != nil {
+	//	properties.AccessProfile = convertV20170831AccessProfile(obj.AccessProfile)
+	//}
+	return properties
 }
 
 func convertV20160930Properties(v20160930 *v20160930.Properties, api *Properties) {
@@ -491,6 +498,24 @@ func convertVLabsLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
 	}
 }
 
+func convertV20170831LinuxProfile(obj *v20170831.LinuxProfile) *LinuxProfile {
+	api := &LinuxProfile{
+		AdminUsername: obj.AdminUsername,
+	}
+	api.SSH.PublicKeys = []PublicKey{}
+	for _, d := range obj.SSH.PublicKeys {
+		api.SSH.PublicKeys = append(api.SSH.PublicKeys, PublicKey{KeyData: d.KeyData})
+	}
+	return api
+}
+
+func convertV20170831WindowsProfile(obj *v20170831.WindowsProfile) *WindowsProfile {
+	return &WindowsProfile{
+		AdminUsername: obj.AdminUsername,
+		AdminPassword: obj.AdminPassword,
+	}
+}
+
 func convertV20160930WindowsProfile(v20160930 *v20160930.WindowsProfile, api *WindowsProfile) {
 	api.AdminUsername = v20160930.AdminUsername
 	api.AdminPassword = v20160930.AdminPassword
@@ -695,12 +720,13 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 }
 
 func convertV20170831AgentPoolProfile(v20170831 *v20170831.AgentPoolProfile) *AgentPoolProfile {
-	api = &AgentPoolProfile{}
+	api := &AgentPoolProfile{}
+	api.AvailabilityProfile = AvailabilitySet
 	api.Name = v20170831.Name
 	api.Count = v20170831.Count
 	api.VMSize = v20170831.VMSize
 	api.OSType = OSType(v20170831.OSType)
-	api.Subnet = v20170831.subnet
+	api.Subnet = v20170831.VnetSubnetID
 	return api
 }
 
@@ -872,6 +898,13 @@ func convertVLabsServicePrincipalProfile(vlabs *vlabs.ServicePrincipalProfile, a
 	api.ClientID = vlabs.ClientID
 	api.Secret = vlabs.Secret
 	api.KeyvaultSecretRef = vlabs.KeyvaultSecretRef
+}
+
+func convertV20170831ServicePrincipalProfile(obj *v20170831.ServicePrincipalProfile) *ServicePrincipalProfile {
+	return &ServicePrincipalProfile{
+		ClientID: obj.ClientID,
+		Secret:   obj.Secret,
+	}
 }
 
 func convertV20160930CustomProfile(v20160930 *v20160930.CustomProfile, api *CustomProfile) {
