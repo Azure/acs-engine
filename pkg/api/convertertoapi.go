@@ -410,11 +410,9 @@ func convertV20160330LinuxProfile(v20160330 *v20160330.LinuxProfile, api *LinuxP
 
 func convertV20170131LinuxProfile(v20170131 *v20170131.LinuxProfile, api *LinuxProfile) {
 	api.AdminUsername = v20170131.AdminUsername
-	api.SSH.PublicKeys = []struct {
-		KeyData string `json:"keyData"`
-	}{}
+	api.SSH.PublicKeys = []PublicKey{}
 	for _, d := range v20170131.SSH.PublicKeys {
-		api.SSH.PublicKeys = append(api.SSH.PublicKeys, d)
+		api.SSH.PublicKeys = append(api.SSH.PublicKeys, PublicKey{KeyData: d.KeyData})
 	}
 }
 

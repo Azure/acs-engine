@@ -16,6 +16,13 @@
 				"description": "Compute API Version"
 			}
 		},
+		"targetVMName":{
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Name of the vm to run the "
+			}
+		},
 		"extensionParameters": {
 			"type": "securestring",
 			"minLength": 1,
@@ -34,7 +41,7 @@
       "dependsOn": [],
       "location": "[resourceGroup().location]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-	  "name": "MicrosoftOMSAgentk8sExtension",
+	  "name": "[concat(parameters('targetVMName'),/OMSAgentk8sExtension)]",
       "properties": {
         "publisher": "Microsoft.Azure.Extensions",
         "type": "CustomScript",
