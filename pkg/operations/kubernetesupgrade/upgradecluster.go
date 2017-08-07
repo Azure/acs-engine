@@ -71,10 +71,10 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 		return uc.Translator.Errorf("Error while querying ARM for resources: %+v", err)
 	}
 
-	switch ucs.OrchestratorProfile.OrchestratorVersion {
-	case "1.6.2":
-		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes 1.6.2"))
-		upgrader := Kubernetes162upgrader{
+	switch ucs.OrchestratorProfile.OrchestratorRelease {
+	case api.KubernetesRelease1Dot6:
+		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes release 1.6"))
+		upgrader := Kubernetes16upgrader{
 			Translator: uc.Translator,
 		}
 		upgrader.ClusterTopology = uc.ClusterTopology
@@ -83,12 +83,13 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 			return err
 		}
 	default:
-		return uc.Translator.Errorf("Upgrade to Kubernetes version: %s is not supported from version: %s",
-			ucs.OrchestratorProfile.OrchestratorVersion,
-			uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+		return uc.Translator.Errorf("Upgrade to Kubernetes release: %s is not supported from release: %s",
+			ucs.OrchestratorProfile.OrchestratorRelease,
+			uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease)
 	}
 
-	log.Infoln(fmt.Sprintf("Cluster upraded successfully to Kubernetes version: %s",
+	log.Infoln(fmt.Sprintf("Cluster upraded successfully to Kubernetes release %s, version: %s",
+		ucs.OrchestratorProfile.OrchestratorRelease,
 		ucs.OrchestratorProfile.OrchestratorVersion))
 	return nil
 }
