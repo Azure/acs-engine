@@ -101,5 +101,5 @@ const (
 	// KubernetesLatest is the string constant for latest Kubernetes version
 	KubernetesLatest string = Kubernetes166
 	// KubernetesDefaultVersion is the string constant for current Kubernetes version
-	KubernetesDefaultVersion string = Kubernetes166
+	KubernetesDefaultVersion string = Kubernetes172
 )
