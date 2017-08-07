@@ -218,6 +218,7 @@ func TestVersionOrdinal(t *testing.T) {
 	v172 := "1.7.2"
 	v171 := "1.7.1"
 	v170 := "1.7.0"
+	v168 := "1.6.8"
 	v166 := "1.6.6"
 	v162 := "1.6.2"
 	v160 := "1.6.0"
@@ -229,6 +230,7 @@ func TestVersionOrdinal(t *testing.T) {
 	Expect(v166 < v170).To(BeTrue())
 	Expect(v166 > v162).To(BeTrue())
 	Expect(v162 < v166).To(BeTrue())
+	Expect(v162 < v168).To(BeTrue())
 	Expect(v162 > v160).To(BeTrue())
 	Expect(v160 < v162).To(BeTrue())
 	Expect(v153 < v160).To(BeTrue())
