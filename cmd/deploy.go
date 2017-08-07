@@ -155,7 +155,7 @@ func autofillApimodel(dc *deployCmd) {
 			dnsPrefix = dnsPrefix + "-" + suffix
 		}
 
-		log.Warnf("apimodel: missing masterProfile.dnsPrefix will use %q", dnsPrefix)
+		log.Debugf("apimodel: missing masterProfile.dnsPrefix will use %q", dnsPrefix)
 		dc.containerService.Properties.MasterProfile.DNSPrefix = dnsPrefix
 	}
 
