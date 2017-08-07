@@ -56,6 +56,7 @@ const (
 	dcosParams                   = "dcosparams.t"
 	dcosMasterResources          = "dcosmasterresources.t"
 	dcosMasterVars               = "dcosmastervars.t"
+	iaasOutputs                  = "iaasoutputs.t"
 	kubernetesBaseFile           = "kubernetesbase.t"
 	kubernetesAgentResourcesVMAS = "kubernetesagentresourcesvmas.t"
 	kubernetesAgentVars          = "kubernetesagentvars.t"
@@ -123,7 +124,7 @@ var calicoAddonYamls15 = map[string]string{
 	"MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR": "kubernetesmasteraddons-calico-daemonset1.5.yaml",
 }
 
-var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, masterParams, windowsParams}
+var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars, dcosParams}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}

@@ -47,6 +47,7 @@
     {{template "kubernetesmasterresources.t" .}}
   ],
   "outputs": {
+    {{template "iaasoutputs.t" .}}
     {{range .AgentPoolProfiles}}
       {{template "agentoutputs.t" .}}
     {{end}}
