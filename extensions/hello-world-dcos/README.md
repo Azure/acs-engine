@@ -26,7 +26,8 @@ dcos task log hello-marathon
       ...
       "extensions": [
         { 
-          "name": "hello-world-dcos"
+          "name": "hello-world-dcos", 
+          "singleOrAll": "single"
         }
      ]
     },

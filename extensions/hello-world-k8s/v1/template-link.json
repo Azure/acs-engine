@@ -1,5 +1,5 @@
 {
-    "name": "HelloWorldK8s",
+    "name": "EXTENSION_TARGET_VM_NAME/HelloWorldK8s",
     "type": "Microsoft.Resources/deployments",
     "apiVersion": "[variables('apiVersionLinkDefault')]",
     "dependsOn": [
@@ -17,6 +17,9 @@
             },
             "apiVersionCompute": {
                 "value": "[variables('apiVersionDefault')]"
+            },
+            "targetVMName": {
+                "value": "EXTENSION_TARGET_VM_NAME"
             },
             "extensionParameters": {
                 "value": "EXTENSION_PARAMETERS_REPLACE"

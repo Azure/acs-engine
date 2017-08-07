@@ -16,6 +16,13 @@
 				"description": "Compute API Version"
 			}
 		},
+		"targetVMName":{
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Name of the vm to run the "
+			}
+		},
 		"extensionParameters": {
 			"type": "securestring",
 			"minLength": 0,
@@ -34,7 +41,7 @@
       "dependsOn": [],
       "location": "[resourceGroup().location]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-	  "name": "HelloWorldDcosExtension",
+	  "name": "[concat(parameters('targetVMName'),/HelloWorldDcosExtension)]",
       "properties": {
         "publisher": "Microsoft.OSTCExtensions",
         "type": "CustomScriptForLinux",

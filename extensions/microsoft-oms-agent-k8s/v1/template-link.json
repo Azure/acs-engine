@@ -1,5 +1,5 @@
 {
-    "name": "MicrosoftOMSAgentk8s",
+    "name": "EXTENSION_TARGET_VM_NAME/MicrosoftOMSAgentk8s",
     "type": "Microsoft.Resources/deployments",
     "apiVersion": "[variables('apiVersionLinkDefault')]",
     "dependsOn": [
@@ -17,6 +17,9 @@
             },
             "apiVersionDefault": {
                 "value": "[variables('apiVersionDefault')]"
+            },
+            "targetVMName": {
+                "value": "EXTENSION_TARGET_VM_NAME"
             },
             "extensionParameters": {
                 "value": "EXTENSION_PARAMETERS_REPLACE"
