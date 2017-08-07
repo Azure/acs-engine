@@ -294,6 +294,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		Kubernetes172: true,
 		Kubernetes171: true,
 		Kubernetes166: true,
+		Kubernetes168: true,
 		Kubernetes170: true,
 	}
 	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
