@@ -1,0 +1,53 @@
+{
+  "apiVersion": "v20170727",
+  "location": "eastus",
+  "name": "my-k8s-agentpools",
+  "properties": {
+    "kubernetesEndpoint": "api.mydomain.io",
+    "kubernetesVersion": "1.7.2",
+    "dnsPrefix": "my-k8s-agentpool",
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "ssh-rsa ..."
+          }
+        ]
+      }
+    },
+    "JumpboxProfile": {
+      "internalAdddress": "10.0.0.254",
+      "publicIpAddressId": "",
+      "vmSize": "Standard_D2_v2",
+      "count": 1
+    },
+    "servicePrincipalProfile": {
+      "servicePrincipalClientID": "Service Principal App ID",
+      "servicePrincipalClientSecret": "Service Principal Password"
+    },
+    "networkProfile": {
+      "agentCIDR": "10.0.0.0/16",
+      "vnetSubnetId": "",
+      "kubeDnsServiceIp": ""
+    },
+    "certificateProfile": {
+      "caCertificate": "-----BEGIN CERTIFICATE-----/n ...",
+      "caPrivateKey": "-----BEGIN CERTIFICATE-----/n ...",
+      "apiServerCertificate": "-----BEGIN CERTIFICATE-----/n ...",
+      "apiServerPrivateKey": "-----BEGIN CERTIFICATE-----/n ...",
+      "clientCertificate": "-----BEGIN CERTIFICATE-----/n ...",
+      "clientPrivateKey": "-----BEGIN CERTIFICATE-----/n ...",
+      "kubeConfigCertificate": "-----BEGIN CERTIFICATE-----/n ...",
+      "kubeConfigPrivateKey": "-----BEGIN CERTIFICATE-----/n ..."
+    }
+  }
+}

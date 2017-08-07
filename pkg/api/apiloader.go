@@ -2,14 +2,13 @@ package api
 
 import (
 	"encoding/json"
-	"io/ioutil"
-
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"io/ioutil"
 )
 
 // Apiloader represents the object that loads api model
@@ -93,7 +92,6 @@ func (a *Apiloader) LoadContainerService(contents []byte, version string, valida
 			return nil, e
 		}
 		return ConvertVLabsContainerService(containerService), nil
-
 	default:
 		return nil, a.Translator.Errorf("unrecognized APIVersion '%s'", version)
 	}

@@ -38,8 +38,10 @@ func NewRootCmd() *cobra.Command {
 	p := rootCmd.PersistentFlags()
 	p.BoolVar(&debug, "debug", false, "enable verbose debug logs")
 
+	genCmd := newGenerateCmd()
 	rootCmd.AddCommand(newVersionCmd())
-	rootCmd.AddCommand(newGenerateCmd())
+	rootCmd.AddCommand(genCmd)
+	genCmd.AddCommand(NewGenerateAgentpoolCmd())
 	rootCmd.AddCommand(newDeployCmd())
 
 	if val := os.Getenv("ACSENGINE_EXPERIMENTAL_FEATURES"); val == "1" {
