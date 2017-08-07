@@ -46,6 +46,7 @@ func (o *OrchestratorProfile) Validate() error {
 		case Kubernetes171:
 		case Kubernetes170:
 		case Kubernetes166:
+		case Kubernetes168:
 		case Kubernetes162:
 		case Kubernetes160:
 		case Kubernetes157:
