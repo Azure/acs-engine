@@ -442,9 +442,7 @@ func convertLinuxProfileToV20170131(api *LinuxProfile, obj *v20170131.LinuxProfi
 	obj.AdminUsername = api.AdminUsername
 	obj.SSH.PublicKeys = []v20170131.PublicKey{}
 	for _, d := range api.SSH.PublicKeys {
-		obj.SSH.PublicKeys = append(obj.SSH.PublicKeys, v20170131.PublicKey{
-			KeyData: d.KeyData,
-		})
+		obj.SSH.PublicKeys = append(obj.SSH.PublicKeys, v20170131.PublicKey{KeyData: d.KeyData})
 	}
 }
 

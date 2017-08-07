@@ -115,13 +115,6 @@ The following is an example of the template.json file.
 				"description": "Compute API Version"
 			}
 		},
-		"masterVMNamePrefix": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Master VM Name Prefix"
-			}
-		},
 		"username": {
 			"type": "string",
 			"minLength": 1,
@@ -164,7 +157,7 @@ The following is an example of the template.json file.
       "dependsOn": [],
       "location": "[resourceGroup().location]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-	  "name": "[concat(parameters('masterVMNamePrefix'), '/cse0')]",
+	  "name": "CustomExtension",
       "properties": {
         "publisher": "Microsoft.OSTCExtensions",
         "type": "CustomScriptForLinux",
@@ -215,9 +208,6 @@ Replace "**EXTENSION-NAME**" with the name of the extension.
             },
             "apiVersionDefault": {
                 "value": "[variables('apiVersionDefault')]"
-            },
-            "masterVMNamePrefix": {
-                "value": "[concat(variables('masterVMNamePrefix'), '0')]"
             },
             "username": {
                 "value": "[variables('username')]"

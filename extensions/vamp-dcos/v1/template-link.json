@@ -1,10 +1,9 @@
 {
-    "name": "VampDcos",
+    "name": "EXTENSION_TARGET_VM_NAME/VampDcos",
     "type": "Microsoft.Resources/deployments",
     "apiVersion": "[variables('apiVersionLinkDefault')]",
     "dependsOn": [
-        "vmLoopNode",
-        "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('masterVMNamePrefix'), sub(variables('masterCount'), 1)), 'waitforleader')]"
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions/', 'EXTENSION_TARGET_VM_NAME', '/waitforleader')]"
     ],
     "properties": {
         "mode": "Incremental",
@@ -18,6 +17,9 @@
             },
             "apiVersionDefault": {
                 "value": "[variables('apiVersionDefault')]"
+            },
+            "targetVMName": {
+                "value": "EXTENSION_TARGET_VM_NAME"
             },
             "extensionParameters": {
                 "value": "EXTENSION_PARAMETERS_REPLACE"
