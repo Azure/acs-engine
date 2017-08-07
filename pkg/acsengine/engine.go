@@ -173,6 +173,8 @@ type KeyVaultRef struct {
 	SecretVersion string     `json:"secretVersion,omitempty"`
 }
 
+type paramsMap map[string]interface{}
+
 var keyvaultSecretPathRe *regexp.Regexp
 
 func init() {
@@ -262,7 +264,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	}
 	templateRaw = b.String()
 
-	var parametersMap map[string]interface{}
+	var parametersMap paramsMap
 	if parametersMap, err = getParameters(containerService, t.ClassicMode); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
@@ -306,19 +308,20 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 func (t *TemplateGenerator) prepareTemplateFiles(properties *api.Properties) ([]string, string, error) {
 	var files []string
 	var baseFile string
-	if properties.OrchestratorProfile.OrchestratorType == api.DCOS {
+	switch properties.OrchestratorProfile.OrchestratorType {
+	case api.DCOS:
 		files = append(commonTemplateFiles, dcosTemplateFiles...)
 		baseFile = dcosBaseFile
-	} else if properties.OrchestratorProfile.OrchestratorType == api.Swarm {
+	case api.Swarm:
 		files = append(commonTemplateFiles, swarmTemplateFiles...)
 		baseFile = swarmBaseFile
-	} else if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+	case api.Kubernetes:
 		files = append(commonTemplateFiles, kubernetesTemplateFiles...)
 		baseFile = kubernetesBaseFile
-	} else if properties.OrchestratorProfile.OrchestratorType == api.SwarmMode {
+	case api.SwarmMode:
 		files = append(commonTemplateFiles, swarmModeTemplateFiles...)
 		baseFile = swarmBaseFile
-	} else {
+	default:
 		return nil, "", t.Translator.Errorf("orchestrator '%s' is unsupported", properties.OrchestratorProfile.OrchestratorType)
 	}
 
@@ -355,10 +358,10 @@ func GetCloudTargetEnv(location string) string {
 	}
 }
 
-func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]interface{}, error) {
+func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, error) {
 	properties := cs.Properties
 	location := cs.Location
-	parametersMap := map[string]interface{}{}
+	parametersMap := paramsMap{}
 
 	// Master Parameters
 	addValue(parametersMap, "location", location)
@@ -494,13 +497,13 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (map[string]int
 	return parametersMap, nil
 }
 
-func addValue(m map[string]interface{}, k string, v interface{}) {
-	m[k] = map[string]interface{}{
+func addValue(m paramsMap, k string, v interface{}) {
+	m[k] = paramsMap{
 		"value": v,
 	}
 }
 
-func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
+func addSecret(m paramsMap, k string, v interface{}, encode bool) {
 	str, ok := v.(string)
 	if !ok {
 		addValue(m, k, v)
@@ -516,7 +519,7 @@ func addSecret(m map[string]interface{}, k string, v interface{}, encode bool) {
 		return
 	}
 
-	m[k] = map[string]interface{}{
+	m[k] = paramsMap{
 		"reference": &KeyVaultRef{
 			KeyVault: KeyVaultID{
 				ID: parts[1],
@@ -571,7 +574,7 @@ func getStorageAccountType(sizeName string) (string, error) {
 }
 
 // getTemplateFuncMap returns all functions used in template generation
-func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[string]interface{} {
+func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) template.FuncMap {
 	return template.FuncMap{
 		"IsDCOS173": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
