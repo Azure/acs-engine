@@ -37,6 +37,9 @@ gometalinter \
   --vendor \
   --deadline 60s \
   --skip test/i18n \
+  --skip pkg/test \
+  --exclude pkg/i18n/translations.go \
+  --exclude pkg/acsengine/templates.go \
   ./... || exit_code=1
 
 echo
@@ -47,7 +50,10 @@ gometalinter \
   --enable golint \
   --vendor \
   --skip proto \
+  --skip pkg/test \
   --deadline 60s \
+  --exclude pkg/i18n/translations.go \
+  --exclude pkg/acsengine/templates.go \
   ./... || :
 
 exit $exit_code
