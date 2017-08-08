@@ -78,6 +78,7 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 			Translator: uc.Translator,
 		}
 		upgrader.ClusterTopology = uc.ClusterTopology
+		upgrader.UpgradeModel = uc.UpgradeModel
 		upgrader.Client = uc.Client
 		if err := upgrader.RunUpgrade(); err != nil {
 			return err

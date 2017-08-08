@@ -19,15 +19,15 @@ type Kubernetes16upgrader struct {
 	Translator *i18n.Translator
 	ClusterTopology
 	GoalStateDataModel *api.ContainerService
-
-	Client armhelpers.ACSEngineClient
+	UpgradeModel       *api.UpgradeContainerService
+	Client             armhelpers.ACSEngineClient
 }
 
 // ClusterPreflightCheck does preflight check
 func (ku *Kubernetes16upgrader) ClusterPreflightCheck() error {
 	// Check that current cluster is 1.5
 	if ku.DataModel.Properties.OrchestratorProfile.OrchestratorRelease != api.KubernetesRelease1Dot5 {
-		return ku.Translator.Errorf("Upgrade to Kubernetes 1.6 is not supported from orchestrator release: %s",
+		return fmt.Errorf("Upgrade to Kubernetes 1.6 is not supported from orchestrator release: %s",
 			ku.DataModel.Properties.OrchestratorProfile.OrchestratorRelease)
 	}
 
@@ -41,7 +41,11 @@ func (ku *Kubernetes16upgrader) RunUpgrade() error {
 	}
 
 	ku.GoalStateDataModel = ku.ClusterTopology.DataModel
-	ku.GoalStateDataModel.Properties.OrchestratorProfile.OrchestratorVersion = "1.6.2"
+	ku.GoalStateDataModel.Properties.OrchestratorProfile = &api.OrchestratorProfile{
+		OrchestratorType:    api.Kubernetes,
+		OrchestratorRelease: ku.UpgradeModel.OrchestratorProfile.OrchestratorRelease,
+		OrchestratorVersion: api.KubernetesReleaseToVersion[ku.GoalStateDataModel.Properties.OrchestratorProfile.OrchestratorRelease],
+	}
 
 	if err := ku.upgradeMasterNodes(); err != nil {
 		return err
