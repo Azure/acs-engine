@@ -13,4 +13,8 @@
       "type": "int",
       "value": "[variables('{{.Name}}StorageAccountsCount')]"
     },
+    "{{.Name}}SubnetName": {
+      "type": "string",
+      "value": "[variables('{{.Name}}SubnetName')]"
+    },
 {{end}}
