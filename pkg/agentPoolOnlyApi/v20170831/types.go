@@ -101,8 +101,13 @@ const (
 
 // NetworkProfile represents the definition of network profile for the cluster
 type NetworkProfile struct {
-	PodCidr          string `json:"podCidr,omitempty"`
-	ServiceCidr      string `json:"serviceCidr,omitempty"`
+	// PodCidr defines the range of addresses that will be used for Pods.
+	// Allocation of subnets to agents will be handed by kube-controller-manager
+	PodCidr string `json:"podCidr,omitempty"`
+	// ServiceCidr defines the range for Kubernetes services
+	ServiceCidr string `json:"serviceCidr,omitempty"`
+	// AgentCidr defines the range for Agent VMs in the subnet
+	AgentCidr        string `json:"agentCidr,omitempty"`
 	KubeDNSServiceIP string `json:"kubeDNSServiceIP,omitempty"`
 }
 
@@ -110,6 +115,7 @@ type NetworkProfile struct {
 type JumpboxProfile struct {
 	PublicIPAddressID string `json:"publicIPAddressID,omitempty"`
 	PublicIPAddress   string `json:"publicIPAddress,omitempty"`
+	InternalIPAddress string `json:"internalIPAddress,omitempty"`
 }
 
 // AgentPoolProfile represents configuration of VMs running agent
