@@ -114,10 +114,16 @@
     "kubeServiceCidr": "10.0.0.0/16",
     "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
     "dockerBridgeCidr": "[parameters('dockerBridgeCidr')]",
-{{if HasLinuxAgents}}
-    "registerSchedulable": "false",
+{{if IsKubernetesVersionGe "1.6.0"}}
+    {{if HasLinuxAgents}}
+    "registerWithTaints": "node-role.kubernetes.io/master=true:NoSchedule",
+    {{end}}
 {{else}}
+    {{if HasLinuxAgents}}
+    "registerSchedulable": "false",
+    {{else}}
     "registerSchedulable": "true",
+    {{end}}
 {{end}}
     "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",

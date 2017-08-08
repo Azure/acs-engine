@@ -189,14 +189,18 @@ write_files:
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
     KUBELET_NETWORK_PLUGIN=
     DOCKER_OPTS=
-    KUBELET_REGISTER_SCHEDULABLE={{WrapAsVariable "registerSchedulable"}}
     KUBELET_NODE_LABELS=role=master
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
     KUBELET_NODE_STATUS_UPDATE_FREQUENCY={{WrapAsVariable "kubernetesNodeStatusUpdateFrequency"}}
     KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD={{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
     KUBE_CTRL_MGR_POD_EVICTION_TIMEOUT={{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}
     KUBE_CTRL_MGR_ROUTE_RECONCILIATION_PERIOD={{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}
-
+{{if IsKubernetesVersionGe "1.6.0"}}
+    KUBELET_REGISTER_NODE=--register-node=true
+    KUBELET_REGISTER_WITH_TAINTS=--register-with-taints={{WrapAsVariable "registerWithTaints"}}
+{{else}}
+    KUBELET_REGISTER_SCHEDULABLE={{WrapAsVariable "registerSchedulable"}}
+{{end}}
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
   encoding: gzip
