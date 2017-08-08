@@ -32,14 +32,14 @@
       "ssh": {
         "publicKeys": [
           {
-            "keyData": "test"
+            "keyData": ""
           }
         ]
       }
     },
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "test",
-      "servicePrincipalClientSecret": "test"
+      "servicePrincipalClientID": "",
+      "servicePrincipalClientSecret": ""
     }
   }
 }
