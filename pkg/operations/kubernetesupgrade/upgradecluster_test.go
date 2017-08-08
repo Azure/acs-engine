@@ -203,7 +203,7 @@ func createContainerService(containerServiceName string, masterCount int, agentC
 	cs.Properties.OrchestratorProfile = &api.OrchestratorProfile{}
 	cs.Properties.OrchestratorProfile.OrchestratorType = api.Kubernetes
 	cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot5
-	cs.Properties.OrchestratorProfile.OrchestratorVersion = "1.5.3"
+	cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot5]
 
 	return &cs
 }
