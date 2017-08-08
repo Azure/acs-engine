@@ -101,10 +101,12 @@ const (
 
 // NetworkProfile represents the definition of network profile for the cluster
 type NetworkProfile struct {
+	// PodCidr defines the range of addresses that will be used for Pods.
+	// Allocation of subnets to agents will be handed by kube-controller-manager
 	PodCidr string `json:"podCidr,omitempty"`
-	// ServiceCidr is used to define the range of addresses within a Subnet
+	// ServiceCidr defines the range for Kubernetes services
 	ServiceCidr string `json:"serviceCidr,omitempty"`
-	// Address range for Kubernetes service
+	// AgentCidr defines the range for Agent VMs in the subnet
 	AgentCidr        string `json:"agentCidr,omitempty"`
 	KubeDNSServiceIP string `json:"kubeDNSServiceIP,omitempty"`
 }
