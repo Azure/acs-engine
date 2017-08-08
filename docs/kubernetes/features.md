@@ -73,7 +73,7 @@ They are managed-premium and managed-standard and map to Standard_LRS and Premiu
 
 In order to use these storage classes the following conditions must be met.
 
-* The cluster must be running Kubernetes version 1.7.2 or greater. Refer to this [example](../examples/kubernetesversions/kubernetes1.7.1.json) for how to provision a Kubernetes cluster of a specific version.
+* The cluster must be running Kubernetes release 1.7 or greater. Refer to this [example](../examples/kubernetes-releases/kubernetes1.7.json) for how to provision a Kubernetes cluster of a specific version.
 * The node must support managed disks. See this [example](../examples/disks-managed/kubernetes-vmas.json) to provision nodes with managed disks. You can also confirm if a node has managed disks using kubectl.
 
 ```console

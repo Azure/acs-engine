@@ -1,7 +1,7 @@
 {
 	"deployments": [
 		{
-			"cluster_definition": "dcos-versions/dcos1.8.8.json",
+			"cluster_definition": "dcos-releases/dcos1.8.json",
 			"location": "eastus"
 		},
 		{
