@@ -41,3 +41,8 @@ ADD Makefile versioning.mk glide.yaml glide.lock /gopath/src/github.com/Azure/ac
 RUN make bootstrap
 
 ADD . /gopath/src/github.com/Azure/acs-engine
+
+ARG VERSION
+ARG BUILD_DATE
+ENV VERSION $VERSION
+ENV BUILD_DATE $BUILD_DATE

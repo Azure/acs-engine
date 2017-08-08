@@ -83,12 +83,12 @@ New-AzureRmResourceGroupDeployment `
 
 The easiest way to start hacking on `acs-engine` is to use a Docker-based environment. If you already have Docker installed then you can get started with a few commands.
 
-* Windows (PowerShell): `.\scripts\devenv.ps1`
-* Linux/OSX (bash): `./scripts/devenv.sh`
+* Windows (PowerShell): `make build-container run-container`
+* Linux/OSX (bash): `make build-container run-container`
 
 This script mounts the `acs-engine` source directory as a volume into the Docker container, which means you can edit your source code in your favorite editor on your machine, while still being able to compile and test inside of the Docker container. This environment mirrors the environment used in the acs-engine continuous integration (CI) system.
 
-When the script `devenv.ps1` or `devenv.sh` completes, you will be left at a command prompt.
+When the `make` commands complete, you will be left at a command prompt.
 
 Run the following commands to pull the latest dependencies and build the `acs-engine` tool.
 
