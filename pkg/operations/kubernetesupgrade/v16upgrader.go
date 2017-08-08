@@ -44,7 +44,7 @@ func (ku *Kubernetes16upgrader) RunUpgrade() error {
 	ku.GoalStateDataModel.Properties.OrchestratorProfile = &api.OrchestratorProfile{
 		OrchestratorType:    api.Kubernetes,
 		OrchestratorRelease: ku.UpgradeModel.OrchestratorProfile.OrchestratorRelease,
-		OrchestratorVersion: api.KubernetesReleaseToVersion[ku.GoalStateDataModel.Properties.OrchestratorProfile.OrchestratorRelease],
+		OrchestratorVersion: api.KubernetesReleaseToVersion[ku.UpgradeModel.OrchestratorProfile.OrchestratorRelease],
 	}
 
 	if err := ku.upgradeMasterNodes(); err != nil {
