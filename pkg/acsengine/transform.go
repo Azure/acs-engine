@@ -34,6 +34,9 @@ const (
 	vmResourceType   = "Microsoft.Compute/virtualMachines"
 	vmssResourceType = "Microsoft.Compute/virtualMachineScaleSets"
 	vmExtensionType  = "Microsoft.Compute/virtualMachines/extensions"
+
+	// resource ids
+	nsgID = "nsgID"
 )
 
 // Transformer represents the object that transforms template
@@ -111,7 +114,7 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 
 		for dIndex := len(dependencies) - 1; dIndex >= 0; dIndex-- {
 			dependency := dependencies[dIndex].(string)
-			if strings.Contains(dependency, nsgResourceType) {
+			if strings.Contains(dependency, nsgResourceType) || strings.Contains(dependency, nsgID) {
 				dependencies = append(dependencies[:dIndex], dependencies[dIndex+1:]...)
 			}
 		}

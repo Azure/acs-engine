@@ -1,0 +1,16 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "k8s-upgrade/kubernetes1.5.3.json",
+      "location": "westus"
+    },
+    {
+      "cluster_definition": "k8s-upgrade/kubernetes1.5.3-win.json",
+      "location": "westus"
+    },
+    {
+      "cluster_definition": "k8s-upgrade/kubernetes1.5.3-hybrid.json",
+      "location": "westus"
+    }
+  ]
+}

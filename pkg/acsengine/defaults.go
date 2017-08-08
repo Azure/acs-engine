@@ -276,24 +276,36 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 }
 
 func certGenerationRequired(a *api.Properties) bool {
-	if a.CertificateProfile != nil &&
-		(len(a.CertificateProfile.APIServerCertificate) > 0 || len(a.CertificateProfile.APIServerPrivateKey) > 0 ||
-			len(a.CertificateProfile.ClientCertificate) > 0 || len(a.CertificateProfile.ClientPrivateKey) > 0) {
+	if certAlreadyPresent(a.CertificateProfile) {
 		return false
 	}
 
 	switch a.OrchestratorProfile.OrchestratorType {
-	case api.DCOS:
-		return false
-	case api.Swarm:
-		return false
-	case api.SwarmMode:
-		return false
 	case api.Kubernetes:
 		return true
 	default:
 		return false
 	}
+}
+
+// certAlreadyPresent determines if the passed in CertificateProfile includes certificate data
+// TODO actually verify valid/useable certificate data
+func certAlreadyPresent(c *api.CertificateProfile) bool {
+	if c != nil {
+		switch {
+		case len(c.APIServerCertificate) > 0:
+			return true
+		case len(c.APIServerPrivateKey) > 0:
+			return true
+		case len(c.ClientCertificate) > 0:
+			return true
+		case len(c.ClientPrivateKey) > 0:
+			return true
+		default:
+			return false
+		}
+	}
+	return false
 }
 
 // getFirstConsecutiveStaticIPAddress returns the first static IP address of the given subnet.

@@ -6,19 +6,13 @@ The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource 
 
 ## Install
 
-Binary downloads for the latest version of acs-engine are available here:
+Binary downloads for the latest version of acs-engine for are available [here](https://github.com/Azure/acs-engine/releases/latest). Download `acs-engine` for your operating system. Extract the binary and copy it to your `$PATH`.
 
-* [OSX](https://github.com/Azure/acs-engine/releases/download/v0.4.0/acs-engine-v0.4.0-darwin-amd64.tar.gz)
-* [Linux 64bit](https://github.com/Azure/acs-engine/releases/download/v0.4.0/acs-engine-v0.4.0-linux-amd64.tar.gz)
-* [Windows 64bit](https://github.com/Azure/acs-engine/releases/download/v0.4.0/acs-engine-v0.4.0-windows-amd64.zip)
-
-Download `acs-engine` for your operating system. Extract the binary and copy it to your `$PATH`.
-
-If would prefer to build `acs-engine` from source or are you are interested in contributing to `acs-engine` see [building from source](#build-from-source) below.
+If would prefer to build `acs-engine` from source or are you are interested in contributing to `acs-engine` see [building from source](#build-acs-engine-from-source) below.
 
 ## Usage
 
-`acs-engine` reads a JSON [cluster definition](../clusterdefinition.md) and generates a number of files that may be submitted to Azure Resource Manager (ARM). The generated files include:
+`acs-engine` reads a JSON [cluster definition](./clusterdefinition.md) and generates a number of files that may be submitted to Azure Resource Manager (ARM). The generated files include:
 
 1. **apimodel.json**: is an expanded version of the cluster definition provided to the generate command. All default or computed values will be expanded during the generate phase.
 2. **azuredeploy.json**: represents a complete description of all Azure resources required to fulfill the cluster definition from `apimodel.json`.
@@ -32,7 +26,7 @@ Here is an example of how to generate a new deployment. This example assumes you
 1. Before starting ensure you have generated a valid [SSH Public/Private key pair](ssh.md#ssh-key-generation).
 2. edit [examples/kubernetes.json](../examples/kubernetes.json) and fill in the blanks.
 3. run `./bin/acs-engine generate examples/kubernetes.json` to generate the templates in the _output/Kubernetes-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
-4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [deployment usage](../acsengine.md#deployment-usage).
+4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [Deploy Templates](#deploy-templates).
 
 **Note:** If you wish to customize cluster configuaration after the `generate` step, make sure to modify `apimodel.json` in the `_output` directory. This ensures that any computed settings and generated certificates are maintained. For example, if you want to add a second agent pool, edit `apimodel.json` and then run `acs-engine` against that file to generate and updated ARM template. This ensures that during the deploy steps, existing resources remain untouched and new agent pools are created.
 
