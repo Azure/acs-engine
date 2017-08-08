@@ -400,9 +400,11 @@ func sendDurationMetrics(step, location string, duration time.Duration, errorNam
 func mainInternal() error {
 	var configFile string
 	var rootDir string
+	var errorFile string
 	var err error
 	flag.StringVar(&configFile, "c", "", "deployment configurations")
 	flag.StringVar(&rootDir, "d", "", "acs-engine root directory")
+	flag.StringVar(&errorFile, "e", "", "acs-engine root directory")
 	flag.Usage = func() {
 		fmt.Println(usage)
 	}
@@ -433,7 +435,7 @@ func mainInternal() error {
 		enableMetrics = true
 	}
 	// initialize report manager
-	testManager.Manager = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments))
+	testManager.Manager = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments), errorFile)
 	// check root directory
 	if rootDir == "" {
 		return fmt.Errorf("acs-engine root directory is not provided")
