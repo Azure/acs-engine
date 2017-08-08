@@ -47,33 +47,3 @@ const (
 	// ManagedDisks means that the nodes use managed disks for their os and attached volumes
 	ManagedDisks = "ManagedDisks"
 )
-
-const (
-	// DCOS190 is the string constant for DCOS 1.9.0
-	DCOS190 string = "1.9.0"
-	// DCOS188 is the string constant for DCOS 1.8.8
-	DCOS188 string = "1.8.8"
-	// DCOS187 is the string constant for DCOS 1.8.7
-	DCOS187 string = "1.8.7"
-	// DCOS184 is the string constant for DCOS 1.8.4
-	DCOS184 string = "1.8.4"
-	// DCOS173 is the string constant for DCOS 1.7.3
-	DCOS173 string = "1.7.3"
-	// DCOSLatest is the string constant for latest DCOS version
-	DCOSLatest string = DCOS190
-)
-
-const (
-	// Kubernetes153 is the string constant for Kubernetes 1.5.3
-	Kubernetes153 string = "1.5.3"
-	// Kubernetes157 is the string constant for Kubernetes 1.5.3
-	Kubernetes157 string = "1.5.7"
-	// Kubernetes160 is the string constant for Kubernetes 1.6.0
-	Kubernetes160 string = "1.6.0"
-	// Kubernetes162 is the string constant for Kubernetes 1.6.2
-	Kubernetes162 string = "1.6.2"
-	// Kubernetes166 is the string constant for Kubernetes 1.6.6
-	Kubernetes166 string = "1.6.6"
-	// KubernetesDefaultVersion is the string constant for current Kubernetes version
-	KubernetesDefaultVersion string = Kubernetes166
-)

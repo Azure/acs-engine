@@ -37,3 +37,39 @@ const (
 	// ManagedDisks means that the nodes use managed disks for their os and attached volumes
 	ManagedDisks = "ManagedDisks"
 )
+
+const (
+	// KubernetesRelease1Dot7 is the major.minor string prefix for 1.7 versions of kubernetes
+	KubernetesRelease1Dot7 string = "1.7"
+	// KubernetesRelease1Dot6 is the major.minor string prefix for 1.6 versions of kubernetes
+	KubernetesRelease1Dot6 string = "1.6"
+	// KubernetesRelease1Dot5 is the major.minor string prefix for 1.5 versions of kubernetes
+	KubernetesRelease1Dot5 string = "1.5"
+	// KubernetesDefaultRelease is the default major.minor version for kubernetes
+	KubernetesDefaultRelease string = KubernetesRelease1Dot6
+)
+
+// KubeReleaseToVersion maps a major.minor release to an full major.minor.patch version
+var KubeReleaseToVersion = map[string]string{
+	KubernetesRelease1Dot7: "1.7.2",
+	KubernetesRelease1Dot6: "1.6.6",
+	KubernetesRelease1Dot5: "1.5.7",
+}
+
+const (
+	// DCOSRelease1Dot9 is the major.minor string prefix for 1.9 versions of DCOS
+	DCOSRelease1Dot9 string = "1.9"
+	// DCOSRelease1Dot8 is the major.minor string prefix for 1.8 versions of DCOS
+	DCOSRelease1Dot8 string = "1.8"
+	// DCOSRelease1Dot7 is the major.minor string prefix for 1.7 versions of DCOS
+	DCOSRelease1Dot7 string = "1.7"
+	// DCOSDefaultRelease is the default major.minor version for DCOS
+	DCOSDefaultRelease string = DCOSRelease1Dot9
+)
+
+// DCOSReleaseToVersion maps a major.minor release to an full major.minor.patch version
+var DCOSReleaseToVersion = map[string]string{
+	DCOSRelease1Dot9: "1.9.0",
+	DCOSRelease1Dot8: "1.8.8",
+	DCOSRelease1Dot7: "1.7.3",
+}

@@ -16,7 +16,7 @@ import (
 // Compiler to verify QueueMessageProcessor implements OperationsProcessor
 var _ UpgradeNode = &UpgradeAgentNode{}
 
-// UpgradeAgentNode upgrades a Kubernetes 1.5.3 agent node to 1.6.2
+// UpgradeAgentNode upgrades a Kubernetes 1.5 agent node to 1.6
 type UpgradeAgentNode struct {
 	Translator              *i18n.Translator
 	TemplateMap             map[string]interface{}

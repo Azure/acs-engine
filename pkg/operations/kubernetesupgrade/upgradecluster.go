@@ -14,7 +14,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	log "github.com/Sirupsen/logrus"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 // ClusterTopology contains resources of the cluster the upgrade operation
@@ -71,24 +71,26 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 		return uc.Translator.Errorf("Error while querying ARM for resources: %+v", err)
 	}
 
-	switch ucs.OrchestratorProfile.OrchestratorVersion {
-	case api.Kubernetes162:
-		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes 1.6.2"))
-		upgrader := Kubernetes162upgrader{
+	switch ucs.OrchestratorProfile.OrchestratorRelease {
+	case api.KubernetesRelease1Dot6:
+		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes release 1.6"))
+		upgrader := Kubernetes16upgrader{
 			Translator: uc.Translator,
 		}
 		upgrader.ClusterTopology = uc.ClusterTopology
+		upgrader.UpgradeModel = uc.UpgradeModel
 		upgrader.Client = uc.Client
 		if err := upgrader.RunUpgrade(); err != nil {
 			return err
 		}
 	default:
-		return uc.Translator.Errorf("Upgrade to Kubernetes version: %s is not supported from version: %s",
-			ucs.OrchestratorProfile.OrchestratorVersion,
-			uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+		return uc.Translator.Errorf("Upgrade to Kubernetes release: %s is not supported from release: %s",
+			ucs.OrchestratorProfile.OrchestratorRelease,
+			uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease)
 	}
 
-	log.Infoln(fmt.Sprintf("Cluster upraded successfully to Kubernetes version: %s",
+	log.Infoln(fmt.Sprintf("Cluster upraded successfully to Kubernetes release %s, version: %s",
+		ucs.OrchestratorProfile.OrchestratorRelease,
 		ucs.OrchestratorProfile.OrchestratorVersion))
 	return nil
 }
