@@ -36,7 +36,11 @@ type Manager struct {
 	Duration    string    `json:"duration"`
 	// Failure map: key=error, value=locations
 	Failures  map[string]*ErrorStat `json:"failures"`
-	LogErrors []logError            `json:"Errors"`
+	LogErrors logErrors             `json:"-"`
+}
+
+type logErrors struct {
+	LogErrors []logError `json:"Errors"`
 }
 
 type logError struct {
@@ -74,19 +78,18 @@ func New(jobName string, buildNum int, nDeploys int, fileName string) *Manager {
 	return h
 }
 
-func makeErrorList(fileName string) []logError {
+func makeErrorList(fileName string) logErrors {
+	dummy := logErrors{}
+
 	if fileName != "" {
 		file, e := ioutil.ReadFile(fileName)
 		if e != nil {
 			fmt.Printf("File error: %v\n", e)
 			os.Exit(1)
 		}
-
-		var dummyMgr Manager
-		json.Unmarshal(file, &dummyMgr)
-		return dummyMgr.LogErrors
+		json.Unmarshal(file, &dummy)
 	}
-	return nil
+	return dummy
 }
 
 // Copy TBD needs definition [ToDo]
@@ -106,7 +109,7 @@ func (h *Manager) Copy() *Manager {
 
 // Process TBD needs definition
 func (h *Manager) Process(txt, testName, location string) *ErrorInfo {
-	for _, logErr := range h.LogErrors {
+	for _, logErr := range h.LogErrors.LogErrors {
 		if match, _ := regexp.MatchString(logErr.Regex, txt); match {
 			h.addFailure(logErr.Name, map[string]int{location: 1})
 			return NewErrorInfo(testName, logErr.Name, logErr.Class, location)
@@ -142,23 +145,10 @@ func (h *Manager) addFailure(key string, locations map[string]int) {
 	h.Errors += cnt
 }
 
-//MarshalJSON gives back customized fields
-func (h *Manager) MarshalJSON() ([]byte, error) {
-	return json.MarshalIndent(struct {
-		JobName     string                `json:"job"`
-		BuildNum    int                   `json:"build"`
-		Deployments int                   `json:"deployments"`
-		Errors      int                   `json:"errors"`
-		StartTime   time.Time             `json:"startTime"`
-		Duration    string                `json:"duration"`
-		Failures    map[string]*ErrorStat `json:"failures"`
-	}{h.JobName, h.BuildNum, h.Deployments, h.Errors, h.StartTime, h.Duration, h.Failures}, "", "  ")
-}
-
 // CreateTestReport TBD needs definition
 func (h *Manager) CreateTestReport(filepath string) error {
 	h.Duration = time.Now().UTC().Sub(h.StartTime).String()
-	data, err := h.MarshalJSON()
+	data, err := json.MarshalIndent(h, "", "  ")
 	if err != nil {
 		return err
 	}
