@@ -20,3 +20,4 @@ pkg/acsengine/templates.go
 pkg/i18n/translations.go
 
 _logs/
+*.swp
