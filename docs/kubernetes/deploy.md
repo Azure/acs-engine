@@ -82,8 +82,8 @@ Edit the [simple Kubernetes cluster definition](../examples/kubernetes.json) and
 
 * `dnsPrefix`: must be a region-unique name and will form part of the hostname (e.g. myprod1, staging, leapinglama), be unique!
 * `keyData`: must contain the public portion of an SSH key, this will be associated with the `adminUsername` value found in the same section of the cluster definition (e.g. 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABA....')
-* `servicePrincipalClientID`: this is the appId uuid or name from step 3
-* `servicePrincipalClientSecret`: this is the password or randomly-generated password from step 3
+* `servicePrincipalClientID`: this is the appId uuid or name from step 2
+* `servicePrincipalClientSecret`: this is the password or randomly-generated password from step 2
 
 ### Step 4: Generate the Templates
 
