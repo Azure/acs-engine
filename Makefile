@@ -1,19 +1,27 @@
+# global project configs
+SHORT_NAME ?= acs-engine
+IMAGE_ORG ?= microsoft
+IMAGE_REGISTRY ?= docker.io
+
 TARGETS           = darwin/amd64 linux/amd64 windows/amd64
 DIST_DIRS         = find * -type d -exec
 
-.NOTPARALLEL:
-
-.PHONY: bootstrap build test test_fmt validate-generated fmt lint ci devenv
-
 # go option
 GO        ?= go
-PKG       := $(shell glide novendor)
 TAGS      :=
 LDFLAGS   :=
 GOFLAGS   :=
 BINDIR    := $(CURDIR)/bin
 BINARIES  := acs-engine
 VERSION   := $(shell git rev-parse HEAD)
+ifeq ($(OS),Windows_NT)
+	BUILD_DATE := 'unknown'
+else
+	BUILD_DATE := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+endif
+
+# artifact image
+IMAGE := ${IMAGE_REGISTRY}/${IMAGE_ORG}/${SHORT_NAME}:${VERSION}
 
 # this isn't particularly pleasant, but it works with the least amount
 # of requirements around $GOPATH. The extra sed is needed because `gofmt`
@@ -37,6 +45,20 @@ build: generate
 build-cross: LDFLAGS += -extldflags "-static"
 build-cross:
 	CGO_ENABLED=0 gox -output="_dist/acs-engine-${VERSION}-{{.OS}}-{{.Arch}}/{{.Dir}}" -osarch='$(TARGETS)' $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)'
+
+.PHONY: build-container
+build-container:
+	docker build \
+		--pull \
+		--build-arg VERSION=${GIT_SHA} \
+		--build-arg BUILD_DATE=${BUILD_DATE} \
+		-t ${IMAGE} .
+
+.PHONY: run-container
+run-container:
+	docker run -it \
+		-v ~/.azure:/root/.azure \
+		${IMAGE} bash
 
 .PHONY: dist
 dist:
@@ -111,8 +133,5 @@ ci: bootstrap test-style build test lint
 .PHONY: coverage
 coverage:
 	@scripts/coverage.sh
-
-devenv:
-	./scripts/devenv.sh
 
 include versioning.mk

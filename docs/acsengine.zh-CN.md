@@ -6,8 +6,8 @@
 
 最简单的开始使用`acs-engine`的方式是使用Docker。如果本地计算机安装了Docker或者windows、Mac版本的Docker的话，无需安装任何软件就可以直接使用`acs-engine`了。
 
-* Windows (PowerShell): `.\scripts\devenv.ps1`
-* Linux (bash): `./scripts/devenv.sh`
+* Windows (PowerShell): `make build-container run-container`
+* Linux/OSX (bash): `make build-container run-container`
 
 上面的这段脚本在Docker容器中挂载了`acs-engine`源目录。你可以在任何熟悉的编辑器上修改这些源代码，所做的修改可以直接在Docker容器中编译和测试（本项目的持续集成系统中也采用了同样的方式）。
 
@@ -15,7 +15,7 @@
 make bootstrap
 ```
 
-当`devenv.{ps1,sh}`执行完毕的时候，你可以在容器中查看对应的日志，最后执行下面的脚本就可以生成`acs-engine`工具了：
+当`make build-container run-container`执行完毕的时候，你可以在容器中查看对应的日志，最后执行下面的脚本就可以生成`acs-engine`工具了：
 
 ```
 make build
@@ -24,7 +24,7 @@ make build
 当项目编译通过后，可以使用如下的命令来验证`acs-engine`是否正常运行：
 
 ```
-# ./bin/acs-engine 
+# ./bin/acs-engine
 ACS-Engine deploys and manages Kubernetes, Swarm Mode, and DC/OS clusters in Azure
 
 Usage:
@@ -53,10 +53,10 @@ ACS引擎具有跨平台特性，可以在windows，OS X和Linux上运行。以�
 安装依赖软件：
 - Git for Windows. [点击这里下载安装](https://git-scm.com/download/win)
 - Go for Windows. [点击这里下载安装](https://golang.org/dl/), 缺省默认安装.
-- Powershell 
+- Powershell
 
-编译步骤: 
- 
+编译步骤:
+
 1. 设置工作目录。 这里假设使用`c:\gopath`作为工作目录：
   1. 使用Windows + R组合键打开运行窗口
   2. 执行命令：`rundll32 sysdm.cpl,EditEnvironmentVariables`打开系统环境变量设置对话框
@@ -78,7 +78,7 @@ ACS引擎具有跨平台特性，可以在windows，OS X和Linux上运行。以�
 安装依赖软件：:
 - Go for OS X. [点击这里下载安装](https://golang.org/dl/)
 
-安装步骤: 
+安装步骤:
 
 1. 打开命令行窗口并设置GOPATH环境变量：
   1. `mkdir $HOME/gopath`
@@ -103,7 +103,7 @@ ACS引擎具有跨平台特性，可以在windows，OS X和Linux上运行。以�
   - 执行命令sudo tar -C /usr/local -xzf go$VERSION.$OS-$ARCH.tar.gz解压并替换原有文件。
 - `git`
 
-编译步骤: 
+编译步骤:
 
 1. 设置GOPATH:
   1. 运行命令`mkdir $HOME/gopath`新建gopath目录
