@@ -224,15 +224,15 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 			validateLogFile = fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
 			env = append(env, fmt.Sprintf("LOGFILE=%s", validateLogFile))
 
-			cmd := exec.Command("test/step.sh", "get_orchestrator_version")
+			cmd := exec.Command("test/step.sh", "get_orchestrator_release")
 			cmd.Env = env
 			out, err := cmd.Output()
 			if err != nil {
-				wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_version", resourceGroup, err)
-				errorInfo = report.NewErrorInfo(testName, "OrchestratorVersionParsingError", "PreRun", d.Location)
+				wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_release", resourceGroup, err)
+				errorInfo = report.NewErrorInfo(testName, "OrchestratorReleaseParsingError", "PreRun", d.Location)
 				break
 			}
-			env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_VERSION=%s", strings.TrimSpace(string(out))))
+			env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_RELEASE=%s", strings.TrimSpace(string(out))))
 
 			cmd = exec.Command("test/step.sh", "get_node_count")
 			cmd.Env = env
