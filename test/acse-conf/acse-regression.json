@@ -3,7 +3,7 @@
     {
       "cluster_definition": "windows/kubernetes-hybrid.json",
       "category": "windows",
-      "location": "brazilsouth"
+      "location": "westus"
     },
     {
       "cluster_definition": "windows/kubernetes.json",
