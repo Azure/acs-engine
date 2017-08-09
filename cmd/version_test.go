@@ -13,7 +13,7 @@ var _ = Describe("the version command", func() {
 		command := newVersionCmd()
 		hook := logtest.NewGlobal()
 		command.Run(command, nil)
-		Expect(hook.LastEntry().Message).To(Equal(fmt.Sprintf("ACS-Engine Version: %s (%s)", BuildSHA, BuildTime)))
+		Expect(hook.LastEntry().Message).To(Equal(fmt.Sprintf("ACS-Engine Version: %s", BuildSHA)))
 
 	})
 })
