@@ -217,8 +217,10 @@ spec:
       hostNetwork: true
       serviceAccountName: canal
       tolerations:
-        - key: node-role.kubernetes.io/master
-          effect: NoSchedule
+        - key: "node-role.kubernetes.io/master"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
         - key: "CriticalAddonsOnly"
           operator: "Exists"
       containers:
