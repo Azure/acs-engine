@@ -21,3 +21,4 @@ pkg/i18n/translations.go
 
 _logs/
 test/acs-engine-test/report/TestReport.json
+*.swp
