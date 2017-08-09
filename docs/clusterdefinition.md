@@ -19,7 +19,7 @@ Here are the cluster definitions for apiVersion "vlabs"
 
 Here are the valid values for the orchestrator types:
 
-1. `DCOS` - this represents the [DC/OS orchestrator](dcos.md).  [Older versions of DCOS173 and DCOS184 may be specified](../examples/dcos-versions).
+1. `DCOS` - this represents the [DC/OS orchestrator](dcos.md).  [Older releases of DCOS 1.7 and DCOS 1.8 may be specified](../examples/dcos-releases).
 2. `Kubernetes` - this represents the [Kubernetes orchestrator](kubernetes.md).
 3. `Swarm` - this represents the [Swarm orchestrator](swarm.md).
 4. `Swarm Mode` - this represents the [Swarm Mode orchestrator](swarmmode.md).

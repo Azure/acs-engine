@@ -9,9 +9,9 @@ import (
 	"github.com/Azure/acs-engine/pkg/i18n"
 	. "github.com/Azure/acs-engine/pkg/test"
 	. "github.com/onsi/gomega"
-	"github.com/satori/go.uuid"
 
 	. "github.com/onsi/ginkgo"
+	uuid "github.com/satori/go.uuid"
 )
 
 func TestUpgradeCluster(t *testing.T) {
@@ -42,7 +42,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
 		err := uc.UpgradeCluster(subID, "TestRg", &cs, &ucs, "12345678")
-
+		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("Error while querying ARM for resources: ListVirtualMachines failed"))
 
 		// Clean up
@@ -55,7 +55,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
+		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
+		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
 		uc := UpgradeCluster{}
 
@@ -67,6 +68,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		err := uc.UpgradeCluster(subID, "TestRg", cs, &ucs, "12345678")
 
+		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("DeleteVirtualMachine failed"))
 	})
 
@@ -76,7 +78,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
+		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
+		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
 		uc := UpgradeCluster{}
 
@@ -87,7 +90,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
 		err := uc.UpgradeCluster(subID, "TestRg", cs, &ucs, "12345678")
-
+		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("DeployTemplate failed"))
 	})
 
@@ -97,7 +100,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
+		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
+		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
 		uc := UpgradeCluster{}
 
@@ -108,7 +112,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
 		err := uc.UpgradeCluster(subID, "TestRg", cs, &ucs, "12345678")
-
+		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("GetVirtualMachine failed"))
 	})
 
@@ -118,7 +122,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
+		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
+		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
 		uc := UpgradeCluster{}
 
@@ -129,7 +134,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
 		err := uc.UpgradeCluster(subID, "TestRg", cs, &ucs, "12345678")
-
+		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("GetStorageClient failed"))
 	})
 
@@ -139,7 +144,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorVersion = api.Kubernetes162
+		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
+		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
 		uc := UpgradeCluster{}
 
@@ -150,7 +156,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
 		err := uc.UpgradeCluster(subID, "TestRg", cs, &ucs, "12345678")
-
+		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("DeleteNetworkInterface failed"))
 	})
 })
@@ -196,7 +202,8 @@ func createContainerService(containerServiceName string, masterCount int, agentC
 
 	cs.Properties.OrchestratorProfile = &api.OrchestratorProfile{}
 	cs.Properties.OrchestratorProfile.OrchestratorType = api.Kubernetes
-	cs.Properties.OrchestratorProfile.OrchestratorVersion = api.Kubernetes153
+	cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot5
+	cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot5]
 
 	return &cs
 }

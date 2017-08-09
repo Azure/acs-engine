@@ -51,40 +51,40 @@ const (
 )
 
 const (
-	// Kubernetes153 is the string constant for Kubernetes 1.5.3
-	Kubernetes153 string = "1.5.3"
-	// Kubernetes157 is the string constant for Kubernetes 1.5.7
-	Kubernetes157 string = "1.5.7"
-	// Kubernetes160 is the string constant for Kubernetes 1.6.0
-	Kubernetes160 string = "1.6.0"
-	// Kubernetes162 is the string constant for Kubernetes 1.6.2
-	Kubernetes162 string = "1.6.2"
-	// Kubernetes166 is the string constant for Kubernetes 1.6.6
-	Kubernetes166 string = "1.6.6"
-	// Kubernetes170 is the string constant for Kubernetes 1.7.0
-	Kubernetes170 string = "1.7.0"
-	// Kubernetes171 is the string constant for Kubernetes 1.7.1
-	Kubernetes171 string = "1.7.1"
-	// Kubernetes172 is the string constant for Kubernetes 1.7.2
-	Kubernetes172 string = "1.7.2"
-	// KubernetesDefaultVersion is the string constant for current Kubernetes version
-	KubernetesDefaultVersion string = Kubernetes166
+	// KubernetesRelease1Dot7 is the major.minor string prefix for 1.7 versions of kubernetes
+	KubernetesRelease1Dot7 string = "1.7"
+	// KubernetesRelease1Dot6 is the major.minor string prefix for 1.6 versions of kubernetes
+	KubernetesRelease1Dot6 string = "1.6"
+	// KubernetesRelease1Dot5 is the major.minor string prefix for 1.5 versions of kubernetes
+	KubernetesRelease1Dot5 string = "1.5"
+	// KubernetesDefaultRelease is the default major.minor version for kubernetes
+	KubernetesDefaultRelease string = KubernetesRelease1Dot6
 )
 
 const (
-	// DCOS190 is the string constant for DCOS 1.9.0
-	DCOS190 string = "1.9.0"
-	// DCOS188 is the string constant for DCOS 1.8.8
-	DCOS188 string = "1.8.8"
-	// DCOS187 is the string constant for DCOS 1.8.7
-	DCOS187 string = "1.8.7"
-	// DCOS184 is the string constant for DCOS 1.8.4
-	DCOS184 string = "1.8.4"
-	// DCOS173 is the string constant for DCOS 1.7.3
-	DCOS173 string = "1.7.3"
-	// DCOSLatest is the string constant for latest DCOS version
-	DCOSLatest string = DCOS190
+	// DCOSRelease1Dot9 is the major.minor string prefix for 1.9 versions of DCOS
+	DCOSRelease1Dot9 string = "1.9"
+	// DCOSRelease1Dot8 is the major.minor string prefix for 1.8 versions of DCOS
+	DCOSRelease1Dot8 string = "1.8"
+	// DCOSRelease1Dot7 is the major.minor string prefix for 1.7 versions of DCOS
+	DCOSRelease1Dot7 string = "1.7"
+	// DCOSDefaultRelease is the default major.minor version for DCOS
+	DCOSDefaultRelease string = DCOSRelease1Dot9
 )
+
+// DCOSReleaseToVersion maps a major.minor release to an full major.minor.patch version
+var DCOSReleaseToVersion = map[string]string{
+	DCOSRelease1Dot9: "1.9.0",
+	DCOSRelease1Dot8: "1.8.8",
+	DCOSRelease1Dot7: "1.7.3",
+}
+
+// KubernetesReleaseToVersion maps a major.minor release to an full major.minor.patch version
+var KubernetesReleaseToVersion = map[string]string{
+	KubernetesRelease1Dot7: "1.7.2",
+	KubernetesRelease1Dot6: "1.6.6",
+	KubernetesRelease1Dot5: "1.5.7",
+}
 
 // To identify programmatically generated public agent pools
 const publicAgentPoolSuffix = "-public"

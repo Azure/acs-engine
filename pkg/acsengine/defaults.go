@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	version "github.com/hashicorp/go-version"
 )
 
 var (
@@ -23,8 +24,6 @@ var (
 
 		DCOSSpecConfig: DCOSSpecConfig{
 			DCOS173BootstrapDownloadURL: fmt.Sprintf(MsecndDCOSBootstrapDownloadURL, "testing", "df308b6fc3bd91e1277baa5a3db928ae70964722"),
-			DCOS184BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "testing", "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
-			DCOS187BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
 			DCOS188BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "5df43052907c021eeb5de145419a3da1898c58a5"),
 			DCOS190BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "58fd0833ce81b6244fc73bf65b5deb43217b0bd7"),
 		},
@@ -43,8 +42,6 @@ var (
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
 			DCOS173BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
-			DCOS184BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5b4aa43610c57ee1d60b4aa0751a1fb75824c083"),
-			DCOS187BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "e73ba2b1cd17795e4dcb3d6647d11a29b9c35084"),
 			DCOS188BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),
 		},
 	}
@@ -76,7 +73,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 	cloudSpecConfig := GetCloudSpecConfig(location)
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-		k8sVersion := a.OrchestratorProfile.OrchestratorVersion
+		k8sRelease := a.OrchestratorProfile.OrchestratorRelease
 		if a.OrchestratorProfile.KubernetesConfig == nil {
 			a.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
 		}
@@ -96,16 +93,16 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 		}
 		if a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency == "" {
-			a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency = KubeImages[k8sVersion]["nodestatusfreq"]
+			a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sRelease]["nodestatusfreq"]
 		}
 		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeImages[k8sVersion]["nodegraceperiod"]
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sRelease]["nodegraceperiod"]
 		}
 		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout = KubeImages[k8sVersion]["podeviction"]
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout = KubeConfigs[k8sRelease]["podeviction"]
 		}
 		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod = KubeImages[k8sVersion]["routeperiod"]
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod = KubeConfigs[k8sRelease]["routeperiod"]
 		}
 		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
 		if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff == true {
@@ -122,8 +119,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
 			}
 		}
+		k8sVersion, _ := version.NewVersion(api.KubernetesReleaseToVersion[k8sRelease])
+		minVersionK8sVersionForCloudProviderRateLimit, _ := version.NewVersion("1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
-		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && (k8sVersion == api.Kubernetes172 || k8sVersion == api.Kubernetes171 || k8sVersion == api.Kubernetes170 || k8sVersion == api.Kubernetes166) {
+		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
+		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && k8sVersion.Compare(minVersionK8sVersionForCloudProviderRateLimit) != -1 {
 			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
 			}

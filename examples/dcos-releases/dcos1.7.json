@@ -3,17 +3,17 @@
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "DCOS",
-      "orchestratorVersion": "1.8.4"
+      "orchestratorRelease": "1.7"
     },
     "masterProfile": {
-      "count": 3,
+      "count": 1,
       "dnsPrefix": "",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
         "name": "agentprivate",
-        "count": 3,
+        "count": 5,
         "vmSize": "Standard_D2_v2"
       },
       {

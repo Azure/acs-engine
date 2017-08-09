@@ -108,7 +108,8 @@ const (
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
 	OrchestratorType    string `json:"orchestratorType" validate:"required"`
-	OrchestratorVersion string `json:"orchestratorVersion"`
+	OrchestratorRelease string `json:"orchestratorRelease"`
+	OrchestratorVersion string `json:"orchestratorVersion" validate:"len=0"`
 }
 
 // MasterProfile represents the definition of master cluster

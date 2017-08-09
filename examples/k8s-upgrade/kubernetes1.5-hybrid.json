@@ -3,21 +3,33 @@
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
-      "orchestratorVersion": "1.6.6"
+      "orchestratorRelease": "1.5"
     },
     "masterProfile": {
-      "count": 3,
+      "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2"
+      "vmSize": "Standard_D2_v2",
+      "storageProfile": "StorageAccount"
     },
     "agentPoolProfiles": [
       {
-        "name": "agentpool1",
-        "count": 3,
+        "name": "linuxpool1",
+        "count": 2,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet"
+      },
+      {
+        "name": "windowspool2",
+        "count": 2,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet",
+        "osType": "Windows"
       }
     ],
+    "windowsProfile": {
+      "adminUsername": "azureuser",
+      "adminPassword": "replacepassword1234$"
+    },
     "linuxProfile": {
       "adminUsername": "azureuser",
       "ssh": {

@@ -2,30 +2,20 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "DCOS",
-      "orchestratorVersion": "1.7.3"
+      "orchestratorType": "Kubernetes",
+      "orchestratorRelease": "1.6"
     },
     "masterProfile": {
-      "count": 1,
+      "count": 3,
       "dnsPrefix": "",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
-        "name": "agentprivate",
-        "count": 5,
-        "vmSize": "Standard_D2_v2"
-      },
-      {
-        "name": "agentpublic",
+        "name": "agentpool1",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "dnsPrefix": "",
-        "ports": [
-          80,
-          443,
-          8080
-        ]
+        "availabilityProfile": "AvailabilitySet"
       }
     ],
     "linuxProfile": {
@@ -37,6 +27,10 @@
           }
         ]
       }
+    },
+    "servicePrincipalProfile": {
+      "servicePrincipalClientID": "",
+      "servicePrincipalClientSecret": ""
     }
   }
 }

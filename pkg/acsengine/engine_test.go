@@ -14,7 +14,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/leonelquinteros/gotext"
-	. "github.com/onsi/gomega"
 )
 
 const (
@@ -211,33 +210,6 @@ func addTestCertificateProfile(api *api.CertificateProfile) {
 	api.ClientPrivateKey = "clientPrivateKey"
 	api.KubeConfigCertificate = "kubeConfigCertificate"
 	api.KubeConfigPrivateKey = "kubeConfigPrivateKey"
-}
-
-func TestVersionOrdinal(t *testing.T) {
-	RegisterTestingT(t)
-	v172 := "1.7.2"
-	v171 := "1.7.1"
-	v170 := "1.7.0"
-	v166 := "1.6.6"
-	v162 := "1.6.2"
-	v160 := "1.6.0"
-	v153 := "1.5.3"
-	v16 := "1.6"
-
-	Expect(v171 < v172).To(BeTrue())
-	Expect(v170 < v171).To(BeTrue())
-	Expect(v166 < v170).To(BeTrue())
-	Expect(v166 > v162).To(BeTrue())
-	Expect(v162 < v166).To(BeTrue())
-	Expect(v162 > v160).To(BeTrue())
-	Expect(v160 < v162).To(BeTrue())
-	Expect(v153 < v160).To(BeTrue())
-
-	//testing with different version length
-	Expect(v171 > v162).To(BeTrue())
-	Expect(v16 < v162).To(BeTrue())
-	Expect(v16 > v153).To(BeTrue())
-
 }
 
 func TestGetStorageAccountType(t *testing.T) {

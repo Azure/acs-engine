@@ -80,9 +80,11 @@ const (
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
 
-// KubeImages represents Docker images used for Kubernetes components based on Kubernetes version
-var KubeImages = map[string]map[string]string{
-	api.Kubernetes172: {
+// KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes releases (major.minor)
+// For instance, Kubernetes release "1.7" would contain the version "1.7.2"
+var KubeConfigs = map[string]map[string]string{
+	api.KubernetesRelease1Dot7: {
+		"version":         "1.7.2",
 		"hyperkube":       "hyperkube-amd64:v1.7.2",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
 		"exechealthz":     "exechealthz-amd64:1.2",
@@ -105,6 +107,7 @@ var KubeImages = map[string]map[string]string{
 		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 	},
+<<<<<<< HEAD
 	api.Kubernetes171: {
 		"hyperkube":       "hyperkube-amd64:v1.7.1",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
@@ -152,6 +155,9 @@ var KubeImages = map[string]map[string]string{
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 	},
 	api.Kubernetes166: {
+=======
+	api.KubernetesRelease1Dot6: {
+>>>>>>> upstream/master
 		"hyperkube":       "hyperkube-amd64:v1.6.6",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
 		"exechealthz":     "exechealthz-amd64:1.2",
@@ -174,43 +180,7 @@ var KubeImages = map[string]map[string]string{
 		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 	},
-	api.Kubernetes162: {
-		"hyperkube":       "hyperkube-amd64:v1.6.2",
-		"dashboard":       "kubernetes-dashboard-amd64:v1.6.0",
-		"exechealthz":     "exechealthz-amd64:1.2",
-		"addonresizer":    "addon-resizer:1.6",
-		"heapster":        "heapster:v1.2.0",
-		"dns":             "k8s-dns-kube-dns-amd64:1.13.0",
-		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.13.0",
-		"pause":           "pause-amd64:3.0",
-		"tiller":          DefaultTillerImage,
-		"windowszip":      "v1.6.2intwinnat.zip",
-		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
-		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
-		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
-		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-	},
-
-	api.Kubernetes160: {
-		"hyperkube":       "hyperkube-amd64:v1.6.0",
-		"dashboard":       "kubernetes-dashboard-amd64:v1.6.0",
-		"exechealthz":     "exechealthz-amd64:1.2",
-		"addonresizer":    "addon-resizer:1.6",
-		"heapster":        "heapster:v1.2.0",
-		"dns":             "k8s-dns-kube-dns-amd64:1.13.0",
-		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.13.0",
-		"pause":           "pause-amd64:3.0",
-		"tiller":          DefaultTillerImage,
-		"windowszip":      "v1.6.0intwinnat.zip",
-		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
-		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
-		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
-		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-	},
-
-	api.Kubernetes157: {
+	api.KubernetesRelease1Dot5: {
 		"hyperkube":       "hyperkube-amd64:v1.5.7",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.5.1",
 		"exechealthz":     "exechealthz-amd64:1.2",
@@ -222,24 +192,6 @@ var KubeImages = map[string]map[string]string{
 		"pause":           "pause-amd64:3.0",
 		"tiller":          DefaultTillerImage,
 		"windowszip":      "v1.5.7intwinnat.zip",
-		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
-		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
-		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
-		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-	},
-
-	api.Kubernetes153: {
-		"hyperkube":       "hyperkube-amd64:v1.5.3",
-		"dashboard":       "kubernetes-dashboard-amd64:v1.5.1",
-		"exechealthz":     "exechealthz-amd64:1.2",
-		"addonresizer":    "addon-resizer:1.6",
-		"heapster":        "heapster:v1.2.0",
-		"dns":             "kubedns-amd64:1.7",
-		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":         "kube-dnsmasq-amd64:1.3",
-		"pause":           "pause-amd64:3.0",
-		"windowszip":      "v1.5.3intwinnat.zip",
-		"tiller":          DefaultTillerImage,
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,

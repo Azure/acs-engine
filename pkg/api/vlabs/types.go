@@ -129,7 +129,8 @@ const (
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
 	OrchestratorType    string            `json:"orchestratorType" validate:"required"`
-	OrchestratorVersion string            `json:"orchestratorVersion"`
+	OrchestratorRelease string            `json:"orchestratorRelease"`
+	OrchestratorVersion string            `json:"orchestratorVersion" validate:"len=0"`
 	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 }
 
@@ -146,13 +147,13 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 	// Unmarshal OrchestratorType, format it as well
 	orchestratorType := o.OrchestratorType
 	switch {
-	case strings.EqualFold(orchestratorType, string(DCOS)):
+	case strings.EqualFold(orchestratorType, DCOS):
 		o.OrchestratorType = DCOS
-	case strings.EqualFold(orchestratorType, string(Swarm)):
+	case strings.EqualFold(orchestratorType, Swarm):
 		o.OrchestratorType = Swarm
-	case strings.EqualFold(orchestratorType, string(Kubernetes)):
+	case strings.EqualFold(orchestratorType, Kubernetes):
 		o.OrchestratorType = Kubernetes
-	case strings.EqualFold(orchestratorType, string(SwarmMode)):
+	case strings.EqualFold(orchestratorType, SwarmMode):
 		o.OrchestratorType = SwarmMode
 	default:
 		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)

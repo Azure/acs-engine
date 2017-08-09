@@ -1,6 +1,10 @@
 package vlabs
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/Azure/acs-engine/pkg/api/common"
+)
 
 const (
 	ValidKubernetesNodeStatusUpdateFrequency        = "10s"
@@ -34,11 +38,11 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 }
 
 func Test_KubernetesConfig_Validate(t *testing.T) {
-	// Tests that should pass across all versions
-	for _, k8sVersion := range []string{Kubernetes153, Kubernetes157, Kubernetes160, Kubernetes162, Kubernetes166, Kubernetes170, Kubernetes171, Kubernetes172} {
+	// Tests that should pass across all releases
+	for _, k8sRelease := range []string{common.KubernetesRelease1Dot5, common.KubernetesRelease1Dot6, common.KubernetesRelease1Dot7} {
 		c := KubernetesConfig{}
-		if err := c.Validate(k8sVersion); err != nil {
-			t.Errorf("should not error on empty KubernetesConfig: %v, version %s", err, k8sVersion)
+		if err := c.Validate(k8sRelease); err != nil {
+			t.Errorf("should not error on empty KubernetesConfig: %v, release %s", err, k8sRelease)
 		}
 
 		c = KubernetesConfig{
@@ -57,35 +61,35 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			CloudProviderRateLimitQPS:        ValidKubernetesCloudProviderRateLimitQPS,
 			CloudProviderRateLimitBucket:     ValidKubernetesCloudProviderRateLimitBucket,
 		}
-		if err := c.Validate(k8sVersion); err != nil {
+		if err := c.Validate(k8sRelease); err != nil {
 			t.Errorf("should not error on a KubernetesConfig with valid param values: %v", err)
 		}
 
 		c = KubernetesConfig{
 			ClusterSubnet: "10.16.x.0/invalid",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sRelease); err == nil {
 			t.Error("should error on invalid ClusterSubnet")
 		}
 
 		c = KubernetesConfig{
 			DockerBridgeSubnet: "10.120.1.0/invalid",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sRelease); err == nil {
 			t.Error("should error on invalid DockerBridgeSubnet")
 		}
 
 		c = KubernetesConfig{
 			NodeStatusUpdateFrequency: "invalid",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sRelease); err == nil {
 			t.Error("should error on invalid NodeStatusUpdateFrequency")
 		}
 
 		c = KubernetesConfig{
 			CtrlMgrNodeMonitorGracePeriod: "invalid",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sRelease); err == nil {
 			t.Error("should error on invalid CtrlMgrNodeMonitorGracePeriod")
 		}
 
@@ -93,43 +97,43 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			NodeStatusUpdateFrequency:     "10s",
 			CtrlMgrNodeMonitorGracePeriod: "30s",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sRelease); err == nil {
 			t.Error("should error when CtrlMgrRouteReconciliationPeriod is not sufficiently larger than NodeStatusUpdateFrequency")
 		}
 
 		c = KubernetesConfig{
 			CtrlMgrPodEvictionTimeout: "invalid",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sRelease); err == nil {
 			t.Error("should error on invalid CtrlMgrPodEvictionTimeout")
 		}
 
 		c = KubernetesConfig{
 			CtrlMgrRouteReconciliationPeriod: "invalid",
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sRelease); err == nil {
 			t.Error("should error on invalid CtrlMgrRouteReconciliationPeriod")
 		}
 	}
 
-	// Tests that apply to pre-1.6.6 versions
-	for _, k8sVersion := range []string{Kubernetes153, Kubernetes157, Kubernetes160, Kubernetes162} {
+	// Tests that apply to pre-1.6 releases
+	for _, k8sRelease := range []string{common.KubernetesRelease1Dot5} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
 		}
-		if err := c.Validate(k8sVersion); err == nil {
+		if err := c.Validate(k8sRelease); err == nil {
 			t.Error("should error because backoff and rate limiting are not available before v1.6.6")
 		}
 	}
 
-	// Tests that apply to 1.6.6 and later versions
-	for _, k8sVersion := range []string{Kubernetes166, Kubernetes170, Kubernetes171, Kubernetes172} {
+	// Tests that apply to 1.6 and later releases
+	for _, k8sRelease := range []string{common.KubernetesRelease1Dot6, common.KubernetesRelease1Dot7} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
 		}
-		if err := c.Validate(k8sVersion); err != nil {
+		if err := c.Validate(k8sRelease); err != nil {
 			t.Error("should not error when basic backoff and rate limiting are set to true with no options")
 		}
 	}
