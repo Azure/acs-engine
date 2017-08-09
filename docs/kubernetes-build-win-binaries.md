@@ -19,7 +19,7 @@ The following instructions show how to deploy the Windows Kubernetes Binaries an
    sudo apt-get install -y linux-image-extra-$(uname -r) linux-image-extra-virtual apt-transport-https ca-certificates make gcc gcc-aarch64-linux-gnu zip
    ```
 
-4. Install Go - this must be installed in local user account since kubernetes cross compile install binaries.
+4. Install Go - this must be installed in local user account since kubernetes cross compile install binaries. For kubernetes 1.6.* and below, use Go version 1.7.3. For Kubernetes 1.7.* and up, use Go version 1.8.3.
    ```
    wget -qO- https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz | tar zx -C $HOME
    echo "export GOPATH=$HOME/gopath" >> $HOME/.profile
