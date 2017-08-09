@@ -321,8 +321,6 @@ func TestTemplateOutputPresence(t *testing.T) {
 	var template TestARMTemplate
 	json.Unmarshal([]byte(armTemplate), &template)
 
-	// fmt.Printf("Result: %+v\n", template.Outputs)
-
 	tt := []struct {
 		key   string
 		value string
