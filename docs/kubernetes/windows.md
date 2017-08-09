@@ -7,7 +7,7 @@ Here are the steps to deploy a simple Kubernetes cluster with Windows:
 1. [install acs-engine](../acsengine.md#downloading-and-building-acs-engine)
 2. [generate your ssh key](../ssh.md#ssh-key-generation)
 3. [generate your service principal](../serviceprincipal.md)
-4. edit the [Kubernetes windows example](../examples/windows/kubernetes.json) and fill in the blank strings
+4. edit the [Kubernetes windows example](../../examples/windows/kubernetes.json) and fill in the blank strings
 5. [generate the template](../acsengine.md#generating-a-template)
 6. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../acsengine.md#deployment-usage)
 7. Temporary workaround when deploying a cluster in a custom VNET with Kubernetes 1.6.0:
