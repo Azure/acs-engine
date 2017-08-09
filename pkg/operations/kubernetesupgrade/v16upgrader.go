@@ -25,8 +25,11 @@ type Kubernetes16upgrader struct {
 
 // ClusterPreflightCheck does preflight check
 func (ku *Kubernetes16upgrader) ClusterPreflightCheck() error {
-	// Check that current cluster is 1.5
-	if ku.DataModel.Properties.OrchestratorProfile.OrchestratorRelease != api.KubernetesRelease1Dot5 {
+	// Check that current cluster is 1.5 or 1.6
+	switch ku.DataModel.Properties.OrchestratorProfile.OrchestratorRelease {
+	case api.KubernetesRelease1Dot5:
+	case api.KubernetesRelease1Dot6:
+	default:
 		return fmt.Errorf("Upgrade to Kubernetes 1.6 is not supported from orchestrator release: %s",
 			ku.DataModel.Properties.OrchestratorProfile.OrchestratorRelease)
 	}
