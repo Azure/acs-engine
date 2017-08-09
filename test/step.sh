@@ -61,8 +61,8 @@ get_orchestrator_type)
   get_orchestrator_type
 ;;
 
-get_orchestrator_version)
-  get_orchestrator_version
+get_orchestrator_release)
+  get_orchestrator_release
 ;;
 
 validate)
