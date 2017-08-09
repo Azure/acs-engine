@@ -2,6 +2,7 @@ package acsengine
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -243,5 +244,73 @@ func TestGetStorageAccountType(t *testing.T) {
 	result, err := getStorageAccountType(invalidVMSize)
 	if err == nil {
 		t.Errorf("getStorageAccountType() = (%s, nil), want error", result)
+	}
+}
+
+type TestARMTemplate struct {
+	Outputs map[string]OutputElement `json:"outputs"`
+	//Parameters *json.RawMessage `json:"parameters"`
+	//Resources  *json.RawMessage `json:"resources"`
+	//Variables  *json.RawMessage `json:"variables"`
+}
+
+type OutputElement struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
+func TestTemplateOutputPresence(t *testing.T) {
+	locale := gotext.NewLocale(path.Join("..", "..", "translations"), "en_US")
+	i18n.Initialize(locale)
+
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: locale,
+		},
+	}
+
+	ctx := Context{
+		Translator: &i18n.Translator{
+			Locale: locale,
+		},
+	}
+
+	templateGenerator, err := InitializeTemplateGenerator(ctx, false)
+
+	if err != nil {
+		t.Fatalf("Failed to initialize template generator: %v", err)
+	}
+
+	containerService, _, err := apiloader.LoadContainerServiceFromFile("./testdata/simple/kubernetes.json", true)
+	if err != nil {
+		t.Fatalf("Failed to load container service from file: %v", err)
+	}
+	armTemplate, _, _, err := templateGenerator.GenerateTemplate(containerService)
+	if err != nil {
+		t.Fatalf("Failed to generate arm template: %v", err)
+	}
+
+	var template TestARMTemplate
+	json.Unmarshal([]byte(armTemplate), &template)
+
+	tt := []struct {
+		key   string
+		value string
+	}{
+		{key: "resourceGroup", value: "[variables('resourceGroup')]"},
+		{key: "subnetName", value: "[variables('subnetName')]"},
+		{key: "securityGroupName", value: "[variables('nsgName')]"},
+		{key: "virtualNetworkName", value: "[variables('virtualNetworkName')]"},
+		{key: "routeTableName", value: "[variables('routeTableName')]"},
+		{key: "primaryAvailablitySetName", value: "[variables('primaryAvailablitySetName')]"},
+	}
+
+	for _, tc := range tt {
+		element, found := template.Outputs[tc.key]
+		if !found {
+			t.Fatalf("Output key %v not found", tc.key)
+		} else if element.Value != tc.value {
+			t.Fatalf("Expected %q at key %v but got: %q", tc.value, tc.key, element.Value)
+		}
 	}
 }
