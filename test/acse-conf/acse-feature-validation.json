@@ -9,7 +9,7 @@
       "location": "eastus"
     },
     {
-      "cluster_definition": "dcos-versions/dcos1.8.8.json",
+      "cluster_definition": "dcos-releases/dcos1.8.json",
       "location": "eastus"
     },
     {
@@ -57,7 +57,7 @@
       "location": "southcentralus"
     },
     {
-      "cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
+      "cluster_definition": "kubernetes-releases/kubernetes1.5.json",
       "location": "southcentralus"
     },
     {

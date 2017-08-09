@@ -21,7 +21,7 @@
 			"location": "westcentralus"
 		},
 		{
-			"cluster_definition": "kubernetesversions/kubernetes1.5.7.json",
+			"cluster_definition": "kubernetes-releases/kubernetes1.5.json",
 			"location": "southcentralus"
 		},
 		{
