@@ -3,9 +3,7 @@ package azure
 import (
 	"encoding/json"
 	"log"
-	"os"
 	"os/exec"
-	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/engine"
 
@@ -164,34 +162,4 @@ func GetCurrentAccount() (*Account, error) {
 		log.Printf("Error unmarshalling account json:%s\n", err)
 	}
 	return &a, nil
-}
-
-func exitOnTimer(cmd *exec.Cmd, duration time.Duration) error {
-	ticker := time.NewTicker(5 * time.Minute)
-	go func(ticker *time.Ticker) {
-		for _ = range ticker.C {
-			log.Printf("Ticking ticker...")
-		}
-	}(ticker)
-
-	timer := time.NewTimer(duration)
-	errCh := make(chan error, 1)
-	go func(timer *time.Timer, ticker *time.Ticker, cmd *exec.Cmd) {
-		for _ = range timer.C {
-			log.Printf("%s time has elaspsed since starting this command! Sending os.Kill signal...\n", duration.String())
-			err := cmd.Process.Signal(os.Interrupt)
-			if err != nil {
-				errCh <- err
-			}
-		}
-	}(timer, ticker, cmd)
-	close(errCh)
-	defer ticker.Stop()
-	defer timer.Stop()
-	select {
-	case err := <-errCh:
-		return err
-	default:
-		return nil
-	}
 }
