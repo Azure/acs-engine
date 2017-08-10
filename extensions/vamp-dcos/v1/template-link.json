@@ -3,7 +3,7 @@
     "type": "Microsoft.Resources/deployments",
     "apiVersion": "[variables('apiVersionLinkDefault')]",
     "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/extensions/', 'EXTENSION_TARGET_VM_NAME', '/waitforleader')]"
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('masterVMNamePrefix'), sub(variables('masterCount'), 1)), 'waitforleader')]"
     ],
     "properties": {
         "mode": "Incremental",
