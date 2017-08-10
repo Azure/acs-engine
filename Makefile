@@ -15,11 +15,7 @@ BINDIR    := $(CURDIR)/bin
 BINARIES  := acs-engine
 VERSION   := $(shell git rev-parse HEAD)
 
-# this isn't particularly pleasant, but it works with the least amount
-# of requirements around $GOPATH. The extra sed is needed because `gofmt`
-# operates on paths, go list returns package names, and `go fmt` always rewrites
-# which is not what we need to do in the `test_fmt` target.
-GOFILES=`go list ./... | grep -v "github.com/Azure/acs-engine/vendor" | sed 's|github.com/Azure/acs-engine|.|g' | grep -v -w '^.$$'`
+GOFILES=`glide novendor | xargs go list`
 
 all: build
 
