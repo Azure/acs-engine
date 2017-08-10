@@ -42,6 +42,24 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
+  ginkgo-k8s-e2e:
+    working_directory: /go/src/github.com/Azure/acs-engine
+    docker:
+      - image: quay.io/deis/go-dev:v0.26.0
+        environment:
+          GOPATH: /go
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: |
+          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+      - run:
+          name: ginkgo k8s e2e tests
+          command: make build-e2e-image test-kubernetes
+          no_output_timeout: "30m"
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_logs
   master-kubernetes-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
@@ -158,6 +176,12 @@ workflows:
       - e2e-hold:
           type: approval
       - e2e:
+          requires:
+            - e2e-hold
+          filters:
+            branches:
+              ignore: /master/
+      - ginkgo-k8s-e2e:
           requires:
             - e2e-hold
           filters:
