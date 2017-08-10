@@ -217,12 +217,12 @@ spec:
       hostNetwork: true
       serviceAccountName: canal
       tolerations:
-        - key: "node-role.kubernetes.io/master"
-          operator: "Equal"
+        - key: node-role.kubernetes.io/master
+          operator: Equal
           value: "true"
-          effect: "NoSchedule"
-        - key: "CriticalAddonsOnly"
-          operator: "Exists"
+          effect: NoSchedule
+        - key: CriticalAddonsOnly
+          operator: Exists
       containers:
         - name: calico-node
           image: quay.io/calico/node:v1.2.1
