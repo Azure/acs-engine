@@ -117,12 +117,12 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to get storage client during upgrade operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot6, 5, 1)
+		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, 5, 1)
 
 		ucs := api.UpgradeContainerService{}
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot7
+		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
 		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
 		uc := UpgradeCluster{}
@@ -167,7 +167,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs.OrchestratorProfile = &api.OrchestratorProfile{}
 		ucs.OrchestratorProfile.OrchestratorType = api.Kubernetes
 		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot7
-		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
+		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot7]
 
 		uc := UpgradeCluster{}
 
