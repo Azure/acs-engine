@@ -7,6 +7,8 @@ jobs:
         environment:
           GOPATH: /go
     steps:
+      - setup_remote_docker
+      - run: apt-get install -y rsync
       - checkout
       - run: echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
       - run:
@@ -20,6 +22,13 @@ jobs:
       - run:
           name: Generate test coverage results
           command:  make build coverage
+      - deploy:
+          name: Build Windows 1.6.8 Binaries
+          command: |
+              make build-windows-k8s K8S_VERSION=1.6.8
+          name: Build Windows 1.7.2 Binaries
+          command: |
+              make build-windows-k8s K8S_VERSION=1.7.2
   e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
