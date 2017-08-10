@@ -277,7 +277,7 @@
         "[variables('masterLbID')]"
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('masterLbName'), '/', 'SSH-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
+      "name": "[concat(variables('masterLbName'), '/', 'SSH-', variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')))]",
       "properties": {
         "backendPort": 22,
         "enableFloatingIP": false,
@@ -301,13 +301,13 @@
 {{else}}
         "[variables('vnetID')]",
 {{end}}
-        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
+        "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')))]"
 {{if gt .MasterProfile.Count 1}}
         ,"[variables('masterInternalLbName')]"
 {{end}}
       ],
       "location": "[variables('location')]",
-      "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]",
+      "name": "[concat(variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')), '-nic')]",
       "properties": {
         "ipConfigurations": [
           {
@@ -326,7 +326,7 @@
               ],
               "loadBalancerInboundNatRules": [
                 {
-                  "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
+                  "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')))]"
                 }
               ],
               "privateIPAddress": "[variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))]]",
@@ -376,7 +376,7 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')), '-nic')]"
         ,"[concat('Microsoft.Compute/availabilitySets/',variables('masterAvailabilitySet'))]"
 {{if .MasterProfile.IsStorageAccount}}
         ,"[variables('masterStorageAccountName')]"
@@ -384,12 +384,12 @@
       ],
       "tags":
       {
-        "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
+        "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')))]",
         "resourceNameSuffix" : "[variables('nameSuffix')]",
         "orchestrator" : "[variables('orchestratorNameVersionTag')]"
       },
       "location": "[variables('location')]",
-      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
+      "name": "[concat(variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')))]",
       {{if UseManagedIdentity}}
       "identity": {
         "type": "systemAssigned"
@@ -405,13 +405,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('masterVMNamePrefix'),'nic-', copyIndex(variables('masterOffset'))))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')), '-nic'))]"
             }
           ]
         },
         "osProfile": {
           "adminUsername": "[variables('username')]",
-          "computername": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
+          "computername": "[concat(variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')))]",
           {{GetKubernetesMasterCustomData .}}
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -435,10 +435,10 @@
               "createOption": "Empty"
               ,"diskSizeGB": "128"
               ,"lun": 0
-              ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
+              ,"name": "[concat(variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')),'-etcddisk')]"
           {{if .MasterProfile.IsStorageAccount}}
               ,"vhd": {
-                "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/', variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-etcddisk.vhd')]"
+                "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/', variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')),'-etcddisk.vhd')]"
               }
           {{end}}
             }
@@ -452,10 +452,10 @@
           "osDisk": {
             "caching": "ReadWrite"
             ,"createOption": "FromImage"
+            ,"name": "[concat(variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')),'-osdisk')]"
 {{if .MasterProfile.IsStorageAccount}}
-            ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]"
             ,"vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-osdisk.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')),'-osdisk.vhd')]"
             }
 {{end}}
 {{if ne .MasterProfile.OSDiskSizeGB 0}}
@@ -474,16 +474,16 @@
          "count": "[variables('masterCount')]",
          "name": "vmLoopNode"
        },
-      "name": "[guid(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(),'vmidentity'))]",
+      "name": "[guid(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), 'vm', copyIndex(),'vmidentity'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "properties": {
         "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
-        "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex()), '2017-03-30', 'Full').identity.principalId]"
+        "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), 'vm', copyIndex()), '2017-03-30', 'Full').identity.principalId]"
       }
     },
      {
        "type": "Microsoft.Compute/virtualMachines/extensions",
-       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(), '/ManagedIdentityExtension')]",
+       "name": "[concat(variables('masterVMNamePrefix'), 'vm', copyIndex(), '/ManagedIdentityExtension')]",
        "copy": {
          "count": "[variables('masterCount')]",
          "name": "vmLoopNode"
@@ -491,8 +491,8 @@
        "apiVersion": "2015-05-01-preview",
        "location": "[resourceGroup().location]",
        "dependsOn": [
-         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]",
-         "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(), 'vmidentity')))]"
+         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), 'vm', copyIndex())]",
+         "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), 'vm', copyIndex(), 'vmidentity')))]"
        ],
        "properties": {
          "publisher": "Microsoft.ManagedIdentity",
@@ -514,14 +514,14 @@
       },
       "dependsOn": [
         {{if UseManagedIdentity}}
-        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '/extensions/ManagedIdentityExtension')]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')), '/extensions/ManagedIdentityExtension')]"
         {{else}}
-        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')))]"
         {{end}}
       ],
       "location": "[variables('location')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'/cse', copyIndex(variables('masterOffset')))]",
+      "name": "[concat(variables('masterVMNamePrefix'), 'vm', copyIndex(variables('masterOffset')),'/cse', copyIndex(variables('masterOffset')))]",
       "properties": {
         "publisher": "Microsoft.Azure.Extensions",
         "type": "CustomScript",

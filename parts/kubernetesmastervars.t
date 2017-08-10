@@ -56,7 +56,7 @@
          "[parameters('location')]"
     ],
     "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
-    "masterAvailabilitySet": "[concat('master-availabilityset-', variables('nameSuffix'))]",
+    "masterAvailabilitySet": "[concat(variables('orchestratorName'), '-', variables('nameSuffix'), '-master-avs')]",
     "nameSuffix": "[parameters('nameSuffix')]",
     "orchestratorName": "k8s",
     "osImageOffer": "UbuntuServer",
@@ -107,7 +107,7 @@
     "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
-    "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
+    "virtualNetworkName": "[concat(variables('orchestratorName'), '-', variables('nameSuffix'), '-vnet')]",
     "vnetCidr": "10.0.0.0/8",
 {{end}}
     "kubeDnsServiceIp": "10.0.0.10",
@@ -121,16 +121,16 @@
 {{end}}
     "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
-    "primaryAvailablitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',variables('nameSuffix'))]",
-    "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterFqdnPrefix'), '-', variables('nameSuffix'))]",
+    "primaryAvailablitySetName": "[concat(variables('orchestratorName'), '-', variables('nameSuffix'), '-{{ (index .AgentPoolProfiles 0).Name }}-avs')]",
+    "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-', variables('nameSuffix'), '-master-ip-', variables('masterFqdnPrefix'))]",
     "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]",
     "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]",
-    "masterLbIPConfigName": "[concat(variables('orchestratorName'), '-master-lbFrontEnd-', variables('nameSuffix'))]",
-    "masterLbName": "[concat(variables('orchestratorName'), '-master-lb-', variables('nameSuffix'))]",
+    "masterLbIPConfigName": "[concat(variables('masterLbName'), '-frontend')]",
+    "masterLbName": "[concat(variables('orchestratorName'), '-', variables('nameSuffix'), '-master-lb')]",
 {{if gt .MasterProfile.Count 1}}
-    "masterInternalLbName": "[concat(variables('orchestratorName'), '-master-internal-lb-', variables('nameSuffix'))]",
+    "masterInternalLbName": "[concat(variables('orchestratorName'), '-', variables('nameSuffix'), '-master-internal-lb')]",
     "masterInternalLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterInternalLbName'))]",
-    "masterInternalLbIPConfigName": "[concat(variables('orchestratorName'), '-master-internal-lbFrontEnd-', variables('nameSuffix'))]",
+    "masterInternalLbIPConfigName": "[concat(variables('masterInternalLbName'), '-frontend')]",
     "masterInternalLbIPConfigID": "[concat(variables('masterInternalLbID'),'/frontendIPConfigurations/', variables('masterInternalLbIPConfigName'))]",
     "masterInternalLbIPOffset": {{GetDefaultInternalLbStaticIPOffset}},
     "kubernetesAPIServerIP": "[concat(variables('masterFirstAddrPrefix'), add(variables('masterInternalLbIPOffset'), int(variables('masterFirstAddrOctet4'))))]",
@@ -142,13 +142,13 @@
     "masterFirstAddrOctets": "[split(parameters('firstConsecutiveStaticIP'),'.')]",
     "masterFirstAddrOctet4": "[variables('masterFirstAddrOctets')[3]]",
     "masterFirstAddrPrefix": "[concat(variables('masterFirstAddrOctets')[0],'.',variables('masterFirstAddrOctets')[1],'.',variables('masterFirstAddrOctets')[2],'.')]",
-    "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-')]",
+    "masterVMNamePrefix": "[concat(variables('orchestratorName'), '-', variables('nameSuffix'), '-master-')]",
     "masterVMNames": [
-      "[concat(variables('masterVMNamePrefix'), '0')]",
-      "[concat(variables('masterVMNamePrefix'), '1')]",
-      "[concat(variables('masterVMNamePrefix'), '2')]",
-      "[concat(variables('masterVMNamePrefix'), '3')]",
-      "[concat(variables('masterVMNamePrefix'), '4')]"
+      "[concat(variables('masterVMNamePrefix'), 'vm0')]",
+      "[concat(variables('masterVMNamePrefix'), 'vm1')]",
+      "[concat(variables('masterVMNamePrefix'), 'vm2')]",
+      "[concat(variables('masterVMNamePrefix'), 'vm3')]",
+      "[concat(variables('masterVMNamePrefix'), 'vm4')]"
     ],
     "masterPrivateIpAddrs": [
       "[concat(variables('masterFirstAddrPrefix'), add(0, int(variables('masterFirstAddrOctet4'))))]",
