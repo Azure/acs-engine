@@ -19,7 +19,7 @@ import:
   - autorest/to
   - autorest/date
 - package: github.com/sirupsen/logrus
-  version: ^1.0.0
+  version: ~1.0.0
 - package: github.com/ghodss/yaml
   version: v1.0.0
 - package: github.com/mitchellh/go-homedir
