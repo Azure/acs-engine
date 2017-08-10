@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Basic Upgrader implementation
+// Upgrader implementation
 type Upgrader struct {
 	Translator *i18n.Translator
 	ClusterTopology
@@ -20,7 +20,7 @@ type Upgrader struct {
 	Client             armhelpers.ACSEngineClient
 }
 
-// Initialize Upgrader
+// Init builds a new Upgrader
 func (ku *Upgrader) Init(translator *i18n.Translator, clusterTopology ClusterTopology, upgradeModel *api.UpgradeContainerService, client armhelpers.ACSEngineClient) {
 	ku.Translator = translator
 	ku.ClusterTopology = clusterTopology
