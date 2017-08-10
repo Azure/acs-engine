@@ -71,22 +71,31 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 		return uc.Translator.Errorf("Error while querying ARM for resources: %+v", err)
 	}
 
+	var upgrader UpgradeWorkFlow
+	log.Infoln(fmt.Sprintf("Upgrading to Kubernetes release %s", ucs.OrchestratorProfile.OrchestratorRelease))
 	switch ucs.OrchestratorProfile.OrchestratorRelease {
 	case api.KubernetesRelease1Dot6:
-		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes release 1.6"))
-		upgrader := Kubernetes16upgrader{
-			Translator: uc.Translator,
-		}
-		upgrader.ClusterTopology = uc.ClusterTopology
-		upgrader.UpgradeModel = uc.UpgradeModel
-		upgrader.Client = uc.Client
-		if err := upgrader.RunUpgrade(); err != nil {
-			return err
-		}
+		upgrader16 := &Kubernetes16upgrader{}
+		upgrader16.Init(uc.Translator, uc.ClusterTopology, uc.UpgradeModel, uc.Client)
+		upgrader = upgrader16
+
+	case api.KubernetesRelease1Dot7:
+		upgrader17 := &Kubernetes17upgrader{}
+		upgrader17.Init(uc.Translator, uc.ClusterTopology, uc.UpgradeModel, uc.Client)
+		upgrader = upgrader17
+
 	default:
 		return uc.Translator.Errorf("Upgrade to Kubernetes release: %s is not supported from release: %s",
 			ucs.OrchestratorProfile.OrchestratorRelease,
 			uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease)
+	}
+
+	if err := upgrader.ClusterPreflightCheck(); err != nil {
+		return err
+	}
+
+	if err := upgrader.RunUpgrade(); err != nil {
+		return err
 	}
 
 	log.Infoln(fmt.Sprintf("Cluster upraded successfully to Kubernetes release %s, version: %s",
