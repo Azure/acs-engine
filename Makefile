@@ -49,6 +49,10 @@ build-cross: LDFLAGS += -extldflags "-static"
 build-cross:
 	CGO_ENABLED=0 gox -output="_dist/acs-engine-${VERSION}-{{.OS}}-{{.Arch}}/{{.Dir}}" -osarch='$(TARGETS)' $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)'
 
+.PHONY: build-windows-k8s
+build-windows-k8s:
+	./scripts/build-windows-k8s.sh -v ${K8S_VERSION}
+
 .PHONY: dist
 dist:
 	( \

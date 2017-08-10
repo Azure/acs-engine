@@ -28,10 +28,7 @@ while getopts "hv:p" opt; do
   esac
 done
 
-if [[ -z "$AZURE_STORAGE_CONNECTION_STRING" ]]; then
-	echo "\$AZURE_STORAGE_CONNECTION_STRING must be set before running."
-	exit
-elif [[ -z $version ]]; then
+if [[ -z $version ]]; then
 	echo "Unknown or no Kubernetes version provided"
 	exit
 fi
@@ -47,7 +44,6 @@ fetch_k8s() {
 	cd ${GOPATH}/src/k8s.io/kubernetes
 	git remote add acs https://github.com/JiangtianLi/kubernetes || true
 	git fetch acs
-	./build/make-clean.sh
 }
 
 set_git_config() {
