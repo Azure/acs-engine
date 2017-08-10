@@ -18,7 +18,7 @@ VERSION   := $(shell git rev-parse HEAD)
 GOFILES=`glide novendor | xargs go list`
 
 REPO_PATH := github.com/Azure/acs-engine
-DEV_ENV_IMAGE := quay.io/deis/go-dev:v0.26.0
+DEV_ENV_IMAGE := quay.io/jchauncey/go-dev:latest
 DEV_ENV_WORK_DIR := /go/src/${REPO_PATH}
 DEV_ENV_OPTS := --rm -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR} ${DEV_ENV_VARS}
 DEV_ENV_CMD := docker run ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}

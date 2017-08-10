@@ -1,5 +1,5 @@
 #! /bin/bash
-cp -f /go/src/github.com/Azure/acs-engine/bin/acs-engine /bin
+export PATH=${PATH}:${GOPATH}/src/github.com/Azure/acs-engine/bin
 
 if [ -z ${CLIENT_ID} ]; then
   echo "Client ID is required to run tests!"

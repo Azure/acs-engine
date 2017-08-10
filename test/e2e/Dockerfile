@@ -1,5 +1,4 @@
-FROM quay.io/deis/go-dev:v0.26.0
+FROM quay.io/deis/go-dev:v1.1.1
 
 RUN apt-get update \
-    && apt-get install -y openssh-client python-pip \
-    && pip install --disable-pip-version-check --no-cache-dir azure-cli==2.0.10
+    && apt-get install -y openssh-client
