@@ -17,7 +17,6 @@ VERSION   := $(shell git rev-parse HEAD)
 
 GOFILES=`glide novendor | xargs go list`
 
-
 REPO_PATH := github.com/Azure/acs-engine
 DEV_ENV_IMAGE := quay.io/deis/go-dev:v0.26.0
 DEV_ENV_WORK_DIR := /go/src/${REPO_PATH}
@@ -78,7 +77,7 @@ ifneq ($(GIT_BASEDIR),)
 endif
 
 test:
-	ginkgo -r -ldflags='$(LDFLAGS)' .
+	ginkgo -skipPackage test/e2e -r .
 
 .PHONY: test-style
 test-style:
