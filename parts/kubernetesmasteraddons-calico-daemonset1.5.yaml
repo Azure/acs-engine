@@ -1,9 +1,12 @@
-# Calico Version v2.2.1
-# http://docs.projectcalico.org/v2.2/releases#v2.2.1
+# Calico Version v2.4.1
+# https://docs.projectcalico.org/v2.4/releases#v2.4.1
+# This manifest includes the following component versions:
+#   calico/node:v2.4.1
+#   calico/cni:v1.10.0
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: canal
+  name: calico-node
   namespace: kube-system
   labels:
     kubernetes.io/cluster-service: "true"
@@ -12,7 +15,7 @@ metadata:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1alpha1
 metadata:
-  name: canal
+  name: calico-node
   namespace: kube-system
   labels:
     kubernetes.io/cluster-service: "true"
@@ -93,84 +96,39 @@ rules:
       - list
       - watch
 ---
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1alpha1
-metadata:
-  name: flannel
-  labels:
-    kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: "Reconcile"
-rules:
-  - apiGroups:
-      - ""
-    resources:
-      - pods
-    verbs:
-      - get
-  - apiGroups:
-      - ""
-    resources:
-      - nodes
-    verbs:
-      - list
-      - watch
-  - apiGroups:
-      - ""
-    resources:
-      - nodes/status
-    verbs:
-      - patch
----
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1alpha1
 metadata:
-  name: flannel
+  name: calico-node
   labels:
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: "Reconcile"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: flannel
+  name: calico-node
 subjects:
 - kind: ServiceAccount
-  name: canal
-  namespace: kube-system
----
-apiVersion: rbac.authorization.k8s.io/v1alpha1
-kind: ClusterRoleBinding
-metadata:
-  name: canal
-  labels:
-    kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: "Reconcile"
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: canal
-subjects:
-- kind: ServiceAccount
-  name: canal
+  name: calico-node
   namespace: kube-system
 ---
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: canal-config
+  name: calico-config
   namespace: kube-system
   labels:
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: "Reconcile"
 data:
-  canal_iface: ""
-  masquerade: "true"
   cni_network_config: |-
     {
         "name": "k8s-pod-network",
+        "cniVersion": "0.1.0",
         "type": "calico",
         "log_level": "info",
         "datastore_type": "kubernetes",
-        "hostname": "__KUBERNETES_NODE_NAME__",
+        "nodename": "__KUBERNETES_NODE_NAME__",
         "ipam": {
             "type": "host-local",
             "subnet": "usePodCidr"
@@ -184,31 +142,24 @@ data:
             "kubeconfig": "__KUBECONFIG_FILEPATH__"
         }
     }
-  net-conf.json: |
-    {
-      "Network": "<kubeClusterCidr>",
-      "Backend": {
-        "Type": "vxlan"
-      }
-    }
 ---
 kind: DaemonSet
 apiVersion: extensions/v1beta1
 metadata:
-  name: canal
+  name: calico-node
   namespace: kube-system
   labels:
-    k8s-app: canal
+    k8s-app: calico-node
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: "Reconcile"
 spec:
   selector:
     matchLabels:
-      k8s-app: canal
+      k8s-app: calico-node
   template:
     metadata:
       labels:
-        k8s-app: canal
+        k8s-app: calico-node
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         scheduler.alpha.kubernetes.io/tolerations: |
@@ -216,14 +167,14 @@ spec:
            {"key":"CriticalAddonsOnly", "operator":"Exists"}]
     spec:
       hostNetwork: true
-      serviceAccountName: canal
+      serviceAccountName: calico-node
       containers:
         - name: calico-node
-          image: quay.io/calico/node:v1.2.1
+          image: quay.io/calico/node:v2.4.1
           env:
             - name: DATASTORE_TYPE
               value: "kubernetes"
-            - name: FELIX_LOGSEVERITYSYS
+            - name: FELIX_LOGSEVERITYSCREEN
               value: "info"
             - name: FELIX_IPTABLESREFRESHINTERVAL
               value: "60"
@@ -231,13 +182,23 @@ spec:
               value: "false"
             - name: CALICO_NETWORKING_BACKEND
               value: "none"
+            - name: CLUSTER_TYPE
+              value: "k8s,acse"
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
             - name: WAIT_FOR_DATASTORE
               value: "true"
             - name: IP
               value: ""
-            - name: HOSTNAME
+            - name: CALICO_IPV4POOL_CIDR
+              value: "<kubeClusterCidr>"
+            - name: CALICO_IPV4POOL_IPIP
+              value: "off"
+            - name: FELIX_IPINIPENABLED
+              value: "false"
+            - name: FELIX_HEALTHENABLED
+              value: "true"
+            - name: NODENAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
@@ -248,6 +209,18 @@ spec:
           resources:
             requests:
               cpu: 250m
+          livenessProbe:
+            httpGet:
+              path: /liveness
+              port: 9099
+            periodSeconds: 10
+            initialDelaySeconds: 10
+            failureThreshold: 6
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: 9099
+            periodSeconds: 10
           volumeMounts:
             - mountPath: /lib/modules
               name: lib-modules
@@ -256,13 +229,13 @@ spec:
               name: var-run-calico
               readOnly: false
         - name: install-cni
-          image: quay.io/calico/cni:v1.8.3
+          image: quay.io/calico/cni:v1.10.0
           command: ["/install-cni.sh"]
           env:
             - name: CNI_NETWORK_CONFIG
               valueFrom:
                 configMapKeyRef:
-                  name: canal-config
+                  name: calico-config
                   key: cni_network_config
             - name: KUBERNETES_NODE_NAME
               valueFrom:
@@ -273,35 +246,6 @@ spec:
               name: cni-bin-dir
             - mountPath: /host/etc/cni/net.d
               name: cni-net-dir
-        - name: kube-flannel
-          image: quay.io/coreos/flannel:v0.8.0
-          command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
-          securityContext:
-            privileged: true
-          env:
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: POD_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: FLANNELD_IFACE
-              valueFrom:
-                configMapKeyRef:
-                  name: canal-config
-                  key: canal_iface
-            - name: FLANNELD_IP_MASQ
-              valueFrom:
-                configMapKeyRef:
-                  name: canal-config
-                  key: masquerade
-          volumeMounts:
-          - name: run
-            mountPath: /run
-          - name: flannel-cfg
-            mountPath: /etc/kube-flannel/
       volumes:
         - name: lib-modules
           hostPath:
@@ -315,9 +259,3 @@ spec:
         - name: cni-net-dir
           hostPath:
             path: /etc/cni/net.d
-        - name: run
-          hostPath:
-            path: /run
-        - name: flannel-cfg
-          configMap:
-            name: canal-config
