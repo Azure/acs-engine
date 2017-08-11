@@ -97,6 +97,11 @@ var kubernetesAritfacts = map[string]string{
 	"KUBELET_SERVICE_B64_GZIP_STR":  kubernetesKubeletService,
 }
 
+var kubernetesAritfacts15 = map[string]string{
+	"MASTER_PROVISION_B64_GZIP_STR": kubernetesMasterCustomScript,
+	"KUBELET_SERVICE_B64_GZIP_STR":  "kuberneteskubelet1.5.service",
+}
+
 var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR":             "kubernetesmasteraddons-heapster-deployment.yaml",
 	"MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR":             "kubernetesmasteraddons-kube-dns-deployment.yaml",
@@ -676,7 +681,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 
 			// add artifacts and addons
-			for placeholder, filename := range kubernetesAritfacts {
+			var artifiacts map[string]string
+			if profile.OrchestratorProfile.OrchestratorRelease == api.KubernetesRelease1Dot5 {
+				artifiacts = kubernetesAritfacts15
+			} else {
+				artifiacts = kubernetesAritfacts
+			}
+			for placeholder, filename := range artifiacts {
 				addonTextContents := getBase64CustomScript(filename)
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
 			}
@@ -713,7 +724,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 
 			// add artifacts
-			for placeholder, filename := range kubernetesAritfacts {
+			var artifiacts map[string]string
+			if cs.Properties.OrchestratorProfile.OrchestratorVersion == api.KubernetesRelease1Dot5 {
+				artifiacts = kubernetesAritfacts15
+			} else {
+				artifiacts = kubernetesAritfacts
+			}
+			for placeholder, filename := range artifiacts {
 				addonTextContents := getBase64CustomScript(filename)
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
 			}

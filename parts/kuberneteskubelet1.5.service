@@ -42,6 +42,7 @@ ExecStart=/usr/bin/docker run \
         --pod-manifest-path=/etc/kubernetes/manifests \
         --cluster-dns=${KUBELET_CLUSTER_DNS} \
         --cluster-domain=cluster.local \
+        --register-schedulable=${KUBELET_REGISTER_SCHEDULABLE} \
         --node-labels="${KUBELET_NODE_LABELS}" \
         --cloud-provider=azure \
         --cloud-config=/etc/kubernetes/azure.json \
@@ -49,8 +50,7 @@ ExecStart=/usr/bin/docker run \
         --hairpin-mode=promiscuous-bridge \
         --network-plugin=${KUBELET_NETWORK_PLUGIN} \
         --node-status-update-frequency=${KUBELET_NODE_STATUS_UPDATE_FREQUENCY} \
-        --v=2 ${KUBELET_FEATURE_GATES} \
-        ${KUBELET_REGISTER_NODE} ${KUBELET_REGISTER_WITH_TAINTS}
+        --v=2 ${KUBELET_FEATURE_GATES}
 
 [Install]
 WantedBy=multi-user.target
