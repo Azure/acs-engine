@@ -104,6 +104,7 @@ write_files:
     KUBELET_API_SERVERS=https://{{WrapAsVariable "kubernetesAPIServerIP"}}:443
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
     KUBELET_NETWORK_PLUGIN=kubenet
+    KUBELET_MAX_PODS=110
     DOCKER_OPTS=
     CUSTOM_CMD=/bin/true
     KUBELET_REGISTER_SCHEDULABLE=true

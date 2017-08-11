@@ -188,6 +188,7 @@ write_files:
     KUBELET_API_SERVERS={{WrapAsVerbatim "concat('https://', variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))], ':443')"}}
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
     KUBELET_NETWORK_PLUGIN=
+    KUBELET_MAX_PODS=110
     DOCKER_OPTS=
     KUBELET_NODE_LABELS=role=master
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
