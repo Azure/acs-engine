@@ -1,6 +1,8 @@
     "maxVMsPerPool": 100,
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
+{{ if.HasMaster }}
     "apiServerPrivateKey": "[parameters('apiServerPrivateKey')]",
+{{end}}
     "caCertificate": "[parameters('caCertificate')]",
     "caPrivateKey": "[parameters('caPrivateKey')]",
     "clientCertificate": "[parameters('clientCertificate')]",

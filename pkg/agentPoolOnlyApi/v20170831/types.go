@@ -43,6 +43,7 @@ type Properties struct {
 	NetworkProfile          *NetworkProfile          `json:"networkProfile,omitempty"`
 	AccessProfiles          []*AccessProfile         `json:"accessProfiles,omitempty"`
 	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"`
+	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty" validate:"required"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -58,6 +59,26 @@ type Properties struct {
 type ServicePrincipalProfile struct {
 	ClientID string `json:"clientId,omitempty" validate:"required"`
 	Secret   string `json:"secret,omitempty" validate:"required"`
+}
+
+// CertificateProfile contains cert material for the Kubernetes cluster
+type CertificateProfile struct {
+	// CaCertificate is the certificate authority certificate.
+	CaCertificate string `json:"caCertificate,omitempty"`
+	// CaPrivateKey is the certificate authority key.
+	CaPrivateKey string `json:"caPrivateKey,omitempty"`
+	// ApiServerCertificate is the rest api server certificate, and signed by the CA
+	APIServerCertificate string `json:"apiServerCertificate,omitempty"`
+	// ApiServerPrivateKey is the rest api server private key, and signed by the CA
+	APIServerPrivateKey string `json:"apiServerPrivateKey,omitempty"`
+	// ClientCertificate is the certificate used by the client kubelet services and signed by the CA
+	ClientCertificate string `json:"clientCertificate,omitempty"`
+	// ClientPrivateKey is the private key used by the client kubelet services and signed by the CA
+	ClientPrivateKey string `json:"clientPrivateKey,omitempty"`
+	// KubeConfigCertificate is the client certificate used for kubectl cli and signed by the CA
+	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty"`
+	// KubeConfigPrivateKey is the client private key used for kubectl cli and signed by the CA
+	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
 }
 
 // LinuxProfile represents the Linux configuration passed to the cluster

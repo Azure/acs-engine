@@ -216,6 +216,10 @@ func convertV20170831Properties(obj *v20170831.Properties) *Properties {
 	//if obj.AccessProfile != nil {
 	//	properties.AccessProfile = convertV20170831AccessProfile(obj.AccessProfile)
 	//}
+	// @TODO(jahanse): not sure if this is right
+	if obj.CertificateProfile != nil {
+		properties.CertificateProfile = convertV20170831CertificateProfile(obj.CertificateProfile)
+	}
 	return properties
 }
 
@@ -904,6 +908,19 @@ func convertV20170831ServicePrincipalProfile(obj *v20170831.ServicePrincipalProf
 	return &ServicePrincipalProfile{
 		ClientID: obj.ClientID,
 		Secret:   obj.Secret,
+	}
+}
+
+func convertV20170831CertificateProfile(obj *v20170831.CertificateProfile) *CertificateProfile {
+	return &CertificateProfile{
+		CaCertificate:         obj.CaCertificate,
+		CaPrivateKey:          obj.CaPrivateKey,
+		APIServerCertificate:  obj.APIServerCertificate,
+		APIServerPrivateKey:   obj.APIServerPrivateKey,
+		ClientCertificate:     obj.ClientCertificate,
+		ClientPrivateKey:      obj.ClientPrivateKey,
+		KubeConfigCertificate: obj.KubeConfigCertificate,
+		KubeConfigPrivateKey:  obj.KubeConfigPrivateKey,
 	}
 }
 

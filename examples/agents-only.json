@@ -1,0 +1,39 @@
+{
+  "apiVersion": "2017-08-31",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 1,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "data"
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "servicePrincipalClientID": "data",
+      "servicePrincipalClientSecret": "data"
+    },
+    "certificateProfile": {
+      "caCertificate": "caCertificate",
+      "apiServerCertificate": "apiServerCertificate",
+      "apiServerPrivateKey": "apiServerPrivateKey",
+      "clientCertificate": "clientCertificate",
+      "clientPrivateKey": "clientPrivateKey",
+      "kubeConfigCertificate": "kubeConfigCertificate",
+      "kubeConfigPrivateKey": "kubeConfigPrivateKey"
+    }
+  }
+}
