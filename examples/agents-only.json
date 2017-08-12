@@ -1,6 +1,7 @@
 {
   "apiVersion": "2017-08-31",
   "properties": {
+    "FQDN": "booyah",
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes"
     },

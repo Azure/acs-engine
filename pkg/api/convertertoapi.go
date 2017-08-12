@@ -193,6 +193,7 @@ func convertV20170831Properties(obj *v20170831.Properties) *Properties {
 	properties := &Properties{
 		ProvisioningState: ProvisioningState(obj.ProvisioningState),
 		MasterProfile:     nil,
+		FQDN:              obj.FQDN,
 	}
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {

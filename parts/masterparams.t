@@ -43,6 +43,14 @@
       }, 
       "type": "string"
     },
+{{else}}
+    "kubernetesEndpoint": {
+      "defaultValue": "{{.FQDN}}",
+      "metadata": {
+        "description": "Sets the static IP of the first master"
+      },
+      "type": "string"
+    },
 {{end}}
     "sshRSAPublicKey": {
       "metadata": {

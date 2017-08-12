@@ -29,12 +29,9 @@ type HostedMaster struct {
 
 // Properties represents the ACS cluster definition
 type Properties struct {
-	ProvisioningState ProvisioningState   `json:"provisioningState,omitempty"`
-	Version           OrchestratorVersion `json:"version"`
-	DNSPrefix         string              `json:"dnsPrefix" validate:"required"`
-	// Master LB public endpoint/FQDN with port
-	// The format will be FQDN:2376
-	// Not used during PUT, returned as part of GET
+	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
+	Version                 OrchestratorVersion      `json:"version"`
+	DNSPrefix               string                   `json:"dnsPrefix" validate:"required"`
 	FQDN                    string                   `json:"fqdn,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`

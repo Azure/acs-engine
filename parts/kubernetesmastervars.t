@@ -43,8 +43,8 @@
 {{ end }}
     "username": "[parameters('linuxAdminUsername')]",
     "masterFqdnPrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
-    "masterPrivateIp": "[parameters('firstConsecutiveStaticIP')]",
 {{ if .HasMaster }}
+    "masterPrivateIp": "[parameters('firstConsecutiveStaticIP')]",
     "masterVMSize": "[parameters('masterVMSize')]",
 {{end}}
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
@@ -209,7 +209,7 @@
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdPeerURLs')[2], ',', variables('masterVMNames')[3], '=', variables('masterEtcdPeerURLs')[3], ',', variables('masterVMNames')[4], '=', variables('masterEtcdPeerURLs')[4])]"
     ],
 {{else}}
-    "kubernetesAPIServerIP": "[parameters('firstConsecutiveStaticIP')]",
+    "kubernetesAPIServerIP": "[parameters('kubernetesEndpoint')]",
     "agentNamePrefix": "[concat(variables('orchestratorName'), '-agentpool-', variables('nameSuffix'), '-')]",
 {{end}}
     "subscriptionId": "[subscription().subscriptionId]",
