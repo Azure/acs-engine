@@ -381,8 +381,15 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 	addValue(parametersMap, "location", location)
 	addValue(parametersMap, "targetEnvironment", GetCloudTargetEnv(location))
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
+	// masterEndpointDNSNamePrefix is the basis for storage account creation across dcos, swarm, and k8s
 	if properties.MasterProfile != nil {
+		// MasterProfile exists, uses master DNS prefix
 		addValue(parametersMap, "masterEndpointDNSNamePrefix", properties.MasterProfile.DNSPrefix)
+	} else {
+		// Agents only, use cluster DNS prefix
+		addValue(parametersMap, "masterEndpointDNSNamePrefix", properties.DNSPrefix)
+	}
+	if properties.MasterProfile != nil {
 		if properties.MasterProfile.IsCustomVNET() {
 			addValue(parametersMap, "masterVnetSubnetID", properties.MasterProfile.VnetSubnetID)
 		} else {
