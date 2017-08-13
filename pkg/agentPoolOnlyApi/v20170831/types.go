@@ -54,8 +54,8 @@ type Properties struct {
 //    <NAME> is the name of the secret.
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
-	ClientID string `json:"clientId,omitempty" validate:"required"`
-	Secret   string `json:"secret,omitempty" validate:"required"`
+	ClientID string `json:"servicePrincipalClientID,omitempty" validate:"required"`
+	Secret   string `json:"servicePrincipalClientSecret,omitempty" validate:"required"`
 }
 
 // CertificateProfile contains cert material for the Kubernetes cluster
