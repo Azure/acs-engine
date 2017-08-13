@@ -29,17 +29,17 @@ type HostedMaster struct {
 
 // Properties represents the ACS cluster definition
 type Properties struct {
-	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
-	Version                 OrchestratorVersion      `json:"version"`
+	ProvisioningState ProvisioningState `json:"provisioningState,omitempty"`
+	// Version                 OrchestratorVersion      `json:"version"` // @todo(jahanse): not used
 	DNSPrefix               string                   `json:"dnsPrefix" validate:"required"`
 	FQDN                    string                   `json:"fqdn,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
-	NetworkProfile          *NetworkProfile          `json:"networkProfile,omitempty"`
-	AccessProfiles          []*AccessProfile         `json:"accessProfiles,omitempty"`
-	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"`
+	NetworkProfile          *NetworkProfile          `json:"networkProfile,omitempty"` //@todo(jahanse): not used
+	AccessProfiles          []*AccessProfile         `json:"accessProfiles,omitempty"` //@todo(jahanse): not used
+	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"` //@todo(jahanse): not used
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty" validate:"required"`
 }
 

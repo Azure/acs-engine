@@ -34,8 +34,9 @@ func ConvertV20170831AgentPool(v20170831 *v20170831.HostedMaster) *ContainerServ
 	c.Properties = convertV20170831Properties(v20170831.Properties)
 	c.Properties.OrchestratorProfile = &OrchestratorProfile{
 		OrchestratorType: Kubernetes,
-		// This is hard coded, fix this...
+		// @todo(jahanse): this is hard coded, fix this...
 		OrchestratorVersion: KubernetesRelease1Dot7,
+		OrchestratorRelease: KubernetesRelease1Dot7,
 	}
 	return c
 }
