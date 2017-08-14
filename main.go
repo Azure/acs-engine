@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/Azure/acs-engine/cmd"
-	log "github.com/sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 )
 
 func main() {

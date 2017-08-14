@@ -9,7 +9,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/i18n"
 	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 )
 
 func TestNormalizeForVMSSScaling(t *testing.T) {

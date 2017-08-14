@@ -14,7 +14,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	uuid "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 )
 
 // ClusterTopology contains resources of the cluster the upgrade operation

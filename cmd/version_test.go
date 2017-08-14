@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	logtest "github.com/sirupsen/logrus/hooks/test"
+	logtest "github.com/Sirupsen/logrus/hooks/test"
 )
 
 var _ = Describe("the version command", func() {

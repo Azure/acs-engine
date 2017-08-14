@@ -7,7 +7,7 @@ import (
 	. "github.com/Azure/acs-engine/pkg/test"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	log "github.com/sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 )
 
 func TestScaleDownVMs(t *testing.T) {

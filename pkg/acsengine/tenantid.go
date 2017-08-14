@@ -7,7 +7,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/arm/resources/subscriptions"
 	"github.com/Azure/go-autorest/autorest/azure"
-	log "github.com/sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 )
 
 // GetTenantID figures out the AAD tenant ID of the subscription by making an

@@ -1,5 +1,5 @@
-hash: 7ab8c3bc47c8889cc1ba5af07a896c6ba2aad7889b79c04f931a644b7f2a1a87
-updated: 2017-08-11T16:23:30.265959374-04:00
+hash: cf55e460d22c9eff47ceddf90b69e5e2f20702fb0656c70a7a31d2288fa2855f
+updated: 2017-08-14T14:25:44.131221875-04:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -99,6 +99,9 @@ imports:
   version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
 - name: github.com/sirupsen/logrus
   version: a3f95b5c423586578a4e099b11a46c2479628cac
+- name: github.com/Sirupsen/logrus
+  version: a3f95b5c423586578a4e099b11a46c2479628cac
+  repo: https://github.com/sirupsen/logrus
 - name: github.com/spf13/cobra
   version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
 - name: github.com/spf13/pflag
@@ -115,5 +118,5 @@ imports:
 - name: gopkg.in/go-playground/validator.v9
   version: fb68f39656d7ebf8aa339ad4917aa0c260ecc237
 - name: gopkg.in/yaml.v2
-  version: 25c4ec802a7d637f88d584ab26798e94ad14c13b
+  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
 devImports: []
