@@ -20,7 +20,7 @@ jobs:
       - run:
           name: Generate test coverage results
           command:  make build coverage
-  e2e:
+  non-k8s-pr-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: microsoft/acs-engine:latest
@@ -35,14 +35,14 @@ jobs:
           echo 'export SKIP_METRICS=y' >> $BASH_ENV
           echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
           echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
-          echo 'export TEST_CONFIG=test/acse-conf/acse-pr.json' >> $BASH_ENV
+          echo 'export TEST_CONFIG=test/acse-conf/acse-pr-non-k8s.json' >> $BASH_ENV
       - run:
           name: e2e tests
           command: make test-e2e
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-  master-kubernetes-e2e:
+  pr-kubernetes-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: microsoft/acs-engine:latest
@@ -69,7 +69,34 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-  master-swarm-e2e:
+  kubernetes-e2e:
+    working_directory: /go/src/github.com/Azure/acs-engine
+    docker:
+      - image: microsoft/acs-engine:latest
+        environment:
+          GOPATH: /go
+    steps:
+      - checkout
+      - run: |
+          echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
+          echo 'export BUILD_NUM=${CIRCLE_BUILD_NUM}' >> $BASH_ENV
+          echo 'export RESOURCE_GROUP_PREFIX=y' >> $BASH_ENV
+          echo 'export SKIP_METRICS=y' >> $BASH_ENV
+          echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
+          echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export TEST_CONFIG=test/e2e/kubernetes-deployments.json' >> $BASH_ENV
+      - run:
+          name: Kubernetes feature validation tests
+          command: make bootstrap build test-e2e
+          no_output_timeout: "30m"
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_logs
+  swarm-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: microsoft/acs-engine:latest
@@ -96,7 +123,7 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-  master-dcos-e2e:
+  dcos-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: microsoft/acs-engine:latest
@@ -123,7 +150,7 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-  master-swarmmode-e2e:
+  swarmmode-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: microsoft/acs-engine:latest
@@ -155,33 +182,33 @@ workflows:
   build_and_test:
     jobs:
       - test
-      - e2e-hold:
+      - pr-e2e-hold:
           type: approval
-      - e2e:
+      - non-k8s-pr-e2e:
           requires:
-            - e2e-hold
-          filters:
-            branches:
-              ignore: /master/
-      - master-kubernetes-e2e:
+            - pr-e2e-hold
+      - pr-kubernetes-e2e:
           requires:
-            - test
-          filters:
-            branches:
-              only: master
-      - master-swarm-e2e:
+            - pr-e2e-hold
+      - kubernetes-e2e:
           requires:
             - test
           filters:
             branches:
               only: master
-      - master-dcos-e2e:
+      - swarm-e2e:
           requires:
             - test
           filters:
             branches:
               only: master
-      - master-swarmmode-e2e:
+      - dcos-e2e:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - swarmmode-e2e:
           requires:
             - test
           filters:
