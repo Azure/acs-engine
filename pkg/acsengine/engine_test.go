@@ -302,7 +302,7 @@ func TestTemplateOutputPresence(t *testing.T) {
 		{key: "securityGroupName", value: "[variables('nsgName')]"},
 		{key: "virtualNetworkName", value: "[variables('virtualNetworkName')]"},
 		{key: "routeTableName", value: "[variables('routeTableName')]"},
-		{key: "primaryAvailabilitySetName", value: "[variables('primaryAvailablitySetName')]"},
+		{key: "primaryAvailabilitySetName", value: "[variables('primaryAvailabilitySetName')]"},
 	}
 
 	for _, tc := range tt {

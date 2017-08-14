@@ -20,5 +20,5 @@
     },
     "primaryAvailabilitySetName": {
         "type": "string",
-        "value": "[variables('primaryAvailablitySetName')]"
+        "value": "[variables('primaryAvailabilitySetName')]"
     },
