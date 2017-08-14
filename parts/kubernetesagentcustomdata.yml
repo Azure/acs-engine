@@ -130,7 +130,7 @@ write_files:
   content: |
     #!/bin/bash
 
-{{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "azure"}}
+{{if IsVNETIntegrated}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
 {{end}}
