@@ -18,7 +18,7 @@
         "type": "string",
         "value": "[variables('routeTableName')]"
     },
-    "primaryAvailablitySetName": {
+    "primaryAvailabilitySetName": {
         "type": "string",
         "value": "[variables('primaryAvailablitySetName')]"
     },
