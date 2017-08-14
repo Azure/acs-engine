@@ -38,6 +38,7 @@ var (
 		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase:    "mirror.azure.cn:5000/google_containers/",
+			TillerImageBase:        "mirror.azure.cn:5000/kubernetes-helm/",
 			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
