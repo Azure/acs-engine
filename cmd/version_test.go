@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 
+	logtest "github.com/Sirupsen/logrus/hooks/test"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	logtest "github.com/Sirupsen/logrus/hooks/test"
 )
 
 var _ = Describe("the version command", func() {

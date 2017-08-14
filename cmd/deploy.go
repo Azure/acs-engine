@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/leonelquinteros/gotext"
 	log "github.com/Sirupsen/logrus"
+	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
 
 	"encoding/json"
