@@ -39,7 +39,7 @@ build: generate
 	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -ldflags '$(LDFLAGS)'
 	cd test/acs-engine-test; go build
 
-build-binary: bootstrap generate
+build-binary: generate
 	go build -v -ldflags "${LDFLAGS}" -o ${BINARY_DEST_DIR}/acs-engine .
 
 build-binary-with-container:
