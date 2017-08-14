@@ -226,9 +226,9 @@ write_files:
 {{end}}
 
     # SNAT outbound traffic from pods to destinations outside of VNET.
-    if [[ "{{WrapAsVariable "networkPolicy"}}" == "azure" ]]; then
+{{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "azure"}}
       iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
-    fi
+{{end}}
 
     sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsVariable "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeServiceCidr>|{{WrapAsVariable "kubeServiceCidr"}}|g; s|<masterEtcdClientPort>|{{WrapAsVariable "masterEtcdClientPort"}}|g; s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
