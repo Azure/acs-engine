@@ -1,31 +1,31 @@
-hash: 5df50308c509024912fc12bda5f9b15eb2661540f64b719707a403a2e52f659a
-updated: 2017-08-02T12:48:17.628000263-07:00
+hash: db8fea98168e19e9513839a43f87d9c75f0fcb9e9a50e52e8eb2b196c7838c35
+updated: 2017-08-15T22:40:47.524253244-04:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
 - name: github.com/Azure/azure-sdk-for-go
   version: 5b6066bbd213e47c49a5fa2be2b29529bbcb6704
   subpackages:
-  - arm/authorization
   - arm/compute
-  - arm/disk
-  - arm/graphrbac
   - arm/network
   - arm/resources/resources
   - arm/resources/subscriptions
   - arm/storage
+  - arm/disk
   - storage
+  - arm/authorization
+  - arm/graphrbac
 - name: github.com/Azure/go-autorest
   version: f6e08fe5e4d45c9a66e40196d3fed5f37331d224
   subpackages:
   - autorest
   - autorest/adal
   - autorest/azure
-  - autorest/date
   - autorest/to
+  - autorest/date
   - autorest/validation
 - name: github.com/dgrijalva/jwt-go
-  version: 6c8dedd55f8a2e41f605de6d5d66e51ed1f299fc
+  version: a539ee1a749a2b895533f979515ac7e6e0f5b650
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-playground/locales
@@ -36,8 +36,6 @@ imports:
   version: b32fa301c9fe55953584134cb6853a13c87ec0a1
 - name: github.com/hashicorp/go-version
   version: 03c5bf6be031b6dd45afec16b1cf94fc8938bc77
-- name: github.com/inconshreveable/mousetrap
-  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JiangtianLi/gettext
   version: a8983c062be4b565d723c478922d7736e04fdba4
 - name: github.com/leonelquinteros/gotext
@@ -50,6 +48,39 @@ imports:
   - vm
 - name: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
+- name: github.com/onsi/ginkgo
+  version: 8382b23d18dbaaff8e5f7e83784c53ebb8ec2f47
+  subpackages:
+  - reporters
+  - config
+  - reporters/stenographer
+  - types
+  - internal/codelocation
+  - internal/failer
+  - internal/remote
+  - internal/suite
+  - internal/testingtproxy
+  - internal/writer
+  - reporters/stenographer/support/go-colorable
+  - internal/spec_iterator
+  - internal/containernode
+  - internal/leafnodes
+  - internal/spec
+  - internal/specrunner
+- name: github.com/onsi/gomega
+  version: c893efa28eb45626cdaa76c9f653b62488858837
+  subpackages:
+  - internal/assertion
+  - internal/asyncassertion
+  - internal/testingtsupport
+  - matchers
+  - types
+  - internal/oraclematcher
+  - format
+  - matchers/support/goraph/bipartitegraph
+  - matchers/support/goraph/edge
+  - matchers/support/goraph/node
+  - matchers/support/goraph/util
 - name: github.com/prometheus/common
   version: 13ba4ddd0caa9c28ca7b7bffe1dfa9ed8d5ef207
   subpackages:
@@ -60,7 +91,7 @@ imports:
   version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
 - name: github.com/Sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
-  repo:    https://github.com/sirupsen/logrus
+  repo: https://github.com/sirupsen/logrus
 - name: github.com/spf13/cobra
   version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
 - name: github.com/spf13/pflag
@@ -68,53 +99,42 @@ imports:
 - name: golang.org/x/crypto
   version: dd85ac7e6a88fc6ca420478e934de5f1a42dd3c6
   subpackages:
+  - ssh
   - curve25519
   - ed25519
   - ed25519/internal/edwards25519
-  - ssh
-- name: golang.org/x/sys
-  version: a55a76086885b80f79961eacb876ebd8caf3868d
+- name: golang.org/x/net
+  version: 1c05540f6879653db88113bc4a2b70aec4bd491f
+  repo: https://github.com/golang/net.git
+  vcs: git
   subpackages:
-  - unix
-  - windows
-  - windows/registry
-  - windows/svc/eventlog
+  - .
+  - html/charset
+  - html
+  - html/atom
+- name: golang.org/x/text
+  version: e56139fd9c5bc7244c76116c68e500765bb6db6b
+  repo: https://github.com/golang/text.git
+  vcs: git
+  subpackages:
+  - .
+  - encoding
+  - encoding/charmap
+  - encoding/htmlindex
+  - transform
+  - encoding/internal/identifier
+  - encoding/internal
+  - encoding/japanese
+  - encoding/korean
+  - encoding/simplifiedchinese
+  - encoding/traditionalchinese
+  - encoding/unicode
+  - language
+  - internal/utf8internal
+  - runes
+  - internal/tag
 - name: gopkg.in/go-playground/validator.v9
   version: fb68f39656d7ebf8aa339ad4917aa0c260ecc237
 - name: gopkg.in/yaml.v2
-  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
-testImports:
-- name: github.com/onsi/ginkgo
-  version: 77a8c1e5c40d6bb6c5eb4dd4bdce9763564f6298
-  subpackages:
-  - config
-  - internal/codelocation
-  - internal/containernode
-  - internal/failer
-  - internal/leafnodes
-  - internal/remote
-  - internal/spec
-  - internal/spec_iterator
-  - internal/specrunner
-  - internal/suite
-  - internal/testingtproxy
-  - internal/writer
-  - reporters
-  - reporters/stenographer
-  - reporters/stenographer/support/go-colorable
-  - reporters/stenographer/support/go-isatty
-  - types
-- name: github.com/onsi/gomega
-  version: 334b8f472b3af5d541c5642701c1e29e2126f486
-  subpackages:
-  - format
-  - internal/assertion
-  - internal/asyncassertion
-  - internal/oraclematcher
-  - internal/testingtsupport
-  - matchers
-  - matchers/support/goraph/bipartitegraph
-  - matchers/support/goraph/edge
-  - matchers/support/goraph/node
-  - matchers/support/goraph/util
-  - types
+  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
+devImports: []

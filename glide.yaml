@@ -26,6 +26,7 @@ import:
 - package: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - package: github.com/prometheus/common
+  version: 13ba4ddd0caa9c28ca7b7bffe1dfa9ed8d5ef207
   subpackages:
   - log
 - package: github.com/satori/go.uuid
@@ -33,6 +34,7 @@ import:
 - package: github.com/spf13/cobra
   version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
 - package: github.com/spf13/pflag
+  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 - package: github.com/leonelquinteros/gotext
   version: a735812a72672008b3902f8b2bc1302166a9a8ea
 - package: gopkg.in/go-playground/validator.v9
@@ -40,6 +42,7 @@ import:
 - package: github.com/go-playground/universal-translator
   version: v0.16.0
 - package: golang.org/x/crypto
+  version: dd85ac7e6a88fc6ca420478e934de5f1a42dd3c6 
   subpackages:
   - ssh
 - package: github.com/alexcesaro/statsd
@@ -52,3 +55,4 @@ testImport:
 - package: github.com/onsi/ginkgo
   version: v1.3.1
 - package: github.com/hashicorp/go-version
+  version: 03c5bf6be031b6dd45afec16b1cf94fc8938bc77
