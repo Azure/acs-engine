@@ -38,6 +38,8 @@ imports:
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JiangtianLi/gettext
   version: a8983c062be4b565d723c478922d7736e04fdba4
+- name: github.com/kelseyhightower/envconfig
+  version: f611eb38b3875cc3bd991ca91c51d06446afa14c
 - name: github.com/leonelquinteros/gotext
   version: a735812a72672008b3902f8b2bc1302166a9a8ea
 - name: github.com/Masterminds/semver
