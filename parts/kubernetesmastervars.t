@@ -115,9 +115,7 @@
     "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
     "dockerBridgeCidr": "[parameters('dockerBridgeCidr')]",
 {{if IsKubernetesVersionGe "1.6.0"}}
-    {{if HasLinuxAgents}}
     "registerWithTaints": "node-role.kubernetes.io/master=true:NoSchedule",
-    {{end}}
 {{else}}
     {{if HasLinuxAgents}}
     "registerSchedulable": "false",
