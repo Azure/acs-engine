@@ -1487,20 +1487,23 @@ func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorT
 	if strings.EqualFold(singleOrAll, "single") {
 		loopCount = 1
 	}
-	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, extensionProfile)
+	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, strconv.Itoa(loopCount), "", extensionProfile)
 }
 
 func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orchestratorType string, extensionProfile api.ExtensionProfile, singleOrAll string) (string, error) {
 	extTargetVMNamePrefix := fmt.Sprintf("variables('%sVMNamePrefix')", agentPoolProfile.Name)
 
-	loopCount := agentPoolProfile.Count
+	loopCount := fmt.Sprintf("[sub(variables('%sCount'), variables('%sOffset'))]",
+		agentPoolProfile.Name, agentPoolProfile.Name)
 	if strings.EqualFold(singleOrAll, "single") {
-		loopCount = 1
+		loopCount = "1"
 	}
-	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, extensionProfile)
+	loopOffset := fmt.Sprintf("variables('%sOffset')", agentPoolProfile.Name)
+
+	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, loopOffset, extensionProfile)
 }
 
-func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType string, loopCount int, extensionProfile api.ExtensionProfile) (string, error) {
+func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, loopOffset string, extensionProfile api.ExtensionProfile) (string, error) {
 	dta, e := getLinkedTemplateText(orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.RootURL)
 	if e != nil {
 		return "", e
@@ -1514,7 +1517,8 @@ func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType s
 		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", extensionProfile.RootURL, -1)
 	}
 	dta = strings.Replace(dta, "EXTENSION_TARGET_VM_NAME_PREFIX", extTargetVMNamePrefix, -1)
-	dta = strings.Replace(dta, "EXTENSION_LOOP_COUNT", strconv.Itoa(loopCount), -1)
+	dta = strings.Replace(dta, "EXTENSION_LOOP_COUNT", loopCount, -1)
+	dta = strings.Replace(dta, "EXTENSION_LOOP_OFFSET", loopOffset, -1)
 	return dta, nil
 }
 

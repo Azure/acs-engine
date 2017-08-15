@@ -1,9 +1,9 @@
 {
-    "name": "[concat('EXTENSION_TARGET_VM_NAME_PREFIX', copyIndex(), '/HelloWorldK8s)]",
+    "name": "[concat('EXTENSION_TARGET_VM_NAME_PREFIX', copyIndex(EXTENSION_LOOP_COUNT), '/HelloWorldK8s)]",
     "type": "Microsoft.Resources/deployments",
     "apiVersion": "[variables('apiVersionLinkDefault')]",
     "dependsOn": [
-        "[concat('EXTENSION_TARGET_VM_NAME_PREFIX', copyIndex(), '/cse', copyIndex())]"
+        "[concat('EXTENSION_TARGET_VM_NAME_PREFIX', copyIndex(EXTENSION_LOOP_COUNT), '/cse', copyIndex(EXTENSION_LOOP_COUNT))]"
     ],
     "copy": {
         "count": "EXTENSION_LOOP_COUNT",
@@ -23,7 +23,7 @@
                 "value": "[variables('apiVersionDefault')]"
             },
             "targetVMName": {
-                "value": "[concat('EXTENSION_TARGET_VM_NAME_PREFIX', copyIndex())]"
+                "value": "[concat('EXTENSION_TARGET_VM_NAME_PREFIX', copyIndex(EXTENSION_LOOP_COUNT))]"
             },
             "extensionParameters": {
                 "value": "EXTENSION_PARAMETERS_REPLACE"
