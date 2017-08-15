@@ -116,6 +116,7 @@
     "subnetName": "[split(parameters('masterVnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
     "vnetNameResourceSegmentIndex": 8,
     "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
+    "vnetCidr": "10.0.0.0/8",
   {{else}}
     "subnet": "[parameters('masterSubnet')]",
     "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
