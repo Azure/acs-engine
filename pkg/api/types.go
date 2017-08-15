@@ -51,9 +51,7 @@ type Properties struct {
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
 	CustomProfile           *CustomProfile           `json:"customProfile,omitempty"`
-	// FQDN not sure if we want this here or nested under OrchestratorProfile
-	FQDN      string `json:"fqdn,omitempty"`
-	DNSPrefix string `json:"dnsPrefix"`
+	HostedMasterProfile     *HostedMasterProfile     `json:"hostedMasterProfile,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -253,6 +251,14 @@ type KeyVaultCertificate struct {
 
 // OSType represents OS types of agents
 type OSType string
+
+type HostedMasterProfile struct {
+	// Master public endpoint/FQDN with port
+	// The format will be FQDN:2376
+	// Not used during PUT, returned as part of GETFQDN
+	FQDN      string `json:"fqdn,omitempty"`
+	DNSPrefix string `json:"dnsPrefix"`
+}
 
 // CustomProfile specifies custom properties that are used for
 // cluster instantiation.  Should not be used by most users.

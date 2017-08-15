@@ -385,9 +385,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 	if properties.MasterProfile != nil {
 		// MasterProfile exists, uses master DNS prefix
 		addValue(parametersMap, "masterEndpointDNSNamePrefix", properties.MasterProfile.DNSPrefix)
-	} else {
+	} else if properties.HostedMasterProfile != nil {
 		// Agents only, use cluster DNS prefix
-		addValue(parametersMap, "masterEndpointDNSNamePrefix", properties.DNSPrefix)
+		addValue(parametersMap, "masterEndpointDNSNamePrefix", properties.HostedMasterProfile.DNSPrefix)
 	}
 	if properties.MasterProfile != nil {
 		if properties.MasterProfile.IsCustomVNET() {
@@ -429,8 +429,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 			addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
 			addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
 		}
-		if properties.FQDN != "" {
-			addValue(parametersMap, "kubernetesEndpoint", properties.FQDN)
+		if properties.HostedMasterProfile != nil && properties.HostedMasterProfile.FQDN != "" {
+			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)
 		}
 		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)

@@ -44,11 +44,14 @@ func convertV20170831AgentPoolProperties(obj *v20170831.Properties) *Properties 
 	properties := &Properties{
 		ProvisioningState: ProvisioningState(obj.ProvisioningState),
 		MasterProfile:     nil,
-		FQDN:              obj.FQDN,
 	}
 
+	properties.HostedMasterProfile = &HostedMasterProfile{}
+	properties.HostedMasterProfile.DNSPrefix = obj.DNSPrefix
+	properties.HostedMasterProfile.FQDN = obj.FQDN
+	// TODO (amanohar): Fiz how orchestrator versions are passed
 	properties.OrchestratorProfile = convertV20170831AgentPoolOrchestratorProfile(obj)
-	properties.MasterProfile = nil
+
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {
 		properties.AgentPoolProfiles[i] = convertV20170831AgentPoolProfile(obj.AgentPoolProfiles[i])
@@ -106,6 +109,10 @@ func convertVLabsAgentPoolProperties(vlabs *vlabs.Properties, api *Properties) {
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
 	api.OrchestratorProfile = convertVLabsAgentPoolOrchestratorProfile(vlabs)
 	api.MasterProfile = nil
+
+	api.HostedMasterProfile = &HostedMasterProfile{}
+	api.HostedMasterProfile.DNSPrefix = vlabs.DNSPrefix
+	api.HostedMasterProfile.FQDN = vlabs.FQDN
 
 	api.AgentPoolProfiles = []*AgentPoolProfile{}
 	for _, p := range vlabs.AgentPoolProfiles {
