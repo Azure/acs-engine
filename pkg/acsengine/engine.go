@@ -1451,10 +1451,10 @@ func getLinkedTemplatesForExtensions(properties *api.Properties) string {
 	for err, extensionProfile := range extensions {
 		_ = err
 
-		masterOptedForExtension := validateProfileOptedForExtension(extensionProfile.Name, masterProfileExtensions)
+		masterOptedForExtension, singleOrAll := validateProfileOptedForExtension(extensionProfile.Name, masterProfileExtensions)
 		if masterOptedForExtension {
 			result += ","
-			dta, e := getMasterLinkedTemplateText(properties.MasterProfile, orchestratorType, extensionProfile)
+			dta, e := getMasterLinkedTemplateText(properties.MasterProfile, orchestratorType, extensionProfile, singleOrAll)
 			if e != nil {
 				fmt.Printf(e.Error())
 				return ""
@@ -1464,10 +1464,10 @@ func getLinkedTemplatesForExtensions(properties *api.Properties) string {
 
 		for _, agentPoolProfile := range properties.AgentPoolProfiles {
 			var poolProfileExtensions = agentPoolProfile.Extensions
-			poolOptedForExtension := validateProfileOptedForExtension(extensionProfile.Name, poolProfileExtensions)
+			poolOptedForExtension, singleOrAll := validateProfileOptedForExtension(extensionProfile.Name, poolProfileExtensions)
 			if poolOptedForExtension {
 				result += ","
-				dta, e := getAgentPoolLinkedTemplateText(agentPoolProfile, orchestratorType, extensionProfile)
+				dta, e := getAgentPoolLinkedTemplateText(agentPoolProfile, orchestratorType, extensionProfile, singleOrAll)
 				if e != nil {
 					fmt.Printf(e.Error())
 					return ""
@@ -1481,7 +1481,26 @@ func getLinkedTemplatesForExtensions(properties *api.Properties) string {
 	return result
 }
 
-func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorType string, extensionProfile api.ExtensionProfile) (string, error) {
+func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorType string, extensionProfile api.ExtensionProfile, singleOrAll string) (string, error) {
+	extTargetVMNamePrefix := "variables('masterVMNamePrefix')"
+	loopCount := masterProfile.Count
+	if strings.EqualFold(singleOrAll, "single") {
+		loopCount = 1
+	}
+	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, extensionProfile)
+}
+
+func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orchestratorType string, extensionProfile api.ExtensionProfile, singleOrAll string) (string, error) {
+	extTargetVMNamePrefix := fmt.Sprintf("variables('%sVMNamePrefix')", agentPoolProfile.Name)
+
+	loopCount := agentPoolProfile.Count
+	if strings.EqualFold(singleOrAll, "single") {
+		loopCount = 1
+	}
+	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, extensionProfile)
+}
+
+func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType string, loopCount int, extensionProfile api.ExtensionProfile) (string, error) {
 	dta, e := getLinkedTemplateText(orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.RootURL)
 	if e != nil {
 		return "", e
@@ -1494,36 +1513,18 @@ func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorT
 	} else {
 		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", extensionProfile.RootURL, -1)
 	}
-	dta = strings.Replace(dta, "EXTENSION_TARGET_VM_NAME_PREFIX", "variables('masterVMNamePrefix')", -1)
-	dta = strings.Replace(dta, "EXTENSION_LOOP_COUNT", string(masterProfile.Count), -1)
+	dta = strings.Replace(dta, "EXTENSION_TARGET_VM_NAME_PREFIX", extTargetVMNamePrefix, -1)
+	dta = strings.Replace(dta, "EXTENSION_LOOP_COUNT", strconv.Itoa(loopCount), -1)
 	return dta, nil
 }
 
-func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orchestratorType string, extensionProfile api.ExtensionProfile) (string, error) {
-	dta, e := getLinkedTemplateText(orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.RootURL)
-	if e != nil {
-		return "", e
-	}
-
-	dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", extensionProfile.ExtensionParameters, -1)
-
-	if strings.TrimSpace(extensionProfile.RootURL) == "" {
-		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", DefaultExtensionsRootURL, -1)
-	} else {
-		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", extensionProfile.RootURL, -1)
-	}
-	dta = strings.Replace(dta, "EXTENSION_TARGET_VM_NAME_PREFIX", fmt.Sprintf("variables('%sVMNamePrefix')", agentPoolProfile.Name), -1)
-	dta = strings.Replace(dta, "EXTENSION_LOOP_COUNT", string(agentPoolProfile.Count), -1)
-	return dta, nil
-}
-
-func validateProfileOptedForExtension(extensionName string, profileExtensions []api.Extension) bool {
+func validateProfileOptedForExtension(extensionName string, profileExtensions []api.Extension) (bool, string) {
 	for _, extension := range profileExtensions {
 		if extensionName == extension.Name {
-			return true
+			return true, extension.SingleOrAll
 		}
 	}
-	return false
+	return false, ""
 }
 
 // getLinkedTemplateText returns the string data from

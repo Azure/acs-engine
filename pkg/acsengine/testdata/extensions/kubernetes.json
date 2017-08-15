@@ -20,7 +20,13 @@
         "name": "agentpool1",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
+        "availabilityProfile": "AvailabilitySet",
+      "extensions": [
+          { 
+            "name": "hello-world-k8s", 
+            "singleOrAll": "all"
+          }
+        ]
       },
       {
         "name": "agentpool2",
@@ -43,7 +49,7 @@
       { 
         "name": "hello-world-k8s", 
         "version": "v1", 
-        "rootURL": "https://raw.githubusercontent.com/RobBagby/acs-engine/rob-master/" 
+        "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/RobBagby-extension-support/" 
       }
     ],
     "servicePrincipalProfile": {
