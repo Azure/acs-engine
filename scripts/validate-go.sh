@@ -19,9 +19,9 @@ exit_code=0
 
 if ! hash gometalinter 2>/dev/null ; then
   go get -u github.com/alecthomas/gometalinter
-  gometalinter --install
 fi
 
+gometalinter --install
 echo
 echo "==> Running static validations <=="
 # Run linters that should return errors
