@@ -3,7 +3,7 @@ jobs:
   test:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: microsoft/acs-engine:latest
+      - image: quay.io/deis/go-dev:v1.2.0
         environment:
           GOPATH: /go
     steps:
