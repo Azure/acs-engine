@@ -1442,44 +1442,83 @@ func getKubernetesPodStartIndex(properties *api.Properties) int {
 func getLinkedTemplatesForExtensions(properties *api.Properties) string {
 	var result string
 
-	var orchestratorType = properties.OrchestratorProfile.OrchestratorType
 	var extensions = properties.ExtensionsProfile
 
 	//This is temporary - to show you how to access the Extensions in the MasterProfile
 	var masterProfileExtensions = properties.MasterProfile.Extensions
+	var orchestratorType = properties.OrchestratorProfile.OrchestratorType
 
 	for err, extensionProfile := range extensions {
 		_ = err
 
-		masterOptedForExtension := validateMasterOptedForExtension(extensionProfile.Name, masterProfileExtensions)
-		if masterOptedForExtension == false {
-			fmt.Printf("Error: Master did not have extension defined for extension name: %s", extensionProfile.Name)
-			fmt.Println()
-			continue
+		masterOptedForExtension := validateProfileOptedForExtension(extensionProfile.Name, masterProfileExtensions)
+		if masterOptedForExtension {
+			result += ","
+			dta, e := getMasterLinkedTemplateText(properties.MasterProfile, orchestratorType, extensionProfile)
+			if e != nil {
+				fmt.Printf(e.Error())
+				return ""
+			}
+			result += dta
 		}
 
-		result += ","
-		dta, e := getLinkedTemplateText(orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.RootURL)
-		if e != nil {
-			fmt.Printf(e.Error())
-			return ""
+		for _, agentPoolProfile := range properties.AgentPoolProfiles {
+			var poolProfileExtensions = agentPoolProfile.Extensions
+			poolOptedForExtension := validateProfileOptedForExtension(extensionProfile.Name, poolProfileExtensions)
+			if poolOptedForExtension {
+				result += ","
+				dta, e := getAgentPoolLinkedTemplateText(agentPoolProfile, orchestratorType, extensionProfile)
+				if e != nil {
+					fmt.Printf(e.Error())
+					return ""
+				}
+				result += dta
+			}
+
 		}
-
-		dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", extensionProfile.ExtensionParameters, -1)
-
-		if strings.TrimSpace(extensionProfile.RootURL) == "" {
-			dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", DefaultExtensionsRootURL, -1)
-		}
-		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", extensionProfile.RootURL, -1)
-
-		result += dta
 	}
 
 	return result
 }
 
-func validateMasterOptedForExtension(extensionName string, masterProfileExtensions []api.Extension) bool {
-	for _, extension := range masterProfileExtensions {
+func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorType string, extensionProfile api.ExtensionProfile) (string, error) {
+	dta, e := getLinkedTemplateText(orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.RootURL)
+	if e != nil {
+		return "", e
+	}
+
+	dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", extensionProfile.ExtensionParameters, -1)
+
+	if strings.TrimSpace(extensionProfile.RootURL) == "" {
+		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", DefaultExtensionsRootURL, -1)
+	} else {
+		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", extensionProfile.RootURL, -1)
+	}
+	dta = strings.Replace(dta, "EXTENSION_TARGET_VM_NAME_PREFIX", "variables('masterVMNamePrefix')", -1)
+	dta = strings.Replace(dta, "EXTENSION_LOOP_COUNT", string(masterProfile.Count), -1)
+	return dta, nil
+}
+
+func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orchestratorType string, extensionProfile api.ExtensionProfile) (string, error) {
+	dta, e := getLinkedTemplateText(orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.RootURL)
+	if e != nil {
+		return "", e
+	}
+
+	dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", extensionProfile.ExtensionParameters, -1)
+
+	if strings.TrimSpace(extensionProfile.RootURL) == "" {
+		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", DefaultExtensionsRootURL, -1)
+	} else {
+		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", extensionProfile.RootURL, -1)
+	}
+	dta = strings.Replace(dta, "EXTENSION_TARGET_VM_NAME_PREFIX", fmt.Sprintf("variables('%sVMNamePrefix')", agentPoolProfile.Name), -1)
+	dta = strings.Replace(dta, "EXTENSION_LOOP_COUNT", string(agentPoolProfile.Count), -1)
+	return dta, nil
+}
+
+func validateProfileOptedForExtension(extensionName string, profileExtensions []api.Extension) bool {
+	for _, extension := range profileExtensions {
 		if extensionName == extension.Name {
 			return true
 		}
