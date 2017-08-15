@@ -1,8 +1,8 @@
-package v20170831
+package vlabs
 
 const (
 	// APIVersion is the version of this API
-	APIVersion = "2017-08-31"
+	APIVersion = "vlabs"
 )
 
 const (
