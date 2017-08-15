@@ -13,8 +13,14 @@ jobs:
           name: Install dependencies
           command: make bootstrap
       - run:
-          name: Run style and unit tests
-          command: make test-style build test
+          name: Run linting rules
+          command: make test-style
+      - run:
+          name: Build binaries
+          command: make build
+      - run:
+          name: Run unit tests
+          command: make test
       - store_test_results:
           path: test/junit
       - run:
