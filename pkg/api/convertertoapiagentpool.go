@@ -54,7 +54,7 @@ func convertV20170831AgentPoolProperties(obj *v20170831.Properties) *Properties 
 
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {
-		properties.AgentPoolProfiles[i] = convertV20170831AgentPoolProfile(obj.AgentPoolProfiles[i])
+		properties.AgentPoolProfiles[i] = convertV20170831AgentPoolProfile(obj.AgentPoolProfiles[i], AvailabilitySet)
 	}
 	if obj.LinuxProfile != nil {
 		properties.LinuxProfile = convertV20170831AgentPoolLinuxProfile(obj.LinuxProfile)
@@ -202,7 +202,7 @@ func convertVLabsAgentPoolOrchestratorProfile(obj *vlabs.Properties) *Orchestrat
 	return orchestratorProfile
 }
 
-func convertV20170831AgentPoolProfile(v20170831 *v20170831.AgentPoolProfile) *AgentPoolProfile {
+func convertV20170831AgentPoolProfile(v20170831 *v20170831.AgentPoolProfile, availabilityProfile string) *AgentPoolProfile {
 	api := &AgentPoolProfile{}
 	api.Name = v20170831.Name
 	api.Count = v20170831.Count
@@ -212,6 +212,7 @@ func convertV20170831AgentPoolProfile(v20170831 *v20170831.AgentPoolProfile) *Ag
 	api.StorageProfile = v20170831.StorageProfile
 	api.VnetSubnetID = v20170831.VnetSubnetID
 	api.Subnet = v20170831.GetSubnet()
+	api.AvailabilityProfile = availabilityProfile
 	return api
 }
 
@@ -222,6 +223,7 @@ func convertVLabsAgentPoolAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *A
 	api.OSDiskSizeGB = vlabs.OSDiskSizeGB
 	api.OSType = OSType(vlabs.OSType)
 	api.StorageProfile = vlabs.StorageProfile
+	api.AvailabilityProfile = vlabs.AvailabilityProfile
 	api.VnetSubnetID = vlabs.VnetSubnetID
 	api.Subnet = vlabs.GetSubnet()
 }

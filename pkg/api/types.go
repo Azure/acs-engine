@@ -319,11 +319,6 @@ type UpgradeContainerService struct {
 	OrchestratorProfile *OrchestratorProfile `json:"orchestratorProfile,omitempty"`
 }
 
-// HasWindows returns true if the cluster contains a master
-func (p *Properties) HasMaster() bool {
-	return p.MasterProfile != nil
-}
-
 // HasWindows returns true if the cluster contains windows
 func (p *Properties) HasWindows() bool {
 	for _, agentPoolProfile := range p.AgentPoolProfiles {

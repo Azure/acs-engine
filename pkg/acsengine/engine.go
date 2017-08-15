@@ -572,8 +572,8 @@ func getStorageAccountType(sizeName string) (string, error) {
 // getTemplateFuncMap returns all functions used in template generation
 func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) template.FuncMap {
 	return template.FuncMap{
-		"IsAgentPool": func() bool {
-			return cs.Properties.MasterProfile == nil
+		"IsHostedMaster": func() bool {
+			return cs.Properties.HostedMasterProfile != nil
 		},
 		"IsDCOS19": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&

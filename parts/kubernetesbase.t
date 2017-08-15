@@ -45,7 +45,7 @@
         {{template "kubernetesagentresourcesvmas.t" .}}
       {{end}}
     {{end}}
-    {{if .HasMaster}}
+    {{if not IsHostedMaster}}
       ,{{template "kubernetesmasterresources.t" .}}
     {{else}}
     ,{
@@ -153,10 +153,10 @@
     {{range .AgentPoolProfiles}}
       {{template "agentoutputs.t" .}} ,
     {{end}}
-    {{if .HasMaster}}
-      {{template "masteroutputs.t" .}} ,
+    {{if IsHostedMaster}}
       {{template "iaasoutputs.t" .}}
     {{else}}
+      {{template "masteroutputs.t" .}} ,
       {{template "iaasoutputs.t" .}}
     {{end}}
 

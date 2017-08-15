@@ -119,12 +119,13 @@ const (
 // daemons that register with the master and offer resources to
 // host applications in containers.
 type AgentPoolProfile struct {
-	Name           string `json:"name" validate:"required"`
-	Count          int    `json:"count" validate:"required,min=1,max=100"`
-	VMSize         string `json:"vmSize" validate:"required"`
-	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	StorageProfile string `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
-	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
+	Name                string `json:"name" validate:"required"`
+	Count               int    `json:"count" validate:"required,min=1,max=100"`
+	VMSize              string `json:"vmSize" validate:"required"`
+	OSDiskSizeGB        int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	AvailabilityProfile string `json:"availabilityProfile"`
+	StorageProfile      string `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 
 	// OSType is the operating system type for agents
 	// Set as nullable to support backward compat because

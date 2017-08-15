@@ -1,6 +1,6 @@
     "maxVMsPerPool": 100,
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
-{{ if.HasMaster }}
+{{ if not IsHostedMaster }}
     "apiServerPrivateKey": "[parameters('apiServerPrivateKey')]",
 {{end}}
     "caCertificate": "[parameters('caCertificate')]",
@@ -43,12 +43,12 @@
 {{ end }}
     "username": "[parameters('linuxAdminUsername')]",
     "masterFqdnPrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
-{{ if .HasMaster }}
+{{ if not IsHostedMaster }}
     "masterPrivateIp": "[parameters('firstConsecutiveStaticIP')]",
     "masterVMSize": "[parameters('masterVMSize')]",
 {{end}}
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
-{{if .HasMaster}}
+{{if not IsHostedMaster}}
   {{if GetClassicMode}}
     "masterCount": "[parameters('masterCount')]",
   {{else}}
@@ -70,7 +70,7 @@
     "osImageSKU": "16.04-LTS",
     "osImageVersion": "16.04.201706191",
     "resourceGroup": "[resourceGroup().name]",
-{{if .HasMaster}}
+{{if not IsHostedMaster}}
     "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
 {{else}}
     "routeTableName": "[concat(variables('agentNamePrefix'), 'routetable')]",
@@ -96,7 +96,7 @@
 {{if .HasManagedDisks}}
     "apiVersionStorageManagedDisks": "2016-04-30-preview",
 {{end}}
-{{if .HasMaster}}
+{{if not IsHostedMaster}}
   {{if .MasterProfile.IsStorageAccount}}
     "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
   {{end}}
@@ -108,7 +108,7 @@
 {{else}}
     "allocateNodeCidrs": true,
 {{end}}
-{{if .HasMaster}}
+{{if not IsHostedMaster}}
   {{if .MasterProfile.IsCustomVNET}}
     "vnetSubnetID": "[parameters('masterVnetSubnetID')]",
     "subnetNameResourceSegmentIndex": 10,
@@ -144,14 +144,14 @@
     "registerSchedulable": "true",
     {{end}}
 {{end}}
-{{if .HasMaster }}
+{{if not IsHostedMaster }}
     "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
 {{else}}
     "nsgName": "[concat(variables('agentNamePrefix'), 'nsg')]",
 {{end}}
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
     "primaryAvailablitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',variables('nameSuffix'))]",
-{{if .HasMaster }}
+{{if not IsHostedMaster }}
     "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterFqdnPrefix'), '-', variables('nameSuffix'))]",
     "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]",
     "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]",
