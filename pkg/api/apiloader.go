@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
+	apvlabs "github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -35,6 +36,9 @@ func (a *Apiloader) DeserializeContainerService(contents []byte, validate bool) 
 	}
 	version := m.APIVersion
 	service, err := a.LoadContainerService(contents, version, validate)
+	if service == nil || err != nil {
+		service, err = a.LoadContainerServiceForAgentPoolOnlyCluster(contents, version, validate)
+	}
 
 	return service, version, err
 }
@@ -42,12 +46,6 @@ func (a *Apiloader) DeserializeContainerService(contents []byte, validate bool) 
 // LoadContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
 func (a *Apiloader) LoadContainerService(contents []byte, version string, validate bool) (*ContainerService, error) {
 	switch version {
-	case v20170831.APIVersion:
-		containerService := &v20170831.HostedMaster{}
-		if e := json.Unmarshal(contents, &containerService); e != nil {
-			return nil, e
-		}
-		return ConvertV20170831AgentPool(containerService), nil
 	case v20160930.APIVersion:
 		containerService := &v20160930.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
@@ -103,6 +101,32 @@ func (a *Apiloader) LoadContainerService(contents []byte, version string, valida
 		}
 		return ConvertVLabsContainerService(containerService), nil
 
+	default:
+		return nil, a.Translator.Errorf("unrecognized APIVersion '%s'", version)
+	}
+}
+
+// LoadContainerServiceForAgentPoolOnlyCluster loads an ACS Cluster API Model, validates it, and returns the unversioned representation
+func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte, version string, validate bool) (*ContainerService, error) {
+	switch version {
+	case v20170831.APIVersion:
+		hostedMaster := &v20170831.HostedMaster{}
+		if e := json.Unmarshal(contents, &hostedMaster); e != nil {
+			return nil, e
+		}
+		if e := hostedMaster.Properties.Validate(); validate && e != nil {
+			return nil, e
+		}
+		return ConvertV20170831AgentPool(hostedMaster), nil
+	case apvlabs.APIVersion:
+		hostedMaster := &apvlabs.HostedMaster{}
+		if e := json.Unmarshal(contents, &hostedMaster); e != nil {
+			return nil, e
+		}
+		if e := hostedMaster.Properties.Validate(); validate && e != nil {
+			return nil, e
+		}
+		return ConvertVLabsAgentPool(hostedMaster), nil
 	default:
 		return nil, a.Translator.Errorf("unrecognized APIVersion '%s'", version)
 	}

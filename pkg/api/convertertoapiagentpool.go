@@ -62,15 +62,11 @@ func convertV20170831AgentPoolProperties(obj *v20170831.Properties) *Properties 
 	if obj.WindowsProfile != nil {
 		properties.WindowsProfile = convertV20170831AgentPoolWindowsProfile(obj.WindowsProfile)
 	}
-	//	if obj.JumpboxProfile != nil {
-	//		properties.JumpboxProfile = convertV20170831JumpboxProfile(obj.JumpboxProfile)
-	//	}
+
 	if obj.ServicePrincipalProfile != nil {
 		properties.ServicePrincipalProfile = convertV20170831AgentPoolServicePrincipalProfile(obj.ServicePrincipalProfile)
 	}
-	//if obj.NetworkProfile != nil {
-	//	properties.NetworkProfile = convertV20170831NetworkProfile(obj.NetworkProfile)
-	//}
+
 	//if obj.AccessProfile != nil {
 	//	properties.AccessProfile = convertV20170831AccessProfile(obj.AccessProfile)
 	//}
@@ -256,49 +252,3 @@ func convertVLabsAgentPoolCertificateProfile(vlabs *vlabs.CertificateProfile, ap
 	api.KubeConfigCertificate = vlabs.KubeConfigCertificate
 	api.KubeConfigPrivateKey = vlabs.KubeConfigPrivateKey
 }
-
-// func convertV20170831AgentPoolKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *KubernetesConfig) {
-// 	api.KubernetesImageBase = vlabs.KubernetesImageBase
-// 	api.ClusterSubnet = vlabs.ClusterSubnet
-// 	api.NetworkPolicy = vlabs.NetworkPolicy
-// 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
-// 	api.NodeStatusUpdateFrequency = vlabs.NodeStatusUpdateFrequency
-// 	api.CtrlMgrNodeMonitorGracePeriod = vlabs.CtrlMgrNodeMonitorGracePeriod
-// 	api.CtrlMgrPodEvictionTimeout = vlabs.CtrlMgrPodEvictionTimeout
-// 	api.CtrlMgrRouteReconciliationPeriod = vlabs.CtrlMgrRouteReconciliationPeriod
-// 	api.CloudProviderBackoff = vlabs.CloudProviderBackoff
-// 	api.CloudProviderBackoffDuration = vlabs.CloudProviderBackoffDuration
-// 	api.CloudProviderBackoffExponent = vlabs.CloudProviderBackoffExponent
-// 	api.CloudProviderBackoffJitter = vlabs.CloudProviderBackoffJitter
-// 	api.CloudProviderBackoffRetries = vlabs.CloudProviderBackoffRetries
-// 	api.CloudProviderRateLimit = vlabs.CloudProviderRateLimit
-// 	api.CloudProviderRateLimitBucket = vlabs.CloudProviderRateLimitBucket
-// 	api.CloudProviderRateLimitQPS = vlabs.CloudProviderRateLimitQPS
-// 	api.UseManagedIdentity = vlabs.UseManagedIdentity
-// 	api.CustomHyperkubeImage = vlabs.CustomHyperkubeImage
-// 	api.UseInstanceMetadata = vlabs.UseInstanceMetadata
-// 	api.EnableRbac = vlabs.EnableRbac
-// }
-
-// func convertVLabsAgentPoolKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *KubernetesConfig) {
-// 	api.KubernetesImageBase = vlabs.KubernetesImageBase
-// 	api.ClusterSubnet = vlabs.ClusterSubnet
-// 	api.NetworkPolicy = vlabs.NetworkPolicy
-// 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
-// 	api.NodeStatusUpdateFrequency = vlabs.NodeStatusUpdateFrequency
-// 	api.CtrlMgrNodeMonitorGracePeriod = vlabs.CtrlMgrNodeMonitorGracePeriod
-// 	api.CtrlMgrPodEvictionTimeout = vlabs.CtrlMgrPodEvictionTimeout
-// 	api.CtrlMgrRouteReconciliationPeriod = vlabs.CtrlMgrRouteReconciliationPeriod
-// 	api.CloudProviderBackoff = vlabs.CloudProviderBackoff
-// 	api.CloudProviderBackoffDuration = vlabs.CloudProviderBackoffDuration
-// 	api.CloudProviderBackoffExponent = vlabs.CloudProviderBackoffExponent
-// 	api.CloudProviderBackoffJitter = vlabs.CloudProviderBackoffJitter
-// 	api.CloudProviderBackoffRetries = vlabs.CloudProviderBackoffRetries
-// 	api.CloudProviderRateLimit = vlabs.CloudProviderRateLimit
-// 	api.CloudProviderRateLimitBucket = vlabs.CloudProviderRateLimitBucket
-// 	api.CloudProviderRateLimitQPS = vlabs.CloudProviderRateLimitQPS
-// 	api.UseManagedIdentity = vlabs.UseManagedIdentity
-// 	api.CustomHyperkubeImage = vlabs.CustomHyperkubeImage
-// 	api.UseInstanceMetadata = vlabs.UseInstanceMetadata
-// 	api.EnableRbac = vlabs.EnableRbac
-// }

@@ -37,9 +37,7 @@ type Properties struct {
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
-	NetworkProfile          *NetworkProfile          `json:"networkProfile,omitempty"` //@todo(jahanse): not used
 	AccessProfiles          []*AccessProfile         `json:"accessProfiles,omitempty"` //@todo(jahanse): not used
-	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"` //@todo(jahanse): not used
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -95,25 +93,6 @@ const (
 	// resource group to another
 	Migrating ProvisioningState = "Migrating"
 )
-
-// NetworkProfile represents the definition of network profile for the cluster
-type NetworkProfile struct {
-	// PodCidr defines the range of addresses that will be used for Pods.
-	// Allocation of subnets to agents will be handed by kube-controller-manager
-	PodCidr string `json:"podCidr,omitempty"`
-	// ServiceCidr defines the range for Kubernetes services
-	ServiceCidr string `json:"serviceCidr,omitempty"`
-	// AgentCidr defines the range for Agent VMs in the subnet
-	AgentCidr        string `json:"agentCidr,omitempty"`
-	KubeDNSServiceIP string `json:"kubeDNSServiceIP,omitempty"`
-}
-
-// JumpboxProfile represents the definition of bastion machine to access the agent nodes
-type JumpboxProfile struct {
-	PublicIPAddressID string `json:"publicIPAddressID,omitempty"`
-	PublicIPAddress   string `json:"publicIPAddress,omitempty"`
-	InternalIPAddress string `json:"internalIPAddress,omitempty"`
-}
 
 // AgentPoolProfile represents configuration of VMs running agent
 // daemons that register with the master and offer resources to
