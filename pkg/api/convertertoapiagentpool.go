@@ -67,9 +67,6 @@ func convertV20170831AgentPoolProperties(obj *v20170831.Properties) *Properties 
 		properties.ServicePrincipalProfile = convertV20170831AgentPoolServicePrincipalProfile(obj.ServicePrincipalProfile)
 	}
 
-	//if obj.AccessProfile != nil {
-	//	properties.AccessProfile = convertV20170831AccessProfile(obj.AccessProfile)
-	//}
 	return properties
 }
 
