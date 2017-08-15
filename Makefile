@@ -73,7 +73,7 @@ ifneq ($(GIT_BASEDIR),)
 endif
 
 test:
-	ginkgo -r -ldflags='$(LDFLAGS)' .
+	ginkgo -skipPackage test/e2e -r .
 
 .PHONY: test-style
 test-style:
