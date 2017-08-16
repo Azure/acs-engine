@@ -37,6 +37,8 @@ import:
   version: a735812a72672008b3902f8b2bc1302166a9a8ea
 - package: gopkg.in/go-playground/validator.v9
   version: v9.4.0
+  subpackages:
+  - locales
 - package: github.com/go-playground/universal-translator
   version: v0.16.0
 - package: golang.org/x/crypto
@@ -51,4 +53,3 @@ import:
 testImport:
 - package: github.com/onsi/gomega
 - package: github.com/onsi/ginkgo
-- package: github.com/hashicorp/go-version

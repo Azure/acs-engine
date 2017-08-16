@@ -1,5 +1,5 @@
-hash: bf17ad520b7c0d6dd453c7168691fea0f035d1cfed418d711a48f411fd0fd411
-updated: 2017-08-16T10:00:56.961393378-07:00
+hash: 1a8fffb7ab0d984b91b2a7a1965b3191aea7c55e85154218d1d54f18fdd4d12e
+updated: 2017-08-16T10:03:45.900998816-07:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -117,8 +117,8 @@ imports:
   - windows/svc/eventlog
 - name: gopkg.in/go-playground/validator.v9
   version: fb68f39656d7ebf8aa339ad4917aa0c260ecc237
+  subpackages:
+  - locales
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
-testImports:
-- name: github.com/hashicorp/go-version
-  version: 03c5bf6be031b6dd45afec16b1cf94fc8938bc77
+testImports: []
