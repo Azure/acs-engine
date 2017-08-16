@@ -214,6 +214,12 @@ workflows:
       - non-k8s-pr-e2e:
           requires:
             - pr-e2e-hold
+      - ginkgo-k8s-e2e:
+          requires:
+            - pr-e2e-hold
+          filters:
+            branches:
+              ignore: /master/
       - pr-kubernetes-e2e:
           requires:
             - pr-e2e-hold
