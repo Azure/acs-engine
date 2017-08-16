@@ -125,3 +125,4 @@ devenv:
 	./scripts/devenv.sh
 
 include versioning.mk
+include test.mk
