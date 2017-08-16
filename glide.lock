@@ -1,5 +1,5 @@
-hash: 1a8fffb7ab0d984b91b2a7a1965b3191aea7c55e85154218d1d54f18fdd4d12e
-updated: 2017-08-16T10:03:45.900998816-07:00
+hash: c6a46812fd61d6d0671bd5f8ee0a2b3be609a705a9729d357a501cbced5fc057
+updated: 2017-08-16T15:22:54.077312971-07:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -34,6 +34,8 @@ imports:
   - currency
 - name: github.com/go-playground/universal-translator
   version: b32fa301c9fe55953584134cb6853a13c87ec0a1
+- name: github.com/imdario/mergo
+  version: 3e95a51e0639b4cf372f2ccf74c86749d747fbdc
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JiangtianLi/gettext
