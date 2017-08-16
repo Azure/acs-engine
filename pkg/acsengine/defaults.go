@@ -5,7 +5,7 @@ import (
 	"net"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	version "github.com/hashicorp/go-version"
+	"github.com/Masterminds/semver"
 )
 
 var (
@@ -119,11 +119,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
 			}
 		}
-		k8sVersion, _ := version.NewVersion(api.KubernetesReleaseToVersion[k8sRelease])
-		minVersionK8sVersionForCloudProviderRateLimit, _ := version.NewVersion("1.6.6")
+		k8sVersion, _ := semver.NewVersion(api.KubernetesReleaseToVersion[k8sRelease])
+		constraint, _ := semver.NewConstraint(">= 1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
 		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
-		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && k8sVersion.Compare(minVersionK8sVersionForCloudProviderRateLimit) != -1 {
+		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && constraint.Check(k8sVersion) {
 			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
 			}
