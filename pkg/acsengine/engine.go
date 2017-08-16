@@ -554,8 +554,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsKubernetesVersionGe": func(version string) bool {
 			orchestratorVersion, _ := semver.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
 			constraint, _ := semver.NewConstraint(">=" + version)
-			ge := constraint.Check(orchestratorVersion)
-			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes && ge
+			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes && constraint.Check(orchestratorVersion)
 		},
 		"GetKubernetesLabels": func(profile *api.AgentPoolProfile) string {
 			var buf bytes.Buffer
