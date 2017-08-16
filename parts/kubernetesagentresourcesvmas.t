@@ -52,7 +52,7 @@
         {
             "platformFaultDomainCount": "2",
             "platformUpdateDomainCount": "3",
-		"managed" : "true"
+            "managed" : "true"
         },
   
       "type": "Microsoft.Compute/availabilitySets"
@@ -77,14 +77,14 @@
           "keySource": "Microsoft.Storage",
           "services": {
             "blob": {
-              "enabled": "true"
+              "enabled": true
             },
             "file": {
-              "enabled": "true"
+              "enabled": true
             }
           }
         },
-        "supportsHttpsTrafficOnly": "true"
+        "supportsHttpsTrafficOnly": true
       },
       "sku": {
         "name": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"
@@ -111,14 +111,14 @@
           "keySource": "Microsoft.Storage",
           "services": {
             "blob": {
-              "enabled": "true"
+              "enabled": true
             },
             "file": {
-              "enabled": "true"
+              "enabled": true
             }
           }
         },
-        "supportsHttpsTrafficOnly": "true"
+        "supportsHttpsTrafficOnly": true
       },
       "sku": {
         "name": "[variables('vmSizesMap')[variables('{{.Name}}VMSize')].storageAccountType]"

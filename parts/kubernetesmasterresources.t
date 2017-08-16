@@ -32,14 +32,14 @@
           "keySource": "Microsoft.Storage",
           "services": {
             "blob": {
-              "enabled": "true"
+              "enabled": true
             },
             "file": {
-              "enabled": "true"
+              "enabled": true
             }
           }
         },
-        "supportsHttpsTrafficOnly": "true"
+        "supportsHttpsTrafficOnly": true
       },
       "sku": {
         "name": "[variables('vmSizesMap')[variables('masterVMSize')].storageAccountType]"
