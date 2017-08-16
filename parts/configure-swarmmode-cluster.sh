@@ -16,6 +16,7 @@ echo "starting Swarm Mode cluster configuration"
 date
 ps ax
 
+# **NOTE** Keep version numbers in sync with constants in cmd/info.go
 DOCKER_CE_VERSION="17.03.*"
 DOCKER_COMPOSE_VERSION="1.14.0"
 #############

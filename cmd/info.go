@@ -13,10 +13,17 @@ const (
 	infoShortDescription = "provide info about supported orchestrators"
 	infoLongDescription  = "provide info about versions of supported orchestrators"
 
-	Kubernetes = "Kubernetes"
-	DCOS       = "DCOS"
-	Swarm      = "Swarm"
-	DockerCE   = "DockerCE"
+	kubernetes = "Kubernetes"
+	dcos       = "DCOS"
+	swarm      = "Swarm"
+	dockerCE   = "DockerCE"
+
+	// To be in sync with parts/configure-swarm-cluster.sh
+	swarmVersion              = "1.1.0"
+	swarmDockerComposeVersion = "1.6.2"
+	// To be in sync with parts/configure-swarmmode-cluster.sh
+	dockerceVersion              = "17.03"
+	dockerceDockerComposeVersion = "1.14.0"
 )
 
 type infoCmd struct {
@@ -48,14 +55,14 @@ func newInfoCmd() *cobra.Command {
 
 func (ic *infoCmd) validate() error {
 	switch {
-	case strings.EqualFold(ic.orchestrator, Kubernetes):
-		ic.orchestrator = Kubernetes
-	case strings.EqualFold(ic.orchestrator, DCOS):
-		ic.orchestrator = DCOS
-	case strings.EqualFold(ic.orchestrator, DockerCE):
-		ic.orchestrator = DockerCE
-	case strings.EqualFold(ic.orchestrator, Swarm):
-		ic.orchestrator = Swarm
+	case strings.EqualFold(ic.orchestrator, kubernetes):
+		ic.orchestrator = kubernetes
+	case strings.EqualFold(ic.orchestrator, dcos):
+		ic.orchestrator = dcos
+	case strings.EqualFold(ic.orchestrator, dockerCE):
+		ic.orchestrator = dockerCE
+	case strings.EqualFold(ic.orchestrator, swarm):
+		ic.orchestrator = swarm
 	case ic.orchestrator == "":
 		if len(ic.release) > 0 {
 			return fmt.Errorf("Must specify orchestrator for release '%s'", ic.release)
@@ -71,38 +78,31 @@ func (ic *infoCmd) run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	funcmap := map[string]infoFunc{
-		Kubernetes: kubernetesInfo,
-		DCOS:       dcosInfo,
-		Swarm:      swarmInfo,
-		DockerCE:   dockerceInfo,
+		kubernetes: kubernetesInfo,
+		dcos:       dcosInfo,
+		swarm:      swarmInfo,
+		dockerCE:   dockerceInfo,
 	}
 	if len(ic.orchestrator) == 0 {
-		for o, f := range funcmap {
-			fmt.Printf("%s:\n", o)
+		for _, f := range funcmap {
 			if err := f(ic.release); err != nil {
 				return err
 			}
-			fmt.Println()
 		}
 		return nil
 	}
 	return funcmap[ic.orchestrator](ic.release)
 }
 
-func printInfo(rel, ver, def string) {
-	fmt.Printf("Release: %s Version: %s", rel, ver)
-	if rel == def {
-		fmt.Println(" (default)")
-	} else {
-		fmt.Println()
-	}
+func printInfo(orch, rel, ver, def string) {
+	fmt.Printf("%s{Release: %s, Version: %s, Default: %t}\n", orch, rel, ver, rel == def)
 }
 
 func kubernetesInfo(release string) error {
 	if len(release) == 0 {
 		// print info for all supported versions
 		for r, v := range common.KubeReleaseToVersion {
-			printInfo(r, v, common.KubernetesDefaultRelease)
+			printInfo(kubernetes, r, v, common.KubernetesDefaultRelease)
 		}
 	} else {
 		// print info for the specified release
@@ -110,7 +110,7 @@ func kubernetesInfo(release string) error {
 		if !ok {
 			return fmt.Errorf("Kubernetes release %s is not supported", release)
 		}
-		printInfo(release, ver, common.KubernetesDefaultRelease)
+		printInfo(kubernetes, release, ver, common.KubernetesDefaultRelease)
 	}
 	return nil
 }
@@ -119,7 +119,7 @@ func dcosInfo(release string) error {
 	if len(release) == 0 {
 		// print info for all supported versions
 		for rel, ver := range common.DCOSReleaseToVersion {
-			printInfo(rel, ver, common.DCOSDefaultRelease)
+			printInfo(dcos, rel, ver, common.DCOSDefaultRelease)
 		}
 	} else {
 		// print info for the specified release
@@ -127,17 +127,17 @@ func dcosInfo(release string) error {
 		if !ok {
 			return fmt.Errorf("DCOS release %s is not supported", release)
 		}
-		printInfo(release, ver, common.DCOSDefaultRelease)
+		printInfo(dcos, release, ver, common.DCOSDefaultRelease)
 	}
 	return nil
 }
 
 func swarmInfo(release string) error {
-	fmt.Println("Version: 1.1.0 Docker Compose Version: 1.6.2")
+	fmt.Printf("Swarm{Version: %s, Docker Compose Version: %s}\n", swarmVersion, swarmDockerComposeVersion)
 	return nil
 }
 
 func dockerceInfo(release string) error {
-	fmt.Println("Version: 17.03 Docker Compose Version: 1.14.0")
+	fmt.Printf("DockerCE{Version: %s, Docker Compose Version: %s}\n", dockerceVersion, dockerceDockerComposeVersion)
 	return nil
 }
