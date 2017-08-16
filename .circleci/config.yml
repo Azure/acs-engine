@@ -193,7 +193,6 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: |
-          echo 'export LOCATION=westus2' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/kubernetes.json' >> $BASH_ENV
           echo 'export SSH_KEY_NAME=id_rsa' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
