@@ -72,7 +72,7 @@ ifneq ($(GIT_BASEDIR),)
 	LDFLAGS += -X github.com/Azure/acs-engine/pkg/test.JUnitOutDir=${GIT_BASEDIR}/test/junit
 endif
 
-test:
+test: generate
 	ginkgo -skipPackage test/e2e -r .
 
 .PHONY: test-style
