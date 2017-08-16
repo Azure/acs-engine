@@ -39,7 +39,7 @@ func TestExpected(t *testing.T) {
 	}
 
 	for _, tuple := range *apiModelTestFiles {
-		containerService, version, err := apiloader.LoadContainerServiceFromFile(tuple.APIModelFilename, true)
+		containerService, version, err := apiloader.LoadContainerServiceFromFile(tuple.APIModelFilename, true, nil)
 		if err != nil {
 			t.Errorf("Loading file %s got error: %s", tuple.APIModelFilename, err.Error())
 			continue
@@ -139,7 +139,7 @@ func TestExpected(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			containerService, version, err = apiloader.DeserializeContainerService(b, true)
+			containerService, version, err = apiloader.DeserializeContainerService(b, true, nil)
 			if err != nil {
 				t.Error(err)
 			}
@@ -281,7 +281,7 @@ func TestTemplateOutputPresence(t *testing.T) {
 		t.Fatalf("Failed to initialize template generator: %v", err)
 	}
 
-	containerService, _, err := apiloader.LoadContainerServiceFromFile("./testdata/simple/kubernetes.json", true)
+	containerService, _, err := apiloader.LoadContainerServiceFromFile("./testdata/simple/kubernetes.json", true, nil)
 	if err != nil {
 		t.Fatalf("Failed to load container service from file: %v", err)
 	}

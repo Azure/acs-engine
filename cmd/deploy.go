@@ -108,7 +108,7 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 		},
 	}
 	// skip validating the model fields for now
-	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false)
+	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, nil)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
@@ -235,7 +235,7 @@ func revalidateApimodel(apiloader *api.Apiloader, containerService *api.Containe
 	if err != nil {
 		return nil, "", err
 	}
-	return apiloader.DeserializeContainerService(rawVersionedAPIModel, true)
+	return apiloader.DeserializeContainerService(rawVersionedAPIModel, true, nil)
 }
 
 func (dc *deployCmd) run() error {
