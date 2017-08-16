@@ -1,5 +1,5 @@
-hash: 5df50308c509024912fc12bda5f9b15eb2661540f64b719707a403a2e52f659a
-updated: 2017-08-02T12:48:17.628000263-07:00
+hash: bf17ad520b7c0d6dd453c7168691fea0f035d1cfed418d711a48f411fd0fd411
+updated: 2017-08-16T10:00:56.961393378-07:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -34,14 +34,14 @@ imports:
   - currency
 - name: github.com/go-playground/universal-translator
   version: b32fa301c9fe55953584134cb6853a13c87ec0a1
-- name: github.com/hashicorp/go-version
-  version: 03c5bf6be031b6dd45afec16b1cf94fc8938bc77
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JiangtianLi/gettext
   version: a8983c062be4b565d723c478922d7736e04fdba4
 - name: github.com/leonelquinteros/gotext
   version: a735812a72672008b3902f8b2bc1302166a9a8ea
+- name: github.com/Masterminds/semver
+  version: 517734cc7d6470c0d07130e40fd40bdeb9bcd3fd
 - name: github.com/mattn/anko
   version: a8c68fa2983e7dd5d3472992b1fbe2f7c44261f0
   subpackages:
@@ -50,40 +50,6 @@ imports:
   - vm
 - name: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
-- name: github.com/prometheus/common
-  version: 13ba4ddd0caa9c28ca7b7bffe1dfa9ed8d5ef207
-  subpackages:
-  - log
-- name: github.com/satori/go.uuid
-  version: 879c5887cd475cd7864858769793b2ceb0d44feb
-- name: github.com/satori/uuid
-  version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
-- name: github.com/Sirupsen/logrus
-  version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
-  repo:    https://github.com/sirupsen/logrus
-- name: github.com/spf13/cobra
-  version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
-- name: github.com/spf13/pflag
-  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
-- name: golang.org/x/crypto
-  version: dd85ac7e6a88fc6ca420478e934de5f1a42dd3c6
-  subpackages:
-  - curve25519
-  - ed25519
-  - ed25519/internal/edwards25519
-  - ssh
-- name: golang.org/x/sys
-  version: a55a76086885b80f79961eacb876ebd8caf3868d
-  subpackages:
-  - unix
-  - windows
-  - windows/registry
-  - windows/svc/eventlog
-- name: gopkg.in/go-playground/validator.v9
-  version: fb68f39656d7ebf8aa339ad4917aa0c260ecc237
-- name: gopkg.in/yaml.v2
-  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
-testImports:
 - name: github.com/onsi/ginkgo
   version: 77a8c1e5c40d6bb6c5eb4dd4bdce9763564f6298
   subpackages:
@@ -118,3 +84,41 @@ testImports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: github.com/prometheus/common
+  version: 13ba4ddd0caa9c28ca7b7bffe1dfa9ed8d5ef207
+  subpackages:
+  - log
+- name: github.com/satori/go.uuid
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+- name: github.com/satori/uuid
+  version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
+- name: github.com/Sirupsen/logrus
+  version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
+  repo: https://github.com/sirupsen/logrus
+  subpackages:
+  - hooks/test
+- name: github.com/spf13/cobra
+  version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
+- name: github.com/spf13/pflag
+  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
+- name: golang.org/x/crypto
+  version: dd85ac7e6a88fc6ca420478e934de5f1a42dd3c6
+  subpackages:
+  - curve25519
+  - ed25519
+  - ed25519/internal/edwards25519
+  - ssh
+- name: golang.org/x/sys
+  version: a55a76086885b80f79961eacb876ebd8caf3868d
+  subpackages:
+  - unix
+  - windows
+  - windows/registry
+  - windows/svc/eventlog
+- name: gopkg.in/go-playground/validator.v9
+  version: fb68f39656d7ebf8aa339ad4917aa0c260ecc237
+- name: gopkg.in/yaml.v2
+  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
+testImports:
+- name: github.com/hashicorp/go-version
+  version: 03c5bf6be031b6dd45afec16b1cf94fc8938bc77
