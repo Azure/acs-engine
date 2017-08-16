@@ -12,6 +12,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	log "github.com/Sirupsen/logrus"
 )
 
 // Apiloader represents the object that loads api model
@@ -37,6 +38,7 @@ func (a *Apiloader) DeserializeContainerService(contents []byte, validate bool) 
 	version := m.APIVersion
 	service, err := a.LoadContainerService(contents, version, validate)
 	if service == nil || err != nil {
+		log.Infof("Error returned by LoadContainerService: %+v. Attempting to load container service using LoadContainerServiceForAgentPoolOnlyCluster", err)
 		service, err = a.LoadContainerServiceForAgentPoolOnlyCluster(contents, version, validate)
 	}
 
@@ -128,7 +130,7 @@ func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte,
 		}
 		return ConvertVLabsAgentPool(hostedMaster), nil
 	default:
-		return nil, a.Translator.Errorf("unrecognized APIVersion '%s'", version)
+		return nil, a.Translator.Errorf("unrecognized APIVersion in LoadContainerServiceForAgentPoolOnlyCluster '%s'", version)
 	}
 }
 
