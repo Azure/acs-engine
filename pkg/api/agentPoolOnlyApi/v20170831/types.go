@@ -29,8 +29,9 @@ type HostedMaster struct {
 
 // Properties represents the ACS cluster definition
 type Properties struct {
-	ProvisioningState ProvisioningState `json:"provisioningState,omitempty"`
-	// Version                 OrchestratorVersion      `json:"version"` // @todo(jahanse): not used
+	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
+	KubernetesVersion       string                   `json:"kubernetesVersion" validate:"len=0"`
+	KubernetesRelease       string                   `json:"kubernetesRelease,omitempty"`
 	DNSPrefix               string                   `json:"dnsPrefix" validate:"required"`
 	FQDN                    string                   `json:"fqdn,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
@@ -153,9 +154,6 @@ func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
 	// If it is not set. The user should get the default for the vm size
 	return nil
 }
-
-// OrchestratorVersion defines the version for orchestratorType
-type OrchestratorVersion string
 
 // OSType represents OS types of agents
 type OSType string
