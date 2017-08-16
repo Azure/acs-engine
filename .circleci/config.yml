@@ -201,7 +201,7 @@ workflows:
             ignore: /master/
   master_workflow:
     jobs:
-      - test
+      - test:
         filters:
           branches:
             only: master
