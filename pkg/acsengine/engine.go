@@ -1483,16 +1483,16 @@ func getLinkedTemplatesForExtensions(properties *api.Properties) string {
 
 func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorType string, extensionProfile api.ExtensionProfile, singleOrAll string) (string, error) {
 	extTargetVMNamePrefix := "variables('masterVMNamePrefix')"
-	loopCount := masterProfile.Count
+	loopCount := "[sub(variables('masterCount'), variables('masterOffset'))]"
 	if strings.EqualFold(singleOrAll, "single") {
-		loopCount = 1
+		loopCount = "1"
 	}
-	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, strconv.Itoa(loopCount), "", extensionProfile)
+	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount,
+		"variables('masterOffset')", extensionProfile)
 }
 
 func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orchestratorType string, extensionProfile api.ExtensionProfile, singleOrAll string) (string, error) {
 	extTargetVMNamePrefix := fmt.Sprintf("variables('%sVMNamePrefix')", agentPoolProfile.Name)
-
 	loopCount := fmt.Sprintf("[sub(variables('%sCount'), variables('%sOffset'))]",
 		agentPoolProfile.Name, agentPoolProfile.Name)
 	if strings.EqualFold(singleOrAll, "single") {
@@ -1500,7 +1500,8 @@ func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orch
 	}
 	loopOffset := fmt.Sprintf("variables('%sOffset')", agentPoolProfile.Name)
 
-	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, loopOffset, extensionProfile)
+	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount,
+		loopOffset, extensionProfile)
 }
 
 func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, loopOffset string, extensionProfile api.ExtensionProfile) (string, error) {
