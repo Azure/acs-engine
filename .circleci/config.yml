@@ -29,7 +29,7 @@ jobs:
   non-k8s-pr-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: microsoft/acs-engine:latest
+      - image: quay.io/deis/go-dev:v1.2.0
         environment:
           GOPATH: /go
     steps:
@@ -51,7 +51,7 @@ jobs:
   pr-kubernetes-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: microsoft/acs-engine:latest
+      - image: quay.io/deis/go-dev:v1.2.0
         environment:
           GOPATH: /go
     steps:
@@ -78,7 +78,7 @@ jobs:
   kubernetes-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: microsoft/acs-engine:latest
+      - image: quay.io/deis/go-dev:v1.2.0
         environment:
           GOPATH: /go
     steps:
@@ -105,7 +105,7 @@ jobs:
   swarm-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: microsoft/acs-engine:latest
+      - image: quay.io/deis/go-dev:v1.2.0
         environment:
           GOPATH: /go
     steps:
@@ -132,7 +132,7 @@ jobs:
   dcos-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: microsoft/acs-engine:latest
+      - image: quay.io/deis/go-dev:v1.2.0
         environment:
           GOPATH: /go
     steps:
@@ -159,7 +159,7 @@ jobs:
   swarmmode-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: microsoft/acs-engine:latest
+      - image: quay.io/deis/go-dev:v1.2.0
         environment:
           GOPATH: /go
     steps:
