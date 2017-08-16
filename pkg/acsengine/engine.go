@@ -17,8 +17,8 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/Masterminds/semver"
 	"github.com/ghodss/yaml"
-	goversion "github.com/hashicorp/go-version"
 )
 
 const (
@@ -552,10 +552,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				cs.Properties.OrchestratorProfile.OrchestratorRelease == api.DCOSRelease1Dot9
 		},
 		"IsKubernetesVersionGe": func(version string) bool {
-			targetVersion, _ := goversion.NewVersion(version)
-			orchestratorVersion, _ := goversion.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
-			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes &&
-				orchestratorVersion.Compare(targetVersion) != -1
+			orchestratorVersion, _ := semver.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
+			constraint, _ := semver.NewConstraint(">=" + version)
+			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes && constraint.Check(orchestratorVersion)
 		},
 		"GetKubernetesLabels": func(profile *api.AgentPoolProfile) string {
 			var buf bytes.Buffer
