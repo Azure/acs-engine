@@ -13,7 +13,7 @@ LDFLAGS   :=
 GOFLAGS   :=
 BINDIR    := $(CURDIR)/bin
 BINARIES  := acs-engine
-VERSION   := $(shell git rev-parse HEAD)
+VERSION   ?= $(shell git rev-parse HEAD)
 
 GOFILES=`glide novendor | xargs go list`
 
