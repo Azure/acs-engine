@@ -13,25 +13,25 @@ import (
 // for converting.
 ///////////////////////////////////////////////////////////
 
-// ConvertV20170831AgentPool converts an AgentPool object into an in-memory container service
-func ConvertV20170831AgentPool(v20170831 *v20170831.HostedMaster) *ContainerService {
+// ConvertV20170831AgentPoolOnly converts an AgentPoolOnly object into an in-memory container service
+func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.HostedMaster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = v20170831.ID
 	c.Location = v20170831.Location
 	c.Name = v20170831.Name
 	if v20170831.Plan != nil {
-		c.Plan = convertv20170831AgentPoolResourcePurchasePlan(v20170831.Plan)
+		c.Plan = convertv20170831AgentPoolOnlyResourcePurchasePlan(v20170831.Plan)
 	}
 	c.Tags = map[string]string{}
 	for k, v := range v20170831.Tags {
 		c.Tags[k] = v
 	}
 	c.Type = v20170831.Type
-	c.Properties = convertV20170831AgentPoolProperties(v20170831.Properties)
+	c.Properties = convertV20170831AgentPoolOnlyProperties(v20170831.Properties)
 	return c
 }
 
-func convertv20170831AgentPoolResourcePurchasePlan(v20170831 *v20170831.ResourcePurchasePlan) *ResourcePurchasePlan {
+func convertv20170831AgentPoolOnlyResourcePurchasePlan(v20170831 *v20170831.ResourcePurchasePlan) *ResourcePurchasePlan {
 	return &ResourcePurchasePlan{
 		Name:          v20170831.Name,
 		Product:       v20170831.Product,
@@ -40,7 +40,7 @@ func convertv20170831AgentPoolResourcePurchasePlan(v20170831 *v20170831.Resource
 	}
 }
 
-func convertV20170831AgentPoolProperties(obj *v20170831.Properties) *Properties {
+func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Properties {
 	properties := &Properties{
 		ProvisioningState: ProvisioningState(obj.ProvisioningState),
 		MasterProfile:     nil,
@@ -50,35 +50,35 @@ func convertV20170831AgentPoolProperties(obj *v20170831.Properties) *Properties 
 	properties.HostedMasterProfile.DNSPrefix = obj.DNSPrefix
 	properties.HostedMasterProfile.FQDN = obj.FQDN
 
-	properties.OrchestratorProfile = convertV20170831AgentPoolOrchestratorProfile(obj.KubernetesRelease)
+	properties.OrchestratorProfile = convertV20170831AgentPoolOnlyOrchestratorProfile(obj.KubernetesRelease)
 
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {
-		properties.AgentPoolProfiles[i] = convertV20170831AgentPoolProfile(obj.AgentPoolProfiles[i], AvailabilitySet)
+		properties.AgentPoolProfiles[i] = convertV20170831AgentPoolOnlyAgentPoolProfile(obj.AgentPoolProfiles[i], AvailabilitySet)
 	}
 	if obj.LinuxProfile != nil {
-		properties.LinuxProfile = convertV20170831AgentPoolLinuxProfile(obj.LinuxProfile)
+		properties.LinuxProfile = convertV20170831AgentPoolOnlyLinuxProfile(obj.LinuxProfile)
 	}
 	if obj.WindowsProfile != nil {
-		properties.WindowsProfile = convertV20170831AgentPoolWindowsProfile(obj.WindowsProfile)
+		properties.WindowsProfile = convertV20170831AgentPoolOnlyWindowsProfile(obj.WindowsProfile)
 	}
 
 	if obj.ServicePrincipalProfile != nil {
-		properties.ServicePrincipalProfile = convertV20170831AgentPoolServicePrincipalProfile(obj.ServicePrincipalProfile)
+		properties.ServicePrincipalProfile = convertV20170831AgentPoolOnlyServicePrincipalProfile(obj.ServicePrincipalProfile)
 	}
 
 	return properties
 }
 
 // ConvertVLabsContainerService converts a vlabs ContainerService to an unversioned ContainerService
-func ConvertVLabsAgentPool(vlabs *vlabs.HostedMaster) *ContainerService {
+func ConvertVLabsAgentPoolOnly(vlabs *vlabs.HostedMaster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = vlabs.ID
 	c.Location = vlabs.Location
 	c.Name = vlabs.Name
 	if vlabs.Plan != nil {
 		c.Plan = &ResourcePurchasePlan{}
-		convertVLabsAgentPoolResourcePurchasePlan(vlabs.Plan, c.Plan)
+		convertVLabsAgentPoolOnlyResourcePurchasePlan(vlabs.Plan, c.Plan)
 	}
 	c.Tags = map[string]string{}
 	for k, v := range vlabs.Tags {
@@ -86,21 +86,21 @@ func ConvertVLabsAgentPool(vlabs *vlabs.HostedMaster) *ContainerService {
 	}
 	c.Type = vlabs.Type
 	c.Properties = &Properties{}
-	convertVLabsAgentPoolProperties(vlabs.Properties, c.Properties)
+	convertVLabsAgentPoolOnlyProperties(vlabs.Properties, c.Properties)
 	return c
 }
 
 // convertVLabsResourcePurchasePlan converts a vlabs ResourcePurchasePlan to an unversioned ResourcePurchasePlan
-func convertVLabsAgentPoolResourcePurchasePlan(vlabs *vlabs.ResourcePurchasePlan, api *ResourcePurchasePlan) {
+func convertVLabsAgentPoolOnlyResourcePurchasePlan(vlabs *vlabs.ResourcePurchasePlan, api *ResourcePurchasePlan) {
 	api.Name = vlabs.Name
 	api.Product = vlabs.Product
 	api.PromotionCode = vlabs.PromotionCode
 	api.Publisher = vlabs.Publisher
 }
 
-func convertVLabsAgentPoolProperties(vlabs *vlabs.Properties, api *Properties) {
+func convertVLabsAgentPoolOnlyProperties(vlabs *vlabs.Properties, api *Properties) {
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
-	api.OrchestratorProfile = convertVLabsAgentPoolOrchestratorProfile(vlabs.KubernetesRelease)
+	api.OrchestratorProfile = convertVLabsAgentPoolOnlyOrchestratorProfile(vlabs.KubernetesRelease)
 	api.MasterProfile = nil
 
 	api.HostedMasterProfile = &HostedMasterProfile{}
@@ -110,7 +110,7 @@ func convertVLabsAgentPoolProperties(vlabs *vlabs.Properties, api *Properties) {
 	api.AgentPoolProfiles = []*AgentPoolProfile{}
 	for _, p := range vlabs.AgentPoolProfiles {
 		apiProfile := &AgentPoolProfile{}
-		convertVLabsAgentPoolAgentPoolProfile(p, apiProfile)
+		convertVLabsAgentPoolOnlyAgentPoolProfile(p, apiProfile)
 		// by default vlabs will use managed disks for all orchestrators but kubernetes as it has encryption at rest.
 		if !api.OrchestratorProfile.IsKubernetes() {
 			// by default vlabs will use managed disks for all orchestrators but kubernetes as it has encryption at rest.
@@ -122,23 +122,23 @@ func convertVLabsAgentPoolProperties(vlabs *vlabs.Properties, api *Properties) {
 	}
 	if vlabs.LinuxProfile != nil {
 		api.LinuxProfile = &LinuxProfile{}
-		convertVLabsAgentPoolLinuxProfile(vlabs.LinuxProfile, api.LinuxProfile)
+		convertVLabsAgentPoolOnlyLinuxProfile(vlabs.LinuxProfile, api.LinuxProfile)
 	}
 	if vlabs.WindowsProfile != nil {
 		api.WindowsProfile = &WindowsProfile{}
-		convertVLabsAgentPoolWindowsProfile(vlabs.WindowsProfile, api.WindowsProfile)
+		convertVLabsAgentPoolOnlyWindowsProfile(vlabs.WindowsProfile, api.WindowsProfile)
 	}
 	if vlabs.ServicePrincipalProfile != nil {
 		api.ServicePrincipalProfile = &ServicePrincipalProfile{}
-		convertVLabsAgentPoolServicePrincipalProfile(vlabs.ServicePrincipalProfile, api.ServicePrincipalProfile)
+		convertVLabsAgentPoolOnlyServicePrincipalProfile(vlabs.ServicePrincipalProfile, api.ServicePrincipalProfile)
 	}
 	if vlabs.CertificateProfile != nil {
 		api.CertificateProfile = &CertificateProfile{}
-		convertVLabsAgentPoolCertificateProfile(vlabs.CertificateProfile, api.CertificateProfile)
+		convertVLabsAgentPoolOnlyCertificateProfile(vlabs.CertificateProfile, api.CertificateProfile)
 	}
 }
 
-func convertVLabsAgentPoolLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
+func convertVLabsAgentPoolOnlyLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
 	api.AdminUsername = vlabs.AdminUsername
 	api.SSH.PublicKeys = []PublicKey{}
 	for _, d := range vlabs.SSH.PublicKeys {
@@ -153,7 +153,7 @@ func convertVLabsAgentPoolLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProf
 	// }
 }
 
-func convertV20170831AgentPoolLinuxProfile(obj *v20170831.LinuxProfile) *LinuxProfile {
+func convertV20170831AgentPoolOnlyLinuxProfile(obj *v20170831.LinuxProfile) *LinuxProfile {
 	api := &LinuxProfile{
 		AdminUsername: obj.AdminUsername,
 	}
@@ -164,14 +164,14 @@ func convertV20170831AgentPoolLinuxProfile(obj *v20170831.LinuxProfile) *LinuxPr
 	return api
 }
 
-func convertV20170831AgentPoolWindowsProfile(obj *v20170831.WindowsProfile) *WindowsProfile {
+func convertV20170831AgentPoolOnlyWindowsProfile(obj *v20170831.WindowsProfile) *WindowsProfile {
 	return &WindowsProfile{
 		AdminUsername: obj.AdminUsername,
 		AdminPassword: obj.AdminPassword,
 	}
 }
 
-func convertVLabsAgentPoolWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile) {
+func convertVLabsAgentPoolOnlyWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile) {
 	api.AdminUsername = vlabs.AdminUsername
 	api.AdminPassword = vlabs.AdminPassword
 	// api.Secrets = []KeyVaultSecrets{}
@@ -182,7 +182,7 @@ func convertVLabsAgentPoolWindowsProfile(vlabs *vlabs.WindowsProfile, api *Windo
 	// }
 }
 
-func convertV20170831AgentPoolOrchestratorProfile(kubernetesRelease string) *OrchestratorProfile {
+func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesRelease string) *OrchestratorProfile {
 	orchestratorProfile := &OrchestratorProfile{
 		OrchestratorType: Kubernetes,
 	}
@@ -198,7 +198,7 @@ func convertV20170831AgentPoolOrchestratorProfile(kubernetesRelease string) *Orc
 	return orchestratorProfile
 }
 
-func convertVLabsAgentPoolOrchestratorProfile(kubernetesRelease string) *OrchestratorProfile {
+func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesRelease string) *OrchestratorProfile {
 	orchestratorProfile := &OrchestratorProfile{
 		OrchestratorType: Kubernetes,
 	}
@@ -214,7 +214,7 @@ func convertVLabsAgentPoolOrchestratorProfile(kubernetesRelease string) *Orchest
 	return orchestratorProfile
 }
 
-func convertV20170831AgentPoolProfile(v20170831 *v20170831.AgentPoolProfile, availabilityProfile string) *AgentPoolProfile {
+func convertV20170831AgentPoolOnlyAgentPoolProfile(v20170831 *v20170831.AgentPoolProfile, availabilityProfile string) *AgentPoolProfile {
 	api := &AgentPoolProfile{}
 	api.Name = v20170831.Name
 	api.Count = v20170831.Count
@@ -228,7 +228,7 @@ func convertV20170831AgentPoolProfile(v20170831 *v20170831.AgentPoolProfile, ava
 	return api
 }
 
-func convertVLabsAgentPoolAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolProfile) {
+func convertVLabsAgentPoolOnlyAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolProfile) {
 	api.Name = vlabs.Name
 	api.Count = vlabs.Count
 	api.VMSize = vlabs.VMSize
@@ -240,20 +240,20 @@ func convertVLabsAgentPoolAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *A
 	api.Subnet = vlabs.GetSubnet()
 }
 
-func convertVLabsAgentPoolServicePrincipalProfile(vlabs *vlabs.ServicePrincipalProfile, api *ServicePrincipalProfile) {
+func convertVLabsAgentPoolOnlyServicePrincipalProfile(vlabs *vlabs.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 	api.ClientID = vlabs.ClientID
 	api.Secret = vlabs.Secret
 	// api.KeyvaultSecretRef = vlabs.KeyvaultSecretRef
 }
 
-func convertV20170831AgentPoolServicePrincipalProfile(obj *v20170831.ServicePrincipalProfile) *ServicePrincipalProfile {
+func convertV20170831AgentPoolOnlyServicePrincipalProfile(obj *v20170831.ServicePrincipalProfile) *ServicePrincipalProfile {
 	return &ServicePrincipalProfile{
 		ClientID: obj.ClientID,
 		Secret:   obj.Secret,
 	}
 }
 
-func convertVLabsAgentPoolCertificateProfile(vlabs *vlabs.CertificateProfile, api *CertificateProfile) {
+func convertVLabsAgentPoolOnlyCertificateProfile(vlabs *vlabs.CertificateProfile, api *CertificateProfile) {
 	api.CaCertificate = vlabs.CaCertificate
 	api.CaPrivateKey = vlabs.CaPrivateKey
 	api.APIServerCertificate = vlabs.APIServerCertificate

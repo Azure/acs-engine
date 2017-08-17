@@ -3,6 +3,7 @@ package api
 import (
 	neturl "net/url"
 
+	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -312,6 +313,14 @@ type V20170701ARMContainerService struct {
 type VlabsUpgradeContainerService struct {
 	TypeMeta
 	*vlabs.UpgradeContainerService
+}
+
+// V20170831ARMManagedContainerService is the type we read and write from file
+// needed because the json that is sent to ARM and acs-engine
+// is different from the json that the ACS RP Api gets from ARM
+type V20170831ARMManagedContainerService struct {
+	TypeMeta
+	*v20170831.HostedMaster
 }
 
 // UpgradeContainerService API model

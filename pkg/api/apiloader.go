@@ -119,7 +119,7 @@ func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte,
 		if e := hostedMaster.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
-		return ConvertV20170831AgentPool(hostedMaster), nil
+		return ConvertV20170831AgentPoolOnly(hostedMaster), nil
 	case apvlabs.APIVersion:
 		hostedMaster := &apvlabs.HostedMaster{}
 		if e := json.Unmarshal(contents, &hostedMaster); e != nil {
@@ -128,7 +128,7 @@ func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte,
 		if e := hostedMaster.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
-		return ConvertVLabsAgentPool(hostedMaster), nil
+		return ConvertVLabsAgentPoolOnly(hostedMaster), nil
 	default:
 		return nil, a.Translator.Errorf("unrecognized APIVersion in LoadContainerServiceForAgentPoolOnlyCluster '%s'", version)
 	}
@@ -136,11 +136,14 @@ func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte,
 
 // SerializeContainerService takes an unversioned container service and returns the bytes
 func (a *Apiloader) SerializeContainerService(containerService *ContainerService, version string) ([]byte, error) {
-	switch version {
-	case v20170831.APIVersion:
-		// TODO: implement this...
-		return []byte("Implement this..."), nil
+	if containerService.Properties != nil && containerService.Properties.HostedMasterProfile != nil {
+		b, err := a.serializeHostedContainerService(containerService, version)
+		if err == nil && b != nil {
+			return b, nil
+		}
+	}
 
+	switch version {
 	case v20160930.APIVersion:
 		v20160930ContainerService := ConvertContainerServiceToV20160930(containerService)
 		armContainerService := &V20160930ARMContainerService{}
@@ -196,6 +199,23 @@ func (a *Apiloader) SerializeContainerService(containerService *ContainerService
 		}
 		return b, nil
 
+	default:
+		return nil, a.Translator.Errorf("invalid version %s for conversion back from unversioned object", version)
+	}
+}
+
+func (a *Apiloader) serializeHostedContainerService(containerService *ContainerService, version string) ([]byte, error) {
+	switch version {
+	case v20170831.APIVersion:
+		v20170831ContainerService := ConvertContainerServiceToV20170831AgentPoolOnly(containerService)
+		armContainerService := &V20170831ARMManagedContainerService{}
+		armContainerService.HostedMaster = v20170831ContainerService
+		armContainerService.APIVersion = version
+		b, err := json.MarshalIndent(armContainerService, "", "  ")
+		if err != nil {
+			return nil, err
+		}
+		return b, nil
 	default:
 		return nil, a.Translator.Errorf("invalid version %s for conversion back from unversioned object", version)
 	}
