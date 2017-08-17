@@ -51,7 +51,7 @@ const (
 
 // KubeReleaseToVersion maps a major.minor release to an full major.minor.patch version
 var KubeReleaseToVersion = map[string]string{
-	KubernetesRelease1Dot7: "1.7.2",
+	KubernetesRelease1Dot7: "1.7.4",
 	KubernetesRelease1Dot6: "1.6.6",
 	KubernetesRelease1Dot5: "1.5.7",
 }
