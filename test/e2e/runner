@@ -39,6 +39,4 @@ export DNS_PREFIX=test-$(echo $RANDOM)
 
 ginkgo -slowSpecThreshold 60 -r test/e2e/${TEST}
 
-if [ -z "${CLEANUP_ON_EXIT}" ] || [ "${CLEANUP_ON_EXIT}" != false ]; then
-  ssh-add -d _output/${SSH_KEY_NAME}
-fi
+ssh-add -d _output/${SSH_KEY_NAME}

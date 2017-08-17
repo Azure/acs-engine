@@ -86,27 +86,22 @@ func (s *Service) GetNodePort(port int) int {
 }
 
 // WaitForExternalIP waits for an external ip to be provisioned
-func (s *Service) WaitForExternalIP(wait, sleep int) (*Service, error) {
+func (s *Service) WaitForExternalIP(wait, sleep time.Duration) (*Service, error) {
 	svcCh := make(chan *Service)
 	errCh := make(chan error)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(wait))
+	ctx, cancel := context.WithTimeout(context.Background(), wait)
 	defer cancel()
 	go func() {
-		var svc *Service
-		var err error
 		for {
 			select {
 			case <-ctx.Done():
 				errCh <- fmt.Errorf("Timeout exceeded while waiting for External IP to be provisioned")
 			default:
-				svc, err = Get(s.Metadata.Name, s.Metadata.Namespace)
-				if err != nil {
-					errCh <- err
-				}
+				svc, _ := Get(s.Metadata.Name, s.Metadata.Namespace)
 				if svc.Status.LoadBalancer.Ingress != nil {
 					svcCh <- svc
 				}
-				time.Sleep(time.Second * time.Duration(sleep))
+				time.Sleep(sleep)
 			}
 		}
 	}()

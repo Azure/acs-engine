@@ -2,7 +2,6 @@ package deployment
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os/exec"
 	"strconv"
@@ -52,9 +51,27 @@ type Container struct {
 	Name       string `json:"name"`
 }
 
-// Create will create a deployment for a given image with a name in a namespace
-func Create(image, name, namespace string) (*Deployment, error) {
-	out, err := exec.Command("kubectl", "run", "-n", namespace, "--image", "library/nginx:latest", name).CombinedOutput()
+// CreateLinuxDeploy will create a deployment for a given image with a name in a namespace
+// --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
+func CreateLinuxDeploy(image, name, namespace string) (*Deployment, error) {
+	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
+	out, err := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides).CombinedOutput()
+	if err != nil {
+		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
+		return nil, err
+	}
+	d, err := Get(name, namespace)
+	if err != nil {
+		log.Printf("Error while trying to fetch Deployment %s in namespace %s:%s\n", name, namespace, err)
+		return nil, err
+	}
+	return d, nil
+}
+
+// CreateWindowsDeploy will crete a deployment for a given image with a name in a namespace
+func CreateWindowsDeploy(image, name, namespace string, port int) (*Deployment, error) {
+	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}}}`
+	out, err := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--port", strconv.Itoa(port), "--overrides", overrides).CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
 		return nil, err
@@ -94,11 +111,10 @@ func (d *Deployment) Delete() error {
 }
 
 // Expose will create a load balancer and expose the deployment on a given port
-func (d *Deployment) Expose(port int) error {
-	ref := fmt.Sprintf("deployments/%s", d.Metadata.Name)
-	out, err := exec.Command("kubectl", "expose", ref, "--type", "LoadBalancer", "-n", d.Metadata.Namespace, "--port", strconv.Itoa(port)).CombinedOutput()
+func (d *Deployment) Expose(targetPort, exposedPort int) error {
+	out, err := exec.Command("kubectl", "expose", "deployment", d.Metadata.Name, "--type", "LoadBalancer", "-n", d.Metadata.Namespace, "--target-port", strconv.Itoa(targetPort), "--port", strconv.Itoa(exposedPort)).CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying to expose deployment %s in namespace %s on port %v:%s\n", d.Metadata.Name, d.Metadata.Namespace, port, string(out))
+		log.Printf("Error while trying to expose target port (%v) for deployment %s in namespace %s on port %v:%s\n", targetPort, d.Metadata.Name, d.Metadata.Namespace, exposedPort, string(out))
 		return err
 	}
 	return nil
