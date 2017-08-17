@@ -17,6 +17,9 @@ func TestCreateCertificateWithOrganisation(t *testing.T) {
 	)
 
 	caCertificate, caPrivateKey, err = createCertificate("ca", nil, nil, false, nil, nil, nil)
+	if err != nil {
+		t.Fatalf("failed to generate certificate: %s", err)
+	}
 	caPair = &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))}
 
 	caCertificate, err = pemToCertificate(caPair.CertificatePem)
@@ -53,6 +56,9 @@ func TestCreateCertificateWithoutOrganisation(t *testing.T) {
 	)
 
 	caCertificate, caPrivateKey, err = createCertificate("ca", nil, nil, false, nil, nil, nil)
+	if err != nil {
+		t.Fatalf("failed to generate certificate: %s", err)
+	}
 	caPair = &PkiKeyCertPair{CertificatePem: string(certificateToPem(caCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(caPrivateKey))}
 
 	caCertificate, err = pemToCertificate(caPair.CertificatePem)

@@ -1,0 +1,39 @@
+#! /bin/bash
+export PATH=${PATH}:${GOPATH}/src/github.com/Azure/acs-engine/bin
+
+if [ -z ${CLIENT_ID} ]; then
+  echo "Client ID is required to run tests!"
+  exit 1
+fi
+
+if [ -z ${CLIENT_SECRET} ]; then
+  echo "Client Secret is required to run tests!"
+  exit 1
+fi
+
+if [ -z ${TENANT_ID} ]; then
+  echo "Tenant ID is required to run tests!"
+  exit 1
+fi
+
+if [ -z ${SUBSCRIPTION_ID} ]; then
+  echo "Subscription ID is required to run tests!"
+  exit 1
+fi
+
+if [ -z "${NAME}" ]; then
+  echo "Removing _output dir"
+  rm -rf _output || true
+
+  echo "Creating _output dir"
+  mkdir -p _output
+
+  echo "Generating new SSH Keys"
+  ssh-keygen -f _output/${SSH_KEY_NAME} -b 2048 -t rsa -q -N ''
+  chmod 0600 _output/${SSH_KEY_NAME}*
+fi
+
+export PUBLIC_SSH_KEY="$(cat _output/${SSH_KEY_NAME}.pub)"
+export DNS_PREFIX=test-$(echo $RANDOM)
+
+ginkgo -slowSpecThreshold 60 -r test/e2e/${TEST}

@@ -98,7 +98,7 @@ var KubeConfigs = map[string]map[string]string{
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addonresizer":    "addon-resizer:1.7",
-		"heapster":        "heapster:v1.4.0",
+		"heapster":        "heapster-amd64:v1.4.0",
 		"dns":             "k8s-dns-kube-dns-amd64:1.14.4",
 		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.14.4",
@@ -121,7 +121,7 @@ var KubeConfigs = map[string]map[string]string{
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addonresizer":    "addon-resizer:1.7",
-		"heapster":        "heapster:v1.3.0",
+		"heapster":        "heapster-amd64:v1.3.0",
 		"dns":             "k8s-dns-kube-dns-amd64:1.14.4",
 		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.13.0",
@@ -165,4 +165,5 @@ const (
 	AzureEdgeDCOSBootstrapDownloadURL = "https://dcosio.azureedge.net/dcos/%s/bootstrap/%s.bootstrap.tar.xz"
 	//AzureChinaCloudDCOSBootstrapDownloadURL is the China specific DCOS package download url.
 	AzureChinaCloudDCOSBootstrapDownloadURL = "https://acsengine.blob.core.chinacloudapi.cn/dcos/%s.bootstrap.tar.xz"
+	//AzureEdgeDCOSWindowsBootstrapDownloadURL
 )

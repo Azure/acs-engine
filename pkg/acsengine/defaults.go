@@ -5,7 +5,7 @@ import (
 	"net"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	version "github.com/hashicorp/go-version"
+	"github.com/Masterminds/semver"
 )
 
 var (
@@ -23,9 +23,10 @@ var (
 		},
 
 		DCOSSpecConfig: DCOSSpecConfig{
-			DCOS173BootstrapDownloadURL: fmt.Sprintf(MsecndDCOSBootstrapDownloadURL, "testing", "df308b6fc3bd91e1277baa5a3db928ae70964722"),
-			DCOS188BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "5df43052907c021eeb5de145419a3da1898c58a5"),
-			DCOS190BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "58fd0833ce81b6244fc73bf65b5deb43217b0bd7"),
+			DCOS173BootstrapDownloadURL:     fmt.Sprintf(MsecndDCOSBootstrapDownloadURL, "testing", "df308b6fc3bd91e1277baa5a3db928ae70964722"),
+			DCOS188BootstrapDownloadURL:     fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "5df43052907c021eeb5de145419a3da1898c58a5"),
+			DCOS190BootstrapDownloadURL:     fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "58fd0833ce81b6244fc73bf65b5deb43217b0bd7"),
+			DCOSWindowsBootstrapDownloadURL: "https://dcosdevstorage.blob.core.windows.net/dcos-windows",
 		},
 	}
 
@@ -38,11 +39,13 @@ var (
 		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase:    "mirror.azure.cn:5000/google_containers/",
+			TillerImageBase:        "mirror.azure.cn:5000/kubernetes-helm/",
 			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
-			DCOS173BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
-			DCOS188BootstrapDownloadURL: fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),
+			DCOS173BootstrapDownloadURL:     fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
+			DCOS188BootstrapDownloadURL:     fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),
+			DCOSWindowsBootstrapDownloadURL: "https://dcosdevstorage.blob.core.windows.net/dcos-windows",
 		},
 	}
 )
@@ -119,11 +122,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
 			}
 		}
-		k8sVersion, _ := version.NewVersion(api.KubernetesReleaseToVersion[k8sRelease])
-		minVersionK8sVersionForCloudProviderRateLimit, _ := version.NewVersion("1.6.6")
+		k8sVersion, _ := semver.NewVersion(api.KubernetesReleaseToVersion[k8sRelease])
+		constraint, _ := semver.NewConstraint(">= 1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
 		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
-		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && k8sVersion.Compare(minVersionK8sVersionForCloudProviderRateLimit) != -1 {
+		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && constraint.Check(k8sVersion) {
 			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
 			}

@@ -322,7 +322,7 @@ func (az *AzureClient) ensureProvidersRegistered(subscriptionID string) error {
 		if registered {
 			log.Debugf("Already registered for %q", provider)
 		} else {
-			log.Info("Registering subscription to resource provider. provider=%q subscription=%q", provider, subscriptionID)
+			log.Infof("Registering subscription to resource provider. provider=%q subscription=%q", provider, subscriptionID)
 			if _, err := az.providersClient.Register(provider); err != nil {
 				return err
 			}

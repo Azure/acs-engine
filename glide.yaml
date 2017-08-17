@@ -20,7 +20,7 @@ import:
   - autorest/date
 - package: github.com/Sirupsen/logrus
   version: v0.11.5
-  repo:    https://github.com/sirupsen/logrus
+  repo: https://github.com/sirupsen/logrus
 - package: github.com/ghodss/yaml
   version: v1.0.0
 - package: github.com/mitchellh/go-homedir
@@ -37,6 +37,8 @@ import:
   version: a735812a72672008b3902f8b2bc1302166a9a8ea
 - package: gopkg.in/go-playground/validator.v9
   version: v9.4.0
+  subpackages:
+  - locales
 - package: github.com/go-playground/universal-translator
   version: v0.16.0
 - package: golang.org/x/crypto
@@ -46,9 +48,11 @@ import:
   version: v2.0.0
 - package: github.com/JiangtianLi/gettext
   version: a8983c062be4b565d723c478922d7736e04fdba4
+- package: github.com/Masterminds/semver
+  version: v1.3.1
 testImport:
 - package: github.com/onsi/gomega
-  version: v1.1.0
 - package: github.com/onsi/ginkgo
   version: v1.3.1
-- package: github.com/hashicorp/go-version
+- package: github.com/kelseyhightower/envconfig
+  version: ~1.3.0
