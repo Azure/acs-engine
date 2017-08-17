@@ -295,6 +295,8 @@ func GenerateClusterID(properties *api.Properties) string {
 	h := fnv.New64a()
 	if properties.MasterProfile != nil {
 		h.Write([]byte(properties.MasterProfile.DNSPrefix))
+	} else if properties.HostedMasterProfile != nil {
+		h.Write([]byte(properties.HostedMasterProfile.DNSPrefix))
 	} else {
 		h.Write([]byte(properties.AgentPoolProfiles[0].Name))
 	}

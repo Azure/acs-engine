@@ -16,9 +16,5 @@
     "{{.Name}}SubnetName": {
       "type": "string",
       "value": "[variables('{{.Name}}SubnetName')]"
-    },
+    }
 {{end}}
-"{{.Name}}DumyAgentOut": {
-  "type": "string",
-  "value": "test"
-}

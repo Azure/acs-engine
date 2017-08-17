@@ -30,13 +30,6 @@
       },
       "type": "string"
     },
-{{else}}
-    "firstConsecutiveStaticIp": {
-      "metadata": {
-        "description": "The first static IP address"
-      },
-      "type": "string"
-    },
 {{end}}
     "clientCertificate": {
       "metadata": {
