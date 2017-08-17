@@ -37,7 +37,7 @@ RUN git clone https://github.com/akesterson/shunit.git /tmp/shunit \
 WORKDIR /gopath/src/github.com/Azure/acs-engine
 
 # Cache vendor layer
-ADD Makefile versioning.mk glide.yaml glide.lock /gopath/src/github.com/Azure/acs-engine/
+ADD Makefile test.mk versioning.mk glide.yaml glide.lock /gopath/src/github.com/Azure/acs-engine/
 RUN make bootstrap
 
 ADD . /gopath/src/github.com/Azure/acs-engine
