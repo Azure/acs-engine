@@ -52,9 +52,33 @@ type Container struct {
 	Name       string `json:"name"`
 }
 
-// Create will create a deployment for a given image with a name in a namespace
-func Create(image, name, namespace string) (*Deployment, error) {
-	out, err := exec.Command("kubectl", "run", "-n", namespace, "--image", "library/nginx:latest", name).CombinedOutput()
+// CreateLinuxDeploy will create a deployment for a given image with a name in a namespace
+// --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
+func CreateLinuxDeploy(image, name, namespace string) (*Deployment, error) {
+	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
+	out, err := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides).CombinedOutput()
+	if err != nil {
+		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
+		return nil, err
+	}
+	d, err := Get(name, namespace)
+	if err != nil {
+		log.Printf("Error while trying to fetch Deployment %s in namespace %s:%s\n", name, namespace, err)
+		return nil, err
+	}
+	return d, nil
+}
+
+// CreateWindowsDeploy will crete a deployment for a given image with a name in a namespace
+func CreateWindowsDeploy(image, name, namespace, podCommand string) (*Deployment, error) {
+	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"windows"}}}}}`
+	var cmd *exec.Cmd
+	if podCommand == "" {
+		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides)
+	} else {
+		cmd = exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides, "--command=true", podCommand)
+	}
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
 		return nil, err
