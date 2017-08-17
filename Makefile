@@ -30,7 +30,7 @@ BINARY_DEST_DIR ?= bin
 all: build
 
 .PHONY: generate
-generate:
+generate: bootstrap
 	go generate -v $(GOFILES)
 
 .PHONY: build
