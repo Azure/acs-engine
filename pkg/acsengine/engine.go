@@ -191,7 +191,8 @@ func init() {
 }
 
 func (t *TemplateGenerator) verifyFiles() error {
-	allFiles := append(commonTemplateFiles, dcosTemplateFiles...)
+	allFiles := commonTemplateFiles
+	allFiles = append(allFiles, dcosTemplateFiles...)
 	allFiles = append(allFiles, kubernetesTemplateFiles...)
 	allFiles = append(allFiles, swarmTemplateFiles...)
 	for _, file := range allFiles {
@@ -292,7 +293,11 @@ func GenerateClusterID(properties *api.Properties) string {
 	// the name suffix uniquely identifies the cluster and is generated off a hash
 	// from the master dns name
 	h := fnv.New64a()
-	h.Write([]byte(properties.MasterProfile.DNSPrefix))
+	if properties.MasterProfile != nil {
+		h.Write([]byte(properties.MasterProfile.DNSPrefix))
+	} else {
+		h.Write([]byte(properties.AgentPoolProfiles[0].Name))
+	}
 	rand.Seed(int64(h.Sum64()))
 	return fmt.Sprintf("%08d", rand.Uint32())[:uniqueNameSuffixSize]
 }
@@ -376,16 +381,18 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 	addValue(parametersMap, "location", location)
 	addValue(parametersMap, "targetEnvironment", GetCloudTargetEnv(location))
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
-	addValue(parametersMap, "masterEndpointDNSNamePrefix", properties.MasterProfile.DNSPrefix)
-	if properties.MasterProfile.IsCustomVNET() {
-		addValue(parametersMap, "masterVnetSubnetID", properties.MasterProfile.VnetSubnetID)
-	} else {
-		addValue(parametersMap, "masterSubnet", properties.MasterProfile.Subnet)
-	}
-	addValue(parametersMap, "firstConsecutiveStaticIP", properties.MasterProfile.FirstConsecutiveStaticIP)
-	addValue(parametersMap, "masterVMSize", properties.MasterProfile.VMSize)
-	if isClassicMode {
-		addValue(parametersMap, "masterCount", properties.MasterProfile.Count)
+	if properties.MasterProfile != nil {
+		addValue(parametersMap, "masterEndpointDNSNamePrefix", properties.MasterProfile.DNSPrefix)
+		if properties.MasterProfile.IsCustomVNET() {
+			addValue(parametersMap, "masterVnetSubnetID", properties.MasterProfile.VnetSubnetID)
+		} else {
+			addValue(parametersMap, "masterSubnet", properties.MasterProfile.Subnet)
+		}
+		addValue(parametersMap, "firstConsecutiveStaticIP", properties.MasterProfile.FirstConsecutiveStaticIP)
+		addValue(parametersMap, "masterVMSize", properties.MasterProfile.VMSize)
+		if isClassicMode {
+			addValue(parametersMap, "masterCount", properties.MasterProfile.Count)
+		}
 	}
 	addValue(parametersMap, "sshRSAPublicKey", properties.LinuxProfile.SSH.PublicKeys[0].KeyData)
 	for i, s := range properties.LinuxProfile.Secrets {
@@ -405,14 +412,16 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 			kubernetesHyperkubeSpec = properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage
 		}
 
-		addSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
-		addSecret(parametersMap, "apiServerPrivateKey", properties.CertificateProfile.APIServerPrivateKey, true)
-		addSecret(parametersMap, "caCertificate", properties.CertificateProfile.CaCertificate, true)
-		addSecret(parametersMap, "caPrivateKey", properties.CertificateProfile.CaPrivateKey, true)
-		addSecret(parametersMap, "clientCertificate", properties.CertificateProfile.ClientCertificate, true)
-		addSecret(parametersMap, "clientPrivateKey", properties.CertificateProfile.ClientPrivateKey, true)
-		addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
-		addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
+		if properties.CertificateProfile != nil {
+			addSecret(parametersMap, "apiServerCertificate", properties.CertificateProfile.APIServerCertificate, true)
+			addSecret(parametersMap, "apiServerPrivateKey", properties.CertificateProfile.APIServerPrivateKey, true)
+			addSecret(parametersMap, "caCertificate", properties.CertificateProfile.CaCertificate, true)
+			addSecret(parametersMap, "caPrivateKey", properties.CertificateProfile.CaPrivateKey, true)
+			addSecret(parametersMap, "clientCertificate", properties.CertificateProfile.ClientCertificate, true)
+			addSecret(parametersMap, "clientPrivateKey", properties.CertificateProfile.ClientPrivateKey, true)
+			addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
+			addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
+		}
 		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[KubernetesRelease]["addonmanager"])
@@ -439,10 +448,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
 		addValue(parametersMap, "dockerBridgeCidr", properties.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet)
 		addValue(parametersMap, "networkPolicy", properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
-		if properties.OrchestratorProfile.KubernetesConfig != nil &&
+		if properties.OrchestratorProfile.KubernetesConfig == nil ||
 			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
 			addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
-
 			if properties.ServicePrincipalProfile.KeyvaultSecretRef != "" {
 				addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.KeyvaultSecretRef, false)
 			} else {
@@ -554,6 +562,9 @@ func getStorageAccountType(sizeName string) (string, error) {
 // getTemplateFuncMap returns all functions used in template generation
 func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) template.FuncMap {
 	return template.FuncMap{
+		"IsAgentPool": func() bool {
+			return cs.Properties.MasterProfile == nil
+		},
 		"IsDCOS19": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
 				cs.Properties.OrchestratorProfile.OrchestratorRelease == api.DCOSRelease1Dot9
