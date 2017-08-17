@@ -127,6 +127,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	})
 
 	It("should be able to access the dashboard from each node", func() {
+		pod.WaitOnReady("kubernetes-dashboard", "kube-system", 5*time.Second, 3*time.Minute)
 		kubeConfig, err := GetConfig()
 		Expect(err).NotTo(HaveOccurred())
 
