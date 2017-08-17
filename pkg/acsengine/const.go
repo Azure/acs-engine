@@ -156,4 +156,5 @@ const (
 	AzureEdgeDCOSBootstrapDownloadURL = "https://dcosio.azureedge.net/dcos/%s/bootstrap/%s.bootstrap.tar.xz"
 	//AzureChinaCloudDCOSBootstrapDownloadURL is the China specific DCOS package download url.
 	AzureChinaCloudDCOSBootstrapDownloadURL = "https://acsengine.blob.core.chinacloudapi.cn/dcos/%s.bootstrap.tar.xz"
+	//AzureEdgeDCOSWindowsBootstrapDownloadURL
 )

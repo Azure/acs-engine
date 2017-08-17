@@ -5,12 +5,17 @@ DIST_DIRS         = find * -type d -exec
 
 .PHONY: bootstrap build test test_fmt validate-generated fmt lint ci devenv
 
+ifdef DEBUG
+GOFLAGS   := -gcflags="-N -l"
+else
+GOFLAGS   := 
+endif
+
 # go option
 GO        ?= go
 PKG       := $(shell glide novendor)
 TAGS      :=
-LDFLAGS   :=
-GOFLAGS   :=
+LDFLAGS   := 
 BINDIR    := $(CURDIR)/bin
 BINARIES  := acs-engine
 VERSION   ?= $(shell git rev-parse HEAD)

@@ -15,6 +15,7 @@ import (
 	"strings"
 	"text/template"
 
+	//log "github.com/Sirupsen/logrus"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Masterminds/semver"
@@ -30,10 +31,11 @@ const (
 )
 
 const (
-	dcosCustomData173 = "dcoscustomdata173.t"
-	dcosCustomData188 = "dcoscustomdata188.t"
-	dcosCustomData190 = "dcoscustomdata190.t"
-	dcosProvision     = "dcosprovision.sh"
+	dcosCustomData173    = "dcoscustomdata173.t"
+	dcosCustomData188    = "dcoscustomdata188.t"
+	dcosCustomData190    = "dcoscustomdata190.t"
+	dcosProvision        = "dcosprovision.sh"
+	dcosWindowsProvision = "dcosWindowsProvision.ps1"
 )
 
 const (
@@ -45,37 +47,39 @@ const (
 )
 
 const (
-	agentOutputs                 = "agentoutputs.t"
-	agentParams                  = "agentparams.t"
-	classicParams                = "classicparams.t"
-	dcosAgentResourcesVMAS       = "dcosagentresourcesvmas.t"
-	dcosAgentResourcesVMSS       = "dcosagentresourcesvmss.t"
-	dcosAgentVars                = "dcosagentvars.t"
-	dcosBaseFile                 = "dcosbase.t"
-	dcosParams                   = "dcosparams.t"
-	dcosMasterResources          = "dcosmasterresources.t"
-	dcosMasterVars               = "dcosmastervars.t"
-	iaasOutputs                  = "iaasoutputs.t"
-	kubernetesBaseFile           = "kubernetesbase.t"
-	kubernetesAgentResourcesVMAS = "kubernetesagentresourcesvmas.t"
-	kubernetesAgentVars          = "kubernetesagentvars.t"
-	kubernetesMasterResources    = "kubernetesmasterresources.t"
-	kubernetesMasterVars         = "kubernetesmastervars.t"
-	kubernetesParams             = "kubernetesparams.t"
-	kubernetesWinAgentVars       = "kuberneteswinagentresourcesvmas.t"
-	kubernetesKubeletService     = "kuberneteskubelet.service"
-	masterOutputs                = "masteroutputs.t"
-	masterParams                 = "masterparams.t"
-	swarmBaseFile                = "swarmbase.t"
-	swarmAgentResourcesVMAS      = "swarmagentresourcesvmas.t"
-	swarmAgentResourcesVMSS      = "swarmagentresourcesvmss.t"
-	swarmAgentResourcesClassic   = "swarmagentresourcesclassic.t"
-	swarmAgentVars               = "swarmagentvars.t"
-	swarmMasterResources         = "swarmmasterresources.t"
-	swarmMasterVars              = "swarmmastervars.t"
-	swarmWinAgentResourcesVMAS   = "swarmwinagentresourcesvmas.t"
-	swarmWinAgentResourcesVMSS   = "swarmwinagentresourcesvmss.t"
-	windowsParams                = "windowsparams.t"
+	agentOutputs                  = "agentoutputs.t"
+	agentParams                   = "agentparams.t"
+	classicParams                 = "classicparams.t"
+	dcosAgentResourcesVMAS        = "dcosagentresourcesvmas.t"
+	dcosWindowsAgentResourcesVMAS = "dcosWindowsAgentResourcesVmas.t"
+	dcosAgentResourcesVMSS        = "dcosagentresourcesvmss.t"
+	dcosWindowsAgentResourcesVMSS = "dcosWindowsAgentResourcesVmss.t"
+	dcosAgentVars                 = "dcosagentvars.t"
+	dcosBaseFile                  = "dcosbase.t"
+	dcosParams                    = "dcosparams.t"
+	dcosMasterResources           = "dcosmasterresources.t"
+	dcosMasterVars                = "dcosmastervars.t"
+	iaasOutputs                   = "iaasoutputs.t"
+	kubernetesBaseFile            = "kubernetesbase.t"
+	kubernetesAgentResourcesVMAS  = "kubernetesagentresourcesvmas.t"
+	kubernetesAgentVars           = "kubernetesagentvars.t"
+	kubernetesMasterResources     = "kubernetesmasterresources.t"
+	kubernetesMasterVars          = "kubernetesmastervars.t"
+	kubernetesParams              = "kubernetesparams.t"
+	kubernetesWinAgentVars        = "kuberneteswinagentresourcesvmas.t"
+	kubernetesKubeletService      = "kuberneteskubelet.service"
+	masterOutputs                 = "masteroutputs.t"
+	masterParams                  = "masterparams.t"
+	swarmBaseFile                 = "swarmbase.t"
+	swarmAgentResourcesVMAS       = "swarmagentresourcesvmas.t"
+	swarmAgentResourcesVMSS       = "swarmagentresourcesvmss.t"
+	swarmAgentResourcesClassic    = "swarmagentresourcesclassic.t"
+	swarmAgentVars                = "swarmagentvars.t"
+	swarmMasterResources          = "swarmmasterresources.t"
+	swarmMasterVars               = "swarmmastervars.t"
+	swarmWinAgentResourcesVMAS    = "swarmwinagentresourcesvmas.t"
+	swarmWinAgentResourcesVMSS    = "swarmwinagentresourcesvmss.t"
+	windowsParams                 = "windowsparams.t"
 )
 
 const (
@@ -129,7 +133,7 @@ var calicoAddonYamls15 = map[string]string{
 }
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
-var dcosTemplateFiles = []string{dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosBaseFile, dcosMasterResources, dcosMasterVars, dcosParams}
+var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
 var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
@@ -461,6 +465,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 			}
 		}
 		addValue(parametersMap, "dcosBootstrapURL", dcosBootstrapURL)
+
+		dcosWindowsBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
+		addValue(parametersMap, "dcosWindowsBootstrapURL", dcosWindowsBootstrapURL)
 	}
 
 	// Agent parameters
@@ -633,6 +640,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				cs.Properties.MasterProfile.Count, agentProvisionScript, attributeContents)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
+		},
+		"GetDCOSWindowsAgentCustomData": func(profile *api.AgentPoolProfile) string {
+			str := getBase64CustomScript(dcosWindowsProvision)
+			return fmt.Sprintf("\"customData\": \"%s\"", str)
 		},
 		"GetMasterAllowedSizes": func() string {
 			if t.ClassicMode {
@@ -1217,7 +1228,15 @@ func getBase64CustomScriptFromStr(str string) string {
 
 func getDCOSAgentProvisionScript(profile *api.AgentPoolProfile) string {
 	// add the provision script
-	bp, err1 := Asset(dcosProvision)
+
+	var scriptname string
+	if profile.OSType == api.Windows {
+		scriptname = dcosWindowsProvision
+	} else {
+		scriptname = dcosProvision
+	}
+
+	bp, err1 := Asset(scriptname)
 	if err1 != nil {
 		panic(fmt.Sprintf("BUG: %s", err1.Error()))
 	}
