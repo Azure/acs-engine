@@ -15,8 +15,6 @@ BINDIR    := $(CURDIR)/bin
 BINARIES  := acs-engine
 VERSION   ?= $(shell git rev-parse HEAD)
 
-GOFILES=`glide novendor | xargs go list`
-
 REPO_PATH := github.com/Azure/acs-engine
 DEV_ENV_IMAGE := quay.io/deis/go-dev:v1.2.0
 DEV_ENV_WORK_DIR := /go/src/${REPO_PATH}
@@ -31,7 +29,7 @@ all: build
 
 .PHONY: generate
 generate: bootstrap
-	go generate -v $(GOFILES)
+	go generate -v `glide novendor | xargs go list`
 
 .PHONY: build
 build: generate
