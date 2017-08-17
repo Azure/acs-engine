@@ -1493,12 +1493,21 @@ func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorT
 
 func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orchestratorType string, extensionProfile api.ExtensionProfile, singleOrAll string) (string, error) {
 	extTargetVMNamePrefix := fmt.Sprintf("variables('%sVMNamePrefix')", agentPoolProfile.Name)
-	loopCount := fmt.Sprintf("[sub(variables('%sCount'), variables('%sOffset'))]",
-		agentPoolProfile.Name, agentPoolProfile.Name)
+	loopCount := fmt.Sprintf("[variables('%sCount'))]", agentPoolProfile.Name)
+	loopOffset := ""
+
+	// Availability sets can have an offset since we don't redeploy vms.
+	// So we don't want to rerun these extensions in scale up scenarios.
+	if agentPoolProfile.IsAvailabilitySets() {
+		loopCount = fmt.Sprintf("[sub(variables('%sCount'), variables('%sOffset'))]",
+			agentPoolProfile.Name, agentPoolProfile.Name)
+		loopOffset = fmt.Sprintf("variables('%sOffset')", agentPoolProfile.Name)
+
+	}
+
 	if strings.EqualFold(singleOrAll, "single") {
 		loopCount = "1"
 	}
-	loopOffset := fmt.Sprintf("variables('%sOffset')", agentPoolProfile.Name)
 
 	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount,
 		loopOffset, extensionProfile)
@@ -1509,8 +1518,9 @@ func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, 
 	if e != nil {
 		return "", e
 	}
-
-	dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", extensionProfile.ExtensionParameters, -1)
+	parmetersString := strings.Replace(extensionProfile.ExtensionParameters, "EXTENSION_LOOP_INDEX",
+		"copyIndex(EXTENSION_LOOP_OFFSET)", -1)
+	dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", parmetersString, -1)
 
 	if strings.TrimSpace(extensionProfile.RootURL) == "" {
 		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", DefaultExtensionsRootURL, -1)

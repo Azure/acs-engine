@@ -41,7 +41,7 @@
       "dependsOn": [],
       "location": "[resourceGroup().location]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-	  "name": "[concat(parameters('targetVMName'),/extensions/HelloWorldDcosExtension)]",
+	  "name": "[concat(parameters('targetVMName'),'/extensions/HelloWorldDcosExtension')]",
       "properties": {
         "publisher": "Microsoft.OSTCExtensions",
         "type": "CustomScriptForLinux",
