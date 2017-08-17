@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	infoName             = "info"
-	infoShortDescription = "provide info about supported orchestrators"
-	infoLongDescription  = "provide info about versions of supported orchestrators"
+	cmdName             = "orchestrators"
+	cmdShortDescription = "provide info about supported orchestrators"
+	cmdLongDescription  = "provide info about versions of supported orchestrators"
 
 	kubernetes = "Kubernetes"
 	dcos       = "DCOS"
@@ -26,72 +26,72 @@ const (
 	dockerceDockerComposeVersion = "1.14.0"
 )
 
-type infoCmd struct {
+type orchestratorsCmd struct {
 	// user input
 	orchestrator string
 	release      string
 }
 
-type infoFunc func(string) error
+type orchestratorsFunc func(string) error
 
-func newInfoCmd() *cobra.Command {
-	ic := infoCmd{}
+func newOrchestratorsCmd() *cobra.Command {
+	oc := orchestratorsCmd{}
 
-	infoCmd := &cobra.Command{
-		Use:   infoName,
-		Short: infoShortDescription,
-		Long:  infoLongDescription,
+	command := &cobra.Command{
+		Use:   cmdName,
+		Short: cmdShortDescription,
+		Long:  cmdLongDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return ic.run(cmd, args)
+			return oc.run(cmd, args)
 		},
 	}
 
-	f := infoCmd.Flags()
-	f.StringVar(&ic.orchestrator, "orchestrator", "", "orchestrator name (optional) ")
-	f.StringVar(&ic.release, "release", "", "orchestrator release (optional)")
+	f := command.Flags()
+	f.StringVar(&oc.orchestrator, "orchestrator", "", "orchestrator name (optional) ")
+	f.StringVar(&oc.release, "release", "", "orchestrator release (optional)")
 
-	return infoCmd
+	return command
 }
 
-func (ic *infoCmd) validate() error {
+func (oc *orchestratorsCmd) validate() error {
 	switch {
-	case strings.EqualFold(ic.orchestrator, kubernetes):
-		ic.orchestrator = kubernetes
-	case strings.EqualFold(ic.orchestrator, dcos):
-		ic.orchestrator = dcos
-	case strings.EqualFold(ic.orchestrator, dockerCE):
-		ic.orchestrator = dockerCE
-	case strings.EqualFold(ic.orchestrator, swarm):
-		ic.orchestrator = swarm
-	case ic.orchestrator == "":
-		if len(ic.release) > 0 {
-			return fmt.Errorf("Must specify orchestrator for release '%s'", ic.release)
+	case strings.EqualFold(oc.orchestrator, kubernetes):
+		oc.orchestrator = kubernetes
+	case strings.EqualFold(oc.orchestrator, dcos):
+		oc.orchestrator = dcos
+	case strings.EqualFold(oc.orchestrator, dockerCE):
+		oc.orchestrator = dockerCE
+	case strings.EqualFold(oc.orchestrator, swarm):
+		oc.orchestrator = swarm
+	case oc.orchestrator == "":
+		if len(oc.release) > 0 {
+			return fmt.Errorf("Must specify orchestrator for release '%s'", oc.release)
 		}
 	default:
-		return fmt.Errorf("Unsupported orchestrator '%s'", ic.orchestrator)
+		return fmt.Errorf("Unsupported orchestrator '%s'", oc.orchestrator)
 	}
 	return nil
 }
 
-func (ic *infoCmd) run(cmd *cobra.Command, args []string) error {
-	if err := ic.validate(); err != nil {
+func (oc *orchestratorsCmd) run(cmd *cobra.Command, args []string) error {
+	if err := oc.validate(); err != nil {
 		return err
 	}
-	funcmap := map[string]infoFunc{
+	funcmap := map[string]orchestratorsFunc{
 		kubernetes: kubernetesInfo,
 		dcos:       dcosInfo,
 		swarm:      swarmInfo,
 		dockerCE:   dockerceInfo,
 	}
-	if len(ic.orchestrator) == 0 {
+	if len(oc.orchestrator) == 0 {
 		for _, f := range funcmap {
-			if err := f(ic.release); err != nil {
+			if err := f(oc.release); err != nil {
 				return err
 			}
 		}
 		return nil
 	}
-	return funcmap[ic.orchestrator](ic.release)
+	return funcmap[oc.orchestrator](oc.release)
 }
 
 func printInfo(orch, rel, ver, def string) {
