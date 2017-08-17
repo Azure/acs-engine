@@ -651,6 +651,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return GetMasterAgentAllowedSizes()
 		},
+		"GetSwarmVersions": func() string {
+			return GetSwarmVersions(SwarmVersion, SwarmDockerComposeVersion)
+		},
+		"GetSwarmModeVersions": func() string {
+			return GetSwarmVersions(DockerCEVersion, DockerCEDockerComposeVersion)
+		},
 		"GetSizeMap": func() string {
 			if t.ClassicMode {
 				return GetClassicSizeMap()
@@ -1381,4 +1387,8 @@ func getKubernetesPodStartIndex(properties *api.Properties) int {
 	}
 
 	return nodeCount + 1
+}
+
+func GetSwarmVersions(orchestratorVersion, dockerComposeVersion string) string {
+	return fmt.Sprintf("\"orchestratorVersion\": \"%s\",\n\"dockerComposeVersion\": \"%s\",\n", orchestratorVersion, dockerComposeVersion)
 }

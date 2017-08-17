@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/spf13/cobra"
 )
@@ -17,13 +18,6 @@ const (
 	dcos       = "DCOS"
 	swarm      = "Swarm"
 	dockerCE   = "DockerCE"
-
-	// To be in sync with parts/configure-swarm-cluster.sh
-	swarmVersion              = "1.1.0"
-	swarmDockerComposeVersion = "1.6.2"
-	// To be in sync with parts/configure-swarmmode-cluster.sh
-	dockerceVersion              = "17.03"
-	dockerceDockerComposeVersion = "1.14.0"
 )
 
 type orchestratorsCmd struct {
@@ -133,11 +127,11 @@ func dcosInfo(release string) error {
 }
 
 func swarmInfo(release string) error {
-	fmt.Printf("Swarm{Version: %s, Docker Compose Version: %s}\n", swarmVersion, swarmDockerComposeVersion)
+	fmt.Printf("Swarm{Version: %s, Docker Compose Version: %s}\n", acsengine.SwarmVersion, acsengine.SwarmDockerComposeVersion)
 	return nil
 }
 
 func dockerceInfo(release string) error {
-	fmt.Printf("DockerCE{Version: %s, Docker Compose Version: %s}\n", dockerceVersion, dockerceDockerComposeVersion)
+	fmt.Printf("DockerCE{Version: %s, Docker Compose Version: %s}\n", acsengine.DockerCEVersion, acsengine.DockerCEDockerComposeVersion)
 	return nil
 }

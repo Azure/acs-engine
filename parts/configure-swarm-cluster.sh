@@ -6,19 +6,18 @@ echo "starting swarm cluster configuration"
 date
 ps ax
 
-# **NOTE** Keep version numbers in sync with constants in cmd/info.go
-SWARM_VERSION="swarm:1.1.0"
-DOCKER_COMPOSE_VERSION="1.6.2"
 #############
 # Parameters
 #############
 
-MASTERCOUNT=${1}
-MASTERPREFIX=${2}
-MASTERFIRSTADDR=${3}
-AZUREUSER=${4}
-POSTINSTALLSCRIPTURI=${5}
-BASESUBNET=${6}
+SWARM_VERSION=${1}
+DOCKER_COMPOSE_VERSION=${2}
+MASTERCOUNT=${3}
+MASTERPREFIX=${4}
+MASTERFIRSTADDR=${5}
+AZUREUSER=${6}
+POSTINSTALLSCRIPTURI=${7}
+BASESUBNET=${8}
 VMNAME=`hostname`
 VMNUMBER=`echo $VMNAME | sed 's/.*[^0-9]\([0-9]\+\)*$/\1/'`
 VMPREFIX=`echo $VMNAME | sed 's/\(.*[^0-9]\)*[0-9]\+$/\1/'`
