@@ -102,7 +102,7 @@ var KubeConfigs = map[string]map[string]string{
 		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.14.4",
 		"pause":           "pause-amd64:3.0",
-		"tiller":          DefaultTillerImage,
+		"tiller":          "tiller:v2.6.0",
 		"windowszip":      "v1.7.2intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
