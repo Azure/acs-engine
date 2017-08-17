@@ -7,7 +7,6 @@ DIST_DIRS         = find * -type d -exec
 
 # go option
 GO        ?= go
-PKG       := $(shell glide novendor)
 TAGS      :=
 LDFLAGS   :=
 GOFLAGS   :=
