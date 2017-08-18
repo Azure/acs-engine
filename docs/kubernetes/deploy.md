@@ -78,7 +78,7 @@ Kubernetes clusters have integrated support for various cloud providers as core 
 
 ACS Engine consumes a cluster definition which outlines the desired shape, size, and configuration of Kubernetes. There are a number of features that can be enabled through the cluster definition, check the `examples` directory for a number of... examples.
 
-Edit the [simple Kubernetes cluster definition](../examples/kubernetes.json) and fill out the required values:
+Edit the [simple Kubernetes cluster definition](/examples/kubernetes.json) and fill out the required values:
 
 * `dnsPrefix`: must be a region-unique name and will form part of the hostname (e.g. myprod1, staging, leapinglama), be unique!
 * `keyData`: must contain the public portion of an SSH key, this will be associated with the `adminUsername` value found in the same section of the cluster definition (e.g. 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABA....')
