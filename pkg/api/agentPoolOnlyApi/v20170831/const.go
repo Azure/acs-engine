@@ -24,13 +24,6 @@ const (
 	MaxDiskSizeGB = 1023
 )
 
-const (
-	// Kubernetes166 is the string constant for Kubernetes 1.6.6
-	Kubernetes166 OrchestratorVersion = "1.6.6"
-	// KubernetesLatest is the string constant for latest Kubernetes version
-	KubernetesLatest OrchestratorVersion = Kubernetes166
-)
-
 // storage profiles
 const (
 	// StorageAccount means that the nodes use raw storage accounts for their os and attached volumes

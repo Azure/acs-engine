@@ -23,6 +23,14 @@
       },
       "type": "securestring"
     },
+{{if IsHostedMaster}}
+    "kubernetesEndpoint": {
+      "metadata": {
+        "description": "The Kubernetes API endpoint https://<kubernetesEndpoint>:443"
+      },
+      "type": "string"
+    },
+{{end}}
     "clientCertificate": {
       "metadata": {
         "description": "The base 64 client certificate used to communicate with the master"

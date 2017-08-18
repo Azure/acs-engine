@@ -3,6 +3,7 @@ package api
 import (
 	neturl "net/url"
 
+	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -51,6 +52,7 @@ type Properties struct {
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
 	CustomProfile           *CustomProfile           `json:"customProfile,omitempty"`
+	HostedMasterProfile     *HostedMasterProfile     `json:"hostedMasterProfile,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -251,6 +253,14 @@ type KeyVaultCertificate struct {
 // OSType represents OS types of agents
 type OSType string
 
+type HostedMasterProfile struct {
+	// Master public endpoint/FQDN with port
+	// The format will be FQDN:2376
+	// Not used during PUT, returned as part of GETFQDN
+	FQDN      string `json:"fqdn,omitempty"`
+	DNSPrefix string `json:"dnsPrefix"`
+}
+
 // CustomProfile specifies custom properties that are used for
 // cluster instantiation.  Should not be used by most users.
 type CustomProfile struct {
@@ -305,6 +315,14 @@ type VlabsUpgradeContainerService struct {
 	*vlabs.UpgradeContainerService
 }
 
+// V20170831ARMManagedContainerService is the type we read and write from file
+// needed because the json that is sent to ARM and acs-engine
+// is different from the json that the ACS RP Api gets from ARM
+type V20170831ARMManagedContainerService struct {
+	TypeMeta
+	*v20170831.HostedMaster
+}
+
 // UpgradeContainerService API model
 type UpgradeContainerService struct {
 	OrchestratorProfile *OrchestratorProfile `json:"orchestratorProfile,omitempty"`
@@ -322,7 +340,7 @@ func (p *Properties) HasWindows() bool {
 
 // HasManagedDisks returns true if the cluster contains Managed Disks
 func (p *Properties) HasManagedDisks() bool {
-	if p.MasterProfile.StorageProfile == ManagedDisks {
+	if p.MasterProfile != nil && p.MasterProfile.StorageProfile == ManagedDisks {
 		return true
 	}
 	for _, agentPoolProfile := range p.AgentPoolProfiles {
@@ -335,7 +353,7 @@ func (p *Properties) HasManagedDisks() bool {
 
 // HasStorageAccountDisks returns true if the cluster contains Storage Account Disks
 func (p *Properties) HasStorageAccountDisks() bool {
-	if p.MasterProfile.StorageProfile == StorageAccount {
+	if p.MasterProfile != nil && p.MasterProfile.StorageProfile == StorageAccount {
 		return true
 	}
 	for _, agentPoolProfile := range p.AgentPoolProfiles {

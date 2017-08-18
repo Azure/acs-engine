@@ -1,4 +1,4 @@
-package v20170831
+package vlabs
 
 import "encoding/json"
 
@@ -29,20 +29,17 @@ type HostedMaster struct {
 
 // Properties represents the ACS cluster definition
 type Properties struct {
-	ProvisioningState ProvisioningState   `json:"provisioningState,omitempty"`
-	Version           OrchestratorVersion `json:"version"`
-	DNSPrefix         string              `json:"dnsPrefix" validate:"required"`
-	// Master LB public endpoint/FQDN with port
-	// The format will be FQDN:2376
-	// Not used during PUT, returned as part of GET
+	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
+	KubernetesVersion       string                   `json:"kubernetesVersion" validate:"len=0"`
+	KubernetesRelease       string                   `json:"kubernetesRelease"`
+	DNSPrefix               string                   `json:"dnsPrefix" validate:"required"`
 	FQDN                    string                   `json:"fqdn,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
-	NetworkProfile          *NetworkProfile          `json:"networkProfile,omitempty"`
-	AccessProfiles          []*AccessProfile         `json:"accessProfiles,omitempty"`
-	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"`
+	AccessProfiles          []*AccessProfile         `json:"accessProfiles,omitempty"` //@todo(jahanse): not used
+	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty" validate:"required"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -56,8 +53,28 @@ type Properties struct {
 //    <NAME> is the name of the secret.
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
-	ClientID string `json:"clientId,omitempty" validate:"required"`
-	Secret   string `json:"secret,omitempty" validate:"required"`
+	ClientID string `json:"servicePrincipalClientID,omitempty" validate:"required"`
+	Secret   string `json:"servicePrincipalClientSecret,omitempty" validate:"required"`
+}
+
+// CertificateProfile contains cert material for the Kubernetes cluster
+type CertificateProfile struct {
+	// CaCertificate is the certificate authority certificate.
+	CaCertificate string `json:"caCertificate,omitempty"`
+	// CaPrivateKey is the certificate authority key.
+	CaPrivateKey string `json:"caPrivateKey,omitempty"`
+	// ApiServerCertificate is the rest api server certificate, and signed by the CA
+	APIServerCertificate string `json:"apiServerCertificate,omitempty"`
+	// ApiServerPrivateKey is the rest api server private key, and signed by the CA
+	APIServerPrivateKey string `json:"apiServerPrivateKey,omitempty"`
+	// ClientCertificate is the certificate used by the client kubelet services and signed by the CA
+	ClientCertificate string `json:"clientCertificate,omitempty"`
+	// ClientPrivateKey is the private key used by the client kubelet services and signed by the CA
+	ClientPrivateKey string `json:"clientPrivateKey,omitempty"`
+	// KubeConfigCertificate is the client certificate used for kubectl cli and signed by the CA
+	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty"`
+	// KubeConfigPrivateKey is the client private key used for kubectl cli and signed by the CA
+	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
 }
 
 // LinuxProfile represents the Linux configuration passed to the cluster
@@ -99,35 +116,17 @@ const (
 	Migrating ProvisioningState = "Migrating"
 )
 
-// NetworkProfile represents the definition of network profile for the cluster
-type NetworkProfile struct {
-	// PodCidr defines the range of addresses that will be used for Pods.
-	// Allocation of subnets to agents will be handed by kube-controller-manager
-	PodCidr string `json:"podCidr,omitempty"`
-	// ServiceCidr defines the range for Kubernetes services
-	ServiceCidr string `json:"serviceCidr,omitempty"`
-	// AgentCidr defines the range for Agent VMs in the subnet
-	AgentCidr        string `json:"agentCidr,omitempty"`
-	KubeDNSServiceIP string `json:"kubeDNSServiceIP,omitempty"`
-}
-
-// JumpboxProfile represents the definition of bastion machine to access the agent nodes
-type JumpboxProfile struct {
-	PublicIPAddressID string `json:"publicIPAddressID,omitempty"`
-	PublicIPAddress   string `json:"publicIPAddress,omitempty"`
-	InternalIPAddress string `json:"internalIPAddress,omitempty"`
-}
-
 // AgentPoolProfile represents configuration of VMs running agent
 // daemons that register with the master and offer resources to
 // host applications in containers.
 type AgentPoolProfile struct {
-	Name           string `json:"name" validate:"required"`
-	Count          int    `json:"count" validate:"required,min=1,max=100"`
-	VMSize         string `json:"vmSize" validate:"required"`
-	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	StorageProfile string `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
-	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
+	Name                string `json:"name" validate:"required"`
+	Count               int    `json:"count" validate:"required,min=1,max=100"`
+	VMSize              string `json:"vmSize" validate:"required"`
+	OSDiskSizeGB        int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	AvailabilityProfile string `json:"availabilityProfile"`
+	StorageProfile      string `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 
 	// OSType is the operating system type for agents
 	// Set as nullable to support backward compat because
@@ -177,9 +176,6 @@ func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
 	// If it is not set. The user should get the default for the vm size
 	return nil
 }
-
-// OrchestratorVersion defines the version for orchestratorType
-type OrchestratorVersion string
 
 // OSType represents OS types of agents
 type OSType string

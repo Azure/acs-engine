@@ -96,7 +96,11 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 	}
 
 	if gc.outputDirectory == "" {
-		gc.outputDirectory = path.Join("_output", gc.containerService.Properties.MasterProfile.DNSPrefix)
+		if gc.containerService.Properties.MasterProfile != nil {
+			gc.outputDirectory = path.Join("_output", gc.containerService.Properties.MasterProfile.DNSPrefix)
+		} else {
+			gc.outputDirectory = path.Join("_output", gc.containerService.Properties.HostedMasterProfile.DNSPrefix)
+		}
 	}
 
 	// consume gc.caCertificatePath and gc.caPrivateKeyPath
