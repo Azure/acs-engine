@@ -50,6 +50,8 @@ import:
   version: a8983c062be4b565d723c478922d7736e04fdba4
 - package: github.com/Masterminds/semver
   version: v1.3.1
+- package: github.com/imdario/mergo
+  version: ^0.2.2
 testImport:
 - package: github.com/onsi/gomega
 - package: github.com/onsi/ginkgo

@@ -48,7 +48,7 @@ func TestCustomHyperkubeImageField(t *testing.T) {
 	apiloader := &Apiloader{
 		Translator: nil,
 	}
-	apimodel, _, err := apiloader.DeserializeContainerService([]byte(exampleAPIModel), false)
+	apimodel, _, err := apiloader.DeserializeContainerService([]byte(exampleAPIModel), false, nil)
 	if err != nil {
 		t.Fatalf("unexpectedly error deserializing the example apimodel: %s", err)
 	}

@@ -21,22 +21,23 @@ type Apiloader struct {
 }
 
 // LoadContainerServiceFromFile loads an ACS Cluster API Model from a JSON file
-func (a *Apiloader) LoadContainerServiceFromFile(jsonFile string, validate bool) (*ContainerService, string, error) {
+func (a *Apiloader) LoadContainerServiceFromFile(jsonFile string, validate bool, existingContainerService *ContainerService) (*ContainerService, string, error) {
 	contents, e := ioutil.ReadFile(jsonFile)
 	if e != nil {
 		return nil, "", a.Translator.Errorf("error reading file %s: %s", jsonFile, e.Error())
 	}
-	return a.DeserializeContainerService(contents, validate)
+	return a.DeserializeContainerService(contents, validate, existingContainerService)
 }
 
 // DeserializeContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
-func (a *Apiloader) DeserializeContainerService(contents []byte, validate bool) (*ContainerService, string, error) {
+func (a *Apiloader) DeserializeContainerService(contents []byte, validate bool, existingContainerService *ContainerService) (*ContainerService, string, error) {
 	m := &TypeMeta{}
 	if err := json.Unmarshal(contents, &m); err != nil {
 		return nil, "", err
 	}
+
 	version := m.APIVersion
-	service, err := a.LoadContainerService(contents, version, validate)
+	service, err := a.LoadContainerService(contents, version, validate, existingContainerService)
 	if service == nil || err != nil {
 		log.Infof("Error returned by LoadContainerService: %+v. Attempting to load container service using LoadContainerServiceForAgentPoolOnlyCluster", err)
 		service, err = a.LoadContainerServiceForAgentPoolOnlyCluster(contents, version, validate)
@@ -46,12 +47,22 @@ func (a *Apiloader) DeserializeContainerService(contents []byte, validate bool) 
 }
 
 // LoadContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
-func (a *Apiloader) LoadContainerService(contents []byte, version string, validate bool) (*ContainerService, error) {
+func (a *Apiloader) LoadContainerService(
+	contents []byte,
+	version string,
+	validate bool,
+	existingContainerService *ContainerService) (*ContainerService, error) {
 	switch version {
 	case v20160930.APIVersion:
 		containerService := &v20160930.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
+		}
+		if existingContainerService != nil {
+			vecs := ConvertContainerServiceToV20160930(existingContainerService)
+			if e := containerService.Merge(vecs); e != nil {
+				return nil, e
+			}
 		}
 		setContainerServiceDefaultsv20160930(containerService)
 		if e := containerService.Properties.Validate(); validate && e != nil {
@@ -64,6 +75,12 @@ func (a *Apiloader) LoadContainerService(contents []byte, version string, valida
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
+		if existingContainerService != nil {
+			vecs := ConvertContainerServiceToV20160330(existingContainerService)
+			if e := containerService.Merge(vecs); e != nil {
+				return nil, e
+			}
+		}
 		setContainerServiceDefaultsv20160330(containerService)
 		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
@@ -74,6 +91,12 @@ func (a *Apiloader) LoadContainerService(contents []byte, version string, valida
 		containerService := &v20170131.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
+		}
+		if existingContainerService != nil {
+			vecs := ConvertContainerServiceToV20170131(existingContainerService)
+			if e := containerService.Merge(vecs); e != nil {
+				return nil, e
+			}
 		}
 		setContainerServiceDefaultsv20170131(containerService)
 		if e := containerService.Properties.Validate(); validate && e != nil {
@@ -86,6 +109,12 @@ func (a *Apiloader) LoadContainerService(contents []byte, version string, valida
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
+		if existingContainerService != nil {
+			vecs := ConvertContainerServiceToV20170701(existingContainerService)
+			if e := containerService.Merge(vecs); e != nil {
+				return nil, e
+			}
+		}
 		setContainerServiceDefaultsv20170701(containerService)
 		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
@@ -96,6 +125,12 @@ func (a *Apiloader) LoadContainerService(contents []byte, version string, valida
 		containerService := &vlabs.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
+		}
+		if existingContainerService != nil {
+			vecs := ConvertContainerServiceToVLabs(existingContainerService)
+			if e := containerService.Merge(vecs); e != nil {
+				return nil, e
+			}
 		}
 		setContainerServiceDefaultsvlabs(containerService)
 		if e := containerService.Properties.Validate(); validate && e != nil {
