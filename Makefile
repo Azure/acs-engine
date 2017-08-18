@@ -13,14 +13,11 @@ endif
 
 # go option
 GO        ?= go
-PKG       := $(shell glide novendor)
 TAGS      :=
 LDFLAGS   := 
 BINDIR    := $(CURDIR)/bin
 BINARIES  := acs-engine
 VERSION   ?= $(shell git rev-parse HEAD)
-
-GOFILES=`glide novendor | xargs go list`
 
 REPO_PATH := github.com/Azure/acs-engine
 DEV_ENV_IMAGE := quay.io/deis/go-dev:v1.2.0
@@ -35,8 +32,8 @@ BINARY_DEST_DIR ?= bin
 all: build
 
 .PHONY: generate
-generate:
-	go generate -v $(GOFILES)
+generate: bootstrap
+	go generate -v `glide novendor | xargs go list`
 
 .PHONY: build
 build: generate
