@@ -93,8 +93,7 @@ const (
 // For instance, Kubernetes release "1.7" would contain the version "1.7.2"
 var KubeConfigs = map[string]map[string]string{
 	api.KubernetesRelease1Dot7: {
-		"version":         "1.7.2",
-		"hyperkube":       "hyperkube-amd64:v1.7.2",
+		"hyperkube":       "hyperkube-amd64:v1.7.4",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addonresizer":    "addon-resizer:1.7",
