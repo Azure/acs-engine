@@ -210,6 +210,9 @@ workflows:
       - test
       - pr-e2e-hold:
           type: approval
+          filters:
+            branches:
+              ignore: master
       - non-k8s-pr-e2e:
           requires:
             - pr-e2e-hold
