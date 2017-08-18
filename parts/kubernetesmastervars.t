@@ -150,7 +150,7 @@
     "nsgName": "[concat(variables('agentNamePrefix'), 'nsg')]",
 {{end}}
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
-    "primaryAvailablitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',variables('nameSuffix'))]",
+    "primaryAvailabilitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',variables('nameSuffix'))]",
 {{if not IsHostedMaster }}
     "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterFqdnPrefix'), '-', variables('nameSuffix'))]",
     "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]",

@@ -3,7 +3,6 @@
 |Feature|Status|API Version|Example|Description|
 |---|---|---|---|---|
 |Managed Disks|Beta|`vlabs`|[kubernetes-vmas.json](../../examples/disks-managed/kubernetes-vmss.json)|[Description](#feat-managed-disks)|
-|Managed Identity|Alpha|`vlabs`|[kubernetes-msi.json](../../examples/managed-identity/kubernetes-msi.json)|[Description](#feat-kubernetes-msi)|
 |Calico Network Policy|Alpha|`vlabs`|[kubernetes-calico.json](../../examples/networkpolicy/kubernetes-calico.json)|[Description](#feat-calico)|
 |Custom VNET|Beta|`vlabs`|[kubernetesvnet.json](../../examples/vnet/kubernetesvnet.json)|[Description](#feat-custom-vnet)|
 
