@@ -311,6 +311,12 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 		}
 	}
 
+	if a.MaxPods != 0 {
+		if a.MaxPods < KubernetesMinMaxPods {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.MaxPods '%v' must be at least %v", a.MaxPods, KubernetesMinMaxPods)
+		}
+	}
+
 	if a.NodeStatusUpdateFrequency != "" {
 		_, err := time.ParseDuration(a.NodeStatusUpdateFrequency)
 		if err != nil {
