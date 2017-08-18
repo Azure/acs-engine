@@ -114,11 +114,6 @@
       "cluster_definition": "vnet/swarmmodevnet.json",
       "category": "network",
       "location": "uksouth"
-    },
-    {
-      "cluster_definition": "managed-identity/kubernetes-msi.json",
-      "category": "msi",
-      "location": "westcentralus"
     }
   ]
 }
