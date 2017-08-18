@@ -35,10 +35,6 @@
 		{
 			"cluster_definition": "vnet/kubernetesvnet.json",
 			"location": "southcentralus"
-		},
-		{
-			"cluster_definition": "managed-identity/kubernetes-msi.json",
-			"location": "southcentralus"
 		}
 	]
 }
