@@ -68,7 +68,7 @@ const (
 	// DefaultKubernetesCloudProviderRateLimitBucket is 10, takes effect if DefaultKubernetesCloudProviderRateLimit is true
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
 	// DefaultTillerImage defines the Helm Tiller deployment version on Kubernetes Clusters
-	DefaultTillerImage = "tiller:v2.5.1"
+	DefaultTillerImage = "tiller:v2.6.0"
 )
 
 const (
@@ -102,7 +102,7 @@ var KubeConfigs = map[string]map[string]string{
 		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.14.4",
 		"pause":           "pause-amd64:3.0",
-		"tiller":          "tiller:v2.6.0",
+		"tiller":          DefaultTillerImage,
 		"windowszip":      "v1.7.2intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
@@ -148,7 +148,7 @@ var KubeConfigs = map[string]map[string]string{
 		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
 		"dnsmasq":         "kube-dnsmasq-amd64:1.3",
 		"pause":           "pause-amd64:3.0",
-		"tiller":          DefaultTillerImage,
+		"tiller":          "tiller:v2.5.1",
 		"windowszip":      "v1.5.7intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
