@@ -98,7 +98,7 @@ imports:
   version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
 - name: github.com/Sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
-  repo: https://github.com/sirupsen/logrus
+  repo: https://github.com/Sirupsen/logrus
   subpackages:
   - hooks/test
 - name: github.com/spf13/cobra

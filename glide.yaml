@@ -20,7 +20,7 @@ import:
   - autorest/date
 - package: github.com/Sirupsen/logrus
   version: v0.11.5
-  repo: https://github.com/sirupsen/logrus
+  repo: https://github.com/Sirupsen/logrus
 - package: github.com/ghodss/yaml
   version: v1.0.0
 - package: github.com/mitchellh/go-homedir
