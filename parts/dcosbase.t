@@ -57,7 +57,7 @@
     {{template "dcosmasterresources.t" .}}
   ],
   "outputs": {
-    {{range .AgentPoolProfiles}}{{template "agentoutputs.t" .}} ,
+    {{range .AgentPoolProfiles}}{{template "agentoutputs.t" .}}
     {{end}}
     {{template "masteroutputs.t" .}}
   }

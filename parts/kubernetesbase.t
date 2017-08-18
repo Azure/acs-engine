@@ -150,8 +150,7 @@
     {{end}}
   ],
   "outputs": {
-    {{range .AgentPoolProfiles}}
-      {{template "agentoutputs.t" .}} ,
+    {{range .AgentPoolProfiles}}{{template "agentoutputs.t" .}}
     {{end}}
     {{if IsHostedMaster}}
       {{template "iaasoutputs.t" .}}
