@@ -92,7 +92,7 @@ The template.json file is a linked template that will be called by the main clus
 
 Additional variables can be defined for use in creating additional resources. Additional resources can also be created.  The key resource for installing the extension is the custom script extension. 
 
-Modify the commandToExecute entry with the necessary command and paramters to install the desired extension. Replace EXTENSION-NAME with the name of the extension.
+Modify the commandToExecute entry with the necessary command and paramters to install the desired extension. Replace EXTENSION-NAME with the name of the extension. The resource name of the custom script extension has to have the same name as the other custom script on the box as we aren't allowed to have two, this is also why we use a linked deployment so we can have the same resource twice and just make this one depend on the other so that it always runs after the provision extension is done.
 
 The following is an example of the template.json file.
 
