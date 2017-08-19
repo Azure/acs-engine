@@ -151,7 +151,7 @@ func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte,
 		if e := json.Unmarshal(contents, &hostedMaster); e != nil {
 			return nil, e
 		}
-		setHostedMasterDefaultsv20170701(hostedMaster)
+		setHostedMasterDefaultsv20170831(hostedMaster)
 		if e := hostedMaster.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
@@ -300,7 +300,7 @@ func setContainerServiceDefaultsvlabs(c *vlabs.ContainerService) {
 }
 
 // Sets default HostedMaster property values for any appropriate zero values
-func setHostedMasterDefaultsv20170701(hm *v20170831.HostedMaster) {
+func setHostedMasterDefaultsv20170831(hm *v20170831.HostedMaster) {
 	hm.Properties.KubernetesVersion = ""
 }
 
