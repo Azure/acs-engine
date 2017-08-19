@@ -27,3 +27,24 @@ func TestMerge(t *testing.T) {
 		t.Fatalf("unexpected Properties.WindowsProfile.AdminPassword not updated")
 	}
 }
+
+func TestMergeWithNil(t *testing.T) {
+	newCS := &ContainerService{
+		Properties: &Properties{},
+	}
+
+	existingCS := &ContainerService{
+		Properties: &Properties{
+			WindowsProfile: &WindowsProfile{
+				AdminUsername: "azureuser",
+				AdminPassword: "existingPassword",
+			},
+		},
+	}
+	if err := newCS.Merge(existingCS); err != nil {
+		t.Fatalf("unexpectedly detected merge failure, %+v", err)
+	}
+	if newCS.Properties.WindowsProfile != nil {
+		t.Fatalf("unexpected Properties.WindowsProfile updated")
+	}
+}
