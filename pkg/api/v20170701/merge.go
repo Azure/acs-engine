@@ -6,13 +6,19 @@ import (
 
 // Merge existing containerService attribute into cs
 func (cs *ContainerService) Merge(ecs *ContainerService) error {
-	if cs.Properties.ServicePrincipalProfile != nil && ecs.Properties.ServicePrincipalProfile != nil {
+	if ecs.Properties.ServicePrincipalProfile != nil {
+		if cs.Properties.ServicePrincipalProfile == nil {
+			cs.Properties.ServicePrincipalProfile = &ServicePrincipalProfile{}
+		}
 		if err := mergo.Merge(cs.Properties.ServicePrincipalProfile,
 			*ecs.Properties.ServicePrincipalProfile); err != nil {
 			return err
 		}
 	}
-	if cs.Properties.WindowsProfile != nil && ecs.Properties.WindowsProfile != nil {
+	if ecs.Properties.WindowsProfile != nil {
+		if cs.Properties.WindowsProfile == nil {
+			cs.Properties.WindowsProfile = &WindowsProfile{}
+		}
 		if err := mergo.Merge(cs.Properties.WindowsProfile,
 			*ecs.Properties.WindowsProfile); err != nil {
 			return err

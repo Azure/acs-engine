@@ -84,7 +84,13 @@ func TestMergeWithNil(t *testing.T) {
 	if newCS.Properties.ServicePrincipalProfile.KeyvaultSecretRef != "keyVaultRefNew" {
 		t.Fatalf("unexpected Properties.ServicePrincipalProfile.KeyvaultSecretRef changed")
 	}
-	if newCS.Properties.WindowsProfile != nil {
-		t.Fatalf("unexpected Properties.WindowsProfile updated")
+	if newCS.Properties.WindowsProfile == nil {
+		t.Fatalf("unexpected Properties.WindowsProfile not updated")
+	}
+	if newCS.Properties.WindowsProfile.AdminUsername != "azureuser" {
+		t.Fatalf("unexpected Properties.WindowsProfile.AdminUsername not updated")
+	}
+	if newCS.Properties.WindowsProfile.AdminPassword != "existingPassword" {
+		t.Fatalf("unexpected Properties.WindowsProfile.AdminPassword not updated")
 	}
 }
