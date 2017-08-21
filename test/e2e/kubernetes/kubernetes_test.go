@@ -106,28 +106,28 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	})
 
 	It("should have kube-dns running", func() {
-		pod.WaitOnReady("kube-dns", "kube-system", 5*time.Second, 3*time.Minute)
-		running, err := pod.AreAllPodsRunning("kube-dns", "kube-system")
+		running, err := pod.WaitOnReady("kube-dns", "kube-system", 5*time.Second, 10*time.Minute)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(running).To(Equal(true))
 	})
 
 	It("should have kube-dashboard running", func() {
-		pod.WaitOnReady("kubernetes-dashboard", "kube-system", 5*time.Second, 3*time.Minute)
-		running, err := pod.AreAllPodsRunning("kubernetes-dashboard", "kube-system")
+		running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 5*time.Second, 10*time.Minute)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(running).To(Equal(true))
 	})
 
 	It("should have kube-proxy running", func() {
-		pod.WaitOnReady("kube-proxy", "kube-system", 5*time.Second, 3*time.Minute)
-		running, err := pod.AreAllPodsRunning("kube-proxy", "kube-system")
+		running, err := pod.WaitOnReady("kube-proxy", "kube-system", 5*time.Second, 10*time.Minute)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(running).To(Equal(true))
 	})
 
 	It("should be able to access the dashboard from each node", func() {
-		pod.WaitOnReady("kubernetes-dashboard", "kube-system", 5*time.Second, 3*time.Minute)
+		running, err := pod.WaitOnReady("kube-proxy", "kube-system", 5*time.Second, 10*time.Minute)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(running).To(Equal(true))
+
 		kubeConfig, err := GetConfig()
 		Expect(err).NotTo(HaveOccurred())
 
@@ -145,7 +145,10 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		for _, node := range nodeList.Nodes {
 			dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
 			curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
-			_, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
+			output, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
+			if err != nil {
+				log.Printf("\n\nOutput:%s\n\n", string(output))
+			}
 			Expect(err).NotTo(HaveOccurred())
 		}
 	})
