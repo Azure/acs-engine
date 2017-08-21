@@ -144,6 +144,36 @@ deploy_yaml() {
   log ''
 }
 
+
+log  " Waiting for API Server to start"
+kubernetesStarted=1
+for i in {1..600}; do
+    if [ -e /usr/local/bin/kubectl ]
+    then
+        /usr/local/bin/kubectl cluster-info
+        if [ "$?" = "0" ]
+        then
+            log "kubernetes started"
+            kubernetesStarted=0
+            break
+        fi
+    else
+        /usr/bin/docker ps | grep apiserver
+        if [ "$?" = "0" ]
+        then
+            log "kubernetes started"
+            kubernetesStarted=0
+            break
+        fi
+    fi
+    sleep 1
+done
+if [ $kubernetesStarted -ne 0 ]
+then
+    log "kubernetes did not start"
+    exit 1
+fi
+
 log ''
 log 'ACS-Engine - installing Microsoft OMS Agent (k8s)'
 log '--------------------------------------------------'
