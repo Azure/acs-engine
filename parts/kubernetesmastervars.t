@@ -124,7 +124,7 @@
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
   {{end}}
 {{else}}
-    "subnet": "10.0.0/16",
+    "subnet": "10.0.0.0/16",
     "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
