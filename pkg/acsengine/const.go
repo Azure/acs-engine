@@ -31,11 +31,10 @@ const (
 	// DefaultKubernetesFirstConsecutiveStaticIPOffset specifies the IP address offset of master 0
 	// when VNET integration is enabled.
 	DefaultKubernetesFirstConsecutiveStaticIPOffset = 5
-	// DefaultAgentIPAddressCount is the default number of IP addresses per network interface on agents
-	DefaultAgentIPAddressCount = 1
-	// DefaultAgentMultiIPAddressCount is the default number of IP addresses per network interface on agents,
-	// when VNET integration is enabled. It can be overridden per pool by setting the pool's IPAdddressCount property.
-	DefaultAgentMultiIPAddressCount = 128
+	// DefaultKubernetesMaxPods is the maximum number of pods to run on a node.
+	DefaultKubernetesMaxPods = 110
+	// DefaultKubernetesMaxPodsVNETIntegrated is the maximum number of pods to run on a node when VNET integration is enabled.
+	DefaultKubernetesMaxPodsVNETIntegrated = 30
 	// DefaultKubernetesClusterDomain is the dns suffix used in the cluster (used as a SAN in the PKI generation)
 	DefaultKubernetesClusterDomain = "cluster.local"
 	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP

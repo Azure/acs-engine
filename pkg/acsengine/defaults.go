@@ -95,6 +95,13 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
 			}
 		}
+		if a.OrchestratorProfile.KubernetesConfig.MaxPods == 0 {
+			if a.OrchestratorProfile.IsVNETIntegrated() {
+				a.OrchestratorProfile.KubernetesConfig.MaxPods = DefaultKubernetesMaxPodsVNETIntegrated
+			} else {
+				a.OrchestratorProfile.KubernetesConfig.MaxPods = DefaultKubernetesMaxPods
+			}
+		}
 		if a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet == "" {
 			a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 		}
@@ -164,13 +171,16 @@ func setMasterNetworkDefaults(a *api.Properties) {
 		}
 	}
 
-	// Allocate IP addresses for containers if VNET integration is enabled.
-	// A custom count specified by the user overrides this value.
+	// Set the default number of IP addresses allocated for masters.
 	if a.MasterProfile.IPAddressCount == 0 {
+		// Allocate one IP address for the node.
+		a.MasterProfile.IPAddressCount = 1
+
+		// Allocate IP addresses for pods if VNET integration is enabled.
 		if a.OrchestratorProfile.IsVNETIntegrated() {
-			a.MasterProfile.IPAddressCount = DefaultAgentMultiIPAddressCount
-		} else {
-			a.MasterProfile.IPAddressCount = DefaultAgentIPAddressCount
+			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+				a.MasterProfile.IPAddressCount += a.OrchestratorProfile.KubernetesConfig.MaxPods
+			}
 		}
 	}
 
@@ -201,13 +211,16 @@ func setAgentNetworkDefaults(a *api.Properties) {
 			profile.OSType = api.Linux
 		}
 
-		// Allocate IP addresses for containers if VNET integration is enabled.
-		// A custom count specified by the user overrides this value.
+		// Set the default number of IP addresses allocated for agents.
 		if profile.IPAddressCount == 0 {
-			if a.OrchestratorProfile != nil && a.OrchestratorProfile.IsVNETIntegrated() {
-				profile.IPAddressCount = DefaultAgentMultiIPAddressCount
-			} else {
-				profile.IPAddressCount = DefaultAgentIPAddressCount
+			// Allocate one IP address for the node.
+			profile.IPAddressCount = 1
+
+			// Allocate IP addresses for pods if VNET integration is enabled.
+			if a.OrchestratorProfile.IsVNETIntegrated() {
+				if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+					profile.IPAddressCount += a.OrchestratorProfile.KubernetesConfig.MaxPods
+				}
 			}
 		}
 	}
