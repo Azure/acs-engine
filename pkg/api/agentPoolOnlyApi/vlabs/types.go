@@ -38,7 +38,7 @@ type Properties struct {
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
-	AccessProfiles          []*AccessProfile         `json:"accessProfiles,omitempty"`
+	AccessProfiles          map[string]AccessProfile `json:"accessProfiles,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty" validate:"required"`
 }
 
