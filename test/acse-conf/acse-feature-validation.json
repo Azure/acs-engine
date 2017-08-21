@@ -65,7 +65,7 @@
       "location": "southcentralus"
     },
     {
-      "cluster_definition": "custom-pod-cidr/kubernetes.json",
+      "cluster_definition": "kubernetes-config/kubernetes-clustersubnet.json",
       "location": "westus2"
     },
     {

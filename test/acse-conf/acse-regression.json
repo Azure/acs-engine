@@ -91,7 +91,7 @@
       "location": "northeurope"
     },
     {
-      "cluster_definition": "custom-pod-cidr/kubernetes.json",
+      "cluster_definition": "kubernetes-config/kubernetes-clustersubnet.json",
       "category": "network",
       "location": "ukwest"
     },
