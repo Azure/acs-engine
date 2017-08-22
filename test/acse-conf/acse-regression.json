@@ -58,11 +58,13 @@
     },
     {
       "cluster_definition": "keyvaultcerts/swarm-windows.json",
-      "category": "keyvault"
+      "category": "keyvault",
+      "location": "westus"
     },
     {
       "cluster_definition": "keyvaultcerts/swarmmode.json",
-      "category": "keyvault"
+      "category": "keyvault",
+      "location": "westus"
     },
     {
       "cluster_definition": "kubernetes-releases/kubernetes1.5.json",
