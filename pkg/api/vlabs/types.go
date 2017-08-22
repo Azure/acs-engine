@@ -202,6 +202,7 @@ type MasterProfile struct {
 	VMSize                   string `json:"vmSize" validate:"required"`
 	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
+	VnetCidr                 string `json:"vnetCidr,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	IPAddressCount           int    `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
 	StorageProfile           string `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`

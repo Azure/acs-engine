@@ -499,6 +499,13 @@ func validateVNET(a *Properties) error {
 		if masterFirstIP == nil {
 			return fmt.Errorf("MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification) '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
 		}
+
+		if a.MasterProfile.VnetCidr != "" {
+			_, _, err := net.ParseCIDR(a.MasterProfile.VnetCidr)
+			if err != nil {
+				return fmt.Errorf("MasterProfile.VnetCidr '%s' contains invalid cidr notation", a.MasterProfile.VnetCidr)
+			}
+		}
 	}
 	return nil
 }

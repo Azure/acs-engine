@@ -169,6 +169,7 @@ type MasterProfile struct {
 	VMSize                   string `json:"vmSize"`
 	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
 	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
+	VnetCidr                 string `json:"vnetCidr,omitempty"`
 	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
 	Subnet                   string `json:"subnet"`
 	IPAddressCount           int    `json:"ipAddressCount,omitempty"`

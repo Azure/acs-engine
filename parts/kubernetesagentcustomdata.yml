@@ -130,6 +130,12 @@ write_files:
   owner: "root"
   content: |
     #!/bin/bash
+
+{{if IsVNETIntegrated}}
+    # SNAT outbound traffic from pods to destinations outside of VNET.
+    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
+{{end}}
+
     exit 0
 
 - path: "/opt/azure/containers/provision.sh"
