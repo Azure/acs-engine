@@ -282,6 +282,7 @@ func getRandFromStringSlice(notThisString string, fullSlice []string) string {
 	numEntries := len(fullSlice)
 	rand.Seed(time.Now().Unix()) // seed random number generator
 	randomIndex := rand.Intn(numEntries)
+	fmt.Printf("getRandFromStringSlice chose %d\n", randomIndex)
 	var randomString string
 	if fullSlice[randomIndex] != notThisString {
 		randomString = fullSlice[randomIndex]
