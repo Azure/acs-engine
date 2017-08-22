@@ -774,16 +774,28 @@ func convertCustomProfileToV20170701(api *CustomProfile, v20170701 *v20170701.Cu
 	v20170701.Orchestrator = api.Orchestrator
 }
 
-func convertServicePrincipalProfileToV20170701(api *ServicePrincipalProfile, v20170701 *v20170701.ServicePrincipalProfile) {
-	v20170701.ClientID = api.ClientID
-	v20170701.Secret = api.Secret
-	v20170701.KeyvaultSecretRef = api.KeyvaultSecretRef
+func convertServicePrincipalProfileToV20170701(api *ServicePrincipalProfile, v *v20170701.ServicePrincipalProfile) {
+	v.ClientID = api.ClientID
+	v.Secret = api.Secret
+	if api.KeyvaultSecretRef != nil {
+		v.KeyvaultSecretRef = &v20170701.KeyvaultSecretRef{
+			VaultID:       api.KeyvaultSecretRef.VaultID,
+			SecretName:    api.KeyvaultSecretRef.SecretName,
+			SecretVersion: api.KeyvaultSecretRef.SecretVersion,
+		}
+	}
 }
 
-func convertServicePrincipalProfileToVLabs(api *ServicePrincipalProfile, vlabs *vlabs.ServicePrincipalProfile) {
-	vlabs.ClientID = api.ClientID
-	vlabs.Secret = api.Secret
-	vlabs.KeyvaultSecretRef = api.KeyvaultSecretRef
+func convertServicePrincipalProfileToVLabs(api *ServicePrincipalProfile, v *vlabs.ServicePrincipalProfile) {
+	v.ClientID = api.ClientID
+	v.Secret = api.Secret
+	if api.KeyvaultSecretRef != nil {
+		v.KeyvaultSecretRef = &vlabs.KeyvaultSecretRef{
+			VaultID:       api.KeyvaultSecretRef.VaultID,
+			SecretName:    api.KeyvaultSecretRef.SecretName,
+			SecretVersion: api.KeyvaultSecretRef.SecretVersion,
+		}
+	}
 }
 
 func convertCertificateProfileToVLabs(api *CertificateProfile, vlabs *vlabs.CertificateProfile) {

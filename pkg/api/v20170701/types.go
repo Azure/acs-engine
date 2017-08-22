@@ -55,9 +55,15 @@ type Properties struct {
 //    <NAME> is the name of the secret.
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
-	ClientID          string `json:"clientId,omitempty" validate:"required"`
-	Secret            string `json:"secret,omitempty"`
-	KeyvaultSecretRef string `json:"keyvaultSecretRef,omitempty"`
+	ClientID          string             `json:"clientId,omitempty" validate:"required"`
+	Secret            string             `json:"secret,omitempty"`
+	KeyvaultSecretRef *KeyvaultSecretRef `json:"keyvaultSecretRef,omitempty"`
+}
+
+type KeyvaultSecretRef struct {
+	VaultID       string `json:"vaultID" validate:"required"`
+	SecretName    string `json:"secretName" validate:"required"`
+	SecretVersion string `json:"version,omitempty"`
 }
 
 // CustomProfile specifies custom properties that are used for
