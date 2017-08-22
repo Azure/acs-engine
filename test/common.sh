@@ -130,7 +130,7 @@ function deploy_template() {
 	create_resource_group
 
 	# Deploy the template
-	az group deployment create \
+	az group deployment --debug create \
 		--name "${DEPLOYMENT_NAME}" \
 		--resource-group "${RESOURCE_GROUP}" \
 		--template-file "${OUTPUT}/azuredeploy.json" \
