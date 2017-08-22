@@ -76,6 +76,7 @@ type TestManager struct {
 	lock    sync.Mutex
 	wg      sync.WaitGroup
 	rootDir string
+	regions []string
 }
 
 // Run begins the test run process
@@ -151,9 +152,9 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		rgPrefix = "y"
 		fmt.Printf("RESOURCE_GROUP_PREFIX is not set. Using default '%s'\n", rgPrefix)
 	}
-	// Randomize region if this is a retry attempt
-	if attempt > 0 {
-		d.Location = getRandFromStringSlice(d.Location, acsengine.AzureLocations)
+	// Randomize region if no location was configured, or if this is a retry attempt
+	if d.Location == "" || attempt > 0 {
+		d.Location = getRandFromStringSlice(d.Location, m.regions)
 	}
 	testName := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
 	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
@@ -472,6 +473,15 @@ func mainInternal() error {
 	if err = os.Mkdir(logDir, os.FileMode(0755)); err != nil {
 		return err
 	}
+	// set regions
+	regions := []string{}
+	for _, region := range acsengine.AzureLocations {
+		// Exclude regions that don't support D2V2
+		if region != "australiaeast" && region != "japanwest" {
+			regions = append(regions, region)
+		}
+	}
+	testManager.regions = regions
 	// run tests
 	return testManager.Run()
 }
