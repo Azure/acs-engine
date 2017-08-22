@@ -249,6 +249,13 @@
       },
       "type": "int"
     },
+    "vnetCidr": {
+      "defaultValue": "10.0.0.0/8",
+      "metadata": {
+        "description": "Cluster vnet cidr"
+      },
+      "type": "string"
+    },
 {{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {

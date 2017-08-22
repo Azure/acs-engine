@@ -35,6 +35,7 @@
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
     "networkPolicy": "[parameters('networkPolicy')]",
     "maxPods": "[parameters('maxPods')]",
+    "vnetCidr": "[parameters('vnetCidr')]",
 {{ if UseManagedIdentity }}
     "servicePrincipalClientId": "msi",
     "servicePrincipalClientSecret": "msi",
@@ -116,7 +117,6 @@
     "subnetName": "[split(parameters('masterVnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
     "vnetNameResourceSegmentIndex": 8,
     "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
-    "vnetCidr": "10.0.0.0/8",
   {{else}}
     "subnet": "[parameters('masterSubnet')]",
     "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
@@ -132,7 +132,7 @@
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
 {{end}}
-    "vnetCidr": "10.0.0.0/8",
+    "vnetCidr": "[parameters('vnetCidr')]",
     "kubeDnsServiceIp": "10.0.0.10",
     "kubeServiceCidr": "10.0.0.0/16",
     "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
