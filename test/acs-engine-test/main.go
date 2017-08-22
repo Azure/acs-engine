@@ -81,7 +81,7 @@ type TestManager struct {
 
 // Run begins the test run process
 func (m *TestManager) Run() error {
-	fmt.Printf("randomizing regional tests against the following regions: %s\n", m.regions)
+	fmt.Printf("Randomizing regional tests against the following regions: %s\n", m.regions)
 	n := len(m.config.Deployments)
 	if n == 0 {
 		return nil
@@ -156,7 +156,6 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	// Randomize region if no location was configured
 	if d.Location == "" {
 		d.Location = getRandFromStringSlice(d.Location, m.regions)
-		fmt.Printf("randomized %s to %s\n", d.ClusterDefinition, d.Location)
 	}
 	testName := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
 	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
@@ -281,7 +280,6 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 func getRandFromStringSlice(notThisString string, fullSlice []string) string {
 	numEntries := len(fullSlice)
 	randomIndex := rand.Intn(numEntries)
-	fmt.Printf("getRandFromStringSlice chose %d\n", randomIndex)
 	var randomString string
 	if fullSlice[randomIndex] != notThisString {
 		randomString = fullSlice[randomIndex]
