@@ -158,7 +158,6 @@ func setMasterNetworkDefaults(a *api.Properties) {
 				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
 				a.MasterProfile.Subnet = a.OrchestratorProfile.KubernetesConfig.ClusterSubnet
 				a.MasterProfile.FirstConsecutiveStaticIP = getFirstConsecutiveStaticIPAddress(a.MasterProfile.Subnet)
-				a.MasterProfile.VnetCidr = (a.MasterProfile.VnetCidr)
 			} else {
 				a.MasterProfile.Subnet = DefaultKubernetesMasterSubnet
 				a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
