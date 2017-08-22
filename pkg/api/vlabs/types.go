@@ -45,8 +45,8 @@ type Properties struct {
 // The 'Secret' parameter should be a secret in plain text.
 // The 'KeyvaultSecretRef' parameter is a reference to a secret in a keyvault.
 type ServicePrincipalProfile struct {
-	ClientID          string             `json:"clientId,omitempty"`
-	Secret            string             `json:"secret,omitempty"`
+	ClientID          string             `json:"servicePrincipalClientID,omitempty"`
+	Secret            string             `json:"servicePrincipalClientSecret,omitempty"`
 	KeyvaultSecretRef *KeyvaultSecretRef `json:"keyvaultSecretRef,omitempty"`
 }
 
@@ -61,7 +61,7 @@ type ServicePrincipalProfile struct {
 // The 'SecretVersion' (optional) is the version of the secret (default: the latest version)
 type KeyvaultSecretRef struct {
 	VaultID       string `json:"vaultID" validate:"required"`
-	SecretName    string `json:"secret" validate:"required"`
+	SecretName    string `json:"secretName" validate:"required"`
 	SecretVersion string `json:"version,omitempty"`
 }
 

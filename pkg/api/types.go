@@ -57,14 +57,14 @@ type Properties struct {
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
 type ServicePrincipalProfile struct {
-	ClientID          string             `json:"servicePrincipalClientID" validate:"required"`
+	ClientID          string             `json:"servicePrincipalClientID"`
 	Secret            string             `json:"servicePrincipalClientSecret,omitempty"`
 	KeyvaultSecretRef *KeyvaultSecretRef `json:"keyvaultSecretRef,omitempty"`
 }
 
 type KeyvaultSecretRef struct {
-	VaultID       string `json:"vaultID" validate:"required"`
-	SecretName    string `json:"secretName" validate:"required"`
+	VaultID       string `json:"vaultID"`
+	SecretName    string `json:"secretName"`
 	SecretVersion string `json:"version,omitempty"`
 }
 
