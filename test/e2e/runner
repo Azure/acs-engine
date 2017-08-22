@@ -31,9 +31,14 @@ if [ -z "${NAME}" ]; then
   echo "Generating new SSH Keys"
   ssh-keygen -f _output/${SSH_KEY_NAME} -b 2048 -t rsa -q -N ''
   chmod 0600 _output/${SSH_KEY_NAME}*
+  ssh-add _output/${SSH_KEY_NAME}
 fi
 
 export PUBLIC_SSH_KEY="$(cat _output/${SSH_KEY_NAME}.pub)"
 export DNS_PREFIX=test-$(echo $RANDOM)
 
 ginkgo -slowSpecThreshold 60 -r test/e2e/${TEST}
+
+if [ -z "${CLEANUP_ON_EXIT}" ] || [ "${CLEANUP_ON_EXIT}" != false ]; then
+  ssh-add -d _output/${SSH_KEY_NAME}
+fi
