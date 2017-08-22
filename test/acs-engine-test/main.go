@@ -152,8 +152,8 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		rgPrefix = "y"
 		fmt.Printf("RESOURCE_GROUP_PREFIX is not set. Using default '%s'\n", rgPrefix)
 	}
-	// Randomize region if no location was configured, or if this is a retry attempt
-	if d.Location == "" || attempt > 0 {
+	// Randomize region if no location was configured
+	if d.Location == "" {
 		d.Location = getRandFromStringSlice(d.Location, m.regions)
 	}
 	testName := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
@@ -476,8 +476,12 @@ func mainInternal() error {
 	// set regions
 	regions := []string{}
 	for _, region := range acsengine.AzureLocations {
-		// Exclude regions that don't support D2V2
-		if region != "australiaeast" && region != "japanwest" {
+		switch region {
+		case "australiaeast": // no D2V2 support
+		case "japanwest": // no D2V2 support
+		case "chinaeast": // private cloud
+		case "chinanorth": // private cloud
+		default:
 			regions = append(regions, region)
 		}
 	}
