@@ -63,7 +63,7 @@ fi
 ###### Check node count
 function check_node_count() {
   log "Checking node count"
-  count=20
+  count=40
   while (( $count > 0 )); do
     log "  ... counting down $count"
     node_count=$(kubectl get nodes --no-headers | grep -v NotReady | grep Ready | wc | awk '{print $1}')

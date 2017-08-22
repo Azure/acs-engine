@@ -34,7 +34,7 @@ function teardown {
 ###### Check node count
 function check_node_count() {
   log "Checking node count"
-  count=20
+  count=40
   while (( $count > 0 )); do
     log "  ... counting down $count"
     node_count=$(${remote_exec} curl -s http://localhost:1050/system/health/v1/nodes | jq '.nodes | length')
