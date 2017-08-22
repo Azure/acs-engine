@@ -463,8 +463,11 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		if properties.OrchestratorProfile.KubernetesConfig == nil ||
 			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
 			addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
-			if properties.ServicePrincipalProfile.KeyvaultSecretRef != "" {
-				addSecret(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.KeyvaultSecretRef, false)
+			if properties.ServicePrincipalProfile.KeyvaultSecretRef != nil {
+				addKeyvaultReference(parametersMap, "servicePrincipalClientSecret",
+					properties.ServicePrincipalProfile.KeyvaultSecretRef.VaultID,
+					properties.ServicePrincipalProfile.KeyvaultSecretRef.SecretName,
+					properties.ServicePrincipalProfile.KeyvaultSecretRef.SecretVersion)
 			} else {
 				addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
 			}
@@ -531,6 +534,18 @@ func addValue(m paramsMap, k string, v interface{}) {
 	}
 }
 
+func addKeyvaultReference(m paramsMap, k string, vaultID, secretName, secretVersion string) {
+	m[k] = paramsMap{
+		"reference": &KeyVaultRef{
+			KeyVault: KeyVaultID{
+				ID: vaultID,
+			},
+			SecretName:    secretName,
+			SecretVersion: secretVersion,
+		},
+	}
+}
+
 func addSecret(m paramsMap, k string, v interface{}, encode bool) {
 	str, ok := v.(string)
 	if !ok {
@@ -546,16 +561,7 @@ func addSecret(m paramsMap, k string, v interface{}, encode bool) {
 		}
 		return
 	}
-
-	m[k] = paramsMap{
-		"reference": &KeyVaultRef{
-			KeyVault: KeyVaultID{
-				ID: parts[1],
-			},
-			SecretName:    parts[2],
-			SecretVersion: parts[4],
-		},
-	}
+	addKeyvaultReference(m, k, parts[1], parts[2], parts[4])
 }
 
 // getStorageAccountType returns the support managed disk storage tier for a give VM size

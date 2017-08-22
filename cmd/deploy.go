@@ -198,7 +198,7 @@ func autofillApimodel(dc *deployCmd) {
 
 	if !useManagedIdentity {
 		spp := dc.containerService.Properties.ServicePrincipalProfile
-		if spp != nil && spp.ClientID == "" && spp.Secret == "" && spp.KeyvaultSecretRef == "" {
+		if spp != nil && spp.ClientID == "" && spp.Secret == "" && spp.KeyvaultSecretRef == nil {
 			log.Warnln("apimodel: ServicePrincipalProfile was missing or empty, creating application...")
 
 			// TODO: consider caching the creds here so they persist between subsequent runs of 'deploy'

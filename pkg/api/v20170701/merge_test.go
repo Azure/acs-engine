@@ -6,9 +6,12 @@ func TestMerge(t *testing.T) {
 	newCS := &ContainerService{
 		Properties: &Properties{
 			ServicePrincipalProfile: &ServicePrincipalProfile{
-				ClientID:          "fakeID",
-				Secret:            "",
-				KeyvaultSecretRef: "keyVaultRefNew",
+				ClientID: "fakeID",
+				Secret:   "",
+				KeyvaultSecretRef: &KeyvaultSecretRef{
+					VaultID:    "keyVaultRefNew",
+					SecretName: "secret-name",
+				},
 			},
 			WindowsProfile: &WindowsProfile{
 				AdminUsername: "azureuser",
@@ -20,9 +23,12 @@ func TestMerge(t *testing.T) {
 	existingCS := &ContainerService{
 		Properties: &Properties{
 			ServicePrincipalProfile: &ServicePrincipalProfile{
-				ClientID:          "existingFakeID",
-				Secret:            "existingSecret",
-				KeyvaultSecretRef: "keyVaultRefExisting",
+				ClientID: "existingFakeID",
+				Secret:   "existingSecret",
+				KeyvaultSecretRef: &KeyvaultSecretRef{
+					VaultID:    "keyVaultRefExisting",
+					SecretName: "secret-name",
+				},
 			},
 			WindowsProfile: &WindowsProfile{
 				AdminUsername: "azureuser",
@@ -39,7 +45,7 @@ func TestMerge(t *testing.T) {
 	if newCS.Properties.ServicePrincipalProfile.Secret != "existingSecret" {
 		t.Fatalf("unexpected Properties.ServicePrincipalProfile.Secret not updated")
 	}
-	if newCS.Properties.ServicePrincipalProfile.KeyvaultSecretRef != "keyVaultRefNew" {
+	if newCS.Properties.ServicePrincipalProfile.KeyvaultSecretRef.VaultID != "keyVaultRefNew" {
 		t.Fatalf("unexpected Properties.ServicePrincipalProfile.KeyvaultSecretRef changed")
 	}
 	if newCS.Properties.WindowsProfile.AdminPassword != "existingPassword" {
@@ -52,9 +58,12 @@ func TestMergeWithNil(t *testing.T) {
 	newCS := &ContainerService{
 		Properties: &Properties{
 			ServicePrincipalProfile: &ServicePrincipalProfile{
-				ClientID:          "fakeID",
-				Secret:            "",
-				KeyvaultSecretRef: "keyVaultRefNew",
+				ClientID: "fakeID",
+				Secret:   "",
+				KeyvaultSecretRef: &KeyvaultSecretRef{
+					VaultID:    "keyVaultRefNew",
+					SecretName: "secret-name",
+				},
 			},
 		},
 	}
@@ -62,9 +71,12 @@ func TestMergeWithNil(t *testing.T) {
 	existingCS := &ContainerService{
 		Properties: &Properties{
 			ServicePrincipalProfile: &ServicePrincipalProfile{
-				ClientID:          "existingFakeID",
-				Secret:            "existingSecret",
-				KeyvaultSecretRef: "keyVaultRefExisting",
+				ClientID: "existingFakeID",
+				Secret:   "existingSecret",
+				KeyvaultSecretRef: &KeyvaultSecretRef{
+					VaultID:    "keyVaultRefExisting",
+					SecretName: "secret-name",
+				},
 			},
 			WindowsProfile: &WindowsProfile{
 				AdminUsername: "azureuser",
@@ -81,7 +93,7 @@ func TestMergeWithNil(t *testing.T) {
 	if newCS.Properties.ServicePrincipalProfile.Secret != "existingSecret" {
 		t.Fatalf("unexpected Properties.ServicePrincipalProfile.Secret not updated")
 	}
-	if newCS.Properties.ServicePrincipalProfile.KeyvaultSecretRef != "keyVaultRefNew" {
+	if newCS.Properties.ServicePrincipalProfile.KeyvaultSecretRef.VaultID != "keyVaultRefNew" {
 		t.Fatalf("unexpected Properties.ServicePrincipalProfile.KeyvaultSecretRef changed")
 	}
 	if newCS.Properties.WindowsProfile == nil {
