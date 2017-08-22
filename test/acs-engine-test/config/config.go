@@ -28,9 +28,6 @@ func (c *TestConfig) validate() error {
 		if d.ClusterDefinition == "" {
 			return errors.New("Cluster definition is not set")
 		}
-		if d.Location == "" {
-			return errors.New("Location is not set")
-		}
 	}
 	return nil
 }
