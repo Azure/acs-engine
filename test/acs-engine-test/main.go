@@ -112,7 +112,7 @@ func (m *TestManager) Run() error {
 		go func(index int, dep config.Deployment) {
 			defer m.wg.Done()
 			resMap := make(map[string]*ErrorStat)
-			for attempt := 0; attempt < retries; attempt++ {
+			for attempt := 1; attempt <= retries; attempt++ {
 				errorInfo := m.testRun(dep, index, attempt, timeout)
 				// do not retry if successful
 				if errorInfo == nil {
@@ -146,6 +146,7 @@ func (m *TestManager) Run() error {
 }
 
 func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout time.Duration) *report.ErrorInfo {
+	fmt.Printf("This is attempt %d", attempt)
 	rgPrefix := os.Getenv("RESOURCE_GROUP_PREFIX")
 	if rgPrefix == "" {
 		rgPrefix = "y"
@@ -153,7 +154,6 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	}
 	// Randomize region if this is a retry attempt
 	if attempt > 1 {
-		fmt.Printf("This is attempt %d", attempt)
 		regions := acsengine.AzureLocations
 		numRegions := len(regions)
 		rand.Seed(time.Now().Unix()) // seed random number generator
