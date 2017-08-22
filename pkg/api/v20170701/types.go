@@ -62,7 +62,7 @@ type ServicePrincipalProfile struct {
 
 type KeyvaultSecretRef struct {
 	VaultID       string `json:"vaultID" validate:"required"`
-	SecretName    string `json:"secret" validate:"required"`
+	SecretName    string `json:"secretName" validate:"required"`
 	SecretVersion string `json:"version,omitempty"`
 }
 
