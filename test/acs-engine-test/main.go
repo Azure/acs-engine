@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/test/acs-engine-test/config"
 	"github.com/Azure/acs-engine/test/acs-engine-test/metrics"
 	"github.com/Azure/acs-engine/test/acs-engine-test/report"
@@ -149,6 +150,25 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	if rgPrefix == "" {
 		rgPrefix = "y"
 		fmt.Printf("RESOURCE_GROUP_PREFIX is not set. Using default '%s'\n", rgPrefix)
+	}
+	// Randomize region if this is a retry attempt
+	if attempt > 1 {
+		fmt.Printf("This is attempt %d", attempt)
+		regions := acsengine.AzureLocations
+		numRegions := len(regions)
+		rand.Seed(time.Now().Unix()) // seed random number generator
+		randomIndex := rand.Intn(numRegions)
+		var randomRegion string
+		if regions[randomIndex] != d.Location {
+			randomRegion = regions[randomIndex]
+		} else {
+			if numRegions-(randomIndex+1) > 0 {
+				randomRegion = regions[randomIndex+1]
+			} else {
+				randomRegion = regions[randomIndex-1]
+			}
+		}
+		d.Location = randomRegion
 	}
 	testName := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
 	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
