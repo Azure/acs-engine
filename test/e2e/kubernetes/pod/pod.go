@@ -71,13 +71,13 @@ func Get(podName, namespace string) (*Pod, error) {
 
 // AreAllPodsRunning will return true if all pods are in a Running State
 func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
-	status := true
 	pl, err := GetAll(namespace)
 	if err != nil {
 		log.Printf("Error while trying to check if all pods are in running state:%s", err)
 		return false, err
 	}
 
+	var status []bool
 	for _, pod := range pl.Pods {
 		matched, err := regexp.MatchString(podPrefix+"-.*", pod.Metadata.Name)
 		if err != nil {
@@ -86,16 +86,28 @@ func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
 		}
 		if matched {
 			if pod.Status.Phase != "Running" {
-				status = false
+				status = append(status, false)
+			} else {
+				status = append(status, true)
 			}
 		}
 	}
 
-	return status, nil
+	if len(status) == 0 {
+		return false, nil
+	}
+
+	for _, s := range status {
+		if s == false {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }
 
 // WaitOnReady will block until all nodes are in ready state
-func WaitOnReady(podPrefix, namespace string, sleep, duration time.Duration) bool {
+func WaitOnReady(podPrefix, namespace string, sleep, duration time.Duration) (bool, error) {
 	readyCh := make(chan bool, 1)
 	errCh := make(chan error)
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
@@ -112,17 +124,18 @@ func WaitOnReady(podPrefix, namespace string, sleep, duration time.Duration) boo
 				}
 				if ready == true {
 					readyCh <- true
+				} else {
+					time.Sleep(sleep)
 				}
-				time.Sleep(sleep)
 			}
 		}
 	}()
 	for {
 		select {
-		case <-errCh:
-			return false
+		case err := <-errCh:
+			return false, err
 		case ready := <-readyCh:
-			return ready
+			return ready, nil
 		}
 	}
 }

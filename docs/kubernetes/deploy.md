@@ -32,7 +32,10 @@ For this example, the subscription id is `51ac25de-afdg-9201-d923-8d8e8e8e8e8e`,
 Run `acs-engine deploy` with the appropriate argumets:
 
 ```
-$ acs-engine deploy --subscription-id 51ac25de-afdg-9201-d923-8d8e8e8e8e8e --dns-prefix contoso-apple --location westus2 --auto-suffix --api-model examples/kubernetes.json
+$ acs-engine deploy --subscription-id 51ac25de-afdg-9201-d923-8d8e8e8e8e8e \
+    --dns-prefix contoso-apple --location westus2 \
+    --auto-suffix --api-model examples/kubernetes.json
+
 WARN[0005] apimodel: missing masterProfile.dnsPrefix will use "contoso-apple-59769a59"
 WARN[0005] --resource-group was not specified. Using the DNS prefix from the apimodel as the resource group name: contoso-apple-59769a59
 WARN[0008] apimodel: ServicePrincipalProfile was empty, creating application...
@@ -42,11 +45,12 @@ INFO[0034] Starting ARM Deployment (contoso-apple-59769a59-1423145182). This wil
 INFO[0393] Finished ARM Deployment (contoso-apple-59769a59-1423145182).
 ```
 
-`acs-engine` will output the generated Azure Resource Manager (ARM) templates, ssh keys and kubeconfig files in `_output/contoso-apple-59769a59` directory:
-    * `_output/contoso-apple-59769a59/azureuser_rsa`
-    * `_output/contoso-apple-59769a59/kubeconfig/kubeconfig.uswest2.json`
+`acs-engine` will output Azure Resource Manager (ARM) templates, SSH keys, and a kubeconfig file in `_output/contoso-apple-59769a59` directory:
 
-Access your cluster using `kubectl`:
+   * `_output/contoso-apple-59769a59/azureuser_rsa`
+   * `_output/contoso-apple-59769a59/kubeconfig/kubeconfig.uswest2.json`
+
+Acs-engine generates kubeconfig files for each possible region. Access the new cluster by using the kubeconfig generated for the cluster's location. This example used `uswest2`, so the kubeconfig is `_output/<clustername>/kubeconfig/kubeconfig.uswest2.json`:
 
 ```
 $ KUBECONFIG=_output/contoso-apple-59769a59/kubeconfig/kubeconfig.westus2.json kubectl cluster-info

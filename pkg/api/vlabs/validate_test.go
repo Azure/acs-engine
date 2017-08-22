@@ -48,6 +48,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		c = KubernetesConfig{
 			ClusterSubnet:                    "10.120.0.0/16",
 			DockerBridgeSubnet:               "10.120.1.0/16",
+			MaxPods:                          42,
 			NodeStatusUpdateFrequency:        ValidKubernetesNodeStatusUpdateFrequency,
 			CtrlMgrNodeMonitorGracePeriod:    ValidKubernetesCtrlMgrNodeMonitorGracePeriod,
 			CtrlMgrPodEvictionTimeout:        ValidKubernetesCtrlMgrPodEvictionTimeout,
@@ -77,6 +78,13 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 		if err := c.Validate(k8sRelease); err == nil {
 			t.Error("should error on invalid DockerBridgeSubnet")
+		}
+
+		c = KubernetesConfig{
+			MaxPods: KubernetesMinMaxPods - 1,
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error on invalid MaxPods")
 		}
 
 		c = KubernetesConfig{

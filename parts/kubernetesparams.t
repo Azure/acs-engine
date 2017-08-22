@@ -242,6 +242,13 @@
       ],
       "type": "string"
     },
+    "maxPods": {
+      "defaultValue": 110,
+      "metadata": {
+        "description": "The maximum number of pods per node."
+      },
+      "type": "int"
+    },
 {{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {
