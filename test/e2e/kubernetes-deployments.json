@@ -34,7 +34,7 @@
 		},
 		{
 			"cluster_definition": "vnet/kubernetesvnet.json",
-			"location": "westus2"
+			"location": "uksouth"
 		}
 	]
 }
