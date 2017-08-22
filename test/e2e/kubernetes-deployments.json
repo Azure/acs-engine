@@ -6,11 +6,11 @@
 		},
 		{
 			"cluster_definition": "windows/kubernetes.json",
-			"location": "southcentralus"
+			"location": "eastus"
 		},
 		{
 			"cluster_definition": "disks-managed/kubernetes-preAttachedDisks-vmas.json",
-			"location": "southcentralus"
+			"location": "westus2"
 		},
 		{
 			"cluster_definition": "disks-managed/kubernetes-vmas.json",
@@ -18,11 +18,11 @@
 		},
 		{
 			"cluster_definition": "disks-storageaccount/kubernetes.json",
-			"location": "westcentralus"
+			"location": "westus2"
 		},
 		{
 			"cluster_definition": "kubernetes-releases/kubernetes1.5.json",
-			"location": "southcentralus"
+			"location": "eastus"
 		},
 		{
 			"cluster_definition": "networkpolicy/kubernetes-calico.json",
@@ -30,11 +30,11 @@
 		},
 		{
 			"cluster_definition": "kubernetes-config/kubernetes-clustersubnet.json",
-			"location": "southcentralus"
+			"location": "eastus"
 		},
 		{
 			"cluster_definition": "vnet/kubernetesvnet.json",
-			"location": "southcentralus"
+			"location": "westus2"
 		}
 	]
 }
