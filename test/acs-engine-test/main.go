@@ -112,7 +112,7 @@ func (m *TestManager) Run() error {
 		go func(index int, dep config.Deployment) {
 			defer m.wg.Done()
 			resMap := make(map[string]*ErrorStat)
-			for attempt := 1; attempt <= retries; attempt++ {
+			for attempt := 0; attempt < retries; attempt++ {
 				errorInfo := m.testRun(dep, index, attempt, timeout)
 				// do not retry if successful
 				if errorInfo == nil {
@@ -146,29 +146,14 @@ func (m *TestManager) Run() error {
 }
 
 func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout time.Duration) *report.ErrorInfo {
-	fmt.Printf("This is attempt %d", attempt)
 	rgPrefix := os.Getenv("RESOURCE_GROUP_PREFIX")
 	if rgPrefix == "" {
 		rgPrefix = "y"
 		fmt.Printf("RESOURCE_GROUP_PREFIX is not set. Using default '%s'\n", rgPrefix)
 	}
 	// Randomize region if this is a retry attempt
-	if attempt > 1 {
-		regions := acsengine.AzureLocations
-		numRegions := len(regions)
-		rand.Seed(time.Now().Unix()) // seed random number generator
-		randomIndex := rand.Intn(numRegions)
-		var randomRegion string
-		if regions[randomIndex] != d.Location {
-			randomRegion = regions[randomIndex]
-		} else {
-			if numRegions-(randomIndex+1) > 0 {
-				randomRegion = regions[randomIndex+1]
-			} else {
-				randomRegion = regions[randomIndex-1]
-			}
-		}
-		d.Location = randomRegion
+	if attempt > 0 {
+		d.Location = getRandFromStringSlice(d.Location, acsengine.AzureLocations)
 	}
 	testName := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
 	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
@@ -288,6 +273,23 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		}
 	}
 	return errorInfo
+}
+
+func getRandFromStringSlice(notThisString string, fullSlice []string) string {
+	numEntries := len(fullSlice)
+	rand.Seed(time.Now().Unix()) // seed random number generator
+	randomIndex := rand.Intn(numEntries)
+	var randomString string
+	if fullSlice[randomIndex] != notThisString {
+		randomString = fullSlice[randomIndex]
+	} else {
+		if numEntries-(randomIndex+1) > 0 {
+			randomString = fullSlice[randomIndex+1]
+		} else {
+			randomString = fullSlice[randomIndex-1]
+		}
+	}
+	return randomString
 }
 
 func isValidEnv() bool {
