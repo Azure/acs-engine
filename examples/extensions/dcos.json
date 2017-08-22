@@ -1,0 +1,54 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "DCOS"
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "",
+      "vmSize": "Standard_D2_v2",
+      "extensions": [
+        { 
+          "name": "hello-world-dcos", 
+          "singleOrAll": "single"
+        }
+     ]
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentprivate",
+        "count": 3,
+        "vmSize": "Standard_D2_v2"
+      },
+      {
+        "name": "agentpublic",
+        "count": 1,
+        "vmSize": "Standard_D2_v2",
+        "dnsPrefix": "",
+        "ports": [
+          80,
+          443,
+          8080
+        ]
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": ""
+          }
+        ]
+      }
+    },
+    "extensionsProfile": [
+      { 
+        "name": "hello-world-dcos", 
+        "version": "v1", 
+        "rootURL": "https://bagbyimages.blob.core.windows.net:443/" 
+      }
+    ]
+  }
+}

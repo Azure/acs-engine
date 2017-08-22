@@ -8,7 +8,9 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"regexp"
 	"runtime/debug"
 	"strconv"
@@ -784,6 +786,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
+		"WriteLinkedTemplatesForExtensions": func() string {
+			extensions := getLinkedTemplatesForExtensions(cs.Properties)
+			return extensions
+		},
 		"GetKubernetesB64Provision": func() string {
 			return getBase64CustomScript(kubernetesMasterCustomScript)
 		},
@@ -1436,6 +1442,202 @@ func getKubernetesPodStartIndex(properties *api.Properties) int {
 	}
 
 	return nodeCount + 1
+}
+
+// getLinkedTemplatesForExtensions returns the
+// Microsoft.Resources/deployments for each extension
+//func getLinkedTemplatesForExtensions(properties api.Properties) string {
+func getLinkedTemplatesForExtensions(properties *api.Properties) string {
+	var result string
+
+	var extensions = properties.ExtensionsProfile
+
+	//This is temporary - to show you how to access the Extensions in the MasterProfile
+	var masterProfileExtensions = properties.MasterProfile.Extensions
+	var orchestratorType = properties.OrchestratorProfile.OrchestratorType
+
+	for err, extensionProfile := range extensions {
+		_ = err
+
+		masterOptedForExtension, singleOrAll := validateProfileOptedForExtension(extensionProfile.Name, masterProfileExtensions)
+		if masterOptedForExtension {
+			result += ","
+			dta, e := getMasterLinkedTemplateText(properties.MasterProfile, orchestratorType, extensionProfile, singleOrAll)
+			if e != nil {
+				fmt.Printf(e.Error())
+				return ""
+			}
+			result += dta
+		}
+
+		for _, agentPoolProfile := range properties.AgentPoolProfiles {
+			var poolProfileExtensions = agentPoolProfile.Extensions
+			poolOptedForExtension, singleOrAll := validateProfileOptedForExtension(extensionProfile.Name, poolProfileExtensions)
+			if poolOptedForExtension {
+				result += ","
+				dta, e := getAgentPoolLinkedTemplateText(agentPoolProfile, orchestratorType, extensionProfile, singleOrAll)
+				if e != nil {
+					fmt.Printf(e.Error())
+					return ""
+				}
+				result += dta
+			}
+
+		}
+	}
+
+	return result
+}
+
+func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorType string, extensionProfile api.ExtensionProfile, singleOrAll string) (string, error) {
+	extTargetVMNamePrefix := "variables('masterVMNamePrefix')"
+	loopCount := "[sub(variables('masterCount'), variables('masterOffset'))]"
+	if strings.EqualFold(singleOrAll, "single") {
+		loopCount = "1"
+	}
+	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount,
+		"variables('masterOffset')", extensionProfile)
+}
+
+func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orchestratorType string, extensionProfile api.ExtensionProfile, singleOrAll string) (string, error) {
+	extTargetVMNamePrefix := fmt.Sprintf("variables('%sVMNamePrefix')", agentPoolProfile.Name)
+	loopCount := fmt.Sprintf("[variables('%sCount'))]", agentPoolProfile.Name)
+	loopOffset := ""
+
+	// Availability sets can have an offset since we don't redeploy vms.
+	// So we don't want to rerun these extensions in scale up scenarios.
+	if agentPoolProfile.IsAvailabilitySets() {
+		loopCount = fmt.Sprintf("[sub(variables('%sCount'), variables('%sOffset'))]",
+			agentPoolProfile.Name, agentPoolProfile.Name)
+		loopOffset = fmt.Sprintf("variables('%sOffset')", agentPoolProfile.Name)
+
+	}
+
+	if strings.EqualFold(singleOrAll, "single") {
+		loopCount = "1"
+	}
+
+	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount,
+		loopOffset, extensionProfile)
+}
+
+func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, loopOffset string, extensionProfile api.ExtensionProfile) (string, error) {
+	dta, e := getLinkedTemplateText(orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.RootURL)
+	if e != nil {
+		return "", e
+	}
+	parmetersString := strings.Replace(extensionProfile.ExtensionParameters, "EXTENSION_LOOP_INDEX",
+		"copyIndex(EXTENSION_LOOP_OFFSET)", -1)
+	dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", parmetersString, -1)
+
+	if strings.TrimSpace(extensionProfile.RootURL) == "" {
+		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", DefaultExtensionsRootURL, -1)
+	} else {
+		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", extensionProfile.RootURL, -1)
+	}
+	dta = strings.Replace(dta, "EXTENSION_TARGET_VM_NAME_PREFIX", extTargetVMNamePrefix, -1)
+	dta = strings.Replace(dta, "EXTENSION_LOOP_COUNT", loopCount, -1)
+	dta = strings.Replace(dta, "EXTENSION_LOOP_OFFSET", loopOffset, -1)
+	return dta, nil
+}
+
+func validateProfileOptedForExtension(extensionName string, profileExtensions []api.Extension) (bool, string) {
+	for _, extension := range profileExtensions {
+		if extensionName == extension.Name {
+			return true, extension.SingleOrAll
+		}
+	}
+	return false, ""
+}
+
+// getLinkedTemplateText returns the string data from
+// template-link.json in the following directory:
+// extensionsRootURL/extensions/extensionName/version
+// It returns an error if the extension cannot be found
+// or loaded.  getLinkedTemplateText calls getLinkedTemplateTextForURL,
+// passing the default rootURL.
+func getLinkedTemplateText(orchestratorType string, extensionName string, version string, rootURL string) (string, error) {
+	if strings.TrimSpace(rootURL) == "" {
+		return getLinkedTemplateTextForURL(DefaultExtensionsRootURL, orchestratorType, extensionName, version)
+	}
+
+	return getLinkedTemplateTextForURL(rootURL, orchestratorType, extensionName, version)
+}
+
+// getLinkedTemplateTextForURL returns the string data from
+// template-link.json in the following directory:
+// extensionsRootURL/extensions/extensionName/version
+// It returns an error if the extension cannot be found
+// or loaded.  getLinkedTemplateTextForURL provides the ability
+// to pass a root extensions url for testing
+func getLinkedTemplateTextForURL(rootURL string, orchestrator string, extensionName string, version string) (string, error) {
+	supportsExtension, err := orchestratorSupportsExtension(rootURL, orchestrator, extensionName, version)
+	if supportsExtension == false {
+		return "", fmt.Errorf("Extension not supported for orchestrator. Error: %s", err)
+	}
+
+	templateLinkBytes, err := getExtensionResource(rootURL, extensionName, version, "template-link.json")
+	if err != nil {
+		return "", err
+	}
+
+	return string(templateLinkBytes), nil
+}
+
+func orchestratorSupportsExtension(rootURL string, orchestrator string, extensionName string, version string) (bool, error) {
+	orchestratorBytes, err := getExtensionResource(rootURL, extensionName, version, "supported-orchestrators.json")
+	if err != nil {
+		return false, err
+	}
+
+	var supportedOrchestrators []string
+	err = json.Unmarshal(orchestratorBytes, &supportedOrchestrators)
+	if err != nil {
+		return false, fmt.Errorf("Unable to parse supported-orchestrators.json for Extension %s Version %s", extensionName, version)
+	}
+
+	if stringInSlice(orchestrator, supportedOrchestrators) != true {
+		return false, fmt.Errorf("Orchestrator: %s not in list of supported orchestrators for Extension: %s Version %s", orchestrator, extensionName, version)
+	}
+
+	return true, nil
+}
+
+func getExtensionResource(rootURL string, extensionName string, version string, fileName string) ([]byte, error) {
+	requestURL := getExtensionURL(rootURL, extensionName, version, fileName)
+
+	res, err := http.Get(requestURL)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to GET extension resource for extension: %s with version %s with filename %s at URL: %s Error: %s", extensionName, version, fileName, requestURL, err)
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("Unable to GET extension resource for extension: %s with version %s with filename %s at URL: %s StatusCode: %s: Status: %s", extensionName, version, fileName, requestURL, strconv.Itoa(res.StatusCode), res.Status)
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to GET extension resource for extension: %s with version %s  with filename %s at URL: %s Error: %s", extensionName, version, fileName, requestURL, err)
+	}
+
+	return body, nil
+}
+
+func getExtensionURL(rootURL string, extensionName string, version string, fileName string) string {
+	extensionsDir := "extensions"
+
+	return rootURL + extensionsDir + "/" + extensionName + "/" + version + "/" + fileName
+}
+
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
 
 func GetSwarmVersions(orchestratorVersion, dockerComposeVersion string) string {
