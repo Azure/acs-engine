@@ -280,7 +280,6 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 
 func getRandFromStringSlice(notThisString string, fullSlice []string) string {
 	numEntries := len(fullSlice)
-	rand.Seed(time.Now().Unix()) // seed random number generator
 	randomIndex := rand.Intn(numEntries)
 	fmt.Printf("getRandFromStringSlice chose %d\n", randomIndex)
 	var randomString string
@@ -489,6 +488,8 @@ func mainInternal() error {
 		}
 	}
 	testManager.regions = regions
+	// seed random number generator
+	rand.Seed(time.Now().Unix())
 	// run tests
 	return testManager.Run()
 }
