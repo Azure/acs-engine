@@ -182,3 +182,40 @@ E.g.:
     }
 ]
 ```
+
+## Using Azure integrated networking (CNI)
+
+Kubernetes clusters can be configured to use the [Azure CNI plugin](https://github.com/Azure/azure-container-networking) which provides a Azure native networking experience. Pods will receive IP addresses directly from the vnet subnet on which they're hosted. To enable Azure integrated networking the following must be added to your cluster definition:
+
+```
+      "kubernetesConfig": {
+        "networkPolicy": "azure"
+      }
+```
+
+### Additional Azure integrated networking configuration
+
+In addition you can modify the following settings to change the networking behavior when using Azure integrated networking:
+
+IP addresses are pre-allocated in the subnet. Using ipAddressCount you can specify how many you would like to pre-allocate. This number needs to account for number of pods you would like to run on that subnet.
+
+```
+    "masterProfile": {
+      "ipAddressCount": 200
+    },
+```
+
+Currently, the IP addresses that are pre-allocated aren't allowed by the default natter for Internet bound traffic. In order to work around this limitation we allow the user to specify the vnetCidr (eg. 10.0.0.0/8) to be EXCLUDED from the default masquerade rule that is applied. The result is that traffic destined for anything within that block will NOT be natted on the outbound VM interface. This field has been called vnetCidr but may be wider than the vnet cidr block if you would like POD IPs to be routable across vnets using vnet-peering or express-route.
+```
+    "masterProfile": {
+      "vnetCidr": "10.0.0.0/8",
+    },
+```
+
+When using Azure integrated networking the maxPods setting will be set to 30 by default. This number can be changed keeping in mind that there is a limit of 4,000 IPs per vnet.
+
+```
+      "kubernetesConfig": {
+        "maxPods": 50
+      }
+```
