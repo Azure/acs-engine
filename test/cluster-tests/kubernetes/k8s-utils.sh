@@ -116,12 +116,12 @@ function test_windows_deployment() {
   fi
 
   log "Checking outbound connection"
-  count=10
+  count=20
   while (( $count > 0 )); do
     log "  ... counting down $count"
     winpodname=$(kubectl get pods --namespace=default | grep win-webserver | awk '{print $1}')
     [[ ! -z "${winpodname}" ]] && break
-    sleep 10; count=$((count-1))
+    sleep 60; count=$((count-1))
   done
   if [[ -z "${winpodname}" ]]; then
     log "K8S-Windows: failed to get expected pod name for simpleweb"
