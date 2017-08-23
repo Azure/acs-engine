@@ -49,8 +49,8 @@ function generate_template() {
 		if [[ ${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET} =~ /subscription.* ]]; then
 			vaultID=$(echo $CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET | awk -F"/secrets/" '{print $1}')
 			secretName=$(echo $CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET | awk -F"/secrets/" '{print $2}')
-			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef.VaultID = \"${vaultID}\""
-			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef.SecretName  = \"${secretName}\""
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef.vaultID = \"${vaultID}\""
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef.secretName  = \"${secretName}\""
 		else
 			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.secret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
 		fi
