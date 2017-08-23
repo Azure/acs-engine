@@ -155,7 +155,8 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	}
 	// Randomize region if no location was configured
 	if d.Location == "" {
-		d.Location = getRandFromStringSlice(d.Location, m.regions)
+		randomIndex := rand.Intn(len(m.regions))
+		d.Location = m.regions[randomIndex]
 	}
 	testName := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
 	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
@@ -275,22 +276,6 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		}
 	}
 	return errorInfo
-}
-
-func getRandFromStringSlice(notThisString string, fullSlice []string) string {
-	numEntries := len(fullSlice)
-	randomIndex := rand.Intn(numEntries)
-	var randomString string
-	if fullSlice[randomIndex] != notThisString {
-		randomString = fullSlice[randomIndex]
-	} else {
-		if numEntries-(randomIndex+1) > 0 {
-			randomString = fullSlice[randomIndex+1]
-		} else {
-			randomString = fullSlice[randomIndex-1]
-		}
-	}
-	return randomString
 }
 
 func isValidEnv() bool {
