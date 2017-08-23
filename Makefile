@@ -38,10 +38,10 @@ generate: bootstrap
 .PHONY: build
 build: generate
 	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -ldflags '$(LDFLAGS)'
-	cd test/acs-engine-test; go build
+	cd test/acs-engine-test; go build $(GOFLAGS)
 
 build-binary: bootstrap generate
-	go build -v -ldflags "${LDFLAGS}" -o ${BINARY_DEST_DIR}/acs-engine .
+	go build $(GOFLAGS) -v -ldflags "${LDFLAGS}" -o ${BINARY_DEST_DIR}/acs-engine .
 
 # usage: make clean build-cross dist VERSION=v0.4.0
 .PHONY: build-cross
