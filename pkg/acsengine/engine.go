@@ -15,7 +15,7 @@ import (
 	"strings"
 	"text/template"
 
-	//log "github.com/Sirupsen/logrus"
+	//log "github.com/sirupsen/logrus"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Masterminds/semver"
