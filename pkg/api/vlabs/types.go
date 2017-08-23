@@ -212,6 +212,7 @@ type MasterProfile struct {
 	StorageProfile           string      `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
 	HTTPSourceAddressPrefix  string      `json:"HTTPSourceAddressPrefix,omitempty"`
 	OAuthEnabled             bool        `json:"oauthEnabled"`
+	PreprovisionExtension    *Extension  `json:"preprovisionExtension"`
 	Extensions               []Extension `json:"extensions"`
 
 	// subnet is internal
@@ -259,9 +260,10 @@ type AgentPoolProfile struct {
 	// subnet is internal
 	subnet string
 
-	FQDN             string            `json:"fqdn"`
-	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
-	Extensions       []Extension       `json:"extensions"`
+	FQDN                  string            `json:"fqdn"`
+	CustomNodeLabels      map[string]string `json:"customNodeLabels,omitempty"`
+	PreprovisionExtension *Extension        `json:"preprovisionExtension"`
+	Extensions            []Extension       `json:"extensions"`
 }
 
 // AADProfile specifies attributes for AAD integration
