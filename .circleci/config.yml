@@ -62,7 +62,7 @@ jobs:
           echo 'export RESOURCE_GROUP_PREFIX=y' >> $BASH_ENV
           echo 'export SKIP_METRICS=y' >> $BASH_ENV
           echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
-          echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
+          echo 'export NUM_OF_RETRIES=3' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
@@ -89,7 +89,7 @@ jobs:
           echo 'export RESOURCE_GROUP_PREFIX=y' >> $BASH_ENV
           echo 'export SKIP_METRICS=y' >> $BASH_ENV
           echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
-          echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
+          echo 'export NUM_OF_RETRIES=3' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
@@ -116,7 +116,7 @@ jobs:
           echo 'export RESOURCE_GROUP_PREFIX=y' >> $BASH_ENV
           echo 'export SKIP_METRICS=y' >> $BASH_ENV
           echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
-          echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
+          echo 'export NUM_OF_RETRIES=3' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_SWARM}' >> $BASH_ENV
           echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_SWARM}' >> $BASH_ENV
           echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_SWARM}' >> $BASH_ENV
@@ -143,7 +143,7 @@ jobs:
           echo 'export RESOURCE_GROUP_PREFIX=y' >> $BASH_ENV
           echo 'export SKIP_METRICS=y' >> $BASH_ENV
           echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
-          echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
+          echo 'export NUM_OF_RETRIES=3' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_DCOS}' >> $BASH_ENV
           echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_DCOS}' >> $BASH_ENV
           echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_DCOS}' >> $BASH_ENV
