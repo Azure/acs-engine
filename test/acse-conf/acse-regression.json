@@ -1,15 +1,6 @@
 {
   "deployments": [
     {
-      "cluster_definition": "dcos.json"
-    },
-    {
-      "cluster_definition": "swarm.json"
-    },
-    {
-      "cluster_definition": "swarmmode.json"
-    },
-    {
       "cluster_definition": "windows/kubernetes-hybrid.json",
       "category": "windows"
     },
