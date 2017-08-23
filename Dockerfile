@@ -22,7 +22,7 @@ RUN mkdir /tmp/azurecli \
 
 RUN curl -fsSL https://get.docker.com/ | sh
 
-ENV KUBECTL_VERSION 1.6.6
+ENV KUBECTL_VERSION 1.6.8
 RUN curl "https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl" > /usr/local/bin/kubectl \
     && chmod +x /usr/local/bin/kubectl
 
