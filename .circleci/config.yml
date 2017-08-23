@@ -13,6 +13,9 @@ jobs:
           name: Install dependencies
           command: make bootstrap
       - run:
+          name: Install dependencies
+          command: make build-vendor
+      - run:
           name: Run linting rules
           command: make test-style
       - run:
