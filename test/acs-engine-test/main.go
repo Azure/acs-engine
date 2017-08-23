@@ -481,6 +481,7 @@ func mainInternal() error {
 		case "japanwest": // no D2V2 support
 		case "chinaeast": // private cloud
 		case "chinanorth": // private cloud
+		case "koreacentral": // TODO make sure our versions of azure-cli support this cloud
 		default:
 			regions = append(regions, region)
 		}
