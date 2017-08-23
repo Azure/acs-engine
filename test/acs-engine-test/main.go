@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/test/acs-engine-test/config"
 	"github.com/Azure/acs-engine/test/acs-engine-test/metrics"
 	"github.com/Azure/acs-engine/test/acs-engine-test/report"
@@ -75,10 +76,12 @@ type TestManager struct {
 	lock    sync.Mutex
 	wg      sync.WaitGroup
 	rootDir string
+	regions []string
 }
 
 // Run begins the test run process
 func (m *TestManager) Run() error {
+	fmt.Printf("Randomizing regional tests against the following regions: %s\n", m.regions)
 	n := len(m.config.Deployments)
 	if n == 0 {
 		return nil
@@ -149,6 +152,11 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	if rgPrefix == "" {
 		rgPrefix = "y"
 		fmt.Printf("RESOURCE_GROUP_PREFIX is not set. Using default '%s'\n", rgPrefix)
+	}
+	// Randomize region if no location was configured
+	if d.Location == "" {
+		randomIndex := rand.Intn(len(m.regions))
+		d.Location = m.regions[randomIndex]
 	}
 	testName := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
 	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
@@ -450,6 +458,25 @@ func mainInternal() error {
 	if err = os.Mkdir(logDir, os.FileMode(0755)); err != nil {
 		return err
 	}
+	// set regions
+	regions := []string{}
+	for _, region := range acsengine.AzureLocations {
+		switch region {
+		case "australiaeast": // no D2V2 support
+		case "japanwest": // no D2V2 support
+		case "chinaeast": // private cloud
+		case "chinanorth": // private cloud
+		case "koreacentral": // TODO make sure our versions of azure-cli support this cloud
+		case "westcentralus": // TODO re-enable when this region's reliability has been upgraded
+		case "centraluseuap": // TODO determine why this region is flaky
+		case "brazilsouth": // canary region
+		default:
+			regions = append(regions, region)
+		}
+	}
+	testManager.regions = regions
+	// seed random number generator
+	rand.Seed(time.Now().Unix())
 	// run tests
 	return testManager.Run()
 }
