@@ -267,3 +267,6 @@ echo $(date) " - Script complete"
 # Current list of extensions
 - [hello-world-dcos] (../extensions/hello-world-dcos/README.md)
 - [hello-world-k8s] (../extensions/hello-world-k8s/README.md)
+
+# Known issues
+Kubernetes extensions that run after provisioning don't currently work if the VM needs to reboot for security reboots. this is a timing issue. the extension script is started before the vm reboots and it will be cutoff before it finishes but will still report success. I've tried to get the provision script to only finish as reboot happens and I haven't gotten that to work. 

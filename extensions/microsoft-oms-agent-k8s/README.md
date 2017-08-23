@@ -1,5 +1,7 @@
 # microsoft-oms-agent-k8s Extension
 
+***Currently doesn't work***
+
 The `microsoft-oms-agent-k8s` extension installs Microsoft OMS agent container on all the nodes (master and agent) in a kubernetes cluster.
 
 # Configuration

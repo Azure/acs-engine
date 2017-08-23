@@ -1,5 +1,7 @@
 # hello-world-k8s Extension
 
+***Currently doesn't work***
+
 Sample hello-world extension.  Calls the following on the master:
 
 ```
