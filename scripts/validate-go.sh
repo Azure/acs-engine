@@ -54,6 +54,6 @@ gometalinter \
   --deadline 60s \
   --exclude pkg/i18n/translations.go \
   --exclude pkg/acsengine/templates.go \
-  ./... || :
+  ./... || : # TODO: clean up lint errors and then return 1 on errors
 
 exit $exit_code

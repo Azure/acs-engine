@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/i18n"
-	"github.com/Sirupsen/logrus"
 	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
 )
 
 func TestNormalizeForVMSSScaling(t *testing.T) {
