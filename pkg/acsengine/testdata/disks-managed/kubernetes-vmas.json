@@ -52,8 +52,8 @@
     },
     "windowsProfile": {},
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "ServicePrincipalClientID",
-      "servicePrincipalClientSecret": "myServicePrincipalClientSecret"
+      "clientId": "ServicePrincipalClientID",
+      "secret": "myServicePrincipalClientSecret"
     },
     "certificateProfile": {
       "caCertificate": "caCertificate",

@@ -101,8 +101,8 @@ https://{keyvaultname}.vault.azure.net:443/secrets/{secretName}/{version}
 
 |Name|Required|Description|
 |---|---|---|
-|servicePrincipalClientID|yes, for Kubernetes clusters|describes the Azure client id.  It is recommended to use a separate client ID per cluster|
-|servicePrincipalClientSecret|yes, for Kubernetes clusters|describes the Azure client secret.  It is recommended to use a separate client secret per client id|
+|clientId|yes, for Kubernetes clusters|describes the Azure client id.  It is recommended to use a separate client ID per cluster|
+|secret|yes, for Kubernetes clusters|describes the Azure client secret.  It is recommended to use a separate client secret per client id|
 
 ## Cluster Defintions for apiVersion "2016-03-30"
 

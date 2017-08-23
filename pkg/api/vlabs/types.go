@@ -45,8 +45,8 @@ type Properties struct {
 // The 'Secret' parameter should be a secret in plain text.
 // The 'KeyvaultSecretRef' parameter is a reference to a secret in a keyvault.
 type ServicePrincipalProfile struct {
-	ClientID          string             `json:"servicePrincipalClientID,omitempty"`
-	Secret            string             `json:"servicePrincipalClientSecret,omitempty"`
+	ClientID          string             `json:"clientId,omitempty"`
+	Secret            string             `json:"secret,omitempty"`
 	KeyvaultSecretRef *KeyvaultSecretRef `json:"keyvaultSecretRef,omitempty"`
 }
 
