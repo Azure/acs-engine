@@ -437,12 +437,7 @@ sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/h
 echo "Install complete successfully"
 
 if $REBOOTREQUIRED; then
-  if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
-    # wait 1 minute to restart master
-    echo 'reboot required, rebooting master in 1 minute'
-    /bin/bash -c "shutdown -r 1 &"
-  else
-    echo 'reboot required, rebooting agent in 1 minute'
-    shutdown -r now
-  fi
+  # wait 1 minute to restart node, so that the custom script extension can complete
+  echo 'reboot required, rebooting node in 1 minute'
+  /bin/bash -c "shutdown -r 1 &"
 fi
