@@ -469,6 +469,7 @@ func mainInternal() error {
 		case "koreacentral": // TODO make sure our versions of azure-cli support this cloud
 		case "westcentralus": // TODO re-enable when this region's reliability has been upgraded
 		case "centraluseuap": // TODO determine why this region is flaky
+		case "brazilsouth": // canary region
 		default:
 			regions = append(regions, region)
 		}
