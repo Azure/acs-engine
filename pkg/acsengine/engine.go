@@ -394,7 +394,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 	if properties.MasterProfile != nil {
 		if properties.MasterProfile.IsCustomVNET() {
 			addValue(parametersMap, "masterVnetSubnetID", properties.MasterProfile.VnetSubnetID)
-			addValue(parametersMap, "vnetCidr", properties.MasterProfile.VnetCidr)
+			if properties.OrchestratorProfile.IsKubernetes() {
+				addValue(parametersMap, "vnetCidr", properties.MasterProfile.VnetCidr)
+			}
 		} else {
 			addValue(parametersMap, "masterSubnet", properties.MasterProfile.Subnet)
 		}
