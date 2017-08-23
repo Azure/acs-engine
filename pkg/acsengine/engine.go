@@ -1019,13 +1019,25 @@ func getDCOSMasterCustomNodeLabels() string {
 
 func getDCOSAgentCustomNodeLabels(profile *api.AgentPoolProfile) string {
 	var buf bytes.Buffer
+	var attrstring string
 	buf.WriteString("")
+	if len(profile.OSType) > 0 {
+		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:%s", profile.OSType)
+	} else {
+		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:linux")
+	}
+
+	if len(profile.Ports) > 0 {
+		attrstring += ";public_ip:yes"
+	}
+
+	buf.WriteString(attrstring)
 	if len(profile.CustomNodeLabels) > 0 {
-		buf.WriteString("MESOS_ATTRIBUTES=")
 		for k, v := range profile.CustomNodeLabels {
-			buf.WriteString(fmt.Sprintf("%s:%s;", k, v))
+			buf.WriteString(fmt.Sprintf(";%s:%s", k, v))
 		}
 	}
+	buf.WriteString("\"")
 	return buf.String()
 }
 
