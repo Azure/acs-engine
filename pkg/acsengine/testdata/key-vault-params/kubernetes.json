@@ -39,7 +39,7 @@
       }
     },
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "ServicePrincipalClientID",
+      "clientId": "ServicePrincipalClientID",
       "keyvaultSecretRef": {
         "vaultID":  "/subscriptions/my-sub/resourceGroups/my-rg/providers/Microsoft.KeyVault/vaults/my-kv",
         "secretName": "my-secret2"

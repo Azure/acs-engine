@@ -85,8 +85,8 @@
 
 |名称|是否必须|说明|
 |---|---|---|
-|servicePrincipalClientID|当指定编排引擎为kubernetes时需要。|指定了Azure client id. 这里建议针对不同的集群使用不同的client ID|
-|servicePrincipalClientSecret|当指定编排引擎为kubernetes时需要。|指定了Azure client secret.  这里建议针对不同的集群使用不同的client secret。|
+|clientId|当指定编排引擎为kubernetes时需要。|指定了Azure client id. 这里建议针对不同的集群使用不同的client ID|
+|secret|当指定编排引擎为kubernetes时需要。|指定了Azure client secret.  这里建议针对不同的集群使用不同的client secret。|
 
 ## "2016-03-30"版本apiVersion的集群定义文件
 
