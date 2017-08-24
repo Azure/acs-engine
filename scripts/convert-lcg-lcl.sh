@@ -16,4 +16,20 @@ convert_lcl_to_po() {
   done
 }
 
-convert_lcl_to_po
+convert_po_to_lcg() {
+  publish/PythonLocalizerTool potolcg translations/en_US/LC_MESSAGES acsengine
+}
+
+case "${1-}" in
+  --potolcg)
+    echo "converting po to lcg..."
+    convert_po_to_lcg
+    ;;
+  --lcltopo)
+    echo "converting lcl to po..."
+    convert_lcl_to_po
+    ;;
+  *)
+    echo $"Usage: $0 {--potolcg|--lcltopo}"
+    exit 1
+esac
