@@ -8,13 +8,13 @@ DIST_DIRS         = find * -type d -exec
 ifdef DEBUG
 GOFLAGS   := -gcflags="-N -l"
 else
-GOFLAGS   := 
+GOFLAGS   :=
 endif
 
 # go option
 GO        ?= go
 TAGS      :=
-LDFLAGS   := 
+LDFLAGS   :=
 BINDIR    := $(CURDIR)/bin
 BINARIES  := acs-engine
 VERSION   ?= $(shell git rev-parse HEAD)
