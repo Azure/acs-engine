@@ -21,15 +21,9 @@ If would prefer to build `acs-engine` from source or are you are interested in c
 
 ### Generate Templates
 
-Here is an example of how to generate a new deployment. This example assumes you are using [examples/kubernetes.json](../examples/kubernetes.json).
+ACS Engine consumes a cluster definition which outlines the desired shape, size, and configuration of Kubernetes. There are a number of features that can be enabled through the cluster definition.
 
-1. Before starting ensure you have generated a valid [SSH Public/Private key pair](ssh.md#ssh-key-generation).
-2. edit [examples/kubernetes.json](../examples/kubernetes.json) and fill in the blanks. The necessary [deployment values](kubernetes/deploy.md#gather-information) (outside of the SSH public key that you created in step 1, above) include a DNS prefix, and a [service principal](./serviceprincipal.md). (If you don't already have one to enter here, that will be detected at deploy and one is generated for you.)
-3. run `./bin/acs-engine generate examples/kubernetes.json` to generate the templates in the _output/Kubernetes-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
-4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [Deploy Templates](#deploy-templates).
-
-**Note:** If you wish to customize cluster configuaration after the `generate` step, make sure to modify `apimodel.json` in the `_output` directory. This ensures that any computed settings and generated certificates are maintained. For example, if you want to add a second agent pool, edit `apimodel.json` and then run `acs-engine` against that file to generate and updated ARM template. This ensures that during the deploy steps, existing resources remain untouched and new agent pools are created.
-
+See [ACS Engine The Long Way](kubernetes/deploy.md#acs-engine-the-long-way) for an example on generating templates by hand.
 
 <a href="#deployment-usage"></a>
 
