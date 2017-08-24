@@ -29,7 +29,7 @@ if [ -z "${version}" ] || [ -z "${acs_patch_version}" ]; then
 fi
 
 if [ -z "${AZURE_STORAGE_CONNECTION_STRING}" ] || [ -z "${AZURE_STORAGE_CONTAINER_NAME}" ]; then
-    echo "$AZURE_STORAGE_CONNECTION_STRING and $AZURE_STORAGE_CONTAINER_NAME need to be set for upload to Azure Blob Storage."
+    echo '$AZURE_STORAGE_CONNECTION_STRING and $AZURE_STORAGE_CONTAINER_NAME need to be set for upload to Azure Blob Storage.'
 		exit 1
 fi
 
@@ -47,8 +47,8 @@ fetch_k8s() {
 }
 
 set_git_config() {
-	git config user.name "Sean Knox"
-	git config user.email "sean.knox@microsoft.com"
+	git config user.name "ACS CI"
+	git config user.email "containers@microsoft.com"
 }
 
 create_version_branch() {
@@ -91,8 +91,8 @@ download_nccm() {
 }
 
 download_winnat() {
-	echo "copying winnat.sys ..."
 	cp $HOME/winnat/winnat.sys ${DIST_DIR}
+	az storage blob download -f ${DIST_DIR}/winnat.sys -c ${AZURE_STORAGE_CONTAINER_NAME} -n winnat.sys
 }
 
 copy_dockerfile_and_pause_ps1() {
@@ -121,6 +121,7 @@ build_kubelet
 build_kubeproxy
 download_kubectl
 download_nccm
+download_winnat
 copy_dockerfile_and_pause_ps1
 create_zip
 upload_zip_to_blob_storage
