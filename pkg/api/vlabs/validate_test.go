@@ -122,6 +122,60 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		if err := c.Validate(k8sRelease); err == nil {
 			t.Error("should error on invalid CtrlMgrRouteReconciliationPeriod")
 		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "192.168.0.10",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP but not ServiceCidr")
+		}
+
+		c = KubernetesConfig{
+			ServiceCidr: "192.168.0.10/24",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when ServiceCidr but not DnsServiceIP")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "invalid",
+			ServiceCidr:  "192.168.0.0/24",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP is invalid")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "192.168.1.10",
+			ServiceCidr:  "192.168.0.0/not-a-len",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when ServiceCidr is invalid")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "192.168.1.10",
+			ServiceCidr:  "192.168.0.0/24",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP is outside of ServiceCidr")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "172.99.255.255",
+			ServiceCidr:  "172.99.0.1/16",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP is broadcast address of ServiceCidr")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "172.99.255.10",
+			ServiceCidr:  "172.99.0.1/16",
+		}
+		if err := c.Validate(k8sRelease); err != nil {
+			t.Error("should not error when DnsServiceIP and ServiceCidr are valid")
+		}
 	}
 
 	// Tests that apply to pre-1.6 releases
