@@ -34,15 +34,24 @@ if [[ -z $version ]]; then
 fi
 
 if [[ -z $acs_patch_version ]]; then
+	echo "Please provide an ACS patch version with -p"
+	exit
+fi
+
+if [[ -z $acs_patch_version ]]; then
 	DIST_DIR=${ACS_ENGINE_HOME}/_dist/k8s-windows-v${version}
 else
 	DIST_DIR=${ACS_ENGINE_HOME}/_dist/k8s-windows-v${version}-${acs_patch_version}
 fi
 
+KUBERNETES_RELEASE=$(echo $version | cut -d'.' -f1,2)
+KUBERNETES_RELEASE_BRANCH_NAME=release-${KUBERNETES_RELEASE}
+ACS_BRANCH_NAME=acs-v${version}-${acs_patch_version}
+
 fetch_k8s() {
 	git clone https://github.com/kubernetes/kubernetes ${GOPATH}/src/k8s.io/kubernetes || true
 	cd ${GOPATH}/src/k8s.io/kubernetes
-	git remote add acs https://github.com/JiangtianLi/kubernetes || true
+	git remote add acs https://github.com/Azure/kubernetes || true
 	git fetch acs
 }
 
@@ -52,27 +61,11 @@ set_git_config() {
 }
 
 create_version_branch() {
-	git checkout -b acs-windows-v${version} v${version}
-
+	git checkout -b ${ACS_BRANCH_NAME} ${KUBERNETES_RELEASE_BRANCH_NAME}
 }
 
 create_dist_dir() {
 	mkdir -p ${DIST_DIR}
-}
-
-# These are Microsoft patches only present in our fork, they are not yet upstream.
-if [[ "$version" =~ "1.6" ]]; then
-	STARTING_PATCH_SHA=d74e09bb4e4e7026f45becbed8310665ddcb8514
-	ENDING_PATCH_SHA=2adf0591bf70cf8affd61be5f2aa2495676172dd
-	echo "Patching for v1.6"
-elif [[ "$version" =~ "1.7" ]]; then
-	STARTING_PATCH_SHA=41e11915a5289fb7074fdcb2a96cac2e13543845
-	ENDING_PATCH_SHA=b0c9ea2463aba41c30a671760c875bf4aaea9845
-	echo "Patching for v1.7"
-fi
-
-apply_acs_patches() {
-	git cherry-pick ${STARTING_PATCH_SHA}..${ENDING_PATCH_SHA}
 }
 
 build_kubelet() {
@@ -123,7 +116,6 @@ create_dist_dir
 fetch_k8s
 set_git_config
 create_version_branch
-apply_acs_patches
 
 # Due to what appears to be a bug in the Kubernetes Windows build system, one
 # has to first build a linux binary to generate _output/bin/deepcopy-gen.
