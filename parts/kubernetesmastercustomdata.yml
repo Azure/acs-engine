@@ -239,6 +239,7 @@ write_files:
     sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsVariable "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsVariable "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
     sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
     sed -i "s|<kubernetesTillerSpec>|{{WrapAsVariable "kubernetesTillerSpec"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<kubeDnsServiceIP>|{{WrapAsVariable "kubeDnsServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-service.yaml"
 
 {{if .OrchestratorProfile.KubernetesConfig.EnableRbac }}
     # If RBAC enabled then add parameters to API server and Controller manager configuration
