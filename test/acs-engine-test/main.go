@@ -46,12 +46,13 @@ const (
 )
 
 const usage = `Usage:
-  acs-engine-test -c <configuration.json> -d <acs-engine root directory>
+  acs-engine-test <options>
 
   Options:
     -c <configuration.json> : JSON file containing a list of deployment configurations.
 		Refer to acs-engine/test/acs-engine-test/acs-engine-test.json for examples
 	-d <acs-engine root directory>
+	-e <log-errors configuration file>
 `
 
 var logDir string
@@ -408,11 +409,11 @@ func sendDurationMetrics(step, location string, duration time.Duration, errorNam
 func mainInternal() error {
 	var configFile string
 	var rootDir string
-	var errorFile string
+	var logErrorFile string
 	var err error
 	flag.StringVar(&configFile, "c", "", "deployment configurations")
 	flag.StringVar(&rootDir, "d", "", "acs-engine root directory")
-	flag.StringVar(&errorFile, "e", "", "acs-engine root directory")
+	flag.StringVar(&logErrorFile, "e", "", "logError config file")
 	flag.Usage = func() {
 		fmt.Println(usage)
 	}
@@ -443,7 +444,7 @@ func mainInternal() error {
 		enableMetrics = true
 	}
 	// initialize report manager
-	testManager.Manager = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments), errorFile)
+	testManager.Manager = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments), logErrorFile)
 	// check root directory
 	if rootDir == "" {
 		return fmt.Errorf("acs-engine root directory is not provided")
