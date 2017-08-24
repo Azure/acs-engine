@@ -51,7 +51,7 @@ build-cross:
 
 .PHONY: build-windows-k8s
 build-windows-k8s:
-	./scripts/build-windows-k8s.sh -v ${K8S_VERSION}
+	./scripts/build-windows-k8s.sh -v ${K8S_VERSION} -p ${PATCH_VERSION}
 
 .PHONY: dist
 dist:
