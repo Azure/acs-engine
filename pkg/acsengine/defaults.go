@@ -207,6 +207,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if a.OrchestratorProfile.KubernetesConfig.ServiceCIDR == "" {
 			a.OrchestratorProfile.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		}
+		if a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCIDR == "" {
+			a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCIDR = DefaultNonMasqueradeCIDR
+		}
 		if a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency == "" {
 			a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sRelease]["nodestatusfreq"]
 		}

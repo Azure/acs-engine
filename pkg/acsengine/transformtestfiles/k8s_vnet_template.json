@@ -811,6 +811,13 @@
       },
       "type": "string"
     },
+    "kubernetesNonMasqueradeCIDR": {
+      "defaultValue": "10.0.0.0/8",
+      "metadata": {
+        "description": "kubernetes Non Masquerade CIDR cluster subnet"
+      },
+      "type": "string"
+    },
     "kubeConfigCertificate": {
       "metadata": {
         "description": "The base 64 certificate used by cli to communicate with the master"

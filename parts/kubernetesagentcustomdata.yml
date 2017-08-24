@@ -117,6 +117,7 @@ write_files:
     KUBELET_IMAGE_GC_HIGH_THRESHOLD={{WrapAsVariable "gchighthreshold"}}
     KUBELET_IMAGE_GC_LOW_THRESHOLD={{WrapAsVariable "gclowthreshold"}}
 {{if IsKubernetesVersionGe "1.6.0"}}
+    KUBELET_NON_MASQUERADE_CIDR={{WrapAsVariable "kubernetesNonMasqueradeCIDR"}}
     KUBELET_FEATURE_GATES=--feature-gates=Accelerators=true
 {{end}}
 

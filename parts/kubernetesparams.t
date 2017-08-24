@@ -95,6 +95,12 @@
       {{PopulateClassicModeDefaultValue "kubeServiceCidr"}}
       "metadata": {
         "description": "Kubernetes service address space"
+        },
+      "type": "string"
+    },
+    "kubernetesNonMasqueradeCIDR": {
+      "metadata": {
+        "description": "kubernetesNonMasqueradeCIDR cluster subnet"
       },
       "type": "string"
     },
