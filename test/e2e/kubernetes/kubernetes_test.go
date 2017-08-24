@@ -2,10 +2,8 @@ package kubernetes
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
-	"net/http"
 	"os"
 	"os/exec"
 	"time"
@@ -210,13 +208,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(s.Status.LoadBalancer.Ingress).NotTo(BeEmpty())
 
-				url := fmt.Sprintf("http://%s", s.Status.LoadBalancer.Ingress[0]["ip"])
-				resp, err := http.Get(url)
-				Expect(err).NotTo(HaveOccurred())
-				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(body)).To(MatchRegexp("(Welcome to nginx)"))
+				valid := s.Validate("(Welcome to nginx)", 5, 5*time.Second)
+				Expect(valid).To(BeTrue())
 			} else {
 				Skip("No linux agent was provisioned for this Cluster Definition")
 			}
@@ -244,13 +237,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(s.Status.LoadBalancer.Ingress).NotTo(BeEmpty())
 
-				url := fmt.Sprintf("http://%s", s.Status.LoadBalancer.Ingress[0]["ip"])
-				resp, err := http.Get(url)
-				Expect(err).NotTo(HaveOccurred())
-				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(body)).To(MatchRegexp("(IIS Windows Server)"))
+				valid := s.Validate("(IIS Windows Server)", 5, 5*time.Second)
+				Expect(valid).To(BeTrue())
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
 			}

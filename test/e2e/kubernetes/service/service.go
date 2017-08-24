@@ -4,8 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os/exec"
+	"regexp"
 	"time"
 )
 
@@ -113,4 +116,21 @@ func (s *Service) WaitForExternalIP(wait, sleep time.Duration) (*Service, error)
 			return svc, nil
 		}
 	}
+}
+
+// Validate will attempt to run an http.Get against the root service url
+func (s *Service) Validate(check string, attempts int, sleep time.Duration) bool {
+	for i := 0; i < attempts; i++ {
+		url := fmt.Sprintf("http://%s", s.Status.LoadBalancer.Ingress[0]["ip"])
+		resp, err := http.Get(url)
+		if err == nil {
+			defer resp.Body.Close()
+			body, _ := ioutil.ReadAll(resp.Body)
+			matched, _ := regexp.MatchString(check, string(body))
+			if matched == true {
+				return true
+			}
+		}
+	}
+	return false
 }
