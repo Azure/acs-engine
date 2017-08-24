@@ -69,6 +69,12 @@
       },
       "type": "string"
     },
+    "kubernetesNonMasqueradeCIDR": {
+      "metadata": {
+        "description": "kubernetesNonMasqueradeCIDR cluster subnet"
+      },
+      "type": "string"
+    },
     "kubernetesHyperkubeSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesHyperkubeSpec"}}
       "metadata": {

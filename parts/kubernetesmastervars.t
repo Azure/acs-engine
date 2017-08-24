@@ -34,6 +34,8 @@
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
     "networkPolicy": "[parameters('networkPolicy')]",
+    "kubernetesNonMasqueradeCIDR": "[parameters('kubernetesNonMasqueradeCIDR')]",
+
     "maxPods": "[parameters('maxPods')]",
     "vnetCidr": "[parameters('vnetCidr')]",
 {{ if UseManagedIdentity }}
