@@ -13,8 +13,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
-	log "github.com/Sirupsen/logrus"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 // ClusterTopology contains resources of the cluster the upgrade operation
@@ -71,24 +71,35 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 		return uc.Translator.Errorf("Error while querying ARM for resources: %+v", err)
 	}
 
-	switch ucs.OrchestratorProfile.OrchestratorVersion {
-	case api.Kubernetes162:
-		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes 1.6.2"))
-		upgrader := Kubernetes162upgrader{
-			Translator: uc.Translator,
-		}
-		upgrader.ClusterTopology = uc.ClusterTopology
-		upgrader.Client = uc.Client
-		if err := upgrader.RunUpgrade(); err != nil {
-			return err
-		}
+	var upgrader UpgradeWorkFlow
+	log.Infoln(fmt.Sprintf("Upgrading to Kubernetes release %s", ucs.OrchestratorProfile.OrchestratorRelease))
+	switch ucs.OrchestratorProfile.OrchestratorRelease {
+	case api.KubernetesRelease1Dot6:
+		upgrader16 := &Kubernetes16upgrader{}
+		upgrader16.Init(uc.Translator, uc.ClusterTopology, uc.UpgradeModel, uc.Client)
+		upgrader = upgrader16
+
+	case api.KubernetesRelease1Dot7:
+		upgrader17 := &Kubernetes17upgrader{}
+		upgrader17.Init(uc.Translator, uc.ClusterTopology, uc.UpgradeModel, uc.Client)
+		upgrader = upgrader17
+
 	default:
-		return uc.Translator.Errorf("Upgrade to Kubernetes version: %s is not supported from version: %s",
-			ucs.OrchestratorProfile.OrchestratorVersion,
-			uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+		return uc.Translator.Errorf("Upgrade to Kubernetes release: %s is not supported from release: %s",
+			ucs.OrchestratorProfile.OrchestratorRelease,
+			uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease)
 	}
 
-	log.Infoln(fmt.Sprintf("Cluster upraded successfully to Kubernetes version: %s",
+	if err := upgrader.ClusterPreflightCheck(); err != nil {
+		return err
+	}
+
+	if err := upgrader.RunUpgrade(); err != nil {
+		return err
+	}
+
+	log.Infoln(fmt.Sprintf("Cluster upraded successfully to Kubernetes release %s, version: %s",
+		ucs.OrchestratorProfile.OrchestratorRelease,
 		ucs.OrchestratorProfile.OrchestratorVersion))
 	return nil
 }

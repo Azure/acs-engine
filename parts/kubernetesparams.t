@@ -23,6 +23,14 @@
       },
       "type": "securestring"
     },
+{{if IsHostedMaster}}
+    "kubernetesEndpoint": {
+      "metadata": {
+        "description": "The Kubernetes API endpoint https://<kubernetesEndpoint>:443"
+      },
+      "type": "string"
+    },
+{{end}}
     "clientCertificate": {
       "metadata": {
         "description": "The base 64 client certificate used to communicate with the master"
@@ -232,6 +240,20 @@
         "azure",
         "calico"
       ],
+      "type": "string"
+    },
+    "maxPods": {
+      "defaultValue": 110,
+      "metadata": {
+        "description": "The maximum number of pods per node."
+      },
+      "type": "int"
+    },
+    "vnetCidr": {
+      "defaultValue": "10.0.0.0/8",
+      "metadata": {
+        "description": "Cluster vnet cidr"
+      },
       "type": "string"
     },
 {{ if not UseManagedIdentity }}

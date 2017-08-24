@@ -13,7 +13,7 @@ import (
 	"net"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -67,19 +67,23 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 
 	go func() {
 		var err error
-		apiServerCertificate, apiServerPrivateKey, err = createCertificate("apiserver", caCertificate, caPrivateKey, true, extraFQDNs, extraIPs)
+		apiServerCertificate, apiServerPrivateKey, err = createCertificate("apiserver", caCertificate, caPrivateKey, true, extraFQDNs, extraIPs, nil)
 		errors <- err
 	}()
 
 	go func() {
 		var err error
-		clientCertificate, clientPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil)
+		organization := make([]string, 1)
+		organization[0] = "system:masters"
+		clientCertificate, clientPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil, organization)
 		errors <- err
 	}()
 
 	go func() {
 		var err error
-		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil)
+		organization := make([]string, 1)
+		organization[0] = "system:masters"
+		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil, organization)
 		errors <- err
 	}()
 
@@ -102,7 +106,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		nil
 }
 
-func createCertificate(commonName string, caCertificate *x509.Certificate, caPrivateKey *rsa.PrivateKey, isServer bool, extraFQDNs []string, extraIPs []net.IP) (*x509.Certificate, *rsa.PrivateKey, error) {
+func createCertificate(commonName string, caCertificate *x509.Certificate, caPrivateKey *rsa.PrivateKey, isServer bool, extraFQDNs []string, extraIPs []net.IP, organization []string) (*x509.Certificate, *rsa.PrivateKey, error) {
 	var err error
 
 	isCA := (caCertificate == nil)
@@ -116,6 +120,10 @@ func createCertificate(commonName string, caCertificate *x509.Certificate, caPri
 
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		BasicConstraintsValid: true,
+	}
+
+	if organization != nil {
+		template.Subject.Organization = organization
 	}
 
 	if isCA {

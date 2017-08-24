@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -9,8 +9,8 @@ var (
 	// BuildSHA holds the git commit SHA at `make build` time.
 	BuildSHA = "unset"
 
-	// BuildTime holds the `date` at `make build` time.
-	BuildTime = "unset"
+	// BuildTag holds the `git tag` if this is a tagged build/release
+	BuildTag = "unset"
 )
 
 func newVersionCmd() *cobra.Command {
@@ -20,7 +20,7 @@ func newVersionCmd() *cobra.Command {
 		Long:  "Print the version of ACS-Engine",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			log.Infof("ACS-Engine Version: %s (%s)", BuildSHA, BuildTime)
+			log.Infof("ACS-Engine Version: %s (%s)", BuildTag, BuildSHA)
 		},
 	}
 	return versionCmd

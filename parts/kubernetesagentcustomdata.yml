@@ -104,6 +104,7 @@ write_files:
     KUBELET_API_SERVERS=https://{{WrapAsVariable "kubernetesAPIServerIP"}}:443
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
     KUBELET_NETWORK_PLUGIN=kubenet
+    KUBELET_MAX_PODS=110
     DOCKER_OPTS=
     CUSTOM_CMD=/bin/true
     KUBELET_REGISTER_SCHEDULABLE=true
@@ -114,7 +115,7 @@ write_files:
     KUBE_CTRL_MGR_POD_EVICTION_TIMEOUT={{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}
     KUBE_CTRL_MGR_ROUTE_RECONCILIATION_PERIOD={{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}
 {{if IsKubernetesVersionGe "1.6.0"}}
-     KUBELET_FEATURE_GATES=--feature-gates=Accelerators=true
+    KUBELET_FEATURE_GATES=--feature-gates=Accelerators=true
 {{end}}
 
 - path: "/etc/systemd/system/kubelet.service"
@@ -129,6 +130,12 @@ write_files:
   owner: "root"
   content: |
     #!/bin/bash
+
+{{if IsVNETIntegrated}}
+    # SNAT outbound traffic from pods to destinations outside of VNET.
+    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
+{{end}}
+
     exit 0
 
 - path: "/opt/azure/containers/provision.sh"
@@ -155,4 +162,4 @@ runcmd:
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
 - /usr/lib/apt/apt.systemd.daily
-- touch /opt/azure/containers/runcmd.complete
+- mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete

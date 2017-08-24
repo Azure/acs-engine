@@ -30,7 +30,7 @@ EXPECTED_LINUX_AGENTS="${EXPECTED_LINUX_AGENTS:-3}"
 EXPECTED_WINDOWS_AGENTS="${EXPECTED_WINDOWS_AGENTS:-0}"
 EXPECTED_DNS="${EXPECTED_DNS:-2}"
 EXPECTED_DASHBOARD="${EXPECTED_DASHBOARD:-1}"
-EXPECTED_ORCHESTRATOR_VERSION="${EXPECTED_ORCHESTRATOR_VERSION:-}"
+EXPECTED_ORCHESTRATOR_RELEASE="${EXPECTED_ORCHESTRATOR_RELEASE:-}"
 
 KUBE_PROXY_COUNT=$((EXPECTED_NODE_COUNT-$EXPECTED_WINDOWS_AGENTS))
 
@@ -78,10 +78,10 @@ function check_node_count() {
 check_node_count
 
 ###### Validate Kubernetes version
-log "Checking Kubernetes version. Expected: ${EXPECTED_ORCHESTRATOR_VERSION}"
-if [ ! -z "${EXPECTED_ORCHESTRATOR_VERSION}" ]; then
+log "Checking Kubernetes version. Expected: ${EXPECTED_ORCHESTRATOR_RELEASE}"
+if [ ! -z "${EXPECTED_ORCHESTRATOR_RELEASE}" ]; then
   kubernetes_version=$(kubectl version --short)
-  if [[ ${kubernetes_version} != *"Server Version: v${EXPECTED_ORCHESTRATOR_VERSION}"* ]]; then
+  if [[ ${kubernetes_version} != *"Server Version: v${EXPECTED_ORCHESTRATOR_RELEASE}"* ]]; then
     log "K8S: unexpected kubernetes version:\n${kubernetes_version}"; exit 1
   fi
 fi

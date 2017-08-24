@@ -11,7 +11,7 @@ ACS-Engine enables you to retrieve the following k8s deployment parameters from 
 *	clientPrivateKey
 *	kubeConfigCertificate
 *	kubeConfigPrivateKey
-*	servicePrincipalClientKeyvaultSecretRef
+*	servicePrincipal secret (a special case)
 
 The parameters above could still be set as plain text.
 
@@ -24,6 +24,9 @@ where:
 - **KV_NAME** is the name of the keyvault
 - **NAME** is the name of the secret in the keyvault
 - **VERSION** (optional) is the version of the secret (default: the latest version)
+
+The treatment of servicePrincipal secret is slightly different. As a plain text, the secret is set in *servicePrincipalProfile.secret*. Alternatively, as a keyvault reference, the secret is set in *servicePrincipalProfile.keyvaultSecretRef*, which separates kevault ID, secret name, and optionally the version.
+The keyvault ID format is *"/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>*
 
 The example **kubernetes.json** shows you how to refer deployment parameter to a secret in a keyvault.
 

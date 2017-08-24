@@ -19,7 +19,7 @@ Here are the cluster definitions for apiVersion "vlabs"
 
 Here are the valid values for the orchestrator types:
 
-1. `DCOS` - this represents the [DC/OS orchestrator](dcos.md).  [Older versions of DCOS173 and DCOS184 may be specified](../examples/dcos-versions).
+1. `DCOS` - this represents the [DC/OS orchestrator](dcos.md).  [Older releases of DCOS 1.7 and DCOS 1.8 may be specified](../examples/dcos-releases).
 2. `Kubernetes` - this represents the [Kubernetes orchestrator](kubernetes.md).
 3. `Swarm` - this represents the [Swarm orchestrator](swarm.md).
 4. `Swarm Mode` - this represents the [Swarm Mode orchestrator](swarmmode.md).
@@ -34,6 +34,8 @@ Here are the valid values for the orchestrator types:
 |networkPolicy|no|Specifies the network policy tool for the cluster. Valid values are:<br>`none` (default), which won't enforce any network policy,<br>`azure` for applying Azure VNET network policy,<br>`calico` for Calico network policy for clusters with Linux agents only.<br>See [network policy examples](../examples/networkpolicy) for more information.|
 |clusterSubnet|no|The IP subnet used for allocating IP addresses for pod network interfaces. The subnet must be in the VNET address space. Default value is 10.244.0.0/16.|
 |dockerBridgeSubnet|no|The specific IP and subnet used for allocating IP addresses for the docker bridge network created on the kubernetes master and agents. Default value is 172.17.0.1/16. This value is used to configure the docker daemon using the [--bip flag](https://docs.docker.com/engine/userguide/networking/default_network/custom-docker0).|
+|enableRbac|no|Enable [Kubernetes RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) (boolean - default == false) |
+|maxPods|no|The maximum number of pods per node. The minimum valid value, necessary for running kube-system pods, is 5. Default value is 30 when networkPolicy equals azure, 110 otherwise.|
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.
@@ -46,6 +48,7 @@ Here are the valid values for the orchestrator types:
 |vmsize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/).  These are restricted machines with at least 2 cores and 100GB of ephemeral disk space.|
 |osDiskSizeGB|no|Describes the OS Disk Size in GB|
 |vnetSubnetId|no|specifies the Id of an alternate VNET subnet.  The subnet id must specify a valid VNET ID owned by the same subscription. ([bring your own VNET examples](../examples/vnet))|
+|vnetCidr|no| specifies the vnet cidr when using custom Vnets ([bring your own VNET examples](../examples/vnet))|
 
 ### agentPoolProfiles
 A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for creating agents with different capabilities such as VMSizes, VMSS or Availability Set, Public/Private access, [attached storage disks](../examples/disks-storageaccount), [attached managed disks](../examples/disks-managed), or [Windows](../examples/windows).
@@ -98,8 +101,8 @@ https://{keyvaultname}.vault.azure.net:443/secrets/{secretName}/{version}
 
 |Name|Required|Description|
 |---|---|---|
-|servicePrincipalClientID|yes, for Kubernetes clusters|describes the Azure client id.  It is recommended to use a separate client ID per cluster|
-|servicePrincipalClientSecret|yes, for Kubernetes clusters|describes the Azure client secret.  It is recommended to use a separate client secret per client id|
+|clientId|yes, for Kubernetes clusters|describes the Azure client id.  It is recommended to use a separate client ID per cluster|
+|secret|yes, for Kubernetes clusters|describes the Azure client secret.  It is recommended to use a separate client secret per client id|
 
 ## Cluster Defintions for apiVersion "2016-03-30"
 

@@ -106,13 +106,6 @@ write_files:
   content: !!binary |
     MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR
 
-- path: /etc/kubernetes/addons/kube-dns-service.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_KUBE_DNS_SERVICE_B64_GZIP_STR
-
 - path: /etc/kubernetes/addons/kube-dns-deployment.yaml
   permissions: "0644"
   encoding: gzip
@@ -134,20 +127,6 @@ write_files:
   content: !!binary |
     MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR
 
-- path: /etc/kubernetes/addons/kubernetes-dashboard-service.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_KUBERNETES_DASHBOARD_SERVICE_B64_GZIP_STR
-
-- path: /etc/kubernetes/addons/kube-heapster-service.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_HEAPSTER_SERVICE_B64_GZIP_STR
-
 - path: /etc/kubernetes/addons/kube-heapster-deployment.yaml
   permissions: "0644"
   encoding: gzip
@@ -155,26 +134,12 @@ write_files:
   content: !!binary |
     MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR
 
-- path: /etc/kubernetes/addons/default-storage-class.yaml
+- path: /etc/kubernetes/addons/azure-storage-classes.yaml
   permissions: "0644"
   encoding: gzip
   owner: "root"
   content: !!binary |
-    MASTER_ADDON_DEFAULT_STORAGE_CLASS_B64_GZIP_STR
-
-- path: /etc/kubernetes/addons/managed-standard-storage-class.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_MANAGED_STANDARD_STORAGE_CLASS_B64_GZIP_STR
-
-- path: /etc/kubernetes/addons/managed-premium-storage-class.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_MANAGED_PREMIUM_STORAGE_CLASS_B64_GZIP_STR
+    MASTER_ADDON_AZURE_STORAGE_CLASSES_B64_GZIP_STR
 
 - path: /etc/kubernetes/addons/kube-tiller-deployment.yaml
   permissions: "0644"
@@ -183,21 +148,7 @@ write_files:
   content: !!binary |
     MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR
 
-- path: /etc/kubernetes/addons/kube-tiller-service.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_TILLER_SERVICE_B64_GZIP_STR
-
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
-- path: /etc/kubernetes/addons/calico-configmap.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_CALICO_CONFIGMAP_B64_GZIP_STR
-
 - path: /etc/kubernetes/addons/calico-daemonset.yaml
   permissions: "0644"
   encoding: gzip
@@ -237,15 +188,22 @@ write_files:
     KUBELET_API_SERVERS={{WrapAsVerbatim "concat('https://', variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))], ':443')"}}
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
     KUBELET_NETWORK_PLUGIN=
+    KUBELET_MAX_PODS=110
     DOCKER_OPTS=
-    KUBELET_REGISTER_SCHEDULABLE={{WrapAsVariable "registerSchedulable"}}
     KUBELET_NODE_LABELS=role=master
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
     KUBELET_NODE_STATUS_UPDATE_FREQUENCY={{WrapAsVariable "kubernetesNodeStatusUpdateFrequency"}}
     KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD={{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
     KUBE_CTRL_MGR_POD_EVICTION_TIMEOUT={{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}
     KUBE_CTRL_MGR_ROUTE_RECONCILIATION_PERIOD={{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}
-
+{{if IsKubernetesVersionGe "1.6.0"}}
+  {{if HasLinuxAgents}}
+    KUBELET_REGISTER_NODE=--register-node=true
+    KUBELET_REGISTER_WITH_TAINTS=--register-with-taints={{WrapAsVariable "registerWithTaints"}}
+  {{end}}
+{{else}}
+    KUBELET_REGISTER_SCHEDULABLE={{WrapAsVariable "registerSchedulable"}}
+{{end}}
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
   encoding: gzip
@@ -267,6 +225,11 @@ write_files:
     iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443
 {{end}}
 
+{{if IsVNETIntegrated}}
+    # SNAT outbound traffic from pods to destinations outside of VNET.
+    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
+{{end}}
+
     sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsVariable "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeServiceCidr>|{{WrapAsVariable "kubeServiceCidr"}}|g; s|<masterEtcdClientPort>|{{WrapAsVariable "masterEtcdClientPort"}}|g; s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g; s|<kubernetesCtrlMgrNodeMonitorGracePeriod>|{{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}|g; s|<kubernetesCtrlMgrPodEvictionTimeout>|{{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}|g; s|<kubernetesCtrlMgrRouteReconciliationPeriod>|{{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
@@ -276,6 +239,15 @@ write_files:
     sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsVariable "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsVariable "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
     sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
     sed -i "s|<kubernetesTillerSpec>|{{WrapAsVariable "kubernetesTillerSpec"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+
+{{if .OrchestratorProfile.KubernetesConfig.EnableRbac }}
+    # If RBAC enabled then add parameters to API server and Controller manager configuration
+    sed -i "s|<kubernetesEnableRbac>|--authorization-mode=RBAC|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesEnableRbac>|--use-service-account-credentials|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+{{else}}
+    sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+{{end}}
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
     # If Calico Policy enabled then update Cluster Cidr

@@ -18,14 +18,15 @@ import:
   - autorest/azure
   - autorest/to
   - autorest/date
-- package: github.com/Sirupsen/logrus
-  version: v0.11.5
+- package: github.com/sirupsen/logrus
+  version: v1.0.3
   repo:    https://github.com/sirupsen/logrus
 - package: github.com/ghodss/yaml
   version: v1.0.0
 - package: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - package: github.com/prometheus/common
+  version: 61f87aac8082fa8c3c5655c7608d7478d46ac2ad # update this every release cycle
   subpackages:
   - log
 - package: github.com/satori/go.uuid
@@ -33,22 +34,29 @@ import:
 - package: github.com/spf13/cobra
   version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
 - package: github.com/spf13/pflag
+  version: v1.0.0
 - package: github.com/leonelquinteros/gotext
   version: a735812a72672008b3902f8b2bc1302166a9a8ea
 - package: gopkg.in/go-playground/validator.v9
   version: v9.4.0
+  subpackages:
+  - locales
 - package: github.com/go-playground/universal-translator
   version: v0.16.0
 - package: golang.org/x/crypto
+  version: eb71ad9bd329b5ac0fd0148dd99bd62e8be8e035 # update this every release cycle
   subpackages:
   - ssh
 - package: github.com/alexcesaro/statsd
   version: v2.0.0
 - package: github.com/JiangtianLi/gettext
   version: a8983c062be4b565d723c478922d7736e04fdba4
-testImport:
-- package: github.com/onsi/gomega
-  version: v1.1.0
-- package: github.com/onsi/ginkgo
+- package: github.com/Masterminds/semver
   version: v1.3.1
-- package: github.com/hashicorp/go-version
+- package: github.com/imdario/mergo
+  version: ^0.2.2
+testImport:
+# glide isn't able to mutually reconcile pinned versions of these deps
+- package: github.com/onsi/gomega
+- package: github.com/onsi/ginkgo
+- package: github.com/kelseyhightower/envconfig

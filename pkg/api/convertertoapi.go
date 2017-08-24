@@ -469,25 +469,30 @@ func convertVLabsWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile
 func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = v20160930.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
-		api.OrchestratorVersion = Kubernetes153
+		api.OrchestratorRelease = KubernetesRelease1Dot5
+		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
 	} else if api.OrchestratorType == DCOS {
-		api.OrchestratorVersion = DCOS190
+		api.OrchestratorRelease = DCOSRelease1Dot9
+		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
 	}
 }
 
 func convertV20160330OrchestratorProfile(v20160330 *v20160330.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = v20160330.OrchestratorType
 	if api.OrchestratorType == DCOS {
-		api.OrchestratorVersion = DCOS190
+		api.OrchestratorRelease = DCOSRelease1Dot9
+		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
 	}
 }
 
 func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = v20170131.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
-		api.OrchestratorVersion = KubernetesDefaultVersion
+		api.OrchestratorRelease = KubernetesDefaultRelease
+		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
 	} else if api.OrchestratorType == DCOS {
-		api.OrchestratorVersion = DCOS190
+		api.OrchestratorRelease = DCOSRelease1Dot9
+		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
 	}
 }
 
@@ -498,73 +503,52 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 		api.OrchestratorType = v20170701cs.OrchestratorType
 	}
 
-	if api.OrchestratorType == Kubernetes {
-
-		switch v20170701cs.OrchestratorVersion {
-		case v20170701.Kubernetes166:
-			api.OrchestratorVersion = Kubernetes166
-		case v20170701.Kubernetes157:
-			api.OrchestratorVersion = Kubernetes157
+	switch api.OrchestratorType {
+	case Kubernetes:
+		switch v20170701cs.OrchestratorRelease {
+		case KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
+			api.OrchestratorRelease = v20170701cs.OrchestratorRelease
 		default:
-			api.OrchestratorVersion = KubernetesDefaultVersion
+			api.OrchestratorRelease = KubernetesDefaultRelease
 		}
-	} else if api.OrchestratorType == DCOS {
-		switch v20170701cs.OrchestratorVersion {
-		case v20170701.DCOS187:
-			api.OrchestratorVersion = DCOS187
-		case v20170701.DCOS188:
-			api.OrchestratorVersion = DCOS188
-		case v20170701.DCOS190:
-			api.OrchestratorVersion = DCOS190
+		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
+	case DCOS:
+		switch v20170701cs.OrchestratorRelease {
+		case DCOSRelease1Dot9, DCOSRelease1Dot8:
+			api.OrchestratorRelease = v20170701cs.OrchestratorRelease
 		default:
-			api.OrchestratorVersion = DCOSLatest
+			api.OrchestratorRelease = DCOSDefaultRelease
 		}
+		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
+	default:
+		break
 	}
 }
 
 func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = vlabscs.OrchestratorType
-	if api.OrchestratorType == Kubernetes {
+	switch api.OrchestratorType {
+	case Kubernetes:
 		if vlabscs.KubernetesConfig != nil {
 			api.KubernetesConfig = &KubernetesConfig{}
 			convertVLabsKubernetesConfig(vlabscs.KubernetesConfig, api.KubernetesConfig)
 		}
 
-		switch vlabscs.OrchestratorVersion {
-		case vlabs.Kubernetes172:
-			api.OrchestratorVersion = Kubernetes172
-		case vlabs.Kubernetes171:
-			api.OrchestratorVersion = Kubernetes171
-		case vlabs.Kubernetes170:
-			api.OrchestratorVersion = Kubernetes170
-		case vlabs.Kubernetes166:
-			api.OrchestratorVersion = Kubernetes166
-		case vlabs.Kubernetes162:
-			api.OrchestratorVersion = Kubernetes162
-		case vlabs.Kubernetes160:
-			api.OrchestratorVersion = Kubernetes160
-		case vlabs.Kubernetes157:
-			api.OrchestratorVersion = Kubernetes157
-		case vlabs.Kubernetes153:
-			api.OrchestratorVersion = Kubernetes153
+		switch vlabscs.OrchestratorRelease {
+		case KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
+			api.OrchestratorRelease = vlabscs.OrchestratorRelease
 		default:
-			api.OrchestratorVersion = KubernetesDefaultVersion
+			api.OrchestratorRelease = KubernetesDefaultRelease
 		}
-	} else if api.OrchestratorType == DCOS {
-		switch vlabscs.OrchestratorVersion {
-		case vlabs.DCOS173:
-			api.OrchestratorVersion = DCOS173
-		case vlabs.DCOS184:
-			api.OrchestratorVersion = DCOS184
-		case vlabs.DCOS187:
-			api.OrchestratorVersion = DCOS187
-		case vlabs.DCOS188:
-			api.OrchestratorVersion = DCOS188
-		case vlabs.DCOS190:
-			api.OrchestratorVersion = DCOS190
+		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
+	case DCOS:
+		switch vlabscs.OrchestratorRelease {
+		case DCOSRelease1Dot9, DCOSRelease1Dot8, DCOSRelease1Dot7:
+			api.OrchestratorRelease = vlabscs.OrchestratorRelease
 		default:
-			api.OrchestratorVersion = DCOSLatest
+			api.OrchestratorRelease = DCOSDefaultRelease
 		}
+		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
 	}
 }
 
@@ -572,6 +556,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.KubernetesImageBase = vlabs.KubernetesImageBase
 	api.ClusterSubnet = vlabs.ClusterSubnet
 	api.NetworkPolicy = vlabs.NetworkPolicy
+	api.MaxPods = vlabs.MaxPods
 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
 	api.NodeStatusUpdateFrequency = vlabs.NodeStatusUpdateFrequency
 	api.CtrlMgrNodeMonitorGracePeriod = vlabs.CtrlMgrNodeMonitorGracePeriod
@@ -588,6 +573,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.UseManagedIdentity = vlabs.UseManagedIdentity
 	api.CustomHyperkubeImage = vlabs.CustomHyperkubeImage
 	api.UseInstanceMetadata = vlabs.UseInstanceMetadata
+	api.EnableRbac = vlabs.EnableRbac
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {
@@ -641,6 +627,7 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	api.OSDiskSizeGB = vlabs.OSDiskSizeGB
 	api.VnetSubnetID = vlabs.VnetSubnetID
 	api.FirstConsecutiveStaticIP = vlabs.FirstConsecutiveStaticIP
+	api.VnetCidr = vlabs.VnetCidr
 	api.Subnet = vlabs.GetSubnet()
 	api.IPAddressCount = vlabs.IPAddressCount
 	api.FQDN = vlabs.FQDN
@@ -815,13 +802,25 @@ func convertV20170131ServicePrincipalProfile(v20170131 *v20170131.ServicePrincip
 func convertV20170701ServicePrincipalProfile(v20170701 *v20170701.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 	api.ClientID = v20170701.ClientID
 	api.Secret = v20170701.Secret
-	api.KeyvaultSecretRef = v20170701.KeyvaultSecretRef
+	if v20170701.KeyvaultSecretRef != nil {
+		api.KeyvaultSecretRef = &KeyvaultSecretRef{
+			VaultID:       v20170701.KeyvaultSecretRef.VaultID,
+			SecretName:    v20170701.KeyvaultSecretRef.SecretName,
+			SecretVersion: v20170701.KeyvaultSecretRef.SecretVersion,
+		}
+	}
 }
 
 func convertVLabsServicePrincipalProfile(vlabs *vlabs.ServicePrincipalProfile, api *ServicePrincipalProfile) {
 	api.ClientID = vlabs.ClientID
 	api.Secret = vlabs.Secret
-	api.KeyvaultSecretRef = vlabs.KeyvaultSecretRef
+	if vlabs.KeyvaultSecretRef != nil {
+		api.KeyvaultSecretRef = &KeyvaultSecretRef{
+			VaultID:       vlabs.KeyvaultSecretRef.VaultID,
+			SecretName:    vlabs.KeyvaultSecretRef.SecretName,
+			SecretVersion: vlabs.KeyvaultSecretRef.SecretVersion,
+		}
+	}
 }
 
 func convertV20160930CustomProfile(v20160930 *v20160930.CustomProfile, api *CustomProfile) {

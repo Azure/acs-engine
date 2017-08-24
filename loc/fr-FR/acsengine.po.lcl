@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="acsengine" PsrId="1" SrcCul="en-US" TgtCul="fr-FR" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Settings Name="@SettingsPath@\default.lss" Type="Lss" />
+  <Item ItemId="1" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Error reading file %s, Error: %s]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[Erreur de lecture du fichier %s. Erreur : %s]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="2" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Error while querying ARM for resources: %+v]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[Erreur pendant la recherche de ressources dans ARM : %+v]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="3" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Found 2 resources with type %s in the template. There should only be 1]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[2 ressources trouvées avec le type %s dans le modèle. 1 seule est attendue]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="4" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Found no resources with type %s in the template. There should have been 1]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[Aucune ressource avec le type %s dans le modèle. 1 ressource est attendue]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="5" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Total count of master VMs: %d exceeded expected count: %d]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[Le nombre total de machines virtuelles maîtres : %d a dépassé le nombre attendu : %d]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="6" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Upgrade to Kubernetes 1.6.2 is not supported from version: %s]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[La mise à niveau vers Kubernetes 1.6.2 n'est pas prise en charge à partir de la version %s]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="7" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Upgrade to Kubernetes version: %s is not supported from version: %s]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[La mise à niveau vers la version %s de Kubernetes n'est pas prise en charge à partir de la version %s]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="8" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[error creating directory '%s': %s]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[erreur de création du répertoire « %s » : %s]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="9" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[error executing template for file %s: %v]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[erreur d'exécution du modèle pour le fichier %s : %v]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="10" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[error generating upgrade template: %s]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[erreur de génération du modèle de mise à niveau : %s]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="11" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[error parsing file %s: %v]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[erreur d'analyse du fichier %s : %v]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="12" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[error reading file %s: %s]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[erreur de lecture du fichier « %s » ; %s]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="13" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[failed to create openssh public key string: %q]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[échec de création de la chaîne de clé publique openssh : %q]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="14" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[failed to generate private key for ssh: %q]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[échec de génération de la clé privée pour ssh : %q]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="15" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[failed to initialize template generator: %s]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[échec d'initialisation du générateur de modèles : %s]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="16" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[invalid version %s for conversion back from unversioned object]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[version non valide %s pour la reconversion à partir de l'objet sans version]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="17" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[orchestrator '%s' is unsupported]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[orchestrator « %s » n'est pas pris en charge]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="18" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[template file %s does not exist]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[le fichier de modèle %s n'existe pas]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="19" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[unrecognized APIVersion '%s']]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[version d'API « %s » non reconnue]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="20" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[yaml file %s does not exist]]></Val>
+      <Tgt Cat="Text" Stat="Loc" Orig="New">
+        <Val><![CDATA[le fichier yaml %s n'existe pas]]></Val>
+      </Tgt>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+</LCX>
