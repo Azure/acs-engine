@@ -4,7 +4,7 @@ The following instructions show how to deploy the Windows Kubernetes Binaries an
 
 ### Prerequisites
 * Azure Storage Account and Azure Storage Container to store Windows binaries
-* Access to [winnat.sys](https://blogs.technet.microsoft.com/virtualization/2016/05/25/windows-nat-winnat-capabilities-and-limitations/) stored in a storage container; at present Microsoft is not able to distribute winnat.sys.
+* Access to [winnat.sys](https://blogs.technet.microsoft.com/virtualization/2016/05/25/windows-nat-winnat-capabilities-and-limitations/) stored in a storage container. (WinNAT) is used to provide required NAT networking functionality for Windows containers that will be included in a future Windows image update.
 * Go development environment for cross-building
 
 ### Set Azure Storage credentials and Container name
@@ -21,8 +21,8 @@ The `make build-windows-k8s` will do the following:
 - Clone the fork of Azure/kubernetes which include Windows fixes not yet in upstream Kubernetes
 - Build kubelet.exe, kube-proxy.exe
 - Download kubectl.exe for desired release
-- Download [NSSM](https://nssm.cc) which is used to start the kubelet on Windows
-- Download [Windows NAT](https://blogs.technet.microsoft.com/virtualization/2016/05/25/windows-nat-winnat-capabilities-and-limitations/) (WinNAT) used to provide required NAT networking functionality for Windows containers
+- Download [NSSM](https://nssm.cc) which is used to start kubelet and kube-proxy on Windows
+- Download [Windows NAT](https://blogs.technet.microsoft.com/virtualization/2016/05/25/windows-nat-winnat-capabilities-and-limitations/)
 - Create an .zip archive of these Windows components
 - Upload archive to Azure Blob Storage
 

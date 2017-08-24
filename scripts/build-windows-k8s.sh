@@ -37,7 +37,7 @@ KUBERNETES_RELEASE=$(echo $version | cut -d'.' -f1,2)
 KUBERNETES_RELEASE_BRANCH_NAME=release-${KUBERNETES_RELEASE}
 ACS_VERSION=${version}-${acs_patch_version}
 ACS_BRANCH_NAME=acs-v${ACS_VERSION}
-DIST_DIR=${ACS_ENGINE_HOME}/_dist/k8s-windows-v${ACS_VERSION}
+DIST_DIR=${ACS_ENGINE_HOME}/_dist/k8s-windows-v${ACS_VERSION}/k
 
 fetch_k8s() {
 	git clone https://github.com/Azure/kubernetes ${GOPATH}/src/k8s.io/kubernetes || true
@@ -99,11 +99,13 @@ copy_dockerfile_and_pause_ps1() {
 }
 
 create_zip() {
-	zip -r ${DIST_DIR}/../v${version}intwinnat.zip ${DIST_DIR}/*
+	cd ${DIST_DIR}/..
+	zip -r ../v${version}intwinnat.zip k/*
+	cd -
 }
 
 upload_zip_to_blob_storage() {
-	az storage blob upload -f ${DIST_DIR}/../v${version}intwinnat.zip -c ${AZURE_STORAGE_CONTAINER_NAME} -n v${version}intwinnat.zip
+	az storage blob upload -f ${DIST_DIR}/../../v${version}intwinnat.zip -c ${AZURE_STORAGE_CONTAINER_NAME} -n v${version}intwinnat.zip
 }
 
 create_dist_dir
