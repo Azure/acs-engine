@@ -83,7 +83,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if a.OrchestratorProfile.KubernetesConfig == nil {
 			a.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
 		}
-		a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
+		if a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase == "" {
+			a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
+		}
 		if a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "" {
 			a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 		}
