@@ -3,56 +3,42 @@ set -eo pipefail
 
 ACS_ENGINE_HOME=${GOPATH}/src/github.com/Azure/acs-engine
 
-version=""
-acs_patch_version=""
-winnat="false"
+usage() {
+	echo "$0 [-v version] [-p acs_patch_version]"
+	echo " -v <version>: version"
+	echo " -p <patched version>: acs_patch_version"
+	exit 0
+}
 
-while getopts "hv:p" opt; do
-  case $opt in
-    h)
-      echo "$0 [-v version] [-p acs_patch_version] [-w]"
-      echo " -v <version>: version"
-      echo " -p <patched version>: acs_patch_version"
-      exit 0
-      ;;
+while getopts ":v:p:" opt; do
+  case ${opt} in
     v)
-      version="${OPTARG}"
+      version=${OPTARG}
       ;;
     p)
-      acs_patch_version="${OPTARG}"
+      acs_patch_version=${OPTARG}
       ;;
-    \?)
-      echo "$0 [-v version] [-p acs_patch_version] [-w]"
-      exit 1
+    *)
+			usage
       ;;
   esac
 done
 
-if [[ -z $version ]]; then
-	echo "Unknown or no Kubernetes version provided"
-	exit
-fi
-
-if [[ -z $acs_patch_version ]]; then
-	echo "Please provide an ACS patch version with -p"
-	exit
-fi
-
-if [[ -z $acs_patch_version ]]; then
-	DIST_DIR=${ACS_ENGINE_HOME}/_dist/k8s-windows-v${version}
-else
-	DIST_DIR=${ACS_ENGINE_HOME}/_dist/k8s-windows-v${version}-${acs_patch_version}
+if [ -z "${version}" ] || [ -z "${acs_patch_version}" ]; then
+    usage
 fi
 
 KUBERNETES_RELEASE=$(echo $version | cut -d'.' -f1,2)
 KUBERNETES_RELEASE_BRANCH_NAME=release-${KUBERNETES_RELEASE}
-ACS_BRANCH_NAME=acs-v${version}-${acs_patch_version}
+ACS_VERSION=${version}-${acs_patch_version}
+ACS_BRANCH_NAME=acs-v${ACS_VERSION}
+DIST_DIR=${ACS_ENGINE_HOME}/_dist/k8s-windows-v${ACS_VERSION}
 
 fetch_k8s() {
-	git clone https://github.com/kubernetes/kubernetes ${GOPATH}/src/k8s.io/kubernetes || true
+	git clone https://github.com/Azure/kubernetes ${GOPATH}/src/k8s.io/kubernetes || true
 	cd ${GOPATH}/src/k8s.io/kubernetes
-	git remote add acs https://github.com/Azure/kubernetes || true
-	git fetch acs
+	git remote add upstream https://github.com/kubernetes/kubernetes || true
+	git fetch upstream
 }
 
 set_git_config() {
@@ -61,7 +47,7 @@ set_git_config() {
 }
 
 create_version_branch() {
-	git checkout -b ${ACS_BRANCH_NAME} ${KUBERNETES_RELEASE_BRANCH_NAME}
+	git checkout -b ${ACS_BRANCH_NAME} ${KUBERNETES_RELEASE_BRANCH_NAME} || true
 }
 
 create_dist_dir() {
