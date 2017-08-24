@@ -38,5 +38,7 @@ export PUBLIC_SSH_KEY="$(cat _output/${SSH_KEY_NAME}.pub)"
 export DNS_PREFIX=test-$(echo $RANDOM)
 
 ginkgo -slowSpecThreshold 60 -r test/e2e/${TEST}
+exit_code=$?
 
-ssh-add -d _output/${SSH_KEY_NAME}
+ssh-add -d _output/${SSH_KEY_NAME} || true
+exit $exit_code
