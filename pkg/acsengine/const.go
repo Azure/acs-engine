@@ -123,7 +123,7 @@ var KubeConfigs = map[string]map[string]string{
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 	},
 	api.KubernetesRelease1Dot6: {
-		"hyperkube":       "hyperkube-amd64:v1.6.8",
+		"hyperkube":       "hyperkube-amd64:v1.6.9",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addonresizer":    "addon-resizer:1.7",
@@ -133,7 +133,7 @@ var KubeConfigs = map[string]map[string]string{
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":           "pause-amd64:3.0",
 		"tiller":          DefaultTillerImage,
-		"windowszip":      "v1.6.8intwinnat.zip",
+		"windowszip":      "v1.6.9intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
