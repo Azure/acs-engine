@@ -24,13 +24,14 @@ type Config struct {
 // Engine holds necessary information to interact with acs-engine cli
 type Engine struct {
 	Config                    *Config
-	ClusterDefinitionPath     string // The original template we want to use to build the cluster from.
-	ClusterDefinitionTemplate string // This is the template after we splice in the environment variables
-	GeneratedDefinitionPath   string // Holds the contents of running acs-engine generate
-	OutputPath                string // This is the root output path
-	DefinitionName            string // Unique cluster name
-	GeneratedTemplatePath     string // azuredeploy.json path
-	GeneratedParametersPath   string // azuredeploy.parameters.json path
+	ClusterDefinitionPath     string                       // The original template we want to use to build the cluster from.
+	ClusterDefinitionTemplate string                       // This is the template after we splice in the environment variables
+	GeneratedDefinitionPath   string                       // Holds the contents of running acs-engine generate
+	OutputPath                string                       // This is the root output path
+	DefinitionName            string                       // Unique cluster name
+	GeneratedTemplatePath     string                       // azuredeploy.json path
+	GeneratedParametersPath   string                       // azuredeploy.parameters.json path
+	ClusterDefinition         api.VlabsARMContainerService // Holds the parsed ClusterDefinition
 }
 
 // ParseConfig will return a new engine config struct taking values from env vars
@@ -94,7 +95,29 @@ func Build(templatePath, outputPath, definitionName string) (*Engine, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	engine.ClusterDefinition = *cs
 	return &engine, nil
+}
+
+// HasLinuxAgents will return true if there is at least 1 linux agent pool
+func (e *Engine) HasLinuxAgents() bool {
+	for _, ap := range e.ClusterDefinition.Properties.AgentPoolProfiles {
+		if ap.OSType == "" || ap.OSType == "Linux" {
+			return true
+		}
+	}
+	return false
+}
+
+// HasWindowsAgents will return true is there is at least 1 windows agent pool
+func (e *Engine) HasWindowsAgents() bool {
+	for _, ap := range e.ClusterDefinition.Properties.AgentPoolProfiles {
+		if ap.OSType == "Windows" {
+			return true
+		}
+	}
+	return false
 }
 
 // Parse takes a template path and will parse that into a api.VlabsARMContainerService
