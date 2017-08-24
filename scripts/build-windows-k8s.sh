@@ -28,6 +28,11 @@ if [ -z "${version}" ] || [ -z "${acs_patch_version}" ]; then
     usage
 fi
 
+if [ -z "${AZURE_STORAGE_CONNECTION_STRING}" ] || [ -z "${AZURE_STORAGE_CONTAINER_NAME}" ]; then
+    echo "$AZURE_STORAGE_CONNECTION_STRING and $AZURE_STORAGE_CONTAINER_NAME need to be set for upload to Azure Blob Storage."
+		exit 1
+fi
+
 KUBERNETES_RELEASE=$(echo $version | cut -d'.' -f1,2)
 KUBERNETES_RELEASE_BRANCH_NAME=release-${KUBERNETES_RELEASE}
 ACS_VERSION=${version}-${acs_patch_version}
@@ -98,6 +103,10 @@ create_zip() {
 	zip -r ${DIST_DIR}/../v${version}intwinnat.zip ${DIST_DIR}/*
 }
 
+upload_zip_to_blob_storage() {
+	az storage blob upload -f ${DIST_DIR}/../v${version}intwinnat.zip -c ${AZURE_STORAGE_CONTAINER_NAME} -n v${version}intwinnat.zip
+}
+
 create_dist_dir
 fetch_k8s
 set_git_config
@@ -114,3 +123,4 @@ download_kubectl
 download_nccm
 copy_dockerfile_and_pause_ps1
 create_zip
+upload_zip_to_blob_storage
