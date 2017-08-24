@@ -40,4 +40,10 @@ WORKDIR /gopath/src/github.com/Azure/acs-engine
 ADD Makefile test.mk versioning.mk glide.yaml glide.lock /gopath/src/github.com/Azure/acs-engine/
 RUN make bootstrap
 
+# https://github.com/dotnet/core/blob/master/release-notes/download-archives/2.0.0-preview2-download.md
+RUN echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main" > /etc/apt/sources.list.d/dotnetdev.list \
+    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893 \
+    && apt-get update \
+    && apt-get -y install dotnet-sdk-2.0.0-preview2-006497
+
 ADD . /gopath/src/github.com/Azure/acs-engine

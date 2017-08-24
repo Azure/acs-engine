@@ -12,19 +12,6 @@ import (
 	"github.com/leonelquinteros/gotext"
 )
 
-const (
-	defaultLanguage   = "default"
-	defaultDomain     = "acsengine"
-	defaultLocalDir   = "translations"
-	defaultMessageDir = "LC_MESSAGES"
-)
-
-var supportedTranslations = map[string]bool{
-	defaultLanguage: true,
-	"en_US":         true,
-	"zh_CN":         true,
-}
-
 func loadSystemLanguage() string {
 	language := os.Getenv("LANG")
 	if language == "" {
