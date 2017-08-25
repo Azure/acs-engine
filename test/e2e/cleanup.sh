@@ -40,5 +40,5 @@ az account set -s $SUBSCRIPTION_ID_TO_CLEANUP
 for resourceGroup in `az group list | jq -r ".[] | select((.tags.now|tonumber < $deadline)).name"`; do
     echo "Will delete resource group ${resourceGroup}..."
     # delete old resource groups
-    az group delete -n $resourceGroup -y --no-wait
+    az group delete -n $resourceGroup -y --no-wait >> delete.log
 done
