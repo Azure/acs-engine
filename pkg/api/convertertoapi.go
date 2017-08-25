@@ -389,6 +389,11 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 		api.CertificateProfile = &CertificateProfile{}
 		convertVLabsCertificateProfile(vlabs.CertificateProfile, api.CertificateProfile)
 	}
+
+	if vlabs.AADProfile != nil {
+		api.AADProfile = &AADProfile{}
+		convertVLabsAADProfile(vlabs.AADProfile, api.AADProfile)
+	}
 }
 
 func convertV20160930LinuxProfile(obj *v20160930.LinuxProfile, api *LinuxProfile) {
@@ -852,6 +857,12 @@ func convertVLabsCertificateProfile(vlabs *vlabs.CertificateProfile, api *Certif
 	api.ClientPrivateKey = vlabs.ClientPrivateKey
 	api.KubeConfigCertificate = vlabs.KubeConfigCertificate
 	api.KubeConfigPrivateKey = vlabs.KubeConfigPrivateKey
+}
+
+func convertVLabsAADProfile(vlabs *vlabs.AADProfile, api *AADProfile) {
+	api.ClientAppID = vlabs.ClientAppID
+	api.ServerAppID = vlabs.ServerAppID
+	api.TenantID = vlabs.TenantID
 }
 
 func addDCOSPublicAgentPool(api *Properties) {
