@@ -864,14 +864,28 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetMasterSwarmCustomData": func() string {
 			files := []string{swarmProvision}
 			str := buildYamlFileWithWriteFiles(files)
+			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
+				extensionStr := MakeExtensionScriptCommands(cs.Properties.MasterProfile.PreprovisionExtension,
+					cs.Properties.ExtensionsProfile, "copyIndex(variables('masterOffset'))")
+				str += "concat('runcmd:\n " + extensionStr + "  \n\n')"
+			}
 			str = escapeSingleLine(str)
 			return fmt.Sprintf("\"customData\": \"[base64('%s')]\",", str)
 		},
-		"GetAgentSwarmCustomData": func() string {
+		"GetAgentSwarmCustomData": func(profile *api.AgentPoolProfile) string {
 			files := []string{swarmProvision}
 			str := buildYamlFileWithWriteFiles(files)
 			str = escapeSingleLine(str)
-			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('agentRunCmdFile'),variables('agentRunCmd')))]\",", str)
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('%sRunCmdFile'),variables('%sRunCmd')))]\",", str, profile.Name, profile.Name)
+		},
+		"GetSwarmAgentPreprovisionExtensionCommands": func(profile *api.AgentPoolProfile, copyIndexFormat string) string {
+			str := ""
+			if profile.PreprovisionExtension != nil {
+				copyIndex := fmt.Sprintf(copyIndexFormat, profile.Name)
+				str = MakeExtensionScriptCommands(profile.PreprovisionExtension, cs.Properties.ExtensionsProfile, copyIndex)
+			}
+			str = escapeSingleLine(str)
+			return str
 		},
 		"GetLocation": func() string {
 			return cs.Location
@@ -894,14 +908,19 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetMasterSwarmModeCustomData": func() string {
 			files := []string{swarmModeProvision}
 			str := buildYamlFileWithWriteFiles(files)
+			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
+				extensionStr := MakeExtensionScriptCommands(cs.Properties.MasterProfile.PreprovisionExtension,
+					cs.Properties.ExtensionsProfile, "copyIndex(variables('masterOffset'))")
+				str += "runcmd:\n " + extensionStr + "  \n\n"
+			}
 			str = escapeSingleLine(str)
 			return fmt.Sprintf("\"customData\": \"[base64('%s')]\",", str)
 		},
-		"GetAgentSwarmModeCustomData": func() string {
+		"GetAgentSwarmModeCustomData": func(profile *api.AgentPoolProfile) string {
 			files := []string{swarmModeProvision}
 			str := buildYamlFileWithWriteFiles(files)
 			str = escapeSingleLine(str)
-			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('agentRunCmdFile'),variables('agentRunCmd')))]\",", str)
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('%sRunCmdFile'),variables('%sRunCmd')))]\",", str, profile.Name, profile.Name)
 		},
 		"GetKubernetesSubnets": func() string {
 			return getKubernetesSubnets(cs.Properties)
@@ -1036,6 +1055,23 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return s
 		},
 	}
+}
+
+// MakeExtensionScriptCommands creates a script to be inserted in a cloud init yaml that downloads and then runs an extension script
+func MakeExtensionScriptCommands(extension *api.Extension, extensionsProfile []api.ExtensionProfile, copyIndex string) string {
+	var extensionProfile *api.ExtensionProfile
+	for _, eP := range extensionsProfile {
+		if strings.EqualFold(eP.Name, extension.Name) {
+			extensionProfile = &eP
+			break
+		}
+	}
+
+	scriptURL := getExtensionURL(extensionProfile.RootURL, extensionProfile.Name, extensionProfile.Version, extensionProfile.Script)
+	scriptFilePath := fmt.Sprintf("/opt/azure/containers/extensions/%s/%s", extensionProfile.Name, extensionProfile.Script)
+	parameters := strings.Replace(extensionProfile.ExtensionParameters, "EXTENSION_LOOP_INDEX", copyIndex, -1)
+	return fmt.Sprintf("- curl -o %s --create-dirs %s \n - chmod 744 %s \n - %s %s",
+		scriptFilePath, scriptURL, scriptFilePath, scriptFilePath, parameters)
 }
 
 func getPackageGUID(orchestratorType string, orchestratorRelease string, masterCount int) string {

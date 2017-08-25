@@ -53,8 +53,8 @@
       }
     ],
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "ServicePrincipalClientID",
-      "servicePrincipalClientSecret": "myServicePrincipalClientSecret"
+      "clientID": "ServicePrincipalClientID",
+      "secret": "myServicePrincipalClientSecret"
     },
     "certificateProfile": {
       "caCertificate": "caCertificate",

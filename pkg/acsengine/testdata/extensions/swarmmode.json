@@ -1,0 +1,77 @@
+{
+  "apiVersion": "vlabs",
+  "plan": {},
+  "properties": {
+    "provisioningState": "",
+    "orchestratorProfile": {
+      "orchestratorType": "SwarmMode"
+    },
+    "masterProfile": {
+      "count": 3,
+      "dnsPrefix": "masterdns1",
+      "vmSize": "Standard_D2_v2",
+      "firstConsecutiveStaticIP": "172.16.0.5",
+      "preprovisionExtension": 
+          { 
+            "name": "hello-world-k8s", 
+            "singleOrAll": "all"
+          }
+        ,
+      "extensions": [
+          { 
+            "name": "hello-world-k8s", 
+            "singleOrAll": "all"
+          }
+        ]
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "dnsPrefix": "agentdns1",
+        "ports": [
+          80,
+          443,
+          8080
+        ],
+        "availabilityProfile": "VirtualMachineScaleSets",
+        "storageProfile": "StorageAccount",
+      "extensions": [
+          { 
+            "name": "hello-world-k8s", 
+            "singleOrAll": "all"
+          }
+        ]
+      },
+      {
+        "name": "agentpool2",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "VirtualMachineScaleSets",
+        "storageProfile": "StorageAccount"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+          }
+        ]
+      }
+    },
+    "extensionsProfile": [
+      { 
+        "name": "hello-world-k8s", 
+        "version": "v1", 
+        "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/RobBagby-extension-support/",
+        "script": "test.sh"
+      }
+    ],
+    "windowsProfile": {},
+    "servicePrincipalProfile": {},
+    "certificateProfile": {}
+  }
+}
