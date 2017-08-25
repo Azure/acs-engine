@@ -5,7 +5,6 @@ The following instructions show how to deploy the Windows Kubernetes Binaries an
 ### Prerequisites
 * Azure Storage Account and Azure Storage Container to store Windows binaries
 * Access to [winnat.sys](https://blogs.technet.microsoft.com/virtualization/2016/05/25/windows-nat-winnat-capabilities-and-limitations/) stored in a storage container. (WinNAT) is used to provide required NAT networking functionality for Windows containers that will be included in a future Windows image update.
-* Go development environment for cross-building
 
 ### Set Azure Storage credentials and Container name
 
