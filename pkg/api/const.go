@@ -14,6 +14,15 @@ const (
 	SwarmMode string = "SwarmMode"
 )
 
+const (
+	// Swarm orchestrator and docker compose versions
+	SwarmVersion              = "swarm:1.1.0"
+	SwarmDockerComposeVersion = "1.6.2"
+	// DockerCE orchestrator and docker compose versions
+	DockerCEVersion              = "17.03.*"
+	DockerCEDockerComposeVersion = "1.14.0"
+)
+
 // the OSTypes supported by vlabs
 const (
 	Windows OSType = "Windows"
