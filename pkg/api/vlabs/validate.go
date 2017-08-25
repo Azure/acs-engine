@@ -380,6 +380,42 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 		}
 	}
 
+	if a.DnsServiceIP != "" || a.ServiceCidr != "" {
+		if a.DnsServiceIP == "" {
+			return errors.New("OrchestratorProfile.KubernetesConfig.ServiceCidr must be specified when DnsServiceIP is")
+		}
+		if a.ServiceCidr == "" {
+			return errors.New("OrchestratorProfile.KubernetesConfig.DnsServiceIP must be specified when ServiceCidr is")
+		}
+
+		dnsIp := net.ParseIP(a.DnsServiceIP)
+		if dnsIp == nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is an invalid IP address", a.DnsServiceIP)
+		}
+
+		_, serviceCidr, err := net.ParseCIDR(a.ServiceCidr)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ServiceCidr '%s' is an invalid CIDR subnet", a.ServiceCidr)
+		}
+
+		// Finally validate that the DNS ip is within the subnet
+		if !serviceCidr.Contains(dnsIp) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is not within the ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		}
+
+		// and that the DNS IP is _not_ the subnet broadcast address
+		broadcast := common.Ip4BroadcastAddress(serviceCidr)
+		if dnsIp.Equal(broadcast) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' cannot be the broadcast address of ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		}
+
+		// and that the DNS IP is _not_ the first IP in the service subnet
+		firstServiceIp := common.CidrFirstIp(serviceCidr.IP)
+		if firstServiceIp.Equal(dnsIp) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' cannot be the first IP of ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		}
+	}
+
 	return nil
 }
 
