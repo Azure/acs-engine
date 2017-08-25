@@ -55,6 +55,42 @@ create_version_branch() {
 	git checkout -b ${ACS_BRANCH_NAME} ${KUBERNETES_TAG_BRANCH} || true
 }
 
+k8s_16_cherry_pick() {
+	# 232fa6e5bc (HEAD -> release-1.6, origin/release-1.6) Fix the delay caused by network setup in POD Infra container
+	# 02b1c2b9e2 Use dns policy to determine setting DNS servers on the correct NIC in Windows container
+	# 4c2a2d79aa Fix getting host DNS for Windows node when dnsPolicy is Default
+	# caa314ccdc Update docker version parsing to allow nonsemantic versions as they have changed how they do their versions
+	# f18be40948 Fix the issue in unqualified name where DNS client such as ping or iwr validate name in response and original question. Switch to use miekg's DNS library
+	# c862b583c9 Remove DNS server from NAT network adapter inside container
+	# f6c27f9375 Merged libCNI-on-Windows changes from CNI release 0.5.0, PRs 359 and 361
+	# 4f196c6cac Fix the issue that ping uses the incorrect NIC to resolve name sometimes
+	# 2c9fd27449 Workaround for Outbound Internet traffic in Azure Kubernetes
+	# 5fa0725025 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
+
+	git cherry-pick 5fa0725025..232fa6e5bc
+}
+
+k8s_17_cherry_pick() {
+	# 45ba7bb0fb Implement metrics for Windows Containers
+	# 76b94898ec Use dns policy to determine setting DNS servers on the correct NIC in Windows container
+	# 74a2f37447 Fix network config due to the split of start POD sandbox and start container from 1.7.0
+	# 5fc0a5e4a2 Workaround for Outbound Internet traffic in Azure Kubernetes (*) Connect a Nat Network to the container (Second adapter) (*) Modify the route so that internet traffic goes via Nat network, and POD traffic goes over the CONTAINER_NETWORK (*) Modify getContainerIP to return the IP corresponding to POD network, and ignore Nat Network (*) DNS Fix for ACS Kubernetes in Windows
+	# adeb88d774 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
+
+	git cherry-pick adeb88d774..45ba7bb0fb
+}
+
+apply_acs_cherry_picks() {
+	if [ "${KUBERNETES_RELEASE}" == "1.6" ]; then
+		k8s_16_cherry_pick
+	elif [ "${KUBERNETES_RELEASE}" == "1.7" ]; then
+		k8s_17_cherry_pick
+	else
+		echo "Unable to apply cherry picks for ${KUBERNETES_RELEASE}."
+		exit 1
+	fi
+}
+
 create_dist_dir() {
 	mkdir -p ${DIST_DIR}
 }
@@ -100,18 +136,19 @@ copy_dockerfile_and_pause_ps1() {
 
 create_zip() {
 	cd ${DIST_DIR}/..
-	zip -r ../v${version}intwinnat.zip k/*
+	zip -r ../v${ACS_VERSION}intwinnat.zip k/*
 	cd -
 }
 
 upload_zip_to_blob_storage() {
-	az storage blob upload -f ${DIST_DIR}/../../v${version}intwinnat.zip -c ${AZURE_STORAGE_CONTAINER_NAME} -n v${version}intwinnat.zip
+	az storage blob upload -f ${DIST_DIR}/../../v${ACS_VERSION}intwinnat.zip -c ${AZURE_STORAGE_CONTAINER_NAME} -n v${ACS_VERSION}intwinnat.zip
 }
 
 create_dist_dir
 fetch_k8s
 set_git_config
 create_version_branch
+apply_acs_cherry_picks
 
 # Due to what appears to be a bug in the Kubernetes Windows build system, one
 # has to first build a linux binary to generate _output/bin/deepcopy-gen.
