@@ -170,6 +170,14 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
+			DnsServiceIP: "172.99.0.1",
+			ServiceCidr:  "172.99.0.1/16",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP is first IP of ServiceCidr")
+		}
+
+		c = KubernetesConfig{
 			DnsServiceIP: "172.99.255.10",
 			ServiceCidr:  "172.99.0.1/16",
 		}
