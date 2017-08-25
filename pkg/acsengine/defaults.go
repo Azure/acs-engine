@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Masterminds/semver"
 )
 
@@ -104,8 +105,14 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.MaxPods = DefaultKubernetesMaxPods
 			}
 		}
+		if a.OrchestratorProfile.KubernetesConfig.DnsServiceIP == "" {
+			a.OrchestratorProfile.KubernetesConfig.DnsServiceIP = DefaultKubernetesDnsServiceIP
+		}
 		if a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet == "" {
 			a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
+		}
+		if a.OrchestratorProfile.KubernetesConfig.ServiceCIDR == "" {
+			a.OrchestratorProfile.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		}
 		if a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency == "" {
 			a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sRelease]["nodestatusfreq"]
@@ -283,6 +290,12 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		a.CertificateProfile.CaCertificate = caPair.CertificatePem
 		a.CertificateProfile.CaPrivateKey = caPair.PrivateKeyPem
 	}
+
+	cidrFirstIp, err := common.CidrStringFirstIp(a.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
+	if err != nil {
+		return false, err
+	}
+	ips = append(ips, cidrFirstIp)
 
 	apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
 	if err != nil {
