@@ -69,9 +69,9 @@
       },
       "type": "string"
     },
-    "kubernetesNonMasqueradeCIDR": {
+    "kubernetesNonMasqueradeCidr": {
       "metadata": {
-        "description": "kubernetesNonMasqueradeCIDR cluster subnet"
+        "description": "kubernetesNonMasqueradeCidr cluster subnet"
       },
       "type": "string"
     },

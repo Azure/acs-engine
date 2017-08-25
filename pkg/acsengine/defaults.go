@@ -106,8 +106,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 		}
 
-		if a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCIDR == "" {
-			a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCIDR = DefaultNonMasqueradeCIDR
+		if a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr == "" {
+			a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr = DefaultNonMasqueradeCidr
 		}
 		if a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency == "" {
 			a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sRelease]["nodestatusfreq"]
