@@ -408,10 +408,10 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 		}
 	}
 
-	if a.NonMasqueradeCIDR != "" {
-		_, _, err := net.ParseCIDR(a.NonMasqueradeCIDR)
+	if a.NonMasqueradeCidr != "" {
+		_, _, err := net.ParseCIDR(a.NonMasqueradeCidr)
 		if err != nil {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NonMasqueradeCIDR '%s' is an invalid subnet", a.NonMasqueradeCIDR)
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr '%s' is an invalid subnet", a.NonMasqueradeCidr)
 		}
 
 	}

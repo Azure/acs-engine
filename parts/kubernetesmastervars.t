@@ -37,7 +37,7 @@
     "cniPluginsURL":"[parameters('cniPluginsURL')]",
     "vnetCniLinuxPluginsURL":"[parameters('vnetCniLinuxPluginsURL')]",
     "vnetCniWindowsPluginsURL":"[parameters('vnetCniWindowsPluginsURL')]",
-    "kubernetesNonMasqueradeCIDR": "[parameters('kubernetesNonMasqueradeCIDR')]",
+    "kubernetesNonMasqueradeCidr": "[parameters('kubernetesNonMasqueradeCidr')]",
     "maxPods": "[parameters('maxPods')]",
     "vnetCidr": "[parameters('vnetCidr')]",
     "calicoConfigURL":"[parameters('calicoConfigURL')]",
