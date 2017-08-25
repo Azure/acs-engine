@@ -330,7 +330,7 @@ type VlabsUpgradeContainerService struct {
 // is different from the json that the ACS RP Api gets from ARM
 type V20170831ARMManagedContainerService struct {
 	TypeMeta
-	*v20170831.HostedMaster
+	*v20170831.ManagedCluster
 }
 
 // UpgradeContainerService API model

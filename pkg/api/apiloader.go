@@ -147,25 +147,25 @@ func (a *Apiloader) LoadContainerService(
 func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte, version string, validate bool) (*ContainerService, error) {
 	switch version {
 	case v20170831.APIVersion:
-		hostedMaster := &v20170831.HostedMaster{}
-		if e := json.Unmarshal(contents, &hostedMaster); e != nil {
+		managedCluster := &v20170831.ManagedCluster{}
+		if e := json.Unmarshal(contents, &managedCluster); e != nil {
 			return nil, e
 		}
-		setHostedMasterDefaultsv20170831(hostedMaster)
-		if e := hostedMaster.Properties.Validate(); validate && e != nil {
+		setManagedClusterDefaultsv20170831(managedCluster)
+		if e := managedCluster.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
-		return ConvertV20170831AgentPoolOnly(hostedMaster), nil
+		return ConvertV20170831AgentPoolOnly(managedCluster), nil
 	case apvlabs.APIVersion:
-		hostedMaster := &apvlabs.HostedMaster{}
-		if e := json.Unmarshal(contents, &hostedMaster); e != nil {
+		managedCluster := &apvlabs.ManagedCluster{}
+		if e := json.Unmarshal(contents, &managedCluster); e != nil {
 			return nil, e
 		}
-		setHostedMasterDefaultsvlabs(hostedMaster)
-		if e := hostedMaster.Properties.Validate(); validate && e != nil {
+		setManagedClusterDefaultsvlabs(managedCluster)
+		if e := managedCluster.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
-		return ConvertVLabsAgentPoolOnly(hostedMaster), nil
+		return ConvertVLabsAgentPoolOnly(managedCluster), nil
 	default:
 		return nil, a.Translator.Errorf("unrecognized APIVersion in LoadContainerServiceForAgentPoolOnlyCluster '%s'", version)
 	}
@@ -246,7 +246,7 @@ func (a *Apiloader) serializeHostedContainerService(containerService *ContainerS
 	case v20170831.APIVersion:
 		v20170831ContainerService := ConvertContainerServiceToV20170831AgentPoolOnly(containerService)
 		armContainerService := &V20170831ARMManagedContainerService{}
-		armContainerService.HostedMaster = v20170831ContainerService
+		armContainerService.ManagedCluster = v20170831ContainerService
 		armContainerService.APIVersion = version
 		b, err := json.MarshalIndent(armContainerService, "", "  ")
 		if err != nil {
@@ -300,11 +300,11 @@ func setContainerServiceDefaultsvlabs(c *vlabs.ContainerService) {
 }
 
 // Sets default HostedMaster property values for any appropriate zero values
-func setHostedMasterDefaultsv20170831(hm *v20170831.HostedMaster) {
+func setManagedClusterDefaultsv20170831(hm *v20170831.ManagedCluster) {
 	hm.Properties.KubernetesVersion = ""
 }
 
 // Sets default HostedMaster property values for any appropriate zero values
-func setHostedMasterDefaultsvlabs(hm *apvlabs.HostedMaster) {
+func setManagedClusterDefaultsvlabs(hm *apvlabs.ManagedCluster) {
 	hm.Properties.KubernetesVersion = ""
 }

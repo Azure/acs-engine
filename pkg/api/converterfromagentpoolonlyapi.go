@@ -11,8 +11,8 @@ import "github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 ///////////////////////////////////////////////////////////
 
 // ConvertContainerServiceToV20170831 converts an unversioned ContainerService to a v20170831 ContainerService
-func ConvertContainerServiceToV20170831AgentPoolOnly(api *ContainerService) *v20170831.HostedMaster {
-	v20170831HCP := &v20170831.HostedMaster{}
+func ConvertContainerServiceToV20170831AgentPoolOnly(api *ContainerService) *v20170831.ManagedCluster {
+	v20170831HCP := &v20170831.ManagedCluster{}
 	v20170831HCP.ID = api.ID
 	v20170831HCP.Location = api.Location
 	v20170831HCP.Name = api.Name
