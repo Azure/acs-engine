@@ -3,18 +3,22 @@
 ####################################################
 
 if [ -z "$SERVICE_PRINCIPAL_CLIENT_ID" ]; then
+    echo "must provide a SERVICE_PRINCIPAL_CLIENT_ID env var"
     exit 1;
 fi
 
 if [ -z "$SERVICE_PRINCIPAL_CLIENT_SECRET" ]; then
+    echo "must provide a SERVICE_PRINCIPAL_CLIENT_SECRET env var"
     exit 1;
 fi
 
 if [ -z "$TENANT_ID" ]; then
+    echo "must provide a TENANT_ID env var"
     exit 1;
 fi
 
 if [ -z "$SUBSCRIPTION_ID_TO_CLEANUP" ]; then
+    echo "must provide a SUBSCRIPTION_ID_TO_CLEANUP env var"
     exit 1;
 fi
 
@@ -37,6 +41,7 @@ az account set -s $SUBSCRIPTION_ID_TO_CLEANUP
 # deadline = the "date +%s" representation of the oldest age we're willing to keep
 (( deadline=$(date +%s)-${expirationInSecs%.*} ))
 # find resource groups created before our deadline
+echo "Looking for resource groups created over ${EXPIRATION_IN_HOURS} hours ago..."
 for resourceGroup in `az group list | jq -r ".[] | select((.tags.now|tonumber < $deadline)).name"`; do
     echo "Will delete resource group ${resourceGroup}..."
     # delete old resource groups
