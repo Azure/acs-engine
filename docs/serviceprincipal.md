@@ -25,7 +25,7 @@ There are several ways to create a Service Principal in Azure Active Directory:
    az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
    ```
 
-   This will output your `appId`, `password`, `name`, and `tenant`.  The `name` or `appId` may be used for the `servicePrincipalProfile.servicePrincipalClientId` and the `password` is used for `servicePrincipalProfile.servicePrincipalClientSecret`.
+   This will output your `appId`, `password`, `name`, and `tenant`.  The `name` or `appId` may be used for the `servicePrincipalProfile.clientId` and the `password` is used for `servicePrincipalProfile.secret`.
 
    Confirm your service principal by opening a new shell and run the following commands substituting in `name`, `password`, and `tenant`:
 
@@ -47,7 +47,7 @@ There are several ways to create a Service Principal in Azure Active Directory:
    PS> New-AzureRmRoleAssignment -RoleDefinitionName Contributor -ServicePrincipalName $app.ApplicationId
    ```
 
-   The first command outputs your `tenantId`, used below. The `$app.ApplicationId` is used for the `servicePrincipalProfile.servicePrincipalClientId` and the `$passwd` is used for `servicePrincipalProfile.servicePrincipalClientSecret`.
+   The first command outputs your `tenantId`, used below. The `$app.ApplicationId` is used for the `servicePrincipalProfile.clientId` and the `$passwd` is used for `servicePrincipalProfile.secret`.
 
    Confirm your service principal by opening a new PowerShell session and running the following commands. Enter `$app.ApplicationId` for username.
 

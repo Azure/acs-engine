@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/test/acs-engine-test/config"
 	"github.com/Azure/acs-engine/test/acs-engine-test/metrics"
 	"github.com/Azure/acs-engine/test/acs-engine-test/report"
@@ -45,12 +46,13 @@ const (
 )
 
 const usage = `Usage:
-  acs-engine-test -c <configuration.json> -d <acs-engine root directory>
+  acs-engine-test <options>
 
   Options:
     -c <configuration.json> : JSON file containing a list of deployment configurations.
 		Refer to acs-engine/test/acs-engine-test/acs-engine-test.json for examples
 	-d <acs-engine root directory>
+	-e <log-errors configuration file>
 `
 
 var logDir string
@@ -75,10 +77,12 @@ type TestManager struct {
 	lock    sync.Mutex
 	wg      sync.WaitGroup
 	rootDir string
+	regions []string
 }
 
 // Run begins the test run process
 func (m *TestManager) Run() error {
+	fmt.Printf("Randomizing regional tests against the following regions: %s\n", m.regions)
 	n := len(m.config.Deployments)
 	if n == 0 {
 		return nil
@@ -149,6 +153,11 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	if rgPrefix == "" {
 		rgPrefix = "y"
 		fmt.Printf("RESOURCE_GROUP_PREFIX is not set. Using default '%s'\n", rgPrefix)
+	}
+	// Randomize region if no location was configured
+	if d.Location == "" {
+		randomIndex := rand.Intn(len(m.regions))
+		d.Location = m.regions[randomIndex]
 	}
 	testName := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
 	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
@@ -224,15 +233,15 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 			validateLogFile = fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
 			env = append(env, fmt.Sprintf("LOGFILE=%s", validateLogFile))
 
-			cmd := exec.Command("test/step.sh", "get_orchestrator_version")
+			cmd := exec.Command("test/step.sh", "get_orchestrator_release")
 			cmd.Env = env
 			out, err := cmd.Output()
 			if err != nil {
-				wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_version", resourceGroup, err)
-				errorInfo = report.NewErrorInfo(testName, "OrchestratorVersionParsingError", "PreRun", d.Location)
+				wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_release", resourceGroup, err)
+				errorInfo = report.NewErrorInfo(testName, "OrchestratorReleaseParsingError", "PreRun", d.Location)
 				break
 			}
-			env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_VERSION=%s", strings.TrimSpace(string(out))))
+			env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_RELEASE=%s", strings.TrimSpace(string(out))))
 
 			cmd = exec.Command("test/step.sh", "get_node_count")
 			cmd.Env = env
@@ -400,11 +409,11 @@ func sendDurationMetrics(step, location string, duration time.Duration, errorNam
 func mainInternal() error {
 	var configFile string
 	var rootDir string
-	var errorFile string
+	var logErrorFile string
 	var err error
 	flag.StringVar(&configFile, "c", "", "deployment configurations")
 	flag.StringVar(&rootDir, "d", "", "acs-engine root directory")
-	flag.StringVar(&errorFile, "e", "", "acs-engine root directory")
+	flag.StringVar(&logErrorFile, "e", "", "logError config file")
 	flag.Usage = func() {
 		fmt.Println(usage)
 	}
@@ -435,7 +444,7 @@ func mainInternal() error {
 		enableMetrics = true
 	}
 	// initialize report manager
-	testManager.Manager = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments), errorFile)
+	testManager.Manager = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments), logErrorFile)
 	// check root directory
 	if rootDir == "" {
 		return fmt.Errorf("acs-engine root directory is not provided")
@@ -450,6 +459,25 @@ func mainInternal() error {
 	if err = os.Mkdir(logDir, os.FileMode(0755)); err != nil {
 		return err
 	}
+	// set regions
+	regions := []string{}
+	for _, region := range acsengine.AzureLocations {
+		switch region {
+		case "australiaeast": // no D2V2 support
+		case "japanwest": // no D2V2 support
+		case "chinaeast": // private cloud
+		case "chinanorth": // private cloud
+		case "koreacentral": // TODO make sure our versions of azure-cli support this cloud
+		case "westcentralus": // TODO re-enable when this region's reliability has been upgraded
+		case "centraluseuap": // TODO determine why this region is flaky
+		case "brazilsouth": // canary region
+		default:
+			regions = append(regions, region)
+		}
+	}
+	testManager.regions = regions
+	// seed random number generator
+	rand.Seed(time.Now().Unix())
 	// run tests
 	return testManager.Run()
 }

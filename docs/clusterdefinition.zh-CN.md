@@ -20,7 +20,7 @@
 
 可选的编排引擎如下所示：
 
-1. `DCOS` - 指定编排引擎为 [DC/OS编排引擎](dcos.md).  [可以指定DCOS的旧版本，比如DCOS173，DCOS184等。](../examples/dcos-versions)
+1. `DCOS` - 指定编排引擎为 [DC/OS编排引擎](dcos.md).  [可以指定DCOS的旧版本，比如DCOS173，DCOS184等。](../examples/dcos-releases)
 2. `Kubernetes` - 指定编排引擎为 [Kubernetes编排引擎](kubernetes.md)。
 3. `Swarm` - 指定编排引擎为 [Swarm编排引擎](swarm.md)。
 4. `Swarm Mode` - 指定编排引擎为 [Swarm Mode编排引擎](swarmmode.md)。
@@ -85,8 +85,8 @@
 
 |名称|是否必须|说明|
 |---|---|---|
-|servicePrincipalClientID|当指定编排引擎为kubernetes时需要。|指定了Azure client id. 这里建议针对不同的集群使用不同的client ID|
-|servicePrincipalClientSecret|当指定编排引擎为kubernetes时需要。|指定了Azure client secret.  这里建议针对不同的集群使用不同的client secret。|
+|clientId|当指定编排引擎为kubernetes时需要。|指定了Azure client id. 这里建议针对不同的集群使用不同的client ID|
+|secret|当指定编排引擎为kubernetes时需要。|指定了Azure client secret.  这里建议针对不同的集群使用不同的client secret。|
 
 ## "2016-03-30"版本apiVersion的集群定义文件
 

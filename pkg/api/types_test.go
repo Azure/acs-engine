@@ -21,7 +21,7 @@ const exampleAPIModel = `{
 		"windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
 		"linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
 		},
-		"servicePrincipalProfile": { "servicePrincipalClientID": "", "servicePrincipalClientSecret": "" }
+		"servicePrincipalProfile": { "clientId": "", "secret": "" }
 	}
 }
 `
@@ -48,7 +48,7 @@ func TestCustomHyperkubeImageField(t *testing.T) {
 	apiloader := &Apiloader{
 		Translator: nil,
 	}
-	apimodel, _, err := apiloader.DeserializeContainerService([]byte(exampleAPIModel), false)
+	apimodel, _, err := apiloader.DeserializeContainerService([]byte(exampleAPIModel), false, nil)
 	if err != nil {
 		t.Fatalf("unexpectedly error deserializing the example apimodel: %s", err)
 	}

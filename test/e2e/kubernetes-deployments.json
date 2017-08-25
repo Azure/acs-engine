@@ -2,7 +2,7 @@
 	"deployments": [
 		{
 			"cluster_definition": "windows/kubernetes-hybrid.json",
-			"location": "eastus"
+			"location": "southcentralus"
 		},
 		{
 			"cluster_definition": "windows/kubernetes.json",
@@ -10,35 +10,31 @@
 		},
 		{
 			"cluster_definition": "disks-managed/kubernetes-preAttachedDisks-vmas.json",
-			"location": "eastus"
+			"location": "westus2"
 		},
 		{
 			"cluster_definition": "disks-managed/kubernetes-vmas.json",
-			"location": "eastus"
+			"location": "southcentralus"
 		},
 		{
 			"cluster_definition": "disks-storageaccount/kubernetes.json",
-			"location": "westcentralus"
+			"location": "westus2"
 		},
 		{
 			"cluster_definition": "kubernetes-releases/kubernetes1.5.json",
-			"location": "southcentralus"
+			"location": "eastus"
 		},
 		{
 			"cluster_definition": "networkpolicy/kubernetes-calico.json",
 			"location": "southcentralus"
 		},
 		{
-			"cluster_definition": "custom-pod-cidr/kubernetes.json",
-			"location": "southcentralus"
+			"cluster_definition": "kubernetes-config/kubernetes-clustersubnet.json",
+			"location": "eastus"
 		},
 		{
 			"cluster_definition": "vnet/kubernetesvnet.json",
-			"location": "southcentralus"
-		},
-		{
-			"cluster_definition": "managed-identity/kubernetes-msi.json",
-			"location": "southcentralus"
+			"location": "westus2"
 		}
 	]
 }

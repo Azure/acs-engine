@@ -1,23 +1,14 @@
-MUTABLE_VERSION := canary
-
 GIT_COMMIT = $(shell git rev-parse HEAD)
 GIT_SHA    = $(shell git rev-parse --short HEAD)
-GIT_TAG    = $(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null)
+GIT_TAG    = $(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null || echo "canary")
 GIT_DIRTY  = $(shell test -n "`git status --porcelain`" && echo "dirty" || echo "clean")
-BUILD			 = $(shell date +%FT%T%z)
 
-ifdef VERSION
-	DOCKER_VERSION = $(VERSION)
-	BINARY_VERSION = $(VERSION)
-endif
-
+LDFLAGS += -X github.com/Azure/acs-engine/cmd.BuildSHA=${GIT_SHA}
+LDFLAGS += -X github.com/Azure/acs-engine/cmd.GitTreeState=${GIT_DIRTY}
 DOCKER_VERSION ?= git-${GIT_SHA}
-BINARY_VERSION ?= ${GIT_TAG}
 
-# Only set Version if building a tag or VERSION is set
-ifneq ($(BINARY_VERSION),)
-	LDFLAGS += -X github.com/Azure/acs-engine/cmd.BuildSHA=${VERSION}
-	LDFLAGS += -X github.com/Azure/acs-engine/cmd.BuildTime=${BUILD}
+ifneq ($(GIT_TAG),)
+	LDFLAGS += -X github.com/Azure/acs-engine/cmd.BuildTag=${GIT_TAG}
 endif
 
 info:

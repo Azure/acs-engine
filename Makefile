@@ -5,32 +5,43 @@ DIST_DIRS         = find * -type d -exec
 
 .PHONY: bootstrap build test test_fmt validate-generated fmt lint ci devenv
 
+ifdef DEBUG
+GOFLAGS   := -gcflags="-N -l"
+else
+GOFLAGS   := 
+endif
+
 # go option
 GO        ?= go
-PKG       := $(shell glide novendor)
 TAGS      :=
-LDFLAGS   :=
-GOFLAGS   :=
+LDFLAGS   := 
 BINDIR    := $(CURDIR)/bin
 BINARIES  := acs-engine
-VERSION   := $(shell git rev-parse HEAD)
+VERSION   ?= $(shell git rev-parse HEAD)
 
-# this isn't particularly pleasant, but it works with the least amount
-# of requirements around $GOPATH. The extra sed is needed because `gofmt`
-# operates on paths, go list returns package names, and `go fmt` always rewrites
-# which is not what we need to do in the `test_fmt` target.
-GOFILES=`go list ./... | grep -v "github.com/Azure/acs-engine/vendor" | sed 's|github.com/Azure/acs-engine|.|g' | grep -v -w '^.$$'`
+REPO_PATH := github.com/Azure/acs-engine
+DEV_ENV_IMAGE := quay.io/deis/go-dev:v1.2.0
+DEV_ENV_WORK_DIR := /go/src/${REPO_PATH}
+DEV_ENV_OPTS := --rm -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR} ${DEV_ENV_VARS}
+DEV_ENV_CMD := docker run ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
+DEV_ENV_CMD_IT := docker run -it ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
+DEV_CMD_RUN := docker run ${DEV_ENV_OPTS}
+LDFLAGS := -s -X main.version=${VERSION}
+BINARY_DEST_DIR ?= bin
 
 all: build
 
 .PHONY: generate
-generate:
-	go generate -v $(GOFILES)
+generate: bootstrap
+	go generate -v `glide novendor | xargs go list`
 
 .PHONY: build
 build: generate
 	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -ldflags '$(LDFLAGS)'
 	cd test/acs-engine-test; go build
+
+build-binary: generate
+	go build -v -ldflags "${LDFLAGS}" -o ${BINARY_DEST_DIR}/acs-engine .
 
 # usage: make clean build-cross dist VERSION=v0.4.0
 .PHONY: build-cross
@@ -63,8 +74,8 @@ ifneq ($(GIT_BASEDIR),)
 	LDFLAGS += -X github.com/Azure/acs-engine/pkg/test.JUnitOutDir=${GIT_BASEDIR}/test/junit
 endif
 
-test:
-	ginkgo -r -ldflags='$(LDFLAGS)' .
+test: generate
+	ginkgo -skipPackage test/e2e -r .
 
 .PHONY: test-style
 test-style:
@@ -99,20 +110,22 @@ ifndef HAS_GOMETALINTER
 	go get -u github.com/alecthomas/gometalinter
 	gometalinter --install
 endif
-	glide install
 ifndef HAS_GINKGO
 	go get -u github.com/onsi/ginkgo/ginkgo
 endif
 
+build-vendor:
+	${DEV_ENV_CMD} rm -f glide.lock && rm -Rf vendor/ && glide --debug install --force
 
 ci: bootstrap test-style build test lint
 	./scripts/coverage.sh --coveralls
 
 .PHONY: coverage
 coverage:
-	@scripts/coverage.sh
+	@scripts/ginkgo.coverage.sh
 
 devenv:
 	./scripts/devenv.sh
 
 include versioning.mk
+include test.mk

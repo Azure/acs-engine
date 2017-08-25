@@ -1,6 +1,6 @@
 # Microsoft Azure Container Service Engine
 
-The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DCOS, Kubernetes, or Swarm orchestrators. The input to acs-engine is a cluster definition file which describes the desired cluster, including orchestrator, features, and agents. The structure of the input files is very similar to the public API for Azure Container Service.
+The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DCOS, [Kubernetes](kubernetes/deploy.md), or Swarm orchestrators. The input to acs-engine is a cluster definition file which describes the desired cluster, including orchestrator, features, and agents. The structure of the input files is very similar to the public API for Azure Container Service.
 
 <a href="#install-acs-engine"></a>
 
@@ -21,15 +21,9 @@ If would prefer to build `acs-engine` from source or are you are interested in c
 
 ### Generate Templates
 
-Here is an example of how to generate a new deployment. This example assumes you are using [examples/kubernetes.json](../examples/kubernetes.json).
+ACS Engine consumes a cluster definition which outlines the desired shape, size, and configuration of Kubernetes. There are a number of features that can be enabled through the cluster definition.
 
-1. Before starting ensure you have generated a valid [SSH Public/Private key pair](ssh.md#ssh-key-generation).
-2. edit [examples/kubernetes.json](../examples/kubernetes.json) and fill in the blanks.
-3. run `./bin/acs-engine generate examples/kubernetes.json` to generate the templates in the _output/Kubernetes-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
-4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [Deploy Templates](#deploy-templates).
-
-**Note:** If you wish to customize cluster configuaration after the `generate` step, make sure to modify `apimodel.json` in the `_output` directory. This ensures that any computed settings and generated certificates are maintained. For example, if you want to add a second agent pool, edit `apimodel.json` and then run `acs-engine` against that file to generate and updated ARM template. This ensures that during the deploy steps, existing resources remain untouched and new agent pools are created.
-
+See [ACS Engine The Long Way](kubernetes/deploy.md#acs-engine-the-long-way) for an example on generating templates by hand.
 
 <a href="#deployment-usage"></a>
 
@@ -137,7 +131,7 @@ Setup steps:
 1. Setup your go workspace. This guide assumes you are using `c:\gopath` as your Go workspace:
   1. Type Windows key-R to open the run prompt
   2. Type `rundll32 sysdm.cpl,EditEnvironmentVariables` to open the system variables
-  3. Add `c:\go\bin` to your PATH variables
+  3. Add `c:\go\bin` and `c:\gopath\bin` to your PATH variables
   4. Click "new" and add new environment variable named `GOPATH` and set the value to `c:\gopath`
 
 Build acs-engine:
@@ -159,8 +153,8 @@ Setup steps:
   2. `mkdir $HOME/go`
   3. edit `$HOME/.bash_profile` and add the following lines to setup your go path
   ```
-  export PATH=$PATH:/usr/local/go/bin
   export GOPATH=$HOME/go
+  export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
   ```
   4. `source $HOME/.bash_profile`
 

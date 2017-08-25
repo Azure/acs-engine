@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="acsengine" PsrId="1" SrcCul="en-US" TgtCul="ko-KR" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Settings Name="@SettingsPath@\default.lss" Type="Lss" />
+  <Item ItemId="1" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Error reading file %s, Error: %s]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="2" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Error while querying ARM for resources: %+v]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="3" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Found 2 resources with type %s in the template. There should only be 1]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="4" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Found no resources with type %s in the template. There should have been 1]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="5" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Total count of master VMs: %d exceeded expected count: %d]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="6" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Upgrade to Kubernetes 1.6.2 is not supported from version: %s]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="7" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[Upgrade to Kubernetes version: %s is not supported from version: %s]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="8" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[error creating directory '%s': %s]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="9" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[error executing template for file %s: %v]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="10" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[error generating upgrade template: %s]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="11" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[error parsing file %s: %v]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="12" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[error reading file %s: %s]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="13" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[failed to create openssh public key string: %q]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="14" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[failed to generate private key for ssh: %q]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="15" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[failed to initialize template generator: %s]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="16" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[invalid version %s for conversion back from unversioned object]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="17" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[orchestrator '%s' is unsupported]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="18" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[template file %s does not exist]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="19" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[unrecognized APIVersion '%s']]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+  <Item ItemId="20" ItemType="0" PsrId="1" Leaf="true">
+    <Str Cat="Text">
+      <Val><![CDATA[yaml file %s does not exist]]></Val>
+    </Str>
+    <Disp Icon="Str" />
+  </Item>
+</LCX>

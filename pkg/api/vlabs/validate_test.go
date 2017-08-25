@@ -48,6 +48,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		c = KubernetesConfig{
 			ClusterSubnet:                    "10.120.0.0/16",
 			DockerBridgeSubnet:               "10.120.1.0/16",
+			MaxPods:                          42,
 			NodeStatusUpdateFrequency:        ValidKubernetesNodeStatusUpdateFrequency,
 			CtrlMgrNodeMonitorGracePeriod:    ValidKubernetesCtrlMgrNodeMonitorGracePeriod,
 			CtrlMgrPodEvictionTimeout:        ValidKubernetesCtrlMgrPodEvictionTimeout,
@@ -77,6 +78,13 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 		if err := c.Validate(k8sRelease); err == nil {
 			t.Error("should error on invalid DockerBridgeSubnet")
+		}
+
+		c = KubernetesConfig{
+			MaxPods: KubernetesMinMaxPods - 1,
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error on invalid MaxPods")
 		}
 
 		c = KubernetesConfig{
@@ -113,6 +121,60 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 		if err := c.Validate(k8sRelease); err == nil {
 			t.Error("should error on invalid CtrlMgrRouteReconciliationPeriod")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "192.168.0.10",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP but not ServiceCidr")
+		}
+
+		c = KubernetesConfig{
+			ServiceCidr: "192.168.0.10/24",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when ServiceCidr but not DnsServiceIP")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "invalid",
+			ServiceCidr:  "192.168.0.0/24",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP is invalid")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "192.168.1.10",
+			ServiceCidr:  "192.168.0.0/not-a-len",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when ServiceCidr is invalid")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "192.168.1.10",
+			ServiceCidr:  "192.168.0.0/24",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP is outside of ServiceCidr")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "172.99.255.255",
+			ServiceCidr:  "172.99.0.1/16",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP is broadcast address of ServiceCidr")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "172.99.255.10",
+			ServiceCidr:  "172.99.0.1/16",
+		}
+		if err := c.Validate(k8sRelease); err != nil {
+			t.Error("should not error when DnsServiceIP and ServiceCidr are valid")
 		}
 	}
 
@@ -188,8 +250,11 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	t.Run("ServicePrincipalProfile with KeyvaultSecretRef (with version) should pass", func(t *testing.T) {
 		p := getK8sDefaultProperties()
 		p.ServicePrincipalProfile.Secret = ""
-		p.ServicePrincipalProfile.KeyvaultSecretRef = "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME/secrets/secret-name/version"
-
+		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
+			VaultID:       "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME",
+			SecretName:    "secret-name",
+			SecretVersion: "version",
+		}
 		if err := p.Validate(); err != nil {
 			t.Errorf("should not error %v", err)
 		}
@@ -198,7 +263,10 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	t.Run("ServicePrincipalProfile with KeyvaultSecretRef (without version) should pass", func(t *testing.T) {
 		p := getK8sDefaultProperties()
 		p.ServicePrincipalProfile.Secret = ""
-		p.ServicePrincipalProfile.KeyvaultSecretRef = "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME/secrets/secret-name>"
+		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
+			VaultID:    "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME",
+			SecretName: "secret-name",
+		}
 
 		if err := p.Validate(); err != nil {
 			t.Errorf("should not error %v", err)
@@ -207,7 +275,11 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 
 	t.Run("ServicePrincipalProfile with Secret and KeyvaultSecretRef should NOT pass", func(t *testing.T) {
 		p := getK8sDefaultProperties()
-		p.ServicePrincipalProfile.KeyvaultSecretRef = "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME/secrets/secret-name/version"
+		p.ServicePrincipalProfile.Secret = "secret"
+		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
+			VaultID:    "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME",
+			SecretName: "secret-name",
+		}
 
 		if err := p.Validate(); err == nil {
 			t.Error("error should have occurred")
@@ -217,7 +289,10 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	t.Run("ServicePrincipalProfile with incorrect KeyvaultSecretRef format should NOT pass", func(t *testing.T) {
 		p := getK8sDefaultProperties()
 		p.ServicePrincipalProfile.Secret = ""
-		p.ServicePrincipalProfile.KeyvaultSecretRef = "randomsecret"
+		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
+			VaultID:    "randomID",
+			SecretName: "secret-name",
+		}
 
 		if err := p.Validate(); err == nil || err.Error() != "service principal client keyvault secret reference is of incorrect format" {
 			t.Error("error should have occurred")

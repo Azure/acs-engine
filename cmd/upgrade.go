@@ -13,7 +13,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/operations/kubernetesupgrade"
 	"github.com/leonelquinteros/gotext"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -105,7 +105,7 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 			Locale: uc.locale,
 		},
 	}
-	uc.containerService, uc.apiVersion, err = apiloader.LoadContainerServiceFromFile(apiModelPath, true)
+	uc.containerService, uc.apiVersion, err = apiloader.LoadContainerServiceFromFile(apiModelPath, true, nil)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
