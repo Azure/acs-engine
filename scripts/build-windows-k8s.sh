@@ -34,7 +34,7 @@ if [ -z "${AZURE_STORAGE_CONNECTION_STRING}" ] || [ -z "${AZURE_STORAGE_CONTAINE
 fi
 
 KUBERNETES_RELEASE=$(echo $version | cut -d'.' -f1,2)
-KUBERNETES_RELEASE_BRANCH_NAME=release-${KUBERNETES_RELEASE}
+KUBERNETES_TAG_BRANCH=v${version}
 ACS_VERSION=${version}-${acs_patch_version}
 ACS_BRANCH_NAME=acs-v${ACS_VERSION}
 DIST_DIR=${ACS_ENGINE_HOME}/_dist/k8s-windows-v${ACS_VERSION}/k
@@ -52,7 +52,7 @@ set_git_config() {
 }
 
 create_version_branch() {
-	git checkout -b ${ACS_BRANCH_NAME} ${KUBERNETES_RELEASE_BRANCH_NAME} || true
+	git checkout -b ${ACS_BRANCH_NAME} ${KUBERNETES_TAG_BRANCH} || true
 }
 
 create_dist_dir() {
