@@ -5,10 +5,6 @@
       "location": "eastus"
     },
     {
-      "cluster_definition": "windows/kubernetes.json",
-      "location": "eastus"
-    },
-    {
       "cluster_definition": "dcos-releases/dcos1.8.json",
       "location": "eastus"
     },

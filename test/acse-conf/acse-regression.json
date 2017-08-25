@@ -5,10 +5,6 @@
       "category": "windows"
     },
     {
-      "cluster_definition": "windows/kubernetes.json",
-      "category": "windows"
-    },
-    {
       "cluster_definition": "dcos-releases/dcos1.8.json",
       "category": "version"
     },
