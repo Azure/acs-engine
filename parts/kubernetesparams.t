@@ -1,3 +1,18 @@
+{{if .HasAadProfile}}
+    "aadServerAppId": {
+      "metadata": {
+        "description": "The server AAD application ID"
+      },
+      "type": "string"
+    },
+    "aadTenantId": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The AAD tenant ID to use for authentication. If not specified, will use the tenant of the deployment subscription."
+      },
+      "type": "string"
+    },
+{{end}}
     "apiServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"
@@ -298,4 +313,3 @@
       },
       "type": "int"
     }
-

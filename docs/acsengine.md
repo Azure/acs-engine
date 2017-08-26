@@ -121,6 +121,7 @@ Use "acs-engine [command] --help" for more information about a command.
 
 Building ACS Engine from source has a few requirements for each of the platforms. Download and install the pre-reqs for your platform, Windows, Linux, or Mac:
 
+### Prerequisite
 1. Go version 1.8 [installation instructions](https://golang.org/doc/install)
 2. Git Version Control [installation instructions](https://git-scm.com/download/)
 
@@ -139,11 +140,17 @@ Build acs-engine:
   2. Type `cmd` to open a command prompt
   3. Type `mkdir %GOPATH%` to create your gopath
   4. Type `cd %GOPATH%`
-  5. Type `go get github.com/Azure/acs-engine` to download acs-engine from GitHub
+  5. Type `go get -d github.com/Azure/acs-engine` to download acs-engine from GitHub
   6. Type `go get all` to get the supporting components
-  7. Type `cd %GOPATH%\src\github.com\Azure\acs-engine`
-  8. Type `go build` to build the project
-  9. Run `bin\acs-engine` to see the command line parameters
+  7. Type `go get -u github.com/jteeuwen/go-bindata/...`
+  8. Type `cd %GOPATH%\src\github.com\Azure\acs-engine\pkg\acsengine`
+  9. Type `go generate`
+  10. Type `cd %GOPATH%\src\github.com\Azure\acs-engine\pkg\i18n`
+  11. Type `go generate`
+  12. Type `cd %GOPATH%\src\github.com\Azure\acs-engine`
+  13. Type `go build` to build the project
+  14. Type `go install` to install the project
+  15. Run `acs-engine.exe` to see the command line parameters
 
 ### OS X and Linux
 

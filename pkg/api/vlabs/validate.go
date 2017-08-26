@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/satori/uuid"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -172,6 +173,22 @@ func handleValidationErrors(e validator.ValidationErrors) error {
 }
 
 // Validate implements APIObject
+func (profile *AADProfile) Validate() error {
+	if _, err := uuid.FromString(profile.ClientAppID); err != nil {
+		return fmt.Errorf("clientAppID '%v' is invalid", profile.ClientAppID)
+	}
+	if _, err := uuid.FromString(profile.ServerAppID); err != nil {
+		return fmt.Errorf("serverAppID '%v' is invalid", profile.ServerAppID)
+	}
+	if len(profile.TenantID) > 0 {
+		if _, err := uuid.FromString(profile.TenantID); err != nil {
+			return fmt.Errorf("tenantID '%v' is invalid", profile.TenantID)
+		}
+	}
+	return nil
+}
+
+// Validate implements APIObject
 func (a *Properties) Validate() error {
 	if e := validate.Struct(a); e != nil {
 		return handleValidationErrors(e.(validator.ValidationErrors))
@@ -285,6 +302,16 @@ func (a *Properties) Validate() error {
 	if e := validateVNET(a); e != nil {
 		return e
 	}
+
+	if a.AADProfile != nil {
+		if a.OrchestratorProfile.OrchestratorType != Kubernetes {
+			return fmt.Errorf("'aadProfile' is only supported by orchestrator '%v'", Kubernetes)
+		}
+		if e := a.AADProfile.Validate(); e != nil {
+			return e
+		}
+	}
+
 	return nil
 }
 
