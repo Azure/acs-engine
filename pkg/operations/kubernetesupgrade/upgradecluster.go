@@ -11,9 +11,10 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
-	log "github.com/Sirupsen/logrus"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 // ClusterTopology contains resources of the cluster the upgrade operation
@@ -41,6 +42,7 @@ type AgentPoolTopology struct {
 // (or X.X or X.X.X) to version y (or Y.Y or X.X.X). RIght now
 // upgrades are supported for Kubernetes cluster only.
 type UpgradeCluster struct {
+	Translator *i18n.Translator
 	ClusterTopology
 	Client armhelpers.ACSEngineClient
 
@@ -66,25 +68,38 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	uc.UpgradeModel = ucs
 
 	if err := uc.getClusterNodeStatus(subscriptionID, resourceGroup); err != nil {
-		return fmt.Errorf("Error while querying ARM for resources: %+v", err)
+		return uc.Translator.Errorf("Error while querying ARM for resources: %+v", err)
 	}
 
-	switch ucs.OrchestratorProfile.OrchestratorVersion {
-	case api.Kubernetes162:
-		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes 1.6.2"))
-		upgrader := Kubernetes162upgrader{}
-		upgrader.ClusterTopology = uc.ClusterTopology
-		upgrader.Client = uc.Client
-		if err := upgrader.RunUpgrade(); err != nil {
-			return err
-		}
+	var upgrader UpgradeWorkFlow
+	log.Infoln(fmt.Sprintf("Upgrading to Kubernetes release %s", ucs.OrchestratorProfile.OrchestratorRelease))
+	switch ucs.OrchestratorProfile.OrchestratorRelease {
+	case api.KubernetesRelease1Dot6:
+		upgrader16 := &Kubernetes16upgrader{}
+		upgrader16.Init(uc.Translator, uc.ClusterTopology, uc.UpgradeModel, uc.Client)
+		upgrader = upgrader16
+
+	case api.KubernetesRelease1Dot7:
+		upgrader17 := &Kubernetes17upgrader{}
+		upgrader17.Init(uc.Translator, uc.ClusterTopology, uc.UpgradeModel, uc.Client)
+		upgrader = upgrader17
+
 	default:
-		return fmt.Errorf("Upgrade to Kubernetes version: %s is not supported from version: %s",
-			ucs.OrchestratorProfile.OrchestratorVersion,
-			uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+		return uc.Translator.Errorf("Upgrade to Kubernetes release: %s is not supported from release: %s",
+			ucs.OrchestratorProfile.OrchestratorRelease,
+			uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease)
 	}
 
-	log.Infoln(fmt.Sprintf("Cluster upraded sucessfully to Kubernetes version: %s",
+	if err := upgrader.ClusterPreflightCheck(); err != nil {
+		return err
+	}
+
+	if err := upgrader.RunUpgrade(); err != nil {
+		return err
+	}
+
+	log.Infoln(fmt.Sprintf("Cluster upraded successfully to Kubernetes release %s, version: %s",
+		ucs.OrchestratorProfile.OrchestratorRelease,
 		ucs.OrchestratorProfile.OrchestratorVersion))
 	return nil
 }
@@ -182,7 +197,9 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 }
 
 // WriteTemplate writes upgrade template to a folder
-func WriteTemplate(upgradeContainerService *api.ContainerService,
+func WriteTemplate(
+	translator *i18n.Translator,
+	upgradeContainerService *api.ContainerService,
 	templateMap map[string]interface{}, parametersMap map[string]interface{}) {
 	updatedTemplateJSON, _ := json.Marshal(templateMap)
 	parametersJSON, _ := json.Marshal(parametersMap)
@@ -196,7 +213,10 @@ func WriteTemplate(upgradeContainerService *api.ContainerService,
 		log.Fatalf("error pretty printing template parameters: %s \n", e.Error())
 	}
 	outputDirectory := path.Join("_output", upgradeContainerService.Properties.MasterProfile.DNSPrefix, "Upgrade")
-	if err := acsengine.WriteArtifacts(upgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
+	writer := &acsengine.ArtifactWriter{
+		Translator: translator,
+	}
+	if err := writer.WriteTLSArtifacts(upgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 }

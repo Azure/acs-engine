@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/test/acs-engine-test/config"
 	"github.com/Azure/acs-engine/test/acs-engine-test/metrics"
 	"github.com/Azure/acs-engine/test/acs-engine-test/report"
@@ -24,45 +25,64 @@ import (
 const (
 	script = "test/step.sh"
 
+	stepInitAzure        = "set_azure_account"
+	stepCreateRG         = "create_resource_group"
+	stepPredeploy        = "predeploy"
+	stepGenerateTemplate = "generate_template"
+	stepDeployTemplate   = "deploy_template"
+	stepPostDeploy       = "postdeploy"
+	stepValidate         = "validate"
+	stepCleanup          = "cleanup"
+
 	testReport     = "TestReport.json"
 	combinedReport = "CombinedReport.json"
 
 	metricsEndpoint = ":8125"
 	metricsNS       = "ACSEngine"
-	metricName      = "Error"
+
+	metricError              = "Error"
+	metricDeploymentDuration = "DeploymentDuration"
+	metricValidationDuration = "ValidationDuration"
 )
 
 const usage = `Usage:
-  acs-engine-test -c <configuration.json> -d <acs-engine root directory>
+  acs-engine-test <options>
 
   Options:
     -c <configuration.json> : JSON file containing a list of deployment configurations.
 		Refer to acs-engine/test/acs-engine-test/acs-engine-test.json for examples
 	-d <acs-engine root directory>
+	-e <log-errors configuration file>
 `
 
 var logDir string
 var orchestratorRe *regexp.Regexp
+var enableMetrics bool
 
 func init() {
 	orchestratorRe = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
 }
 
+// ErrorStat represents an error status that will be reported
 type ErrorStat struct {
 	errorInfo    *report.ErrorInfo
 	testCategory string
 	count        int64
 }
 
+// TestManager is object that contains test runner functions
 type TestManager struct {
-	config    *config.TestConfig
-	reportMgr *report.ReportMgr
-	lock      sync.Mutex
-	wg        sync.WaitGroup
-	rootDir   string
+	config  *config.TestConfig
+	Manager *report.Manager
+	lock    sync.Mutex
+	wg      sync.WaitGroup
+	rootDir string
+	regions []string
 }
 
+// Run begins the test run process
 func (m *TestManager) Run() error {
+	fmt.Printf("Randomizing regional tests against the following regions: %s\n", m.regions)
 	n := len(m.config.Deployments)
 	if n == 0 {
 		return nil
@@ -82,7 +102,7 @@ func (m *TestManager) Run() error {
 		retries = 1
 	}
 	// login to Azure
-	if _, err := m.runStep("init", "set_azure_account", os.Environ(), timeout); err != nil {
+	if _, _, err := m.runStep("init", stepInitAzure, os.Environ(), timeout); err != nil {
 		return err
 	}
 
@@ -108,15 +128,15 @@ func (m *TestManager) Run() error {
 					errorStat.count++
 				}
 			}
-			sendMetrics(resMap)
+			sendErrorMetrics(resMap)
 		}(index, dep)
 	}
 	m.wg.Wait()
 	//create reports
-	if err = m.reportMgr.CreateTestReport(fmt.Sprintf("%s/%s", logDir, testReport)); err != nil {
+	if err = m.Manager.CreateTestReport(fmt.Sprintf("%s/%s", logDir, testReport)); err != nil {
 		fmt.Printf("Failed to create %s: %v\n", testReport, err)
 	}
-	if err = m.reportMgr.CreateCombinedReport(fmt.Sprintf("%s/%s", logDir, combinedReport), testReport); err != nil {
+	if err = m.Manager.CreateCombinedReport(fmt.Sprintf("%s/%s", logDir, combinedReport), testReport); err != nil {
 		fmt.Printf("Failed to create %s: %v\n", combinedReport, err)
 	}
 	// fail the test on error
@@ -131,12 +151,17 @@ func (m *TestManager) Run() error {
 func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout time.Duration) *report.ErrorInfo {
 	rgPrefix := os.Getenv("RESOURCE_GROUP_PREFIX")
 	if rgPrefix == "" {
-		rgPrefix = "x"
+		rgPrefix = "y"
 		fmt.Printf("RESOURCE_GROUP_PREFIX is not set. Using default '%s'\n", rgPrefix)
 	}
+	// Randomize region if no location was configured
+	if d.Location == "" {
+		randomIndex := rand.Intn(len(m.regions))
+		d.Location = m.regions[randomIndex]
+	}
 	testName := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
-	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
-	resourceGroup := fmt.Sprintf("%s-%s-%s-%s-%d-%d", rgPrefix, strings.Replace(testName, "/", "-", -1), d.Location, os.Getenv("BUILD_NUMBER"), index, attempt)
+	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
+	resourceGroup := fmt.Sprintf("%s-%s-%s-%s-%d-%d", rgPrefix, strings.Replace(testName, "/", "-", -1), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
 	logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
 	validateLogFile := fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
 
@@ -179,20 +204,21 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	}
 
 	var errorInfo *report.ErrorInfo
-	steps := []string{"create_resource_group", "predeploy", "generate_template", "deploy_template", "postdeploy"}
+	steps := []string{stepCreateRG, stepPredeploy, stepGenerateTemplate, stepDeployTemplate, stepPostDeploy}
 
 	// determine validation script
 	if !d.SkipValidation {
 		validate := fmt.Sprintf("test/cluster-tests/%s/test.sh", orchestrator)
 		if _, err = os.Stat(fmt.Sprintf("%s/%s", m.rootDir, validate)); err == nil {
 			env = append(env, fmt.Sprintf("VALIDATE=%s", validate))
-			steps = append(steps, "validate")
+			steps = append(steps, stepValidate)
 		}
 	}
 	for _, step := range steps {
-		txt, err := m.runStep(resourceGroup, step, env, timeout)
+		txt, duration, err := m.runStep(resourceGroup, step, env, timeout)
 		if err != nil {
-			errorInfo = m.reportMgr.Process(txt, testName, d.Location)
+			errorInfo = m.Manager.Process(txt, testName, d.Location)
+			sendDurationMetrics(step, d.Location, duration, errorInfo.ErrName)
 			wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, resourceGroup, err, txt)
 			// check AUTOCLEAN flag: if set to 'n', don't remove deployment
 			if os.Getenv("AUTOCLEAN") == "n" {
@@ -200,21 +226,22 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 			}
 			break
 		}
+		sendDurationMetrics(step, d.Location, duration, report.ErrSuccess)
 		wrileLog(logFile, txt)
-		if step == "generate_template" {
+		if step == stepGenerateTemplate {
 			// set up extra environment variables available after template generation
 			validateLogFile = fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
 			env = append(env, fmt.Sprintf("LOGFILE=%s", validateLogFile))
 
-			cmd := exec.Command("test/step.sh", "get_orchestrator_version")
+			cmd := exec.Command("test/step.sh", "get_orchestrator_release")
 			cmd.Env = env
 			out, err := cmd.Output()
 			if err != nil {
-				wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_version", resourceGroup, err)
-				errorInfo = report.NewErrorInfo(testName, "OrchestratorVersionParsingError", "PreRun", d.Location)
+				wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_release", resourceGroup, err)
+				errorInfo = report.NewErrorInfo(testName, "OrchestratorReleaseParsingError", "PreRun", d.Location)
 				break
 			}
-			env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_VERSION=%s", strings.TrimSpace(string(out))))
+			env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_RELEASE=%s", strings.TrimSpace(string(out))))
 
 			cmd = exec.Command("test/step.sh", "get_node_count")
 			cmd.Env = env
@@ -236,7 +263,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		}
 	}
 	// clean up
-	if txt, err := m.runStep(resourceGroup, "cleanup", env, timeout); err != nil {
+	if txt, _, err := m.runStep(resourceGroup, stepCleanup, env, timeout); err != nil {
 		wrileLog(logFile, "Error: %v\nOutput: %s", err, txt)
 	}
 	if errorInfo == nil {
@@ -272,14 +299,14 @@ func isValidEnv() bool {
 	return valid
 }
 
-func (m *TestManager) runStep(name, step string, env []string, timeout time.Duration) (string, error) {
+func (m *TestManager) runStep(name, step string, env []string, timeout time.Duration) (string, time.Duration, error) {
 	// prevent ARM throttling
 	m.lock.Lock()
 	go func() {
 		time.Sleep(2 * time.Second)
 		m.lock.Unlock()
 	}()
-
+	start := time.Now()
 	cmd := exec.Command("/bin/bash", "-c", fmt.Sprintf("%s %s", script, step))
 	cmd.Dir = m.rootDir
 	cmd.Env = env
@@ -289,7 +316,7 @@ func (m *TestManager) runStep(name, step string, env []string, timeout time.Dura
 	cmd.Stderr = &out
 
 	if err := cmd.Start(); err != nil {
-		return "", err
+		return "", time.Since(start), err
 	}
 	timer := time.AfterFunc(timeout, func() {
 		cmd.Process.Kill()
@@ -300,10 +327,10 @@ func (m *TestManager) runStep(name, step string, env []string, timeout time.Dura
 	now := time.Now().Format("15:04:05")
 	if err != nil {
 		fmt.Printf("ERROR [%s] [%s %s]\n", now, step, name)
-		return out.String(), err
+		return out.String(), time.Since(start), err
 	}
 	fmt.Printf("SUCCESS [%s] [%s %s]\n", now, step, name)
-	return out.String(), nil
+	return out.String(), time.Since(start), nil
 }
 
 func wrileLog(fname string, format string, args ...interface{}) {
@@ -321,7 +348,10 @@ func wrileLog(fname string, format string, args ...interface{}) {
 	}
 }
 
-func sendMetrics(resMap map[string]*ErrorStat) {
+func sendErrorMetrics(resMap map[string]*ErrorStat) {
+	if !enableMetrics {
+		return
+	}
 	for _, errorStat := range resMap {
 		var severity string
 		if errorStat.count > 1 {
@@ -342,19 +372,48 @@ func sendMetrics(resMap map[string]*ErrorStat) {
 			"Class":        errorStat.errorInfo.ErrClass,
 			"Severity":     severity,
 		}
-		err := metrics.AddMetric(metricsEndpoint, metricsNS, metricName, errorStat.count, dims)
+		err := metrics.AddMetric(metricsEndpoint, metricsNS, metricError, errorStat.count, dims)
 		if err != nil {
 			fmt.Printf("Failed to send metric: %v\n", err)
 		}
 	}
 }
 
+func sendDurationMetrics(step, location string, duration time.Duration, errorName string) {
+	if !enableMetrics {
+		return
+	}
+	var metricName string
+
+	switch step {
+	case stepDeployTemplate:
+		metricName = metricDeploymentDuration
+	case stepValidate:
+		metricName = metricValidationDuration
+	default:
+		return
+	}
+
+	durationSec := int64(duration / time.Second)
+	// add metrics
+	dims := map[string]string{
+		"Location": location,
+		"Error":    errorName,
+	}
+	err := metrics.AddMetric(metricsEndpoint, metricsNS, metricName, durationSec, dims)
+	if err != nil {
+		fmt.Printf("Failed to send metric: %v\n", err)
+	}
+}
+
 func mainInternal() error {
 	var configFile string
 	var rootDir string
+	var logErrorFile string
 	var err error
 	flag.StringVar(&configFile, "c", "", "deployment configurations")
 	flag.StringVar(&rootDir, "d", "", "acs-engine root directory")
+	flag.StringVar(&logErrorFile, "e", "", "logError config file")
 	flag.Usage = func() {
 		fmt.Println(usage)
 	}
@@ -375,13 +434,17 @@ func mainInternal() error {
 		return err
 	}
 	// get Jenkins build number
-	buildNum, err := strconv.Atoi(os.Getenv("BUILD_NUMBER"))
+	buildNum, err := strconv.Atoi(os.Getenv("BUILD_NUM"))
 	if err != nil {
-		fmt.Println("Warning: BUILD_NUMBER is not set or invalid. Assuming 0")
+		fmt.Println("Warning: BUILD_NUM is not set or invalid. Assuming 0")
 		buildNum = 0
 	}
+	// set environment variable ENABLE_METRICS=y to enable sending the metrics (disabled by default)
+	if os.Getenv("ENABLE_METRICS") == "y" {
+		enableMetrics = true
+	}
 	// initialize report manager
-	testManager.reportMgr = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments))
+	testManager.Manager = report.New(os.Getenv("JOB_BASE_NAME"), buildNum, len(testManager.config.Deployments), logErrorFile)
 	// check root directory
 	if rootDir == "" {
 		return fmt.Errorf("acs-engine root directory is not provided")
@@ -396,6 +459,25 @@ func mainInternal() error {
 	if err = os.Mkdir(logDir, os.FileMode(0755)); err != nil {
 		return err
 	}
+	// set regions
+	regions := []string{}
+	for _, region := range acsengine.AzureLocations {
+		switch region {
+		case "australiaeast": // no D2V2 support
+		case "japanwest": // no D2V2 support
+		case "chinaeast": // private cloud
+		case "chinanorth": // private cloud
+		case "koreacentral": // TODO make sure our versions of azure-cli support this cloud
+		case "westcentralus": // TODO re-enable when this region's reliability has been upgraded
+		case "centraluseuap": // TODO determine why this region is flaky
+		case "brazilsouth": // canary region
+		default:
+			regions = append(regions, region)
+		}
+	}
+	testManager.regions = regions
+	// seed random number generator
+	rand.Seed(time.Now().Unix())
 	// run tests
 	return testManager.Run()
 }

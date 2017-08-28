@@ -7,7 +7,9 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
-	log "github.com/Sirupsen/logrus"
+	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/leonelquinteros/gotext"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -29,6 +31,7 @@ type generateCmd struct {
 	// derived
 	containerService *api.ContainerService
 	apiVersion       string
+	locale           *gotext.Locale
 }
 
 func newGenerateCmd() *cobra.Command {
@@ -61,6 +64,11 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 	var caKeyBytes []byte
 	var err error
 
+	gc.locale, err = i18n.LoadTranslations()
+	if err != nil {
+		log.Fatalf("error loading translation files: %s", err.Error())
+	}
+
 	if gc.apimodelPath == "" {
 		if len(args) > 0 {
 			gc.apimodelPath = args[0]
@@ -77,13 +85,22 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("specified api model does not exist (%s)", gc.apimodelPath)
 	}
 
-	gc.containerService, gc.apiVersion, err = api.LoadContainerServiceFromFile(gc.apimodelPath, true)
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: gc.locale,
+		},
+	}
+	gc.containerService, gc.apiVersion, err = apiloader.LoadContainerServiceFromFile(gc.apimodelPath, true, nil)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
 
 	if gc.outputDirectory == "" {
-		gc.outputDirectory = path.Join("_output", gc.containerService.Properties.MasterProfile.DNSPrefix)
+		if gc.containerService.Properties.MasterProfile != nil {
+			gc.outputDirectory = path.Join("_output", gc.containerService.Properties.MasterProfile.DNSPrefix)
+		} else {
+			gc.outputDirectory = path.Join("_output", gc.containerService.Properties.HostedMasterProfile.DNSPrefix)
+		}
 	}
 
 	// consume gc.caCertificatePath and gc.caPrivateKeyPath
@@ -111,12 +128,16 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 func (gc *generateCmd) run() error {
 	log.Infoln("Generating assets...")
 
-	templateGenerator, err := acsengine.InitializeTemplateGenerator(gc.classicMode)
+	ctx := acsengine.Context{
+		Translator: &i18n.Translator{
+			Locale: gc.locale,
+		},
+	}
+	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, gc.classicMode)
 	if err != nil {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}
 
-	certsGenerated := false
 	template, parameters, certsGenerated, err := templateGenerator.GenerateTemplate(gc.containerService)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", gc.apimodelPath, err.Error())
@@ -132,7 +153,12 @@ func (gc *generateCmd) run() error {
 		}
 	}
 
-	if err = acsengine.WriteArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
+	writer := &acsengine.ArtifactWriter{
+		Translator: &i18n.Translator{
+			Locale: gc.locale,
+		},
+	}
+	if err = writer.WriteTLSArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 

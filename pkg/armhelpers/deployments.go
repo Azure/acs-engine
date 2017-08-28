@@ -3,7 +3,7 @@ package armhelpers
 import (
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // DeployTemplate implements the TemplateDeployer interface for the AzureClient client

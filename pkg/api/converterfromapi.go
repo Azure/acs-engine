@@ -406,6 +406,10 @@ func convertPropertiesToVLabs(api *Properties, vlabsProps *vlabs.Properties) {
 		vlabsProps.CertificateProfile = &vlabs.CertificateProfile{}
 		convertCertificateProfileToVLabs(api.CertificateProfile, vlabsProps.CertificateProfile)
 	}
+	if api.AADProfile != nil {
+		vlabsProps.AADProfile = &vlabs.AADProfile{}
+		convertAADProfileToVLabs(api.AADProfile, vlabsProps.AADProfile)
+	}
 }
 
 func convertLinuxProfileToV20160930(api *LinuxProfile, obj *v20160930.LinuxProfile) {
@@ -495,26 +499,26 @@ func convertWindowsProfileToVLabs(api *WindowsProfile, vlabsProfile *vlabs.Windo
 }
 
 func convertOrchestratorProfileToV20160930(api *OrchestratorProfile, o *v20160930.OrchestratorProfile) {
-	if strings.HasPrefix(string(api.OrchestratorType), string(v20160930.DCOS)) {
-		o.OrchestratorType = v20160930.OrchestratorType(v20160930.DCOS)
+	if strings.HasPrefix(api.OrchestratorType, v20160930.DCOS) {
+		o.OrchestratorType = v20160930.DCOS
 	} else {
-		o.OrchestratorType = v20160930.OrchestratorType(api.OrchestratorType)
+		o.OrchestratorType = api.OrchestratorType
 	}
 }
 
 func convertOrchestratorProfileToV20160330(api *OrchestratorProfile, o *v20160330.OrchestratorProfile) {
-	if strings.HasPrefix(string(api.OrchestratorType), string(v20160330.DCOS)) {
-		o.OrchestratorType = v20160330.OrchestratorType(v20160930.DCOS)
+	if strings.HasPrefix(api.OrchestratorType, v20160330.DCOS) {
+		o.OrchestratorType = v20160330.DCOS
 	} else {
-		o.OrchestratorType = v20160330.OrchestratorType(api.OrchestratorType)
+		o.OrchestratorType = api.OrchestratorType
 	}
 }
 
 func convertOrchestratorProfileToV20170131(api *OrchestratorProfile, o *v20170131.OrchestratorProfile) {
-	if strings.HasPrefix(string(api.OrchestratorType), string(v20170131.DCOS)) {
-		o.OrchestratorType = v20170131.OrchestratorType(v20170131.DCOS)
+	if strings.HasPrefix(api.OrchestratorType, v20170131.DCOS) {
+		o.OrchestratorType = v20170131.DCOS
 	} else {
-		o.OrchestratorType = v20170131.OrchestratorType(api.OrchestratorType)
+		o.OrchestratorType = api.OrchestratorType
 	}
 }
 
@@ -522,19 +526,27 @@ func convertOrchestratorProfileToV20170701(api *OrchestratorProfile, o *v2017070
 	if api.OrchestratorType == SwarmMode {
 		o.OrchestratorType = v20170701.DockerCE
 	} else {
-		o.OrchestratorType = v20170701.OrchestratorType(api.OrchestratorType)
+		o.OrchestratorType = api.OrchestratorType
+	}
+
+	if api.OrchestratorRelease != "" {
+		o.OrchestratorRelease = api.OrchestratorRelease
 	}
 
 	if api.OrchestratorVersion != "" {
-		o.OrchestratorVersion = v20170701.OrchestratorVersion(api.OrchestratorVersion)
+		o.OrchestratorVersion = api.OrchestratorVersion
 	}
 }
 
 func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.OrchestratorProfile) {
-	o.OrchestratorType = vlabs.OrchestratorType(api.OrchestratorType)
+	o.OrchestratorType = api.OrchestratorType
+
+	if api.OrchestratorRelease != "" {
+		o.OrchestratorRelease = api.OrchestratorRelease
+	}
 
 	if api.OrchestratorVersion != "" {
-		o.OrchestratorVersion = vlabs.OrchestratorVersion(api.OrchestratorVersion)
+		o.OrchestratorVersion = api.OrchestratorVersion
 	}
 
 	if api.KubernetesConfig != nil {
@@ -546,7 +558,10 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {
 	vlabs.KubernetesImageBase = api.KubernetesImageBase
 	vlabs.ClusterSubnet = api.ClusterSubnet
+	vlabs.DnsServiceIP = api.DnsServiceIP
+	vlabs.ServiceCidr = api.ServiceCIDR
 	vlabs.NetworkPolicy = api.NetworkPolicy
+	vlabs.MaxPods = api.MaxPods
 	vlabs.DockerBridgeSubnet = api.DockerBridgeSubnet
 	vlabs.NodeStatusUpdateFrequency = api.NodeStatusUpdateFrequency
 	vlabs.CtrlMgrNodeMonitorGracePeriod = api.CtrlMgrNodeMonitorGracePeriod
@@ -563,6 +578,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.UseManagedIdentity = api.UseManagedIdentity
 	vlabs.CustomHyperkubeImage = api.CustomHyperkubeImage
 	vlabs.UseInstanceMetadata = api.UseInstanceMetadata
+	vlabs.EnableRbac = api.EnableRbac
 }
 
 func convertMasterProfileToV20160930(api *MasterProfile, v20160930 *v20160930.MasterProfile) {
@@ -605,6 +621,7 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	vlabsProfile.OSDiskSizeGB = api.OSDiskSizeGB
 	vlabsProfile.VnetSubnetID = api.VnetSubnetID
 	vlabsProfile.FirstConsecutiveStaticIP = api.FirstConsecutiveStaticIP
+	vlabsProfile.VnetCidr = api.VnetCidr
 	vlabsProfile.SetSubnet(api.Subnet)
 	vlabsProfile.FQDN = api.FQDN
 	vlabsProfile.StorageProfile = api.StorageProfile
@@ -764,16 +781,28 @@ func convertCustomProfileToV20170701(api *CustomProfile, v20170701 *v20170701.Cu
 	v20170701.Orchestrator = api.Orchestrator
 }
 
-func convertServicePrincipalProfileToV20170701(api *ServicePrincipalProfile, v20170701 *v20170701.ServicePrincipalProfile) {
-	v20170701.ClientID = api.ClientID
-	v20170701.Secret = api.Secret
-	v20170701.KeyvaultSecretRef = api.KeyvaultSecretRef
+func convertServicePrincipalProfileToV20170701(api *ServicePrincipalProfile, v *v20170701.ServicePrincipalProfile) {
+	v.ClientID = api.ClientID
+	v.Secret = api.Secret
+	if api.KeyvaultSecretRef != nil {
+		v.KeyvaultSecretRef = &v20170701.KeyvaultSecretRef{
+			VaultID:       api.KeyvaultSecretRef.VaultID,
+			SecretName:    api.KeyvaultSecretRef.SecretName,
+			SecretVersion: api.KeyvaultSecretRef.SecretVersion,
+		}
+	}
 }
 
-func convertServicePrincipalProfileToVLabs(api *ServicePrincipalProfile, vlabs *vlabs.ServicePrincipalProfile) {
-	vlabs.ClientID = api.ClientID
-	vlabs.Secret = api.Secret
-	vlabs.KeyvaultSecretRef = api.KeyvaultSecretRef
+func convertServicePrincipalProfileToVLabs(api *ServicePrincipalProfile, v *vlabs.ServicePrincipalProfile) {
+	v.ClientID = api.ClientID
+	v.Secret = api.Secret
+	if api.KeyvaultSecretRef != nil {
+		v.KeyvaultSecretRef = &vlabs.KeyvaultSecretRef{
+			VaultID:       api.KeyvaultSecretRef.VaultID,
+			SecretName:    api.KeyvaultSecretRef.SecretName,
+			SecretVersion: api.KeyvaultSecretRef.SecretVersion,
+		}
+	}
 }
 
 func convertCertificateProfileToVLabs(api *CertificateProfile, vlabs *vlabs.CertificateProfile) {
@@ -785,4 +814,10 @@ func convertCertificateProfileToVLabs(api *CertificateProfile, vlabs *vlabs.Cert
 	vlabs.ClientPrivateKey = api.ClientPrivateKey
 	vlabs.KubeConfigCertificate = api.KubeConfigCertificate
 	vlabs.KubeConfigPrivateKey = api.KubeConfigPrivateKey
+}
+
+func convertAADProfileToVLabs(api *AADProfile, vlabs *vlabs.AADProfile) {
+	vlabs.ClientAppID = api.ClientAppID
+	vlabs.ServerAppID = api.ServerAppID
+	vlabs.TenantID = api.TenantID
 }

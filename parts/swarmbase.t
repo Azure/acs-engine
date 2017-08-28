@@ -44,6 +44,7 @@
   ],
   "outputs": {
     {{range .AgentPoolProfiles}}{{template "agentoutputs.t" .}}
-    {{end}}{{template "masteroutputs.t" .}}
+    {{end}}
+    {{template "masteroutputs.t" .}}
   }
 }

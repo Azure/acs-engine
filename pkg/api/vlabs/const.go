@@ -8,13 +8,13 @@ const (
 // the orchestrators supported by vlabs
 const (
 	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS188
-	DCOS OrchestratorType = "DCOS"
+	DCOS string = "DCOS"
 	// Swarm is the string constant for the Swarm orchestrator type
-	Swarm OrchestratorType = "Swarm"
+	Swarm string = "Swarm"
 	// Kubernetes is the string constant for the Kubernetes orchestrator type
-	Kubernetes OrchestratorType = "Kubernetes"
+	Kubernetes string = "Kubernetes"
 	// SwarmMode is the string constant for the Swarm Mode orchestrator type
-	SwarmMode OrchestratorType = "SwarmMode"
+	SwarmMode string = "SwarmMode"
 )
 
 // the OSTypes supported by vlabs
@@ -66,38 +66,8 @@ var (
 	NetworkPolicyValues = [...]string{"", "none", "azure", "calico"}
 )
 
+// Kubernetes configuration
 const (
-	// DCOS190 is the string constant for DCOS 1.9.0
-	DCOS190 OrchestratorVersion = "1.9.0"
-	// DCOS188 is the string constant for DCOS 1.8.8
-	DCOS188 OrchestratorVersion = "1.8.8"
-	// DCOS187 is the string constant for DCOS 1.8.7
-	DCOS187 OrchestratorVersion = "1.8.7"
-	// DCOS184 is the string constant for DCOS 1.8.4
-	DCOS184 OrchestratorVersion = "1.8.4"
-	// DCOS173 is the string constant for DCOS 1.7.3
-	DCOS173 OrchestratorVersion = "1.7.3"
-	// DCOSLatest is the string constant for latest DCOS version
-	DCOSLatest OrchestratorVersion = DCOS190
-)
-
-const (
-	// Kubernetes153 is the string constant for Kubernetes 1.5.3
-	Kubernetes153 OrchestratorVersion = "1.5.3"
-	// Kubernetes157 is the string constant for Kubernetes 1.5.7
-	Kubernetes157 OrchestratorVersion = "1.5.7"
-	// Kubernetes160 is the string constant for Kubernetes 1.6.0
-	Kubernetes160 OrchestratorVersion = "1.6.0"
-	// Kubernetes162 is the string constant for Kubernetes 1.6.2
-	Kubernetes162 OrchestratorVersion = "1.6.2"
-	// Kubernetes166 is the string constant for Kubernetes 1.6.6
-	Kubernetes166 OrchestratorVersion = "1.6.6"
-	// Kubernetes170 is the string constant for Kubernetes 1.7.0
-	Kubernetes170 OrchestratorVersion = "1.7.0"
-	// Kubernetes171 is the string constant for Kubernetes 1.7.1
-	Kubernetes171 OrchestratorVersion = "1.7.1"
-	// KubernetesLatest is the string constant for latest Kubernetes version
-	KubernetesLatest OrchestratorVersion = Kubernetes166
-	// KubernetesDefaultVersion is the string constant for current Kubernetes version
-	KubernetesDefaultVersion OrchestratorVersion = Kubernetes166
+	// KubernetesMinMaxPods is the minimum valid value for MaxPods, necessary for running kube-system pods
+	KubernetesMinMaxPods = 5
 )

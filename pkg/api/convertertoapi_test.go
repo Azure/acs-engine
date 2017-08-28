@@ -22,19 +22,19 @@ func TestAddDCOSPublicAgentPool(t *testing.T) {
 			t.Fatalf("incorrect agent pools count. expected=%d actual=%d", expectedNumPools, len(props.AgentPoolProfiles))
 		}
 		if props.AgentPoolProfiles[1].Name != expectedPublicPoolName {
-			t.Fatalf("incorrect public pool name. expected=%d actual=%d", expectedPublicPoolName, props.AgentPoolProfiles[1].Name)
+			t.Fatalf("incorrect public pool name. expected=%s actual=%s", expectedPublicPoolName, props.AgentPoolProfiles[1].Name)
 		}
 		if props.AgentPoolProfiles[1].DNSPrefix != expectedPublicDNSPrefix {
-			t.Fatalf("incorrect public pool DNS prefix. expected=%d actual=%d", expectedPublicDNSPrefix, props.AgentPoolProfiles[1].DNSPrefix)
+			t.Fatalf("incorrect public pool DNS prefix. expected=%s actual=%s", expectedPublicDNSPrefix, props.AgentPoolProfiles[1].DNSPrefix)
 		}
 		if props.AgentPoolProfiles[0].DNSPrefix != expectedPrivateDNSPrefix {
-			t.Fatalf("incorrect private pool DNS prefix. expected=%d actual=%d", expectedPrivateDNSPrefix, props.AgentPoolProfiles[0].DNSPrefix)
+			t.Fatalf("incorrect private pool DNS prefix. expected=%s actual=%s", expectedPrivateDNSPrefix, props.AgentPoolProfiles[0].DNSPrefix)
 		}
 		if props.AgentPoolProfiles[1].OSType != expectedPublicOSType {
-			t.Fatalf("incorrect public pool OS type. expected=%d actual=%d", expectedPublicOSType, props.AgentPoolProfiles[1].OSType)
+			t.Fatalf("incorrect public pool OS type. expected=%s actual=%s", expectedPublicOSType, props.AgentPoolProfiles[1].OSType)
 		}
 		if props.AgentPoolProfiles[1].VMSize != expectedPublicVMSize {
-			t.Fatalf("incorrect public pool VM size. expected=%d actual=%d", expectedPublicVMSize, props.AgentPoolProfiles[1].VMSize)
+			t.Fatalf("incorrect public pool VM size. expected=%s actual=%s", expectedPublicVMSize, props.AgentPoolProfiles[1].VMSize)
 		}
 		for i, port := range [3]int{80, 443, 8080} {
 			if props.AgentPoolProfiles[1].Ports[i] != port {
