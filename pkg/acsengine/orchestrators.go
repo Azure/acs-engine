@@ -16,7 +16,7 @@ type orchestratorsFunc func(string) ([]*api.OrchestratorInfo, error)
 
 var funcmap map[string]orchestratorsFunc
 
-func Init() {
+func init() {
 	funcmap = map[string]orchestratorsFunc{
 		api.Kubernetes: kubernetesInfo,
 		api.DCOS:       dcosInfo,
@@ -50,7 +50,6 @@ func NewOrchestratorsInfo(orchestrator, release string) (*OrchestratorsInfo, err
 	if orchestrator, err = validate(orchestrator, release); err != nil {
 		return nil, err
 	}
-
 	orch := &OrchestratorsInfo{}
 
 	if len(orchestrator) == 0 {
