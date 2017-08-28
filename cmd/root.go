@@ -6,8 +6,8 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 
 	"github.com/Azure/go-autorest/autorest/azure"
-	log "github.com/Sirupsen/logrus"
 	"github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 )
@@ -41,6 +41,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(newVersionCmd())
 	rootCmd.AddCommand(newGenerateCmd())
 	rootCmd.AddCommand(newDeployCmd())
+	rootCmd.AddCommand(newOrchestratorsCmd())
 
 	if val := os.Getenv("ACSENGINE_EXPERIMENTAL_FEATURES"); val == "1" {
 		rootCmd.AddCommand(newUpgradeCmd())

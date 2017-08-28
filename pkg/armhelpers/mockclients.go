@@ -11,7 +11,7 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 )
 
-//MockACSEngineClient is an implemetnation of ACSEngineClient where all requests error out
+//MockACSEngineClient is an implementation of ACSEngineClient where all requests error out
 type MockACSEngineClient struct {
 	FailDeployTemplate              bool
 	FailEnsureResourceGroup         bool
@@ -67,7 +67,7 @@ func (mc *MockACSEngineClient) ListVirtualMachines(resourceGroup string) (comput
 	resourceNameSuffixString := "resourceNameSuffix"
 
 	creationSource := "acsengine-k8s-master-12345678-0"
-	orchestrator := "Kubernetes:1.5.3"
+	orchestrator := "Kubernetes:1.5.7"
 	resourceNameSuffix := "12345678"
 
 	tags := map[string]*string{
@@ -124,7 +124,7 @@ func (mc *MockACSEngineClient) GetVirtualMachine(resourceGroup, name string) (co
 	resourceNameSuffixString := "resourceNameSuffix"
 
 	creationSource := "acsengine-k8s-master-12345678-0"
-	orchestrator := "Kubernetes:1.5.3"
+	orchestrator := "Kubernetes:1.5.7"
 	resourceNameSuffix := "12345678"
 
 	tags := map[string]*string{

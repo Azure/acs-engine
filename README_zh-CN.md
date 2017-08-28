@@ -56,31 +56,8 @@ needed assets are generated and placed in the output directory.)
 ## 部署方法
 
 可以使用如下几种方式来部署ARM模板：
-[the Azure XPlat CLI (v0.10**.0** only)](https://github.com/Azure/azure-xplat-cli/releases/tag/v0.10.0-May2016),
 [the Azure CLI 2.0](https://github.com/Azure/azure-cli)，
 [Powershell](https://github.com/Azure/azure-powershell).
-
-### 使用Azure XPlat CLI部署
-
-**注意:** 建议使用[Azure XPlat CLI 0.10**.0**](https://github.com/Azure/azure-xplat-cli/releases/tag/v0.10.0-May2016)来部署，使用其他版本的话可能会出现兼容性问题，这些问题会在`0.10.x`版本有更新后修复。
-
-```bash
-$ azure login （登录中国版Azure需要指定-e AzureChinaCloud参数）
-
-$ azure account set "<SUBSCRIPTION NAME OR ID>"
-
-$ azure config mode arm
-
-$ azure group create \
-    --name="<RESOURCE_GROUP_NAME>" \
-    --location="<LOCATION>"
-
-$ azure group deployment create \
-    --name="<DEPLOYMENT NAME>" \
-    --resource-group="<RESOURCE_GROUP_NAME>" \
-    --template-file="./_output/<INSTANCE>/azuredeploy.json" \
-    --parameters-file="./_output/<INSTANCE>/azuredeploy.parameters.json"
-```
 
 ### 使用Azure CLI 2.0部署
 **NOTE:** Azure CLI 2.0目前任处于测试阶段，中国地区尚且无法使用。如果部署到国际版的Azure的话可以使用以下流程：

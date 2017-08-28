@@ -1,0 +1,7 @@
+{
+  "apiVersion": "vlabs",
+  "orchestratorProfile": {
+    "orchestratorType": "Kubernetes",
+    "orchestratorRelease": "1.6"
+  }
+}

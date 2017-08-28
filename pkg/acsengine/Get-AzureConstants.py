@@ -7,26 +7,16 @@ import json
 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
 def getAllSizes():
-    proc = subprocess.Popen(['az account list-locations'], stdout=subprocess.PIPE, shell=True)
-    (locations, err) = proc.communicate()
-    if err:
-        raise Exception(err.message)
-
+    locations = json.loads(subprocess.check_output(['az', 'account', 'list-locations']))
     sizeMap = {}
-    locations = json.loads(locations)
+
     for location in locations:
-        command = "az vm list-sizes -l %s" % (location['name'])
-        proc = subprocess.Popen(command , shell=True, stdout=subprocess.PIPE)
-        (sizes, err) = proc.communicate()
-        if err:
-            raise Exception(err.message)
-        
-        sizes = json.loads(sizes)
+        sizes = json.loads(subprocess.check_output(['az', 'vm', 'list-sizes', '-l', location['name']]))
         for size in sizes:
             if not size['name'] in sizeMap and not size['name'].split('_')[0] == 'Basic':
                 sizeMap[size['name']] = size
 
-    return sizeMap        
+    return sizeMap
 
 min_cores = 2
 dcos_masters_ephemeral_disk_min = 102400
@@ -40,28 +30,22 @@ def getDcosMasterMap(sizeMap):
            size['resourceDiskSizeInMb'] >= dcos_masters_ephemeral_disk_min:
             masterMap[size['name']] = size
 
-    return masterMap    
+    return masterMap
 
 def getMasterAgentMap(sizeMap):
     agentMap = {}
-    
+
     for key in sizeMap.keys():
         size = sizeMap[key]
         if size['numberOfCores'] >= min_cores:
             agentMap[size['name']] = size
-    
+
     return agentMap
 
 def getLocations():
-    proc = subprocess.Popen(['az account list-locations'], stdout=subprocess.PIPE, shell=True)
-    (locations, err) = proc.communicate()
-    if err:
-        raise Exception(err.message)
+    locations = json.loads(subprocess.check_output(['az', 'account', 'list-locations']))
 
-    locations = json.loads(locations)
-    locationList = []
-    for location in locations:
-        locationList.append(location['name'])
+    locationList = [l['name'] for l in locations]
 
     #hard code Azure China Cloud location
     locationList.append('chinanorth')
@@ -71,7 +55,7 @@ def getLocations():
     locationList.append('eastus2euap')
 
     locationList = sorted(locationList)
-    return locationList    
+    return locationList
 
 def getStorageAccountType(sizeName):
     capability = sizeName.split('_')[1]
@@ -90,7 +74,7 @@ import "fmt"
     text += r"""
 
 const (
-       // AzurePublicProdFQDNFormat specifies the format for a prod dns name 
+       // AzurePublicProdFQDNFormat specifies the format for a prod dns name
        AzurePublicProdFQDNFormat = "%s.%s.cloudapp.azure.com"
        //AzureChinaProdFQDNFormat specify the endpoint of Azure China Cloud
        AzureChinaProdFQDNFormat = "%s.%s.cloudapp.chinacloudapi.cn"
@@ -132,7 +116,7 @@ func GetDCOSMasterAllowedSizes() string {
     for key in dcosMasterMapKeys[:-1]:
         text += '        "' + key + '",\n'
     text += '        "' + dcosMasterMapKeys[-1] + '"\n'
- 
+
     text += r"""    ],
 `
 }
@@ -221,20 +205,20 @@ func GetClassicSizeMap() string {
 }"""
     return text
 
-def getSizeDef(sizeMap):
-    keys = sizeMap.keys()
-    print sizeMap[keys[0]]    
 
+def main():
+    outfile = 'pkg/acsengine/azureconst.go'
+    allSizes = getAllSizes()
+    dcosMasterMap = getDcosMasterMap(allSizes)
+    masterAgentMap = getMasterAgentMap(allSizes)
+    kubernetesAgentMap = allSizes
+    locations = getLocations()
+    text = getFileContents(dcosMasterMap, masterAgentMap, kubernetesAgentMap, allSizes, locations)
 
-outfile = 'pkg/acsengine/azureconst.go'
-allSizes = getAllSizes()
-dcosMasterMap = getDcosMasterMap(allSizes) 
-masterAgentMap = getMasterAgentMap(allSizes)
-kubernetesAgentMap = allSizes
-locations = getLocations()
-text = getFileContents(dcosMasterMap, masterAgentMap, kubernetesAgentMap, allSizes, locations)
-file = open(outfile, 'w')
-file.write(text)
-file.close()
-command = "gofmt -w pkg/acsengine/azureconst.go"
-proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    with open(outfile, 'w') as f:
+        f.write(text)
+
+    subprocess.check_call(['gofmt', '-w', outfile])
+
+if __name__ == '__main__':
+    main()

@@ -24,7 +24,7 @@ Pageant enables agent forwarding.  This means that you can SSH from any of the m
   ![Image of Pageant addkey](images/pageant-addkey.png)
 
  5. Now try out the configuration by opening up Putty.exe
- 6. Type in "azureuser@FQDN" and port 2200 where FQDN is the management name returned after deploying a cluster and port:
+ 6. Type in "azureuser@FQDN" and port 22 where FQDN is the management name returned after deploying a cluster and port:
 
   ![Image of Putty main](images/putty-address.png)
 

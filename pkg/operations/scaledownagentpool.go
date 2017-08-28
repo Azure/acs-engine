@@ -4,7 +4,7 @@ import (
 	"container/list"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 //VMScalingErrorDetails give the index in the agent pool that failed and the accompanying error

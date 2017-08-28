@@ -36,7 +36,7 @@ func (m *MasterProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
+func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 	if e := validateName(a.Name, "AgentPoolProfile.Name"); e != nil {
 		return e
 	}
@@ -98,6 +98,16 @@ func (a *Properties) Validate() error {
 	}
 	if e := validateUniqueProfileNames(a.AgentPoolProfiles); e != nil {
 		return e
+	}
+
+	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
+		if a.ServicePrincipalProfile == nil {
+			return fmt.Errorf("ServicePrincipalProfile must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+		}
+
+		if len(a.ServicePrincipalProfile.Secret) == 0 {
+			return fmt.Errorf("service principal client secret must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+		}
 	}
 
 	for _, agentPoolProfile := range a.AgentPoolProfiles {

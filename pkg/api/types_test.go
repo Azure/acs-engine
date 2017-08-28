@@ -21,7 +21,7 @@ const exampleAPIModel = `{
 		"windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
 		"linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
 		},
-		"servicePrincipalProfile": { "servicePrincipalClientID": "", "servicePrincipalClientSecret": "" }
+		"servicePrincipalProfile": { "clientId": "", "secret": "" }
 	}
 }
 `
@@ -29,14 +29,14 @@ const exampleAPIModel = `{
 func TestIsDCOS(t *testing.T) {
 	dCOSProfile := &OrchestratorProfile{
 		OrchestratorType:    "DCOS",
-		OrchestratorVersion: "vlabs",
+		OrchestratorRelease: "vlabs",
 	}
 	if !dCOSProfile.IsDCOS() {
 		t.Fatalf("unable to detect DCOS orchestrator profile from OrchestratorType=%s", dCOSProfile.OrchestratorType)
 	}
 	kubernetesProfile := &OrchestratorProfile{
 		OrchestratorType:    "Kubernetes",
-		OrchestratorVersion: "vlabs",
+		OrchestratorRelease: "vlabs",
 	}
 	if kubernetesProfile.IsDCOS() {
 		t.Fatalf("unexpectedly detected DCOS orchestrator profile from OrchestratorType=%s", kubernetesProfile.OrchestratorType)
@@ -45,7 +45,10 @@ func TestIsDCOS(t *testing.T) {
 
 func TestCustomHyperkubeImageField(t *testing.T) {
 	log.Println(exampleAPIModel)
-	apimodel, _, err := DeserializeContainerService([]byte(exampleAPIModel), false)
+	apiloader := &Apiloader{
+		Translator: nil,
+	}
+	apimodel, _, err := apiloader.DeserializeContainerService([]byte(exampleAPIModel), false, nil)
 	if err != nil {
 		t.Fatalf("unexpectedly error deserializing the example apimodel: %s", err)
 	}

@@ -1,6 +1,8 @@
     "maxVMsPerPool": 100,
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
+{{ if not IsHostedMaster }}
     "apiServerPrivateKey": "[parameters('apiServerPrivateKey')]",
+{{end}}
     "caCertificate": "[parameters('caCertificate')]",
     "caPrivateKey": "[parameters('caPrivateKey')]",
     "clientCertificate": "[parameters('clientCertificate')]",
@@ -13,6 +15,7 @@
     "kubernetesDashboardSpec": "[parameters('kubernetesDashboardSpec')]",
     "kubernetesExecHealthzSpec": "[parameters('kubernetesExecHealthzSpec')]",
     "kubernetesHeapsterSpec": "[parameters('kubernetesHeapsterSpec')]",
+    "kubernetesTillerSpec": "[parameters('kubernetesTillerSpec')]",
     "kubernetesPodInfraContainerSpec": "[parameters('kubernetesPodInfraContainerSpec')]",
     "kubernetesNodeStatusUpdateFrequency": "[parameters('kubernetesNodeStatusUpdateFrequency')]",
     "kubernetesCtrlMgrNodeMonitorGracePeriod": "[parameters('kubernetesCtrlMgrNodeMonitorGracePeriod')]",
@@ -31,6 +34,8 @@
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
     "networkPolicy": "[parameters('networkPolicy')]",
+    "maxPods": "[parameters('maxPods')]",
+    "vnetCidr": "[parameters('vnetCidr')]",
 {{ if UseManagedIdentity }}
     "servicePrincipalClientId": "msi",
     "servicePrincipalClientSecret": "msi",
@@ -40,15 +45,23 @@
 {{ end }}
     "username": "[parameters('linuxAdminUsername')]",
     "masterFqdnPrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]",
+{{ if not IsHostedMaster }}
     "masterPrivateIp": "[parameters('firstConsecutiveStaticIP')]",
     "masterVMSize": "[parameters('masterVMSize')]",
-    "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
-{{if  GetClassicMode}}
-    "masterCount": "[parameters('masterCount')]",
-{{else}}
-    "masterCount": {{.MasterProfile.Count}},
 {{end}}
+    "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
+{{if .HasAadProfile}}
+    "aadServerAppId": "[parameters('aadServerAppId')]",
+    "aadTenantId": "[parameters('aadTenantId')]",
+{{end}}
+{{if not IsHostedMaster}}
+  {{if GetClassicMode}}
+    "masterCount": "[parameters('masterCount')]",
+  {{else}}
+    "masterCount": {{.MasterProfile.Count}},
+  {{end}}
     "masterOffset": "[parameters('masterOffset')]",
+{{end}}
     "apiVersionDefault": "2016-03-30",
     "locations": [
          "[resourceGroup().location]",
@@ -63,7 +76,11 @@
     "osImageSKU": "16.04-LTS",
     "osImageVersion": "16.04.201706191",
     "resourceGroup": "[resourceGroup().name]",
+{{if not IsHostedMaster}}
     "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
+{{else}}
+    "routeTableName": "[concat(variables('agentNamePrefix'), 'routetable')]",
+{{end}}
     "routeTableID": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]",
     "sshNatPorts": [22,2201,2202,2203,2204],
     "sshKeyPath": "[concat('/home/',variables('username'),'/.ssh/authorized_keys')]",
@@ -85,8 +102,10 @@
 {{if .HasManagedDisks}}
     "apiVersionStorageManagedDisks": "2016-04-30-preview",
 {{end}}
-{{if .MasterProfile.IsStorageAccount}}
+{{if not IsHostedMaster}}
+  {{if .MasterProfile.IsStorageAccount}}
     "masterStorageAccountName": "[concat(variables('storageAccountBaseName'), 'mstr0')]",
+  {{end}}
 {{end}}
     "provisionScript": "{{GetKubernetesB64Provision}}",
     "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
@@ -95,47 +114,65 @@
 {{else}}
     "allocateNodeCidrs": true,
 {{end}}
-{{if .MasterProfile.IsCustomVNET}}
+{{if not IsHostedMaster}}
+  {{if .MasterProfile.IsCustomVNET}}
     "vnetSubnetID": "[parameters('masterVnetSubnetID')]",
     "subnetNameResourceSegmentIndex": 10,
     "subnetName": "[split(parameters('masterVnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
     "vnetNameResourceSegmentIndex": 8,
     "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
-{{else}}
+  {{else}}
     "subnet": "[parameters('masterSubnet')]",
     "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
-    "vnetCidr": "10.0.0.0/8",
+  {{end}}
+{{else}}
+    "subnet": "10.0.0.0/16",
+    "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
+    "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+    "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
+    "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
 {{end}}
-    "kubeDnsServiceIp": "10.0.0.10",
-    "kubeServiceCidr": "10.0.0.0/16",
+    "vnetCidr": "[parameters('vnetCidr')]",
+    "kubeDnsServiceIP": "[parameters('kubeDnsServiceIP')]",
+    "kubeServiceCidr": "[parameters('kubeServiceCidr')]",
     "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
     "dockerBridgeCidr": "[parameters('dockerBridgeCidr')]",
-{{if HasLinuxAgents}}
-    "registerSchedulable": "false",
+{{if IsKubernetesVersionGe "1.6.0"}}
+    "registerWithTaints": "node-role.kubernetes.io/master=true:NoSchedule",
 {{else}}
+    {{if HasLinuxAgents}}
+    "registerSchedulable": "false",
+    {{else}}
     "registerSchedulable": "true",
+    {{end}}
 {{end}}
+{{if not IsHostedMaster }}
     "nsgName": "[concat(variables('masterVMNamePrefix'), 'nsg')]",
+{{else}}
+    "nsgName": "[concat(variables('agentNamePrefix'), 'nsg')]",
+{{end}}
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
-    "primaryAvailablitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',variables('nameSuffix'))]",
+    "primaryAvailabilitySetName": "[concat('{{ (index .AgentPoolProfiles 0).Name }}-availabilitySet-',variables('nameSuffix'))]",
+{{if not IsHostedMaster }}
     "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterFqdnPrefix'), '-', variables('nameSuffix'))]",
     "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]",
     "masterLbIPConfigID": "[concat(variables('masterLbID'),'/frontendIPConfigurations/', variables('masterLbIPConfigName'))]",
     "masterLbIPConfigName": "[concat(variables('orchestratorName'), '-master-lbFrontEnd-', variables('nameSuffix'))]",
     "masterLbName": "[concat(variables('orchestratorName'), '-master-lb-', variables('nameSuffix'))]",
-{{if gt .MasterProfile.Count 1}}
+  {{if gt .MasterProfile.Count 1}}
     "masterInternalLbName": "[concat(variables('orchestratorName'), '-master-internal-lb-', variables('nameSuffix'))]",
     "masterInternalLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterInternalLbName'))]",
     "masterInternalLbIPConfigName": "[concat(variables('orchestratorName'), '-master-internal-lbFrontEnd-', variables('nameSuffix'))]",
     "masterInternalLbIPConfigID": "[concat(variables('masterInternalLbID'),'/frontendIPConfigurations/', variables('masterInternalLbIPConfigName'))]",
     "masterInternalLbIPOffset": {{GetDefaultInternalLbStaticIPOffset}},
     "kubernetesAPIServerIP": "[concat(variables('masterFirstAddrPrefix'), add(variables('masterInternalLbIPOffset'), int(variables('masterFirstAddrOctet4'))))]",
-{{else}}
+  {{else}}
     "kubernetesAPIServerIP": "[parameters('firstConsecutiveStaticIP')]",
-{{end}}
+  {{end}}
     "masterLbBackendPoolName": "[concat(variables('orchestratorName'), '-master-pool-', variables('nameSuffix'))]",
     "masterFirstAddrComment": "these MasterFirstAddrComment are used to place multiple masters consecutively in the address space",
     "masterFirstAddrOctets": "[split(parameters('firstConsecutiveStaticIP'),'.')]",
@@ -177,6 +214,10 @@
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdPeerURLs')[2])]",
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdPeerURLs')[2], ',', variables('masterVMNames')[3], '=', variables('masterEtcdPeerURLs')[3], ',', variables('masterVMNames')[4], '=', variables('masterEtcdPeerURLs')[4])]"
     ],
+{{else}}
+    "kubernetesAPIServerIP": "[parameters('kubernetesEndpoint')]",
+    "agentNamePrefix": "[concat(variables('orchestratorName'), '-agentpool-', variables('nameSuffix'), '-')]",
+{{end}}
     "subscriptionId": "[subscription().subscriptionId]",
     "contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
     "readerRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",

@@ -3,7 +3,7 @@
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
-       "orchestratorVersion": "1.6.2"
+       "orchestratorRelease": "1.6"
     },
     "masterProfile": {
       "count": 1,
@@ -34,8 +34,8 @@
       }
     },
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "ServicePrincipalClientID",
-      "servicePrincipalClientSecret": "myServicePrincipalClientSecret"
+      "clientId": "ServicePrincipalClientID",
+      "secret": "myServicePrincipalClientSecret"
     },
     "certificateProfile": {
       "caCertificate": "caCertificate",

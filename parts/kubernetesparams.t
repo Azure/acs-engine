@@ -1,3 +1,18 @@
+{{if .HasAadProfile}}
+    "aadServerAppId": {
+      "metadata": {
+        "description": "The server AAD application ID"
+      },
+      "type": "string"
+    },
+    "aadTenantId": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The AAD tenant ID to use for authentication. If not specified, will use the tenant of the deployment subscription."
+      },
+      "type": "string"
+    },
+{{end}}
     "apiServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"
@@ -23,6 +38,14 @@
       },
       "type": "securestring"
     },
+{{if IsHostedMaster}}
+    "kubernetesEndpoint": {
+      "metadata": {
+        "description": "The Kubernetes API endpoint https://<kubernetesEndpoint>:443"
+      },
+      "type": "string"
+    },
+{{end}}
     "clientCertificate": {
       "metadata": {
         "description": "The base 64 client certificate used to communicate with the master"
@@ -58,6 +81,20 @@
       {{PopulateClassicModeDefaultValue "kubeClusterCidr"}}
       "metadata": {
         "description": "Kubernetes cluster subnet"
+      },
+      "type": "string"
+    },
+    "kubeDnsServiceIP": {
+      {{PopulateClassicModeDefaultValue "kubeDnsServiceIP"}}
+      "metadata": {
+        "description": "Kubernetes DNS IP"
+      },
+      "type": "string"
+    },
+    "kubeServiceCidr": {
+      {{PopulateClassicModeDefaultValue "kubeServiceCidr"}}
+      "metadata": {
+        "description": "Kubernetes service address space"
       },
       "type": "string"
     },
@@ -100,6 +137,13 @@
       {{PopulateClassicModeDefaultValue "kubernetesHeapsterSpec"}}
       "metadata": {
         "description": "The container spec for heapster."
+      },
+      "type": "string"
+    },
+    "kubernetesTillerSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerSpec"}}
+      "metadata": {
+        "description": "The container spec for Helm Tiller."
       },
       "type": "string"
     },
@@ -227,6 +271,20 @@
       ],
       "type": "string"
     },
+    "maxPods": {
+      "defaultValue": 110,
+      "metadata": {
+        "description": "The maximum number of pods per node."
+      },
+      "type": "int"
+    },
+    "vnetCidr": {
+      "defaultValue": "10.0.0.0/8",
+      "metadata": {
+        "description": "Cluster vnet cidr"
+      },
+      "type": "string"
+    },
 {{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {
@@ -255,4 +313,3 @@
       },
       "type": "int"
     }
-

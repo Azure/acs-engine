@@ -23,8 +23,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
-	log "github.com/Sirupsen/logrus"
 	"github.com/mitchellh/go-homedir"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/azure-sdk-for-go/arm/disk"
@@ -322,7 +322,7 @@ func (az *AzureClient) ensureProvidersRegistered(subscriptionID string) error {
 		if registered {
 			log.Debugf("Already registered for %q", provider)
 		} else {
-			log.Info("Registering subscription to resource provider. provider=%q subscription=%q", provider, subscriptionID)
+			log.Infof("Registering subscription to resource provider. provider=%q subscription=%q", provider, subscriptionID)
 			if _, err := az.providersClient.Register(provider); err != nil {
 				return err
 			}

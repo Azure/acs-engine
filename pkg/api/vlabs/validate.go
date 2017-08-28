@@ -7,48 +7,52 @@ import (
 	"net/url"
 	"regexp"
 	"time"
+
+	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/satori/uuid"
+	validator "gopkg.in/go-playground/validator.v9"
 )
 
-var keyvaultSecretPathRegex *regexp.Regexp
+var (
+	validate        *validator.Validate
+	keyvaultIdRegex *regexp.Regexp
+)
 
 func init() {
-	keyvaultSecretPathRegex = regexp.MustCompile(`^(/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/\S+)/secrets/([^/\s]+)(/(\S+))?$`)
+	validate = validator.New()
+	keyvaultIdRegex = regexp.MustCompile(`^/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/[^/\s]+$`)
 }
 
 // Validate implements APIObject
 func (o *OrchestratorProfile) Validate() error {
+	// Don't need to call validate.Struct(o)
+	// It is handled by Properties.Validate()
 	switch o.OrchestratorType {
 	case DCOS:
-		switch o.OrchestratorVersion {
-		case DCOS173:
-		case DCOS184:
-		case DCOS187:
-		case DCOS188:
-		case DCOS190:
+		switch o.OrchestratorRelease {
+		case common.DCOSRelease1Dot7:
+		case common.DCOSRelease1Dot8:
+		case common.DCOSRelease1Dot9:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
 		}
 
 	case Swarm:
 	case SwarmMode:
 
 	case Kubernetes:
-		switch o.OrchestratorVersion {
-		case Kubernetes171:
-		case Kubernetes170:
-		case Kubernetes166:
-		case Kubernetes162:
-		case Kubernetes160:
-		case Kubernetes157:
-		case Kubernetes153:
+		switch o.OrchestratorRelease {
+		case common.KubernetesRelease1Dot7:
+		case common.KubernetesRelease1Dot6:
+		case common.KubernetesRelease1Dot5:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
 		}
 
 		if o.KubernetesConfig != nil {
-			err := o.KubernetesConfig.Validate(o.OrchestratorVersion)
+			err := o.KubernetesConfig.Validate(o.OrchestratorRelease)
 			if err != nil {
 				return err
 			}
@@ -67,47 +71,30 @@ func (o *OrchestratorProfile) Validate() error {
 
 // Validate implements APIObject
 func (m *MasterProfile) Validate() error {
-	if m.Count != 1 && m.Count != 3 && m.Count != 5 {
-		return fmt.Errorf("MasterProfile count needs to be 1, 3, or 5")
-	}
-	if e := validateName(m.DNSPrefix, "MasterProfile.DNSPrefix"); e != nil {
-		return e
-	}
 	if e := validateDNSName(m.DNSPrefix); e != nil {
-		return e
-	}
-	if e := validateName(m.VMSize, "MasterProfile.VMSize"); e != nil {
-		return e
-	}
-	if m.OSDiskSizeGB != 0 && (m.OSDiskSizeGB < MinDiskSizeGB || m.OSDiskSizeGB > MaxDiskSizeGB) {
-		return fmt.Errorf("Invalid master os disk size of %d specified.  The range of valid values are [%d, %d]", m.OSDiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
-	}
-	if m.IPAddressCount != 0 && (m.IPAddressCount < MinIPAddressCount || m.IPAddressCount > MaxIPAddressCount) {
-		return fmt.Errorf("MasterProfile.IPAddressCount needs to be in the range [%d,%d]", MinIPAddressCount, MaxIPAddressCount)
-	}
-	if e := validateStorageProfile(m.StorageProfile); e != nil {
 		return e
 	}
 	return nil
 }
 
 // Validate implements APIObject
-func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
-	if e := validateName(a.Name, "AgentPoolProfile.Name"); e != nil {
-		return e
-	}
+func (a *AgentPoolProfile) Validate(orchestratorType string) error {
+	// Don't need to call validate.Struct(a)
+	// It is handled by Properties.Validate()
 	if e := validatePoolName(a.Name); e != nil {
 		return e
 	}
-	if a.Count < MinAgentCount || a.Count > MaxAgentCount {
-		return fmt.Errorf("AgentPoolProfile count needs to be in the range [%d,%d]", MinAgentCount, MaxAgentCount)
+
+	// for Kubernetes, we don't support AgentPoolProfile.DNSPrefix
+	if orchestratorType == Kubernetes {
+		if e := validate.Var(a.DNSPrefix, "len=0"); e != nil {
+			return fmt.Errorf("AgentPoolProfile.DNSPrefix must be empty for Kubernetes")
+		}
+		if e := validate.Var(a.Ports, "len=0"); e != nil {
+			return fmt.Errorf("AgentPoolProfile.Ports must be empty for Kubernetes")
+		}
 	}
-	if e := validateName(a.VMSize, "AgentPoolProfile.VMSize"); e != nil {
-		return e
-	}
-	if a.OSDiskSizeGB != 0 && (a.OSDiskSizeGB < MinDiskSizeGB || a.OSDiskSizeGB > MaxDiskSizeGB) {
-		return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", a.OSDiskSizeGB, MinDiskSizeGB, MaxDiskSizeGB)
-	}
+
 	if a.DNSPrefix != "" {
 		if e := validateDNSName(a.DNSPrefix); e != nil {
 			return e
@@ -116,54 +103,28 @@ func (a *AgentPoolProfile) Validate(orchestratorType OrchestratorType) error {
 			if e := validateUniquePorts(a.Ports, a.Name); e != nil {
 				return e
 			}
-			for _, port := range a.Ports {
-				if port < MinPort || port > MaxPort {
-					return fmt.Errorf("AgentPoolProfile Ports must be in the range[%d, %d]", MinPort, MaxPort)
-				}
-			}
 		} else {
 			a.Ports = []int{80, 443, 8080}
 		}
 	} else {
-		if len(a.Ports) > 0 {
-			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty")
-		}
-	}
-
-	// for Kubernetes, we don't support AgentPoolProfile.DNSPrefix
-	if orchestratorType == Kubernetes {
-		if e := validateNameEmpty(a.DNSPrefix, "AgentPoolProfile.DNSPrefix"); e != nil {
-			return e
+		if e := validate.Var(a.Ports, "len=0"); e != nil {
+			return fmt.Errorf("AgentPoolProfile.Ports must be empty when AgentPoolProfile.DNSPrefix is empty for Orchestrator: %s", string(orchestratorType))
 		}
 	}
 
 	if len(a.DiskSizesGB) > 0 {
-		if len(a.StorageProfile) == 0 {
+		if e := validate.Var(a.StorageProfile, "eq=StorageAccount|eq=ManagedDisks"); e != nil {
 			return fmt.Errorf("property 'StorageProfile' must be set to either '%s' or '%s' when attaching disks", StorageAccount, ManagedDisks)
 		}
-		if len(a.AvailabilityProfile) == 0 {
+		if e := validate.Var(a.AvailabilityProfile, "eq=VirtualMachineScaleSets|eq=AvailabilitySet"); e != nil {
 			return fmt.Errorf("property 'AvailabilityProfile' must be set to either '%s' or '%s' when attaching disks", VirtualMachineScaleSets, AvailabilitySet)
 		}
 		if a.StorageProfile == StorageAccount && (a.AvailabilityProfile == VirtualMachineScaleSets) {
 			return fmt.Errorf("VirtualMachineScaleSets does not support storage account attached disks.  Instead specify 'StorageAccount': '%s' or specify AvailabilityProfile '%s'", ManagedDisks, AvailabilitySet)
 		}
 	}
-	for _, s := range a.DiskSizesGB {
-		if s < MinDiskSizeGB || s > MaxDiskSizeGB {
-			return fmt.Errorf("Invalid disk size %d specified for cluster cluster named '%s'.  The range of valid values are [%d, %d]", s, a.Name, MinDiskSizeGB, MaxDiskSizeGB)
-		}
-	}
-	if len(a.DiskSizesGB) > MaxDisks {
-		return fmt.Errorf("A maximum of %d disks may be specified.  %d disks were specified for cluster named '%s'", MaxDisks, len(a.DiskSizesGB), a.Name)
-	}
 	if len(a.Ports) == 0 && len(a.DNSPrefix) > 0 {
 		return fmt.Errorf("AgentPoolProfile.Ports must be non empty when AgentPoolProfile.DNSPrefix is specified")
-	}
-	if a.IPAddressCount != 0 && (a.IPAddressCount < MinIPAddressCount || a.IPAddressCount > MaxIPAddressCount) {
-		return fmt.Errorf("AgentPoolProfile.IPAddressCount needs to be in the range [%d,%d]", MinIPAddressCount, MaxIPAddressCount)
-	}
-	if e := validateStorageProfile(a.StorageProfile); e != nil {
-		return e
 	}
 	return nil
 }
@@ -193,14 +154,10 @@ func validateKeyVaultSecrets(secrets []KeyVaultSecrets, requireCertificateStore 
 
 // Validate implements APIObject
 func (l *LinuxProfile) Validate() error {
-	if e := validateName(l.AdminUsername, "LinuxProfile.AdminUsername"); e != nil {
-		return e
-	}
-	if len(l.SSH.PublicKeys) != 1 {
-		return errors.New("LinuxProfile.PublicKeys requires only 1 SSH Key")
-	}
-	if e := validateName(l.SSH.PublicKeys[0].KeyData, "LinuxProfile.PublicKeys.KeyData"); e != nil {
-		return e
+	// Don't need to call validate.Struct(l)
+	// It is handled by Properties.Validate()
+	if e := validate.Var(l.SSH.PublicKeys[0].KeyData, "required"); e != nil {
+		return fmt.Errorf("KeyData in LinuxProfile.SSH.PublicKeys cannot be empty string")
 	}
 	if e := validateKeyVaultSecrets(l.Secrets, false); e != nil {
 		return e
@@ -208,16 +165,33 @@ func (l *LinuxProfile) Validate() error {
 	return nil
 }
 
+func handleValidationErrors(e validator.ValidationErrors) error {
+	// Override any version specific validation error message
+
+	// common.HandleValidationErrors if the validation error message is general
+	return common.HandleValidationErrors(e)
+}
+
+// Validate implements APIObject
+func (profile *AADProfile) Validate() error {
+	if _, err := uuid.FromString(profile.ClientAppID); err != nil {
+		return fmt.Errorf("clientAppID '%v' is invalid", profile.ClientAppID)
+	}
+	if _, err := uuid.FromString(profile.ServerAppID); err != nil {
+		return fmt.Errorf("serverAppID '%v' is invalid", profile.ServerAppID)
+	}
+	if len(profile.TenantID) > 0 {
+		if _, err := uuid.FromString(profile.TenantID); err != nil {
+			return fmt.Errorf("tenantID '%v' is invalid", profile.TenantID)
+		}
+	}
+	return nil
+}
+
 // Validate implements APIObject
 func (a *Properties) Validate() error {
-	if a.OrchestratorProfile == nil {
-		return fmt.Errorf("missing OrchestratorProfile")
-	}
-	if a.MasterProfile == nil {
-		return fmt.Errorf("missing MasterProfile")
-	}
-	if a.LinuxProfile == nil {
-		return fmt.Errorf("missing LinuxProfile")
+	if e := validate.Struct(a); e != nil {
+		return handleValidationErrors(e.(validator.ValidationErrors))
 	}
 	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
@@ -237,18 +211,25 @@ func (a *Properties) Validate() error {
 			a.OrchestratorProfile.KubernetesConfig.UseManagedIdentity)
 
 		if !useManagedIdentity {
-			if len(a.ServicePrincipalProfile.ClientID) == 0 {
+			if a.ServicePrincipalProfile == nil {
+				return fmt.Errorf("ServicePrincipalProfile must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+			if e := validate.Var(a.ServicePrincipalProfile.ClientID, "required"); e != nil {
 				return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
-
-			if (len(a.ServicePrincipalProfile.Secret) == 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) == 0) ||
-				(len(a.ServicePrincipalProfile.Secret) != 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0) {
+			if (len(a.ServicePrincipalProfile.Secret) == 0 && a.ServicePrincipalProfile.KeyvaultSecretRef == nil) ||
+				(len(a.ServicePrincipalProfile.Secret) != 0 && a.ServicePrincipalProfile.KeyvaultSecretRef != nil) {
 				return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
 
-			if len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0 {
-				parts := keyvaultSecretPathRegex.FindStringSubmatch(a.ServicePrincipalProfile.KeyvaultSecretRef)
-				if len(parts) != 5 {
+			if a.ServicePrincipalProfile.KeyvaultSecretRef != nil {
+				if e := validate.Var(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID, "required"); e != nil {
+					return fmt.Errorf("the Keyvault ID must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+				}
+				if e := validate.Var(a.ServicePrincipalProfile.KeyvaultSecretRef.SecretName, "required"); e != nil {
+					return fmt.Errorf("the Keyvault Secret must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+				}
+				if !keyvaultIdRegex.MatchString(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID) {
 					return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
 				}
 			}
@@ -268,17 +249,8 @@ func (a *Properties) Validate() error {
 				return fmt.Errorf("unknown availability profile type '%s' for agent pool '%s'.  Specify either %s, or %s", agentPoolProfile.AvailabilityProfile, agentPoolProfile.Name, AvailabilitySet, VirtualMachineScaleSets)
 			}
 		}
-		switch agentPoolProfile.StorageProfile {
-		case StorageAccount:
-		case ManagedDisks:
-		case "":
-		default:
-			{
-				return fmt.Errorf("unknown storage type '%s' for agent pool '%s'.  Specify either %s, or %s", agentPoolProfile.StorageProfile, agentPoolProfile.Name, StorageAccount, ManagedDisks)
-			}
-		}
-		/* this switch statement is left to protect newly added orchestrators until they support Managed Disks*/
 
+		/* this switch statement is left to protect newly added orchestrators until they support Managed Disks*/
 		if agentPoolProfile.StorageProfile == ManagedDisks {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
@@ -301,30 +273,23 @@ func (a *Properties) Validate() error {
 		if a.OrchestratorProfile.OrchestratorType == Kubernetes && (agentPoolProfile.AvailabilityProfile == VirtualMachineScaleSets || len(agentPoolProfile.AvailabilityProfile) == 0) {
 			return fmt.Errorf("VirtualMachineScaleSets are not supported with Kubernetes since Kubernetes requires the ability to attach/detach disks.  To fix specify \"AvailabilityProfile\":\"%s\"", AvailabilitySet)
 		}
-		if a.OrchestratorProfile.OrchestratorType == Kubernetes && len(agentPoolProfile.DNSPrefix) > 0 {
-			return errors.New("DNSPrefix not support for agent pools in Kubernetes - Kubernetes marks its own clusters public")
-		}
 		if agentPoolProfile.OSType == Windows {
-			if a.WindowsProfile == nil {
-				return fmt.Errorf("missing WindowsProfile")
+			if e := validate.Var(a.WindowsProfile, "required"); e != nil {
+				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
 			}
 			switch a.OrchestratorProfile.OrchestratorType {
+			case DCOS:
 			case Swarm:
 			case SwarmMode:
 			case Kubernetes:
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
-
-			if a.WindowsProfile == nil {
-				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
+			if e := validate.Var(a.WindowsProfile.AdminUsername, "required"); e != nil {
+				return fmt.Errorf("WindowsProfile.AdminUsername is required, when agent pool specifies windows")
 			}
-
-			if len(a.WindowsProfile.AdminUsername) == 0 {
-				return fmt.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
-			}
-			if len(a.WindowsProfile.AdminPassword) == 0 {
-				return fmt.Errorf("WindowsProfile.AdminPassword must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
+			if e := validate.Var(a.WindowsProfile.AdminPassword, "required"); e != nil {
+				return fmt.Errorf("WindowsProfile.AdminPassword is required, when agent pool specifies windows")
 			}
 			if e := validateKeyVaultSecrets(a.WindowsProfile.Secrets, true); e != nil {
 				return e
@@ -337,26 +302,40 @@ func (a *Properties) Validate() error {
 	if e := validateVNET(a); e != nil {
 		return e
 	}
+
+	if a.AADProfile != nil {
+		if a.OrchestratorProfile.OrchestratorType != Kubernetes {
+			return fmt.Errorf("'aadProfile' is only supported by orchestrator '%v'", Kubernetes)
+		}
+		if e := a.AADProfile.Validate(); e != nil {
+			return e
+		}
+	}
+
 	return nil
 }
 
 // Validate validates the KubernetesConfig.
-func (a *KubernetesConfig) Validate(k8sVersion OrchestratorVersion) error {
+func (a *KubernetesConfig) Validate(k8sRelease string) error {
 	// number of minimum retries allowed for kubelet to post node status
 	const minKubeletRetries = 4
-	// k8s versions that have cloudprovider backoff enabled
-	var backoffEnabledVersions = map[OrchestratorVersion]bool{
-		Kubernetes171: true,
-		Kubernetes166: true,
-		Kubernetes170: true,
+	// k8s releases that have cloudprovider backoff enabled
+	var backoffEnabledReleases = map[string]bool{
+		common.KubernetesRelease1Dot7: true,
+		common.KubernetesRelease1Dot6: true,
 	}
-	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
-	ratelimitEnabledVersions := backoffEnabledVersions
+	// k8s releases that have cloudprovider rate limiting enabled (currently identical with backoff enabled releases)
+	ratelimitEnabledReleases := backoffEnabledReleases
 
 	if a.ClusterSubnet != "" {
-		_, _, err := net.ParseCIDR(a.ClusterSubnet)
+		_, subnet, err := net.ParseCIDR(a.ClusterSubnet)
 		if err != nil {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' is an invalid subnet", a.ClusterSubnet)
+		}
+
+		ones, bits := subnet.Mask.Size()
+		if bits-ones <= 8 {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' must reserve at least 9 bits for nodes", a.ClusterSubnet)
 		}
 	}
 
@@ -364,6 +343,12 @@ func (a *KubernetesConfig) Validate(k8sVersion OrchestratorVersion) error {
 		_, _, err := net.ParseCIDR(a.DockerBridgeSubnet)
 		if err != nil {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet '%s' is an invalid subnet", a.DockerBridgeSubnet)
+		}
+	}
+
+	if a.MaxPods != 0 {
+		if a.MaxPods < KubernetesMinMaxPods {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.MaxPods '%v' must be at least %v", a.MaxPods, KubernetesMinMaxPods)
 		}
 	}
 
@@ -411,14 +396,50 @@ func (a *KubernetesConfig) Validate(k8sVersion OrchestratorVersion) error {
 	}
 
 	if a.CloudProviderBackoff {
-		if !backoffEnabledVersions[k8sVersion] {
-			return fmt.Errorf("cloudprovider backoff functionality not available in kubernetes version %s", k8sVersion)
+		if !backoffEnabledReleases[k8sRelease] {
+			return fmt.Errorf("cloudprovider backoff functionality not available in kubernetes release %s", k8sRelease)
 		}
 	}
 
 	if a.CloudProviderRateLimit {
-		if !ratelimitEnabledVersions[k8sVersion] {
-			return fmt.Errorf("cloudprovider rate limiting functionality not available in kubernetes version %s", k8sVersion)
+		if !ratelimitEnabledReleases[k8sRelease] {
+			return fmt.Errorf("cloudprovider rate limiting functionality not available in kubernetes release %s", k8sRelease)
+		}
+	}
+
+	if a.DnsServiceIP != "" || a.ServiceCidr != "" {
+		if a.DnsServiceIP == "" {
+			return errors.New("OrchestratorProfile.KubernetesConfig.ServiceCidr must be specified when DnsServiceIP is")
+		}
+		if a.ServiceCidr == "" {
+			return errors.New("OrchestratorProfile.KubernetesConfig.DnsServiceIP must be specified when ServiceCidr is")
+		}
+
+		dnsIp := net.ParseIP(a.DnsServiceIP)
+		if dnsIp == nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is an invalid IP address", a.DnsServiceIP)
+		}
+
+		_, serviceCidr, err := net.ParseCIDR(a.ServiceCidr)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ServiceCidr '%s' is an invalid CIDR subnet", a.ServiceCidr)
+		}
+
+		// Finally validate that the DNS ip is within the subnet
+		if !serviceCidr.Contains(dnsIp) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is not within the ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		}
+
+		// and that the DNS IP is _not_ the subnet broadcast address
+		broadcast := common.Ip4BroadcastAddress(serviceCidr)
+		if dnsIp.Equal(broadcast) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' cannot be the broadcast address of ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		}
+
+		// and that the DNS IP is _not_ the first IP in the service subnet
+		firstServiceIp := common.CidrFirstIp(serviceCidr.IP)
+		if firstServiceIp.Equal(dnsIp) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' cannot be the first IP of ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
 		}
 	}
 
@@ -454,13 +475,6 @@ func (a *Properties) validateNetworkPolicy() error {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 
-	return nil
-}
-
-func validateNameEmpty(name string, label string) error {
-	if name != "" {
-		return fmt.Errorf("%s must be an empty value", label)
-	}
 	return nil
 }
 
@@ -508,19 +522,6 @@ func validateUniqueProfileNames(profiles []*AgentPoolProfile) error {
 	return nil
 }
 
-func validateStorageProfile(storageProfile string) error {
-	switch storageProfile {
-	case StorageAccount:
-	case ManagedDisks:
-	case "":
-	default:
-		{
-			return fmt.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", storageProfile, StorageAccount, ManagedDisks)
-		}
-	}
-	return nil
-}
-
 func validateUniquePorts(ports []int, name string) error {
 	portMap := make(map[int]bool)
 	for _, port := range ports {
@@ -560,6 +561,13 @@ func validateVNET(a *Properties) error {
 		masterFirstIP := net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP)
 		if masterFirstIP == nil {
 			return fmt.Errorf("MasterProfile.FirstConsecutiveStaticIP (with VNET Subnet specification) '%s' is an invalid IP address", a.MasterProfile.FirstConsecutiveStaticIP)
+		}
+
+		if a.MasterProfile.VnetCidr != "" {
+			_, _, err := net.ParseCIDR(a.MasterProfile.VnetCidr)
+			if err != nil {
+				return fmt.Errorf("MasterProfile.VnetCidr '%s' contains invalid cidr notation", a.MasterProfile.VnetCidr)
+			}
 		}
 	}
 	return nil

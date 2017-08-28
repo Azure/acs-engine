@@ -3,7 +3,7 @@
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
-      "orchestratorVersion": "1.6.6",
+      "orchestratorRelease": "1.6",
       "kubernetesConfig": {
         "nodeStatusUpdateFrequency": "1m",
         "ctrlMgrNodeMonitorGracePeriod": "5m",
@@ -67,8 +67,8 @@
       }
     },
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "",
-      "servicePrincipalClientSecret": ""
+      "clientId": "",
+      "secret": ""
     }
   }
 }
