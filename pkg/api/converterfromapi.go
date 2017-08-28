@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
+	"github.com/Azure/acs-engine/pkg/api/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -117,6 +118,56 @@ func ConvertContainerServiceToVLabs(api *ContainerService) *vlabs.ContainerServi
 	vlabsCS.Properties = &vlabs.Properties{}
 	convertPropertiesToVLabs(api.Properties, vlabsCS.Properties)
 	return vlabsCS
+}
+
+func ConvertOrchestratorInfoToV20170930(api *OrchestratorInfo) *v20170930.OrchestratorInfo {
+	vOrchInfo := &v20170930.OrchestratorInfo{}
+	switch api.Orchestrator {
+	case Kubernetes:
+		vOrchInfo.Orchestrator = v20170930.Kubernetes
+	case DCOS:
+		vOrchInfo.Orchestrator = v20170930.DCOS
+	case Swarm:
+		vOrchInfo.Orchestrator = v20170930.Swarm
+	case SwarmMode:
+		vOrchInfo.Orchestrator = v20170930.DockerCE
+	}
+	vOrchInfo.Version = api.Version
+	vOrchInfo.Release = api.Release
+	vOrchInfo.DockerComposeVersion = api.DockerComposeVersion
+	vOrchInfo.Default = api.Default
+	if api.Upgradable != nil {
+		vOrchInfo.Upgradable = make([]*v20170930.VersionInfo, len(api.Upgradable))
+		for i, h := range api.Upgradable {
+			vOrchInfo.Upgradable[i] = &v20170930.VersionInfo{Release: h.Release, Version: h.Version}
+		}
+	}
+	return vOrchInfo
+}
+
+func ConvertOrchestratorInfoToVLabs(api *OrchestratorInfo) *vlabs.OrchestratorInfo {
+	vlabsOrchInfo := &vlabs.OrchestratorInfo{}
+	switch api.Orchestrator {
+	case Kubernetes:
+		vlabsOrchInfo.Orchestrator = vlabs.Kubernetes
+	case DCOS:
+		vlabsOrchInfo.Orchestrator = vlabs.DCOS
+	case Swarm:
+		vlabsOrchInfo.Orchestrator = vlabs.Swarm
+	case SwarmMode:
+		vlabsOrchInfo.Orchestrator = vlabs.SwarmMode
+	}
+	vlabsOrchInfo.Version = api.Version
+	vlabsOrchInfo.Release = api.Release
+	vlabsOrchInfo.DockerComposeVersion = api.DockerComposeVersion
+	vlabsOrchInfo.Default = api.Default
+	if api.Upgradable != nil {
+		vlabsOrchInfo.Upgradable = make([]*vlabs.VersionInfo, len(api.Upgradable))
+		for i, h := range api.Upgradable {
+			vlabsOrchInfo.Upgradable[i] = &vlabs.VersionInfo{Release: h.Release, Version: h.Version}
+		}
+	}
+	return vlabsOrchInfo
 }
 
 // convertResourcePurchasePlanToV20160930 converts a v20160930 ResourcePurchasePlan to an unversioned ResourcePurchasePlan

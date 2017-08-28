@@ -79,6 +79,15 @@ const (
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
 
+const (
+	// Swarm orchestrator and docker compose versions
+	SwarmVersion              = "swarm:1.1.0"
+	SwarmDockerComposeVersion = "1.6.2"
+	// DockerCE orchestrator and docker compose versions
+	DockerCEVersion              = "17.03.*"
+	DockerCEDockerComposeVersion = "1.14.0"
+)
+
 // KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes releases (major.minor)
 // For instance, Kubernetes release "1.7" would contain the version "1.7.2"
 var KubeConfigs = map[string]map[string]string{

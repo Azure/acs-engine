@@ -142,6 +142,21 @@ type OrchestratorProfile struct {
 	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 }
 
+// VersionInfo contains rersion and release numbers
+type VersionInfo struct {
+	Release string `json:"release,omitempty"`
+	Version string `json:"version"`
+}
+
+// OrchestratorInfo contains orchestrator version info
+type OrchestratorInfo struct {
+	Orchestrator string `json:"orchestrator"`
+	VersionInfo
+	DockerComposeVersion string         `json:"docker-compose-version,omitempty"`
+	Default              bool           `json:"default,omitempty"`
+	Upgradable           []*VersionInfo `json:"upgradable,omitempty"`
+}
+
 // UnmarshalJSON unmarshal json using the default behavior
 // And do fields manipulation, such as populating default value
 func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {

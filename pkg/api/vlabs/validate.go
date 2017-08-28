@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -124,6 +125,29 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 	}
 	if len(a.Ports) == 0 && len(a.DNSPrefix) > 0 {
 		return fmt.Errorf("AgentPoolProfile.Ports must be non empty when AgentPoolProfile.DNSPrefix is specified")
+	}
+	return nil
+}
+
+// Validate implements APIObject
+func (o *OrchestratorInfo) Validate() error {
+	switch {
+	case strings.EqualFold(o.Orchestrator, Kubernetes):
+		o.Orchestrator = Kubernetes
+		if _, ok := common.KubeReleaseToVersion[o.Release]; !ok {
+			return fmt.Errorf("Unsupported Kubernetes release '%s'", o.Release)
+		}
+	case strings.EqualFold(o.Orchestrator, DCOS):
+		o.Orchestrator = DCOS
+		if _, ok := common.DCOSReleaseToVersion[o.Release]; !ok {
+			return fmt.Errorf("Unsupported Kubernetes release '%s'", o.Release)
+		}
+	case strings.EqualFold(o.Orchestrator, Swarm):
+		o.Orchestrator = Swarm
+	case strings.EqualFold(o.Orchestrator, SwarmMode):
+		o.Orchestrator = SwarmMode
+	default:
+		return fmt.Errorf("Unsupported orchestrator '%s'", o.Orchestrator)
 	}
 	return nil
 }
