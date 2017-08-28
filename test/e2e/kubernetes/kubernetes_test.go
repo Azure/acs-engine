@@ -101,7 +101,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		It("should be running the expected default version", func() {
 			version, err := node.Version()
 			Expect(err).NotTo(HaveOccurred())
-			Expect(version).To(Equal("v1.6.6"))
+			Expect(version).To(Equal("v1.6.9"))
 		})
 
 		It("should have kube-dns running", func() {
