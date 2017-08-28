@@ -161,14 +161,17 @@ echo "$HOSTADDR $VMNAME" | sudo tee -a /etc/hosts
 
 echo "Installing and configuring docker"
 
+# simple general command retry function
+retrycmd_if_failure() {for i in 1 2 3 4 5; do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
+
 installDocker()
 {
-  apt-get update
-  apt-get install -y apt-transport-https ca-certificates
-  for i in 1 2 3 4 5; do curl --max-time 60 -fsSL https://apt.dockerproject.org/gpg | apt-key add -; [ $? -eq 0 ] && break || sleep 5; done
+  retrycmd_if_failure apt-get update
+  retrycmd_if_failure apt-get install -y apt-transport-https ca-certificates
+  retrycmd_if_failure curl --max-time 60 -fsSL https://apt.dockerproject.org/gpg | apt-key add -
   echo "deb ${DOCKERENGINEDOWNLOADREPO} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
-  apt-get update
-  apt-get install -y --allow-unauthenticated docker-engine
+  retrycmd_if_failure apt-get update
+  retrycmd_if_failure apt-get install -y --allow-unauthenticated docker-engine
   systemctl restart docker
 }
 time installDocker
