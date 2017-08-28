@@ -271,6 +271,18 @@
       ],
       "type": "string"
     },
+    "azureVnetCniURL": {
+      "defaultValue": "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz",
+      "type": "string"
+    },
+    "azureCniURL": {
+      "defaultValue": "https://acs-mirror.azureedge.net/cni/cni-amd64-latest.tgz",
+      "type": "string"
+    },
+    "calicoConfigURL": {
+      "defaultValue": "https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager",
+      "type": "string"
+    },
     "maxPods": {
       "defaultValue": 110,
       "metadata": {
