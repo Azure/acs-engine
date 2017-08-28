@@ -40,7 +40,7 @@ build: generate
 	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -ldflags '$(LDFLAGS)'
 	cd test/acs-engine-test; go build
 
-build-binary: bootstrap generate
+build-binary: generate
 	go build -v -ldflags "${LDFLAGS}" -o ${BINARY_DEST_DIR}/acs-engine .
 
 # usage: make clean build-cross dist VERSION=v0.4.0
@@ -110,11 +110,12 @@ ifndef HAS_GOMETALINTER
 	go get -u github.com/alecthomas/gometalinter
 	gometalinter --install
 endif
-	glide install
 ifndef HAS_GINKGO
 	go get -u github.com/onsi/ginkgo/ginkgo
 endif
 
+build-vendor:
+	${DEV_ENV_CMD} rm -f glide.lock && rm -Rf vendor/ && glide --debug install --force
 
 ci: bootstrap test-style build test lint
 	./scripts/coverage.sh --coveralls

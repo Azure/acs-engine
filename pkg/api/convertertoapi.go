@@ -1,6 +1,8 @@
 package api
 
 import (
+	"strings"
+
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -16,11 +18,16 @@ import (
 // for converting.
 ///////////////////////////////////////////////////////////
 
+// NormalizeAzureRegion returns a normalized Azure region with whilte spaces removed and converted to lower case
+func NormalizeAzureRegion(name string) string {
+	return strings.ToLower(strings.Replace(name, " ", "", -1))
+}
+
 // ConvertV20160930ContainerService converts a v20160930 ContainerService to an unversioned ContainerService
 func ConvertV20160930ContainerService(v20160930 *v20160930.ContainerService) *ContainerService {
 	c := &ContainerService{}
 	c.ID = v20160930.ID
-	c.Location = v20160930.Location
+	c.Location = NormalizeAzureRegion(v20160930.Location)
 	c.Name = v20160930.Name
 	if v20160930.Plan != nil {
 		c.Plan = &ResourcePurchasePlan{}
@@ -40,7 +47,7 @@ func ConvertV20160930ContainerService(v20160930 *v20160930.ContainerService) *Co
 func ConvertV20160330ContainerService(v20160330 *v20160330.ContainerService) *ContainerService {
 	c := &ContainerService{}
 	c.ID = v20160330.ID
-	c.Location = v20160330.Location
+	c.Location = NormalizeAzureRegion(v20160330.Location)
 	c.Name = v20160330.Name
 	if v20160330.Plan != nil {
 		c.Plan = &ResourcePurchasePlan{}
@@ -60,7 +67,7 @@ func ConvertV20160330ContainerService(v20160330 *v20160330.ContainerService) *Co
 func ConvertV20170131ContainerService(v20170131 *v20170131.ContainerService) *ContainerService {
 	c := &ContainerService{}
 	c.ID = v20170131.ID
-	c.Location = v20170131.Location
+	c.Location = NormalizeAzureRegion(v20170131.Location)
 	c.Name = v20170131.Name
 	if v20170131.Plan != nil {
 		c.Plan = &ResourcePurchasePlan{}
@@ -80,7 +87,7 @@ func ConvertV20170131ContainerService(v20170131 *v20170131.ContainerService) *Co
 func ConvertV20170701ContainerService(v20170701 *v20170701.ContainerService) *ContainerService {
 	c := &ContainerService{}
 	c.ID = v20170701.ID
-	c.Location = v20170701.Location
+	c.Location = NormalizeAzureRegion(v20170701.Location)
 	c.Name = v20170701.Name
 	if v20170701.Plan != nil {
 		c.Plan = &ResourcePurchasePlan{}
@@ -100,7 +107,7 @@ func ConvertV20170701ContainerService(v20170701 *v20170701.ContainerService) *Co
 func ConvertVLabsContainerService(vlabs *vlabs.ContainerService) *ContainerService {
 	c := &ContainerService{}
 	c.ID = vlabs.ID
-	c.Location = vlabs.Location
+	c.Location = NormalizeAzureRegion(vlabs.Location)
 	c.Name = vlabs.Name
 	if vlabs.Plan != nil {
 		c.Plan = &ResourcePurchasePlan{}
@@ -382,6 +389,11 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 		api.CertificateProfile = &CertificateProfile{}
 		convertVLabsCertificateProfile(vlabs.CertificateProfile, api.CertificateProfile)
 	}
+
+	if vlabs.AADProfile != nil {
+		api.AADProfile = &AADProfile{}
+		convertVLabsAADProfile(vlabs.AADProfile, api.AADProfile)
+	}
 }
 
 func convertV20160930LinuxProfile(obj *v20160930.LinuxProfile, api *LinuxProfile) {
@@ -556,6 +568,8 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.KubernetesImageBase = vlabs.KubernetesImageBase
 	api.ClusterSubnet = vlabs.ClusterSubnet
 	api.NonMasqueradeCidr = vlabs.NonMasqueradeCidr
+	api.DnsServiceIP = vlabs.DnsServiceIP
+	api.ServiceCIDR = vlabs.ServiceCidr
 	api.NetworkPolicy = vlabs.NetworkPolicy
 	api.MaxPods = vlabs.MaxPods
 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
@@ -844,6 +858,12 @@ func convertVLabsCertificateProfile(vlabs *vlabs.CertificateProfile, api *Certif
 	api.ClientPrivateKey = vlabs.ClientPrivateKey
 	api.KubeConfigCertificate = vlabs.KubeConfigCertificate
 	api.KubeConfigPrivateKey = vlabs.KubeConfigPrivateKey
+}
+
+func convertVLabsAADProfile(vlabs *vlabs.AADProfile, api *AADProfile) {
+	api.ClientAppID = vlabs.ClientAppID
+	api.ServerAppID = vlabs.ServerAppID
+	api.TenantID = vlabs.TenantID
 }
 
 func addDCOSPublicAgentPool(api *Properties) {

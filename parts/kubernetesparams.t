@@ -1,3 +1,18 @@
+{{if .HasAadProfile}}
+    "aadServerAppId": {
+      "metadata": {
+        "description": "The server AAD application ID"
+      },
+      "type": "string"
+    },
+    "aadTenantId": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The AAD tenant ID to use for authentication. If not specified, will use the tenant of the deployment subscription."
+      },
+      "type": "string"
+    },
+{{end}}
     "apiServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"
@@ -72,6 +87,20 @@
     "kubernetesNonMasqueradeCidr": {
       "metadata": {
         "description": "kubernetesNonMasqueradeCidr cluster subnet"
+      },
+      "type": "string"
+    },
+    "kubeDnsServiceIP": {
+      {{PopulateClassicModeDefaultValue "kubeDnsServiceIP"}}
+      "metadata": {
+        "description": "Kubernetes DNS IP"
+      },
+      "type": "string"
+    },
+    "kubeServiceCidr": {
+      {{PopulateClassicModeDefaultValue "kubeServiceCidr"}}
+      "metadata": {
+        "description": "Kubernetes service address space"
       },
       "type": "string"
     },
@@ -290,4 +319,3 @@
       },
       "type": "int"
     }
-

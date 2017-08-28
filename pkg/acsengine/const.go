@@ -70,6 +70,12 @@ const (
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
 	// DefaultTillerImage defines the Helm Tiller deployment version on Kubernetes Clusters
 	DefaultTillerImage = "tiller:v2.6.0"
+	// DefaultKubernetesDnsServiceIP specifies the IP address that kube-dns
+	// listens on by default. must by in the default Service CIDR range.
+	DefaultKubernetesDnsServiceIP = "10.0.0.10"
+	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will
+	// create Service IPs within.
+	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
 )
 
 const (
@@ -95,7 +101,7 @@ const (
 var KubeConfigs = map[string]map[string]string{
 	api.KubernetesRelease1Dot7: {
 		"hyperkube":       "hyperkube-amd64:v1.7.4",
-		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
+		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addonresizer":    "addon-resizer:1.7",
 		"heapster":        "heapster-amd64:v1.4.1",
@@ -118,7 +124,7 @@ var KubeConfigs = map[string]map[string]string{
 	},
 	api.KubernetesRelease1Dot6: {
 		"hyperkube":       "hyperkube-amd64:v1.6.6",
-		"dashboard":       "kubernetes-dashboard-amd64:v1.6.1",
+		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addonresizer":    "addon-resizer:1.7",
 		"heapster":        "heapster-amd64:v1.3.0",

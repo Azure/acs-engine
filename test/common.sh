@@ -45,26 +45,14 @@ function generate_template() {
 	k8sServicePrincipal=$(jq 'getpath(["properties","servicePrincipalProfile"])' ${FINAL_CLUSTER_DEFINITION})
 	if [[ "${k8sServicePrincipal}" != "null" ]]; then
 		apiVersion=$(get_api_version)
-		if [[ "$apiVersion" == "vlabs" ]]; then
-			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientID = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
-			if [[ ${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET} =~ /subscription.* ]]; then
-				vaultID=$(echo $CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET | awk -F"/secrets/" '{print $1}')
-				secretName=$(echo $CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET | awk -F"/secrets/" '{print $2}')
-				jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef.VaultID  = \"${vaultID}\""
-				jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef.SecretName  = \"${secretName}\""
-			else
-				jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.servicePrincipalClientSecret  = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
-			fi
+		jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.clientId = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
+		if [[ ${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET} =~ /subscription.* ]]; then
+			vaultID=$(echo $CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET | awk -F"/secrets/" '{print $1}')
+			secretName=$(echo $CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET | awk -F"/secrets/" '{print $2}')
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef.vaultID = \"${vaultID}\""
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef.secretName  = \"${secretName}\""
 		else
-			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.clientId = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}\""
-			if [[ ${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET} =~ /subscription.* ]]; then
-				vaultID=$(echo $CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET | awk -F"/secrets/" '{print $1}')
-				secretName=$(echo $CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET | awk -F"/secrets/" '{print $2}')
-				jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef.VaultID = \"${vaultID}\""
-				jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.keyvaultSecretRef.SecretName  = \"${secretName}\""
-			else
-				jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.secret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
-			fi
+			jqi "${FINAL_CLUSTER_DEFINITION}" ".properties.servicePrincipalProfile.secret = \"${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}\""
 		fi
 	fi
 

@@ -38,6 +38,7 @@ type Properties struct {
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
+	AADProfile              *AADProfile              `json:"aadProfile,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -45,8 +46,8 @@ type Properties struct {
 // The 'Secret' parameter should be a secret in plain text.
 // The 'KeyvaultSecretRef' parameter is a reference to a secret in a keyvault.
 type ServicePrincipalProfile struct {
-	ClientID          string             `json:"servicePrincipalClientID,omitempty"`
-	Secret            string             `json:"servicePrincipalClientSecret,omitempty"`
+	ClientID          string             `json:"clientId,omitempty"`
+	Secret            string             `json:"secret,omitempty"`
 	KeyvaultSecretRef *KeyvaultSecretRef `json:"keyvaultSecretRef,omitempty"`
 }
 
@@ -174,6 +175,8 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 type KubernetesConfig struct {
 	KubernetesImageBase              string  `json:"kubernetesImageBase,omitempty"`
 	ClusterSubnet                    string  `json:"clusterSubnet,omitempty"`
+	DnsServiceIP                     string  `json:"dnsServiceIP,omitempty"`
+	ServiceCidr                      string  `json:"serviceCidr,omitempty"`
 	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
 	NonMasqueradeCidr                string  `json:"NonMasqueradeCidr,omitempty"`
 	MaxPods                          int     `json:"maxPods,omitempty"`
@@ -242,6 +245,18 @@ type AgentPoolProfile struct {
 
 	FQDN             string            `json:"fqdn"`
 	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
+}
+
+// AADProfile specifies attributes for AAD integration
+type AADProfile struct {
+	// The client AAD application ID.
+	ClientAppID string `json:"clientAppID,omitempty"`
+	// The server AAD application ID.
+	ServerAppID string `json:"serverAppID,omitempty"`
+	// The AAD tenant ID to use for authentication.
+	// If not specified, will use the tenant of the deployment subscription.
+	// Optional
+	TenantID string `json:"tenantID,omitempty"`
 }
 
 // KeyVaultSecrets specifies certificates to install on the pool

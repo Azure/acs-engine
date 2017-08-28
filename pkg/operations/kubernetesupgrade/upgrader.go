@@ -8,7 +8,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // Upgrader holds information on upgrading an ACS cluster

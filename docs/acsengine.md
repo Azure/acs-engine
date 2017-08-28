@@ -1,6 +1,6 @@
 # Microsoft Azure Container Service Engine
 
-The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DCOS, Kubernetes, or Swarm orchestrators. The input to acs-engine is a cluster definition file which describes the desired cluster, including orchestrator, features, and agents. The structure of the input files is very similar to the public API for Azure Container Service.
+The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource Manager) templates for Docker enabled clusters on Microsoft Azure with your choice of DCOS, [Kubernetes](kubernetes/deploy.md), or Swarm orchestrators. The input to acs-engine is a cluster definition file which describes the desired cluster, including orchestrator, features, and agents. The structure of the input files is very similar to the public API for Azure Container Service.
 
 <a href="#install-acs-engine"></a>
 
@@ -21,15 +21,9 @@ If would prefer to build `acs-engine` from source or are you are interested in c
 
 ### Generate Templates
 
-Here is an example of how to generate a new deployment. This example assumes you are using [examples/kubernetes.json](../examples/kubernetes.json).
+ACS Engine consumes a cluster definition which outlines the desired shape, size, and configuration of Kubernetes. There are a number of features that can be enabled through the cluster definition.
 
-1. Before starting ensure you have generated a valid [SSH Public/Private key pair](ssh.md#ssh-key-generation).
-2. edit [examples/kubernetes.json](../examples/kubernetes.json) and fill in the blanks.
-3. run `./bin/acs-engine generate examples/kubernetes.json` to generate the templates in the _output/Kubernetes-UNIQUEID directory.  The UNIQUEID is a hash of your master's FQDN prefix.
-4. now you can use the `azuredeploy.json` and `azuredeploy.parameters.json` for deployment as described in [Deploy Templates](#deploy-templates).
-
-**Note:** If you wish to customize cluster configuaration after the `generate` step, make sure to modify `apimodel.json` in the `_output` directory. This ensures that any computed settings and generated certificates are maintained. For example, if you want to add a second agent pool, edit `apimodel.json` and then run `acs-engine` against that file to generate and updated ARM template. This ensures that during the deploy steps, existing resources remain untouched and new agent pools are created.
-
+See [ACS Engine The Long Way](kubernetes/deploy.md#acs-engine-the-long-way) for an example on generating templates by hand.
 
 <a href="#deployment-usage"></a>
 
@@ -127,6 +121,7 @@ Use "acs-engine [command] --help" for more information about a command.
 
 Building ACS Engine from source has a few requirements for each of the platforms. Download and install the pre-reqs for your platform, Windows, Linux, or Mac:
 
+### Prerequisite
 1. Go version 1.8 [installation instructions](https://golang.org/doc/install)
 2. Git Version Control [installation instructions](https://git-scm.com/download/)
 
@@ -145,11 +140,17 @@ Build acs-engine:
   2. Type `cmd` to open a command prompt
   3. Type `mkdir %GOPATH%` to create your gopath
   4. Type `cd %GOPATH%`
-  5. Type `go get github.com/Azure/acs-engine` to download acs-engine from GitHub
+  5. Type `go get -d github.com/Azure/acs-engine` to download acs-engine from GitHub
   6. Type `go get all` to get the supporting components
-  7. Type `cd %GOPATH%\src\github.com\Azure\acs-engine`
-  8. Type `go build` to build the project
-  9. Run `bin\acs-engine` to see the command line parameters
+  7. Type `go get -u github.com/jteeuwen/go-bindata/...`
+  8. Type `cd %GOPATH%\src\github.com\Azure\acs-engine\pkg\acsengine`
+  9. Type `go generate`
+  10. Type `cd %GOPATH%\src\github.com\Azure\acs-engine\pkg\i18n`
+  11. Type `go generate`
+  12. Type `cd %GOPATH%\src\github.com\Azure\acs-engine`
+  13. Type `go build` to build the project
+  14. Type `go install` to install the project
+  15. Run `acs-engine.exe` to see the command line parameters
 
 ### OS X and Linux
 

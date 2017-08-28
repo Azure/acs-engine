@@ -2,7 +2,12 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "Kubernetes"
+      "orchestratorType": "Kubernetes",
+      "kubernetesConfig": {
+        "dnsServiceIP": "172.17.1.10",
+        "serviceCidr": "172.16.0.0/14",
+        "clusterSubnet": "172.40.0.0/16"
+      }
     },
     "masterProfile": {
       "count": 1,
@@ -38,8 +43,8 @@
       }
     },
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "ServicePrincipalClientID",
-      "servicePrincipalClientSecret": "myServicePrincipalClientSecret"
+      "clientId": "ServicePrincipalClientID",
+      "secret": "myServicePrincipalClientSecret"
     },
     "certificateProfile": {
       "caCertificate": "caCertificate",

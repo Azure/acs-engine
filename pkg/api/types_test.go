@@ -21,7 +21,7 @@ const exampleAPIModel = `{
 		"windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
 		"linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
 		},
-		"servicePrincipalProfile": { "servicePrincipalClientID": "", "servicePrincipalClientSecret": "" }
+		"servicePrincipalProfile": { "clientId": "", "secret": "" }
 	}
 }
 `

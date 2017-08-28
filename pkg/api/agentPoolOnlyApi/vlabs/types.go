@@ -14,9 +14,9 @@ type ResourcePurchasePlan struct {
 	Publisher     string `json:"publisher,omitempty"`
 }
 
-// HostedMaster complies with the ARM model of
+// ManagedCluster complies with the ARM model of
 // resource definition in a JSON template.
-type HostedMaster struct {
+type ManagedCluster struct {
 	ID       string                `json:"id,omitempty"`
 	Location string                `json:"location,omitempty" validate:"required"`
 	Name     string                `json:"name,omitempty"`
@@ -53,8 +53,8 @@ type Properties struct {
 //    <NAME> is the name of the secret.
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
-	ClientID string `json:"servicePrincipalClientID,omitempty" validate:"required"`
-	Secret   string `json:"servicePrincipalClientSecret,omitempty" validate:"required"`
+	ClientID string `json:"clientId,omitempty" validate:"required"`
+	Secret   string `json:"secret,omitempty" validate:"required"`
 }
 
 // CertificateProfile contains cert material for the Kubernetes cluster

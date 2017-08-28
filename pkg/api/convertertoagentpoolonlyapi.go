@@ -14,7 +14,7 @@ import (
 ///////////////////////////////////////////////////////////
 
 // ConvertV20170831AgentPoolOnly converts an AgentPoolOnly object into an in-memory container service
-func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.HostedMaster) *ContainerService {
+func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.ManagedCluster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = v20170831.ID
 	c.Location = v20170831.Location
@@ -71,7 +71,7 @@ func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Propert
 }
 
 // ConvertVLabsContainerService converts a vlabs ContainerService to an unversioned ContainerService
-func ConvertVLabsAgentPoolOnly(vlabs *vlabs.HostedMaster) *ContainerService {
+func ConvertVLabsAgentPoolOnly(vlabs *vlabs.ManagedCluster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = vlabs.ID
 	c.Location = vlabs.Location

@@ -17,7 +17,7 @@ jobs:
           command: make test-style
       - run:
           name: Build binaries
-          command: make build
+          command: make build-binary
       - run:
           name: Run unit tests
           command: make test
@@ -25,7 +25,7 @@ jobs:
           path: test/junit
       - run:
           name: Generate test coverage results
-          command:  make build coverage
+          command:  make coverage
   non-k8s-pr-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:

@@ -15,7 +15,7 @@ import (
 	"strings"
 	"text/template"
 
-	//log "github.com/Sirupsen/logrus"
+	//log "github.com/sirupsen/logrus"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Masterminds/semver"
@@ -315,8 +315,25 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('caCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", FormatAzureProdFQDN(properties.MasterProfile.DNSPrefix, location), -1)
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVariable \"resourceGroup\"}}", properties.MasterProfile.DNSPrefix, -1)
-	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('kubeConfigCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)), -1)
-	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('kubeConfigPrivateKey')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)), -1)
+
+	var authInfo string
+	if properties.AADProfile == nil {
+		authInfo = fmt.Sprintf("{\"client-certificate-data\":\"%v\",\"client-key-data\":\"%v\"}",
+			base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)),
+			base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)))
+	} else {
+		tenantID := properties.AADProfile.TenantID
+		if len(tenantID) == 0 {
+			tenantID = "common"
+		}
+
+		authInfo = fmt.Sprintf("{\"auth-provider\":{\"name\":\"azure\",\"config\":{\"environment\":\"%v\",\"tenant-id\":\"%v\",\"apiserver-id\":\"%v\",\"client-id\":\"%v\"}}}",
+			GetCloudTargetEnv(location),
+			tenantID,
+			properties.AADProfile.ServerAppID,
+			properties.AADProfile.ClientAppID)
+	}
+	kubeconfig = strings.Replace(kubeconfig, "{{authInfo}}", authInfo, -1)
 
 	return kubeconfig, nil
 }
@@ -438,6 +455,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)
 		}
 		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
+		addValue(parametersMap, "kubeDnsServiceIP", properties.OrchestratorProfile.KubernetesConfig.DnsServiceIP)
+		addValue(parametersMap, "kubeServiceCidr", properties.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[KubernetesRelease]["addonmanager"])
 		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[KubernetesRelease]["addonresizer"])
@@ -477,6 +496,11 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 			} else {
 				addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
 			}
+		}
+
+		if properties.AADProfile != nil {
+			addValue(parametersMap, "aadTenantId", properties.AADProfile.TenantID)
+			addValue(parametersMap, "aadServerAppId", properties.AADProfile.ServerAppID)
 		}
 	}
 
@@ -925,7 +949,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				case "kubeBinariesSASURL":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeConfigs[kubernetesRelease]["windowszip"]
 				case "kubeClusterCidr":
-					val = "10.244.0.0/16"
+					val = DefaultKubernetesClusterSubnet
+				case "kubeDnsServiceIP":
+					val = DefaultKubernetesDnsServiceIP
+				case "kubeServiceCidr":
+					val = DefaultKubernetesServiceCIDR
 				case "kubeBinariesVersion":
 					val = api.KubernetesReleaseToVersion[cs.Properties.OrchestratorProfile.OrchestratorRelease]
 				case "caPrivateKey":
@@ -1020,13 +1048,25 @@ func getDCOSMasterCustomNodeLabels() string {
 
 func getDCOSAgentCustomNodeLabels(profile *api.AgentPoolProfile) string {
 	var buf bytes.Buffer
+	var attrstring string
 	buf.WriteString("")
+	if len(profile.OSType) > 0 {
+		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:%s", profile.OSType)
+	} else {
+		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:linux")
+	}
+
+	if len(profile.Ports) > 0 {
+		attrstring += ";public_ip:yes"
+	}
+
+	buf.WriteString(attrstring)
 	if len(profile.CustomNodeLabels) > 0 {
-		buf.WriteString("MESOS_ATTRIBUTES=")
 		for k, v := range profile.CustomNodeLabels {
-			buf.WriteString(fmt.Sprintf("%s:%s;", k, v))
+			buf.WriteString(fmt.Sprintf(";%s:%s", k, v))
 		}
 	}
+	buf.WriteString("\"")
 	return buf.String()
 }
 

@@ -51,17 +51,20 @@ type Properties struct {
 	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
+	AADProfile              *AADProfile              `json:"aadProfile,omitempty"`
 	CustomProfile           *CustomProfile           `json:"customProfile,omitempty"`
 	HostedMasterProfile     *HostedMasterProfile     `json:"hostedMasterProfile,omitempty"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
 type ServicePrincipalProfile struct {
-	ClientID          string             `json:"servicePrincipalClientID"`
-	Secret            string             `json:"servicePrincipalClientSecret,omitempty"`
+	ClientID          string             `json:"clientId"`
+	Secret            string             `json:"secret,omitempty"`
 	KeyvaultSecretRef *KeyvaultSecretRef `json:"keyvaultSecretRef,omitempty"`
 }
 
+// KeyvaultSecretRef specifies path to the Azure keyvault along with secret name and (optionaly) version
+// for Service Principal's secret
 type KeyvaultSecretRef struct {
 	VaultID       string `json:"vaultID"`
 	SecretName    string `json:"secretName"`
@@ -145,6 +148,8 @@ type KubernetesConfig struct {
 	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
 	MaxPods                          int     `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string  `json:"dockerBridgeSubnet,omitempty"`
+	DnsServiceIP                     string  `json:"dnsServiceIP,omitempty"`
+	ServiceCIDR                      string  `json:"serviceCidr,omitempty"`
 	NodeStatusUpdateFrequency        string  `json:"nodeStatusUpdateFrequency,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string  `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string  `json:"ctrlMgrPodEvictionTimeout,omitempty"`
@@ -270,6 +275,18 @@ type HostedMasterProfile struct {
 	DNSPrefix string `json:"dnsPrefix"`
 }
 
+// AADProfile specifies attributes for AAD integration
+type AADProfile struct {
+	// The client AAD application ID.
+	ClientAppID string `json:"clientAppID,omitempty"`
+	// The server AAD application ID.
+	ServerAppID string `json:"serverAppID,omitempty"`
+	// The AAD tenant ID to use for authentication.
+	// If not specified, will use the tenant of the deployment subscription.
+	// Optional
+	TenantID string `json:"tenantID,omitempty"`
+}
+
 // CustomProfile specifies custom properties that are used for
 // cluster instantiation.  Should not be used by most users.
 type CustomProfile struct {
@@ -329,7 +346,7 @@ type VlabsUpgradeContainerService struct {
 // is different from the json that the ACS RP Api gets from ARM
 type V20170831ARMManagedContainerService struct {
 	TypeMeta
-	*v20170831.HostedMaster
+	*v20170831.ManagedCluster
 }
 
 // UpgradeContainerService API model
@@ -456,4 +473,9 @@ func (o *OrchestratorProfile) IsVNETIntegrated() bool {
 	default:
 		return false
 	}
+}
+
+// HasAadProfile  returns true if the has aad profile
+func (p *Properties) HasAadProfile() bool {
+	return p.AADProfile != nil
 }

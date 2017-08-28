@@ -66,7 +66,7 @@ const (
 )
 
 // New creates a new error report
-func New(jobName string, buildNum int, nDeploys int, fileName string) *Manager {
+func New(jobName string, buildNum int, nDeploys int, logErrorsFileName string) *Manager {
 	h := &Manager{}
 	h.JobName = jobName
 	h.BuildNum = buildNum
@@ -74,7 +74,7 @@ func New(jobName string, buildNum int, nDeploys int, fileName string) *Manager {
 	h.Errors = 0
 	h.StartTime = time.Now().UTC()
 	h.Failures = make(map[string]*ErrorStat)
-	h.LogErrors = makeErrorList(fileName)
+	h.LogErrors = makeErrorList(logErrorsFileName)
 	return h
 }
 
@@ -84,8 +84,8 @@ func makeErrorList(fileName string) logErrors {
 	if fileName != "" {
 		file, e := ioutil.ReadFile(fileName)
 		if e != nil {
-			fmt.Printf("File error: %v\n", e)
-			os.Exit(1)
+			// do not exit the tests
+			fmt.Printf("ERROR: %v\n", e)
 		}
 		json.Unmarshal(file, &dummy)
 	}

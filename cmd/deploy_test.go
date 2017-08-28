@@ -9,7 +9,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 const ExampleAPIModel = `{
@@ -21,7 +21,7 @@ const ExampleAPIModel = `{
     "windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
     "linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
     },
-    "servicePrincipalProfile": { "servicePrincipalClientID": "%s", "servicePrincipalClientSecret": "%s" }
+    "servicePrincipalProfile": { "clientId": "%s", "secret": "%s" }
   }
 }
 `

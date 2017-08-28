@@ -4,8 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os/exec"
+	"regexp"
 	"time"
 )
 
@@ -86,27 +89,22 @@ func (s *Service) GetNodePort(port int) int {
 }
 
 // WaitForExternalIP waits for an external ip to be provisioned
-func (s *Service) WaitForExternalIP(wait, sleep int) (*Service, error) {
+func (s *Service) WaitForExternalIP(wait, sleep time.Duration) (*Service, error) {
 	svcCh := make(chan *Service)
 	errCh := make(chan error)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(wait))
+	ctx, cancel := context.WithTimeout(context.Background(), wait)
 	defer cancel()
 	go func() {
-		var svc *Service
-		var err error
 		for {
 			select {
 			case <-ctx.Done():
 				errCh <- fmt.Errorf("Timeout exceeded while waiting for External IP to be provisioned")
 			default:
-				svc, err = Get(s.Metadata.Name, s.Metadata.Namespace)
-				if err != nil {
-					errCh <- err
-				}
+				svc, _ := Get(s.Metadata.Name, s.Metadata.Namespace)
 				if svc.Status.LoadBalancer.Ingress != nil {
 					svcCh <- svc
 				}
-				time.Sleep(time.Second * time.Duration(sleep))
+				time.Sleep(sleep)
 			}
 		}
 	}()
@@ -118,4 +116,21 @@ func (s *Service) WaitForExternalIP(wait, sleep int) (*Service, error) {
 			return svc, nil
 		}
 	}
+}
+
+// Validate will attempt to run an http.Get against the root service url
+func (s *Service) Validate(check string, attempts int, sleep time.Duration) bool {
+	for i := 0; i < attempts; i++ {
+		url := fmt.Sprintf("http://%s", s.Status.LoadBalancer.Ingress[0]["ip"])
+		resp, err := http.Get(url)
+		if err == nil {
+			defer resp.Body.Close()
+			body, _ := ioutil.ReadAll(resp.Body)
+			matched, _ := regexp.MatchString(check, string(body))
+			if matched == true {
+				return true
+			}
+		}
+	}
+	return false
 }

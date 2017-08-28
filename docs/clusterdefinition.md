@@ -30,10 +30,12 @@ Here are the valid values for the orchestrator types:
 
 |Name|Required|Description|
 |---|---|---|
-|kubernetesImageBase|no|This specifies the image of kubernetes to use for the cluster.|
+|kubernetesImageBase|no|This specifies the base URL (everything preceding the actual image filename) of the kubernetes hyperkube image to use for cluster deploymenbt, e.g., `gcrio.azureedge.net/google_containers/`.|
 |networkPolicy|no|Specifies the network policy tool for the cluster. Valid values are:<br>`none` (default), which won't enforce any network policy,<br>`azure` for applying Azure VNET network policy,<br>`calico` for Calico network policy for clusters with Linux agents only.<br>See [network policy examples](../examples/networkpolicy) for more information.|
 |clusterSubnet|no|The IP subnet used for allocating IP addresses for pod network interfaces. The subnet must be in the VNET address space. Default value is 10.244.0.0/16.|
+|dnsServiceIP|no|IP address for kube-dns to listen on. If specified must be in the range of `serviceCidr`.|
 |dockerBridgeSubnet|no|The specific IP and subnet used for allocating IP addresses for the docker bridge network created on the kubernetes master and agents. Default value is 172.17.0.1/16. This value is used to configure the docker daemon using the [--bip flag](https://docs.docker.com/engine/userguide/networking/default_network/custom-docker0).|
+|serviceCidr|no|IP range for Service IPs, Default is "10.0.0.0/16". This range is never routed outside of a node so does not need to lie within clusterSubnet or the VNet.|
 |enableRbac|no|Enable [Kubernetes RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) (boolean - default == false) |
 |maxPods|no|The maximum number of pods per node. The minimum valid value, necessary for running kube-system pods, is 5. Default value is 30 when networkPolicy equals azure, 110 otherwise.|
 
@@ -101,8 +103,8 @@ https://{keyvaultname}.vault.azure.net:443/secrets/{secretName}/{version}
 
 |Name|Required|Description|
 |---|---|---|
-|servicePrincipalClientID|yes, for Kubernetes clusters|describes the Azure client id.  It is recommended to use a separate client ID per cluster|
-|servicePrincipalClientSecret|yes, for Kubernetes clusters|describes the Azure client secret.  It is recommended to use a separate client secret per client id|
+|clientId|yes, for Kubernetes clusters|describes the Azure client id.  It is recommended to use a separate client ID per cluster|
+|secret|yes, for Kubernetes clusters|describes the Azure client secret.  It is recommended to use a separate client secret per client id|
 
 ## Cluster Defintions for apiVersion "2016-03-30"
 
@@ -154,3 +156,13 @@ For apiVersion "2016-03-30", a cluster may have only 1 agent pool profiles.
 |---|---|---|
 |adminUsername|yes|describes the username to be used on all linux clusters|
 |ssh.publicKeys[0].keyData|yes|The public SSH key used for authenticating access to all Linux nodes in the cluster.  Here are instructions for [generating a public/private key pair](ssh.md#ssh-key-generation).|
+
+### aadProfile
+
+`linuxProfile` provides [AAD integration](kubernetes.aad.md) configuration for the cluster, currently only available for Kubernetes orchestrator.
+
+|Name|Required|Description|
+|---|---|---|
+|clientAppID|yes|describes the client AAD application ID|
+|serverAppID|yes|describes the server AAD application ID|
+|tenantID|no|describes the AAD tenant ID to use for authentication. If not specified, will use the tenant of the deployment subscription.|

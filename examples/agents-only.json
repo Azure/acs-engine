@@ -24,8 +24,8 @@
       }
     },
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "spId",
-      "servicePrincipalClientSecret": "spSecret"
+      "clientId": "spId",
+      "secret": "spSecret"
     },
     "certificateProfile": {
       "caCertificate": "cert_Ca",

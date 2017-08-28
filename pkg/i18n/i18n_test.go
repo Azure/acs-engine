@@ -44,7 +44,7 @@ func TestTranslationLanguageDefault(t *testing.T) {
 	Expect(err).Should(BeNil())
 
 	lang := GetLanguage()
-	Expect(lang).Should(Equal("default"))
+	Expect(lang).Should(Equal(defaultLanguage))
 
 	os.Setenv("LANG", origLang)
 }

@@ -8,8 +8,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/go-autorest/autorest/to"
-	log "github.com/Sirupsen/logrus"
 	"github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
