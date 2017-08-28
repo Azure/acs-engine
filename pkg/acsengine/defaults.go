@@ -73,7 +73,7 @@ var (
 		},
 	}
 
-	//AzureUSGovernmentCloud is the US goverment config.
+	//AzureUSGovernmentCloud is the US government config.
 	AzureUSGovernmentCloud = AzureEnvironmentSpecConfig{
 		DockerSpecConfig:     DefaultDockerSpecConfig,
 		KubernetesSpecConfig: DefaultKubernetesSpecConfig,

@@ -71,7 +71,7 @@ const (
 	masterOutputs                 = "masteroutputs.t"
 	masterParams                  = "masterparams.t"
 	swarmBaseFile                 = "swarmbase.t"
-	swarmParams                  = "swarmparams.t"
+	swarmParams                   = "swarmparams.t"
 	swarmAgentResourcesVMAS       = "swarmagentresourcesvmas.t"
 	swarmAgentResourcesVMSS       = "swarmagentresourcesvmss.t"
 	swarmAgentResourcesClassic    = "swarmagentresourcesclassic.t"

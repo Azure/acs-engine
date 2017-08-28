@@ -43,7 +43,7 @@ type DCOSSpecConfig struct {
 //KubernetesSpecConfig is the kubernetes container images used.
 type KubernetesSpecConfig struct {
 	KubernetesImageBase     string
-	TillerImageBase        string
+	TillerImageBase         string
 	KubeBinariesSASURLBase  string
 	AzureVnetCNIDownloadURL string
 	AzureCNIDownloadURL     string
