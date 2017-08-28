@@ -463,6 +463,7 @@ func mainInternal() error {
 	regions := []string{}
 	for _, region := range acsengine.AzureLocations {
 		switch region {
+		case "eastus2euap": // initial deploy region for all RPs, known to be less stable
 		case "australiaeast": // no D2V2 support
 		case "japanwest": // no D2V2 support
 		case "chinaeast": // private cloud
