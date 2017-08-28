@@ -558,6 +558,7 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {
 	vlabs.KubernetesImageBase = api.KubernetesImageBase
 	vlabs.ClusterSubnet = api.ClusterSubnet
+	vlabs.NonMasqueradeCidr = api.NonMasqueradeCidr
 	vlabs.DnsServiceIP = api.DnsServiceIP
 	vlabs.ServiceCidr = api.ServiceCIDR
 	vlabs.NetworkPolicy = api.NetworkPolicy

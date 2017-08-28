@@ -84,6 +84,12 @@
       },
       "type": "string"
     },
+    "kubernetesNonMasqueradeCidr": {
+      "metadata": {
+        "description": "kubernetesNonMasqueradeCidr cluster subnet"
+      },
+      "type": "string"
+    },
     "kubeDnsServiceIP": {
       {{PopulateClassicModeDefaultValue "kubeDnsServiceIP"}}
       "metadata": {
