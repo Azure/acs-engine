@@ -51,6 +51,7 @@ type Properties struct {
 	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
+	AADProfile              *AADProfile              `json:"aadProfile,omitempty"`
 	CustomProfile           *CustomProfile           `json:"customProfile,omitempty"`
 	HostedMasterProfile     *HostedMasterProfile     `json:"hostedMasterProfile,omitempty"`
 }
@@ -161,6 +162,8 @@ type KubernetesConfig struct {
 	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
 	MaxPods                          int     `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string  `json:"dockerBridgeSubnet,omitempty"`
+	DnsServiceIP                     string  `json:"dnsServiceIP,omitempty"`
+	ServiceCIDR                      string  `json:"serviceCidr,omitempty"`
 	NodeStatusUpdateFrequency        string  `json:"nodeStatusUpdateFrequency,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string  `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string  `json:"ctrlMgrPodEvictionTimeout,omitempty"`
@@ -286,6 +289,18 @@ type HostedMasterProfile struct {
 	DNSPrefix string `json:"dnsPrefix"`
 }
 
+// AADProfile specifies attributes for AAD integration
+type AADProfile struct {
+	// The client AAD application ID.
+	ClientAppID string `json:"clientAppID,omitempty"`
+	// The server AAD application ID.
+	ServerAppID string `json:"serverAppID,omitempty"`
+	// The AAD tenant ID to use for authentication.
+	// If not specified, will use the tenant of the deployment subscription.
+	// Optional
+	TenantID string `json:"tenantID,omitempty"`
+}
+
 // CustomProfile specifies custom properties that are used for
 // cluster instantiation.  Should not be used by most users.
 type CustomProfile struct {
@@ -345,7 +360,7 @@ type VlabsUpgradeContainerService struct {
 // is different from the json that the ACS RP Api gets from ARM
 type V20170831ARMManagedContainerService struct {
 	TypeMeta
-	*v20170831.HostedMaster
+	*v20170831.ManagedCluster
 }
 
 // UpgradeContainerService API model
@@ -472,4 +487,9 @@ func (o *OrchestratorProfile) IsVNETIntegrated() bool {
 	default:
 		return false
 	}
+}
+
+// HasAadProfile  returns true if the has aad profile
+func (p *Properties) HasAadProfile() bool {
+	return p.AADProfile != nil
 }

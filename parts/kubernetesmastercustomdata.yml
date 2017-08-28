@@ -230,6 +230,22 @@ write_files:
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
 {{end}}
 
+{{ if .HasAadProfile }}
+    OIDC_CLIENT_ID=spn:{{WrapAsVariable "aadServerAppId"}}
+    VAR_AAD_TENANT_ID={{WrapAsVariable "aadTenantId"}}
+    VAR_TENANT_ID={{WrapAsVariable "tenantId"}}
+    VAR_TARGET_ENV={{WrapAsVariable "targetEnvironment"}}
+    AAD_TENANT_ID=${VAR_AAD_TENANT_ID:-$VAR_TENANT_ID}
+    AAD_ISSUER_HOST="sts.windows.net"
+    if [ "$VAR_TARGET_ENV" = "AzureChinaCloud" ]; then
+        AAD_ISSUER_HOST="sts.chinacloudapi.cn"
+    fi
+
+    OIDC_ISSUER_URL="https://$AAD_ISSUER_HOST/$AAD_TENANT_ID/" 
+    perl -pi -e "s|--oidc-client-id=\K(?=\")|$OIDC_CLIENT_ID| || s|--oidc-issuer-url=\K(?=\")|$OIDC_ISSUER_URL|" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+{{else}}
+    sed -i "/--oidc-client-id\|--oidc-issuer-url\|--oidc-username-claim/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+{{end}}
     sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsVariable "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeServiceCidr>|{{WrapAsVariable "kubeServiceCidr"}}|g; s|<masterEtcdClientPort>|{{WrapAsVariable "masterEtcdClientPort"}}|g; s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g; s|<kubernetesCtrlMgrNodeMonitorGracePeriod>|{{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}|g; s|<kubernetesCtrlMgrPodEvictionTimeout>|{{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}|g; s|<kubernetesCtrlMgrRouteReconciliationPeriod>|{{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
@@ -239,6 +255,7 @@ write_files:
     sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsVariable "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsVariable "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
     sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
     sed -i "s|<kubernetesTillerSpec>|{{WrapAsVariable "kubernetesTillerSpec"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<kubeDnsServiceIP>|{{WrapAsVariable "kubeDnsServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
 
 {{if .OrchestratorProfile.KubernetesConfig.EnableRbac }}
     # If RBAC enabled then add parameters to API server and Controller manager configuration

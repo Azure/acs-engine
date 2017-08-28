@@ -122,6 +122,68 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		if err := c.Validate(k8sRelease); err == nil {
 			t.Error("should error on invalid CtrlMgrRouteReconciliationPeriod")
 		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "192.168.0.10",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP but not ServiceCidr")
+		}
+
+		c = KubernetesConfig{
+			ServiceCidr: "192.168.0.10/24",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when ServiceCidr but not DnsServiceIP")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "invalid",
+			ServiceCidr:  "192.168.0.0/24",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP is invalid")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "192.168.1.10",
+			ServiceCidr:  "192.168.0.0/not-a-len",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when ServiceCidr is invalid")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "192.168.1.10",
+			ServiceCidr:  "192.168.0.0/24",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP is outside of ServiceCidr")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "172.99.255.255",
+			ServiceCidr:  "172.99.0.1/16",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP is broadcast address of ServiceCidr")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "172.99.0.1",
+			ServiceCidr:  "172.99.0.1/16",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error when DnsServiceIP is first IP of ServiceCidr")
+		}
+
+		c = KubernetesConfig{
+			DnsServiceIP: "172.99.255.10",
+			ServiceCidr:  "172.99.0.1/16",
+		}
+		if err := c.Validate(k8sRelease); err != nil {
+			t.Error("should not error when DnsServiceIP and ServiceCidr are valid")
+		}
 	}
 
 	// Tests that apply to pre-1.6 releases
@@ -242,6 +304,48 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 
 		if err := p.Validate(); err == nil || err.Error() != "service principal client keyvault secret reference is of incorrect format" {
 			t.Error("error should have occurred")
+		}
+	})
+}
+
+func Test_AadProfile_Validate(t *testing.T) {
+	t.Run("Valid aadProfile should pass", func(t *testing.T) {
+		for _, aadProfile := range []AADProfile{
+			{
+				ClientAppID: "92444486-5bc3-4291-818b-d53ae480991b",
+				ServerAppID: "403f018b-4d89-495b-b548-0cf9868cdb0a",
+			},
+			{
+				ClientAppID: "92444486-5bc3-4291-818b-d53ae480991b",
+				ServerAppID: "403f018b-4d89-495b-b548-0cf9868cdb0a",
+				TenantID:    "feb784f6-7174-46da-aeae-da66e80c7a11",
+			},
+		} {
+			if err := aadProfile.Validate(); err != nil {
+				t.Errorf("should not error %v", err)
+			}
+		}
+	})
+
+	t.Run("Invalid aadProfiles should NOT pass", func(t *testing.T) {
+		for _, aadProfile := range []AADProfile{
+			{
+				ClientAppID: "1",
+				ServerAppID: "d",
+			},
+			{
+				ClientAppID: "6a247d73-ae33-4559-8e5d-4001fdc17b15",
+			},
+			{
+				ClientAppID: "92444486-5bc3-4291-818b-d53ae480991b",
+				ServerAppID: "403f018b-4d89-495b-b548-0cf9868cdb0a",
+				TenantID:    "1",
+			},
+			{},
+		} {
+			if err := aadProfile.Validate(); err == nil {
+				t.Errorf("error should have occurred")
+			}
 		}
 	})
 }

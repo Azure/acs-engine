@@ -34,8 +34,11 @@
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
     "networkPolicy": "[parameters('networkPolicy')]",
+    "azureVnetCniURL":"[parameters('azureVnetCniURL')]",
+    "azureCniURL":"[parameters('azureCniURL')]",
     "maxPods": "[parameters('maxPods')]",
     "vnetCidr": "[parameters('vnetCidr')]",
+    "calicoConfigURL":"[parameters('calicoConfigURL')]",
 {{ if UseManagedIdentity }}
     "servicePrincipalClientId": "msi",
     "servicePrincipalClientSecret": "msi",
@@ -50,6 +53,10 @@
     "masterVMSize": "[parameters('masterVMSize')]",
 {{end}}
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
+{{if .HasAadProfile}}
+    "aadServerAppId": "[parameters('aadServerAppId')]",
+    "aadTenantId": "[parameters('aadTenantId')]",
+{{end}}
 {{if not IsHostedMaster}}
   {{if GetClassicMode}}
     "masterCount": "[parameters('masterCount')]",
@@ -67,10 +74,11 @@
     "masterAvailabilitySet": "[concat('master-availabilityset-', variables('nameSuffix'))]",
     "nameSuffix": "[parameters('nameSuffix')]",
     "orchestratorName": "k8s",
-    "osImageOffer": "UbuntuServer",
-    "osImagePublisher": "Canonical",
-    "osImageSKU": "16.04-LTS",
-    "osImageVersion": "16.04.201706191",
+    "fqdnEndpointSuffix":"[parameters('fqdnEndpointSuffix')]",
+    "osImageOffer": "[parameters('osImageOffer')]", 
+    "osImagePublisher": "[parameters('osImagePublisher')]", 
+    "osImageSKU": "[parameters('osImageSKU')]", 
+    "osImageVersion": "[parameters('osImageVersion')]",
     "resourceGroup": "[resourceGroup().name]",
 {{if not IsHostedMaster}}
     "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
@@ -133,8 +141,8 @@
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
 {{end}}
     "vnetCidr": "[parameters('vnetCidr')]",
-    "kubeDnsServiceIp": "10.0.0.10",
-    "kubeServiceCidr": "10.0.0.0/16",
+    "kubeDnsServiceIP": "[parameters('kubeDnsServiceIP')]",
+    "kubeServiceCidr": "[parameters('kubeServiceCidr')]",
     "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
     "dockerBridgeCidr": "[parameters('dockerBridgeCidr')]",
 {{if IsKubernetesVersionGe "1.6.0"}}

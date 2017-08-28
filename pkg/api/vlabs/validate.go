@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/satori/uuid"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -196,6 +197,22 @@ func handleValidationErrors(e validator.ValidationErrors) error {
 }
 
 // Validate implements APIObject
+func (profile *AADProfile) Validate() error {
+	if _, err := uuid.FromString(profile.ClientAppID); err != nil {
+		return fmt.Errorf("clientAppID '%v' is invalid", profile.ClientAppID)
+	}
+	if _, err := uuid.FromString(profile.ServerAppID); err != nil {
+		return fmt.Errorf("serverAppID '%v' is invalid", profile.ServerAppID)
+	}
+	if len(profile.TenantID) > 0 {
+		if _, err := uuid.FromString(profile.TenantID); err != nil {
+			return fmt.Errorf("tenantID '%v' is invalid", profile.TenantID)
+		}
+	}
+	return nil
+}
+
+// Validate implements APIObject
 func (a *Properties) Validate() error {
 	if e := validate.Struct(a); e != nil {
 		return handleValidationErrors(e.(validator.ValidationErrors))
@@ -309,6 +326,16 @@ func (a *Properties) Validate() error {
 	if e := validateVNET(a); e != nil {
 		return e
 	}
+
+	if a.AADProfile != nil {
+		if a.OrchestratorProfile.OrchestratorType != Kubernetes {
+			return fmt.Errorf("'aadProfile' is only supported by orchestrator '%v'", Kubernetes)
+		}
+		if e := a.AADProfile.Validate(); e != nil {
+			return e
+		}
+	}
+
 	return nil
 }
 
@@ -401,6 +428,42 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 	if a.CloudProviderRateLimit {
 		if !ratelimitEnabledReleases[k8sRelease] {
 			return fmt.Errorf("cloudprovider rate limiting functionality not available in kubernetes release %s", k8sRelease)
+		}
+	}
+
+	if a.DnsServiceIP != "" || a.ServiceCidr != "" {
+		if a.DnsServiceIP == "" {
+			return errors.New("OrchestratorProfile.KubernetesConfig.ServiceCidr must be specified when DnsServiceIP is")
+		}
+		if a.ServiceCidr == "" {
+			return errors.New("OrchestratorProfile.KubernetesConfig.DnsServiceIP must be specified when ServiceCidr is")
+		}
+
+		dnsIp := net.ParseIP(a.DnsServiceIP)
+		if dnsIp == nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is an invalid IP address", a.DnsServiceIP)
+		}
+
+		_, serviceCidr, err := net.ParseCIDR(a.ServiceCidr)
+		if err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ServiceCidr '%s' is an invalid CIDR subnet", a.ServiceCidr)
+		}
+
+		// Finally validate that the DNS ip is within the subnet
+		if !serviceCidr.Contains(dnsIp) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is not within the ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		}
+
+		// and that the DNS IP is _not_ the subnet broadcast address
+		broadcast := common.Ip4BroadcastAddress(serviceCidr)
+		if dnsIp.Equal(broadcast) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' cannot be the broadcast address of ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		}
+
+		// and that the DNS IP is _not_ the first IP in the service subnet
+		firstServiceIp := common.CidrFirstIp(serviceCidr.IP)
+		if firstServiceIp.Equal(dnsIp) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' cannot be the first IP of ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
 		}
 	}
 

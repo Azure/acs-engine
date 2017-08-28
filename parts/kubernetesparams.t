@@ -1,3 +1,18 @@
+{{if .HasAadProfile}}
+    "aadServerAppId": {
+      "metadata": {
+        "description": "The server AAD application ID"
+      },
+      "type": "string"
+    },
+    "aadTenantId": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The AAD tenant ID to use for authentication. If not specified, will use the tenant of the deployment subscription."
+      },
+      "type": "string"
+    },
+{{end}}
     "apiServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"
@@ -66,6 +81,20 @@
       {{PopulateClassicModeDefaultValue "kubeClusterCidr"}}
       "metadata": {
         "description": "Kubernetes cluster subnet"
+      },
+      "type": "string"
+    },
+    "kubeDnsServiceIP": {
+      {{PopulateClassicModeDefaultValue "kubeDnsServiceIP"}}
+      "metadata": {
+        "description": "Kubernetes DNS IP"
+      },
+      "type": "string"
+    },
+    "kubeServiceCidr": {
+      {{PopulateClassicModeDefaultValue "kubeServiceCidr"}}
+      "metadata": {
+        "description": "Kubernetes service address space"
       },
       "type": "string"
     },
@@ -242,6 +271,18 @@
       ],
       "type": "string"
     },
+    "azureVnetCniURL": {
+      "defaultValue": "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz",
+      "type": "string"
+    },
+    "azureCniURL": {
+      "defaultValue": "https://acs-mirror.azureedge.net/cni/cni-amd64-latest.tgz",
+      "type": "string"
+    },
+    "calicoConfigURL": {
+      "defaultValue": "https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager",
+      "type": "string"
+    },
     "maxPods": {
       "defaultValue": 110,
       "metadata": {
@@ -284,4 +325,3 @@
       },
       "type": "int"
     }
-

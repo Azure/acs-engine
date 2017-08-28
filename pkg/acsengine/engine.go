@@ -71,6 +71,7 @@ const (
 	masterOutputs                 = "masteroutputs.t"
 	masterParams                  = "masterparams.t"
 	swarmBaseFile                 = "swarmbase.t"
+	swarmParams                   = "swarmparams.t"
 	swarmAgentResourcesVMAS       = "swarmagentresourcesvmas.t"
 	swarmAgentResourcesVMSS       = "swarmagentresourcesvmss.t"
 	swarmAgentResourcesClassic    = "swarmagentresourcesclassic.t"
@@ -135,8 +136,8 @@ var calicoAddonYamls15 = map[string]string{
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
 var kubernetesTemplateFiles = []string{kubernetesBaseFile, kubernetesAgentResourcesVMAS, kubernetesAgentVars, kubernetesMasterResources, kubernetesMasterVars, kubernetesParams, kubernetesWinAgentVars}
-var swarmTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
-var swarmModeTemplateFiles = []string{swarmBaseFile, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
+var swarmTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
+var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentResourcesVMAS, swarmAgentVars, swarmAgentResourcesVMSS, swarmAgentResourcesClassic, swarmBaseFile, swarmMasterResources, swarmMasterVars, swarmWinAgentResourcesVMAS, swarmWinAgentResourcesVMSS}
 
 /**
  The following parameters could be either a plain text, or referenced to a secret in a keyvault:
@@ -315,8 +316,25 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('caCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", FormatAzureProdFQDN(properties.MasterProfile.DNSPrefix, location), -1)
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVariable \"resourceGroup\"}}", properties.MasterProfile.DNSPrefix, -1)
-	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('kubeConfigCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)), -1)
-	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('kubeConfigPrivateKey')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)), -1)
+
+	var authInfo string
+	if properties.AADProfile == nil {
+		authInfo = fmt.Sprintf("{\"client-certificate-data\":\"%v\",\"client-key-data\":\"%v\"}",
+			base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigCertificate)),
+			base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.KubeConfigPrivateKey)))
+	} else {
+		tenantID := properties.AADProfile.TenantID
+		if len(tenantID) == 0 {
+			tenantID = "common"
+		}
+
+		authInfo = fmt.Sprintf("{\"auth-provider\":{\"name\":\"azure\",\"config\":{\"environment\":\"%v\",\"tenant-id\":\"%v\",\"apiserver-id\":\"%v\",\"client-id\":\"%v\"}}}",
+			GetCloudTargetEnv(location),
+			tenantID,
+			properties.AADProfile.ServerAppID,
+			properties.AADProfile.ClientAppID)
+	}
+	kubeconfig = strings.Replace(kubeconfig, "{{authInfo}}", authInfo, -1)
 
 	return kubeconfig, nil
 }
@@ -344,6 +362,28 @@ func (t *TemplateGenerator) prepareTemplateFiles(properties *api.Properties) ([]
 	return files, baseFile, nil
 }
 
+// FormatAzureProdFQDNs constructs all possible Azure prod fqdn
+func FormatAzureProdFQDNs(fqdnPrefix string) []string {
+	var fqdns []string
+	for _, location := range AzureLocations {
+		fqdns = append(fqdns, FormatAzureProdFQDN(fqdnPrefix, location))
+	}
+	return fqdns
+}
+
+// FormatAzureProdFQDN constructs an Azure prod fqdn
+func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
+	FQDNFormat := AzureCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
+	if location == "chinaeast" || location == "chinanorth" {
+		FQDNFormat = AzureChinaCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
+	} else if location == "germanynortheast" || location == "germanycentral" {
+		FQDNFormat = AzureGermanCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
+	} else if location == "usgovvirginia" || location == "usgoviowa" {
+		FQDNFormat = AzureUSGovernmentCloud.EndpointConfig.ResourceManagerVMDNSSuffix
+	}
+	return fmt.Sprintf("%s.%s."+FQDNFormat, fqdnPrefix, location)
+}
+
 //GetCloudSpecConfig returns the kubenernetes container images url configurations based on the deploy target environment
 //for example: if the target is the public azure, then the default container image url should be gcrio.azureedge.net/google_container/...
 //if the target is azure china, then the default container image should be mirror.azure.cn:5000/google_container/...
@@ -351,7 +391,10 @@ func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
 	switch GetCloudTargetEnv(location) {
 	case azureChinaCloud:
 		return AzureChinaCloudSpec
-	//TODO - add cloud specs for germany and usgov
+	case azureGermanCloud:
+		return AzureGermanCloudSpec
+	case azureUSGovernmentCloud:
+		return AzureUSGovernmentCloud
 	default:
 		return AzureCloudSpec
 	}
@@ -378,9 +421,15 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 	properties := cs.Properties
 	location := cs.Location
 	parametersMap := paramsMap{}
+	cloudSpecConfig := GetCloudSpecConfig(location)
 
 	// Master Parameters
 	addValue(parametersMap, "location", location)
+	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig.ImageOffer)
+	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig.ImageSku)
+	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig.ImagePublisher)
+	addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig.ImageVersion)
+	addValue(parametersMap, "fqdnEndpointSuffix", cloudSpecConfig.EndpointConfig.ResourceManagerVMDNSSuffix)
 	addValue(parametersMap, "targetEnvironment", GetCloudTargetEnv(location))
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
 	// masterEndpointDNSNamePrefix is the basis for storage account creation across dcos, swarm, and k8s
@@ -414,7 +463,12 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		}
 	}
 
-	cloudSpecConfig := GetCloudSpecConfig(location)
+	//Swarm and SwarmMode Parameters
+	if properties.OrchestratorProfile.OrchestratorType == api.Swarm || properties.OrchestratorProfile.OrchestratorType == api.SwarmMode {
+		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
+		addValue(parametersMap, "dockerComposeDownloadURL", cloudSpecConfig.DockerSpecConfig.DockerComposeDownloadURL)
+	}
+
 	// Kubernetes Parameters
 	if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 		KubernetesRelease := properties.OrchestratorProfile.OrchestratorRelease
@@ -438,6 +492,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)
 		}
 		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
+		addValue(parametersMap, "kubeDnsServiceIP", properties.OrchestratorProfile.KubernetesConfig.DnsServiceIP)
+		addValue(parametersMap, "kubeServiceCidr", properties.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[KubernetesRelease]["addonmanager"])
 		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[KubernetesRelease]["addonresizer"])
@@ -463,10 +519,14 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
 		addValue(parametersMap, "dockerBridgeCidr", properties.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet)
 		addValue(parametersMap, "networkPolicy", properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
+		addValue(parametersMap, "azureVnetCniURL", cloudSpecConfig.KubernetesSpecConfig.AzureVnetCNIDownloadURL)
+		addValue(parametersMap, "azureCniURL", cloudSpecConfig.KubernetesSpecConfig.AzureCNIDownloadURL)
+		addValue(parametersMap, "calicoConfigURL", cloudSpecConfig.KubernetesSpecConfig.CalicoConfigDownloadURL)
 		addValue(parametersMap, "maxPods", properties.OrchestratorProfile.KubernetesConfig.MaxPods)
 
 		if properties.OrchestratorProfile.KubernetesConfig == nil ||
 			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
+
 			addValue(parametersMap, "servicePrincipalClientId", properties.ServicePrincipalProfile.ClientID)
 			if properties.ServicePrincipalProfile.KeyvaultSecretRef != nil {
 				addKeyvaultReference(parametersMap, "servicePrincipalClientSecret",
@@ -476,6 +536,11 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 			} else {
 				addValue(parametersMap, "servicePrincipalClientSecret", properties.ServicePrincipalProfile.Secret)
 			}
+		}
+
+		if properties.AADProfile != nil {
+			addValue(parametersMap, "aadTenantId", properties.AADProfile.TenantID)
+			addValue(parametersMap, "aadServerAppId", properties.AADProfile.ServerAppID)
 		}
 	}
 
@@ -924,7 +989,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				case "kubeBinariesSASURL":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeConfigs[kubernetesRelease]["windowszip"]
 				case "kubeClusterCidr":
-					val = "10.244.0.0/16"
+					val = DefaultKubernetesClusterSubnet
+				case "kubeDnsServiceIP":
+					val = DefaultKubernetesDnsServiceIP
+				case "kubeServiceCidr":
+					val = DefaultKubernetesServiceCIDR
 				case "kubeBinariesVersion":
 					val = api.KubernetesReleaseToVersion[cs.Properties.OrchestratorProfile.OrchestratorRelease]
 				case "caPrivateKey":
