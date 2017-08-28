@@ -413,7 +413,6 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 		if err != nil {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr '%s' is an invalid subnet", a.NonMasqueradeCidr)
 		}
-
 	}
 
 	if a.DockerBridgeSubnet != "" {
