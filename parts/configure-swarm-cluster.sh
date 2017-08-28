@@ -162,7 +162,7 @@ echo "$HOSTADDR $VMNAME" | sudo tee -a /etc/hosts
 echo "Installing and configuring docker"
 
 # simple general command retry function
-retrycmd_if_failure() {for i in 1 2 3 4 5; do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
+retrycmd_if_failure() { for i in 1 2 3 4 5; do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
 
 installDocker()
 {
