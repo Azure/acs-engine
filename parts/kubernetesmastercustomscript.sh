@@ -50,9 +50,18 @@ ADMINUSER="${36}"
 
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
+
+OS=$(cat /etc/*release | grep ^NAME | tr -d 'NAME="')
 ensureRunCommandCompleted()
 {
     echo "waiting for runcmd to finish"
+	
+	
+	if [[ $OS == *"CoreOS"* ]]; then
+		echo "It's CoreOS."
+		return 0
+	fi
+
     for i in {1..900}; do
         if [ -e /opt/azure/containers/runcmd.complete ]; then
             echo "runcmd finished"
@@ -420,16 +429,22 @@ ensureJournal
 
 # master only
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
-    writeKubeConfig
-    ensureKubectl
-    ensureEtcdDataDir
-    ensureEtcd
-    ensureApiserver
+	writeKubeConfig
+	ensureKubectl
+	ensureEtcdDataDir
+	ensureEtcd
+	ensureApiserver
 fi
 
-# mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
-echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
-sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
+if [[ $OS == *"CoreOS"* ]]; 
+then
+    echo "It's CoreOS."
+else
+	# mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
+	echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
+	sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
+fi
+
 
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 echo "Install complete successfully"

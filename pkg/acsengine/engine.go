@@ -23,11 +23,12 @@ import (
 )
 
 const (
-	kubernetesMasterCustomDataYaml      = "kubernetesmastercustomdata.yml"
-	kubernetesMasterCustomScript        = "kubernetesmastercustomscript.sh"
-	kubernetesAgentCustomDataYaml       = "kubernetesagentcustomdata.yml"
-	kubeConfigJSON                      = "kubeconfig.json"
-	kubernetesWindowsAgentCustomDataPS1 = "kuberneteswindowssetup.ps1"
+	kubernetesMasterCustomDataYaml         = "kubernetesmastercustomdata.yml"
+	kubernetesMasterCustomScript           = "kubernetesmastercustomscript.sh"
+	kubernetesAgentCustomDataYaml          = "kubernetesagentcustomdata.yml"
+	kubernetesAgentCustomDataForCoreOSYaml = "kubernetesagentcustomdataforcoreos.yml"
+	kubeConfigJSON                         = "kubeconfig.json"
+	kubernetesWindowsAgentCustomDataPS1    = "kuberneteswindowssetup.ps1"
 )
 
 const (
@@ -566,7 +567,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 	// Agent parameters
 	for _, agentProfile := range properties.AgentPoolProfiles {
 		addValue(parametersMap, fmt.Sprintf("%sCount", agentProfile.Name), agentProfile.Count)
-		addValue(parametersMap, fmt.Sprintf("%sVMSize", agentProfile.Name), agentProfile.VMSize)
+		addValue(parametersMap, fmt.Sprintf("%sVMSize", agentProfile.Name), agentProfile.VMSize)		
 		if agentProfile.IsCustomVNET() {
 			addValue(parametersMap, fmt.Sprintf("%sVnetSubnetID", agentProfile.Name), agentProfile.VnetSubnetID)
 		} else {
@@ -833,11 +834,16 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
+			var str string
+			var e error			
+			if profile.IsDistroCoreOS() {
+				str, e = t.getSingleLineForTemplate(kubernetesAgentCustomDataForCoreOSYaml, cs, profile)
+			} else {
+				str, e = t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
+			}
 			if e != nil {
 				return ""
 			}
-
 			// add artifacts
 			var artifiacts map[string]string
 			if cs.Properties.OrchestratorProfile.OrchestratorVersion == api.KubernetesRelease1Dot5 {
@@ -849,7 +855,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				addonTextContents := getBase64CustomScript(filename)
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
 			}
-
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesB64Provision": func() string {

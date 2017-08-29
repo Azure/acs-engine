@@ -1,0 +1,48 @@
+{
+	"apiVersion": "vlabs",
+	"properties": {
+		"orchestratorProfile": {
+			"orchestratorType": "Kubernetes",
+			"orchestratorVersion": "1.6.6"
+		},
+		"masterProfile": {
+			"count": 1,
+			"dnsPrefix": "udayk8s19",
+			"vmSize": "Standard_DS2_v2"
+		},
+		"agentPoolProfiles": [{
+				"name": "agentpool1",
+				"count": 1,
+				"vmSize": "Standard_DS2_v2",
+				"availabilityProfile": "AvailabilitySet",
+				"distro": "CoreOS"
+			},
+			{
+				"name": "agentpool2",
+				"count": 1,
+				"vmSize": "Standard_DS2_v2",
+				"availabilityProfile": "AvailabilitySet",
+				"distro": "Ubuntu"
+			},
+			{
+				"name": "apnotsp",
+				"count": 1,
+				"vmSize": "Standard_DS2_v2",
+				"availabilityProfile": "AvailabilitySet"
+			}
+		],
+		
+		"linuxProfile": {
+			"adminUsername": "azureuser",
+			"ssh": {
+				"publicKeys": [{
+					"keyData": ""
+				}]
+			}
+		},
+		"servicePrincipalProfile": {
+			"servicePrincipalClientID": "",
+			"servicePrincipalClientSecret": ""
+		}
+	}
+}

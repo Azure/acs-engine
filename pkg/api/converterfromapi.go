@@ -687,6 +687,7 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	p.Name = api.Name
 	p.Count = api.Count
 	p.VMSize = api.VMSize
+	p.Distro = vlabs.Distro(api.Distro)
 	p.OSDiskSizeGB = api.OSDiskSizeGB
 	p.DNSPrefix = api.DNSPrefix
 	p.OSType = vlabs.OSType(api.OSType)

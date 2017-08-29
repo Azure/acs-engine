@@ -112,6 +112,30 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 		}
 	}
 
+	//Distro is only applicable for Kubernetes and OSType Linux Only. Distro should be either CoreOS or Ubuntu or Empty to use Ubuntu as default
+	if orchestratorType == Kubernetes {
+		if a.IsWindows() {
+			if e := validate.Var(a.Distro, "len=0"); e != nil {
+				return fmt.Errorf("Distro is not suppored for OSType Windows. OSType determined  was: %s and Distro was: %s", a.OSType, a.Distro)
+			}
+		}
+
+		switch a.Distro {
+			case "CoreOS":
+			case "Ubuntu":
+			case "": 
+			default:
+				return fmt.Errorf("Unsupported Distro is specified for OSType Linux. OSType determined  was: %s and Distro was: %s", a.OSType, a.Distro)
+			}
+
+		
+	} else {
+		//Not Kubernetes
+		if e := validateDistroEmpty(a.Distro, "AgentPoolProfile.distro"); e != nil {
+				return fmt.Errorf("Distro is suppored for Orchestrator Type Kubernetes only. orchestratorType determined   was: %s and Distro was: %s", orchestratorType, a.Distro)
+		}
+	}
+
 	if len(a.DiskSizesGB) > 0 {
 		if e := validate.Var(a.StorageProfile, "eq=StorageAccount|eq=ManagedDisks"); e != nil {
 			return fmt.Errorf("property 'StorageProfile' must be set to either '%s' or '%s' when attaching disks", StorageAccount, ManagedDisks)
@@ -475,6 +499,13 @@ func (a *Properties) validateNetworkPolicy() error {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 
+	return nil
+}
+
+func validateDistroEmpty(name Distro, label string) error {
+	if name != "" {
+		return fmt.Errorf("%s must be an empty value", label)
+	}
 	return nil
 }
 

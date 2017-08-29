@@ -190,22 +190,22 @@ type MasterProfile struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                string `json:"name"`
-	Count               int    `json:"count"`
-	VMSize              string `json:"vmSize"`
-	OSDiskSizeGB        int    `json:"osDiskSizeGB,omitempty"`
-	DNSPrefix           string `json:"dnsPrefix,omitempty"`
-	OSType              OSType `json:"osType,omitempty"`
-	Ports               []int  `json:"ports,omitempty"`
-	AvailabilityProfile string `json:"availabilityProfile"`
-	StorageProfile      string `json:"storageProfile,omitempty"`
-	DiskSizesGB         []int  `json:"diskSizesGB,omitempty"`
-	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
-	Subnet              string `json:"subnet"`
-	IPAddressCount      int    `json:"ipAddressCount,omitempty"`
-
-	FQDN             string            `json:"fqdn,omitempty"`
-	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
+	Name                string            `json:"name"`
+	Count               int               `json:"count"`
+	VMSize              string            `json:"vmSize"`
+	OSDiskSizeGB        int               `json:"osDiskSizeGB,omitempty"`
+	DNSPrefix           string            `json:"dnsPrefix,omitempty"`
+	OSType              OSType            `json:"osType,omitempty"`
+	Ports               []int             `json:"ports,omitempty"`
+	AvailabilityProfile string            `json:"availabilityProfile"`
+	StorageProfile      string            `json:"storageProfile,omitempty"`
+	DiskSizesGB         []int             `json:"diskSizesGB,omitempty"`
+	VnetSubnetID        string            `json:"vnetSubnetID,omitempty"`
+	Subnet              string            `json:"subnet"`
+	IPAddressCount      int               `json:"ipAddressCount,omitempty"`
+	Distro              Distro            `json:"distro,omitempty"`
+	FQDN                string            `json:"fqdn,omitempty"`
+	CustomNodeLabels    map[string]string `json:"customNodeLabels,omitempty"`
 }
 
 // DiagnosticsProfile setting to enable/disable capturing
@@ -265,6 +265,9 @@ type KeyVaultCertificate struct {
 
 // OSType represents OS types of agents
 type OSType string
+
+// Distro represents Distro of OS
+type Distro string
 
 type HostedMasterProfile struct {
 	// Master public endpoint/FQDN with port
@@ -417,6 +420,19 @@ func (a *AgentPoolProfile) IsWindows() bool {
 // IsLinux returns true if the agent pool is linux
 func (a *AgentPoolProfile) IsLinux() bool {
 	return a.OSType == Linux
+}
+
+// IsDistroCoreOS returns true if distro is coreos
+func (a *AgentPoolProfile) IsDistroCoreOS() bool {
+	return a.Distro == CoreOS
+}
+
+//IsDistroUbuntu returns treue if Distro in the agentppol is Ubuntu or Not spefcified
+func (a *AgentPoolProfile) IsDistroUbuntu() bool {
+	if a.OSType == Windows {
+		return false
+	}
+	return a.Distro == Ubuntu || a.Distro == ""
 }
 
 // IsAvailabilitySets returns true if the customer specified disks

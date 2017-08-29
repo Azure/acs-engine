@@ -24,6 +24,65 @@
       }, 
       "type": "string"
     },
+{{if .IsLinux}}	
+	{{if .IsDistroCoreOS}}	
+		"{{.Name}}osImageOffer": {
+		  "metadata": {
+			"description": "osImageOffer for Agent Pool '{{.Name}}'."
+		  }, 
+		   "defaultValue": "CoreOS",
+		  "type": "string"
+		},
+		"{{.Name}}osImagePublisher": {
+		  "metadata": {
+			"description": "osImagePublisher for Agent Pool '{{.Name}}'."
+		  }, 
+		  "defaultValue": "CoreOS",
+		  "type": "string"
+		},
+		"{{.Name}}osImageSKU": {
+		  "metadata": {
+			"description": "osImageSKU for Agent Pool '{{.Name}}'."
+		  }, 
+		  "defaultValue": "Stable",
+		  "type": "string"
+		},"{{.Name}}osImageVersion": {
+		  "metadata": {
+			"description": "osImageVersion for Agent Pool '{{.Name}}'."
+		  }, 
+		  "defaultValue": "latest",
+		  "type": "string"
+		},
+	{{else if .IsDistroUbuntu}}
+		"{{.Name}}osImageOffer": {
+		  "metadata": {
+			"description": "osImageOffer for Agent Pool '{{.Name}}'."
+		  }, 
+		   "defaultValue": "UbuntuServer",
+		  "type": "string"
+		},
+		"{{.Name}}osImagePublisher": {
+		  "metadata": {
+			"description": "osImagePublisher for Agent Pool '{{.Name}}'."
+		  }, 
+		  "defaultValue": "Canonical",
+		  "type": "string"
+		},
+		"{{.Name}}osImageSKU": {
+		  "metadata": {
+			"description": "osImageSKU for Agent Pool '{{.Name}}'."
+		  }, 
+		  "defaultValue": "16.04-LTS",
+		  "type": "string"
+		},"{{.Name}}osImageVersion": {
+		  "metadata": {
+			"description": "osImageVersion for Agent Pool '{{.Name}}'."
+		  }, 
+		  "defaultValue": "16.04.201706191",
+		  "type": "string"
+		},
+	{{end}}
+{{end}}
 {{if .IsCustomVNET}}
     "{{.Name}}VnetSubnetID": {
       "metadata": {
