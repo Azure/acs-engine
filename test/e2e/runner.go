@@ -22,9 +22,6 @@ var (
 
 const (
 	kubernetesOrchestrator = "kubernetes"
-	dcosOrchestrator       = "dcos"
-	swarmOrchestrator      = "swarm"
-	dockerceOrchestrator   = "dockerce"
 )
 
 func main() {
