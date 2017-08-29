@@ -18,6 +18,7 @@ type Config struct {
 	MasterDNSPrefix       string `envconfig:"DNS_PREFIX"`
 	PublicSSHKey          string `envconfig:"PUBLIC_SSH_KEY"`
 	WindowsAdminPasssword string `envconfig:"WINDOWS_ADMIN_PASSWORD"`
+	OrchestratorRelease   string `envconfig:"ORCHESTRATOR_RELEASE"`
 }
 
 // Engine holds necessary information to interact with acs-engine cli
@@ -83,6 +84,10 @@ func Build(cwd, templatePath, outputPath, definitionName string) (*Engine, error
 
 	if config.WindowsAdminPasssword != "" {
 		cs.ContainerService.Properties.WindowsProfile.AdminPassword = config.WindowsAdminPasssword
+	}
+
+	if config.OrchestratorRelease != "" {
+		cs.ContainerService.Properties.OrchestratorProfile.OrchestratorRelease = config.OrchestratorRelease
 	}
 
 	err = engine.write(cs)

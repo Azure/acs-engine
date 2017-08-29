@@ -20,6 +20,13 @@ var (
 	err  error
 )
 
+const (
+	kubernetesOrchestrator = "kubernetes"
+	dcosOrchestrator       = "dcos"
+	swarmOrchestrator      = "swarm"
+	dockerceOrchestrator   = "dockerce"
+)
+
 func main() {
 	cwd, _ := os.Getwd()
 	cfg, err = config.ParseConfig()
@@ -37,6 +44,26 @@ func main() {
 	acct.SetSubscription()
 
 	// If an interrupt/kill signal is sent we will run the clean up procedure
+	trap()
+	provisionCluster()
+
+	if cfg.Orchestrator == kubernetesOrchestrator {
+		os.Setenv("KUBECONFIG", cfg.GetKubeConfig())
+		log.Printf("Kubeconfig:%s\n", cfg.GetKubeConfig())
+		log.Println("Waiting on nodes to go into ready state...")
+		ready := node.WaitOnReady(10*time.Second, 10*time.Minute)
+		if ready == false {
+			teardown()
+			log.Fatalf("Error: Not all nodes in ready state!")
+		}
+	}
+
+	os.Setenv("NAME", cfg.Name)
+	runGinkgo(cfg.Orchestrator)
+}
+
+func trap() {
+	// If an interrupt/kill signal is sent we will run the clean up procedure
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	signal.Notify(c, os.Kill)
@@ -47,7 +74,35 @@ func main() {
 			os.Exit(1)
 		}
 	}()
+}
 
+func teardown() {
+	if cfg.CleanUpOnExit {
+		log.Printf("Deleting Group:%s\n", cfg.Name)
+		acct.DeleteGroup()
+	}
+	exec.Command("ssh-add", "-d", cfg.GetSSHKeyPath())
+}
+
+func runGinkgo(orchestrator string) {
+	cmd := exec.Command("ginkgo", "-nodes", "10", "-slowSpecThreshold", "180", "-r", "test/e2e/", orchestrator)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Start()
+	if err != nil {
+		log.Printf("Error while trying to start ginkgo:%s\n", err)
+		teardown()
+		os.Exit(1)
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		teardown()
+		os.Exit(1)
+	}
+}
+
+func provisionCluster() {
 	if cfg.Name == "" {
 		cfg.Name = cfg.GenerateName()
 		log.Printf("Cluster name:%s\n", cfg.Name)
@@ -99,39 +154,4 @@ func main() {
 			log.Fatalf("Error while trying to create deployment: %s\n", err)
 		}
 	}
-
-	os.Setenv("NAME", cfg.Name)
-	os.Setenv("KUBECONFIG", cfg.GetKubeConfig())
-	log.Printf("Kubeconfig:%s\n", cfg.GetKubeConfig())
-
-	log.Println("Waiting on nodes to go into ready state...")
-	ready := node.WaitOnReady(10*time.Second, 10*time.Minute)
-	if ready == false {
-		teardown()
-		log.Fatalf("Error: Not all nodes in ready state!")
-	}
-
-	cmd := exec.Command("ginkgo", "-nodes", "10", "-slowSpecThreshold", "180", "-r", "test/e2e/", cfg.Orchestrator)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Start()
-	if err != nil {
-		log.Printf("Error while trying to start ginkgo:%s\n", err)
-		teardown()
-		os.Exit(1)
-	}
-
-	err = cmd.Wait()
-	if err != nil {
-		teardown()
-		os.Exit(1)
-	}
-}
-
-func teardown() {
-	if cfg.CleanUpOnExit {
-		log.Printf("Deleting Group:%s\n", cfg.Name)
-		acct.DeleteGroup()
-	}
-	exec.Command("ssh-add", "-d", cfg.GetSSHKeyPath())
 }
