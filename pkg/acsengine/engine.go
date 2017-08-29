@@ -885,7 +885,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetKubernetesAgentPreprovisionYaml": func(profile *api.AgentPoolProfile) string {
 			str := ""
-			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
+			if profile.PreprovisionExtension != nil {
 				str += "\n"
 				str += makeAgentExtensionScriptCommands(cs, profile)
 			}
