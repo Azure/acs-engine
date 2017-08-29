@@ -165,7 +165,7 @@ var KubeConfigs = map[string]map[string]string{
 }
 
 const (
-	// Root URL for extensions
+	//DefaultExtensionsRootURL  Root URL for extensions
 	DefaultExtensionsRootURL = "https://raw.githubusercontent.com/Azure/acs-engine/master/"
 
 	//MsecndDCOSBootstrapDownloadURL Azure CDN to download DCOS1.7.3
