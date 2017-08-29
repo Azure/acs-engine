@@ -20,8 +20,6 @@ type orchestratorsCmd struct {
 	release      string
 }
 
-type orchestratorsFunc func(string) error
-
 func newOrchestratorsCmd() *cobra.Command {
 	oc := orchestratorsCmd{}
 
