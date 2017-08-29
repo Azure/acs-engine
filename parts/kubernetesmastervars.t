@@ -34,6 +34,7 @@
     "kubernetesKubeDNSSpec": "[parameters('kubernetesKubeDNSSpec')]",
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
     "networkPolicy": "[parameters('networkPolicy')]",
+    "kubernetesNonMasqueradeCidr": "[parameters('kubernetesNonMasqueradeCidr')]",
     "azureVnetCniURL":"[parameters('azureVnetCniURL')]",
     "azureCniURL":"[parameters('azureCniURL')]",
     "maxPods": "[parameters('maxPods')]",
