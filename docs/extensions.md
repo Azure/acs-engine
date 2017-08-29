@@ -4,17 +4,18 @@ Extensions in acs-engine provide an easy way for acs-engine users to add pre-pac
 
 # extensionsProfile
 
-The extensionsProfile contains the extensions that the cluster will install. The following illustrates a template with a hello-world-k8s extension.
+The extensionsProfile contains the extensions that the cluster will install. The following illustrates a template with a hello-world-dcos extension.
 
 ``` javascript
 { 
   ...
   "extensionsProfile": [
     {
-        "name": "hello-world-k8s",
+        "name": "hello-world-dcos",
         "version": "v1",
         "extensionParameters": "parameters",
-        "rootURL": "http://mytestlocation.com/hello-world-k8s/"
+        "rootURL": "http://mytestlocation.com/hello-world-dcos/",
+        "script": "hello-world-dcos.sh"
     }
   ]
 }
@@ -26,6 +27,7 @@ The extensionsProfile contains the extensions that the cluster will install. The
 |version|yes|the version of the extension.  This has to exactly match the name of the folder under the extension name folder|
 |extensionParameters|optional|extension parameters may be required by extensions.  The format of the parameters is also extension dependant. If the index in the vm pool is needed add EXTENSION_LOOP_INDEX at the location you wan the index and it will be replaced with the string representation of the index(zero based)|
 |rootURL|optional|url to the root location of extensions.  The rootURL must have an extensions child folder that follows the extensions convention.  The rootURL is mainly used for testing purposes.|
+|script|optional|Used for preprovision scripts this points to the location of the script to run inside of the extension folder.|
 
 # rootURL
 You normally would not provide a rootURL.  The extensions are normally loaded from the extensions folder in GitHub.  However, you may specify the rootURL when testing a new extension.  The rootURL must adhere to the extensions conventions.  For example, in order to use an Azure Storage account to test an extension named extension-one, you would do the following:
@@ -37,7 +39,7 @@ You normally would not provide a rootURL.  The extensions are normally loaded fr
 - Set the rootURL to: 'https://mystorageaccount.blob.core.windows.net/'
 
 # masterProfile
-Extensions, in the current implementation run a script on a master node. The extensions array in the masterProfile define that the master pool will have the script run on a single node on it.
+Extensions, in the current implementation run a script on a master node. The extensions array in the masterProfile define that the master pool will have the script run on a single node on it. If you want it to run on all pass in All to singleOrAll
 
 ``` javascript
 {
@@ -49,7 +51,8 @@ Extensions, in the current implementation run a script on a master node. The ext
       "firstConsecutiveStaticIP": "10.240.255.5",
       "extensions": [
         { 
-          "name": "hello-world-k8s"
+          "name": "hello-world-k8s",
+          "singleOrAll": "single"
         }
      ]
   },
@@ -62,14 +65,41 @@ Extensions, in the current implementation run a script on a master node. The ext
   ]
 }
 ```
-
+Or they can be referenced as a preprovision extension, this will run during cloud init before the cluster is brought up. Usually used for installing antivirus or the like. These will run on all the masters or the nodes in the agent pool it is specified to run on if it is specified. Single or all is a formality at this point.
+``` javascript
+{
+  "masterProfile": {
+      "count": 3,
+      "dnsPrefix": "dnsprefix",
+      "vmSize": "Standard_D2_v2",
+      "osType": "Linux",
+      "firstConsecutiveStaticIP": "10.240.255.5",
+      "preprovisionExtension": {
+          "name": "hello-world",
+          "singleOrAll": "All"
+      }
+     
+  },
+  "extensionsProfile": [
+    {
+        "name": "hello-world-k8s",
+        "version": "v1",
+        "extensionParameters": "parameters",
+        "script": "hello.sh"
+    }
+  ]
+}
+```
 |Name|Required|Description|
 |---|---|---|
 |name|yes|The name of the extension. This must match the name in the extensionsProfile| 
 
 # Required Extension Files
 
-In order to install an extension, there are four required files - supported-orchestrators.json, template.json, template-link.json and EXTENSION-NAME.sh. Following is a description of each file.
+In order to install a post provision extension, there are four required files - supported-orchestrators.json, template.json, template-link.json and EXTENSION-NAME.sh. Following is a description of each file.
+
+In order to install a preprovision extension, there are two required files - supported-orchestrators.json and EXTENSION-NAME.sh. Following is a description of each file.
+
 
 |File Name|Description|
 |-----------------------------|---|
@@ -225,7 +255,7 @@ Replace "**EXTENSION-NAME**" with the name of the extension.
 
 # Creating extension script file
 
-The script file will get executed on the VM to install the extension. Following is an example of a script.sh file.
+The script file will get executed on the VM to install the extension. Following is an example of a script.sh file. For a preprovision extension the relative path of the file inside the version folder needs to be passed in as the "script" property in the extensions profile
 
 ``` bash
 #!/bin/bash

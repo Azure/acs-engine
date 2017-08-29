@@ -1699,12 +1699,7 @@ func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, 
 	parmetersString := strings.Replace(extensionProfile.ExtensionParameters, "EXTENSION_LOOP_INDEX",
 		"copyIndex(EXTENSION_LOOP_OFFSET)", -1)
 	dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", parmetersString, -1)
-
-	if strings.TrimSpace(extensionProfile.RootURL) == "" {
-		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", DefaultExtensionsRootURL, -1)
-	} else {
-		dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", extensionProfile.RootURL, -1)
-	}
+	dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", extensionProfile.RootURL, -1)
 	dta = strings.Replace(dta, "EXTENSION_TARGET_VM_NAME_PREFIX", extTargetVMNamePrefix, -1)
 	dta = strings.Replace(dta, "EXTENSION_LOOP_COUNT", loopCount, -1)
 	dta = strings.Replace(dta, "EXTENSION_LOOP_OFFSET", loopOffset, -1)
@@ -1727,10 +1722,6 @@ func validateProfileOptedForExtension(extensionName string, profileExtensions []
 // or loaded.  getLinkedTemplateText calls getLinkedTemplateTextForURL,
 // passing the default rootURL.
 func getLinkedTemplateText(orchestratorType string, extensionName string, version string, rootURL string) (string, error) {
-	if strings.TrimSpace(rootURL) == "" {
-		return getLinkedTemplateTextForURL(DefaultExtensionsRootURL, orchestratorType, extensionName, version)
-	}
-
 	return getLinkedTemplateTextForURL(rootURL, orchestratorType, extensionName, version)
 }
 
