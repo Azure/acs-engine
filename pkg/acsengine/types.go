@@ -50,10 +50,12 @@ type KubernetesSpecConfig struct {
 	CalicoConfigDownloadURL string
 }
 
+//AzureEndpointConfig describes an Azure endpoint
 type AzureEndpointConfig struct {
 	ResourceManagerVMDNSSuffix string
 }
 
+//AzureOSImageConfig describes an Azure OS image
 type AzureOSImageConfig struct {
 	ImageOffer     string
 	ImageSku       string

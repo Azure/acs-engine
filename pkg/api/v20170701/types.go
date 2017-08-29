@@ -60,6 +60,7 @@ type ServicePrincipalProfile struct {
 	KeyvaultSecretRef *KeyvaultSecretRef `json:"keyvaultSecretRef,omitempty"`
 }
 
+// KeyvaultSecretRef is a reference to a secret in a keyvault.
 type KeyvaultSecretRef struct {
 	VaultID       string `json:"vaultID" validate:"required"`
 	SecretName    string `json:"secretName" validate:"required"`

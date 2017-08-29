@@ -492,7 +492,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)
 		}
 		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
-		addValue(parametersMap, "kubeDnsServiceIP", properties.OrchestratorProfile.KubernetesConfig.DnsServiceIP)
+		addValue(parametersMap, "kubeDNSServiceIP", properties.OrchestratorProfile.KubernetesConfig.DNSServiceIP)
 		addValue(parametersMap, "kubeServiceCidr", properties.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[KubernetesRelease]["addonmanager"])
@@ -760,11 +760,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return GetMasterAgentAllowedSizes()
 		},
-		"GetSwarmVersions": func() string {
-			return GetSwarmVersions(SwarmVersion, SwarmDockerComposeVersion)
+		"getSwarmVersions": func() string {
+			return getSwarmVersions(SwarmVersion, SwarmDockerComposeVersion)
 		},
 		"GetSwarmModeVersions": func() string {
-			return GetSwarmVersions(DockerCEVersion, DockerCEDockerComposeVersion)
+			return getSwarmVersions(DockerCEVersion, DockerCEDockerComposeVersion)
 		},
 		"GetSizeMap": func() string {
 			if t.ClassicMode {
@@ -990,8 +990,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase + KubeConfigs[kubernetesRelease]["windowszip"]
 				case "kubeClusterCidr":
 					val = DefaultKubernetesClusterSubnet
-				case "kubeDnsServiceIP":
-					val = DefaultKubernetesDnsServiceIP
+				case "kubeDNSServiceIP":
+					val = DefaultKubernetesDNSServiceIP
 				case "kubeServiceCidr":
 					val = DefaultKubernetesServiceCIDR
 				case "kubeBinariesVersion":
@@ -1522,6 +1522,6 @@ func getKubernetesPodStartIndex(properties *api.Properties) int {
 	return nodeCount + 1
 }
 
-func GetSwarmVersions(orchestratorVersion, dockerComposeVersion string) string {
+func getSwarmVersions(orchestratorVersion, dockerComposeVersion string) string {
 	return fmt.Sprintf("\"orchestratorVersion\": \"%s\",\n\"dockerComposeVersion\": \"%s\",\n", orchestratorVersion, dockerComposeVersion)
 }
