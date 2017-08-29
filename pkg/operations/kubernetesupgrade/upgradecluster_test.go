@@ -58,7 +58,12 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
 		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
-		uc := UpgradeCluster{}
+		locale, _ := i18n.LoadTranslations()
+		uc := UpgradeCluster{
+			Translator: &i18n.Translator{
+				Locale: locale,
+			},
+		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
 		mockClient.FailDeleteVirtualMachine = true
@@ -81,7 +86,12 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
 		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
-		uc := UpgradeCluster{}
+		locale, _ := i18n.LoadTranslations()
+		uc := UpgradeCluster{
+			Translator: &i18n.Translator{
+				Locale: locale,
+			},
+		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
 		mockClient.FailDeployTemplate = true
@@ -103,7 +113,12 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
 		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
-		uc := UpgradeCluster{}
+		locale, _ := i18n.LoadTranslations()
+		uc := UpgradeCluster{
+			Translator: &i18n.Translator{
+				Locale: locale,
+			},
+		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
 		mockClient.FailGetVirtualMachine = true
@@ -125,7 +140,12 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
 		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
-		uc := UpgradeCluster{}
+		locale, _ := i18n.LoadTranslations()
+		uc := UpgradeCluster{
+			Translator: &i18n.Translator{
+				Locale: locale,
+			},
+		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
 		mockClient.FailGetStorageClient = true
@@ -147,7 +167,12 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
 		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
-		uc := UpgradeCluster{}
+		locale, _ := i18n.LoadTranslations()
+		uc := UpgradeCluster{
+			Translator: &i18n.Translator{
+				Locale: locale,
+			},
+		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
 		mockClient.FailDeleteNetworkInterface = true
@@ -169,7 +194,12 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot7
 		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot7]
 
-		uc := UpgradeCluster{}
+		locale, _ := i18n.LoadTranslations()
+		uc := UpgradeCluster{
+			Translator: &i18n.Translator{
+				Locale: locale,
+			},
+		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
 		uc.Client = &mockClient
@@ -190,7 +220,12 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		ucs.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
 		ucs.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
-		uc := UpgradeCluster{}
+		locale, _ := i18n.LoadTranslations()
+		uc := UpgradeCluster{
+			Translator: &i18n.Translator{
+				Locale: locale,
+			},
+		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
 		uc.Client = &mockClient

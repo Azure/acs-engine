@@ -145,7 +145,7 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionScript"}}
 
-runcmd:
+runcmd: {{GetKubernetesAgentPreprovisionYaml .}}
 - apt-get update
 - apt-get install -y apt-transport-https ca-certificates nfs-common
 - systemctl enable rpcbind

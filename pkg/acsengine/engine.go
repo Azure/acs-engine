@@ -725,20 +725,34 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetDCOSMasterCustomData": func() string {
 			masterProvisionScript := getDCOSMasterProvisionScript()
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
+			masterPreprovisionExtentsion := ""
+			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
+				masterPreprovisionExtentsion += "\n"
+				masterPreprovisionExtentsion += makeMasterExtensionScriptCommands(cs)
+			}
+
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
 				cs.Properties.OrchestratorProfile.OrchestratorRelease,
-				cs.Properties.MasterProfile.Count, masterProvisionScript, masterAttributeContents)
+				cs.Properties.MasterProfile.Count, masterProvisionScript,
+				masterAttributeContents, masterPreprovisionExtentsion)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			agentProvisionScript := getDCOSAgentProvisionScript(profile)
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
+			agentPreprovisionExtentsion := ""
+			if profile.PreprovisionExtension != nil {
+				agentPreprovisionExtentsion += "\n"
+				agentPreprovisionExtentsion += makeAgentExtensionScriptCommands(cs, profile)
+			}
+
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
 				cs.Properties.OrchestratorProfile.OrchestratorRelease,
-				cs.Properties.MasterProfile.Count, agentProvisionScript, attributeContents)
+				cs.Properties.MasterProfile.Count, agentProvisionScript,
+				attributeContents, agentPreprovisionExtentsion)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -861,16 +875,31 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetKubernetesB64Provision": func() string {
 			return getBase64CustomScript(kubernetesMasterCustomScript)
 		},
+		"GetKubernetesMasterPreprovisionYaml": func() string {
+			str := ""
+			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
+				str += "\n"
+				str += makeMasterExtensionScriptCommands(cs)
+			}
+			return str
+		},
+		"GetKubernetesAgentPreprovisionYaml": func(profile *api.AgentPoolProfile) string {
+			str := ""
+			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
+				str += "\n"
+				str += makeAgentExtensionScriptCommands(cs, profile)
+			}
+			return str
+		},
 		"GetMasterSwarmCustomData": func() string {
 			files := []string{swarmProvision}
 			str := buildYamlFileWithWriteFiles(files)
 			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
-				extensionStr := MakeExtensionScriptCommands(cs.Properties.MasterProfile.PreprovisionExtension,
-					cs.Properties.ExtensionsProfile, "copyIndex(variables('masterOffset'))")
-				str += "concat('runcmd:\n " + extensionStr + "  \n\n')"
+				extensionStr := makeMasterExtensionScriptCommands(cs)
+				str += "'runcmd:\n" + extensionStr + "\n\n'"
 			}
 			str = escapeSingleLine(str)
-			return fmt.Sprintf("\"customData\": \"[base64('%s')]\",", str)
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetAgentSwarmCustomData": func(profile *api.AgentPoolProfile) string {
 			files := []string{swarmProvision}
@@ -878,11 +907,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			str = escapeSingleLine(str)
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('%sRunCmdFile'),variables('%sRunCmd')))]\",", str, profile.Name, profile.Name)
 		},
-		"GetSwarmAgentPreprovisionExtensionCommands": func(profile *api.AgentPoolProfile, copyIndexFormat string) string {
+		"GetSwarmAgentPreprovisionExtensionCommands": func(profile *api.AgentPoolProfile) string {
 			str := ""
 			if profile.PreprovisionExtension != nil {
-				copyIndex := fmt.Sprintf(copyIndexFormat, profile.Name)
-				str = MakeExtensionScriptCommands(profile.PreprovisionExtension, cs.Properties.ExtensionsProfile, copyIndex)
+				makeAgentExtensionScriptCommands(cs, profile)
 			}
 			str = escapeSingleLine(str)
 			return str
@@ -909,12 +937,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			files := []string{swarmModeProvision}
 			str := buildYamlFileWithWriteFiles(files)
 			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
-				extensionStr := MakeExtensionScriptCommands(cs.Properties.MasterProfile.PreprovisionExtension,
-					cs.Properties.ExtensionsProfile, "copyIndex(variables('masterOffset'))")
-				str += "runcmd:\n " + extensionStr + "  \n\n"
+				extensionStr := makeMasterExtensionScriptCommands(cs)
+				str += "runcmd:\n" + extensionStr + "\n\n"
 			}
 			str = escapeSingleLine(str)
-			return fmt.Sprintf("\"customData\": \"[base64('%s')]\",", str)
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetAgentSwarmModeCustomData": func(profile *api.AgentPoolProfile) string {
 			files := []string{swarmModeProvision}
@@ -1057,8 +1084,25 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 	}
 }
 
-// MakeExtensionScriptCommands creates a script to be inserted in a cloud init yaml that downloads and then runs an extension script
-func MakeExtensionScriptCommands(extension *api.Extension, extensionsProfile []api.ExtensionProfile, copyIndex string) string {
+func makeMasterExtensionScriptCommands(cs *api.ContainerService) string {
+	copyIndex := "',copyIndex(),'"
+	if cs.Properties.OrchestratorProfile.IsKubernetes() {
+		copyIndex = "',copyIndex(variables('masterOffset')),'"
+	}
+	return makeExtensionScriptCommands(cs.Properties.MasterProfile.PreprovisionExtension,
+		cs.Properties.ExtensionsProfile, copyIndex)
+}
+
+func makeAgentExtensionScriptCommands(cs *api.ContainerService, profile *api.AgentPoolProfile) string {
+	copyIndex := "',copyIndex(),'"
+	if profile.IsAvailabilitySets() {
+		copyIndex = fmt.Sprintf("',copyIndex(variables('%sOffset')),'", profile.Name)
+	}
+	return makeExtensionScriptCommands(cs.Properties.MasterProfile.PreprovisionExtension,
+		cs.Properties.ExtensionsProfile, copyIndex)
+}
+
+func makeExtensionScriptCommands(extension *api.Extension, extensionsProfile []api.ExtensionProfile, copyIndex string) string {
 	var extensionProfile *api.ExtensionProfile
 	for _, eP := range extensionsProfile {
 		if strings.EqualFold(eP.Name, extension.Name) {
@@ -1067,11 +1111,15 @@ func MakeExtensionScriptCommands(extension *api.Extension, extensionsProfile []a
 		}
 	}
 
+	if extensionProfile == nil {
+		panic(fmt.Sprintf("%s extension referenced was not found in the extension profile", extension.Name))
+	}
+
 	scriptURL := getExtensionURL(extensionProfile.RootURL, extensionProfile.Name, extensionProfile.Version, extensionProfile.Script)
 	scriptFilePath := fmt.Sprintf("/opt/azure/containers/extensions/%s/%s", extensionProfile.Name, extensionProfile.Script)
 	parameters := strings.Replace(extensionProfile.ExtensionParameters, "EXTENSION_LOOP_INDEX", copyIndex, -1)
-	return fmt.Sprintf("- curl -o %s --create-dirs %s \n - chmod 744 %s \n - %s %s",
-		scriptFilePath, scriptURL, scriptFilePath, scriptFilePath, parameters)
+	return fmt.Sprintf("- sudo /usr/bin/curl -o %s --create-dirs %s \n- sudo /bin/chmod 744 %s \n- sudo %s %s > /var/log/%s-output.log",
+		scriptFilePath, scriptURL, scriptFilePath, scriptFilePath, parameters, extensionProfile.Name)
 }
 
 func getPackageGUID(orchestratorType string, orchestratorRelease string, masterCount int) string {
@@ -1444,7 +1492,8 @@ touch /etc/mesosphere/roles/azure_master`
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineDCOSCustomData(orchestratorType string, orchestratorRelease string, masterCount int, provisionContent string, attributeContents string) string {
+func getSingleLineDCOSCustomData(orchestratorType, orchestratorRelease string,
+	masterCount int, provisionContent, attributeContents, preprovisionExtensionContents string) string {
 	yamlFilename := ""
 	switch orchestratorType {
 	case api.DCOS:
@@ -1473,6 +1522,7 @@ func getSingleLineDCOSCustomData(orchestratorType string, orchestratorRelease st
 	yamlStr := string(b)
 	yamlStr = strings.Replace(yamlStr, "PROVISION_STR", provisionContent, -1)
 	yamlStr = strings.Replace(yamlStr, "ATTRIBUTES_STR", attributeContents, -1)
+	yamlStr = strings.Replace(yamlStr, "PREPROVISION_EXTENSION", preprovisionExtensionContents, -1)
 
 	// convert to json
 	jsonBytes, err4 := yaml.YAMLToJSON([]byte(yamlStr))
