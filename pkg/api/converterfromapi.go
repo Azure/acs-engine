@@ -120,6 +120,7 @@ func ConvertContainerServiceToVLabs(api *ContainerService) *vlabs.ContainerServi
 	return vlabsCS
 }
 
+// ConvertOrchestratorInfoToV20170930 converts an unversioned OrchestratorInfo to a v20170930 OrchestratorInfo
 func ConvertOrchestratorInfoToV20170930(api *OrchestratorInfo) *v20170930.OrchestratorInfo {
 	vOrchInfo := &v20170930.OrchestratorInfo{}
 	switch api.Orchestrator {
@@ -145,6 +146,7 @@ func ConvertOrchestratorInfoToV20170930(api *OrchestratorInfo) *v20170930.Orches
 	return vOrchInfo
 }
 
+// ConvertOrchestratorInfoToVLabs converts an unversioned OrchestratorInfo to a vlabs OrchestratorInfo
 func ConvertOrchestratorInfoToVLabs(api *OrchestratorInfo) *vlabs.OrchestratorInfo {
 	vlabsOrchInfo := &vlabs.OrchestratorInfo{}
 	switch api.Orchestrator {

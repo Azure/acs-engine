@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/common"
 )
 
+// OrchestratorsInfo contains list of release info for supported orchestrators
 type OrchestratorsInfo struct {
 	Orchestrators []*api.OrchestratorInfo `json:"orchestrators"`
 }
@@ -45,6 +46,7 @@ func validate(orchestrator, release string) (string, error) {
 	return "", nil
 }
 
+// NewOrchestratorsInfo returns OrchestratorsInfo object per (optionally) specified orchestrator and release
 func NewOrchestratorsInfo(orchestrator, release string) (*OrchestratorsInfo, error) {
 	var err error
 	if orchestrator, err = validate(orchestrator, release); err != nil {
@@ -70,6 +72,7 @@ func NewOrchestratorsInfo(orchestrator, release string) (*OrchestratorsInfo, err
 	return orch, nil
 }
 
+// GetOrchestratorUpgradeInfo returns orchestrator info for upgradable container service
 func GetOrchestratorUpgradeInfo(cs *api.ContainerService) (*api.OrchestratorInfo, error) {
 	if cs == nil || cs.Properties == nil || cs.Properties.OrchestratorProfile == nil {
 		return nil, fmt.Errorf("Incomplete ContainerService")
@@ -181,7 +184,7 @@ func dcosInfo(release string) ([]*api.OrchestratorInfo, error) {
 
 func swarmInfo(release string) ([]*api.OrchestratorInfo, error) {
 	return []*api.OrchestratorInfo{
-		&api.OrchestratorInfo{
+		{
 			Orchestrator: api.Swarm,
 			VersionInfo: api.VersionInfo{
 				Version: SwarmVersion,
@@ -193,7 +196,7 @@ func swarmInfo(release string) ([]*api.OrchestratorInfo, error) {
 
 func dockerceInfo(release string) ([]*api.OrchestratorInfo, error) {
 	return []*api.OrchestratorInfo{
-		&api.OrchestratorInfo{
+		{
 			Orchestrator: api.SwarmMode,
 			VersionInfo: api.VersionInfo{
 				Version: DockerCEVersion,
