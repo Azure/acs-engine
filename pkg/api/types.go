@@ -162,7 +162,7 @@ type KubernetesConfig struct {
 	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
 	MaxPods                          int     `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string  `json:"dockerBridgeSubnet,omitempty"`
-	DnsServiceIP                     string  `json:"dnsServiceIP,omitempty"`
+	DNSServiceIP                     string  `json:"dnsServiceIP,omitempty"`
 	ServiceCIDR                      string  `json:"serviceCidr,omitempty"`
 	NodeStatusUpdateFrequency        string  `json:"nodeStatusUpdateFrequency,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string  `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
@@ -281,6 +281,7 @@ type KeyVaultCertificate struct {
 // OSType represents OS types of agents
 type OSType string
 
+// HostedMasterProfile defines properties for a hosted master
 type HostedMasterProfile struct {
 	// Master public endpoint/FQDN with port
 	// The format will be FQDN:2376

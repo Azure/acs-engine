@@ -167,8 +167,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.MaxPods = DefaultKubernetesMaxPods
 			}
 		}
-		if a.OrchestratorProfile.KubernetesConfig.DnsServiceIP == "" {
-			a.OrchestratorProfile.KubernetesConfig.DnsServiceIP = DefaultKubernetesDnsServiceIP
+		if a.OrchestratorProfile.KubernetesConfig.DNSServiceIP == "" {
+			a.OrchestratorProfile.KubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
 		}
 		if a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet == "" {
 			a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
@@ -353,11 +353,11 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		a.CertificateProfile.CaPrivateKey = caPair.PrivateKeyPem
 	}
 
-	cidrFirstIp, err := common.CidrStringFirstIp(a.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
+	cidrFirstIP, err := common.CidrStringFirstIP(a.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
 	if err != nil {
 		return false, err
 	}
-	ips = append(ips, cidrFirstIp)
+	ips = append(ips, cidrFirstIP)
 
 	apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
 	if err != nil {

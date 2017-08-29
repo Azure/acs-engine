@@ -16,12 +16,12 @@ import (
 
 var (
 	validate        *validator.Validate
-	keyvaultIdRegex *regexp.Regexp
+	keyvaultIDRegex *regexp.Regexp
 )
 
 func init() {
 	validate = validator.New()
-	keyvaultIdRegex = regexp.MustCompile(`^/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/[^/\s]+$`)
+	keyvaultIDRegex = regexp.MustCompile(`^/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/[^/\s]+$`)
 }
 
 // Validate implements APIObject
@@ -253,7 +253,7 @@ func (a *Properties) Validate() error {
 				if e := validate.Var(a.ServicePrincipalProfile.KeyvaultSecretRef.SecretName, "required"); e != nil {
 					return fmt.Errorf("the Keyvault Secret must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 				}
-				if !keyvaultIdRegex.MatchString(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID) {
+				if !keyvaultIDRegex.MatchString(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID) {
 					return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
 				}
 			}
@@ -431,17 +431,17 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 		}
 	}
 
-	if a.DnsServiceIP != "" || a.ServiceCidr != "" {
-		if a.DnsServiceIP == "" {
-			return errors.New("OrchestratorProfile.KubernetesConfig.ServiceCidr must be specified when DnsServiceIP is")
+	if a.DNSServiceIP != "" || a.ServiceCidr != "" {
+		if a.DNSServiceIP == "" {
+			return errors.New("OrchestratorProfile.KubernetesConfig.ServiceCidr must be specified when DNSServiceIP is")
 		}
 		if a.ServiceCidr == "" {
-			return errors.New("OrchestratorProfile.KubernetesConfig.DnsServiceIP must be specified when ServiceCidr is")
+			return errors.New("OrchestratorProfile.KubernetesConfig.DNSServiceIP must be specified when ServiceCidr is")
 		}
 
-		dnsIp := net.ParseIP(a.DnsServiceIP)
-		if dnsIp == nil {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is an invalid IP address", a.DnsServiceIP)
+		dnsIP := net.ParseIP(a.DNSServiceIP)
+		if dnsIP == nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DNSServiceIP '%s' is an invalid IP address", a.DNSServiceIP)
 		}
 
 		_, serviceCidr, err := net.ParseCIDR(a.ServiceCidr)
@@ -450,20 +450,20 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 		}
 
 		// Finally validate that the DNS ip is within the subnet
-		if !serviceCidr.Contains(dnsIp) {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' is not within the ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		if !serviceCidr.Contains(dnsIP) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DNSServiceIP '%s' is not within the ServiceCidr '%s'", a.DNSServiceIP, a.ServiceCidr)
 		}
 
 		// and that the DNS IP is _not_ the subnet broadcast address
-		broadcast := common.Ip4BroadcastAddress(serviceCidr)
-		if dnsIp.Equal(broadcast) {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' cannot be the broadcast address of ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		broadcast := common.IP4BroadcastAddress(serviceCidr)
+		if dnsIP.Equal(broadcast) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DNSServiceIP '%s' cannot be the broadcast address of ServiceCidr '%s'", a.DNSServiceIP, a.ServiceCidr)
 		}
 
 		// and that the DNS IP is _not_ the first IP in the service subnet
-		firstServiceIp := common.CidrFirstIp(serviceCidr.IP)
-		if firstServiceIp.Equal(dnsIp) {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DnsServiceIP '%s' cannot be the first IP of ServiceCidr '%s'", a.DnsServiceIP, a.ServiceCidr)
+		firstServiceIP := common.CidrFirstIP(serviceCidr.IP)
+		if firstServiceIP.Equal(dnsIP) {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DNSServiceIP '%s' cannot be the first IP of ServiceCidr '%s'", a.DNSServiceIP, a.ServiceCidr)
 		}
 	}
 

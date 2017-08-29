@@ -70,7 +70,7 @@ func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Propert
 	return properties
 }
 
-// ConvertVLabsContainerService converts a vlabs ContainerService to an unversioned ContainerService
+// ConvertVLabsAgentPoolOnly converts a vlabs ContainerService to an unversioned ContainerService
 func ConvertVLabsAgentPoolOnly(vlabs *vlabs.ManagedCluster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = vlabs.ID

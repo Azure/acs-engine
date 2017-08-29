@@ -84,8 +84,8 @@
       },
       "type": "string"
     },
-    "kubeDnsServiceIP": {
-      {{PopulateClassicModeDefaultValue "kubeDnsServiceIP"}}
+    "kubeDNSServiceIP": {
+      {{PopulateClassicModeDefaultValue "kubeDNSServiceIP"}}
       "metadata": {
         "description": "Kubernetes DNS IP"
       },
