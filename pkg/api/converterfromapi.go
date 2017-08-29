@@ -394,6 +394,12 @@ func convertPropertiesToVLabs(api *Properties, vlabsProps *vlabs.Properties) {
 		vlabsProps.LinuxProfile = &vlabs.LinuxProfile{}
 		convertLinuxProfileToVLabs(api.LinuxProfile, vlabsProps.LinuxProfile)
 	}
+	vlabsProps.ExtensionsProfile = []vlabs.ExtensionProfile{}
+	for _, extensionProfile := range api.ExtensionsProfile {
+		vlabsExtensionProfile := &vlabs.ExtensionProfile{}
+		convertExtensionProfileToVLabs(&extensionProfile, vlabsExtensionProfile)
+		vlabsProps.ExtensionsProfile = append(vlabsProps.ExtensionsProfile, *vlabsExtensionProfile)
+	}
 	if api.WindowsProfile != nil {
 		vlabsProps.WindowsProfile = &vlabs.WindowsProfile{}
 		convertWindowsProfileToVLabs(api.WindowsProfile, vlabsProps.WindowsProfile)
@@ -440,6 +446,19 @@ func convertLinuxProfileToV20170131(api *LinuxProfile, obj *v20170131.LinuxProfi
 			KeyData: d.KeyData,
 		})
 	}
+}
+
+func convertExtensionProfileToVLabs(api *ExtensionProfile, vlabs *vlabs.ExtensionProfile) {
+	vlabs.Name = api.Name
+	vlabs.Version = api.Version
+	vlabs.ExtensionParameters = api.ExtensionParameters
+	vlabs.RootURL = api.RootURL
+}
+
+func convertExtensionToVLabs(api *Extension, vlabs *vlabs.Extension) {
+	vlabs.Name = api.Name
+	vlabs.SingleOrAll = api.SingleOrAll
+	vlabs.Template = api.Template
 }
 
 func convertLinuxProfileToV20170701(api *LinuxProfile, obj *v20170701.LinuxProfile) {
@@ -624,7 +643,12 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	vlabsProfile.VnetCidr = api.VnetCidr
 	vlabsProfile.SetSubnet(api.Subnet)
 	vlabsProfile.FQDN = api.FQDN
-	vlabsProfile.StorageProfile = api.StorageProfile
+	vlabsProfile.Extensions = []vlabs.Extension{}
+	for _, extension := range api.Extensions {
+		vlabsExtension := &vlabs.Extension{}
+		convertExtensionToVLabs(&extension, vlabsExtension)
+		vlabsProfile.Extensions = append(vlabsProfile.Extensions, *vlabsExtension)
+	}
 }
 
 func convertKeyVaultSecretsToVlabs(api *KeyVaultSecrets, vlabsSecrets *vlabs.KeyVaultSecrets) {
@@ -702,6 +726,13 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	p.CustomNodeLabels = map[string]string{}
 	for k, v := range api.CustomNodeLabels {
 		p.CustomNodeLabels[k] = v
+	}
+
+	p.Extensions = []vlabs.Extension{}
+	for _, extension := range api.Extensions {
+		vlabsExtension := &vlabs.Extension{}
+		convertExtensionToVLabs(&extension, vlabsExtension)
+		p.Extensions = append(p.Extensions, *vlabsExtension)
 	}
 }
 
