@@ -105,7 +105,7 @@
     "orchestratorName": "swarm", 
     "osImageSKU": "14.04.5-LTS",
     "osImageVersion": "14.04.201706190",
-    {{GetSwarmVersions}}
+    {{getSwarmVersions}}
 {{end}}
     "locations": [
          "[resourceGroup().location]",

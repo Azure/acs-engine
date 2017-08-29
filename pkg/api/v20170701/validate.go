@@ -12,12 +12,12 @@ import (
 
 var (
 	validate        *validator.Validate
-	keyvaultIdRegex *regexp.Regexp
+	keyvaultIDRegex *regexp.Regexp
 )
 
 func init() {
 	validate = validator.New()
-	keyvaultIdRegex = regexp.MustCompile(`^/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/[^/\s]+$`)
+	keyvaultIDRegex = regexp.MustCompile(`^/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/[^/\s]+$`)
 }
 
 // Validate implements APIObject
@@ -151,7 +151,7 @@ func (a *Properties) Validate() error {
 			if e := validate.Var(a.ServicePrincipalProfile.KeyvaultSecretRef.SecretName, "required"); e != nil {
 				return fmt.Errorf("the Keyvault Secret must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 			}
-			if !keyvaultIdRegex.MatchString(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID) {
+			if !keyvaultIDRegex.MatchString(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID) {
 				return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
 			}
 		}

@@ -141,7 +141,7 @@
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
 {{end}}
     "vnetCidr": "[parameters('vnetCidr')]",
-    "kubeDnsServiceIP": "[parameters('kubeDnsServiceIP')]",
+    "kubeDNSServiceIP": "[parameters('kubeDNSServiceIP')]",
     "kubeServiceCidr": "[parameters('kubeServiceCidr')]",
     "kubeClusterCidr": "[parameters('kubeClusterCidr')]",
     "dockerBridgeCidr": "[parameters('dockerBridgeCidr')]",
