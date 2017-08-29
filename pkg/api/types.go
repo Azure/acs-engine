@@ -2,6 +2,7 @@ package api
 
 import (
 	neturl "net/url"
+
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
@@ -263,7 +264,9 @@ type KeyVaultCertificate struct {
 type OSType string
 
 // Distro represents Distro of OS
-type Distro stringtype HostedMasterProfile struct {
+type Distro string
+
+type HostedMasterProfile struct {
 	// Master public endpoint/FQDN with port
 	// The format will be FQDN:2376
 	// Not used during PUT, returned as part of GETFQDN
@@ -406,7 +409,7 @@ func (a *AgentPoolProfile) IsLinux() bool {
 
 // IsDistroCoreOS returns true if distro is coreos
 func (a *AgentPoolProfile) IsDistroCoreOS() bool {
-	return a.Distro ==  CoreOS
+	return a.Distro == CoreOS
 }
 
 //IsDistroUbuntu returns treue if Distro in the agentppol is Ubuntu or Not spefcified
@@ -414,7 +417,7 @@ func (a *AgentPoolProfile) IsDistroUbuntu() bool {
 	if a.OSType == Windows {
 		return false
 	}
-	return a.Distro ==  Ubuntu || a.Distro == ""
+	return a.Distro == Ubuntu || a.Distro == ""
 }
 
 // IsAvailabilitySets returns true if the customer specified disks
