@@ -40,7 +40,7 @@ func newOrchestratorsCmd() *cobra.Command {
 }
 
 func (oc *orchestratorsCmd) run(cmd *cobra.Command, args []string) error {
-	orchs, err := acsengine.NewOrchestratorsInfo(oc.orchestrator, oc.release)
+	orchs, err := acsengine.NewOrchestratorInfos(oc.orchestrator, oc.release)
 	if err != nil {
 		return err
 	}
