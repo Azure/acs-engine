@@ -120,56 +120,60 @@ func ConvertContainerServiceToVLabs(api *ContainerService) *vlabs.ContainerServi
 	return vlabsCS
 }
 
-// ConvertOrchestratorInfoToV20170930 converts an unversioned OrchestratorInfo to a v20170930 OrchestratorInfo
-func ConvertOrchestratorInfoToV20170930(api *OrchestratorInfo) *v20170930.OrchestratorInfo {
-	vOrchInfo := &v20170930.OrchestratorInfo{}
-	switch api.Orchestrator {
+// ConvertOrchestratorVersionProfileToV20170930 converts an unversioned OrchestratorVersionProfile to a v20170930 OrchestratorVersionProfile
+func ConvertOrchestratorVersionProfileToV20170930(api *OrchestratorVersionProfile) *v20170930.OrchestratorVersionProfile {
+	vProfile := &v20170930.OrchestratorVersionProfile{}
+	switch api.OrchestratorType {
 	case Kubernetes:
-		vOrchInfo.Orchestrator = v20170930.Kubernetes
+		vProfile.OrchestratorType = v20170930.Kubernetes
 	case DCOS:
-		vOrchInfo.Orchestrator = v20170930.DCOS
+		vProfile.OrchestratorType = v20170930.DCOS
 	case Swarm:
-		vOrchInfo.Orchestrator = v20170930.Swarm
+		vProfile.OrchestratorType = v20170930.Swarm
 	case SwarmMode:
-		vOrchInfo.Orchestrator = v20170930.DockerCE
+		vProfile.OrchestratorType = v20170930.DockerCE
 	}
-	vOrchInfo.Version = api.Version
-	vOrchInfo.Release = api.Release
-	vOrchInfo.DockerComposeVersion = api.DockerComposeVersion
-	vOrchInfo.Default = api.Default
-	if api.Upgradable != nil {
-		vOrchInfo.Upgradable = make([]*v20170930.VersionInfo, len(api.Upgradable))
-		for i, h := range api.Upgradable {
-			vOrchInfo.Upgradable[i] = &v20170930.VersionInfo{Release: h.Release, Version: h.Version}
+	vProfile.OrchestratorVersion = api.OrchestratorVersion
+	vProfile.OrchestratorRelease = api.OrchestratorRelease
+	vProfile.Default = api.Default
+	if api.Upgradables != nil {
+		vProfile.Upgradables = make([]*v20170930.OrchestratorEdition, len(api.Upgradables))
+		for i, h := range api.Upgradables {
+			vProfile.Upgradables[i] = &v20170930.OrchestratorEdition{
+				OrchestratorRelease: h.OrchestratorRelease,
+				OrchestratorVersion: h.OrchestratorVersion,
+			}
 		}
 	}
-	return vOrchInfo
+	return vProfile
 }
 
-// ConvertOrchestratorInfoToVLabs converts an unversioned OrchestratorInfo to a vlabs OrchestratorInfo
-func ConvertOrchestratorInfoToVLabs(api *OrchestratorInfo) *vlabs.OrchestratorInfo {
-	vlabsOrchInfo := &vlabs.OrchestratorInfo{}
-	switch api.Orchestrator {
+// ConvertOrchestratorVersionProfileToVLabs converts an unversioned OrchestratorVersionProfile to a vlabs OrchestratorVersionProfile
+func ConvertOrchestratorVersionProfileToVLabs(api *OrchestratorVersionProfile) *vlabs.OrchestratorVersionProfile {
+	vlabsProfile := &vlabs.OrchestratorVersionProfile{}
+	switch api.OrchestratorType {
 	case Kubernetes:
-		vlabsOrchInfo.Orchestrator = vlabs.Kubernetes
+		vlabsProfile.OrchestratorType = vlabs.Kubernetes
 	case DCOS:
-		vlabsOrchInfo.Orchestrator = vlabs.DCOS
+		vlabsProfile.OrchestratorType = vlabs.DCOS
 	case Swarm:
-		vlabsOrchInfo.Orchestrator = vlabs.Swarm
+		vlabsProfile.OrchestratorType = vlabs.Swarm
 	case SwarmMode:
-		vlabsOrchInfo.Orchestrator = vlabs.SwarmMode
+		vlabsProfile.OrchestratorType = vlabs.SwarmMode
 	}
-	vlabsOrchInfo.Version = api.Version
-	vlabsOrchInfo.Release = api.Release
-	vlabsOrchInfo.DockerComposeVersion = api.DockerComposeVersion
-	vlabsOrchInfo.Default = api.Default
-	if api.Upgradable != nil {
-		vlabsOrchInfo.Upgradable = make([]*vlabs.VersionInfo, len(api.Upgradable))
-		for i, h := range api.Upgradable {
-			vlabsOrchInfo.Upgradable[i] = &vlabs.VersionInfo{Release: h.Release, Version: h.Version}
+	vlabsProfile.OrchestratorVersion = api.OrchestratorVersion
+	vlabsProfile.OrchestratorRelease = api.OrchestratorRelease
+	vlabsProfile.Default = api.Default
+	if api.Upgradables != nil {
+		vlabsProfile.Upgradables = make([]*vlabs.OrchestratorEdition, len(api.Upgradables))
+		for i, h := range api.Upgradables {
+			vlabsProfile.Upgradables[i] = &vlabs.OrchestratorEdition{
+				OrchestratorRelease: h.OrchestratorRelease,
+				OrchestratorVersion: h.OrchestratorVersion,
+			}
 		}
 	}
-	return vlabsOrchInfo
+	return vlabsProfile
 }
 
 // convertResourcePurchasePlanToV20160930 converts a v20160930 ResourcePurchasePlan to an unversioned ResourcePurchasePlan
