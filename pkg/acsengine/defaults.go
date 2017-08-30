@@ -220,10 +220,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 }
 
 func setExtensionDefaults(a *api.Properties) {
-	if a.ExtensionsProfile == nil {
+	if a.ExtensionProfiles == nil {
 		return
 	}
-	for _, extension := range a.ExtensionsProfile {
+	for _, extension := range a.ExtensionProfiles {
 		if extension.RootURL == "" {
 			extension.RootURL = DefaultExtensionsRootURL
 		}

@@ -32,7 +32,7 @@
         ]
       }
     },
-    "extensionsProfile": [
+    "extensionProfiles": [
       { 
         "name": "microsoft-oms-agent-k8s", 
         "version": "v1", 

@@ -32,7 +32,7 @@ ls -l /var/log
      ]
     },
     ...
-    "extensionsProfile": [
+    "extensionProfiles": [
       { 
         "name": "hello-world-dcos", 
         "version": "v1", 

@@ -394,11 +394,11 @@ func convertPropertiesToVLabs(api *Properties, vlabsProps *vlabs.Properties) {
 		vlabsProps.LinuxProfile = &vlabs.LinuxProfile{}
 		convertLinuxProfileToVLabs(api.LinuxProfile, vlabsProps.LinuxProfile)
 	}
-	vlabsProps.ExtensionsProfile = []vlabs.ExtensionProfile{}
-	for _, extensionProfile := range api.ExtensionsProfile {
+	vlabsProps.ExtensionProfiles = []*vlabs.ExtensionProfile{}
+	for _, extensionProfile := range api.ExtensionProfiles {
 		vlabsExtensionProfile := &vlabs.ExtensionProfile{}
-		convertExtensionProfileToVLabs(&extensionProfile, vlabsExtensionProfile)
-		vlabsProps.ExtensionsProfile = append(vlabsProps.ExtensionsProfile, *vlabsExtensionProfile)
+		convertExtensionProfileToVLabs(extensionProfile, vlabsExtensionProfile)
+		vlabsProps.ExtensionProfiles = append(vlabsProps.ExtensionProfiles, vlabsExtensionProfile)
 	}
 	if api.WindowsProfile != nil {
 		vlabsProps.WindowsProfile = &vlabs.WindowsProfile{}
@@ -646,7 +646,7 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	if api.PreprovisionExtension != nil {
 		vlabsExtension := &vlabs.Extension{}
 		convertExtensionToVLabs(api.PreprovisionExtension, vlabsExtension)
-		vlabsProfile.PreprovisionExtension = vlabsExtension
+		vlabsProfile.PreProvisionExtension = vlabsExtension
 	}
 	vlabsProfile.Extensions = []vlabs.Extension{}
 	for _, extension := range api.Extensions {
@@ -736,7 +736,7 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	if api.PreprovisionExtension != nil {
 		vlabsExtension := &vlabs.Extension{}
 		convertExtensionToVLabs(api.PreprovisionExtension, vlabsExtension)
-		p.PreprovisionExtension = vlabsExtension
+		p.PreProvisionExtension = vlabsExtension
 	}
 
 	p.Extensions = []vlabs.Extension{}

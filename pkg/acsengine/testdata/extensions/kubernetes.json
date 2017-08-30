@@ -45,7 +45,7 @@
         ]
       }
     },
-    "extensionsProfile": [
+    "extensionProfiles": [
       { 
         "name": "hello-world-k8s", 
         "version": "v1", 

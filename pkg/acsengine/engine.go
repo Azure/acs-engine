@@ -725,34 +725,34 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetDCOSMasterCustomData": func() string {
 			masterProvisionScript := getDCOSMasterProvisionScript()
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
-			masterPreprovisionExtentsion := ""
+			masterPreprovisionExtension := ""
 			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
-				masterPreprovisionExtentsion += "\n"
-				masterPreprovisionExtentsion += makeMasterExtensionScriptCommands(cs)
+				masterPreprovisionExtension += "\n"
+				masterPreprovisionExtension += makeMasterExtensionScriptCommands(cs)
 			}
 
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
 				cs.Properties.OrchestratorProfile.OrchestratorRelease,
 				cs.Properties.MasterProfile.Count, masterProvisionScript,
-				masterAttributeContents, masterPreprovisionExtentsion)
+				masterAttributeContents, masterPreprovisionExtension)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			agentProvisionScript := getDCOSAgentProvisionScript(profile)
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
-			agentPreprovisionExtentsion := ""
+			agentPreprovisionExtension := ""
 			if profile.PreprovisionExtension != nil {
-				agentPreprovisionExtentsion += "\n"
-				agentPreprovisionExtentsion += makeAgentExtensionScriptCommands(cs, profile)
+				agentPreprovisionExtension += "\n"
+				agentPreprovisionExtension += makeAgentExtensionScriptCommands(cs, profile)
 			}
 
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
 				cs.Properties.OrchestratorProfile.OrchestratorRelease,
 				cs.Properties.MasterProfile.Count, agentProvisionScript,
-				attributeContents, agentPreprovisionExtentsion)
+				attributeContents, agentPreprovisionExtension)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -1090,7 +1090,7 @@ func makeMasterExtensionScriptCommands(cs *api.ContainerService) string {
 		copyIndex = "',copyIndex(variables('masterOffset')),'"
 	}
 	return makeExtensionScriptCommands(cs.Properties.MasterProfile.PreprovisionExtension,
-		cs.Properties.ExtensionsProfile, copyIndex)
+		cs.Properties.ExtensionProfiles, copyIndex)
 }
 
 func makeAgentExtensionScriptCommands(cs *api.ContainerService, profile *api.AgentPoolProfile) string {
@@ -1099,14 +1099,14 @@ func makeAgentExtensionScriptCommands(cs *api.ContainerService, profile *api.Age
 		copyIndex = fmt.Sprintf("',copyIndex(variables('%sOffset')),'", profile.Name)
 	}
 	return makeExtensionScriptCommands(cs.Properties.MasterProfile.PreprovisionExtension,
-		cs.Properties.ExtensionsProfile, copyIndex)
+		cs.Properties.ExtensionProfiles, copyIndex)
 }
 
-func makeExtensionScriptCommands(extension *api.Extension, extensionsProfile []api.ExtensionProfile, copyIndex string) string {
+func makeExtensionScriptCommands(extension *api.Extension, extensionProfiles []*api.ExtensionProfile, copyIndex string) string {
 	var extensionProfile *api.ExtensionProfile
-	for _, eP := range extensionsProfile {
+	for _, eP := range extensionProfiles {
 		if strings.EqualFold(eP.Name, extension.Name) {
-			extensionProfile = &eP
+			extensionProfile = eP
 			break
 		}
 	}
@@ -1493,7 +1493,7 @@ touch /etc/mesosphere/roles/azure_master`
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
 func getSingleLineDCOSCustomData(orchestratorType, orchestratorRelease string,
-	masterCount int, provisionContent, attributeContents, preprovisionExtensionContents string) string {
+	masterCount int, provisionContent, attributeContents, preProvisionExtensionContents string) string {
 	yamlFilename := ""
 	switch orchestratorType {
 	case api.DCOS:
@@ -1522,7 +1522,7 @@ func getSingleLineDCOSCustomData(orchestratorType, orchestratorRelease string,
 	yamlStr := string(b)
 	yamlStr = strings.Replace(yamlStr, "PROVISION_STR", provisionContent, -1)
 	yamlStr = strings.Replace(yamlStr, "ATTRIBUTES_STR", attributeContents, -1)
-	yamlStr = strings.Replace(yamlStr, "PREPROVISION_EXTENSION", preprovisionExtensionContents, -1)
+	yamlStr = strings.Replace(yamlStr, "PREPROVISION_EXTENSION", preProvisionExtensionContents, -1)
 
 	// convert to json
 	jsonBytes, err4 := yaml.YAMLToJSON([]byte(yamlStr))
@@ -1620,11 +1620,9 @@ func getKubernetesPodStartIndex(properties *api.Properties) int {
 func getLinkedTemplatesForExtensions(properties *api.Properties) string {
 	var result string
 
-	var extensions = properties.ExtensionsProfile
-
-	//This is temporary - to show you how to access the Extensions in the MasterProfile
-	var masterProfileExtensions = properties.MasterProfile.Extensions
-	var orchestratorType = properties.OrchestratorProfile.OrchestratorType
+	extensions := properties.ExtensionProfiles
+	masterProfileExtensions := properties.MasterProfile.Extensions
+	orchestratorType := properties.OrchestratorProfile.OrchestratorType
 
 	for err, extensionProfile := range extensions {
 		_ = err
@@ -1641,7 +1639,7 @@ func getLinkedTemplatesForExtensions(properties *api.Properties) string {
 		}
 
 		for _, agentPoolProfile := range properties.AgentPoolProfiles {
-			var poolProfileExtensions = agentPoolProfile.Extensions
+			poolProfileExtensions := agentPoolProfile.Extensions
 			poolOptedForExtension, singleOrAll := validateProfileOptedForExtension(extensionProfile.Name, poolProfileExtensions)
 			if poolOptedForExtension {
 				result += ","
@@ -1659,7 +1657,7 @@ func getLinkedTemplatesForExtensions(properties *api.Properties) string {
 	return result
 }
 
-func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorType string, extensionProfile api.ExtensionProfile, singleOrAll string) (string, error) {
+func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorType string, extensionProfile *api.ExtensionProfile, singleOrAll string) (string, error) {
 	extTargetVMNamePrefix := "variables('masterVMNamePrefix')"
 	loopCount := "[sub(variables('masterCount'), variables('masterOffset'))]"
 	if strings.EqualFold(singleOrAll, "single") {
@@ -1669,7 +1667,7 @@ func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorT
 		"variables('masterOffset')", extensionProfile)
 }
 
-func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orchestratorType string, extensionProfile api.ExtensionProfile, singleOrAll string) (string, error) {
+func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orchestratorType string, extensionProfile *api.ExtensionProfile, singleOrAll string) (string, error) {
 	extTargetVMNamePrefix := fmt.Sprintf("variables('%sVMNamePrefix')", agentPoolProfile.Name)
 	loopCount := fmt.Sprintf("[variables('%sCount'))]", agentPoolProfile.Name)
 	loopOffset := ""
@@ -1691,7 +1689,7 @@ func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orch
 		loopOffset, extensionProfile)
 }
 
-func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, loopOffset string, extensionProfile api.ExtensionProfile) (string, error) {
+func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, loopOffset string, extensionProfile *api.ExtensionProfile) (string, error) {
 	dta, e := getLinkedTemplateText(orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.RootURL)
 	if e != nil {
 		return "", e

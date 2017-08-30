@@ -35,7 +35,7 @@ type Properties struct {
 	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty" validate:"required"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`
-	ExtensionsProfile       []ExtensionProfile       `json:"extensionsProfile,omitempty"`
+	ExtensionProfiles       []*ExtensionProfile      `json:"extensionProfiles,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
@@ -212,7 +212,7 @@ type MasterProfile struct {
 	StorageProfile           string      `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
 	HTTPSourceAddressPrefix  string      `json:"HTTPSourceAddressPrefix,omitempty"`
 	OAuthEnabled             bool        `json:"oauthEnabled"`
-	PreprovisionExtension    *Extension  `json:"preprovisionExtension"`
+	PreProvisionExtension    *Extension  `json:"preProvisionExtension"`
 	Extensions               []Extension `json:"extensions"`
 
 	// subnet is internal
@@ -264,7 +264,7 @@ type AgentPoolProfile struct {
 
 	FQDN                  string            `json:"fqdn"`
 	CustomNodeLabels      map[string]string `json:"customNodeLabels,omitempty"`
-	PreprovisionExtension *Extension        `json:"preprovisionExtension"`
+	PreProvisionExtension *Extension        `json:"preProvisionExtension"`
 	Extensions            []Extension       `json:"extensions"`
 }
 

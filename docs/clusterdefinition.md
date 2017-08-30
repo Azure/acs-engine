@@ -50,7 +50,7 @@ Here are the valid values for the orchestrator types:
 |vmsize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/).  These are restricted machines with at least 2 cores and 100GB of ephemeral disk space.|
 |osDiskSizeGB|no|Describes the OS Disk Size in GB|
 |vnetSubnetId|no|specifies the Id of an alternate VNET subnet.  The subnet id must specify a valid VNET ID owned by the same subscription. ([bring your own VNET examples](../examples/vnet))|
-|extensions|no|This is an array of extensions.  This indicates that the extension be run on a single master.  The name in the extensions array must exactly match the extension name in the extensionsProfile.|
+|extensions|no|This is an array of extensions.  This indicates that the extension be run on a single master.  The name in the extensions array must exactly match the extension name in the extensionProfiles.|
 |vnetCidr|no| specifies the vnet cidr when using custom Vnets ([bring your own VNET examples](../examples/vnet))|
 
 ### agentPoolProfiles
@@ -166,7 +166,7 @@ For apiVersion "2016-03-30", a cluster may have only 1 agent pool profiles.
 |clientAppID|yes|describes the client AAD application ID|
 |serverAppID|yes|describes the server AAD application ID|
 |tenantID|no|describes the AAD tenant ID to use for authentication. If not specified, will use the tenant of the deployment subscription.|
-### extensionsProfile
+### extensionProfiles
 A cluster can have 0 - N extensions in extension profiles.  Extension profiles allow a user to easily add pre-packaged functionality into a cluster.  An example would be configuring a monitoring solution on your cluster.  You can think of extensions like a marketplace for acs clusters.
 
 |Name|Required|Description|

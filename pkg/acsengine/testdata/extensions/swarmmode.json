@@ -11,7 +11,7 @@
       "dnsPrefix": "masterdns1",
       "vmSize": "Standard_D2_v2",
       "firstConsecutiveStaticIP": "172.16.0.5",
-      "preprovisionExtension": 
+      "preProvisionExtension": 
           { 
             "name": "hello-world-k8s", 
             "singleOrAll": "all"
@@ -62,7 +62,7 @@
         ]
       }
     },
-    "extensionsProfile": [
+    "extensionProfiles": [
       { 
         "name": "hello-world-k8s", 
         "version": "v1", 

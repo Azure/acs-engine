@@ -2,11 +2,11 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "DCOS"
+      "orchestratorType": "Kubernetes"
     },
     "masterProfile": {
       "count": 1,
-      "dnsPrefix": "masterdns1",
+      "dnsPrefix": "",
       "vmSize": "Standard_D2_v2",
       "preProvisionExtension": {
         "name": "hello-world",
@@ -20,15 +20,9 @@
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet",
         "preProvisionExtension": {
-          "name": "hello-world",
-          "singleOrAll": "All"
+            "name": "hello-world",
+            "singleOrAll": "All"
         }
-      },
-      {
-        "name": "agentpool2",
-        "count": 3,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
       }
     ],
     "linuxProfile": {
@@ -36,7 +30,7 @@
       "ssh": {
         "publicKeys": [
           {
-            "keyData": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+            "keyData": ""
           }
         ]
       }
@@ -45,9 +39,13 @@
       { 
         "name": "hello-world", 
         "version": "v1", 
-        "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/RobBagby-extension-support/",
+        "rootURL": "https://raw.githubusercontent.com/JackQuincy/ACS-Extensions/master/",
         "script": "hello.sh"
       }
-    ]
+    ],
+    "servicePrincipalProfile": {
+      "servicePrincipalClientID": "",
+      "servicePrincipalClientSecret": ""
+    }
   }
 }

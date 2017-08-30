@@ -6,7 +6,7 @@
     },
     "masterProfile": {
       "count": 1,
-      "dnsPrefix": "masterdns1",
+      "dnsPrefix": "",
       "vmSize": "Standard_D2_v2",
       "preProvisionExtension": {
         "name": "hello-world",
@@ -15,20 +15,19 @@
     },
     "agentPoolProfiles": [
       {
-        "name": "agentpool1",
-        "count": 3,
+        "name": "agentpublic",
+        "count": 1,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet",
+        "dnsPrefix": "",
+        "ports": [
+          80,
+          443,
+          8080
+        ],
         "preProvisionExtension": {
-          "name": "hello-world",
-          "singleOrAll": "All"
+            "name": "hello-world",
+            "singleOrAll": "All"
         }
-      },
-      {
-        "name": "agentpool2",
-        "count": 3,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
       }
     ],
     "linuxProfile": {
@@ -36,7 +35,7 @@
       "ssh": {
         "publicKeys": [
           {
-            "keyData": "ssh-rsa PUBLICKEY azureuser@linuxvm"
+            "keyData": ""
           }
         ]
       }
@@ -45,7 +44,7 @@
       { 
         "name": "hello-world", 
         "version": "v1", 
-        "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/RobBagby-extension-support/",
+        "rootURL": "https://raw.githubusercontent.com/JackQuincy/ACS-Extensions/master/",
         "script": "hello.sh"
       }
     ]

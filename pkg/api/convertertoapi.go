@@ -377,11 +377,11 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 		api.LinuxProfile = &LinuxProfile{}
 		convertVLabsLinuxProfile(vlabs.LinuxProfile, api.LinuxProfile)
 	}
-	api.ExtensionsProfile = []ExtensionProfile{}
-	for _, p := range vlabs.ExtensionsProfile {
+	api.ExtensionProfiles = []*ExtensionProfile{}
+	for _, p := range vlabs.ExtensionProfiles {
 		apiExtensionProfile := &ExtensionProfile{}
-		convertVLabsExtensionProfile(&p, apiExtensionProfile)
-		api.ExtensionsProfile = append(api.ExtensionsProfile, *apiExtensionProfile)
+		convertVLabsExtensionProfile(p, apiExtensionProfile)
+		api.ExtensionProfiles = append(api.ExtensionProfiles, apiExtensionProfile)
 	}
 	if vlabs.WindowsProfile != nil {
 		api.WindowsProfile = &WindowsProfile{}
@@ -672,9 +672,9 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 		api.StorageProfile = ManagedDisks
 	}
 
-	if vlabs.PreprovisionExtension != nil {
+	if vlabs.PreProvisionExtension != nil {
 		apiExtension := &Extension{}
-		convertVLabsExtension(vlabs.PreprovisionExtension, apiExtension)
+		convertVLabsExtension(vlabs.PreProvisionExtension, apiExtension)
 		api.PreprovisionExtension = apiExtension
 	}
 
@@ -768,9 +768,9 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 		api.CustomNodeLabels[k] = v
 	}
 
-	if vlabs.PreprovisionExtension != nil {
+	if vlabs.PreProvisionExtension != nil {
 		apiExtension := &Extension{}
-		convertVLabsExtension(vlabs.PreprovisionExtension, apiExtension)
+		convertVLabsExtension(vlabs.PreProvisionExtension, apiExtension)
 		api.PreprovisionExtension = apiExtension
 	}
 

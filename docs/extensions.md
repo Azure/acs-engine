@@ -1,15 +1,15 @@
 # Microsoft Azure Container Service Engine - Extensions
 
-Extensions in acs-engine provide an easy way for acs-engine users to add pre-packaged functionality into their cluster.  For example, an extension could configure a monitoring solution on an ACS cluster.  The user would not need to know the details of how to install the monitoring solution.  Rather, the user would simply add the extension into the extensionsProfile section of the template.
+Extensions in acs-engine provide an easy way for acs-engine users to add pre-packaged functionality into their cluster.  For example, an extension could configure a monitoring solution on an ACS cluster.  The user would not need to know the details of how to install the monitoring solution.  Rather, the user would simply add the extension into the extensionProfiles section of the template.
 
-# extensionsProfile
+# extensionProfiles
 
-The extensionsProfile contains the extensions that the cluster will install. The following illustrates a template with a hello-world-dcos extension.
+The extensionProfiles contains the extensions that the cluster will install. The following illustrates a template with a hello-world-dcos extension.
 
 ``` javascript
 { 
   ...
-  "extensionsProfile": [
+  "extensionProfiles": [
     {
         "name": "hello-world-dcos",
         "version": "v1",
@@ -56,7 +56,7 @@ Extensions, in the current implementation run a script on a master node. The ext
         }
      ]
   },
-  "extensionsProfile": [
+  "extensionProfiles": [
     {
         "name": "hello-world-k8s",
         "version": "v1",
@@ -74,13 +74,13 @@ Or they can be referenced as a preprovision extension, this will run during clou
       "vmSize": "Standard_D2_v2",
       "osType": "Linux",
       "firstConsecutiveStaticIP": "10.240.255.5",
-      "preprovisionExtension": {
+      "preProvisionExtension": {
           "name": "hello-world",
           "singleOrAll": "All"
       }
      
   },
-  "extensionsProfile": [
+  "extensionProfiles": [
     {
         "name": "hello-world-k8s",
         "version": "v1",
@@ -92,7 +92,7 @@ Or they can be referenced as a preprovision extension, this will run during clou
 ```
 |Name|Required|Description|
 |---|---|---|
-|name|yes|The name of the extension. This must match the name in the extensionsProfile| 
+|name|yes|The name of the extension. This must match the name in the extensionProfiles| 
 
 # Required Extension Files
 
@@ -212,7 +212,7 @@ The following is an example of the template.json file.
 
 When acs-engine generates the azuredeploy.json file, this JSON snippet will be injected. This code calls the linked template (template.json) defined above.
 
-Any parameters from the main azuredeploy.json file that is needed by template.json must be passed in via the parameters section. The parameter, "extensionParameters" is an optional parameter that is passed in directly by the user in the **extensionsProfile** section as defined in an earlier section. This special parameter can be used to pass in information such as an activation key or access code (as an example). If the extension does not need this capability, this optional parameter can be deleted.
+Any parameters from the main azuredeploy.json file that is needed by template.json must be passed in via the parameters section. The parameter, "extensionParameters" is an optional parameter that is passed in directly by the user in the **extensionProfiles** section as defined in an earlier section. This special parameter can be used to pass in information such as an activation key or access code (as an example). If the extension does not need this capability, this optional parameter can be deleted.
 
 Before this resource is created, all the dependencies must be satisfied first as defined by "dependsOn". The default dependency is that the entire cluster is fully provisioned before the script extension executes. This can be changed to meet your needs.
 

@@ -47,7 +47,7 @@ type Properties struct {
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
-	ExtensionsProfile       []ExtensionProfile       `json:"extensionsProfile"`
+	ExtensionProfiles       []*ExtensionProfile      `json:"extensionProfiles"`
 	DiagnosticsProfile      *DiagnosticsProfile      `json:"diagnosticsProfile,omitempty"`
 	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
@@ -182,7 +182,7 @@ type MasterProfile struct {
 	StorageProfile           string      `json:"storageProfile,omitempty"`
 	HTTPSourceAddressPrefix  string      `json:"HTTPSourceAddressPrefix,omitempty"`
 	OAuthEnabled             bool        `json:"oauthEnabled"`
-	PreprovisionExtension    *Extension  `json:"preprovisionExtension"`
+	PreprovisionExtension    *Extension  `json:"preProvisionExtension"`
 	Extensions               []Extension `json:"extensions"`
 
 	// Master LB public endpoint/FQDN with port
@@ -226,7 +226,7 @@ type AgentPoolProfile struct {
 
 	FQDN                  string            `json:"fqdn,omitempty"`
 	CustomNodeLabels      map[string]string `json:"customNodeLabels,omitempty"`
-	PreprovisionExtension *Extension        `json:"preprovisionExtension"`
+	PreprovisionExtension *Extension        `json:"preProvisionExtension"`
 	Extensions            []Extension       `json:"extensions"`
 }
 
