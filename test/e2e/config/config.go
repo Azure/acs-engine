@@ -18,6 +18,7 @@ type Config struct {
 	Location          string `envconfig:"LOCATION" required:"true" default:"southcentralus"`                     // Location where you want to create the cluster
 	ClusterDefinition string `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
 	CleanUpOnExit     bool   `envconfig:"CLEANUP_ON_EXIT" default:"true"`                                        // if set the tests will not clean up rgs when tests finish
+	ProvisionRetries  int    `envcofnig:"PROVISION_RETRIES" default:"3"`
 	CurrentWorkingDir string
 }
 
