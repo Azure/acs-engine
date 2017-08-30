@@ -36,7 +36,8 @@
       { 
         "name": "microsoft-oms-agent-k8s", 
         "version": "v1", 
-        "rootURL": "https://bagbyimages.blob.core.windows.net:443/" 
+        "rootURL": "https://bagbyimages.blob.core.windows.net:443/",
+        "extensionParameters": "BASE64-Encoded-Json"
       }
     ],
     "servicePrincipalProfile": {
