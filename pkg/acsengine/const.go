@@ -70,9 +70,9 @@ const (
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
 	// DefaultTillerImage defines the Helm Tiller deployment version on Kubernetes Clusters
 	DefaultTillerImage = "tiller:v2.6.0"
-	// DefaultKubernetesDnsServiceIP specifies the IP address that kube-dns
+	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
 	// listens on by default. must by in the default Service CIDR range.
-	DefaultKubernetesDnsServiceIP = "10.0.0.10"
+	DefaultKubernetesDNSServiceIP = "10.0.0.10"
 	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will
 	// create Service IPs within.
 	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
@@ -88,11 +88,13 @@ const (
 )
 
 const (
-	// Swarm orchestrator and docker compose versions
-	SwarmVersion              = "swarm:1.1.0"
+	// SwarmVersion is the Swarm orchestrator version
+	SwarmVersion = "swarm:1.1.0"
+	// SwarmDockerComposeVersion is the Docker Compose version
 	SwarmDockerComposeVersion = "1.6.2"
-	// DockerCE orchestrator and docker compose versions
-	DockerCEVersion              = "17.03.*"
+	// DockerCEVersion is the DockerCE orchestrator version
+	DockerCEVersion = "17.03.*"
+	// DockerCEDockerComposeVersion is the Docker Compose version
 	DockerCEDockerComposeVersion = "1.14.0"
 )
 

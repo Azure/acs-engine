@@ -65,6 +65,41 @@
       },
       "type": "string"
     },
+    "osImageOffer": {
+      "defaultValue": "UbuntuServer",
+      "metadata": {
+        "description": "Linux OS image type."
+      },
+      "type": "string"
+    }, 
+    "osImagePublisher": {
+      "defaultValue": "Canonical",
+      "metadata": {
+        "description": "OS image publisher."
+      },
+      "type": "string"
+    }, 
+    "osImageSKU": {
+      "defaultValue": "16.04-LTS",
+      "metadata": {
+        "description": "OS image SKU."
+      },
+      "type": "string"
+    }, 
+    "osImageVersion": {
+      "defaultValue": "16.04.201706191",
+      "metadata": {
+        "description": "OS image version."
+      },
+      "type": "string"
+    },
+    "fqdnEndpointSuffix":{
+      "defaultValue": "%s.%s.cloudapp.azure.com",
+      "metadata": {
+        "description": "Endpoint of FQDN."
+      },
+      "type": "string"
+    },
     "targetEnvironment": {
       "defaultValue": "AzurePublicCloud",
       "metadata": {

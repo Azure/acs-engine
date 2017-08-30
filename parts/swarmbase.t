@@ -7,6 +7,7 @@
       {{template "windowsparams.t"}},
     {{end}}
     {{template "masterparams.t" .}}
+    {{template "swarmparams.t" .}}
   },
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}

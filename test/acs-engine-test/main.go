@@ -463,12 +463,16 @@ func mainInternal() error {
 	regions := []string{}
 	for _, region := range acsengine.AzureLocations {
 		switch region {
+		case "eastus2euap": // initial deploy region for all RPs, known to be less stable
 		case "australiaeast": // no D2V2 support
 		case "japanwest": // no D2V2 support
 		case "chinaeast": // private cloud
 		case "chinanorth": // private cloud
+		case "germanycentral": // Germany cloud
+		case "germanynortheast": // Germany cloud
+		case "usgovvirginia": // US Gov cloud
+		case "usgoviowa": // US Gov cloud
 		case "koreacentral": // TODO make sure our versions of azure-cli support this cloud
-		case "westcentralus": // TODO re-enable when this region's reliability has been upgraded
 		case "centraluseuap": // TODO determine why this region is flaky
 		case "brazilsouth": // canary region
 		default:

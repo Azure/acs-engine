@@ -51,7 +51,7 @@ type ServicePrincipalProfile struct {
 	KeyvaultSecretRef *KeyvaultSecretRef `json:"keyvaultSecretRef,omitempty"`
 }
 
-// The 'KeyvaultSecretRef' parameter is a reference to a secret in a keyvault.
+// KeyvaultSecretRef is a reference to a secret in a keyvault.
 // The format of 'VaultID' value should be
 // "/subscriptions/<SUB_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.KeyVault/vaults/<KV_NAME>"
 // where:
@@ -175,7 +175,7 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 type KubernetesConfig struct {
 	KubernetesImageBase              string  `json:"kubernetesImageBase,omitempty"`
 	ClusterSubnet                    string  `json:"clusterSubnet,omitempty"`
-	DnsServiceIP                     string  `json:"dnsServiceIP,omitempty"`
+	DNSServiceIP                     string  `json:"dnsServiceIP,omitempty"`
 	ServiceCidr                      string  `json:"serviceCidr,omitempty"`
 	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
 	NonMasqueradeCidr                string  `json:"NonMasqueradeCidr,omitempty"`

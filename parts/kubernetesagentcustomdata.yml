@@ -100,7 +100,7 @@ write_files:
   permissions: "0644"
   owner: "root"
   content: |
-    KUBELET_CLUSTER_DNS={{WrapAsVariable "kubeDnsServiceIP"}}
+    KUBELET_CLUSTER_DNS={{WrapAsVariable "kubeDNSServiceIP"}}
     KUBELET_API_SERVERS=https://{{WrapAsVariable "kubernetesAPIServerIP"}}:443
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
     KUBELET_NETWORK_PLUGIN=kubenet
