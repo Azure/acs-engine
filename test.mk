@@ -20,7 +20,7 @@ test-interactive:
 test-functional: test-kubernetes
 
 test-kubernetes-with-container:
-	${TEST_CMD} -e TEST=kubernetes ${DEV_ENV_IMAGE} test/e2e/runner
+	${TEST_CMD} -e ORCHESTRATOR=kubernetes ${DEV_ENV_IMAGE} test/e2e/runner
 
 test-kubernetes:
-	TEST=kubernetes ./test/e2e/runner
+	@ORCHESTRATOR=kubernetes go run ./test/e2e/runner.go

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 
 	"github.com/Azure/acs-engine/pkg/api"
@@ -19,19 +18,20 @@ type Config struct {
 	MasterDNSPrefix       string `envconfig:"DNS_PREFIX"`
 	PublicSSHKey          string `envconfig:"PUBLIC_SSH_KEY"`
 	WindowsAdminPasssword string `envconfig:"WINDOWS_ADMIN_PASSWORD"`
+	OrchestratorRelease   string `envconfig:"ORCHESTRATOR_RELEASE"`
 }
 
 // Engine holds necessary information to interact with acs-engine cli
 type Engine struct {
 	Config                    *Config
-	ClusterDefinitionPath     string                       // The original template we want to use to build the cluster from.
-	ClusterDefinitionTemplate string                       // This is the template after we splice in the environment variables
-	GeneratedDefinitionPath   string                       // Holds the contents of running acs-engine generate
-	OutputPath                string                       // This is the root output path
-	DefinitionName            string                       // Unique cluster name
-	GeneratedTemplatePath     string                       // azuredeploy.json path
-	GeneratedParametersPath   string                       // azuredeploy.parameters.json path
-	ClusterDefinition         api.VlabsARMContainerService // Holds the parsed ClusterDefinition
+	ClusterDefinitionPath     string                        // The original template we want to use to build the cluster from.
+	ClusterDefinitionTemplate string                        // This is the template after we splice in the environment variables
+	GeneratedDefinitionPath   string                        // Holds the contents of running acs-engine generate
+	OutputPath                string                        // This is the root output path
+	DefinitionName            string                        // Unique cluster name
+	GeneratedTemplatePath     string                        // azuredeploy.json path
+	GeneratedParametersPath   string                        // azuredeploy.parameters.json path
+	ClusterDefinition         *api.VlabsARMContainerService // Holds the parsed ClusterDefinition
 }
 
 // ParseConfig will return a new engine config struct taking values from env vars
@@ -45,16 +45,10 @@ func ParseConfig() (*Config, error) {
 
 // Build takes a template path and will inject values based on provided environment variables
 // it will then serialize the structs back into json and save it to outputPath
-func Build(templatePath, outputPath, definitionName string) (*Engine, error) {
+func Build(cwd, templatePath, outputPath, definitionName string) (*Engine, error) {
 	config, err := ParseConfig()
 	if err != nil {
 		log.Printf("Error while trying to build Engine Configuration:%s\n", err)
-	}
-
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Printf("Error while trying to get the current working directory: %s\n", err)
-		return nil, err
 	}
 
 	clusterDefinitionTemplate := fmt.Sprintf("%s/%s.json", outputPath, definitionName)
@@ -62,12 +56,12 @@ func Build(templatePath, outputPath, definitionName string) (*Engine, error) {
 	engine := Engine{
 		Config:                    config,
 		DefinitionName:            definitionName,
-		ClusterDefinitionPath:     filepath.Join(cwd, "../../..", templatePath),
-		ClusterDefinitionTemplate: filepath.Join(cwd, "../../..", clusterDefinitionTemplate),
-		OutputPath:                filepath.Join(cwd, "../../..", outputPath),
-		GeneratedDefinitionPath:   filepath.Join(cwd, "../../..", generatedDefinitionPath),
-		GeneratedTemplatePath:     filepath.Join(cwd, "../../..", generatedDefinitionPath, "azuredeploy.json"),
-		GeneratedParametersPath:   filepath.Join(cwd, "../../..", generatedDefinitionPath, "azuredeploy.parameters.json"),
+		ClusterDefinitionPath:     filepath.Join(cwd, templatePath),
+		ClusterDefinitionTemplate: filepath.Join(cwd, clusterDefinitionTemplate),
+		OutputPath:                filepath.Join(cwd, outputPath),
+		GeneratedDefinitionPath:   filepath.Join(cwd, generatedDefinitionPath),
+		GeneratedTemplatePath:     filepath.Join(cwd, generatedDefinitionPath, "azuredeploy.json"),
+		GeneratedParametersPath:   filepath.Join(cwd, generatedDefinitionPath, "azuredeploy.parameters.json"),
 	}
 
 	cs, err := engine.parse()
@@ -91,12 +85,17 @@ func Build(templatePath, outputPath, definitionName string) (*Engine, error) {
 	if config.WindowsAdminPasssword != "" {
 		cs.ContainerService.Properties.WindowsProfile.AdminPassword = config.WindowsAdminPasssword
 	}
+
+	if config.OrchestratorRelease != "" {
+		cs.ContainerService.Properties.OrchestratorProfile.OrchestratorRelease = config.OrchestratorRelease
+	}
+
 	err = engine.write(cs)
 	if err != nil {
 		return nil, err
 	}
 
-	engine.ClusterDefinition = *cs
+	engine.ClusterDefinition = cs
 	return &engine, nil
 }
 
