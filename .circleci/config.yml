@@ -1,4 +1,9 @@
 version: 2
+experimental:
+  notify:
+    branches:
+      only:
+        - master
 jobs:
   test:
     working_directory: /go/src/github.com/Azure/acs-engine
