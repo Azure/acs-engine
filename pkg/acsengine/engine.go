@@ -8,7 +8,9 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"regexp"
 	"runtime/debug"
 	"strconv"
@@ -723,20 +725,34 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetDCOSMasterCustomData": func() string {
 			masterProvisionScript := getDCOSMasterProvisionScript()
 			masterAttributeContents := getDCOSMasterCustomNodeLabels()
+			masterPreprovisionExtension := ""
+			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
+				masterPreprovisionExtension += "\n"
+				masterPreprovisionExtension += makeMasterExtensionScriptCommands(cs)
+			}
+
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
 				cs.Properties.OrchestratorProfile.OrchestratorRelease,
-				cs.Properties.MasterProfile.Count, masterProvisionScript, masterAttributeContents)
+				cs.Properties.MasterProfile.Count, masterProvisionScript,
+				masterAttributeContents, masterPreprovisionExtension)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			agentProvisionScript := getDCOSAgentProvisionScript(profile)
 			attributeContents := getDCOSAgentCustomNodeLabels(profile)
+			agentPreprovisionExtension := ""
+			if profile.PreprovisionExtension != nil {
+				agentPreprovisionExtension += "\n"
+				agentPreprovisionExtension += makeAgentExtensionScriptCommands(cs, profile)
+			}
+
 			str := getSingleLineDCOSCustomData(
 				cs.Properties.OrchestratorProfile.OrchestratorType,
 				cs.Properties.OrchestratorProfile.OrchestratorRelease,
-				cs.Properties.MasterProfile.Count, agentProvisionScript, attributeContents)
+				cs.Properties.MasterProfile.Count, agentProvisionScript,
+				attributeContents, agentPreprovisionExtension)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
@@ -852,20 +868,52 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
+		"WriteLinkedTemplatesForExtensions": func() string {
+			extensions := getLinkedTemplatesForExtensions(cs.Properties)
+			return extensions
+		},
 		"GetKubernetesB64Provision": func() string {
 			return getBase64CustomScript(kubernetesMasterCustomScript)
+		},
+		"GetKubernetesMasterPreprovisionYaml": func() string {
+			str := ""
+			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
+				str += "\n"
+				str += makeMasterExtensionScriptCommands(cs)
+			}
+			return str
+		},
+		"GetKubernetesAgentPreprovisionYaml": func(profile *api.AgentPoolProfile) string {
+			str := ""
+			if profile.PreprovisionExtension != nil {
+				str += "\n"
+				str += makeAgentExtensionScriptCommands(cs, profile)
+			}
+			return str
 		},
 		"GetMasterSwarmCustomData": func() string {
 			files := []string{swarmProvision}
 			str := buildYamlFileWithWriteFiles(files)
+			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
+				extensionStr := makeMasterExtensionScriptCommands(cs)
+				str += "'runcmd:\n" + extensionStr + "\n\n'"
+			}
 			str = escapeSingleLine(str)
-			return fmt.Sprintf("\"customData\": \"[base64('%s')]\",", str)
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
-		"GetAgentSwarmCustomData": func() string {
+		"GetAgentSwarmCustomData": func(profile *api.AgentPoolProfile) string {
 			files := []string{swarmProvision}
 			str := buildYamlFileWithWriteFiles(files)
 			str = escapeSingleLine(str)
-			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('agentRunCmdFile'),variables('agentRunCmd')))]\",", str)
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('%sRunCmdFile'),variables('%sRunCmd')))]\",", str, profile.Name, profile.Name)
+		},
+		"GetSwarmAgentPreprovisionExtensionCommands": func(profile *api.AgentPoolProfile) string {
+			str := ""
+			if profile.PreprovisionExtension != nil {
+				makeAgentExtensionScriptCommands(cs, profile)
+			}
+			str = escapeSingleLine(str)
+			return str
 		},
 		"GetLocation": func() string {
 			return cs.Location
@@ -888,14 +936,18 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetMasterSwarmModeCustomData": func() string {
 			files := []string{swarmModeProvision}
 			str := buildYamlFileWithWriteFiles(files)
+			if cs.Properties.MasterProfile.PreprovisionExtension != nil {
+				extensionStr := makeMasterExtensionScriptCommands(cs)
+				str += "runcmd:\n" + extensionStr + "\n\n"
+			}
 			str = escapeSingleLine(str)
-			return fmt.Sprintf("\"customData\": \"[base64('%s')]\",", str)
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
-		"GetAgentSwarmModeCustomData": func() string {
+		"GetAgentSwarmModeCustomData": func(profile *api.AgentPoolProfile) string {
 			files := []string{swarmModeProvision}
 			str := buildYamlFileWithWriteFiles(files)
 			str = escapeSingleLine(str)
-			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('agentRunCmdFile'),variables('agentRunCmd')))]\",", str)
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s',variables('%sRunCmdFile'),variables('%sRunCmd')))]\",", str, profile.Name, profile.Name)
 		},
 		"GetKubernetesSubnets": func() string {
 			return getKubernetesSubnets(cs.Properties)
@@ -1030,6 +1082,44 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return s
 		},
 	}
+}
+
+func makeMasterExtensionScriptCommands(cs *api.ContainerService) string {
+	copyIndex := "',copyIndex(),'"
+	if cs.Properties.OrchestratorProfile.IsKubernetes() {
+		copyIndex = "',copyIndex(variables('masterOffset')),'"
+	}
+	return makeExtensionScriptCommands(cs.Properties.MasterProfile.PreprovisionExtension,
+		cs.Properties.ExtensionProfiles, copyIndex)
+}
+
+func makeAgentExtensionScriptCommands(cs *api.ContainerService, profile *api.AgentPoolProfile) string {
+	copyIndex := "',copyIndex(),'"
+	if profile.IsAvailabilitySets() {
+		copyIndex = fmt.Sprintf("',copyIndex(variables('%sOffset')),'", profile.Name)
+	}
+	return makeExtensionScriptCommands(cs.Properties.MasterProfile.PreprovisionExtension,
+		cs.Properties.ExtensionProfiles, copyIndex)
+}
+
+func makeExtensionScriptCommands(extension *api.Extension, extensionProfiles []*api.ExtensionProfile, copyIndex string) string {
+	var extensionProfile *api.ExtensionProfile
+	for _, eP := range extensionProfiles {
+		if strings.EqualFold(eP.Name, extension.Name) {
+			extensionProfile = eP
+			break
+		}
+	}
+
+	if extensionProfile == nil {
+		panic(fmt.Sprintf("%s extension referenced was not found in the extension profile", extension.Name))
+	}
+
+	scriptURL := getExtensionURL(extensionProfile.RootURL, extensionProfile.Name, extensionProfile.Version, extensionProfile.Script)
+	scriptFilePath := fmt.Sprintf("/opt/azure/containers/extensions/%s/%s", extensionProfile.Name, extensionProfile.Script)
+	parameters := strings.Replace(extensionProfile.ExtensionParameters, "EXTENSION_LOOP_INDEX", copyIndex, -1)
+	return fmt.Sprintf("- sudo /usr/bin/curl -o %s --create-dirs %s \n- sudo /bin/chmod 744 %s \n- sudo %s %s > /var/log/%s-output.log",
+		scriptFilePath, scriptURL, scriptFilePath, scriptFilePath, parameters, extensionProfile.Name)
 }
 
 func getPackageGUID(orchestratorType string, orchestratorRelease string, masterCount int) string {
@@ -1402,7 +1492,8 @@ touch /etc/mesosphere/roles/azure_master`
 }
 
 // getSingleLineForTemplate returns the file as a single line for embedding in an arm template
-func getSingleLineDCOSCustomData(orchestratorType string, orchestratorRelease string, masterCount int, provisionContent string, attributeContents string) string {
+func getSingleLineDCOSCustomData(orchestratorType, orchestratorRelease string,
+	masterCount int, provisionContent, attributeContents, preProvisionExtensionContents string) string {
 	yamlFilename := ""
 	switch orchestratorType {
 	case api.DCOS:
@@ -1431,6 +1522,7 @@ func getSingleLineDCOSCustomData(orchestratorType string, orchestratorRelease st
 	yamlStr := string(b)
 	yamlStr = strings.Replace(yamlStr, "PROVISION_STR", provisionContent, -1)
 	yamlStr = strings.Replace(yamlStr, "ATTRIBUTES_STR", attributeContents, -1)
+	yamlStr = strings.Replace(yamlStr, "PREPROVISION_EXTENSION", preProvisionExtensionContents, -1)
 
 	// convert to json
 	jsonBytes, err4 := yaml.YAMLToJSON([]byte(yamlStr))
@@ -1520,6 +1612,191 @@ func getKubernetesPodStartIndex(properties *api.Properties) int {
 	}
 
 	return nodeCount + 1
+}
+
+// getLinkedTemplatesForExtensions returns the
+// Microsoft.Resources/deployments for each extension
+//func getLinkedTemplatesForExtensions(properties api.Properties) string {
+func getLinkedTemplatesForExtensions(properties *api.Properties) string {
+	var result string
+
+	extensions := properties.ExtensionProfiles
+	masterProfileExtensions := properties.MasterProfile.Extensions
+	orchestratorType := properties.OrchestratorProfile.OrchestratorType
+
+	for err, extensionProfile := range extensions {
+		_ = err
+
+		masterOptedForExtension, singleOrAll := validateProfileOptedForExtension(extensionProfile.Name, masterProfileExtensions)
+		if masterOptedForExtension {
+			result += ","
+			dta, e := getMasterLinkedTemplateText(properties.MasterProfile, orchestratorType, extensionProfile, singleOrAll)
+			if e != nil {
+				fmt.Printf(e.Error())
+				return ""
+			}
+			result += dta
+		}
+
+		for _, agentPoolProfile := range properties.AgentPoolProfiles {
+			poolProfileExtensions := agentPoolProfile.Extensions
+			poolOptedForExtension, singleOrAll := validateProfileOptedForExtension(extensionProfile.Name, poolProfileExtensions)
+			if poolOptedForExtension {
+				result += ","
+				dta, e := getAgentPoolLinkedTemplateText(agentPoolProfile, orchestratorType, extensionProfile, singleOrAll)
+				if e != nil {
+					fmt.Printf(e.Error())
+					return ""
+				}
+				result += dta
+			}
+
+		}
+	}
+
+	return result
+}
+
+func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorType string, extensionProfile *api.ExtensionProfile, singleOrAll string) (string, error) {
+	extTargetVMNamePrefix := "variables('masterVMNamePrefix')"
+	loopCount := "[sub(variables('masterCount'), variables('masterOffset'))]"
+	if strings.EqualFold(singleOrAll, "single") {
+		loopCount = "1"
+	}
+	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount,
+		"variables('masterOffset')", extensionProfile)
+}
+
+func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orchestratorType string, extensionProfile *api.ExtensionProfile, singleOrAll string) (string, error) {
+	extTargetVMNamePrefix := fmt.Sprintf("variables('%sVMNamePrefix')", agentPoolProfile.Name)
+	loopCount := fmt.Sprintf("[variables('%sCount'))]", agentPoolProfile.Name)
+	loopOffset := ""
+
+	// Availability sets can have an offset since we don't redeploy vms.
+	// So we don't want to rerun these extensions in scale up scenarios.
+	if agentPoolProfile.IsAvailabilitySets() {
+		loopCount = fmt.Sprintf("[sub(variables('%sCount'), variables('%sOffset'))]",
+			agentPoolProfile.Name, agentPoolProfile.Name)
+		loopOffset = fmt.Sprintf("variables('%sOffset')", agentPoolProfile.Name)
+
+	}
+
+	if strings.EqualFold(singleOrAll, "single") {
+		loopCount = "1"
+	}
+
+	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount,
+		loopOffset, extensionProfile)
+}
+
+func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, loopOffset string, extensionProfile *api.ExtensionProfile) (string, error) {
+	dta, e := getLinkedTemplateText(orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.RootURL)
+	if e != nil {
+		return "", e
+	}
+	parmetersString := strings.Replace(extensionProfile.ExtensionParameters, "EXTENSION_LOOP_INDEX",
+		"copyIndex(EXTENSION_LOOP_OFFSET)", -1)
+	dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", parmetersString, -1)
+	dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", extensionProfile.RootURL, -1)
+	dta = strings.Replace(dta, "EXTENSION_TARGET_VM_NAME_PREFIX", extTargetVMNamePrefix, -1)
+	dta = strings.Replace(dta, "EXTENSION_LOOP_COUNT", loopCount, -1)
+	dta = strings.Replace(dta, "EXTENSION_LOOP_OFFSET", loopOffset, -1)
+	return dta, nil
+}
+
+func validateProfileOptedForExtension(extensionName string, profileExtensions []api.Extension) (bool, string) {
+	for _, extension := range profileExtensions {
+		if extensionName == extension.Name {
+			return true, extension.SingleOrAll
+		}
+	}
+	return false, ""
+}
+
+// getLinkedTemplateText returns the string data from
+// template-link.json in the following directory:
+// extensionsRootURL/extensions/extensionName/version
+// It returns an error if the extension cannot be found
+// or loaded.  getLinkedTemplateText calls getLinkedTemplateTextForURL,
+// passing the default rootURL.
+func getLinkedTemplateText(orchestratorType string, extensionName string, version string, rootURL string) (string, error) {
+	return getLinkedTemplateTextForURL(rootURL, orchestratorType, extensionName, version)
+}
+
+// getLinkedTemplateTextForURL returns the string data from
+// template-link.json in the following directory:
+// extensionsRootURL/extensions/extensionName/version
+// It returns an error if the extension cannot be found
+// or loaded.  getLinkedTemplateTextForURL provides the ability
+// to pass a root extensions url for testing
+func getLinkedTemplateTextForURL(rootURL string, orchestrator string, extensionName string, version string) (string, error) {
+	supportsExtension, err := orchestratorSupportsExtension(rootURL, orchestrator, extensionName, version)
+	if supportsExtension == false {
+		return "", fmt.Errorf("Extension not supported for orchestrator. Error: %s", err)
+	}
+
+	templateLinkBytes, err := getExtensionResource(rootURL, extensionName, version, "template-link.json")
+	if err != nil {
+		return "", err
+	}
+
+	return string(templateLinkBytes), nil
+}
+
+func orchestratorSupportsExtension(rootURL string, orchestrator string, extensionName string, version string) (bool, error) {
+	orchestratorBytes, err := getExtensionResource(rootURL, extensionName, version, "supported-orchestrators.json")
+	if err != nil {
+		return false, err
+	}
+
+	var supportedOrchestrators []string
+	err = json.Unmarshal(orchestratorBytes, &supportedOrchestrators)
+	if err != nil {
+		return false, fmt.Errorf("Unable to parse supported-orchestrators.json for Extension %s Version %s", extensionName, version)
+	}
+
+	if stringInSlice(orchestrator, supportedOrchestrators) != true {
+		return false, fmt.Errorf("Orchestrator: %s not in list of supported orchestrators for Extension: %s Version %s", orchestrator, extensionName, version)
+	}
+
+	return true, nil
+}
+
+func getExtensionResource(rootURL string, extensionName string, version string, fileName string) ([]byte, error) {
+	requestURL := getExtensionURL(rootURL, extensionName, version, fileName)
+
+	res, err := http.Get(requestURL)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to GET extension resource for extension: %s with version %s with filename %s at URL: %s Error: %s", extensionName, version, fileName, requestURL, err)
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("Unable to GET extension resource for extension: %s with version %s with filename %s at URL: %s StatusCode: %s: Status: %s", extensionName, version, fileName, requestURL, strconv.Itoa(res.StatusCode), res.Status)
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to GET extension resource for extension: %s with version %s  with filename %s at URL: %s Error: %s", extensionName, version, fileName, requestURL, err)
+	}
+
+	return body, nil
+}
+
+func getExtensionURL(rootURL string, extensionName string, version string, fileName string) string {
+	extensionsDir := "extensions"
+
+	return rootURL + extensionsDir + "/" + extensionName + "/" + version + "/" + fileName
+}
+
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
 
 func getSwarmVersions(orchestratorVersion, dockerComposeVersion string) string {

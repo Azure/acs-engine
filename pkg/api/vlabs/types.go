@@ -35,6 +35,7 @@ type Properties struct {
 	MasterProfile           *MasterProfile           `json:"masterProfile,omitempty" validate:"required"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty" validate:"required"`
+	ExtensionProfiles       []*ExtensionProfile      `json:"extensionProfiles,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	CertificateProfile      *CertificateProfile      `json:"certificateProfile,omitempty"`
@@ -200,17 +201,19 @@ type KubernetesConfig struct {
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int    `json:"count" validate:"required,eq=1|eq=3|eq=5"`
-	DNSPrefix                string `json:"dnsPrefix" validate:"required"`
-	VMSize                   string `json:"vmSize" validate:"required"`
-	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
-	VnetCidr                 string `json:"vnetCidr,omitempty"`
-	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	IPAddressCount           int    `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
-	StorageProfile           string `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
-	HTTPSourceAddressPrefix  string `json:"HTTPSourceAddressPrefix,omitempty"`
-	OAuthEnabled             bool   `json:"oauthEnabled"`
+	Count                    int         `json:"count" validate:"required,eq=1|eq=3|eq=5"`
+	DNSPrefix                string      `json:"dnsPrefix" validate:"required"`
+	VMSize                   string      `json:"vmSize" validate:"required"`
+	OSDiskSizeGB             int         `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	VnetSubnetID             string      `json:"vnetSubnetID,omitempty"`
+	VnetCidr                 string      `json:"vnetCidr,omitempty"`
+	FirstConsecutiveStaticIP string      `json:"firstConsecutiveStaticIP,omitempty"`
+	IPAddressCount           int         `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
+	StorageProfile           string      `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	HTTPSourceAddressPrefix  string      `json:"HTTPSourceAddressPrefix,omitempty"`
+	OAuthEnabled             bool        `json:"oauthEnabled"`
+	PreProvisionExtension    *Extension  `json:"preProvisionExtension"`
+	Extensions               []Extension `json:"extensions"`
 
 	// subnet is internal
 	subnet string
@@ -223,6 +226,23 @@ type MasterProfile struct {
 
 // ClassicAgentPoolProfileType represents types of classic profiles
 type ClassicAgentPoolProfileType string
+
+// ExtensionProfile represents an extension definition
+type ExtensionProfile struct {
+	Name                string `json:"name"`
+	Version             string `json:"version"`
+	ExtensionParameters string `json:"extensionParameters"`
+	RootURL             string `json:"rootURL"`
+	// This is only needed for preprovision extensions and it needs to be a bash script
+	Script string `json:"script"`
+}
+
+// Extension represents an extension definition in the master or agentPoolProfile
+type Extension struct {
+	Name        string `json:"name"`
+	SingleOrAll string `json:"singleOrAll"`
+	Template    string `json:"template"`
+}
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
@@ -242,8 +262,10 @@ type AgentPoolProfile struct {
 	// subnet is internal
 	subnet string
 
-	FQDN             string            `json:"fqdn"`
-	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
+	FQDN                  string            `json:"fqdn"`
+	CustomNodeLabels      map[string]string `json:"customNodeLabels,omitempty"`
+	PreProvisionExtension *Extension        `json:"preProvisionExtension"`
+	Extensions            []Extension       `json:"extensions"`
 }
 
 // AADProfile specifies attributes for AAD integration

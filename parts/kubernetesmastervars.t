@@ -66,6 +66,7 @@
     "masterOffset": "[parameters('masterOffset')]",
 {{end}}
     "apiVersionDefault": "2016-03-30",
+    "apiVersionLinkDefault": "2015-01-01",
     "locations": [
          "[resourceGroup().location]",
          "[parameters('location')]"

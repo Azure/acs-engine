@@ -124,6 +124,7 @@ func SetPropertiesDefaults(cs *api.ContainerService) (bool, error) {
 	setAgentNetworkDefaults(properties)
 
 	setStorageDefaults(properties)
+	setExtensionDefaults(properties)
 
 	certsGenerated, e := setDefaultCerts(properties)
 	if e != nil {
@@ -214,6 +215,17 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket == 0 {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
 			}
+		}
+	}
+}
+
+func setExtensionDefaults(a *api.Properties) {
+	if a.ExtensionProfiles == nil {
+		return
+	}
+	for _, extension := range a.ExtensionProfiles {
+		if extension.RootURL == "" {
+			extension.RootURL = DefaultExtensionsRootURL
 		}
 	}
 }
