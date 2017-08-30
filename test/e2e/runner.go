@@ -138,13 +138,11 @@ func provisionCluster() bool {
 	// Lets modify our template and call acs-engine generate on it
 	e, err := engine.Build(cfg.CurrentWorkingDir, cfg.ClusterDefinition, "_output", cfg.Name)
 	if err != nil {
-		teardown()
 		log.Fatalf("Error while trying to build cluster definition: %s\n", err)
 	}
 
 	err = e.Generate()
 	if err != nil {
-		teardown()
 		log.Fatalf("Error while trying to generate acs-engine template: %s\n", err)
 	}
 
