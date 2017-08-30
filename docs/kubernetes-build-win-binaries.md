@@ -10,7 +10,7 @@ The following instructions show how to deploy the Windows Kubernetes Binaries an
 ## Background
 Microsoft maintains a fork of the Kubernetes project at https://github.com/Azure/kubernetes which includes patches not yet included in upstream Kubernetes; these are needed for Windows containers to function.
 
-[build-windows-k8s.sh](scripts/build-windows-k8s.sh) does the following:
+[build-windows-k8s.sh](../scripts/build-windows-k8s.sh) does the following:
 - Checks out the fork of Azure/kubernetes (includes Windows fixes not yet in upstream Kubernetes, needed for Windows containers to function)
 - Builds kubelet.exe and kube-proxy.exe from source in a Docker container
 - Downloads kubectl.exe for desired release
