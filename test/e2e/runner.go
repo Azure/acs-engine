@@ -17,6 +17,7 @@ import (
 var (
 	cfg  *config.Config
 	acct *azure.Account
+	eng  *engine.Engine
 	err  error
 )
 
@@ -60,7 +61,7 @@ func main() {
 		os.Setenv("KUBECONFIG", cfg.GetKubeConfig())
 		log.Printf("Kubeconfig:%s\n", cfg.GetKubeConfig())
 		log.Println("Waiting on nodes to go into ready state...")
-		ready := node.WaitOnReady(10*time.Second, 10*time.Minute)
+		ready := node.WaitOnReady(eng.NodeCount(), 10*time.Second, 10*time.Minute)
 		if ready == false {
 			teardown()
 			log.Fatalf("Error: Not all nodes in ready state!")
@@ -136,12 +137,12 @@ func provisionCluster() bool {
 	os.Setenv("DNS_PREFIX", cfg.Name)
 
 	// Lets modify our template and call acs-engine generate on it
-	e, err := engine.Build(cfg.CurrentWorkingDir, cfg.ClusterDefinition, "_output", cfg.Name)
+	eng, err = engine.Build(cfg.CurrentWorkingDir, cfg.ClusterDefinition, "_output", cfg.Name)
 	if err != nil {
 		log.Fatalf("Error while trying to build cluster definition: %s\n", err)
 	}
 
-	err = e.Generate()
+	err = eng.Generate()
 	if err != nil {
 		log.Fatalf("Error while trying to generate acs-engine template: %s\n", err)
 	}
@@ -154,7 +155,7 @@ func provisionCluster() bool {
 
 	// Lets start by just using the normal az group deployment cli for creating a cluster
 	log.Println("Creating deployment this make take a few minutes...")
-	err = acct.CreateDeployment(cfg.Name, e)
+	err = acct.CreateDeployment(cfg.Name, eng)
 	if err != nil {
 		teardown()
 		return false

@@ -43,13 +43,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	Context("regardless of agent pool type", func() {
 
 		It("should have have the appropriate node count", func() {
-			expectedCount := eng.ClusterDefinition.Properties.MasterProfile.Count
-			for _, pool := range eng.ClusterDefinition.Properties.AgentPoolProfiles {
-				expectedCount = expectedCount + pool.Count
-			}
 			nodeList, err := node.Get()
 			Expect(err).NotTo(HaveOccurred())
-			Expect(len(nodeList.Nodes)).To(Equal(expectedCount))
+			Expect(len(nodeList.Nodes)).To(Equal(eng.NodeCount()))
 		})
 
 		It("should be running the expected version", func() {
@@ -136,7 +132,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			for _, node := range nodeList.Nodes {
 				success := false
-				for i := 0; i < 3; i++ {
+				for i := 0; i < 20; i++ {
 					dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
 					curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
 					output, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
