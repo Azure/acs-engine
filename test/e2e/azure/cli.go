@@ -160,6 +160,7 @@ func GetCurrentAccount() (*Account, error) {
 	err = json.Unmarshal(out, &a)
 	if err != nil {
 		log.Printf("Error unmarshalling account json:%s\n", err)
+		log.Printf("JSON:%s\n", out)
 	}
 	return &a, nil
 }

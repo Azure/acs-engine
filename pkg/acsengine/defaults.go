@@ -10,44 +10,106 @@ import (
 )
 
 var (
+	//DefaultKubernetesSpecConfig is the default Docker image source of Kubernetes
+	DefaultKubernetesSpecConfig = KubernetesSpecConfig{
+		KubernetesImageBase:     "gcrio.azureedge.net/google_containers/",
+		TillerImageBase:         "gcrio.azureedge.net/kubernetes-helm/",
+		KubeBinariesSASURLBase:  "https://acs-mirror.azureedge.net/wink8s/",
+		CalicoConfigDownloadURL: "https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager",
+		AzureCNIDownloadURL:     "https://acs-mirror.azureedge.net/cni/cni-amd64-latest.tgz",
+		AzureVnetCNIDownloadURL: "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz",
+	}
+
+	//DefaultDCOSSpecConfig is the default DC/OS binary download URL.
+	DefaultDCOSSpecConfig = DCOSSpecConfig{
+		DCOS173BootstrapDownloadURL:     fmt.Sprintf(MsecndDCOSBootstrapDownloadURL, "testing", "df308b6fc3bd91e1277baa5a3db928ae70964722"),
+		DCOS188BootstrapDownloadURL:     fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "5df43052907c021eeb5de145419a3da1898c58a5"),
+		DCOS190BootstrapDownloadURL:     fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "58fd0833ce81b6244fc73bf65b5deb43217b0bd7"),
+		DCOSWindowsBootstrapDownloadURL: "https://dcosdevstorage.blob.core.windows.net/dcos-windows",
+	}
+
+	//DefaultDockerSpecConfig is the default Docker engine repo.
+	DefaultDockerSpecConfig = DockerSpecConfig{
+		DockerEngineRepo:         "https://aptdocker.azureedge.net/repo",
+		DockerComposeDownloadURL: "https://github.com/docker/compose/releases/download",
+	}
+
+	//DefaultOSImageConfig is the default Linux distribution.
+	DefaultOSImageConfig = AzureOSImageConfig{
+		ImageOffer:     "UbuntuServer",
+		ImageSku:       "16.04-LTS",
+		ImagePublisher: "Canonical",
+		ImageVersion:   "16.04.201706191",
+	}
+
 	//AzureCloudSpec is the default configurations for global azure.
 	AzureCloudSpec = AzureEnvironmentSpecConfig{
 		//DockerSpecConfig specify the docker engine download repo
-		DockerSpecConfig: DockerSpecConfig{
-			DockerEngineRepo: "https://aptdocker.azureedge.net/repo",
-		},
+		DockerSpecConfig: DefaultDockerSpecConfig,
 		//KubernetesSpecConfig is the default kubernetes container image url.
-		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase:    "gcrio.azureedge.net/google_containers/",
-			TillerImageBase:        "gcrio.azureedge.net/kubernetes-helm/",
-			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
+		KubernetesSpecConfig: DefaultKubernetesSpecConfig,
+		DCOSSpecConfig:       DefaultDCOSSpecConfig,
+
+		EndpointConfig: AzureEndpointConfig{
+			ResourceManagerVMDNSSuffix: "cloudapp.azure.com",
 		},
 
-		DCOSSpecConfig: DCOSSpecConfig{
-			DCOS173BootstrapDownloadURL:     fmt.Sprintf(MsecndDCOSBootstrapDownloadURL, "testing", "df308b6fc3bd91e1277baa5a3db928ae70964722"),
-			DCOS188BootstrapDownloadURL:     fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "5df43052907c021eeb5de145419a3da1898c58a5"),
-			DCOS190BootstrapDownloadURL:     fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "58fd0833ce81b6244fc73bf65b5deb43217b0bd7"),
-			DCOSWindowsBootstrapDownloadURL: "https://dcosdevstorage.blob.core.windows.net/dcos-windows",
+		OSImageConfig: DefaultOSImageConfig,
+	}
+
+	//AzureGermanCloudSpec is the German cloud config.
+	AzureGermanCloudSpec = AzureEnvironmentSpecConfig{
+		DockerSpecConfig:     DefaultDockerSpecConfig,
+		KubernetesSpecConfig: DefaultKubernetesSpecConfig,
+		DCOSSpecConfig:       DefaultDCOSSpecConfig,
+		EndpointConfig: AzureEndpointConfig{
+			ResourceManagerVMDNSSuffix: "cloudapp.microsoftazure.de",
 		},
+		OSImageConfig: AzureOSImageConfig{
+			ImageOffer:     "UbuntuServer",
+			ImageSku:       "16.04-LTS",
+			ImagePublisher: "Canonical",
+			ImageVersion:   "16.04.201701130",
+		},
+	}
+
+	//AzureUSGovernmentCloud is the US government config.
+	AzureUSGovernmentCloud = AzureEnvironmentSpecConfig{
+		DockerSpecConfig:     DefaultDockerSpecConfig,
+		KubernetesSpecConfig: DefaultKubernetesSpecConfig,
+		DCOSSpecConfig:       DefaultDCOSSpecConfig,
+		EndpointConfig: AzureEndpointConfig{
+			ResourceManagerVMDNSSuffix: "cloudapp.windowsazure.us",
+		},
+		OSImageConfig: DefaultOSImageConfig,
 	}
 
 	//AzureChinaCloudSpec is the configurations for Azure China (Mooncake)
 	AzureChinaCloudSpec = AzureEnvironmentSpecConfig{
 		//DockerSpecConfig specify the docker engine download repo
 		DockerSpecConfig: DockerSpecConfig{
-			DockerEngineRepo: "https://mirror.azure.cn/docker-engine/apt/repo/",
+			DockerEngineRepo:         "https://mirror.azure.cn/docker-engine/apt/repo/",
+			DockerComposeDownloadURL: "https://mirror.azure.cn/docker-toolbox/linux/compose",
 		},
 		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase:    "mirror.azure.cn:5000/google_containers/",
-			TillerImageBase:        "mirror.azure.cn:5000/kubernetes-helm/",
-			KubeBinariesSASURLBase: "https://acs-mirror.azureedge.net/wink8s/",
+			KubernetesImageBase:     "crproxy.trafficmanager.net:6000/google_containers/",
+			TillerImageBase:         "mirror.azure.cn:5000/kubernetes-helm/",
+			CalicoConfigDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/cni",
+			AzureVnetCNIDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-linux-amd64-latest.tar",
+			AzureCNIDownloadURL:     "https://acsengine.blob.core.chinacloudapi.cn/cni/cni-amd64-latest.tar",
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
 			DCOS173BootstrapDownloadURL:     fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
 			DCOS188BootstrapDownloadURL:     fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),
 			DCOSWindowsBootstrapDownloadURL: "https://dcosdevstorage.blob.core.windows.net/dcos-windows",
+			DCOS190BootstrapDownloadURL:     fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "58fd0833ce81b6244fc73bf65b5deb43217b0bd7"),
 		},
+
+		EndpointConfig: AzureEndpointConfig{
+			ResourceManagerVMDNSSuffix: "cloudapp.chinacloudapi.cn",
+		},
+		OSImageConfig: DefaultOSImageConfig,
 	}
 )
 
@@ -62,6 +124,7 @@ func SetPropertiesDefaults(cs *api.ContainerService) (bool, error) {
 	setAgentNetworkDefaults(properties)
 
 	setStorageDefaults(properties)
+	setExtensionDefaults(properties)
 
 	certsGenerated, e := setDefaultCerts(properties)
 	if e != nil {
@@ -105,8 +168,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.MaxPods = DefaultKubernetesMaxPods
 			}
 		}
-		if a.OrchestratorProfile.KubernetesConfig.DnsServiceIP == "" {
-			a.OrchestratorProfile.KubernetesConfig.DnsServiceIP = DefaultKubernetesDnsServiceIP
+		if a.OrchestratorProfile.KubernetesConfig.DNSServiceIP == "" {
+			a.OrchestratorProfile.KubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
 		}
 		if a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet == "" {
 			a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
@@ -152,6 +215,17 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket == 0 {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
 			}
+		}
+	}
+}
+
+func setExtensionDefaults(a *api.Properties) {
+	if a.ExtensionProfiles == nil {
+		return
+	}
+	for _, extension := range a.ExtensionProfiles {
+		if extension.RootURL == "" {
+			extension.RootURL = DefaultExtensionsRootURL
 		}
 	}
 }
@@ -291,11 +365,11 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		a.CertificateProfile.CaPrivateKey = caPair.PrivateKeyPem
 	}
 
-	cidrFirstIp, err := common.CidrStringFirstIp(a.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
+	cidrFirstIP, err := common.CidrStringFirstIP(a.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
 	if err != nil {
 		return false, err
 	}
-	ips = append(ips, cidrFirstIp)
+	ips = append(ips, cidrFirstIP)
 
 	apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
 	if err != nil {

@@ -182,9 +182,9 @@
           "adminUsername": "[variables('adminUsername')]",
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
 {{if IsSwarmMode}}
-            {{GetAgentSwarmModeCustomData}} 
+            {{GetAgentSwarmModeCustomData .}} 
 {{else}}
-            {{GetAgentSwarmCustomData}} 
+            {{GetAgentSwarmCustomData .}} 
 {{end}}
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true",

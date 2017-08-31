@@ -47,6 +47,7 @@ type Properties struct {
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty"`
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
+	ExtensionProfiles       []*ExtensionProfile      `json:"extensionProfiles"`
 	DiagnosticsProfile      *DiagnosticsProfile      `json:"diagnosticsProfile,omitempty"`
 	JumpboxProfile          *JumpboxProfile          `json:"jumpboxProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
@@ -147,7 +148,7 @@ type KubernetesConfig struct {
 	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
 	MaxPods                          int     `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string  `json:"dockerBridgeSubnet,omitempty"`
-	DnsServiceIP                     string  `json:"dnsServiceIP,omitempty"`
+	DNSServiceIP                     string  `json:"dnsServiceIP,omitempty"`
 	ServiceCIDR                      string  `json:"serviceCidr,omitempty"`
 	NodeStatusUpdateFrequency        string  `json:"nodeStatusUpdateFrequency,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string  `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
@@ -169,23 +170,42 @@ type KubernetesConfig struct {
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int    `json:"count"`
-	DNSPrefix                string `json:"dnsPrefix"`
-	VMSize                   string `json:"vmSize"`
-	OSDiskSizeGB             int    `json:"osDiskSizeGB,omitempty"`
-	VnetSubnetID             string `json:"vnetSubnetID,omitempty"`
-	VnetCidr                 string `json:"vnetCidr,omitempty"`
-	FirstConsecutiveStaticIP string `json:"firstConsecutiveStaticIP,omitempty"`
-	Subnet                   string `json:"subnet"`
-	IPAddressCount           int    `json:"ipAddressCount,omitempty"`
-	StorageProfile           string `json:"storageProfile,omitempty"`
-	HTTPSourceAddressPrefix  string `json:"HTTPSourceAddressPrefix,omitempty"`
-	OAuthEnabled             bool   `json:"oauthEnabled"`
+	Count                    int         `json:"count"`
+	DNSPrefix                string      `json:"dnsPrefix"`
+	VMSize                   string      `json:"vmSize"`
+	OSDiskSizeGB             int         `json:"osDiskSizeGB,omitempty"`
+	VnetSubnetID             string      `json:"vnetSubnetID,omitempty"`
+	VnetCidr                 string      `json:"vnetCidr,omitempty"`
+	FirstConsecutiveStaticIP string      `json:"firstConsecutiveStaticIP,omitempty"`
+	Subnet                   string      `json:"subnet"`
+	IPAddressCount           int         `json:"ipAddressCount,omitempty"`
+	StorageProfile           string      `json:"storageProfile,omitempty"`
+	HTTPSourceAddressPrefix  string      `json:"HTTPSourceAddressPrefix,omitempty"`
+	OAuthEnabled             bool        `json:"oauthEnabled"`
+	PreprovisionExtension    *Extension  `json:"preProvisionExtension"`
+	Extensions               []Extension `json:"extensions"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
 	// Not used during PUT, returned as part of GET
 	FQDN string `json:"fqdn,omitempty"`
+}
+
+// ExtensionProfile represents an extension definition
+type ExtensionProfile struct {
+	Name                string `json:"name"`
+	Version             string `json:"version"`
+	ExtensionParameters string `json:"extensionParameters"`
+	RootURL             string `json:"rootURL"`
+	// This is only needed for preprovision extensions and it needs to be a bash script
+	Script string `json:"script"`
+}
+
+// Extension represents an extension definition in the master or agentPoolProfile
+type Extension struct {
+	Name        string `json:"name"`
+	SingleOrAll string `json:"singleOrAll"`
+	Template    string `json:"template"`
 }
 
 // AgentPoolProfile represents an agent pool definition
@@ -204,8 +224,10 @@ type AgentPoolProfile struct {
 	Subnet              string `json:"subnet"`
 	IPAddressCount      int    `json:"ipAddressCount,omitempty"`
 
-	FQDN             string            `json:"fqdn,omitempty"`
-	CustomNodeLabels map[string]string `json:"customNodeLabels,omitempty"`
+	FQDN                  string            `json:"fqdn,omitempty"`
+	CustomNodeLabels      map[string]string `json:"customNodeLabels,omitempty"`
+	PreprovisionExtension *Extension        `json:"preProvisionExtension"`
+	Extensions            []Extension       `json:"extensions"`
 }
 
 // DiagnosticsProfile setting to enable/disable capturing
@@ -266,6 +288,7 @@ type KeyVaultCertificate struct {
 // OSType represents OS types of agents
 type OSType string
 
+// HostedMasterProfile defines properties for a hosted master
 type HostedMasterProfile struct {
 	// Master public endpoint/FQDN with port
 	// The format will be FQDN:2376

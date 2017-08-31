@@ -127,9 +127,9 @@
             "adminUsername": "[variables('adminUsername')]",
             "computerNamePrefix": "[variables('{{.Name}}VMNamePrefix')]",
 {{if IsSwarmMode}}
-            {{GetAgentSwarmModeCustomData}} 
+            {{GetAgentSwarmModeCustomData .}} 
 {{else}}
-            {{GetAgentSwarmCustomData}} 
+            {{GetAgentSwarmCustomData .}} 
 {{end}}
             "linuxConfiguration": {
               "disablePasswordAuthentication": "true",

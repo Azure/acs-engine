@@ -8,13 +8,13 @@ DIST_DIRS         = find * -type d -exec
 ifdef DEBUG
 GOFLAGS   := -gcflags="-N -l"
 else
-GOFLAGS   := 
+GOFLAGS   :=
 endif
 
 # go option
 GO        ?= go
 TAGS      :=
-LDFLAGS   := 
+LDFLAGS   :=
 BINDIR    := $(CURDIR)/bin
 BINARIES  := acs-engine
 VERSION   ?= $(shell git rev-parse HEAD)
@@ -48,6 +48,10 @@ build-binary: generate
 build-cross: LDFLAGS += -extldflags "-static"
 build-cross:
 	CGO_ENABLED=0 gox -output="_dist/acs-engine-${VERSION}-{{.OS}}-{{.Arch}}/{{.Dir}}" -osarch='$(TARGETS)' $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)'
+
+.PHONY: build-windows-k8s
+build-windows-k8s:
+	./scripts/build-windows-k8s.sh -v ${K8S_VERSION} -p ${PATCH_VERSION}
 
 .PHONY: dist
 dist:

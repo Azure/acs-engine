@@ -2,6 +2,7 @@
     "targetEnvironment": "[parameters('targetEnvironment')]",
     "maxVMsPerPool": 100,
     "apiVersionDefault": "2016-03-30",
+    "apiVersionLinkDefault": "2015-01-01",
     "singleQuote": "'",
 {{if .LinuxProfile.HasSecrets}}
     "linuxProfileSecrets" :
@@ -97,10 +98,10 @@
     "nameSuffix": "[parameters('nameSuffix')]",
     "oauthEnabled": "{{.MasterProfile.OAuthEnabled}}",
     "orchestratorName": "dcos",
-    "osImageOffer": "UbuntuServer",
-    "osImagePublisher": "Canonical",
-    "osImageSKU": "16.04-LTS",
-    "osImageVersion": "16.04.201706191",
+    "osImageOffer": "[parameters('osImageOffer')]", 
+    "osImagePublisher": "[parameters('osImagePublisher')]", 
+    "osImageSKU": "[parameters('osImageSKU')]", 
+    "osImageVersion": "[parameters('osImageVersion')]",
     "sshKeyPath": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]",
     "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
     "locations": [

@@ -124,29 +124,29 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
-			DnsServiceIP: "192.168.0.10",
+			DNSServiceIP: "192.168.0.10",
 		}
 		if err := c.Validate(k8sRelease); err == nil {
-			t.Error("should error when DnsServiceIP but not ServiceCidr")
+			t.Error("should error when DNSServiceIP but not ServiceCidr")
 		}
 
 		c = KubernetesConfig{
 			ServiceCidr: "192.168.0.10/24",
 		}
 		if err := c.Validate(k8sRelease); err == nil {
-			t.Error("should error when ServiceCidr but not DnsServiceIP")
+			t.Error("should error when ServiceCidr but not DNSServiceIP")
 		}
 
 		c = KubernetesConfig{
-			DnsServiceIP: "invalid",
+			DNSServiceIP: "invalid",
 			ServiceCidr:  "192.168.0.0/24",
 		}
 		if err := c.Validate(k8sRelease); err == nil {
-			t.Error("should error when DnsServiceIP is invalid")
+			t.Error("should error when DNSServiceIP is invalid")
 		}
 
 		c = KubernetesConfig{
-			DnsServiceIP: "192.168.1.10",
+			DNSServiceIP: "192.168.1.10",
 			ServiceCidr:  "192.168.0.0/not-a-len",
 		}
 		if err := c.Validate(k8sRelease); err == nil {
@@ -154,35 +154,35 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
-			DnsServiceIP: "192.168.1.10",
+			DNSServiceIP: "192.168.1.10",
 			ServiceCidr:  "192.168.0.0/24",
 		}
 		if err := c.Validate(k8sRelease); err == nil {
-			t.Error("should error when DnsServiceIP is outside of ServiceCidr")
+			t.Error("should error when DNSServiceIP is outside of ServiceCidr")
 		}
 
 		c = KubernetesConfig{
-			DnsServiceIP: "172.99.255.255",
+			DNSServiceIP: "172.99.255.255",
 			ServiceCidr:  "172.99.0.1/16",
 		}
 		if err := c.Validate(k8sRelease); err == nil {
-			t.Error("should error when DnsServiceIP is broadcast address of ServiceCidr")
+			t.Error("should error when DNSServiceIP is broadcast address of ServiceCidr")
 		}
 
 		c = KubernetesConfig{
-			DnsServiceIP: "172.99.0.1",
+			DNSServiceIP: "172.99.0.1",
 			ServiceCidr:  "172.99.0.1/16",
 		}
 		if err := c.Validate(k8sRelease); err == nil {
-			t.Error("should error when DnsServiceIP is first IP of ServiceCidr")
+			t.Error("should error when DNSServiceIP is first IP of ServiceCidr")
 		}
 
 		c = KubernetesConfig{
-			DnsServiceIP: "172.99.255.10",
+			DNSServiceIP: "172.99.255.10",
 			ServiceCidr:  "172.99.0.1/16",
 		}
 		if err := c.Validate(k8sRelease); err != nil {
-			t.Error("should not error when DnsServiceIP and ServiceCidr are valid")
+			t.Error("should not error when DNSServiceIP and ServiceCidr are valid")
 		}
 	}
 

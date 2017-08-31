@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
+	"github.com/Azure/acs-engine/pkg/api/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -117,6 +118,62 @@ func ConvertContainerServiceToVLabs(api *ContainerService) *vlabs.ContainerServi
 	vlabsCS.Properties = &vlabs.Properties{}
 	convertPropertiesToVLabs(api.Properties, vlabsCS.Properties)
 	return vlabsCS
+}
+
+// ConvertOrchestratorVersionProfileToV20170930 converts an unversioned OrchestratorVersionProfile to a v20170930 OrchestratorVersionProfile
+func ConvertOrchestratorVersionProfileToV20170930(api *OrchestratorVersionProfile) *v20170930.OrchestratorVersionProfile {
+	vProfile := &v20170930.OrchestratorVersionProfile{}
+	switch api.OrchestratorType {
+	case Kubernetes:
+		vProfile.OrchestratorType = v20170930.Kubernetes
+	case DCOS:
+		vProfile.OrchestratorType = v20170930.DCOS
+	case Swarm:
+		vProfile.OrchestratorType = v20170930.Swarm
+	case SwarmMode:
+		vProfile.OrchestratorType = v20170930.DockerCE
+	}
+	vProfile.OrchestratorVersion = api.OrchestratorVersion
+	vProfile.OrchestratorRelease = api.OrchestratorRelease
+	vProfile.Default = api.Default
+	if api.Upgradables != nil {
+		vProfile.Upgradables = make([]*v20170930.OrchestratorEdition, len(api.Upgradables))
+		for i, h := range api.Upgradables {
+			vProfile.Upgradables[i] = &v20170930.OrchestratorEdition{
+				OrchestratorRelease: h.OrchestratorRelease,
+				OrchestratorVersion: h.OrchestratorVersion,
+			}
+		}
+	}
+	return vProfile
+}
+
+// ConvertOrchestratorVersionProfileToVLabs converts an unversioned OrchestratorVersionProfile to a vlabs OrchestratorVersionProfile
+func ConvertOrchestratorVersionProfileToVLabs(api *OrchestratorVersionProfile) *vlabs.OrchestratorVersionProfile {
+	vlabsProfile := &vlabs.OrchestratorVersionProfile{}
+	switch api.OrchestratorType {
+	case Kubernetes:
+		vlabsProfile.OrchestratorType = vlabs.Kubernetes
+	case DCOS:
+		vlabsProfile.OrchestratorType = vlabs.DCOS
+	case Swarm:
+		vlabsProfile.OrchestratorType = vlabs.Swarm
+	case SwarmMode:
+		vlabsProfile.OrchestratorType = vlabs.SwarmMode
+	}
+	vlabsProfile.OrchestratorVersion = api.OrchestratorVersion
+	vlabsProfile.OrchestratorRelease = api.OrchestratorRelease
+	vlabsProfile.Default = api.Default
+	if api.Upgradables != nil {
+		vlabsProfile.Upgradables = make([]*vlabs.OrchestratorEdition, len(api.Upgradables))
+		for i, h := range api.Upgradables {
+			vlabsProfile.Upgradables[i] = &vlabs.OrchestratorEdition{
+				OrchestratorRelease: h.OrchestratorRelease,
+				OrchestratorVersion: h.OrchestratorVersion,
+			}
+		}
+	}
+	return vlabsProfile
 }
 
 // convertResourcePurchasePlanToV20160930 converts a v20160930 ResourcePurchasePlan to an unversioned ResourcePurchasePlan
@@ -394,6 +451,12 @@ func convertPropertiesToVLabs(api *Properties, vlabsProps *vlabs.Properties) {
 		vlabsProps.LinuxProfile = &vlabs.LinuxProfile{}
 		convertLinuxProfileToVLabs(api.LinuxProfile, vlabsProps.LinuxProfile)
 	}
+	vlabsProps.ExtensionProfiles = []*vlabs.ExtensionProfile{}
+	for _, extensionProfile := range api.ExtensionProfiles {
+		vlabsExtensionProfile := &vlabs.ExtensionProfile{}
+		convertExtensionProfileToVLabs(extensionProfile, vlabsExtensionProfile)
+		vlabsProps.ExtensionProfiles = append(vlabsProps.ExtensionProfiles, vlabsExtensionProfile)
+	}
 	if api.WindowsProfile != nil {
 		vlabsProps.WindowsProfile = &vlabs.WindowsProfile{}
 		convertWindowsProfileToVLabs(api.WindowsProfile, vlabsProps.WindowsProfile)
@@ -436,10 +499,22 @@ func convertLinuxProfileToV20170131(api *LinuxProfile, obj *v20170131.LinuxProfi
 	obj.AdminUsername = api.AdminUsername
 	obj.SSH.PublicKeys = []v20170131.PublicKey{}
 	for _, d := range api.SSH.PublicKeys {
-		obj.SSH.PublicKeys = append(obj.SSH.PublicKeys, v20170131.PublicKey{
-			KeyData: d.KeyData,
-		})
+		obj.SSH.PublicKeys = append(obj.SSH.PublicKeys, v20170131.PublicKey{KeyData: d.KeyData})
 	}
+}
+
+func convertExtensionProfileToVLabs(api *ExtensionProfile, vlabs *vlabs.ExtensionProfile) {
+	vlabs.Name = api.Name
+	vlabs.Version = api.Version
+	vlabs.ExtensionParameters = api.ExtensionParameters
+	vlabs.RootURL = api.RootURL
+	vlabs.Script = api.Script
+}
+
+func convertExtensionToVLabs(api *Extension, vlabs *vlabs.Extension) {
+	vlabs.Name = api.Name
+	vlabs.SingleOrAll = api.SingleOrAll
+	vlabs.Template = api.Template
 }
 
 func convertLinuxProfileToV20170701(api *LinuxProfile, obj *v20170701.LinuxProfile) {
@@ -558,7 +633,7 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {
 	vlabs.KubernetesImageBase = api.KubernetesImageBase
 	vlabs.ClusterSubnet = api.ClusterSubnet
-	vlabs.DnsServiceIP = api.DnsServiceIP
+	vlabs.DNSServiceIP = api.DNSServiceIP
 	vlabs.ServiceCidr = api.ServiceCIDR
 	vlabs.NetworkPolicy = api.NetworkPolicy
 	vlabs.MaxPods = api.MaxPods
@@ -625,6 +700,17 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 	vlabsProfile.SetSubnet(api.Subnet)
 	vlabsProfile.FQDN = api.FQDN
 	vlabsProfile.StorageProfile = api.StorageProfile
+	if api.PreprovisionExtension != nil {
+		vlabsExtension := &vlabs.Extension{}
+		convertExtensionToVLabs(api.PreprovisionExtension, vlabsExtension)
+		vlabsProfile.PreProvisionExtension = vlabsExtension
+	}
+	vlabsProfile.Extensions = []vlabs.Extension{}
+	for _, extension := range api.Extensions {
+		vlabsExtension := &vlabs.Extension{}
+		convertExtensionToVLabs(&extension, vlabsExtension)
+		vlabsProfile.Extensions = append(vlabsProfile.Extensions, *vlabsExtension)
+	}
 }
 
 func convertKeyVaultSecretsToVlabs(api *KeyVaultSecrets, vlabsSecrets *vlabs.KeyVaultSecrets) {
@@ -702,6 +788,19 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 	p.CustomNodeLabels = map[string]string{}
 	for k, v := range api.CustomNodeLabels {
 		p.CustomNodeLabels[k] = v
+	}
+
+	if api.PreprovisionExtension != nil {
+		vlabsExtension := &vlabs.Extension{}
+		convertExtensionToVLabs(api.PreprovisionExtension, vlabsExtension)
+		p.PreProvisionExtension = vlabsExtension
+	}
+
+	p.Extensions = []vlabs.Extension{}
+	for _, extension := range api.Extensions {
+		vlabsExtension := &vlabs.Extension{}
+		convertExtensionToVLabs(&extension, vlabsExtension)
+		p.Extensions = append(p.Extensions, *vlabsExtension)
 	}
 }
 
