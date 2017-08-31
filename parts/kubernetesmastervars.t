@@ -39,6 +39,7 @@
     "maxPods": "[parameters('maxPods')]",
     "vnetCidr": "[parameters('vnetCidr')]",
     "calicoConfigURL":"[parameters('calicoConfigURL')]",
+    "singleQuote": "'",
 {{ if UseManagedIdentity }}
     "servicePrincipalClientId": "msi",
     "servicePrincipalClientSecret": "msi",
@@ -261,6 +262,5 @@
     "agentWindowsOffer": "WindowsServer",
     "agentWindowsSku": "2016-Datacenter-with-Containers",
     "agentWindowsVersion": "latest",
-    "singleQuote": "'",
     "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Copy-Item $inputFile $outputFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
 {{end}}
