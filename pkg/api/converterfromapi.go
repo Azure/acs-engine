@@ -509,6 +509,7 @@ func convertExtensionProfileToVLabs(api *ExtensionProfile, vlabs *vlabs.Extensio
 	vlabs.ExtensionParameters = api.ExtensionParameters
 	vlabs.RootURL = api.RootURL
 	vlabs.Script = api.Script
+	vlabs.URLQuery = api.URLQuery
 }
 
 func convertExtensionToVLabs(api *Extension, vlabs *vlabs.Extension) {
