@@ -67,9 +67,9 @@ type List struct {
 }
 
 // AreAllReady returns a bool depending on cluster state
-func AreAllReady() bool {
+func AreAllReady(nodeCount int) bool {
 	list, _ := Get()
-	if list != nil {
+	if list != nil && len(list.Nodes) == nodeCount {
 		for _, node := range list.Nodes {
 			for _, condition := range node.Status.Conditions {
 				if condition.Type == "KubeletReady" && condition.Status == "false" {
@@ -83,7 +83,7 @@ func AreAllReady() bool {
 }
 
 // WaitOnReady will block until all nodes are in ready state
-func WaitOnReady(sleep, duration time.Duration) bool {
+func WaitOnReady(nodeCount int, sleep, duration time.Duration) bool {
 	readyCh := make(chan bool, 1)
 	errCh := make(chan error)
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
@@ -94,7 +94,7 @@ func WaitOnReady(sleep, duration time.Duration) bool {
 			case <-ctx.Done():
 				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Nodes to become ready", duration.String())
 			default:
-				if AreAllReady() == true {
+				if AreAllReady(nodeCount) == true {
 					readyCh <- true
 				}
 				time.Sleep(sleep)

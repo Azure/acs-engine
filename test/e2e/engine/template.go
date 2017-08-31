@@ -99,6 +99,15 @@ func Build(cwd, templatePath, outputPath, definitionName string) (*Engine, error
 	return &engine, nil
 }
 
+// NodeCount returns the number of nodes that should be provisioned for a given cluster definition
+func (e *Engine) NodeCount() int {
+	expectedCount := e.ClusterDefinition.Properties.MasterProfile.Count
+	for _, pool := range e.ClusterDefinition.Properties.AgentPoolProfiles {
+		expectedCount = expectedCount + pool.Count
+	}
+	return expectedCount
+}
+
 // HasLinuxAgents will return true if there is at least 1 linux agent pool
 func (e *Engine) HasLinuxAgents() bool {
 	for _, ap := range e.ClusterDefinition.Properties.AgentPoolProfiles {
