@@ -21,7 +21,7 @@ TARGET_ENVIRONMENT="${13}"
 NETWORK_POLICY="${14}"
 FQDNSuffix="${15}"
 AZURE_VNET_CNI_URL="${16}"
-AZURE_CNI_URL="${17}"
+AZURE_CNI_PLUGIN_URL="${17}"
 CALICO_CONFIG_URL="${18}"
 MAX_PODS="${19}"
 
@@ -197,7 +197,7 @@ function configAzureNetworkPolicy() {
     # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
     downloadUrl ${AZURE_VNET_CNI_URL} | tar -xz -C $CNI_BIN_DIR
     # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
-    downloadUrl ${AZURE_CNI_URL} | tar -xz -C $CNI_BIN_DIR ./loopback
+    downloadUrl ${AZURE_CNI_PLUGIN_URL} | tar -xz -C $CNI_BIN_DIR ./loopback
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
 
