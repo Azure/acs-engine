@@ -145,6 +145,11 @@ upload_zip_to_blob_storage() {
 	az storage blob upload -f ${DIST_DIR}/../../v${ACS_VERSION}intwinnat.zip -c ${AZURE_STORAGE_CONTAINER_NAME} -n v${ACS_VERSION}intwinnat.zip
 }
 
+push_acs_branch() {
+  cd ${GOPATH}/src/k8s.io/kubernetes
+  git push origin ${ACS_BRANCH_NAME}
+}
+
 create_dist_dir
 fetch_k8s
 set_git_config
@@ -164,3 +169,4 @@ download_winnat
 copy_dockerfile_and_pause_ps1
 create_zip
 upload_zip_to_blob_storage
+push_acs_branch
