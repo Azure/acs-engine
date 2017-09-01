@@ -1660,12 +1660,15 @@ func getLinkedTemplatesForExtensions(properties *api.Properties) string {
 
 func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorType string, extensionProfile *api.ExtensionProfile, singleOrAll string) (string, error) {
 	extTargetVMNamePrefix := "variables('masterVMNamePrefix')"
+
 	loopCount := "[variables('masterCount')]"
 	loopOffset := ""
 	if orchestratorType == api.Kubernetes {
+		// Due to upgrade k8s sometimes needs to install just some of the nodes.
 		loopCount = "[sub(variables('masterCount'), variables('masterOffset'))]"
 		loopOffset = "variables('masterOffset')"
 	}
+
 	if strings.EqualFold(singleOrAll, "single") {
 		loopCount = "1"
 	}
