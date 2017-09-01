@@ -1,7 +1,7 @@
 # marathonBaseUrl="http://localhost:8080/marathon" # handy for local testing with SSH
 marathonBaseUrl="http://marathon.mesos:8080" 
 # dcosBaseUrl="http://localhost/" # handy for local testing with SSH
-dcosBaseUrl="http://localhost:8080/"
+dcosBaseUrl="http://leader.mesos/"
 
 # definitions for elasticsearch and vamp applications (from http://vamp.io/documentation/installation/v0.9.5/dcos/)
 elasticsearch='{"id":"elasticsearch","instances":1,"cpus":0.2,"mem":1024.0,"container":{"type":"DOCKER","docker":{"image":"magneticio/elastic:2.2","network":"HOST","forcePullImage":true}},"healthChecks":[{"protocol":"TCP","gracePeriodSeconds":30,"intervalSeconds":10,"timeoutSeconds":5,"port":9200,"maxConsecutiveFailures":0}]}'
