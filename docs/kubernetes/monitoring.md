@@ -71,22 +71,36 @@ Another option to see stats is via Grafana and Influx DB. Grafana is a powerful 
 
 ![Image of Grafana](../images/k8s-monitoring-grafana1.png)
 
-To set up Grafana, we will need to delete the existing Heapster deployment from the Kubernetes cluster and recreate it. When we will recreate the heapster deployment, our new deployment will be configured to use InfluxDB as it's database store.
+To set up Grafana, we will need to deploy Grafana and InfluxDB. We will also need to configure Heapster to use InfluxDB as its storage backend. 
 
-1. `kubectl delete heapster --namespace=kube-system --all`
 1. `git clone https://github.com/kubernetes/Heapster.git $HOME/heapster`
 1. `cd $HOME/heapster`
 1. `git checkout release-1.4`
 1. `git cherry-pick c674a16f74782b326f02345486b5f9520891f395` (This works around the [open issue](https://github.com/kubernetes/Heapster/issues/1783) with Grafana deployments currently)
-1. `kubectl create -f deploy/kube-config/rbac/Heapster-rbac.yaml`
-1. `kubectl create -f deploy/kube-config/influxdb/`
+1. `kubectl create -f deploy/kube-config/influxdb/influxdb.yaml`
+1. `kubectl create -f deploy/kube-config/influxdb/grafana.yaml`
+1. `kubectl get pods --namespace=kube-system` Ensure that Heapster, Grafana and InfluxDB are in the `Running` state
+1. `kubectl edit deployment/heapster --namespace=kube-system`
+1. We need to configure Heapster to use InfluxDB as the the data store. To do that under the spec > containers > command property change the command field from:
+   ``` yaml
+   command:
+   - /heapster
+   - --source=kubernetes.summary_api:""
+   ```
+   to this:
+   ```yaml
+   command:
+   - /heapster
+   - --source=kubernetes.summary_api:""
+   - --source=kubernetes.summary_api:""
+   - --sink=influxdb:http://monitoring-influxdb.kube-system.svc:8086
+   ```
+1. Save and exit from your editor to change the deployment. Now, Heapster will restart the pods and be configured to use InfluxDB. To ensure everything is ok, check the Heapster logs:
 1. `getHeapster() { kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' --namespace=kube-system | grep -i heapster; }`
-1. `sleep 120; kubectl delete pod $(getHeapster) --namespace=kube-system` (Heapster sometimes starts up before InfluxDB resulting in an error. To work around this delete the heapster pod. It will start back up and should see the new InfluxDB service)
-1. `watch kubectl get pods --all-namespaces` Wait until you see Heapster listed under a running state.
-1. `kubctl logs $(getHeapster) --namespace=kube-system` Look at the logs of heapster to ensure it started up correctly.
+1. `kubectl logs $(getHeapster) --namespace=kube-system -c heapster` Look at the logs of heapster to ensure it started up correctly.
 You should see something like this if everything is ok:
 ```shell
-azureuser@k8s-master-95363663-0:~/Heapster$ kubectl logs $(getHeapster) --namespace=kube-system
+azureuser@k8s-master-95363663-0:~/Heapster$ kubectl logs $(getHeapster) --namespace=kube-system -c heapster
 I0830 22:30:57.671954       1 Heapster.go:72] /heapster --source=kubernetes:https://kubernetes.default --sink=influxdb:http://monitoring-influxdb.kube-system.svc:8086
 I0830 22:30:57.671989       1 Heapster.go:73] Heapster version v1.3.0
 I0830 22:30:57.672149       1 configs.go:61] Using Kubernetes client with master "https://kubernetes.default" and version v1
@@ -99,7 +113,7 @@ I0830 22:31:05.106039       1 influxdb.go:215] Created database "k8s" on influxD
 ```
 
 If everything looks ok and Grafana and Influx DB were able to start up, you can now access them! To do that:
-1. Run `kubctl proxy`.
+1. Run `kubectl proxy`.
     * If you are using Windows and sshing into the master to use kubectl, you will need to set up remote port forwarding from port 8001 on the master to your host in order to use `kubectl proxy`. To do this, under Putty > Connection > SSH > Tunnels, create a new forwarded port (source local port 8001 to destination 127.0.0.1:8001).
 
 1. To see cluster stats: http://localhost:8001/api/v1/namespaces/kube-system/services/monitoring-grafana/proxy/dashboard/db/cluster
