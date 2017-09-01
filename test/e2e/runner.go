@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -18,11 +19,8 @@ var (
 	cfg  *config.Config
 	acct *azure.Account
 	eng  *engine.Engine
+	rgs  []string
 	err  error
-)
-
-const (
-	kubernetesOrchestrator = "kubernetes"
 )
 
 func main() {
@@ -49,15 +47,33 @@ func main() {
 	if cfg.Name == "" {
 		for i := 1; i <= cfg.ProvisionRetries; i++ {
 			success := provisionCluster()
+			rgs = append(rgs, cfg.Name)
 			if success {
 				break
 			} else if i == cfg.ProvisionRetries {
+				teardown()
 				log.Fatalf("Exceeded Provision retry count!")
 			}
 		}
+	} else {
+		engCfg, err := engine.ParseConfig(cfg.CurrentWorkingDir, cfg.ClusterDefinition, cfg.Name)
+		if err != nil {
+			teardown()
+			log.Fatalf("Error trying to parse Engine config:%s\n", err)
+		}
+		cs, err := engine.Parse(engCfg.ClusterDefinitionTemplate)
+		if err != nil {
+			teardown()
+			log.Fatalf("Error trying to parse engine template into memory:%s\n", err)
+
+		}
+		eng = &engine.Engine{
+			Config:            engCfg,
+			ClusterDefinition: cs,
+		}
 	}
 
-	if cfg.Orchestrator == kubernetesOrchestrator {
+	if cfg.IsKubernetes() {
 		os.Setenv("KUBECONFIG", cfg.GetKubeConfig())
 		log.Printf("Kubeconfig:%s\n", cfg.GetKubeConfig())
 		log.Println("Waiting on nodes to go into ready state...")
@@ -89,10 +105,11 @@ func trap() {
 
 func teardown() {
 	if cfg.CleanUpOnExit {
-		log.Printf("Deleting Group:%s\n", cfg.Name)
-		acct.DeleteGroup()
+		for _, rg := range rgs {
+			log.Printf("Deleting Group:%s\n", rg)
+			acct.DeleteGroup(rg)
+		}
 	}
-	exec.Command("ssh-add", "-d", cfg.GetSSHKeyPath())
 }
 
 func runGinkgo(orchestrator string) {
@@ -127,7 +144,6 @@ func provisionCluster() bool {
 		log.Fatalf("Error while trying to generate ssh key:%s\n\nOutput:%s\n", err, out)
 	}
 	exec.Command("chmod", "0600", cfg.GetSSHKeyPath()+"*")
-	exec.Command("ssh-add", cfg.GetSSHKeyPath())
 
 	publicSSHKey, err := cfg.ReadPublicSSHKey()
 	if err != nil {
@@ -136,29 +152,47 @@ func provisionCluster() bool {
 	os.Setenv("PUBLIC_SSH_KEY", publicSSHKey)
 	os.Setenv("DNS_PREFIX", cfg.Name)
 
-	// Lets modify our template and call acs-engine generate on it
-	eng, err = engine.Build(cfg.CurrentWorkingDir, cfg.ClusterDefinition, "_output", cfg.Name)
+	err = acct.CreateGroup(cfg.Name, cfg.Location)
 	if err != nil {
-		log.Fatalf("Error while trying to build cluster definition: %s\n", err)
+		log.Printf("Error while trying to create resource group: %s\n", err)
+		return false
+	}
+
+	subnetID := ""
+	if cfg.CreateVNET {
+		acct.CreateVnet("KubernetesCustomVNET", "10.239.0.0/16", "KubernetesSubnet", "10.239.0.0/16")
+		subnetID = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s", acct.SubscriptionID, acct.ResourceGroup.Name, "KubernetesCustomVNET", "KubernetesSubnet")
+	}
+
+	// Lets modify our template and call acs-engine generate on it
+	eng, err = engine.Build(cfg, subnetID)
+	if err != nil {
+		log.Printf("Error while trying to build cluster definition: %s\n", err)
+		return false
+	}
+
+	err = eng.Write()
+	if err != nil {
+		log.Printf("Error while trying to write Engine Template to disk:%s\n", err)
+		return false
 	}
 
 	err = eng.Generate()
 	if err != nil {
-		log.Fatalf("Error while trying to generate acs-engine template: %s\n", err)
-	}
-
-	err = acct.CreateGroup(cfg.Name, cfg.Location)
-	if err != nil {
-		teardown()
-		log.Fatalf("Error while trying to create resource group: %s\n", err)
+		log.Printf("Error while trying to generate acs-engine template: %s\n", err)
+		return false
 	}
 
 	// Lets start by just using the normal az group deployment cli for creating a cluster
 	log.Println("Creating deployment this make take a few minutes...")
 	err = acct.CreateDeployment(cfg.Name, eng)
 	if err != nil {
-		teardown()
 		return false
 	}
+
+	if cfg.CreateVNET {
+		acct.UpdateRouteTables("KubernetesSubnet", "KubernetesCustomVNET")
+	}
+
 	return true
 }

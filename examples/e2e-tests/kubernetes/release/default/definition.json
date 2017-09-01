@@ -1,0 +1,56 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "kubernetesConfig": {
+        "networkPolicy": "calico",
+        "clusterSubnet": "10.230.0.0/16"
+      }
+    },
+    "masterProfile": {
+      "count": 1,
+      "dnsPrefix": "",
+      "vmSize": "Standard_D2_v2",
+      "OSDiskSizeGB": 200,
+      "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME",
+      "firstConsecutiveStaticIP": "10.239.255.239" 
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "md",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "OSDiskSizeGB": 200,
+        "storageProfile" : "ManagedDisks",
+        "diskSizesGB": [128],
+        "availabilityProfile": "AvailabilitySet",
+        "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME"
+      },
+      {
+        "name": "sa",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "OSDiskSizeGB": 200,
+        "storageProfile": "StorageAccount",
+        "diskSizesGB": [128],
+        "availabilityProfile": "AvailabilitySet",
+        "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": ""
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "clientId": "",
+      "secret": ""
+    }
+  }
+}
