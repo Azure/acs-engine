@@ -7,7 +7,6 @@ usage() {
 	echo "$0 [-v version] [-p acs_patch_version]"
 	echo " -v <version>: version"
 	echo " -p <patched version>: acs_patch_version"
-	exit 0
 }
 
 while getopts ":v:p:" opt; do
@@ -20,12 +19,14 @@ while getopts ":v:p:" opt; do
       ;;
     *)
 			usage
+			exit
       ;;
   esac
 done
 
 if [ -z "${version}" ] || [ -z "${acs_patch_version}" ]; then
     usage
+		exit 1
 fi
 
 if [ -z "${AZURE_STORAGE_CONNECTION_STRING}" ] || [ -z "${AZURE_STORAGE_CONTAINER_NAME}" ]; then
