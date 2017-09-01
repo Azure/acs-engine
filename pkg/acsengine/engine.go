@@ -522,7 +522,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		addValue(parametersMap, "dockerBridgeCidr", properties.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet)
 		addValue(parametersMap, "networkPolicy", properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
 		addValue(parametersMap, "azureVnetCniURL", cloudSpecConfig.KubernetesSpecConfig.AzureVnetCNIDownloadURL)
-		addValue(parametersMap, "azureCniURL", cloudSpecConfig.KubernetesSpecConfig.AzureCNIPluginDownloadURL)
+		addValue(parametersMap, "azureCniURL", cloudSpecConfig.KubernetesSpecConfig.AzureCNIPluginsDownloadURL)
 		addValue(parametersMap, "calicoConfigURL", cloudSpecConfig.KubernetesSpecConfig.CalicoConfigDownloadURL)
 		addValue(parametersMap, "maxPods", properties.OrchestratorProfile.KubernetesConfig.MaxPods)
 

@@ -12,12 +12,12 @@ import (
 var (
 	//DefaultKubernetesSpecConfig is the default Docker image source of Kubernetes
 	DefaultKubernetesSpecConfig = KubernetesSpecConfig{
-		KubernetesImageBase:       "gcrio.azureedge.net/google_containers/",
-		TillerImageBase:           "gcrio.azureedge.net/kubernetes-helm/",
-		KubeBinariesSASURLBase:    "https://acs-mirror.azureedge.net/wink8s/",
-		CalicoConfigDownloadURL:   "https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager",
-		AzureCNIPluginDownloadURL: "https://acs-mirror.azureedge.net/cni/cni-plugin-amd64-latest.tgz",
-		AzureVnetCNIDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz",
+		KubernetesImageBase:        "gcrio.azureedge.net/google_containers/",
+		TillerImageBase:            "gcrio.azureedge.net/kubernetes-helm/",
+		KubeBinariesSASURLBase:     "https://acs-mirror.azureedge.net/wink8s/",
+		CalicoConfigDownloadURL:    "https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager",
+		AzureCNIPluginsDownloadURL: "https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-latest.tgz",
+		AzureVnetCNIDownloadURL:    "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz",
 	}
 
 	//DefaultDCOSSpecConfig is the default DC/OS binary download URL.
@@ -93,11 +93,11 @@ var (
 		},
 		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase:       "crproxy.trafficmanager.net:6000/google_containers/",
-			TillerImageBase:           "mirror.azure.cn:5000/kubernetes-helm/",
-			CalicoConfigDownloadURL:   "https://acsengine.blob.core.chinacloudapi.cn/cni",
-			AzureVnetCNIDownloadURL:   "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-linux-amd64-latest.tar",
-			AzureCNIPluginDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/cni/cni-plugin-amd64-latest.tar",
+			KubernetesImageBase:        "crproxy.trafficmanager.net:6000/google_containers/",
+			TillerImageBase:            "mirror.azure.cn:5000/kubernetes-helm/",
+			CalicoConfigDownloadURL:    "https://acsengine.blob.core.chinacloudapi.cn/cni",
+			AzureVnetCNIDownloadURL:    "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-linux-amd64-latest.tar",
+			AzureCNIPluginsDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/cni/cni-plugins-amd64-latest.tar",
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
 			DCOS173BootstrapDownloadURL:     fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "df308b6fc3bd91e1277baa5a3db928ae70964722"),
