@@ -301,7 +301,7 @@ catch
 
     $kubeProxyStartStr = @"
 `$env:INTERFACE_TO_ADD_SERVICE_IP="vEthernet (forwarder)"
-c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
+c:\k\kube-proxy.exe --proxy-mode=userspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
 "@
 
     $kubeProxyStartStr | Out-File -encoding ASCII -filepath $global:KubeProxyStartFile
