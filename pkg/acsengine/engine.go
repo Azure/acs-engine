@@ -1660,12 +1660,17 @@ func getLinkedTemplatesForExtensions(properties *api.Properties) string {
 
 func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorType string, extensionProfile *api.ExtensionProfile, singleOrAll string) (string, error) {
 	extTargetVMNamePrefix := "variables('masterVMNamePrefix')"
-	loopCount := "[sub(variables('masterCount'), variables('masterOffset'))]"
+	loopCount := "[variables('masterCount')]"
+	loopOffset := ""
+	if orchestratorType == api.Kubernetes {
+		loopCount = "[sub(variables('masterCount'), variables('masterOffset'))]"
+		loopOffset = "variables('masterOffset')"
+	}
 	if strings.EqualFold(singleOrAll, "single") {
 		loopCount = "1"
 	}
 	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount,
-		"variables('masterOffset')", extensionProfile)
+		loopOffset, extensionProfile)
 }
 
 func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orchestratorType string, extensionProfile *api.ExtensionProfile, singleOrAll string) (string, error) {
