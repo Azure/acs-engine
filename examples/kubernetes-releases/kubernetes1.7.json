@@ -3,7 +3,7 @@
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
-      "orchestratorRelease": "1.7"
+      "orchestratorVersion": "1.7.2"
     },
     "masterProfile": {
       "count": 1,
@@ -29,8 +29,8 @@
       }
     },
     "servicePrincipalProfile": {
-      "clientId": "",
-      "secret": ""
+      "servicePrincipalClientId": "",
+      "servicePrincipalClientSecret": ""
     }
   }
 }
