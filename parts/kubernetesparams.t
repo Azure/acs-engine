@@ -271,12 +271,16 @@
       ],
       "type": "string"
     },
-    "azureVnetCniURL": {
+    "cniPluginsURL": {
+      "defaultValue": "https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-latest.tgz",
+      "type": "string"
+    },
+    "vnetCniLinuxPluginsURL": {
       "defaultValue": "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz",
       "type": "string"
     },
-    "azureCniURL": {
-      "defaultValue": "https://acs-mirror.azureedge.net/cni/cni-amd64-latest.tgz",
+    "vnetCniWindowsPluginsURL": {
+      "defaultValue": "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-latest.zip",
       "type": "string"
     },
     "calicoConfigURL": {
