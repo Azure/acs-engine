@@ -296,6 +296,10 @@ type HostedMasterProfile struct {
 	// Not used during PUT, returned as part of GETFQDN
 	FQDN      string `json:"fqdn,omitempty"`
 	DNSPrefix string `json:"dnsPrefix"`
+	// Subnet holds the CIDR which defines the Azure Subnet in which
+	// Agents will be provisioned. This is stored on the HostedMasterProfile
+	// and will become `masterSubnet` in the compiled template.
+	Subnet string `json:"subnet"`
 }
 
 // AADProfile specifies attributes for AAD integration

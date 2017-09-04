@@ -457,6 +457,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 			addValue(parametersMap, "masterCount", properties.MasterProfile.Count)
 		}
 	}
+	if properties.HostedMasterProfile != nil {
+		addValue(parametersMap, "masterSubnet", properties.HostedMasterProfile.Subnet)
+	}
 	addValue(parametersMap, "sshRSAPublicKey", properties.LinuxProfile.SSH.PublicKeys[0].KeyData)
 	for i, s := range properties.LinuxProfile.Secrets {
 		addValue(parametersMap, fmt.Sprintf("linuxKeyVaultID%d", i), s.SourceVault.ID)
