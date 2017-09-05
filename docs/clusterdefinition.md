@@ -176,4 +176,4 @@ A cluster can have 0 - N extensions in extension profiles.  Extension profiles a
 |extensionParameters|optional|extension parameters may be required by extensions.  The format of the parameters is also extension dependant.|
 |rootURL|optional|url to the root location of extensions.  The rootURL must have an extensions child folder that follows the extensions convention.  The rootURL is mainly used for testing purposes.|
 
-You can find more information, as well as a list of extensions on the [extensions documentation] (extensions.md).
+You can find more information, as well as a list of extensions on the [extensions documentation](extensions.md).
