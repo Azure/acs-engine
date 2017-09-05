@@ -234,7 +234,8 @@ type ExtensionProfile struct {
 	ExtensionParameters string `json:"extensionParameters"`
 	RootURL             string `json:"rootURL"`
 	// This is only needed for preprovision extensions and it needs to be a bash script
-	Script string `json:"script"`
+	Script   string `json:"script"`
+	URLQuery string `json:"urlQuery"`
 }
 
 // Extension represents an extension definition in the master or agentPoolProfile

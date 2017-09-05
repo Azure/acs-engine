@@ -1116,10 +1116,10 @@ func makeExtensionScriptCommands(extension *api.Extension, extensionProfiles []*
 		panic(fmt.Sprintf("%s extension referenced was not found in the extension profile", extension.Name))
 	}
 
-	scriptURL := getExtensionURL(extensionProfile.RootURL, extensionProfile.Name, extensionProfile.Version, extensionProfile.Script)
+	scriptURL := getExtensionURL(extensionProfile.RootURL, extensionProfile.Name, extensionProfile.Version, extensionProfile.Script, extensionProfile.URLQuery)
 	scriptFilePath := fmt.Sprintf("/opt/azure/containers/extensions/%s/%s", extensionProfile.Name, extensionProfile.Script)
 	parameters := strings.Replace(extensionProfile.ExtensionParameters, "EXTENSION_LOOP_INDEX", copyIndex, -1)
-	return fmt.Sprintf("- sudo /usr/bin/curl -o %s --create-dirs %s \n- sudo /bin/chmod 744 %s \n- sudo %s %s > /var/log/%s-output.log",
+	return fmt.Sprintf("- sudo /usr/bin/curl -o %s --create-dirs \"%s\" \n- sudo /bin/chmod 744 %s \n- sudo %s %s > /var/log/%s-output.log",
 		scriptFilePath, scriptURL, scriptFilePath, scriptFilePath, parameters, extensionProfile.Name)
 }
 
@@ -1660,12 +1660,20 @@ func getLinkedTemplatesForExtensions(properties *api.Properties) string {
 
 func getMasterLinkedTemplateText(masterProfile *api.MasterProfile, orchestratorType string, extensionProfile *api.ExtensionProfile, singleOrAll string) (string, error) {
 	extTargetVMNamePrefix := "variables('masterVMNamePrefix')"
-	loopCount := "[sub(variables('masterCount'), variables('masterOffset'))]"
+
+	loopCount := "[variables('masterCount')]"
+	loopOffset := ""
+	if orchestratorType == api.Kubernetes {
+		// Due to upgrade k8s sometimes needs to install just some of the nodes.
+		loopCount = "[sub(variables('masterCount'), variables('masterOffset'))]"
+		loopOffset = "variables('masterOffset')"
+	}
+
 	if strings.EqualFold(singleOrAll, "single") {
 		loopCount = "1"
 	}
 	return internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount,
-		"variables('masterOffset')", extensionProfile)
+		loopOffset, extensionProfile)
 }
 
 func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orchestratorType string, extensionProfile *api.ExtensionProfile, singleOrAll string) (string, error) {
@@ -1691,7 +1699,7 @@ func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orch
 }
 
 func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, loopOffset string, extensionProfile *api.ExtensionProfile) (string, error) {
-	dta, e := getLinkedTemplateText(orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.RootURL)
+	dta, e := getLinkedTemplateTextForURL(orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.RootURL, extensionProfile.URLQuery)
 	if e != nil {
 		return "", e
 	}
@@ -1714,29 +1722,19 @@ func validateProfileOptedForExtension(extensionName string, profileExtensions []
 	return false, ""
 }
 
-// getLinkedTemplateText returns the string data from
-// template-link.json in the following directory:
-// extensionsRootURL/extensions/extensionName/version
-// It returns an error if the extension cannot be found
-// or loaded.  getLinkedTemplateText calls getLinkedTemplateTextForURL,
-// passing the default rootURL.
-func getLinkedTemplateText(orchestratorType string, extensionName string, version string, rootURL string) (string, error) {
-	return getLinkedTemplateTextForURL(rootURL, orchestratorType, extensionName, version)
-}
-
 // getLinkedTemplateTextForURL returns the string data from
 // template-link.json in the following directory:
 // extensionsRootURL/extensions/extensionName/version
 // It returns an error if the extension cannot be found
 // or loaded.  getLinkedTemplateTextForURL provides the ability
 // to pass a root extensions url for testing
-func getLinkedTemplateTextForURL(rootURL string, orchestrator string, extensionName string, version string) (string, error) {
-	supportsExtension, err := orchestratorSupportsExtension(rootURL, orchestrator, extensionName, version)
+func getLinkedTemplateTextForURL(rootURL, orchestrator, extensionName, version, query string) (string, error) {
+	supportsExtension, err := orchestratorSupportsExtension(rootURL, orchestrator, extensionName, version, query)
 	if supportsExtension == false {
 		return "", fmt.Errorf("Extension not supported for orchestrator. Error: %s", err)
 	}
 
-	templateLinkBytes, err := getExtensionResource(rootURL, extensionName, version, "template-link.json")
+	templateLinkBytes, err := getExtensionResource(rootURL, extensionName, version, "template-link.json", query)
 	if err != nil {
 		return "", err
 	}
@@ -1744,8 +1742,8 @@ func getLinkedTemplateTextForURL(rootURL string, orchestrator string, extensionN
 	return string(templateLinkBytes), nil
 }
 
-func orchestratorSupportsExtension(rootURL string, orchestrator string, extensionName string, version string) (bool, error) {
-	orchestratorBytes, err := getExtensionResource(rootURL, extensionName, version, "supported-orchestrators.json")
+func orchestratorSupportsExtension(rootURL, orchestrator, extensionName, version, query string) (bool, error) {
+	orchestratorBytes, err := getExtensionResource(rootURL, extensionName, version, "supported-orchestrators.json", query)
 	if err != nil {
 		return false, err
 	}
@@ -1763,8 +1761,8 @@ func orchestratorSupportsExtension(rootURL string, orchestrator string, extensio
 	return true, nil
 }
 
-func getExtensionResource(rootURL string, extensionName string, version string, fileName string) ([]byte, error) {
-	requestURL := getExtensionURL(rootURL, extensionName, version, fileName)
+func getExtensionResource(rootURL, extensionName, version, fileName, query string) ([]byte, error) {
+	requestURL := getExtensionURL(rootURL, extensionName, version, fileName, query)
 
 	res, err := http.Get(requestURL)
 	if err != nil {
@@ -1785,10 +1783,13 @@ func getExtensionResource(rootURL string, extensionName string, version string, 
 	return body, nil
 }
 
-func getExtensionURL(rootURL string, extensionName string, version string, fileName string) string {
+func getExtensionURL(rootURL, extensionName, version, fileName, query string) string {
 	extensionsDir := "extensions"
-
-	return rootURL + extensionsDir + "/" + extensionName + "/" + version + "/" + fileName
+	url := rootURL + extensionsDir + "/" + extensionName + "/" + version + "/" + fileName
+	if query != "" {
+		url += "?" + query
+	}
+	return url
 }
 
 func stringInSlice(a string, list []string) bool {

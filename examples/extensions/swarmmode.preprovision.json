@@ -44,7 +44,6 @@
       { 
         "name": "hello-world", 
         "version": "v1", 
-        "rootURL": "https://raw.githubusercontent.com/JackQuincy/ACS-Extensions/master/",
         "script": "hello.sh"
       }
     ]
