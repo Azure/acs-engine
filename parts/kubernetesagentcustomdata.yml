@@ -145,7 +145,8 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionScript"}}
 
-runcmd: {{GetKubernetesAgentPreprovisionYaml .}}
+runcmd: 
+- apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
 - apt-get update
 - apt-get install -y apt-transport-https ca-certificates nfs-common
 - systemctl enable rpcbind
@@ -162,4 +163,5 @@ runcmd: {{GetKubernetesAgentPreprovisionYaml .}}
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
 - /usr/lib/apt/apt.systemd.daily
+- apt-mark unhold walinuxagent
 - mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete
