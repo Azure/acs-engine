@@ -35,8 +35,7 @@
     "extensionProfiles": [
       { 
         "name": "hello-world-k8s", 
-        "version": "v1", 
-        "rootURL": "https://bagbyimages.blob.core.windows.net:443/" 
+        "version": "v1"
       }
     ],
     "servicePrincipalProfile": {
