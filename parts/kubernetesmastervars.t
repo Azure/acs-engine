@@ -39,6 +39,8 @@
     "maxPods": "[parameters('maxPods')]",
     "vnetCidr": "[parameters('vnetCidr')]",
     "calicoConfigURL":"[parameters('calicoConfigURL')]",
+    "gcHighThreshold":"[parameters('gcHighThreshold')]",
+    "gcLowThreshold":"[parameters('gcLowThreshold')]",
 {{ if UseManagedIdentity }}
     "servicePrincipalClientId": "msi",
     "servicePrincipalClientSecret": "msi",

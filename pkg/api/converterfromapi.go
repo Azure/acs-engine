@@ -654,6 +654,8 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.CustomHyperkubeImage = api.CustomHyperkubeImage
 	vlabs.UseInstanceMetadata = api.UseInstanceMetadata
 	vlabs.EnableRbac = api.EnableRbac
+	vlabs.GCHighThreshold = api.GCHighThreshold
+	vlabs.GCLowThreshold = api.GCLowThreshold
 }
 
 func convertMasterProfileToV20160930(api *MasterProfile, v20160930 *v20160930.MasterProfile) {
