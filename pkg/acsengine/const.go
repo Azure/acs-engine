@@ -151,7 +151,7 @@ var KubeConfigs = map[string]map[string]string{
 		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
 		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
-		"gclowthreshold": strconv.Itoa(DefaultKubernetesGCLowThreshold),
+		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 	api.KubernetesRelease1Dot5: {
 		"hyperkube":       "hyperkube-amd64:v1.5.7",
@@ -170,7 +170,7 @@ var KubeConfigs = map[string]map[string]string{
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
 		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
 		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
-		"gclowthreshold": strconv.Itoa(DefaultKubernetesGCLowThreshold),
+		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 }
 
