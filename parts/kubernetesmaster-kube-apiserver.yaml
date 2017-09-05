@@ -28,6 +28,7 @@ spec:
         - "--tls-cert-file=/etc/kubernetes/certs/apiserver.crt"
         - "--tls-private-key-file=/etc/kubernetes/certs/apiserver.key"
         - "--client-ca-file=/etc/kubernetes/certs/ca.crt"
+        - "--requestheader-client-ca-file <requestHeaderClientCABundle>"
         - "--service-account-key-file=/etc/kubernetes/certs/apiserver.key"
         - "--oidc-client-id="
         - "--oidc-issuer-url="

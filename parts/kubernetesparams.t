@@ -342,4 +342,12 @@
         "description": "The offset into the master pool where to start creating master VMs.  This value can be from 0 to 4, but must be less than masterCount."
       },
       "type": "int"
+    },
+    {
+      "requestHeaderClientCAEncoded": {
+        "metadata": {
+          "description": "PEM-encoded certificate bundle for use with kubernetes aggregated API servers"
+        },
+        "type": "string"
+      }
     }

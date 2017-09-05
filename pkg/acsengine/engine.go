@@ -562,6 +562,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 			addValue(parametersMap, "aadTenantId", properties.AADProfile.TenantID)
 			addValue(parametersMap, "aadServerAppId", properties.AADProfile.ServerAppID)
 		}
+
+		if properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIServers {
+			addSecret(parametersMap, "requestHeaderClientCAEncoded", /* TODO generate a cert string here! */, true)
+		}
 	}
 
 	if strings.HasPrefix(properties.OrchestratorProfile.OrchestratorType, api.DCOS) {
