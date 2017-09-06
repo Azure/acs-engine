@@ -70,6 +70,24 @@
       },
       "type": "securestring"
     },
+    "proxyCACertificate": {
+      "metadata": {
+        "description": "The base 64 public key used to sign certificates for the API aggregator"
+      },
+      "type": "securestring"
+    },
+    "proxyCertificate": {
+      "metadata": {
+        "description": "The base 64 proxy CA-signed public key for the API aggregator"
+      },
+      "type": "securestring"
+    },
+    "proxyPrivateKey": {
+      "metadata": {
+        "description": "The base 64 proxy CA-signed private key for the API aggregator"
+      },
+      "type": "securestring"
+    },
     "dockerBridgeCidr": {
       {{PopulateClassicModeDefaultValue "dockerBridgeCidr"}}
       "metadata": {
