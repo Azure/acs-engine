@@ -99,6 +99,7 @@ type LinuxProfile struct {
 		PublicKeys []PublicKey `json:"publicKeys"`
 	} `json:"ssh"`
 	Secrets []KeyVaultSecrets `json:"secrets,omitempty"`
+	Distro  Distro            `json:"distro,omitempty"`
 }
 
 // PublicKey represents an SSH key for LinuxProfile
@@ -293,6 +294,9 @@ type KeyVaultCertificate struct {
 
 // OSType represents OS types of agents
 type OSType string
+
+// Distro represents Linux distro to use for Linux VMs
+type Distro string
 
 // HostedMasterProfile defines properties for a hosted master
 type HostedMasterProfile struct {
@@ -497,4 +501,9 @@ func (o *OrchestratorProfile) IsVNETIntegrated() bool {
 // HasAadProfile  returns true if the has aad profile
 func (p *Properties) HasAadProfile() bool {
 	return p.AADProfile != nil
+}
+
+// IsRHEL returns true if the RHEL Linux distro is requested.
+func (l *LinuxProfile) IsRHEL() bool {
+	return l.Distro == RHEL
 }

@@ -103,6 +103,7 @@ type LinuxProfile struct {
 		PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
 	} `json:"ssh" validate:"required"`
 	Secrets []KeyVaultSecrets `json:"secrets,omitempty"`
+	Distro  Distro            `json:"distro,omitempty"`
 }
 
 // PublicKey represents an SSH key for LinuxProfile
@@ -309,6 +310,9 @@ type KeyVaultCertificate struct {
 
 // OSType represents OS types of agents
 type OSType string
+
+// Distro represents Linux distro to use for Linux VMs
+type Distro string
 
 // HasWindows returns true if the cluster contains windows
 func (p *Properties) HasWindows() bool {

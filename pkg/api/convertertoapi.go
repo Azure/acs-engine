@@ -473,6 +473,7 @@ func convertVLabsLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
 		convertVLabsKeyVaultSecrets(&s, secret)
 		api.Secrets = append(api.Secrets, *secret)
 	}
+	api.Distro = Distro(vlabs.Distro)
 }
 
 func convertV20160930WindowsProfile(v20160930 *v20160930.WindowsProfile, api *WindowsProfile) {
