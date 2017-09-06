@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -19,6 +20,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/test/acs-engine-test/config"
 	"github.com/Azure/acs-engine/test/acs-engine-test/metrics"
+	"github.com/Azure/acs-engine/test/acs-engine-test/promote"
 	"github.com/Azure/acs-engine/test/acs-engine-test/report"
 )
 
@@ -58,6 +60,13 @@ const usage = `Usage:
 var logDir string
 var orchestratorRe *regexp.Regexp
 var enableMetrics bool
+var saName string
+var saKey string
+var sa promote.StorageAccount
+var subID string
+var rgPrefix string
+var orchestrator string
+var region string
 
 func init() {
 	orchestratorRe = regexp.MustCompile(`"orchestratorType": "(\S+)"`)
@@ -88,6 +97,12 @@ func (m *TestManager) Run() error {
 		return nil
 	}
 
+	sa = promote.StorageAccount{
+		Name: saName,
+		Key:  saKey,
+	}
+	promToFailInfo := promote.DigitalSignalFilter{}
+
 	// determine timeout
 	timeoutMin, err := strconv.Atoi(os.Getenv("STAGE_TIMEOUT_MIN"))
 	if err != nil {
@@ -115,19 +130,62 @@ func (m *TestManager) Run() error {
 		go func(index int, dep config.Deployment) {
 			defer m.wg.Done()
 			resMap := make(map[string]*ErrorStat)
-			for attempt := 0; attempt < retries; attempt++ {
-				errorInfo := m.testRun(dep, index, attempt, timeout)
-				// do not retry if successful
-				if errorInfo == nil {
-					success[index] = true
-					break
+			if os.Getenv("CIRCLECI") != "" {
+				for attempt := 0; attempt < retries; attempt++ {
+					errorInfo := m.testRun(dep, index, attempt, timeout)
+					// do not retry if successful
+					if errorInfo == nil {
+						success[index] = true
+						break
+					}
+					if errorStat, ok := resMap[errorInfo.ErrName]; !ok {
+						resMap[errorInfo.ErrName] = &ErrorStat{errorInfo: errorInfo, testCategory: dep.TestCategory, count: 1}
+					} else {
+						errorStat.count++
+					}
 				}
-				if errorStat, ok := resMap[errorInfo.ErrName]; !ok {
-					resMap[errorInfo.ErrName] = &ErrorStat{errorInfo: errorInfo, testCategory: dep.TestCategory, count: 1}
+			} else {
+				errorInfo := m.testRun(dep, index, 0, timeout)
+				var failureStr string
+				testName := strings.Replace(dep.ClusterDefinition, "/", "-", -1)
+				if errorInfo != nil {
+					log.Printf("")
+					if errorStat, ok := resMap[errorInfo.ErrName]; !ok {
+						resMap[errorInfo.ErrName] = &ErrorStat{errorInfo: errorInfo, testCategory: dep.TestCategory, count: 1}
+					} else {
+						errorStat.count++
+					}
+					// Push Error Result to PromoteToFailure
+					promToFailInfo = promote.DigitalSignalFilter{
+						TestName:     testName,
+						TestType:     metricsNS,
+						FailureStr:   errorInfo.ErrName,
+						FailureCount: 1,
+					}
+
+					// For RecordTestRun
+					success[index] = false
+					failureStr = errorInfo.ErrName
+
 				} else {
-					errorStat.count++
+					promToFailInfo = promote.DigitalSignalFilter{
+						TestName:     testName,
+						TestType:     metricsNS,
+						FailureStr:   "",
+						FailureCount: 0,
+					}
+					success[index] = true
 				}
+				// RunPromoteToFailure
+				result, _ := promote.RunPromoteToFailure(sa, promToFailInfo)
+				if result == true {
+					success[index] = false
+				}
+
+				// RecordTestRun QoS
+				sendRecordTestRun(sa, success[index], dep.Location, testName, dep.TestCategory, failureStr)
 			}
+
 			sendErrorMetrics(resMap)
 		}(index, dep)
 	}
@@ -149,7 +207,9 @@ func (m *TestManager) Run() error {
 }
 
 func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout time.Duration) *report.ErrorInfo {
-	rgPrefix := os.Getenv("RESOURCE_GROUP_PREFIX")
+	subID = os.Getenv("SUBSCRIPTION_ID")
+
+	rgPrefix = os.Getenv("RESOURCE_GROUP_PREFIX")
 	if rgPrefix == "" {
 		rgPrefix = "y"
 		fmt.Printf("RESOURCE_GROUP_PREFIX is not set. Using default '%s'\n", rgPrefix)
@@ -160,8 +220,8 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		d.Location = m.regions[randomIndex]
 	}
 	testName := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
-	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
-	resourceGroup := fmt.Sprintf("%s-%s-%s-%s-%d-%d", rgPrefix, strings.Replace(testName, "/", "-", -1), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
+	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUM"), index)
+	resourceGroup := fmt.Sprintf("%s-%s-%s-%s-%d", rgPrefix, strings.Replace(testName, "/", "-", -1), d.Location, os.Getenv("BUILD_NUM"), index)
 	logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
 	validateLogFile := fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
 
@@ -175,7 +235,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		wrileLog(logFile, "Error [getOrchestrator %s] : %v", d.ClusterDefinition, err)
 		return report.NewErrorInfo(testName, "OrchestratorTypeParsingError", "PreRun", d.Location)
 	}
-	orchestrator := strings.TrimSpace(string(out))
+	orchestrator = strings.TrimSpace(string(out))
 
 	// update environment
 	env = append(env, fmt.Sprintf("LOCATION=%s", d.Location))
@@ -406,6 +466,22 @@ func sendDurationMetrics(step, location string, duration time.Duration, errorNam
 	}
 }
 
+func sendRecordTestRun(sa promote.StorageAccount, success bool, location, testName, testtype, failureStr string) {
+
+	testRecordQoS := promote.TestRunQos{
+		TimeStampUTC:   time.Now(),
+		TestName:       testName,
+		TestType:       metricsNS,
+		SubscriptionID: subID,
+		ResourceGroup:  rgPrefix,
+		Region:         location,
+		Orchestrator:   testtype,
+		Success:        success,
+		FailureStr:     failureStr,
+	}
+	promote.RecordTestRun(sa, testRecordQoS)
+}
+
 func mainInternal() error {
 	var configFile string
 	var rootDir string
@@ -414,6 +490,8 @@ func mainInternal() error {
 	flag.StringVar(&configFile, "c", "", "deployment configurations")
 	flag.StringVar(&rootDir, "d", "", "acs-engine root directory")
 	flag.StringVar(&logErrorFile, "e", "", "logError config file")
+	flag.StringVar(&saName, "j", "", "SA Name")
+	flag.StringVar(&saKey, "k", "", "SA Key")
 	flag.Usage = func() {
 		fmt.Println(usage)
 	}
