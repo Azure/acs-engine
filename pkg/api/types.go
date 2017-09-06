@@ -179,7 +179,6 @@ type KubernetesConfig struct {
 	EnableRbac                       bool    `json:"enableRbac,omitempty"`
 	GCHighThreshold                  int     `json:"gchighthreshold,omitempty"`
 	GCLowThreshold                   int     `json:"gclowthreshold,omitempty"`
-	EnableAggregatedAPIServers       bool    `json:"enableAggregatedAPIServers,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster

@@ -289,13 +289,6 @@ write_files:
     sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
 {{end}}
 
-{{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIServers}}
-    # Aggregated API Servers need a request header client CA file configured on the API server
-    sed -i "s|<requestHeaderClientCABundle>|{{WrapAsVariable "requestHeaderClientCAEncoded"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-{{else}}
-    sed -i "/<requestHeaderClientCABundle>/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-{{end}}
-
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
     # If Calico Policy enabled then update Cluster Cidr
     sed -i "s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-daemonset.yaml"

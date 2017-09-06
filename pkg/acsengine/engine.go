@@ -3,17 +3,12 @@ package acsengine
 import (
 	"bytes"
 	"compress/gzip"
-	crand "crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"crypto/x509/pkix"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"hash/fnv"
 	"io/ioutil"
-	"math/big"
 	"math/rand"
 	"net/http"
 	"regexp"
@@ -21,7 +16,6 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
-	"time"
 
 	//log "github.com/sirupsen/logrus"
 	"github.com/Azure/acs-engine/pkg/api"
@@ -426,36 +420,6 @@ func GetCloudTargetEnv(location string) string {
 	}
 }
 
-func genCertForAggregatedAPIServers() string {
-	template := &x509.Certificate{
-		IsCA: true,
-		BasicConstraintsValid: true,
-		SubjectKeyId:          []byte{1, 2, 3},
-		SerialNumber:          big.NewInt(1234),
-		Subject: pkix.Name{
-			Country:      []string{"Earth"},
-			Organization: []string{"The Kubernetes Project"},
-		},
-		NotBefore: time.Now(),
-		NotAfter:  time.Now().AddDate(5, 5, 5),
-		// see http://golang.org/pkg/crypto/x509/#KeyUsage
-		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-		KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-	}
-
-	// generate private key, ignore errors for now
-	privatekey, _ := rsa.GenerateKey(crand.Reader, 2048)
-
-	publickey := &privatekey.PublicKey
-
-	// create a self-signed certificate. template = parent
-	var parent = template
-	// create certificate, ignore errors for now
-	cert, _ := x509.CreateCertificate(crand.Reader, template, parent, publickey, privatekey)
-
-	return string(cert)
-}
-
 func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, error) {
 	properties := cs.Properties
 	location := cs.Location
@@ -600,10 +564,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		if properties.AADProfile != nil {
 			addValue(parametersMap, "aadTenantId", properties.AADProfile.TenantID)
 			addValue(parametersMap, "aadServerAppId", properties.AADProfile.ServerAppID)
-		}
-
-		if properties.OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIServers {
-			addSecret(parametersMap, "requestHeaderClientCAEncoded", genCertForAggregatedAPIServers(), true)
 		}
 	}
 
