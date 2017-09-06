@@ -6,7 +6,11 @@
 {{else}}
     "configureClusterScriptFile": "configure-swarm-cluster.sh",
 {{end}}
+{{if .LinuxProfile.IsRHEL}}
+    "agentCustomScript": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash ',variables('configureClusterScriptFile'), ' ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1 &\" &')]",
+{{else}}
     "agentCustomScript": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/',variables('configureClusterScriptFile'), ' ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1 &\" &')]",
+{{end}}
     "agentMaxVMs": 100,
     "clusterInstallParameters": "[concat(variables('orchestratorVersion'), ' ',variables('dockerComposeVersion'), ' ',variables('masterCount'), ' ',variables('masterVMNamePrefix'), ' ',variables('masterFirstAddrOctet4'), ' ',variables('adminUsername'),' ',variables('postInstallScriptURI'),' ',variables('masterFirstAddrPrefix'),' ', parameters('dockerEngineDownloadRepo'), ' ', parameters('dockerComposeDownloadURL'))]",
 {{if .LinuxProfile.HasSecrets}}
@@ -36,7 +40,11 @@
 {{else}}
     "masterCount": {{.MasterProfile.Count}}, 
 {{end}} 
+{{if .LinuxProfile.IsRHEL}}
+    "masterCustomScript": "[concat('/bin/bash -c \"/bin/bash ',variables('configureClusterScriptFile'), ' ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1\"')]", 
+{{else}}
     "masterCustomScript": "[concat('/bin/bash -c \"/bin/bash /opt/azure/containers/',variables('configureClusterScriptFile'), ' ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1\"')]", 
+{{end}}
     "masterEndpointDNSNamePrefix": "[tolower(parameters('masterEndpointDNSNamePrefix'))]", 
     "masterLbBackendPoolName": "[concat(variables('orchestratorName'), '-master-pool-', variables('nameSuffix'))]", 
     "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]", 

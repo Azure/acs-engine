@@ -206,7 +206,9 @@
           "adminUsername": "[variables('adminUsername')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
           {{if .OrchestratorProfile.IsSwarmMode}}
-            {{GetMasterSwarmModeCustomData}}
+            {{if not .LinuxProfile.IsRHEL}}
+              {{GetMasterSwarmModeCustomData}}
+            {{end}}
           {{else}}
             {{GetMasterSwarmCustomData}}
           {{end}}
@@ -262,13 +264,17 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(), '/configuremaster')]",
       "properties": {
-        "publisher": "Microsoft.OSTCExtensions",
+        "publisher": "Microsoft.Azure.Extensions",
         "settings": {
           "commandToExecute": "[variables('masterCustomScript')]",
-          "fileUris": []
+          "fileUris": [
+{{if IsRHEL}}
+            "[concat('https://raw.githubusercontent.com/tomconte/acs-engine/tco-rhel-swarmmode/parts/', variables('configureClusterScriptFile'))]"
+{{end}}
+          ]
         },
-        "type": "CustomScriptForLinux",
-        "typeHandlerVersion": "1.4"
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0"
       },
       "type": "Microsoft.Compute/virtualMachines/extensions"
     }

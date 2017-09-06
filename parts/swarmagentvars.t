@@ -1,5 +1,7 @@
+{{if not IsRHEL}}
     "{{.Name}}RunCmd": "[concat('runcmd:\n {{GetSwarmAgentPreprovisionExtensionCommands .}} \n-  [ /bin/bash, /opt/azure/containers/install-cluster.sh ]\n\n')]", 
     "{{.Name}}RunCmdFile": "[concat(' -  content: |\n        #!/bin/bash\n        ','sudo mkdir -p /var/log/azure\n        ',variables('agentCustomScript'),'\n    path: /opt/azure/containers/install-cluster.sh\n    permissions: \"0744\"\n')]",
+{{end}}
     "{{.Name}}Count": "[parameters('{{.Name}}Count')]", 
     "{{.Name}}VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'))]", 
     "{{.Name}}VMSize": "[parameters('{{.Name}}VMSize')]", 
