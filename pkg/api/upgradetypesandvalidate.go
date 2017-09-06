@@ -1,4 +1,4 @@
-package vlabs
+package api
 
 import (
 	"fmt"

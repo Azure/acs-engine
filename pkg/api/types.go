@@ -130,6 +130,8 @@ const (
 	// Migrating means resource is being migrated from one subscription or
 	// resource group to another
 	Migrating ProvisioningState = "Migrating"
+	// Upgrading means an existing ContainerService resource is being upgraded
+	Upgrading ProvisioningState = "Upgrading"
 )
 
 // OrchestratorProfile contains Orchestrator properties
@@ -250,7 +252,7 @@ type VMDiagnostics struct {
 	StorageURL *neturl.URL `json:"storageUrl"`
 }
 
-// JumpboxProfile dscribes properties of the jumpbox setup
+// JumpboxProfile describes properties of the jumpbox setup
 // in the ACS container cluster.
 type JumpboxProfile struct {
 	OSType    OSType `json:"osType"`
@@ -355,25 +357,12 @@ type V20170701ARMContainerService struct {
 	*v20170701.ContainerService
 }
 
-// VlabsUpgradeContainerService is the type we read and write from file
-// needed because the json that is sent to ARM and acs-engine
-// is different from the json that the ACS RP Api gets from ARM
-type VlabsUpgradeContainerService struct {
-	TypeMeta
-	*vlabs.UpgradeContainerService
-}
-
 // V20170831ARMManagedContainerService is the type we read and write from file
 // needed because the json that is sent to ARM and acs-engine
 // is different from the json that the ACS RP Api gets from ARM
 type V20170831ARMManagedContainerService struct {
 	TypeMeta
 	*v20170831.ManagedCluster
-}
-
-// UpgradeContainerService API model
-type UpgradeContainerService struct {
-	OrchestratorProfile *OrchestratorProfile `json:"orchestratorProfile,omitempty"`
 }
 
 // HasWindows returns true if the cluster contains windows

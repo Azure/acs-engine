@@ -1,4 +1,4 @@
-package vlabs
+package v20170930
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ type UpgradeContainerService OrchestratorProfile
 // Validate implements APIObject
 func (ucs *UpgradeContainerService) Validate() error {
 	switch ucs.OrchestratorType {
-	case DCOS, SwarmMode, Swarm:
+	case DCOS, DockerCE, Swarm:
 		return fmt.Errorf("Upgrade is not supported for orchestrator: %s", ucs.OrchestratorType)
 	case Kubernetes:
 		switch ucs.OrchestratorRelease {

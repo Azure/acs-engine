@@ -11,9 +11,8 @@ import "github.com/Azure/acs-engine/pkg/api/vlabs"
 ///////////////////////////////////////////////////////////
 
 // ConvertVLabsUpgradeContainerService converts a vlabs UpgradeContainerService to an unversioned UpgradeContainerService
-func ConvertVLabsUpgradeContainerService(vlabs *vlabs.UpgradeContainerService) *UpgradeContainerService {
+func ConvertVLabsUpgradeContainerService(vlabUCS *vlabs.UpgradeContainerService) *UpgradeContainerService {
 	ucs := &UpgradeContainerService{}
-	ucs.OrchestratorProfile = &OrchestratorProfile{}
-	convertVLabsOrchestratorProfile(vlabs.OrchestratorProfile, ucs.OrchestratorProfile)
+	convertVLabsOrchestratorProfile((*vlabs.OrchestratorProfile)(vlabUCS), (*OrchestratorProfile)(ucs))
 	return ucs
 }

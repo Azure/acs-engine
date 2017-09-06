@@ -16,26 +16,19 @@ type Upgrader struct {
 	Translator *i18n.Translator
 	ClusterTopology
 	GoalStateDataModel *api.ContainerService
-	UpgradeModel       *api.UpgradeContainerService
 	Client             armhelpers.ACSEngineClient
 }
 
 // Init initializes an upgrader struct
-func (ku *Upgrader) Init(translator *i18n.Translator, clusterTopology ClusterTopology, upgradeModel *api.UpgradeContainerService, client armhelpers.ACSEngineClient) {
+func (ku *Upgrader) Init(translator *i18n.Translator, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient) {
 	ku.Translator = translator
 	ku.ClusterTopology = clusterTopology
-	ku.UpgradeModel = upgradeModel
 	ku.Client = client
 }
 
 // RunUpgrade runs the upgrade pipeline
 func (ku *Upgrader) RunUpgrade() error {
 	ku.GoalStateDataModel = ku.ClusterTopology.DataModel
-	ku.GoalStateDataModel.Properties.OrchestratorProfile = &api.OrchestratorProfile{
-		OrchestratorType:    api.Kubernetes,
-		OrchestratorRelease: ku.UpgradeModel.OrchestratorProfile.OrchestratorRelease,
-		OrchestratorVersion: api.KubernetesReleaseToVersion[ku.UpgradeModel.OrchestratorProfile.OrchestratorRelease],
-	}
 
 	if err := ku.upgradeMasterNodes(); err != nil {
 		return err
