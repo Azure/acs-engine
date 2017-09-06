@@ -396,7 +396,6 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		}
 		proxyCAPair = &PkiKeyCertPair{CertificatePem: string(certificateToPem(proxyCACertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(proxyCAPrivateKey))}
 		a.CertificateProfile.ProxyCACertificate = proxyCAPair.CertificatePem
-		a.CertificateProfile.ProxyCAPrivateKey = proxyCAPair.PrivateKeyPem
 	}
 
 	cidrFirstIP, err := common.CidrStringFirstIP(a.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
