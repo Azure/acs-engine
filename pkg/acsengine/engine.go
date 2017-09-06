@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"regexp"
@@ -402,6 +403,20 @@ func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
 	}
 }
 
+// SetOSImage modifies the cloud configuration to select the requested Linux distribution. It checks if the requested
+// orchestrator type is supported on the requested Linux distro.
+func SetOSImage(spec *AzureEnvironmentSpecConfig, cs *api.ContainerService) {
+	// TODO: check RHEL image availability and details per Azure cloud
+	if cs.Properties.LinuxProfile.Distro == api.RHEL {
+		switch cs.Properties.OrchestratorProfile.OrchestratorType {
+		case api.SwarmMode:
+			spec.OSImageConfig = RHELOSImageConfig
+		default:
+			log.Fatalf("Orchestrator type %s not suported on RHEL", cs.Properties.OrchestratorProfile.OrchestratorType)
+		}
+	}
+}
+
 // GetCloudTargetEnv determines and returns whether the region is a sovereign cloud which
 // have their own data compliance regulations (China/Germany/USGov) or standard
 //  Azure public cloud
@@ -424,6 +439,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 	location := cs.Location
 	parametersMap := paramsMap{}
 	cloudSpecConfig := GetCloudSpecConfig(location)
+	SetOSImage(&cloudSpecConfig, cs)
 
 	// Master Parameters
 	addValue(parametersMap, "location", location)
@@ -1000,6 +1016,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"HasWindowsSecrets": func() bool {
 			return cs.Properties.WindowsProfile.HasSecrets()
+		},
+		"IsRHEL": func() bool {
+			return cs.Properties.LinuxProfile.IsRHEL()
 		},
 		"PopulateClassicModeDefaultValue": func(attr string) string {
 			var val string

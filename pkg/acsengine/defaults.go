@@ -44,6 +44,14 @@ var (
 		ImageVersion:   "16.04.201706191",
 	}
 
+	//RHELOSImageConfig is the RHEL Linux distribution.
+	RHELOSImageConfig = AzureOSImageConfig{
+		ImageOffer:     "RHEL",
+		ImageSku:       "7.3",
+		ImagePublisher: "RedHat",
+		ImageVersion:   "latest",
+	}
+
 	//AzureCloudSpec is the default configurations for global azure.
 	AzureCloudSpec = AzureEnvironmentSpecConfig{
 		//DockerSpecConfig specify the docker engine download repo
