@@ -385,6 +385,20 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		a.CertificateProfile.CaPrivateKey = caPair.PrivateKeyPem
 	}
 
+	// generate a proxy CA pair
+	var proxyCAPair *PkiKeyCertPair
+	if len(a.CertificateProfile.ProxyCACertificate) != 0 && len(a.CertificateProfile.ProxyCAPrivateKey) != 0 {
+		proxyCAPair = &PkiKeyCertPair{CertificatePem: a.CertificateProfile.ProxyCACertificate, PrivateKeyPem: a.CertificateProfile.ProxyCAPrivateKey}
+	} else {
+		proxyCACertificate, proxyCAPrivateKey, err := createCertificate("proxyca", nil, nil, false, nil, nil, nil)
+		if err != nil {
+			return false, err
+		}
+		proxyCAPair = &PkiKeyCertPair{CertificatePem: string(certificateToPem(proxyCACertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(proxyCAPrivateKey))}
+		a.CertificateProfile.ProxyCACertificate = proxyCAPair.CertificatePem
+		a.CertificateProfile.ProxyCAPrivateKey = proxyCAPair.PrivateKeyPem
+	}
+
 	cidrFirstIP, err := common.CidrStringFirstIP(a.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
 	if err != nil {
 		return false, err
@@ -396,12 +410,20 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		return false, err
 	}
 
+	// Get proxy server certificate pair
+	proxyServerPair, err := CreateProxyPki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
+	if err != nil {
+		return false, err
+	}
+
 	a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
 	a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
 	a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
 	a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
 	a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
 	a.CertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
+	a.CertificateProfile.ProxyCertificate = proxyServerPair.CertificatePem
+	a.CertificateProfile.ProxyPrivateKey = proxyServerPair.PrivateKeyPem
 
 	return true, nil
 }

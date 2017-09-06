@@ -30,6 +30,7 @@ type PkiKeyCertPair struct {
 }
 
 // CreatePki creates PKI certificates
+// TODO generalize this with CreateProxyPki
 func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
 	start := time.Now()
 	defer func(s time.Time) {
@@ -103,6 +104,43 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(clientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(clientPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(kubeConfigCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(kubeConfigPrivateKey))},
+		nil
+}
+
+// CreateProxyPki creates PKI certificates
+// TODO generalize this with CreatePki
+func CreateProxyPki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, error) {
+	start := time.Now()
+	defer func(s time.Time) {
+		log.Debugf("pki: PKI asset creation took %s", time.Since(s))
+	}(start)
+	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes"))
+	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.default"))
+	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.default.svc"))
+	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.default.svc.%s", clusterDomain))
+	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system"))
+	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc"))
+	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.kube-system.svc.%s", clusterDomain))
+
+	var (
+		caCertificate          *x509.Certificate
+		caPrivateKey           *rsa.PrivateKey
+		proxyServerCertificate *x509.Certificate
+		proxyServerPrivateKey  *rsa.PrivateKey
+	)
+
+	caCertificate, err := pemToCertificate(caPair.CertificatePem)
+	if err != nil {
+		return nil, err
+	}
+	caPrivateKey, err = pemToKey(caPair.PrivateKeyPem)
+	if err != nil {
+		return nil, err
+	}
+
+	proxyServerCertificate, proxyServerPrivateKey, err = createCertificate("proxyserver", caCertificate, caPrivateKey, true, extraFQDNs, extraIPs, nil)
+
+	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(proxyServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(proxyServerPrivateKey))},
 		nil
 }
 

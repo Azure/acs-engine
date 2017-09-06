@@ -78,6 +78,10 @@ type CertificateProfile struct {
 	CaCertificate string `json:"caCertificate,omitempty"`
 	// CaPrivateKey is the certificate authority key.
 	CaPrivateKey string `json:"caPrivateKey,omitempty"`
+	// ProxyCACertificate is the certificate authority certificate for the aggregator
+	ProxyCACertificate string `json:"proxyCACertificate,omitempty"`
+	// ProxyCAPrivateKey is the certificate authority key for the aggregator
+	ProxyCAPrivateKey string `json:"proxyCAPrivateKey,omitempty"`
 	// ApiServerCertificate is the rest api server certificate, and signed by the CA
 	APIServerCertificate string `json:"apiServerCertificate,omitempty"`
 	// ApiServerPrivateKey is the rest api server private key, and signed by the CA
@@ -90,6 +94,10 @@ type CertificateProfile struct {
 	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty"`
 	// KubeConfigPrivateKey is the client private key used for kubectl cli and signed by the CA
 	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
+	// ProxyCertificate is the certificate used by the aggregator and signed by the proxy CA
+	ProxyCertificate string `json:"proxyCertificate,omitempty"`
+	// ProxyPrivateKey is the private key used by the aggregator and signed by the proxy CA
+	ProxyPrivateKey string `json:"proxyPrivateKey,omitempty"`
 }
 
 // LinuxProfile represents the linux parameters passed to the cluster
