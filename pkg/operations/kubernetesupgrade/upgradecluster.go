@@ -6,8 +6,6 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/Azure/acs-engine/pkg/api/common"
-
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
@@ -51,44 +49,28 @@ type UpgradeCluster struct {
 // MasterVMNamePrefix is the prefix for all master VM names for Kubernetes clusters
 const MasterVMNamePrefix = "k8s-master-"
 
-// PreflightCheck runs the workflow to pre-validate upgrade of Kubernetes cluster.
-// UpgradeContainerService contains target state of the cluster that
-// the operation will drive towards.
-func (uc *UpgradeCluster) PreflightCheck(subscriptionID uuid.UUID, resourceGroup string,
-	cs *api.ContainerService, ucs *api.UpgradeContainerService, nameSuffix string) error {
-	uc.ClusterTopology = ClusterTopology{}
-	uc.ResourceGroup = resourceGroup
-	uc.DataModel = cs
-	uc.NameSuffix = nameSuffix
-	uc.MasterVMs = &[]compute.VirtualMachine{}
-	uc.UpgradedMasterVMs = &[]compute.VirtualMachine{}
-	uc.AgentPools = make(map[string]*AgentPoolTopology)
-
-	log.Infoln(fmt.Sprintf("PreflightCheck for Kubernetes Upgrade to %s", ucs.OrchestratorRelease))
-
-	if err := uc.getClusterNodeStatus(subscriptionID, resourceGroup, ucs); err != nil {
-		return uc.Translator.Errorf("Error while querying ARM for resources: %+v", err)
-	}
-
-	upgrader, err := uc.getUpgrader(ucs.OrchestratorRelease)
+// ValidateAndSetUpgradeVersion validates correctness of the desired version, and sets UpgradeProfile in ContainerService
+func (uc *UpgradeCluster) ValidateAndSetUpgradeVersion(cs *api.ContainerService, ucs *api.UpgradeContainerService) error {
+	// get available upgrades for container service
+	orchestratorInfo, err := acsengine.GetOrchestratorVersionProfile(cs)
 	if err != nil {
-		return uc.Translator.Errorf("Orchestrator error: %+v", err)
+		return uc.Translator.Errorf("failed to get orchestrator upgrade info: %v", err)
 	}
-
-	if err = upgrader.ClusterPreflightCheck(); err != nil {
-		return err
+	// validate desired upgrade version
+	for _, up := range orchestratorInfo.Upgrades {
+		if up.OrchestratorRelease == ucs.OrchestratorRelease {
+			cs.Properties.UpgradeProfile = up
+			return nil
+		}
 	}
-
-	// PreflightCheck successful - update Container Service Data Model
-	cs.Properties.OrchestratorProfile.OrchestratorRelease = ucs.OrchestratorRelease
-	cs.Properties.OrchestratorProfile.OrchestratorVersion = common.KubeReleaseToVersion[ucs.OrchestratorRelease]
-	return nil
+	return uc.Translator.Errorf("orchestrator %s release %s cannot be upgraded to release %s", ucs.OrchestratorType,
+		cs.Properties.OrchestratorProfile.OrchestratorRelease, ucs.OrchestratorRelease)
 }
 
-// Upgrade runs the workflow to upgrade a Kubernetes cluster.
-// ContainerService contains target state of the cluster that
+// UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
+// UpgradeContainerService contains target state of the cluster that
 // the operation will drive towards.
-func (uc *UpgradeCluster) Upgrade(subscriptionID uuid.UUID, resourceGroup string,
+func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
 	cs *api.ContainerService, nameSuffix string) error {
 	uc.ClusterTopology = ClusterTopology{}
 	uc.ResourceGroup = resourceGroup
@@ -98,9 +80,35 @@ func (uc *UpgradeCluster) Upgrade(subscriptionID uuid.UUID, resourceGroup string
 	uc.UpgradedMasterVMs = &[]compute.VirtualMachine{}
 	uc.AgentPools = make(map[string]*AgentPoolTopology)
 
-	upgrader, err := uc.getUpgrader(cs.Properties.OrchestratorProfile.OrchestratorRelease)
-	if err != nil {
-		return uc.Translator.Errorf("Orchestrator error: %+v", err)
+	if uc.DataModel == nil || uc.DataModel.Properties == nil || uc.DataModel.Properties.UpgradeProfile == nil {
+		return uc.Translator.Errorf("Incomplete upgrade information")
+	}
+
+	if err := uc.getClusterNodeStatus(subscriptionID, resourceGroup); err != nil {
+		return uc.Translator.Errorf("Error while querying ARM for resources: %+v", err)
+	}
+
+	var upgrader UpgradeWorkFlow
+	log.Infoln(fmt.Sprintf("Upgrading to Kubernetes release %s", uc.DataModel.Properties.UpgradeProfile.OrchestratorRelease))
+	switch uc.DataModel.Properties.UpgradeProfile.OrchestratorRelease {
+	case api.KubernetesRelease1Dot6:
+		upgrader16 := &Kubernetes16upgrader{}
+		upgrader16.Init(uc.Translator, uc.ClusterTopology, uc.Client)
+		upgrader = upgrader16
+
+	case api.KubernetesRelease1Dot7:
+		upgrader17 := &Kubernetes17upgrader{}
+		upgrader17.Init(uc.Translator, uc.ClusterTopology, uc.Client)
+		upgrader = upgrader17
+
+	default:
+		return uc.Translator.Errorf("Upgrade to Kubernetes release: %s is not supported from release: %s",
+			uc.DataModel.Properties.UpgradeProfile.OrchestratorRelease,
+			uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease)
+	}
+
+	if err := upgrader.ClusterPreflightCheck(); err != nil {
+		return err
 	}
 
 	if err := upgrader.RunUpgrade(); err != nil {
@@ -108,38 +116,12 @@ func (uc *UpgradeCluster) Upgrade(subscriptionID uuid.UUID, resourceGroup string
 	}
 
 	log.Infoln(fmt.Sprintf("Cluster upraded successfully to Kubernetes release %s, version: %s",
-		cs.Properties.OrchestratorProfile.OrchestratorRelease,
-		cs.Properties.OrchestratorProfile.OrchestratorVersion))
+		uc.DataModel.Properties.UpgradeProfile.OrchestratorRelease,
+		uc.DataModel.Properties.UpgradeProfile.OrchestratorVersion))
 	return nil
 }
 
-// PreflightCheckAndUpgrade combines pre-validation and upgrade
-func (uc *UpgradeCluster) PreflightCheckAndUpgrade(subscriptionID uuid.UUID, resourceGroup string,
-	cs *api.ContainerService, ucs *api.UpgradeContainerService, nameSuffix string) error {
-	if err := uc.PreflightCheck(subscriptionID, resourceGroup, cs, ucs, nameSuffix); err != nil {
-		return err
-	}
-	return uc.Upgrade(subscriptionID, resourceGroup, cs, nameSuffix)
-}
-
-func (uc *UpgradeCluster) getUpgrader(release string) (UpgradeWorkFlow, error) {
-	switch release {
-	case api.KubernetesRelease1Dot6:
-		upgrader16 := &Kubernetes16upgrader{}
-		upgrader16.Init(uc.Translator, uc.ClusterTopology, uc.Client)
-		return upgrader16, nil
-
-	case api.KubernetesRelease1Dot7:
-		upgrader17 := &Kubernetes17upgrader{}
-		upgrader17.Init(uc.Translator, uc.ClusterTopology, uc.Client)
-		return upgrader17, nil
-
-	default:
-		return nil, fmt.Errorf("Upgrade to Kubernetes %s is not supported", release)
-	}
-}
-
-func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourceGroup string, ucs *api.UpgradeContainerService) error {
+func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourceGroup string) error {
 	vmListResult, err := uc.Client.ListVirtualMachines(resourceGroup)
 	if err != nil {
 		return err
@@ -147,8 +129,8 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 
 	orchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorType,
 		uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
-	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", ucs.OrchestratorType,
-		ucs.OrchestratorVersion)
+	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.UpgradeProfile.OrchestratorType,
+		uc.DataModel.Properties.UpgradeProfile.OrchestratorVersion)
 
 	for _, vm := range *vmListResult.Value {
 		if vm.Tags == nil {

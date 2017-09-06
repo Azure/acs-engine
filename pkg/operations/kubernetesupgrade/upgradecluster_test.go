@@ -25,8 +25,12 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to list VMs during upgrade operation", func() {
-		cs := &api.ContainerService{}
-		ucs := &api.UpgradeContainerService{}
+		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot5], 1, 1)
+		ucs := &api.UpgradeContainerService{
+			OrchestratorType:    api.Kubernetes,
+			OrchestratorRelease: api.KubernetesRelease1Dot6,
+			OrchestratorVersion: api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6],
+		}
 
 		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
@@ -41,7 +45,9 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.PreflightCheckAndUpgrade(subID, "TestRg", cs, ucs, "12345678")
+		err := uc.ValidateAndSetUpgradeVersion(cs, ucs)
+		Expect(err).To(BeNil())
+		err = uc.UpgradeCluster(subID, "TestRg", cs, "12345678")
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("Error while querying ARM for resources: ListVirtualMachines failed"))
 
@@ -50,12 +56,12 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to detete VMs during upgrade operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, 1, 1)
-
-		ucs := &api.UpgradeContainerService{}
-		ucs.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorRelease = api.KubernetesRelease1Dot6
-		ucs.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
+		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot5], 1, 1)
+		ucs := &api.UpgradeContainerService{
+			OrchestratorType:    api.Kubernetes,
+			OrchestratorRelease: api.KubernetesRelease1Dot6,
+			OrchestratorVersion: api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6],
+		}
 
 		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
@@ -70,19 +76,20 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.PreflightCheckAndUpgrade(subID, "TestRg", cs, ucs, "12345678")
-
+		err := uc.ValidateAndSetUpgradeVersion(cs, ucs)
+		Expect(err).To(BeNil())
+		err = uc.UpgradeCluster(subID, "TestRg", cs, "12345678")
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("DeleteVirtualMachine failed"))
 	})
 
 	It("Should return error message when failing to deploy template during upgrade operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot6, 1, 1)
-
-		ucs := &api.UpgradeContainerService{}
-		ucs.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorRelease = api.KubernetesRelease1Dot6
-		ucs.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
+		cs := createContainerService("testcluster", api.KubernetesRelease1Dot6, "1.6.0", 1, 1)
+		ucs := &api.UpgradeContainerService{
+			OrchestratorType:    api.Kubernetes,
+			OrchestratorRelease: api.KubernetesRelease1Dot6,
+			OrchestratorVersion: api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6],
+		}
 
 		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
@@ -97,18 +104,20 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.PreflightCheckAndUpgrade(subID, "TestRg", cs, ucs, "12345678")
+		err := uc.ValidateAndSetUpgradeVersion(cs, ucs)
+		Expect(err).To(BeNil())
+		err = uc.UpgradeCluster(subID, "TestRg", cs, "12345678")
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("DeployTemplate failed"))
 	})
 
 	It("Should return error message when failing to get a virtual machine during upgrade operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, 1, 6)
-
-		ucs := &api.UpgradeContainerService{}
-		ucs.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorRelease = api.KubernetesRelease1Dot6
-		ucs.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
+		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot5], 1, 6)
+		ucs := &api.UpgradeContainerService{
+			OrchestratorType:    api.Kubernetes,
+			OrchestratorRelease: api.KubernetesRelease1Dot6,
+			OrchestratorVersion: api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6],
+		}
 
 		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
@@ -123,18 +132,20 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.PreflightCheckAndUpgrade(subID, "TestRg", cs, ucs, "12345678")
+		err := uc.ValidateAndSetUpgradeVersion(cs, ucs)
+		Expect(err).To(BeNil())
+		err = uc.UpgradeCluster(subID, "TestRg", cs, "12345678")
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("GetVirtualMachine failed"))
 	})
 
 	It("Should return error message when failing to get storage client during upgrade operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, 5, 1)
-
-		ucs := &api.UpgradeContainerService{}
-		ucs.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorRelease = api.KubernetesRelease1Dot6
-		ucs.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
+		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot5], 5, 1)
+		ucs := &api.UpgradeContainerService{
+			OrchestratorType:    api.Kubernetes,
+			OrchestratorRelease: api.KubernetesRelease1Dot6,
+			OrchestratorVersion: api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6],
+		}
 
 		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
@@ -149,18 +160,20 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.PreflightCheckAndUpgrade(subID, "TestRg", cs, ucs, "12345678")
+		err := uc.ValidateAndSetUpgradeVersion(cs, ucs)
+		Expect(err).To(BeNil())
+		err = uc.UpgradeCluster(subID, "TestRg", cs, "12345678")
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("GetStorageClient failed"))
 	})
 
 	It("Should return error message when failing to delete network interface during upgrade operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, 3, 2)
-
-		ucs := &api.UpgradeContainerService{}
-		ucs.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorRelease = api.KubernetesRelease1Dot6
-		ucs.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
+		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot5], 3, 2)
+		ucs := &api.UpgradeContainerService{
+			OrchestratorType:    api.Kubernetes,
+			OrchestratorRelease: api.KubernetesRelease1Dot6,
+			OrchestratorVersion: api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6],
+		}
 
 		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
@@ -175,18 +188,20 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
 
-		err := uc.PreflightCheckAndUpgrade(subID, "TestRg", cs, ucs, "12345678")
+		err := uc.ValidateAndSetUpgradeVersion(cs, ucs)
+		Expect(err).To(BeNil())
+		err = uc.UpgradeCluster(subID, "TestRg", cs, "12345678")
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(Equal("DeleteNetworkInterface failed"))
 	})
 
 	It("Should return error message when failing on ClusterPreflightCheck operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, 3, 3)
-
-		ucs := &api.UpgradeContainerService{}
-		ucs.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorRelease = api.KubernetesRelease1Dot7
-		ucs.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot7]
+		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot5], 3, 3)
+		ucs := &api.UpgradeContainerService{
+			OrchestratorType:    api.Kubernetes,
+			OrchestratorRelease: api.KubernetesRelease1Dot7,
+			OrchestratorVersion: api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot7],
+		}
 
 		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
@@ -198,20 +213,18 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		mockClient := armhelpers.MockACSEngineClient{}
 		uc.Client = &mockClient
 
-		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
-
-		err := uc.PreflightCheckAndUpgrade(subID, "TestRg", cs, ucs, "12345678")
+		err := uc.ValidateAndSetUpgradeVersion(cs, ucs)
 		Expect(err).NotTo(BeNil())
-		Expect(err.Error()).To(Equal("Upgrade to Kubernetes 1.7 is not supported from orchestrator release: 1.5"))
+		Expect(err.Error()).To(Equal("orchestrator Kubernetes release 1.5 cannot be upgraded to release 1.7"))
 	})
 
 	It("Should return error message when failing on ClusterPreflightCheck operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot7, 3, 3)
-
-		ucs := &api.UpgradeContainerService{}
-		ucs.OrchestratorType = api.Kubernetes
-		ucs.OrchestratorRelease = api.KubernetesRelease1Dot6
-		ucs.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
+		cs := createContainerService("testcluster", api.KubernetesRelease1Dot7, api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot7], 3, 3)
+		ucs := &api.UpgradeContainerService{
+			OrchestratorType:    api.Kubernetes,
+			OrchestratorRelease: api.KubernetesRelease1Dot6,
+			OrchestratorVersion: api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6],
+		}
 
 		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
@@ -223,15 +236,13 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		mockClient := armhelpers.MockACSEngineClient{}
 		uc.Client = &mockClient
 
-		subID, _ := uuid.FromString("DEC923E3-1EF1-4745-9516-37906D56DEC4")
-
-		err := uc.PreflightCheckAndUpgrade(subID, "TestRg", cs, ucs, "12345678")
+		err := uc.ValidateAndSetUpgradeVersion(cs, ucs)
 		Expect(err).NotTo(BeNil())
-		Expect(err.Error()).To(Equal("Upgrade to Kubernetes 1.6 is not supported from orchestrator release: 1.7"))
+		Expect(err.Error()).To(Equal("orchestrator Kubernetes release 1.7 cannot be upgraded to release 1.6"))
 	})
 })
 
-func createContainerService(containerServiceName string, orchestratorRelease string, masterCount int, agentCount int) *api.ContainerService {
+func createContainerService(containerServiceName string, orchestratorRelease, orchestratorVersion string, masterCount int, agentCount int) *api.ContainerService {
 	cs := api.ContainerService{}
 	cs.ID = uuid.NewV4().String()
 	cs.Location = "eastus"
@@ -273,7 +284,7 @@ func createContainerService(containerServiceName string, orchestratorRelease str
 	cs.Properties.OrchestratorProfile = &api.OrchestratorProfile{}
 	cs.Properties.OrchestratorProfile.OrchestratorType = api.Kubernetes
 	cs.Properties.OrchestratorProfile.OrchestratorRelease = orchestratorRelease
-	cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[orchestratorRelease]
+	cs.Properties.OrchestratorProfile.OrchestratorVersion = orchestratorVersion
 
 	return &cs
 }

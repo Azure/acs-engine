@@ -160,8 +160,11 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		Client: uc.client,
 	}
 
-	if err := upgradeCluster.PreflightCheckAndUpgrade(uc.authArgs.SubscriptionID, uc.resourceGroupName,
-		uc.containerService, uc.upgradeModel, uc.nameSuffix); err != nil {
+	if err := upgradeCluster.ValidateAndSetUpgradeVersion(uc.containerService, uc.upgradeModel); err != nil {
+		log.Fatalf("Error upgrading cluster: %s \n", err.Error())
+	}
+	if err := upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.resourceGroupName,
+		uc.containerService, uc.nameSuffix); err != nil {
 		log.Fatalf("Error upgrading cluster: %s \n", err.Error())
 	}
 
