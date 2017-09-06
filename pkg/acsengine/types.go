@@ -72,7 +72,7 @@ type AzureEnvironmentSpecConfig struct {
 	KubernetesSpecConfig KubernetesSpecConfig
 	DCOSSpecConfig       DCOSSpecConfig
 	EndpointConfig       AzureEndpointConfig
-	OSImageConfig        AzureOSImageConfig
+	OSImageConfig        map[api.Distro]AzureOSImageConfig
 }
 
 // Context represents the object that is passed to the package
