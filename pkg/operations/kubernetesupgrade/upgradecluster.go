@@ -49,24 +49,6 @@ type UpgradeCluster struct {
 // MasterVMNamePrefix is the prefix for all master VM names for Kubernetes clusters
 const MasterVMNamePrefix = "k8s-master-"
 
-// ValidateAndSetUpgradeVersion validates correctness of the desired version, and sets UpgradeProfile in ContainerService
-func (uc *UpgradeCluster) ValidateAndSetUpgradeVersion(cs *api.ContainerService, ucs *api.UpgradeContainerService) error {
-	// get available upgrades for container service
-	orchestratorInfo, err := acsengine.GetOrchestratorVersionProfile(cs)
-	if err != nil {
-		return uc.Translator.Errorf("failed to get orchestrator upgrade info: %v", err)
-	}
-	// validate desired upgrade version
-	for _, up := range orchestratorInfo.Upgrades {
-		if up.OrchestratorRelease == ucs.OrchestratorRelease {
-			cs.Properties.UpgradeProfile = up
-			return nil
-		}
-	}
-	return uc.Translator.Errorf("orchestrator %s release %s cannot be upgraded to release %s", ucs.OrchestratorType,
-		cs.Properties.OrchestratorProfile.OrchestratorRelease, ucs.OrchestratorRelease)
-}
-
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
 // UpgradeContainerService contains target state of the cluster that
 // the operation will drive towards.
@@ -80,17 +62,13 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	uc.UpgradedMasterVMs = &[]compute.VirtualMachine{}
 	uc.AgentPools = make(map[string]*AgentPoolTopology)
 
-	if uc.DataModel == nil || uc.DataModel.Properties == nil || uc.DataModel.Properties.UpgradeProfile == nil {
-		return uc.Translator.Errorf("Incomplete upgrade information")
-	}
-
 	if err := uc.getClusterNodeStatus(subscriptionID, resourceGroup); err != nil {
 		return uc.Translator.Errorf("Error while querying ARM for resources: %+v", err)
 	}
 
 	var upgrader UpgradeWorkFlow
-	log.Infoln(fmt.Sprintf("Upgrading to Kubernetes release %s", uc.DataModel.Properties.UpgradeProfile.OrchestratorRelease))
-	switch uc.DataModel.Properties.UpgradeProfile.OrchestratorRelease {
+	log.Infoln(fmt.Sprintf("Upgrading to Kubernetes release %s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease))
+	switch uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease {
 	case api.KubernetesRelease1Dot6:
 		upgrader16 := &Kubernetes16upgrader{}
 		upgrader16.Init(uc.Translator, uc.ClusterTopology, uc.Client)
@@ -102,8 +80,7 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 		upgrader = upgrader17
 
 	default:
-		return uc.Translator.Errorf("Upgrade to Kubernetes release: %s is not supported from release: %s",
-			uc.DataModel.Properties.UpgradeProfile.OrchestratorRelease,
+		return uc.Translator.Errorf("Upgrade to Kubernetes release %s is not supported",
 			uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease)
 	}
 
@@ -116,8 +93,8 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	}
 
 	log.Infoln(fmt.Sprintf("Cluster upraded successfully to Kubernetes release %s, version: %s",
-		uc.DataModel.Properties.UpgradeProfile.OrchestratorRelease,
-		uc.DataModel.Properties.UpgradeProfile.OrchestratorVersion))
+		uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease,
+		uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion))
 	return nil
 }
 
@@ -127,10 +104,8 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 		return err
 	}
 
-	orchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorType,
+	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorType,
 		uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
-	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.UpgradeProfile.OrchestratorType,
-		uc.DataModel.Properties.UpgradeProfile.OrchestratorVersion)
 
 	for _, vm := range *vmListResult.Value {
 		if vm.Tags == nil {
@@ -139,12 +114,15 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 		}
 
 		vmOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
-		if vmOrchestratorTypeAndVersion == orchestratorTypeVersion {
+		if vmOrchestratorTypeAndVersion != targetOrchestratorTypeVersion {
 			if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
 				if !strings.Contains(*(vm.Name), uc.NameSuffix) {
 					log.Infoln(fmt.Sprintf("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s",
 						*vm.Name, uc.NameSuffix))
 					continue
+				}
+				if err := uc.upgradable(vmOrchestratorTypeAndVersion); err != nil {
+					return err
 				}
 				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (MasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
 				*uc.MasterVMs = append(*uc.MasterVMs, vm)
@@ -152,12 +130,12 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 				uc.addVMToAgentPool(vm, true)
 			}
 		} else if vmOrchestratorTypeAndVersion == targetOrchestratorTypeVersion {
-			if !strings.Contains(*(vm.Name), uc.NameSuffix) {
-				log.Infoln(fmt.Sprintf("Not adding VM: %s to upgraded list as it does not belong to cluster with expected name suffix: %s",
-					*vm.Name, uc.NameSuffix))
-				continue
-			}
 			if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
+				if !strings.Contains(*(vm.Name), uc.NameSuffix) {
+					log.Infoln(fmt.Sprintf("Not adding VM: %s to upgraded list as it does not belong to cluster with expected name suffix: %s",
+						*vm.Name, uc.NameSuffix))
+					continue
+				}
 				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (UpgradedMasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
 				*uc.UpgradedMasterVMs = append(*uc.UpgradedMasterVMs, vm)
 			} else {
@@ -167,6 +145,39 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 	}
 
 	return nil
+}
+
+func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error {
+	arr := strings.Split(vmOrchestratorTypeAndVersion, ":")
+	if len(arr) != 2 {
+		return fmt.Errorf("Unsupported orchestrator tag format %s", vmOrchestratorTypeAndVersion)
+	}
+	currentVer := arr[1]
+	arr = strings.Split(currentVer, ".")
+	if len(arr) != 3 {
+		return fmt.Errorf("Unsupported orchestrator version format %s", currentVer)
+	}
+	currentRel := fmt.Sprintf("%s.%s", arr[0], arr[1])
+
+	cs := &api.ContainerService{
+		Properties: &api.Properties{
+			OrchestratorProfile: &api.OrchestratorProfile{
+				OrchestratorType:    api.Kubernetes,
+				OrchestratorRelease: currentRel,
+				OrchestratorVersion: currentVer,
+			},
+		},
+	}
+	orch, err := acsengine.GetOrchestratorVersionProfile(cs)
+	if err != nil {
+		return err
+	}
+	for _, up := range orch.Upgrades {
+		if up.OrchestratorRelease == uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease {
+			return nil
+		}
+	}
+	return fmt.Errorf("%s in non-upgradable to %s", vmOrchestratorTypeAndVersion, uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease)
 }
 
 func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradableVM bool) error {

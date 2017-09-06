@@ -35,10 +35,9 @@ type upgradeCmd struct {
 	apiVersion          string
 
 	// derived
-	upgradeModel *api.UpgradeContainerService
-	client       armhelpers.ACSEngineClient
-	locale       *gotext.Locale
-	nameSuffix   string
+	client     armhelpers.ACSEngineClient
+	locale     *gotext.Locale
+	nameSuffix string
 }
 
 // NewUpgradeCmd run a command to upgrade a Kubernetes cluster
@@ -124,7 +123,10 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("error parsing file %s: %s", uc.upgradeModelFile, err.Error())
 	}
 
-	uc.upgradeModel = api.ConvertVLabsUpgradeContainerService(vlabsUCS)
+	// set GoalState
+	upgradeModel := api.ConvertVLabsUpgradeContainerService(vlabsUCS)
+	uc.containerService.Properties.OrchestratorProfile.OrchestratorRelease = upgradeModel.OrchestratorRelease
+	uc.containerService.Properties.OrchestratorProfile.OrchestratorVersion = upgradeModel.OrchestratorVersion
 
 	uc.client, err = uc.authArgs.getClient()
 	if err != nil {
@@ -160,9 +162,6 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		Client: uc.client,
 	}
 
-	if err := upgradeCluster.ValidateAndSetUpgradeVersion(uc.containerService, uc.upgradeModel); err != nil {
-		log.Fatalf("Error upgrading cluster: %s \n", err.Error())
-	}
 	if err := upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.resourceGroupName,
 		uc.containerService, uc.nameSuffix); err != nil {
 		log.Fatalf("Error upgrading cluster: %s \n", err.Error())
