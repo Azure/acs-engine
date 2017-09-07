@@ -123,6 +123,8 @@ func SetPropertiesDefaults(cs *api.ContainerService) (bool, error) {
 
 	setMasterNetworkDefaults(properties)
 
+	setHostedMasterNetworkDefaults(properties)
+
 	setAgentNetworkDefaults(properties)
 
 	setStorageDefaults(properties)
@@ -230,6 +232,14 @@ func setExtensionDefaults(a *api.Properties) {
 			extension.RootURL = DefaultExtensionsRootURL
 		}
 	}
+}
+
+// SetHostedMasterNetworkDefaults for hosted masters
+func setHostedMasterNetworkDefaults(a *api.Properties) {
+	if a.HostedMasterProfile == nil {
+		return
+	}
+	a.HostedMasterProfile.Subnet = DefaultKubernetesMasterSubnet
 }
 
 // SetMasterNetworkDefaults for masters
