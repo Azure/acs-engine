@@ -17,11 +17,8 @@ K8S_UPGRADE_CONF="$OUTPUT/k8sUpgrade.json"
 
 cat > $K8S_UPGRADE_CONF <<END
 {
-  "apiVersion": "vlabs",
-  "orchestratorProfile": {
-      "orchestratorType": "Kubernetes",
-      "orchestratorRelease": "${EXPECTED_ORCHESTRATOR_RELEASE}"
-    }
+  "orchestratorType": "Kubernetes",
+  "orchestratorRelease": "${EXPECTED_ORCHESTRATOR_RELEASE}"
 }
 END
 
