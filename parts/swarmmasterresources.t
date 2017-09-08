@@ -269,7 +269,7 @@
           "commandToExecute": "[variables('masterCustomScript')]",
           "fileUris": [
 {{if IsRHEL}}
-            "[concat('https://raw.githubusercontent.com/tomconte/acs-engine/tco-rhel-swarmmode/parts/', variables('configureClusterScriptFile'))]"
+            "[concat('{{ GetConfigurationScriptRootURL }}', variables('configureClusterScriptFile'))]"
 {{end}}
           ]
         },

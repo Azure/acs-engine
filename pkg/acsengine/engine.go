@@ -1020,6 +1020,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsRHEL": func() bool {
 			return cs.Properties.LinuxProfile.IsRHEL()
 		},
+		"GetConfigurationScriptRootURL": func() string {
+			return ConfigurationScriptRootURL
+		},
 		"PopulateClassicModeDefaultValue": func(attr string) string {
 			var val string
 			if !t.ClassicMode {
