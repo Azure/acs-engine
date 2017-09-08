@@ -109,12 +109,21 @@ func (m *TestManager) Run() error {
 	}
 	timeout := time.Duration(time.Minute * time.Duration(timeoutMin))
 
-	// determine number of retries
-	retries, err := strconv.Atoi(os.Getenv("NUM_OF_RETRIES"))
-	if err != nil {
-		fmt.Println("Warning: NUM_OF_RETRIES is not set or invalid. Assuming 1")
-		retries = 1
+	usePromoteToFailure := os.Getenv("PROMOTE_TO_FAILURE") == "true"
+
+	var retries int
+	if usePromoteToFailure {
+		fmt.Println("Using promote to failure to determine pass/fail")
+	} else {
+		// determine number of retries
+		retries, err = strconv.Atoi(os.Getenv("NUM_OF_RETRIES"))
+		if err != nil {
+			// Set default retries if not set
+			retries = 1
+		}
+		fmt.Printf("Will allow %d retries to determine pass/fail\n", retries)
 	}
+
 	// login to Azure
 	if _, _, err := m.runStep("init", stepInitAzure, os.Environ(), timeout); err != nil {
 		return err
@@ -129,21 +138,7 @@ func (m *TestManager) Run() error {
 		go func(index int, dep config.Deployment) {
 			defer m.wg.Done()
 			resMap := make(map[string]*ErrorStat)
-			if os.Getenv("CIRCLECI") != "" {
-				for attempt := 0; attempt < retries; attempt++ {
-					errorInfo := m.testRun(dep, index, attempt, timeout)
-					// do not retry if successful
-					if errorInfo == nil {
-						success[index] = true
-						break
-					}
-					if errorStat, ok := resMap[errorInfo.ErrName]; !ok {
-						resMap[errorInfo.ErrName] = &ErrorStat{errorInfo: errorInfo, testCategory: dep.TestCategory, count: 1}
-					} else {
-						errorStat.count++
-					}
-				}
-			} else {
+			if usePromoteToFailure {
 				errorInfo := m.testRun(dep, index, 0, timeout)
 				var failureStr string
 				testName := strings.Replace(dep.ClusterDefinition, "/", "-", -1)
@@ -184,6 +179,20 @@ func (m *TestManager) Run() error {
 
 				// RecordTestRun QoS
 				sendRecordTestRun(sa, success[index], dep.Location, testName, dep.TestCategory, failureStr)
+			} else {
+				for attempt := 0; attempt < retries; attempt++ {
+					errorInfo := m.testRun(dep, index, attempt, timeout)
+					// do not retry if successful
+					if errorInfo == nil {
+						success[index] = true
+						break
+					}
+					if errorStat, ok := resMap[errorInfo.ErrName]; !ok {
+						resMap[errorInfo.ErrName] = &ErrorStat{errorInfo: errorInfo, testCategory: dep.TestCategory, count: 1}
+					} else {
+						errorStat.count++
+					}
+				}
 			}
 
 			sendErrorMetrics(resMap)
@@ -220,8 +229,8 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		d.Location = m.regions[randomIndex]
 	}
 	testName := strings.TrimSuffix(d.ClusterDefinition, filepath.Ext(d.ClusterDefinition))
-	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUM"), index)
-	resourceGroup := fmt.Sprintf("%s-%s-%s-%s-%d", rgPrefix, strings.Replace(testName, "/", "-", -1), d.Location, os.Getenv("BUILD_NUM"), index)
+	instanceName := fmt.Sprintf("acse-%d-%s-%s-%d-%d", rand.Intn(0x0ffffff), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
+	resourceGroup := fmt.Sprintf("%s-%s-%s-%s-%d-%d", rgPrefix, strings.Replace(testName, "/", "-", -1), d.Location, os.Getenv("BUILD_NUM"), index, attempt)
 	logFile := fmt.Sprintf("%s/%s.log", logDir, resourceGroup)
 	validateLogFile := fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
 
