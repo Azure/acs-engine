@@ -474,6 +474,7 @@ func convertVLabsLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
 		api.Secrets = append(api.Secrets, *secret)
 	}
 	api.Distro = Distro(vlabs.Distro)
+	api.ScriptRootURL = vlabs.ScriptRootURL
 }
 
 func convertV20160930WindowsProfile(v20160930 *v20160930.WindowsProfile, api *WindowsProfile) {

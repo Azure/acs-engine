@@ -177,6 +177,6 @@ const (
 )
 
 const (
-	//ConfigurationScriptRootURL  Root URL for configuration script (used for script extension on RHEL)
-	ConfigurationScriptRootURL = "https://raw.githubusercontent.com/Azure/acs-engine/master/parts/"
+	//DefaultConfigurationScriptRootURL  Root URL for configuration script (used for script extension on RHEL)
+	DefaultConfigurationScriptRootURL = "https://raw.githubusercontent.com/Azure/acs-engine/master/parts/"
 )

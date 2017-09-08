@@ -549,6 +549,7 @@ func convertLinuxProfileToVLabs(obj *LinuxProfile, vlabsProfile *vlabs.LinuxProf
 		vlabsProfile.Secrets = append(vlabsProfile.Secrets, *secret)
 	}
 	vlabsProfile.Distro = vlabs.Distro(obj.Distro)
+	vlabsProfile.ScriptRootURL = obj.ScriptRootURL
 }
 
 func convertWindowsProfileToV20160930(api *WindowsProfile, v20160930 *v20160930.WindowsProfile) {

@@ -102,8 +102,9 @@ type LinuxProfile struct {
 	SSH           struct {
 		PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
 	} `json:"ssh" validate:"required"`
-	Secrets []KeyVaultSecrets `json:"secrets,omitempty"`
-	Distro  Distro            `json:"distro,omitempty"`
+	Secrets       []KeyVaultSecrets `json:"secrets,omitempty"`
+	Distro        Distro            `json:"distro,omitempty"`
+	ScriptRootURL string            `json:"scriptroot,omitempty"`
 }
 
 // PublicKey represents an SSH key for LinuxProfile
