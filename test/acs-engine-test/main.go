@@ -116,7 +116,7 @@ func (m *TestManager) Run() error {
 		fmt.Println("Using promote to failure to determine pass/fail")
 	} else {
 		// determine number of retries
-		retries, err := strconv.Atoi(os.Getenv("NUM_OF_RETRIES"))
+		retries, err = strconv.Atoi(os.Getenv("NUM_OF_RETRIES"))
 		if err != nil {
 			// Set default retries if not set
 			retries = 1
