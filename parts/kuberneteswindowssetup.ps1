@@ -47,6 +47,7 @@ $global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
 $global:KubeBinariesSASURL = "{{WrapAsVariable "kubeBinariesSASURL"}}"
 $global:KubeBinariesVersion = "{{WrapAsVariable "kubeBinariesVersion"}}"
+$global:WindowsTelemetryGUID = "{{WrapAsVariable "windowsTelemetryGUID"}}"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
 $global:NatNetworkName="nat"
@@ -72,6 +73,11 @@ Write-Log($message)
 {
     $msg = $message | Timestamp
     Write-Output $msg
+}
+
+function Set-TelemetrySetting()
+{
+    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "CommercialId" -Value $global:WindowsTelemetryGUID -Force
 }
 
 function
@@ -369,6 +375,9 @@ try
     # the output.
     if ($true) {
         Write-Log "Provisioning $global:DockerServiceName... with IP $MasterIP"
+
+        Write-Log "apply telemetry data setting"
+        Set-TelemetrySetting
 
         Write-Log "download kubelet binaries and unzip"
         Get-KubeBinaries

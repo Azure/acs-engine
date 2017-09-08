@@ -258,6 +258,7 @@
     "windowsAdminPassword": "[parameters('windowsAdminPassword')]",
     "kubeBinariesSASURL": "[parameters('kubeBinariesSASURL')]",
     "kubeBinariesVersion": "[parameters('kubeBinariesVersion')]",
+    "windowsTelemetryGUID": "[parameters('windowsTelemetryGUID')]",
     "agentWindowsPublisher": "MicrosoftWindowsServer",
     "agentWindowsOffer": "WindowsServer",
     "agentWindowsSku": "2016-Datacenter-with-Containers",
