@@ -109,12 +109,21 @@ func (m *TestManager) Run() error {
 	}
 	timeout := time.Duration(time.Minute * time.Duration(timeoutMin))
 
-	// determine number of retries
-	retries, err := strconv.Atoi(os.Getenv("NUM_OF_RETRIES"))
-	if err != nil {
-		fmt.Println("Warning: NUM_OF_RETRIES is not set or invalid. Assuming 1")
-		retries = 1
+	usePromoteToFailure := os.Getenv("PROMOTE_TO_FAILURE") == "true"
+
+	var retries int
+	if usePromoteToFailure {
+		fmt.Println("Using promote to failure to determine pass/fail")
+	} else {
+		// determine number of retries
+		retries, err := strconv.Atoi(os.Getenv("NUM_OF_RETRIES"))
+		if err != nil {
+			// Set default retries if not set
+			retries = 1
+		}
+		fmt.Printf("Will allow %d retries to determine pass/fail\n", retries)
 	}
+
 	// login to Azure
 	if _, _, err := m.runStep("init", stepInitAzure, os.Environ(), timeout); err != nil {
 		return err
@@ -129,7 +138,7 @@ func (m *TestManager) Run() error {
 		go func(index int, dep config.Deployment) {
 			defer m.wg.Done()
 			resMap := make(map[string]*ErrorStat)
-			if os.Getenv("PROMOTE_TO_FAILURE") != "true" {
+			if usePromoteToFailure {
 				errorInfo := m.testRun(dep, index, 0, timeout)
 				var failureStr string
 				testName := strings.Replace(dep.ClusterDefinition, "/", "-", -1)
