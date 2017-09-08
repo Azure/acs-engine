@@ -6,7 +6,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -149,7 +148,6 @@ func (m *TestManager) Run() error {
 				var failureStr string
 				testName := strings.Replace(dep.ClusterDefinition, "/", "-", -1)
 				if errorInfo != nil {
-					log.Printf("")
 					if errorStat, ok := resMap[errorInfo.ErrName]; !ok {
 						resMap[errorInfo.ErrName] = &ErrorStat{errorInfo: errorInfo, testCategory: dep.TestCategory, count: 1}
 					} else {
@@ -180,6 +178,8 @@ func (m *TestManager) Run() error {
 				result, _ := promote.RunPromoteToFailure(sa, promToFailInfo)
 				if result == true {
 					success[index] = false
+				} else {
+					success[index] = true
 				}
 
 				// RecordTestRun QoS
