@@ -173,6 +173,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.MaxPods = DefaultKubernetesMaxPods
 			}
 		}
+		if a.OrchestratorProfile.KubernetesConfig.GCHighThreshold == 0 {
+			a.OrchestratorProfile.KubernetesConfig.GCHighThreshold = DefaultKubernetesGCHighThreshold
+		}
+		if a.OrchestratorProfile.KubernetesConfig.GCLowThreshold == 0 {
+			a.OrchestratorProfile.KubernetesConfig.GCLowThreshold = DefaultKubernetesGCLowThreshold
+		}
 		if a.OrchestratorProfile.KubernetesConfig.DNSServiceIP == "" {
 			a.OrchestratorProfile.KubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
 		}

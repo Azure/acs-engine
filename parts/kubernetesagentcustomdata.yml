@@ -114,6 +114,8 @@ write_files:
     KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD={{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
     KUBE_CTRL_MGR_POD_EVICTION_TIMEOUT={{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}
     KUBE_CTRL_MGR_ROUTE_RECONCILIATION_PERIOD={{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}
+    KUBELET_IMAGE_GC_HIGH_THRESHOLD={{WrapAsVariable "gchighthreshold"}}
+    KUBELET_IMAGE_GC_LOW_THRESHOLD={{WrapAsVariable "gclowthreshold"}}
 {{if IsKubernetesVersionGe "1.6.0"}}
     KUBELET_FEATURE_GATES=--feature-gates=Accelerators=true
 {{end}}
