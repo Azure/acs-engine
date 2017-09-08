@@ -168,6 +168,8 @@ type KubernetesConfig struct {
 	CustomHyperkubeImage             string  `json:"customHyperkubeImage,omitempty"`
 	UseInstanceMetadata              bool    `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                       bool    `json:"enableRbac,omitempty"`
+	GCHighThreshold                  int     `json:"gchighthreshold,omitempty"`
+	GCLowThreshold                   int     `json:"gclowthreshold,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -200,7 +202,8 @@ type ExtensionProfile struct {
 	ExtensionParameters string `json:"extensionParameters"`
 	RootURL             string `json:"rootURL"`
 	// This is only needed for preprovision extensions and it needs to be a bash script
-	Script string `json:"script"`
+	Script   string `json:"script"`
+	URLQuery string `json:"urlQuery"`
 }
 
 // Extension represents an extension definition in the master or agentPoolProfile
@@ -297,6 +300,10 @@ type HostedMasterProfile struct {
 	// Not used during PUT, returned as part of GETFQDN
 	FQDN      string `json:"fqdn,omitempty"`
 	DNSPrefix string `json:"dnsPrefix"`
+	// Subnet holds the CIDR which defines the Azure Subnet in which
+	// Agents will be provisioned. This is stored on the HostedMasterProfile
+	// and will become `masterSubnet` in the compiled template.
+	Subnet string `json:"subnet"`
 }
 
 // AADProfile specifies attributes for AAD integration

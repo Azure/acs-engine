@@ -197,6 +197,8 @@ type KubernetesConfig struct {
 	CustomHyperkubeImage             string  `json:"customHyperkubeImage,omitempty"`
 	UseInstanceMetadata              bool    `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                       bool    `json:"enableRbac,omitempty"`
+	GCHighThreshold                  int     `json:"gchighthreshold,omitempty"`
+	GCLowThreshold                   int     `json:"gclowthreshold,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -234,7 +236,8 @@ type ExtensionProfile struct {
 	ExtensionParameters string `json:"extensionParameters"`
 	RootURL             string `json:"rootURL"`
 	// This is only needed for preprovision extensions and it needs to be a bash script
-	Script string `json:"script"`
+	Script   string `json:"script"`
+	URLQuery string `json:"urlQuery"`
 }
 
 // Extension represents an extension definition in the master or agentPoolProfile

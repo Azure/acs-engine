@@ -15,6 +15,7 @@ var (
 		KubernetesImageBase:              "gcrio.azureedge.net/google_containers/",
 		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
 		KubeBinariesSASURLBase:           "https://acs-mirror.azureedge.net/wink8s/",
+		WindowsTelemetryGUID:             "fb801154-36b9-41bc-89c2-f4d4f05472b0",
 		CNIPluginsDownloadURL:            "https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-latest.tgz",
 		VnetCNILinuxPluginsDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz",
 		VnetCNIWindowsPluginsDownloadURL: "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-latest.zip",
@@ -123,6 +124,8 @@ func SetPropertiesDefaults(cs *api.ContainerService) (bool, error) {
 
 	setMasterNetworkDefaults(properties)
 
+	setHostedMasterNetworkDefaults(properties)
+
 	setAgentNetworkDefaults(properties)
 
 	setStorageDefaults(properties)
@@ -169,6 +172,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			} else {
 				a.OrchestratorProfile.KubernetesConfig.MaxPods = DefaultKubernetesMaxPods
 			}
+		}
+		if a.OrchestratorProfile.KubernetesConfig.GCHighThreshold == 0 {
+			a.OrchestratorProfile.KubernetesConfig.GCHighThreshold = DefaultKubernetesGCHighThreshold
+		}
+		if a.OrchestratorProfile.KubernetesConfig.GCLowThreshold == 0 {
+			a.OrchestratorProfile.KubernetesConfig.GCLowThreshold = DefaultKubernetesGCLowThreshold
 		}
 		if a.OrchestratorProfile.KubernetesConfig.DNSServiceIP == "" {
 			a.OrchestratorProfile.KubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
@@ -230,6 +239,14 @@ func setExtensionDefaults(a *api.Properties) {
 			extension.RootURL = DefaultExtensionsRootURL
 		}
 	}
+}
+
+// SetHostedMasterNetworkDefaults for hosted masters
+func setHostedMasterNetworkDefaults(a *api.Properties) {
+	if a.HostedMasterProfile == nil {
+		return
+	}
+	a.HostedMasterProfile.Subnet = DefaultKubernetesMasterSubnet
 }
 
 // SetMasterNetworkDefaults for masters

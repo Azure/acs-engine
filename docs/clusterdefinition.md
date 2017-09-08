@@ -38,6 +38,8 @@ Here are the valid values for the orchestrator types:
 |serviceCidr|no|IP range for Service IPs, Default is "10.0.0.0/16". This range is never routed outside of a node so does not need to lie within clusterSubnet or the VNet.|
 |enableRbac|no|Enable [Kubernetes RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) (boolean - default == false) |
 |maxPods|no|The maximum number of pods per node. The minimum valid value, necessary for running kube-system pods, is 5. Default value is 30 when networkPolicy equals azure, 110 otherwise.|
+|gcHighThreshold|no|Sets the --image-gc-high-threshold value on the kublet configuration. Default is 85. [See kubelet Garbage Collection](https://kubernetes.io/docs/concepts/cluster-administration/kubelet-garbage-collection/) |
+|gcLowThreshold|no|Sets the --image-gc-low-threshold value on the kublet configuration. Default is 80. [See kubelet Garbage Collection](https://kubernetes.io/docs/concepts/cluster-administration/kubelet-garbage-collection/) |
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.
@@ -176,4 +178,4 @@ A cluster can have 0 - N extensions in extension profiles.  Extension profiles a
 |extensionParameters|optional|extension parameters may be required by extensions.  The format of the parameters is also extension dependant.|
 |rootURL|optional|url to the root location of extensions.  The rootURL must have an extensions child folder that follows the extensions convention.  The rootURL is mainly used for testing purposes.|
 
-You can find more information, as well as a list of extensions on the [extensions documentation] (extensions.md).
+You can find more information, as well as a list of extensions on the [extensions documentation](extensions.md).

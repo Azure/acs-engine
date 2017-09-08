@@ -29,6 +29,13 @@
   {{end}}
 {{end}}
 {{if IsHostedMaster}}
+    "masterSubnet": {
+      "defaultValue": "{{.HostedMasterProfile.Subnet}}",
+      "metadata": {
+        "description": "Sets the subnet for the VMs in the cluster."
+      },
+      "type": "string"
+    },
     "kubernetesEndpoint": {
       "defaultValue": "{{.HostedMasterProfile.FQDN}}",
       "metadata": {

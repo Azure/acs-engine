@@ -40,6 +40,8 @@
     "maxPods": "[parameters('maxPods')]",
     "vnetCidr": "[parameters('vnetCidr')]",
     "calicoConfigURL":"[parameters('calicoConfigURL')]",
+    "gcHighThreshold":"[parameters('gcHighThreshold')]",
+    "gcLowThreshold":"[parameters('gcLowThreshold')]",
 {{ if UseManagedIdentity }}
     "servicePrincipalClientId": "msi",
     "servicePrincipalClientSecret": "msi",
@@ -135,7 +137,7 @@
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
   {{end}}
 {{else}}
-    "subnet": "10.0.0.0/16",
+    "subnet": "[parameters('masterSubnet')]",
     "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
@@ -258,6 +260,7 @@
     "windowsAdminPassword": "[parameters('windowsAdminPassword')]",
     "kubeBinariesSASURL": "[parameters('kubeBinariesSASURL')]",
     "kubeBinariesVersion": "[parameters('kubeBinariesVersion')]",
+    "windowsTelemetryGUID": "[parameters('windowsTelemetryGUID')]",
     "agentWindowsPublisher": "MicrosoftWindowsServer",
     "agentWindowsOffer": "WindowsServer",
     "agentWindowsSku": "2016-Datacenter-with-Containers",

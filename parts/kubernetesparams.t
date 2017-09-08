@@ -301,6 +301,20 @@
       },
       "type": "string"
     },
+    "gcHighThreshold": {
+      "defaultValue": 85,
+      "metadata": {
+        "description": "High Threshold for Image Garbage collection on each node"
+      },
+      "type": "int"
+    },
+    "gcLowThreshold": {
+      "defaultValue": 80,
+      "metadata": {
+        "description": "Low Threshold for Image Garbage collection on each node."
+      },
+      "type": "int"
+    },
 {{ if not UseManagedIdentity }}
     "servicePrincipalClientId": {
       "metadata": {

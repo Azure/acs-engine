@@ -2,17 +2,16 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "Kubernetes"
+      "orchestratorType": "Kubernetes",
+      "kubernetesConfig": {
+        "gcHighThreshold":70,
+        "gcLowThreshold": 60
+      }
     },
     "masterProfile": {
       "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2",
-      "extensions": [
-        { 
-          "name": "hello-world-k8s"
-        }
-     ]
+      "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
@@ -23,7 +22,7 @@
       }
     ],
     "linuxProfile": {
-      "adminUsername": "azureuser",
+      "adminUsername": "azureUser",
       "ssh": {
         "publicKeys": [
           {
@@ -32,15 +31,9 @@
         ]
       }
     },
-    "extensionProfiles": [
-      { 
-        "name": "hello-world-k8s", 
-        "version": "v1"
-      }
-    ],
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "",
-      "servicePrincipalClientSecret": ""
+      "clientId": "",
+      "secret": ""
     }
   }
 }

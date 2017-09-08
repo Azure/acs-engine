@@ -63,6 +63,9 @@ ensureRunCommandCompleted()
 }
 ensureRunCommandCompleted
 
+# make sure walinuxagent doesn't get updated in the middle of running this script
+apt-mark hold walinuxagent
+
 # A delay to start the kubernetes processes is necessary
 # if a reboot is required.  Otherwise, the agents will encounter issue: 
 # https://github.com/kubernetes/kubernetes/issues/41185
@@ -431,6 +434,7 @@ sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/h
 
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 echo "Install complete successfully"
+apt-mark unhold walinuxagent
 
 if $REBOOTREQUIRED; then
   # wait 1 minute to restart node, so that the custom script extension can complete

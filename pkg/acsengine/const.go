@@ -74,6 +74,10 @@ const (
 	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will
 	// create Service IPs within.
 	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
+	//DefaultKubernetesGCHighThreshold specifies the value for  for the image-gc-high-threshold kubelet flag
+	DefaultKubernetesGCHighThreshold = 85
+	//DefaultKubernetesGCLowThreshold specifies the value for the image-gc-low-threshold kubelet flag
+	DefaultKubernetesGCLowThreshold = 80
 )
 
 const (
@@ -110,7 +114,7 @@ var KubeConfigs = map[string]map[string]string{
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.14.4",
 		"pause":           "pause-amd64:3.0",
 		"tiller":          DefaultTillerImage,
-		"windowszip":      "v1.7.5-2intwinnat.zip",
+		"windowszip":      "v1.7.5-3intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
@@ -121,6 +125,8 @@ var KubeConfigs = map[string]map[string]string{
 		"backoffexponent": strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
 		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
+		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
+		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 	api.KubernetesRelease1Dot6: {
 		"hyperkube":       "hyperkube-amd64:v1.6.9",
@@ -144,6 +150,8 @@ var KubeConfigs = map[string]map[string]string{
 		"backoffexponent": strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
 		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
+		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
+		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 	api.KubernetesRelease1Dot5: {
 		"hyperkube":       "hyperkube-amd64:v1.5.7",
@@ -161,6 +169,8 @@ var KubeConfigs = map[string]map[string]string{
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
 		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
+		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
+		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 }
 

@@ -45,6 +45,7 @@ type KubernetesSpecConfig struct {
 	KubernetesImageBase              string
 	TillerImageBase                  string
 	KubeBinariesSASURLBase           string
+	WindowsTelemetryGUID             string
 	CNIPluginsDownloadURL            string
 	VnetCNILinuxPluginsDownloadURL   string
 	VnetCNIWindowsPluginsDownloadURL string
