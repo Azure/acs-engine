@@ -129,21 +129,7 @@ func (m *TestManager) Run() error {
 		go func(index int, dep config.Deployment) {
 			defer m.wg.Done()
 			resMap := make(map[string]*ErrorStat)
-			if os.Getenv("CIRCLECI") != "" {
-				for attempt := 0; attempt < retries; attempt++ {
-					errorInfo := m.testRun(dep, index, attempt, timeout)
-					// do not retry if successful
-					if errorInfo == nil {
-						success[index] = true
-						break
-					}
-					if errorStat, ok := resMap[errorInfo.ErrName]; !ok {
-						resMap[errorInfo.ErrName] = &ErrorStat{errorInfo: errorInfo, testCategory: dep.TestCategory, count: 1}
-					} else {
-						errorStat.count++
-					}
-				}
-			} else {
+			if os.Getenv("PROMOTE_TO_FAILURE") != "true" {
 				errorInfo := m.testRun(dep, index, 0, timeout)
 				var failureStr string
 				testName := strings.Replace(dep.ClusterDefinition, "/", "-", -1)
@@ -184,6 +170,20 @@ func (m *TestManager) Run() error {
 
 				// RecordTestRun QoS
 				sendRecordTestRun(sa, success[index], dep.Location, testName, dep.TestCategory, failureStr)
+			} else {
+				for attempt := 0; attempt < retries; attempt++ {
+					errorInfo := m.testRun(dep, index, attempt, timeout)
+					// do not retry if successful
+					if errorInfo == nil {
+						success[index] = true
+						break
+					}
+					if errorStat, ok := resMap[errorInfo.ErrName]; !ok {
+						resMap[errorInfo.ErrName] = &ErrorStat{errorInfo: errorInfo, testCategory: dep.TestCategory, count: 1}
+					} else {
+						errorStat.count++
+					}
+				}
 			}
 
 			sendErrorMetrics(resMap)
