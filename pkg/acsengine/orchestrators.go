@@ -2,50 +2,16 @@ package acsengine
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Masterminds/semver"
 )
 
 type orchestratorsFunc func(*api.OrchestratorProfile) ([]*api.OrchestratorVersionProfile, error)
 
 var funcmap map[string]orchestratorsFunc
-
-type versionNumber struct {
-	major, minor, patch int64
-}
-
-func (v *versionNumber) parse(ver string) (err error) {
-	arr := strings.Split(ver, ".")
-	if len(arr) != 3 {
-		return fmt.Errorf("Illegal version format '%s'", ver)
-	}
-	if v.major, err = strconv.ParseInt(arr[0], 10, 32); err != nil {
-		return
-	}
-	if v.minor, err = strconv.ParseInt(arr[1], 10, 32); err != nil {
-		return
-	}
-	if v.patch, err = strconv.ParseInt(arr[2], 10, 32); err != nil {
-		return
-	}
-	return nil
-}
-
-func (v *versionNumber) greaterThan(o *versionNumber) bool {
-	// check major
-	if v.major != o.major {
-		return v.major > o.major
-	}
-	// same major; check minor
-	if v.minor != o.minor {
-		return v.minor > o.minor
-	}
-	// same minor; check patch
-	return v.patch > o.patch
-}
 
 func init() {
 	funcmap = map[string]orchestratorsFunc{
@@ -176,12 +142,8 @@ func kubernetesInfo(csOrch *api.OrchestratorProfile) ([]*api.OrchestratorVersion
 
 func kubernetesUpgrades(csOrch *api.OrchestratorProfile) ([]*api.UpgradeContainerService, error) {
 	ret := []*api.UpgradeContainerService{}
-	var csVer versionNumber
 	var err error
 
-	if err = csVer.parse(csOrch.OrchestratorVersion); err != nil {
-		return ret, err
-	}
 	switch csOrch.OrchestratorRelease {
 	case common.KubernetesRelease1Dot5:
 		// add next release
@@ -192,7 +154,7 @@ func kubernetesUpgrades(csOrch *api.OrchestratorProfile) ([]*api.UpgradeContaine
 		})
 	case common.KubernetesRelease1Dot6:
 		// check for patch upgrade
-		if ret, err = addPatchUpgrade(ret, &csVer, csOrch.OrchestratorRelease); err != nil {
+		if ret, err = addPatchUpgrade(ret, csOrch.OrchestratorRelease, csOrch.OrchestratorVersion); err != nil {
 			return ret, err
 		}
 		// add next release
@@ -203,20 +165,27 @@ func kubernetesUpgrades(csOrch *api.OrchestratorProfile) ([]*api.UpgradeContaine
 		})
 	case common.KubernetesRelease1Dot7:
 		// check for patch upgrade
-		if ret, err = addPatchUpgrade(ret, &csVer, csOrch.OrchestratorRelease); err != nil {
+		if ret, err = addPatchUpgrade(ret, csOrch.OrchestratorRelease, csOrch.OrchestratorVersion); err != nil {
 			return ret, err
 		}
 	}
 	return ret, nil
 }
 
-func addPatchUpgrade(upgrades []*api.UpgradeContainerService, csVer *versionNumber, release string) ([]*api.UpgradeContainerService, error) {
-	var pVer versionNumber
-	patchVersion := common.KubeReleaseToVersion[release]
-	if err := pVer.parse(patchVersion); err != nil {
+func addPatchUpgrade(upgrades []*api.UpgradeContainerService, release, version string) ([]*api.UpgradeContainerService, error) {
+	patchVersion, ok := common.KubeReleaseToVersion[release]
+	if !ok {
+		return upgrades, fmt.Errorf("Kubernetes release %s is not supported", release)
+	}
+	pVer, err := semver.NewVersion(patchVersion)
+	if err != nil {
 		return upgrades, err
 	}
-	if pVer.greaterThan(csVer) {
+	constraint, err := semver.NewConstraint(">" + version)
+	if err != nil {
+		return upgrades, err
+	}
+	if constraint.Check(pVer) {
 		upgrades = append(upgrades, &api.UpgradeContainerService{OrchestratorRelease: release, OrchestratorVersion: patchVersion})
 	}
 	return upgrades, nil
