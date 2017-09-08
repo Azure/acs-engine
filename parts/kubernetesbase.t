@@ -18,6 +18,13 @@
         },
         "type": "string"
       },
+      "windowsTelemetryGUID": {
+        {{PopulateClassicModeDefaultValue "windowsTelemetryGUID"}}
+        "metadata": {
+          "description": "The GUID to set in windows agent to collect telemetry data."
+        },
+        "type": "string"
+      },
       {{template "windowsparams.t"}},
     {{end}}
     {{template "masterparams.t" .}},
