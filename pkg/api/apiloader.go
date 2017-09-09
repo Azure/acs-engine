@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
+	"github.com/Azure/acs-engine/pkg/api/v20170930"
+
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	apvlabs "github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
@@ -168,6 +170,32 @@ func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte,
 		return ConvertVLabsAgentPoolOnly(managedCluster), nil
 	default:
 		return nil, a.Translator.Errorf("unrecognized APIVersion in LoadContainerServiceForAgentPoolOnlyCluster '%s'", version)
+	}
+}
+
+// LoadUpgradeContainerService loads an UpgradeContainerService API Model, validates it, and returns the unversioned representation
+func (a *Apiloader) LoadUpgradeContainerService(contents []byte, version string, validate bool) (*UpgradeContainerService, error) {
+	switch version {
+	case v20170930.APIVersion:
+		ucs := &v20170930.UpgradeContainerService{}
+		if e := json.Unmarshal(contents, ucs); e != nil {
+			return nil, e
+		}
+		if e := ucs.Validate(); validate && e != nil {
+			return nil, e
+		}
+		return ConvertV20170930UpgradeContainerService(ucs), nil
+	case vlabs.APIVersion:
+		ucs := &vlabs.UpgradeContainerService{}
+		if e := json.Unmarshal(contents, ucs); e != nil {
+			return nil, e
+		}
+		if e := ucs.Validate(); validate && e != nil {
+			return nil, e
+		}
+		return ConvertVLabsUpgradeContainerService(ucs), nil
+	default:
+		return nil, a.Translator.Errorf("unrecognized APIVersion in LoadUpgradeContainerService '%s'", version)
 	}
 }
 

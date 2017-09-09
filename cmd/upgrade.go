@@ -114,17 +114,15 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	}
 
 	// acs-engine command line uses vlabs API
-	vlabsUCS := &vlabs.UpgradeContainerService{}
 	contents, err := ioutil.ReadFile(uc.upgradeModelFile)
 	if err != nil {
 		log.Fatalf("error reading file %s: %s", uc.upgradeModelFile, err.Error())
 	}
-	if err = ((*vlabs.OrchestratorProfile)(vlabsUCS)).UnmarshalJSON(contents); err != nil {
-		log.Fatalf("error parsing file %s: %s", uc.upgradeModelFile, err.Error())
+	upgradeModel, err := apiloader.LoadUpgradeContainerService(contents, vlabs.APIVersion, true)
+	if err != nil {
+		log.Fatalf("error loading UpgradeContainerService: %s", err.Error())
 	}
-
 	// set GoalState
-	upgradeModel := api.ConvertVLabsUpgradeContainerService(vlabsUCS)
 	uc.containerService.Properties.OrchestratorProfile.OrchestratorRelease = upgradeModel.OrchestratorRelease
 	uc.containerService.Properties.OrchestratorProfile.OrchestratorVersion = upgradeModel.OrchestratorVersion
 
