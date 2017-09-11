@@ -179,16 +179,14 @@ func (m *TestManager) Run() error {
 					sendRecordTestRun(sa, success[index], dep.Location, testName, dep.TestCategory, failureStr)
 
 					// RunPromoteToFailure
-					if isPromoteToFailureStep(errorInfo.Step) {
-						promToFailInfo = promote.DigitalSignalFilter{
-							TestName:     testName,
-							TestType:     metricsNS,
-							FailureStr:   failureStr,
-							FailureCount: 0,
-						}
-
-						promote.RunPromoteToFailure(sa, promToFailInfo)
+					promToFailInfo = promote.DigitalSignalFilter{
+						TestName:     testName,
+						TestType:     metricsNS,
+						FailureStr:   failureStr,
+						FailureCount: 0,
 					}
+
+					promote.RunPromoteToFailure(sa, promToFailInfo)
 
 				}
 
