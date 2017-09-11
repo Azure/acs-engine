@@ -4,6 +4,7 @@
     "apiVersionDefault": "2016-03-30",
     "apiVersionLinkDefault": "2015-01-01",
     "singleQuote": "'",
+    "escapedSingleQuote": "''",
 {{if .LinuxProfile.HasSecrets}}
     "linuxProfileSecrets" :
       [

@@ -31,9 +31,13 @@ param(
     [ValidateNotNullOrEmpty()]
     $subnet,
 
-    [switch]
+    [parameter()]
     [AllowNull()]
-    $isPublic = $false
+    $isPublic = $false,
+
+    [string]
+    [AllowNull()]
+    $customAttrs = ""
 )
 
 
@@ -135,7 +139,7 @@ try
     # the output.
     Write-Log "Get the install script"
 
-    Write-Log ("Parameters = isAgent = ["+ $isAgent + "] mastercount = ["+$MasterCount + "] First master ip= [" + $firstMasterIp+ "] boostrap URI = ["+ $bootstrapUri+"] Subnet = ["+ $subnet +"]")
+    Write-Log ("Parameters = isAgent = ["+ $isAgent + "] mastercount = ["+$MasterCount + "] First master ip= [" + $firstMasterIp+ "] boostrap URI = ["+ $bootstrapUri+"] Subnet = ["+ $subnet +"]" + " -customAttrs " + $customAttrs )
 
     # Get the boostrap script
 
@@ -182,6 +186,10 @@ try
         if ($isPublic) 
         {
             $run_cmd += " -isPublic:`$true "
+        }
+        if ($customAttrs) 
+        {
+            $run_cmd += " -customAttrs '$customAttrs'"
         }
         $run_cmd += ">"+$global:BootstrapInstallDir+"\DCOSWindowsAgentSetup.log 2>&1"
         Write-Log "run setup script $run_cmd"

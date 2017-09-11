@@ -796,6 +796,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			str := getBase64CustomScript(dcosWindowsProvision)
 			return fmt.Sprintf("\"customData\": \"%s\"", str)
 		},
+		"GetDCOSWindowsAgentCustomNodeAttributes": func(profile *api.AgentPoolProfile) string {
+			return getDCOSWindowsAgentCustomAttributes(profile)
+		},
 		"GetMasterAllowedSizes": func() string {
 			if t.ClassicMode {
 				return GetClassicAllowedSizes()
@@ -1239,6 +1242,27 @@ func getDCOSAgentCustomNodeLabels(profile *api.AgentPoolProfile) string {
 		}
 	}
 	buf.WriteString("\"")
+	return buf.String()
+}
+
+func getDCOSWindowsAgentCustomAttributes(profile *api.AgentPoolProfile) string {
+	var buf bytes.Buffer
+	var attrstring string
+	buf.WriteString("")
+	if len(profile.OSType) > 0 {
+		attrstring = fmt.Sprintf("os=%s", profile.OSType)
+	} else {
+		attrstring = fmt.Sprintf("os=windows")
+	}
+	if len(profile.Ports) > 0 {
+		attrstring += ";public_ip=yes"
+	}
+	buf.WriteString(attrstring)
+	if len(profile.CustomNodeLabels) > 0 {
+		for k, v := range profile.CustomNodeLabels {
+			buf.WriteString(fmt.Sprintf(";%s=%s", k, v))
+		}
+	}
 	return buf.String()
 }
 
