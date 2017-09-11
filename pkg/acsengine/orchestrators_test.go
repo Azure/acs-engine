@@ -53,32 +53,24 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	RegisterTestingT(t)
 
 	// 1.5.3 is upgradable to 1.6
-	cs := &api.ContainerService{
-		Properties: &api.Properties{
-			OrchestratorProfile: &api.OrchestratorProfile{
-				OrchestratorType:    api.Kubernetes,
-				OrchestratorRelease: common.KubernetesRelease1Dot5,
-				OrchestratorVersion: "1.5.3",
-			},
-		},
+	csOrch := &api.OrchestratorProfile{
+		OrchestratorType:    api.Kubernetes,
+		OrchestratorRelease: common.KubernetesRelease1Dot5,
+		OrchestratorVersion: "1.5.3",
 	}
-	orch, e := GetOrchestratorVersionProfile(cs)
+	orch, e := GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
 	Expect(len(orch.Upgrades)).To(Equal(1))
 	Expect(orch.Upgrades[0].OrchestratorRelease).To(Equal(common.KubernetesRelease1Dot6))
 	Expect(orch.Upgrades[0].OrchestratorVersion).To(Equal(common.KubeReleaseToVersion[common.KubernetesRelease1Dot6]))
 
 	// 1.6.0 is upgradable to 1.6 and 1.7
-	cs = &api.ContainerService{
-		Properties: &api.Properties{
-			OrchestratorProfile: &api.OrchestratorProfile{
-				OrchestratorType:    api.Kubernetes,
-				OrchestratorRelease: common.KubernetesRelease1Dot6,
-				OrchestratorVersion: "1.6.0",
-			},
-		},
+	csOrch = &api.OrchestratorProfile{
+		OrchestratorType:    api.Kubernetes,
+		OrchestratorRelease: common.KubernetesRelease1Dot6,
+		OrchestratorVersion: "1.6.0",
 	}
-	orch, e = GetOrchestratorVersionProfile(cs)
+	orch, e = GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
 	Expect(len(orch.Upgrades)).To(Equal(2))
 	Expect(orch.Upgrades[0].OrchestratorRelease).To(Equal(common.KubernetesRelease1Dot6))
@@ -87,32 +79,24 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	Expect(orch.Upgrades[1].OrchestratorVersion).To(Equal(common.KubeReleaseToVersion[common.KubernetesRelease1Dot7]))
 
 	// 1.7.0 is upgradable to 1.7
-	cs = &api.ContainerService{
-		Properties: &api.Properties{
-			OrchestratorProfile: &api.OrchestratorProfile{
-				OrchestratorType:    api.Kubernetes,
-				OrchestratorRelease: common.KubernetesRelease1Dot7,
-				OrchestratorVersion: "1.7.0",
-			},
-		},
+	csOrch = &api.OrchestratorProfile{
+		OrchestratorType:    api.Kubernetes,
+		OrchestratorRelease: common.KubernetesRelease1Dot7,
+		OrchestratorVersion: "1.7.0",
 	}
-	orch, e = GetOrchestratorVersionProfile(cs)
+	orch, e = GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
 	Expect(len(orch.Upgrades)).To(Equal(1))
 	Expect(orch.Upgrades[0].OrchestratorRelease).To(Equal(common.KubernetesRelease1Dot7))
 	Expect(orch.Upgrades[0].OrchestratorVersion).To(Equal(common.KubeReleaseToVersion[common.KubernetesRelease1Dot7]))
 
 	// 1.7 is not upgradable
-	cs = &api.ContainerService{
-		Properties: &api.Properties{
-			OrchestratorProfile: &api.OrchestratorProfile{
-				OrchestratorType:    api.Kubernetes,
-				OrchestratorRelease: common.KubernetesRelease1Dot7,
-				OrchestratorVersion: common.KubeReleaseToVersion[common.KubernetesRelease1Dot7],
-			},
-		},
+	csOrch = &api.OrchestratorProfile{
+		OrchestratorType:    api.Kubernetes,
+		OrchestratorRelease: common.KubernetesRelease1Dot7,
+		OrchestratorVersion: common.KubeReleaseToVersion[common.KubernetesRelease1Dot7],
 	}
-	orch, e = GetOrchestratorVersionProfile(cs)
+	orch, e = GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
 	Expect(len(orch.Upgrades)).To(Equal(0))
 }

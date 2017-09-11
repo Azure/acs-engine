@@ -69,19 +69,14 @@ func GetOrchestratorVersionProfileList(orchestrator, release string) (*api.Orche
 }
 
 // GetOrchestratorVersionProfile returns orchestrator info for upgradable container service
-func GetOrchestratorVersionProfile(cs *api.ContainerService) (*api.OrchestratorVersionProfile, error) {
-	if cs == nil || cs.Properties == nil || cs.Properties.OrchestratorProfile == nil {
-		return nil, fmt.Errorf("Incomplete ContainerService")
-	}
-	if len(cs.Properties.OrchestratorProfile.OrchestratorRelease) == 0 {
+func GetOrchestratorVersionProfile(orch *api.OrchestratorProfile) (*api.OrchestratorVersionProfile, error) {
+	if len(orch.OrchestratorRelease) == 0 {
 		return nil, fmt.Errorf("Missing Orchestrator Release")
 	}
-	if cs.Properties.OrchestratorProfile.OrchestratorType != api.Kubernetes {
-		return nil, fmt.Errorf("Upgrade operation is not supported for '%s'", cs.Properties.OrchestratorProfile.OrchestratorType)
+	if orch.OrchestratorType != api.Kubernetes {
+		return nil, fmt.Errorf("Upgrade operation is not supported for '%s'", orch.OrchestratorType)
 	}
-	arr, err := kubernetesInfo(&api.OrchestratorProfile{
-		OrchestratorRelease: cs.Properties.OrchestratorProfile.OrchestratorRelease,
-		OrchestratorVersion: cs.Properties.OrchestratorProfile.OrchestratorVersion})
+	arr, err := kubernetesInfo(orch)
 	if err != nil {
 		return nil, err
 	}

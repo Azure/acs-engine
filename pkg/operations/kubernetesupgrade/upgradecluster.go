@@ -159,16 +159,12 @@ func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error 
 	}
 	currentRel := fmt.Sprintf("%s.%s", arr[0], arr[1])
 
-	cs := &api.ContainerService{
-		Properties: &api.Properties{
-			OrchestratorProfile: &api.OrchestratorProfile{
-				OrchestratorType:    api.Kubernetes,
-				OrchestratorRelease: currentRel,
-				OrchestratorVersion: currentVer,
-			},
-		},
+	csOrch := &api.OrchestratorProfile{
+		OrchestratorType:    api.Kubernetes,
+		OrchestratorRelease: currentRel,
+		OrchestratorVersion: currentVer,
 	}
-	orch, err := acsengine.GetOrchestratorVersionProfile(cs)
+	orch, err := acsengine.GetOrchestratorVersionProfile(csOrch)
 	if err != nil {
 		return err
 	}
