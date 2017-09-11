@@ -1,12 +1,13 @@
+[![GitHub release](https://img.shields.io/github/release/leonelquinteros/gotext.svg)](https://github.com/leonelquinteros/gotext)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GoDoc](https://godoc.org/github.com/leonelquinteros/gotext?status.svg)](https://godoc.org/github.com/leonelquinteros/gotext)
 [![Build Status](https://travis-ci.org/leonelquinteros/gotext.svg?branch=master)](https://travis-ci.org/leonelquinteros/gotext)
+[![codecov](https://codecov.io/gh/leonelquinteros/gotext/branch/master/graph/badge.svg)](https://codecov.io/gh/leonelquinteros/gotext)
 [![Go Report Card](https://goreportcard.com/badge/github.com/leonelquinteros/gotext)](https://goreportcard.com/report/github.com/leonelquinteros/gotext)
 
 # Gotext
 
 [GNU gettext utilities](https://www.gnu.org/software/gettext) for Go. 
-
-Version: [v1.1.1](https://github.com/leonelquinteros/gotext/releases/tag/v1.1.1)
 
 
 # Features
@@ -19,7 +20,7 @@ Version: [v1.1.1](https://github.com/leonelquinteros/gotext/releases/tag/v1.1.1)
   - Support for [message contexts](https://www.gnu.org/software/gettext/manual/html_node/Contexts.html).
 - Thread-safe: This package is safe for concurrent use across multiple goroutines. 
 - It works with UTF-8 encoding as it's the default for Go language.
-- Unit tests available. See coverage: https://gocover.io/github.com/leonelquinteros/gotext
+- Unit tests available.
 - Language codes are automatically simplified from the form `en_UK` to `en` if the first isn't available.
 - Ready to use inside Go templates.
 
@@ -115,39 +116,6 @@ A library directory structure can look like:
 And so on...
 
 
-
-# About translation function names
-
-The standard GNU gettext defines helper functions that maps to the `gettext()` function and it's widely adopted by most implementations. 
-
-The basic translation function is usually `_()` in the form: 
-
-```
-_("Translate this")
-``` 
-
-In Go, this can't be implemented by a reusable package as the function name has to start with a capital letter in order to be exported. 
-
-Each implementation of this package can declare this helper functions inside their own packages if this function naming are desired/needed: 
-
-```go
-package main
-
-import "github.com/leonelquinteros/gotext"
-
-func _(str string, vars ...interface{}) string {
-    return gotext.Get(str, vars...)
-}
-
-``` 
-
-This is valid and can be used within a package.
-
-In normal conditions the Go compiler will optimize the calls to `_()` by replacing its content in place of the function call to reduce the function calling overhead. 
-This is a normal Go compiler behavior.  
-
-
-
 # Usage examples
 
 ## Using package for single language/domain settings
@@ -155,17 +123,20 @@ This is a normal Go compiler behavior.
 For quick/simple translations you can use the package level functions directly.
 
 ```go
-import "github.com/leonelquinteros/gotext"
+import (
+    "fmt"
+    "github.com/leonelquinteros/gotext"
+)
 
 func main() {
     // Configure package
     gotext.Configure("/path/to/locales/root/dir", "en_UK", "domain-name")
     
     // Translate text from default domain
-    println(gotext.Get("My text on 'domain-name' domain"))
+    fmt.Println(gotext.Get("My text on 'domain-name' domain"))
     
     // Translate text from a different domain without reconfigure
-    println(gotext.GetD("domain2", "Another text on a different domain"))
+    fmt.Println(gotext.GetD("domain2", "Another text on a different domain"))
 }
 
 ```
@@ -176,7 +147,10 @@ All translation strings support dynamic variables to be inserted without transla
 Use the fmt.Printf syntax (from Go's "fmt" package) to specify how to print the non-translated variable inside the translation string. 
 
 ```go
-import "github.com/leonelquinteros/gotext"
+import (
+    "fmt"
+    "github.com/leonelquinteros/gotext"
+)
 
 func main() {
     // Configure package
@@ -186,7 +160,7 @@ func main() {
     name := "John"
     
     // Translate text with variables
-    println(gotext.Get("Hi, my name is %s", name))
+    fmt.Println(gotext.Get("Hi, my name is %s", name))
 }
 
 ```
@@ -198,7 +172,10 @@ When having multiple languages/domains/libraries at the same time, you can creat
 so you can handle each settings on their own.
 
 ```go
-import "github.com/leonelquinteros/gotext"
+import (
+    "fmt"
+    "github.com/leonelquinteros/gotext"
+)
 
 func main() {
     // Create Locale with library path and language code
@@ -208,13 +185,13 @@ func main() {
     l.AddDomain("default")
     
     // Translate text from default domain
-    println(l.Get("Translate this"))
+    fmt.Println(l.Get("Translate this"))
     
     // Load different domain
     l.AddDomain("translations")
     
     // Translate text from domain
-    println(l.GetD("translations", "Translate this"))
+    fmt.Println(l.GetD("translations", "Translate this"))
 }
 ```
 
@@ -232,7 +209,10 @@ For when you need to work with PO files and strings,
 you can directly use the Po object to parse it and access the translations in there in the same way.
 
 ```go
-import "github.com/leonelquinteros/gotext"
+import (
+    "fmt"
+    "github.com/leonelquinteros/gotext"
+)
 
 func main() {
     // Set PO content
@@ -248,10 +228,10 @@ msgstr "This one sets the var: %s"
 `
     
     // Create Po object
-    po := new(Po)
+    po := new(gotext.Po)
     po.Parse(str)
     
-    println(po.Get("Translate this"))
+    fmt.Println(po.Get("Translate this"))
 }
 ```
 
@@ -262,10 +242,13 @@ PO format supports defining one or more plural forms for the same translation.
 Relying on the PO file headers, a Plural-Forms formula can be set on the translation file
 as defined in (https://www.gnu.org/savannah-checkouts/gnu/gettext/manual/html_node/Plural-forms.html)
 
-Plural formulas are parsed and evaluated using [Anko](https://github.com/mattn/anko)
+Plural formulas are parsed and evaluated using [Kinako](https://github.com/mattn/kinako)
 
 ```go
-import "github.com/leonelquinteros/gotext"
+import (
+    "fmt"
+    "github.com/leonelquinteros/gotext"
+)
 
 func main() {
     // Set PO content
@@ -289,10 +272,10 @@ msgstr[1] "This one is the plural: %s"
 `
     
     // Create Po object
-    po := new(Po)
+    po := new(gotext.Po)
     po.Parse(str)
     
-    println(po.GetN("One with var: %s", "Several with vars: %s", 54, v))
+    fmt.Println(po.GetN("One with var: %s", "Several with vars: %s", 54, v))
     // "This one is the plural: Variable"
 }
 ```

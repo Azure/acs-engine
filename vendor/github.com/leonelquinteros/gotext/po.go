@@ -3,7 +3,7 @@ package gotext
 import (
 	"bufio"
 	"fmt"
-	"github.com/mattn/anko/vm"
+	"github.com/mattn/kinako/vm"
 	"io/ioutil"
 	"net/textproto"
 	"os"
@@ -28,7 +28,9 @@ func newTranslation() *translation {
 func (t *translation) get() string {
 	// Look for translation index 0
 	if _, ok := t.trs[0]; ok {
-		return t.trs[0]
+		if t.trs[0] != "" {
+			return t.trs[0]
+		}
 	}
 
 	// Return unstranlated id by default
@@ -38,10 +40,17 @@ func (t *translation) get() string {
 func (t *translation) getN(n int) string {
 	// Look for translation index
 	if _, ok := t.trs[n]; ok {
-		return t.trs[n]
+		if t.trs[n] != "" {
+			return t.trs[n]
+		}
 	}
 
-	// Return unstranlated plural by default
+	// Return unstranlated singular if corresponding
+	if n == 0 {
+		return t.id
+	}
+
+	// Return untranslated plural by default
 	return t.pluralID
 }
 
@@ -52,23 +61,26 @@ And it's safe for concurrent use by multiple goroutines by using the sync packag
 
 Example:
 
-    import "github.com/leonelquinteros/gotext"
+	import (
+		"fmt"
+		"github.com/leonelquinteros/gotext"
+	)
 
-    func main() {
-        // Create po object
-        po := new(gotext.Po)
+	func main() {
+		// Create po object
+		po := new(gotext.Po)
 
-        // Parse .po file
-        po.ParseFile("/path/to/po/file/translations.po")
+		// Parse .po file
+		po.ParseFile("/path/to/po/file/translations.po")
 
-        // Get translation
-        println(po.Get("Translate this"))
-    }
+		// Get translation
+		fmt.Println(po.Get("Translate this"))
+	}
 
 */
 type Po struct {
-	// Headers
-	RawHeaders string
+	// Headers storage
+	Headers textproto.MIMEHeader
 
 	// Language header
 	Language string
@@ -91,6 +103,16 @@ type Po struct {
 	trBuffer  *translation
 	ctxBuffer string
 }
+
+type parseState int
+
+const (
+	head parseState = iota
+	msgCtxt
+	msgID
+	msgIDPlural
+	msgStr
+)
 
 // ParseFile tries to read the file by its provided path (f) and parse its content as a .po file.
 func (po *Po) ParseFile(f string) {
@@ -118,7 +140,6 @@ func (po *Po) ParseFile(f string) {
 func (po *Po) Parse(str string) {
 	// Lock while parsing
 	po.Lock()
-	defer po.Unlock()
 
 	// Init storage
 	if po.translations == nil {
@@ -133,6 +154,7 @@ func (po *Po) Parse(str string) {
 	po.trBuffer = newTranslation()
 	po.ctxBuffer = ""
 
+	state := head
 	for _, l := range lines {
 		// Trim spaces
 		l = strings.TrimSpace(l)
@@ -145,36 +167,43 @@ func (po *Po) Parse(str string) {
 		// Buffer context and continue
 		if strings.HasPrefix(l, "msgctxt") {
 			po.parseContext(l)
+			state = msgCtxt
 			continue
 		}
 
 		// Buffer msgid and continue
 		if strings.HasPrefix(l, "msgid") && !strings.HasPrefix(l, "msgid_plural") {
 			po.parseID(l)
+			state = msgID
 			continue
 		}
 
 		// Check for plural form
 		if strings.HasPrefix(l, "msgid_plural") {
 			po.parsePluralID(l)
+			state = msgIDPlural
 			continue
 		}
 
 		// Save translation
 		if strings.HasPrefix(l, "msgstr") {
 			po.parseMessage(l)
+			state = msgStr
 			continue
 		}
 
 		// Multi line strings and headers
 		if strings.HasPrefix(l, "\"") && strings.HasSuffix(l, "\"") {
-			po.parseString(l)
+			po.parseString(l, state)
 			continue
 		}
 	}
 
 	// Save last translation buffer.
 	po.saveBuffer()
+
+	// Unlock to parse headers
+	po.Unlock()
 
 	// Parse headers
 	po.parseHeaders()
@@ -183,23 +212,24 @@ func (po *Po) Parse(str string) {
 // saveBuffer takes the context and translation buffers
 // and saves it on the translations collection
 func (po *Po) saveBuffer() {
-	// If we have something to save...
-	if po.trBuffer.id != "" {
-		// With no context...
-		if po.ctxBuffer == "" {
-			po.translations[po.trBuffer.id] = po.trBuffer
-		} else {
-			// With context...
-			if _, ok := po.contexts[po.ctxBuffer]; !ok {
-				po.contexts[po.ctxBuffer] = make(map[string]*translation)
-			}
-			po.contexts[po.ctxBuffer][po.trBuffer.id] = po.trBuffer
+	// With no context...
+	if po.ctxBuffer == "" {
+		po.translations[po.trBuffer.id] = po.trBuffer
+	} else {
+		// With context...
+		if _, ok := po.contexts[po.ctxBuffer]; !ok {
+			po.contexts[po.ctxBuffer] = make(map[string]*translation)
 		}
+		po.contexts[po.ctxBuffer][po.trBuffer.id] = po.trBuffer
 
-		// Flush buffer
-		po.trBuffer = newTranslation()
-		po.ctxBuffer = ""
+		// Cleanup current context buffer if needed
+		if po.trBuffer.id != "" {
+			po.ctxBuffer = ""
+		}
 	}
+
+	// Flush translation buffer
+	po.trBuffer = newTranslation()
 }
 
 // parseContext takes a line starting with "msgctxt",
@@ -259,57 +289,72 @@ func (po *Po) parseMessage(l string) {
 
 // parseString takes a well formatted string without prefix
 // and creates headers or attach multi-line strings when corresponding
-func (po *Po) parseString(l string) {
-	// Check for multiline from previously set msgid
-	if po.trBuffer.id != "" {
+func (po *Po) parseString(l string, state parseState) {
+	clean, _ := strconv.Unquote(l)
+
+	switch state {
+	case msgStr:
 		// Append to last translation found
-		uq, _ := strconv.Unquote(l)
-		po.trBuffer.trs[len(po.trBuffer.trs)-1] += uq
+		po.trBuffer.trs[len(po.trBuffer.trs)-1] += clean
 
-		return
+	case msgID:
+		// Multiline msgid - Append to current id
+		po.trBuffer.id += clean
+
+	case msgIDPlural:
+		// Multiline msgid - Append to current id
+		po.trBuffer.pluralID += clean
+
+	case msgCtxt:
+		// Multiline context - Append to current context
+		po.ctxBuffer += clean
+
 	}
-
-	// Otherwise is a header
-	h, err := strconv.Unquote(strings.TrimSpace(l))
-	if err != nil {
-		return
-	}
-
-	po.RawHeaders += h
 }
 
 // isValidLine checks for line prefixes to detect valid syntax.
 func (po *Po) isValidLine(l string) bool {
-	// Skip empty lines
-	if l == "" {
-		return false
-	}
-
 	// Check prefix
-	if !strings.HasPrefix(l, "\"") && !strings.HasPrefix(l, "msgctxt") && !strings.HasPrefix(l, "msgid") && !strings.HasPrefix(l, "msgid_plural") && !strings.HasPrefix(l, "msgstr") {
-		return false
+	valid := []string{
+		"\"",
+		"msgctxt",
+		"msgid",
+		"msgid_plural",
+		"msgstr",
 	}
 
-	return true
+	for _, v := range valid {
+		if strings.HasPrefix(l, v) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // parseHeaders retrieves data from previously parsed headers
 func (po *Po) parseHeaders() {
 	// Make sure we end with 2 carriage returns.
-	po.RawHeaders += "\n\n"
+	raw := po.Get("") + "\n\n"
 
 	// Read
-	reader := bufio.NewReader(strings.NewReader(po.RawHeaders))
+	reader := bufio.NewReader(strings.NewReader(raw))
 	tp := textproto.NewReader(reader)
 
-	mimeHeader, err := tp.ReadMIMEHeader()
+	var err error
+
+	// Sync Headers write.
+	po.Lock()
+	defer po.Unlock()
+
+	po.Headers, err = tp.ReadMIMEHeader()
 	if err != nil {
 		return
 	}
 
 	// Get/save needed headers
-	po.Language = mimeHeader.Get("Language")
-	po.PluralForms = mimeHeader.Get("Plural-Forms")
+	po.Language = po.Headers.Get("Language")
+	po.PluralForms = po.Headers.Get("Plural-Forms")
 
 	// Parse Plural-Forms formula
 	if po.PluralForms == "" {
@@ -382,12 +427,12 @@ func (po *Po) Get(str string, vars ...interface{}) string {
 
 	if po.translations != nil {
 		if _, ok := po.translations[str]; ok {
-			return fmt.Sprintf(po.translations[str].get(), vars...)
+			return po.printf(po.translations[str].get(), vars...)
 		}
 	}
 
 	// Return the same we received by default
-	return fmt.Sprintf(str, vars...)
+	return po.printf(str, vars...)
 }
 
 // GetN retrieves the (N)th plural form of translation for the given string.
@@ -399,12 +444,14 @@ func (po *Po) GetN(str, plural string, n int, vars ...interface{}) string {
 
 	if po.translations != nil {
 		if _, ok := po.translations[str]; ok {
-			return fmt.Sprintf(po.translations[str].getN(po.pluralForm(n)), vars...)
+			return po.printf(po.translations[str].getN(po.pluralForm(n)), vars...)
 		}
 	}
 
-	// Return the plural string we received by default
-	return fmt.Sprintf(plural, vars...)
+	if n == 1 {
+		return po.printf(str, vars...)
+	}
+	return po.printf(plural, vars...)
 }
 
 // GetC retrieves the corresponding translation for a given string in the given context.
@@ -418,14 +465,14 @@ func (po *Po) GetC(str, ctx string, vars ...interface{}) string {
 		if _, ok := po.contexts[ctx]; ok {
 			if po.contexts[ctx] != nil {
 				if _, ok := po.contexts[ctx][str]; ok {
-					return fmt.Sprintf(po.contexts[ctx][str].get(), vars...)
+					return po.printf(po.contexts[ctx][str].get(), vars...)
 				}
 			}
 		}
 	}
 
 	// Return the string we received by default
-	return fmt.Sprintf(str, vars...)
+	return po.printf(str, vars...)
 }
 
 // GetNC retrieves the (N)th plural form of translation for the given string in the given context.
@@ -439,12 +486,23 @@ func (po *Po) GetNC(str, plural string, n int, ctx string, vars ...interface{}) 
 		if _, ok := po.contexts[ctx]; ok {
 			if po.contexts[ctx] != nil {
 				if _, ok := po.contexts[ctx][str]; ok {
-					return fmt.Sprintf(po.contexts[ctx][str].getN(po.pluralForm(n)), vars...)
+					return po.printf(po.contexts[ctx][str].getN(po.pluralForm(n)), vars...)
 				}
 			}
 		}
 	}
 
-	// Return the plural string we received by default
-	return fmt.Sprintf(plural, vars...)
+	if n == 1 {
+		return po.printf(str, vars...)
+	}
+	return po.printf(plural, vars...)
+}
+
+// printf applies text formatting only when needed to parse variables.
+func (po *Po) printf(str string, vars ...interface{}) string {
+	if len(vars) > 0 {
+		return fmt.Sprintf(str, vars...)
+	}
+
+	return str
 }
