@@ -16,9 +16,10 @@ func TestReportParse(t *testing.T) {
 	dummy := New(jobName, buildNum, nDeploys, fileName)
 
 	txt := "Error loading command module"
+	step := "step"
 	testName := "dummyTest"
 	d := "westus"
-	_ = dummy.Process(txt, testName, d)
+	_ = dummy.Process(txt, step, testName, d)
 
 	testReport := "TestReport.json"
 	if err := dummy.CreateTestReport(fmt.Sprintf("%s", testReport)); err != nil {
