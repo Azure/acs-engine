@@ -10,7 +10,6 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
@@ -50,42 +49,7 @@ type UpgradeCluster struct {
 // MasterVMNamePrefix is the prefix for all master VM names for Kubernetes clusters
 const MasterVMNamePrefix = "k8s-master-"
 
-// PreValidateUpgrade checks that OrchestratorRelease provided in UpgradeContainerService is allowed for given container service,
-// and sets corresponding OrchestratorVersion in UpgradeContainerService
-func PreValidateUpgrade(cs *api.ContainerService, ucs *api.UpgradeContainerService, allowCurrentVersionUpgrade bool) error {
-	if err := ucs.Validate(); err != nil {
-		return err
-	}
-	// get available upgrades for container service
-	orchestratorInfo, err := acsengine.GetOrchestratorVersionProfile(cs.Properties.OrchestratorProfile)
-	if err != nil {
-		return fmt.Errorf("failed to get orchestrator upgrade info: %v", err)
-	}
-	// add current version if upgrade has failed
-	if allowCurrentVersionUpgrade {
-		release := cs.Properties.OrchestratorProfile.OrchestratorRelease
-		orchestratorInfo.Upgrades = append(orchestratorInfo.Upgrades, &api.UpgradeContainerService{
-			OrchestratorRelease: release,
-			OrchestratorVersion: common.KubeReleaseToVersion[release]})
-	}
-	// validate desired upgrade version
-	upgradeable := false
-	for _, up := range orchestratorInfo.Upgrades {
-		if up.OrchestratorRelease == ucs.OrchestratorRelease {
-			ucs.OrchestratorVersion = up.OrchestratorVersion
-			upgradeable = true
-			break
-		}
-	}
-	if !upgradeable {
-		return fmt.Errorf("Kubernetes %s cannot be upgraded to %s", cs.Properties.OrchestratorProfile.OrchestratorRelease, ucs.OrchestratorRelease)
-	}
-	return nil
-}
-
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
-// UpgradeContainerService contains target state of the cluster that
-// the operation will drive towards.
 func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
 	cs *api.ContainerService, nameSuffix string) error {
 	uc.ClusterTopology = ClusterTopology{}
@@ -116,10 +80,6 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	default:
 		return uc.Translator.Errorf("Upgrade to Kubernetes release %s is not supported",
 			uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease)
-	}
-
-	if err := upgrader.ClusterPreflightCheck(); err != nil {
-		return err
 	}
 
 	if err := upgrader.RunUpgrade(); err != nil {
@@ -198,7 +158,7 @@ func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error 
 		OrchestratorRelease: currentRel,
 		OrchestratorVersion: currentVer,
 	}
-	orch, err := acsengine.GetOrchestratorVersionProfile(csOrch)
+	orch, err := api.GetOrchestratorVersionProfile(csOrch)
 	if err != nil {
 		return err
 	}

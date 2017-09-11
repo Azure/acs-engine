@@ -1,9 +1,8 @@
-package acsengine
+package api
 
 import (
 	"testing"
 
-	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Masterminds/semver"
 	. "github.com/onsi/gomega"
@@ -53,8 +52,8 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	RegisterTestingT(t)
 
 	// 1.5.3 is upgradable to 1.6
-	csOrch := &api.OrchestratorProfile{
-		OrchestratorType:    api.Kubernetes,
+	csOrch := &OrchestratorProfile{
+		OrchestratorType:    Kubernetes,
 		OrchestratorRelease: common.KubernetesRelease1Dot5,
 		OrchestratorVersion: "1.5.3",
 	}
@@ -65,8 +64,8 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	Expect(orch.Upgrades[0].OrchestratorVersion).To(Equal(common.KubeReleaseToVersion[common.KubernetesRelease1Dot6]))
 
 	// 1.6.0 is upgradable to 1.6 and 1.7
-	csOrch = &api.OrchestratorProfile{
-		OrchestratorType:    api.Kubernetes,
+	csOrch = &OrchestratorProfile{
+		OrchestratorType:    Kubernetes,
 		OrchestratorRelease: common.KubernetesRelease1Dot6,
 		OrchestratorVersion: "1.6.0",
 	}
@@ -79,8 +78,8 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	Expect(orch.Upgrades[1].OrchestratorVersion).To(Equal(common.KubeReleaseToVersion[common.KubernetesRelease1Dot7]))
 
 	// 1.7.0 is upgradable to 1.7
-	csOrch = &api.OrchestratorProfile{
-		OrchestratorType:    api.Kubernetes,
+	csOrch = &OrchestratorProfile{
+		OrchestratorType:    Kubernetes,
 		OrchestratorRelease: common.KubernetesRelease1Dot7,
 		OrchestratorVersion: "1.7.0",
 	}
@@ -91,8 +90,8 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	Expect(orch.Upgrades[0].OrchestratorVersion).To(Equal(common.KubeReleaseToVersion[common.KubernetesRelease1Dot7]))
 
 	// 1.7 is not upgradable
-	csOrch = &api.OrchestratorProfile{
-		OrchestratorType:    api.Kubernetes,
+	csOrch = &OrchestratorProfile{
+		OrchestratorType:    Kubernetes,
 		OrchestratorRelease: common.KubernetesRelease1Dot7,
 		OrchestratorVersion: common.KubeReleaseToVersion[common.KubernetesRelease1Dot7],
 	}

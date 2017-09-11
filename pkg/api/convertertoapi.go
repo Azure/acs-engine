@@ -124,31 +124,6 @@ func ConvertVLabsContainerService(vlabs *vlabs.ContainerService) *ContainerServi
 	return c
 }
 
-// ConvertV20170930UpgradeContainerService converts a v20170930 UpgradeContainerService to an unversioned UpgradeContainerService
-func ConvertV20170930UpgradeContainerService(vUCS *v20170930.UpgradeContainerService) *UpgradeContainerService {
-	ucs := &UpgradeContainerService{}
-	switch vUCS.OrchestratorType {
-	case v20170930.Kubernetes:
-		ucs.OrchestratorType = Kubernetes
-	case v20170930.DCOS:
-		ucs.OrchestratorType = DCOS
-	case v20170930.Swarm:
-		ucs.OrchestratorType = Swarm
-	case v20170930.DockerCE:
-		ucs.OrchestratorType = SwarmMode
-	}
-	ucs.OrchestratorRelease = vUCS.OrchestratorRelease
-	ucs.OrchestratorVersion = vUCS.OrchestratorVersion
-	return ucs
-}
-
-// ConvertVLabsUpgradeContainerService converts a vlabs UpgradeContainerService to an unversioned UpgradeContainerService
-func ConvertVLabsUpgradeContainerService(vlabUCS *vlabs.UpgradeContainerService) *UpgradeContainerService {
-	ucs := &UpgradeContainerService{}
-	convertVLabsOrchestratorProfile((*vlabs.OrchestratorProfile)(vlabUCS), (*OrchestratorProfile)(ucs))
-	return ucs
-}
-
 // convertV20160930ResourcePurchasePlan converts a v20160930 ResourcePurchasePlan to an unversioned ResourcePurchasePlan
 func convertV20160930ResourcePurchasePlan(v20160930 *v20160930.ResourcePurchasePlan, api *ResourcePurchasePlan) {
 	api.Name = v20160930.Name
@@ -552,6 +527,21 @@ func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfil
 		api.OrchestratorRelease = DCOSRelease1Dot9
 		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
 	}
+}
+
+func convertV20170930OrchestratorProfile(v *v20170930.OrchestratorProfile, api *OrchestratorProfile) {
+	switch v.OrchestratorType {
+	case v20170930.Kubernetes:
+		api.OrchestratorType = Kubernetes
+	case v20170930.DCOS:
+		api.OrchestratorType = DCOS
+	case v20170930.Swarm:
+		api.OrchestratorType = Swarm
+	case v20170930.DockerCE:
+		api.OrchestratorType = SwarmMode
+	}
+	api.OrchestratorRelease = v.OrchestratorRelease
+	api.OrchestratorVersion = v.OrchestratorVersion
 }
 
 func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProfile, api *OrchestratorProfile) {

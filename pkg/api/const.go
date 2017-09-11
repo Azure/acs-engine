@@ -20,6 +20,17 @@ const (
 	Linux   OSType = "Linux"
 )
 
+const (
+	// SwarmVersion is the Swarm orchestrator version
+	SwarmVersion = "swarm:1.1.0"
+	// SwarmDockerComposeVersion is the Docker Compose version
+	SwarmDockerComposeVersion = "1.6.2"
+	// DockerCEVersion is the DockerCE orchestrator version
+	DockerCEVersion = "17.03.*"
+	// DockerCEDockerComposeVersion is the Docker Compose version
+	DockerCEDockerComposeVersion = "1.14.0"
+)
+
 // validation values
 const (
 	// MinAgentCount are the minimum number of agents per agent pool

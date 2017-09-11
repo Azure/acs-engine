@@ -784,10 +784,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return GetMasterAgentAllowedSizes()
 		},
 		"getSwarmVersions": func() string {
-			return getSwarmVersions(SwarmVersion, SwarmDockerComposeVersion)
+			return getSwarmVersions(api.SwarmVersion, api.SwarmDockerComposeVersion)
 		},
 		"GetSwarmModeVersions": func() string {
-			return getSwarmVersions(DockerCEVersion, DockerCEDockerComposeVersion)
+			return getSwarmVersions(api.DockerCEVersion, api.DockerCEDockerComposeVersion)
 		},
 		"GetSizeMap": func() string {
 			if t.ClassicMode {

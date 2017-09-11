@@ -108,27 +108,18 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
-
 	if _, err = os.Stat(uc.upgradeModelFile); os.IsNotExist(err) {
 		log.Fatalf("specified upgrade model file does not exist (%s)", uc.upgradeModelFile)
 	}
 
-	// acs-engine command line uses vlabs API
+	// validate upgrade and set the Goal State
 	contents, err := ioutil.ReadFile(uc.upgradeModelFile)
 	if err != nil {
 		log.Fatalf("error reading file %s: %s", uc.upgradeModelFile, err.Error())
 	}
-	upgradeModel, err := apiloader.LoadUpgradeContainerService(contents, vlabs.APIVersion, true)
-	if err != nil {
-		log.Fatalf("error loading UpgradeContainerService: %s", err.Error())
+	if err = apiloader.UpdateContainerServiceForUpgrade(contents, vlabs.APIVersion, uc.containerService, true); err != nil {
+		log.Fatalf("error loading ContainerService: %s", err.Error())
 	}
-	// validate desired release
-	if err = kubernetesupgrade.PreValidateUpgrade(uc.containerService, upgradeModel, true); err != nil {
-		log.Fatalf("validation error: %s", err.Error())
-	}
-	// set GoalState
-	uc.containerService.Properties.OrchestratorProfile.OrchestratorRelease = upgradeModel.OrchestratorRelease
-	uc.containerService.Properties.OrchestratorProfile.OrchestratorVersion = upgradeModel.OrchestratorVersion
 
 	uc.client, err = uc.authArgs.getClient()
 	if err != nil {

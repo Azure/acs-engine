@@ -137,9 +137,9 @@ func ConvertOrchestratorVersionProfileToV20170930(api *OrchestratorVersionProfil
 	vProfile.OrchestratorRelease = api.OrchestratorRelease
 	vProfile.Default = api.Default
 	if api.Upgrades != nil {
-		vProfile.Upgrades = make([]*v20170930.UpgradeContainerService, len(api.Upgrades))
+		vProfile.Upgrades = make([]*v20170930.OrchestratorProfile, len(api.Upgrades))
 		for i, h := range api.Upgrades {
-			vProfile.Upgrades[i] = &v20170930.UpgradeContainerService{
+			vProfile.Upgrades[i] = &v20170930.OrchestratorProfile{
 				OrchestratorRelease: h.OrchestratorRelease,
 				OrchestratorVersion: h.OrchestratorVersion,
 			}
@@ -165,9 +165,9 @@ func ConvertOrchestratorVersionProfileToVLabs(api *OrchestratorVersionProfile) *
 	vlabsProfile.OrchestratorRelease = api.OrchestratorRelease
 	vlabsProfile.Default = api.Default
 	if api.Upgrades != nil {
-		vlabsProfile.Upgrades = make([]*vlabs.UpgradeContainerService, len(api.Upgrades))
+		vlabsProfile.Upgrades = make([]*vlabs.OrchestratorProfile, len(api.Upgrades))
 		for i, h := range api.Upgrades {
-			vlabsProfile.Upgrades[i] = &vlabs.UpgradeContainerService{
+			vlabsProfile.Upgrades[i] = &vlabs.OrchestratorProfile{
 				OrchestratorRelease: h.OrchestratorRelease,
 				OrchestratorVersion: h.OrchestratorVersion,
 			}

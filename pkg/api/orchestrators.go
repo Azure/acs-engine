@@ -1,37 +1,36 @@
-package acsengine
+package api
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Masterminds/semver"
 )
 
-type orchestratorsFunc func(*api.OrchestratorProfile) ([]*api.OrchestratorVersionProfile, error)
+type orchestratorsFunc func(*OrchestratorProfile) ([]*OrchestratorVersionProfile, error)
 
 var funcmap map[string]orchestratorsFunc
 
 func init() {
 	funcmap = map[string]orchestratorsFunc{
-		api.Kubernetes: kubernetesInfo,
-		api.DCOS:       dcosInfo,
-		api.Swarm:      swarmInfo,
-		api.SwarmMode:  dockerceInfo,
+		Kubernetes: kubernetesInfo,
+		DCOS:       dcosInfo,
+		Swarm:      swarmInfo,
+		SwarmMode:  dockerceInfo,
 	}
 }
 
 func validate(orchestrator, release string) (string, error) {
 	switch {
-	case strings.EqualFold(orchestrator, api.Kubernetes):
-		return api.Kubernetes, nil
-	case strings.EqualFold(orchestrator, api.DCOS):
-		return api.DCOS, nil
-	case strings.EqualFold(orchestrator, api.Swarm):
-		return api.Swarm, nil
-	case strings.EqualFold(orchestrator, api.SwarmMode):
-		return api.SwarmMode, nil
+	case strings.EqualFold(orchestrator, Kubernetes):
+		return Kubernetes, nil
+	case strings.EqualFold(orchestrator, DCOS):
+		return DCOS, nil
+	case strings.EqualFold(orchestrator, Swarm):
+		return Swarm, nil
+	case strings.EqualFold(orchestrator, SwarmMode):
+		return SwarmMode, nil
 	case len(orchestrator) == 0:
 		if len(release) > 0 {
 			return "", fmt.Errorf("Must specify orchestrator for release '%s'", release)
@@ -43,18 +42,18 @@ func validate(orchestrator, release string) (string, error) {
 }
 
 // GetOrchestratorVersionProfileList returns OrchestratorVersionProfileList object per (optionally) specified orchestrator and release
-func GetOrchestratorVersionProfileList(orchestrator, release string) (*api.OrchestratorVersionProfileList, error) {
+func GetOrchestratorVersionProfileList(orchestrator, release string) (*OrchestratorVersionProfileList, error) {
 	var err error
 	if orchestrator, err = validate(orchestrator, release); err != nil {
 		return nil, err
 	}
-	orch := &api.OrchestratorVersionProfileList{}
+	orch := &OrchestratorVersionProfileList{}
 
 	if len(orchestrator) == 0 {
 		// return all orchestrators
-		orch.Orchestrators = []*api.OrchestratorVersionProfile{}
+		orch.Orchestrators = []*OrchestratorVersionProfile{}
 		for _, f := range funcmap {
-			arr, err := f(&api.OrchestratorProfile{})
+			arr, err := f(&OrchestratorProfile{})
 			if err != nil {
 				return nil, err
 			}
@@ -62,18 +61,18 @@ func GetOrchestratorVersionProfileList(orchestrator, release string) (*api.Orche
 		}
 		return orch, nil
 	}
-	if orch.Orchestrators, err = funcmap[orchestrator](&api.OrchestratorProfile{OrchestratorRelease: release}); err != nil {
+	if orch.Orchestrators, err = funcmap[orchestrator](&OrchestratorProfile{OrchestratorRelease: release}); err != nil {
 		return nil, err
 	}
 	return orch, nil
 }
 
 // GetOrchestratorVersionProfile returns orchestrator info for upgradable container service
-func GetOrchestratorVersionProfile(orch *api.OrchestratorProfile) (*api.OrchestratorVersionProfile, error) {
+func GetOrchestratorVersionProfile(orch *OrchestratorProfile) (*OrchestratorVersionProfile, error) {
 	if len(orch.OrchestratorRelease) == 0 {
 		return nil, fmt.Errorf("Missing Orchestrator Release")
 	}
-	if orch.OrchestratorType != api.Kubernetes {
+	if orch.OrchestratorType != Kubernetes {
 		return nil, fmt.Errorf("Upgrade operation is not supported for '%s'", orch.OrchestratorType)
 	}
 	arr, err := kubernetesInfo(orch)
@@ -87,19 +86,19 @@ func GetOrchestratorVersionProfile(orch *api.OrchestratorProfile) (*api.Orchestr
 	return arr[0], nil
 }
 
-func kubernetesInfo(csOrch *api.OrchestratorProfile) ([]*api.OrchestratorVersionProfile, error) {
-	orchs := []*api.OrchestratorVersionProfile{}
+func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
+	orchs := []*OrchestratorVersionProfile{}
 	if len(csOrch.OrchestratorRelease) == 0 {
 		// get info for all supported versions
 		for rel, ver := range common.KubeReleaseToVersion {
-			upgrades, err := kubernetesUpgrades(&api.OrchestratorProfile{OrchestratorRelease: rel, OrchestratorVersion: ver})
+			upgrades, err := kubernetesUpgrades(&OrchestratorProfile{OrchestratorRelease: rel, OrchestratorVersion: ver})
 			if err != nil {
 				return nil, err
 			}
 			orchs = append(orchs,
-				&api.OrchestratorVersionProfile{
-					OrchestratorProfile: api.OrchestratorProfile{
-						OrchestratorType:    api.Kubernetes,
+				&OrchestratorVersionProfile{
+					OrchestratorProfile: OrchestratorProfile{
+						OrchestratorType:    Kubernetes,
 						OrchestratorRelease: rel,
 						OrchestratorVersion: ver,
 					},
@@ -122,9 +121,9 @@ func kubernetesInfo(csOrch *api.OrchestratorProfile) ([]*api.OrchestratorVersion
 			return nil, err
 		}
 		orchs = append(orchs,
-			&api.OrchestratorVersionProfile{
-				OrchestratorProfile: api.OrchestratorProfile{
-					OrchestratorType:    api.Kubernetes,
+			&OrchestratorVersionProfile{
+				OrchestratorProfile: OrchestratorProfile{
+					OrchestratorType:    Kubernetes,
 					OrchestratorRelease: csOrch.OrchestratorRelease,
 					OrchestratorVersion: ver,
 				},
@@ -135,15 +134,15 @@ func kubernetesInfo(csOrch *api.OrchestratorProfile) ([]*api.OrchestratorVersion
 	return orchs, nil
 }
 
-func kubernetesUpgrades(csOrch *api.OrchestratorProfile) ([]*api.UpgradeContainerService, error) {
-	ret := []*api.UpgradeContainerService{}
+func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, error) {
+	ret := []*OrchestratorProfile{}
 	var err error
 
 	switch csOrch.OrchestratorRelease {
 	case common.KubernetesRelease1Dot5:
 		// add next release
-		ret = append(ret, &api.UpgradeContainerService{
-			OrchestratorType:    api.Kubernetes,
+		ret = append(ret, &OrchestratorProfile{
+			OrchestratorType:    Kubernetes,
 			OrchestratorRelease: common.KubernetesRelease1Dot6,
 			OrchestratorVersion: common.KubeReleaseToVersion[common.KubernetesRelease1Dot6],
 		})
@@ -153,8 +152,8 @@ func kubernetesUpgrades(csOrch *api.OrchestratorProfile) ([]*api.UpgradeContaine
 			return ret, err
 		}
 		// add next release
-		ret = append(ret, &api.UpgradeContainerService{
-			OrchestratorType:    api.Kubernetes,
+		ret = append(ret, &OrchestratorProfile{
+			OrchestratorType:    Kubernetes,
 			OrchestratorRelease: common.KubernetesRelease1Dot7,
 			OrchestratorVersion: common.KubeReleaseToVersion[common.KubernetesRelease1Dot7],
 		})
@@ -167,7 +166,7 @@ func kubernetesUpgrades(csOrch *api.OrchestratorProfile) ([]*api.UpgradeContaine
 	return ret, nil
 }
 
-func addPatchUpgrade(upgrades []*api.UpgradeContainerService, release, version string) ([]*api.UpgradeContainerService, error) {
+func addPatchUpgrade(upgrades []*OrchestratorProfile, release, version string) ([]*OrchestratorProfile, error) {
 	patchVersion, ok := common.KubeReleaseToVersion[release]
 	if !ok {
 		return upgrades, fmt.Errorf("Kubernetes release %s is not supported", release)
@@ -181,20 +180,20 @@ func addPatchUpgrade(upgrades []*api.UpgradeContainerService, release, version s
 		return upgrades, err
 	}
 	if constraint.Check(pVer) {
-		upgrades = append(upgrades, &api.UpgradeContainerService{OrchestratorRelease: release, OrchestratorVersion: patchVersion})
+		upgrades = append(upgrades, &OrchestratorProfile{OrchestratorRelease: release, OrchestratorVersion: patchVersion})
 	}
 	return upgrades, nil
 }
 
-func dcosInfo(csOrch *api.OrchestratorProfile) ([]*api.OrchestratorVersionProfile, error) {
-	orchs := []*api.OrchestratorVersionProfile{}
+func dcosInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
+	orchs := []*OrchestratorVersionProfile{}
 	if len(csOrch.OrchestratorRelease) == 0 {
 		// get info for all supported versions
 		for rel, ver := range common.DCOSReleaseToVersion {
 			orchs = append(orchs,
-				&api.OrchestratorVersionProfile{
-					OrchestratorProfile: api.OrchestratorProfile{
-						OrchestratorType:    api.DCOS,
+				&OrchestratorVersionProfile{
+					OrchestratorProfile: OrchestratorProfile{
+						OrchestratorType:    DCOS,
 						OrchestratorRelease: rel,
 						OrchestratorVersion: ver,
 					},
@@ -208,9 +207,9 @@ func dcosInfo(csOrch *api.OrchestratorProfile) ([]*api.OrchestratorVersionProfil
 			return nil, fmt.Errorf("DCOS release %s is not supported", csOrch.OrchestratorRelease)
 		}
 		orchs = append(orchs,
-			&api.OrchestratorVersionProfile{
-				OrchestratorProfile: api.OrchestratorProfile{
-					OrchestratorType:    api.DCOS,
+			&OrchestratorVersionProfile{
+				OrchestratorProfile: OrchestratorProfile{
+					OrchestratorType:    DCOS,
 					OrchestratorRelease: csOrch.OrchestratorRelease,
 					OrchestratorVersion: ver,
 				},
@@ -220,22 +219,22 @@ func dcosInfo(csOrch *api.OrchestratorProfile) ([]*api.OrchestratorVersionProfil
 	return orchs, nil
 }
 
-func swarmInfo(csOrch *api.OrchestratorProfile) ([]*api.OrchestratorVersionProfile, error) {
-	return []*api.OrchestratorVersionProfile{
+func swarmInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
+	return []*OrchestratorVersionProfile{
 		{
-			OrchestratorProfile: api.OrchestratorProfile{
-				OrchestratorType:    api.Swarm,
+			OrchestratorProfile: OrchestratorProfile{
+				OrchestratorType:    Swarm,
 				OrchestratorVersion: SwarmVersion,
 			},
 		},
 	}, nil
 }
 
-func dockerceInfo(csOrch *api.OrchestratorProfile) ([]*api.OrchestratorVersionProfile, error) {
-	return []*api.OrchestratorVersionProfile{
+func dockerceInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
+	return []*OrchestratorVersionProfile{
 		{
-			OrchestratorProfile: api.OrchestratorProfile{
-				OrchestratorType:    api.SwarmMode,
+			OrchestratorProfile: OrchestratorProfile{
+				OrchestratorType:    SwarmMode,
 				OrchestratorVersion: DockerCEVersion,
 			},
 		},
