@@ -1,5 +1,5 @@
-hash: 258fb4bc8867878c13db0a0a2cf6b69c5051f2aeab6cbac99ee8566381cb656a
-updated: 2017-08-23T13:42:42.886449398-07:00
+hash: 71413cc0eaeefaeacc6c226261c56bd5a3342f58c5f9181f5af2e40318490bd2
+updated: 2017-09-08T22:46:24.9857202Z
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -52,8 +52,8 @@ imports:
   version: 1fc8dec04d161fc0b4007e808a48620c537b6a6e
 - name: github.com/Masterminds/semver
   version: 517734cc7d6470c0d07130e40fd40bdeb9bcd3fd
-- name: github.com/mattn/anko
-  version: a8c68fa2983e7dd5d3472992b1fbe2f7c44261f0
+- name: github.com/mattn/kinako
+  version: 332c0a7e205a29536e672337a4bea6c7a96b04c1
   subpackages:
   - ast
   - parser
@@ -61,7 +61,7 @@ imports:
 - name: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - name: github.com/onsi/ginkgo
-  version: 8382b23d18dbaaff8e5f7e83784c53ebb8ec2f47
+  version: 11459a886d9cd66b319dac7ef1e917ee221372c9
   subpackages:
   - config
   - internal/codelocation
@@ -81,7 +81,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: c893efa28eb45626cdaa76c9f653b62488858837
+  version: dcabb60a477c2b6f456df65037cb6708210fbb02
   subpackages:
   - format
   - internal/assertion
@@ -104,8 +104,6 @@ imports:
   version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
 - name: github.com/sirupsen/logrus
   version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
-  subpackages:
-  - hooks/test
 - name: github.com/spf13/cobra
   version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
 - name: github.com/spf13/pflag
@@ -119,7 +117,7 @@ imports:
   - ssh
   - ssh/terminal
 - name: golang.org/x/net
-  version: 1c05540f6879653db88113bc4a2b70aec4bd491f
+  version: 66aacef3dd8a676686c7ae3716979581e8b03c47
   repo: https://github.com/golang/net.git
   vcs: git
   subpackages:
@@ -128,14 +126,14 @@ imports:
   - html/atom
   - html/charset
 - name: golang.org/x/sys
-  version: 07c182904dbd53199946ba614a412c61d3c548f5
+  version: 5513e650ab47a692d3a036d49be8fa52ddd09b65
   subpackages:
   - unix
   - windows
   - windows/registry
   - windows/svc/eventlog
 - name: golang.org/x/text
-  version: e56139fd9c5bc7244c76116c68e500765bb6db6b
+  version: bd91bbf73e9a4a801adbfb97133c992678533126
   repo: https://github.com/golang/text.git
   vcs: git
   subpackages:
