@@ -3,6 +3,7 @@ package gotext
 import (
 	"os"
 	"path"
+	"sync"
 	"testing"
 )
 
@@ -32,10 +33,12 @@ func TestGettersSetters(t *testing.T) {
 func TestPackageFunctions(t *testing.T) {
 	// Set PO content
 	str := `
-msgid ""
-msgstr ""
+msgid   ""
+msgstr  "Project-Id-Version: %s\n"
+        "Report-Msgid-Bugs-To: %s\n"
+        
 # Initial comment
-# Headers below
+# More Headers below
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -55,14 +58,6 @@ msgstr[0] "This one is the singular: %s"
 msgstr[1] "This one is the plural: %s"
 msgstr[2] "And this is the second plural form: %s"
 
-msgid "This one has invalid syntax translations"
-msgid_plural "Plural index"
-msgstr[abc] "Wrong index"
-msgstr[1 "Forgot to close brackets"
-msgstr[0] "Badly formatted string'
-
-msgid "Invalid formatted id[] with no translations
-
 msgctxt "Ctx"
 msgid "One with var: %s"
 msgid_plural "Several with vars: %s"
@@ -79,7 +74,12 @@ msgstr "Some random translation in a context"
 msgid "More"
 msgstr "More translation"
 
-    `
+msgid "Untranslated"
+msgid_plural "Several untranslated"
+msgstr[0] ""
+msgstr[1] ""
+
+	`
 
 	// Create Locales directory on default location
 	dirname := path.Clean("/tmp" + string(os.PathSeparator) + "en_US")
@@ -141,6 +141,79 @@ msgstr "More translation"
 	}
 }
 
+func TestUntranslated(t *testing.T) {
+	// Set PO content
+	str := `
+msgid ""
+msgstr ""
+# Initial comment
+# Headers below
+"Language: en\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Untranslated"
+msgid_plural "Several untranslated"
+msgstr[0] ""
+msgstr[1] ""
+
+	`
+
+	// Create Locales directory on default location
+	dirname := path.Clean("/tmp" + string(os.PathSeparator) + "en_US")
+	err := os.MkdirAll(dirname, os.ModePerm)
+	if err != nil {
+		t.Fatalf("Can't create test directory: %s", err.Error())
+	}
+
+	// Write PO content to default domain file
+	filename := path.Clean(dirname + string(os.PathSeparator) + "default.po")
+
+	f, err := os.Create(filename)
+	if err != nil {
+		t.Fatalf("Can't create test file: %s", err.Error())
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(str)
+	if err != nil {
+		t.Fatalf("Can't write to test file: %s", err.Error())
+	}
+
+	// Set package configuration
+	Configure("/tmp", "en_US", "default")
+
+	// Test untranslated
+	tr := Get("Untranslated")
+	if tr != "Untranslated" {
+		t.Errorf("Expected 'Untranslated' but got '%s'", tr)
+	}
+	tr = GetN("Untranslated", "Several untranslated", 1)
+	if tr != "Untranslated" {
+		t.Errorf("Expected 'Untranslated' but got '%s'", tr)
+	}
+
+	tr = GetN("Untranslated", "Several untranslated", 2)
+	if tr != "Several untranslated" {
+		t.Errorf("Expected 'Several untranslated' but got '%s'", tr)
+	}
+
+	tr = GetD("default", "Untranslated")
+	if tr != "Untranslated" {
+		t.Errorf("Expected 'Untranslated' but got '%s'", tr)
+	}
+	tr = GetND("default", "Untranslated", "Several untranslated", 1)
+	if tr != "Untranslated" {
+		t.Errorf("Expected 'Untranslated' but got '%s'", tr)
+	}
+
+	tr = GetND("default", "Untranslated", "Several untranslated", 2)
+	if tr != "Several untranslated" {
+		t.Errorf("Expected 'Several untranslated' but got '%s'", tr)
+	}
+}
+
 func TestPackageRace(t *testing.T) {
 	// Set PO content
 	str := `# Some comment
@@ -157,7 +230,7 @@ msgstr[0] "This one is the singular: %s"
 msgstr[1] "This one is the plural: %s"
 msgstr[2] "And this is the second plural form: %s"
 
-    `
+	`
 
 	// Create Locales directory on default location
 	dirname := path.Clean(library + string(os.PathSeparator) + "en_US")
@@ -180,20 +253,29 @@ msgstr[2] "And this is the second plural form: %s"
 		t.Fatalf("Can't write to test file: %s", err.Error())
 	}
 
-	// Init sync channels
-	c1 := make(chan bool)
-	c2 := make(chan bool)
+	var wg sync.WaitGroup
 
-	// Test translations
-	go func(done chan bool) {
+	for i := 0; i < 100; i++ {
+		wg.Add(1)
+		// Test translations
+		go func() {
+			defer wg.Done()
+
+			Get("My text")
+			GetN("One with var: %s", "Several with vars: %s", 0, "test")
+		}()
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			Get("My text")
+			GetN("One with var: %s", "Several with vars: %s", 1, "test")
+		}()
+
 		Get("My text")
-		done <- true
-	}(c1)
+		GetN("One with var: %s", "Several with vars: %s", 2, "test")
+	}
 
-	go func(done chan bool) {
-		Get("My text")
-		done <- true
-	}(c2)
-
-	Get("My text")
+	wg.Wait()
 }
