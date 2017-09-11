@@ -122,6 +122,10 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatalf("error loading UpgradeContainerService: %s", err.Error())
 	}
+	// validate desired release
+	if err = kubernetesupgrade.PreValidateUpgrade(uc.containerService, upgradeModel, true); err != nil {
+		log.Fatalf("validation error: %s", err.Error())
+	}
 	// set GoalState
 	uc.containerService.Properties.OrchestratorProfile.OrchestratorRelease = upgradeModel.OrchestratorRelease
 	uc.containerService.Properties.OrchestratorProfile.OrchestratorVersion = upgradeModel.OrchestratorVersion

@@ -2,8 +2,6 @@
 
 set -e
 
-export ACSENGINE_EXPERIMENTAL_FEATURES=1
-
 # some tests set EXPECTED_ORCHESTRATOR_RELEASE in .env files
 ENV_FILE="${CLUSTER_DEFINITION}.env"
 if [ -e "${ENV_FILE}" ]; then
