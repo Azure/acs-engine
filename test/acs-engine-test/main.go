@@ -152,36 +152,46 @@ func (m *TestManager) Run() error {
 					// For RecordTestRun
 					success[index] = false
 					failureStr = errorInfo.ErrName
+					// RecordTestRun QoS
+					sendRecordTestRun(sa, success[index], dep.Location, testName, dep.TestCategory, failureStr)
 
-					promToFailInfo = promote.DigitalSignalFilter{
-						TestName:     testName,
-						TestType:     metricsNS,
-						FailureStr:   errorInfo.ErrName,
-						FailureCount: 1,
+					// RunPromoteToFailure
+					if isPromoteToFailureStep(errorInfo.Step) {
+						promToFailInfo = promote.DigitalSignalFilter{
+							TestName:     testName,
+							TestType:     metricsNS,
+							FailureStr:   failureStr,
+							FailureCount: 1,
+						}
+
+						result, _ := promote.RunPromoteToFailure(sa, promToFailInfo)
+						if result == true {
+							success[index] = false
+						} else {
+							success[index] = true
+						}
 					}
 
 				} else {
-					promToFailInfo = promote.DigitalSignalFilter{
-						TestName:     testName,
-						TestType:     metricsNS,
-						FailureStr:   "",
-						FailureCount: 0,
-					}
 					success[index] = true
-				}
+					failureStr = ""
+					// RecordTestRun QoS
+					sendRecordTestRun(sa, success[index], dep.Location, testName, dep.TestCategory, failureStr)
 
-				// RecordTestRun QoS
-				sendRecordTestRun(sa, success[index], dep.Location, testName, dep.TestCategory, failureStr)
+					// RunPromoteToFailure
+					if isPromoteToFailureStep(errorInfo.Step) {
+						promToFailInfo = promote.DigitalSignalFilter{
+							TestName:     testName,
+							TestType:     metricsNS,
+							FailureStr:   failureStr,
+							FailureCount: 0,
+						}
 
-				// RunPromoteToFailure
-				if isPromoteToFailureStep(errorInfo.Step) {
-					result, _ := promote.RunPromoteToFailure(sa, promToFailInfo)
-					if result == true {
-						success[index] = false
-					} else {
-						success[index] = true
+						promote.RunPromoteToFailure(sa, promToFailInfo)
 					}
+
 				}
+
 			} else {
 				for attempt := 0; attempt < retries; attempt++ {
 					errorInfo := m.testRun(dep, index, attempt, timeout)
