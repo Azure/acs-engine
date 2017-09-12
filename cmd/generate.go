@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -126,7 +127,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 }
 
 func (gc *generateCmd) run() error {
-	log.Infoln("Generating assets...")
+	log.Infoln(fmt.Sprintf("Generating assets into %s...", gc.outputDirectory))
 
 	ctx := acsengine.Context{
 		Translator: &i18n.Translator{
