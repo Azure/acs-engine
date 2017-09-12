@@ -3,7 +3,7 @@
     {
       "cluster_definition": "disks-storageaccount/swarmmode-master-sa.json",
       "category": "canary",
-      "location": "centraluseuap"
+      "location": "eastus2euap"
     },
     {
       "cluster_definition": "swarmmode.json",
