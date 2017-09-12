@@ -15,7 +15,7 @@
         "metadata": {
         "description": "Parameters for the extension"
       }, 
-      "type": "string"
+      "type": "securestring"
       },
     {{end}}
 {{if not IsHostedMaster }}

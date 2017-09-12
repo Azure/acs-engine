@@ -49,10 +49,6 @@
       { 
         "name": "hello-world-k8s", 
         "version": "v1", 
-        "parametersKeyvaultSecretRef":{
-          "vaultID":"id",
-          "secretName":"name"
-        },
         "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/master/" 
       }
     ],
