@@ -3,7 +3,7 @@
     {
       "cluster_definition": "windows/kubernetes-master-sa.json",
       "category": "canary",
-      "location": "centraluseuap"
+      "location": "eastus2euap"
     },
     {
       "cluster_definition": "windows/kubernetes.json",
