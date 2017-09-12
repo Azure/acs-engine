@@ -1139,7 +1139,7 @@ func makeExtensionScriptCommands(extension *api.Extension, extensionProfiles []*
 		panic(fmt.Sprintf("%s extension referenced was not found in the extension profile", extension.Name))
 	}
 
-	extensionsParameterReference := fmt.Sprintf("parameters('%s'Parameters)", extensionProfile.Name)
+	extensionsParameterReference := fmt.Sprintf("parameters('%sParameters')", extensionProfile.Name)
 	scriptURL := getExtensionURL(extensionProfile.RootURL, extensionProfile.Name, extensionProfile.Version, extensionProfile.Script, extensionProfile.URLQuery)
 	scriptFilePath := fmt.Sprintf("/opt/azure/containers/extensions/%s/%s", extensionProfile.Name, extensionProfile.Script)
 	return fmt.Sprintf("- sudo /usr/bin/curl -o %s --create-dirs \"%s\" \n- sudo /bin/chmod 744 %s \n- sudo %s ',%s,' > /var/log/%s-output.log",
@@ -1726,7 +1726,7 @@ func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, 
 	if e != nil {
 		return "", e
 	}
-	extensionsParameterReference := fmt.Sprintf("[parameters('%s'Parameters)]", extensionProfile.Name)
+	extensionsParameterReference := fmt.Sprintf("[parameters('%sParameters')]", extensionProfile.Name)
 	dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", extensionsParameterReference, -1)
 	dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", extensionProfile.RootURL, -1)
 	dta = strings.Replace(dta, "EXTENSION_TARGET_VM_NAME_PREFIX", extTargetVMNamePrefix, -1)
