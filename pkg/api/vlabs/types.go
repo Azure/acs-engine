@@ -231,10 +231,11 @@ type ClassicAgentPoolProfileType string
 
 // ExtensionProfile represents an extension definition
 type ExtensionProfile struct {
-	Name                string `json:"name"`
-	Version             string `json:"version"`
-	ExtensionParameters string `json:"extensionParameters"`
-	RootURL             string `json:"rootURL"`
+	Name                           string             `json:"name"`
+	Version                        string             `json:"version"`
+	ExtensionParameters            string             `json:"extensionParameters"`
+	ExtensionParametersKeyVaultRef *KeyvaultSecretRef `json:"parametersKeyvaultSecretRef`
+	RootURL                        string             `json:"rootURL"`
 	// This is only needed for preprovision extensions and it needs to be a bash script
 	Script   string `json:"script"`
 	URLQuery string `json:"urlQuery"`

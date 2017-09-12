@@ -336,6 +336,20 @@ func (a *Properties) Validate() error {
 		}
 	}
 
+	for _, extension := range a.ExtensionProfiles {
+		if extension.ExtensionParametersKeyVaultRef != nil {
+			if e := validate.Var(extension.ExtensionParametersKeyVaultRef.VaultID, "required"); e != nil {
+				return fmt.Errorf("the Keyvault ID must be specified for Extension %s", extension.Name)
+			}
+			if e := validate.Var(extension.ExtensionParametersKeyVaultRef.SecretName, "required"); e != nil {
+				return fmt.Errorf("the Keyvault Secret must be specified for Extension %s", extension.Name)
+			}
+			if !keyvaultIDRegex.MatchString(extension.ExtensionParametersKeyVaultRef.VaultID) {
+				return fmt.Errorf("Extension %s's keyvault secret reference is of incorrect format", extension.Name)
+			}
+		}
+	}
+
 	return nil
 }
 

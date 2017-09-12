@@ -45,7 +45,7 @@
       { 
         "name": "hello-world", 
         "version": "v1", 
-        "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/RobBagby-extension-support/",
+        "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/master/",
         "script": "hello.sh"
       }
     ]

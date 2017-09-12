@@ -49,7 +49,11 @@
       { 
         "name": "hello-world-k8s", 
         "version": "v1", 
-        "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/RobBagby-extension-support/" 
+        "parametersKeyvaultSecretRef":{
+          "vaultID":"id",
+          "secretName":"name"
+        },
+        "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/master/" 
       }
     ],
     "servicePrincipalProfile": {

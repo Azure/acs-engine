@@ -25,7 +25,7 @@ The extensionProfiles contains the extensions that the cluster will install. The
 |---|---|---|
 |name|yes|the name of the extension.  This has to exactly match the name of a folder under the extensions folder|
 |version|yes|the version of the extension.  This has to exactly match the name of the folder under the extension name folder|
-|extensionParameters|optional|extension parameters may be required by extensions.  The format of the parameters is also extension dependant. If the index in the vm pool is needed add EXTENSION_LOOP_INDEX at the location you wan the index and it will be replaced with the string representation of the index(zero based)|
+|extensionParameters|optional|extension parameters may be required by extensions.  The format of the parameters is also extension dependant.|
 |rootURL|optional|url to the root location of extensions.  The rootURL must have an extensions child folder that follows the extensions convention.  The rootURL is mainly used for testing purposes.|
 |script|optional|Used for preprovision scripts this points to the location of the script to run inside of the extension folder.|
 

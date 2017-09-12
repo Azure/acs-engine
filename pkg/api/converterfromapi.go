@@ -503,13 +503,20 @@ func convertLinuxProfileToV20170131(api *LinuxProfile, obj *v20170131.LinuxProfi
 	}
 }
 
-func convertExtensionProfileToVLabs(api *ExtensionProfile, vlabs *vlabs.ExtensionProfile) {
-	vlabs.Name = api.Name
-	vlabs.Version = api.Version
-	vlabs.ExtensionParameters = api.ExtensionParameters
-	vlabs.RootURL = api.RootURL
-	vlabs.Script = api.Script
-	vlabs.URLQuery = api.URLQuery
+func convertExtensionProfileToVLabs(api *ExtensionProfile, obj *vlabs.ExtensionProfile) {
+	obj.Name = api.Name
+	obj.Version = api.Version
+	obj.ExtensionParameters = api.ExtensionParameters
+	if api.ExtensionParametersKeyVaultRef != nil {
+		obj.ExtensionParametersKeyVaultRef = &vlabs.KeyvaultSecretRef{
+			VaultID:       api.ExtensionParametersKeyVaultRef.VaultID,
+			SecretName:    api.ExtensionParametersKeyVaultRef.SecretName,
+			SecretVersion: api.ExtensionParametersKeyVaultRef.SecretVersion,
+		}
+	}
+	obj.RootURL = api.RootURL
+	obj.Script = api.Script
+	obj.URLQuery = api.URLQuery
 }
 
 func convertExtensionToVLabs(api *Extension, vlabs *vlabs.Extension) {
