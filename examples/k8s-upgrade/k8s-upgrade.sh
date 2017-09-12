@@ -2,8 +2,6 @@
 
 set -e
 
-export ACSENGINE_EXPERIMENTAL_FEATURES=1
-
 # some tests set EXPECTED_ORCHESTRATOR_RELEASE in .env files
 ENV_FILE="${CLUSTER_DEFINITION}.env"
 if [ -e "${ENV_FILE}" ]; then
@@ -17,11 +15,8 @@ K8S_UPGRADE_CONF="$OUTPUT/k8sUpgrade.json"
 
 cat > $K8S_UPGRADE_CONF <<END
 {
-  "apiVersion": "vlabs",
-  "orchestratorProfile": {
-      "orchestratorType": "Kubernetes",
-      "orchestratorRelease": "${EXPECTED_ORCHESTRATOR_RELEASE}"
-    }
+  "orchestratorType": "Kubernetes",
+  "orchestratorRelease": "${EXPECTED_ORCHESTRATOR_RELEASE}"
 }
 END
 

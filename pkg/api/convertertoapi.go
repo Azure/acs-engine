@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
+	"github.com/Azure/acs-engine/pkg/api/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -526,6 +527,21 @@ func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfil
 		api.OrchestratorRelease = DCOSRelease1Dot9
 		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
 	}
+}
+
+func convertV20170930OrchestratorProfile(v *v20170930.OrchestratorProfile, api *OrchestratorProfile) {
+	switch v.OrchestratorType {
+	case v20170930.Kubernetes:
+		api.OrchestratorType = Kubernetes
+	case v20170930.DCOS:
+		api.OrchestratorType = DCOS
+	case v20170930.Swarm:
+		api.OrchestratorType = Swarm
+	case v20170930.DockerCE:
+		api.OrchestratorType = SwarmMode
+	}
+	api.OrchestratorRelease = v.OrchestratorRelease
+	api.OrchestratorVersion = v.OrchestratorVersion
 }
 
 func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProfile, api *OrchestratorProfile) {
