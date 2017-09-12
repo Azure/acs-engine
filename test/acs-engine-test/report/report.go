@@ -14,6 +14,7 @@ import (
 // ErrorInfo represents the CI error
 type ErrorInfo struct {
 	TestName string
+	Step     string
 	ErrName  string
 	ErrClass string
 	Location string
@@ -108,15 +109,15 @@ func (h *Manager) Copy() *Manager {
 }
 
 // Process TBD needs definition
-func (h *Manager) Process(txt, testName, location string) *ErrorInfo {
+func (h *Manager) Process(txt, step, testName, location string) *ErrorInfo {
 	for _, logErr := range h.LogErrors.LogErrors {
 		if match, _ := regexp.MatchString(logErr.Regex, txt); match {
 			h.addFailure(logErr.Name, map[string]int{location: 1})
-			return NewErrorInfo(testName, logErr.Name, logErr.Class, location)
+			return NewErrorInfo(testName, step, logErr.Name, logErr.Class, location)
 		}
 	}
 	h.addFailure(ErrUnknown, map[string]int{location: 1})
-	return NewErrorInfo(testName, ErrUnknown, ErrClassNone, location)
+	return NewErrorInfo(testName, step, ErrUnknown, ErrClassNone, location)
 }
 
 func (h *Manager) addFailure(key string, locations map[string]int) {
@@ -193,6 +194,6 @@ func (h *Manager) CreateCombinedReport(filepath, testReportFname string) error {
 }
 
 // NewErrorInfo TBD needs definition
-func NewErrorInfo(testName, errName, errClass, location string) *ErrorInfo {
-	return &ErrorInfo{TestName: testName, ErrName: errName, ErrClass: errClass, Location: location}
+func NewErrorInfo(testName, step, errName, errClass, location string) *ErrorInfo {
+	return &ErrorInfo{TestName: testName, Step: step, ErrName: errName, ErrClass: errClass, Location: location}
 }

@@ -35,7 +35,7 @@ import:
 - package: github.com/spf13/pflag
   version: v1.0.0
 - package: github.com/leonelquinteros/gotext
-  version: a735812a72672008b3902f8b2bc1302166a9a8ea
+  version: 1fc8dec04d161fc0b4007e808a48620c537b6a6e
 - package: gopkg.in/go-playground/validator.v9
   version: v9.4.0
   subpackages:

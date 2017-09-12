@@ -100,7 +100,6 @@ func (m *TestManager) Run() error {
 		Name: saName,
 		Key:  saKey,
 	}
-	promToFailInfo := promote.DigitalSignalFilter{}
 
 	// determine timeout
 	timeoutMin, err := strconv.Atoi(os.Getenv("STAGE_TIMEOUT_MIN"))
@@ -137,6 +136,7 @@ func (m *TestManager) Run() error {
 	for index, dep := range m.config.Deployments {
 		go func(index int, dep config.Deployment) {
 			defer m.wg.Done()
+			promToFailInfo := promote.DigitalSignalFilter{}
 			resMap := make(map[string]*ErrorStat)
 			if usePromoteToFailure {
 				errorInfo := m.testRun(dep, index, 0, timeout)
@@ -148,37 +148,48 @@ func (m *TestManager) Run() error {
 					} else {
 						errorStat.count++
 					}
-					// Push Error Result to PromoteToFailure
-					promToFailInfo = promote.DigitalSignalFilter{
-						TestName:     testName,
-						TestType:     metricsNS,
-						FailureStr:   errorInfo.ErrName,
-						FailureCount: 1,
-					}
 
 					// For RecordTestRun
 					success[index] = false
 					failureStr = errorInfo.ErrName
+					// RecordTestRun QoS
+					sendRecordTestRun(sa, success[index], dep.Location, testName, dep.TestCategory, failureStr)
+
+					// RunPromoteToFailure
+					if isPromoteToFailureStep(errorInfo.Step) {
+						promToFailInfo = promote.DigitalSignalFilter{
+							TestName:     testName,
+							TestType:     metricsNS,
+							FailureStr:   failureStr,
+							FailureCount: 1,
+						}
+
+						result, _ := promote.RunPromoteToFailure(sa, promToFailInfo)
+						if result == true {
+							success[index] = false
+						} else {
+							success[index] = true
+						}
+					}
 
 				} else {
+					success[index] = true
+					failureStr = ""
+					// RecordTestRun QoS
+					sendRecordTestRun(sa, success[index], dep.Location, testName, dep.TestCategory, failureStr)
+
+					// RunPromoteToFailure
 					promToFailInfo = promote.DigitalSignalFilter{
 						TestName:     testName,
 						TestType:     metricsNS,
-						FailureStr:   "",
+						FailureStr:   failureStr,
 						FailureCount: 0,
 					}
-					success[index] = true
-				}
-				// RunPromoteToFailure
-				result, _ := promote.RunPromoteToFailure(sa, promToFailInfo)
-				if result == true {
-					success[index] = false
-				} else {
-					success[index] = true
+
+					promote.RunPromoteToFailure(sa, promToFailInfo)
+
 				}
 
-				// RecordTestRun QoS
-				sendRecordTestRun(sa, success[index], dep.Location, testName, dep.TestCategory, failureStr)
 			} else {
 				for attempt := 0; attempt < retries; attempt++ {
 					errorInfo := m.testRun(dep, index, attempt, timeout)
@@ -242,7 +253,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	out, err := cmd.Output()
 	if err != nil {
 		wrileLog(logFile, "Error [getOrchestrator %s] : %v", d.ClusterDefinition, err)
-		return report.NewErrorInfo(testName, "OrchestratorTypeParsingError", "PreRun", d.Location)
+		return report.NewErrorInfo(testName, "pretest", "OrchestratorTypeParsingError", "PreRun", d.Location)
 	}
 	orchestrator = strings.TrimSpace(string(out))
 
@@ -259,7 +270,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		envHandle, err := os.Open(envFile)
 		if err != nil {
 			wrileLog(logFile, "Error [open %s] : %v", envFile, err)
-			return report.NewErrorInfo(testName, "FileAccessError", "PreRun", d.Location)
+			return report.NewErrorInfo(testName, "pretest", "FileAccessError", "PreRun", d.Location)
 		}
 		defer envHandle.Close()
 
@@ -286,7 +297,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 	for _, step := range steps {
 		txt, duration, err := m.runStep(resourceGroup, step, env, timeout)
 		if err != nil {
-			errorInfo = m.Manager.Process(txt, testName, d.Location)
+			errorInfo = m.Manager.Process(txt, step, testName, d.Location)
 			sendDurationMetrics(step, d.Location, duration, errorInfo.ErrName)
 			wrileLog(logFile, "Error [%s:%s] %v\nOutput: %s", step, resourceGroup, err, txt)
 			// check AUTOCLEAN flag: if set to 'n', don't remove deployment
@@ -307,7 +318,7 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 			out, err := cmd.Output()
 			if err != nil {
 				wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_release", resourceGroup, err)
-				errorInfo = report.NewErrorInfo(testName, "OrchestratorReleaseParsingError", "PreRun", d.Location)
+				errorInfo = report.NewErrorInfo(testName, step, "OrchestratorReleaseParsingError", "PreRun", d.Location)
 				break
 			}
 			env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_RELEASE=%s", strings.TrimSpace(string(out))))
@@ -317,13 +328,13 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 			out, err = cmd.Output()
 			if err != nil {
 				wrileLog(logFile, "Error [%s:%s] %v", "get_node_count", resourceGroup, err)
-				errorInfo = report.NewErrorInfo(testName, "NodeCountParsingError", "PreRun", d.Location)
+				errorInfo = report.NewErrorInfo(testName, step, "NodeCountParsingError", "PreRun", d.Location)
 				break
 			}
 			nodesCount := strings.Split(strings.TrimSpace(string(out)), ":")
 			if len(nodesCount) != 3 {
 				wrileLog(logFile, "get_node_count: unexpected output '%s'", string(out))
-				errorInfo = report.NewErrorInfo(testName, "NodeCountParsingError", "PreRun", d.Location)
+				errorInfo = report.NewErrorInfo(testName, step, "NodeCountParsingError", "PreRun", d.Location)
 				break
 			}
 			env = append(env, fmt.Sprintf("EXPECTED_NODE_COUNT=%s", nodesCount[0]))
@@ -346,6 +357,17 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 		}
 	}
 	return errorInfo
+}
+
+func isPromoteToFailureStep(step string) bool {
+	switch step {
+	case stepValidate:
+		return true
+	case stepPostDeploy:
+		return true
+	default:
+		return false
+	}
 }
 
 func isValidEnv() bool {

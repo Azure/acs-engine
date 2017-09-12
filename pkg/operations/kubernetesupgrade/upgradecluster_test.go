@@ -30,11 +30,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
-		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{
-				Locale: locale,
-			},
+			Translator: &i18n.Translator{},
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
@@ -57,11 +54,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
-		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{
-				Locale: locale,
-			},
+			Translator: &i18n.Translator{},
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
@@ -81,11 +75,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
-		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{
-				Locale: locale,
-			},
+			Translator: &i18n.Translator{},
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
@@ -105,11 +96,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
-		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{
-				Locale: locale,
-			},
+			Translator: &i18n.Translator{},
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
@@ -129,11 +117,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
-		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{
-				Locale: locale,
-			},
+			Translator: &i18n.Translator{},
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
@@ -153,11 +138,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
 
-		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{
-				Locale: locale,
-			},
+			Translator: &i18n.Translator{},
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
@@ -177,11 +159,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot7
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot7]
 
-		locale, _ := i18n.LoadTranslations()
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{
-				Locale: locale,
-			},
+			Translator: &i18n.Translator{},
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}

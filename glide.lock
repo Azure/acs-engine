@@ -49,7 +49,7 @@ imports:
 - name: github.com/kelseyhightower/envconfig
   version: 70f0258d44cbaa3b6a2581d82f58da01a38e4de4
 - name: github.com/leonelquinteros/gotext
-  version: a735812a72672008b3902f8b2bc1302166a9a8ea
+  version: 1fc8dec04d161fc0b4007e808a48620c537b6a6e
 - name: github.com/Masterminds/semver
   version: 517734cc7d6470c0d07130e40fd40bdeb9bcd3fd
 - name: github.com/mattn/anko

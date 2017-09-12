@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/mattn/anko/parser"
+	"github.com/mattn/kinako/parser"
 )
 
 // Env provides interface to run VM. This mean function scope and blocked-scope.

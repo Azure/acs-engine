@@ -1,11 +1,11 @@
-// Package parser implements parser for anko.
 package parser
 
 import (
 	"errors"
 	"fmt"
+	"unicode"
 
-	"github.com/mattn/anko/ast"
+	"github.com/mattn/kinako/ast"
 )
 
 const (
@@ -17,7 +17,6 @@ const (
 // It can be Error inteface with type cast which can call Pos().
 type Error struct {
 	Message  string
-	Pos      ast.Position
 	Filename string
 	Fatal    bool
 }
@@ -35,34 +34,6 @@ type Scanner struct {
 	line     int
 }
 
-// opName is correction of operation names.
-var opName = map[string]int{
-	"func":     FUNC,
-	"return":   RETURN,
-	"var":      VAR,
-	"throw":    THROW,
-	"if":       IF,
-	"for":      FOR,
-	"break":    BREAK,
-	"continue": CONTINUE,
-	"in":       IN,
-	"else":     ELSE,
-	"new":      NEW,
-	"true":     TRUE,
-	"false":    FALSE,
-	"nil":      NIL,
-	"module":   MODULE,
-	"try":      TRY,
-	"catch":    CATCH,
-	"finally":  FINALLY,
-	"switch":   SWITCH,
-	"case":     CASE,
-	"default":  DEFAULT,
-	"go":       GO,
-	"chan":     CHAN,
-	"make":     MAKE,
-}
-
 // Init resets code to scan.
 func (s *Scanner) Init(src string) {
 	s.src = []rune(src)
@@ -75,14 +46,10 @@ retry:
 	pos = s.pos()
 	switch ch := s.peek(); {
 	case isLetter(ch):
+		tok = IDENT
 		lit, err = s.scanIdentifier()
 		if err != nil {
 			return
-		}
-		if name, ok := opName[lit]; ok {
-			tok = name
-		} else {
-			tok = IDENT
 		}
 	case isDigit(ch):
 		tok = NUMBER
@@ -140,58 +107,17 @@ retry:
 				lit = string(ch)
 			}
 		case '+':
-			s.next()
-			switch s.peek() {
-			case '+':
-				tok = PLUSPLUS
-				lit = "++"
-			case '=':
-				tok = PLUSEQ
-				lit = "+="
-			default:
-				s.back()
-				tok = int(ch)
-				lit = string(ch)
-			}
+			tok = int(ch)
+			lit = string(ch)
 		case '-':
-			s.next()
-			switch s.peek() {
-			case '-':
-				tok = MINUSMINUS
-				lit = "--"
-			case '=':
-				tok = MINUSEQ
-				lit = "-="
-			default:
-				s.back()
-				tok = int(ch)
-				lit = string(ch)
-			}
+			tok = int(ch)
+			lit = string(ch)
 		case '*':
-			s.next()
-			switch s.peek() {
-			case '*':
-				tok = POW
-				lit = "**"
-			case '=':
-				tok = MULEQ
-				lit = "*="
-			default:
-				s.back()
-				tok = int(ch)
-				lit = string(ch)
-			}
+			tok = int(ch)
+			lit = string(ch)
 		case '/':
-			s.next()
-			switch s.peek() {
-			case '=':
-				tok = DIVEQ
-				lit = "/="
-			default:
-				s.back()
-				tok = int(ch)
-				lit = string(ch)
-			}
+			tok = int(ch)
+			lit = string(ch)
 		case '>':
 			s.next()
 			switch s.peek() {
@@ -209,9 +135,6 @@ retry:
 		case '<':
 			s.next()
 			switch s.peek() {
-			case '-':
-				tok = OPCHAN
-				lit = "<-"
 			case '=':
 				tok = LE
 				lit = "<="
@@ -229,9 +152,6 @@ retry:
 			case '|':
 				tok = OROR
 				lit = "||"
-			case '=':
-				tok = OREQ
-				lit = "|="
 			default:
 				s.back()
 				tok = int(ch)
@@ -243,50 +163,24 @@ retry:
 			case '&':
 				tok = ANDAND
 				lit = "&&"
-			case '=':
-				tok = ANDEQ
-				lit = "&="
 			default:
 				s.back()
 				tok = int(ch)
 				lit = string(ch)
 			}
 		case '.':
-			s.next()
-			if s.peek() == '.' {
-				s.next()
-				if s.peek() == '.' {
-					tok = VARARG
-				} else {
-					err = fmt.Errorf(`syntax error "%s"`, "..")
-					return
-				}
-			} else {
-				s.back()
-				tok = int(ch)
-				lit = string(ch)
-			}
-		case '(', ')', ':', ';', '%', '?', '{', '}', ',', '[', ']', '^', '\n':
-			s.next()
-			if ch == '[' && s.peek() == ']' {
-				s.next()
-				if isLetter(s.peek()) {
-					s.back()
-					tok = ARRAYLIT
-					lit = "[]"
-				} else {
-					s.back()
-					s.back()
-					tok = int(ch)
-					lit = string(ch)
-				}
-			} else {
-				s.back()
-				tok = int(ch)
-				lit = string(ch)
-			}
+			tok = int(ch)
+			lit = string(ch)
+		case '\n':
+			tok = int(ch)
+			lit = string(ch)
+		case '(', ')', ':', ';', '%', '?', '{', '}', ',', '[', ']', '^':
+			tok = int(ch)
+			lit = string(ch)
 		default:
 			err = fmt.Errorf(`syntax error "%s"`, string(ch))
+			tok = int(ch)
+			lit = string(ch)
 			return
 		}
 		s.next()
@@ -296,7 +190,7 @@ retry:
 
 // isLetter returns true if the rune is a letter for identity.
 func isLetter(ch rune) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
+	return unicode.IsLetter(ch) || ch == '_'
 }
 
 // isDigit returns true if the rune is a number.
@@ -498,10 +392,9 @@ type Lexer struct {
 func (l *Lexer) Lex(lval *yySymType) int {
 	tok, lit, pos, err := l.s.Scan()
 	if err != nil {
-		l.e = &Error{Message: fmt.Sprintf("%s", err.Error()), Pos: pos, Fatal: true}
+		l.e = &Error{Message: fmt.Sprintf("%s", err.Error()), Fatal: true}
 	}
 	lval.tok = ast.Token{Tok: tok, Lit: lit}
-	lval.tok.SetPosition(pos)
 	l.lit = lit
 	l.pos = pos
 	return tok
@@ -509,7 +402,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 
 // Error sets parse error.
 func (l *Lexer) Error(msg string) {
-	l.e = &Error{Message: msg, Pos: l.pos, Fatal: false}
+	l.e = &Error{Message: msg, Fatal: false}
 }
 
 // Parser provides way to parse the code using Scanner.
@@ -519,6 +412,10 @@ func Parse(s *Scanner) ([]ast.Stmt, error) {
 		return nil, l.e
 	}
 	return l.stmts, l.e
+}
+
+func EnableErrorVerbose() {
+	yyErrorVerbose = true
 }
 
 // ParserSrc provides way to parse the code from source.
