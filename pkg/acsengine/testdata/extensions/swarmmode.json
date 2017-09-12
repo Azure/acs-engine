@@ -66,7 +66,8 @@
       { 
         "name": "hello-world-k8s", 
         "version": "v1", 
-        "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/RobBagby-extension-support/",
+        "extensionParameters": "extensionParameters",
+        "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/master/",
         "script": "test.sh"
       }
     ],

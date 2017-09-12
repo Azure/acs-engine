@@ -10,6 +10,14 @@
       }, 
       "type": "string"
     },
+    {{range .ExtensionProfiles}}
+      "{{.Name}}Parameters": {
+        "metadata": {
+        "description": "Parameters for the extension"
+      }, 
+      "type": "securestring"
+      },
+    {{end}}
 {{if not IsHostedMaster }}
   {{if .MasterProfile.IsCustomVNET}}
     "masterVnetSubnetID": {

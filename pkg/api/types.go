@@ -197,13 +197,14 @@ type MasterProfile struct {
 
 // ExtensionProfile represents an extension definition
 type ExtensionProfile struct {
-	Name                string `json:"name"`
-	Version             string `json:"version"`
-	ExtensionParameters string `json:"extensionParameters"`
-	RootURL             string `json:"rootURL"`
+	Name                           string             `json:"name"`
+	Version                        string             `json:"version"`
+	ExtensionParameters            string             `json:"extensionParameters,omitempty"`
+	ExtensionParametersKeyVaultRef *KeyvaultSecretRef `json:"parametersKeyvaultSecretRef,omitempty"`
+	RootURL                        string             `json:"rootURL,omitempty"`
 	// This is only needed for preprovision extensions and it needs to be a bash script
-	Script   string `json:"script"`
-	URLQuery string `json:"urlQuery"`
+	Script   string `json:"script,omitempty"`
+	URLQuery string `json:"urlQuery,omitempty"`
 }
 
 // Extension represents an extension definition in the master or agentPoolProfile

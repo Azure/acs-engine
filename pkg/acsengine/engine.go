@@ -604,6 +604,17 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		}
 	}
 
+	for _, extension := range properties.ExtensionProfiles {
+		if extension.ExtensionParametersKeyVaultRef != nil {
+			addKeyvaultReference(parametersMap, fmt.Sprintf("%sParameters", extension.Name),
+				extension.ExtensionParametersKeyVaultRef.VaultID,
+				extension.ExtensionParametersKeyVaultRef.SecretName,
+				extension.ExtensionParametersKeyVaultRef.SecretVersion)
+		} else {
+			addValue(parametersMap, fmt.Sprintf("%sParameters", extension.Name), extension.ExtensionParameters)
+		}
+	}
+
 	return parametersMap, nil
 }
 
@@ -1128,11 +1139,11 @@ func makeExtensionScriptCommands(extension *api.Extension, extensionProfiles []*
 		panic(fmt.Sprintf("%s extension referenced was not found in the extension profile", extension.Name))
 	}
 
+	extensionsParameterReference := fmt.Sprintf("parameters('%sParameters')", extensionProfile.Name)
 	scriptURL := getExtensionURL(extensionProfile.RootURL, extensionProfile.Name, extensionProfile.Version, extensionProfile.Script, extensionProfile.URLQuery)
 	scriptFilePath := fmt.Sprintf("/opt/azure/containers/extensions/%s/%s", extensionProfile.Name, extensionProfile.Script)
-	parameters := strings.Replace(extensionProfile.ExtensionParameters, "EXTENSION_LOOP_INDEX", copyIndex, -1)
-	return fmt.Sprintf("- sudo /usr/bin/curl -o %s --create-dirs \"%s\" \n- sudo /bin/chmod 744 %s \n- sudo %s %s > /var/log/%s-output.log",
-		scriptFilePath, scriptURL, scriptFilePath, scriptFilePath, parameters, extensionProfile.Name)
+	return fmt.Sprintf("- sudo /usr/bin/curl -o %s --create-dirs \"%s\" \n- sudo /bin/chmod 744 %s \n- sudo %s ',%s,' > /var/log/%s-output.log",
+		scriptFilePath, scriptURL, scriptFilePath, scriptFilePath, extensionsParameterReference, extensionProfile.Name)
 }
 
 func getPackageGUID(orchestratorType string, orchestratorRelease string, masterCount int) string {
@@ -1711,13 +1722,12 @@ func getAgentPoolLinkedTemplateText(agentPoolProfile *api.AgentPoolProfile, orch
 }
 
 func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, loopCount, loopOffset string, extensionProfile *api.ExtensionProfile) (string, error) {
-	dta, e := getLinkedTemplateTextForURL(orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.RootURL, extensionProfile.URLQuery)
+	dta, e := getLinkedTemplateTextForURL(extensionProfile.RootURL, orchestratorType, extensionProfile.Name, extensionProfile.Version, extensionProfile.URLQuery)
 	if e != nil {
 		return "", e
 	}
-	parmetersString := strings.Replace(extensionProfile.ExtensionParameters, "EXTENSION_LOOP_INDEX",
-		"copyIndex(EXTENSION_LOOP_OFFSET)", -1)
-	dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", parmetersString, -1)
+	extensionsParameterReference := fmt.Sprintf("[parameters('%sParameters')]", extensionProfile.Name)
+	dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", extensionsParameterReference, -1)
 	dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", extensionProfile.RootURL, -1)
 	dta = strings.Replace(dta, "EXTENSION_TARGET_VM_NAME_PREFIX", extTargetVMNamePrefix, -1)
 	dta = strings.Replace(dta, "EXTENSION_LOOP_COUNT", loopCount, -1)

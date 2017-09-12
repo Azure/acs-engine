@@ -433,6 +433,13 @@ func convertVLabsExtensionProfile(vlabs *vlabs.ExtensionProfile, api *ExtensionP
 	api.Name = vlabs.Name
 	api.Version = vlabs.Version
 	api.ExtensionParameters = vlabs.ExtensionParameters
+	if vlabs.ExtensionParametersKeyVaultRef != nil {
+		api.ExtensionParametersKeyVaultRef = &KeyvaultSecretRef{
+			VaultID:       vlabs.ExtensionParametersKeyVaultRef.VaultID,
+			SecretName:    vlabs.ExtensionParametersKeyVaultRef.SecretName,
+			SecretVersion: vlabs.ExtensionParametersKeyVaultRef.SecretVersion,
+		}
+	}
 	api.RootURL = vlabs.RootURL
 	api.Script = vlabs.Script
 	api.URLQuery = vlabs.URLQuery
