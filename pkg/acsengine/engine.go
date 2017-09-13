@@ -470,8 +470,19 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 
 	//Swarm and SwarmMode Parameters
 	if properties.OrchestratorProfile.OrchestratorType == api.Swarm || properties.OrchestratorProfile.OrchestratorType == api.SwarmMode {
-		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
-		addValue(parametersMap, "dockerComposeDownloadURL", cloudSpecConfig.DockerSpecConfig.DockerComposeDownloadURL)
+		var dockerEngineRepo, dockerComposeDownloadURL string
+		if cloudSpecConfig.DockerSpecConfig.DockerEngineRepo == "" {
+			dockerEngineRepo = DefaultDockerEngineRepo
+		} else {
+			dockerEngineRepo = cloudSpecConfig.DockerSpecConfig.DockerEngineRepo
+		}
+		if cloudSpecConfig.DockerSpecConfig.DockerComposeDownloadURL == "" {
+			dockerComposeDownloadURL = DefaultDockerComposeURL
+		} else {
+			dockerComposeDownloadURL = cloudSpecConfig.DockerSpecConfig.DockerComposeDownloadURL
+		}
+		addValue(parametersMap, "dockerEngineDownloadRepo", dockerEngineRepo)
+		addValue(parametersMap, "dockerComposeDownloadURL", dockerComposeDownloadURL)
 	}
 
 	// Kubernetes Parameters

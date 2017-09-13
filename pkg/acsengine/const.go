@@ -166,6 +166,10 @@ var KubeConfigs = map[string]map[string]string{
 const (
 	//DefaultExtensionsRootURL  Root URL for extensions
 	DefaultExtensionsRootURL = "https://raw.githubusercontent.com/Azure/acs-engine/master/"
+	// DefaultDockerEngineRepo for grabbing docker engine packages
+	DefaultDockerEngineRepo = "https://download.docker.com/linux/ubuntu"
+	// DefaultDockerComposeURL for grabbing docker images
+	DefaultDockerComposeURL = "https://github.com/docker/compose/releases/download"
 
 	//MsecndDCOSBootstrapDownloadURL Azure CDN to download DCOS1.7.3
 	MsecndDCOSBootstrapDownloadURL = "https://az837203.vo.msecnd.net/dcos/%s/bootstrap/%s.bootstrap.tar.xz"
