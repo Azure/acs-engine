@@ -272,6 +272,10 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 		}
 	}()
 
+	if !ValidateDistro(containerService) {
+		return templateRaw, parametersRaw, certsGenerated, fmt.Errorf("Invalid distro")
+	}
+
 	var b bytes.Buffer
 	if err = templ.ExecuteTemplate(&b, baseFile, properties); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
@@ -403,18 +407,21 @@ func GetCloudSpecConfig(location string) AzureEnvironmentSpecConfig {
 	}
 }
 
-// SetOSImage modifies the cloud configuration to select the requested Linux distribution. It checks if the requested
-// orchestrator type is supported on the requested Linux distro.
-func SetOSImage(spec *AzureEnvironmentSpecConfig, cs *api.ContainerService) {
-	// TODO: check RHEL image availability and details per Azure cloud
-	if cs.Properties.LinuxProfile.Distro == api.RHEL {
-		switch cs.Properties.OrchestratorProfile.OrchestratorType {
-		case api.SwarmMode:
-			spec.OSImageConfig = RHELOSImageConfig
-		default:
-			log.Fatalf("Orchestrator type %s not suported on RHEL", cs.Properties.OrchestratorProfile.OrchestratorType)
+// ValidateDistro checks if the requested orchestrator type is supported on the requested Linux distro.
+func ValidateDistro(cs *api.ContainerService) bool {
+	// Check Master distro
+	if cs.Properties.MasterProfile != nil && cs.Properties.MasterProfile.Distro == api.RHEL && cs.Properties.OrchestratorProfile.OrchestratorType != api.SwarmMode {
+		log.Fatalf("Orchestrator type %s not suported on RHEL Master", cs.Properties.OrchestratorProfile.OrchestratorType)
+		return false
+	}
+	// Check Agent distros
+	for _, agentProfile := range cs.Properties.AgentPoolProfiles {
+		if agentProfile.Distro == api.RHEL && cs.Properties.OrchestratorProfile.OrchestratorType != api.SwarmMode {
+			log.Fatalf("Orchestrator type %s not suported on RHEL Agent", cs.Properties.OrchestratorProfile.OrchestratorType)
+			return false
 		}
 	}
+	return true
 }
 
 // GetCloudTargetEnv determines and returns whether the region is a sovereign cloud which
@@ -439,14 +446,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 	location := cs.Location
 	parametersMap := paramsMap{}
 	cloudSpecConfig := GetCloudSpecConfig(location)
-	SetOSImage(&cloudSpecConfig, cs)
 
 	// Master Parameters
 	addValue(parametersMap, "location", location)
-	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig.ImageOffer)
-	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig.ImageSku)
-	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig.ImagePublisher)
-	addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig.ImageVersion)
 	addValue(parametersMap, "fqdnEndpointSuffix", cloudSpecConfig.EndpointConfig.ResourceManagerVMDNSSuffix)
 	addValue(parametersMap, "targetEnvironment", GetCloudTargetEnv(location))
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
@@ -1017,14 +1019,43 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"HasWindowsSecrets": func() bool {
 			return cs.Properties.WindowsProfile.HasSecrets()
 		},
-		"IsRHEL": func() bool {
-			return cs.Properties.LinuxProfile.IsRHEL()
-		},
 		"GetConfigurationScriptRootURL": func() string {
 			if cs.Properties.LinuxProfile.ScriptRootURL == "" {
 				return DefaultConfigurationScriptRootURL
 			}
 			return cs.Properties.LinuxProfile.ScriptRootURL
+		},
+		"GetMasterOSImageOffer": func() string {
+			cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImageOffer)
+		},
+		"GetMasterOSImagePublisher": func() string {
+			cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImagePublisher)
+		},
+		"GetMasterOSImageSKU": func() string {
+			cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImageSku)
+		},
+		"GetMasterOSImageVersion": func() string {
+			cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImageVersion)
+		},
+		"GetAgentOSImageOffer": func(profile *api.AgentPoolProfile) string {
+			cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[profile.Distro].ImageOffer)
+		},
+		"GetAgentOSImagePublisher": func(profile *api.AgentPoolProfile) string {
+			cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[profile.Distro].ImagePublisher)
+		},
+		"GetAgentOSImageSKU": func(profile *api.AgentPoolProfile) string {
+			cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[profile.Distro].ImageSku)
+		},
+		"GetAgentOSImageVersion": func(profile *api.AgentPoolProfile) string {
+			cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[profile.Distro].ImageVersion)
 		},
 		"PopulateClassicModeDefaultValue": func(attr string) string {
 			var val string

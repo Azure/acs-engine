@@ -7,7 +7,8 @@
     "masterProfile": {
       "count": 3,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2"
+      "vmSize": "Standard_D2_v2",
+      "distro": "rhel"
     },
     "agentPoolProfiles": [
       {
@@ -19,7 +20,8 @@
           80,
           443,
           8080
-        ]
+        ],
+        "distro": "rhel"
       }
     ],
     "linuxProfile": {
@@ -30,8 +32,7 @@
             "keyData": ""
           }
         ]
-      },
-      "distro": "rhel"
+      }
     }
   }
 }

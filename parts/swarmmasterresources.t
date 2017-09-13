@@ -206,7 +206,7 @@
           "adminUsername": "[variables('adminUsername')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
           {{if .OrchestratorProfile.IsSwarmMode}}
-            {{if not .LinuxProfile.IsRHEL}}
+            {{if not .MasterProfile.IsRHEL}}
               {{GetMasterSwarmModeCustomData}}
             {{end}}
           {{else}}
@@ -230,10 +230,10 @@
         },
         "storageProfile": {
           "imageReference": {
-            "offer": "[variables('osImageOffer')]",
-            "publisher": "[variables('osImagePublisher')]",
-            "sku": "[variables('osImageSKU')]",
-            "version": "[variables('osImageVersion')]"
+            "offer": "[variables('masterOSImageOffer')]",
+            "publisher": "[variables('masterOSImagePublisher')]",
+            "sku": "[variables('masterOSImageSKU')]",
+            "version": "[variables('masterOSImageVersion')]"
           },
           "osDisk": {
             "caching": "ReadWrite"
@@ -268,7 +268,7 @@
         "settings": {
           "commandToExecute": "[variables('masterCustomScript')]",
           "fileUris": [
-{{if IsRHEL}}
+{{if .MasterProfile.IsRHEL}}
             "[concat('{{ GetConfigurationScriptRootURL }}', variables('configureClusterScriptFile'))]"
 {{end}}
           ]

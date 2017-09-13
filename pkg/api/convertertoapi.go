@@ -473,7 +473,6 @@ func convertVLabsLinuxProfile(vlabs *vlabs.LinuxProfile, api *LinuxProfile) {
 		convertVLabsKeyVaultSecrets(&s, secret)
 		api.Secrets = append(api.Secrets, *secret)
 	}
-	api.Distro = Distro(vlabs.Distro)
 	api.ScriptRootURL = vlabs.ScriptRootURL
 }
 
@@ -712,6 +711,8 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 		convertVLabsExtension(&extension, apiExtension)
 		api.Extensions = append(api.Extensions, *apiExtension)
 	}
+
+	api.Distro = Distro(vlabs.Distro)
 }
 
 func convertV20160930AgentPoolProfile(v20160930 *v20160930.AgentPoolProfile, availabilityProfile string, api *AgentPoolProfile) {
@@ -808,6 +809,7 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 		convertVLabsExtension(&extension, apiExtension)
 		api.Extensions = append(api.Extensions, *apiExtension)
 	}
+	api.Distro = Distro(vlabs.Distro)
 }
 
 func convertVLabsKeyVaultSecrets(vlabs *vlabs.KeyVaultSecrets, api *KeyVaultSecrets) {

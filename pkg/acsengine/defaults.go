@@ -36,16 +36,16 @@ var (
 		DockerComposeDownloadURL: "https://github.com/docker/compose/releases/download",
 	}
 
-	//DefaultOSImageConfig is the default Linux distribution.
-	DefaultOSImageConfig = AzureOSImageConfig{
+	//DefaultUbuntuImageConfig is the default Linux distribution.
+	DefaultUbuntuImageConfig = AzureOSImageConfig{
 		ImageOffer:     "UbuntuServer",
 		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
 		ImageVersion:   "16.04.201706191",
 	}
 
-	//RHELOSImageConfig is the RHEL Linux distribution.
-	RHELOSImageConfig = AzureOSImageConfig{
+	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
+	DefaultRHELOSImageConfig = AzureOSImageConfig{
 		ImageOffer:     "RHEL",
 		ImageSku:       "7.3",
 		ImagePublisher: "RedHat",
@@ -64,7 +64,10 @@ var (
 			ResourceManagerVMDNSSuffix: "cloudapp.azure.com",
 		},
 
-		OSImageConfig: DefaultOSImageConfig,
+		OSImageConfig: map[api.Distro]AzureOSImageConfig{
+			api.Ubuntu: DefaultUbuntuImageConfig,
+			api.RHEL:   DefaultRHELOSImageConfig,
+		},
 	}
 
 	//AzureGermanCloudSpec is the German cloud config.
@@ -75,11 +78,14 @@ var (
 		EndpointConfig: AzureEndpointConfig{
 			ResourceManagerVMDNSSuffix: "cloudapp.microsoftazure.de",
 		},
-		OSImageConfig: AzureOSImageConfig{
-			ImageOffer:     "UbuntuServer",
-			ImageSku:       "16.04-LTS",
-			ImagePublisher: "Canonical",
-			ImageVersion:   "16.04.201701130",
+		OSImageConfig: map[api.Distro]AzureOSImageConfig{
+			api.Ubuntu: {
+				ImageOffer:     "UbuntuServer",
+				ImageSku:       "16.04-LTS",
+				ImagePublisher: "Canonical",
+				ImageVersion:   "16.04.201701130",
+			},
+			api.RHEL: DefaultRHELOSImageConfig,
 		},
 	}
 
@@ -91,7 +97,10 @@ var (
 		EndpointConfig: AzureEndpointConfig{
 			ResourceManagerVMDNSSuffix: "cloudapp.windowsazure.us",
 		},
-		OSImageConfig: DefaultOSImageConfig,
+		OSImageConfig: map[api.Distro]AzureOSImageConfig{
+			api.Ubuntu: DefaultUbuntuImageConfig,
+			api.RHEL:   DefaultRHELOSImageConfig,
+		},
 	}
 
 	//AzureChinaCloudSpec is the configurations for Azure China (Mooncake)
@@ -120,7 +129,10 @@ var (
 		EndpointConfig: AzureEndpointConfig{
 			ResourceManagerVMDNSSuffix: "cloudapp.chinacloudapi.cn",
 		},
-		OSImageConfig: DefaultOSImageConfig,
+		OSImageConfig: map[api.Distro]AzureOSImageConfig{
+			api.Ubuntu: DefaultUbuntuImageConfig,
+			api.RHEL:   DefaultRHELOSImageConfig,
+		},
 	}
 )
 
@@ -262,6 +274,12 @@ func setMasterNetworkDefaults(a *api.Properties) {
 	if a.MasterProfile == nil {
 		return
 	}
+
+	// Set default Distro to Ubuntu
+	if a.MasterProfile.Distro == "" {
+		a.MasterProfile.Distro = api.Ubuntu
+	}
+
 	if !a.MasterProfile.IsCustomVNET() {
 		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 			if a.OrchestratorProfile.IsVNETIntegrated() {
@@ -319,6 +337,10 @@ func setAgentNetworkDefaults(a *api.Properties) {
 		// set default OSType to Linux
 		if profile.OSType == "" {
 			profile.OSType = api.Linux
+		}
+		// set default Distro to Ubuntu
+		if profile.Distro == "" {
+			profile.Distro = api.Ubuntu
 		}
 
 		// Set the default number of IP addresses allocated for agents.

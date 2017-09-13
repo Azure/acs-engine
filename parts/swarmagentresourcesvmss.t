@@ -127,7 +127,7 @@
             "adminUsername": "[variables('adminUsername')]",
             "computerNamePrefix": "[variables('{{.Name}}VMNamePrefix')]",
 {{if IsSwarmMode}}
-  {{if not IsRHEL}}
+  {{if not .IsRHEL}}
             {{GetAgentSwarmModeCustomData .}} 
   {{end}}
 {{else}}
@@ -151,10 +151,10 @@
           },
           "storageProfile": {
             "imageReference": {
-              "offer": "[variables('osImageOffer')]",
-              "publisher": "[variables('osImagePublisher')]",
-              "sku": "[variables('osImageSKU')]",
-              "version": "[variables('osImageVersion')]"
+              "offer": "[variables('{{.Name}}OSImageOffer')]",
+              "publisher": "[variables('{{.Name}}OSImagePublisher')]",
+              "sku": "[variables('{{.Name}}OSImageSKU')]",
+              "version": "[variables('{{.Name}}OSImageVersion')]"
             },
             {{GetDataDisks .}}
             "osDisk": {
@@ -175,7 +175,7 @@
 {{end}}
             }
           }
-{{if IsRHEL}}
+{{if .IsRHEL}}
           ,"extensionProfile": {
             "extensions": [
               {

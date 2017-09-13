@@ -6,7 +6,7 @@
 {{else}}
     "configureClusterScriptFile": "configure-swarm-cluster.sh",
 {{end}}
-{{if .LinuxProfile.IsRHEL}}
+{{if .MasterProfile.IsRHEL}}
     "agentCustomScript": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash ',variables('configureClusterScriptFile'), ' ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1 &\" &')]",
 {{else}}
     "agentCustomScript": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/',variables('configureClusterScriptFile'), ' ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1 &\" &')]",
@@ -40,7 +40,7 @@
 {{else}}
     "masterCount": {{.MasterProfile.Count}}, 
 {{end}} 
-{{if .LinuxProfile.IsRHEL}}
+{{if .MasterProfile.IsRHEL}}
     "masterCustomScript": "[concat('/bin/bash -c \"/bin/bash ',variables('configureClusterScriptFile'), ' ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1\"')]", 
 {{else}}
     "masterCustomScript": "[concat('/bin/bash -c \"/bin/bash /opt/azure/containers/',variables('configureClusterScriptFile'), ' ',variables('clusterInstallParameters'),' >> /var/log/azure/cluster-bootstrap.log 2>&1\"')]", 
@@ -100,12 +100,12 @@
         }
       ]
     ],
-    "osImageOffer": "[parameters('osImageOffer')]", 
-    "osImagePublisher": "[parameters('osImagePublisher')]", 
+    "masterOSImageOffer": {{GetMasterOSImageOffer}}, 
+    "masterOSImagePublisher": {{GetMasterOSImagePublisher}}, 
 {{if .OrchestratorProfile.IsSwarmMode}}
     "orchestratorName": "swarmm", 
-    "osImageSKU": "[parameters('osImageSKU')]", 
-    "osImageVersion": "[parameters('osImageVersion')]",
+    "masterOSImageSKU": {{GetMasterOSImageSKU}}, 
+    "masterOSImageVersion": {{GetMasterOSImageVersion}},
     {{GetSwarmModeVersions}}
 {{else}}
     "orchestratorName": "swarm", 

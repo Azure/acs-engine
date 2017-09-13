@@ -103,7 +103,6 @@ type LinuxProfile struct {
 		PublicKeys []PublicKey `json:"publicKeys" validate:"required,len=1"`
 	} `json:"ssh" validate:"required"`
 	Secrets       []KeyVaultSecrets `json:"secrets,omitempty"`
-	Distro        Distro            `json:"distro,omitempty"`
 	ScriptRootURL string            `json:"scriptroot,omitempty"`
 }
 
@@ -218,6 +217,7 @@ type MasterProfile struct {
 	OAuthEnabled             bool        `json:"oauthEnabled"`
 	PreProvisionExtension    *Extension  `json:"preProvisionExtension"`
 	Extensions               []Extension `json:"extensions"`
+	Distro                   Distro      `json:"distro,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -264,6 +264,7 @@ type AgentPoolProfile struct {
 	DiskSizesGB         []int  `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
 	IPAddressCount      int    `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
+	Distro              Distro `json:"distro,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -350,6 +351,11 @@ func (m *MasterProfile) IsStorageAccount() bool {
 	return m.StorageProfile == StorageAccount
 }
 
+// IsRHEL returns true if the master specified a RHEL distro
+func (m *MasterProfile) IsRHEL() bool {
+	return m.Distro == RHEL
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (a *AgentPoolProfile) IsCustomVNET() bool {
 	return len(a.VnetSubnetID) > 0
@@ -363,6 +369,11 @@ func (a *AgentPoolProfile) IsWindows() bool {
 // IsLinux returns true if the agent pool is linux
 func (a *AgentPoolProfile) IsLinux() bool {
 	return a.OSType == Linux
+}
+
+// IsRHEL returns true if the agent pool specified a RHEL distro
+func (a *AgentPoolProfile) IsRHEL() bool {
+	return a.OSType == Linux && a.Distro == RHEL
 }
 
 // IsAvailabilitySets returns true if the customer specified disks
