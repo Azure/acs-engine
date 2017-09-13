@@ -14,7 +14,7 @@ write_files:
   content: |
     [Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --bip={{WrapAsVariable "dockerBridgeCidr"}}
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
 
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
@@ -147,6 +147,18 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionScript"}}
 
+- path: "/opt/azure/containers/useoverlay2.sh"
+  permissions: "0744"
+  owner: "root"
+  content: |
+    #!/bin/bash
+    # Use overlay2 for docker
+    set -x
+    if [ -f /etc/systemd/system/docker.service.d/exec_start.conf ]
+    then
+        sed -i "s/overlay /overlay2 /" /etc/systemd/system/docker.service.d/exec_start.conf
+    fi
+
 runcmd: 
 - apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
 - apt-get update
@@ -161,6 +173,7 @@ runcmd:
 - apt-get update
 - apt-get install -y ebtables
 - apt-get install -y docker-engine
+- /opt/azure/containers/useoverlay2.sh
 - systemctl restart docker
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}

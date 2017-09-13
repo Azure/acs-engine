@@ -19,7 +19,7 @@ write_files:
   content: |
     [Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay --bip={{WrapAsVariable "dockerBridgeCidr"}}
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
 
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
@@ -315,6 +315,18 @@ write_files:
     fi
     mount $MOUNTPOINT
 
+- path: "/opt/azure/containers/useoverlay2.sh"
+  permissions: "0744"
+  owner: "root"
+  content: |
+    #!/bin/bash
+    # Use overlay2 for docker
+    set -x
+    if [ -f /etc/systemd/system/docker.service.d/exec_start.conf ]
+    then
+        sed -i "s/overlay /overlay2 /" /etc/systemd/system/docker.service.d/exec_start.conf
+    fi
+
 runcmd: 
 - apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
 - /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',http://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
@@ -334,6 +346,7 @@ runcmd:
 - retrycmd_if_failure apt-get update
 - retrycmd_if_failure apt-get install -y ebtables
 - retrycmd_if_failure apt-get install -y docker-engine
+- /opt/azure/containers/useoverlay2.sh
 - systemctl restart docker
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
