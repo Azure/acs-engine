@@ -16,22 +16,6 @@ set -u
 
 source "$DIR/../utils.sh"
 
-function assert {
-# $1 is the string to describe the value
-# $2 is the actual value
-# $3 is the expected value
-
-  if [ $# -ne 3 ]; then
-    log "$@" >&2
-    exit 1
-  fi
-
-  if [ "$2" != "$3" ]; then
-    log "[Actual] $1 $2, [Expected] $3" >&2
-    exit 1
-  fi
-}
-
 SSH="ssh -i ${SSH_KEY} -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p2200 azureuser@${INSTANCE_NAME}.${LOCATION}.cloudapp.azure.com"
 
 deploy="docker -H :2375 run -d -p 80:80 yeasy/simple-web"
@@ -45,14 +29,15 @@ while true; do
   log "Validation: Expected to get containerId. $(($total_loops*$wait_duration)) seconds remain"
   sleep $wait_duration
   total_loops=$((total_loops-1))
-  if [ $total_loops -eq 0 ]; then 
-      log "swarm Validation Failed, timeout"; exit 1;
+  if [ $total_loops -eq 0 ]; then
+      log "Swarm validation failed: timeout"; exit 1;
   fi
 done
 
-result=$($SSH curl localhost:2375/containers/json)
-assert "deployed container should be found." \
-  "$(echo $result | jq "[.[].Id==\"$containerId\"] | any")" \
-  "true" 
+result=$($SSH curl localhost:2375/containers/json | jq "[.[].Id==\"$containerId\"] | any")
 
-log "Finished swarm_deep_test"
+if [ "$result" != "true" ]; then
+  log "Swarm validation failed: container not found"; exit 1;
+fi
+
+log "Swarm validation completed"
