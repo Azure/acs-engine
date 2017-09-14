@@ -57,6 +57,8 @@ var KubeReleaseToVersion = map[string]string{
 }
 
 const (
+	// DCOSRelease1Dot10 is the major.minor string prefix for 1.9 versions of DCOS
+	DCOSRelease1Dot10 string = "1.10"
 	// DCOSRelease1Dot9 is the major.minor string prefix for 1.9 versions of DCOS
 	DCOSRelease1Dot9 string = "1.9"
 	// DCOSRelease1Dot8 is the major.minor string prefix for 1.8 versions of DCOS
@@ -69,7 +71,8 @@ const (
 
 // DCOSReleaseToVersion maps a major.minor release to an full major.minor.patch version
 var DCOSReleaseToVersion = map[string]string{
-	DCOSRelease1Dot9: "1.9.0",
-	DCOSRelease1Dot8: "1.8.8",
-	DCOSRelease1Dot7: "1.7.3",
+	DCOSRelease1Dot10: "1.10.0",
+	DCOSRelease1Dot9:  "1.9.0",
+	DCOSRelease1Dot8:  "1.8.8",
+	DCOSRelease1Dot7:  "1.7.3",
 }
