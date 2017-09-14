@@ -29,10 +29,6 @@
       "location": "eastus"
     },
     {
-      "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmas-windows.json",
-      "location": "eastus"
-    },
-    {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json",
       "location": "southcentralus"
     },

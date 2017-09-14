@@ -29,10 +29,6 @@
       "category": "managed-disk"
     },
     {
-      "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmas-windows.json",
-      "category": "managed-disk"
-    },
-    {
       "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json",
       "category": "managed-disk"
     },
@@ -55,11 +51,6 @@
     {
       "cluster_definition": "disks-storageaccount/swarmmode.json",
       "category": "sa-disk"
-    },
-    {
-      "cluster_definition": "keyvaultcerts/swarm-windows.json",
-      "category": "keyvault",
-      "location": "westus"
     },
     {
       "cluster_definition": "keyvaultcerts/swarmmode.json",
