@@ -36,6 +36,7 @@ const (
 	dcosCustomData173    = "dcoscustomdata173.t"
 	dcosCustomData188    = "dcoscustomdata188.t"
 	dcosCustomData190    = "dcoscustomdata190.t"
+	dcosCustomData110    = "dcoscustomdata110.t"
 	dcosProvision        = "dcosprovision.sh"
 	dcosWindowsProvision = "dcosWindowsProvision.ps1"
 )
@@ -574,6 +575,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188BootstrapDownloadURL
 			case api.DCOSRelease1Dot9:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS190BootstrapDownloadURL
+			case api.DCOSRelease1Dot10:
+				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS110BootstrapDownloadURL
 			}
 		}
 		addValue(parametersMap, "dcosBootstrapURL", dcosBootstrapURL)
@@ -687,6 +690,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsDCOS19": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
 				cs.Properties.OrchestratorProfile.OrchestratorRelease == api.DCOSRelease1Dot9
+		},
+		"IsDCOS110": func() bool {
+			return cs.Properties.OrchestratorProfile.OrchestratorType == api.DCOS &&
+				cs.Properties.OrchestratorProfile.OrchestratorRelease == api.DCOSRelease1Dot10
 		},
 		"IsKubernetesVersionGe": func(version string) bool {
 			orchestratorVersion, _ := semver.NewVersion(cs.Properties.OrchestratorProfile.OrchestratorVersion)
@@ -1160,6 +1167,15 @@ func makeExtensionScriptCommands(extension *api.Extension, extensionProfiles []*
 func getPackageGUID(orchestratorType string, orchestratorRelease string, masterCount int) string {
 	if orchestratorType == api.DCOS {
 		switch orchestratorRelease {
+		case api.DCOSRelease1Dot10:
+			switch masterCount {
+			case 1:
+				return "c4ec6210f396b8e435177b82e3280a2cef0ce721"
+			case 3:
+				return "08197947cb57d479eddb077a429fa15c139d7d20"
+			case 5:
+				return "f286ad9d3641da5abb622e4a8781f73ecd8492fa"
+			}
 		case api.DCOSRelease1Dot9:
 			switch masterCount {
 			case 1:
@@ -1539,6 +1555,8 @@ func getSingleLineDCOSCustomData(orchestratorType, orchestratorRelease string,
 			yamlFilename = dcosCustomData188
 		case api.DCOSRelease1Dot9:
 			yamlFilename = dcosCustomData190
+		case api.DCOSRelease1Dot10:
+			yamlFilename = dcosCustomData110
 		}
 	default:
 		// it is a bug to get here

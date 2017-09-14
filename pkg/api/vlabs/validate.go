@@ -34,6 +34,7 @@ func (o *OrchestratorProfile) Validate() error {
 		case common.DCOSRelease1Dot7:
 		case common.DCOSRelease1Dot8:
 		case common.DCOSRelease1Dot9:
+		case common.DCOSRelease1Dot10:
 		case "":
 		default:
 			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
