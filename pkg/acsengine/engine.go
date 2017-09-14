@@ -25,11 +25,12 @@ import (
 )
 
 const (
-	kubernetesMasterCustomDataYaml      = "kubernetesmastercustomdata.yml"
-	kubernetesMasterCustomScript        = "kubernetesmastercustomscript.sh"
-	kubernetesAgentCustomDataYaml       = "kubernetesagentcustomdata.yml"
-	kubeConfigJSON                      = "kubeconfig.json"
-	kubernetesWindowsAgentCustomDataPS1 = "kuberneteswindowssetup.ps1"
+	kubernetesMasterCustomDataYaml           = "kubernetesmastercustomdata.yml"
+	kubernetesMasterCustomScript             = "kubernetesmastercustomscript.sh"
+	kubernetesMasterGenerateProxyCertsScript = "kubernetesmastergenerateproxycertscript.sh"
+	kubernetesAgentCustomDataYaml            = "kubernetesagentcustomdata.yml"
+	kubeConfigJSON                           = "kubeconfig.json"
+	kubernetesWindowsAgentCustomDataPS1      = "kuberneteswindowssetup.ps1"
 )
 
 const (
@@ -101,13 +102,15 @@ var kubernetesManifestYamls = map[string]string{
 }
 
 var kubernetesAritfacts = map[string]string{
-	"MASTER_PROVISION_B64_GZIP_STR": kubernetesMasterCustomScript,
-	"KUBELET_SERVICE_B64_GZIP_STR":  kubernetesKubeletService,
+	"MASTER_PROVISION_B64_GZIP_STR":            kubernetesMasterCustomScript,
+	"MASTER_GENERATE_PROXY_CERTS_B64_GZIP_STR": kubernetesMasterGenerateProxyCertsScript,
+	"KUBELET_SERVICE_B64_GZIP_STR":             kubernetesKubeletService,
 }
 
 var kubernetesAritfacts15 = map[string]string{
-	"MASTER_PROVISION_B64_GZIP_STR": kubernetesMasterCustomScript,
-	"KUBELET_SERVICE_B64_GZIP_STR":  "kuberneteskubelet1.5.service",
+	"MASTER_PROVISION_B64_GZIP_STR":            kubernetesMasterCustomScript,
+	"MASTER_GENERATE_PROXY_CERTS_B64_GZIP_STR": kubernetesMasterGenerateProxyCertsScript,
+	"KUBELET_SERVICE_B64_GZIP_STR":             "kuberneteskubelet1.5.service",
 }
 
 var kubernetesAddonYamls = map[string]string{
@@ -839,9 +842,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetDefaultInternalLbStaticIPOffset": func() int {
 			return DefaultInternalLbStaticIPOffset
 		},
-		"GetKubernetesMasterCustomScript": func() string {
-			return getBase64CustomScript(kubernetesMasterCustomScript)
-		},
 		"GetKubernetesMasterCustomData": func(profile *api.Properties) string {
 			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml, cs, profile)
 			if e != nil {
@@ -916,6 +916,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetKubernetesB64Provision": func() string {
 			return getBase64CustomScript(kubernetesMasterCustomScript)
+		},
+		"GetKubernetesB64GenerateProxyCerts": func() string {
+			return getBase64CustomScript(kubernetesMasterGenerateProxyCertsScript)
 		},
 		"GetKubernetesMasterPreprovisionYaml": func() string {
 			str := ""
