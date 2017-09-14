@@ -225,7 +225,7 @@ spec:
         - name: cni-net-dir
           hostPath:
             path: /etc/cni/net.d
-
+---
 # This manifest deploys the Calico policy controller on Kubernetes.
 # See https://github.com/projectcalico/k8s-policy
 apiVersion: extensions/v1beta1
