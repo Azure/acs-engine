@@ -9,7 +9,7 @@
       "category": "windows"
     },
     {
-      "cluster_definition": "dcos-releases/dcos1.8.json",
+      "cluster_definition": "dcos-releases/dcos1.9.json",
       "category": "version"
     },
     {
