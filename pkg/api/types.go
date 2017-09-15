@@ -130,6 +130,8 @@ const (
 	// Migrating means resource is being migrated from one subscription or
 	// resource group to another
 	Migrating ProvisioningState = "Migrating"
+	// Upgrading means an existing ContainerService resource is being upgraded
+	Upgrading ProvisioningState = "Upgrading"
 )
 
 // OrchestratorProfile contains Orchestrator properties
@@ -166,6 +168,8 @@ type KubernetesConfig struct {
 	CustomHyperkubeImage             string  `json:"customHyperkubeImage,omitempty"`
 	UseInstanceMetadata              bool    `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                       bool    `json:"enableRbac,omitempty"`
+	GCHighThreshold                  int     `json:"gchighthreshold,omitempty"`
+	GCLowThreshold                   int     `json:"gclowthreshold,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
@@ -193,12 +197,14 @@ type MasterProfile struct {
 
 // ExtensionProfile represents an extension definition
 type ExtensionProfile struct {
-	Name                string `json:"name"`
-	Version             string `json:"version"`
-	ExtensionParameters string `json:"extensionParameters"`
-	RootURL             string `json:"rootURL"`
+	Name                           string             `json:"name"`
+	Version                        string             `json:"version"`
+	ExtensionParameters            string             `json:"extensionParameters,omitempty"`
+	ExtensionParametersKeyVaultRef *KeyvaultSecretRef `json:"parametersKeyvaultSecretRef,omitempty"`
+	RootURL                        string             `json:"rootURL,omitempty"`
 	// This is only needed for preprovision extensions and it needs to be a bash script
-	Script string `json:"script"`
+	Script   string `json:"script,omitempty"`
+	URLQuery string `json:"urlQuery,omitempty"`
 }
 
 // Extension represents an extension definition in the master or agentPoolProfile
@@ -250,7 +256,7 @@ type VMDiagnostics struct {
 	StorageURL *neturl.URL `json:"storageUrl"`
 }
 
-// JumpboxProfile dscribes properties of the jumpbox setup
+// JumpboxProfile describes properties of the jumpbox setup
 // in the ACS container cluster.
 type JumpboxProfile struct {
 	OSType    OSType `json:"osType"`
@@ -295,6 +301,10 @@ type HostedMasterProfile struct {
 	// Not used during PUT, returned as part of GETFQDN
 	FQDN      string `json:"fqdn,omitempty"`
 	DNSPrefix string `json:"dnsPrefix"`
+	// Subnet holds the CIDR which defines the Azure Subnet in which
+	// Agents will be provisioned. This is stored on the HostedMasterProfile
+	// and will become `masterSubnet` in the compiled template.
+	Subnet string `json:"subnet"`
 }
 
 // AADProfile specifies attributes for AAD integration
@@ -355,25 +365,12 @@ type V20170701ARMContainerService struct {
 	*v20170701.ContainerService
 }
 
-// VlabsUpgradeContainerService is the type we read and write from file
-// needed because the json that is sent to ARM and acs-engine
-// is different from the json that the ACS RP Api gets from ARM
-type VlabsUpgradeContainerService struct {
-	TypeMeta
-	*vlabs.UpgradeContainerService
-}
-
 // V20170831ARMManagedContainerService is the type we read and write from file
 // needed because the json that is sent to ARM and acs-engine
 // is different from the json that the ACS RP Api gets from ARM
 type V20170831ARMManagedContainerService struct {
 	TypeMeta
 	*v20170831.ManagedCluster
-}
-
-// UpgradeContainerService API model
-type UpgradeContainerService struct {
-	OrchestratorProfile *OrchestratorProfile `json:"orchestratorProfile,omitempty"`
 }
 
 // HasWindows returns true if the cluster contains windows

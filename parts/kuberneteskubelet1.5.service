@@ -50,6 +50,8 @@ ExecStart=/usr/bin/docker run \
         --hairpin-mode=promiscuous-bridge \
         --network-plugin=${KUBELET_NETWORK_PLUGIN} \
         --node-status-update-frequency=${KUBELET_NODE_STATUS_UPDATE_FREQUENCY} \
+        --image-gc-high-threshold=${KUBELET_IMAGE_GC_HIGH_THRESHOLD} \
+        --image-gc-low-threshold=${KUBELET_IMAGE_GC_LOW_THRESHOLD} \
         --v=2 ${KUBELET_FEATURE_GATES}
 
 [Install]

@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
+	"github.com/Azure/acs-engine/pkg/api/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -432,8 +433,16 @@ func convertVLabsExtensionProfile(vlabs *vlabs.ExtensionProfile, api *ExtensionP
 	api.Name = vlabs.Name
 	api.Version = vlabs.Version
 	api.ExtensionParameters = vlabs.ExtensionParameters
+	if vlabs.ExtensionParametersKeyVaultRef != nil {
+		api.ExtensionParametersKeyVaultRef = &KeyvaultSecretRef{
+			VaultID:       vlabs.ExtensionParametersKeyVaultRef.VaultID,
+			SecretName:    vlabs.ExtensionParametersKeyVaultRef.SecretName,
+			SecretVersion: vlabs.ExtensionParametersKeyVaultRef.SecretVersion,
+		}
+	}
 	api.RootURL = vlabs.RootURL
 	api.Script = vlabs.Script
+	api.URLQuery = vlabs.URLQuery
 }
 
 func convertVLabsExtension(vlabs *vlabs.Extension, api *Extension) {
@@ -527,6 +536,21 @@ func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfil
 	}
 }
 
+func convertV20170930OrchestratorProfile(v *v20170930.OrchestratorProfile, api *OrchestratorProfile) {
+	switch v.OrchestratorType {
+	case v20170930.Kubernetes:
+		api.OrchestratorType = Kubernetes
+	case v20170930.DCOS:
+		api.OrchestratorType = DCOS
+	case v20170930.Swarm:
+		api.OrchestratorType = Swarm
+	case v20170930.DockerCE:
+		api.OrchestratorType = SwarmMode
+	}
+	api.OrchestratorRelease = v.OrchestratorRelease
+	api.OrchestratorVersion = v.OrchestratorVersion
+}
+
 func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProfile, api *OrchestratorProfile) {
 	if v20170701cs.OrchestratorType == v20170701.DockerCE {
 		api.OrchestratorType = SwarmMode
@@ -545,7 +569,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
 	case DCOS:
 		switch v20170701cs.OrchestratorRelease {
-		case DCOSRelease1Dot9, DCOSRelease1Dot8:
+		case DCOSRelease1Dot10, DCOSRelease1Dot9, DCOSRelease1Dot8:
 			api.OrchestratorRelease = v20170701cs.OrchestratorRelease
 		default:
 			api.OrchestratorRelease = DCOSDefaultRelease
@@ -574,7 +598,7 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
 	case DCOS:
 		switch vlabscs.OrchestratorRelease {
-		case DCOSRelease1Dot9, DCOSRelease1Dot8, DCOSRelease1Dot7:
+		case DCOSRelease1Dot10, DCOSRelease1Dot9, DCOSRelease1Dot8, DCOSRelease1Dot7:
 			api.OrchestratorRelease = vlabscs.OrchestratorRelease
 		default:
 			api.OrchestratorRelease = DCOSDefaultRelease
@@ -607,6 +631,8 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.CustomHyperkubeImage = vlabs.CustomHyperkubeImage
 	api.UseInstanceMetadata = vlabs.UseInstanceMetadata
 	api.EnableRbac = vlabs.EnableRbac
+	api.GCHighThreshold = vlabs.GCHighThreshold
+	api.GCLowThreshold = vlabs.GCLowThreshold
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {

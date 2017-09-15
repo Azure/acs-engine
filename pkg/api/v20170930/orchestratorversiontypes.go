@@ -1,17 +1,17 @@
 package v20170930
 
-// OrchestratorEdition contains version and release numbers
-type OrchestratorEdition struct {
-	OrchestratorRelease string `json:"orchestratorRelease,omitempty"`
+// OrchestratorProfile contains Orchestrator properties
+type OrchestratorProfile struct {
+	OrchestratorType    string `json:"orchestratorType"`
+	OrchestratorRelease string `json:"orchestratorRelease"`
 	OrchestratorVersion string `json:"orchestratorVersion"`
 }
 
 // OrchestratorVersionProfile contains orchestrator version info
 type OrchestratorVersionProfile struct {
-	OrchestratorType string `json:"orchestratorType"`
-	OrchestratorEdition
-	Default     bool                   `json:"default,omitempty"`
-	Upgradables []*OrchestratorEdition `json:"upgradables,omitempty"`
+	OrchestratorProfile
+	Default  bool                   `json:"default,omitempty"`
+	Upgrades []*OrchestratorProfile `json:"upgrades,omitempty"`
 }
 
 // OrchestratorVersionProfileList contains list of version profiles for supported orchestrators

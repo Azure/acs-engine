@@ -9,7 +9,7 @@
       "location": "eastus"
     },
     {
-      "cluster_definition": "dcos-releases/dcos1.8.json",
+      "cluster_definition": "dcos-releases/dcos1.9.json",
       "location": "eastus"
     },
     {
@@ -26,10 +26,6 @@
     },
     {
       "cluster_definition": "disks-managed/kubernetes-vmas.json",
-      "location": "eastus"
-    },
-    {
-      "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmas-windows.json",
       "location": "eastus"
     },
     {

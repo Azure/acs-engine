@@ -34,6 +34,7 @@ func (o *OrchestratorProfile) Validate() error {
 		case common.DCOSRelease1Dot7:
 		case common.DCOSRelease1Dot8:
 		case common.DCOSRelease1Dot9:
+		case common.DCOSRelease1Dot10:
 		case "":
 		default:
 			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
@@ -149,6 +150,22 @@ func (o *OrchestratorVersionProfile) Validate() error {
 		o.OrchestratorType = SwarmMode
 	default:
 		return fmt.Errorf("Unsupported orchestrator '%s'", o.OrchestratorType)
+	}
+	return nil
+}
+
+// ValidateForUpgrade validates upgrade input data
+func (o *OrchestratorProfile) ValidateForUpgrade() error {
+	switch o.OrchestratorType {
+	case DCOS, SwarmMode, Swarm:
+		return fmt.Errorf("Upgrade is not supported for orchestrator %s", o.OrchestratorType)
+	case Kubernetes:
+		switch o.OrchestratorRelease {
+		case common.KubernetesRelease1Dot6:
+		case common.KubernetesRelease1Dot7:
+		default:
+			return fmt.Errorf("Upgrade to Kubernetes %s is not supported", o.OrchestratorRelease)
+		}
 	}
 	return nil
 }
@@ -333,6 +350,20 @@ func (a *Properties) Validate() error {
 		}
 		if e := a.AADProfile.Validate(); e != nil {
 			return e
+		}
+	}
+
+	for _, extension := range a.ExtensionProfiles {
+		if extension.ExtensionParametersKeyVaultRef != nil {
+			if e := validate.Var(extension.ExtensionParametersKeyVaultRef.VaultID, "required"); e != nil {
+				return fmt.Errorf("the Keyvault ID must be specified for Extension %s", extension.Name)
+			}
+			if e := validate.Var(extension.ExtensionParametersKeyVaultRef.SecretName, "required"); e != nil {
+				return fmt.Errorf("the Keyvault Secret must be specified for Extension %s", extension.Name)
+			}
+			if !keyvaultIDRegex.MatchString(extension.ExtensionParametersKeyVaultRef.VaultID) {
+				return fmt.Errorf("Extension %s's keyvault secret reference is of incorrect format", extension.Name)
+			}
 		}
 	}
 

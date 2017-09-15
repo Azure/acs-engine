@@ -20,7 +20,7 @@ Extract the GUIDs from the 3 differents templates, and them in `engine.go/getPac
 
 In one of the template (no matter which one), grab the data from the MasterVM.osProfile.customData.  
 If you remove the concat operation, you should end up which a big string of unescaped JSON.  
-Escape it (for example using this [online tool](http://www.freeformatter.com/javascript-escape.html#ad-output)), and convert it to yaml (you can use [json2yaml](https://www.json2yaml.com/)).
+Unescape it (for example using this [online tool](http://www.freeformatter.com/javascript-escape.html#ad-output)), and convert it to yaml (you can use [json2yaml](https://www.json2yaml.com/)).
 You should now have a clean yaml.
 
 ## 4. Create and customize the custom data file.
@@ -49,7 +49,6 @@ becomes
 ```
 
 Additional modifications under `runcmd`:
-* the `content` of the cmd with path `/etc/mesosphere/setup-flags/cluster-packages.json` becomes `'DCOS_ENVIRONMENT={{{targetEnvironment}}}'`
 * Replace every occurence of the Package GUID (that we found in step 2) by `DCOSGUID`.
 * the `content` of the cmd with path `/etc/mesosphere/setup-flags/late-config.yaml` should be modified to accept ACS-Engine bindings instead of variable where needed (look at a previous custom data file for reference).  
 * At the very end of the file, replace  

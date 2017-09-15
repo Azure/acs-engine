@@ -15,28 +15,18 @@ import (
 type Upgrader struct {
 	Translator *i18n.Translator
 	ClusterTopology
-	GoalStateDataModel *api.ContainerService
-	UpgradeModel       *api.UpgradeContainerService
-	Client             armhelpers.ACSEngineClient
+	Client armhelpers.ACSEngineClient
 }
 
 // Init initializes an upgrader struct
-func (ku *Upgrader) Init(translator *i18n.Translator, clusterTopology ClusterTopology, upgradeModel *api.UpgradeContainerService, client armhelpers.ACSEngineClient) {
+func (ku *Upgrader) Init(translator *i18n.Translator, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient) {
 	ku.Translator = translator
 	ku.ClusterTopology = clusterTopology
-	ku.UpgradeModel = upgradeModel
 	ku.Client = client
 }
 
 // RunUpgrade runs the upgrade pipeline
 func (ku *Upgrader) RunUpgrade() error {
-	ku.GoalStateDataModel = ku.ClusterTopology.DataModel
-	ku.GoalStateDataModel.Properties.OrchestratorProfile = &api.OrchestratorProfile{
-		OrchestratorType:    api.Kubernetes,
-		OrchestratorRelease: ku.UpgradeModel.OrchestratorProfile.OrchestratorRelease,
-		OrchestratorVersion: api.KubernetesReleaseToVersion[ku.UpgradeModel.OrchestratorProfile.OrchestratorRelease],
-	}
-
 	if err := ku.upgradeMasterNodes(); err != nil {
 		return err
 	}
@@ -54,9 +44,9 @@ func (ku *Upgrader) Validate() error {
 }
 
 func (ku *Upgrader) upgradeMasterNodes() error {
-	log.Infoln(fmt.Sprintf("Master nodes StorageProfile: %s", ku.GoalStateDataModel.Properties.MasterProfile.StorageProfile))
+	log.Infoln(fmt.Sprintf("Master nodes StorageProfile: %s", ku.ClusterTopology.DataModel.Properties.MasterProfile.StorageProfile))
 	// Upgrade Master VMs
-	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.GoalStateDataModel)
+	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
 	if err != nil {
 		return ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 	}
@@ -76,11 +66,11 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	}
 	upgradeMasterNode.TemplateMap = templateMap
 	upgradeMasterNode.ParametersMap = parametersMap
-	upgradeMasterNode.UpgradeContainerService = ku.GoalStateDataModel
+	upgradeMasterNode.UpgradeContainerService = ku.ClusterTopology.DataModel
 	upgradeMasterNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 	upgradeMasterNode.Client = ku.Client
 
-	expectedMasterCount := ku.GoalStateDataModel.Properties.MasterProfile.Count
+	expectedMasterCount := ku.ClusterTopology.DataModel.Properties.MasterProfile.Count
 	mastersUpgradedCount := len(*ku.ClusterTopology.UpgradedMasterVMs)
 	mastersToUgradeCount := expectedMasterCount - mastersUpgradedCount
 
@@ -171,7 +161,7 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 func (ku *Upgrader) upgradeAgentPools() error {
 	for _, agentPool := range ku.ClusterTopology.AgentPools {
 		// Upgrade Agent VMs
-		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.GoalStateDataModel)
+		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
 		if err != nil {
 			return ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 		}
@@ -188,7 +178,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		}
 
 		var agentCount int
-		for _, app := range ku.GoalStateDataModel.Properties.AgentPoolProfiles {
+		for _, app := range ku.ClusterTopology.DataModel.Properties.AgentPoolProfiles {
 			if app.Name == *agentPool.Name {
 				agentCount = app.Count
 				break
@@ -200,7 +190,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		}
 		upgradeAgentNode.TemplateMap = templateMap
 		upgradeAgentNode.ParametersMap = parametersMap
-		upgradeAgentNode.UpgradeContainerService = ku.GoalStateDataModel
+		upgradeAgentNode.UpgradeContainerService = ku.ClusterTopology.DataModel
 		upgradeAgentNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 		upgradeAgentNode.Client = ku.Client
 

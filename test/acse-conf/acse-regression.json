@@ -9,7 +9,7 @@
       "category": "windows"
     },
     {
-      "cluster_definition": "dcos-releases/dcos1.8.json",
+      "cluster_definition": "dcos-releases/dcos1.9.json",
       "category": "version"
     },
     {
@@ -26,10 +26,6 @@
     },
     {
       "cluster_definition": "disks-managed/kubernetes-vmas.json",
-      "category": "managed-disk"
-    },
-    {
-      "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmas-windows.json",
       "category": "managed-disk"
     },
     {
@@ -55,11 +51,6 @@
     {
       "cluster_definition": "disks-storageaccount/swarmmode.json",
       "category": "sa-disk"
-    },
-    {
-      "cluster_definition": "keyvaultcerts/swarm-windows.json",
-      "category": "keyvault",
-      "location": "westus"
     },
     {
       "cluster_definition": "keyvaultcerts/swarmmode.json",

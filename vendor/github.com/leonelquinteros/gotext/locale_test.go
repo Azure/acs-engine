@@ -38,8 +38,6 @@ msgstr[abc] "Wrong index"
 msgstr[1 "Forgot to close brackets"
 msgstr[0] "Badly formatted string'
 
-msgid "Invalid formatted id[] with no translations
-
 msgctxt "Ctx"
 msgid "One with var: %s"
 msgid_plural "Several with vars: %s"
@@ -56,7 +54,7 @@ msgstr "Some random translation in a context"
 msgid "More"
 msgstr "More translation"
 
-    `
+	`
 
 	// Create Locales directory with simplified language code
 	dirname := path.Join("/tmp", "en", "LC_MESSAGES")
@@ -176,7 +174,7 @@ msgstr "Some random translation in a context"
 msgid "More"
 msgstr "More translation"
 
-    `
+	`
 
 	// Create Locales directory with simplified language code
 	dirname := path.Join("/tmp", "en", "LC_MESSAGES")
@@ -259,7 +257,7 @@ msgstr[0] "This one is the singular: %s"
 msgstr[1] "This one is the plural: %s"
 msgstr[2] "And this is the second plural form: %s"
 
-    `
+	`
 
 	// Create Locales directory with simplified language code
 	dirname := path.Join("/tmp", "es")

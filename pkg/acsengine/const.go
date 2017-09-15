@@ -74,6 +74,10 @@ const (
 	// DefaultKubernetesServiceCIDR specifies the IP subnet that kubernetes will
 	// create Service IPs within.
 	DefaultKubernetesServiceCIDR = "10.0.0.0/16"
+	//DefaultKubernetesGCHighThreshold specifies the value for  for the image-gc-high-threshold kubelet flag
+	DefaultKubernetesGCHighThreshold = 85
+	//DefaultKubernetesGCLowThreshold specifies the value for the image-gc-low-threshold kubelet flag
+	DefaultKubernetesGCLowThreshold = 80
 )
 
 const (
@@ -85,32 +89,21 @@ const (
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
 
-const (
-	// SwarmVersion is the Swarm orchestrator version
-	SwarmVersion = "swarm:1.1.0"
-	// SwarmDockerComposeVersion is the Docker Compose version
-	SwarmDockerComposeVersion = "1.6.2"
-	// DockerCEVersion is the DockerCE orchestrator version
-	DockerCEVersion = "17.03.*"
-	// DockerCEDockerComposeVersion is the Docker Compose version
-	DockerCEDockerComposeVersion = "1.14.0"
-)
-
 // KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes releases (major.minor)
 // For instance, Kubernetes release "1.7" would contain the version "1.7.2"
 var KubeConfigs = map[string]map[string]string{
 	api.KubernetesRelease1Dot7: {
-		"hyperkube":       "hyperkube-amd64:v1.7.4",
+		"hyperkube":       "hyperkube-amd64:v1.7.5",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addonresizer":    "addon-resizer:1.7",
-		"heapster":        "heapster-amd64:v1.4.1",
+		"heapster":        "heapster-amd64:v1.4.2",
 		"dns":             "k8s-dns-kube-dns-amd64:1.14.4",
 		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.14.4",
 		"pause":           "pause-amd64:3.0",
 		"tiller":          DefaultTillerImage,
-		"windowszip":      "v1.7.2intwinnat.zip",
+		"windowszip":      "v1.7.5-3intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
@@ -121,9 +114,11 @@ var KubeConfigs = map[string]map[string]string{
 		"backoffexponent": strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
 		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
+		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
+		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 	api.KubernetesRelease1Dot6: {
-		"hyperkube":       "hyperkube-amd64:v1.6.6",
+		"hyperkube":       "hyperkube-amd64:v1.6.9",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addonresizer":    "addon-resizer:1.7",
@@ -133,7 +128,7 @@ var KubeConfigs = map[string]map[string]string{
 		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.13.0",
 		"pause":           "pause-amd64:3.0",
 		"tiller":          DefaultTillerImage,
-		"windowszip":      "v1.6.6intwinnat.zip",
+		"windowszip":      "v1.6.9-3intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
@@ -144,6 +139,8 @@ var KubeConfigs = map[string]map[string]string{
 		"backoffexponent": strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
 		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
 		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
+		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
+		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 	api.KubernetesRelease1Dot5: {
 		"hyperkube":       "hyperkube-amd64:v1.5.7",
@@ -161,12 +158,18 @@ var KubeConfigs = map[string]map[string]string{
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
 		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
+		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
+		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 }
 
 const (
 	//DefaultExtensionsRootURL  Root URL for extensions
 	DefaultExtensionsRootURL = "https://raw.githubusercontent.com/Azure/acs-engine/master/"
+	// DefaultDockerEngineRepo for grabbing docker engine packages
+	DefaultDockerEngineRepo = "https://download.docker.com/linux/ubuntu"
+	// DefaultDockerComposeURL for grabbing docker images
+	DefaultDockerComposeURL = "https://github.com/docker/compose/releases/download"
 
 	//MsecndDCOSBootstrapDownloadURL Azure CDN to download DCOS1.7.3
 	MsecndDCOSBootstrapDownloadURL = "https://az837203.vo.msecnd.net/dcos/%s/bootstrap/%s.bootstrap.tar.xz"

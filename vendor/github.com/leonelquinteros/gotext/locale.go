@@ -14,7 +14,10 @@ multiple languages at the same time by working with this object.
 
 Example:
 
-    import "github.com/leonelquinteros/gotext"
+    import (
+	    "fmt"
+	    "github.com/leonelquinteros/gotext"
+    )
 
     func main() {
         // Create Locale with library path and language code
@@ -24,13 +27,13 @@ Example:
         l.AddDomain("default")
 
         // Translate text from default domain
-        println(l.Get("Translate this"))
+        fmt.Println(l.Get("Translate this"))
 
         // Load different domain ('/path/to/i18n/dir/en_US/LC_MESSAGES/extras.po')
         l.AddDomain("extras")
 
         // Translate text from domain
-        println(l.GetD("extras", "Translate this"))
+        fmt.Println(l.GetD("extras", "Translate this"))
     }
 
 */

@@ -114,6 +114,8 @@ write_files:
     KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD={{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
     KUBE_CTRL_MGR_POD_EVICTION_TIMEOUT={{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}
     KUBE_CTRL_MGR_ROUTE_RECONCILIATION_PERIOD={{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}
+    KUBELET_IMAGE_GC_HIGH_THRESHOLD={{WrapAsVariable "gchighthreshold"}}
+    KUBELET_IMAGE_GC_LOW_THRESHOLD={{WrapAsVariable "gclowthreshold"}}
 {{if IsKubernetesVersionGe "1.6.0"}}
     KUBELET_FEATURE_GATES=--feature-gates=Accelerators=true
 {{end}}
@@ -145,7 +147,8 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionScript"}}
 
-runcmd: {{GetKubernetesAgentPreprovisionYaml .}}
+runcmd: 
+- apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
 - apt-get update
 - apt-get install -y apt-transport-https ca-certificates nfs-common
 - systemctl enable rpcbind
@@ -162,4 +165,5 @@ runcmd: {{GetKubernetesAgentPreprovisionYaml .}}
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
 - /usr/lib/apt/apt.systemd.daily
+- apt-mark unhold walinuxagent
 - mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete

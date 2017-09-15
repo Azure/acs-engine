@@ -20,8 +20,8 @@ KUBELET_PRIVATE_KEY="${12}"
 TARGET_ENVIRONMENT="${13}"
 NETWORK_POLICY="${14}"
 FQDNSuffix="${15}"
-AZURE_VNET_CNI_URL="${16}"
-AZURE_CNI_URL="${17}"
+VNET_CNI_PLUGINS_URL="${16}"
+CNI_PLUGINS_URL="${17}"
 CALICO_CONFIG_URL="${18}"
 MAX_PODS="${19}"
 
@@ -62,6 +62,9 @@ ensureRunCommandCompleted()
     done
 }
 ensureRunCommandCompleted
+
+# make sure walinuxagent doesn't get updated in the middle of running this script
+apt-mark hold walinuxagent
 
 # A delay to start the kubernetes processes is necessary
 # if a reboot is required.  Otherwise, the agents will encounter issue: 
@@ -195,9 +198,9 @@ function configAzureNetworkPolicy() {
     mkdir -p $CNI_BIN_DIR
 
     # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
-    downloadUrl ${AZURE_VNET_CNI_URL} | tar -xz -C $CNI_BIN_DIR
+    downloadUrl ${VNET_CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR
     # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
-    downloadUrl ${AZURE_CNI_URL} | tar -xz -C $CNI_BIN_DIR ./loopback
+    downloadUrl ${CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR ./loopback
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
 
@@ -215,10 +218,8 @@ function configAzureNetworkPolicy() {
 
 # Configures Kubelet to use CNI and mount the appropriate hostpaths
 function configCalicoNetworkPolicy() {
-
-        setNetworkPlugin cni
-        setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
-
+    setNetworkPlugin cni
+    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
 function configNetworkPolicy() {
@@ -433,6 +434,7 @@ sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/h
 
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 echo "Install complete successfully"
+apt-mark unhold walinuxagent
 
 if $REBOOTREQUIRED; then
   # wait 1 minute to restart node, so that the custom script extension can complete

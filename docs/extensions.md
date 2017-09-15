@@ -25,7 +25,7 @@ The extensionProfiles contains the extensions that the cluster will install. The
 |---|---|---|
 |name|yes|the name of the extension.  This has to exactly match the name of a folder under the extensions folder|
 |version|yes|the version of the extension.  This has to exactly match the name of the folder under the extension name folder|
-|extensionParameters|optional|extension parameters may be required by extensions.  The format of the parameters is also extension dependant. If the index in the vm pool is needed add EXTENSION_LOOP_INDEX at the location you wan the index and it will be replaced with the string representation of the index(zero based)|
+|extensionParameters|optional|extension parameters may be required by extensions.  The format of the parameters is also extension dependant.|
 |rootURL|optional|url to the root location of extensions.  The rootURL must have an extensions child folder that follows the extensions convention.  The rootURL is mainly used for testing purposes.|
 |script|optional|Used for preprovision scripts this points to the location of the script to run inside of the extension folder.|
 
@@ -299,4 +299,4 @@ echo $(date) " - Script complete"
 - [hello-world-k8s] (../extensions/hello-world-k8s/README.md)
 
 # Known issues
-Kubernetes extensions that run after provisioning don't currently work if the VM needs to reboot for security reboots. this is a timing issue. the extension script is started before the vm reboots and it will be cutoff before it finishes but will still report success. I've tried to get the provision script to only finish as reboot happens and I haven't gotten that to work. 
+Kubernetes extensions that run after provisioning don't currently work if the VM needs to reboot for security reboots. this is a timing issue. the extension script is started before the vm reboots and it will be cutoff before it finishes but will still report success. I've tried to get the provision script to only finish as reboot happens and I haven't gotten that to work. An extension could work most of the time if it cancelled the restart at the start and checked if a restart was needed and scheduled one at the end of its work

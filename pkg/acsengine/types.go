@@ -37,17 +37,20 @@ type DCOSSpecConfig struct {
 	DCOS173BootstrapDownloadURL     string
 	DCOS188BootstrapDownloadURL     string
 	DCOS190BootstrapDownloadURL     string
+	DCOS110BootstrapDownloadURL     string
 	DCOSWindowsBootstrapDownloadURL string
 }
 
 //KubernetesSpecConfig is the kubernetes container images used.
 type KubernetesSpecConfig struct {
-	KubernetesImageBase     string
-	TillerImageBase         string
-	KubeBinariesSASURLBase  string
-	AzureVnetCNIDownloadURL string
-	AzureCNIDownloadURL     string
-	CalicoConfigDownloadURL string
+	KubernetesImageBase              string
+	TillerImageBase                  string
+	KubeBinariesSASURLBase           string
+	WindowsTelemetryGUID             string
+	CNIPluginsDownloadURL            string
+	VnetCNILinuxPluginsDownloadURL   string
+	VnetCNIWindowsPluginsDownloadURL string
+	CalicoConfigDownloadURL          string
 }
 
 //AzureEndpointConfig describes an Azure endpoint
