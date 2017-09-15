@@ -179,8 +179,3 @@ const (
 	AzureChinaCloudDCOSBootstrapDownloadURL = "https://acsengine.blob.core.chinacloudapi.cn/dcos/%s.bootstrap.tar.xz"
 	//AzureEdgeDCOSWindowsBootstrapDownloadURL
 )
-
-const (
-	//DefaultConfigurationScriptRootURL  Root URL for configuration script (used for script extension on RHEL)
-	DefaultConfigurationScriptRootURL = "https://raw.githubusercontent.com/Azure/acs-engine/master/parts/"
-)

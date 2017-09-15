@@ -20,12 +20,6 @@ const (
 	Linux   OSType = "Linux"
 )
 
-// the LinuxDistros supported by vlabs
-const (
-	Ubuntu Distro = "ubuntu"
-	RHEL   Distro = "rhel"
-)
-
 const (
 	// SwarmVersion is the Swarm orchestrator version
 	SwarmVersion = "swarm:1.1.0"
