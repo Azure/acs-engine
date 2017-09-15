@@ -206,9 +206,7 @@
           "adminUsername": "[variables('adminUsername')]",
           "computername": "[concat(variables('masterVMNamePrefix'), copyIndex())]",
           {{if .OrchestratorProfile.IsSwarmMode}}
-            {{if not .MasterProfile.IsRHEL}}
-              {{GetMasterSwarmModeCustomData}}
-            {{end}}
+            {{GetMasterSwarmModeCustomData}}
           {{else}}
             {{GetMasterSwarmCustomData}}
           {{end}}
@@ -230,17 +228,10 @@
         },
         "storageProfile": {
           "imageReference": {
-            {{if .OrchestratorProfile.IsSwarmMode}}
-            "offer": "[variables('masterOSImageOffer')]",
-            "publisher": "[variables('masterOSImagePublisher')]",
-            "sku": "[variables('masterOSImageSKU')]",
-            "version": "[variables('masterOSImageVersion')]"
-            {{else}}
             "offer": "[variables('osImageOffer')]",
             "publisher": "[variables('osImagePublisher')]",
             "sku": "[variables('osImageSKU')]",
             "version": "[variables('osImageVersion')]"
-            {{end}}
           },
           "osDisk": {
             "caching": "ReadWrite"
@@ -271,17 +262,13 @@
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(), '/configuremaster')]",
       "properties": {
-        "publisher": "Microsoft.Azure.Extensions",
+        "publisher": "Microsoft.OSTCExtensions",
         "settings": {
           "commandToExecute": "[variables('masterCustomScript')]",
-          "fileUris": [
-{{if .MasterProfile.IsRHEL}}
-            "[concat('{{ GetConfigurationScriptRootURL }}', variables('configureClusterScriptFile'))]"
-{{end}}
-          ]
+          "fileUris": []
         },
-        "type": "CustomScript",
-        "typeHandlerVersion": "2.0"
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.4"
       },
       "type": "Microsoft.Compute/virtualMachines/extensions"
     }
