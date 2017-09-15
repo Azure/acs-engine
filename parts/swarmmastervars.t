@@ -100,15 +100,17 @@
         }
       ]
     ],
-    "masterOSImageOffer": {{GetMasterOSImageOffer}}, 
-    "masterOSImagePublisher": {{GetMasterOSImagePublisher}}, 
 {{if .OrchestratorProfile.IsSwarmMode}}
     "orchestratorName": "swarmm", 
+    "masterOSImageOffer": {{GetMasterOSImageOffer}}, 
+    "masterOSImagePublisher": {{GetMasterOSImagePublisher}}, 
     "masterOSImageSKU": {{GetMasterOSImageSKU}}, 
     "masterOSImageVersion": {{GetMasterOSImageVersion}},
     {{GetSwarmModeVersions}}
 {{else}}
     "orchestratorName": "swarm", 
+    "osImageOffer": "[parameters('osImageOffer')]", 
+    "osImagePublisher": "[parameters('osImagePublisher')]",
     "osImageSKU": "14.04.5-LTS",
     "osImageVersion": "14.04.201706190",
     {{getSwarmVersions}}

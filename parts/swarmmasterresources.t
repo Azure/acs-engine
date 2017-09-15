@@ -230,10 +230,17 @@
         },
         "storageProfile": {
           "imageReference": {
+            {{if .OrchestratorProfile.IsSwarmMode}}
             "offer": "[variables('masterOSImageOffer')]",
             "publisher": "[variables('masterOSImagePublisher')]",
             "sku": "[variables('masterOSImageSKU')]",
             "version": "[variables('masterOSImageVersion')]"
+            {{else}}
+            "offer": "[variables('osImageOffer')]",
+            "publisher": "[variables('osImagePublisher')]",
+            "sku": "[variables('osImageSKU')]",
+            "version": "[variables('osImageVersion')]"
+            {{end}}
           },
           "osDisk": {
             "caching": "ReadWrite"
