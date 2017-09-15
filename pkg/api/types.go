@@ -141,6 +141,7 @@ type OrchestratorProfile struct {
 	OrchestratorRelease string            `json:"orchestratorRelease"`
 	OrchestratorVersion string            `json:"orchestratorVersion"`
 	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	DcosConfig          *DcosConfig       `json:"dcosConfig,omitempty"`
 }
 
 // KubernetesConfig contains the Kubernetes config structure, containing
@@ -171,6 +172,11 @@ type KubernetesConfig struct {
 	EnableRbac                       bool    `json:"enableRbac,omitempty"`
 	GCHighThreshold                  int     `json:"gchighthreshold,omitempty"`
 	GCLowThreshold                   int     `json:"gclowthreshold,omitempty"`
+}
+
+// DcosConfig Configuration for DC/OS
+type DcosConfig struct {
+	DcosWindowsBootstrapURL string `json:"dcosWindowsBootstrapURL,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster

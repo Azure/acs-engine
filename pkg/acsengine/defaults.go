@@ -226,6 +226,13 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
 			}
 		}
+	} else if a.OrchestratorProfile.OrchestratorType == api.DCOS {
+		if a.OrchestratorProfile.DcosConfig == nil {
+			a.OrchestratorProfile.DcosConfig = &api.DcosConfig{}
+		}
+		if a.OrchestratorProfile.DcosConfig.DcosWindowsBootstrapURL == "" {
+			a.OrchestratorProfile.DcosConfig.DcosWindowsBootstrapURL = DefaultDCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
+		}
 	}
 }
 

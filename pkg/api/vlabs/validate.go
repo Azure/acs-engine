@@ -67,6 +67,9 @@ func (o *OrchestratorProfile) Validate() error {
 		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
 	}
 
+	if o.OrchestratorType != DCOS && o.DcosConfig != nil && (*o.DcosConfig != DcosConfig{}) {
+		return fmt.Errorf("DcosConfig can be specified only when OrchestratorType is DCOS")
+	}
 	return nil
 }
 
