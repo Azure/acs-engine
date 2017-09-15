@@ -33,7 +33,6 @@ const (
 )
 
 const (
-	dcosCustomData173    = "dcoscustomdata173.t"
 	dcosCustomData188    = "dcoscustomdata188.t"
 	dcosCustomData190    = "dcoscustomdata190.t"
 	dcosCustomData110    = "dcoscustomdata110.t"
@@ -569,8 +568,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		switch properties.OrchestratorProfile.OrchestratorType {
 		case api.DCOS:
 			switch properties.OrchestratorProfile.OrchestratorRelease {
-			case api.DCOSRelease1Dot7:
-				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS173BootstrapDownloadURL
 			case api.DCOSRelease1Dot8:
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS188BootstrapDownloadURL
 			case api.DCOSRelease1Dot9:
@@ -1194,15 +1191,6 @@ func getPackageGUID(orchestratorType string, orchestratorRelease string, masterC
 			case 5:
 				return "d9b61156dfcc9383e014851529738aa550ef57d9"
 			}
-		case api.DCOSRelease1Dot7:
-			switch masterCount {
-			case 1:
-				return "6b604c1331c2b8b52bb23d1ea8a8d17e0f2b7428"
-			case 3:
-				return "6af5097e7956962a3d4318d28fbf280a47305485"
-			case 5:
-				return "376e07e0dbad2af3da2c03bc92bb07e84b3dafd5"
-			}
 		}
 	}
 	return ""
@@ -1549,8 +1537,6 @@ func getSingleLineDCOSCustomData(orchestratorType, orchestratorRelease string,
 	switch orchestratorType {
 	case api.DCOS:
 		switch orchestratorRelease {
-		case api.DCOSRelease1Dot7:
-			yamlFilename = dcosCustomData173
 		case api.DCOSRelease1Dot8:
 			yamlFilename = dcosCustomData188
 		case api.DCOSRelease1Dot9:

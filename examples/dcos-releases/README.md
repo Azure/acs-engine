@@ -4,9 +4,10 @@
 
 This section provides example templates enable creation of Docker enabled cluster with older version of the DC/OS orchestrator.
 
-Here are the supported versions:
+Here are the release channels acs-engine is able to deploy:
 
-1. DC/OS1.7.3 - released July 27, 2016.  Access by specifying `DCOS173`.
-2. DC/OS1.8.4 - released Sept 15, 2016.  Access by specifying `DCOS184`.
+1. DC/OS `1.8`.  Access by specifying `"orchestratorRelease": "1.8"`.
+2. DC/OS `1.9`.  Access by specifying `"orchestratorRelease": "1.9"`.
+3. DC/OS `1.9`.  Access by specifying `"orchestratorRelease": "1.10"`.
 
 Deploying and using [DC/OS](../../docs/dcos.md)

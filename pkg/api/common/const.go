@@ -63,8 +63,6 @@ const (
 	DCOSRelease1Dot9 string = "1.9"
 	// DCOSRelease1Dot8 is the major.minor string prefix for 1.8 versions of DCOS
 	DCOSRelease1Dot8 string = "1.8"
-	// DCOSRelease1Dot7 is the major.minor string prefix for 1.7 versions of DCOS
-	DCOSRelease1Dot7 string = "1.7"
 	// DCOSDefaultRelease is the default major.minor version for DCOS
 	DCOSDefaultRelease string = DCOSRelease1Dot9
 )
@@ -74,5 +72,4 @@ var DCOSReleaseToVersion = map[string]string{
 	DCOSRelease1Dot10: "1.10.0",
 	DCOSRelease1Dot9:  "1.9.0",
 	DCOSRelease1Dot8:  "1.8.8",
-	DCOSRelease1Dot7:  "1.7.3",
 }

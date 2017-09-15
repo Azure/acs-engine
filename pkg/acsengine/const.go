@@ -171,8 +171,6 @@ const (
 	// DefaultDockerComposeURL for grabbing docker images
 	DefaultDockerComposeURL = "https://github.com/docker/compose/releases/download"
 
-	//MsecndDCOSBootstrapDownloadURL Azure CDN to download DCOS1.7.3
-	MsecndDCOSBootstrapDownloadURL = "https://az837203.vo.msecnd.net/dcos/%s/bootstrap/%s.bootstrap.tar.xz"
 	//AzureEdgeDCOSBootstrapDownloadURL is the azure edge CDN download url
 	AzureEdgeDCOSBootstrapDownloadURL = "https://dcosio.azureedge.net/dcos/%s/bootstrap/%s.bootstrap.tar.xz"
 	//AzureChinaCloudDCOSBootstrapDownloadURL is the China specific DCOS package download url.
