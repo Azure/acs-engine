@@ -216,7 +216,7 @@
             "publisher": "[variables('agentWindowsPublisher')]",
             "offer": "[variables('agentWindowsOffer')]",
             "sku": "[variables('agentWindowsSku')]",
-            "version": "latest"
+            "version": "[variables('agentWindowsVersion')]"
           }
           ,"osDisk": {
             "caching": "ReadOnly"

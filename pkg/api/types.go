@@ -110,6 +110,7 @@ type PublicKey struct {
 type WindowsProfile struct {
 	AdminUsername string            `json:"adminUsername"`
 	AdminPassword string            `json:"adminPassword"`
+	ImageVersion  string            `json:"imageVersion"`
 	Secrets       []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 

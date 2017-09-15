@@ -95,6 +95,7 @@ type PublicKey struct {
 type WindowsProfile struct {
 	AdminUsername string `json:"adminUsername,omitempty" validate:"required"`
 	AdminPassword string `json:"adminPassword,omitempty" validate:"required"`
+	ImageVersion  string `json:"imageVersion,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.
