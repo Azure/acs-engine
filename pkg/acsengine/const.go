@@ -100,7 +100,7 @@ var KubeConfigs = map[string]map[string]string{
 		"heapster":        "heapster-amd64:v1.4.2",
 		"dns":             "k8s-dns-kube-dns-amd64:1.14.4",
 		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":         "k8s-dns-dnsmasq-amd64:1.14.4",
+		"dnsmasq":         "k8s-dns-dnsmasq-nanny-amd64:1.14.4",
 		"pause":           "pause-amd64:3.0",
 		"tiller":          DefaultTillerImage,
 		"windowszip":      "v1.7.5-3intwinnat.zip",

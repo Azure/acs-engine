@@ -113,6 +113,12 @@ spec:
         - name: kube-dns-config
           mountPath: /kube-dns-config
       - args:
+        - "-v=2"
+        - "-logtostderr"
+        - "-configDir=/kube-dns-config"
+        - "-restartDnsmasq=true"
+        - "--"
+        - "-k"
         - "--cache-size=1000"
         - "--no-resolv"
         - "--server=127.0.0.1#10053"
@@ -128,6 +134,9 @@ spec:
         - containerPort: 53
           name: dns-tcp
           protocol: TCP
+        volumeMounts:
+        - mountPath: /kube-dns-config
+          name: kube-dns-config
       - args:
         - "--cmd=nslookup kubernetes.default.svc.cluster.local 127.0.0.1 >/dev/null"
         - "--url=/healthz-dnsmasq"
