@@ -26,22 +26,26 @@ DEV_ENV_OPTS := --rm -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR} ${D
 DEV_ENV_CMD := docker run ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
 DEV_ENV_CMD_IT := docker run -it ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
 DEV_CMD_RUN := docker run ${DEV_ENV_OPTS}
+ifdef DEBUG
+LDFLAGS := -X main.version=${VERSION}
+else
 LDFLAGS := -s -X main.version=${VERSION}
+endif
 BINARY_DEST_DIR ?= bin
 
 all: build
 
 .PHONY: generate
 generate: bootstrap
-	go generate -v `glide novendor | xargs go list`
+	go generate $(GOFLAGS) -v `glide novendor | xargs go list`
 
 .PHONY: build
 build: generate
 	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -ldflags '$(LDFLAGS)'
-	cd test/acs-engine-test; go build
+	cd test/acs-engine-test; go build $(GOFLAGS)
 
 build-binary: generate
-	go build -v -ldflags "${LDFLAGS}" -o ${BINARY_DEST_DIR}/acs-engine .
+	go build $(GOFLAGS) -v -ldflags "${LDFLAGS}" -o ${BINARY_DEST_DIR}/acs-engine .
 
 # usage: make clean build-cross dist VERSION=v0.4.0
 .PHONY: build-cross
