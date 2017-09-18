@@ -11,6 +11,7 @@ import (
 
 	"github.com/Azure/acs-engine/test/e2e/azure"
 	"github.com/Azure/acs-engine/test/e2e/config"
+	"github.com/Azure/acs-engine/test/e2e/dcos"
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
 )
@@ -91,6 +92,20 @@ func main() {
 		}
 	}
 
+	if cfg.IsDCOS() {
+		host := fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location)
+		user := eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername
+		log.Printf("SSH Key: %s\n", cfg.GetSSHKeyPath())
+		log.Printf("Master Node: %s@%s\n", user, host)
+		log.Printf("SSH Command: ssh -i %s -p 2200 %s@%s", cfg.GetSSHKeyPath(), user, host)
+		cluster := dcos.NewCluster(cfg, eng)
+		err = cluster.InstallDCOSClient()
+		if err != nil {
+			teardown()
+			log.Fatalf("Error trying to install dcos client:%s\n", err)
+		}
+	}
+
 	runGinkgo(cfg.Orchestrator)
 	teardown()
 	log.Printf("Total Testing Elapsed Time:%s\n", time.Since(start))
@@ -120,7 +135,8 @@ func teardown() {
 }
 
 func runGinkgo(orchestrator string) {
-	cmd := exec.Command("ginkgo", "-nodes", "10", "-slowSpecThreshold", "180", "-r", "test/e2e/", orchestrator)
+	testDir := fmt.Sprintf("test/e2e/%s", orchestrator)
+	cmd := exec.Command("ginkgo", "-nodes", "10", "-slowSpecThreshold", "180", "-r", testDir)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Start()
@@ -166,9 +182,11 @@ func provisionCluster() bool {
 	}
 
 	subnetID := ""
+	vnetName := fmt.Sprintf("%sCustomVnet", cfg.Name)
+	subnetName := fmt.Sprintf("%sCustomSubnet", cfg.Name)
 	if cfg.CreateVNET {
-		acct.CreateVnet("KubernetesCustomVNET", "10.239.0.0/16", "KubernetesSubnet", "10.239.0.0/16")
-		subnetID = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s", acct.SubscriptionID, acct.ResourceGroup.Name, "KubernetesCustomVNET", "KubernetesSubnet")
+		acct.CreateVnet(vnetName, "10.239.0.0/16", subnetName, "10.239.0.0/16")
+		subnetID = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s", acct.SubscriptionID, acct.ResourceGroup.Name, vnetName, subnetName)
 	}
 
 	// Lets modify our template and call acs-engine generate on it
@@ -198,7 +216,7 @@ func provisionCluster() bool {
 	}
 
 	if cfg.CreateVNET {
-		acct.UpdateRouteTables("KubernetesSubnet", "KubernetesCustomVNET")
+		acct.UpdateRouteTables(subnetName, vnetName)
 	}
 
 	return true
