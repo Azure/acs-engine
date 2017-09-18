@@ -116,7 +116,7 @@
   {{end}}
 {{end}}
     "provisionScript": "{{GetKubernetesB64Provision}}",
-    "generateProxyCertsScript": "{{GetKubernetesB64GenerateProxyCerts}}"
+    "generateProxyCertsScript": "{{GetKubernetesB64GenerateProxyCerts}}",
     "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
 {{if IsVNETIntegrated}}
     "allocateNodeCidrs": false,
