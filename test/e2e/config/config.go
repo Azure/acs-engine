@@ -1,11 +1,14 @@
 package config
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
@@ -19,8 +22,16 @@ type Config struct {
 	ClusterDefinition string `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
 	CleanUpOnExit     bool   `envconfig:"CLEANUP_ON_EXIT" default:"true"`                                        // if set the tests will not clean up rgs when tests finish
 	ProvisionRetries  int    `envcofnig:"PROVISION_RETRIES" default:"3"`
+	CreateVNET        bool   `envconfig:"CREATE_VNET" default:"false"`
 	CurrentWorkingDir string
 }
+
+const (
+	kubernetesOrchestrator = "kubernetes"
+	dcosOrchestrator       = "dcos"
+	swarmModeOrchestrator  = "swarmmode"
+	swarmOrchestrator      = "swarm"
+)
 
 // ParseConfig will parse needed environment variables for running the tests
 func ParseConfig() (*Config, error) {
@@ -51,6 +62,33 @@ func (c *Config) GetSSHKeyPath() string {
 	return filepath.Join(c.CurrentWorkingDir, "_output", c.Name+"-ssh")
 }
 
+// SetEnvVars will determine if we need to
+func (c *Config) SetEnvVars() error {
+	envFile := fmt.Sprintf("%s/%s.env", c.CurrentWorkingDir, c.ClusterDefinition)
+	if _, err := os.Stat(envFile); err == nil {
+		file, err := os.Open(envFile)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			line := scanner.Text()
+			log.Printf("Setting the following:%s\n", line)
+			env := strings.Split(line, "=")
+			if len(env) > 0 {
+				os.Setenv(env[0], env[1])
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			log.Fatal(err)
+		}
+	}
+	return nil
+}
+
 // ReadPublicSSHKey will read the contents of the public ssh key on disk into a string
 func (c *Config) ReadPublicSSHKey() (string, error) {
 	file := c.GetSSHKeyPath() + ".pub"
@@ -60,4 +98,36 @@ func (c *Config) ReadPublicSSHKey() (string, error) {
 		return "", err
 	}
 	return string(contents), nil
+}
+
+// IsKubernetes will return true if the ORCHESTRATOR env var is set to kubernetes or not set at all
+func (c *Config) IsKubernetes() bool {
+	if c.Orchestrator == kubernetesOrchestrator {
+		return true
+	}
+	return false
+}
+
+// IsDCOS will return true if the ORCHESTRATOR env var is set to dcos
+func (c *Config) IsDCOS() bool {
+	if c.Orchestrator == dcosOrchestrator {
+		return true
+	}
+	return false
+}
+
+// IsSwarmMode will return true if the ORCHESTRATOR env var is set to dcos
+func (c *Config) IsSwarmMode() bool {
+	if c.Orchestrator == swarmModeOrchestrator {
+		return true
+	}
+	return false
+}
+
+// IsSwarm will return true if the ORCHESTRATOR env var is set to dcos
+func (c *Config) IsSwarm() bool {
+	if c.Orchestrator == swarmOrchestrator {
+		return true
+	}
+	return false
 }

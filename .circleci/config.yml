@@ -53,33 +53,6 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-  pr-kubernetes-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.2.0
-        environment:
-          GOPATH: /go
-    steps:
-      - checkout
-      - run: |
-          echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
-          echo 'export BUILD_NUM=${CIRCLE_BUILD_NUM}' >> $BASH_ENV
-          echo 'export RESOURCE_GROUP_PREFIX=y' >> $BASH_ENV
-          echo 'export SKIP_METRICS=y' >> $BASH_ENV
-          echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
-          echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
-          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
-          echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
-          echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
-          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
-          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
-          echo 'export TEST_CONFIG=test/e2e/kubernetes-deployments.json' >> $BASH_ENV
-      - run:
-          name: Kubernetes feature validation tests
-          command: make bootstrap build test-e2e
-          no_output_timeout: "30m"
-      - store_artifacts:
-          path: /go/src/github.com/Azure/acs-engine/_logs
   kubernetes-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
@@ -188,7 +161,7 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-  ginkgo-k8s-e2e:
+  ginkgo-k8s-linux-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: quay.io/deis/go-dev:v1.2.0
@@ -196,14 +169,49 @@ jobs:
           GOPATH: /go
     steps:
       - checkout
-      - setup_remote_docker
       - run: |
-          echo 'export CLUSTER_DEFINITION=examples/kubernetes.json' >> $BASH_ENV
-          echo 'export SSH_KEY_NAME=id_rsa' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
+          echo 'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
       - run:
           name: ginkgo k8s e2e tests
+          command: make build-binary test-kubernetes
+          no_output_timeout: "30m"
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_logs
+  ginkgo-k8s-windows-e2e:
+    working_directory: /go/src/github.com/Azure/acs-engine
+    docker:
+      - image: quay.io/deis/go-dev:v1.2.0
+        environment:
+          GOPATH: /go
+    steps:
+      - checkout
+      - run: |
+          echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
+          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+      - run:
+          name: ginkgo k8s windows e2e tests
+          command: make build-binary test-kubernetes
+          no_output_timeout: "30m"
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_logs
+  ginkgo-k8s-hybrid-e2e:
+    working_directory: /go/src/github.com/Azure/acs-engine
+    docker:
+      - image: quay.io/deis/go-dev:v1.2.0
+        environment:
+          GOPATH: /go
+    steps:
+      - checkout
+      - run: |
+          echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes-hybrid.json' >> $BASH_ENV
+          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+      - run:
+          name: ginkgo k8s hybrid e2e tests
           command: make build-binary test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
@@ -224,18 +232,24 @@ workflows:
           filters:
             branches:
               ignore: master
-      - pr-kubernetes-e2e:
+      - ginkgo-k8s-linux-e2e:
           requires:
             - pr-e2e-hold
           filters:
             branches:
               ignore: master
-      - ginkgo-k8s-e2e:
+      - ginkgo-k8s-windows-e2e:
           requires:
             - pr-e2e-hold
           filters:
             branches:
               ignore: master
+      - ginkgo-k8s-hybrid-e2e:
+          requires:
+            - pr-e2e-hold
+          filters:
+            branches:
+              ignore: master              
       - kubernetes-e2e:
           requires:
             - test

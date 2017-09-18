@@ -34,9 +34,14 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	cfg = *c // We have to do this because golang anon functions and scoping and stuff
 
-	e, err := engine.Build(cfg.CurrentWorkingDir, cfg.ClusterDefinition, "_output", cfg.Name)
+	engCfg, err := engine.ParseConfig(c.CurrentWorkingDir, c.ClusterDefinition, c.Name)
 	Expect(err).NotTo(HaveOccurred())
-	eng = *e
+	cs, err := engine.Parse(engCfg.ClusterDefinitionTemplate)
+	Expect(err).NotTo(HaveOccurred())
+	eng = engine.Engine{
+		Config:            engCfg,
+		ClusterDefinition: cs,
+	}
 })
 
 var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", func() {

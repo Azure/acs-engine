@@ -110,17 +110,10 @@ func (a *Account) CreateGroup(name, location string) error {
 }
 
 // DeleteGroup delets a given resource group by name
-func (a *Account) DeleteGroup() error {
-	cmd := exec.Command("az", "group", "delete", "--name", a.Deployment.Name, "--no-wait", "--yes")
-	err := cmd.Start()
-
+func (a *Account) DeleteGroup(name string) error {
+	out, err := exec.Command("az", "group", "delete", "--name", name, "--no-wait", "--yes").CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying to start command to delete resource group (%s):%s", a.Deployment.Name, err)
-		return err
-	}
-	err = cmd.Wait()
-	if err != nil {
-		log.Printf("Error occurred while waiting for resource group (%s):%s", a.Deployment.Name, err)
+		log.Printf("Error while trying to delete resource group (%s):%s", a.Deployment.Name, out)
 		return err
 	}
 	return nil
@@ -130,13 +123,13 @@ func (a *Account) DeleteGroup() error {
 func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
 	d := Deployment{
 		Name:              name,
-		TemplateDirectory: e.GeneratedDefinitionPath,
+		TemplateDirectory: e.Config.GeneratedDefinitionPath,
 	}
 	cmd := exec.Command("az", "group", "deployment", "create",
 		"--name", d.Name,
 		"--resource-group", a.ResourceGroup.Name,
-		"--template-file", e.GeneratedTemplatePath,
-		"--parameters", e.GeneratedParametersPath)
+		"--template-file", e.Config.GeneratedTemplatePath,
+		"--parameters", e.Config.GeneratedParametersPath)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -163,4 +156,41 @@ func GetCurrentAccount() (*Account, error) {
 		log.Printf("JSON:%s\n", out)
 	}
 	return &a, nil
+}
+
+// CreateVnet will create a vnet in a resource group
+func (a *Account) CreateVnet(vnet, addressPrefixes, subnetName, subnetPrefix string) error {
+	out, err := exec.Command("az", "network", "vnet", "create", "-g", a.ResourceGroup.Name, "-n", vnet, "--address-prefixes", addressPrefixes, "--subnet-name", subnetName, "--subnet-prefix", subnetPrefix).CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to create vnet with the following command:\n az network vnet create -g %s -n %s --address-prefixes %s --subnet-name %s --subnet-prefix %s \n Output:%s\n", a.ResourceGroup.Name, vnet, addressPrefixes, subnetName, subnetPrefix, out)
+		return err
+	}
+	return nil
+}
+
+// RouteTable holds information from running az network route-table list
+type RouteTable struct {
+	ID                string `json:"id"`
+	Location          string `json:"location"`
+	Name              string `json:"name"`
+	ProvisioningState string `json:"provisioningState"`
+	ResourceGroup     string `json:"resourceGroup"`
+}
+
+// UpdateRouteTables is used to updated a vnet with the appropriate route tables
+func (a *Account) UpdateRouteTables(subnet, vnet string) error {
+	out, err := exec.Command("az", "network", "route-table", "list", "-g", a.ResourceGroup.Name).CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to get route table list!\n Output:%s\n", out)
+		return err
+	}
+	rts := []RouteTable{}
+	err = json.Unmarshal(out, &rts)
+
+	out, err = exec.Command("az", "network", "vnet", "subnet", "update", "-n", subnet, "-g", a.ResourceGroup.Name, "--vnet-name", vnet, "--route-table", rts[0].Name).CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to update vnet route tables:%s\n", out)
+		return err
+	}
+	return nil
 }
