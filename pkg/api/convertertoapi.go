@@ -599,7 +599,7 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
 	case DCOS:
 		switch vlabscs.OrchestratorRelease {
-		case DCOSRelease1Dot10, DCOSRelease1Dot9, DCOSRelease1Dot8, DCOSRelease1Dot7:
+		case DCOSRelease1Dot10, DCOSRelease1Dot9, DCOSRelease1Dot8:
 			api.OrchestratorRelease = vlabscs.OrchestratorRelease
 		default:
 			api.OrchestratorRelease = DCOSDefaultRelease

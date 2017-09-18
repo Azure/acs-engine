@@ -31,7 +31,6 @@ func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case DCOS:
 		switch o.OrchestratorRelease {
-		case common.DCOSRelease1Dot7:
 		case common.DCOSRelease1Dot8:
 		case common.DCOSRelease1Dot9:
 		case common.DCOSRelease1Dot10:
