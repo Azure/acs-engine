@@ -22,37 +22,32 @@ The parameters for this extension must be provided in the following json format.
 ``` javascript
 { 
   "WSID": "c714f34a-74cd-4bea-b1cb-b1af58a2ec1a", 
-  "KEY": "dGhlIG9tcyBrZXkgdmFsdWUgZm9yIHdzaWQgYzcxNGYzNGEtNzRjZC00YmVhLWIxY2ItYjFhZjU4YTJlYzFhCg==" 
+  "KEY": "<oms-workspace-key>" 
 }
 ```
 The json must then be base64 encoded before being passed into the `extensionParameters` value.
 
 Here is an example in bash.
 ``` bash
-$ printf '{ "WSID": "c714f34a-74cd-4bea-b1cb-b1af58a2ec1a", "KEY": "dGhlIG9tcyBrZXkgdmFsdWUgZm9yIHdzaWQgYzcxNGYzNGEtNzRjZC00YmVhLWIxY2ItYjFhZjU4YTJlYzFhCg==" }' | base64 -w0
-eyAiV1NJRCI6ICJjNzE0ZjM0YS03NGNkLTRiZWEtYjFjYi1iMWFmNThhMmVjMWEiLCAiS0VZIjogImRHaGxJRzl0Y3lCclpYa2dkbUZzZFdVZ1ptOXlJSGR6YVdRZ1l6Y3hOR1l6TkdFdE56UmpaQzAwWW1WaExXSXhZMkl0WWpGaFpqVTRZVEpsWXpGaENnPT0iIH0=
+$ printf '{ "WSID": "c714f34a-74cd-4bea-b1cb-b1af58a2ec1a", "KEY": "<oms-workspace-key" }' | base64 -w0
+<base64-coded-string>
 ```
 
 Here is an example in PowerShell.
 ``` powershell
-PS> $json = '{ "WSID": "c714f34a-74cd-4bea-b1cb-b1af58a2ec1a", "KEY": "dGhlIG9tcyBrZXkgdmFsdWUgZm9yIHdzaWQgYzcxNGYzNGEtNzRjZC00YmVhLWIxY2ItYjFhZjU4YTJlYzFhCg==" }'
+PS> $json = '{ "WSID": "c714f34a-74cd-4bea-b1cb-b1af58a2ec1a", "KEY": "<oms-workspace-key>" }'
 PS> [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($json))
-eyAiV1NJRCI6ICJjNzE0ZjM0YS03NGNkLTRiZWEtYjFjYi1iMWFmNThhMmVjMWEiLCAiS0VZIjogImRHaGxJRzl0Y3lCclpYa2dkbUZzZFdVZ1ptOXlJSGR6YVdRZ1l6Y3hOR1l6TkdFdE56UmpaQzAwWW1WaExXSXhZMkl0WWpGaFpqVTRZVEpsWXpGaENnPT0iIH0=
+<base64-coded-string>
 ```
 
 # Example
-
-
-
 ``` javascript
 { 
   "name": "microsoft-oms-agent-k8s", 
   "version": "v1" 
-  "extensionsParameters": "eyAiV1NJRCI6ICJjNzE0ZjM0YS03NGNkLTRiZWEtYjFjYi1iMWFmNThhMmVjMWEiLCAiS0VZIjogImRHaGxJRzl0Y3lCclpYa2dkbUZzZFdVZ1ptOXlJSGR6YVdRZ1l6Y3hOR1l6TkdFdE56UmpaQzAwWW1WaExXSXhZMkl0WWpGaFpqVTRZVEpsWXpGaENnPT0iIH0="
+  "extensionsParameters": "<base64-coded-string>"
 }
 ```
-
-
 
 # Supported Orchestrators
 Kubernetes
