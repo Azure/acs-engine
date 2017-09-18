@@ -16,11 +16,12 @@ write_certs_to_disk() {
     etcdctl get /proxycerts/requestheader-client-ca-file > /etc/kubernetes/certs/proxy-ca.crt
     etcdctl get /proxycerts/proxy-client-cert-file > /etc/kubernetes/certs/proxy.crt
     etcdctl get /proxycerts/proxy-client-key-file > /etc/kubernetes/certs/proxy.key
+    chmod 600 /etc/kubernetes/certs/proxy.key
 }
 
 # block until all etcd is ready
 retrycmd_if_failure etcdctl cluster-health
-if etcdctl mk /proxycerts/requestheader-client-ca-file " $(echo $(cat proxy-client-ca.key))"; then
+if etcdctl mk /proxycerts/requestheader-client-ca-file " $(echo $(cat proxy-client-ca.crt))"; then
     etcdctl mk /proxycerts/proxy-client-key-file " $(echo $(cat proxy-client.key))"
     etcdctl mk /proxycerts/proxy-client-cert-file " $(echo $(cat proxy-client.crt))"
     write_certs_to_disk
