@@ -55,7 +55,7 @@ write_files:
   content: |
     {{WrapAsVariable "clientCertificate"}}
 
-# TODO write certs generation script as generateProxyCertsScript
+# TODO PR1406 write certs generation script as generateProxyCertsScript
 - path: "/etc/kubernetes/generate-proxy-certs.sh"
   permissions: "0744"
   encoding: "gzip"
@@ -367,7 +367,7 @@ runcmd:
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
 - /usr/lib/apt/apt.systemd.daily
-# TODO run certs generation script
+# TODO PR1406 run certs generation script
 - bash /etc/kubernetes/generate-proxy-certs.sh
 - apt-mark unhold walinuxagent
 - touch /opt/azure/containers/runcmd.complete

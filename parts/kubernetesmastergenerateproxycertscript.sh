@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#TODO write script
+#TODO PR1406 write script
 
 # PSEUDO CODE
 # block until all etcd is ready

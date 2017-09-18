@@ -30,7 +30,6 @@ type PkiKeyCertPair struct {
 }
 
 // CreatePki creates PKI certificates
-// TODO generalize this with CreateProxyPki
 func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
 	start := time.Now()
 	defer func(s time.Time) {
@@ -108,7 +107,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 }
 
 // CreateProxyPki creates PKI certificates
-// TODO generalize this with CreatePki
+// TODO PR1406 delete this function after master-generated implementation
 func CreateProxyPki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, error) {
 	start := time.Now()
 	defer func(s time.Time) {
