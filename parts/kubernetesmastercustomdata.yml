@@ -62,27 +62,6 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "generateProxyCertsScript"}}
 
-- path: "/etc/kubernetes/certs/proxy-ca.crt"
-  permissions: "0644"
-  encoding: "base64"
-  owner: "root"
-  content: |
-    {{WrapAsVariable "proxyCACertificate"}}
-
-- path: "/etc/kubernetes/certs/proxy.crt"
-  permissions: "0644"
-  encoding: "base64"
-  owner: "root"
-  content: |
-    {{WrapAsVariable "proxyCertificate"}}
-
-- path: "/etc/kubernetes/certs/proxy.key"
-  permissions: "0600"
-  encoding: "base64"
-  owner: "root"
-  content: |
-    {{WrapAsVariable "proxyPrivateKey"}}
-
 - path: "/var/lib/kubelet/kubeconfig"
   permissions: "0644"
   owner: "root"

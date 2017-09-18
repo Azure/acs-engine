@@ -507,9 +507,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 			addSecret(parametersMap, "clientPrivateKey", properties.CertificateProfile.ClientPrivateKey, true)
 			addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
 			addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
-			addSecret(parametersMap, "proxyCACertificate", properties.CertificateProfile.ProxyCACertificate, true)
-			addSecret(parametersMap, "proxyCertificate", properties.CertificateProfile.ProxyCertificate, true)
-			addSecret(parametersMap, "proxyPrivateKey", properties.CertificateProfile.ProxyPrivateKey, true)
 		}
 		if properties.HostedMasterProfile != nil && properties.HostedMasterProfile.FQDN != "" {
 			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)
