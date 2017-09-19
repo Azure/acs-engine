@@ -41,7 +41,7 @@
         },
         "windowsProfile": {
             "adminUsername": "azureuser",
-            "adminPassword": ""
+            "adminPassword": "replacepassword1234$"
         }
     }
 }
