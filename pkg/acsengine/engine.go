@@ -1231,6 +1231,9 @@ func getDCOSAgentCustomNodeLabels(profile *api.AgentPoolProfile) string {
 	var buf bytes.Buffer
 	var attrstring string
 	buf.WriteString("")
+	// always write MESOS_ATTRIBUTES because
+	// the provision script will add FD/UD attributes
+	// at node provisioning time
 	if len(profile.OSType) > 0 {
 		attrstring = fmt.Sprintf("MESOS_ATTRIBUTES=\"os:%s", profile.OSType)
 	} else {

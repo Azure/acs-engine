@@ -42,3 +42,8 @@ for i in {1..300}; do
 done
 
 ROLESFILECONTENTS
+
+# add Azure update domain and fault domain attributes
+ud=$( curl -H Metadata:true "http://169.254.169.254/metadata/instance/compute/platformUpdateDomain?api-version=2017-04-02&format=text" )
+fd=$( curl -H Metadata:true "http://169.254.169.254/metadata/instance/compute/platformFaultDomain?api-version=2017-04-02&format=text" )
+echo ";azure.faultdomain:$fd;azure.updatedomain:$ud" >> /var/lib/dcos/mesos-slave-common
