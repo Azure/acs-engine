@@ -30,7 +30,7 @@
             }
         ],
         "linuxProfile": {
-            "adminUsername": "",
+            "adminUsername": "azureuser",
             "ssh": {
                 "publicKeys": [
                     {
@@ -40,7 +40,7 @@
             }
         },
         "windowsProfile": {
-            "adminUsername": "",
+            "adminUsername": "azureuser",
             "adminPassword": ""
         }
     }
