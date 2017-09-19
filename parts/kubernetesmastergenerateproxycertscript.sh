@@ -1,10 +1,10 @@
 #!/bin/bash
 
-PROXY_CA_KEY="${PROXY_CA_KEY:=proxy-client-ca.key}"
-PROXY_CRT="${PROXY_CRT:=proxy-client-ca.crt}"
-PROXY_CLIENT_KEY="${PROXY_CLIENT_KEY:=proxy-client.key}"
-PROXY_CLIENT_CSR="${PROXY_CLIENT_CSR:=proxy-client.csr}"
-PROXY_CLIENT_CRT="${PROXY_CLIENT_CRT:=proxy-client.crt}"
+PROXY_CA_KEY="${PROXY_CA_KEY:=/tmp/proxy-client-ca.key}"
+PROXY_CRT="${PROXY_CRT:=/tmp/proxy-client-ca.crt}"
+PROXY_CLIENT_KEY="${PROXY_CLIENT_KEY:=/tmp/proxy-client.key}"
+PROXY_CLIENT_CSR="${PROXY_CLIENT_CSR:=/tmp/proxy-client.csr}"
+PROXY_CLIENT_CRT="${PROXY_CLIENT_CRT:=/tmp/proxy-client.crt}"
 ETCD_REQUESTHEADER_CLIENT_CA="${ETCD_REQUESTHEADER_CLIENT_CA:=/proxycerts/requestheader-client-ca-file}"
 ETCD_PROXY_CERT="${ETCD_PROXY_CERT:=/proxycerts/proxy-client-cert-file}"
 ETCD_PROXY_KEY="${ETCD_PROXY_KEY:=/proxycerts/proxy-client-key-file}"
