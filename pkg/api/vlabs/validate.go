@@ -63,6 +63,10 @@ func (o *OrchestratorProfile) Validate() error {
 					return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s; unable to validate for Kubernetes version %s",
 						common.KubernetesRelease1Dot7, o.OrchestratorRelease)
 				}
+
+				if !o.KubernetesConfig.EnableRbac {
+					return fmt.Errorf("enableAggregatedAPIs requires the enableRbac feature as a prerequisite")
+				}
 			}
 		}
 

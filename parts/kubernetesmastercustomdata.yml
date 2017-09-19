@@ -286,6 +286,10 @@ write_files:
     sed -i "/requestheader-client-ca-file/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "/proxy-client-cert-file/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "/proxy-client-key-file/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/requestheader-allowed-names/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/requestheader-extra-headers-prefix/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/requestheader-group-headers/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/requestheader-username-headers/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{end}}
 
 - path: "/opt/azure/containers/provision.sh"

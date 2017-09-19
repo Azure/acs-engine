@@ -38,6 +38,10 @@ spec:
         - "--storage-backend=etcd2"
         - "--v=4"
         - "<kubernetesEnableRbac>"
+        - "--requestheader-allowed-names="
+        - "--requestheader-extra-headers-prefix=X-Remote-Extra-"
+        - "--requestheader-group-headers=X-Remote-Group"
+        - "--requestheader-username-headers=X-Remote-User"
       volumeMounts:
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"
