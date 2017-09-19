@@ -3,7 +3,14 @@
 set -eu -o pipefail
 set -x
 
-docker build --pull -t acs-engine .
+docker build --pull -t \
+	--build-arg http_proxy=$http_proxy \
+	--build-arg https_proxy=$https_proxy \
+	--build-arg no_proxy=$no_proxy \
+	--build-arg HTTP_PROXY=$HTTP_PROXY \
+	--build-arg HTTPS_PROXY=$HTTPS_PROXY \
+	--build-arg NO_PROXY=$NO_PROXY \
+	acs-engine .
 
 docker run -it \
 	--privileged \
