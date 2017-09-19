@@ -35,6 +35,20 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 	if err := o.Validate(); err == nil {
 		t.Errorf("should error when KubernetesConfig populated for non-Kubernetes OrchestratorType")
 	}
+
+	o = &OrchestratorProfile{
+		OrchestratorType: "Kubernetes",
+		DcosConfig:       &DcosConfig{},
+	}
+
+	if err := o.Validate(); err != nil {
+		t.Errorf("should not error with empty object: %v", err)
+	}
+
+	o.DcosConfig.DcosWindowsBootstrapURL = "http://www.microsoft.com"
+	if err := o.Validate(); err == nil {
+		t.Errorf("should error when DcosConfig populated for non-Kubernetes OrchestratorType")
+	}
 }
 
 func Test_KubernetesConfig_Validate(t *testing.T) {

@@ -6,9 +6,11 @@
     "winResourceNamePrefix" : "[substring(variables('nameSuffix'), 0, 5)]",
     "{{.Name}}VMNamePrefix": "[concat(variables('winResourceNamePrefix'), 'acs', add(900,variables('{{.Name}}Index')))]",
     {{if IsPublic .Ports}}
-        "{{.Name}}windowsAgentCustomScriptArguments": "[concat('$arguments = ', variables('singleQuote'),'-subnet ', variables('{{.Name}}Subnet'), ' -MasterCount ', variables('masterCount'), ' -firstMasterIP ', parameters('firstConsecutiveStaticIP'), ' -bootstrapUri ', '\"', variables('dcosWindowsBootstrapURL'), '\"', ' -isAgent $true -isPublic:$true',  variables('singleQuote'),' ; ')]",
+        "{{.Name}}windowsAgentCustomAttributes": "[concat(' -customAttrs ', variables('doubleSingleQuote'), '{{GetDCOSWindowsAgentCustomNodeAttributes . }}', variables('doubleSingleQuote') )]",
+        "{{.Name}}windowsAgentCustomScriptArguments": "[concat('$arguments = ', variables('singleQuote'), '-subnet ', variables('{{.Name}}Subnet'), ' -MasterCount ', variables('masterCount'), ' -firstMasterIP ', parameters('firstConsecutiveStaticIP'), ' -bootstrapUri ', '\"', variables('dcosWindowsBootstrapURL'), '\"', ' -isAgent $true -isPublic $true ',  variables('{{.Name}}windowsAgentCustomAttributes'), variables('singleQuote'), ' ; ')]",
     {{else}}
-        "{{.Name}}windowsAgentCustomScriptArguments": "[concat('$arguments = ', variables('singleQuote'),'-subnet ', variables('{{.Name}}Subnet'), ' -MasterCount ', variables('masterCount'), ' -firstMasterIP ', parameters('firstConsecutiveStaticIP'), ' -bootstrapUri ', '\"', variables('dcosWindowsBootstrapURL'), '\"', ' -isAgent $true',  variables('singleQuote'),' ; ')]",
+        "{{.Name}}windowsAgentCustomAttributes": "[concat(' -customAttrs ', variables('doubleSingleQuote'), '{{GetDCOSWindowsAgentCustomNodeAttributes . }}', variables('doubleSingleQuote') )]",
+        "{{.Name}}windowsAgentCustomScriptArguments": "[concat('$arguments = ', variables('singleQuote'), '-subnet ', variables('{{.Name}}Subnet'), ' -MasterCount ', variables('masterCount'), ' -firstMasterIP ', parameters('firstConsecutiveStaticIP'), ' -bootstrapUri ', '\"', variables('dcosWindowsBootstrapURL'), '\"', ' -isAgent $true -isPublic $false ',  variables('{{.Name}}windowsAgentCustomAttributes'), variables('singleQuote'), ' ; ')]",
     {{end}}
    
     "{{.Name}}windowsAgentCustomScript": "[concat('powershell.exe -ExecutionPolicy Unrestricted -command \"', variables('{{.Name}}windowsAgentCustomScriptArguments'), variables('windowsCustomScriptSuffix'), '\" > %SYSTEMDRIVE%\\AzureData\\dcosWindowsProvision.log 2>&1')]",

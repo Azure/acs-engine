@@ -598,6 +598,10 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		}
 		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
 	case DCOS:
+		if vlabscs.DcosConfig != nil {
+			api.DcosConfig = &DcosConfig{}
+			convertVLabsDcosConfig(vlabscs.DcosConfig, api.DcosConfig)
+		}
 		switch vlabscs.OrchestratorRelease {
 		case DCOSRelease1Dot10, DCOSRelease1Dot9, DCOSRelease1Dot8:
 			api.OrchestratorRelease = vlabscs.OrchestratorRelease
@@ -606,6 +610,10 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		}
 		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
 	}
+}
+
+func convertVLabsDcosConfig(vlabs *vlabs.DcosConfig, api *DcosConfig) {
+	api.DcosWindowsBootstrapURL = vlabs.DcosWindowsBootstrapURL
 }
 
 func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *KubernetesConfig) {

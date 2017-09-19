@@ -565,6 +565,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 
 	if strings.HasPrefix(properties.OrchestratorProfile.OrchestratorType, api.DCOS) {
 		dcosBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOS188BootstrapDownloadURL
+		dcosWindowsBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
 		switch properties.OrchestratorProfile.OrchestratorType {
 		case api.DCOS:
 			switch properties.OrchestratorProfile.OrchestratorRelease {
@@ -576,9 +577,14 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 				dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS110BootstrapDownloadURL
 			}
 		}
-		addValue(parametersMap, "dcosBootstrapURL", dcosBootstrapURL)
 
-		dcosWindowsBootstrapURL := cloudSpecConfig.DCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
+		if properties.OrchestratorProfile.DcosConfig != nil {
+			if properties.OrchestratorProfile.DcosConfig.DcosWindowsBootstrapURL != "" {
+				dcosWindowsBootstrapURL = properties.OrchestratorProfile.DcosConfig.DcosWindowsBootstrapURL
+			}
+		}
+
+		addValue(parametersMap, "dcosBootstrapURL", dcosBootstrapURL)
 		addValue(parametersMap, "dcosWindowsBootstrapURL", dcosWindowsBootstrapURL)
 	}
 
@@ -795,6 +801,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetDCOSWindowsAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			str := getBase64CustomScript(dcosWindowsProvision)
 			return fmt.Sprintf("\"customData\": \"%s\"", str)
+		},
+		"GetDCOSWindowsAgentCustomNodeAttributes": func(profile *api.AgentPoolProfile) string {
+			return getDCOSWindowsAgentCustomAttributes(profile)
 		},
 		"GetMasterAllowedSizes": func() string {
 			if t.ClassicMode {
@@ -1239,6 +1248,27 @@ func getDCOSAgentCustomNodeLabels(profile *api.AgentPoolProfile) string {
 		}
 	}
 	buf.WriteString("\"")
+	return buf.String()
+}
+
+func getDCOSWindowsAgentCustomAttributes(profile *api.AgentPoolProfile) string {
+	var buf bytes.Buffer
+	var attrstring string
+	buf.WriteString("")
+	if len(profile.OSType) > 0 {
+		attrstring = fmt.Sprintf("os:%s", profile.OSType)
+	} else {
+		attrstring = fmt.Sprintf("os:windows")
+	}
+	if len(profile.Ports) > 0 {
+		attrstring += ";public_ip:yes"
+	}
+	buf.WriteString(attrstring)
+	if len(profile.CustomNodeLabels) > 0 {
+		for k, v := range profile.CustomNodeLabels {
+			buf.WriteString(fmt.Sprintf(";%s:%s", k, v))
+		}
+	}
 	return buf.String()
 }
 
