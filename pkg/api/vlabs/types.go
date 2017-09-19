@@ -198,6 +198,7 @@ type KubernetesConfig struct {
 	CustomHyperkubeImage             string  `json:"customHyperkubeImage,omitempty"`
 	UseInstanceMetadata              bool    `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                       bool    `json:"enableRbac,omitempty"`
+	EnableAggregatedAPIs             bool    `json:"enableAggregatedAPIs,omitempty"`
 	GCHighThreshold                  int     `json:"gchighthreshold,omitempty"`
 	GCLowThreshold                   int     `json:"gclowthreshold,omitempty"`
 }

@@ -55,12 +55,14 @@ write_files:
   content: |
     {{WrapAsVariable "clientCertificate"}}
 
+{{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
 - path: "/etc/kubernetes/generate-proxy-certs.sh"
   permissions: "0744"
   encoding: "gzip"
   owner: "root"
   content: !!binary |
     {{WrapAsVariable "generateProxyCertsScript"}}
+{{end}}
 
 - path: "/var/lib/kubelet/kubeconfig"
   permissions: "0644"
@@ -280,6 +282,12 @@ write_files:
     sed -i "s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-daemonset.yaml"
 {{end}}
 
+{{if not .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
+    sed -i "/requestheader-client-ca-file/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/proxy-client-cert-file/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/proxy-client-key-file/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+{{end}}
+
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
   encoding: gzip
@@ -345,6 +353,8 @@ runcmd:
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
 - /usr/lib/apt/apt.systemd.daily
+{{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
 - sudo bash /etc/kubernetes/generate-proxy-certs.sh
+{{end}}
 - apt-mark unhold walinuxagent
 - touch /opt/azure/containers/runcmd.complete
