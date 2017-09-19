@@ -14,7 +14,6 @@
                 "name": "linuxpool",
                 "count": 3,
                 "vmSize": "Standard_D2_v2",
-                "dnsPrefix": "",
                 "ports": [
                     80,
                     443,
@@ -25,7 +24,6 @@
                 "name": "windowspool",
                 "count": 3,
                 "vmSize": "Standard_D2_v2",
-                "dnsPrefix": "",
                 "osType": "Windows"
             }
         ],
