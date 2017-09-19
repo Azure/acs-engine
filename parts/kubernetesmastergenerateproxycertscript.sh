@@ -1,32 +1,45 @@
 #!/bin/bash
 
-#TODO PR1406
+PROXY_CA_KEY="${PROXY_CA_KEY:=proxy-client-ca.key}"
+PROXY_CRT="${PROXY_CRT:=proxy-client-ca.crt}"
+PROXY_CLIENT_KEY="${PROXY_CLIENT_KEY:=proxy-client.key}"
+PROXY_CLIENT_CSR="${PROXY_CLIENT_CSR:=proxy-client.csr}"
+PROXY_CLIENT_CRT="${PROXY_CLIENT_CRT:=proxy-client.crt}"
+ETCD_REQUESTHEADER_CLIENT_CA="${ETCD_REQUESTHEADER_CLIENT_CA:=/proxycerts/requestheader-client-ca-file}"
+ETCD_PROXY_CERT="${ETCD_PROXY_CERT:=/proxycerts/proxy-client-cert-file}"
+ETCD_PROXY_KEY="${ETCD_PROXY_KEY:=/proxycerts/proxy-client-key-file}"
+K8S_PROXY_CA_CRT_FILEPATH="${K8S_PROXY_CA_CRT_FILEPATH:=/etc/kubernetes/certs/proxy-ca.crt}"
+K8S_PROXY_KEY_FILEPATH="${K8S_PROXY_KEY_FILEPATH:=/etc/kubernetes/certs/proxy.key}"
+K8S_PROXY_CRT_FILEPATH="${K8S_PROXY_CRT_FILEPATH:=/etc/kubernetes/certs/proxy.crt}"
 
 # generate root CA
-openssl genrsa -out proxy-client-ca.key 2048
-openssl req -new -x509 -days 1826 -key proxy-client-ca.key -out proxy-client-ca.crt -subj '/CN=proxyClientCA'
+openssl genrsa -out $PROXY_CA_KEY 2048
+openssl req -new -x509 -days 1826 -key $PROXY_CA_KEY -out $PROXY_CRT -subj '/CN=proxyClientCA'
 # generate new cert
-openssl genrsa -out proxy-client.key 2048
-openssl req -new -key proxy-client.key -out proxy-client.csr -subj '/CN=aggregator/O=system:masters'
-openssl x509 -req -days 730 -in proxy-client.csr -CA proxy-client-ca.crt -CAkey proxy-client-ca.key -set_serial 02 -out proxy-client.crt
+openssl genrsa -out $PROXY_CLIENT_KEY 2048
+openssl req -new -key $PROXY_CLIENT_KEY -out $PROXY_CLIENT_CSR -subj '/CN=aggregator/O=system:masters'
+openssl x509 -req -days 730 -in $PROXY_CLIENT_CSR -CA $PROXY_CRT -CAkey $PROXY_CA_KEY -set_serial 02 -out $PROXY_CLIENT_CRT
 
 retrycmd_if_failure() { for i in 1 2 3 4 5 6 7 8 9 10; do $@; [ $? -eq 0  ] && break || sleep 30; done ; }
 
 write_certs_to_disk() {
-    etcdctl get /proxycerts/requestheader-client-ca-file > /etc/kubernetes/certs/proxy-ca.crt
-    etcdctl get /proxycerts/proxy-client-cert-file > /etc/kubernetes/certs/proxy.crt
-    etcdctl get /proxycerts/proxy-client-key-file > /etc/kubernetes/certs/proxy.key
-    sed -i '1s/.//' /etc/kubernetes/certs/proxy-ca.crt /etc/kubernetes/certs/proxy.crt /etc/kubernetes/certs/proxy.key
-    chmod 600 /etc/kubernetes/certs/proxy.key
+    etcdctl get $ETCD_REQUESTHEADER_CLIENT_CA > $K8S_PROXY_CA_CRT_FILEPATH
+    etcdctl get $ETCD_PROXY_KEY > $K8S_PROXY_KEY_FILEPATH
+    etcdctl get $ETCD_PROXY_CERT > $K8S_PROXY_CRT_FILEPATH
+    # Remove whitespace padding at beginning of 1st line
+    sed -i '1s/\s//' $K8S_PROXY_CA_CRT_FILEPATH $K8S_PROXY_CRT_FILEPATH $K8S_PROXY_KEY_FILEPATH
+    chmod 600 $K8S_PROXY_KEY_FILEPATH
 }
 
 # block until all etcd is ready
 retrycmd_if_failure etcdctl cluster-health
-if etcdctl mk /proxycerts/requestheader-client-ca-file " $(cat proxy-client-ca.crt)"; then
-    etcdctl mk /proxycerts/proxy-client-key-file " $(cat proxy-client.key)"
-    etcdctl mk /proxycerts/proxy-client-cert-file " $(cat proxy-client.crt)"
+# Make etcd keys, adding a leading whitespace because etcd won't accept a val that begins with a '-' (hyphen)!
+if etcdctl mk $ETCD_REQUESTHEADER_CLIENT_CA " $(cat ${PROXY_CRT})"; then
+    etcdctl mk $ETCD_PROXY_KEY " $(cat ${PROXY_CLIENT_KEY})"
+    etcdctl mk $ETCD_PROXY_CERT " $(cat ${PROXY_CLIENT_CRT})"
     write_certs_to_disk
+# If the etcdtl mk command failed, that means the key already exists
 else
-    sleep 30
+    sleep 5
     write_certs_to_disk
 fi
