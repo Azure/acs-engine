@@ -1,79 +1,120 @@
-// +build ignore
-
 package acsengine
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"testing"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
 )
 
 func TestNormalizeForVMSSScaling(t *testing.T) {
 	RegisterTestingT(t)
-	logger := logrus.New()
-	fileContents, e := ioutil.ReadFile("./testFiles/vmssTemplate.json")
+	logger := logrus.New().WithField("testName", "TestNormalizeForVMSSScaling")
+	fileContents, e := ioutil.ReadFile("./transformtestfiles/dcos_template.json")
 	Expect(e).To(BeNil())
-	expectedFileContents, e := ioutil.ReadFile("./testFiles/vmssScaleTemplate_expected.json")
+	expectedFileContents, e := ioutil.ReadFile("./transformtestfiles/dcos_scale_template.json")
 	Expect(e).To(BeNil())
 	templateJSON := string(fileContents)
 	var template interface{}
 	json.Unmarshal([]byte(templateJSON), &template)
 	templateMap := template.(map[string]interface{})
-	e = NormalizeForVMSSScaling(logger, templateMap)
+	transformer := Transformer{}
+	e = transformer.NormalizeForVMSSScaling(logger, templateMap)
 	Expect(e).To(BeNil())
-	ValidateTemplate(templateMap, expectedFileContents, "vmssScaleTemplate")
+	ValidateTemplate(templateMap, expectedFileContents, "TestNormalizeForVMSSScaling")
 }
 
 func TestNormalizeForK8sVMASScalingUp(t *testing.T) {
 	RegisterTestingT(t)
-	logger := logrus.New()
-	fileContents, e := ioutil.ReadFile("./testFiles/k8sVMASTemplate.json")
+	logger := logrus.New().WithField("testName", "TestNormalizeForK8sVMASScalingUp")
+	fileContents, e := ioutil.ReadFile("./transformtestfiles/k8s_template.json")
 	Expect(e).To(BeNil())
-	expectedFileContents, e := ioutil.ReadFile("./testFiles/k8sVMASTemplate_expected.json")
+	expectedFileContents, e := ioutil.ReadFile("./transformtestfiles/k8s_scale_template.json")
 	Expect(e).To(BeNil())
 	templateJSON := string(fileContents)
 	var template interface{}
 	json.Unmarshal([]byte(templateJSON), &template)
 	templateMap := template.(map[string]interface{})
-	e = NormalizeForK8sVMASScalingUp(logger, templateMap)
+	transformer := Transformer{}
+	e = transformer.NormalizeForK8sVMASScalingUp(logger, templateMap)
 	Expect(e).To(BeNil())
-	ValidateTemplate(templateMap, expectedFileContents, "k8sVMASTemplate")
+	ValidateTemplate(templateMap, expectedFileContents, "TestNormalizeForK8sVMASScalingUp")
+}
+
+func TestNormalizeForK8sVMASScalingUpWithVnet(t *testing.T) {
+	RegisterTestingT(t)
+	logger := logrus.New().WithField("testName", "TestNormalizeForK8sVMASScalingUp")
+	fileContents, e := ioutil.ReadFile("./transformtestfiles/k8s_vnet_template.json")
+	Expect(e).To(BeNil())
+	expectedFileContents, e := ioutil.ReadFile("./transformtestfiles/k8s_vnet_scale_template.json")
+	Expect(e).To(BeNil())
+	templateJSON := string(fileContents)
+	var template interface{}
+	json.Unmarshal([]byte(templateJSON), &template)
+	templateMap := template.(map[string]interface{})
+	transformer := Transformer{}
+	e = transformer.NormalizeForK8sVMASScalingUp(logger, templateMap)
+	Expect(e).To(BeNil())
+	ValidateTemplate(templateMap, expectedFileContents, "TestNormalizeForK8sVMASScalingUpWithVnet")
 }
 
 func TestNormalizeResourcesForK8sMasterUpgrade(t *testing.T) {
 	RegisterTestingT(t)
-	logger := logrus.New()
-	fileContents, e := ioutil.ReadFile("./testFiles/k8sVMASTemplate.json")
+	logger := logrus.New().WithField("testName", "TestNormalizeResourcesForK8sMasterUpgrade")
+	fileContents, e := ioutil.ReadFile("./transformtestfiles/k8s_template.json")
 	Expect(e).To(BeNil())
-	expectedFileContents, e := ioutil.ReadFile("./testFiles/k8sVMASTemplate_expected.json")
+	expectedFileContents, e := ioutil.ReadFile("./transformtestfiles/k8s_master_upgrade_template.json")
 	Expect(e).To(BeNil())
 	templateJSON := string(fileContents)
 	var template interface{}
 	json.Unmarshal([]byte(templateJSON), &template)
 	templateMap := template.(map[string]interface{})
-	e = NormalizeResourcesForK8sMasterUpgrade(logger, templateMap)
+	locale, _ := i18n.LoadTranslations()
+	transformer := &Transformer{
+		Translator: &i18n.Translator{
+			Locale: locale,
+		},
+	}
+	agentsToKeepMap := make(map[string]bool)
+	agentsToKeepMap["agentpool1"] = true
+	agentsToKeepMap["agentpool2"] = true
+	e = transformer.NormalizeResourcesForK8sMasterUpgrade(logger, templateMap, false, agentsToKeepMap)
 	Expect(e).To(BeNil())
-	ValidateTemplate(templateMap, expectedFileContents, "k8sVMASTemplate")
+	ValidateTemplate(templateMap, expectedFileContents, "TestNormalizeResourcesForK8sMasterUpgrade")
+	// Clean up
+	os.RemoveAll("./translations")
 }
 
 func TestNormalizeResourcesForK8sAgentUpgrade(t *testing.T) {
 	RegisterTestingT(t)
-	logger := logrus.New()
-	fileContents, e := ioutil.ReadFile("./testFiles/k8sVMASTemplate.json")
+	logger := logrus.New().WithField("testName", "TestNormalizeResourcesForK8sAgentUpgrade")
+	fileContents, e := ioutil.ReadFile("./transformtestfiles/k8s_template.json")
 	Expect(e).To(BeNil())
-	expectedFileContents, e := ioutil.ReadFile("./testFiles/k8sVMASTemplate_expected.json")
+	expectedFileContents, e := ioutil.ReadFile("./transformtestfiles/k8s_agent_upgrade_template.json")
 	Expect(e).To(BeNil())
 	templateJSON := string(fileContents)
 	var template interface{}
 	json.Unmarshal([]byte(templateJSON), &template)
 	templateMap := template.(map[string]interface{})
-	e = NormalizeResourcesForK8sAgentUpgrade(logger, templateMap)
+	locale, _ := i18n.LoadTranslations()
+	transformer := &Transformer{
+		Translator: &i18n.Translator{
+			Locale: locale,
+		},
+	}
+	agentsToKeepMap := make(map[string]bool)
+	agentsToKeepMap["agentpool1"] = true
+	agentsToKeepMap["agentpool2"] = false
+	e = transformer.NormalizeResourcesForK8sAgentUpgrade(logger, templateMap, false, agentsToKeepMap)
 	Expect(e).To(BeNil())
-	ValidateTemplate(templateMap, expectedFileContents, "k8sVMASTemplate")
+	ValidateTemplate(templateMap, expectedFileContents, "TestNormalizeResourcesForK8sAgentUpgrade")
+	// Clean up
+	os.RemoveAll("./translations")
 }
 
 func ValidateTemplate(templateMap map[string]interface{}, expectedFileContents []byte, testFileName string) {
@@ -84,7 +125,7 @@ func ValidateTemplate(templateMap map[string]interface{}, expectedFileContents [
 	prettyExpectedOutput, e := PrettyPrintArmTemplate(string(expectedFileContents))
 	Expect(e).To(BeNil())
 	if prettyOutput != prettyExpectedOutput {
-		ioutil.WriteFile(fmt.Sprintf("./testFiles/%s.failure.json", testFileName), []byte(prettyOutput), 0600)
+		ioutil.WriteFile(fmt.Sprintf("./transformtestfiles/%s.failure.json", testFileName), []byte(prettyOutput), 0600)
 	}
 	Expect(prettyOutput).To(Equal(prettyExpectedOutput))
 }

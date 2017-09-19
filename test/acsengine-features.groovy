@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 
-node {
+node("slave") {
   withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'AZURE_CLI_SPN_ACS_TEST',
                   passwordVariable: 'SPN_PASSWORD', usernameVariable: 'SPN_USER']]) {
     timestamps {
@@ -65,7 +65,7 @@ node {
                   def name = names[j].trim()
                   env.CLUSTER_DEFINITION = pwd()+"/examples/${name}"
                   env.INSTANCE_NAME = "${prefix}-${i}-${j}"
-                  env.RESOURCE_GROUP = "test-acs-${subdir}-${env.LOCATION}-${env.BUILD_NUMBER}-${i}-${j}"
+                  env.RESOURCE_GROUP = "test-acs-${subdir}-${env.LOCATION}-${env.BUILD_NUM}-${i}-${j}"
                   env.DEPLOYMENT_NAME = "${env.RESOURCE_GROUP}"
                   env.ORCHESTRATOR = sh(returnStdout: true, script: './test/step.sh get_orchestrator_type').trim()
                   env.LOGFILE = pwd()+"/${junit_dir}/${name}.log"
@@ -111,7 +111,7 @@ node {
                   if(sendTo != "") {
                     emailext(
                       to: "${sendTo}",
-                      subject: "[ACS Engine Jenkins Failure] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                      subject: "[ACS Engine Jenkins Failure] ${env.JOB_NAME} #${env.BUILD_NUM}",
                       body: "${env.BUILD_URL}testReport")
                   }
                 }

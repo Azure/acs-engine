@@ -26,7 +26,7 @@ mounts:
   - /var/lib/docker
 - - ephemeral0.3
   - /var/tmp
-runcmd:
+runcmd: PREPROVISION_EXTENSION
 - /usr/lib/apt/apt.systemd.daily
 - echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
 - sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
@@ -84,6 +84,7 @@ runcmd:
   - unscd.service
 - sed -i "s/^Port 22$/Port 22\nPort 2222/1" /etc/ssh/sshd_config
 - service ssh restart 
+- /opt/azure/containers/setup_ephemeral_disk.sh
 - /opt/azure/containers/provision.sh
 - - cp
   - -p
@@ -118,6 +119,7 @@ runcmd:
   - --no-block
   - start
   - dcos-setup.service
+- /opt/azure/containers/add_admin_to_docker_group.sh
 write_files:
 - content: 'https://dcosio.azureedge.net/dcos/stable
 
@@ -302,4 +304,49 @@ write_files:
 - path: /var/lib/dcos/mesos-slave-common
   content: 'ATTRIBUTES_STR'
   permissions: "0644"
+  owner: "root"
+- content: |
+    #!/bin/bash
+    adduser {{{adminUsername}}} docker
+  path: "/opt/azure/containers/add_admin_to_docker_group.sh"
+  permissions: "0744"
+  owner: "root"
+- content: |
+    #!/bin/bash
+    # Check the partitions on /dev/sdb created by cloudinit and force a detach and
+    # reformat of the parition.  After which, all will be remounted.
+    EPHEMERAL_DISK="/dev/sdb"
+    PARTITIONS=`fdisk -l $EPHEMERAL_DISK | grep "^$EPHEMERAL_DISK" | cut -d" " -f1 | sed "s~$EPHEMERAL_DISK~~"`
+    if [ -n "$PARTITIONS" ]; then
+        for f in $PARTITIONS; do
+            df -k | grep "/dev/sdb$f"
+            if [ $? -eq 0 ]; then
+                umount -f /dev/sdb$f
+            fi
+            mkfs.ext4 /dev/sdb$f
+        done
+        mount -a
+    fi
+    # If there is a /var/tmp partition on the ephemeral disk, create a symlink such
+    # that the /var/log/mesos and /var/log/journal placed on the ephemeral disk.
+    VAR_TMP_PARTITION=`df -P /var/tmp | tail -1 | cut -d" " -f 1`
+    echo $VAR_TMP_PARTITION | grep "^$EPHEMERAL_DISK"
+    if [ $? -eq 0 ]; then
+        # Handle the /var/log/mesos directory
+        mkdir -p /var/tmp/log/mesos
+        if [ -d "/var/log/mesos" ]; then
+            cp -rp /var/log/mesos/* /var/tmp/log/mesos/
+            rm -rf /var/log/mesos
+        fi
+        ln -s /var/tmp/log/mesos /var/log/mesos
+        # Handle the /var/log/journal direcotry
+        mkdir -p /var/tmp/log/journal
+        if [ -d "/var/log/journal" ]; then
+            cp -rp /var/log/journal/* /var/tmp/log/journal/
+            rm -rf /var/log/journal
+        fi
+        ln -s /var/tmp/log/journal /var/log/journal
+    fi
+  path: "/opt/azure/containers/setup_ephemeral_disk.sh"
+  permissions: "0744"
   owner: "root"

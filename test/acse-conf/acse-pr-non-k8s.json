@@ -1,0 +1,16 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "dcos.json",
+      "location": "eastus"
+    },
+    {
+      "cluster_definition": "swarm.json",
+      "location": "westus2"
+    },
+    {
+      "cluster_definition": "swarmmode.json",
+      "location": "westcentralus"
+    }
+  ]
+}

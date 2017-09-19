@@ -11,24 +11,29 @@ import (
 	"fmt"
 	"math/big"
 	"net"
-	"os"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
+	// ValidityDuration specifies the duration an TLS certificate is valid
 	ValidityDuration = time.Hour * 24 * 365 * 2
-	PkiKeySize       = 4096
+	// PkiKeySize is the size in bytes of the PKI key
+	PkiKeySize = 4096
 )
 
+// PkiKeyCertPair represents an PKI public and private cert pair
 type PkiKeyCertPair struct {
 	CertificatePem string
 	PrivateKeyPem  string
 }
 
+// CreatePki creates PKI certificates
 func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
 	start := time.Now()
 	defer func(s time.Time) {
-		fmt.Fprintf(os.Stderr, "cert creation took %s\n", time.Since(s))
+		log.Debugf("pki: PKI asset creation took %s", time.Since(s))
 	}(start)
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes"))
 	extraFQDNs = append(extraFQDNs, fmt.Sprintf("kubernetes.default"))
@@ -62,19 +67,23 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 
 	go func() {
 		var err error
-		apiServerCertificate, apiServerPrivateKey, err = createCertificate("apiserver", caCertificate, caPrivateKey, true, extraFQDNs, extraIPs)
+		apiServerCertificate, apiServerPrivateKey, err = createCertificate("apiserver", caCertificate, caPrivateKey, true, extraFQDNs, extraIPs, nil)
 		errors <- err
 	}()
 
 	go func() {
 		var err error
-		clientCertificate, clientPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil)
+		organization := make([]string, 1)
+		organization[0] = "system:masters"
+		clientCertificate, clientPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil, organization)
 		errors <- err
 	}()
 
 	go func() {
 		var err error
-		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil)
+		organization := make([]string, 1)
+		organization[0] = "system:masters"
+		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil, organization)
 		errors <- err
 	}()
 
@@ -97,7 +106,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		nil
 }
 
-func createCertificate(commonName string, caCertificate *x509.Certificate, caPrivateKey *rsa.PrivateKey, isServer bool, extraFQDNs []string, extraIPs []net.IP) (*x509.Certificate, *rsa.PrivateKey, error) {
+func createCertificate(commonName string, caCertificate *x509.Certificate, caPrivateKey *rsa.PrivateKey, isServer bool, extraFQDNs []string, extraIPs []net.IP, organization []string) (*x509.Certificate, *rsa.PrivateKey, error) {
 	var err error
 
 	isCA := (caCertificate == nil)
@@ -113,12 +122,14 @@ func createCertificate(commonName string, caCertificate *x509.Certificate, caPri
 		BasicConstraintsValid: true,
 	}
 
+	if organization != nil {
+		template.Subject.Organization = organization
+	}
+
 	if isCA {
 		template.KeyUsage |= x509.KeyUsageCertSign
 		template.IsCA = isCA
 	} else if isServer {
-		extraIPs = append(extraIPs, net.ParseIP("10.0.0.1"))
-
 		template.DNSNames = extraFQDNs
 		template.IPAddresses = extraIPs
 		template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageServerAuth)
@@ -132,7 +143,7 @@ func createCertificate(commonName string, caCertificate *x509.Certificate, caPri
 		return nil, nil, err
 	}
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, PkiKeySize)
+	privateKey, _ := rsa.GenerateKey(rand.Reader, PkiKeySize)
 
 	var privateKeyToUse *rsa.PrivateKey
 	var certificateToUse *x509.Certificate

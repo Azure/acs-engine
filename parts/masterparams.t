@@ -10,14 +10,23 @@
       }, 
       "type": "string"
     },
-{{if .MasterProfile.IsCustomVNET}}
+    {{range .ExtensionProfiles}}
+      "{{.Name}}Parameters": {
+        "metadata": {
+        "description": "Parameters for the extension"
+      }, 
+      "type": "securestring"
+      },
+    {{end}}
+{{if not IsHostedMaster }}
+  {{if .MasterProfile.IsCustomVNET}}
     "masterVnetSubnetID": {
       "metadata": {
         "description": "Sets the vnet subnet of the master."
       }, 
       "type": "string"
     },
-{{else}}
+  {{else}}
     "masterSubnet": {
       "defaultValue": "{{.MasterProfile.Subnet}}",
       "metadata": {
@@ -25,7 +34,24 @@
       }, 
       "type": "string"
     },
+  {{end}}
 {{end}}
+{{if IsHostedMaster}}
+    "masterSubnet": {
+      "defaultValue": "{{.HostedMasterProfile.Subnet}}",
+      "metadata": {
+        "description": "Sets the subnet for the VMs in the cluster."
+      },
+      "type": "string"
+    },
+    "kubernetesEndpoint": {
+      "defaultValue": "{{.HostedMasterProfile.FQDN}}",
+      "metadata": {
+        "description": "Sets the static IP of the first master"
+      },
+      "type": "string"
+    },
+{{else}}
     "firstConsecutiveStaticIP": {
       "defaultValue": "{{.MasterProfile.FirstConsecutiveStaticIP}}",
       "metadata": {
@@ -39,7 +65,8 @@
         "description": "The size of the Virtual Machine."
       }, 
       "type": "string"
-    }, 
+    },
+{{end}}
     "sshRSAPublicKey": {
       "metadata": {
         "description": "SSH public key used for auth to all Linux machines.  Not Required.  If not set, you must provide a password key."
@@ -50,6 +77,41 @@
       "defaultValue": "{{GetUniqueNameSuffix}}",
       "metadata": {
         "description": "A string hash of the master DNS name to uniquely identify the cluster."
+      },
+      "type": "string"
+    },
+    "osImageOffer": {
+      "defaultValue": "UbuntuServer",
+      "metadata": {
+        "description": "Linux OS image type."
+      },
+      "type": "string"
+    }, 
+    "osImagePublisher": {
+      "defaultValue": "Canonical",
+      "metadata": {
+        "description": "OS image publisher."
+      },
+      "type": "string"
+    }, 
+    "osImageSKU": {
+      "defaultValue": "16.04-LTS",
+      "metadata": {
+        "description": "OS image SKU."
+      },
+      "type": "string"
+    }, 
+    "osImageVersion": {
+      "defaultValue": "16.04.201706191",
+      "metadata": {
+        "description": "OS image version."
+      },
+      "type": "string"
+    },
+    "fqdnEndpointSuffix":{
+      "defaultValue": "%s.%s.cloudapp.azure.com",
+      "metadata": {
+        "description": "Endpoint of FQDN."
       },
       "type": "string"
     },

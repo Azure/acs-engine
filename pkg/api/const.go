@@ -3,21 +3,32 @@ package api
 // the orchestrators supported by vlabs
 const (
 	// Mesos is the string constant for MESOS orchestrator type
-	Mesos OrchestratorType = "Mesos"
+	Mesos string = "Mesos"
 	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS188
-	DCOS OrchestratorType = "DCOS"
+	DCOS string = "DCOS"
 	// Swarm is the string constant for the Swarm orchestrator type
-	Swarm OrchestratorType = "Swarm"
+	Swarm string = "Swarm"
 	// Kubernetes is the string constant for the Kubernetes orchestrator type
-	Kubernetes OrchestratorType = "Kubernetes"
+	Kubernetes string = "Kubernetes"
 	// SwarmMode is the string constant for the Swarm Mode orchestrator type
-	SwarmMode OrchestratorType = "SwarmMode"
+	SwarmMode string = "SwarmMode"
 )
 
 // the OSTypes supported by vlabs
 const (
 	Windows OSType = "Windows"
 	Linux   OSType = "Linux"
+)
+
+const (
+	// SwarmVersion is the Swarm orchestrator version
+	SwarmVersion = "swarm:1.1.0"
+	// SwarmDockerComposeVersion is the Docker Compose version
+	SwarmDockerComposeVersion = "1.6.2"
+	// DockerCEVersion is the DockerCE orchestrator version
+	DockerCEVersion = "17.03.*"
+	// DockerCEDockerComposeVersion is the Docker Compose version
+	DockerCEDockerComposeVersion = "1.14.0"
 )
 
 // validation values
@@ -51,34 +62,39 @@ const (
 )
 
 const (
-	// Kubernetes153 is the string constant for Kubernetes 1.5.3
-	Kubernetes153 OrchestratorVersion = "1.5.3"
-	// Kubernetes157 is the string constant for Kubernetes 1.5.7
-	Kubernetes157 OrchestratorVersion = "1.5.7"
-	// Kubernetes160 is the string constant for Kubernetes 1.6.0
-	Kubernetes160 OrchestratorVersion = "1.6.0"
-	// Kubernetes162 is the string constant for Kubernetes 1.6.2
-	Kubernetes162 OrchestratorVersion = "1.6.2"
-	// Kubernetes166 is the string constant for Kubernetes 1.6.6
-	Kubernetes166 OrchestratorVersion = "1.6.6"
-	// KubernetesLatest is the string constant for latest Kubernetes version
-	KubernetesLatest OrchestratorVersion = Kubernetes166
+	// KubernetesRelease1Dot7 is the major.minor string prefix for 1.7 versions of kubernetes
+	KubernetesRelease1Dot7 string = "1.7"
+	// KubernetesRelease1Dot6 is the major.minor string prefix for 1.6 versions of kubernetes
+	KubernetesRelease1Dot6 string = "1.6"
+	// KubernetesRelease1Dot5 is the major.minor string prefix for 1.5 versions of kubernetes
+	KubernetesRelease1Dot5 string = "1.5"
+	// KubernetesDefaultRelease is the default major.minor version for kubernetes
+	KubernetesDefaultRelease string = KubernetesRelease1Dot6
 )
 
 const (
-	// DCOS190 is the string constant for DCOS 1.9.0
-	DCOS190 OrchestratorVersion = "1.9.0"
-	// DCOS188 is the string constant for DCOS 1.8.8
-	DCOS188 OrchestratorVersion = "1.8.8"
-	// DCOS187 is the string constant for DCOS 1.8.7
-	DCOS187 OrchestratorVersion = "1.8.7"
-	// DCOS184 is the string constant for DCOS 1.8.4
-	DCOS184 OrchestratorVersion = "1.8.4"
-	// DCOS173 is the string constant for DCOS 1.7.3
-	DCOS173 OrchestratorVersion = "1.7.3"
-	// DCOSLatest is the string constant for latest DCOS version
-	DCOSLatest OrchestratorVersion = DCOS190
+	// DCOSRelease1Dot10 is the major.minor string prefix for 1.10 versions of DCOS
+	DCOSRelease1Dot10 string = "1.10"
+	// DCOSRelease1Dot9 is the major.minor string prefix for 1.9 versions of DCOS
+	DCOSRelease1Dot9 string = "1.9"
+	// DCOSRelease1Dot8 is the major.minor string prefix for 1.8 versions of DCOS
+	DCOSRelease1Dot8 string = "1.8"
+	// DCOSDefaultRelease is the default major.minor version for DCOS
+	DCOSDefaultRelease string = DCOSRelease1Dot9
 )
+
+// DCOSReleaseToVersion maps a major.minor release to an full major.minor.patch version
+var DCOSReleaseToVersion = map[string]string{
+	DCOSRelease1Dot9: "1.9.0",
+	DCOSRelease1Dot8: "1.8.8",
+}
+
+// KubernetesReleaseToVersion maps a major.minor release to an full major.minor.patch version
+var KubernetesReleaseToVersion = map[string]string{
+	KubernetesRelease1Dot7: "1.7.5",
+	KubernetesRelease1Dot6: "1.6.9",
+	KubernetesRelease1Dot5: "1.5.7",
+}
 
 // To identify programmatically generated public agent pools
 const publicAgentPoolSuffix = "-public"

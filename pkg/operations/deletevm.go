@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // CleanDeleteVirtualMachine deletes a VM and any associated OS disk
@@ -16,16 +16,15 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 		return err
 	}
 
-	// NOTE: This code assumes a non-managed disk!
 	vhd := vm.VirtualMachineProperties.StorageProfile.OsDisk.Vhd
-	if vhd == nil {
-		logger.Warnf("found an OS Disk with no VHD URI. This is probably a VM with a managed disk")
+	managedDisk := vm.VirtualMachineProperties.StorageProfile.OsDisk.ManagedDisk
+	if vhd == nil && managedDisk == nil {
+		logger.Errorf("failed to get a valid os disk URI for VM: %s/%s", resourceGroup, name)
+
 		return fmt.Errorf("os disk does not have a VHD URI")
 	}
-	accountName, vhdContainer, vhdBlob, err := armhelpers.SplitBlobURI(*vhd.URI)
-	if err != nil {
-		return err
-	}
+
+	osDiskName := vm.VirtualMachineProperties.StorageProfile.OsDisk.Name
 
 	nicID := (*vm.VirtualMachineProperties.NetworkProfile.NetworkInterfaces)[0].ID
 	nicName, err := armhelpers.ResourceName(*nicID)
@@ -33,16 +32,10 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 		return err
 	}
 
-	logger.Infof("found os disk storage reference: %s %s %s", accountName, vhdContainer, vhdBlob)
 	logger.Infof("found nic name for VM (%s/%s): %s", resourceGroup, name, nicName)
 
 	logger.Infof("deleting VM: %s/%s", resourceGroup, name)
 	_, deleteErrChan := az.DeleteVirtualMachine(resourceGroup, name, nil)
-
-	as, err := az.GetStorageClient(resourceGroup, accountName)
-	if err != nil {
-		return err
-	}
 
 	logger.Infof("waiting for vm deletion: %s/%s", resourceGroup, name)
 	if err := <-deleteErrChan; err != nil {
@@ -51,18 +44,36 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 
 	logger.Infof("deleting nic: %s/%s", resourceGroup, nicName)
 	_, nicErrChan := az.DeleteNetworkInterface(resourceGroup, nicName, nil)
-	if err != nil {
-		return err
-	}
-
-	logger.Infof("deleting blob: %s/%s", vhdContainer, vhdBlob)
-	if err = as.DeleteBlob(vhdContainer, vhdBlob); err != nil {
-		return err
-	}
 
 	logger.Infof("waiting for nic deletion: %s/%s", resourceGroup, nicName)
 	if nicErr := <-nicErrChan; nicErr != nil {
 		return nicErr
+	}
+
+	if vhd != nil {
+		accountName, vhdContainer, vhdBlob, err := armhelpers.SplitBlobURI(*vhd.URI)
+		if err != nil {
+			return err
+		}
+
+		logger.Infof("found os disk storage reference: %s %s %s", accountName, vhdContainer, vhdBlob)
+
+		as, err := az.GetStorageClient(resourceGroup, accountName)
+		if err != nil {
+			return err
+		}
+
+		logger.Infof("deleting blob: %s/%s", vhdContainer, vhdBlob)
+		if err = as.DeleteBlob(vhdContainer, vhdBlob); err != nil {
+			return err
+		}
+	} else if managedDisk != nil {
+		logger.Infof("deleting managed disk: %s/%s", resourceGroup, *osDiskName)
+		_, diskErrChan := az.DeleteManagedDisk(resourceGroup, *osDiskName, nil)
+
+		if err := <-diskErrChan; err != nil {
+			return err
+		}
 	}
 
 	return nil

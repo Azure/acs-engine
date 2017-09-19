@@ -390,6 +390,11 @@
       },
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
+      {{if UseManagedIdentity}}
+      "identity": {
+        "type": "systemAssigned"
+      },
+      {{end}}
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('masterAvailabilitySet'))]"
@@ -430,8 +435,8 @@
               "createOption": "Empty"
               ,"diskSizeGB": "128"
               ,"lun": 0
-          {{if .MasterProfile.IsStorageAccount}}
               ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
+          {{if .MasterProfile.IsStorageAccount}}
               ,"vhd": {
                 "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/', variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-etcddisk.vhd')]"
               }
@@ -462,6 +467,45 @@
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
+    {{if UseManagedIdentity}}
+    {
+      "apiVersion": "2014-10-01-preview",
+      "copy": {
+         "count": "[variables('masterCount')]",
+         "name": "vmLoopNode"
+       },
+      "name": "[guid(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(),'vmidentity'))]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "properties": {
+        "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+        "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex()), '2017-03-30', 'Full').identity.principalId]"
+      }
+    },
+     {
+       "type": "Microsoft.Compute/virtualMachines/extensions",
+       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(), '/ManagedIdentityExtension')]",
+       "copy": {
+         "count": "[variables('masterCount')]",
+         "name": "vmLoopNode"
+       },
+       "apiVersion": "2015-05-01-preview",
+       "location": "[resourceGroup().location]",
+       "dependsOn": [
+         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex())]",
+         "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(), 'vmidentity')))]"
+       ],
+       "properties": {
+         "publisher": "Microsoft.ManagedIdentity",
+         "type": "ManagedIdentityExtensionForLinux",
+         "typeHandlerVersion": "1.0",
+         "autoUpgradeMinorVersion": true,
+         "settings": {
+           "port": 50343
+         },
+         "protectedSettings": {}
+       }
+     },
+     {{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
@@ -469,7 +513,11 @@
         "name": "vmLoopNode"
       },
       "dependsOn": [
+        {{if UseManagedIdentity}}
+        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')), '/extensions/ManagedIdentityExtension')]"
+        {{else}}
         "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]"
+        {{end}}
       ],
       "location": "[variables('location')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
@@ -481,7 +529,7 @@
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
-          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailablitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('targetEnvironment'),' ',variables('networkPolicy'),' ',variables('apiServerPrivateKey'),' ',variables('caCertificate'),' ',variables('caPrivateKey'),' ',variables('masterFqdnPrefix'),' ',variables('kubeConfigCertificate'),' ',variables('kubeConfigPrivateKey'),' ',variables('username'),' >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailabilitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('targetEnvironment'),' ',variables('networkPolicy'),' ', variables('fqdnEndpointSuffix'),' ',variables('vnetCniLinuxPluginsURL'),' ',variables('cniPluginsURL'),' ',variables('calicoConfigURL'),' ',variables('maxPods'),' ',variables('cloudProviderBackoff'),' ',variables('cloudProviderBackoffRetries'),' ',variables('cloudProviderBackoffExponent'),' ',variables('cloudProviderBackoffDuration'),' ',variables('cloudProviderBackoffJitter'),' ',variables('cloudProviderRatelimit'),' ',variables('cloudProviderRatelimitQPS'),' ',variables('cloudProviderRatelimitBucket'),' ',variables('useManagedIdentityExtension'),' ',variables('useInstanceMetadata'),' ',variables('apiServerPrivateKey'),' ',variables('caCertificate'),' ',variables('caPrivateKey'),' ',variables('masterFqdnPrefix'),' ',variables('kubeConfigCertificate'),' ',variables('kubeConfigPrivateKey'),' ',variables('username'),' >> /var/log/azure/cluster-provision.log 2>&1\"')]"
         }
       }
-    }
+    }{{WriteLinkedTemplatesForExtensions}}

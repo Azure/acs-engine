@@ -21,14 +21,23 @@ spec:
         - "--cloud-provider=azure"
         - "--cloud-config=/etc/kubernetes/azure.json"
         - "--root-ca-file=/etc/kubernetes/certs/ca.crt"
+        - "--cluster-signing-cert-file=/etc/kubernetes/certs/ca.crt"
+        - "--cluster-signing-key-file=/etc/kubernetes/certs/ca.key"
         - "--service-account-private-key-file=/etc/kubernetes/certs/apiserver.key"
         - "--leader-elect=true"
+        - "<kubernetesEnableRbac>"
         - "--v=2"
+        - "--node-monitor-grace-period=<kubernetesCtrlMgrNodeMonitorGracePeriod>"
+        - "--pod-eviction-timeout=<kubernetesCtrlMgrPodEvictionTimeout>"
+        - "--route-reconciliation-period=<kubernetesCtrlMgrRouteReconciliationPeriod>"
       volumeMounts: 
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"
         - name: "var-lib-kubelet"
           mountPath: "/var/lib/kubelet"
+        - name: msi
+          mountPath: "/var/lib/waagent/ManagedIdentity-Settings"
+          readOnly: true
   volumes:
     - name: "etc-kubernetes"
       hostPath:
@@ -36,3 +45,6 @@ spec:
     - name: "var-lib-kubelet"
       hostPath:
         path: "/var/lib/kubelet"
+    - name: msi
+      hostPath:
+        path: "/var/lib/waagent/ManagedIdentity-Settings"

@@ -20,7 +20,7 @@ Extract the GUIDs from the 3 differents templates, and them in `engine.go/getPac
 
 In one of the template (no matter which one), grab the data from the MasterVM.osProfile.customData.  
 If you remove the concat operation, you should end up which a big string of unescaped JSON.  
-Escape it (for example using this [online tool](http://www.freeformatter.com/javascript-escape.html#ad-output)), and convert it to yaml (you can use [json2yaml](https://www.json2yaml.com/)).
+Unescape it (for example using this [online tool](http://www.freeformatter.com/javascript-escape.html#ad-output)), and convert it to yaml (you can use [json2yaml](https://www.json2yaml.com/)).
 You should now have a clean yaml.
 
 ## 4. Create and customize the custom data file.
@@ -49,7 +49,6 @@ becomes
 ```
 
 Additional modifications under `runcmd`:
-* the `content` of the cmd with path `/etc/mesosphere/setup-flags/cluster-packages.json` becomes `'DCOS_ENVIRONMENT={{{targetEnvironment}}}'`
 * Replace every occurence of the Package GUID (that we found in step 2) by `DCOSGUID`.
 * the `content` of the cmd with path `/etc/mesosphere/setup-flags/late-config.yaml` should be modified to accept ACS-Engine bindings instead of variable where needed (look at a previous custom data file for reference).  
 * At the very end of the file, replace  
@@ -72,3 +71,137 @@ by
   permissions: "0744"
   owner: "root"
 ```
+
+## 5. Adding the support of the new version inside to .go files
+
+### pkg/acsengine/defaults.go
+
+- Around line 30, add your `DCOSXXXBootstrapDownloadURL` variable (replace XXX with the version number), inside the `fmt.Sprintf()` function replace the second and third parameters with the version `EA, Stable, Beta, ...` and the commit hash.
+
+> You can find the commit hash from the https://downloads.dcos.io/dcos/stable/X.XX.X/azure.html page.
+
+Example for version 1.10
+[https://downloads.dcos.io/dcos/stable/1.10.0/azure.html](https://downloads.dcos.io/dcos/stable/1.10.0/azure.html)
+
+```
+DCOS110BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "stable", "e38ab2aa282077c8eb7bf103c6fff7b0f08db1a4"),
+```
+
+### pkg/acsengine/engine.go
+
+- Around line 39, add `dcosCustomDataXXX    = "dcoscustomdataXXX.t"` variable
+
+Example for version 1.10:
+```
+dcosCustomData110    = "dcoscustomdata110.t"
+```
+
+- Around line  578, add the code case block for your version.
+
+Example for version 1.10:
+```
+case api.DCOSRelease1Dot10:
+  dcosBootstrapURL = cloudSpecConfig.DCOSSpecConfig.DCOS110BootstrapDownloadURL
+ ```
+
+- Around line 1170, add your api case version.
+
+ Example for version 1.10:
+ ```
+ case api.DCOSRelease1Dot10:
+			switch masterCount {
+			case 1:
+				return "c4ec6210f396b8e435177b82e3280a2cef0ce721"
+			case 3:
+				return "08197947cb57d479eddb077a429fa15c139d7d20"
+			case 5:
+				return "f286ad9d3641da5abb622e4a8781f73ecd8492fa"
+			}
+ ```
+
+ > In the return function, paste the package GUID from the step 2 for each cases.
+
+- Around line 1558, add your api case version.
+
+Example for version 1.10:
+```
+		case api.DCOSRelease1Dot10:
+ 			yamlFilename = dcosCustomData110
+```
+
+### pkg/acsengine/types.go
+
+- Around line 40, add your the type for your new version.
+
+Example for version 1.10 :
+```
+DCOS110BootstrapDownloadURL     string
+```
+
+### pkg/api/common/const.go
+
+- Around line 59, declare a new const with your `DCOSRelease`
+
+Example for version 1.10 :
+```
+// DCOSRelease1Dot10 is the major.minor string prefix for 1.9 versions of DCOS
+DCOSRelease1Dot10 string = "1.10"
+```
+
+- Around line 72, add your `DCOSReleaseToVersion` in the map
+
+Example for version 1.10 :
+```
+DCOSRelease1Dot10: "1.10.0",
+```
+
+### pkg/api/const.go
+
+- Around line 76, add the const for your DCOS release
+
+Example for version 1.10 :
+```
+// DCOSRelease1Dot10 is the major.minor string prefix for 1.10 versions of DCOS
+DCOSRelease1Dot10 string = "1.10"
+```
+
+### pkg/api/convertertoapi.go
+
+- Around line 572 and 601 (two places) add the case for your release
+
+Example for version 1.10 :
+```
+case DCOSRelease1Dot10, DCOSRelease1Dot9, DCOSRelease1Dot8:
+```
+```
+case DCOSRelease1Dot10, DCOSRelease1Dot9, DCOSRelease1Dot8, DCOSRelease1Dot7:
+```
+
+### pkg/api/v20170701/validate.go
+
+- Around line 33, add the case for your release
+
+Example for version 1.10 :
+```
+case common.DCOSRelease1Dot10:
+```
+
+### pkg/api/vlabs/validate.go
+
+- Around line 37, add the case for your release
+
+Example for version 1.10 :
+```
+case common.DCOSRelease1Dot10:
+```
+
+
+## Conclusion
+
+We encourage you to look at previous PR as example, listed bellow :
+
+- [Adding DC/OS 1.10 stable version support #1439](https://github.com/Azure/acs-engine/pull/1439/files)
+- [setting dcos test to 1.9 (current default)](https://github.com/Azure/acs-engine/pull/1443)
+- [[DC/OS] Set 1.9 as default DCOS version and upgrade Packages](https://github.com/Azure/acs-engine/pull/457)
+- [[DC/OS] Add support for DCOS 1.9 EA](https://github.com/Azure/acs-engine/pull/360)
+- [DCOS 1.8.8 Support](https://github.com/Azure/acs-engine/pull/278)

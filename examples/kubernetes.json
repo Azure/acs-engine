@@ -2,8 +2,7 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "Kubernetes",
-      "orchestratorVersion": "1.6.2"
+      "orchestratorType": "Kubernetes"
     },
     "masterProfile": {
       "count": 1,
@@ -29,8 +28,8 @@
       }
     },
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "",
-      "servicePrincipalClientSecret": ""
+      "clientId": "",
+      "secret": ""
     }
   }
 }

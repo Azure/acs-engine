@@ -428,6 +428,15 @@ func (s *StorageBlobSuite) TestGetBlobRange(c *chk.C) {
 		{
 			options: GetBlobRangeOptions{
 				Range: &BlobRange{
+					Start: 0,
+					End:   0,
+				},
+			},
+			expected: body,
+		},
+		{
+			options: GetBlobRangeOptions{
+				Range: &BlobRange{
 					Start: 1,
 					End:   3,
 				},
@@ -443,7 +452,19 @@ func (s *StorageBlobSuite) TestGetBlobRange(c *chk.C) {
 			},
 			expected: body[3:],
 		},
+		{
+			options: GetBlobRangeOptions{
+				Range: &BlobRange{
+					Start: 3,
+					End:   0,
+				},
+			},
+			expected: body[3:],
+		},
 	}
+
+	err := b.GetProperties(nil)
+	c.Assert(err, chk.IsNil)
 
 	// Read 1-3
 	for _, r := range cases {
@@ -455,8 +476,8 @@ func (s *StorageBlobSuite) TestGetBlobRange(c *chk.C) {
 		str := string(blobBody)
 		c.Assert(str, chk.Equals, r.expected)
 
-		// Was content lenght properly updated...?
-		c.Assert(b.Properties.ContentLength, chk.Equals, int64(len(r.expected)))
+		// Was content length left untouched?
+		c.Assert(b.Properties.ContentLength, chk.Equals, int64(len(body)))
 	}
 }
 

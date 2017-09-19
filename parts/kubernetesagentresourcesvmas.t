@@ -52,7 +52,7 @@
         {
             "platformFaultDomainCount": "2",
             "platformUpdateDomainCount": "3",
-		        "managed" : "true"
+		"managed" : "true"
         },
   
       "type": "Microsoft.Compute/availabilitySets"
@@ -64,9 +64,11 @@
         "count": "[variables('{{.Name}}StorageAccountsCount')]",
         "name": "loop"
       },
+      {{if not IsHostedMaster}}
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
+      {{end}}
       "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}AccountName'))]",
       "properties": {
@@ -81,9 +83,11 @@
         "count": "[variables('{{.Name}}StorageAccountsCount')]",
         "name": "datadiskLoop"
       },
+      {{if not IsHostedMaster}}
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
+      {{end}}
       "location": "[variables('location')]",
       "name": "[concat(variables('storageAccountPrefixes')[mod(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('storageAccountPrefixes')[div(add(copyIndex(variables('dataStorageAccountPrefixSeed')),variables('{{.Name}}StorageAccountOffset')),variables('storageAccountPrefixesCount'))],variables('{{.Name}}DataAccountName'))]",
       "properties": {
@@ -130,6 +134,11 @@
       },
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
+      {{if UseManagedIdentity}}
+      "identity": {
+        "type": "systemAssigned"
+      },
+      {{end}}
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('{{.Name}}AvailabilitySet'))]"
@@ -189,14 +198,57 @@
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
+    {{if UseManagedIdentity}}
     {
+      "apiVersion": "2014-10-01-preview",
+      "copy": {
+         "count": "[variables('{{.Name}}Count')]",
+         "name": "vmLoopNode"
+       },
+      "name": "[guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), 'vmidentity'))]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "properties": {
+        "roleDefinitionId": "[variables('readerRoleDefinitionId')]",
+        "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex()), '2017-03-30', 'Full').identity.principalId]"
+      }
+    },
+     {
+       "type": "Microsoft.Compute/virtualMachines/extensions",
+       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(), '/ManagedIdentityExtension')]",
+       "copy": {
+         "count": "[variables('{{.Name}}Count')]",
+         "name": "vmLoopNode"
+       },
+       "apiVersion": "2015-05-01-preview",
+       "location": "[resourceGroup().location]",
+       "dependsOn": [
+         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex())]",
+         "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), 'vmidentity')))]"
+       ],
+       "properties": {
+         "publisher": "Microsoft.ManagedIdentity",
+         "type": "ManagedIdentityExtensionForLinux",
+         "typeHandlerVersion": "1.0",
+         "autoUpgradeMinorVersion": true,
+         "settings": {
+           "port": 50343
+         },
+         "protectedSettings": {}
+       }
+     },
+     {{end}}
+     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
         "count": "[sub(variables('{{.Name}}Count'), variables('{{.Name}}Offset'))]",
         "name": "vmLoopNode"
       },
       "dependsOn": [
+        {{if UseManagedIdentity}}
+        "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), '/extensions/ManagedIdentityExtension')]"
+        {{else}}
         "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]"
+        {{end}}
       ],
       "location": "[variables('location')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
@@ -208,7 +260,7 @@
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
-          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailablitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('targetEnvironment'),' ',variables('networkPolicy'),' >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
+          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailabilitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('targetEnvironment'),' ',variables('networkPolicy'),' ',variables('fqdnEndpointSuffix'),' ',variables('vnetCniLinuxPluginsURL'),' ',variables('cniPluginsURL'),' ',variables('calicoConfigURL'),' ',variables('maxPods'),' ',variables('cloudProviderBackoff'),' ',variables('cloudProviderBackoffRetries'),' ',variables('cloudProviderBackoffExponent'),' ',variables('cloudProviderBackoffDuration'),' ',variables('cloudProviderBackoffJitter'),' ',variables('cloudProviderRatelimit'),' ',variables('cloudProviderRatelimitQPS'),' ',variables('cloudProviderRatelimitBucket'),' ', variables('useManagedIdentityExtension'),' ',variables('useInstanceMetadata'),' >> /var/log/azure/cluster-provision.log 2>&1 &\" &')]"
         }
       }
     }

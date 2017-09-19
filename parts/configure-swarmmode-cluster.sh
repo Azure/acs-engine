@@ -16,18 +16,20 @@ echo "starting Swarm Mode cluster configuration"
 date
 ps ax
 
-DOCKER_CE_VERSION="17.03.*"
-DOCKER_COMPOSE_VERSION="1.14.0"
 #############
 # Parameters
 #############
 
-MASTERCOUNT=${1}
-MASTERPREFIX=${2}
-MASTERFIRSTADDR=${3}
-AZUREUSER=${4}
-POSTINSTALLSCRIPTURI=${5}
-BASESUBNET=${6}
+DOCKER_CE_VERSION=${1}
+DOCKER_COMPOSE_VERSION=${2}
+MASTERCOUNT=${3}
+MASTERPREFIX=${4}
+MASTERFIRSTADDR=${5}
+AZUREUSER=${6}
+POSTINSTALLSCRIPTURI=${7}
+BASESUBNET=${8}
+DOCKERENGINEDOWNLOADREPO=${9}
+DOCKERCOMPOSEDOWNLOADURL=${10}
 VMNAME=`hostname`
 VMNUMBER=`echo $VMNAME | sed 's/.*[^0-9]\([0-9]\+\)*$/\1/'`
 VMPREFIX=`echo $VMNAME | sed 's/\(.*[^0-9]\)*[0-9]\+$/\1/'`
@@ -179,7 +181,7 @@ updateDockerDaemonOptions()
     # also have it bind to the unix socket at /var/run/docker.sock
     sudo bash -c 'echo "[Service]
     ExecStart=
-    ExecStart=/usr/bin/docker daemon -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
+    ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
   " > /etc/systemd/system/docker.service.d/override.conf'
 }
 time updateDockerDaemonOptions
@@ -190,7 +192,7 @@ installDockerCompose()
   # sudo -i
 
   for i in {1..10}; do
-    wget --tries 4 --retry-connrefused --waitretry=15 -qO- https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+    wget --tries 4 --retry-connrefused --waitretry=15 -qO- $DOCKERCOMPOSEDOWNLOADURL/$DOCKER_COMPOSE_VERSION/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
     if [ $? -eq 0 ]
     then
       # hostname has been found continue

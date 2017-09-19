@@ -25,7 +25,7 @@ There are several ways to create a Service Principal in Azure Active Directory:
    az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
    ```
 
-   This will output your `appId`, `password`, `name`, and `tenant`.  The `name` or `appId` may be used for the `servicePrincipalProfile.servicePrincipalClientId` and the `password` is used for `servicePrincipalProfile.servicePrincipalClientSecret`.
+   This will output your `appId`, `password`, `name`, and `tenant`.  The `name` or `appId` may be used for the `servicePrincipalProfile.clientId` and the `password` is used for `servicePrincipalProfile.secret`.
 
    Confirm your service principal by opening a new shell and run the following commands substituting in `name`, `password`, and `tenant`:
 
@@ -33,10 +33,6 @@ There are several ways to create a Service Principal in Azure Active Directory:
    az login --service-principal -u NAME -p PASSWORD --tenant TENANT
    az vm list-sizes --location westus
    ```
-
-* **With the legacy [Azure XPlat CLI](https://github.com/Azure/azure-xplat-cli)**
-
-   Instructions: ["Use Azure CLI to create a service principal to access resources"](https://azure.microsoft.com/en-us/documentation/articles/resource-group-authenticate-service-principal-cli/)
 
 * **With [PowerShell](https://github.com/Azure/azure-powershell)**
 
@@ -51,7 +47,7 @@ There are several ways to create a Service Principal in Azure Active Directory:
    PS> New-AzureRmRoleAssignment -RoleDefinitionName Contributor -ServicePrincipalName $app.ApplicationId
    ```
 
-   The first command outputs your `tenantId`, used below. The `$app.ApplicationId` is used for the `servicePrincipalProfile.servicePrincipalClientId` and the `$passwd` is used for `servicePrincipalProfile.servicePrincipalClientSecret`.
+   The first command outputs your `tenantId`, used below. The `$app.ApplicationId` is used for the `servicePrincipalProfile.clientId` and the `$passwd` is used for `servicePrincipalProfile.secret`.
 
    Confirm your service principal by opening a new PowerShell session and running the following commands. Enter `$app.ApplicationId` for username.
 

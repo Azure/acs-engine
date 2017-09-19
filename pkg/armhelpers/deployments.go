@@ -3,7 +3,7 @@ package armhelpers
 import (
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 )
 
 // DeployTemplate implements the TemplateDeployer interface for the AzureClient client
@@ -16,7 +16,7 @@ func (az *AzureClient) DeployTemplate(resourceGroupName, deploymentName string, 
 		},
 	}
 
-	log.Infof("Starting ARM Deployment. This will take some time. deployment=%q", deploymentName)
+	log.Infof("Starting ARM Deployment (%s). This will take some time...", deploymentName)
 
 	resChan, errChan := az.deploymentsClient.CreateOrUpdate(
 		resourceGroupName,
@@ -28,7 +28,7 @@ func (az *AzureClient) DeployTemplate(resourceGroupName, deploymentName string, 
 	}
 	res := <-resChan
 
-	log.Infof("Finished ARM Deployment. deployment=%q. res=%q", deploymentName, res)
+	log.Infof("Finished ARM Deployment (%s).", deploymentName)
 
 	return &res, nil
 }
