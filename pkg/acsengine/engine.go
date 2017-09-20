@@ -1847,7 +1847,12 @@ func internalGetPoolLinkedTemplateText(extTargetVMNamePrefix, orchestratorType, 
 	dta = strings.Replace(dta, "EXTENSION_PARAMETERS_REPLACE", extensionsParameterReference, -1)
 	dta = strings.Replace(dta, "EXTENSION_URL_REPLACE", extensionProfile.RootURL, -1)
 	dta = strings.Replace(dta, "EXTENSION_TARGET_VM_NAME_PREFIX", extTargetVMNamePrefix, -1)
-	dta = strings.Replace(dta, "EXTENSION_LOOP_COUNT", loopCount, -1)
+	if _, err := strconv.Atoi(loopCount); err == nil {
+		dta = strings.Replace(dta, "\"EXTENSION_LOOP_COUNT\"", loopCount, -1)
+	} else {
+		dta = strings.Replace(dta, "EXTENSION_LOOP_COUNT", loopCount, -1)
+	}
+
 	dta = strings.Replace(dta, "EXTENSION_LOOP_OFFSET", loopOffset, -1)
 	return dta, nil
 }

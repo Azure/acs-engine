@@ -36,7 +36,6 @@ ls -l /var/log
       { 
         "name": "hello-world-dcos", 
         "version": "v1", 
-        "rootURL": "https://bagbyimages.blob.core.windows.net:443/",
         "script": "hello.sh" 
       }
     ]
