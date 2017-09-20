@@ -134,7 +134,7 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-  k8s-default-release-e2e:
+  k8s-1.6-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: quay.io/deis/go-dev:v1.2.0
@@ -143,6 +143,7 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export ORCHESTRATOR_RELEASE=1.6'
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
@@ -162,7 +163,8 @@ jobs:
     steps:
       - checkout
       - run: |
-          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/1.7/definition.json' >> $BASH_ENV
+          echo 'export ORCHESTRATOR_RELEASE=1.7'
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
@@ -172,7 +174,7 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-  k8s-windows-e2e:
+  k8s-windows-1.7-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: quay.io/deis/go-dev:v1.2.0
@@ -181,6 +183,7 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export ORCHESTRATOR_RELEASE=1.7'
           echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
@@ -190,7 +193,7 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-  k8s-hybrid-e2e:
+  k8s-hybrid-1.7-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: quay.io/deis/go-dev:v1.2.0
@@ -199,6 +202,7 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export ORCHESTRATOR_RELEASE=1.7'
           echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes-hybrid.json' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
@@ -208,7 +212,7 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-  k8s-default-release-e2e-master:
+  k8s-1.6-release-e2e-master:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: quay.io/deis/go-dev:v1.2.0
@@ -217,6 +221,7 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export ORCHESTRATOR_RELEASE=1.6'
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
@@ -236,7 +241,8 @@ jobs:
     steps:
       - checkout
       - run: |
-          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/1.7/definition.json' >> $BASH_ENV
+          echo 'export ORCHESTRATOR_RELEASE=1.7'
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
@@ -246,7 +252,7 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-  k8s-windows-e2e-master:
+  k8s-windows-1.7-release-e2e-master:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: quay.io/deis/go-dev:v1.2.0
@@ -255,6 +261,7 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export ORCHESTRATOR_RELEASE=1.7'
           echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
@@ -264,7 +271,7 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
-  k8s-hybrid-e2e-master:
+  k8s-hybrid-1.7-release-e2e-master:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: quay.io/deis/go-dev:v1.2.0
@@ -273,6 +280,7 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export ORCHESTRATOR_RELEASE=1.7'
           echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes-hybrid.json' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
@@ -298,7 +306,7 @@ workflows:
           filters:
             branches:
               ignore: master
-      - k8s-default-release-e2e:
+      - k8s-1.6-release-e2e:
           requires:
             - pr-e2e-hold
           filters:
@@ -310,19 +318,19 @@ workflows:
           filters:
             branches:
               ignore: master
-      - k8s-windows-e2e:
+      - k8s-windows-1.7-release-e2e:
           requires:
             - pr-e2e-hold
           filters:
             branches:
               ignore: master
-      - k8s-hybrid-e2e:
+      - k8s-hybrid-1.7-release-e2e:
           requires:
             - pr-e2e-hold
           filters:
             branches:
               ignore: master
-      - k8s-default-release-e2e-master:
+      - k8s-1.6-release-e2e-master:
           requires:
             - test
           filters:
@@ -334,13 +342,13 @@ workflows:
           filters:
             branches:
               only: master
-      - k8s-windows-e2e-master:
+      - k8s-windows-1.7-release-e2e-master:
           requires:
             - test
           filters:
             branches:
               only: master
-      - k8s-hybrid-e2e-master:
+      - k8s-hybrid-1.7-release-e2e-master:
           requires:
             - test
           filters:
