@@ -46,7 +46,7 @@ const (
 	// KubernetesRelease1Dot5 is the major.minor string prefix for 1.5 versions of kubernetes
 	KubernetesRelease1Dot5 string = "1.5"
 	// KubernetesDefaultRelease is the default major.minor version for kubernetes
-	KubernetesDefaultRelease string = KubernetesRelease1Dot6
+	KubernetesDefaultRelease string = KubernetesRelease1Dot7
 )
 
 // KubeReleaseToVersion maps a major.minor release to an full major.minor.patch version
