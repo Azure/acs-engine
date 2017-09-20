@@ -291,7 +291,10 @@ func TestTemplateOutputPresence(t *testing.T) {
 	}
 
 	var template TestARMTemplate
-	json.Unmarshal([]byte(armTemplate), &template)
+	err = json.Unmarshal([]byte(armTemplate), &template)
+	if err != nil {
+		t.Fatalf("couldn't unmarshall ARM template: %#v\n", err)
+	}
 
 	tt := []struct {
 		key   string
