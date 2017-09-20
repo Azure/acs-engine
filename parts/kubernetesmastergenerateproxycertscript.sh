@@ -31,15 +31,23 @@ write_certs_to_disk() {
     chmod 600 $K8S_PROXY_KEY_FILEPATH
 }
 
+write_certs_to_disk_with_retry() {
+    for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+        write_certs_to_disk
+        [ $? -eq 0  ] && break || sleep 5
+    done
+}
+
 # block until all etcd is ready
 retrycmd_if_failure etcdctl cluster-health
 # Make etcd keys, adding a leading whitespace because etcd won't accept a val that begins with a '-' (hyphen)!
 if etcdctl mk $ETCD_REQUESTHEADER_CLIENT_CA " $(cat ${PROXY_CRT})"; then
     etcdctl mk $ETCD_PROXY_KEY " $(cat ${PROXY_CLIENT_KEY})"
     etcdctl mk $ETCD_PROXY_CERT " $(cat ${PROXY_CLIENT_CRT})"
-    write_certs_to_disk
+    sleep 5
+    write_certs_to_disk_with_retry
 # If the etcdtl mk command failed, that means the key already exists
 else
     sleep 5
-    write_certs_to_disk
+    write_certs_to_disk_with_retry
 fi
