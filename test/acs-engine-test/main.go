@@ -370,6 +370,8 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 
 func isPromoteToFailureStep(step string) bool {
 	switch step {
+	case stepDeployTemplate:
+		return true
 	case stepValidate:
 		return true
 	case stepPostDeploy:
