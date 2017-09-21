@@ -164,7 +164,10 @@ func (m *TestManager) Run() error {
 							FailureCount: 1,
 						}
 
-						result, _ := promote.RunPromoteToFailure(sa, promToFailInfo)
+						result, err := promote.RunPromoteToFailure(sa, promToFailInfo)
+						if err != nil {
+							fmt.Printf("Got error from RunPromoteToFailure: %#v\n", err)
+						}
 						if result == true {
 							success[index] = false
 						} else {
@@ -188,6 +191,12 @@ func (m *TestManager) Run() error {
 
 					promote.RunPromoteToFailure(sa, promToFailInfo)
 
+				}
+
+				if success[index] {
+					fmt.Printf("Promote to Fail passed: SUCCESS [%s] [%s]\n", errorInfo.Step, testName)
+				} else {
+					fmt.Printf("Promote to Fail did not pass: ERROR [%s] [%s]\n", errorInfo.Step, testName)
 				}
 
 			} else {
@@ -361,6 +370,8 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 
 func isPromoteToFailureStep(step string) bool {
 	switch step {
+	case stepDeployTemplate:
+		return true
 	case stepValidate:
 		return true
 	case stepPostDeploy:
