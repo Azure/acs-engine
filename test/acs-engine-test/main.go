@@ -194,9 +194,9 @@ func (m *TestManager) Run() error {
 				}
 
 				if success[index] {
-					fmt.Printf("Promote to Fail passed: SUCCESS [%s] [%s]\n", errorInfo.Step, testName)
+					fmt.Printf("Promote to Fail passed: SUCCESS [%s]\n", testName)
 				} else {
-					fmt.Printf("Promote to Fail did not pass: ERROR [%s] [%s]\n", errorInfo.Step, testName)
+					fmt.Printf("Promote to Fail did not pass: ERROR [%s]\n", testName)
 				}
 
 			} else {
