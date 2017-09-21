@@ -143,26 +143,6 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	nameSuffixParam := templateParameters["nameSuffix"].(map[string]interface{})
 	uc.nameSuffix = nameSuffixParam["defaultValue"].(string)
 	log.Infoln(fmt.Sprintf("Name suffix: %s", uc.nameSuffix))
-
-	// Validate VM Size does not change in upgrade template
-	templateParamsPath := path.Join(uc.deploymentDirectory, "azuredeploy.parameters.json")
-	contents, _ = ioutil.ReadFile(templatePath)
-
-	var templateParams interface{}
-	json.Unmarshal(contents, &templateParams)
-
-	templateParamsMap := templateParams.(map[string]interface{})
-	templateParamsParameters := templateParamsMap["parameters"].(map[string]interface{})
-
-	masterVMSizeParam := templateParamsParameters["masterVMSize"].(map[string]interface{})
-	ucMasterVMSizeParamValue := masterVMSizeParam["value"]
-	fmt.Println("New VM Size is : ", ucMasterVMSizeParamValue)
-	exisMasterVMSizeValue := uc.containerService.Properties.MasterProfile.VMSize
-	fmt.Println("Existing VMSize is : ", exisMasterVMSizeValue)
-	if exisMasterVMSizeValue != ucMasterVMSizeParamValue {
-		err := fmt.Errorf("Trying to change master vm size during upgrade. Forbidden")
-		log.Fatalf("error upgrading ContainerService: %v", err)
-	}
 }
 
 func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
