@@ -12,12 +12,17 @@ GOFLAGS   :=
 endif
 
 # go option
-GO        ?= go
-TAGS      :=
-LDFLAGS   :=
-BINDIR    := $(CURDIR)/bin
-BINARIES  := acs-engine
-VERSION   ?= $(shell git rev-parse HEAD)
+GO              ?= go
+TAGS            :=
+LDFLAGS         :=
+BINDIR          := $(CURDIR)/bin
+BINARIES        := acs-engine
+VERSION         ?= $(shell git rev-parse HEAD)
+VERSION_SHORT   ?= $(shell git rev-parse --short HEAD)
+GITTAG          := $(shell git describe --exact-match --tags $(shell git log -n1 --pretty='%h') 2> /dev/null)
+ifeq ($(GITTAG),)
+GITTAG := $(VERSION_SHORT)
+endif
 
 REPO_PATH := github.com/Azure/acs-engine
 DEV_ENV_IMAGE := quay.io/deis/go-dev:v1.2.0
@@ -49,16 +54,17 @@ build-binary: generate
 
 # usage: make clean build-cross dist VERSION=v0.4.0
 .PHONY: build-cross
+build-cross: build
 build-cross: LDFLAGS += -extldflags "-static"
 build-cross:
-	CGO_ENABLED=0 gox -output="_dist/acs-engine-${VERSION}-{{.OS}}-{{.Arch}}/{{.Dir}}" -osarch='$(TARGETS)' $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)'
+	CGO_ENABLED=0 gox -output="_dist/acs-engine-${GITTAG}-{{.OS}}-{{.Arch}}/{{.Dir}}" -osarch='$(TARGETS)' $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)'
 
 .PHONY: build-windows-k8s
 build-windows-k8s:
 	./scripts/build-windows-k8s.sh -v ${K8S_VERSION} -p ${PATCH_VERSION}
 
 .PHONY: dist
-dist:
+dist: build-cross
 	( \
 		cd _dist && \
 		$(DIST_DIRS) cp ../LICENSE {} \; && \
