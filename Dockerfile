@@ -34,6 +34,7 @@ RUN git clone https://github.com/akesterson/cmdarg.git /tmp/cmdarg \
 RUN git clone https://github.com/akesterson/shunit.git /tmp/shunit \
     && cd /tmp/shunit && make install && rm -rf /tmp/shunit
 
+ENV ACSENGINE_EXPERIMENTAL_FEATURES 1
 WORKDIR /gopath/src/github.com/Azure/acs-engine
 
 # Cache vendor layer
