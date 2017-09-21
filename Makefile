@@ -12,15 +12,16 @@ GOFLAGS   :=
 endif
 
 # go option
-GO        ?= go
-TAGS      :=
-LDFLAGS   :=
-BINDIR    := $(CURDIR)/bin
-BINARIES  := acs-engine
-VERSION   ?= $(shell git rev-parse HEAD)
-GITTAG    := $(shell git describe --exact-match --tags $(shell git log -n1 --pretty='%h') 2> /dev/null)
+GO              ?= go
+TAGS            :=
+LDFLAGS         :=
+BINDIR          := $(CURDIR)/bin
+BINARIES        := acs-engine
+VERSION         ?= $(shell git rev-parse HEAD)
+VERSION_SHORT   ?= $(shell git rev-parse --short HEAD)
+GITTAG          := $(shell git describe --exact-match --tags $(shell git log -n1 --pretty='%h') 2> /dev/null)
 ifeq ($(GITTAG),)
-GITTAG := $(VERSION)
+GITTAG := $(VERSION_SHORT)
 endif
 
 REPO_PATH := github.com/Azure/acs-engine
