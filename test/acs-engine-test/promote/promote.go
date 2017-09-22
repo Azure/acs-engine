@@ -173,8 +173,9 @@ func RunPromoteToFailure(sa StorageAccount, testRunPromToFail DigitalSignalFilte
 		return false, nil
 	}
 
-	fmt.Printf("Existing Failure Count : %v\n\n", existingFailureCount)
+	fmt.Printf("Existing Failure Count for %s : %v\n\n", testRunPromToFail.TestName, existingFailureCount)
 	newFailureCount := existingFailureCount.(float64) + testRunPromToFail.FailureCount
+	fmt.Printf("Incremented Failure Count for %s to : %v\n\n", testRunPromToFail.TestName, newFailureCount)
 	if err = updateEntity(entity, newFailureCount, testRunPromToFail.FailureStr); err != nil {
 		return false, err
 	}

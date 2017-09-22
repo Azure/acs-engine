@@ -1,6 +1,8 @@
 package api
 
 import (
+	"encoding/json"
+
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 )
@@ -263,4 +265,24 @@ func convertVLabsAgentPoolOnlyCertificateProfile(vlabs *vlabs.CertificateProfile
 	api.ClientPrivateKey = vlabs.ClientPrivateKey
 	api.KubeConfigCertificate = vlabs.KubeConfigCertificate
 	api.KubeConfigPrivateKey = vlabs.KubeConfigPrivateKey
+}
+
+func isAgentPoolOnlyClusterJSON(contents []byte) bool {
+	properties, propertiesPresent := propertiesAsMap(contents)
+	if !propertiesPresent {
+		return false
+	}
+	_, masterProfilePresent := properties["masterProfile"]
+	return !masterProfilePresent
+}
+
+func propertiesAsMap(contents []byte) (map[string]interface{}, bool) {
+	var raw interface{}
+	json.Unmarshal(contents, &raw)
+	jsonMap := raw.(map[string]interface{})
+	properties, propertiesPresent := jsonMap["properties"]
+	if !propertiesPresent {
+		return nil, false
+	}
+	return properties.(map[string]interface{}), true
 }

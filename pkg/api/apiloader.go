@@ -42,8 +42,15 @@ func (a *Apiloader) DeserializeContainerService(contents []byte, validate bool, 
 	version := m.APIVersion
 	service, err := a.LoadContainerService(contents, version, validate, existingContainerService)
 	if service == nil || err != nil {
-		log.Infof("Error returned by LoadContainerService: %+v. Attempting to load container service using LoadContainerServiceForAgentPoolOnlyCluster", err)
-		service, err = a.LoadContainerServiceForAgentPoolOnlyCluster(contents, version, validate)
+		if isAgentPoolOnlyClusterJSON(contents) {
+			log.Info("No masterProfile: interpreting API model as agent pool only")
+			service, err := a.LoadContainerServiceForAgentPoolOnlyCluster(contents, version, validate)
+			if service == nil || err != nil {
+				log.Infof("Error returned by LoadContainerServiceForAgentPoolOnlyCluster: %+v", err)
+			}
+			return service, version, err
+		}
+		log.Infof("Error returned by LoadContainerService: %+v", err)
 	}
 
 	return service, version, err
