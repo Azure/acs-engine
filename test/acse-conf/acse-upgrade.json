@@ -15,6 +15,14 @@
     {
       "cluster_definition": "k8s-upgrade/kubernetes1.6.json",
       "location": "westus"
+    },
+    {
+      "cluster_definition": "k8s-upgrade/kubernetes1.5-multiagentpools.json",
+      "location": "westus"
+    },
+    {
+      "cluster_definition": "k8s-upgrade/kubernetes1.6-multiagentpools.json",
+      "location": "westus"
     }
   ]
 }
