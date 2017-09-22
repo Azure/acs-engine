@@ -11,13 +11,20 @@
       "vmSize": "Standard_D2_v2",
       "storageProfile" : "ManagedDisks"
     },
-    "agentPoolProfiles": [
+     "agentPoolProfiles": [
       {
         "name": "agentpool1",
         "count": 1,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet",
-        "storageProfile": "ManagedDisks"
+        "storageProfile" : "ManagedDisks"
+      },
+      {
+        "name": "agentpool2",
+        "count": 3,
+        "vmSize": "Standard_D2",
+        "availabilityProfile": "AvailabilitySet"
+
       }
     ],
     "linuxProfile": {
