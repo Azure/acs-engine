@@ -81,6 +81,13 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
+			VnetIntegration: "invalid",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error on invalid VnetIntegration")
+		}
+
+		c = KubernetesConfig{
 			MaxPods: KubernetesMinMaxPods - 1,
 		}
 		if err := c.Validate(k8sRelease); err == nil {
@@ -210,12 +217,13 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 }
 
 func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
-	p := &Properties{}
-	p.OrchestratorProfile = &OrchestratorProfile{}
-	p.OrchestratorProfile.OrchestratorType = Kubernetes
+	pt := &Properties{}
+	pt.OrchestratorProfile = &OrchestratorProfile{}
+	pt.OrchestratorProfile.OrchestratorType = Kubernetes
+	pt.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
 
+	p := pt
 	for _, policy := range NetworkPolicyValues {
-		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
 		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = policy
 		if err := p.validateNetworkPolicy(); err != nil {
 			t.Errorf(
@@ -225,6 +233,7 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 		}
 	}
 
+	p = pt
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "not-existing"
 	if err := p.validateNetworkPolicy(); err == nil {
 		t.Errorf(
@@ -232,6 +241,25 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 		)
 	}
 
+	p = pt
+	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "azure"
+	p.OrchestratorProfile.KubernetesConfig.VnetIntegration = "disabled"
+	if err := p.validateNetworkPolicy(); err == nil {
+		t.Errorf(
+			"should error on invalid combination of vnetIntegration and networkPolicy",
+		)
+	}
+
+	p = pt
+	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "calico"
+	p.OrchestratorProfile.KubernetesConfig.VnetIntegration = "enabled"
+	if err := p.validateNetworkPolicy(); err == nil {
+		t.Errorf(
+			"should error on invalid combination of vnetIntegration and networkPolicy",
+		)
+	}
+
+	p = pt
 	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "calico"
 	p.AgentPoolProfiles = []*AgentPoolProfile{
 		{

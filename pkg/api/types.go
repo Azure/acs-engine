@@ -145,11 +145,12 @@ type OrchestratorProfile struct {
 type KubernetesConfig struct {
 	KubernetesImageBase              string  `json:"kubernetesImageBase,omitempty"`
 	ClusterSubnet                    string  `json:"clusterSubnet,omitempty"`
+	ServiceCIDR                      string  `json:"serviceCidr,omitempty"`
+	DNSServiceIP                     string  `json:"dnsServiceIP,omitempty"`
 	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
+	VnetIntegration                  string  `json:"vnetIntegration,omitempty"`
 	MaxPods                          int     `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string  `json:"dockerBridgeSubnet,omitempty"`
-	DNSServiceIP                     string  `json:"dnsServiceIP,omitempty"`
-	ServiceCIDR                      string  `json:"serviceCidr,omitempty"`
 	NodeStatusUpdateFrequency        string  `json:"nodeStatusUpdateFrequency,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string  `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string  `json:"ctrlMgrPodEvictionTimeout,omitempty"`
@@ -492,7 +493,7 @@ func (o *OrchestratorProfile) IsDCOS() bool {
 func (o *OrchestratorProfile) IsVNETIntegrated() bool {
 	switch o.OrchestratorType {
 	case Kubernetes:
-		return o.KubernetesConfig.NetworkPolicy == "azure"
+		return o.KubernetesConfig.VnetIntegration != "disabled"
 	default:
 		return false
 	}

@@ -176,9 +176,10 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 type KubernetesConfig struct {
 	KubernetesImageBase              string  `json:"kubernetesImageBase,omitempty"`
 	ClusterSubnet                    string  `json:"clusterSubnet,omitempty"`
-	DNSServiceIP                     string  `json:"dnsServiceIP,omitempty"`
 	ServiceCidr                      string  `json:"serviceCidr,omitempty"`
+	DNSServiceIP                     string  `json:"dnsServiceIP,omitempty"`
 	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
+	VnetIntegration                  string  `json:"vnetIntegration,omitempty"`
 	MaxPods                          int     `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string  `json:"DockerBridgeSubnet,omitempty"`
 	NodeStatusUpdateFrequency        string  `json:"nodeStatusUpdateFrequency,omitempty"`

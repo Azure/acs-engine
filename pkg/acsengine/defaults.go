@@ -155,6 +155,14 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "" {
 			a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 		}
+		if a.OrchestratorProfile.KubernetesConfig.VnetIntegration == "" {
+			if a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "azure" {
+				// Azure VNET network policy requires VNET integration.
+				a.OrchestratorProfile.KubernetesConfig.VnetIntegration = "enabled"
+			} else {
+				a.OrchestratorProfile.KubernetesConfig.VnetIntegration = DefaultVnetIntegration
+			}
+		}
 		if a.OrchestratorProfile.KubernetesConfig.ClusterSubnet == "" {
 			if a.OrchestratorProfile.IsVNETIntegrated() {
 				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.

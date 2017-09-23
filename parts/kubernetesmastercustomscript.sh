@@ -18,35 +18,36 @@ SERVICE_PRINCIPAL_CLIENT_ID="${10}"
 SERVICE_PRINCIPAL_CLIENT_SECRET="${11}"
 KUBELET_PRIVATE_KEY="${12}"
 TARGET_ENVIRONMENT="${13}"
-NETWORK_POLICY="${14}"
-FQDNSuffix="${15}"
-VNET_CNI_PLUGINS_URL="${16}"
-CNI_PLUGINS_URL="${17}"
-CALICO_CONFIG_URL="${18}"
-MAX_PODS="${19}"
+FQDNSuffix="${14}"
+NETWORK_POLICY="${15}"
+VNET_INTEGRATION="${16}"
+VNET_CNI_PLUGINS_URL="${17}"
+CNI_PLUGINS_URL="${18}"
+CALICO_CONFIG_URL="${19}"
+MAX_PODS="${20}"
 
 # Default values for backoff configuration
-CLOUDPROVIDER_BACKOFF="${20}"
-CLOUDPROVIDER_BACKOFF_RETRIES="${21}"
-CLOUDPROVIDER_BACKOFF_EXPONENT="${22}"
-CLOUDPROVIDER_BACKOFF_DURATION="${23}"
-CLOUDPROVIDER_BACKOFF_JITTER="${24}"
+CLOUDPROVIDER_BACKOFF="${21}"
+CLOUDPROVIDER_BACKOFF_RETRIES="${22}"
+CLOUDPROVIDER_BACKOFF_EXPONENT="${23}"
+CLOUDPROVIDER_BACKOFF_DURATION="${24}"
+CLOUDPROVIDER_BACKOFF_JITTER="${25}"
 # Default values for rate limit configuration
-CLOUDPROVIDER_RATELIMIT="${25}"
-CLOUDPROVIDER_RATELIMIT_QPS="${26}"
-CLOUDPROVIDER_RATELIMIT_BUCKET="${27}"
+CLOUDPROVIDER_RATELIMIT="${26}"
+CLOUDPROVIDER_RATELIMIT_QPS="${27}"
+CLOUDPROVIDER_RATELIMIT_BUCKET="${28}"
 
-USE_MANAGED_IDENTITY_EXTENSION="${28}"
-USE_INSTANCE_METADATA="${29}"
+USE_MANAGED_IDENTITY_EXTENSION="${29}"
+USE_INSTANCE_METADATA="${30}"
 
 # Master only secrets
-APISERVER_PRIVATE_KEY="${30}"
-CA_CERTIFICATE="${31}"
-CA_PRIVATE_KEY="${32}"
-MASTER_FQDN="${33}"
-KUBECONFIG_CERTIFICATE="${34}"
-KUBECONFIG_KEY="${35}"
-ADMINUSER="${36}"
+APISERVER_PRIVATE_KEY="${31}"
+CA_CERTIFICATE="${32}"
+CA_PRIVATE_KEY="${33}"
+MASTER_FQDN="${34}"
+KUBECONFIG_CERTIFICATE="${35}"
+KUBECONFIG_KEY="${36}"
+ADMINUSER="${37}"
 
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
@@ -186,10 +187,14 @@ function setDockerOpts () {
     sed -i "s#^DOCKER_OPTS=.*#DOCKER_OPTS=${1}#" /etc/default/kubelet
 }
 
-function configAzureNetworkPolicy() {
+function setVnetPluginMode() {
+    sed -i "s|\"mode\":.*|\"mode\": \"${1}\",|" $CNI_CONFIG_DIR/10-azure.conf
+}
+
+function installVnetPlugins() {
+    # Setup CNI config directory.
     CNI_CONFIG_DIR=/etc/cni/net.d
     mkdir -p $CNI_CONFIG_DIR
-
     chown -R root:root $CNI_CONFIG_DIR
     chmod 755 $CNI_CONFIG_DIR
 
@@ -204,16 +209,24 @@ function configAzureNetworkPolicy() {
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
 
-    # Copy config file
+    # Copy CNI network config file and set bridge mode.
     mv $CNI_BIN_DIR/10-azure.conf $CNI_CONFIG_DIR/
-    chmod 600 $CNI_CONFIG_DIR/10-azure.conf
+    chmod 644 $CNI_CONFIG_DIR/10-azure.conf
+    setVnetPluginMode "bridge"
 
-    # Dump ebtables rules.
+    # VNET CNI network plugin uses ebtables. Kubelet and the plugin run in a container,
+    # which may not have permissions to load kernel modules. Dumping ebtables rules
+    # here forces the node to load the ebtables kernel module before Kubelet starts.
     /sbin/ebtables -t nat --list
 
     # Enable CNI.
     setNetworkPlugin cni
     setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+}
+
+function configAzureNetworkPolicy() {
+    # Azure VNET network policy requires tunnel (hairpin) mode because policy is enforced in the host.
+    setVnetPluginMode "tunnel"
 }
 
 # Configures Kubelet to use CNI and mount the appropriate hostpaths
@@ -222,13 +235,19 @@ function configCalicoNetworkPolicy() {
     setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
-function configNetworkPolicy() {
+function configNetworking() {
+    # Configure VNET integration.
+    if [ "${VNET_INTEGRATION}" = "enabled" ]; then
+        installVnetPlugins
+    fi
+
+    # Configure network policy.
     if [[ "${NETWORK_POLICY}" = "azure" ]]; then
         configAzureNetworkPolicy
     elif [[ "${NETWORK_POLICY}" = "calico" ]]; then
         configCalicoNetworkPolicy
-    else
-        # No policy, defaults to kubenet.
+    elif [ "${VNET_INTEGRATION}" = "disabled" ]; then
+        # No policy or VNET integration, defaults to kubenet.
         setNetworkPlugin kubenet
         setDockerOpts ""
     fi
@@ -413,7 +432,7 @@ users:
 
 # master and node
 ensureDocker
-configNetworkPolicy
+configNetworking
 setMaxPods ${MAX_PODS}
 ensureKubelet
 extractKubectl

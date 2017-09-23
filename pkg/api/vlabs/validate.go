@@ -370,6 +370,19 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 		}
 	}
 
+	if a.VnetIntegration != "" {
+		valid := false
+		for _, value := range VnetIntegrationValues {
+			if a.VnetIntegration == value {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.VnetIntegration '%s' is not one of the valid values in %v", a.VnetIntegration, VnetIntegrationValues)
+		}
+	}
+
 	if a.MaxPods != 0 {
 		if a.MaxPods < KubernetesMinMaxPods {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.MaxPods '%v' must be at least %v", a.MaxPods, KubernetesMinMaxPods)
@@ -472,11 +485,13 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 
 func (a *Properties) validateNetworkPolicy() error {
 	var networkPolicy string
+	var vnetIntegration string
 
 	switch a.OrchestratorProfile.OrchestratorType {
 	case Kubernetes:
 		if a.OrchestratorProfile.KubernetesConfig != nil {
 			networkPolicy = a.OrchestratorProfile.KubernetesConfig.NetworkPolicy
+			vnetIntegration = a.OrchestratorProfile.KubernetesConfig.VnetIntegration
 		}
 	default:
 		return nil
@@ -492,6 +507,16 @@ func (a *Properties) validateNetworkPolicy() error {
 	}
 	if !valid {
 		return fmt.Errorf("unknown networkPolicy '%s' specified", networkPolicy)
+	}
+
+	// Azure network policy requires VNET integration.
+	if networkPolicy == "azure" && vnetIntegration == "disabled" {
+		return fmt.Errorf("networkPolicy '%s' requires vnetIntegration", networkPolicy)
+	}
+
+	// Temporary safety check, to be removed when calico supports VNET integration.
+	if networkPolicy == "calico" && vnetIntegration == "enabled" {
+		return fmt.Errorf("networkPolicy '%s' does not support vnetIntegration", networkPolicy)
 	}
 
 	// Temporary safety check, to be removed when Windows support is added.

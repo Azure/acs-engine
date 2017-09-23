@@ -271,6 +271,17 @@
       ],
       "type": "string"
     },
+    "vnetIntegration": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.VnetIntegration}}",
+      "metadata": {
+        "description": "VNET integration level."
+      },
+      "allowedValues": [
+        "disabled",
+        "enabled"
+      ],
+      "type": "string"
+    },
     "cniPluginsURL": {
       "defaultValue": "https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-latest.tgz",
       "type": "string"
