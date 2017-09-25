@@ -39,3 +39,9 @@ The example **kubernetes.json** shows you how to refer deployment parameter to a
   # On Linux it will wrap at 76 chars by default
   az keyvault secret set --vault-name KV_NAME --name NAME --value "$(cat ca.crt | base64 --wrap=0)"
 ```
+
+## KeyVault Configuration
+To enable Azure Resource Manager to retrieve the secrets from the KeyVault, template deployment must be enabled on the KeyVault:
+```sh
+az keyvault update -g $RG_NAME -n $KV_NAME --enabled-for-template-deployment
+```
