@@ -16,3 +16,9 @@ const (
 	// DockerCE is the string constant for the Docker CE orchestrator type
 	DockerCE string = "DockerCE"
 )
+
+// the OSTypes supported by vlabs
+const (
+	Windows OSType = "Windows"
+	Linux   OSType = "Linux"
+)

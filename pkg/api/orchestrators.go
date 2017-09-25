@@ -86,6 +86,39 @@ func GetOrchestratorVersionProfile(orch *OrchestratorProfile) (*OrchestratorVers
 	return arr[0], nil
 }
 
+// GetUpgradeProfile returns cluster profile for existing cluster.
+// Note: This is a temporary implementation.
+// TODO: re-implement once  AgentPoolProfiles contain orchestrator version
+func GetUpgradeProfile(cs *ContainerService) (*UpgradeProfile, error) {
+	orch, err := GetOrchestratorVersionProfile(cs.Properties.OrchestratorProfile)
+	if err != nil {
+		return nil, err
+	}
+	upgradeProfile := &UpgradeProfile{}
+	if cs.Properties.MasterProfile != nil {
+		upgradeProfile.ControlPlaneProfile = &PoolUpgradeProfile{
+			OrchestratorProfile: orch.OrchestratorProfile,
+			OSType:              Linux,
+			Upgrades:            orch.Upgrades,
+		}
+	} else if cs.Properties.HostedMasterProfile != nil {
+		upgradeProfile.ControlPlaneProfile = &PoolUpgradeProfile{
+			OrchestratorProfile: orch.OrchestratorProfile,
+			OSType:              Linux,
+			Upgrades:            orch.Upgrades,
+		}
+	}
+	for _, agent := range cs.Properties.AgentPoolProfiles {
+		upgradeProfile.AgentPoolsProfiles = append(upgradeProfile.AgentPoolsProfiles, &PoolUpgradeProfile{
+			OrchestratorProfile: orch.OrchestratorProfile,
+			Name:                agent.Name,
+			OSType:              agent.OSType,
+			Upgrades:            orch.Upgrades,
+		})
+	}
+	return upgradeProfile, nil
+}
+
 func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
 	orchs := []*OrchestratorVersionProfile{}
 	if len(csOrch.OrchestratorRelease) == 0 {
