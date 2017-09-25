@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"strconv"
 	"time"
+
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 )
 
 // List holds a list of deployments returned from kubectl get deploy
@@ -118,4 +120,9 @@ func (d *Deployment) Expose(targetPort, exposedPort int) error {
 		return err
 	}
 	return nil
+}
+
+// Pods will return all pods related to a deployment
+func (d *Deployment) Pods() ([]pod.Pod, error) {
+	return pod.GetAllByPrefix(d.Metadata.Name, d.Metadata.Namespace)
 }
