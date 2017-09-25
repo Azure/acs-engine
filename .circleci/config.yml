@@ -187,6 +187,7 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export TIMEOUT=15m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
@@ -209,6 +210,7 @@ jobs:
       - checkout
       - run: |
           echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
+          echo 'export TIMEOUT=15m' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes-hybrid.json' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
@@ -273,6 +275,7 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export TIMEOUT=15m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
@@ -295,6 +298,7 @@ jobs:
       - checkout
       - run: |
           echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
+          echo 'export TIMEOUT=15m' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes-hybrid.json' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV

@@ -16,13 +16,14 @@ import (
 
 // Config holds global test configuration
 type Config struct {
-	Orchestrator      string `envconfig:"ORCHESTRATOR" default:"kubernetes"`
-	Name              string `envconfig:"NAME"`                                                                  // Name allows you to set the name of a cluster already created
-	Location          string `envconfig:"LOCATION" required:"true" default:"southcentralus"`                     // Location where you want to create the cluster
-	ClusterDefinition string `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
-	CleanUpOnExit     bool   `envconfig:"CLEANUP_ON_EXIT" default:"true"`                                        // if set the tests will not clean up rgs when tests finish
-	ProvisionRetries  int    `envcofnig:"PROVISION_RETRIES" default:"3"`
-	CreateVNET        bool   `envconfig:"CREATE_VNET" default:"false"`
+	Orchestrator      string        `envconfig:"ORCHESTRATOR" default:"kubernetes"`
+	Name              string        `envconfig:"NAME"`                                                                  // Name allows you to set the name of a cluster already created
+	Location          string        `envconfig:"LOCATION" required:"true" default:"southcentralus"`                     // Location where you want to create the cluster
+	ClusterDefinition string        `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
+	CleanUpOnExit     bool          `envconfig:"CLEANUP_ON_EXIT" default:"true"`                                        // if set the tests will not clean up rgs when tests finish
+	ProvisionRetries  int           `envcofnig:"PROVISION_RETRIES" default:"3"`
+	CreateVNET        bool          `envconfig:"CREATE_VNET" default:"false"`
+	Timeout           time.Duration `envconfig:"TIMEOUT" default:"10m"`
 	CurrentWorkingDir string
 }
 
