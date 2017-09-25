@@ -37,8 +37,15 @@ func main() {
 		log.Fatalf("Error while trying to setup azure account: %s\n", err)
 	}
 
-	acct.Login()
-	acct.SetSubscription()
+	err := acct.Login()
+	if err != nil {
+		log.Fatal("Error while trying to login to azure account!")
+	}
+
+	err = acct.SetSubscription()
+	if err != nil {
+		log.Fatal("Error while trying to set azure subscription!")
+	}
 
 	// If an interrupt/kill signal is sent we will run the clean up procedure
 	trap()
