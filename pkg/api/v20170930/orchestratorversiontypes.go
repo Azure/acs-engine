@@ -30,7 +30,7 @@ type PoolUpgradeProfile struct {
 //  - list of pool profiles, constituting the cluster
 type UpgradeProfile struct {
 	ControlPlaneProfile *PoolUpgradeProfile   `json:"controlPlaneProfile"`
-	AgentPoolsProfiles  []*PoolUpgradeProfile `json:"agentPoolsProfiles"`
+	AgentPoolProfiles   []*PoolUpgradeProfile `json:"agentPoolProfiles"`
 }
 
 // OrchestratorVersionProfile contains information of a supported orchestrator version:

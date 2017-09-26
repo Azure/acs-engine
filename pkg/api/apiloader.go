@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20170930"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
@@ -219,13 +218,9 @@ func (a *Apiloader) UpdateContainerServiceForUpgrade(
 	if e != nil {
 		return e
 	}
-
 	// add current version if upgrade has failed
 	if allowCurrentVersionUpgrade {
-		release := cs.Properties.OrchestratorProfile.OrchestratorRelease
-		orchestratorInfo.Upgrades = append(orchestratorInfo.Upgrades, &OrchestratorProfile{
-			OrchestratorRelease: release,
-			OrchestratorVersion: common.KubeReleaseToVersion[release]})
+		orchestratorInfo.Upgrades = addCurrentVersionUpgrade(cs.Properties.OrchestratorProfile, orchestratorInfo.Upgrades)
 	}
 	// validate desired upgrade version and set goal state
 	for _, up := range orchestratorInfo.Upgrades {

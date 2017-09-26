@@ -89,7 +89,7 @@ func GetOrchestratorVersionProfile(orch *OrchestratorProfile) (*OrchestratorVers
 // GetUpgradeProfile returns cluster profile for existing cluster.
 // Note: This is a temporary implementation.
 // TODO: re-implement once  AgentPoolProfiles contain orchestrator version
-func GetUpgradeProfile(cs *ContainerService) (*UpgradeProfile, error) {
+func GetUpgradeProfile(cs *ContainerService, allowCurrentVersionUpgrade bool) (*UpgradeProfile, error) {
 	orch, err := GetOrchestratorVersionProfile(cs.Properties.OrchestratorProfile)
 	if err != nil {
 		return nil, err
@@ -108,15 +108,30 @@ func GetUpgradeProfile(cs *ContainerService) (*UpgradeProfile, error) {
 			Upgrades:            orch.Upgrades,
 		}
 	}
+	if allowCurrentVersionUpgrade {
+		upgradeProfile.ControlPlaneProfile.Upgrades = addCurrentVersionUpgrade(cs.Properties.OrchestratorProfile, upgradeProfile.ControlPlaneProfile.Upgrades)
+	}
+
 	for _, agent := range cs.Properties.AgentPoolProfiles {
-		upgradeProfile.AgentPoolsProfiles = append(upgradeProfile.AgentPoolsProfiles, &PoolUpgradeProfile{
+		agentPoolUpgradeProfile := &PoolUpgradeProfile{
 			OrchestratorProfile: orch.OrchestratorProfile,
 			Name:                agent.Name,
 			OSType:              agent.OSType,
 			Upgrades:            orch.Upgrades,
-		})
+		}
+		if allowCurrentVersionUpgrade {
+			agentPoolUpgradeProfile.Upgrades = addCurrentVersionUpgrade(cs.Properties.OrchestratorProfile, agentPoolUpgradeProfile.Upgrades)
+		}
+		upgradeProfile.AgentPoolProfiles = append(upgradeProfile.AgentPoolProfiles, agentPoolUpgradeProfile)
 	}
 	return upgradeProfile, nil
+}
+
+func addCurrentVersionUpgrade(orch *OrchestratorProfile, upgrades []*OrchestratorProfile) []*OrchestratorProfile {
+	// add current version if upgrade has failed
+	return append(upgrades, &OrchestratorProfile{
+		OrchestratorRelease: orch.OrchestratorRelease,
+		OrchestratorVersion: common.KubeReleaseToVersion[orch.OrchestratorRelease]})
 }
 
 func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {

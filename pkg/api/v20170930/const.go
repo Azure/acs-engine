@@ -17,7 +17,7 @@ const (
 	DockerCE string = "DockerCE"
 )
 
-// the OSTypes supported by vlabs
+// the OSTypes
 const (
 	Windows OSType = "Windows"
 	Linux   OSType = "Linux"
