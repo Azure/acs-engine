@@ -116,7 +116,7 @@ function test_windows_deployment() {
   fi
 
   log "Checking outbound connection"
-  count=10
+  count=30
   while (( $count > 0 )); do
     log "  ... counting down $count"
     winpodname=$(kubectl get pods --namespace=default | grep win-webserver | awk '{print $1}')
