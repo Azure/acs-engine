@@ -1,5 +1,3 @@
-# Calico Version v2.5.1
-# https://docs.projectcalico.org/v2.5/releases/#2.5.1
 # This manifest includes the following component versions:
 #   calico/node:v2.5.1
 #   calico/cni:v1.10.0
@@ -68,7 +66,6 @@ subjects:
   name: calico-node
   namespace: kube-system
 ---
-# This ConfigMap is used to configure a self-hosted Calico installation.
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -77,10 +74,8 @@ metadata:
   labels:
     addonmanager.kubernetes.io/mode: "EnsureExists"
 data:
-  # Configure this with the location of your etcd cluster.
   etcd_endpoints: "http://10.240.255.5:2379"
 
-  # The CNI network configuration to install on each node.
   cni_network_config: |-
     {
         "name": "k8s-pod-network",
@@ -105,7 +100,6 @@ data:
         }
     }
 
-  # Not using TLS with etcd
   etcd_ca: ""   # "/calico-secrets/etcd-ca"
   etcd_cert: "" # "/calico-secrets/etcd-cert"
   etcd_key: ""  # "/calico-secrets/etcd-key"
@@ -237,8 +231,6 @@ spec:
           hostPath:
             path: /etc/cni/net.d
 ---
-# This manifest deploys the Calico policy controller on Kubernetes.
-# See https://github.com/projectcalico/k8s-policy
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -253,7 +245,6 @@ metadata:
       [{"key": "dedicated", "value": "master", "effect": "NoSchedule" },
        {"key":"CriticalAddonsOnly", "operator":"Exists"}]
 spec:
-  # The policy controller can only have a single active instance.
   replicas: 1
   strategy:
     type: Recreate
@@ -264,27 +255,19 @@ spec:
       labels:
         k8s-app: calico-policy
     spec:
-      # The policy controller must run in the host network namespace so that
-      # it isn't governed by policy that would prevent it from working.
       hostNetwork: true
       serviceAccountName: calico-policy-controller
       containers:
         - name: calico-policy-controller
           image: quay.io/calico/kube-policy-controller:v0.7.0
           env:
-            # The location of the Calico etcd cluster.
             - name: ETCD_ENDPOINTS
               valueFrom:
                 configMapKeyRef:
                   name: calico-config
                   key: etcd_endpoints
-            # The location of the Kubernetes API.  Use the default Kubernetes
-            # service for API access.
             - name: K8S_API
               value: "https://kubernetes.default:443"
-            # Since we're running in the host namespace and might not have KubeDNS
-            # access, configure the container's /etc/hosts to resolve
-            # kubernetes.default to the correct service clusterIP.
             - name: CONFIGURE_ETC_HOSTS
               value: "true"
 ---
