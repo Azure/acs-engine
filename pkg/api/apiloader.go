@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"io/ioutil"
+	"reflect"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	apvlabs "github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
@@ -133,6 +134,9 @@ func (a *Apiloader) LoadContainerService(
 	case vlabs.APIVersion:
 		containerService := &vlabs.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
+			return nil, e
+		}
+		if e := checkJSONKeys(contents, reflect.TypeOf(*containerService), reflect.TypeOf(TypeMeta{})); e != nil {
 			return nil, e
 		}
 		if existingContainerService != nil {
