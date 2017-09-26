@@ -4,11 +4,11 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/api/upgrade/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
-	"github.com/Azure/acs-engine/pkg/api/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
@@ -118,34 +118,6 @@ func ConvertContainerServiceToVLabs(api *ContainerService) *vlabs.ContainerServi
 	vlabsCS.Properties = &vlabs.Properties{}
 	convertPropertiesToVLabs(api.Properties, vlabsCS.Properties)
 	return vlabsCS
-}
-
-// ConvertUpgradeProfileToV20170930 converts an unversioned UpgradeProfile to a v20170930 UpgradeProfile
-func ConvertUpgradeProfileToV20170930(api *UpgradeProfile) *v20170930.UpgradeProfile {
-	vProfile := &v20170930.UpgradeProfile{}
-
-	vProfile.ControlPlaneProfile = convertPoolUpgradeProfileToV20170930(api.ControlPlaneProfile)
-	if api.AgentPoolProfiles != nil {
-		vProfile.AgentPoolProfiles = make([]*v20170930.PoolUpgradeProfile, len(api.AgentPoolProfiles))
-		for i, h := range api.AgentPoolProfiles {
-			vProfile.AgentPoolProfiles[i] = convertPoolUpgradeProfileToV20170930(h)
-		}
-	}
-	return vProfile
-}
-
-//ConvertUpgradeProfileToVLabs converts an unversioned UpgradeProfile to a vlabs UpgradeProfile
-func ConvertUpgradeProfileToVLabs(api *UpgradeProfile) *vlabs.UpgradeProfile {
-	vlabsProfile := &vlabs.UpgradeProfile{}
-
-	vlabsProfile.ControlPlaneProfile = convertPoolUpgradeProfileToVLabs(api.ControlPlaneProfile)
-	if api.AgentPoolProfiles != nil {
-		vlabsProfile.AgentPoolProfiles = make([]*vlabs.PoolUpgradeProfile, len(api.AgentPoolProfiles))
-		for i, h := range api.AgentPoolProfiles {
-			vlabsProfile.AgentPoolProfiles[i] = convertPoolUpgradeProfileToVLabs(h)
-		}
-	}
-	return vlabsProfile
 }
 
 // ConvertOrchestratorVersionProfileToV20170930 converts an unversioned OrchestratorVersionProfile to a v20170930 OrchestratorVersionProfile
@@ -971,56 +943,4 @@ func convertAADProfileToVLabs(api *AADProfile, vlabs *vlabs.AADProfile) {
 	vlabs.ClientAppID = api.ClientAppID
 	vlabs.ServerAppID = api.ServerAppID
 	vlabs.TenantID = api.TenantID
-}
-
-func convertPoolUpgradeProfileToV20170930(apiProfile *PoolUpgradeProfile) *v20170930.PoolUpgradeProfile {
-	vProfile := &v20170930.PoolUpgradeProfile{}
-
-	switch apiProfile.OSType {
-	case Linux:
-		vProfile.OSType = v20170930.Linux
-	case Windows:
-		vProfile.OSType = v20170930.Windows
-	}
-	vProfile.Name = apiProfile.Name
-	vProfile.OrchestratorProfile = v20170930.OrchestratorProfile{
-		OrchestratorRelease: apiProfile.OrchestratorRelease,
-		OrchestratorVersion: apiProfile.OrchestratorVersion,
-	}
-	if apiProfile.Upgrades != nil {
-		vProfile.Upgrades = make([]*v20170930.OrchestratorProfile, len(apiProfile.Upgrades))
-		for i, h := range apiProfile.Upgrades {
-			vProfile.Upgrades[i] = &v20170930.OrchestratorProfile{
-				OrchestratorRelease: h.OrchestratorRelease,
-				OrchestratorVersion: h.OrchestratorVersion,
-			}
-		}
-	}
-	return vProfile
-}
-
-func convertPoolUpgradeProfileToVLabs(apiProfile *PoolUpgradeProfile) *vlabs.PoolUpgradeProfile {
-	vProfile := &vlabs.PoolUpgradeProfile{}
-
-	switch apiProfile.OSType {
-	case Linux:
-		vProfile.OSType = vlabs.Linux
-	case Windows:
-		vProfile.OSType = vlabs.Windows
-	}
-	vProfile.Name = apiProfile.Name
-	vProfile.OrchestratorProfile = vlabs.OrchestratorProfile{
-		OrchestratorRelease: apiProfile.OrchestratorRelease,
-		OrchestratorVersion: apiProfile.OrchestratorVersion,
-	}
-	if apiProfile.Upgrades != nil {
-		vProfile.Upgrades = make([]*vlabs.OrchestratorProfile, len(apiProfile.Upgrades))
-		for i, h := range apiProfile.Upgrades {
-			vProfile.Upgrades[i] = &vlabs.OrchestratorProfile{
-				OrchestratorRelease: h.OrchestratorRelease,
-				OrchestratorVersion: h.OrchestratorVersion,
-			}
-		}
-	}
-	return vProfile
 }

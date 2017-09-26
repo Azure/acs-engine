@@ -21,7 +21,7 @@ type OrchestratorProfile struct {
 type PoolUpgradeProfile struct {
 	OrchestratorProfile
 	Name     string                 `json:"name,omitempty"`
-	OSType   OSType                 `json:"osType,omitempty"`
+	OSType   string                 `json:"osType,omitempty"`
 	Upgrades []*OrchestratorProfile `json:"upgrades,omitempty"`
 }
 
