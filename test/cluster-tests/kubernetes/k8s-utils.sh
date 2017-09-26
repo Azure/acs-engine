@@ -129,7 +129,7 @@ function test_windows_deployment() {
   fi
 
   # TODO: There is an issue Windows POD has delay to talk to DNS, but not to other services
-  sleep 300
+  sleep 600
 
   count=30
   success="n"
