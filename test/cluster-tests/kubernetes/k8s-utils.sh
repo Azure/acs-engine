@@ -116,7 +116,7 @@ function test_windows_deployment() {
   fi
 
   log "Checking outbound connection"
-  count=30
+  count=10
   while (( $count > 0 )); do
     log "  ... counting down $count"
     winpodname=$(kubectl get pods --namespace=default | grep win-webserver | awk '{print $1}')
@@ -131,7 +131,7 @@ function test_windows_deployment() {
   # TODO: There is an issue Windows POD has delay to talk to DNS, but not to other services
   sleep 300
 
-  count=10
+  count=30
   success="n"
   while (( $count > 0 )); do
     log "  ... counting down $count"
