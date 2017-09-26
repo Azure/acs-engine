@@ -99,7 +99,7 @@ Run `acs-engine generate examples/kubernetes.json`
 
 [deploy the output azuredeploy.json and azuredeploy.parameters.json](../acsengine.md#deployment-usage)
   * To enable the optional network policy enforcement using calico, you have to
-    set the parameter during this step according to this [guide](../kuberntes.md#optional-enable-network-policy-enforcement-using-calico)
+    set the parameter during this step according to this [guide](kuberntes.md#optional-enable-network-policy-enforcement-using-calico)
 
 
 **Note**: If the cluster is using an existing VNET please see the [Custom VNET](features.md#feat-custom-vnet) feature documentation for additional steps that must be completed after cluster provisioning.
