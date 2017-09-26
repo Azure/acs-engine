@@ -136,6 +136,7 @@ func getUpgradesV20170930(orch *OrchestratorVersionProfile, allowCurrentVersionU
 		upgrades = make([]*v20170930.OrchestratorProfile, len(orch.Upgrades))
 		for i, h := range orch.Upgrades {
 			upgrades[i] = &v20170930.OrchestratorProfile{
+				OrchestratorType:    orch.OrchestratorType,
 				OrchestratorRelease: h.OrchestratorRelease,
 				OrchestratorVersion: h.OrchestratorVersion,
 			}
@@ -144,6 +145,7 @@ func getUpgradesV20170930(orch *OrchestratorVersionProfile, allowCurrentVersionU
 	// add current version if upgrade has failed
 	if allowCurrentVersionUpgrade {
 		upgrades = append(upgrades, &v20170930.OrchestratorProfile{
+			OrchestratorType:    orch.OrchestratorType,
 			OrchestratorRelease: orch.OrchestratorRelease,
 			OrchestratorVersion: common.KubeReleaseToVersion[orch.OrchestratorRelease]})
 	}
