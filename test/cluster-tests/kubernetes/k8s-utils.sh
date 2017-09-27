@@ -128,6 +128,20 @@ function test_windows_deployment() {
     exit 1
   fi
 
+  log "query DNS"
+  count=10
+  success="n"
+  while (( $count > 0 )); do
+    log "  ... counting down $count"
+    query=$(kubectl exec $winpodname -- powershell nslookup www.bing.com)
+    if [[ $(echo ${query} | grep "DNS request timed out" | wc -l) == 0 ]]; then
+      success="y"
+      break
+    fi
+    sleep 10; count=$((count-1))
+  done
+
+  log "curl external website"
   count=10
   success="n"
   while (( $count > 0 )); do
