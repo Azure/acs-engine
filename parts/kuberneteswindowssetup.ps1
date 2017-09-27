@@ -304,6 +304,12 @@ catch
 c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
 "@
 
+    if ($global:KubeBinariesVersion -ge "1.7.0")
+    {
+        # 1.7.0 uses event-based service configuration so shorter duration (default 15m) is needed to update forwarder NIC
+        $kubeProxyStartStr += " --config-sync-period=5m"
+    }
+
     $kubeProxyStartStr | Out-File -encoding ASCII -filepath $global:KubeProxyStartFile
 }
 
