@@ -6,6 +6,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/upgrade/v20170930"
+	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Masterminds/semver"
 )
 
@@ -42,30 +43,55 @@ func validate(orchestrator, release string) (string, error) {
 	return "", nil
 }
 
-// GetOrchestratorVersionProfileList returns OrchestratorVersionProfileList object per (optionally) specified orchestrator and release
-func GetOrchestratorVersionProfileList(orchestrator, release string) (*OrchestratorVersionProfileList, error) {
+// GetOrchestratorVersionProfileListVLabs returns vlabs OrchestratorVersionProfileList object per (optionally) specified orchestrator and release
+func GetOrchestratorVersionProfileListVLabs(orchestrator, release string) (*vlabs.OrchestratorVersionProfileList, error) {
+	apiOrchs, err := getOrchestratorVersionProfileList(orchestrator, release)
+	if err != nil {
+		return nil, err
+	}
+	orchList := &vlabs.OrchestratorVersionProfileList{}
+	orchList.Orchestrators = []*vlabs.OrchestratorVersionProfile{}
+	for _, orch := range apiOrchs {
+		orchList.Orchestrators = append(orchList.Orchestrators, ConvertOrchestratorVersionProfileToVLabs(orch))
+	}
+	return orchList, nil
+}
+
+// GetOrchestratorVersionProfileListV20170930 returns v20170930 OrchestratorVersionProfileList object per (optionally) specified orchestrator and release
+func GetOrchestratorVersionProfileListV20170930(orchestrator, release string) (*v20170930.OrchestratorVersionProfileList, error) {
+	apiOrchs, err := getOrchestratorVersionProfileList(orchestrator, release)
+	if err != nil {
+		return nil, err
+	}
+	orchList := &v20170930.OrchestratorVersionProfileList{}
+	orchList.Orchestrators = []*v20170930.OrchestratorVersionProfile{}
+	for _, orch := range apiOrchs {
+		orchList.Orchestrators = append(orchList.Orchestrators, ConvertOrchestratorVersionProfileToV20170930(orch))
+	}
+	return orchList, nil
+}
+
+func getOrchestratorVersionProfileList(orchestrator, release string) ([]*OrchestratorVersionProfile, error) {
 	var err error
 	if orchestrator, err = validate(orchestrator, release); err != nil {
 		return nil, err
 	}
-	orch := &OrchestratorVersionProfileList{}
-
+	orchs := []*OrchestratorVersionProfile{}
 	if len(orchestrator) == 0 {
 		// return all orchestrators
-		orch.Orchestrators = []*OrchestratorVersionProfile{}
 		for _, f := range funcmap {
 			arr, err := f(&OrchestratorProfile{})
 			if err != nil {
 				return nil, err
 			}
-			orch.Orchestrators = append(orch.Orchestrators, arr...)
+			orchs = append(orchs, arr...)
 		}
-		return orch, nil
+	} else {
+		if orchs, err = funcmap[orchestrator](&OrchestratorProfile{OrchestratorRelease: release}); err != nil {
+			return nil, err
+		}
 	}
-	if orch.Orchestrators, err = funcmap[orchestrator](&OrchestratorProfile{OrchestratorRelease: release}); err != nil {
-		return nil, err
-	}
-	return orch, nil
+	return orchs, nil
 }
 
 // GetOrchestratorVersionProfile returns orchestrator info for upgradable container service

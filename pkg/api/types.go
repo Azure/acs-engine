@@ -146,6 +146,16 @@ type OrchestratorProfile struct {
 	DcosConfig          *DcosConfig       `json:"dcosConfig,omitempty"`
 }
 
+// OrchestratorVersionProfile contains information of a supported orchestrator version:
+type OrchestratorVersionProfile struct {
+	// Orchestrator type and version
+	OrchestratorProfile
+	// Whether this orchestrator version is deployed by default if orchestrator release is not specified
+	Default bool `json:"default,omitempty"`
+	// List of available upgrades for this orchestrator version
+	Upgrades []*OrchestratorProfile `json:"upgrades,omitempty"`
+}
+
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
