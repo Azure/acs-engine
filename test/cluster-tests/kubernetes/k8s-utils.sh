@@ -128,9 +128,6 @@ function test_windows_deployment() {
     exit 1
   fi
 
-  # TODO: There is an issue Windows POD has delay to talk to DNS, but not to other services
-  sleep 600
-
   count=10
   success="n"
   while (( $count > 0 )); do
