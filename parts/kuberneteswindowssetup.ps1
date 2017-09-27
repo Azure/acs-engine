@@ -62,13 +62,28 @@ $global:PrimaryAvailabilitySetName = "{{WrapAsVariable "primaryAvailabilitySetNa
 $global:KubeClusterCIDR = "{{WrapAsVariable "kubeClusterCidr"}}"
 $global:KubeServiceCIDR = "{{WrapAsVariable "kubeServiceCidr"}}"
 
-$global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
-$global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
-
 $global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
 $global:NetworkMode = "L2Bridge"
 $global:CNIConfig = [Io.path]::Combine($global:CNIPath, "config", "`$global:NetworkMode.conf")
 $global:HNSModule = [Io.path]::Combine("$global:KubeDir", "hns.psm1")
+$global:NetworkPolicy = "{{WrapAsVariable "networkPolicy"}}"
+$global:VnetIntegration = "{{WrapAsVariable "vnetIntegration"}}"
+$global:VNetCNIPluginsURL = "{{WrapAsVariable "vnetCniWindowsPluginsURL"}}"
+$global:MaxPods = "{{WrapAsVariable "maxPods"}}"
+$global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
+$global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
+
+# Network configuration
+$global:TransparentNetworkName = "transparentNet"
+$global:NatNetworkName = "nat"
+$global:NeedPatchWinNAT = $false
+
+# Azure CNI configuration
+$global:CNIDir = "$env:SystemDrive\cni"
+$global:CNIBinDir = $global:CNIDir + "\bin"
+$global:CNIConfDir = $global:CNIDir + "\netconf"
+$global:CNIKubeletOptions = " --network-plugin=cni --cni-bin-dir=$global:CNIBinDir --cni-conf-dir=$global:CNIConfDir"
+$global:CNIEnabled = $false
 
 filter Timestamp {"$(Get-Date -Format o): $_"}
 
@@ -156,11 +171,67 @@ New-InfraContainer()
 }
 
 function
+Set-VnetPluginMode($mode)
+{
+    # Sets Azure VNET CNI plugin operational mode.
+    $fileName = $global:CNIConfDir + "\10-azure.conf"
+    (Get-Content $fileName) | %{$_ -replace "`"mode`":.*", "`"mode`": `"$mode`","} | Out-File -encoding ASCII -filepath $fileName
+}
+
+function
+Install-VnetPlugins()
+{
+    # Create CNI directories.
+    mkdir $global:CNIBinDir
+    mkdir $global:CNIConfDir
+
+    # Download Azure VNET CNI plugins.
+    # Mirror from https://github.com/Azure/azure-container-networking/releases
+    $zipfile = $global:CNIDir + "\azure-vnet.zip"
+    Invoke-WebRequest -Uri $global:VNetCNIPluginsURL -OutFile $zipfile
+    Expand-ZIPFile -File $zipfile -Destination $global:CNIBinDir
+    del $zipfile
+
+    # Windows does not need a separate CNI loopback plugin because the Windows
+    # kernel automatically creates a loopback interface for each network namespace.
+
+    # Copy CNI network config file and set bridge mode.
+    move $global:CNIBinDir/*.conf $global:CNIConfDir
+    Set-VnetPluginMode "bridge"
+
+    # Enable CNI in kubelet.
+    $global:CNIEnabled = $true
+}
+
+function
+Set-AzureNetworkPolicy()
+{
+    # Azure VNET network policy requires tunnel (hairpin) mode because policy is enforced in the host.
+    Set-VnetPluginMode "tunnel"
+}
+
+function
+Set-NetworkConfig
+{
+    Write-Log "Configuring networking with VnetIntegration:$global:VnetIntegration NetworkPolicy:$global:NetworkPolicy"
+
+    # Configure VNET integration.
+    if ($global:VnetIntegration -eq "enabled") {
+        Install-VnetPlugins
+    }
+
+    # Configure network policy.
+    if ($global:NetworkPolicy -eq "azure") {
+        Set-AzureNetworkPolicy
+    }
+}
+
+function
 Write-KubernetesStartFiles($podCIDR)
 {
     $KubeletArgList = @("--hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--kubeconfig=c:\k\config","--cloud-provider=azure","--cloud-config=c:\k\azure.json")
     $KubeletCommandLine = @"
-c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m  --cloud-provider=azure --cloud-config=c:\k\azure.json
+c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local --kubeconfig=c:\k\config --max-pods=`$global:MaxPods --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m  --cloud-provider=azure --cloud-config=c:\k\azure.json
 "@
 
     if ($global:KubeBinariesVersion -lt "1.8.0")
@@ -176,8 +247,12 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
     # more time is needed to pull windows server images
     $KubeletCommandLine += " --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
 
-    $KubeletArgListStr = "`"" + ($KubeletArgList -join "`",`"") + "`""
+    # Configure kubelet to use CNI plugins if enabled.
+    if ($global:CNIEnabled) {
+        $KubeletCommandLine += $global:CNIKubeletOptions
+    }
 
+    $KubeletArgListStr = "`"" + ($KubeletArgList -join "`",`"") + "`""
     $KubeletArgListStr = "@`($KubeletArgListStr`)"
 
     $kubeStartStr = @"
@@ -192,6 +267,8 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
 `$global:NetworkMode = "$global:NetworkMode"
 `$global:CNIConfig = "$global:CNIConfig"
 `$global:HNSModule = "$global:HNSModule"
+`$global:MaxPods="$global:MaxPods"
+`$global:VnetIntegration="$global:VnetIntegration"
 
 function
 Get-DefaultGateway(`$CIDR)
@@ -264,6 +341,12 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
 
 try
 {
+    if (`$global:VnetIntegration -eq "enabled") {
+        Write-Host "VnetIntegration enabled, starting kubelet."
+        $KubeletCommandLine
+        return 0
+    }
+    
     `$masterSubnetGW = Get-DefaultGateway `$global:MasterSubnet
     `$podCIDR=Get-PodCIDR
     `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
@@ -410,6 +493,9 @@ try
 
         Write-Log "Create the Pause Container kubletwin/pause"
         New-InfraContainer
+
+        Write-Log "Configure networking"
+        Set-NetworkConfig
 
         Write-Log "write kubelet startfile with pod CIDR of $podCIDR"
         Write-KubernetesStartFiles $podCIDR
