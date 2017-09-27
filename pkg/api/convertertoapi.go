@@ -3,11 +3,11 @@ package api
 import (
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/api/upgrade/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
-	"github.com/Azure/acs-engine/pkg/api/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 

@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/api/upgrade/v20170930"
+	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Masterminds/semver"
 )
 
@@ -41,30 +43,55 @@ func validate(orchestrator, release string) (string, error) {
 	return "", nil
 }
 
-// GetOrchestratorVersionProfileList returns OrchestratorVersionProfileList object per (optionally) specified orchestrator and release
-func GetOrchestratorVersionProfileList(orchestrator, release string) (*OrchestratorVersionProfileList, error) {
+// GetOrchestratorVersionProfileListVLabs returns vlabs OrchestratorVersionProfileList object per (optionally) specified orchestrator and release
+func GetOrchestratorVersionProfileListVLabs(orchestrator, release string) (*vlabs.OrchestratorVersionProfileList, error) {
+	apiOrchs, err := getOrchestratorVersionProfileList(orchestrator, release)
+	if err != nil {
+		return nil, err
+	}
+	orchList := &vlabs.OrchestratorVersionProfileList{}
+	orchList.Orchestrators = []*vlabs.OrchestratorVersionProfile{}
+	for _, orch := range apiOrchs {
+		orchList.Orchestrators = append(orchList.Orchestrators, ConvertOrchestratorVersionProfileToVLabs(orch))
+	}
+	return orchList, nil
+}
+
+// GetOrchestratorVersionProfileListV20170930 returns v20170930 OrchestratorVersionProfileList object per (optionally) specified orchestrator and release
+func GetOrchestratorVersionProfileListV20170930(orchestrator, release string) (*v20170930.OrchestratorVersionProfileList, error) {
+	apiOrchs, err := getOrchestratorVersionProfileList(orchestrator, release)
+	if err != nil {
+		return nil, err
+	}
+	orchList := &v20170930.OrchestratorVersionProfileList{}
+	orchList.Orchestrators = []*v20170930.OrchestratorVersionProfile{}
+	for _, orch := range apiOrchs {
+		orchList.Orchestrators = append(orchList.Orchestrators, ConvertOrchestratorVersionProfileToV20170930(orch))
+	}
+	return orchList, nil
+}
+
+func getOrchestratorVersionProfileList(orchestrator, release string) ([]*OrchestratorVersionProfile, error) {
 	var err error
 	if orchestrator, err = validate(orchestrator, release); err != nil {
 		return nil, err
 	}
-	orch := &OrchestratorVersionProfileList{}
-
+	orchs := []*OrchestratorVersionProfile{}
 	if len(orchestrator) == 0 {
 		// return all orchestrators
-		orch.Orchestrators = []*OrchestratorVersionProfile{}
 		for _, f := range funcmap {
 			arr, err := f(&OrchestratorProfile{})
 			if err != nil {
 				return nil, err
 			}
-			orch.Orchestrators = append(orch.Orchestrators, arr...)
+			orchs = append(orchs, arr...)
 		}
-		return orch, nil
+	} else {
+		if orchs, err = funcmap[orchestrator](&OrchestratorProfile{OrchestratorRelease: release}); err != nil {
+			return nil, err
+		}
 	}
-	if orch.Orchestrators, err = funcmap[orchestrator](&OrchestratorProfile{OrchestratorRelease: release}); err != nil {
-		return nil, err
-	}
-	return orch, nil
+	return orchs, nil
 }
 
 // GetOrchestratorVersionProfile returns orchestrator info for upgradable container service
@@ -84,6 +111,71 @@ func GetOrchestratorVersionProfile(orch *OrchestratorProfile) (*OrchestratorVers
 		return nil, fmt.Errorf("Umbiguous Orchestrator Releases")
 	}
 	return arr[0], nil
+}
+
+// GetUpgradeProfileV20170930 returns v20170930 upgrade profile for existing cluster.
+// Note: This is a temporary implementation.
+// TODO: re-implement once  AgentPoolProfiles contain orchestrator version
+func GetUpgradeProfileV20170930(cs *ContainerService, allowCurrentVersionUpgrade bool) (*v20170930.UpgradeProfile, error) {
+	orch, err := GetOrchestratorVersionProfile(cs.Properties.OrchestratorProfile)
+	if err != nil {
+		return nil, err
+	}
+	upgradeProfile := &v20170930.UpgradeProfile{}
+	if cs.Properties.MasterProfile != nil {
+		upgradeProfile.ControlPlaneProfile = &v20170930.PoolUpgradeProfile{
+			OrchestratorProfile: v20170930.OrchestratorProfile{
+				OrchestratorRelease: orch.OrchestratorRelease,
+				OrchestratorVersion: orch.OrchestratorVersion,
+			},
+			OSType:   string(Linux),
+			Upgrades: getUpgradesV20170930(orch, allowCurrentVersionUpgrade),
+		}
+	} else if cs.Properties.HostedMasterProfile != nil {
+		upgradeProfile.ControlPlaneProfile = &v20170930.PoolUpgradeProfile{
+			OrchestratorProfile: v20170930.OrchestratorProfile{
+				OrchestratorRelease: orch.OrchestratorRelease,
+				OrchestratorVersion: orch.OrchestratorVersion,
+			},
+			OSType:   string(Linux),
+			Upgrades: getUpgradesV20170930(orch, allowCurrentVersionUpgrade),
+		}
+	}
+
+	for _, agent := range cs.Properties.AgentPoolProfiles {
+		upgradeProfile.AgentPoolProfiles = append(upgradeProfile.AgentPoolProfiles, &v20170930.PoolUpgradeProfile{
+			OrchestratorProfile: v20170930.OrchestratorProfile{
+				OrchestratorRelease: orch.OrchestratorRelease,
+				OrchestratorVersion: orch.OrchestratorVersion,
+			},
+			Name:     agent.Name,
+			OSType:   string(agent.OSType),
+			Upgrades: getUpgradesV20170930(orch, allowCurrentVersionUpgrade),
+		})
+	}
+	return upgradeProfile, nil
+}
+
+func getUpgradesV20170930(orch *OrchestratorVersionProfile, allowCurrentVersionUpgrade bool) []*v20170930.OrchestratorProfile {
+	var upgrades []*v20170930.OrchestratorProfile
+	if orch.Upgrades != nil {
+		upgrades = make([]*v20170930.OrchestratorProfile, len(orch.Upgrades))
+		for i, h := range orch.Upgrades {
+			upgrades[i] = &v20170930.OrchestratorProfile{
+				OrchestratorType:    orch.OrchestratorType,
+				OrchestratorRelease: h.OrchestratorRelease,
+				OrchestratorVersion: h.OrchestratorVersion,
+			}
+		}
+	}
+	// add current version if upgrade has failed
+	if allowCurrentVersionUpgrade {
+		upgrades = append(upgrades, &v20170930.OrchestratorProfile{
+			OrchestratorType:    orch.OrchestratorType,
+			OrchestratorRelease: orch.OrchestratorRelease,
+			OrchestratorVersion: common.KubeReleaseToVersion[orch.OrchestratorRelease]})
+	}
+	return upgrades
 }
 
 func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {

@@ -1,4 +1,17 @@
-package vlabs
+package v20170930
+
+// OSType represents OS types of agents
+type OSType string
+
+// OrchestratorProfile contains orchestrator properties:
+//  - type: kubernetes, DCOS, etc.
+//  - release: major and minor version numbers
+//  - version: major, minor, and patch version numbers
+type OrchestratorProfile struct {
+	OrchestratorType    string `json:"orchestratorType"`
+	OrchestratorRelease string `json:"orchestratorRelease"`
+	OrchestratorVersion string `json:"orchestratorVersion"`
+}
 
 // PoolUpgradeProfile contains pool properties:
 //  - orchestrator type and version
@@ -8,7 +21,7 @@ package vlabs
 type PoolUpgradeProfile struct {
 	OrchestratorProfile
 	Name     string                 `json:"name,omitempty"`
-	OSType   OSType                 `json:"osType,omitempty"`
+	OSType   string                 `json:"osType,omitempty"`
 	Upgrades []*OrchestratorProfile `json:"upgrades,omitempty"`
 }
 
