@@ -45,7 +45,7 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", func() {
-	Context("regardless of agent pool type", func() {
+	Describe("regardless of agent pool type", func() {
 
 		It("should have have the appropriate node count", func() {
 			nodeList, err := node.Get()
@@ -155,19 +155,19 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 	})
 
-	Context("with a linux agent pool", func() {
+	Describe("with a linux agent pool", func() {
 		It("should be able to deploy an nginx service", func() {
 			if eng.HasLinuxAgents() {
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				deploymentName := fmt.Sprintf("nginx-%s-%v", cfg.Name, r.Intn(99999))
-				d, err := deployment.CreateLinuxDeploy("library/nginx:latest", deploymentName, "default")
+				nginxDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", deploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
 
 				running, err := pod.WaitOnReady(deploymentName, "default", 5*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
-				err = d.Expose(80, 80)
+				err = nginxDeploy.Expose(80, 80)
 				Expect(err).NotTo(HaveOccurred())
 
 				s, err := service.Get(deploymentName, "default")
@@ -178,25 +178,34 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				valid := s.Validate("(Welcome to nginx)", 5, 5*time.Second)
 				Expect(valid).To(BeTrue())
+
+				nginxPods, err := nginxDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(nginxPods)).ToNot(BeZero())
+				for _, nginxPod := range nginxPods {
+					pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(pass).To(BeTrue())
+				}
 			} else {
 				Skip("No linux agent was provisioned for this Cluster Definition")
 			}
 		})
 	})
 
-	Context("with a windows agent pool", func() {
+	Describe("with a windows agent pool", func() {
 		It("should be able to deploy an iis webserver", func() {
 			if eng.HasWindowsAgents() {
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
-				d, err := deployment.CreateWindowsDeploy("microsoft/iis", deploymentName, "default", 80)
+				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis", deploymentName, "default", 80)
 				Expect(err).NotTo(HaveOccurred())
 
 				running, err := pod.WaitOnReady(deploymentName, "default", 5*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
-				err = d.Expose(80, 80)
+				err = iisDeploy.Expose(80, 80)
 				Expect(err).NotTo(HaveOccurred())
 
 				s, err := service.Get(deploymentName, "default")
@@ -207,6 +216,15 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				valid := s.Validate("(IIS Windows Server)", 5, 5*time.Second)
 				Expect(valid).To(BeTrue())
+
+				iisPods, err := iisDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(iisPods)).ToNot(BeZero())
+				for _, iisPod := range iisPods {
+					pass, err := iisPod.CheckWindowsOutboundConnection(5*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(pass).To(BeTrue())
+				}
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
 			}
