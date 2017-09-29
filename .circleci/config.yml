@@ -151,7 +151,7 @@ jobs:
       - run:
           name: ginkgo k8s e2e tests
           command: make build-binary test-kubernetes
-          no_output_timeout: "30m"
+          no_output_timeout: "5m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -173,7 +173,7 @@ jobs:
       - run:
           name: ginkgo k8s e2e tests
           command: make build-binary test-kubernetes
-          no_output_timeout: "30m"
+          no_output_timeout: "5m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -195,7 +195,7 @@ jobs:
       - run:
           name: ginkgo k8s windows e2e tests
           command: make build-binary test-kubernetes
-          no_output_timeout: "30m"
+          no_output_timeout: "5m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -217,7 +217,7 @@ jobs:
       - run:
           name: ginkgo k8s hybrid e2e tests
           command: make build-binary test-kubernetes
-          no_output_timeout: "30m"
+          no_output_timeout: "5m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -239,7 +239,7 @@ jobs:
       - run:
           name: ginkgo k8s e2e tests
           command: make build-binary test-kubernetes
-          no_output_timeout: "30m"
+          no_output_timeout: "5m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -261,7 +261,7 @@ jobs:
       - run:
           name: ginkgo k8s e2e tests
           command: make build-binary test-kubernetes
-          no_output_timeout: "30m"
+          no_output_timeout: "5m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -283,7 +283,7 @@ jobs:
       - run:
           name: ginkgo k8s windows e2e tests
           command: make build-binary test-kubernetes
-          no_output_timeout: "30m"
+          no_output_timeout: "5m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
@@ -305,7 +305,7 @@ jobs:
       - run:
           name: ginkgo k8s hybrid e2e tests
           command: make build-binary test-kubernetes
-          no_output_timeout: "30m"
+          no_output_timeout: "5m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
