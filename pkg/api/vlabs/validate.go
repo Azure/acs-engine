@@ -59,7 +59,7 @@ func (o *OrchestratorProfile) Validate() error {
 				return err
 			}
 			if o.KubernetesConfig.EnableAggregatedAPIs {
-				if (o.OrchestratorRelease != common.KubernetesRelease1Dot7) || (o.OrchestratorRelease != common.KubernetesRelease1Dot8) {
+				if o.OrchestratorRelease == common.KubernetesRelease1Dot5 || o.OrchestratorRelease == common.KubernetesRelease1Dot6 {
 					return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 						common.KubernetesRelease1Dot7, o.OrchestratorRelease)
 				}
