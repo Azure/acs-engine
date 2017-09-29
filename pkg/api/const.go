@@ -68,6 +68,8 @@ const (
 )
 
 const (
+	// KubernetesRelease1Dot8 is the major.minor string prefix for 1.8 versions of kubernetes
+	KubernetesRelease1Dot8 string = "1.8"
 	// KubernetesRelease1Dot7 is the major.minor string prefix for 1.7 versions of kubernetes
 	KubernetesRelease1Dot7 string = "1.7"
 	// KubernetesRelease1Dot6 is the major.minor string prefix for 1.6 versions of kubernetes

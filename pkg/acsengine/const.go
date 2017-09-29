@@ -92,6 +92,31 @@ const (
 // KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes releases (major.minor)
 // For instance, Kubernetes release "1.7" would contain the version "1.7.2"
 var KubeConfigs = map[string]map[string]string{
+	api.KubernetesRelease1Dot8: {
+		"hyperkube":       "hyperkube-amd64:v1.8.0",
+		"dashboard":       "kubernetes-dashboard-amd64:v1.7.0",
+		"exechealthz":     "exechealthz-amd64:1.2",
+		"addonresizer":    "addon-resizer:1.7",
+		"heapster":        "heapster-amd64:v1.4.2",
+		"dns":             "k8s-dns-kube-dns-amd64:1.14.5",
+		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
+		"dnsmasq":         "k8s-dns-dnsmasq-nanny-amd64:1.14.5",
+		"pause":           "pause-amd64:3.0",
+		"tiller":          DefaultTillerImage,
+		"windowszip":      "v1.8.0-1intwinnat.zip",
+		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
+		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
+		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
+		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
+		"backoffretries":  strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
+		"backoffjitter":   strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
+		"backoffduration": strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
+		"backoffexponent": strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
+		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
+		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
+		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
+		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
+	},
 	api.KubernetesRelease1Dot7: {
 		"hyperkube":       "hyperkube-amd64:v1.7.5",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
