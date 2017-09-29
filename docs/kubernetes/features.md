@@ -5,6 +5,7 @@
 |Managed Disks|Beta|`vlabs`|[kubernetes-vmas.json](../../examples/disks-managed/kubernetes-vmss.json)|[Description](#feat-managed-disks)|
 |Calico Network Policy|Alpha|`vlabs`|[kubernetes-calico.json](../../examples/networkpolicy/kubernetes-calico.json)|[Description](#feat-calico)|
 |Custom VNET|Beta|`vlabs`|[kubernetesvnet.json](../../examples/vnet/kubernetesvnet.json)|[Description](#feat-custom-vnet)|
+|VNET Integrated Networking|Beta|`vlabs`||[Description](#feat-vnet-integration)|
 
 <a name="feat-kubernetes-msi"></a>
 
@@ -23,8 +24,6 @@ Enable Managed Identity by adding `useManagedIdentity` in `kubernetesConfig`.
 }
 ```
 
-<a name="feat-managed-disks"></a>
-
 ## Optional: Enable Kubernetes Role-Based Access Control (RBAC)
 
 By default, the cluster will be provisioned without [Role-Based Access Control](https://kubernetes.io/docs/admin/authorization/rbac/) enabled. Enable RBAC by adding `enableRbac` in `kubernetesConfig` in the api model:
@@ -36,6 +35,8 @@ By default, the cluster will be provisioned without [Role-Based Access Control](
 ```
 
 See [cluster definition](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig) for further detail.
+
+<a name="feat-managed-disks"></a>
 
 ## Managed Disks
 
@@ -183,39 +184,36 @@ E.g.:
 ]
 ```
 
-## Using Azure integrated networking (CNI)
+<a name="feat-vnet-integration"></a>
 
-Kubernetes clusters can be configured to use the [Azure CNI plugin](https://github.com/Azure/azure-container-networking) which provides a Azure native networking experience. Pods will receive IP addresses directly from the vnet subnet on which they're hosted. To enable Azure integrated networking the following must be added to your cluster definition:
+## VNET integrated networking using CNI plugin
 
-```
-      "kubernetesConfig": {
-        "networkPolicy": "azure"
-      }
-```
+Kubernetes clusters can be configured to use the [Azure VNET CNI plugins](https://github.com/Azure/azure-container-networking) which enable full integration with Azure SDN features such as network security groups, VNET peering and route tables for your Linux and Windows containers. Pods will receive IP addresses directly from the VNET subnet on which they are hosted.
 
-### Additional Azure integrated networking configuration
-
-In addition you can modify the following settings to change the networking behavior when using Azure integrated networking:
-
-IP addresses are pre-allocated in the subnet. Using ipAddressCount you can specify how many you would like to pre-allocate. This number needs to account for number of pods you would like to run on that subnet.
-
-```
-    "masterProfile": {
-      "ipAddressCount": 200
-    },
-```
-
-Currently, the IP addresses that are pre-allocated aren't allowed by the default natter for Internet bound traffic. In order to work around this limitation we allow the user to specify the vnetCidr (eg. 10.0.0.0/8) to be EXCLUDED from the default masquerade rule that is applied. The result is that traffic destined for anything within that block will NOT be natted on the outbound VM interface. This field has been called vnetCidr but may be wider than the vnet cidr block if you would like POD IPs to be routable across vnets using vnet-peering or express-route.
-```
-    "masterProfile": {
-      "vnetCidr": "10.0.0.0/8",
-    },
-```
-
-When using Azure integrated networking the maxPods setting will be set to 30 by default. This number can be changed keeping in mind that there is a limit of 4,000 IPs per vnet.
+To enable VNET integrated networking, the following must be added to your cluster definition:
 
 ```
       "kubernetesConfig": {
-        "maxPods": 50
+        "vnetIntegration": "enabled"
       }
+```
+
+### Additional VNET integrated networking configuration
+
+In addition, you can modify the following settings to change the networking behavior when using VNET integrated networking:
+
+The `maxPods` property specifies the maximum number of pods per node. When VNET integration is enabled, it also controls how many IP addresses are pre-allocated for pods on each node in the subnet, with a default value of 30. This number can be changed keeping in mind that there is a soft limit of 4,000 IP addresses per VNET.
+
+```
+    "kubernetesConfig": {
+      "maxPods": 50
+    },
+```
+
+When VNET integration is enabled, `networkPolicy` can be set to `azure` to use [network security groups](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-networks-nsg) to secure pod traffic. Please note that pods running on Linux nodes currently do not have outbound internet access in this networkPolicy mode.
+
+```
+    "kubernetesConfig": {
+      "networkPolicy": "azure"
+    }
 ```
