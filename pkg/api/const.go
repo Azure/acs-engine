@@ -101,7 +101,7 @@ var DCOSReleaseToVersion = map[string]string{
 var KubernetesReleaseToVersion = map[string]string{
 	KubernetesRelease1Dot8: "1.8.0",
 	KubernetesRelease1Dot7: "1.7.5",
-	KubernetesRelease1Dot6: "1.6.9",
+	KubernetesRelease1Dot6: "1.6.10",
 	KubernetesRelease1Dot5: "1.5.7",
 }
 

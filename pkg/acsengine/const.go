@@ -143,7 +143,7 @@ var KubeConfigs = map[string]map[string]string{
 		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 	api.KubernetesRelease1Dot6: {
-		"hyperkube":       "hyperkube-amd64:v1.6.9",
+		"hyperkube":       "hyperkube-amd64:v1.6.10",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addonresizer":    "addon-resizer:1.7",
@@ -153,7 +153,7 @@ var KubeConfigs = map[string]map[string]string{
 		"dnsmasq":         "k8s-dns-dnsmasq-nanny-amd64:1.14.4",
 		"pause":           "pause-amd64:3.0",
 		"tiller":          DefaultTillerImage,
-		"windowszip":      "v1.6.9-3intwinnat.zip",
+		"windowszip":      "v1.6.10intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
