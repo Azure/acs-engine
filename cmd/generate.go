@@ -74,7 +74,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 	}
 
 	if gc.apimodelPath == "" {
-		if len(args) > 0 {
+		if len(args) == 1 {
 			gc.apimodelPath = args[0]
 		} else if len(args) > 1 {
 			cmd.Usage()
@@ -86,7 +86,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 	}
 
 	if _, err := os.Stat(gc.apimodelPath); os.IsNotExist(err) {
-		return errors.New(fmt.Sprintf("specified api model does not exist (%s)", gc.apimodelPath))
+		return fmt.Errorf(fmt.Sprintf("specified api model does not exist (%s)", gc.apimodelPath))
 	}
 
 	apiloader := &api.Apiloader{
@@ -96,7 +96,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 	}
 	gc.containerService, gc.apiVersion, err = apiloader.LoadContainerServiceFromFile(gc.apimodelPath, true, nil)
 	if err != nil {
-		return errors.New(fmt.Sprintf("error parsing the api model: %s", err.Error()))
+		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}
 
 	if gc.outputDirectory == "" {
@@ -114,10 +114,10 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 	}
 	if gc.caCertificatePath != "" {
 		if caCertificateBytes, err = ioutil.ReadFile(gc.caCertificatePath); err != nil {
-			return errors.New(fmt.Sprintf("failed to read CA certificate file:", err))
+			return fmt.Errorf(fmt.Sprintf("failed to read CA certificate file: %s", err.Error()))
 		}
 		if caKeyBytes, err = ioutil.ReadFile(gc.caPrivateKeyPath); err != nil {
-			return errors.New(fmt.Sprintf("failed to read CA private key file:", err))
+			return fmt.Errorf(fmt.Sprintf("failed to read CA private key file: %s", err.Error()))
 		}
 
 		prop := gc.containerService.Properties
