@@ -386,7 +386,8 @@
       {
         "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
         "resourceNameSuffix" : "[variables('nameSuffix')]",
-        "orchestrator" : "[variables('orchestratorNameVersionTag')]"
+        "orchestrator" : "[variables('orchestratorNameVersionTag')]",
+        "poolName" : "master"
       },
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
