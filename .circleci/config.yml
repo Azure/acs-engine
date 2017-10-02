@@ -524,24 +524,6 @@ workflows:
           filters:
             branches:
               only: master
-      - k8s-1.8-release-e2e-master:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
-      - k8s-windows-1.8-release-e2e-master:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
-      - k8s-hybrid-1.8-release-e2e-master:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
       - swarm-e2e:
           requires:
             - test
