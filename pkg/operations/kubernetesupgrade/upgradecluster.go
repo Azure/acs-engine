@@ -49,6 +49,8 @@ type UpgradeCluster struct {
 
 // MasterVMNamePrefix is the prefix for all master VM names for Kubernetes clusters
 const MasterVMNamePrefix = "k8s-master-"
+
+// MasterPoolName pool name
 const MasterPoolName = "master"
 
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
