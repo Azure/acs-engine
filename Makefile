@@ -40,10 +40,6 @@ BINARY_DEST_DIR ?= bin
 
 all: build
 
-.PHONY: dev
-dev:
-	$(DEV_ENV_CMD_IT) bash
-
 .PHONY: generate
 generate: bootstrap
 	go generate $(GOFLAGS) -v `glide novendor | xargs go list`
