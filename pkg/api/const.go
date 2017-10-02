@@ -102,7 +102,7 @@ var KubernetesReleaseToVersion = map[string]string{
 	KubernetesRelease1Dot8: "1.8.0",
 	KubernetesRelease1Dot7: "1.7.7",
 	KubernetesRelease1Dot6: "1.6.11",
-	KubernetesRelease1Dot5: "1.5.7",
+	KubernetesRelease1Dot5: "1.5.8",
 }
 
 // To identify programmatically generated public agent pools
