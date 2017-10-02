@@ -191,7 +191,7 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesRelease string) 
 	}
 
 	switch kubernetesRelease {
-	case KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
+	case KubernetesRelease1Dot8, KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
 		orchestratorProfile.OrchestratorRelease = kubernetesRelease
 	default:
 		orchestratorProfile.OrchestratorRelease = KubernetesDefaultRelease
@@ -207,7 +207,7 @@ func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesRelease string) *Orc
 	}
 
 	switch kubernetesRelease {
-	case KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
+	case KubernetesRelease1Dot8, KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
 		orchestratorProfile.OrchestratorRelease = kubernetesRelease
 	default:
 		orchestratorProfile.OrchestratorRelease = KubernetesDefaultRelease

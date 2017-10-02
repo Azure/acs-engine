@@ -44,6 +44,7 @@ func (o *OrchestratorProfile) Validate() error {
 
 	case Kubernetes:
 		switch o.OrchestratorRelease {
+		case common.KubernetesRelease1Dot8:
 		case common.KubernetesRelease1Dot7:
 		case common.KubernetesRelease1Dot6:
 		case common.KubernetesRelease1Dot5:
@@ -58,8 +59,8 @@ func (o *OrchestratorProfile) Validate() error {
 				return err
 			}
 			if o.KubernetesConfig.EnableAggregatedAPIs {
-				if o.OrchestratorRelease != common.KubernetesRelease1Dot7 {
-					return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s; unable to validate for Kubernetes version %s",
+				if o.OrchestratorRelease == common.KubernetesRelease1Dot5 || o.OrchestratorRelease == common.KubernetesRelease1Dot6 {
+					return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 						common.KubernetesRelease1Dot7, o.OrchestratorRelease)
 				}
 
@@ -388,6 +389,7 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 	const minKubeletRetries = 4
 	// k8s releases that have cloudprovider backoff enabled
 	var backoffEnabledReleases = map[string]bool{
+		common.KubernetesRelease1Dot8: true,
 		common.KubernetesRelease1Dot7: true,
 		common.KubernetesRelease1Dot6: true,
 	}
