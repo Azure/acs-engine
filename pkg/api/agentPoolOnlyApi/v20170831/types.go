@@ -103,7 +103,7 @@ type AgentPoolProfile struct {
 	Count          int    `json:"count" validate:"required,min=1,max=100"`
 	VMSize         string `json:"vmSize" validate:"required"`
 	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	StorageProfile string `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	StorageProfile string `json:"storageProfile" validate:"eq=ManagedDisks|len=0"`
 	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
 
 	// OSType is the operating system type for agents
@@ -137,8 +137,8 @@ func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
 	}
 
 	if a.StorageProfile == "" {
-		// if StorageProfile is missing, set to default StorageAccount
-		a.StorageProfile = StorageAccount
+		// if StorageProfile is missing, set to default ManagedDisks
+		a.StorageProfile = ManagedDisks
 	}
 
 	if string(a.OSType) == "" {
@@ -195,9 +195,4 @@ func (a *AgentPoolProfile) SetSubnet(subnet string) {
 // IsManagedDisks returns true if the customer specified managed disks
 func (a *AgentPoolProfile) IsManagedDisks() bool {
 	return a.StorageProfile == ManagedDisks
-}
-
-// IsStorageAccount returns true if the customer specified storage account
-func (a *AgentPoolProfile) IsStorageAccount() bool {
-	return a.StorageProfile == StorageAccount
 }
