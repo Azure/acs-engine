@@ -68,6 +68,8 @@ const (
 )
 
 const (
+	// KubernetesRelease1Dot8 is the major.minor string prefix for 1.8 versions of kubernetes
+	KubernetesRelease1Dot8 string = "1.8"
 	// KubernetesRelease1Dot7 is the major.minor string prefix for 1.7 versions of kubernetes
 	KubernetesRelease1Dot7 string = "1.7"
 	// KubernetesRelease1Dot6 is the major.minor string prefix for 1.6 versions of kubernetes
@@ -97,9 +99,10 @@ var DCOSReleaseToVersion = map[string]string{
 
 // KubernetesReleaseToVersion maps a major.minor release to an full major.minor.patch version
 var KubernetesReleaseToVersion = map[string]string{
-	KubernetesRelease1Dot7: "1.7.5",
-	KubernetesRelease1Dot6: "1.6.9",
-	KubernetesRelease1Dot5: "1.5.7",
+	KubernetesRelease1Dot8: "1.8.0",
+	KubernetesRelease1Dot7: "1.7.7",
+	KubernetesRelease1Dot6: "1.6.11",
+	KubernetesRelease1Dot5: "1.5.8",
 }
 
 // To identify programmatically generated public agent pools

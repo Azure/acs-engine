@@ -563,7 +563,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 	switch api.OrchestratorType {
 	case Kubernetes:
 		switch v20170701cs.OrchestratorRelease {
-		case KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
+		case KubernetesRelease1Dot8, KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
 			api.OrchestratorRelease = v20170701cs.OrchestratorRelease
 		default:
 			api.OrchestratorRelease = KubernetesDefaultRelease
@@ -592,7 +592,7 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 		}
 
 		switch vlabscs.OrchestratorRelease {
-		case KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
+		case KubernetesRelease1Dot8, KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
 			api.OrchestratorRelease = vlabscs.OrchestratorRelease
 		default:
 			api.OrchestratorRelease = KubernetesDefaultRelease

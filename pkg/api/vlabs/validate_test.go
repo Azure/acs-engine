@@ -53,7 +53,7 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 
 func Test_KubernetesConfig_Validate(t *testing.T) {
 	// Tests that should pass across all releases
-	for _, k8sRelease := range []string{common.KubernetesRelease1Dot5, common.KubernetesRelease1Dot6, common.KubernetesRelease1Dot7} {
+	for _, k8sRelease := range []string{common.KubernetesRelease1Dot5, common.KubernetesRelease1Dot6, common.KubernetesRelease1Dot7, common.KubernetesRelease1Dot8} {
 		c := KubernetesConfig{}
 		if err := c.Validate(k8sRelease); err != nil {
 			t.Errorf("should not error on empty KubernetesConfig: %v, release %s", err, k8sRelease)
@@ -212,7 +212,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	}
 
 	// Tests that apply to 1.6 and later releases
-	for _, k8sRelease := range []string{common.KubernetesRelease1Dot6, common.KubernetesRelease1Dot7} {
+	for _, k8sRelease := range []string{common.KubernetesRelease1Dot6, common.KubernetesRelease1Dot7, common.KubernetesRelease1Dot8} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
