@@ -59,3 +59,7 @@ testImport:
 - package: github.com/onsi/gomega
 - package: github.com/onsi/ginkgo
 - package: github.com/kelseyhightower/envconfig
+- package: k8s.io/apiserver
+  version: 366b072768b4e6d93c7de236464c0abe85d0b7c6
+- package: k8s.io/client-go
+  version: ~4.0.0
