@@ -69,7 +69,7 @@ k8s_16_cherry_pick() {
 	# 5fa0725025 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
 	# 79cf9963f7 Merge pull request #51126 from chen-anders/anders/port-47991-to-release-1.6
 
-	git cherry-pick 79cf9963f7..232fa6e5bc
+	git cherry-pick 79cf9963f7^..232fa6e5bc
 }
 
 k8s_17_cherry_pick() {
@@ -83,8 +83,8 @@ k8s_17_cherry_pick() {
 	# adeb88d774 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
 	# 02549d6647 Merge pull request #50914 from shyamjvs/add-logging-to-logdump
 
-	git cherry-pick 02549d6647..45ba7bb0fb
-        git cherry-pick 51fab673e1..72b9c8f519
+	git cherry-pick 02549d6647^..45ba7bb0fb
+        git cherry-pick 51fab673e1^..72b9c8f519
 }
 
 k8s_18_cherry_pick() {
