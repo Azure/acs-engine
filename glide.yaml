@@ -54,6 +54,10 @@ import:
   version: v1.3.1
 - package: github.com/imdario/mergo
   version: ^0.2.2
+- package: k8s.io/apiserver
+  version: 366b072768b4e6d93c7de236464c0abe85d0b7c6
+- package: k8s.io/client-go
+  version: ~4.0.0
 testImport:
 # glide isn't able to mutually reconcile pinned versions of these deps
 - package: github.com/onsi/gomega
