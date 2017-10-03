@@ -67,24 +67,33 @@ k8s_16_cherry_pick() {
 	# 4f196c6cac Fix the issue that ping uses the incorrect NIC to resolve name sometimes
 	# 2c9fd27449 Workaround for Outbound Internet traffic in Azure Kubernetes
 	# 5fa0725025 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
-	# 79cf9963f7 Merge pull request #51126 from chen-anders/anders/port-47991-to-release-1.6
 
-	git cherry-pick 79cf9963f7..232fa6e5bc
+	git cherry-pick 5fa0725025^..232fa6e5bc
 }
 
 k8s_17_cherry_pick() {
-        # 72b9c8f519 Add start time for root container spec
-        # b7c4184821 Fix windows docker stats cpu units issue
-        # 51fab673e1 Merge pull request #3 from JiangtianLi/release-1.7
-	# 45ba7bb0fb Implement metrics for Windows Containers
-	# 76b94898ec Use dns policy to determine setting DNS servers on the correct NIC in Windows container
-	# 74a2f37447 Fix network config due to the split of start POD sandbox and start container from 1.7.0
-	# 5fc0a5e4a2 Workaround for Outbound Internet traffic in Azure Kubernetes (*) Connect a Nat Network to the container (Second adapter) (*) Modify the route so that internet traffic goes via Nat network, and POD traffic goes over the CONTAINER_NETWORK (*) Modify getContainerIP to return the IP corresponding to POD network, and ignore Nat Network (*) DNS Fix for ACS Kubernetes in Windows
-	# adeb88d774 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
-	# 02549d6647 Merge pull request #50914 from shyamjvs/add-logging-to-logdump
+        # d9f95d1152 Add start time for root container spec
+        # ee4e187451 Fix windows docker stats cpu units issue
+	# f33e310ede Implement metrics for Windows Containers
+	# 08ab2f2636 Use dns policy to determine setting DNS servers on the correct NIC in Windows container
+	# 1d4a5780cb Fix network config due to the split of start POD sandbox and start container from 1.7.0
+	# 4d00a52142 Workaround for Outbound Internet traffic in Azure Kubernetes (*) Connect a Nat Network to the container (Second adapter) (*) Modify the route so that internet traffic goes via Nat network, and POD traffic goes over the CONTAINER_NETWORK (*) Modify getContainerIP to return the IP corresponding to POD network, and ignore Nat Network (*) DNS Fix for ACS Kubernetes in Windows
+	# b8fe713754 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
 
-	git cherry-pick 02549d6647..45ba7bb0fb
-        git cherry-pick 51fab673e1..72b9c8f519
+	git cherry-pick b8fe713754^..d9f95d1152
+}
+
+k8s_18_cherry_pick() {
+        # d07a7d498f Resolve merge conflict
+        # f96286ae9e Add start time for root container spec
+        # 6d9542b1d6 Fix windows docker stats cpu units issue
+        # 6800851a7e Implement metrics for Windows Containers
+        # 9802a3178c Use dns policy to determine setting DNS servers on the correct NIC in Windows container
+        # cba79368f9 Fix network config due to the split of start POD sandbox and start container from 1.7.0
+        # 0e9f3ac18c Workaround for Outbound Internet traffic in Azure Kubernetes (*) Connect a Nat Network to the container (Second adapter) (*) Modify the route so that internet traffic goes via Nat network, and POD traffic goes over the CONTAINER_NETWORK (*) Modify getContainerIP to return the IP corresponding to POD network, and ignore Nat Network (*) DNS Fix for ACS Kubernetes in Windows
+        # 69644018c8 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
+
+        git cherry-pick 69644018c8^..d07a7d498f
 }
 
 apply_acs_cherry_picks() {
@@ -92,6 +101,8 @@ apply_acs_cherry_picks() {
 		k8s_16_cherry_pick
 	elif [ "${KUBERNETES_RELEASE}" == "1.7" ]; then
 		k8s_17_cherry_pick
+        elif [ "${KUBERNETES_RELEASE}" == "1.8" ]; then
+		k8s_18_cherry_pick
 	else
 		echo "Unable to apply cherry picks for ${KUBERNETES_RELEASE}."
 		exit 1
