@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -43,7 +44,9 @@ func newGenerateCmd() *cobra.Command {
 		Short: generateShortDescription,
 		Long:  generateLongDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			gc.validate(cmd, args)
+			if err := gc.validate(cmd, args); err != nil {
+				log.Fatalf(fmt.Sprintf("error validating generateCmd: %s", err.Error()))
+			}
 			return gc.run()
 		},
 	}
@@ -60,30 +63,30 @@ func newGenerateCmd() *cobra.Command {
 	return generateCmd
 }
 
-func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
+func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 	var caCertificateBytes []byte
 	var caKeyBytes []byte
 	var err error
 
 	gc.locale, err = i18n.LoadTranslations()
 	if err != nil {
-		log.Fatalf("error loading translation files: %s", err.Error())
+		return fmt.Errorf(fmt.Sprintf("error loading translation files: %s", err.Error()))
 	}
 
 	if gc.apimodelPath == "" {
-		if len(args) > 0 {
+		if len(args) == 1 {
 			gc.apimodelPath = args[0]
 		} else if len(args) > 1 {
 			cmd.Usage()
-			log.Fatalln("too many arguments were provided to 'generate'")
+			return errors.New("too many arguments were provided to 'generate'")
 		} else {
 			cmd.Usage()
-			log.Fatalln("--api-model was not supplied, nor was one specified as a positional argument")
+			return errors.New("--api-model was not supplied, nor was one specified as a positional argument")
 		}
 	}
 
 	if _, err := os.Stat(gc.apimodelPath); os.IsNotExist(err) {
-		log.Fatalf("specified api model does not exist (%s)", gc.apimodelPath)
+		return fmt.Errorf(fmt.Sprintf("specified api model does not exist (%s)", gc.apimodelPath))
 	}
 
 	apiloader := &api.Apiloader{
@@ -93,7 +96,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 	}
 	gc.containerService, gc.apiVersion, err = apiloader.LoadContainerServiceFromFile(gc.apimodelPath, true, nil)
 	if err != nil {
-		log.Fatalf("error parsing the api model: %s", err.Error())
+		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}
 
 	if gc.outputDirectory == "" {
@@ -107,14 +110,14 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 	// consume gc.caCertificatePath and gc.caPrivateKeyPath
 
 	if (gc.caCertificatePath != "" && gc.caPrivateKeyPath == "") || (gc.caCertificatePath == "" && gc.caPrivateKeyPath != "") {
-		log.Fatal("--ca-certificate-path and --ca-private-key-path must be specified together")
+		return errors.New("--ca-certificate-path and --ca-private-key-path must be specified together")
 	}
 	if gc.caCertificatePath != "" {
 		if caCertificateBytes, err = ioutil.ReadFile(gc.caCertificatePath); err != nil {
-			log.Fatal("failed to read CA certificate file:", err)
+			return fmt.Errorf(fmt.Sprintf("failed to read CA certificate file: %s", err.Error()))
 		}
 		if caKeyBytes, err = ioutil.ReadFile(gc.caPrivateKeyPath); err != nil {
-			log.Fatal("failed to read CA private key file:", err)
+			return fmt.Errorf(fmt.Sprintf("failed to read CA private key file: %s", err.Error()))
 		}
 
 		prop := gc.containerService.Properties
@@ -124,6 +127,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 		prop.CertificateProfile.CaCertificate = string(caCertificateBytes)
 		prop.CertificateProfile.CaPrivateKey = string(caKeyBytes)
 	}
+	return nil
 }
 
 func (gc *generateCmd) run() error {

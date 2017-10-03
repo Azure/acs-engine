@@ -58,7 +58,9 @@ func newDeployCmd() *cobra.Command {
 		Short: deployShortDescription,
 		Long:  deployLongDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			dc.validate(cmd, args)
+			if err := dc.validate(cmd, args); err != nil {
+				log.Fatalf(fmt.Sprintf("error validating deployCmd: %s", err.Error()))
+			}
 			return dc.run()
 		},
 	}
@@ -78,28 +80,28 @@ func newDeployCmd() *cobra.Command {
 	return deployCmd
 }
 
-func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
+func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 	var err error
 
 	dc.locale, err = i18n.LoadTranslations()
 	if err != nil {
-		log.Fatalf("error loading translation files: %s", err.Error())
+		return fmt.Errorf(fmt.Sprintf("error loading translation files: %s", err.Error()))
 	}
 
 	if dc.apimodelPath == "" {
-		if len(args) > 0 {
+		if len(args) == 1 {
 			dc.apimodelPath = args[0]
 		} else if len(args) > 1 {
 			cmd.Usage()
-			log.Fatalln("too many arguments were provided to 'deploy'")
+			return fmt.Errorf(fmt.Sprintf("too many arguments were provided to 'deploy'"))
 		} else {
 			cmd.Usage()
-			log.Fatalln("--api-model was not supplied, nor was one specified as a positional argument")
+			return fmt.Errorf(fmt.Sprintf("--api-model was not supplied, nor was one specified as a positional argument"))
 		}
 	}
 
 	if _, err := os.Stat(dc.apimodelPath); os.IsNotExist(err) {
-		log.Fatalf("specified api model does not exist (%s)", dc.apimodelPath)
+		return fmt.Errorf(fmt.Sprintf("specified api model does not exist (%s)", dc.apimodelPath))
 	}
 
 	apiloader := &api.Apiloader{
@@ -110,16 +112,16 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 	// skip validating the model fields for now
 	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, nil)
 	if err != nil {
-		log.Fatalf("error parsing the api model: %s", err.Error())
+		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}
 
 	if dc.location == "" {
-		log.Fatalf("--location must be specified")
+		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
 	}
 
 	dc.client, err = dc.authArgs.getClient()
 	if err != nil {
-		log.Fatalf("failed to get client") // TODO: cleanup
+		return fmt.Errorf(fmt.Sprintf("failed to get client")) // TODO: cleanup
 	}
 
 	// autofillApimodel calls log.Fatal() directly and does not return errors
@@ -127,10 +129,12 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
 
 	_, _, err = revalidateApimodel(apiloader, dc.containerService, dc.apiVersion)
 	if err != nil {
-		log.Fatalf("Failed to validate the apimodel after populating values: %s", err)
+		return fmt.Errorf(fmt.Sprintf("Failed to validate the apimodel after populating values: %s", err))
 	}
 
 	dc.random = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	return nil
 }
 
 func autofillApimodel(dc *deployCmd) {
