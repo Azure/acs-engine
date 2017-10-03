@@ -35,9 +35,10 @@ type upgradeCmd struct {
 	apiVersion          string
 
 	// derived
-	client     armhelpers.ACSEngineClient
-	locale     *gotext.Locale
-	nameSuffix string
+	client              armhelpers.ACSEngineClient
+	locale              *gotext.Locale
+	nameSuffix          string
+	agentPoolsToUpgrade []string
 }
 
 // NewUpgradeCmd run a command to upgrade a Kubernetes cluster
@@ -143,6 +144,12 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 	nameSuffixParam := templateParameters["nameSuffix"].(map[string]interface{})
 	uc.nameSuffix = nameSuffixParam["defaultValue"].(string)
 	log.Infoln(fmt.Sprintf("Name suffix: %s", uc.nameSuffix))
+
+	uc.agentPoolsToUpgrade = []string{}
+	log.Infoln(fmt.Sprintf("Gathering agent pool names..."))
+	for _, agentPool := range uc.containerService.Properties.AgentPoolProfiles {
+		uc.agentPoolsToUpgrade = append(uc.agentPoolsToUpgrade, agentPool.Name)
+	}
 }
 
 func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
@@ -156,7 +163,7 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 	}
 
 	if err := upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.resourceGroupName,
-		uc.containerService, uc.nameSuffix); err != nil {
+		uc.containerService, uc.nameSuffix, uc.agentPoolsToUpgrade); err != nil {
 		log.Fatalf("Error upgrading cluster: %s \n", err.Error())
 	}
 
