@@ -25,7 +25,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to list VMs during upgrade operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, 1, 1)
+		cs := createContainerService("testcluster", api.KubernetesVersion1Dot5Dot8, 1, 1)
 
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot6Dot11
 
@@ -152,7 +152,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		err := uc.UpgradeCluster(subID, "TestRg", cs, "12345678", []string{"agentpool1"})
 		Expect(err).NotTo(BeNil())
-		Expect(err.Error()).To(Equal("Error while querying ARM for resources: Kubernetes:1.5.8 in non-upgradable to 1.7"))
+		Expect(err.Error()).To(Equal("Error while querying ARM for resources: Kubernetes:1.5.8 in non-upgradable to 1.7.7"))
 	})
 })
 

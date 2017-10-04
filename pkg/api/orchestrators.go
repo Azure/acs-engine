@@ -194,10 +194,12 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 				})
 		}
 	} else {
-		// set default version if empty
-		if len(csOrch.OrchestratorVersion) == 0 {
-			csOrch.OrchestratorVersion = common.KubernetesDefaultVersion
+		ver, _ := semver.NewVersion(csOrch.OrchestratorVersion)
+		cons, _ := semver.NewConstraint("<1.5.0")
+		if cons.Check(ver) {
+			return nil, fmt.Errorf("Kubernetes version %s is not supported", csOrch.OrchestratorVersion)
 		}
+
 		upgrades, err := kubernetesUpgrades(csOrch)
 		if err != nil {
 			return nil, err

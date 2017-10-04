@@ -2,6 +2,6 @@
   "apiVersion": "vlabs",
   "orchestratorProfile": {
     "orchestratorType": "Kubernetes",
-    "orchestratorRelease": "1.6"
+    "orchestratorVersion": "1.6.11"
   }
 }

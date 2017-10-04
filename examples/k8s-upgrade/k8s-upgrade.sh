@@ -16,7 +16,7 @@ K8S_UPGRADE_CONF="$OUTPUT/k8sUpgrade.json"
 cat > $K8S_UPGRADE_CONF <<END
 {
   "orchestratorType": "Kubernetes",
-  "orchestratorRelease": "${EXPECTED_ORCHESTRATOR_RELEASE}"
+  "orchestratorVersion": "${EXPECTED_ORCHESTRATOR_VERSION}"
 }
 END
 
