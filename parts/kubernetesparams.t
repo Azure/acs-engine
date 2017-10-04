@@ -283,10 +283,6 @@
       "defaultValue": "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-latest.zip",
       "type": "string"
     },
-    "calicoConfigURL": {
-      "defaultValue": "https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager",
-      "type": "string"
-    },
     "maxPods": {
       "defaultValue": 110,
       "metadata": {
