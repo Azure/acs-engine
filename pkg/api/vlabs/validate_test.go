@@ -95,6 +95,20 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
+			NonMasqueradeCidr: "10.120.1.0/24",
+		}
+		if err := c.Validate(k8sRelease); err != nil {
+			t.Error("should not error on valid NonMasqueradeCidr")
+		}
+
+		c = KubernetesConfig{
+			NonMasqueradeCidr: "10.120.1.0/invalid",
+		}
+		if err := c.Validate(k8sRelease); err == nil {
+			t.Error("should error on invalid NonMasqueradeCidr")
+		}
+
+		c = KubernetesConfig{
 			MaxPods: KubernetesMinMaxPods - 1,
 		}
 		if err := c.Validate(k8sRelease); err == nil {
