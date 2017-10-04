@@ -84,7 +84,7 @@ func main() {
 		os.Setenv("KUBECONFIG", cfg.GetKubeConfig())
 		log.Printf("Kubeconfig:%s\n", cfg.GetKubeConfig())
 		log.Println("Waiting on nodes to go into ready state...")
-		ready := node.WaitOnReady(eng.NodeCount(), 10*time.Second, 10*time.Minute)
+		ready := node.WaitOnReady(eng.NodeCount(), 10*time.Second, cfg.Timeout)
 		if ready == false {
 			teardown()
 			log.Fatalf("Error: Not all nodes in ready state!")
