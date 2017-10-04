@@ -95,7 +95,7 @@
       {{PopulateClassicModeDefaultValue "kubeServiceCidr"}}
       "metadata": {
         "description": "Kubernetes service address space"
-        },
+      },
       "type": "string"
     },
     "kubernetesNonMasqueradeCidr": {
