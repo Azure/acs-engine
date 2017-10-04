@@ -53,7 +53,7 @@ func handleValidationErrors(e validator.ValidationErrors) error {
 			case strings.HasSuffix(ns, ".OSDiskSizeGB"):
 				return fmt.Errorf("Invalid os disk size of %d specified.  The range of valid values are [%d, %d]", err.Value().(int), MinDiskSizeGB, MaxDiskSizeGB)
 			case strings.HasSuffix(ns, ".StorageProfile"):
-				return fmt.Errorf("Unknown storageProfile '%s'. Specify either %s or %s", err.Value().(string), StorageAccount, ManagedDisks)
+				return fmt.Errorf("Unknown storageProfile '%s'. Must specify %s", err.Value().(string), ManagedDisks)
 			default:
 				break
 			}

@@ -26,8 +26,6 @@ const (
 
 // storage profiles
 const (
-	// StorageAccount means that the nodes use raw storage accounts for their os and attached volumes
-	StorageAccount = "StorageAccount"
 	// ManagedDisks means that the nodes use managed disks for their os and attached volumes
 	ManagedDisks = "ManagedDisks"
 )

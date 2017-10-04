@@ -21,7 +21,7 @@ func TestAgentPoolProfile(t *testing.T) {
 		t.Fatalf("unexpectedly detected AgentPoolProfile.OSType != Linux after unmarshal")
 	}
 
-	if !ap.IsStorageAccount() {
-		t.Fatalf("unexpectedly detected AgentPoolProfile.StorageProfile != StorageAccount after unmarshal")
+	if !ap.IsManagedDisks() {
+		t.Fatalf("unexpectedly detected AgentPoolProfile.StorageProfile != ManagedDisks after unmarshal")
 	}
 }
