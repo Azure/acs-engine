@@ -1,5 +1,5 @@
-hash: 71413cc0eaeefaeacc6c226261c56bd5a3342f58c5f9181f5af2e40318490bd2
-updated: 2017-09-21T13:02:19.578143056-07:00
+hash: c8b5fc5d664fa6ff2f050df07f27e2c8655e891579f7c6e4acfcec811f019d7a
+updated: 2017-10-03T16:47:11.117841-07:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -161,4 +161,8 @@ imports:
   - locales
 - name: gopkg.in/yaml.v2
   version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
-testImports: []
+testImports:
+- name: k8s.io/apiserver
+  version: 366b072768b4e6d93c7de236464c0abe85d0b7c6
+- name: k8s.io/client-go
+  version: d92e8497f71b7b4e0494e5bd204b48d34bd6f254
