@@ -49,7 +49,6 @@ type KubernetesSpecConfig struct {
 	CNIPluginsDownloadURL            string
 	VnetCNILinuxPluginsDownloadURL   string
 	VnetCNIWindowsPluginsDownloadURL string
-	CalicoConfigDownloadURL          string
 }
 
 //AzureEndpointConfig describes an Azure endpoint
