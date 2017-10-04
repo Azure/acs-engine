@@ -17,7 +17,7 @@ spec:
         - "--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
         - "--address=0.0.0.0"
         - "--allow-privileged"
-        - "--insecure-port=8080"
+        - "--insecure-port=0"
         - "--secure-port=443"
         - "--cloud-provider=azure"
         - "--cloud-config=/etc/kubernetes/azure.json"
