@@ -67,9 +67,10 @@ const (
 	ManagedDisks = "ManagedDisks"
 )
 
-// Network policy
+// Network policy and integration
 var (
-	NetworkPolicyValues = [...]string{"", "none", "azure", "calico"}
+	NetworkPolicyValues   = []string{"", "none", "azure", "calico"}
+	VnetIntegrationValues = []string{"", "disabled", "enabled"}
 )
 
 // Kubernetes configuration
