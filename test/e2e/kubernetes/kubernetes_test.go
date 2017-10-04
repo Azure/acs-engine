@@ -57,10 +57,10 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			version, err := node.Version()
 			Expect(err).NotTo(HaveOccurred())
 
-			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease != "" {
-				Expect(version).To(MatchRegexp("v" + api.KubernetesReleaseToVersion[eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease]))
+			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion != "" {
+				Expect(version).To(MatchRegexp("v" + eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion))
 			} else {
-				Expect(version).To(Equal("v" + api.KubernetesReleaseToVersion[api.KubernetesDefaultRelease]))
+				Expect(version).To(Equal("v" + api.KubernetesDefaultVersion))
 			}
 		})
 

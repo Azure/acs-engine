@@ -30,11 +30,11 @@ func (o *OrchestratorProfile) ValidateForUpgrade() error {
 	case DCOS, DockerCE, Swarm:
 		return fmt.Errorf("Upgrade is not supported for orchestrator %s", o.OrchestratorType)
 	case Kubernetes:
-		switch o.OrchestratorRelease {
-		case common.KubernetesRelease1Dot6:
-		case common.KubernetesRelease1Dot7:
+		switch o.OrchestratorVersion {
+		case common.KubernetesVersion1Dot6Dot11:
+		case common.KubernetesVersion1Dot7Dot7:
 		default:
-			return fmt.Errorf("Upgrade to Kubernetes %s is not supported", o.OrchestratorRelease)
+			return fmt.Errorf("Upgrade to Kubernetes %s is not supported", o.OrchestratorVersion)
 		}
 	}
 	return nil

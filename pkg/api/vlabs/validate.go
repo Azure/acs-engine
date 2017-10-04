@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/url"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -30,38 +29,38 @@ func (o *OrchestratorProfile) Validate() error {
 	// It is handled by Properties.Validate()
 	switch o.OrchestratorType {
 	case DCOS:
-		switch o.OrchestratorRelease {
-		case common.DCOSRelease1Dot8:
-		case common.DCOSRelease1Dot9:
-		case common.DCOSRelease1Dot10:
+		switch o.OrchestratorVersion {
+		case common.DCOSVersion1Dot10Dot0:
+		case common.DCOSVersion1Dot9Dot0:
+		case common.DCOSVersion1Dot8Dot8:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
 		}
 
 	case Swarm:
 	case SwarmMode:
 
 	case Kubernetes:
-		switch o.OrchestratorRelease {
-		case common.KubernetesRelease1Dot8:
-		case common.KubernetesRelease1Dot7:
-		case common.KubernetesRelease1Dot6:
-		case common.KubernetesRelease1Dot5:
+		switch o.OrchestratorVersion {
+		case common.KubernetesVersion1Dot8Dot0:
+		case common.KubernetesVersion1Dot7Dot7:
+		case common.KubernetesVersion1Dot6Dot11:
+		case common.KubernetesVersion1Dot5Dot8:
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator versions: %s", o.OrchestratorVersion)
 		}
 
 		if o.KubernetesConfig != nil {
-			err := o.KubernetesConfig.Validate(o.OrchestratorRelease)
+			err := o.KubernetesConfig.Validate(o.OrchestratorVersion)
 			if err != nil {
 				return err
 			}
 			if o.KubernetesConfig.EnableAggregatedAPIs {
-				if o.OrchestratorRelease == common.KubernetesRelease1Dot5 || o.OrchestratorRelease == common.KubernetesRelease1Dot6 {
+				if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 || o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
 					return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-						common.KubernetesRelease1Dot7, o.OrchestratorRelease)
+						"1.7.0", o.OrchestratorVersion)
 				}
 
 				if !o.KubernetesConfig.EnableRbac {
@@ -146,25 +145,11 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 
 // Validate implements APIObject
 func (o *OrchestratorVersionProfile) Validate() error {
-	switch {
-	case strings.EqualFold(o.OrchestratorType, Kubernetes):
-		o.OrchestratorType = Kubernetes
-		if _, ok := common.KubeReleaseToVersion[o.OrchestratorRelease]; !ok {
-			return fmt.Errorf("Unsupported Kubernetes release '%s'", o.OrchestratorRelease)
-		}
-	case strings.EqualFold(o.OrchestratorType, DCOS):
-		o.OrchestratorType = DCOS
-		if _, ok := common.DCOSReleaseToVersion[o.OrchestratorRelease]; !ok {
-			return fmt.Errorf("Unsupported DCOS release '%s'", o.OrchestratorRelease)
-		}
-	case strings.EqualFold(o.OrchestratorType, Swarm):
-		o.OrchestratorType = Swarm
-	case strings.EqualFold(o.OrchestratorType, SwarmMode):
-		o.OrchestratorType = SwarmMode
-	default:
-		return fmt.Errorf("Unsupported orchestrator '%s'", o.OrchestratorType)
-	}
-	return nil
+	// The only difference compared with OrchestratorProfile.Validate is
+	// Here we use strings.EqualFold, the other just string comparison.
+	// Rationalize orchestrator type should be done from versioned to unversioned
+	// I will go ahead to simplify this
+	return o.OrchestratorProfile.Validate()
 }
 
 // ValidateForUpgrade validates upgrade input data
@@ -173,11 +158,11 @@ func (o *OrchestratorProfile) ValidateForUpgrade() error {
 	case DCOS, SwarmMode, Swarm:
 		return fmt.Errorf("Upgrade is not supported for orchestrator %s", o.OrchestratorType)
 	case Kubernetes:
-		switch o.OrchestratorRelease {
-		case common.KubernetesRelease1Dot6:
-		case common.KubernetesRelease1Dot7:
+		switch o.OrchestratorVersion {
+		case common.KubernetesVersion1Dot6Dot11:
+		case common.KubernetesVersion1Dot7Dot7:
 		default:
-			return fmt.Errorf("Upgrade to Kubernetes %s is not supported", o.OrchestratorRelease)
+			return fmt.Errorf("Upgrade to Kubernetes version %s is not supported", o.OrchestratorVersion)
 		}
 	}
 	return nil
@@ -384,17 +369,17 @@ func (a *Properties) Validate() error {
 }
 
 // Validate validates the KubernetesConfig.
-func (a *KubernetesConfig) Validate(k8sRelease string) error {
+func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	// number of minimum retries allowed for kubelet to post node status
 	const minKubeletRetries = 4
-	// k8s releases that have cloudprovider backoff enabled
-	var backoffEnabledReleases = map[string]bool{
-		common.KubernetesRelease1Dot8: true,
-		common.KubernetesRelease1Dot7: true,
-		common.KubernetesRelease1Dot6: true,
+	// k8s versions that have cloudprovider backoff enabled
+	var backoffEnabledVersions = map[string]bool{
+		common.KubernetesVersion1Dot8Dot0:  true,
+		common.KubernetesVersion1Dot7Dot7:  true,
+		common.KubernetesVersion1Dot6Dot11: true,
 	}
-	// k8s releases that have cloudprovider rate limiting enabled (currently identical with backoff enabled releases)
-	ratelimitEnabledReleases := backoffEnabledReleases
+	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
+	ratelimitEnabledVersions := backoffEnabledVersions
 
 	if a.ClusterSubnet != "" {
 		_, subnet, err := net.ParseCIDR(a.ClusterSubnet)
@@ -465,14 +450,14 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 	}
 
 	if a.CloudProviderBackoff {
-		if !backoffEnabledReleases[k8sRelease] {
-			return fmt.Errorf("cloudprovider backoff functionality not available in kubernetes release %s", k8sRelease)
+		if !backoffEnabledVersions[k8sVersion] {
+			return fmt.Errorf("cloudprovider backoff functionality not available in kubernetes version %s", k8sVersion)
 		}
 	}
 
 	if a.CloudProviderRateLimit {
-		if !ratelimitEnabledReleases[k8sRelease] {
-			return fmt.Errorf("cloudprovider rate limiting functionality not available in kubernetes release %s", k8sRelease)
+		if !ratelimitEnabledVersions[k8sVersion] {
+			return fmt.Errorf("cloudprovider rate limiting functionality not available in kubernetes version %s", k8sVersion)
 		}
 	}
 

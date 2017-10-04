@@ -27,8 +27,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	It("Should return error message when failing to list VMs during upgrade operation", func() {
 		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, 1, 1)
 
-		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot6Dot11
 
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
@@ -49,11 +48,9 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to detete VMs during upgrade operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, 1, 1)
+		cs := createContainerService("testcluster", api.KubernetesVersion1Dot5Dot8, 1, 1)
 
-		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
-
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot6Dot11
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 		}
@@ -70,11 +67,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to deploy template during upgrade operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot6, 1, 1)
-
-		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
-
+		cs := createContainerService("testcluster", api.KubernetesVersion1Dot6Dot11, 1, 1)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot6Dot11
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 		}
@@ -91,11 +85,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to get a virtual machine during upgrade operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, 1, 6)
-
-		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
-
+		cs := createContainerService("testcluster", api.KubernetesVersion1Dot5Dot8, 1, 6)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot6Dot11
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 		}
@@ -112,11 +103,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to get storage client during upgrade operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, 5, 1)
-
-		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
-
+		cs := createContainerService("testcluster", api.KubernetesVersion1Dot5Dot8, 5, 1)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot6Dot11
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 		}
@@ -133,11 +121,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing to delete network interface during upgrade operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, 3, 2)
-
-		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot6
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot6]
-
+		cs := createContainerService("testcluster", api.KubernetesVersion1Dot5Dot8, 3, 2)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot6Dot11
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 		}
@@ -154,11 +139,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 
 	It("Should return error message when failing on ClusterPreflightCheck operation", func() {
-		cs := createContainerService("testcluster", api.KubernetesRelease1Dot5, 3, 3)
-
-		cs.Properties.OrchestratorProfile.OrchestratorRelease = api.KubernetesRelease1Dot7
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[api.KubernetesRelease1Dot7]
-
+		cs := createContainerService("testcluster", api.KubernetesVersion1Dot5Dot8, 3, 3)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot7Dot7
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 		}
@@ -174,7 +156,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 	})
 })
 
-func createContainerService(containerServiceName string, orchestratorRelease string, masterCount int, agentCount int) *api.ContainerService {
+func createContainerService(containerServiceName string, orchestratorVersion string, masterCount int, agentCount int) *api.ContainerService {
 	cs := api.ContainerService{}
 	cs.ID = uuid.NewV4().String()
 	cs.Location = "eastus"
@@ -215,8 +197,7 @@ func createContainerService(containerServiceName string, orchestratorRelease str
 
 	cs.Properties.OrchestratorProfile = &api.OrchestratorProfile{}
 	cs.Properties.OrchestratorProfile.OrchestratorType = api.Kubernetes
-	cs.Properties.OrchestratorProfile.OrchestratorRelease = orchestratorRelease
-	cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesReleaseToVersion[orchestratorRelease]
+	cs.Properties.OrchestratorProfile.OrchestratorVersion = orchestratorVersion
 
 	return &cs
 }

@@ -185,35 +185,31 @@ func convertVLabsAgentPoolOnlyWindowsProfile(vlabs *vlabs.WindowsProfile, api *W
 	// }
 }
 
-func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesRelease string) *OrchestratorProfile {
+func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
 	orchestratorProfile := &OrchestratorProfile{
 		OrchestratorType: Kubernetes,
 	}
 
-	switch kubernetesRelease {
-	case KubernetesRelease1Dot8, KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
-		orchestratorProfile.OrchestratorRelease = kubernetesRelease
+	switch kubernetesVersion {
+	case KubernetesVersion1Dot8Dot0, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
+		orchestratorProfile.OrchestratorVersion = kubernetesVersion
 	default:
-		orchestratorProfile.OrchestratorRelease = KubernetesDefaultRelease
+		orchestratorProfile.OrchestratorVersion = KubernetesDefaultVersion
 	}
-	orchestratorProfile.OrchestratorVersion = KubernetesReleaseToVersion[orchestratorProfile.OrchestratorRelease]
-
 	return orchestratorProfile
 }
 
-func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesRelease string) *OrchestratorProfile {
+func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
 	orchestratorProfile := &OrchestratorProfile{
 		OrchestratorType: Kubernetes,
 	}
 
-	switch kubernetesRelease {
-	case KubernetesRelease1Dot8, KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
-		orchestratorProfile.OrchestratorRelease = kubernetesRelease
+	switch kubernetesVersion {
+	case KubernetesVersion1Dot8Dot0, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
+		orchestratorProfile.OrchestratorVersion = kubernetesVersion
 	default:
-		orchestratorProfile.OrchestratorRelease = KubernetesDefaultRelease
+		orchestratorProfile.OrchestratorVersion = KubernetesDefaultVersion
 	}
-	orchestratorProfile.OrchestratorVersion = KubernetesReleaseToVersion[orchestratorProfile.OrchestratorRelease]
-
 	return orchestratorProfile
 }
 

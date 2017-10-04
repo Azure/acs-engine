@@ -7,7 +7,6 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	apvlabs "github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
-	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/upgrade/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
@@ -224,21 +223,18 @@ func (a *Apiloader) UpdateContainerServiceForUpgrade(
 	}
 	// add current version if upgrade has failed
 	if allowCurrentVersionUpgrade {
-		release := cs.Properties.OrchestratorProfile.OrchestratorRelease
 		orchestratorInfo.Upgrades = append(orchestratorInfo.Upgrades, &OrchestratorProfile{
-			OrchestratorRelease: release,
-			OrchestratorVersion: common.KubeReleaseToVersion[release]})
+			OrchestratorVersion: cs.Properties.OrchestratorProfile.OrchestratorVersion})
 	}
 	// validate desired upgrade version and set goal state
 	for _, up := range orchestratorInfo.Upgrades {
-		if up.OrchestratorRelease == unverOrch.OrchestratorRelease {
-			cs.Properties.OrchestratorProfile.OrchestratorRelease = up.OrchestratorRelease
+		if up.OrchestratorVersion == unverOrch.OrchestratorVersion {
 			cs.Properties.OrchestratorProfile.OrchestratorVersion = up.OrchestratorVersion
 			return nil
 		}
 	}
 	return a.Translator.Errorf("Kubernetes %s cannot be upgraded to %s",
-		cs.Properties.OrchestratorProfile.OrchestratorRelease, unverOrch.OrchestratorRelease)
+		cs.Properties.OrchestratorProfile.OrchestratorVersion, unverOrch.OrchestratorVersion)
 }
 
 // SerializeContainerService takes an unversioned container service and returns the bytes

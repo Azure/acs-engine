@@ -9,7 +9,6 @@ type OSType string
 //  - version: major, minor, and patch version numbers
 type OrchestratorProfile struct {
 	OrchestratorType    string `json:"orchestratorType"`
-	OrchestratorRelease string `json:"orchestratorRelease"`
 	OrchestratorVersion string `json:"orchestratorVersion"`
 }
 
