@@ -2,8 +2,10 @@ package azure
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os/exec"
+	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/engine"
 
@@ -75,8 +77,10 @@ func (a *Account) SetSubscription() error {
 }
 
 // CreateGroup will create a resource group in a given location
+//--tags "type=${RESOURCE_GROUP_TAG_TYPE:-}" "now=$(date +%s)" "job=${JOB_BASE_NAME:-}" "buildno=${BUILD_NUM:-}"
 func (a *Account) CreateGroup(name, location string) error {
-	out, err := exec.Command("az", "group", "create", "--name", name, "--location", location).CombinedOutput()
+	now := fmt.Sprintf("now=%v", time.Now().Add(-3*time.Hour).Unix())
+	out, err := exec.Command("az", "group", "create", "--name", name, "--location", location, "--tags", now).CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying create resource group (%s) in %s:%s", name, location, err)
 		log.Printf("Output:%s\n", out)
