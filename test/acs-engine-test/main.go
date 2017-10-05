@@ -136,7 +136,7 @@ func (m *TestManager) Run() error {
 	for index, dep := range m.config.Deployments {
 		go func(index int, dep config.Deployment) {
 			defer m.wg.Done()
-			promToFailInfo := promote.DigitalSignalFilter{}
+			var promToFailInfo promote.DigitalSignalFilter
 			resMap := make(map[string]*ErrorStat)
 			if usePromoteToFailure {
 				errorInfo := m.testRun(dep, index, 0, timeout)
