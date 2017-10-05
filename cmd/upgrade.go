@@ -100,7 +100,7 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatal("--deployment-dir must be specified")
 	}
 
-	_, err = uc.client.EnsureResourceGroup(uc.resourceGroup, uc.location)
+	_, err = uc.client.EnsureResourceGroup(uc.resourceGroupName, uc.location)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -174,7 +174,7 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		Client: uc.client,
 	}
 
-	if err := upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.resourceGroupName,
+	if err := upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.location, uc.resourceGroupName,
 		uc.containerService, uc.nameSuffix, uc.agentPoolsToUpgrade); err != nil {
 		log.Fatalf("Error upgrading cluster: %s \n", err.Error())
 	}
