@@ -162,12 +162,12 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 }
 
 func (ku *Upgrader) upgradeAgentPools() error {
-	var kubeApiServerUrl string
+	var kubeApiServerURL string
 	if ku.DataModel.Properties.MasterProfile != nil {
-		kubeApiServerUrl = ku.DataModel.Properties.MasterProfile.FQDN
+		kubeApiServerURL = ku.DataModel.Properties.MasterProfile.FQDN
 	}
 	if ku.DataModel.Properties.HostedMasterProfile != nil {
-		kubeApiServerUrl = ku.DataModel.Properties.HostedMasterProfile.FQDN
+		kubeApiServerURL = ku.DataModel.Properties.HostedMasterProfile.FQDN
 	}
 	for _, agentPool := range ku.ClusterTopology.AgentPools {
 		// Upgrade Agent VMs
@@ -220,7 +220,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
-			err := operations.SafelyDrainNode(ku.Client, log.New().WithField("operation", "upgrade"), kubeApiServerUrl, ku.kubeConfig, *vm.Name)
+			err := operations.SafelyDrainNode(ku.Client, log.New().WithField("operation", "upgrade"), kubeApiServerURL, ku.kubeConfig, *vm.Name)
 			if err != nil {
 				log.Infoln(fmt.Sprintf("Error draining agent VM: %s", *vm.Name))
 				return err
