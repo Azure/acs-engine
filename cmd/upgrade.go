@@ -173,8 +173,12 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		},
 		Client: uc.client,
 	}
+	kubeConfig, err := acsengine.GenerateKubeConfig(uc.containerService.Properties, uc.location)
+	if err != nil {
+		log.Fatalf("failed to generate kube config") // TODO: cleanup
+	}
 
-	if err := upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, uc.location, uc.resourceGroupName,
+	if err = upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, kubeConfig, uc.resourceGroupName,
 		uc.containerService, uc.nameSuffix, uc.agentPoolsToUpgrade); err != nil {
 		log.Fatalf("Error upgrading cluster: %s \n", err.Error())
 	}

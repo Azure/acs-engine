@@ -8,7 +8,6 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
-	"github.com/Azure/acs-engine/pkg/operations"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -21,11 +20,11 @@ type Upgrader struct {
 }
 
 // Init initializes an upgrader struct
-func (ku *Upgrader) Init(translator *i18n.Translator, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient) {
+func (ku *Upgrader) Init(translator *i18n.Translator, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient, kubeConfig string) {
 	ku.Translator = translator
 	ku.ClusterTopology = clusterTopology
 	ku.Client = client
-	ku.kubeConfig, _ = acsengine.GenerateKubeConfig(ku.DataModel.Properties, ku.Location)
+	ku.kubeConfig = kubeConfig
 }
 
 // RunUpgrade runs the upgrade pipeline
@@ -162,13 +161,14 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 }
 
 func (ku *Upgrader) upgradeAgentPools() error {
-	var kubeAPIServerURL string
-	if ku.DataModel.Properties.MasterProfile != nil {
-		kubeAPIServerURL = ku.DataModel.Properties.MasterProfile.FQDN
-	}
-	if ku.DataModel.Properties.HostedMasterProfile != nil {
-		kubeAPIServerURL = ku.DataModel.Properties.HostedMasterProfile.FQDN
-	}
+	// Unused until safely drain node is being called
+	// var kubeAPIServerURL string
+	// if ku.DataModel.Properties.MasterProfile != nil {
+	// 	kubeAPIServerURL = ku.DataModel.Properties.MasterProfile.FQDN
+	// }
+	// if ku.DataModel.Properties.HostedMasterProfile != nil {
+	// 	kubeAPIServerURL = ku.DataModel.Properties.HostedMasterProfile.FQDN
+	// }
 	for _, agentPool := range ku.ClusterTopology.AgentPools {
 		// Upgrade Agent VMs
 		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
@@ -220,13 +220,14 @@ func (ku *Upgrader) upgradeAgentPools() error {
 
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
-			err := operations.SafelyDrainNode(ku.Client, log.New().WithField("operation", "upgrade"), kubeAPIServerURL, ku.kubeConfig, *vm.Name)
-			if err != nil {
-				log.Infoln(fmt.Sprintf("Error draining agent VM: %s", *vm.Name))
-				return err
-			}
+			// Currently in a sinlge node cluster the api server will not be running when this point is reached on the first node so it will always fail.
+			// err := operations.SafelyDrainNode(ku.Client, log.New().WithField("operation", "upgrade"), kubeAPIServerURL, ku.kubeConfig, *vm.Name)
+			// if err != nil {
+			// 	log.Infoln(fmt.Sprintf("Error draining agent VM: %s", *vm.Name))
+			// 	return err
+			// }
 
-			err = upgradeAgentNode.DeleteNode(vm.Name)
+			err := upgradeAgentNode.DeleteNode(vm.Name)
 			if err != nil {
 				log.Infoln(fmt.Sprintf("Error deleting agent VM: %s", *vm.Name))
 				return err

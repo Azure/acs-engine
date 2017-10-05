@@ -55,11 +55,10 @@ const MasterVMNamePrefix = "k8s-master-"
 const MasterPoolName = "master"
 
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
-func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, location, resourceGroup string,
+func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, resourceGroup string,
 	cs *api.ContainerService, nameSuffix string, agentPoolsToUpgrade []string) error {
 	uc.ClusterTopology = ClusterTopology{}
 	uc.ResourceGroup = resourceGroup
-	uc.Location = location
 	uc.DataModel = cs
 	uc.NameSuffix = nameSuffix
 	uc.MasterVMs = &[]compute.VirtualMachine{}
@@ -81,12 +80,12 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, location, res
 	switch uc.DataModel.Properties.OrchestratorProfile.OrchestratorRelease {
 	case api.KubernetesRelease1Dot6:
 		upgrader16 := &Kubernetes16upgrader{}
-		upgrader16.Init(uc.Translator, uc.ClusterTopology, uc.Client)
+		upgrader16.Init(uc.Translator, uc.ClusterTopology, uc.Client, kubeConfig)
 		upgrader = upgrader16
 
 	case api.KubernetesRelease1Dot7:
 		upgrader17 := &Kubernetes17upgrader{}
-		upgrader17.Init(uc.Translator, uc.ClusterTopology, uc.Client)
+		upgrader17.Init(uc.Translator, uc.ClusterTopology, uc.Client, kubeConfig)
 		upgrader = upgrader17
 
 	default:
