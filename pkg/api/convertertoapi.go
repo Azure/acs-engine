@@ -539,21 +539,6 @@ func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfil
 	}
 }
 
-func convertV20170930OrchestratorProfile(v *v20170930.OrchestratorProfile, api *OrchestratorProfile) {
-	switch v.OrchestratorType {
-	case v20170930.Kubernetes:
-		api.OrchestratorType = Kubernetes
-	case v20170930.DCOS:
-		api.OrchestratorType = DCOS
-	case v20170930.Swarm:
-		api.OrchestratorType = Swarm
-	case v20170930.DockerCE:
-		api.OrchestratorType = SwarmMode
-	}
-	api.OrchestratorRelease = v.OrchestratorRelease
-	api.OrchestratorVersion = v.OrchestratorVersion
-}
-
 func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProfile, api *OrchestratorProfile) {
 	if v20170701cs.OrchestratorType == v20170701.DockerCE {
 		api.OrchestratorType = SwarmMode
@@ -582,6 +567,22 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
 	default:
 		break
+	}
+}
+
+func convertV20170930OrchestratorProfile(v *v20170930.OrchestratorProfile, api *OrchestratorProfile) {
+	// We only support Kubernetes and
+	switch v.OrchestratorType {
+	case Kubernetes:
+		// it is validated, no need to handle err
+		release, _ := common.GetReleaseFromVersion(v.OrchestratorVersion)
+		switch release {
+		case KubernetesRelease1Dot8, KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
+			api.OrchestratorRelease = release
+		default:
+			api.OrchestratorRelease = KubernetesDefaultRelease
+		}
+		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
 	}
 }
 
