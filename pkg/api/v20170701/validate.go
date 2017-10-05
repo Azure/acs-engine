@@ -27,30 +27,51 @@ func (o *OrchestratorProfile) Validate() error {
 	switch o.OrchestratorType {
 	case Swarm:
 	case DCOS:
-		switch o.OrchestratorRelease {
-		case common.DCOSRelease1Dot8:
-		case common.DCOSRelease1Dot9:
-		case common.DCOSRelease1Dot10:
+		switch o.OrchestratorVersion {
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
+			release, err := common.GetReleaseFromVersion(o.OrchestratorVersion)
+			if err != nil {
+				return err
+			}
+			switch release {
+			case common.DCOSRelease1Dot10, common.DCOSRelease1Dot9, common.DCOSRelease1Dot8:
+				if o.OrchestratorVersion != common.DCOSReleaseToVersion[release] {
+					return fmt.Errorf("OrchestratorProfile has unsupported version %s, for orchestrator %s release %s, we only support version %s",
+						o.OrchestratorVersion,
+						o.OrchestratorType,
+						release,
+						common.DCOSReleaseToVersion[release])
+				}
+			default:
+				return fmt.Errorf("OrchestratorProfile has unknown orchestrator %s release: %s", o.OrchestratorType, release)
+			}
 		}
 	case DockerCE:
 	case Kubernetes:
-		switch o.OrchestratorRelease {
-		case common.KubernetesRelease1Dot8:
-		case common.KubernetesRelease1Dot7:
-		case common.KubernetesRelease1Dot6:
-		case common.KubernetesRelease1Dot5:
+		switch o.OrchestratorVersion {
 		case "":
 		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
+			release, err := common.GetReleaseFromVersion(o.OrchestratorVersion)
+			if err != nil {
+				return err
+			}
+			switch release {
+			case common.KubernetesRelease1Dot8, common.KubernetesRelease1Dot7, common.KubernetesRelease1Dot6, common.KubernetesRelease1Dot5:
+				if o.OrchestratorVersion != common.KubeReleaseToVersion[release] {
+					return fmt.Errorf("OrchestratorProfile has unsupported version %s, for orchestrator %s release %s, we only support version %s",
+						o.OrchestratorVersion,
+						o.OrchestratorType,
+						release,
+						common.KubeReleaseToVersion[release])
+				}
+			default:
+				return fmt.Errorf("OrchestratorProfile has unknown orchestrator %s release: %s", o.OrchestratorType, release)
+			}
 		}
-
 	default:
 		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
 	}
-
 	return nil
 }
 

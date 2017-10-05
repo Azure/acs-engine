@@ -614,10 +614,6 @@ func convertOrchestratorProfileToV20170701(api *OrchestratorProfile, o *v2017070
 		o.OrchestratorType = api.OrchestratorType
 	}
 
-	if api.OrchestratorRelease != "" {
-		o.OrchestratorRelease = api.OrchestratorRelease
-	}
-
 	if api.OrchestratorVersion != "" {
 		o.OrchestratorVersion = api.OrchestratorVersion
 	}

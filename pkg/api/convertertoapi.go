@@ -3,6 +3,7 @@ package api
 import (
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/upgrade/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
@@ -562,17 +563,19 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 
 	switch api.OrchestratorType {
 	case Kubernetes:
-		switch v20170701cs.OrchestratorRelease {
+		release, _ := common.GetReleaseFromVersion(v20170701cs.OrchestratorVersion)
+		switch release {
 		case KubernetesRelease1Dot8, KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
-			api.OrchestratorRelease = v20170701cs.OrchestratorRelease
+			api.OrchestratorRelease = release
 		default:
 			api.OrchestratorRelease = KubernetesDefaultRelease
 		}
 		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
 	case DCOS:
-		switch v20170701cs.OrchestratorRelease {
+		release, _ := common.GetReleaseFromVersion(v20170701cs.OrchestratorVersion)
+		switch release {
 		case DCOSRelease1Dot10, DCOSRelease1Dot9, DCOSRelease1Dot8:
-			api.OrchestratorRelease = v20170701cs.OrchestratorRelease
+			api.OrchestratorRelease = release
 		default:
 			api.OrchestratorRelease = DCOSDefaultRelease
 		}

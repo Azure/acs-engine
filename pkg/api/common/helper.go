@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Masterminds/semver"
+
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -52,4 +54,14 @@ func HandleValidationErrors(e validator.ValidationErrors) error {
 		}
 	}
 	return fmt.Errorf("Namespace %s is not caught, %+v", ns, e)
+}
+
+// GetReleaseFromVersion return major.minor part of a version string
+// Like release 1.7 from version 1.7.7
+func GetReleaseFromVersion(version string) (string, error) {
+	ver, err := semver.NewVersion(version)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%d.%d", ver.Major(), ver.Minor()), nil
 }
