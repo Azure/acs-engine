@@ -340,7 +340,6 @@ runcmd:
 - sudo /bin/chown -R etcd:etcd /var/lib/etcd/default
 - /opt/azure/containers/mountetcd.sh
 - sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
-- sed -i s/Restart=on-abnormal/Restart=always/g /etc/systemd/system/etcd2.service
 - systemctl stop etcd
 - sudo -u etcd rm -rf /var/lib/etcd/default
 - systemctl restart etcd
