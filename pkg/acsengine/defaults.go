@@ -83,7 +83,7 @@ var (
 				ImageOffer:     "UbuntuServer",
 				ImageSku:       "16.04-LTS",
 				ImagePublisher: "Canonical",
-				ImageVersion:   "16.04.201708151",
+				ImageVersion:   "16.04.201701130",
 			},
 			api.RHEL: DefaultRHELOSImageConfig,
 		},
