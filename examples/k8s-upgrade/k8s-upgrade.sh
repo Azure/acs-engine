@@ -23,6 +23,7 @@ END
 ./bin/acs-engine upgrade \
   --subscription-id ${SUBSCRIPTION_ID} \
   --deployment-dir ${OUTPUT} \
+  --location ${LOCATION} \
   --resource-group ${RESOURCE_GROUP} \
   --upgrademodel-file $K8S_UPGRADE_CONF \
   --auth-method client_secret \
