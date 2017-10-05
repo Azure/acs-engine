@@ -5,8 +5,8 @@
 This document describes how to upgrade kubernetes version on a running cluster.
 
 Supported scenarios:
-- upgrade from v1.5 to v1.6
-- upgrade from v1.6 to v1.7
+- upgrade from v1.5.x to v1.6.11
+- upgrade from v1.6.x to v1.7.7
 
 The cluster definition file examples demonstrate initial cluster configurations:
 - **kubernetes1.5.json** - Kubernetes cluster v1.5 with Linux agent pool
