@@ -30,8 +30,7 @@ type ManagedCluster struct {
 // Properties represents the ACS cluster definition
 type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
-	KubernetesVersion       string                   `json:"kubernetesVersion" validate:"len=0"`
-	KubernetesRelease       string                   `json:"kubernetesRelease,omitempty"`
+	KubernetesVersion       string                   `json:"kubernetesVersion"`
 	DNSPrefix               string                   `json:"dnsPrefix" validate:"required"`
 	FQDN                    string                   `json:"fqdn,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`

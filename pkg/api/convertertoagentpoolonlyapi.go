@@ -52,7 +52,7 @@ func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Propert
 	properties.HostedMasterProfile.DNSPrefix = obj.DNSPrefix
 	properties.HostedMasterProfile.FQDN = obj.FQDN
 
-	properties.OrchestratorProfile = convertV20170831AgentPoolOnlyOrchestratorProfile(obj.KubernetesRelease)
+	properties.OrchestratorProfile = convertV20170831AgentPoolOnlyOrchestratorProfile(obj.KubernetesVersion)
 
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {
@@ -102,7 +102,7 @@ func convertVLabsAgentPoolOnlyResourcePurchasePlan(vlabs *vlabs.ResourcePurchase
 
 func convertVLabsAgentPoolOnlyProperties(vlabs *vlabs.Properties, api *Properties) {
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
-	api.OrchestratorProfile = convertVLabsAgentPoolOnlyOrchestratorProfile(vlabs.KubernetesRelease)
+	api.OrchestratorProfile = convertVLabsAgentPoolOnlyOrchestratorProfile(vlabs.KubernetesVersion)
 	api.MasterProfile = nil
 
 	api.HostedMasterProfile = &HostedMasterProfile{}
