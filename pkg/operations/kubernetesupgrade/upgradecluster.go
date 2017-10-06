@@ -21,6 +21,7 @@ import (
 // is targeting
 type ClusterTopology struct {
 	DataModel     *api.ContainerService
+	Location      string
 	ResourceGroup string
 	NameSuffix    string
 
@@ -54,10 +55,11 @@ const MasterVMNamePrefix = "k8s-master-"
 const MasterPoolName = "master"
 
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
-func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
+func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, location, resourceGroup string,
 	cs *api.ContainerService, nameSuffix string, agentPoolsToUpgrade []string) error {
 	uc.ClusterTopology = ClusterTopology{}
 	uc.ResourceGroup = resourceGroup
+	uc.Location = location
 	uc.DataModel = cs
 	uc.NameSuffix = nameSuffix
 	uc.MasterVMs = &[]compute.VirtualMachine{}

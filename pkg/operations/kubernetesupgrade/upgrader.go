@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/Azure/acs-engine/pkg/operations"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -15,7 +16,8 @@ import (
 type Upgrader struct {
 	Translator *i18n.Translator
 	ClusterTopology
-	Client armhelpers.ACSEngineClient
+	Client     armhelpers.ACSEngineClient
+	kubeConfig string
 }
 
 // Init initializes an upgrader struct
@@ -23,6 +25,7 @@ func (ku *Upgrader) Init(translator *i18n.Translator, clusterTopology ClusterTop
 	ku.Translator = translator
 	ku.ClusterTopology = clusterTopology
 	ku.Client = client
+	ku.kubeConfig, _ = acsengine.GenerateKubeConfig(ku.DataModel.Properties, ku.Location)
 }
 
 // RunUpgrade runs the upgrade pipeline
@@ -159,6 +162,13 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 }
 
 func (ku *Upgrader) upgradeAgentPools() error {
+	var kubeApiServerUrl string
+	if ku.DataModel.Properties.MasterProfile != nil {
+		kubeApiServerUrl = ku.DataModel.Properties.MasterProfile.FQDN
+	}
+	if ku.DataModel.Properties.HostedMasterProfile != nil {
+		kubeApiServerUrl = ku.DataModel.Properties.HostedMasterProfile.FQDN
+	}
 	for _, agentPool := range ku.ClusterTopology.AgentPools {
 		// Upgrade Agent VMs
 		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
@@ -210,7 +220,13 @@ func (ku *Upgrader) upgradeAgentPools() error {
 
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
-			err := upgradeAgentNode.DeleteNode(vm.Name)
+			err := operations.SafelyDrainNode(ku.Client, log.New().WithField("operation", "upgrade"), kubeApiServerUrl, ku.kubeConfig, *vm.Name)
+			if err != nil {
+				log.Infoln(fmt.Sprintf("Error draining agent VM: %s", *vm.Name))
+				return err
+			}
+
+			err = upgradeAgentNode.DeleteNode(vm.Name)
 			if err != nil {
 				log.Infoln(fmt.Sprintf("Error deleting agent VM: %s", *vm.Name))
 				return err
