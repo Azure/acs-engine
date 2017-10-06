@@ -44,6 +44,9 @@ func (ku *Upgrader) Validate() error {
 }
 
 func (ku *Upgrader) upgradeMasterNodes() error {
+	if ku.ClusterTopology.DataModel.Properties.MasterProfile == nil {
+		return nil
+	}
 	log.Infoln(fmt.Sprintf("Master nodes StorageProfile: %s", ku.ClusterTopology.DataModel.Properties.MasterProfile.StorageProfile))
 	// Upgrade Master VMs
 	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
@@ -172,7 +175,11 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		transformer := &acsengine.Transformer{
 			Translator: ku.Translator,
 		}
-		if err := transformer.NormalizeResourcesForK8sAgentUpgrade(log.NewEntry(log.New()), templateMap, ku.DataModel.Properties.MasterProfile.IsManagedDisks(), preservePools); err != nil {
+		var isMasterManagedDisk bool
+		if ku.DataModel.Properties.MasterProfile != nil {
+			isMasterManagedDisk = ku.DataModel.Properties.MasterProfile.IsManagedDisks()
+		}
+		if err := transformer.NormalizeResourcesForK8sAgentUpgrade(log.NewEntry(log.New()), templateMap, isMasterManagedDisk, preservePools); err != nil {
 			log.Fatalln(err)
 			return err
 		}
