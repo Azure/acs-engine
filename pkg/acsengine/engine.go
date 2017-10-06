@@ -809,11 +809,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			}
 			return false
 		},
-		"HasGPU": func(profile *api.AgentPoolProfile) bool {
-			if strings.HasPrefix(profile.VMSize, "Standard_N") {
-				return true
-			}
-			return false
+		"GetGPUDriversInstallScript": func(profile *api.AgentPoolProfile) string {
+			return getGPUDriversInstallScript(profile)
 		},
 		"HasLinuxSecrets": func() bool {
 			return cs.Properties.LinuxProfile.HasSecrets()
@@ -914,6 +911,41 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) map[str
 			return s
 		},
 	}
+}
+
+func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
+	nvidia378 := `- rmmod nouveau
+	- sh -c "echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf"
+	- update-initramfs -u
+	- sudo add-apt-repository -y ppa:graphics-drivers
+	- sudo apt-get update
+	- sudo apt-get install -y nvidia-378`
+
+	na := fmt.Sprintf("echo 'NVIDIA Drivers for this VM SKU (%v) are not automatically installed, please install them manually'", profile.VMSize)
+
+	dm := map[string]string{
+		"Standard_NC6":   nvidia378,
+		"Standard_NC12":  nvidia378,
+		"Standard_NC24":  nvidia378,
+		"Standard_NC24r": nvidia378,
+		"Standard_NV6":   nvidia378,
+		"Standard_NV12":  nvidia378,
+		"Standard_NV24":  nvidia378,
+		"Standard_NV24r": nvidia378,
+		// Drivers not yet available for the following skys
+		"Standard_NC6_v2":   na,
+		"Standard_NC12_v2":  na,
+		"Standard_NC24_v2":  na,
+		"Standard_NC24r_v2": na,
+		"Standard_ND6":      na,
+		"Standard_ND12":     na,
+		"Standard_ND24":     na,
+		"Standard_ND24r":    na,
+	}
+	if _, ok := dm[profile.VMSize]; ok {
+		return dm[profile.VMSize]
+	}
+	return ""
 }
 
 func getPackageGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {

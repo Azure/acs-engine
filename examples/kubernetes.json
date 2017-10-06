@@ -6,20 +6,14 @@
     },
     "masterProfile": {
       "count": 1,
-      "dnsPrefix": "wibuch",
+      "dnsPrefix": "",
       "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
         "name": "agentpool1",
-        "count": 1,
+        "count": 3,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
-      },
-      {
-        "name": "agentpool2",
-        "count": 1,
-        "vmSize": "Standard_NC6",
         "availabilityProfile": "AvailabilitySet"
       }
     ],
@@ -28,14 +22,14 @@
       "ssh": {
         "publicKeys": [
           {
-            "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0EfRgF+TazuK/kYyqgmT3KHhN6Gk7DLuPePP/0wK+/9qpv8DatJdVLfAU5r409+q/EuGylmNqBip1nRCyZH4nRGeEpiZyidwBuK7y4wyyBRGv6Nd4Hc2i2Wn1P7OtkmprHtqc9U4HN4e2eBxaXKvgsFEbKC/c4FRYe2kiPrxAfYLPmkE4etFdK0srHXOwPKDywwrqg7iuPKDGAvqMYRkozFRlY/UT6lSWGlB8jC6kBsGKUPPckIyD9DbdNNFarT1PHp+2VluC4S7mG1Vdfx6s5SJWGdzjCGksmS6xhKQxYf3/VS+L9G8OhDd+nbsSQtVj/Cu3KSTetom6VSi6uFU9 will@Williams-MacBook-Pro.loca"
+            "keyData": ""
           }
         ]
       }
     },
     "servicePrincipalProfile": {
-      "servicePrincipalClientID": "71f6e073-2269-4cbd-95cd-9ed0648220f7",
-      "servicePrincipalClientSecret": "60ab2eda-a0d1-4293-be2f-8b56567f1fbc"
+      "servicePrincipalClientID": "",
+      "servicePrincipalClientSecret": ""
     }
   }
 }
