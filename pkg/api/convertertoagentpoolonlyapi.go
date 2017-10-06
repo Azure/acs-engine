@@ -5,6 +5,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
+	"github.com/Azure/acs-engine/pkg/api/common"
 )
 
 ///////////////////////////////////////////////////////////
@@ -52,7 +53,7 @@ func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Propert
 	properties.HostedMasterProfile.DNSPrefix = obj.DNSPrefix
 	properties.HostedMasterProfile.FQDN = obj.FQDN
 
-	properties.OrchestratorProfile = convertV20170831AgentPoolOnlyOrchestratorProfile(obj.KubernetesRelease)
+	properties.OrchestratorProfile = convertV20170831AgentPoolOnlyOrchestratorProfile(obj.KubernetesVersion)
 
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {
@@ -102,7 +103,7 @@ func convertVLabsAgentPoolOnlyResourcePurchasePlan(vlabs *vlabs.ResourcePurchase
 
 func convertVLabsAgentPoolOnlyProperties(vlabs *vlabs.Properties, api *Properties) {
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
-	api.OrchestratorProfile = convertVLabsAgentPoolOnlyOrchestratorProfile(vlabs.KubernetesRelease)
+	api.OrchestratorProfile = convertVLabsAgentPoolOnlyOrchestratorProfile(vlabs.KubernetesVersion)
 	api.MasterProfile = nil
 
 	api.HostedMasterProfile = &HostedMasterProfile{}
@@ -185,34 +186,36 @@ func convertVLabsAgentPoolOnlyWindowsProfile(vlabs *vlabs.WindowsProfile, api *W
 	// }
 }
 
-func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesRelease string) *OrchestratorProfile {
+func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
 	orchestratorProfile := &OrchestratorProfile{
 		OrchestratorType: Kubernetes,
 	}
 
-	switch kubernetesRelease {
+	release, _ := common.GetReleaseFromVersion(kubernetesVersion)
+
+	switch release {
 	case KubernetesRelease1Dot8, KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
-		orchestratorProfile.OrchestratorRelease = kubernetesRelease
 	default:
-		orchestratorProfile.OrchestratorRelease = KubernetesDefaultRelease
+		release = KubernetesDefaultRelease
 	}
-	orchestratorProfile.OrchestratorVersion = KubernetesReleaseToVersion[orchestratorProfile.OrchestratorRelease]
+	orchestratorProfile.OrchestratorVersion = KubernetesReleaseToVersion[release]
 
 	return orchestratorProfile
 }
 
-func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesRelease string) *OrchestratorProfile {
+func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
 	orchestratorProfile := &OrchestratorProfile{
 		OrchestratorType: Kubernetes,
 	}
 
-	switch kubernetesRelease {
+	release, _ := common.GetReleaseFromVersion(kubernetesVersion)
+
+	switch release {
 	case KubernetesRelease1Dot8, KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
-		orchestratorProfile.OrchestratorRelease = kubernetesRelease
 	default:
-		orchestratorProfile.OrchestratorRelease = KubernetesDefaultRelease
+		release = KubernetesDefaultRelease
 	}
-	orchestratorProfile.OrchestratorVersion = KubernetesReleaseToVersion[orchestratorProfile.OrchestratorRelease]
+	orchestratorProfile.OrchestratorVersion = KubernetesReleaseToVersion[release]
 
 	return orchestratorProfile
 }
