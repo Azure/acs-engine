@@ -3,8 +3,6 @@ package kubernetesupgrade
 // UpgradeWorkFlow outlines various individual high level steps
 // that need to be run (one or more times) in the upgrade workflow.
 type UpgradeWorkFlow interface {
-	ClusterPreflightCheck() error
-
 	// upgrade masters
 	// upgrade agent nodes
 	RunUpgrade() error

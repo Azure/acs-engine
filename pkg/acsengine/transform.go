@@ -5,8 +5,9 @@ import (
 	"log"
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -33,11 +34,19 @@ const (
 	vmResourceType   = "Microsoft.Compute/virtualMachines"
 	vmssResourceType = "Microsoft.Compute/virtualMachineScaleSets"
 	vmExtensionType  = "Microsoft.Compute/virtualMachines/extensions"
+
+	// resource ids
+	nsgID = "nsgID"
 )
 
+// Transformer represents the object that transforms template
+type Transformer struct {
+	Translator *i18n.Translator
+}
+
 // NormalizeForVMSSScaling takes a template and removes elements that are unwanted in a VMSS scale up/down case
-func NormalizeForVMSSScaling(logger *logrus.Entry, templateMap map[string]interface{}) error {
-	if err := NormalizeMasterResourcesForScaling(logger, templateMap); err != nil {
+func (t *Transformer) NormalizeForVMSSScaling(logger *logrus.Entry, templateMap map[string]interface{}) error {
+	if err := t.NormalizeMasterResourcesForScaling(logger, templateMap); err != nil {
 		return err
 	}
 
@@ -66,7 +75,7 @@ func NormalizeForVMSSScaling(logger *logrus.Entry, templateMap map[string]interf
 			continue
 		}
 
-		if !removeCustomData(logger, virtualMachineProfile) || !removeImageReference(logger, virtualMachineProfile) {
+		if !t.removeCustomData(logger, virtualMachineProfile) || !t.removeImageReference(logger, virtualMachineProfile) {
 			continue
 		}
 	}
@@ -74,8 +83,8 @@ func NormalizeForVMSSScaling(logger *logrus.Entry, templateMap map[string]interf
 }
 
 // NormalizeForK8sVMASScalingUp takes a template and removes elements that are unwanted in a K8s VMAS scale up/down case
-func NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templateMap map[string]interface{}) error {
-	if err := NormalizeMasterResourcesForScaling(logger, templateMap); err != nil {
+func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templateMap map[string]interface{}) error {
+	if err := t.NormalizeMasterResourcesForScaling(logger, templateMap); err != nil {
 		return err
 	}
 	nsgIndex := -1
@@ -90,7 +99,7 @@ func NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templateMap map[string]i
 		resourceType, ok := resourceMap[typeFieldName].(string)
 		if ok && resourceType == nsgResourceType {
 			if nsgIndex != -1 {
-				err := fmt.Errorf("Found 2 resources with type %s in the template. There should only be 1", nsgResourceType)
+				err := t.Translator.Errorf("Found 2 resources with type %s in the template. There should only be 1", nsgResourceType)
 				logger.Errorf(err.Error())
 				return err
 			}
@@ -105,7 +114,7 @@ func NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templateMap map[string]i
 
 		for dIndex := len(dependencies) - 1; dIndex >= 0; dIndex-- {
 			dependency := dependencies[dIndex].(string)
-			if strings.Contains(dependency, nsgResourceType) {
+			if strings.Contains(dependency, nsgResourceType) || strings.Contains(dependency, nsgID) {
 				dependencies = append(dependencies[:dIndex], dependencies[dIndex+1:]...)
 			}
 		}
@@ -113,7 +122,7 @@ func NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templateMap map[string]i
 		resourceMap[dependsOnFieldName] = dependencies
 	}
 	if nsgIndex == -1 {
-		err := fmt.Errorf("Found no resources with type %s in the template. There should have been 1", nsgResourceType)
+		err := t.Translator.Errorf("Found no resources with type %s in the template. There should have been 1", nsgResourceType)
 		logger.Errorf(err.Error())
 		return err
 	}
@@ -124,7 +133,7 @@ func NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templateMap map[string]i
 }
 
 // NormalizeMasterResourcesForScaling takes a template and removes elements that are unwanted in any scale up/down case
-func NormalizeMasterResourcesForScaling(logger *logrus.Entry, templateMap map[string]interface{}) error {
+func (t *Transformer) NormalizeMasterResourcesForScaling(logger *logrus.Entry, templateMap map[string]interface{}) error {
 	resources := templateMap[resourcesFieldName].([]interface{})
 	//update master nodes resources
 	for _, resource := range resources {
@@ -166,7 +175,7 @@ func NormalizeMasterResourcesForScaling(logger *logrus.Entry, templateMap map[st
 			delete(hardwareProfile, vmSizeFieldName)
 		}
 
-		if !removeCustomData(logger, resourceProperties) || !removeImageReference(logger, resourceProperties) {
+		if !t.removeCustomData(logger, resourceProperties) || !t.removeImageReference(logger, resourceProperties) {
 			continue
 		}
 	}
@@ -174,7 +183,7 @@ func NormalizeMasterResourcesForScaling(logger *logrus.Entry, templateMap map[st
 	return nil
 }
 
-func removeCustomData(logger *logrus.Entry, resourceProperties map[string]interface{}) bool {
+func (t *Transformer) removeCustomData(logger *logrus.Entry, resourceProperties map[string]interface{}) bool {
 	osProfile, ok := resourceProperties[osProfileFieldName].(map[string]interface{})
 	if !ok {
 		logger.Warnf("Template improperly formatted")
@@ -187,7 +196,7 @@ func removeCustomData(logger *logrus.Entry, resourceProperties map[string]interf
 	return ok
 }
 
-func removeImageReference(logger *logrus.Entry, resourceProperties map[string]interface{}) bool {
+func (t *Transformer) removeImageReference(logger *logrus.Entry, resourceProperties map[string]interface{}) bool {
 	storageProfile, ok := resourceProperties[storageProfileFieldName].(map[string]interface{})
 	if !ok {
 		logger.Warnf("Template improperly formatted. Could not find: %s", storageProfileFieldName)
@@ -201,7 +210,7 @@ func removeImageReference(logger *logrus.Entry, resourceProperties map[string]in
 }
 
 // NormalizeResourcesForK8sMasterUpgrade takes a template and removes elements that are unwanted in any scale up/down case
-func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, isMasterManagedDisk bool, agentPoolsToPreserve map[string]bool) error {
+func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, isMasterManagedDisk bool, agentPoolsToPreserve map[string]bool) error {
 	resources := templateMap[resourcesFieldName].([]interface{})
 	logger.Infoln(fmt.Sprintf("Resource count before running NormalizeResourcesForK8sMasterUpgrade: %d", len(resources)))
 
@@ -246,7 +255,7 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 			}
 
 			dataDisks := storageProfile[dataDisksFieldName].([]interface{})
-			dataDisk, ok := dataDisks[0].(map[string]interface{})
+			dataDisk, _ := dataDisks[0].(map[string]interface{})
 			dataDisk[createOptionFieldName] = "attach"
 
 			if isMasterManagedDisk {
@@ -259,7 +268,7 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 			}
 		}
 
-		tags, ok := resourceMap[tagsFieldName].(map[string]interface{})
+		tags, _ := resourceMap[tagsFieldName].(map[string]interface{})
 		poolName := fmt.Sprint(tags["poolName"]) // poolName tag exists on agents only
 
 		if resourceType == vmResourceType {
@@ -309,15 +318,15 @@ func NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry, templateMap map
 }
 
 // NormalizeResourcesForK8sAgentUpgrade takes a template and removes elements that are unwanted in any scale up/down case
-func NormalizeResourcesForK8sAgentUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, isMasterManagedDisk bool, agentPoolsToPreserve map[string]bool) error {
+func (t *Transformer) NormalizeResourcesForK8sAgentUpgrade(logger *logrus.Entry, templateMap map[string]interface{}, isMasterManagedDisk bool, agentPoolsToPreserve map[string]bool) error {
 	logger.Infoln(fmt.Sprintf("Running NormalizeResourcesForK8sMasterUpgrade...."))
-	if err := NormalizeResourcesForK8sMasterUpgrade(logger, templateMap, isMasterManagedDisk, agentPoolsToPreserve); err != nil {
+	if err := t.NormalizeResourcesForK8sMasterUpgrade(logger, templateMap, isMasterManagedDisk, agentPoolsToPreserve); err != nil {
 		log.Fatalln(err)
 		return err
 	}
 
 	logger.Infoln(fmt.Sprintf("Running NormalizeForK8sVMASScalingUp...."))
-	if err := NormalizeForK8sVMASScalingUp(logger, templateMap); err != nil {
+	if err := t.NormalizeForK8sVMASScalingUp(logger, templateMap); err != nil {
 		log.Fatalln(err)
 		return err
 	}

@@ -5,3 +5,10 @@
       }, 
       "type": "string"
     },
+    "dcosWindowsBootstrapURL": {
+      "defaultValue": "http://dcos-win.westus.cloudapp.azure.com/dcos-windows/stable/",
+      "metadata": {
+        "description": "The default mesosphere bootstrap package location for windows."
+      }, 
+      "type": "string"
+    },

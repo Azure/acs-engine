@@ -55,9 +55,16 @@ type Properties struct {
 //    <NAME> is the name of the secret.
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
-	ClientID          string `json:"clientId,omitempty" validate:"required"`
-	Secret            string `json:"secret,omitempty"`
-	KeyvaultSecretRef string `json:"keyvaultSecretRef,omitempty"`
+	ClientID          string             `json:"clientId,omitempty" validate:"required"`
+	Secret            string             `json:"secret,omitempty"`
+	KeyvaultSecretRef *KeyvaultSecretRef `json:"keyvaultSecretRef,omitempty"`
+}
+
+// KeyvaultSecretRef is a reference to a secret in a keyvault.
+type KeyvaultSecretRef struct {
+	VaultID       string `json:"vaultID" validate:"required"`
+	SecretName    string `json:"secretName" validate:"required"`
+	SecretVersion string `json:"version,omitempty"`
 }
 
 // CustomProfile specifies custom properties that are used for
@@ -108,7 +115,8 @@ const (
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
 	OrchestratorType    string `json:"orchestratorType" validate:"required"`
-	OrchestratorVersion string `json:"orchestratorVersion"`
+	OrchestratorRelease string `json:"orchestratorRelease"`
+	OrchestratorVersion string `json:"orchestratorVersion" validate:"len=0"`
 }
 
 // MasterProfile represents the definition of master cluster
@@ -147,11 +155,6 @@ func (m *MasterProfile) UnmarshalJSON(b []byte) error {
 	if m.FirstConsecutiveStaticIP == "" {
 		// if FirstConsecutiveStaticIP is missing, set to default 10.240.255.5
 		m.FirstConsecutiveStaticIP = "10.240.255.5"
-	}
-
-	if m.StorageProfile == "" {
-		// if StorageProfile is missing, set to default StorageAccount
-		m.StorageProfile = StorageAccount
 	}
 
 	// OSDiskSizeGB is an override value. vm sizes have default OS disk sizes.
@@ -195,11 +198,6 @@ func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
 	if a.Count == 0 {
 		// if AgentPoolProfile.Count is missing or 0, set it to default 1
 		a.Count = 1
-	}
-
-	if a.StorageProfile == "" {
-		// if StorageProfile is missing, set to default StorageAccount
-		a.StorageProfile = StorageAccount
 	}
 
 	if string(a.OSType) == "" {

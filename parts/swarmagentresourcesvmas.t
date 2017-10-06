@@ -182,9 +182,11 @@
           "adminUsername": "[variables('adminUsername')]",
           "computername": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
 {{if IsSwarmMode}}
-            {{GetAgentSwarmModeCustomData}} 
+  {{if not .IsRHEL}}
+            {{GetAgentSwarmModeCustomData .}} 
+  {{end}}
 {{else}}
-            {{GetAgentSwarmCustomData}} 
+            {{GetAgentSwarmCustomData .}} 
 {{end}}
           "linuxConfiguration": {
               "disablePasswordAuthentication": "true",
@@ -205,10 +207,10 @@
         "storageProfile": {
           {{GetDataDisks .}}
           "imageReference": {
-            "offer": "[variables('osImageOffer')]",
-            "publisher": "[variables('osImagePublisher')]",
-            "sku": "[variables('osImageSKU')]",
-            "version": "[variables('osImageVersion')]"
+            "offer": "[variables('{{.Name}}OSImageOffer')]",
+            "publisher": "[variables('{{.Name}}OSImagePublisher')]",
+            "sku": "[variables('{{.Name}}OSImageSKU')]",
+            "version": "[variables('{{.Name}}OSImageVersion')]"
           }
 
           ,"osDisk": {
@@ -228,3 +230,29 @@
       },
       "type": "Microsoft.Compute/virtualMachines"
     }
+{{if .IsRHEL}}
+    ,{
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "copy": {
+        "count": "[variables('{{.Name}}Count')]",
+        "name": "vmLoopNode"
+      },
+      "dependsOn": [
+          "[concat('Microsoft.Compute/virtualMachines/', concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset'))))]"
+      ],
+      "location": "[variables('location')]",
+      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')), '/configureagent')]",
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "settings": {
+          "commandToExecute": "[variables('agentCustomScript')]",
+          "fileUris": [
+            "[concat('{{ GetConfigurationScriptRootURL }}', variables('configureClusterScriptFile'))]"
+          ]
+        },
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0"
+      },
+      "type": "Microsoft.Compute/virtualMachines/extensions"
+    }
+{{end}}

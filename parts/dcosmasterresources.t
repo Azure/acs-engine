@@ -180,7 +180,7 @@
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
-{{if IsDCOS190}}
+{{if IsDCOS19}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
@@ -207,7 +207,7 @@
       "name": "[variables('masterNSGName')]",
       "properties": {
         "securityRules": [
-{{if IsDCOS190}} 
+{{if IsDCOS19}} 
             {
                 "properties": {
                     "priority": 201,
@@ -281,7 +281,7 @@
         "[variables('vnetID')]",
 {{end}}
         "[variables('masterLbID')]",
-{{if IsDCOS190}}
+{{if IsDCOS19}}
         "[concat(variables('masterLbID'),'/inboundNatRules/SSHPort22-',variables('masterVMNamePrefix'),0)]",
 {{end}}
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex())]"
@@ -298,7 +298,7 @@
                   "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
               ],
-{{if IsDCOS190}}
+{{if IsDCOS19}}
               "loadBalancerInboundNatRules": "[variables('masterLbInboundNatRules')[copyIndex()]]",
 {{else}}
               "loadBalancerInboundNatRules": [
@@ -420,4 +420,4 @@
         "typeHandlerVersion": "1.4"
       },
       "type": "Microsoft.Compute/virtualMachines/extensions"
-    }
+    }{{WriteLinkedTemplatesForExtensions}}

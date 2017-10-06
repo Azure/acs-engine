@@ -38,19 +38,20 @@ ExecStart=/usr/bin/docker run \
         --address=0.0.0.0 \
         --allow-privileged=true \
         --enable-server \
-        --enable-debugging-handlers \
         --pod-manifest-path=/etc/kubernetes/manifests \
         --cluster-dns=${KUBELET_CLUSTER_DNS} \
         --cluster-domain=cluster.local \
-        --register-schedulable=${KUBELET_REGISTER_SCHEDULABLE} \
         --node-labels="${KUBELET_NODE_LABELS}" \
         --cloud-provider=azure \
         --cloud-config=/etc/kubernetes/azure.json \
         --azure-container-registry-config=/etc/kubernetes/azure.json \
-        --hairpin-mode=promiscuous-bridge \
         --network-plugin=${KUBELET_NETWORK_PLUGIN} \
+        --max-pods=${KUBELET_MAX_PODS} \
         --node-status-update-frequency=${KUBELET_NODE_STATUS_UPDATE_FREQUENCY} \
-        --v=2 ${KUBELET_FEATURE_GATES}
+        --image-gc-high-threshold=${KUBELET_IMAGE_GC_HIGH_THRESHOLD} \
+        --image-gc-low-threshold=${KUBELET_IMAGE_GC_LOW_THRESHOLD} \
+        --v=2 ${KUBELET_FEATURE_GATES} \
+        ${KUBELET_REGISTER_NODE} ${KUBELET_REGISTER_WITH_TAINTS}
 
 [Install]
 WantedBy=multi-user.target

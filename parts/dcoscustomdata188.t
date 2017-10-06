@@ -20,7 +20,7 @@ mounts:
   - /var/lib/mesos
 - - ephemeral0.2
   - /var/lib/docker
-runcmd:
+runcmd: PREPROVISION_EXTENSION
 - /usr/lib/apt/apt.systemd.daily
 - echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
 - sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635

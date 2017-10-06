@@ -47,6 +47,7 @@ $global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
 $global:KubeBinariesSASURL = "{{WrapAsVariable "kubeBinariesSASURL"}}"
 $global:KubeBinariesVersion = "{{WrapAsVariable "kubeBinariesVersion"}}"
+$global:WindowsTelemetryGUID = "{{WrapAsVariable "windowsTelemetryGUID"}}"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
 $global:NatNetworkName="nat"
@@ -59,7 +60,7 @@ $global:SubnetName = "{{WrapAsVariable "subnetName"}}"
 $global:SecurityGroupName = "{{WrapAsVariable "nsgName"}}"
 $global:VNetName = "{{WrapAsVariable "virtualNetworkName"}}"
 $global:RouteTableName = "{{WrapAsVariable "routeTableName"}}"
-$global:PrimaryAvailabilitySetName = "{{WrapAsVariable "primaryAvailablitySetName"}}"
+$global:PrimaryAvailabilitySetName = "{{WrapAsVariable "primaryAvailabilitySetName"}}"
 $global:NeedPatchWinNAT = $false
 
 $global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
@@ -72,6 +73,11 @@ Write-Log($message)
 {
     $msg = $message | Timestamp
     Write-Output $msg
+}
+
+function Set-TelemetrySetting()
+{
+    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "CommercialId" -Value $global:WindowsTelemetryGUID -Force
 }
 
 function
@@ -175,10 +181,17 @@ New-InfraContainer()
 function
 Write-KubernetesStartFiles($podCIDR)
 {
-    $KubeletArgList = @("--hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--api-servers=https://`${global:MasterIP}:443","--kubeconfig=c:\k\config")
+    $KubeletArgList = @("--hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--kubeconfig=c:\k\config","--cloud-provider=azure","--cloud-config=c:\k\azure.json")
     $KubeletCommandLine = @"
-c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --api-servers=https://`${global:MasterIP}:443 --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m
+c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m  --cloud-provider=azure --cloud-config=c:\k\azure.json
 "@
+
+    if ($global:KubeBinariesVersion -lt "1.8.0")
+    {
+        # --api-server deprecates from 1.8.0
+        $KubeletArgList += "--api-servers=https://`${global:MasterIP}:443"
+        $KubeletCommandLine += " --api-servers=https://`${global:MasterIP}:443"
+    }
 
     if ($global:KubeBinariesVersion -ge "1.6.0")
     {
@@ -298,6 +311,12 @@ catch
 c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
 "@
 
+    if ($global:KubeBinariesVersion -ge "1.7.0")
+    {
+        # 1.7.0 uses event-based service configuration so shorter duration (default 15m) is needed to update forwarder NIC
+        $kubeProxyStartStr += " --config-sync-period=5m"
+    }
+
     $kubeProxyStartStr | Out-File -encoding ASCII -filepath $global:KubeProxyStartFile
 }
 
@@ -369,6 +388,9 @@ try
     # the output.
     if ($true) {
         Write-Log "Provisioning $global:DockerServiceName... with IP $MasterIP"
+
+        Write-Log "apply telemetry data setting"
+        Set-TelemetrySetting
 
         Write-Log "download kubelet binaries and unzip"
         Get-KubeBinaries

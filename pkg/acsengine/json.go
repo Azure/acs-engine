@@ -1,6 +1,7 @@
 package acsengine
 
 import (
+	// "fmt"
 	"encoding/json"
 	"strings"
 )
@@ -31,6 +32,8 @@ func PrettyPrintArmTemplate(template string) (string, error) {
 // PrettyPrintJSON will pretty print the json into
 func PrettyPrintJSON(content string) (string, error) {
 	var data map[string]interface{}
+	// fmt.Printf("content = %s\n", content);
+
 	if err := json.Unmarshal([]byte(content), &data); err != nil {
 		return "", err
 	}

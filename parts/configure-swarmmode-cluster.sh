@@ -16,21 +16,24 @@ echo "starting Swarm Mode cluster configuration"
 date
 ps ax
 
-DOCKER_CE_VERSION="17.03.*"
-DOCKER_COMPOSE_VERSION="1.14.0"
 #############
 # Parameters
 #############
 
-MASTERCOUNT=${1}
-MASTERPREFIX=${2}
-MASTERFIRSTADDR=${3}
-AZUREUSER=${4}
-POSTINSTALLSCRIPTURI=${5}
-BASESUBNET=${6}
+DOCKER_CE_VERSION=${1}
+DOCKER_COMPOSE_VERSION=${2}
+MASTERCOUNT=${3}
+MASTERPREFIX=${4}
+MASTERFIRSTADDR=${5}
+AZUREUSER=${6}
+POSTINSTALLSCRIPTURI=${7}
+BASESUBNET=${8}
+DOCKERENGINEDOWNLOADREPO=${9}
+DOCKERCOMPOSEDOWNLOADURL=${10}
 VMNAME=`hostname`
 VMNUMBER=`echo $VMNAME | sed 's/.*[^0-9]\([0-9]\+\)*$/\1/'`
 VMPREFIX=`echo $VMNAME | sed 's/\(.*[^0-9]\)*[0-9]\+$/\1/'`
+OS="$(. /etc/os-release; echo $ID)"
 
 echo "Master Count: $MASTERCOUNT"
 echo "Master Prefix: $MASTERPREFIX"
@@ -39,10 +42,31 @@ echo "vmname: $VMNAME"
 echo "VMNUMBER: $VMNUMBER, VMPREFIX: $VMPREFIX"
 echo "BASESUBNET: $BASESUBNET"
 echo "AZUREUSER: $AZUREUSER"
+echo "OS ID: $OS"
 
 ###################
 # Common Functions
 ###################
+
+isUbuntu()
+{
+  if [ "$OS" == "ubuntu" ]
+  then
+    return 0
+  else
+    return 1
+  fi
+}
+
+isRHEL()
+{
+  if [ "$OS" == "rhel" ]
+  then
+    return 0
+  else
+    return 1
+  fi
+}
 
 ensureAzureNetwork()
 {
@@ -148,7 +172,7 @@ fi
 
 echo "Installing and configuring Docker"
 
-installDocker()
+installDockerUbuntu()
 {
   for i in {1..10}; do
     apt-get install -y apt-transport-https ca-certificates curl software-properties-common
@@ -166,6 +190,36 @@ installDocker()
     sleep 10
   done
 }
+
+installDockerRHEL()
+{
+  for i in {1..10}; do
+    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    yum makecache fast
+    yum -y install docker-ce
+    if [ $? -eq 0 ]
+    then
+      systemctl enable docker
+      systemctl start docker
+      echo "Docker installed successfully"
+      break
+    fi
+    sleep 10
+  done
+}
+
+installDocker()
+{
+  if isUbuntu ; then
+    installDockerUbuntu
+  elif isRHEL ; then
+    installDockerRHEL
+  else
+    echo "OS not supported, aborting install"
+    exit 5
+  fi
+}
+
 time installDocker
 
 sudo usermod -aG docker $AZUREUSER
@@ -190,7 +244,7 @@ installDockerCompose()
   # sudo -i
 
   for i in {1..10}; do
-    wget --tries 4 --retry-connrefused --waitretry=15 -qO- https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+    wget --tries 4 --retry-connrefused --waitretry=15 -qO- $DOCKERCOMPOSEDOWNLOADURL/$DOCKER_COMPOSE_VERSION/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
     if [ $? -eq 0 ]
     then
       # hostname has been found continue
@@ -203,6 +257,14 @@ installDockerCompose()
 time installDockerCompose
 chmod +x /usr/local/bin/docker-compose
 
+if ismaster && isRHEL ; then
+  echo "Opening Docker ports"
+  firewall-cmd --add-port=2375/tcp --permanent
+  firewall-cmd --add-port=2377/tcp --permanent
+  firewall-cmd --reload
+fi
+
+echo "Restarting Docker"
 sudo systemctl daemon-reload
 sudo service docker restart
 

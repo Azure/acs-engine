@@ -127,9 +127,11 @@
             "adminUsername": "[variables('adminUsername')]",
             "computerNamePrefix": "[variables('{{.Name}}VMNamePrefix')]",
 {{if IsSwarmMode}}
-            {{GetAgentSwarmModeCustomData}} 
+  {{if not .IsRHEL}}
+            {{GetAgentSwarmModeCustomData .}} 
+  {{end}}
 {{else}}
-            {{GetAgentSwarmCustomData}} 
+            {{GetAgentSwarmCustomData .}} 
 {{end}}
             "linuxConfiguration": {
               "disablePasswordAuthentication": "true",
@@ -149,10 +151,10 @@
           },
           "storageProfile": {
             "imageReference": {
-              "offer": "[variables('osImageOffer')]",
-              "publisher": "[variables('osImagePublisher')]",
-              "sku": "[variables('osImageSKU')]",
-              "version": "[variables('osImageVersion')]"
+              "offer": "[variables('{{.Name}}OSImageOffer')]",
+              "publisher": "[variables('{{.Name}}OSImagePublisher')]",
+              "sku": "[variables('{{.Name}}OSImageSKU')]",
+              "version": "[variables('{{.Name}}OSImageVersion')]"
             },
             {{GetDataDisks .}}
             "osDisk": {
@@ -173,6 +175,26 @@
 {{end}}
             }
           }
+{{if .IsRHEL}}
+          ,"extensionProfile": {
+            "extensions": [
+              {
+                "name": "configure{{.Name}}",
+                "properties": {
+                  "publisher": "Microsoft.Azure.Extensions",
+                  "settings": {
+                    "commandToExecute": "[variables('agentCustomScript')]",
+                    "fileUris": [
+                      "[concat('{{ GetConfigurationScriptRootURL }}', variables('configureClusterScriptFile'))]"
+                    ]
+                  },
+                  "type": "CustomScript",
+                  "typeHandlerVersion": "2.0"
+                }
+              }
+            ]
+          }
+{{end}}
         }
       },
       "sku": {

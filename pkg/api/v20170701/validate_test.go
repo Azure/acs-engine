@@ -4,6 +4,15 @@ import "testing"
 
 func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T) {
 
+	t.Run("ServicePrincipalProfile is nil should fail", func(t *testing.T) {
+		p := getK8sDefaultProperties()
+		p.ServicePrincipalProfile = nil
+
+		if err := p.Validate(); err == nil {
+			t.Errorf("should error %v", err)
+		}
+	})
+
 	t.Run("ServicePrincipalProfile with secret should pass", func(t *testing.T) {
 		p := getK8sDefaultProperties()
 
@@ -15,8 +24,11 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	t.Run("ServicePrincipalProfile with KeyvaultSecretRef (with version) should pass", func(t *testing.T) {
 		p := getK8sDefaultProperties()
 		p.ServicePrincipalProfile.Secret = ""
-		p.ServicePrincipalProfile.KeyvaultSecretRef = "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME/secrets/secret-name/version"
-
+		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
+			VaultID:       "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME",
+			SecretName:    "secret-name",
+			SecretVersion: "version",
+		}
 		if err := p.Validate(); err != nil {
 			t.Errorf("should not error %v", err)
 		}
@@ -25,8 +37,10 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	t.Run("ServicePrincipalProfile with KeyvaultSecretRef (without version) should pass", func(t *testing.T) {
 		p := getK8sDefaultProperties()
 		p.ServicePrincipalProfile.Secret = ""
-		p.ServicePrincipalProfile.KeyvaultSecretRef = "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME/secrets/secret-name>"
-
+		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
+			VaultID:    "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME",
+			SecretName: "secret-name",
+		}
 		if err := p.Validate(); err != nil {
 			t.Errorf("should not error %v", err)
 		}
@@ -34,8 +48,11 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 
 	t.Run("ServicePrincipalProfile with Secret and KeyvaultSecretRef should NOT pass", func(t *testing.T) {
 		p := getK8sDefaultProperties()
-		p.ServicePrincipalProfile.KeyvaultSecretRef = "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME/secrets/secret-name/version"
-
+		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
+			VaultID:       "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME",
+			SecretName:    "secret-name",
+			SecretVersion: "version",
+		}
 		if err := p.Validate(); err == nil {
 			t.Error("error should have occurred")
 		}
@@ -44,7 +61,11 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	t.Run("ServicePrincipalProfile with incorrect KeyvaultSecretRef format should NOT pass", func(t *testing.T) {
 		p := getK8sDefaultProperties()
 		p.ServicePrincipalProfile.Secret = ""
-		p.ServicePrincipalProfile.KeyvaultSecretRef = "randomsecret"
+		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
+			VaultID:       "randomID",
+			SecretName:    "secret-name",
+			SecretVersion: "version",
+		}
 
 		if err := p.Validate(); err == nil || err.Error() != "service principal client keyvault secret reference is of incorrect format" {
 			t.Error("error should have occurred")
@@ -63,7 +84,7 @@ func getK8sDefaultProperties() *Properties {
 			VMSize:    "Standard_DS2_v2",
 		},
 		AgentPoolProfiles: []*AgentPoolProfile{
-			&AgentPoolProfile{
+			{
 				Name:   "agentpool",
 				VMSize: "Standard_D2_v2",
 				Count:  1,

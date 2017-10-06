@@ -6,7 +6,7 @@
 
 # Fields for `azure.json`
 TENANT_ID="${1}"
-SUBNETSCRIPTION_ID="${2}"
+SUBSCRIPTION_ID="${2}"
 RESOURCE_GROUP="${3}"
 LOCATION="${4}"
 SUBNET="${5}"
@@ -19,29 +19,33 @@ SERVICE_PRINCIPAL_CLIENT_SECRET="${11}"
 KUBELET_PRIVATE_KEY="${12}"
 TARGET_ENVIRONMENT="${13}"
 NETWORK_POLICY="${14}"
+FQDNSuffix="${15}"
+VNET_CNI_PLUGINS_URL="${16}"
+CNI_PLUGINS_URL="${17}"
+MAX_PODS="${18}"
 
 # Default values for backoff configuration
-CLOUDPROVIDER_BACKOFF="${15}"
-CLOUDPROVIDER_BACKOFF_RETRIES="${16}"
-CLOUDPROVIDER_BACKOFF_EXPONENT="${17}"
-CLOUDPROVIDER_BACKOFF_DURATION="${18}"
-CLOUDPROVIDER_BACKOFF_JITTER="${19}"
+CLOUDPROVIDER_BACKOFF="${19}"
+CLOUDPROVIDER_BACKOFF_RETRIES="${20}"
+CLOUDPROVIDER_BACKOFF_EXPONENT="${21}"
+CLOUDPROVIDER_BACKOFF_DURATION="${22}"
+CLOUDPROVIDER_BACKOFF_JITTER="${23}"
 # Default values for rate limit configuration
-CLOUDPROVIDER_RATELIMIT="${20}"
-CLOUDPROVIDER_RATELIMIT_QPS="${21}"
-CLOUDPROVIDER_RATELIMIT_BUCKET="${22}"
+CLOUDPROVIDER_RATELIMIT="${24}"
+CLOUDPROVIDER_RATELIMIT_QPS="${25}"
+CLOUDPROVIDER_RATELIMIT_BUCKET="${26}"
 
-USE_MANAGED_IDENTITY_EXTENSION="${23}"
-USE_INSTANCE_METADATA="${24}"
+USE_MANAGED_IDENTITY_EXTENSION="${27}"
+USE_INSTANCE_METADATA="${28}"
 
 # Master only secrets
-APISERVER_PRIVATE_KEY="${25}"
-CA_CERTIFICATE="${26}"
-CA_PRIVATE_KEY="${27}"
-MASTER_FQDN="${28}"
-KUBECONFIG_CERTIFICATE="${29}"
-KUBECONFIG_KEY="${30}"
-ADMINUSER="${31}"
+APISERVER_PRIVATE_KEY="${29}"
+CA_CERTIFICATE="${30}"
+CA_PRIVATE_KEY="${31}"
+MASTER_FQDN="${32}"
+KUBECONFIG_CERTIFICATE="${33}"
+KUBECONFIG_KEY="${34}"
+ADMINUSER="${35}"
 
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
@@ -57,6 +61,9 @@ ensureRunCommandCompleted()
     done
 }
 ensureRunCommandCompleted
+
+# make sure walinuxagent doesn't get updated in the middle of running this script
+apt-mark hold walinuxagent
 
 # A delay to start the kubernetes processes is necessary
 # if a reboot is required.  Otherwise, the agents will encounter issue: 
@@ -107,7 +114,7 @@ cat << EOF > "${AZURE_JSON_PATH}"
 {
     "cloud":"${TARGET_ENVIRONMENT}",
     "tenantId": "${TENANT_ID}",
-    "subscriptionId": "${SUBNETSCRIPTION_ID}",
+    "subscriptionId": "${SUBSCRIPTION_ID}",
     "aadClientId": "${SERVICE_PRINCIPAL_CLIENT_ID}",
     "aadClientSecret": "${SERVICE_PRINCIPAL_CLIENT_SECRET}",
     "resourceGroup": "${RESOURCE_GROUP}",
@@ -166,6 +173,10 @@ function downloadUrl () {
 	for i in 1 2 3 4 5; do curl --max-time 60 -fsSL ${1}; [ $? -eq 0 ] && break || sleep 10; done
 }
 
+function setMaxPods () {
+    sed -i "s/^KUBELET_MAX_PODS=.*/KUBELET_MAX_PODS=${1}/" /etc/default/kubelet
+}
+
 function setNetworkPlugin () {
     sed -i "s/^KUBELET_NETWORK_PLUGIN=.*/KUBELET_NETWORK_PLUGIN=${1}/" /etc/default/kubelet
 }
@@ -186,9 +197,9 @@ function configAzureNetworkPolicy() {
     mkdir -p $CNI_BIN_DIR
 
     # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
-    downloadUrl https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz | tar -xz -C $CNI_BIN_DIR
+    downloadUrl ${VNET_CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR
     # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
-    downloadUrl https://acs-mirror.azureedge.net/cni/cni-amd64-latest.tgz | tar -xz -C $CNI_BIN_DIR ./loopback
+    downloadUrl ${CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR ./loopback
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
 
@@ -206,10 +217,8 @@ function configAzureNetworkPolicy() {
 
 # Configures Kubelet to use CNI and mount the appropriate hostpaths
 function configCalicoNetworkPolicy() {
-
-        setNetworkPlugin cni
-        setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
-
+    setNetworkPlugin cni
+    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
 function configNetworkPolicy() {
@@ -224,8 +233,30 @@ function configNetworkPolicy() {
     fi
 }
 
+function systemctlEnableAndCheck() {
+    systemctl enable $1
+    systemctl is-enabled $1
+    enabled=$?
+    for i in {1..900}; do
+        if [ $enabled -ne 0 ]; then
+            systemctl enable $1
+            systemctl is-enabled $1
+            enabled=$?
+        else
+            break
+        fi
+        sleep 1
+    done
+    if [ $enabled -ne 0 ]
+    then
+        echo "$1 could not be enabled by systemctl"
+        exit 5
+    fi
+    systemctl enable $1
+}
+
 function ensureDocker() {
-    systemctl enable docker
+    systemctlEnableAndCheck docker
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
         systemctl restart docker
@@ -250,7 +281,7 @@ function ensureDocker() {
 }
 
 function ensureKubelet() {
-    systemctl enable kubelet
+    systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
         systemctl restart kubelet
@@ -258,7 +289,7 @@ function ensureKubelet() {
 }
 
 function extractKubectl(){
-    systemctl enable kubectl-extract
+    systemctlEnableAndCheck kubectl-extract
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
         systemctl restart kubectl-extract
@@ -267,7 +298,7 @@ function extractKubectl(){
 
 function ensureJournal(){
     systemctl daemon-reload
-    systemctl enable systemd-journald.service
+    systemctlEnableAndCheck systemd-journald.service
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
         systemctl restart systemd-journald.service
@@ -351,12 +382,7 @@ function writeKubeConfig() {
     chown $ADMINUSER:$ADMINUSER $KUBECONFIGFILE
     chmod 700 $KUBECONFIGDIR
     chmod 600 $KUBECONFIGFILE
-
-    FQDNSuffix="cloudapp.azure.com"
-    if [ "$TARGET_ENVIRONMENT" = "AzureChinaCloud" ]
-    then
-        FQDNSuffix="cloudapp.chinacloudapi.cn"
-    fi
+    
     # disable logging after secret output
     set +x
     echo "
@@ -387,6 +413,7 @@ users:
 # master and node
 ensureDocker
 configNetworkPolicy
+setMaxPods ${MAX_PODS}
 ensureKubelet
 extractKubectl
 ensureJournal
@@ -406,14 +433,10 @@ sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/h
 
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 echo "Install complete successfully"
+apt-mark unhold walinuxagent
 
 if $REBOOTREQUIRED; then
-  if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
-    # wait 1 minute to restart master
-    echo 'reboot required, rebooting master in 1 minute'
-    /bin/bash -c "shutdown -r 1 &"
-  else
-    echo 'reboot required, rebooting agent in 1 minute'
-    shutdown -r now
-  fi
+  # wait 1 minute to restart node, so that the custom script extension can complete
+  echo 'reboot required, rebooting node in 1 minute'
+  /bin/bash -c "shutdown -r 1 &"
 fi

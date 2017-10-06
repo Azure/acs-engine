@@ -63,7 +63,11 @@ EPDesL0rH+3s1CKpgkhYdbJ675GFoGoq+X21QaqsdvoXmmuJF9qq9Tq+JaWloUNq
 -----END RSA PRIVATE KEY-----
 `
 
-	privateKey, publicKey, err := CreateSSH(rg)
+	creator := &SSHCreator{
+		Translator: nil,
+	}
+
+	privateKey, publicKey, err := creator.CreateSSH(rg)
 	if err != nil {
 		t.Fatalf("failed to generate SSH: %s", err)
 	}

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // CleanDeleteVirtualMachine deletes a VM and any associated OS disk

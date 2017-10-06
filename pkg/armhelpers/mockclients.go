@@ -11,7 +11,7 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 )
 
-//MockACSEngineClient is an implemetnation of ACSEngineClient where all requests error out
+//MockACSEngineClient is an implementation of ACSEngineClient where all requests error out
 type MockACSEngineClient struct {
 	FailDeployTemplate              bool
 	FailEnsureResourceGroup         bool
@@ -60,20 +60,23 @@ func (mc *MockACSEngineClient) ListVirtualMachines(resourceGroup string) (comput
 		return compute.VirtualMachineListResult{}, fmt.Errorf("ListVirtualMachines failed")
 	}
 
-	vm1Name := "k8s-master-12345678-0"
+	vm1Name := "k8s-agentpool1-12345678-0"
 
 	creationSourceString := "creationSource"
 	orchestratorString := "orchestrator"
 	resourceNameSuffixString := "resourceNameSuffix"
+	poolnameString := "poolName"
 
-	creationSource := "acsengine-k8s-master-12345678-0"
-	orchestrator := "Kubernetes:1.5.3"
+	creationSource := "acsengine-k8s-agentpool1-12345678-0"
+	orchestrator := "Kubernetes:1.5.8"
 	resourceNameSuffix := "12345678"
+	poolname := "agentpool1"
 
 	tags := map[string]*string{
 		creationSourceString:     &creationSource,
 		orchestratorString:       &orchestrator,
 		resourceNameSuffixString: &resourceNameSuffix,
+		poolnameString:           &poolname,
 	}
 
 	vm1 := compute.VirtualMachine{
@@ -117,20 +120,23 @@ func (mc *MockACSEngineClient) GetVirtualMachine(resourceGroup, name string) (co
 		return compute.VirtualMachine{}, fmt.Errorf("GetVirtualMachine failed")
 	}
 
-	vm1Name := "k8s-master-12345678-0"
+	vm1Name := "k8s-agentpool1-12345678-0"
 
 	creationSourceString := "creationSource"
 	orchestratorString := "orchestrator"
 	resourceNameSuffixString := "resourceNameSuffix"
+	poolnameString := "poolName"
 
-	creationSource := "acsengine-k8s-master-12345678-0"
-	orchestrator := "Kubernetes:1.5.3"
+	creationSource := "acsengine-k8s-agentpool1-12345678-0"
+	orchestrator := "Kubernetes:1.5.8"
 	resourceNameSuffix := "12345678"
+	poolname := "agentpool1"
 
 	tags := map[string]*string{
 		creationSourceString:     &creationSource,
 		orchestratorString:       &orchestrator,
 		resourceNameSuffixString: &resourceNameSuffix,
+		poolnameString:           &poolname,
 	}
 
 	return compute.VirtualMachine{
