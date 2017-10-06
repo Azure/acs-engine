@@ -2,7 +2,6 @@ package operations
 
 import (
 	"fmt"
-	"math"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
@@ -13,7 +12,6 @@ import (
 
 const (
 	interval            = time.Second * 1
-	timeout             = time.Minute * 60
 	mirrorPodAnnotation = "kubernetes.io/config.mirror"
 )
 
@@ -27,7 +25,7 @@ type drainOperation struct {
 type podFilter func(v1.Pod) bool
 
 // SafelyDrainNode safely drains a node so that it can be deleted from the cluster
-func SafelyDrainNode(az armhelpers.ACSEngineClient, logger *log.Entry, masterURL, kubeConfig, nodeName string) error {
+func SafelyDrainNode(az armhelpers.ACSEngineClient, logger *log.Entry, masterURL, kubeConfig, nodeName string, timeout time.Duration) error {
 	//get client using kubeconfig
 	client, err := az.GetKubernetesClient(masterURL, kubeConfig, interval, timeout)
 	if err != nil {
@@ -47,7 +45,7 @@ func SafelyDrainNode(az armhelpers.ACSEngineClient, logger *log.Entry, masterURL
 	logger.Infof("Node %s has been marked unschedulable.", nodeName)
 
 	//Evict pods in node
-	drainOp := &drainOperation{client: client, node: node, logger: logger}
+	drainOp := &drainOperation{client: client, node: node, logger: logger, timeout: timeout}
 	return drainOp.deleteOrEvictPodsSimple()
 }
 
@@ -153,7 +151,6 @@ func (o *drainOperation) evictPods(pods []v1.Pod, policyGroupVersion string) err
 	}
 
 	doneCount := 0
-	globalTimeout := time.Duration(math.MaxInt64)
 	for {
 		select {
 		case err := <-errCh:
@@ -163,8 +160,8 @@ func (o *drainOperation) evictPods(pods []v1.Pod, policyGroupVersion string) err
 			if doneCount == len(pods) {
 				return nil
 			}
-		case <-time.After(globalTimeout):
-			return fmt.Errorf("Drain did not complete within %v", globalTimeout)
+		case <-time.After(o.timeout):
+			return fmt.Errorf("Drain did not complete within %v", o.timeout)
 		}
 	}
 }
