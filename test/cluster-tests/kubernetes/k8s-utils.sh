@@ -141,6 +141,8 @@ function test_windows_deployment() {
     sleep 10; count=$((count-1))
   done
 
+  # temporarily disable breaking on errors to allow the retry
+  set +e
   log "curl external website"
   count=10
   success="n"
@@ -154,13 +156,14 @@ function test_windows_deployment() {
       log "got 200 status code"
       log "${statuscode}"
       success="y"
-      break 
+      break
     fi
     log "curl failed, retrying..."
     ipconfig=$(kubectl exec $winpodname -- powershell ipconfig /all)
     log "$ipconfig"
     sleep 10; count=$((count-1))
   done
+  set -e
   if [[ "${success}" != "y" ]]; then
     nslookup=$(kubectl exec $winpodname -- powershell nslookup www.bing.com)
     log "$nslookup"
