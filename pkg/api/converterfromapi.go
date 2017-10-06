@@ -134,13 +134,11 @@ func ConvertOrchestratorVersionProfileToV20170930(api *OrchestratorVersionProfil
 		vProfile.OrchestratorType = v20170930.DockerCE
 	}
 	vProfile.OrchestratorVersion = api.OrchestratorVersion
-	vProfile.OrchestratorRelease = api.OrchestratorRelease
 	vProfile.Default = api.Default
 	if api.Upgrades != nil {
 		vProfile.Upgrades = make([]*v20170930.OrchestratorProfile, len(api.Upgrades))
 		for i, h := range api.Upgrades {
 			vProfile.Upgrades[i] = &v20170930.OrchestratorProfile{
-				OrchestratorRelease: h.OrchestratorRelease,
 				OrchestratorVersion: h.OrchestratorVersion,
 			}
 		}
@@ -612,10 +610,6 @@ func convertOrchestratorProfileToV20170701(api *OrchestratorProfile, o *v2017070
 		o.OrchestratorType = v20170701.DockerCE
 	} else {
 		o.OrchestratorType = api.OrchestratorType
-	}
-
-	if api.OrchestratorRelease != "" {
-		o.OrchestratorRelease = api.OrchestratorRelease
 	}
 
 	if api.OrchestratorVersion != "" {

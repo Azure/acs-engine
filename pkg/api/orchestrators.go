@@ -125,7 +125,6 @@ func GetUpgradeProfileV20170930(cs *ContainerService, allowCurrentVersionUpgrade
 	if cs.Properties.MasterProfile != nil {
 		upgradeProfile.ControlPlaneProfile = &v20170930.PoolUpgradeProfile{
 			OrchestratorProfile: v20170930.OrchestratorProfile{
-				OrchestratorRelease: orch.OrchestratorRelease,
 				OrchestratorVersion: orch.OrchestratorVersion,
 			},
 			OSType:   string(Linux),
@@ -134,7 +133,6 @@ func GetUpgradeProfileV20170930(cs *ContainerService, allowCurrentVersionUpgrade
 	} else if cs.Properties.HostedMasterProfile != nil {
 		upgradeProfile.ControlPlaneProfile = &v20170930.PoolUpgradeProfile{
 			OrchestratorProfile: v20170930.OrchestratorProfile{
-				OrchestratorRelease: orch.OrchestratorRelease,
 				OrchestratorVersion: orch.OrchestratorVersion,
 			},
 			OSType:   string(Linux),
@@ -145,7 +143,6 @@ func GetUpgradeProfileV20170930(cs *ContainerService, allowCurrentVersionUpgrade
 	for _, agent := range cs.Properties.AgentPoolProfiles {
 		upgradeProfile.AgentPoolProfiles = append(upgradeProfile.AgentPoolProfiles, &v20170930.PoolUpgradeProfile{
 			OrchestratorProfile: v20170930.OrchestratorProfile{
-				OrchestratorRelease: orch.OrchestratorRelease,
 				OrchestratorVersion: orch.OrchestratorVersion,
 			},
 			Name:     agent.Name,
@@ -163,7 +160,6 @@ func getUpgradesV20170930(orch *OrchestratorVersionProfile, allowCurrentVersionU
 		for i, h := range orch.Upgrades {
 			upgrades[i] = &v20170930.OrchestratorProfile{
 				OrchestratorType:    orch.OrchestratorType,
-				OrchestratorRelease: h.OrchestratorRelease,
 				OrchestratorVersion: h.OrchestratorVersion,
 			}
 		}
@@ -172,7 +168,6 @@ func getUpgradesV20170930(orch *OrchestratorVersionProfile, allowCurrentVersionU
 	if allowCurrentVersionUpgrade {
 		upgrades = append(upgrades, &v20170930.OrchestratorProfile{
 			OrchestratorType:    orch.OrchestratorType,
-			OrchestratorRelease: orch.OrchestratorRelease,
 			OrchestratorVersion: common.KubeReleaseToVersion[orch.OrchestratorRelease]})
 	}
 	return upgrades
