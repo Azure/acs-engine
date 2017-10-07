@@ -48,7 +48,8 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 	masterOffset, _ := templateVariables["masterCount"]
 	log.Infoln(fmt.Sprintf("Master pool set count to: %v temporarily during upgrade...", masterOffset))
 
-	WriteTemplate(kmn.Translator, kmn.UpgradeContainerService, kmn.TemplateMap, kmn.ParametersMap)
+	// Debug function - keep commented out
+	// WriteTemplate(kmn.Translator, kmn.UpgradeContainerService, kmn.TemplateMap, kmn.ParametersMap)
 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	deploymentSuffix := random.Int31()
