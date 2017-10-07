@@ -27,33 +27,30 @@ func init() {
 func (o *OrchestratorProfile) Validate() error {
 	// Don't need to call validate.Struct(o)
 	// It is handled by Properties.Validate()
+
 	switch o.OrchestratorType {
 	case DCOS:
-		switch o.OrchestratorVersion {
-		case common.DCOSVersion1Dot10Dot0:
-		case common.DCOSVersion1Dot9Dot0:
-		case common.DCOSVersion1Dot8Dot8:
-		case "":
-		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
+		version := common.RationalizeReleaseAndVersion(
+			o.OrchestratorType,
+			o.OrchestratorRelease,
+			o.OrchestratorVersion)
+		if version == "" {
+			return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 		}
-
 	case Swarm:
 	case SwarmMode:
 
 	case Kubernetes:
-		switch o.OrchestratorVersion {
-		case common.KubernetesVersion1Dot8Dot0:
-		case common.KubernetesVersion1Dot7Dot7:
-		case common.KubernetesVersion1Dot6Dot11:
-		case common.KubernetesVersion1Dot5Dot8:
-		case "":
-		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator versions: %s", o.OrchestratorVersion)
+		version := common.RationalizeReleaseAndVersion(
+			o.OrchestratorType,
+			o.OrchestratorRelease,
+			o.OrchestratorVersion)
+		if version == "" {
+			return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 		}
 
 		if o.KubernetesConfig != nil {
-			err := o.KubernetesConfig.Validate(o.OrchestratorVersion)
+			err := o.KubernetesConfig.Validate(version)
 			if err != nil {
 				return err
 			}

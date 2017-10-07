@@ -1,8 +1,11 @@
 package api
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/Masterminds/semver"
 
 	"github.com/Azure/acs-engine/pkg/api/upgrade/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
@@ -619,6 +622,8 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 	o.OrchestratorType = api.OrchestratorType
 	if api.OrchestratorVersion != "" {
 		o.OrchestratorVersion = api.OrchestratorVersion
+		sv, _ := semver.NewVersion(o.OrchestratorVersion)
+		o.OrchestratorRelease = fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
 	}
 
 	if api.KubernetesConfig != nil {

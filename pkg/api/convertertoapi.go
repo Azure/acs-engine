@@ -3,6 +3,7 @@ package api
 import (
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/upgrade/v20170930"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
@@ -582,24 +583,19 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 			api.KubernetesConfig = &KubernetesConfig{}
 			convertVLabsKubernetesConfig(vlabscs.KubernetesConfig, api.KubernetesConfig)
 		}
-
-		switch vlabscs.OrchestratorVersion {
-		case KubernetesVersion1Dot8Dot0, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
-			api.OrchestratorVersion = vlabscs.OrchestratorVersion
-		default:
-			api.OrchestratorVersion = KubernetesDefaultVersion
-		}
+		api.OrchestratorVersion = common.RationalizeReleaseAndVersion(
+			vlabscs.OrchestratorType,
+			vlabscs.OrchestratorRelease,
+			vlabscs.OrchestratorVersion)
 	case DCOS:
 		if vlabscs.DcosConfig != nil {
 			api.DcosConfig = &DcosConfig{}
 			convertVLabsDcosConfig(vlabscs.DcosConfig, api.DcosConfig)
 		}
-		switch vlabscs.OrchestratorVersion {
-		case DCOSVersion1Dot10Dot0, DCOSVersion1Dot9Dot0, DCOSVersion1Dot8Dot8:
-			api.OrchestratorVersion = vlabscs.OrchestratorVersion
-		default:
-			api.OrchestratorVersion = DCOSDefaultVersion
-		}
+		api.OrchestratorVersion = common.RationalizeReleaseAndVersion(
+			vlabscs.OrchestratorType,
+			vlabscs.OrchestratorRelease,
+			vlabscs.OrchestratorVersion)
 	}
 }
 
