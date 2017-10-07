@@ -103,17 +103,16 @@ func RationalizeReleaseAndVersion(orchType, orchRel, orchVer string) (version st
 			}
 		}
 		return version
-	} else {
-		// Try to get latest version matching the release
-		version = ""
-		for _, ver := range supportedVersions {
-			sv, _ := semver.NewVersion(ver)
-			sr := fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
-			if sr == orchRel && ver == orchVer {
-				version = ver
-				break
-			}
-		}
-		return version
 	}
+	// Try to get latest version matching the release
+	version = ""
+	for _, ver := range supportedVersions {
+		sv, _ := semver.NewVersion(ver)
+		sr := fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+		if sr == orchRel && ver == orchVer {
+			version = ver
+			break
+		}
+	}
+	return version
 }
