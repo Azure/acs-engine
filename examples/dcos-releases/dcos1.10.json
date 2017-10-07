@@ -3,7 +3,7 @@
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "DCOS",
-      "orchestratorVersion": "1.10.0"
+      "orchestratorRelease": "1.10"
     },
     "masterProfile": {
       "count": 3,
