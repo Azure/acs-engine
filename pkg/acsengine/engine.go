@@ -96,10 +96,11 @@ const (
 )
 
 var kubernetesManifestYamls = map[string]string{
-	"MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR":          "kubernetesmaster-kube-scheduler.yaml",
-	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetesmaster-kube-controller-manager.yaml",
-	"MASTER_KUBERNETES_APISERVER_B64_GZIP_STR":          "kubernetesmaster-kube-apiserver.yaml",
-	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":      "kubernetesmaster-kube-addon-manager.yaml",
+	"MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR":                "kubernetesmaster-kube-scheduler.yaml",
+	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR":       "kubernetesmaster-kube-controller-manager.yaml",
+	"MASTER_KUBERNETES_CLOUD_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetesmaster-cloud-controller-manager.yaml",
+	"MASTER_KUBERNETES_APISERVER_B64_GZIP_STR":                "kubernetesmaster-kube-apiserver.yaml",
+	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":            "kubernetesmaster-kube-addon-manager.yaml",
 }
 
 var kubernetesAritfacts = map[string]string{
@@ -543,6 +544,16 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		if properties.HostedMasterProfile != nil && properties.HostedMasterProfile.FQDN != "" {
 			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)
 		}
+
+		if properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager {
+			kubernetesCcmSpec := properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["ccm"]
+			if properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage != "" {
+				kubernetesCcmSpec = properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage
+			}
+
+			addValue(parametersMap, "kubernetesCcmImageSpec", kubernetesCcmSpec)
+		}
+
 		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
 		addValue(parametersMap, "kubeDNSServiceIP", properties.OrchestratorProfile.KubernetesConfig.DNSServiceIP)
 		addValue(parametersMap, "kubeServiceCidr", properties.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
@@ -1386,6 +1397,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				}
 			}
 			return fmt.Sprintf("\"defaultValue\": \"%s\",", val)
+		},
+		"UseCloudControllerManager": func() bool {
+			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager
 		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {

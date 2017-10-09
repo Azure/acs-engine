@@ -9,7 +9,8 @@ import (
 // KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes versions (major.minor.patch)
 var KubeConfigs = map[string]map[string]string{
 	common.KubernetesVersion1Dot8Dot2: {
-		"hyperkube":                 "hyperkube-amd64:v1.8.2",
+		"hyperkube": "hyperkube-amd64:v1.8.2",
+		"ccm":       "cloud-controller-manager-amd64:v1.8.2",
 		DefaultDashboardAddonName:   "kubernetes-dashboard-amd64:v1.7.1",
 		"exechealthz":               "exechealthz-amd64:1.2",
 		"addonresizer":              "addon-resizer:1.7",
@@ -35,7 +36,8 @@ var KubeConfigs = map[string]map[string]string{
 		"gclowthreshold":            strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 	common.KubernetesVersion1Dot8Dot1: {
-		"hyperkube":                 "hyperkube-amd64:v1.8.1",
+		"hyperkube": "hyperkube-amd64:v1.8.1",
+		"ccm":       "cloud-controller-manager-amd64:v1.8.1",
 		DefaultDashboardAddonName:   "kubernetes-dashboard-amd64:v1.7.1",
 		"exechealthz":               "exechealthz-amd64:1.2",
 		"addonresizer":              "addon-resizer:1.7",
@@ -61,7 +63,8 @@ var KubeConfigs = map[string]map[string]string{
 		"gclowthreshold":            strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 	common.KubernetesVersion1Dot8Dot0: {
-		"hyperkube":                 "hyperkube-amd64:v1.8.0",
+		"hyperkube": "hyperkube-amd64:v1.8.0",
+		"ccm":       "cloud-controller-manager-amd64:v1.8.0",
 		DefaultDashboardAddonName:   "kubernetes-dashboard-amd64:v1.7.1",
 		"exechealthz":               "exechealthz-amd64:1.2",
 		"addonresizer":              "addon-resizer:1.7",
