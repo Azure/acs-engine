@@ -109,7 +109,7 @@
       "type": "string"
     },
     "fqdnEndpointSuffix":{
-      "defaultValue": "%s.%s.cloudapp.azure.com",
+      "defaultValue": "cloudapp.azure.com",
       "metadata": {
         "description": "Endpoint of FQDN."
       },
