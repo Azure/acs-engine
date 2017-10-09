@@ -143,7 +143,6 @@ func (a *Apiloader) LoadContainerService(
 				return nil, e
 			}
 		}
-		setContainerServiceDefaultsvlabs(containerService)
 		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
@@ -301,10 +300,6 @@ func setContainerServiceDefaultsv20170701(c *v20170701.ContainerService) {
 	if c.Properties.OrchestratorProfile != nil {
 		c.Properties.OrchestratorProfile.OrchestratorVersion = ""
 	}
-}
-
-// Sets default container service property values for any appropriate zero values
-func setContainerServiceDefaultsvlabs(c *vlabs.ContainerService) {
 }
 
 // Sets default HostedMaster property values for any appropriate zero values
