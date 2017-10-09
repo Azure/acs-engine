@@ -134,6 +134,26 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
+  dcos-pr-e2e:
+    working_directory: /go/src/github.com/Azure/acs-engine
+    docker:
+      - image: quay.io/deis/go-dev:v1.2.0
+        environment:
+          GOPATH: /go
+    steps:
+      - checkout
+      - run: |
+          echo 'export CLUSTER_DEFINITION=examples/dcos.json' >> $BASH_ENV
+          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+      - run:
+          name: ginkgo dcos e2e tests
+          command: make build-binary test-dcos
+          no_output_timeout: "30m"
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_logs
+      - store_artifacts:
+          path: /go/src/github.com/Azure/acs-engine/_output          
   k8s-1.6-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
@@ -458,6 +478,12 @@ workflows:
           filters:
             branches:
               ignore: master
+      - dcos-pr-e2e:
+          requires:
+            - pr-e2e-hold
+          filters:
+            branches:
+              ignore: master              
       - k8s-1.6-release-e2e:
           requires:
             - pr-e2e-hold
