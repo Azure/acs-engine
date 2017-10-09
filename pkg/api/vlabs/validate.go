@@ -397,6 +397,12 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		}
 	}
 
+	if a.NonMasqueradeCidr != "" {
+		if _, _, err := net.ParseCIDR(a.NonMasqueradeCidr); err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr '%s' is an invalid CIDR string", a.NonMasqueradeCidr)
+		}
+	}
+
 	if a.MaxPods != 0 {
 		if a.MaxPods < KubernetesMinMaxPods {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.MaxPods '%v' must be at least %v", a.MaxPods, KubernetesMinMaxPods)
