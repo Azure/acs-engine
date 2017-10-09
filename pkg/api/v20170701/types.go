@@ -196,12 +196,10 @@ type PoolUpgradeProfile struct {
 	Upgrades []*OrchestratorProfile `json:"upgrades,omitempty"`
 }
 
-// UpgradeProfile contains cluster properties:
-//  - orchestrator type and version for the cluster
-//  - list of pool profiles, constituting the cluster
+// UpgradeProfile contains master and agent pools upgrade profiles
 type UpgradeProfile struct {
-	ControlPlaneProfile *PoolUpgradeProfile   `json:"controlPlaneProfile"`
-	AgentPoolProfiles   []*PoolUpgradeProfile `json:"agentPoolProfiles"`
+	MasterPoolProfile *PoolUpgradeProfile   `json:"masterPoolProfile"`
+	AgentPoolProfiles []*PoolUpgradeProfile `json:"agentPoolProfiles"`
 }
 
 // UnmarshalJSON unmarshal json using the default behavior

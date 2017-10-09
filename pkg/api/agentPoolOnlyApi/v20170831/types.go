@@ -106,9 +106,7 @@ type PoolUpgradeProfile struct {
 	Upgrades          []*string `json:"upgrades,omitempty"`
 }
 
-// UpgradeProfile contains cluster properties:
-//  - orchestrator type and version for the cluster
-//  - list of pool profiles, constituting the cluster
+// UpgradeProfile contains controlPlane and agent pools upgrade profiles
 type UpgradeProfile struct {
 	ControlPlaneProfile *PoolUpgradeProfile   `json:"controlPlaneProfile"`
 	AgentPoolProfiles   []*PoolUpgradeProfile `json:"agentPoolProfiles"`
