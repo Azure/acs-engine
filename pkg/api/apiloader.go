@@ -305,9 +305,6 @@ func setContainerServiceDefaultsv20170701(c *v20170701.ContainerService) {
 
 // Sets default container service property values for any appropriate zero values
 func setContainerServiceDefaultsvlabs(c *vlabs.ContainerService) {
-	if c.Properties.OrchestratorProfile != nil {
-		c.Properties.OrchestratorProfile.OrchestratorVersion = ""
-	}
 }
 
 // Sets default HostedMaster property values for any appropriate zero values
