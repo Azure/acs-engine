@@ -123,7 +123,6 @@ func (a *Apiloader) LoadContainerService(
 				return nil, e
 			}
 		}
-		setContainerServiceDefaultsv20170701(containerService)
 		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
@@ -292,13 +291,6 @@ func setContainerServiceDefaultsv20170131(c *v20170131.ContainerService) {
 		c.Properties.OrchestratorProfile = &v20170131.OrchestratorProfile{
 			OrchestratorType: v20170131.DCOS,
 		}
-	}
-}
-
-// Sets default container service property values for any appropriate zero values
-func setContainerServiceDefaultsv20170701(c *v20170701.ContainerService) {
-	if c.Properties.OrchestratorProfile != nil {
-		c.Properties.OrchestratorProfile.OrchestratorVersion = ""
 	}
 }
 
