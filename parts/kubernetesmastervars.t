@@ -130,12 +130,15 @@
     "subnetName": "[split(parameters('masterVnetSubnetID'), '/')[variables('subnetNameResourceSegmentIndex')]]",
     "vnetNameResourceSegmentIndex": 8,
     "virtualNetworkName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetNameResourceSegmentIndex')]]",
+    "vnetResourceGroupNameResourceSegmentIndex": 4,
+    "virtualNetworkResourceGroupName": "[split(parameters('masterVnetSubnetID'), '/')[variables('vnetResourceGroupNameResourceSegmentIndex')]]",
   {{else}}
     "subnet": "[parameters('masterSubnet')]",
     "subnetName": "[concat(variables('orchestratorName'), '-subnet')]",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
+    "virtualNetworkResourceGroupName": "",
   {{end}}
 {{else}}
     "subnet": "[parameters('masterSubnet')]",
