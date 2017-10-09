@@ -15,14 +15,16 @@ import (
 type Upgrader struct {
 	Translator *i18n.Translator
 	ClusterTopology
-	Client armhelpers.ACSEngineClient
+	Client     armhelpers.ACSEngineClient
+	kubeConfig string
 }
 
 // Init initializes an upgrader struct
-func (ku *Upgrader) Init(translator *i18n.Translator, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient) {
+func (ku *Upgrader) Init(translator *i18n.Translator, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient, kubeConfig string) {
 	ku.Translator = translator
 	ku.ClusterTopology = clusterTopology
 	ku.Client = client
+	ku.kubeConfig = kubeConfig
 }
 
 // RunUpgrade runs the upgrade pipeline
@@ -162,6 +164,14 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 }
 
 func (ku *Upgrader) upgradeAgentPools() error {
+	// Unused until safely drain node is being called
+	// var kubeAPIServerURL string
+	// if ku.DataModel.Properties.MasterProfile != nil {
+	// 	kubeAPIServerURL = ku.DataModel.Properties.MasterProfile.FQDN
+	// }
+	// if ku.DataModel.Properties.HostedMasterProfile != nil {
+	// 	kubeAPIServerURL = ku.DataModel.Properties.HostedMasterProfile.FQDN
+	// }
 	for _, agentPool := range ku.ClusterTopology.AgentPools {
 		// Upgrade Agent VMs
 		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
@@ -216,6 +226,13 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			log.Infoln(fmt.Sprintf("Upgrading Agent VM: %s, pool name: %s", *vm.Name, *agentPool.Name))
 
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
+
+			// Currently in a sinlge node cluster the api server will not be running when this point is reached on the first node so it will always fail.
+			// err := operations.SafelyDrainNode(ku.Client, log.New().WithField("operation", "upgrade"), kubeAPIServerURL, ku.kubeConfig, *vm.Name)
+			// if err != nil {
+			// 	log.Infoln(fmt.Sprintf("Error draining agent VM: %s", *vm.Name))
+			// 	return err
+			// }
 
 			err := upgradeAgentNode.DeleteNode(vm.Name)
 			if err != nil {

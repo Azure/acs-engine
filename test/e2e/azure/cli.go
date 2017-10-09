@@ -169,7 +169,7 @@ func (a *Account) UpdateRouteTables(subnet, vnet string) error {
 		return err
 	}
 	rts := []RouteTable{}
-	err = json.Unmarshal(out, &rts)
+	json.Unmarshal(out, &rts)
 
 	out, err = exec.Command("az", "network", "vnet", "subnet", "update", "-n", subnet, "-g", a.ResourceGroup.Name, "--vnet-name", vnet, "--route-table", rts[0].Name).CombinedOutput()
 	if err != nil {

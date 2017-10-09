@@ -10,8 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func TestScaleDownVMs(t *testing.T) {
-	RunSpecsWithReporters(t, "scaledownagentpool", "Server Suite")
+func TestOperations(t *testing.T) {
+	RunSpecsWithReporters(t, "operations", "Server Suite")
 }
 
 var _ = Describe("Scale down vms operation tests", func() {
