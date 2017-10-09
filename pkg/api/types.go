@@ -140,7 +140,6 @@ const (
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
 	OrchestratorType    string            `json:"orchestratorType"`
-	OrchestratorRelease string            `json:"orchestratorRelease"`
 	OrchestratorVersion string            `json:"orchestratorVersion"`
 	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	DcosConfig          *DcosConfig       `json:"dcosConfig,omitempty"`

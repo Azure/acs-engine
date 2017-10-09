@@ -191,15 +191,15 @@ function get_orchestrator_type() {
 	echo $orchestratorType
 }
 
-function get_orchestrator_release() {
+function get_orchestrator_version() {
 	[[ ! -z "${CLUSTER_DEFINITION:-}" ]] || (echo "Must specify CLUSTER_DEFINITION" && exit -1)
 
-	orchestratorRelease=$(jq -r 'getpath(["properties","orchestratorProfile","orchestratorRelease"])' ${CLUSTER_DEFINITION})
-	if [[ "$orchestratorRelease" == "null" ]]; then
-		orchestratorRelease=""
+	orchestratorVersion=$(jq -r 'getpath(["properties","orchestratorProfile","orchestratorVersion"])' ${CLUSTER_DEFINITION})
+	if [[ "$orchestratorVersion" == "null" ]]; then
+		orchestratorVersion=""
 	fi
 
-	echo $orchestratorRelease
+	echo $orchestratorVersion
 }
 
 function get_api_version() {

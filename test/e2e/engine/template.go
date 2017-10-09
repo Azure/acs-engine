@@ -19,7 +19,7 @@ type Config struct {
 	MasterDNSPrefix       string `envconfig:"DNS_PREFIX"`
 	PublicSSHKey          string `envconfig:"PUBLIC_SSH_KEY"`
 	WindowsAdminPasssword string `envconfig:"WINDOWS_ADMIN_PASSWORD"`
-	OrchestratorRelease   string `envconfig:"ORCHESTRATOR_RELEASE"`
+	OrchestratorVersion   string `envconfig:"ORCHESTRATOR_VERSION"`
 	OutputDirectory       string `envconfig:"OUTPUT_DIR" default:"_output"`
 
 	ClusterDefinitionPath     string // The original template we want to use to build the cluster from.
@@ -86,8 +86,8 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 		cs.ContainerService.Properties.WindowsProfile.AdminPassword = config.WindowsAdminPasssword
 	}
 
-	if config.OrchestratorRelease != "" {
-		cs.ContainerService.Properties.OrchestratorProfile.OrchestratorRelease = config.OrchestratorRelease
+	if config.OrchestratorVersion != "" {
+		cs.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion = config.OrchestratorVersion
 	}
 
 	if cfg.CreateVNET {
