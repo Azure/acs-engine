@@ -18,29 +18,29 @@ var _ = Describe("The orchestrators command", func() {
 
 	It("should fail on unprovided orchestrator", func() {
 		command := &orchestratorsCmd{
-			release: "1.1",
+			version: "1.1.1",
 		}
 
 		err := command.run(nil, nil)
 		Expect(err).NotTo(BeNil())
-		Expect(err.Error()).To(Equal("Must specify orchestrator for release '1.1'"))
+		Expect(err.Error()).To(Equal("Must specify orchestrator for version '1.1.1'"))
 	})
 
-	It("should fail on unsupported release", func() {
+	It("should fail on unsupported version", func() {
 		command := &orchestratorsCmd{
 			orchestrator: "kubernetes",
-			release:      "1.1",
+			version:      "1.1.1",
 		}
 
 		err := command.run(nil, nil)
 		Expect(err).NotTo(BeNil())
-		Expect(err.Error()).To(Equal("Kubernetes release 1.1 is not supported"))
+		Expect(err.Error()).To(Equal("Kubernetes version 1.1.1 is not supported"))
 	})
 
 	It("should succeed", func() {
 		command := &orchestratorsCmd{
 			orchestrator: "kubernetes",
-			release:      "1.7",
+			version:      "1.7.7",
 		}
 
 		err := command.run(nil, nil)

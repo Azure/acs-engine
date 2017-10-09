@@ -33,7 +33,6 @@ func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
 	if err := operations.CleanDeleteVirtualMachine(kan.Client, log.NewEntry(log.New()), kan.ResourceGroup, *vmName); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -49,7 +48,8 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 	templateVariables := kan.TemplateMap["variables"].(map[string]interface{})
 	templateVariables[poolOffsetVarName] = agentNo
 
-	WriteTemplate(kan.Translator, kan.UpgradeContainerService, kan.TemplateMap, kan.ParametersMap)
+	// Debug function - keep commented out
+	// WriteTemplate(kan.Translator, kan.UpgradeContainerService, kan.TemplateMap, kan.ParametersMap)
 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	deploymentSuffix := random.Int31()

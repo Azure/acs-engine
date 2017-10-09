@@ -41,12 +41,8 @@ func convertResourcePurchasePlanToV20170831AgentPoolOnly(api *ResourcePurchasePl
 func convertPropertiesToV20170831AgentPoolOnly(api *Properties, p *v20170831.Properties) {
 	p.ProvisioningState = v20170831.ProvisioningState(api.ProvisioningState)
 	if api.OrchestratorProfile != nil {
-		if api.OrchestratorProfile.OrchestratorRelease != "" {
-			p.KubernetesVersion = api.OrchestratorProfile.OrchestratorVersion
-		}
-
 		if api.OrchestratorProfile.OrchestratorVersion != "" {
-			p.KubernetesRelease = api.OrchestratorProfile.OrchestratorRelease
+			p.KubernetesVersion = api.OrchestratorProfile.OrchestratorVersion
 		}
 	}
 	if api.HostedMasterProfile != nil {

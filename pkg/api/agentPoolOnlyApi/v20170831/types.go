@@ -30,8 +30,7 @@ type ManagedCluster struct {
 // Properties represents the ACS cluster definition
 type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
-	KubernetesVersion       string                   `json:"kubernetesVersion" validate:"len=0"`
-	KubernetesRelease       string                   `json:"kubernetesRelease,omitempty"`
+	KubernetesVersion       string                   `json:"kubernetesVersion"`
 	DNSPrefix               string                   `json:"dnsPrefix" validate:"required"`
 	FQDN                    string                   `json:"fqdn,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
@@ -94,6 +93,24 @@ const (
 	// resource group to another
 	Migrating ProvisioningState = "Migrating"
 )
+
+// PoolUpgradeProfile contains pool properties:
+//  - kubernetes version
+//  - pool name (for agent pool)
+//  - OS type of the VMs in the pool
+//  - list of applicable upgrades
+type PoolUpgradeProfile struct {
+	KubernetesVersion string    `json:"kubernetesVersion"`
+	Name              string    `json:"name,omitempty"`
+	OSType            string    `json:"osType,omitempty"`
+	Upgrades          []*string `json:"upgrades,omitempty"`
+}
+
+// UpgradeProfile contains controlPlane and agent pools upgrade profiles
+type UpgradeProfile struct {
+	ControlPlaneProfile *PoolUpgradeProfile   `json:"controlPlaneProfile"`
+	AgentPoolProfiles   []*PoolUpgradeProfile `json:"agentPoolProfiles"`
+}
 
 // AgentPoolProfile represents configuration of VMs running agent
 // daemons that register with the master and offer resources to

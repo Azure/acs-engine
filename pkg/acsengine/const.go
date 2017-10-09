@@ -21,6 +21,8 @@ const (
 	DefaultKubernetesClusterSubnet = "10.244.0.0/16"
 	// DefaultDockerBridgeSubnet specifies the default subnet for the docker bridge network for masters and agents.
 	DefaultDockerBridgeSubnet = "172.17.0.1/16"
+	// DefaultNonMasqueradeCidr specifies the subnet that should not be masqueraded on host
+	DefaultNonMasqueradeCidr = "10.0.0.0/8"
 	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
 	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
 	// DefaultAgentSubnetTemplate specifies a default agent subnet
@@ -67,7 +69,7 @@ const (
 	// DefaultKubernetesCloudProviderRateLimitBucket is 10, takes effect if DefaultKubernetesCloudProviderRateLimit is true
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
 	// DefaultTillerImage defines the Helm Tiller deployment version on Kubernetes Clusters
-	DefaultTillerImage = "tiller:v2.6.1"
+	DefaultTillerImage = "tiller:v2.6.2"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
 	// listens on by default. must by in the default Service CIDR range.
 	DefaultKubernetesDNSServiceIP = "10.0.0.10"
@@ -89,10 +91,9 @@ const (
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
 
-// KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes releases (major.minor)
-// For instance, Kubernetes release "1.7" would contain the version "1.7.2"
+// KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes versions (major.minor.patch)
 var KubeConfigs = map[string]map[string]string{
-	api.KubernetesRelease1Dot8: {
+	api.KubernetesVersion1Dot8Dot0: {
 		"hyperkube":       "hyperkube-amd64:v1.8.0",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.7.0",
 		"exechealthz":     "exechealthz-amd64:1.2",
@@ -117,7 +118,7 @@ var KubeConfigs = map[string]map[string]string{
 		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
-	api.KubernetesRelease1Dot7: {
+	api.KubernetesVersion1Dot7Dot7: {
 		"hyperkube":       "hyperkube-amd64:v1.7.7",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
 		"exechealthz":     "exechealthz-amd64:1.2",
@@ -142,7 +143,7 @@ var KubeConfigs = map[string]map[string]string{
 		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
-	api.KubernetesRelease1Dot6: {
+	api.KubernetesVersion1Dot6Dot11: {
 		"hyperkube":       "hyperkube-amd64:v1.6.11",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
 		"exechealthz":     "exechealthz-amd64:1.2",
@@ -167,7 +168,7 @@ var KubeConfigs = map[string]map[string]string{
 		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
 		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
-	api.KubernetesRelease1Dot5: {
+	api.KubernetesVersion1Dot5Dot8: {
 		"hyperkube":       "hyperkube-amd64:v1.5.8",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.5.1",
 		"exechealthz":     "exechealthz-amd64:1.2",

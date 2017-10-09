@@ -141,8 +141,8 @@ const (
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
 	OrchestratorType    string            `json:"orchestratorType" validate:"required"`
-	OrchestratorRelease string            `json:"orchestratorRelease"`
-	OrchestratorVersion string            `json:"orchestratorVersion" validate:"len=0"`
+	OrchestratorRelease string            `json:"orchestratorRelease,omitempty"`
+	OrchestratorVersion string            `json:"orchestratorVersion,omitempty"`
 	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	DcosConfig          *DcosConfig       `json:"dcosConfig,omitempty"`
 }
@@ -182,8 +182,9 @@ type KubernetesConfig struct {
 	DNSServiceIP                     string  `json:"dnsServiceIP,omitempty"`
 	ServiceCidr                      string  `json:"serviceCidr,omitempty"`
 	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
+	NonMasqueradeCidr                string  `json:"nonMasqueradeCidr,omitempty"`
 	MaxPods                          int     `json:"maxPods,omitempty"`
-	DockerBridgeSubnet               string  `json:"DockerBridgeSubnet,omitempty"`
+	DockerBridgeSubnet               string  `json:"dockerBridgeSubnet,omitempty"`
 	NodeStatusUpdateFrequency        string  `json:"nodeStatusUpdateFrequency,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string  `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string  `json:"ctrlMgrPodEvictionTimeout,omitempty"`
