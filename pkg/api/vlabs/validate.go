@@ -27,7 +27,6 @@ func init() {
 func (o *OrchestratorProfile) Validate() error {
 	// Don't need to call validate.Struct(o)
 	// It is handled by Properties.Validate()
-
 	switch o.OrchestratorType {
 	case DCOS:
 		version := common.RationalizeReleaseAndVersion(
@@ -39,7 +38,6 @@ func (o *OrchestratorProfile) Validate() error {
 		}
 	case Swarm:
 	case SwarmMode:
-
 	case Kubernetes:
 		version := common.RationalizeReleaseAndVersion(
 			o.OrchestratorType,

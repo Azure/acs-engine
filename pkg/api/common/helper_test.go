@@ -39,4 +39,9 @@ func Test_RationalizeReleaseAndVersion(t *testing.T) {
 		t.Errorf("It is not empty string")
 	}
 
+	version = RationalizeReleaseAndVersion(Kubernetes, "", "1.5.8")
+	if version != "1.5.8" {
+		t.Errorf("It is not 1.5.8")
+	}
+
 }

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/Azure/acs-engine/test/e2e/engine"
 
@@ -54,11 +54,11 @@ var _ = Describe("Azure Container Cluster using the DCOS Orchestrator", func() {
 			version, err := cluster.Version()
 			Expect(err).NotTo(HaveOccurred())
 
-			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease != "" {
-				Expect(version).To(MatchRegexp(api.DCOSReleaseToVersion[eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease]))
-			} else {
-				Expect(version).To(Equal(api.DCOSReleaseToVersion[api.DCOSDefaultRelease]))
-			}
+			expectedVersion := common.RationalizeReleaseAndVersion(
+				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorType,
+				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
+				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion)
+			Expect(version).To(Equal(expectedVersion))
 		})
 
 		It("should be able to install marathon", func() {
