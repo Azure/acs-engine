@@ -113,27 +113,6 @@ func GetOrchestratorVersionProfile(orch *OrchestratorProfile) (*OrchestratorVers
 	return arr[0], nil
 }
 
-func getUpgradesV20170930(orch *OrchestratorVersionProfile, allowCurrentVersionUpgrade bool) []*v20170930.OrchestratorProfile {
-	var upgrades []*v20170930.OrchestratorProfile
-	if orch.Upgrades != nil {
-		upgrades = make([]*v20170930.OrchestratorProfile, len(orch.Upgrades))
-		for i, h := range orch.Upgrades {
-			upgrades[i] = &v20170930.OrchestratorProfile{
-				OrchestratorType:    orch.OrchestratorType,
-				OrchestratorVersion: h.OrchestratorVersion,
-			}
-		}
-	}
-	// add current version if upgrade has failed
-	if allowCurrentVersionUpgrade {
-		upgrades = append(upgrades, &v20170930.OrchestratorProfile{
-			OrchestratorType:    orch.OrchestratorType,
-			OrchestratorVersion: orch.OrchestratorVersion,
-		})
-	}
-	return upgrades
-}
-
 func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {
 	orchs := []*OrchestratorVersionProfile{}
 	if csOrch.OrchestratorVersion == "" {
