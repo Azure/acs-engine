@@ -94,6 +94,24 @@ const (
 	Migrating ProvisioningState = "Migrating"
 )
 
+// PoolUpgradeProfile contains pool properties:
+//  - kubernetes version
+//  - pool name (for agent pool)
+//  - OS type of the VMs in the pool
+//  - list of applicable upgrades
+type PoolUpgradeProfile struct {
+	KubernetesVersion string    `json:"kubernetesVersion"`
+	Name              string    `json:"name,omitempty"`
+	OSType            string    `json:"osType,omitempty"`
+	Upgrades          []*string `json:"upgrades,omitempty"`
+}
+
+// UpgradeProfile contains controlPlane and agent pools upgrade profiles
+type UpgradeProfile struct {
+	ControlPlaneProfile *PoolUpgradeProfile   `json:"controlPlaneProfile"`
+	AgentPoolProfiles   []*PoolUpgradeProfile `json:"agentPoolProfiles"`
+}
+
 // AgentPoolProfile represents configuration of VMs running agent
 // daemons that register with the master and offer resources to
 // host applications in containers.

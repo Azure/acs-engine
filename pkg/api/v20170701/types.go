@@ -184,6 +184,24 @@ type AgentPoolProfile struct {
 	subnet string
 }
 
+// PoolUpgradeProfile contains pool properties:
+//  - orchestrator type and version
+//  - pool name (for agent pool)
+//  - OS type of the VMs in the pool
+//  - list of applicable upgrades
+type PoolUpgradeProfile struct {
+	OrchestratorProfile
+	Name     string                 `json:"name,omitempty"`
+	OSType   string                 `json:"osType,omitempty"`
+	Upgrades []*OrchestratorProfile `json:"upgrades,omitempty"`
+}
+
+// UpgradeProfile contains master and agent pools upgrade profiles
+type UpgradeProfile struct {
+	MasterPoolProfile *PoolUpgradeProfile   `json:"masterPoolProfile"`
+	AgentPoolProfiles []*PoolUpgradeProfile `json:"agentPoolProfiles"`
+}
+
 // UnmarshalJSON unmarshal json using the default behavior
 // And do fields manipulation, such as populating default value
 func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
