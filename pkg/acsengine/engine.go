@@ -232,7 +232,7 @@ func InitializeTemplateGenerator(ctx Context, classicMode bool) (*TemplateGenera
 
 // GenerateTemplate generates the template from the API Model
 func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
-	// named return values are used in order to set err in case of a panic
+	// named return values are used in order to set err in case of a.OrchestratorProfile.panic
 	templateRaw = ""
 	parametersRaw = ""
 	err = nil

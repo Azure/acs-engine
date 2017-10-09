@@ -9,6 +9,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
 	"github.com/Azure/acs-engine/pkg/api/v20170701"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+	"github.com/Masterminds/semver"
 )
 
 // TypeMeta describes an individual API model object
@@ -185,6 +186,7 @@ type KubernetesConfig struct {
 	EnableAggregatedAPIs             bool    `json:"enableAggregatedAPIs,omitempty"`
 	GCHighThreshold                  int     `json:"gchighthreshold,omitempty"`
 	GCLowThreshold                   int     `json:"gclowthreshold,omitempty"`
+	EtcdVersion                      string  `json:"etcdVersion,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS
@@ -532,4 +534,20 @@ func (o *OrchestratorProfile) IsVNETIntegrated() bool {
 // HasAadProfile  returns true if the has aad profile
 func (p *Properties) HasAadProfile() bool {
 	return p.AADProfile != nil
+}
+
+// IsCustomEtcdVersion Checks if etcd version is NOT default 2.5.2
+func (o *OrchestratorProfile) IsCustomEtcdVersion() bool {
+	return "2.5.2" != o.KubernetesConfig.EtcdVersion
+}
+
+// GetAPIServerEtcdAPIVersion Used to set apiserver's etcdapi version
+func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
+	// if we are here, version has already been validated..
+	etcdversion, _ := semver.NewVersion(o.KubernetesConfig.EtcdVersion)
+	if 2 == etcdversion.Major() {
+		return "etcd2"
+	}
+	return "etcd3"
+
 }

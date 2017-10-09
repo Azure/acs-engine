@@ -15,13 +15,26 @@ import (
 )
 
 var (
-	validate        *validator.Validate
-	keyvaultIDRegex *regexp.Regexp
+	validate          *validator.Validate
+	keyvaultIDRegex   *regexp.Regexp
+	etcdValidVersions = [...]string{"2.5.2", "3.2.0"}
 )
 
 func init() {
 	validate = validator.New()
 	keyvaultIDRegex = regexp.MustCompile(`^/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/[^/\s]+$`)
+}
+
+func isValidEtcdVersion(etcdVersion string) error {
+	validVersions := ""
+	for _, ver := range etcdValidVersions {
+		if ver == etcdVersion {
+			return nil
+		}
+		validVersions = fmt.Sprintf("%s %s", validVersions, ver)
+	}
+
+	return fmt.Errorf("Invalid etcd version, valid versions are%s", validVersions)
 }
 
 // Validate implements APIObject
@@ -510,6 +523,11 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 		if firstServiceIP.Equal(dnsIP) {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DNSServiceIP '%s' cannot be the first IP of ServiceCidr '%s'", a.DNSServiceIP, a.ServiceCidr)
 		}
+	}
+
+	// Validate that we have a valid etcd version
+	if e := isValidEtcdVersion(a.EtcdVersion); e != nil {
+		return e
 	}
 
 	return nil
