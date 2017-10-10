@@ -358,7 +358,7 @@ write_files:
     User=etcd
     PermissionsStartOnly=true
     ExecStart=/usr/bin/etcd $DAEMON_ARGS
-    Restart=on-abnormal
+    Restart=always
     [Install]
     WantedBy=multi-user.target
     Alias=etcd.service

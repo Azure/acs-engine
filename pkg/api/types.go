@@ -549,5 +549,4 @@ func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
 		return "etcd2"
 	}
 	return "etcd3"
-
 }

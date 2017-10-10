@@ -32,8 +32,7 @@ func isValidEtcdVersion(etcdVersion string) error {
 		}
 		validVersions = fmt.Sprintf("%s %s", validVersions, ver)
 	}
-
-	return fmt.Errorf("Invalid etcd version, valid versions are%s", validVersions)
+	return fmt.Errorf("Invalid etcd version(%s), valid versions are%s", etcdVersion, validVersions)
 }
 
 // Validate implements APIObject
