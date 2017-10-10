@@ -1,5 +1,5 @@
-hash: cc56b497256a351a3ec05accf4489f4ceffcb9ab1a7cc4c6e47c598c98811f95
-updated: 2017-10-03T21:20:33.6824085Z
+hash: e54c3fabaa2a79b06772f745c5483d26ec587d122e1fdbcf7c80b6c1e56bfd5b
+updated: 2017-10-09T13:13:09.911374-07:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -79,7 +79,7 @@ imports:
 - name: github.com/howeyc/gopass
   version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
 - name: github.com/imdario/mergo
-  version: 3e95a51e0639b4cf372f2ccf74c86749d747fbdc
+  version: 7fe0c75c13abdee74b09fcacef5ea1c6bba6a874
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/JiangtianLi/gettext
@@ -171,7 +171,7 @@ imports:
   - ssh
   - ssh/terminal
 - name: golang.org/x/net
-  version: 0a9397675ba34b2845f758fe3cd68828369c6517
+  version: a04bdaca5b32abe1c069418fb7088ae607de5bd0
   repo: https://github.com/golang/net.git
   vcs: git
   subpackages:
@@ -191,7 +191,7 @@ imports:
   - windows/registry
   - windows/svc/eventlog
 - name: golang.org/x/text
-  version: 1cbadb444a806fd9430d14ad08967ed91da4fa0a
+  version: 825fc78a2fd6fa0a5447e300189e3219e05e1f25
   repo: https://github.com/golang/text.git
   vcs: git
   subpackages:
@@ -227,7 +227,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
+  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
 - name: k8s.io/apimachinery
   version: 1fd2e63a9a370677308a42f24fd40c86438afddf
   subpackages:
