@@ -100,7 +100,7 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatal("--deployment-dir must be specified")
 	}
 
-	_, err = uc.client.EnsureResourceGroup(uc.resourceGroupName, uc.location)
+	_, err = uc.client.EnsureResourceGroup(uc.resourceGroupName, uc.location, nil)
 	if err != nil {
 		log.Fatalln(err)
 	}

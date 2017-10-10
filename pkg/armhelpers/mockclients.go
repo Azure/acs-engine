@@ -126,7 +126,7 @@ func (mc *MockACSEngineClient) DeployTemplate(resourceGroup, name string, templa
 }
 
 //EnsureResourceGroup mock
-func (mc *MockACSEngineClient) EnsureResourceGroup(resourceGroup, location string) (*resources.Group, error) {
+func (mc *MockACSEngineClient) EnsureResourceGroup(resourceGroup, location string, managedBy *string) (*resources.Group, error) {
 	if mc.FailEnsureResourceGroup {
 		return nil, fmt.Errorf("EnsureResourceGroup failed")
 	}
