@@ -372,9 +372,9 @@ write_files:
     # We download it and set it up here 
     set -x
     ETCD_VER=v{{ .OrchestratorProfile.KubernetesConfig.EtcdVersion }}
-    DOWNLOAD_URL=https://github.com/coreos/etcd/releases/download # we default to github
+    DOWNLOAD_URL=https://acs-mirror.azureedge.net/github-coreos # we use mirror to github
     mkdir -p /tmp/etcd-download
-    curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+    curl -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
     #create etcd user
     useradd -U "etcd"
