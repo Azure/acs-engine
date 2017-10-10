@@ -138,7 +138,7 @@
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
-    "virtualNetworkResourceGroupName": "",
+    "virtualNetworkResourceGroupName": "''",
   {{end}}
 {{else}}
     "subnet": "[parameters('masterSubnet')]",
