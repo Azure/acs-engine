@@ -145,16 +145,66 @@ func (c *Cluster) InstallDCOSClient() error {
 	return nil
 }
 
-// NodeCount will return the node count for a dcos cluster
-func (c *Cluster) NodeCount() (int, error) {
+// WaitForNodes will return an false if the nodes never become healthy
+func (c *Cluster) WaitForNodes(nodeCount int, sleep, duration time.Duration) bool {
+	readyCh := make(chan bool, 1)
+	errCh := make(chan error)
+	ctx, cancel := context.WithTimeout(context.Background(), duration)
+	defer cancel()
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for nodes to become ready", duration.String())
+			default:
+				nodes, err := c.GetNodes()
+				ready := true
+				if err == nil {
+					for _, n := range nodes {
+						if n.Health != 0 {
+							ready = false
+						}
+					}
+				}
+				if ready {
+					readyCh <- true
+				}
+				time.Sleep(sleep)
+			}
+		}
+	}()
+	for {
+		select {
+		case <-errCh:
+			return false
+		case ready := <-readyCh:
+			return ready
+		}
+	}
+}
+
+// GetNodes will return a []Node for a given cluster
+func (c *Cluster) GetNodes() ([]Node, error) {
 	out, err := c.Connection.Execute("curl -s http://localhost:1050/system/health/v1/nodes")
+	if err != nil {
+		return nil, err
+	}
 	list := List{}
 	err = json.Unmarshal(out, &list)
 	if err != nil {
 		log.Printf("Error while trying to unmarshall json:%s\n JSON:%s\n", err, out)
+		return nil, err
+	}
+	return list.Nodes, nil
+}
+
+// NodeCount will return the node count for a dcos cluster
+func (c *Cluster) NodeCount() (int, error) {
+	nodes, err := c.GetNodes()
+	if err != nil {
 		return 0, err
 	}
-	return len(list.Nodes), nil
+	return len(nodes), nil
 }
 
 // AppCount will determine the number of apps installed
