@@ -106,15 +106,18 @@ type PoolUpgradeProfile struct {
 	Upgrades          []string `json:"upgrades,omitempty"`
 }
 
+// UpgradeProfileProperties contains properties of UpgradeProfile
+type UpgradeProfileProperties struct {
+	ControlPlaneProfile *PoolUpgradeProfile   `json:"controlPlaneProfile"`
+	AgentPoolProfiles   []*PoolUpgradeProfile `json:"agentPoolProfiles"`
+}
+
 // UpgradeProfile contains controlPlane and agent pools upgrade profiles
 type UpgradeProfile struct {
-	ID         string `json:"id,omitempty"`
-	Name       string `json:"name,omitempty"`
-	Type       string `json:"type,omitempty"`
-	Properties struct {
-		ControlPlaneProfile *PoolUpgradeProfile   `json:"controlPlaneProfile"`
-		AgentPoolProfiles   []*PoolUpgradeProfile `json:"agentPoolProfiles"`
-	} `json:"properties"`
+	ID         string                   `json:"id,omitempty"`
+	Name       string                   `json:"name,omitempty"`
+	Type       string                   `json:"type,omitempty"`
+	Properties UpgradeProfileProperties `json:"properties"`
 }
 
 // AgentPoolProfile represents configuration of VMs running agent
