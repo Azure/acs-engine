@@ -89,4 +89,9 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	orch, e = GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
 	Expect(len(orch.Upgrades)).To(Equal(0))
+
+	// v20170930
+	list, e := GetOrchestratorVersionProfileListV20170930("", "")
+	Expect(e).To(BeNil())
+	Expect(len(list.Properties.Orchestrators)).NotTo(Equal(0))
 }

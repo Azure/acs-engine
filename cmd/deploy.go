@@ -192,7 +192,7 @@ func autofillApimodel(dc *deployCmd) {
 		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{{KeyData: publicKey}}
 	}
 
-	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location)
+	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location, nil)
 	if err != nil {
 		log.Fatalln(err)
 	}

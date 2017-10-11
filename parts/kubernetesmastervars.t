@@ -116,6 +116,7 @@
   {{end}}
 {{end}}
     "provisionScript": "{{GetKubernetesB64Provision}}",
+    "mountetcdScript": "{{GetKubernetesB64Mountetcd}}",
     "generateProxyCertsScript": "{{GetKubernetesB64GenerateProxyCerts}}",
     "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
 {{if IsVNETIntegrated}}
@@ -147,6 +148,7 @@
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
+    "virtualNetworkResourceGroupName": "''",
 {{end}}
     "vnetCidr": "[parameters('vnetCidr')]",
     "kubeDNSServiceIP": "[parameters('kubeDNSServiceIP')]",

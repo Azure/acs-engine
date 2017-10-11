@@ -64,9 +64,8 @@ func GetOrchestratorVersionProfileListV20170930(orchestrator, version string) (*
 		return nil, err
 	}
 	orchList := &v20170930.OrchestratorVersionProfileList{}
-	orchList.Orchestrators = []*v20170930.OrchestratorVersionProfile{}
 	for _, orch := range apiOrchs {
-		orchList.Orchestrators = append(orchList.Orchestrators, ConvertOrchestratorVersionProfileToV20170930(orch))
+		orchList.Properties.Orchestrators = append(orchList.Properties.Orchestrators, ConvertOrchestratorVersionProfileToV20170930(orch))
 	}
 	return orchList, nil
 }
