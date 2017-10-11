@@ -17,7 +17,7 @@ var (
 	validate        *validator.Validate
 	keyvaultIDRegex *regexp.Regexp
 	// Any version has to be mirrored in https://acs-mirror.azureedge.net/github-coreos/etcd-v[Version]-linux-amd64.tar.gz
-	etcdValidVersions = [...]string{"2.5.2", "3.2.0"}
+	etcdValidVersions = [...]string{"2.5.2", "3.1.10"}
 )
 
 func init() {
