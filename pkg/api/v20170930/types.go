@@ -24,5 +24,10 @@ type OrchestratorVersionProfile struct {
 
 // OrchestratorVersionProfileList contains list of version profiles for supported orchestrators
 type OrchestratorVersionProfileList struct {
-	Orchestrators []*OrchestratorVersionProfile `json:"orchestrators"`
+	ID         string `json:"id,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Type       string `json:"type,omitempty"`
+	Properties struct {
+		Orchestrators []*OrchestratorVersionProfile `json:"orchestrators"`
+	} `json:"properties"`
 }
