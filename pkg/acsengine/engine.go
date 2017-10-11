@@ -28,6 +28,7 @@ import (
 const (
 	kubernetesMasterCustomDataYaml           = "kubernetesmastercustomdata.yml"
 	kubernetesMasterCustomScript             = "kubernetesmastercustomscript.sh"
+	kubernetesMountetcd                      = "kubernetes_mountetcd.sh"
 	kubernetesMasterGenerateProxyCertsScript = "kubernetesmastergenerateproxycertscript.sh"
 	kubernetesAgentCustomDataYaml            = "kubernetesagentcustomdata.yml"
 	kubeConfigJSON                           = "kubeconfig.json"
@@ -945,6 +946,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetKubernetesB64Provision": func() string {
 			return getBase64CustomScript(kubernetesMasterCustomScript)
+		},
+		"GetKubernetesB64Mountetcd": func() string {
+			return getBase64CustomScript(kubernetesMountetcd)
 		},
 		"GetKubernetesB64GenerateProxyCerts": func() string {
 			return getBase64CustomScript(kubernetesMasterGenerateProxyCertsScript)

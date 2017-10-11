@@ -116,6 +116,7 @@
   {{end}}
 {{end}}
     "provisionScript": "{{GetKubernetesB64Provision}}",
+    "mountetcdScript": "{{GetKubernetesB64Mountetcd}}",
     "generateProxyCertsScript": "{{GetKubernetesB64GenerateProxyCerts}}",
     "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
 {{if IsVNETIntegrated}}
