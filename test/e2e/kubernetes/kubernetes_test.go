@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api"
@@ -65,19 +66,43 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
+		/* The master nodes are hidden behind a load balancer. Therefore, we will create an ssh connection and then continue to reuse that connection for subsequent commands. We will iterate the nodes first to make sure that we ssh onto each host from a given master and then the inner loop will verify that we cannot connect to another master's etcd instance. If we see a "Host key verification failed" error this is an indication that we are trying to ssh onto a host that we are already on. Then we will just execute the etcdctl command locally. */
 		It("should not expose etcd to the internet", func() {
+			hostKeyRegex, err := regexp.Compile("Host key verification failed")
+			Expect(err).NotTo(HaveOccurred())
+
 			nodes, err := node.GetByPrefix("k8s-master")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(nodes)).NotTo(Equal(0))
 
-			for _, n := range nodes {
-				conn := remote.NewConnection(fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location), "22", eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cfg.GetSSHKeyPath())
-				endpoint := fmt.Sprintf("http://%s:2379", n.Status.GetAddressByType("InternalIP").Address)
-				cmd := fmt.Sprintf("etcdctl --endpoint=%s ls /registry/secrets/kube-system", endpoint)
+			conn, err := remote.NewConnection(fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location), "22", eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cfg.GetSSHKeyPath())
+			Expect(err).NotTo(HaveOccurred())
 
-				out, err := conn.Execute(cmd)
-				Expect(err).To(HaveOccurred())
-				Expect(out).To(MatchRegexp("connection refused"))
+			hostname, err := conn.Execute("hostname")
+			Expect(err).NotTo(HaveOccurred())
+			for _, n := range nodes {
+				for _, nprime := range nodes {
+					// I am doing this to validate that we always run these commands from the same host
+					host, err := conn.Execute("hostname")
+					Expect(err).NotTo(HaveOccurred())
+					Expect(hostname).To(Equal(host))
+
+					if n.Metadata.Name != nprime.Metadata.Name {
+						etcdCmd := fmt.Sprintf("etcdctl --endpoint=http://%s:2379 ls /registry/secrets/kube-system", nprime.Status.GetAddressByType("InternalIP").Address)
+						cmd := fmt.Sprintf("ssh %s@%s %s", eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername, n.Metadata.Name, etcdCmd)
+
+						out, err := conn.Execute(cmd)
+						matched := hostKeyRegex.MatchString(string(out))
+						if !matched {
+							Expect(err).To(HaveOccurred())
+							Expect(out).To(MatchRegexp("connection refused"))
+						} else {
+							out, err := conn.Execute(etcdCmd)
+							Expect(err).To(HaveOccurred())
+							Expect(out).To(MatchRegexp("connection refused"))
+						}
+					}
+				}
 			}
 		})
 

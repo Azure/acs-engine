@@ -38,7 +38,8 @@ var _ = BeforeSuite(func() {
 		ClusterDefinition: cs,
 	}
 
-	cluster = NewCluster(&cfg, &eng)
+	cluster, err = NewCluster(&cfg, &eng)
+	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = Describe("Azure Container Cluster using the DCOS Orchestrator", func() {
