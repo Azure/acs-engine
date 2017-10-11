@@ -100,16 +100,24 @@ const (
 //  - OS type of the VMs in the pool
 //  - list of applicable upgrades
 type PoolUpgradeProfile struct {
-	KubernetesVersion string    `json:"kubernetesVersion"`
-	Name              string    `json:"name,omitempty"`
-	OSType            string    `json:"osType,omitempty"`
-	Upgrades          []*string `json:"upgrades,omitempty"`
+	KubernetesVersion string   `json:"kubernetesVersion"`
+	Name              string   `json:"name,omitempty"`
+	OSType            string   `json:"osType,omitempty"`
+	Upgrades          []string `json:"upgrades,omitempty"`
+}
+
+// UpgradeProfileProperties contains properties of UpgradeProfile
+type UpgradeProfileProperties struct {
+	ControlPlaneProfile *PoolUpgradeProfile   `json:"controlPlaneProfile"`
+	AgentPoolProfiles   []*PoolUpgradeProfile `json:"agentPoolProfiles"`
 }
 
 // UpgradeProfile contains controlPlane and agent pools upgrade profiles
 type UpgradeProfile struct {
-	ControlPlaneProfile *PoolUpgradeProfile   `json:"controlPlaneProfile"`
-	AgentPoolProfiles   []*PoolUpgradeProfile `json:"agentPoolProfiles"`
+	ID         string                   `json:"id,omitempty"`
+	Name       string                   `json:"name,omitempty"`
+	Type       string                   `json:"type,omitempty"`
+	Properties UpgradeProfileProperties `json:"properties"`
 }
 
 // AgentPoolProfile represents configuration of VMs running agent
