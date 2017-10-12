@@ -78,10 +78,6 @@ func (a *Properties) Validate() error {
 		return e
 	}
 
-	if a.ServicePrincipalProfile == nil {
-		return fmt.Errorf("missing ServicePrincipalProfile")
-	}
-
 	for _, agentPoolProfile := range a.AgentPoolProfiles {
 		if agentPoolProfile.OSType == Windows {
 			if a.WindowsProfile == nil {
