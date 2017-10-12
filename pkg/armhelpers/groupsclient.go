@@ -9,10 +9,18 @@ import (
 // EnsureResourceGroup ensures the named resouce group exists in the given location.
 func (az *AzureClient) EnsureResourceGroup(name, location string, managedBy *string) (resourceGroup *resources.Group, err error) {
 	log.Debugf("Ensuring resource group exists. resourcegroup=%q", name)
+
+	var tags *map[string]*string
+	group, err := az.groupsClient.Get(name)
+	if err == nil {
+		tags = group.Tags
+	}
+
 	response, err := az.groupsClient.CreateOrUpdate(name, resources.Group{
 		Name:      &name,
 		Location:  &location,
 		ManagedBy: managedBy,
+		Tags:      tags,
 	})
 	if err != nil {
 		return &response, err
