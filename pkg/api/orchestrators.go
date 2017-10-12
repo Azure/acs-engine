@@ -181,6 +181,16 @@ func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, er
 		if ret, err = addPatchUpgrade(ret, csOrch.OrchestratorVersion, common.KubernetesVersion1Dot7Dot7); err != nil {
 			return ret, err
 		}
+		// add next version
+		ret = append(ret, &OrchestratorProfile{
+			OrchestratorType:    Kubernetes,
+			OrchestratorVersion: common.KubernetesVersion1Dot8Dot0,
+		})
+	case strings.HasPrefix(csOrch.OrchestratorVersion, "1.8"):
+		// check for patch upgrade
+		if ret, err = addPatchUpgrade(ret, csOrch.OrchestratorVersion, common.KubernetesVersion1Dot8Dot0); err != nil {
+			return ret, err
+		}
 	}
 	return ret, nil
 }
