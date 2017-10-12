@@ -31,7 +31,7 @@ func (c *Connection) Execute(cmd string) ([]byte, error) {
 	connectString := fmt.Sprintf("%s@%s", c.User, c.Host)
 	out, err := exec.Command("ssh", "-i", c.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", c.Port, cmd).CombinedOutput()
 	if err != nil {
-		return nil, err
+		return out, err
 	}
 	return out, nil
 }

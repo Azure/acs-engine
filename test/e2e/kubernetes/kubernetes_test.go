@@ -16,6 +16,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/service"
+	"github.com/Azure/acs-engine/test/e2e/remote"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -61,6 +62,22 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(version).To(MatchRegexp("v" + eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion))
 			} else {
 				Expect(version).To(Equal("v" + api.KubernetesDefaultVersion))
+			}
+		})
+
+		It("should not expose etcd to the internet", func() {
+			nodes, err := node.GetByPrefix("k8s-master")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(nodes)).NotTo(Equal(0))
+
+			for _, n := range nodes {
+				conn := remote.NewConnection(fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location), "22", eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cfg.GetSSHKeyPath())
+				endpoint := fmt.Sprintf("http://%s:2379", n.Status.GetAddressByType("InternalIP").Address)
+				cmd := fmt.Sprintf("etcdctl --endpoint=%s ls /registry/secrets/kube-system", endpoint)
+
+				out, err := conn.Execute(cmd)
+				Expect(err).To(HaveOccurred())
+				Expect(out).To(MatchRegexp("connection refused"))
 			}
 		})
 
