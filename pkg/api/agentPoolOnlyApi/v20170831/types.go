@@ -43,12 +43,10 @@ type Properties struct {
 // ManagedClusterAccessProfile represents the access profile definition for managed cluster
 // The Id captures the Role Name e.g. clusterAdmin, clusterUser
 type ManagedClusterAccessProfile struct {
-	ID       string                `json:"id,omitempty"`
-	Location string                `json:"location,omitempty" validate:"required"`
-	Name     string                `json:"name,omitempty"`
-	Plan     *ResourcePurchasePlan `json:"plan,omitempty"`
-	Tags     map[string]string     `json:"tags,omitempty"`
-	Type     string                `json:"type,omitempty"`
+	ID       string `json:"id,omitempty"`
+	Location string `json:"location,omitempty" validate:"required"`
+	Name     string `json:"name,omitempty"`
+	Type     string `json:"type,omitempty"`
 
 	Properties *AccessProfile `json:"properties"`
 }
