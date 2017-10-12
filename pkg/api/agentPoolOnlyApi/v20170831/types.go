@@ -52,7 +52,7 @@ type Properties struct {
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
 	ClientID string `json:"clientId,omitempty" validate:"required"`
-	Secret   string `json:"secret,omitempty" validate:"required"`
+	Secret   string `json:"secret,omitempty"`
 }
 
 // LinuxProfile represents the Linux configuration passed to the cluster
@@ -72,7 +72,7 @@ type PublicKey struct {
 // WindowsProfile represents the Windows configuration passed to the cluster
 type WindowsProfile struct {
 	AdminUsername string `json:"adminUsername,omitempty" validate:"required"`
-	AdminPassword string `json:"adminPassword,omitempty" validate:"required"`
+	AdminPassword string `json:"adminPassword,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.
