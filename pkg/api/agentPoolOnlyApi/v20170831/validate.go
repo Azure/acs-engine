@@ -78,23 +78,6 @@ func (a *Properties) Validate() error {
 		return e
 	}
 
-	if a.ServicePrincipalProfile == nil {
-		return fmt.Errorf("missing ServicePrincipalProfile")
-	}
-
-	for _, agentPoolProfile := range a.AgentPoolProfiles {
-		if agentPoolProfile.OSType == Windows {
-			if a.WindowsProfile == nil {
-				return fmt.Errorf("WindowsProfile must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
-			}
-			if len(a.WindowsProfile.AdminUsername) == 0 {
-				return fmt.Errorf("WindowsProfile.AdminUsername must not be empty since agent pool '%s' specifies windows", agentPoolProfile.Name)
-			}
-			if len(a.WindowsProfile.AdminPassword) == 0 {
-				return fmt.Errorf("WindowsProfile.AdminPassword must not be empty since  agent pool '%s' specifies windows", agentPoolProfile.Name)
-			}
-		}
-	}
 	if e := a.LinuxProfile.Validate(); e != nil {
 		return e
 	}

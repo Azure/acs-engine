@@ -53,7 +53,7 @@ type Properties struct {
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
 	ClientID string `json:"clientId,omitempty" validate:"required"`
-	Secret   string `json:"secret,omitempty" validate:"required"`
+	Secret   string `json:"secret,omitempty"`
 }
 
 // CertificateProfile contains cert material for the Kubernetes cluster
@@ -93,7 +93,7 @@ type PublicKey struct {
 // WindowsProfile represents the Windows configuration passed to the cluster
 type WindowsProfile struct {
 	AdminUsername string `json:"adminUsername,omitempty" validate:"required"`
-	AdminPassword string `json:"adminPassword,omitempty" validate:"required"`
+	AdminPassword string `json:"adminPassword,omitempty"`
 	ImageVersion  string `json:"imageVersion,omitempty"`
 }
 
