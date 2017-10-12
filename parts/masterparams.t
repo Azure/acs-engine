@@ -95,14 +95,14 @@
       "type": "string"
     }, 
     "osImageSKU": {
-      "defaultValue": "16.04-LTS",
+      "defaultValue": "16.04-DAILY-LTS",
       "metadata": {
         "description": "OS image SKU."
       },
       "type": "string"
     }, 
     "osImageVersion": {
-      "defaultValue": "16.04.201708151",
+      "defaultValue": "16.04.201710110",
       "metadata": {
         "description": "OS image version."
       },
