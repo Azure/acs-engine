@@ -88,7 +88,7 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 		upgrader17.Init(uc.Translator, uc.ClusterTopology, uc.Client, kubeConfig)
 		upgrader = upgrader17
 
-	case api.KubernetesVersion1Dot8Dot0:
+	case api.KubernetesVersion1Dot8Dot1:
 		upgrader18 := &Kubernetes18upgrader{}
 		upgrader18.Init(uc.Translator, uc.ClusterTopology, uc.Client, kubeConfig)
 		upgrader = upgrader18
