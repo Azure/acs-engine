@@ -38,9 +38,9 @@ var (
 	//DefaultUbuntuImageConfig is the default Linux distribution.
 	DefaultUbuntuImageConfig = AzureOSImageConfig{
 		ImageOffer:     "UbuntuServer",
-		ImageSku:       "16.04-LTS",
+		ImageSku:       "16.04-DAILY-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201708151",
+		ImageVersion:   "16.04.201710110",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
