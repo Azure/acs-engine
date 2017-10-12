@@ -543,7 +543,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 	switch api.OrchestratorType {
 	case Kubernetes:
 		switch v20170701cs.OrchestratorVersion {
-		case KubernetesVersion1Dot8Dot0, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
+		case KubernetesVersion1Dot8Dot1, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
 			api.OrchestratorVersion = v20170701cs.OrchestratorVersion
 		default:
 			api.OrchestratorVersion = KubernetesDefaultVersion
