@@ -8,7 +8,7 @@
     {
       "cluster_definition": "dcos.json",
       "category": "service-availability",
-      "location": "australiasoutheast"
+      "location": "australiaeast"
     },
     {
       "cluster_definition": "dcos.json",
