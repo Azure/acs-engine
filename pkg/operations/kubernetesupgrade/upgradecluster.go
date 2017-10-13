@@ -77,7 +77,7 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 	}
 
 	var upgrader UpgradeWorkFlow
-	uc.TraceLogger.Infof("Upgrading to Kubernetes version %s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+	uc.TraceLogger.Infof("Upgrading to Kubernetes version %s\n", uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 	switch uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion {
 	case api.KubernetesVersion1Dot6Dot11:
 		upgrader16 := &Kubernetes16upgrader{}
