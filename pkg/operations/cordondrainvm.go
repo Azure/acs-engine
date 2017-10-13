@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	log "github.com/sirupsen/logrus"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/api/v1"
 )
 
@@ -77,6 +78,27 @@ func mirrorPodFilter(pod v1.Pod) bool {
 	return true
 }
 
+func getControllerRef(pod *v1.Pod) *metav1.OwnerReference {
+	for _, ref := range pod.ObjectMeta.OwnerReferences {
+		if ref.Controller != nil && *ref.Controller == true {
+			return &ref
+		}
+	}
+	return nil
+}
+
+func daemonSetPodFilter(pod v1.Pod) bool {
+	controllerRef := getControllerRef(&pod)
+	// Kubectl goes and verifies this controller exists in the api server to make sure it isn't orphaned
+	// we are deleting orphaned pods so we don't care and delete any that aren't a daemonset
+	if controllerRef == nil || controllerRef.Kind != "DaemonSet" {
+		return true
+	}
+	// Don't delete/evict daemonsets as they will just come back
+	// and can deleting/evicting them can cause service disruptions
+	return false
+}
+
 // getPodsForDeletion returns all the pods we're going to delete.  If there are
 // any pods preventing us from deleting, we return that list in an error.
 func (o *drainOperation) getPodsForDeletion() (pods []v1.Pod, err error) {
@@ -89,8 +111,7 @@ func (o *drainOperation) getPodsForDeletion() (pods []v1.Pod, err error) {
 		podOk := true
 		for _, filt := range []podFilter{
 			mirrorPodFilter,
-			// localStorageFilter,
-			//unreplicatedFilter,
+			daemonSetPodFilter,
 		} {
 			podOk = podOk && filt(pod)
 		}

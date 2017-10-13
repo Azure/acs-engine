@@ -40,6 +40,17 @@ type Properties struct {
 	AccessProfiles          map[string]AccessProfile `json:"accessProfiles,omitempty"`
 }
 
+// ManagedClusterAccessProfile represents the access profile definition for managed cluster
+// The Id captures the Role Name e.g. clusterAdmin, clusterUser
+type ManagedClusterAccessProfile struct {
+	ID       string `json:"id,omitempty"`
+	Location string `json:"location,omitempty" validate:"required"`
+	Name     string `json:"name,omitempty"`
+	Type     string `json:"type,omitempty"`
+
+	Properties *AccessProfile `json:"properties"`
+}
+
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
 // The 'Secret' parameter could be either a plain text, or referenced to a secret in a keyvault.
 // In the latter case, the format of the parameter's value should be
