@@ -24,10 +24,6 @@ import:
   version: v1.0.0
 - package: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
-- package: github.com/prometheus/common
-  version: 61f87aac8082fa8c3c5655c7608d7478d46ac2ad # update this every release cycle
-  subpackages:
-  - log
 - package: github.com/satori/go.uuid
   version: v1.1.0
 - package: github.com/spf13/cobra
