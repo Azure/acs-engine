@@ -78,16 +78,16 @@ func mirrorPodFilter(pod v1.Pod) bool {
 	return true
 }
 
-func getControllerRef(pod *v1.Pod) {
-	for _, ref := range pod.ObjectMeta.OwnerReferences{
-		if ref.Controller ! nil && ref.Controller == true{
-			return ref
+func getControllerRef(pod *v1.Pod) *metav1.OwnerReference {
+	for _, ref := range pod.ObjectMeta.OwnerReferences {
+		if ref.Controller != nil && *ref.Controller == true {
+			return &ref
 		}
 	}
 	return nil
 }
 
-func (o *drainOperation) daemonSetPodFilter(pod v1.Pod) bool {
+func daemonSetPodFilter(pod v1.Pod) bool {
 	controllerRef := getControllerRef(&pod)
 	// Kubectl goes and verifies this controller exists in the api server to make sure it isn't orphaned
 	// we are deleting orphaned pods so we don't care and delete any that aren't a daemonset
@@ -111,7 +111,7 @@ func (o *drainOperation) getPodsForDeletion() (pods []v1.Pod, err error) {
 		podOk := true
 		for _, filt := range []podFilter{
 			mirrorPodFilter,
-			o.daemonSetPodFilter,
+			daemonSetPodFilter,
 		} {
 			podOk = podOk && filt(pod)
 		}
