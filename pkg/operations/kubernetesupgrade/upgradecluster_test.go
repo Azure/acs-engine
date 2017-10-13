@@ -12,6 +12,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	uuid "github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 func TestUpgradeCluster(t *testing.T) {
@@ -30,7 +31,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot6Dot11
 
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{},
+			Translator:  &i18n.Translator{},
+			TraceLogger: log.NewEntry(log.New()),
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
@@ -52,7 +54,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot6Dot11
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{},
+			Translator:  &i18n.Translator{},
+			TraceLogger: log.NewEntry(log.New()),
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
@@ -70,7 +73,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs := createContainerService("testcluster", api.KubernetesVersion1Dot6Dot11, 1, 1)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot6Dot11
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{},
+			Translator:  &i18n.Translator{},
+			TraceLogger: log.NewEntry(log.New()),
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
@@ -88,7 +92,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs := createContainerService("testcluster", api.KubernetesVersion1Dot5Dot8, 1, 6)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot6Dot11
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{},
+			Translator:  &i18n.Translator{},
+			TraceLogger: log.NewEntry(log.New()),
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
@@ -106,7 +111,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs := createContainerService("testcluster", api.KubernetesVersion1Dot5Dot8, 5, 1)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot6Dot11
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{},
+			Translator:  &i18n.Translator{},
+			TraceLogger: log.NewEntry(log.New()),
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
@@ -124,7 +130,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs := createContainerService("testcluster", api.KubernetesVersion1Dot5Dot8, 3, 2)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot6Dot11
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{},
+			Translator:  &i18n.Translator{},
+			TraceLogger: log.NewEntry(log.New()),
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}
@@ -142,7 +149,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 		cs := createContainerService("testcluster", api.KubernetesVersion1Dot5Dot8, 3, 3)
 		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot7Dot7
 		uc := UpgradeCluster{
-			Translator: &i18n.Translator{},
+			Translator:  &i18n.Translator{},
+			TraceLogger: log.NewEntry(log.New()),
 		}
 
 		mockClient := armhelpers.MockACSEngineClient{}

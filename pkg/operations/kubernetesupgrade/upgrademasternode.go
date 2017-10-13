@@ -9,7 +9,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // Compiler to verify QueueMessageProcessor implements OperationsProcessor
@@ -18,6 +18,7 @@ var _ UpgradeNode = &UpgradeMasterNode{}
 // UpgradeMasterNode upgrades a Kubernetes 1.5 master node to 1.6
 type UpgradeMasterNode struct {
 	Translator              *i18n.Translator
+	TraceLogger             *logrus.Entry
 	TemplateMap             map[string]interface{}
 	ParametersMap           map[string]interface{}
 	UpgradeContainerService *api.ContainerService
@@ -29,7 +30,7 @@ type UpgradeMasterNode struct {
 // backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 // the node
 func (kmn *UpgradeMasterNode) DeleteNode(vmName *string) error {
-	if err := operations.CleanDeleteVirtualMachine(kmn.Client, log.NewEntry(log.New()), kmn.ResourceGroup, *vmName); err != nil {
+	if err := operations.CleanDeleteVirtualMachine(kmn.Client, kmn.TraceLogger, kmn.ResourceGroup, *vmName); err != nil {
 		return err
 	}
 
@@ -42,11 +43,11 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 
 	templateVariables["masterOffset"] = masterNo
 	masterOffsetVar, _ := templateVariables["masterOffset"]
-	log.Infoln(fmt.Sprintf("Master offset: %v", masterOffsetVar))
+	kmn.TraceLogger.Infof("Master offset: %v\n", masterOffsetVar)
 
 	templateVariables["masterCount"] = masterNo + 1
 	masterOffset, _ := templateVariables["masterCount"]
-	log.Infoln(fmt.Sprintf("Master pool set count to: %v temporarily during upgrade...", masterOffset))
+	kmn.TraceLogger.Infof("Master pool set count to: %v temporarily during upgrade...\n", masterOffset)
 
 	// Debug function - keep commented out
 	// WriteTemplate(kmn.Translator, kmn.UpgradeContainerService, kmn.TemplateMap, kmn.ParametersMap)
