@@ -12,17 +12,17 @@ import (
 
 // Upgrader holds information on upgrading an ACS cluster
 type Upgrader struct {
-	Translator  *i18n.Translator
-	TraceLogger *logrus.Entry
+	Translator *i18n.Translator
+	logger     *logrus.Entry
 	ClusterTopology
 	Client     armhelpers.ACSEngineClient
 	kubeConfig string
 }
 
 // Init initializes an upgrader struct
-func (ku *Upgrader) Init(translator *i18n.Translator, traceLogger *logrus.Entry, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient, kubeConfig string) {
+func (ku *Upgrader) Init(translator *i18n.Translator, logger *logrus.Entry, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient, kubeConfig string) {
 	ku.Translator = translator
-	ku.TraceLogger = traceLogger
+	ku.logger = logger
 	ku.ClusterTopology = clusterTopology
 	ku.Client = client
 	ku.kubeConfig = kubeConfig
@@ -50,26 +50,26 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	if ku.ClusterTopology.DataModel.Properties.MasterProfile == nil {
 		return nil
 	}
-	ku.TraceLogger.Infof("Master nodes StorageProfile: %s\n", ku.ClusterTopology.DataModel.Properties.MasterProfile.StorageProfile)
+	ku.logger.Infof("Master nodes StorageProfile: %s\n", ku.ClusterTopology.DataModel.Properties.MasterProfile.StorageProfile)
 	// Upgrade Master VMs
 	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
 	if err != nil {
 		return ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 	}
 
-	ku.TraceLogger.Infof("Prepping master nodes for upgrade...\n")
+	ku.logger.Infof("Prepping master nodes for upgrade...\n")
 
 	transformer := &acsengine.Transformer{
 		Translator: ku.Translator,
 	}
-	if err := transformer.NormalizeResourcesForK8sMasterUpgrade(ku.TraceLogger, templateMap, ku.DataModel.Properties.MasterProfile.IsManagedDisks(), nil); err != nil {
-		ku.TraceLogger.Errorf(err.Error())
+	if err := transformer.NormalizeResourcesForK8sMasterUpgrade(ku.logger, templateMap, ku.DataModel.Properties.MasterProfile.IsManagedDisks(), nil); err != nil {
+		ku.logger.Errorf(err.Error())
 		return err
 	}
 
 	upgradeMasterNode := UpgradeMasterNode{
-		Translator:  ku.Translator,
-		TraceLogger: ku.TraceLogger,
+		Translator: ku.Translator,
+		logger:     ku.logger,
 	}
 	upgradeMasterNode.TemplateMap = templateMap
 	upgradeMasterNode.ParametersMap = parametersMap
@@ -81,14 +81,14 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	mastersUpgradedCount := len(*ku.ClusterTopology.UpgradedMasterVMs)
 	mastersToUgradeCount := expectedMasterCount - mastersUpgradedCount
 
-	ku.TraceLogger.Infof("Total expected master count: %d\n", expectedMasterCount)
-	ku.TraceLogger.Infof("Master nodes that need to be upgraded: %d\n", mastersToUgradeCount)
-	ku.TraceLogger.Infof("Master nodes that have been upgraded: %d\n", mastersUpgradedCount)
+	ku.logger.Infof("Total expected master count: %d\n", expectedMasterCount)
+	ku.logger.Infof("Master nodes that need to be upgraded: %d\n", mastersToUgradeCount)
+	ku.logger.Infof("Master nodes that have been upgraded: %d\n", mastersUpgradedCount)
 
-	ku.TraceLogger.Infof("Starting upgrade of master nodes...\n")
+	ku.logger.Infof("Starting upgrade of master nodes...\n")
 
 	masterNodesInCluster := len(*ku.ClusterTopology.MasterVMs) + mastersUpgradedCount
-	ku.TraceLogger.Infof("masterNodesInCluster: %d\n", masterNodesInCluster)
+	ku.logger.Infof("masterNodesInCluster: %d\n", masterNodesInCluster)
 	if masterNodesInCluster > expectedMasterCount {
 		return ku.Translator.Errorf("Total count of master VMs: %d exceeded expected count: %d", masterNodesInCluster, expectedMasterCount)
 	}
@@ -96,31 +96,31 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	upgradedMastersIndex := make(map[int]bool)
 
 	for _, vm := range *ku.ClusterTopology.UpgradedMasterVMs {
-		ku.TraceLogger.Infof("Master VM: %s is upgraded to expected orchestrator version\n", *vm.Name)
+		ku.logger.Infof("Master VM: %s is upgraded to expected orchestrator version\n", *vm.Name)
 		masterIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 		upgradedMastersIndex[masterIndex] = true
 	}
 
 	for _, vm := range *ku.ClusterTopology.MasterVMs {
-		ku.TraceLogger.Infof("Upgrading Master VM: %s\n", *vm.Name)
+		ku.logger.Infof("Upgrading Master VM: %s\n", *vm.Name)
 
 		masterIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
 		err := upgradeMasterNode.DeleteNode(vm.Name)
 		if err != nil {
-			ku.TraceLogger.Infof("Error deleting master VM: %s, err: %v\n", *vm.Name, err)
+			ku.logger.Infof("Error deleting master VM: %s, err: %v\n", *vm.Name, err)
 			return err
 		}
 
 		err = upgradeMasterNode.CreateNode("master", masterIndex)
 		if err != nil {
-			ku.TraceLogger.Infof("Error creating upgraded master VM: %s\n", *vm.Name)
+			ku.logger.Infof("Error creating upgraded master VM: %s\n", *vm.Name)
 			return err
 		}
 
 		err = upgradeMasterNode.Validate()
 		if err != nil {
-			ku.TraceLogger.Infof("Error validating upgraded master VM: %s\n", *vm.Name)
+			ku.logger.Infof("Error validating upgraded master VM: %s\n", *vm.Name)
 			return err
 		}
 
@@ -130,12 +130,12 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	// This condition is possible if the previous upgrade operation failed during master
 	// VM upgrade when a master VM was deleted but creation of upgraded master did not run.
 	if masterNodesInCluster < expectedMasterCount {
-		ku.TraceLogger.Infof(
+		ku.logger.Infof(
 			"Found missing master VMs in the cluster. Reconstructing names of missing master VMs for recreation during upgrade...\n")
 	}
 
 	mastersToCreate := expectedMasterCount - masterNodesInCluster
-	ku.TraceLogger.Infof("Expected master count: %d, Creating %d more master VMs\n", expectedMasterCount, mastersToCreate)
+	ku.logger.Infof("Expected master count: %d, Creating %d more master VMs\n", expectedMasterCount, mastersToCreate)
 
 	// NOTE: this is NOT completely idempotent because it assumes that
 	// the OS disk has been deleted
@@ -145,17 +145,17 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 			masterIndexToCreate++
 		}
 
-		ku.TraceLogger.Infof("Creating upgraded master VM with index: %d\n", masterIndexToCreate)
+		ku.logger.Infof("Creating upgraded master VM with index: %d\n", masterIndexToCreate)
 
 		err = upgradeMasterNode.CreateNode("master", masterIndexToCreate)
 		if err != nil {
-			ku.TraceLogger.Infof("Error creating upgraded master VM with index: %d\n", masterIndexToCreate)
+			ku.logger.Infof("Error creating upgraded master VM with index: %d\n", masterIndexToCreate)
 			return err
 		}
 
 		err = upgradeMasterNode.Validate()
 		if err != nil {
-			ku.TraceLogger.Infof("Error validating upgraded master VM with index: %d\n", masterIndexToCreate)
+			ku.logger.Infof("Error validating upgraded master VM with index: %d\n", masterIndexToCreate)
 			return err
 		}
 
@@ -181,7 +181,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			return ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 		}
 
-		ku.TraceLogger.Infof("Prepping agent pool: %s for upgrade...\n", *agentPool.Name)
+		ku.logger.Infof("Prepping agent pool: %s for upgrade...\n", *agentPool.Name)
 
 		preservePools := map[string]bool{*agentPool.Name: true}
 		transformer := &acsengine.Transformer{
@@ -191,8 +191,8 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		if ku.DataModel.Properties.MasterProfile != nil {
 			isMasterManagedDisk = ku.DataModel.Properties.MasterProfile.IsManagedDisks()
 		}
-		if err := transformer.NormalizeResourcesForK8sAgentUpgrade(ku.TraceLogger, templateMap, isMasterManagedDisk, preservePools); err != nil {
-			ku.TraceLogger.Errorf(err.Error())
+		if err := transformer.NormalizeResourcesForK8sAgentUpgrade(ku.logger, templateMap, isMasterManagedDisk, preservePools); err != nil {
+			ku.logger.Errorf(err.Error())
 			return err
 		}
 
@@ -205,8 +205,8 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		}
 
 		upgradeAgentNode := UpgradeAgentNode{
-			Translator:  ku.Translator,
-			TraceLogger: ku.TraceLogger,
+			Translator: ku.Translator,
+			logger:     ku.logger,
 		}
 		upgradeAgentNode.TemplateMap = templateMap
 		upgradeAgentNode.ParametersMap = parametersMap
@@ -217,41 +217,41 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		upgradedAgentsIndex := make(map[int]bool)
 
 		for _, vm := range *agentPool.UpgradedAgentVMs {
-			ku.TraceLogger.Infof("Agent VM: %s, pool name: %s on expected orchestrator version\n", *vm.Name, *agentPool.Name)
+			ku.logger.Infof("Agent VM: %s, pool name: %s on expected orchestrator version\n", *vm.Name, *agentPool.Name)
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 			upgradedAgentsIndex[agentIndex] = true
 		}
 
-		ku.TraceLogger.Infof("Starting upgrade of agent nodes in pool identifier: %s, name: %s...\n",
+		ku.logger.Infof("Starting upgrade of agent nodes in pool identifier: %s, name: %s...\n",
 			*agentPool.Identifier, *agentPool.Name)
 
 		for _, vm := range *agentPool.AgentVMs {
-			ku.TraceLogger.Infof("Upgrading Agent VM: %s, pool name: %s\n", *vm.Name, *agentPool.Name)
+			ku.logger.Infof("Upgrading Agent VM: %s, pool name: %s\n", *vm.Name, *agentPool.Name)
 
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
 			// Currently in a sinlge node cluster the api server will not be running when this point is reached on the first node so it will always fail.
 			// err := operations.SafelyDrainNode(ku.Client, log.New().WithField("operation", "upgrade"), kubeAPIServerURL, ku.kubeConfig, *vm.Name)
 			// if err != nil {
-			// 	ku.TraceLogger.Infof("Error draining agent VM: %s", *vm.Name))
+			// 	ku.logger.Infof("Error draining agent VM: %s\n", *vm.Name))
 			// 	return err
 			// }
 
 			err := upgradeAgentNode.DeleteNode(vm.Name)
 			if err != nil {
-				ku.TraceLogger.Infof("Error deleting agent VM: %s\n", *vm.Name)
+				ku.logger.Infof("Error deleting agent VM: %s\n", *vm.Name)
 				return err
 			}
 
 			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
 			if err != nil {
-				ku.TraceLogger.Infof("Error creating upgraded agent VM: %s\n", *vm.Name)
+				ku.logger.Infof("Error creating upgraded agent VM: %s\n", *vm.Name)
 				return err
 			}
 
 			err = upgradeAgentNode.Validate()
 			if err != nil {
-				ku.TraceLogger.Infof("Error validating upgraded agent VM: %s\n", *vm.Name)
+				ku.logger.Infof("Error validating upgraded agent VM: %s\n", *vm.Name)
 				return err
 			}
 
@@ -259,7 +259,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		}
 
 		agentsToCreate := agentCount - len(upgradedAgentsIndex)
-		ku.TraceLogger.Infof("Expected agent count in the pool: %d, Creating %d more agents\n", agentCount, agentsToCreate)
+		ku.logger.Infof("Expected agent count in the pool: %d, Creating %d more agents\n", agentCount, agentsToCreate)
 
 		// NOTE: this is NOT completely idempotent because it assumes that
 		// the OS disk has been deleted
@@ -269,17 +269,17 @@ func (ku *Upgrader) upgradeAgentPools() error {
 				agentIndexToCreate++
 			}
 
-			ku.TraceLogger.Infof("Creating upgraded Agent VM with index: %d, pool name: %s\n", agentIndexToCreate, *agentPool.Name)
+			ku.logger.Infof("Creating upgraded Agent VM with index: %d, pool name: %s\n", agentIndexToCreate, *agentPool.Name)
 
 			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndexToCreate)
 			if err != nil {
-				ku.TraceLogger.Infof("Error creating upgraded agent VM with index: %d\n", agentIndexToCreate)
+				ku.logger.Infof("Error creating upgraded agent VM with index: %d\n", agentIndexToCreate)
 				return err
 			}
 
 			err = upgradeAgentNode.Validate()
 			if err != nil {
-				ku.TraceLogger.Infof("Error validating upgraded agent VM with index: %d\n", agentIndexToCreate)
+				ku.logger.Infof("Error validating upgraded agent VM with index: %d\n", agentIndexToCreate)
 				return err
 			}
 

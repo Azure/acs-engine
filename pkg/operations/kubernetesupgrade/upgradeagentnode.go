@@ -18,7 +18,7 @@ var _ UpgradeNode = &UpgradeAgentNode{}
 // UpgradeAgentNode upgrades a Kubernetes 1.5 agent node to 1.6
 type UpgradeAgentNode struct {
 	Translator              *i18n.Translator
-	TraceLogger             *logrus.Entry
+	logger                  *logrus.Entry
 	TemplateMap             map[string]interface{}
 	ParametersMap           map[string]interface{}
 	UpgradeContainerService *api.ContainerService
@@ -30,7 +30,7 @@ type UpgradeAgentNode struct {
 // backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 // the node
 func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
-	if err := operations.CleanDeleteVirtualMachine(kan.Client, kan.TraceLogger, kan.ResourceGroup, *vmName); err != nil {
+	if err := operations.CleanDeleteVirtualMachine(kan.Client, kan.logger, kan.ResourceGroup, *vmName); err != nil {
 		return err
 	}
 	return nil
@@ -41,7 +41,7 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 	poolCountParameter := kan.ParametersMap[poolName+"Count"].(map[string]interface{})
 	poolCountParameter["value"] = agentNo + 1
 	agentCount, _ := poolCountParameter["value"]
-	kan.TraceLogger.Infof("Agent pool: %s, set count to: %d temporarily during upgrade. Upgrading agent: %d\n",
+	kan.logger.Infof("Agent pool: %s, set count to: %d temporarily during upgrade. Upgrading agent: %d\n",
 		poolName, agentCount, agentNo)
 
 	poolOffsetVarName := poolName + "Offset"
