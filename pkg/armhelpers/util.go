@@ -3,12 +3,27 @@ package armhelpers
 import (
 	"fmt"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	log "github.com/sirupsen/logrus"
 )
+
+const (
+	// TODO: merge with the RP code
+	k8sLinuxVMNamingFormat         = "^k8s-(.+)-([0-9a-fA-F]{8})-{0,2}([0-9]+)$"
+	k8sLinuxVMAgentPoolNameIndex   = 1
+	k8sLinuxVMAgentClusterIDIndex  = 2
+	k8sLinuxVMAgentIndexArrayIndex = 3
+)
+
+var vmnameLinuxRegexp *regexp.Regexp
+
+func init() {
+	vmnameLinuxRegexp = regexp.MustCompile(k8sLinuxVMNamingFormat)
+}
 
 // ResourceName returns the last segment (the resource name) for the specified resource identifier.
 func ResourceName(ID string) (string, error) {
@@ -37,21 +52,20 @@ func SplitBlobURI(URI string) (string, string, string, error) {
 	return accountName, containerName, blobPath, nil
 }
 
-// LinuxVMNameParts returns parts of Linux VM name e.g: k8s-agentpool1-11290731-0
-func LinuxVMNameParts(vmName string) (orchestrator string, poolIdentifier string, nameSuffix string, agentIndex int, err error) {
-	vmNameParts := strings.Split(vmName, "-")
-
+// K8sLinuxVMNameParts returns parts of Linux VM name e.g: k8s-agentpool1-11290731-0
+func K8sLinuxVMNameParts(vmName string) (poolIdentifier, nameSuffix string, agentIndex int, err error) {
+	vmNameParts := vmnameLinuxRegexp.FindStringSubmatch(vmName)
 	if len(vmNameParts) != 4 {
-		return "", "", "", -1, fmt.Errorf("resource name was missing from identifier")
+		return "", "", -1, fmt.Errorf("resource name was missing from identifier")
 	}
 
-	vmNum, err := strconv.Atoi(vmNameParts[3])
+	vmNum, err := strconv.Atoi(vmNameParts[k8sLinuxVMAgentIndexArrayIndex])
 
 	if err != nil {
-		return "", "", "", -1, fmt.Errorf("Error parsing VM Name: %v", err)
+		return "", "", -1, fmt.Errorf("Error parsing VM Name: %v", err)
 	}
 
-	return vmNameParts[0], vmNameParts[1], vmNameParts[2], vmNum, nil
+	return vmNameParts[k8sLinuxVMAgentPoolNameIndex], vmNameParts[k8sLinuxVMAgentClusterIDIndex], vmNum, nil
 }
 
 // WindowsVMNameParts returns parts of Windows VM name e.g: 50621acs9000
@@ -79,7 +93,7 @@ func GetVMNameIndex(osType compute.OperatingSystemTypes, vmName string) (int, er
 	var agentIndex int
 	var err error
 	if osType == compute.Linux {
-		_, _, _, agentIndex, err = LinuxVMNameParts(vmName)
+		_, _, agentIndex, err = K8sLinuxVMNameParts(vmName)
 		if err != nil {
 			log.Errorln(err)
 			return 0, err
