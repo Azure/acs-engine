@@ -1,6 +1,6 @@
 # Microsoft Azure Container Service Engine - Kubernetes
 
-* [Create a Kubernetes Cluster](kubernetes/deploy.md) - Create a your first Kubernetes cluster. Start here!
+* [Create a Kubernetes Cluster](kubernetes/deploy.md) - Create your first Kubernetes cluster. Start here!
 * [Kubernetes Next Steps](kubernetes/walkthrough.md) - You have successfully deployed a Kubernetes cluster, now what?
 
 * [Troubleshooting](kubernetes/troubleshooting.md) - Running into issues? Start here to troubleshoot Kubernetes.
