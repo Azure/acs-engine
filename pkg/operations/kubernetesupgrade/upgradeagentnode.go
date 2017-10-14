@@ -11,8 +11,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
-
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -26,6 +25,7 @@ var _ UpgradeNode = &UpgradeAgentNode{}
 // UpgradeAgentNode upgrades a Kubernetes 1.5 agent node to 1.6
 type UpgradeAgentNode struct {
 	Translator              *i18n.Translator
+	logger                  *logrus.Entry
 	TemplateMap             map[string]interface{}
 	ParametersMap           map[string]interface{}
 	UpgradeContainerService *api.ContainerService
@@ -46,7 +46,7 @@ func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
 	// 	return err
 	// }
 
-	if err := operations.CleanDeleteVirtualMachine(kan.Client, log.NewEntry(log.New()), kan.ResourceGroup, *vmName); err != nil {
+	if err := operations.CleanDeleteVirtualMachine(kan.Client, kan.logger, kan.ResourceGroup, *vmName); err != nil {
 		return err
 	}
 	return nil
@@ -57,8 +57,8 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 	poolCountParameter := kan.ParametersMap[poolName+"Count"].(map[string]interface{})
 	poolCountParameter["value"] = agentNo + 1
 	agentCount, _ := poolCountParameter["value"]
-	log.Infoln(fmt.Sprintf("Agent pool: %s, set count to: %d temporarily during upgrade. Upgrading agent: %d",
-		poolName, agentCount, agentNo))
+	kan.logger.Infof("Agent pool: %s, set count to: %d temporarily during upgrade. Upgrading agent: %d\n",
+		poolName, agentCount, agentNo)
 
 	poolOffsetVarName := poolName + "Offset"
 	templateVariables := kan.TemplateMap["variables"].(map[string]interface{})
@@ -87,7 +87,7 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 // Validate will verify the that master/agent node has been upgraded as expected.
 func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 	if vmName == nil || *vmName == "" {
-		log.Warningln(fmt.Sprintf("VM name was empty. Skipping node condition check"))
+		kan.logger.Warningf(fmt.Sprintf("VM name was empty. Skipping node condition check"))
 		return nil
 	}
 
@@ -116,10 +116,10 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 	go func() {
 		for {
 			if node.IsNodeReady(agentNode) {
-				log.Infoln(fmt.Sprintf("Agent VM: %s is ready", *vmName))
+				kan.logger.Infof(fmt.Sprintf("Agent VM: %s is ready", *vmName))
 				ch <- struct{}{}
 			} else {
-				log.Infoln(fmt.Sprintf("Agent VM: %s not ready yet...", *vmName))
+				kan.logger.Infof(fmt.Sprintf("Agent VM: %s not ready yet...", *vmName))
 				time.Sleep(time.Second)
 			}
 		}
@@ -130,6 +130,7 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 		case <-ch:
 			return nil
 		case <-time.After(timeout):
+			kan.logger.Infof(fmt.Sprintf("Node was not ready within %v", timeout))
 			return fmt.Errorf("Node was not ready within %v", timeout)
 		}
 	}

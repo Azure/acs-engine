@@ -182,6 +182,7 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		Translator: &i18n.Translator{
 			Locale: uc.locale,
 		},
+		Logger: log.NewEntry(log.New()),
 		Client: uc.client,
 	}
 	kubeConfig, err := acsengine.GenerateKubeConfig(uc.containerService.Properties, uc.location)
