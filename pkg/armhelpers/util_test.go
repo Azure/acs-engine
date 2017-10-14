@@ -1,6 +1,7 @@
 package armhelpers
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
@@ -26,26 +27,33 @@ func Test_SplitBlobURI(t *testing.T) {
 }
 
 func Test_LinuxVMNameParts(t *testing.T) {
-	expectedOrchestrator := "k8s"
-	expectedPoolIdentifier := "agentpool1"
-	expectedNameSuffix := "38988164"
-	expectedAgentIndex := 10
+	data := []struct {
+		orchestrator, poolIdentifier, nameSuffix string
+		agentIndex                               int
+	}{
+		{"k8s", "agentpool1", "38988164", 10},
+		{"k8s", "agent-pool1", "38988164", 8},
+		{"k8s", "agent-pool-1", "38988164", 0},
+	}
 
-	orchestrator, poolIdentifier, nameSuffix, agentIndex, err := LinuxVMNameParts("k8s-agentpool1-38988164-10")
-	if orchestrator != expectedOrchestrator {
-		t.Fatalf("incorrect orchestrator. expected=%s actual=%s", expectedOrchestrator, orchestrator)
-	}
-	if poolIdentifier != expectedPoolIdentifier {
-		t.Fatalf("incorrect poolIdentifier. expected=%s actual=%s", expectedPoolIdentifier, poolIdentifier)
-	}
-	if nameSuffix != expectedNameSuffix {
-		t.Fatalf("incorrect nameSuffix. expected=%s actual=%s", expectedNameSuffix, nameSuffix)
-	}
-	if agentIndex != expectedAgentIndex {
-		t.Fatalf("incorrect agentIndex. expected=%d actual=%d", expectedAgentIndex, agentIndex)
-	}
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
+	for _, el := range data {
+		vmName := fmt.Sprintf("%s-%s-%s-%d", el.orchestrator, el.poolIdentifier, el.nameSuffix, el.agentIndex)
+		orchestrator, poolIdentifier, nameSuffix, agentIndex, err := LinuxVMNameParts(vmName)
+		if orchestrator != el.orchestrator {
+			t.Fatalf("incorrect orchestrator. expected=%s actual=%s", el.orchestrator, orchestrator)
+		}
+		if poolIdentifier != el.poolIdentifier {
+			t.Fatalf("incorrect poolIdentifier. expected=%s actual=%s", el.poolIdentifier, poolIdentifier)
+		}
+		if nameSuffix != el.nameSuffix {
+			t.Fatalf("incorrect nameSuffix. expected=%s actual=%s", el.nameSuffix, nameSuffix)
+		}
+		if agentIndex != el.agentIndex {
+			t.Fatalf("incorrect agentIndex. expected=%d actual=%d", el.agentIndex, agentIndex)
+		}
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
 	}
 }
 

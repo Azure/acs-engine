@@ -3,12 +3,33 @@ package armhelpers
 import (
 	"fmt"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	log "github.com/sirupsen/logrus"
 )
+
+const (
+	// TODO: merge with the RP code
+	// here there are 4 capture groups
+	//  #1 is the orchestrator (dcos|k8s|swarm|swarmm)
+	//  #2 is the agent pool name, which can contain -s
+	//  #3 is the Cluster ID for the cluster
+	//  #4 is the index of the vm in the agent pool/master pool
+	k8sLinuxVMNamingFormat         = "^([^-]+)-(.+)-([0-9a-fA-F]{8})-{0,2}([0-9]+)$"
+	k8sLinuxVMOrchestratorIndex    = 1
+	k8sLinuxVMAgentPoolNameIndex   = 2
+	k8sLinuxVMAgentClusterIDIndex  = 3
+	k8sLinuxVMAgentIndexArrayIndex = 4
+)
+
+var vmnameLinuxRegexp *regexp.Regexp
+
+func init() {
+	vmnameLinuxRegexp = regexp.MustCompile(k8sLinuxVMNamingFormat)
+}
 
 // ResourceName returns the last segment (the resource name) for the specified resource identifier.
 func ResourceName(ID string) (string, error) {
@@ -39,19 +60,21 @@ func SplitBlobURI(URI string) (string, string, string, error) {
 
 // LinuxVMNameParts returns parts of Linux VM name e.g: k8s-agentpool1-11290731-0
 func LinuxVMNameParts(vmName string) (orchestrator string, poolIdentifier string, nameSuffix string, agentIndex int, err error) {
-	vmNameParts := strings.Split(vmName, "-")
-
-	if len(vmNameParts) != 4 {
+	vmNameParts := vmnameLinuxRegexp.FindStringSubmatch(vmName)
+	if len(vmNameParts) != 5 {
 		return "", "", "", -1, fmt.Errorf("resource name was missing from identifier")
 	}
 
-	vmNum, err := strconv.Atoi(vmNameParts[3])
+	vmNum, err := strconv.Atoi(vmNameParts[k8sLinuxVMAgentIndexArrayIndex])
 
 	if err != nil {
 		return "", "", "", -1, fmt.Errorf("Error parsing VM Name: %v", err)
 	}
 
-	return vmNameParts[0], vmNameParts[1], vmNameParts[2], vmNum, nil
+	return vmNameParts[k8sLinuxVMOrchestratorIndex],
+		vmNameParts[k8sLinuxVMAgentPoolNameIndex],
+		vmNameParts[k8sLinuxVMAgentClusterIDIndex],
+		vmNum, nil
 }
 
 // WindowsVMNameParts returns parts of Windows VM name e.g: 50621acs9000
