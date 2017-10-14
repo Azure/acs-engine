@@ -28,20 +28,17 @@ func Test_SplitBlobURI(t *testing.T) {
 
 func Test_LinuxVMNameParts(t *testing.T) {
 	data := []struct {
-		orchestrator, poolIdentifier, nameSuffix string
-		agentIndex                               int
+		poolIdentifier, nameSuffix string
+		agentIndex                 int
 	}{
-		{"k8s", "agentpool1", "38988164", 10},
-		{"k8s", "agent-pool1", "38988164", 8},
-		{"k8s", "agent-pool-1", "38988164", 0},
+		{"agentpool1", "38988164", 10},
+		{"agent-pool1", "38988164", 8},
+		{"agent-pool-1", "38988164", 0},
 	}
 
 	for _, el := range data {
-		vmName := fmt.Sprintf("%s-%s-%s-%d", el.orchestrator, el.poolIdentifier, el.nameSuffix, el.agentIndex)
-		orchestrator, poolIdentifier, nameSuffix, agentIndex, err := LinuxVMNameParts(vmName)
-		if orchestrator != el.orchestrator {
-			t.Fatalf("incorrect orchestrator. expected=%s actual=%s", el.orchestrator, orchestrator)
-		}
+		vmName := fmt.Sprintf("k8s-%s-%s-%d", el.poolIdentifier, el.nameSuffix, el.agentIndex)
+		poolIdentifier, nameSuffix, agentIndex, err := K8sLinuxVMNameParts(vmName)
 		if poolIdentifier != el.poolIdentifier {
 			t.Fatalf("incorrect poolIdentifier. expected=%s actual=%s", el.poolIdentifier, poolIdentifier)
 		}

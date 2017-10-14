@@ -204,7 +204,7 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 	}
 
 	if vm.StorageProfile.OsDisk.OsType == compute.Linux {
-		_, poolIdentifier, poolPrefix, _, err = armhelpers.LinuxVMNameParts(*vm.Name)
+		poolIdentifier, poolPrefix, _, err = armhelpers.K8sLinuxVMNameParts(*vm.Name)
 		if err != nil {
 			uc.Logger.Errorf(err.Error())
 			return err
