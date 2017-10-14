@@ -107,20 +107,20 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 		return err
 	}
 
-	agentNode, err := client.GetNode(*vmName)
-	if err != nil {
-		return err
-	}
-
 	ch := make(chan struct{}, 1)
+	errCh := make(chan error)
 	go func() {
 		for {
+			agentNode, err := client.GetNode(*vmName)
+			if err != nil {
+				errCh <- err
+			}
 			if node.IsNodeReady(agentNode) {
 				kan.logger.Infof(fmt.Sprintf("Agent VM: %s is ready", *vmName))
 				ch <- struct{}{}
 			} else {
 				kan.logger.Infof(fmt.Sprintf("Agent VM: %s not ready yet...", *vmName))
-				time.Sleep(time.Second)
+				time.Sleep(time.Second * 5)
 			}
 		}
 	}()
@@ -129,6 +129,8 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 		select {
 		case <-ch:
 			return nil
+		case err := <-errCh:
+			return err
 		case <-time.After(timeout):
 			kan.logger.Infof(fmt.Sprintf("Node was not ready within %v", timeout))
 			return fmt.Errorf("Node was not ready within %v", timeout)

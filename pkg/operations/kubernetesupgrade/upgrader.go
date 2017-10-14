@@ -246,7 +246,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 
 			err = upgradeAgentNode.Validate(vm.Name)
 			if err != nil {
-				ku.logger.Infof("Error validating upgraded agent VM: %s\n", *vm.Name)
+				ku.logger.Infof("Error validating upgraded agent VM: %s, err: %v\n", *vm.Name, err)
 				return err
 			}
 
