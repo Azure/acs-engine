@@ -119,6 +119,11 @@ write_files:
 {{if IsKubernetesVersionGe "1.6.0"}}
     KUBELET_NON_MASQUERADE_CIDR=--non-masquerade-cidr={{WrapAsVariable "kubernetesNonMasqueradeCidr"}}
     KUBELET_FEATURE_GATES=--feature-gates=Accelerators=true
+  {{if IsKubernetesVersionTilde "1.6.x"}}
+    KUBELET_FIX_43704_1=--cgroups-per-qos=false
+    KUBELET_FIX_43704_2=--enforce-node-allocatable=
+    KUBELET_FIX_43704_3=""
+  {{end}}
 {{end}}
 
 - path: "/etc/systemd/system/kubelet.service"
