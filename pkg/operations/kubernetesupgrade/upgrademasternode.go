@@ -70,6 +70,6 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 }
 
 // Validate will verify the that master/agent node has been upgraded as expected.
-func (kmn *UpgradeMasterNode) Validate() error {
+func (kmn *UpgradeMasterNode) Validate(vmName *string) error {
 	return nil
 }

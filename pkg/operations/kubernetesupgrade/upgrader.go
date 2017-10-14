@@ -118,7 +118,7 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 			return err
 		}
 
-		err = upgradeMasterNode.Validate()
+		err = upgradeMasterNode.Validate(vm.Name)
 		if err != nil {
 			ku.logger.Infof("Error validating upgraded master VM: %s\n", *vm.Name)
 			return err
@@ -153,7 +153,8 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 			return err
 		}
 
-		err = upgradeMasterNode.Validate()
+		tempVMName := ""
+		err = upgradeMasterNode.Validate(&tempVMName)
 		if err != nil {
 			ku.logger.Infof("Error validating upgraded master VM with index: %d\n", masterIndexToCreate)
 			return err
@@ -213,6 +214,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		upgradeAgentNode.UpgradeContainerService = ku.ClusterTopology.DataModel
 		upgradeAgentNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 		upgradeAgentNode.Client = ku.Client
+		upgradeAgentNode.kubeConfig = ku.kubeConfig
 
 		upgradedAgentsIndex := make(map[int]bool)
 
@@ -230,13 +232,6 @@ func (ku *Upgrader) upgradeAgentPools() error {
 
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
-			// Currently in a sinlge node cluster the api server will not be running when this point is reached on the first node so it will always fail.
-			// err := operations.SafelyDrainNode(ku.Client, log.New().WithField("operation", "upgrade"), kubeAPIServerURL, ku.kubeConfig, *vm.Name)
-			// if err != nil {
-			// 	ku.logger.Infof("Error draining agent VM: %s\n", *vm.Name))
-			// 	return err
-			// }
-
 			err := upgradeAgentNode.DeleteNode(vm.Name)
 			if err != nil {
 				ku.logger.Infof("Error deleting agent VM: %s\n", *vm.Name)
@@ -249,9 +244,9 @@ func (ku *Upgrader) upgradeAgentPools() error {
 				return err
 			}
 
-			err = upgradeAgentNode.Validate()
+			err = upgradeAgentNode.Validate(vm.Name)
 			if err != nil {
-				ku.logger.Infof("Error validating upgraded agent VM: %s\n", *vm.Name)
+				ku.logger.Infof("Error validating upgraded agent VM: %s, err: %v\n", *vm.Name, err)
 				return err
 			}
 
@@ -277,7 +272,8 @@ func (ku *Upgrader) upgradeAgentPools() error {
 				return err
 			}
 
-			err = upgradeAgentNode.Validate()
+			tempVMName := ""
+			err = upgradeAgentNode.Validate(&tempVMName)
 			if err != nil {
 				ku.logger.Infof("Error validating upgraded agent VM with index: %d\n", agentIndexToCreate)
 				return err
