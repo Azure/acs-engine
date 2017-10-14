@@ -61,11 +61,8 @@ ensureRunCommandCompleted()
         sleep 1
     done
 }
-ensureRunCommandCompleted
 
 echo `date`,`hostname`, startscript>>/opt/m 
-# make sure walinuxagent doesn't get updated in the middle of running this script
-apt-mark hold walinuxagent
 
 # A delay to start the kubernetes processes is necessary
 # if a reboot is required.  Otherwise, the agents will encounter issue: 
@@ -426,7 +423,13 @@ echo `date`,`hostname`, extractKubctlStart>>/opt/m
 extractKubectl
 echo `date`,`hostname`, ensureJournalStart>>/opt/m 
 ensureJournal
-echo `date`,`hostname`, ensureJournalEnd>>/opt/m 
+echo `date`,`hostname`, ensureJournalDone>>/opt/m 
+
+ensureRunCommandCompleted
+echo `date`,`hostname`, RunCmdCompleted>>/opt/m 
+
+# make sure walinuxagent doesn't get updated in the middle of running this script
+apt-mark hold walinuxagent
 
 # master only
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
