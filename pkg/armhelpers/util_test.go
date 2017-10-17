@@ -56,11 +56,11 @@ func Test_LinuxVMNameParts(t *testing.T) {
 
 func Test_WindowsVMNameParts(t *testing.T) {
 	expectedPoolPrefix := "38988"
-	expectedAcs := "acs"
+	expectedAcs := "k8s"
 	expectedPoolIndex := 903
 	expectedAgentIndex := 12
 
-	poolPrefix, acs, poolIndex, agentIndex, err := WindowsVMNameParts("38988acs90312")
+	poolPrefix, acs, poolIndex, agentIndex, err := WindowsVMNameParts("38988k8s90312")
 	if poolPrefix != expectedPoolPrefix {
 		t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", expectedPoolPrefix, poolPrefix)
 	}
@@ -94,7 +94,7 @@ func Test_GetVMNameIndexLinux(t *testing.T) {
 func Test_GetVMNameIndexWindows(t *testing.T) {
 	expectedAgentIndex := 20
 
-	agentIndex, err := GetVMNameIndex(compute.Windows, "38988acs90320")
+	agentIndex, err := GetVMNameIndex(compute.Windows, "38988k8s90320")
 
 	if agentIndex != expectedAgentIndex {
 		t.Fatalf("incorrect agentIndex. expected=%d actual=%d", expectedAgentIndex, agentIndex)
