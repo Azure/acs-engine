@@ -104,6 +104,11 @@ func main() {
 			teardown()
 			log.Fatalf("Error trying to install dcos client:%s\n", err)
 		}
+		ready := cluster.WaitForNodes(eng.NodeCount(), 10*time.Second, cfg.Timeout)
+		if ready == false {
+			teardown()
+			log.Fatal("Error: Not all nodes in healthy state!")
+		}
 	}
 
 	runGinkgo(cfg.Orchestrator)
