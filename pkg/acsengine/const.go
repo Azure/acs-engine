@@ -80,6 +80,10 @@ const (
 	DefaultKubernetesGCHighThreshold = 85
 	//DefaultKubernetesGCLowThreshold specifies the value for the image-gc-low-threshold kubelet flag
 	DefaultKubernetesGCLowThreshold = 80
+	// DefaultGeneratorCode specifies the source generator of the cluster template.
+	DefaultGeneratorCode = "acsengine"
+	// DefaultOrchestratorName specifies the 3 character orchestrator code of the cluster template and affects resource naming.
+	DefaultOrchestratorName = "k8s"
 )
 
 const (

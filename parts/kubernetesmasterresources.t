@@ -384,7 +384,7 @@
       ],
       "tags":
       {
-        "creationSource" : "[concat('acsengine-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
+        "creationSource" : "[concat(variables('generatorCode'), '-', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
         "resourceNameSuffix" : "[variables('nameSuffix')]",
         "orchestrator" : "[variables('orchestratorNameVersionTag')]",
         "poolName" : "master"
