@@ -129,6 +129,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			s, err := service.Get("kubernetes-dashboard", "kube-system")
 			Expect(err).NotTo(HaveOccurred())
+
 			port := s.GetNodePort(80)
 
 			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
@@ -139,6 +140,41 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				success := false
 				for i := 0; i < 20; i++ {
 					dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
+					curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
+					output, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
+					if err != nil {
+						log.Printf("Error on iteration:%v for node (%s)\n", i, node.Metadata.Name)
+						log.Printf("Command:ssh -i %s -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s %s\n", sshKeyPath, master, curlCMD)
+						log.Printf("\nOutput:%s\n", string(output))
+					} else {
+						success = true
+					}
+					time.Sleep(5 * time.Second)
+				}
+				Expect(success).To(BeTrue())
+			}
+		})
+
+		It("should be able to access the dashboard on cluterIP from each node", func() {
+			running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 5*time.Second, cfg.Timeout)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(running).To(Equal(true))
+
+			kubeConfig, err := GetConfig()
+			Expect(err).NotTo(HaveOccurred())
+			sshKeyPath := cfg.GetSSHKeyPath()
+
+			s, err := service.Get("kubernetes-dashboard", "kube-system")
+			Expect(err).NotTo(HaveOccurred())
+
+			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
+			nodeList, err := node.Get()
+			Expect(err).NotTo(HaveOccurred())
+
+			for _, node := range nodeList.Nodes {
+				success := false
+				for i := 0; i < 20; i++ {
+					dashboardURL := fmt.Sprintf("http://%s", s.Spec.ClusterIP)
 					curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
 					output, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
 					if err != nil {
