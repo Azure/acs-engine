@@ -43,24 +43,24 @@ param(
 $global:CACertificate = "{{WrapAsVariable "caCertificate"}}"
 $global:AgentCertificate = "{{WrapAsVariable "clientCertificate"}}"
 $global:DockerServiceName = "Docker"
-$global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
 $global:KubeBinariesSASURL = "{{WrapAsVariable "kubeBinariesSASURL"}}"
 $global:KubeBinariesVersion = "{{WrapAsVariable "kubeBinariesVersion"}}"
 $global:WindowsTelemetryGUID = "{{WrapAsVariable "windowsTelemetryGUID"}}"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
-$global:NatNetworkName="nat"
-$global:TransparentNetworkName="transparentNet"
 
 $global:TenantId = "{{WrapAsVariable "tenantID"}}"
 $global:SubscriptionId = "{{WrapAsVariable "subscriptionId"}}"
 $global:ResourceGroup = "{{WrapAsVariable "resourceGroup"}}"
 $global:SubnetName = "{{WrapAsVariable "subnetName"}}"
+$global:MasterSubnet = "{{WrapAsVariable "subnet"}}"
 $global:SecurityGroupName = "{{WrapAsVariable "nsgName"}}"
 $global:VNetName = "{{WrapAsVariable "virtualNetworkName"}}"
 $global:RouteTableName = "{{WrapAsVariable "routeTableName"}}"
 $global:PrimaryAvailabilitySetName = "{{WrapAsVariable "primaryAvailabilitySetName"}}"
+$global:KubeClusterCIDR = "{{WrapAsVariable "kubeClusterCidr"}}"
+$global:KubeServiceCIDR = "{{WrapAsVariable "kubeServiceCidr"}}"
 $global:NeedPatchWinNAT = $false
 
 $global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
@@ -81,22 +81,11 @@ function Set-TelemetrySetting()
 }
 
 function
-Expand-ZIPFile($file, $destination)
-{
-    $shell = new-object -com shell.application
-    $zip = $shell.NameSpace($file)
-    foreach($item in $zip.items())
-    {
-        $shell.Namespace($destination).copyhere($item)
-    }
-}
-
-function
 Get-KubeBinaries()
 {
     $zipfile = "c:\k.zip"
     Invoke-WebRequest -Uri $global:KubeBinariesSASURL -OutFile $zipfile
-    Expand-ZIPFile -File $zipfile -Destination C:\
+    Expand-Archive -path $zipfile -DestinationPath C:\
 }
 
 function
@@ -209,49 +198,28 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
     $KubeletArgListStr = "@`($KubeletArgListStr`)"
 
     $kubeStartStr = @"
-`$global:TransparentNetworkName="$global:TransparentNetworkName"
-`$global:AzureHostname="$AzureHostname"
-`$global:MasterIP="$MasterIP"
-`$global:NatNetworkName="$global:NatNetworkName"
-`$global:KubeDnsServiceIp="$KubeDnsServiceIp"
-`$global:KubeBinariesVersion="$global:KubeBinariesVersion"
+`$global:AzureHostname = "$AzureHostname"
+`$global:MasterIP = "$MasterIP"
+`$global:KubeDnsServiceIp = "$KubeDnsServiceIp"
+`$global:MasterSubnet = "$global:MasterSubnet"
+`$global:KubeClusterCIDR = "$global:KubeClusterCIDR"
+`$global:KubeServiceCIDR = "$global:KubeServiceCIDR"
+`$global:KubeBinariesVersion = "$global:KubeBinariesVersion"
+`$global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
+`$global:NetworkMode = "L2Bridge"
+`$global:CNIConfig = [Io.path]::Combine(`$global:CNIPath, "config", "`$global:NetworkMode.conf")
+`$global:HNSModule = [Io.path]::Combine("$global:KubeDir", "hns.psm1")
 
 function
-Get-PodGateway(`$podCIDR)
+Get-DefaultGateway(`$CIDR)
 {
-    return `$podCIDR.substring(0,`$podCIDR.lastIndexOf(".")) + ".1"
-}
-
-function
-Set-DockerNetwork(`$podCIDR)
-{
-    # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
-    netsh advfirewall set allprofiles state off
-
-    `$dockerTransparentNet=docker network ls --quiet --filter "NAME=`$global:TransparentNetworkName"
-    if (`$dockerTransparentNet.length -eq 0)
-    {
-        `$podGW=Get-PodGateway(`$podCIDR)
-
-        # create new transparent network
-        docker network create --driver=transparent --subnet=`$podCIDR --gateway=`$podGW `$global:TransparentNetworkName
-
-        
-        `$vmswitch = get-vmSwitch  | ? SwitchType -EQ External
-        # create host vnic for gateway ip to forward the traffic and kubeproxy to listen over VIP
-        Add-VMNetworkAdapter -ManagementOS -Name forwarder -SwitchName `$vmswitch.Name
-
-        # Assign gateway IP to new adapter and enable forwarding on host adapters:
-        netsh interface ipv4 add address "vEthernet (forwarder)" `$podGW 255.255.255.0
-        netsh interface ipv4 set interface "vEthernet (forwarder)" for=en
-        netsh interface ipv4 set interface "vEthernet (HNSTransparent)" for=en
-    }
+    return `$CIDR.substring(0,`$CIDR.lastIndexOf(".")) + ".1"
 }
 
 function
 Get-PodCIDR()
 {
-    `$podCIDR=c:\k\kubectl.exe --kubeconfig=c:\k\config get nodes/`$(`$global:AzureHostname.ToLower()) -o custom-columns=podCidr:.spec.podCIDR --no-headers
+    `$podCIDR = c:\k\kubectl.exe --kubeconfig=c:\k\config get nodes/`$(`$global:AzureHostname.ToLower()) -o custom-columns=podCidr:.spec.podCIDR --no-headers
     return `$podCIDR
 }
 
@@ -259,6 +227,62 @@ function
 Test-PodCIDR(`$podCIDR)
 {
     return `$podCIDR.length -gt 0
+}
+
+function
+Get-MgmtIpAddress()
+{
+    `$adapter = Get-NetAdapter | ? Name -Like "vEthernet (Ethernet*"
+    return (Get-NetIPAddress -InterfaceAlias `$adapter.ifAlias -AddressFamily IPv4).IPAddress
+}
+
+function
+Update-CNIConfig(`$podCIDR)
+{
+    `$jsonSampleConfig = 
+"{
+  ""cniVersion"": ""0.2.0"",
+  ""name"": ""<NetworkMode>"",
+  ""type"": ""wincni.exe"",
+  ""master"": ""Ethernet"",
+  ""ipam"": {
+     ""environment"": ""azure"",
+     ""subnet"":""<PODCIDR>"",
+     ""routes"": [{
+        ""GW"":""<PODGW>""
+     }]
+  },
+  ""dns"" : {
+    ""Nameservers"" : [ ""<NameServers>"" ]
+  },
+  ""AdditionalArgs"" : [
+    {
+      ""Name"" : ""EndpointPolicy"", ""Value"" : { ""Type"" : ""OutBoundNAT"", ""ExceptionList"": [ ""<ClusterCIDR>"" ] }
+    },
+    {
+      ""Name"" : ""EndpointPolicy"", ""Value"" : { ""Type"" : ""ROUTE"", ""DestinationPrefix"": ""<ServiceCIDR>"", ""NeedEncap"" : true }
+    }
+  ]
+}"
+
+    `$configJson = ConvertFrom-Json `$jsonSampleConfig 
+    `$configJson.name = `$global:NetworkMode.ToLower()
+    `$configJson.ipam.subnet=`$podCIDR
+    `$masterSubnetGW = Get-DefaultGateway `$global:MasterSubnet
+    `$configJson.ipam.routes[0].GW = `$masterSubnetGW
+    `$configJson.dns.Nameservers[0] = `$global:KubeDnsServiceIp
+
+    `$configJson.AdditionalArgs[0].Value.ExceptionList[0] = `$global:KubeClusterCIDR
+    `$configJson.AdditionalArgs[1].Value.DestinationPrefix  = `$global:KubeServiceCIDR
+
+    if (Test-Path `$global:CNIConfig) 
+    {
+        Clear-Content -Path `$global:CNIConfig
+    }
+
+    Write-Host "Generated CNI Config [`$configJson]"
+
+    Add-Content -Path `$global:CNIConfig -Value (ConvertTo-Json `$configJson -Depth 20)
 }
 
 try
@@ -278,7 +302,7 @@ try
         while (-not `$podCidrDiscovered)
         {
             Write-Host "Sleeping for 10s, and then waiting to discover pod CIDR"
-            Start-Sleep -sec 10
+            Start-Sleep 10
             
             `$podCIDR=Get-PodCIDR
             `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
@@ -288,14 +312,21 @@ try
         `$process | Stop-Process | Out-Null
     }
     
-    Set-DockerNetwork(`$podCIDR)
+    # startup the service    
+    `$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:NetworkMode.ToLower()
+    
+    if (!`$hnsNetwork) 
+    {
+        Write-Host "No HNS network found, creating a new one..."
+        ipmo `$global:HNSModule
+        `$podGW = Get-DefaultGateway `$podCIDR
 
-    # startup the service
-    `$podGW=Get-PodGateway(`$podCIDR)
-    `$env:CONTAINER_NETWORK="`$global:TransparentNetworkName"
-    `$env:NAT_NETWORK="`$global:NatNetworkName"
-    `$env:POD_GW="`$podGW"
-    `$env:VIP_CIDR="10.0.0.0/8"
+        `$hnsNetwork = New-HNSNetwork -Type `$global:NetworkMode -AddressPrefix `$podCIDR -Gateway `$masterSubnetGW -Name `$global:NetworkMode.ToLower() -Verbose
+    }
+
+    Start-Sleep 10
+    # Add route to all other POD networks
+    Update-CNIConfig `$podCIDR
 
     $KubeletCommandLine
 }
@@ -307,8 +338,16 @@ catch
     $kubeStartStr | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
     $kubeProxyStartStr = @"
-`$env:INTERFACE_TO_ADD_SERVICE_IP="vEthernet (forwarder)"
-c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
+`$env:KUBE_NETWORK = "l2bridge"
+`$global:NetworkMode = "L2Bridge"
+`$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:NetworkMode.ToLower()
+while (!`$hnsNetwork)
+{
+    Start-Sleep 10
+    `$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:NetworkMode.ToLower()
+}
+
+c:\k\kube-proxy.exe --v=3 --proxy-mode=kernelspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
 "@
 
     if ($global:KubeBinariesVersion -ge "1.7.0")

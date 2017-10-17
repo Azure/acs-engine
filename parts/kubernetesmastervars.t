@@ -267,9 +267,9 @@
     "kubeBinariesSASURL": "[parameters('kubeBinariesSASURL')]",
     "kubeBinariesVersion": "[parameters('kubeBinariesVersion')]",
     "windowsTelemetryGUID": "[parameters('windowsTelemetryGUID')]",
-    "agentWindowsPublisher": "MicrosoftWindowsServer",
-    "agentWindowsOffer": "WindowsServer",
-    "agentWindowsSku": "2016-Datacenter-with-Containers",
+    "agentWindowsPublisher": "microsoft-hyperv",
+    "agentWindowsOffer": "rs3_prertm_validation-preview",
+    "agentWindowsSku": "servercore_with_containers",
     "agentWindowsVersion": "[parameters('agentWindowsVersion')]",
     "singleQuote": "'",
     "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Copy-Item $inputFile $outputFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "

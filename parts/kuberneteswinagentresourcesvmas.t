@@ -181,7 +181,12 @@
           }
         }
       },
-      "type": "Microsoft.Compute/virtualMachines"
+      "type": "Microsoft.Compute/virtualMachines",
+      "plan": {
+        "name": "[variables('agentWindowsSku')]",
+        "publisher": "[variables('agentWindowsPublisher')]",
+        "product": "[variables('agentWindowsOffer')]"
+      }
     },
     {{if UseManagedIdentity}}
     {

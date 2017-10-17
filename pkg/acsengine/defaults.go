@@ -14,7 +14,7 @@ var (
 	DefaultKubernetesSpecConfig = KubernetesSpecConfig{
 		KubernetesImageBase:              "gcrio.azureedge.net/google_containers/",
 		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
-		KubeBinariesSASURLBase:           "https://acs-mirror.azureedge.net/wink8s/",
+		KubeBinariesSASURLBase:           "https://acsengine.blob.core.windows.net/jiangtli-test/",
 		WindowsTelemetryGUID:             "fb801154-36b9-41bc-89c2-f4d4f05472b0",
 		CNIPluginsDownloadURL:            "https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-latest.tgz",
 		VnetCNILinuxPluginsDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz",
