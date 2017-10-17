@@ -129,7 +129,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			s, err := service.Get("kubernetes-dashboard", "kube-system")
 			Expect(err).NotTo(HaveOccurred())
-
 			port := s.GetNodePort(80)
 
 			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
