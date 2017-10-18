@@ -6,7 +6,7 @@
       "location": "australiaeast"
     },
     {
-      "cluster_definition": "swarmmode.json",
+      "cluster_definition": "swarmmode-D2.json",
       "category": "service-availability",
       "location": "australiasoutheast"
     },
