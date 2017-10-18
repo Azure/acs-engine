@@ -78,6 +78,12 @@ func (a *Properties) Validate() error {
 		return e
 	}
 
+	for _, agentPoolProfile := range a.AgentPoolProfiles {
+		if e := agentPoolProfile.Validate(); e != nil {
+			return e
+		}
+	}
+
 	if e := a.LinuxProfile.Validate(); e != nil {
 		return e
 	}
