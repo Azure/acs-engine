@@ -14,6 +14,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/dcos"
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
+	"github.com/Azure/acs-engine/test/e2e/metrics"
 )
 
 var (
@@ -22,10 +23,10 @@ var (
 	eng  *engine.Engine
 	rgs  []string
 	err  error
+	pt   *metrics.Point
 )
 
 func main() {
-	start := time.Now()
 	cwd, _ := os.Getwd()
 	cfg, err = config.ParseConfig()
 	if err != nil {
@@ -47,6 +48,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Error while trying to set azure subscription!")
 	}
+	pt = metrics.BuildPoint(cfg.Orchestrator, cfg.Location, cfg.ClusterDefinition, acct.SubscriptionID)
 
 	// If an interrupt/kill signal is sent we will run the clean up procedure
 	trap()
@@ -54,14 +56,18 @@ func main() {
 	// Only provision a cluster if there isnt a name present
 	if cfg.Name == "" {
 		for i := 1; i <= cfg.ProvisionRetries; i++ {
+			pt.SetProvisionStart()
 			success := provisionCluster()
 			rgs = append(rgs, cfg.Name)
 			if success {
+				pt.RecordProvisionSuccess()
 				break
 			} else if i == cfg.ProvisionRetries {
+				pt.RecordProvisionError()
 				teardown()
 				log.Fatalf("Exceeded Provision retry count!")
 			}
+			pt.RecordProvisionError()
 		}
 	} else {
 		engCfg, err := engine.ParseConfig(cfg.CurrentWorkingDir, cfg.ClusterDefinition, cfg.Name)
@@ -81,12 +87,14 @@ func main() {
 		}
 	}
 
+	pt.SetNodeWaitStart()
 	if cfg.IsKubernetes() {
 		os.Setenv("KUBECONFIG", cfg.GetKubeConfig())
 		log.Printf("Kubeconfig:%s\n", cfg.GetKubeConfig())
 		log.Println("Waiting on nodes to go into ready state...")
 		ready := node.WaitOnReady(eng.NodeCount(), 10*time.Second, cfg.Timeout)
 		if ready == false {
+			pt.RecordNodeWait()
 			teardown()
 			log.Fatalf("Error: Not all nodes in ready state!")
 		}
@@ -106,14 +114,27 @@ func main() {
 		}
 		ready := cluster.WaitForNodes(eng.NodeCount(), 10*time.Second, cfg.Timeout)
 		if ready == false {
+			pt.RecordNodeWait()
 			teardown()
 			log.Fatal("Error: Not all nodes in healthy state!")
 		}
 	}
+	pt.RecordNodeWait()
 
-	runGinkgo(cfg.Orchestrator)
+	if !cfg.SkipTest {
+		pt.SetTestStart()
+		err := runGinkgo(cfg.Orchestrator)
+		if err != nil {
+			pt.RecordTestError()
+			teardown()
+			os.Exit(1)
+		} else {
+			pt.RecordTestSuccess()
+		}
+	}
+
 	teardown()
-	log.Printf("Total Testing Elapsed Time:%s\n", time.Since(start))
+	os.Exit(0)
 }
 
 func trap() {
@@ -131,6 +152,8 @@ func trap() {
 }
 
 func teardown() {
+	pt.RecordTotalTime()
+	pt.Write()
 	if cfg.CleanUpOnExit {
 		for _, rg := range rgs {
 			log.Printf("Deleting Group:%s\n", rg)
@@ -139,7 +162,7 @@ func teardown() {
 	}
 }
 
-func runGinkgo(orchestrator string) {
+func runGinkgo(orchestrator string) error {
 	testDir := fmt.Sprintf("test/e2e/%s", orchestrator)
 	cmd := exec.Command("ginkgo", "-nodes", "10", "-slowSpecThreshold", "180", "-r", testDir)
 	cmd.Stdout = os.Stdout
@@ -147,15 +170,14 @@ func runGinkgo(orchestrator string) {
 	err = cmd.Start()
 	if err != nil {
 		log.Printf("Error while trying to start ginkgo:%s\n", err)
-		teardown()
-		os.Exit(1)
+		return err
 	}
 
 	err = cmd.Wait()
 	if err != nil {
-		teardown()
-		os.Exit(1)
+		return err
 	}
+	return nil
 }
 
 func provisionCluster() bool {
@@ -169,13 +191,15 @@ func provisionCluster() bool {
 
 	out, err := exec.Command("ssh-keygen", "-f", cfg.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa").CombinedOutput()
 	if err != nil {
-		log.Fatalf("Error while trying to generate ssh key:%s\n\nOutput:%s\n", err, out)
+		log.Printf("Error while trying to generate ssh key:%s\n\nOutput:%s\n", err, out)
+		return false
 	}
 	exec.Command("chmod", "0600", cfg.GetSSHKeyPath()+"*")
 
 	publicSSHKey, err := cfg.ReadPublicSSHKey()
 	if err != nil {
-		log.Fatalf("Error while trying to read public ssh key: %s\n", err)
+		log.Printf("Error while trying to read public ssh key: %s\n", err)
+		return false
 	}
 	os.Setenv("PUBLIC_SSH_KEY", publicSSHKey)
 	os.Setenv("DNS_PREFIX", cfg.Name)
@@ -190,7 +214,10 @@ func provisionCluster() bool {
 	vnetName := fmt.Sprintf("%sCustomVnet", cfg.Name)
 	subnetName := fmt.Sprintf("%sCustomSubnet", cfg.Name)
 	if cfg.CreateVNET {
-		acct.CreateVnet(vnetName, "10.239.0.0/16", subnetName, "10.239.0.0/16")
+		err = acct.CreateVnet(vnetName, "10.239.0.0/16", subnetName, "10.239.0.0/16")
+		if err != nil {
+			return false
+		}
 		subnetID = fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s", acct.SubscriptionID, acct.ResourceGroup.Name, vnetName, subnetName)
 	}
 
@@ -221,7 +248,10 @@ func provisionCluster() bool {
 	}
 
 	if cfg.CreateVNET {
-		acct.UpdateRouteTables(subnetName, vnetName)
+		err = acct.UpdateRouteTables(subnetName, vnetName)
+		if err != nil {
+			return false
+		}
 	}
 
 	return true
