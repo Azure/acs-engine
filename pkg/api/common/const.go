@@ -55,8 +55,8 @@ const (
 const (
 	// KubernetesVersion1Dot8Dot1 is the major.minor.patch string for 1.8.1 versions of kubernetes
 	KubernetesVersion1Dot8Dot1 string = "1.8.1"
-	// KubernetesVersion1Dot7Dot7 is the major.minor.patch string for 1.7.7 versions of kubernetes
-	KubernetesVersion1Dot7Dot7 string = "1.7.7"
+	// KubernetesVersion1Dot7Dot7 is the major.minor.patch string for 1.7.8 versions of kubernetes
+	KubernetesVersion1Dot7Dot7 string = "1.7.8"
 	// KubernetesVersion1Dot6Dot11 is the major.minor.patch string for 1.6.11 versions of kubernetes
 	KubernetesVersion1Dot6Dot11 string = "1.6.11"
 	// KubernetesVersion1Dot5Dot8 is the major.minor.patch string for 1.5.8 versions of kubernetes
