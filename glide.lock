@@ -349,4 +349,8 @@ imports:
   - util/flowcontrol
   - util/homedir
   - util/integer
+- name: github.com/influxdata/influxdb
+  version: 2f47c3d28fc8d9b80f676b2626799a807833e720
+  subpackages:
+  - client/v2
 testImports: []
