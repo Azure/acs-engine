@@ -152,7 +152,7 @@
     <Str Cat="Text">
       <Val><![CDATA[orchestrator '%s' is unsupported]]></Val>
       <Tgt Cat="Text" Stat="Loc" Orig="New">
-        <Val><![CDATA[不支持业务流程“%s”]]></Val>
+        <Val><![CDATA[不支持业务流程协调程序“%s”]]></Val>
       </Tgt>
     </Str>
     <Disp Icon="Str" />
