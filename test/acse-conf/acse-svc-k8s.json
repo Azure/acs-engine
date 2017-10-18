@@ -6,9 +6,9 @@
       "location": "australiaeast"
     },
     {
-      "cluster_definition": "kubernetes.json",
+      "cluster_definition": "kubernetes-D2.json",
       "category": "service-availability",
-      "location": "australiaeast"
+      "location": "australiasoutheast"
     },
     {
       "cluster_definition": "kubernetes.json",
