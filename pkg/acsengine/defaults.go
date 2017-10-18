@@ -38,9 +38,9 @@ var (
 	//DefaultUbuntuImageConfig is the default Linux distribution.
 	DefaultUbuntuImageConfig = AzureOSImageConfig{
 		ImageOffer:     "UbuntuServer",
-		ImageSku:       "16.04-LTS",
+		ImageSku:       "16.04-DAILY-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201708151",
+		ImageVersion:   "16.04.201710110",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -247,6 +247,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
 			}
 		}
+
+		// default etcd version
+		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdVersion {
+			a.OrchestratorProfile.KubernetesConfig.EtcdVersion = "2.5.2"
+		}
+
 	} else if a.OrchestratorProfile.OrchestratorType == api.DCOS {
 		if a.OrchestratorProfile.DcosConfig == nil {
 			a.OrchestratorProfile.DcosConfig = &api.DcosConfig{}

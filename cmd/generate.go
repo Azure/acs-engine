@@ -143,7 +143,7 @@ func (gc *generateCmd) run() error {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}
 
-	template, parameters, certsGenerated, err := templateGenerator.GenerateTemplate(gc.containerService)
+	template, parameters, certsGenerated, err := templateGenerator.GenerateTemplate(gc.containerService, acsengine.DefaultGeneratorCode)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", gc.apimodelPath, err.Error())
 		os.Exit(1)

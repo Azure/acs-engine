@@ -61,10 +61,8 @@ ensureRunCommandCompleted()
         sleep 1
     done
 }
-ensureRunCommandCompleted
 
-# make sure walinuxagent doesn't get updated in the middle of running this script
-apt-mark hold walinuxagent
+echo `date`,`hostname`, startscript>>/opt/m 
 
 # A delay to start the kubernetes processes is necessary
 # if a reboot is required.  Otherwise, the agents will encounter issue: 
@@ -413,12 +411,25 @@ users:
 }
 
 # master and node
+echo `date`,`hostname`, EnsureDockerStart>>/opt/m 
 ensureDocker
+echo `date`,`hostname`, configNetworkPolicyStart>>/opt/m 
 configNetworkPolicy
+echo `date`,`hostname`, setMaxPodsStart>>/opt/m 
 setMaxPods ${MAX_PODS}
+echo `date`,`hostname`, ensureKubeletStart>>/opt/m
 ensureKubelet
+echo `date`,`hostname`, extractKubctlStart>>/opt/m 
 extractKubectl
+echo `date`,`hostname`, ensureJournalStart>>/opt/m 
 ensureJournal
+echo `date`,`hostname`, ensureJournalDone>>/opt/m 
+
+ensureRunCommandCompleted
+echo `date`,`hostname`, RunCmdCompleted>>/opt/m 
+
+# make sure walinuxagent doesn't get updated in the middle of running this script
+apt-mark hold walinuxagent
 
 # master only
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
@@ -442,3 +453,5 @@ if $REBOOTREQUIRED; then
   echo 'reboot required, rebooting node in 1 minute'
   /bin/bash -c "shutdown -r 1 &"
 fi
+
+echo `date`,`hostname`, endscript>>/opt/m 

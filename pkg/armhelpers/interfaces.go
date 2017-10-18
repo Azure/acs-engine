@@ -27,7 +27,7 @@ type ACSEngineClient interface {
 	DeployTemplate(resourceGroup, name string, template, parameters map[string]interface{}, cancel <-chan struct{}) (*resources.DeploymentExtended, error)
 
 	// EnsureResourceGroup ensures the specified resource group exists in the specified location
-	EnsureResourceGroup(resourceGroup, location string) (*resources.Group, error)
+	EnsureResourceGroup(resourceGroup, location string, managedBy *string) (*resources.Group, error)
 
 	//
 	// COMPUTE

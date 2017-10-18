@@ -40,6 +40,17 @@ type Properties struct {
 	AccessProfiles          map[string]AccessProfile `json:"accessProfiles,omitempty"`
 }
 
+// ManagedClusterAccessProfile represents the access profile definition for managed cluster
+// The Id captures the Role Name e.g. clusterAdmin, clusterUser
+type ManagedClusterAccessProfile struct {
+	ID       string `json:"id,omitempty"`
+	Location string `json:"location,omitempty" validate:"required"`
+	Name     string `json:"name,omitempty"`
+	Type     string `json:"type,omitempty"`
+
+	Properties *AccessProfile `json:"properties"`
+}
+
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
 // The 'Secret' parameter could be either a plain text, or referenced to a secret in a keyvault.
 // In the latter case, the format of the parameter's value should be
@@ -52,7 +63,7 @@ type Properties struct {
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
 	ClientID string `json:"clientId,omitempty" validate:"required"`
-	Secret   string `json:"secret,omitempty" validate:"required"`
+	Secret   string `json:"secret,omitempty"`
 }
 
 // LinuxProfile represents the Linux configuration passed to the cluster
@@ -72,7 +83,7 @@ type PublicKey struct {
 // WindowsProfile represents the Windows configuration passed to the cluster
 type WindowsProfile struct {
 	AdminUsername string `json:"adminUsername,omitempty" validate:"required"`
-	AdminPassword string `json:"adminPassword,omitempty" validate:"required"`
+	AdminPassword string `json:"adminPassword,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.
@@ -100,16 +111,24 @@ const (
 //  - OS type of the VMs in the pool
 //  - list of applicable upgrades
 type PoolUpgradeProfile struct {
-	KubernetesVersion string    `json:"kubernetesVersion"`
-	Name              string    `json:"name,omitempty"`
-	OSType            string    `json:"osType,omitempty"`
-	Upgrades          []*string `json:"upgrades,omitempty"`
+	KubernetesVersion string   `json:"kubernetesVersion"`
+	Name              string   `json:"name,omitempty"`
+	OSType            string   `json:"osType,omitempty"`
+	Upgrades          []string `json:"upgrades,omitempty"`
+}
+
+// UpgradeProfileProperties contains properties of UpgradeProfile
+type UpgradeProfileProperties struct {
+	ControlPlaneProfile *PoolUpgradeProfile   `json:"controlPlaneProfile"`
+	AgentPoolProfiles   []*PoolUpgradeProfile `json:"agentPoolProfiles"`
 }
 
 // UpgradeProfile contains controlPlane and agent pools upgrade profiles
 type UpgradeProfile struct {
-	ControlPlaneProfile *PoolUpgradeProfile   `json:"controlPlaneProfile"`
-	AgentPoolProfiles   []*PoolUpgradeProfile `json:"agentPoolProfiles"`
+	ID         string                   `json:"id,omitempty"`
+	Name       string                   `json:"name,omitempty"`
+	Type       string                   `json:"type,omitempty"`
+	Properties UpgradeProfileProperties `json:"properties"`
 }
 
 // AgentPoolProfile represents configuration of VMs running agent

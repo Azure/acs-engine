@@ -16,11 +16,30 @@ import (
 var (
 	validate        *validator.Validate
 	keyvaultIDRegex *regexp.Regexp
+	// Any version has to be mirrored in https://acs-mirror.azureedge.net/github-coreos/etcd-v[Version]-linux-amd64.tar.gz
+	etcdValidVersions = [...]string{"2.5.2", "3.1.10"}
 )
 
 func init() {
 	validate = validator.New()
 	keyvaultIDRegex = regexp.MustCompile(`^/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/[^/\s]+$`)
+}
+
+func isValidEtcdVersion(etcdVersion string) error {
+	// Empty versions is defaulted to 2.5.2 on the generalized api model
+	// after vlabs validation. Empty "" version is a valid version for etcd
+	if "" == etcdVersion {
+		return nil
+	}
+	// We have a version set by user
+	validVersions := "" // a bag of valid versions
+	for _, ver := range etcdValidVersions {
+		if ver == etcdVersion {
+			return nil
+		}
+		validVersions = fmt.Sprintf("%s %s", validVersions, ver)
+	}
+	return fmt.Errorf("Invalid etcd version(%s), valid versions are%s", etcdVersion, validVersions)
 }
 
 // Validate implements APIObject
@@ -369,7 +388,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	const minKubeletRetries = 4
 	// k8s versions that have cloudprovider backoff enabled
 	var backoffEnabledVersions = map[string]bool{
-		common.KubernetesVersion1Dot8Dot0:  true,
+		common.KubernetesVersion1Dot8Dot1:  true,
 		common.KubernetesVersion1Dot7Dot7:  true,
 		common.KubernetesVersion1Dot6Dot11: true,
 	}
@@ -496,6 +515,11 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		if firstServiceIP.Equal(dnsIP) {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DNSServiceIP '%s' cannot be the first IP of ServiceCidr '%s'", a.DNSServiceIP, a.ServiceCidr)
 		}
+	}
+
+	// Validate that we have a valid etcd version
+	if e := isValidEtcdVersion(a.EtcdVersion); e != nil {
+		return e
 	}
 
 	return nil

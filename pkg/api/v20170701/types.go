@@ -196,10 +196,18 @@ type PoolUpgradeProfile struct {
 	Upgrades []*OrchestratorProfile `json:"upgrades,omitempty"`
 }
 
-// UpgradeProfile contains master and agent pools upgrade profiles
-type UpgradeProfile struct {
+// UpgradeProfileProperties contains properties of UpgradeProfile
+type UpgradeProfileProperties struct {
 	MasterPoolProfile *PoolUpgradeProfile   `json:"masterPoolProfile"`
 	AgentPoolProfiles []*PoolUpgradeProfile `json:"agentPoolProfiles"`
+}
+
+// UpgradeProfile contains master and agent pools upgrade profiles
+type UpgradeProfile struct {
+	ID         string                   `json:"id,omitempty"`
+	Name       string                   `json:"name,omitempty"`
+	Type       string                   `json:"type,omitempty"`
+	Properties UpgradeProfileProperties `json:"properties"`
 }
 
 // UnmarshalJSON unmarshal json using the default behavior

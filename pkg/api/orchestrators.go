@@ -64,9 +64,8 @@ func GetOrchestratorVersionProfileListV20170930(orchestrator, version string) (*
 		return nil, err
 	}
 	orchList := &v20170930.OrchestratorVersionProfileList{}
-	orchList.Orchestrators = []*v20170930.OrchestratorVersionProfile{}
 	for _, orch := range apiOrchs {
-		orchList.Orchestrators = append(orchList.Orchestrators, ConvertOrchestratorVersionProfileToV20170930(orch))
+		orchList.Properties.Orchestrators = append(orchList.Properties.Orchestrators, ConvertOrchestratorVersionProfileToV20170930(orch))
 	}
 	return orchList, nil
 }
@@ -180,6 +179,16 @@ func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, er
 	case strings.HasPrefix(csOrch.OrchestratorVersion, "1.7"):
 		// check for patch upgrade
 		if ret, err = addPatchUpgrade(ret, csOrch.OrchestratorVersion, common.KubernetesVersion1Dot7Dot7); err != nil {
+			return ret, err
+		}
+		// add next version
+		ret = append(ret, &OrchestratorProfile{
+			OrchestratorType:    Kubernetes,
+			OrchestratorVersion: common.KubernetesVersion1Dot8Dot1,
+		})
+	case strings.HasPrefix(csOrch.OrchestratorVersion, "1.8"):
+		// check for patch upgrade
+		if ret, err = addPatchUpgrade(ret, csOrch.OrchestratorVersion, common.KubernetesVersion1Dot8Dot1); err != nil {
 			return ret, err
 		}
 	}

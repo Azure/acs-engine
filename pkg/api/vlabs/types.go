@@ -204,6 +204,7 @@ type KubernetesConfig struct {
 	EnableAggregatedAPIs             bool    `json:"enableAggregatedAPIs,omitempty"`
 	GCHighThreshold                  int     `json:"gchighthreshold,omitempty"`
 	GCLowThreshold                   int     `json:"gclowthreshold,omitempty"`
+	EtcdVersion                      string  `json:"etcdVersion,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS

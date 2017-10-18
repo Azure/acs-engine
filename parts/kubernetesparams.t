@@ -70,6 +70,22 @@
       },
       "type": "securestring"
     },
+    "generatorCode": {
+      {{PopulateClassicModeDefaultValue "generatorCode"}}
+      "metadata": {
+        "description": "The generator code used to identify the generator"
+      },
+      "type": "string"
+    },
+    "orchestratorName": {
+      {{PopulateClassicModeDefaultValue "orchestratorName"}}
+      "metadata": {
+        "description": "The orchestrator name used to identify the orchestrator.  This must be no more than 3 digits in length, otherwise it will exceed Windows Naming"
+      },
+      "minLength": 3,
+      "maxLength": 3,
+      "type": "string"
+    },
     "dockerBridgeCidr": {
       {{PopulateClassicModeDefaultValue "dockerBridgeCidr"}}
       "metadata": {

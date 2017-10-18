@@ -77,7 +77,8 @@
     "location": "[variables('locations')[mod(add(2,length(parameters('location'))),add(1,length(parameters('location'))))]]",
     "masterAvailabilitySet": "[concat('master-availabilityset-', variables('nameSuffix'))]",
     "nameSuffix": "[parameters('nameSuffix')]",
-    "orchestratorName": "k8s",
+    "orchestratorName": "[parameters('orchestratorName')]",
+    "generatorCode": "[parameters('generatorCode')]",
     "fqdnEndpointSuffix":"[parameters('fqdnEndpointSuffix')]",
     "osImageOffer": "[parameters('osImageOffer')]", 
     "osImagePublisher": "[parameters('osImagePublisher')]", 
@@ -116,6 +117,7 @@
   {{end}}
 {{end}}
     "provisionScript": "{{GetKubernetesB64Provision}}",
+    "mountetcdScript": "{{GetKubernetesB64Mountetcd}}",
     "generateProxyCertsScript": "{{GetKubernetesB64GenerateProxyCerts}}",
     "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
 {{if IsVNETIntegrated}}
@@ -138,7 +140,7 @@
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
-    "virtualNetworkResourceGroupName": "",
+    "virtualNetworkResourceGroupName": "''",
   {{end}}
 {{else}}
     "subnet": "[parameters('masterSubnet')]",
@@ -147,6 +149,7 @@
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "virtualNetworkName": "[concat(variables('orchestratorName'), '-vnet-', variables('nameSuffix'))]",
+    "virtualNetworkResourceGroupName": "''",
 {{end}}
     "vnetCidr": "[parameters('vnetCidr')]",
     "kubeDNSServiceIP": "[parameters('kubeDNSServiceIP')]",

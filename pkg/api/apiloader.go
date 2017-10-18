@@ -160,7 +160,6 @@ func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte,
 		if e := json.Unmarshal(contents, &managedCluster); e != nil {
 			return nil, e
 		}
-		setManagedClusterDefaultsv20170831(managedCluster)
 		if e := managedCluster.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
@@ -170,7 +169,6 @@ func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte,
 		if e := json.Unmarshal(contents, &managedCluster); e != nil {
 			return nil, e
 		}
-		setManagedClusterDefaultsvlabs(managedCluster)
 		if e := managedCluster.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
@@ -292,14 +290,4 @@ func setContainerServiceDefaultsv20170131(c *v20170131.ContainerService) {
 			OrchestratorType: v20170131.DCOS,
 		}
 	}
-}
-
-// Sets default HostedMaster property values for any appropriate zero values
-func setManagedClusterDefaultsv20170831(hm *v20170831.ManagedCluster) {
-	hm.Properties.KubernetesVersion = ""
-}
-
-// Sets default HostedMaster property values for any appropriate zero values
-func setManagedClusterDefaultsvlabs(hm *apvlabs.ManagedCluster) {
-	hm.Properties.KubernetesVersion = ""
 }
