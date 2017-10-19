@@ -54,7 +54,6 @@ $global:TenantId = "{{WrapAsVariable "tenantID"}}"
 $global:SubscriptionId = "{{WrapAsVariable "subscriptionId"}}"
 $global:ResourceGroup = "{{WrapAsVariable "resourceGroup"}}"
 $global:SubnetName = "{{WrapAsVariable "subnetName"}}"
-$global:MasterSubnet = "{{WrapAsVariable "subnet"}}"
 $global:SecurityGroupName = "{{WrapAsVariable "nsgName"}}"
 $global:VNetName = "{{WrapAsVariable "virtualNetworkName"}}"
 $global:RouteTableName = "{{WrapAsVariable "routeTableName"}}"
@@ -201,7 +200,6 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
 `$global:AzureHostname = "$AzureHostname"
 `$global:MasterIP = "$MasterIP"
 `$global:KubeDnsServiceIp = "$KubeDnsServiceIp"
-`$global:MasterSubnet = "$global:MasterSubnet"
 `$global:KubeClusterCIDR = "$global:KubeClusterCIDR"
 `$global:KubeServiceCIDR = "$global:KubeServiceCIDR"
 `$global:KubeBinariesVersion = "$global:KubeBinariesVersion"
@@ -237,7 +235,7 @@ Get-MgmtIpAddress()
 }
 
 function
-Update-CNIConfig(`$podCIDR)
+Update-CNIConfig(`$podCIDR, `$podGW)
 {
     `$jsonSampleConfig = 
 "{
@@ -268,8 +266,7 @@ Update-CNIConfig(`$podCIDR)
     `$configJson = ConvertFrom-Json `$jsonSampleConfig 
     `$configJson.name = `$global:NetworkMode.ToLower()
     `$configJson.ipam.subnet=`$podCIDR
-    `$masterSubnetGW = Get-DefaultGateway `$global:MasterSubnet
-    `$configJson.ipam.routes[0].GW = `$masterSubnetGW
+    `$configJson.ipam.routes[0].GW = `$podGW
     `$configJson.dns.Nameservers[0] = `$global:KubeDnsServiceIp
 
     `$configJson.AdditionalArgs[0].Value.ExceptionList[0] = `$global:KubeClusterCIDR
@@ -315,18 +312,18 @@ try
     # startup the service    
     `$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:NetworkMode.ToLower()
     
-    if (!`$hnsNetwork) 
+    if (!`$hnsNetwork)
     {
         Write-Host "No HNS network found, creating a new one..."
         ipmo `$global:HNSModule
         `$podGW = Get-DefaultGateway `$podCIDR
 
-        `$hnsNetwork = New-HNSNetwork -Type `$global:NetworkMode -AddressPrefix `$podCIDR -Gateway `$masterSubnetGW -Name `$global:NetworkMode.ToLower() -Verbose
+        `$hnsNetwork = New-HNSNetwork -Type `$global:NetworkMode -AddressPrefix `$podCIDR -Gateway `$podGW -Name `$global:NetworkMode.ToLower() -Verbose
     }
 
     Start-Sleep 10
     # Add route to all other POD networks
-    Update-CNIConfig `$podCIDR
+    Update-CNIConfig `$podCIDR `$podGW
 
     $KubeletCommandLine
 }
