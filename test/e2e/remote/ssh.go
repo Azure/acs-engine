@@ -79,7 +79,7 @@ func NewConnection(host, port, user, keyPath string) (*Connection, error) {
 func (c *Connection) Execute(cmd string) ([]byte, error) {
 	session, err := c.Client.NewSession()
 	if err != nil {
-		return out, err
+		return nil, err
 	}
 	defer session.Close()
 
