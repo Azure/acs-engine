@@ -594,6 +594,7 @@ func mainInternal() error {
 		case "usgoviowa": // US Gov cloud
 		case "koreacentral": // TODO make sure our versions of azure-cli support this cloud
 		case "centraluseuap": // TODO determine why this region is flaky
+		case "australiasoutheast": // TODO undo when this region is not flaky
 		case "brazilsouth": // canary region
 		default:
 			regions = append(regions, region)
