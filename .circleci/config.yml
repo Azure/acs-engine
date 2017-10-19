@@ -271,6 +271,9 @@ workflows:
   build_and_test_pr:
     jobs:
       - test
+        filters:
+          branches:
+            ignore: master
       - pr-e2e-hold:
           type: approval
           filters:
@@ -338,7 +341,10 @@ workflows:
               ignore: master
   build_and_test_master:
     jobs:
-      - test     
+      - test
+        filters:
+          branches:
+            only: master
       - k8s-1.6-release-e2e:
           requires:
             - test
