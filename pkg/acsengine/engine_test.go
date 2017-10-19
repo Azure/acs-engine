@@ -74,7 +74,7 @@ func TestExpected(t *testing.T) {
 			continue
 		}
 
-		armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService)
+		armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode)
 		if err != nil {
 			t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 			continue
@@ -98,7 +98,7 @@ func TestExpected(t *testing.T) {
 		}
 
 		for i := 0; i < 3; i++ {
-			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService)
+			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode)
 			if err != nil {
 				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 				continue
@@ -285,7 +285,7 @@ func TestTemplateOutputPresence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to load container service from file: %v", err)
 	}
-	armTemplate, _, _, err := templateGenerator.GenerateTemplate(containerService)
+	armTemplate, _, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode)
 	if err != nil {
 		t.Fatalf("Failed to generate arm template: %v", err)
 	}

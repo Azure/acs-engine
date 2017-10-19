@@ -1,5 +1,19 @@
 package common
 
+// the orchestrators supported
+const (
+	// Mesos is the string constant for MESOS orchestrator type
+	Mesos string = "Mesos"
+	// DCOS is the string constant for DCOS orchestrator type and defaults to DCOS188
+	DCOS string = "DCOS"
+	// Swarm is the string constant for the Swarm orchestrator type
+	Swarm string = "Swarm"
+	// Kubernetes is the string constant for the Kubernetes orchestrator type
+	Kubernetes string = "Kubernetes"
+	// SwarmMode is the string constant for the Swarm Mode orchestrator type
+	SwarmMode string = "SwarmMode"
+)
+
 // validation values
 const (
 	// MinAgentCount are the minimum number of agents per agent pool
@@ -39,40 +53,40 @@ const (
 )
 
 const (
-	// KubernetesRelease1Dot8 is the major.minor string prefix for 1.8 versions of kubernetes
-	KubernetesRelease1Dot8 string = "1.8"
-	// KubernetesRelease1Dot7 is the major.minor string prefix for 1.7 versions of kubernetes
-	KubernetesRelease1Dot7 string = "1.7"
-	// KubernetesRelease1Dot6 is the major.minor string prefix for 1.6 versions of kubernetes
-	KubernetesRelease1Dot6 string = "1.6"
-	// KubernetesRelease1Dot5 is the major.minor string prefix for 1.5 versions of kubernetes
-	KubernetesRelease1Dot5 string = "1.5"
-	// KubernetesDefaultRelease is the default major.minor version for kubernetes
-	KubernetesDefaultRelease string = KubernetesRelease1Dot7
+	// KubernetesVersion1Dot8Dot1 is the major.minor.patch string for 1.8.1 versions of kubernetes
+	KubernetesVersion1Dot8Dot1 string = "1.8.1"
+	// KubernetesVersion1Dot7Dot7 is the major.minor.patch string for 1.7.7 versions of kubernetes
+	KubernetesVersion1Dot7Dot7 string = "1.7.7"
+	// KubernetesVersion1Dot6Dot11 is the major.minor.patch string for 1.6.11 versions of kubernetes
+	KubernetesVersion1Dot6Dot11 string = "1.6.11"
+	// KubernetesVersion1Dot5Dot8 is the major.minor.patch string for 1.5.8 versions of kubernetes
+	KubernetesVersion1Dot5Dot8 string = "1.5.8"
+	// KubernetesDefaultVersion is the default major.minor.patch version for kubernetes
+	KubernetesDefaultVersion string = KubernetesVersion1Dot7Dot7
 )
 
-// KubeReleaseToVersion maps a major.minor release to an full major.minor.patch version
-var KubeReleaseToVersion = map[string]string{
-	KubernetesRelease1Dot8: "1.8.0",
-	KubernetesRelease1Dot7: "1.7.7",
-	KubernetesRelease1Dot6: "1.6.11",
-	KubernetesRelease1Dot5: "1.5.8",
+// AllKubernetesSupportedVersions maintain a list of available k8s versions in acs-engine
+var AllKubernetesSupportedVersions = []string{
+	KubernetesVersion1Dot8Dot1,
+	KubernetesVersion1Dot7Dot7,
+	KubernetesVersion1Dot6Dot11,
+	KubernetesVersion1Dot5Dot8,
 }
 
 const (
-	// DCOSRelease1Dot10 is the major.minor string prefix for 1.9 versions of DCOS
-	DCOSRelease1Dot10 string = "1.10"
-	// DCOSRelease1Dot9 is the major.minor string prefix for 1.9 versions of DCOS
-	DCOSRelease1Dot9 string = "1.9"
-	// DCOSRelease1Dot8 is the major.minor string prefix for 1.8 versions of DCOS
-	DCOSRelease1Dot8 string = "1.8"
-	// DCOSDefaultRelease is the default major.minor version for DCOS
-	DCOSDefaultRelease string = DCOSRelease1Dot9
+	// DCOSVersion1Dot10Dot0 is the major.minor.patch string for 1.10.0 versions of DCOS
+	DCOSVersion1Dot10Dot0 string = "1.10.0"
+	// DCOSVersion1Dot9Dot0 is the major.minor.patch string for 1.9.0 versions of DCOS
+	DCOSVersion1Dot9Dot0 string = "1.9.0"
+	// DCOSVersion1Dot8Dot8 is the major.minor.patch string for 1.8.8 versions of DCOS
+	DCOSVersion1Dot8Dot8 string = "1.8.8"
+	// DCOSDefaultVersion is the default major.minor.patch version for DCOS
+	DCOSDefaultVersion string = DCOSVersion1Dot9Dot0
 )
 
-// DCOSReleaseToVersion maps a major.minor release to an full major.minor.patch version
-var DCOSReleaseToVersion = map[string]string{
-	DCOSRelease1Dot10: "1.10.0",
-	DCOSRelease1Dot9:  "1.9.0",
-	DCOSRelease1Dot8:  "1.8.8",
+// AllDCOSSupportedVersions maintain a list of available dcos versions in acs-engine
+var AllDCOSSupportedVersions = []string{
+	DCOSVersion1Dot10Dot0,
+	DCOSVersion1Dot9Dot0,
+	DCOSVersion1Dot8Dot8,
 }

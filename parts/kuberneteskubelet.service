@@ -37,6 +37,8 @@ ExecStart=/usr/bin/docker run \
         --pod-infra-container-image="${KUBELET_POD_INFRA_CONTAINER_IMAGE}" \
         --address=0.0.0.0 \
         --allow-privileged=true \
+        ${KUBELET_FIX_43704_1} \
+        ${KUBELET_FIX_43704_2}${KUBELET_FIX_43704_3} \
         --enable-server \
         --pod-manifest-path=/etc/kubernetes/manifests \
         --cluster-dns=${KUBELET_CLUSTER_DNS} \
@@ -51,6 +53,7 @@ ExecStart=/usr/bin/docker run \
         --image-gc-high-threshold=${KUBELET_IMAGE_GC_HIGH_THRESHOLD} \
         --image-gc-low-threshold=${KUBELET_IMAGE_GC_LOW_THRESHOLD} \
         --v=2 ${KUBELET_FEATURE_GATES} \
+        ${KUBELET_NON_MASQUERADE_CIDR} \
         ${KUBELET_REGISTER_NODE} ${KUBELET_REGISTER_WITH_TAINTS}
 
 [Install]

@@ -24,10 +24,6 @@ import:
   version: v1.0.0
 - package: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
-- package: github.com/prometheus/common
-  version: 61f87aac8082fa8c3c5655c7608d7478d46ac2ad # update this every release cycle
-  subpackages:
-  - log
 - package: github.com/satori/go.uuid
   version: v1.1.0
 - package: github.com/spf13/cobra
@@ -54,6 +50,10 @@ import:
   version: v1.3.1
 - package: github.com/imdario/mergo
   version: ^0.2.2
+- package: k8s.io/apiserver
+  version: 366b072768b4e6d93c7de236464c0abe85d0b7c6
+- package: k8s.io/client-go
+  version: ~4.0.0
 testImport:
 # glide isn't able to mutually reconcile pinned versions of these deps
 - package: github.com/onsi/gomega
@@ -63,3 +63,4 @@ testImport:
   version: 366b072768b4e6d93c7de236464c0abe85d0b7c6
 - package: k8s.io/client-go
   version: ~4.0.0
+- package: github.com/influxdata/influxdb/client/v2

@@ -16,6 +16,7 @@ import (
 
 // Config holds global test configuration
 type Config struct {
+	SkipTest          bool          `envconfig:"SKIP_TEST" default:"false"`
 	Orchestrator      string        `envconfig:"ORCHESTRATOR" default:"kubernetes"`
 	Name              string        `envconfig:"NAME"`                                                                  // Name allows you to set the name of a cluster already created
 	Location          string        `envconfig:"LOCATION" required:"true" default:"southcentralus"`                     // Location where you want to create the cluster

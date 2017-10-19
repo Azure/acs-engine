@@ -16,7 +16,7 @@ node("slave") {
 
         if(locations_str.equals("all")) {
           locations_str = "\
-australiaeast australiasoutheast \
+australiaeast \
 brazilsouth \
 canadacentral canadaeast \
 centralindia southindia \

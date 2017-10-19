@@ -52,11 +52,11 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 }
 
 func Test_KubernetesConfig_Validate(t *testing.T) {
-	// Tests that should pass across all releases
-	for _, k8sRelease := range []string{common.KubernetesRelease1Dot5, common.KubernetesRelease1Dot6, common.KubernetesRelease1Dot7, common.KubernetesRelease1Dot8} {
+	// Tests that should pass across all versions
+	for _, k8sVersion := range []string{common.KubernetesVersion1Dot5Dot8, common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot8Dot1} {
 		c := KubernetesConfig{}
-		if err := c.Validate(k8sRelease); err != nil {
-			t.Errorf("should not error on empty KubernetesConfig: %v, release %s", err, k8sRelease)
+		if err := c.Validate(k8sVersion); err != nil {
+			t.Errorf("should not error on empty KubernetesConfig: %v, version %s", err, k8sVersion)
 		}
 
 		c = KubernetesConfig{
@@ -76,42 +76,56 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			CloudProviderRateLimitQPS:        ValidKubernetesCloudProviderRateLimitQPS,
 			CloudProviderRateLimitBucket:     ValidKubernetesCloudProviderRateLimitBucket,
 		}
-		if err := c.Validate(k8sRelease); err != nil {
+		if err := c.Validate(k8sVersion); err != nil {
 			t.Errorf("should not error on a KubernetesConfig with valid param values: %v", err)
 		}
 
 		c = KubernetesConfig{
 			ClusterSubnet: "10.16.x.0/invalid",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error on invalid ClusterSubnet")
 		}
 
 		c = KubernetesConfig{
 			DockerBridgeSubnet: "10.120.1.0/invalid",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error on invalid DockerBridgeSubnet")
+		}
+
+		c = KubernetesConfig{
+			NonMasqueradeCidr: "10.120.1.0/24",
+		}
+		if err := c.Validate(k8sVersion); err != nil {
+			t.Error("should not error on valid NonMasqueradeCidr")
+		}
+
+		c = KubernetesConfig{
+			NonMasqueradeCidr: "10.120.1.0/invalid",
+		}
+		if err := c.Validate(k8sVersion); err == nil {
+			t.Error("should error on invalid NonMasqueradeCidr")
 		}
 
 		c = KubernetesConfig{
 			MaxPods: KubernetesMinMaxPods - 1,
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error on invalid MaxPods")
 		}
 
 		c = KubernetesConfig{
 			NodeStatusUpdateFrequency: "invalid",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error on invalid NodeStatusUpdateFrequency")
 		}
 
 		c = KubernetesConfig{
 			CtrlMgrNodeMonitorGracePeriod: "invalid",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error on invalid CtrlMgrNodeMonitorGracePeriod")
 		}
 
@@ -119,35 +133,35 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			NodeStatusUpdateFrequency:     "10s",
 			CtrlMgrNodeMonitorGracePeriod: "30s",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error when CtrlMgrRouteReconciliationPeriod is not sufficiently larger than NodeStatusUpdateFrequency")
 		}
 
 		c = KubernetesConfig{
 			CtrlMgrPodEvictionTimeout: "invalid",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error on invalid CtrlMgrPodEvictionTimeout")
 		}
 
 		c = KubernetesConfig{
 			CtrlMgrRouteReconciliationPeriod: "invalid",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error on invalid CtrlMgrRouteReconciliationPeriod")
 		}
 
 		c = KubernetesConfig{
 			DNSServiceIP: "192.168.0.10",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error when DNSServiceIP but not ServiceCidr")
 		}
 
 		c = KubernetesConfig{
 			ServiceCidr: "192.168.0.10/24",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error when ServiceCidr but not DNSServiceIP")
 		}
 
@@ -155,7 +169,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			DNSServiceIP: "invalid",
 			ServiceCidr:  "192.168.0.0/24",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error when DNSServiceIP is invalid")
 		}
 
@@ -163,7 +177,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			DNSServiceIP: "192.168.1.10",
 			ServiceCidr:  "192.168.0.0/not-a-len",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error when ServiceCidr is invalid")
 		}
 
@@ -171,7 +185,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			DNSServiceIP: "192.168.1.10",
 			ServiceCidr:  "192.168.0.0/24",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error when DNSServiceIP is outside of ServiceCidr")
 		}
 
@@ -179,7 +193,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			DNSServiceIP: "172.99.255.255",
 			ServiceCidr:  "172.99.0.1/16",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error when DNSServiceIP is broadcast address of ServiceCidr")
 		}
 
@@ -187,7 +201,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			DNSServiceIP: "172.99.0.1",
 			ServiceCidr:  "172.99.0.1/16",
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error when DNSServiceIP is first IP of ServiceCidr")
 		}
 
@@ -195,29 +209,29 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			DNSServiceIP: "172.99.255.10",
 			ServiceCidr:  "172.99.0.1/16",
 		}
-		if err := c.Validate(k8sRelease); err != nil {
+		if err := c.Validate(k8sVersion); err != nil {
 			t.Error("should not error when DNSServiceIP and ServiceCidr are valid")
 		}
 	}
 
 	// Tests that apply to pre-1.6 releases
-	for _, k8sRelease := range []string{common.KubernetesRelease1Dot5} {
+	for _, k8sVersion := range []string{common.KubernetesVersion1Dot5Dot8} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
 		}
-		if err := c.Validate(k8sRelease); err == nil {
+		if err := c.Validate(k8sVersion); err == nil {
 			t.Error("should error because backoff and rate limiting are not available before v1.6.6")
 		}
 	}
 
 	// Tests that apply to 1.6 and later releases
-	for _, k8sRelease := range []string{common.KubernetesRelease1Dot6, common.KubernetesRelease1Dot7, common.KubernetesRelease1Dot8} {
+	for _, k8sVersion := range []string{common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot8Dot1} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
 		}
-		if err := c.Validate(k8sRelease); err != nil {
+		if err := c.Validate(k8sVersion); err != nil {
 			t.Error("should not error when basic backoff and rate limiting are set to true with no options")
 		}
 	}

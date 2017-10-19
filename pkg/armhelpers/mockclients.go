@@ -2,6 +2,7 @@ package armhelpers
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/arm/authorization"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
@@ -9,6 +10,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest"
+	log "github.com/sirupsen/logrus"
+	"k8s.io/client-go/pkg/api/v1"
 )
 
 //MockACSEngineClient is an implementation of ACSEngineClient where all requests error out
@@ -21,10 +24,87 @@ type MockACSEngineClient struct {
 	FailDeleteVirtualMachine        bool
 	FailGetStorageClient            bool
 	FailDeleteNetworkInterface      bool
+	FailGetKubernetesClient         bool
+	MockKubernetesClient            *MockKubernetesClient
 }
 
 //MockStorageClient mock implementation of StorageClient
 type MockStorageClient struct{}
+
+//MockKubernetesClient mock implementation of KubernetesClient
+type MockKubernetesClient struct {
+	FailListPods          bool
+	FailGetNode           bool
+	FailUpdateNode        bool
+	FailSupportEviction   bool
+	FailDeletePod         bool
+	FailEvictPod          bool
+	FailWaitForDelete     bool
+	ShouldSupportEviction bool
+	PodsList              *v1.PodList
+}
+
+//ListPods returns all Pods running on the passed in node
+func (mkc *MockKubernetesClient) ListPods(node *v1.Node) (*v1.PodList, error) {
+	if mkc.FailListPods {
+		return nil, fmt.Errorf("ListPods failed")
+	}
+	if mkc.PodsList != nil {
+		return mkc.PodsList, nil
+	}
+	return &v1.PodList{}, nil
+}
+
+//GetNode returns details about node with passed in name
+func (mkc *MockKubernetesClient) GetNode(name string) (*v1.Node, error) {
+	if mkc.FailGetNode {
+		return nil, fmt.Errorf("GetNode failed")
+	}
+	return &v1.Node{}, nil
+}
+
+//UpdateNode updates the node in the api server with the passed in info
+func (mkc *MockKubernetesClient) UpdateNode(node *v1.Node) (*v1.Node, error) {
+	if mkc.FailUpdateNode {
+		return nil, fmt.Errorf("UpdateNode failed")
+	}
+	return node, nil
+}
+
+//SupportEviction queries the api server to discover if it supports eviction, and returns supported type if it is supported
+func (mkc *MockKubernetesClient) SupportEviction() (string, error) {
+	if mkc.FailSupportEviction {
+		return "", fmt.Errorf("SupportEviction failed")
+	}
+	if mkc.ShouldSupportEviction {
+		return "version", nil
+	}
+	return "", nil
+}
+
+//DeletePod deletes the passed in pod
+func (mkc *MockKubernetesClient) DeletePod(pod *v1.Pod) error {
+	if mkc.FailDeletePod {
+		return fmt.Errorf("DeletePod failed")
+	}
+	return nil
+}
+
+//EvictPod evicts the passed in pod using the passed in api version
+func (mkc *MockKubernetesClient) EvictPod(pod *v1.Pod, policyGroupVersion string) error {
+	if mkc.FailEvictPod {
+		return fmt.Errorf("EvictPod failed")
+	}
+	return nil
+}
+
+//WaitForDelete waits until all pods are deleted. Returns all pods not deleted and an error on failure
+func (mkc *MockKubernetesClient) WaitForDelete(logger *log.Entry, pods []v1.Pod, usingEviction bool) ([]v1.Pod, error) {
+	if mkc.FailWaitForDelete {
+		return nil, fmt.Errorf("WaitForDelete failed")
+	}
+	return []v1.Pod{}, nil
+}
 
 //DeleteBlob mock
 func (msc *MockStorageClient) DeleteBlob(container, blob string) error {
@@ -46,7 +126,7 @@ func (mc *MockACSEngineClient) DeployTemplate(resourceGroup, name string, templa
 }
 
 //EnsureResourceGroup mock
-func (mc *MockACSEngineClient) EnsureResourceGroup(resourceGroup, location string) (*resources.Group, error) {
+func (mc *MockACSEngineClient) EnsureResourceGroup(resourceGroup, location string, managedBy *string) (*resources.Group, error) {
 	if mc.FailEnsureResourceGroup {
 		return nil, fmt.Errorf("EnsureResourceGroup failed")
 	}
@@ -288,4 +368,16 @@ func (mc *MockACSEngineClient) DeleteManagedDisk(resourceGroupName string, diskN
 // ListManagedDisksByResourceGroup is a wrapper around disksClient.ListManagedDisksByResourceGroup
 func (mc *MockACSEngineClient) ListManagedDisksByResourceGroup(resourceGroupName string) (result disk.ListType, err error) {
 	return disk.ListType{}, nil
+}
+
+//GetKubernetesClient mock
+func (mc *MockACSEngineClient) GetKubernetesClient(masterURL, kubeConfig string, interval, timeout time.Duration) (KubernetesClient, error) {
+	if mc.FailGetKubernetesClient {
+		return nil, fmt.Errorf("GetKubernetesClient failed")
+	}
+
+	if mc.MockKubernetesClient == nil {
+		mc.MockKubernetesClient = &MockKubernetesClient{}
+	}
+	return mc.MockKubernetesClient, nil
 }

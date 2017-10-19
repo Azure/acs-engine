@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/url"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -17,11 +16,30 @@ import (
 var (
 	validate        *validator.Validate
 	keyvaultIDRegex *regexp.Regexp
+	// Any version has to be mirrored in https://acs-mirror.azureedge.net/github-coreos/etcd-v[Version]-linux-amd64.tar.gz
+	etcdValidVersions = [...]string{"2.5.2", "3.1.10"}
 )
 
 func init() {
 	validate = validator.New()
 	keyvaultIDRegex = regexp.MustCompile(`^/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/[^/\s]+$`)
+}
+
+func isValidEtcdVersion(etcdVersion string) error {
+	// Empty versions is defaulted to 2.5.2 on the generalized api model
+	// after vlabs validation. Empty "" version is a valid version for etcd
+	if "" == etcdVersion {
+		return nil
+	}
+	// We have a version set by user
+	validVersions := "" // a bag of valid versions
+	for _, ver := range etcdValidVersions {
+		if ver == etcdVersion {
+			return nil
+		}
+		validVersions = fmt.Sprintf("%s %s", validVersions, ver)
+	}
+	return fmt.Errorf("Invalid etcd version(%s), valid versions are%s", etcdVersion, validVersions)
 }
 
 // Validate implements APIObject
@@ -30,38 +48,33 @@ func (o *OrchestratorProfile) Validate() error {
 	// It is handled by Properties.Validate()
 	switch o.OrchestratorType {
 	case DCOS:
-		switch o.OrchestratorRelease {
-		case common.DCOSRelease1Dot8:
-		case common.DCOSRelease1Dot9:
-		case common.DCOSRelease1Dot10:
-		case "":
-		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
+		version := common.RationalizeReleaseAndVersion(
+			o.OrchestratorType,
+			o.OrchestratorRelease,
+			o.OrchestratorVersion)
+		if version == "" {
+			return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 		}
-
 	case Swarm:
 	case SwarmMode:
-
 	case Kubernetes:
-		switch o.OrchestratorRelease {
-		case common.KubernetesRelease1Dot8:
-		case common.KubernetesRelease1Dot7:
-		case common.KubernetesRelease1Dot6:
-		case common.KubernetesRelease1Dot5:
-		case "":
-		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator release: %s", o.OrchestratorRelease)
+		version := common.RationalizeReleaseAndVersion(
+			o.OrchestratorType,
+			o.OrchestratorRelease,
+			o.OrchestratorVersion)
+		if version == "" {
+			return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 		}
 
 		if o.KubernetesConfig != nil {
-			err := o.KubernetesConfig.Validate(o.OrchestratorRelease)
+			err := o.KubernetesConfig.Validate(version)
 			if err != nil {
 				return err
 			}
 			if o.KubernetesConfig.EnableAggregatedAPIs {
-				if o.OrchestratorRelease == common.KubernetesRelease1Dot5 || o.OrchestratorRelease == common.KubernetesRelease1Dot6 {
+				if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 || o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
 					return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-						common.KubernetesRelease1Dot7, o.OrchestratorRelease)
+						"1.7.0", o.OrchestratorVersion)
 				}
 
 				if !o.KubernetesConfig.EnableRbac {
@@ -146,25 +159,11 @@ func (a *AgentPoolProfile) Validate(orchestratorType string) error {
 
 // Validate implements APIObject
 func (o *OrchestratorVersionProfile) Validate() error {
-	switch {
-	case strings.EqualFold(o.OrchestratorType, Kubernetes):
-		o.OrchestratorType = Kubernetes
-		if _, ok := common.KubeReleaseToVersion[o.OrchestratorRelease]; !ok {
-			return fmt.Errorf("Unsupported Kubernetes release '%s'", o.OrchestratorRelease)
-		}
-	case strings.EqualFold(o.OrchestratorType, DCOS):
-		o.OrchestratorType = DCOS
-		if _, ok := common.DCOSReleaseToVersion[o.OrchestratorRelease]; !ok {
-			return fmt.Errorf("Unsupported DCOS release '%s'", o.OrchestratorRelease)
-		}
-	case strings.EqualFold(o.OrchestratorType, Swarm):
-		o.OrchestratorType = Swarm
-	case strings.EqualFold(o.OrchestratorType, SwarmMode):
-		o.OrchestratorType = SwarmMode
-	default:
-		return fmt.Errorf("Unsupported orchestrator '%s'", o.OrchestratorType)
-	}
-	return nil
+	// The only difference compared with OrchestratorProfile.Validate is
+	// Here we use strings.EqualFold, the other just string comparison.
+	// Rationalize orchestrator type should be done from versioned to unversioned
+	// I will go ahead to simplify this
+	return o.OrchestratorProfile.Validate()
 }
 
 // ValidateForUpgrade validates upgrade input data
@@ -173,11 +172,11 @@ func (o *OrchestratorProfile) ValidateForUpgrade() error {
 	case DCOS, SwarmMode, Swarm:
 		return fmt.Errorf("Upgrade is not supported for orchestrator %s", o.OrchestratorType)
 	case Kubernetes:
-		switch o.OrchestratorRelease {
-		case common.KubernetesRelease1Dot6:
-		case common.KubernetesRelease1Dot7:
+		switch o.OrchestratorVersion {
+		case common.KubernetesVersion1Dot6Dot11:
+		case common.KubernetesVersion1Dot7Dot7:
 		default:
-			return fmt.Errorf("Upgrade to Kubernetes %s is not supported", o.OrchestratorRelease)
+			return fmt.Errorf("Upgrade to Kubernetes version %s is not supported", o.OrchestratorVersion)
 		}
 	}
 	return nil
@@ -384,17 +383,17 @@ func (a *Properties) Validate() error {
 }
 
 // Validate validates the KubernetesConfig.
-func (a *KubernetesConfig) Validate(k8sRelease string) error {
+func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	// number of minimum retries allowed for kubelet to post node status
 	const minKubeletRetries = 4
-	// k8s releases that have cloudprovider backoff enabled
-	var backoffEnabledReleases = map[string]bool{
-		common.KubernetesRelease1Dot8: true,
-		common.KubernetesRelease1Dot7: true,
-		common.KubernetesRelease1Dot6: true,
+	// k8s versions that have cloudprovider backoff enabled
+	var backoffEnabledVersions = map[string]bool{
+		common.KubernetesVersion1Dot8Dot1:  true,
+		common.KubernetesVersion1Dot7Dot7:  true,
+		common.KubernetesVersion1Dot6Dot11: true,
 	}
-	// k8s releases that have cloudprovider rate limiting enabled (currently identical with backoff enabled releases)
-	ratelimitEnabledReleases := backoffEnabledReleases
+	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
+	ratelimitEnabledVersions := backoffEnabledVersions
 
 	if a.ClusterSubnet != "" {
 		_, subnet, err := net.ParseCIDR(a.ClusterSubnet)
@@ -412,6 +411,12 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 		_, _, err := net.ParseCIDR(a.DockerBridgeSubnet)
 		if err != nil {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet '%s' is an invalid subnet", a.DockerBridgeSubnet)
+		}
+	}
+
+	if a.NonMasqueradeCidr != "" {
+		if _, _, err := net.ParseCIDR(a.NonMasqueradeCidr); err != nil {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr '%s' is an invalid CIDR string", a.NonMasqueradeCidr)
 		}
 	}
 
@@ -465,14 +470,14 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 	}
 
 	if a.CloudProviderBackoff {
-		if !backoffEnabledReleases[k8sRelease] {
-			return fmt.Errorf("cloudprovider backoff functionality not available in kubernetes release %s", k8sRelease)
+		if !backoffEnabledVersions[k8sVersion] {
+			return fmt.Errorf("cloudprovider backoff functionality not available in kubernetes version %s", k8sVersion)
 		}
 	}
 
 	if a.CloudProviderRateLimit {
-		if !ratelimitEnabledReleases[k8sRelease] {
-			return fmt.Errorf("cloudprovider rate limiting functionality not available in kubernetes release %s", k8sRelease)
+		if !ratelimitEnabledVersions[k8sVersion] {
+			return fmt.Errorf("cloudprovider rate limiting functionality not available in kubernetes version %s", k8sVersion)
 		}
 	}
 
@@ -510,6 +515,11 @@ func (a *KubernetesConfig) Validate(k8sRelease string) error {
 		if firstServiceIP.Equal(dnsIP) {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DNSServiceIP '%s' cannot be the first IP of ServiceCidr '%s'", a.DNSServiceIP, a.ServiceCidr)
 		}
+	}
+
+	// Validate that we have a valid etcd version
+	if e := isValidEtcdVersion(a.EtcdVersion); e != nil {
+		return e
 	}
 
 	return nil

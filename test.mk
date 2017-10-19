@@ -24,3 +24,6 @@ test-kubernetes-with-container:
 
 test-kubernetes:
 	@ORCHESTRATOR=kubernetes go run ./test/e2e/runner.go
+
+test-dcos:
+	@ORCHESTRATOR=dcos go run ./test/e2e/runner.go

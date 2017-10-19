@@ -3,7 +3,7 @@ package api
 import (
 	"strings"
 
-	"github.com/Azure/acs-engine/pkg/api/upgrade/v20170930"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -511,46 +511,26 @@ func convertVLabsWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile
 func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = v20160930.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
-		api.OrchestratorRelease = KubernetesRelease1Dot5
-		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
+		api.OrchestratorVersion = KubernetesVersion1Dot5Dot8
 	} else if api.OrchestratorType == DCOS {
-		api.OrchestratorRelease = DCOSRelease1Dot9
-		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
+		api.OrchestratorVersion = DCOSVersion1Dot9Dot0
 	}
 }
 
 func convertV20160330OrchestratorProfile(v20160330 *v20160330.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = v20160330.OrchestratorType
 	if api.OrchestratorType == DCOS {
-		api.OrchestratorRelease = DCOSRelease1Dot9
-		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
+		api.OrchestratorVersion = DCOSVersion1Dot9Dot0
 	}
 }
 
 func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = v20170131.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
-		api.OrchestratorRelease = KubernetesDefaultRelease
-		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
+		api.OrchestratorVersion = KubernetesDefaultVersion
 	} else if api.OrchestratorType == DCOS {
-		api.OrchestratorRelease = DCOSRelease1Dot9
-		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
+		api.OrchestratorVersion = DCOSVersion1Dot9Dot0
 	}
-}
-
-func convertV20170930OrchestratorProfile(v *v20170930.OrchestratorProfile, api *OrchestratorProfile) {
-	switch v.OrchestratorType {
-	case v20170930.Kubernetes:
-		api.OrchestratorType = Kubernetes
-	case v20170930.DCOS:
-		api.OrchestratorType = DCOS
-	case v20170930.Swarm:
-		api.OrchestratorType = Swarm
-	case v20170930.DockerCE:
-		api.OrchestratorType = SwarmMode
-	}
-	api.OrchestratorRelease = v.OrchestratorRelease
-	api.OrchestratorVersion = v.OrchestratorVersion
 }
 
 func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProfile, api *OrchestratorProfile) {
@@ -562,21 +542,19 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 
 	switch api.OrchestratorType {
 	case Kubernetes:
-		switch v20170701cs.OrchestratorRelease {
-		case KubernetesRelease1Dot8, KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
-			api.OrchestratorRelease = v20170701cs.OrchestratorRelease
+		switch v20170701cs.OrchestratorVersion {
+		case KubernetesVersion1Dot8Dot1, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
+			api.OrchestratorVersion = v20170701cs.OrchestratorVersion
 		default:
-			api.OrchestratorRelease = KubernetesDefaultRelease
+			api.OrchestratorVersion = KubernetesDefaultVersion
 		}
-		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
 	case DCOS:
-		switch v20170701cs.OrchestratorRelease {
-		case DCOSRelease1Dot10, DCOSRelease1Dot9, DCOSRelease1Dot8:
-			api.OrchestratorRelease = v20170701cs.OrchestratorRelease
+		switch v20170701cs.OrchestratorVersion {
+		case DCOSVersion1Dot10Dot0, DCOSVersion1Dot9Dot0, DCOSVersion1Dot8Dot8:
+			api.OrchestratorVersion = v20170701cs.OrchestratorVersion
 		default:
-			api.OrchestratorRelease = DCOSDefaultRelease
+			api.OrchestratorVersion = DCOSDefaultVersion
 		}
-		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
 	default:
 		break
 	}
@@ -590,26 +568,19 @@ func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *Or
 			api.KubernetesConfig = &KubernetesConfig{}
 			convertVLabsKubernetesConfig(vlabscs.KubernetesConfig, api.KubernetesConfig)
 		}
-
-		switch vlabscs.OrchestratorRelease {
-		case KubernetesRelease1Dot8, KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
-			api.OrchestratorRelease = vlabscs.OrchestratorRelease
-		default:
-			api.OrchestratorRelease = KubernetesDefaultRelease
-		}
-		api.OrchestratorVersion = KubernetesReleaseToVersion[api.OrchestratorRelease]
+		api.OrchestratorVersion = common.RationalizeReleaseAndVersion(
+			vlabscs.OrchestratorType,
+			vlabscs.OrchestratorRelease,
+			vlabscs.OrchestratorVersion)
 	case DCOS:
 		if vlabscs.DcosConfig != nil {
 			api.DcosConfig = &DcosConfig{}
 			convertVLabsDcosConfig(vlabscs.DcosConfig, api.DcosConfig)
 		}
-		switch vlabscs.OrchestratorRelease {
-		case DCOSRelease1Dot10, DCOSRelease1Dot9, DCOSRelease1Dot8:
-			api.OrchestratorRelease = vlabscs.OrchestratorRelease
-		default:
-			api.OrchestratorRelease = DCOSDefaultRelease
-		}
-		api.OrchestratorVersion = DCOSReleaseToVersion[api.OrchestratorRelease]
+		api.OrchestratorVersion = common.RationalizeReleaseAndVersion(
+			vlabscs.OrchestratorType,
+			vlabscs.OrchestratorRelease,
+			vlabscs.OrchestratorVersion)
 	}
 }
 
@@ -622,6 +593,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.ClusterSubnet = vlabs.ClusterSubnet
 	api.DNSServiceIP = vlabs.DNSServiceIP
 	api.ServiceCIDR = vlabs.ServiceCidr
+	api.NonMasqueradeCidr = vlabs.NonMasqueradeCidr
 	api.NetworkPolicy = vlabs.NetworkPolicy
 	api.MaxPods = vlabs.MaxPods
 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
@@ -644,6 +616,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.EnableAggregatedAPIs = vlabs.EnableAggregatedAPIs
 	api.GCHighThreshold = vlabs.GCHighThreshold
 	api.GCLowThreshold = vlabs.GCLowThreshold
+	api.EtcdVersion = vlabs.EtcdVersion
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {

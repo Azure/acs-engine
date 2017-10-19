@@ -22,5 +22,5 @@ type UpgradeNode interface {
 	CreateNode(string, int) error
 
 	// Validate will verify the that master/agent node has been upgraded as expected.
-	Validate() error
+	Validate(*string) error
 }

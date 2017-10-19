@@ -17,7 +17,7 @@ node("slave") {
 
         if(locations_str.equals("all")) {
           locations_str = "\
-australiaeast australiasoutheast \
+australiaeast \
 brazilsouth \
 canadacentral canadaeast \
 centralindia southindia \
@@ -116,7 +116,7 @@ uksouth ukwest"
                   stage("${env.LOCATION} validate") {
                     if(ok) {
                       env.EXPECTED_NODE_COUNT = sh(returnStdout: true, script: './test/step.sh get_node_count').trim()
-                      env.EXPECTED_ORCHESTRATOR_RELEASE = sh(returnStdout: true, script: './test/step.sh get_orchestrator_release').trim()
+                      env.EXPECTED_ORCHESTRATOR_VERSION = sh(returnStdout: true, script: './test/step.sh get_orchestrator_release').trim()
                       def test = "validate-${env.LOCATION}"
                       sh("mkdir -p ${junit_dir}/${test}")
                       sh("cp ./test/shunit/validate_deployment.sh ${junit_dir}/${test}/t.sh")

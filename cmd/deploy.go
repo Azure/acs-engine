@@ -192,7 +192,7 @@ func autofillApimodel(dc *deployCmd) {
 		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{{KeyData: publicKey}}
 	}
 
-	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location)
+	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location, nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -254,7 +254,7 @@ func (dc *deployCmd) run() error {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}
 
-	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService)
+	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", dc.apimodelPath, err.Error())
 		os.Exit(1)
