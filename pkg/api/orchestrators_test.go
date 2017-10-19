@@ -82,10 +82,10 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	Expect(orch.Upgrades[0].OrchestratorVersion).To(Equal(common.KubernetesVersion1Dot7Dot7))
 	Expect(orch.Upgrades[1].OrchestratorVersion).To(Equal(common.KubernetesVersion1Dot8Dot1))
 
-	// 1.7.8 is upgradable to 1.8.x
+	// 1.7.9 is upgradable to 1.8.x
 	csOrch = &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
-		OrchestratorVersion: "1.7.8",
+		OrchestratorVersion: "1.7.9",
 	}
 	orch, e = GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())

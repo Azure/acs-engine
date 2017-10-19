@@ -123,7 +123,7 @@ var KubeConfigs = map[string]map[string]string{
 		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 	api.KubernetesVersion1Dot7Dot7: {
-		"hyperkube":       "hyperkube-amd64:v1.7.8",
+		"hyperkube":       "hyperkube-amd64:v1.7.9",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addonresizer":    "addon-resizer:1.7",
