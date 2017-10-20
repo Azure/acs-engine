@@ -93,7 +93,7 @@ make bootstrap
 make build
 ```
 
-The build process leaves the compiled `acs-engine` binary in the `bin` directory. Make sure everything completed successfully bu running `bin/acs-engine` without any arguments:
+The build process leaves the compiled `acs-engine` binary in the `bin` directory. Make sure everything completed successfully by running `bin/acs-engine` without any arguments:
 
 ```
 # ./bin/acs-engine
