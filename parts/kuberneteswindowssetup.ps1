@@ -65,6 +65,11 @@ $global:NeedPatchWinNAT = $false
 $global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
 $global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
 
+$global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
+$global:NetworkMode = "L2Bridge"
+$global:CNIConfig = [Io.path]::Combine($global:CNIPath, "config", "`$global:NetworkMode.conf")
+$global:HNSModule = [Io.path]::Combine("$global:KubeDir", "hns.psm1")
+
 filter Timestamp {"$(Get-Date -Format o): $_"}
 
 function
@@ -189,6 +194,10 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
             $KubeletArgList += "--enable-cri=false"
             $KubeletCommandLine += " --enable-cri=false"
         }
+        else
+        {
+            $KubeletCommandLine += " --network-plugin=cni --cni-bin-dir=`$global:CNIPath --cni-conf-dir `$global:CNIPath\config"
+        }
         # more time is needed to pull windows server images (flag supported from 1.6.0)
         $KubeletCommandLine += " --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
     }
@@ -203,10 +212,10 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
 `$global:KubeClusterCIDR = "$global:KubeClusterCIDR"
 `$global:KubeServiceCIDR = "$global:KubeServiceCIDR"
 `$global:KubeBinariesVersion = "$global:KubeBinariesVersion"
-`$global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
-`$global:NetworkMode = "L2Bridge"
-`$global:CNIConfig = [Io.path]::Combine(`$global:CNIPath, "config", "`$global:NetworkMode.conf")
-`$global:HNSModule = [Io.path]::Combine("$global:KubeDir", "hns.psm1")
+`$global:CNIPath = "$global:CNIPath"
+`$global:NetworkMode = "$global:NetworkMode"
+`$global:CNIConfig = "$global:CNIConfig"
+`$global:HNSModule = "$global:HNSModule"
 
 function
 Get-DefaultGateway(`$CIDR)
@@ -309,9 +318,12 @@ try
         `$process | Stop-Process | Out-Null
     }
     
-    # startup the service    
+    # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
+    netsh advfirewall set allprofiles state off
+
+    # startup the service
     `$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:NetworkMode.ToLower()
-    
+
     if (!`$hnsNetwork)
     {
         Write-Host "No HNS network found, creating a new one..."
@@ -443,14 +455,14 @@ try
         Write-Log "write kubelet startfile with pod CIDR of $podCIDR"
         Write-KubernetesStartFiles $podCIDR
 
+        Write-Log "Patch winnat binary"
+        Patch-WinNATBinary
+
         Write-Log "install the NSSM service"
         New-NSSMService
 
         Write-Log "Set Internet Explorer"
         Set-Explorer
-
-        Write-Log "Patch winnat binary"
-        Patch-WinNATBinary
 
         Write-Log "Setup Complete"
         if ($global:NeedPatchWinNAT -eq $true)
