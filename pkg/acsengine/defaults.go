@@ -59,6 +59,14 @@ var (
 		ImageVersion:   "latest",
 	}
 
+	//DefaultCoreOSImageConfig is the CoreOS Linux distribution.
+	DefaultCoreOSImageConfig = AzureOSImageConfig{
+		ImageOffer:     "CoreOS",
+		ImageSku:       "Stable",
+		ImagePublisher: "CoreOS",
+		ImageVersion:   "latest",
+	}
+
 	//AzureCloudSpec is the default configurations for global azure.
 	AzureCloudSpec = AzureEnvironmentSpecConfig{
 		//DockerSpecConfig specify the docker engine download repo
@@ -74,6 +82,7 @@ var (
 		OSImageConfig: map[api.Distro]AzureOSImageConfig{
 			api.Ubuntu: DefaultUbuntuImageConfig,
 			api.RHEL:   DefaultRHELOSImageConfig,
+			api.CoreOS: DefaultCoreOSImageConfig,
 		},
 	}
 
@@ -92,7 +101,8 @@ var (
 				ImagePublisher: "Canonical",
 				ImageVersion:   "16.04.201701130",
 			},
-			api.RHEL: DefaultRHELOSImageConfig,
+			api.RHEL:   DefaultRHELOSImageConfig,
+			api.CoreOS: DefaultCoreOSImageConfig,
 		},
 	}
 
@@ -107,6 +117,7 @@ var (
 		OSImageConfig: map[api.Distro]AzureOSImageConfig{
 			api.Ubuntu: DefaultUbuntuImageConfig,
 			api.RHEL:   DefaultRHELOSImageConfig,
+			api.CoreOS: DefaultCoreOSImageConfig,
 		},
 	}
 
@@ -142,7 +153,9 @@ var (
 				ImagePublisher: "Canonical",
 				ImageVersion:   "latest",
 			},
-			api.RHEL: DefaultRHELOSImageConfig,
+			api.RHEL:   DefaultRHELOSImageConfig,
+			api.RHEL:   DefaultRHELOSImageConfig,
+			api.CoreOS: DefaultCoreOSImageConfig,
 		},
 	}
 

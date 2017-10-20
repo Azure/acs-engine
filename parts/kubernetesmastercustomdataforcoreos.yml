@@ -1,0 +1,361 @@
+#cloud-config
+
+write_files:
+- path: "/etc/systemd/system/docker.service.d/exec_start.conf"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Service]
+    ExecStart=
+    ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/dockerd --host=fd:// --containerd=/var/run/docker/libcontainerd/docker-containerd.sock --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}} $DOCKER_SELINUX $DOCKER_OPTS $DOCKER_CGROUPS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
+
+- path: "/etc/docker/daemon.json"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    {
+      "live-restore": true,
+      "log-driver": "json-file",
+      "log-opts":  {
+         "max-size": "50m",
+         "max-file": "5"
+      }
+    }
+
+- path: "/etc/kubernetes/certs/ca.crt"
+  permissions: "0644"
+  encoding: "base64"
+  owner: "root"
+  content: |
+    {{WrapAsVariable "caCertificate"}}
+
+- path: "/etc/kubernetes/certs/apiserver.crt"
+  permissions: "0644"
+  encoding: "base64"
+  owner: "root"
+  content: |
+    {{WrapAsVariable "apiServerCertificate"}}
+
+- path: "/etc/kubernetes/certs/client.crt"
+  permissions: "0644"
+  encoding: "base64"
+  owner: "root"
+  content: |
+    {{WrapAsVariable "clientCertificate"}}
+
+{{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
+- path: "/etc/kubernetes/generate-proxy-certs.sh"
+  permissions: "0744"
+  encoding: "gzip"
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "generateProxyCertsScript"}}
+{{end}}
+
+- path: "/var/lib/kubelet/kubeconfig"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    apiVersion: v1
+    kind: Config
+    clusters:
+    - name: localcluster
+      cluster:
+        certificate-authority: /etc/kubernetes/certs/ca.crt
+        server: {{WrapAsVerbatim "concat('https://', variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))], ':443')"}}
+    users:
+    - name: client
+      user:
+        client-certificate: /etc/kubernetes/certs/client.crt
+        client-key: /etc/kubernetes/certs/client.key
+    contexts:
+    - context:
+        cluster: localcluster
+        user: client
+      name: localclustercontext
+    current-context: localclustercontext
+
+- path: /etc/kubernetes/manifests/kube-apiserver.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_KUBERNETES_APISERVER_B64_GZIP_STR
+
+- path: /etc/kubernetes/manifests/kube-controller-manager.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR
+
+- path: /etc/kubernetes/manifests/kube-scheduler.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR
+
+- path: /etc/kubernetes/manifests/kube-addon-manager.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/kube-dns-deployment.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/kube-proxy-daemonset.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/kube-heapster-deployment.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/azure-storage-classes.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_AZURE_STORAGE_CLASSES_B64_GZIP_STR
+
+- path: /etc/kubernetes/addons/kube-tiller-deployment.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR
+
+{{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
+- path: /etc/kubernetes/addons/calico-daemonset.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR
+{{end}}
+
+- path: "/etc/systemd/system/kubectl-extract.service"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=Kubectl extraction
+    Requires=docker.service
+    After=docker.service
+    ConditionPathExists=!/opt/kubectl
+
+    [Service]
+    TimeoutStartSec=0
+    Restart=on-failure
+    RestartSec=5s
+    ExecStartPre=/bin/mkdir -p /tmp/kubectldir
+    ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
+    ExecStartPre=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
+    ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /opt/kubectl
+    ExecStart=/bin/chmod a+x /opt/kubectl
+
+    [Install]
+    WantedBy=multi-user.target
+
+- path: "/etc/default/kubelet"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    KUBELET_CLUSTER_DNS={{WrapAsVariable "kubeDNSServiceIP"}}
+    KUBELET_API_SERVERS={{WrapAsVerbatim "concat('https://', variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))], ':443')"}}
+    KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
+    KUBELET_NETWORK_PLUGIN=
+    KUBELET_MAX_PODS=110
+    DOCKER_OPTS=
+    KUBELET_NODE_LABELS=kubernetes.io/role=master
+    KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
+    KUBELET_NODE_STATUS_UPDATE_FREQUENCY={{WrapAsVariable "kubernetesNodeStatusUpdateFrequency"}}
+    KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD={{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
+    KUBE_CTRL_MGR_POD_EVICTION_TIMEOUT={{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}
+    KUBE_CTRL_MGR_ROUTE_RECONCILIATION_PERIOD={{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}
+    KUBELET_IMAGE_GC_HIGH_THRESHOLD={{WrapAsVariable "gchighthreshold"}}
+    KUBELET_IMAGE_GC_LOW_THRESHOLD={{WrapAsVariable "gclowthreshold"}}
+{{if IsKubernetesVersionGe "1.6.0"}}
+  {{if HasLinuxAgents}}
+    KUBELET_NON_MASQUERADE_CIDR=--non-masquerade-cidr={{WrapAsVariable "kubernetesNonMasqueradeCidr"}}
+    KUBELET_REGISTER_NODE=--register-node=true
+    KUBELET_REGISTER_WITH_TAINTS=--register-with-taints={{WrapAsVariable "registerWithTaints"}}
+  {{end}}
+{{else}}
+    KUBELET_REGISTER_SCHEDULABLE={{WrapAsVariable "registerSchedulable"}}
+{{end}}
+- path: "/etc/systemd/system/kubelet.service"
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    KUBELET_SERVICE_B64_GZIP_STR
+
+- path: "/opt/azure/containers/kubelet.sh"
+  permissions: "0755"
+  owner: "root"
+  content: |
+    #!/bin/bash
+    set -e
+
+{{if gt .MasterProfile.Count 1}}
+    # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
+    # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
+    # This IPTable rule then redirects ILB traffic to port 443 in the prerouting chain
+    iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443
+{{end}}
+
+{{if IsVNETIntegrated}}
+    # SNAT outbound traffic from pods to destinations outside of VNET.
+    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
+{{end}}
+
+{{ if .HasAadProfile }}
+    OIDC_CLIENT_ID=spn:{{WrapAsVariable "aadServerAppId"}}
+    VAR_AAD_TENANT_ID={{WrapAsVariable "aadTenantId"}}
+    VAR_TENANT_ID={{WrapAsVariable "tenantId"}}
+    VAR_TARGET_ENV={{WrapAsVariable "targetEnvironment"}}
+    AAD_TENANT_ID=${VAR_AAD_TENANT_ID:-$VAR_TENANT_ID}
+    AAD_ISSUER_HOST="sts.windows.net"
+    if [ "$VAR_TARGET_ENV" = "AzureChinaCloud" ]; then
+        AAD_ISSUER_HOST="sts.chinacloudapi.cn"
+    fi
+
+    OIDC_ISSUER_URL="https://$AAD_ISSUER_HOST/$AAD_TENANT_ID/" 
+    perl -pi -e "s|--oidc-client-id=\K(?=\")|$OIDC_CLIENT_ID| || s|--oidc-issuer-url=\K(?=\")|$OIDC_ISSUER_URL|" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+{{else}}
+    sed -i "/--oidc-client-id\|--oidc-issuer-url\|--oidc-username-claim/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+{{end}}
+    sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsVariable "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeServiceCidr>|{{WrapAsVariable "kubeServiceCidr"}}|g; s|<masterEtcdClientPort>|{{WrapAsVariable "masterEtcdClientPort"}}|g; s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g; s|<kubernetesCtrlMgrNodeMonitorGracePeriod>|{{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}|g; s|<kubernetesCtrlMgrPodEvictionTimeout>|{{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}|g; s|<kubernetesCtrlMgrRouteReconciliationPeriod>|{{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
+    sed -i "s|<kubernetesKubeDNSSpec>|{{WrapAsVariable "kubernetesKubeDNSSpec"}}|g; s|<kubernetesDNSMasqSpec>|{{WrapAsVariable "kubernetesDNSMasqSpec"}}|g; s|<kubernetesExecHealthzSpec>|{{WrapAsVariable "kubernetesExecHealthzSpec"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
+    sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsVariable "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsVariable "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
+    sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+    sed -i "s|<kubernetesTillerSpec>|{{WrapAsVariable "kubernetesTillerSpec"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<kubeDNSServiceIP>|{{WrapAsVariable "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
+
+{{if .OrchestratorProfile.KubernetesConfig.EnableRbac }}
+    # If RBAC enabled then add parameters to API server and Controller manager configuration
+    sed -i "s|<kubernetesEnableRbac>|--authorization-mode=RBAC|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesEnableRbac>|--use-service-account-credentials|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+{{else}}
+    sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+{{end}}
+
+{{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
+    # If Calico Policy enabled then update Cluster Cidr
+    sed -i "s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-daemonset.yaml"
+{{end}}
+
+{{if not .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
+    sed -i "/requestheader-client-ca-file/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/proxy-client-cert-file/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/proxy-client-key-file/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/requestheader-allowed-names/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/requestheader-extra-headers-prefix/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/requestheader-group-headers/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "/requestheader-username-headers/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+{{end}}
+
+- path: "/opt/azure/containers/provision.sh"
+  permissions: "0744"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "provisionScript"}}
+
+- path: "/opt/azure/containers/mountetcd.sh"
+  permissions: "0744"
+  owner: "root"
+  content: |
+    #!/bin/bash
+    # Mounting is done here instead of etcd because of bug https://bugs.launchpad.net/cloud-init/+bug/1692093
+    # Once the bug is fixed, replace the below with the cloud init changes replaced in https://github.com/Azure/acs-engine/pull/661.
+    set -x
+    DISK=/dev/sdc
+    PARTITION=${DISK}1
+    MOUNTPOINT=/var/lib/etcddisk
+    udevadm settle
+    mkdir -p $MOUNTPOINT
+    mount | grep $MOUNTPOINT
+    if [ $? -eq 0 ]
+    then
+        echo "disk is already mounted"
+        exit 0
+    fi
+    # fill /etc/fstab
+    grep "/dev/sdc1" /etc/fstab
+    if [ $? -ne 0 ]
+    then
+        echo "$PARTITION       $MOUNTPOINT       auto    defaults,nofail       0       2" >> /etc/fstab
+    fi
+    # check if partition exists
+    ls $PARTITION
+    if [ $? -ne 0 ]
+    then
+        # partition does not exist
+        /sbin/sgdisk --new 1 $DISK
+        /sbin/mkfs.ext4 $PARTITION -L etcd_disk -F -E lazy_itable_init=1,lazy_journal_init=1
+    fi
+    mount $MOUNTPOINT
+
+- path: "/opt/azure/containers/provision-setup.sh"
+  permissions: "0755"
+  owner: "root"
+  content: |
+    #!/bin/bash
+    /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',http://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
+    sudo /bin/chown -R etcd:etcd /var/lib/etcd/default
+    /opt/azure/containers/mountetcd.sh
+    sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
+    systemctl stop etcd2
+    sudo -u etcd rm -rf /var/lib/etcd/default
+    sudo /bin/sed -i s/Restart=on-abnormal/Restart=always/g /lib/systemd/system/etcd.service
+    systemctl daemon-reload
+    systemctl restart etcd2
+    for i in $(seq 1 20); do curl --max-time 60 http://127.0.0.1:2379/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
+    mkdir -p /etc/kubernetes/manifests
+    usermod -aG docker {{WrapAsVariable "username"}}
+    
+    {{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
+    sudo bash /etc/kubernetes/generate-proxy-certs.sh
+    {{end}}
+    
+    # Simulates runcmd completion
+    touch /opt/azure/containers/runcmd.complete
+
+coreos:
+  units:
+    - name: start-provision-setup.service
+      command: "start"
+      content: |
+        # Note: Initiated as a service since there is no runcmd within CoreOS on cloud-config/Ignition
+        [Unit] 
+        Description=Start provision setup service
+
+        [Service]
+        ExecStart=/opt/azure/containers/provision-setup.sh

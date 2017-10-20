@@ -22,6 +22,19 @@
 # APISERVER_PRIVATE_KEY CA_CERTIFICATE CA_PRIVATE_KEY MASTER_FQDN KUBECONFIG_CERTIFICATE
 # KUBECONFIG_KEY ADMINUSER
 
+# Handling for different OSes
+shopt -s nocasematch
+OS=$(cat /etc/*release | grep ^NAME | tr -d 'NAME="')
+
+KUBECTL=$KUBECTL
+
+# CoreOS: /usr is read-only; therefore kubectl is installed at /opt/kubectl
+#   Details on install at kubernetets[master/agent]customdataforcoreos.yml
+if [[ $OS == *"CoreOS"* ]]; then
+    echo "Changing default kubectl bin location"
+    KUBECTL=/opt/kubectl
+fi
+
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
 ensureRunCommandCompleted()
@@ -36,7 +49,7 @@ ensureRunCommandCompleted()
     done
 }
 
-echo `date`,`hostname`, startscript>>/opt/m 
+echo `date`,`hostname`, startscript>>/opt/m
 
 # A delay to start the kubernetes processes is necessary
 # if a reboot is required.  Otherwise, the agents will encounter issue: 
@@ -130,7 +143,7 @@ function ensureKubectl() {
     fi
     kubectlfound=1
     for i in {1..600}; do
-        if [ -e /usr/local/bin/kubectl ]
+        if [ -e $KUBECTL ]
         then
             kubectlfound=0
             break
@@ -291,9 +304,9 @@ function ensureApiserver() {
     fi
     kubernetesStarted=1
     for i in {1..600}; do
-        if [ -e /usr/local/bin/kubectl ]
+        if [ -e $KUBECTL ]
         then
-            /usr/local/bin/kubectl cluster-info
+            $KUBECTL cluster-info
             if [ "$?" = "0" ]
             then
                 echo "kubernetes started"
@@ -408,8 +421,10 @@ echo `date`,`hostname`, ensureJournalDone>>/opt/m
 ensureRunCommandCompleted
 echo `date`,`hostname`, RunCmdCompleted>>/opt/m 
 
-# make sure walinuxagent doesn't get updated in the middle of running this script
-apt-mark hold walinuxagent
+if [[ $OS == *"Ubuntu"* ]]; then
+    # make sure walinuxagent doesn't get updated in the middle of running this script
+    apt-mark hold walinuxagent
+fi
 
 # master only
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
@@ -420,13 +435,17 @@ if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     ensureApiserver
 fi
 
-# mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
-echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
-sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
+# Ubuntu specific logic
+if [[ $OS == *"Ubuntu"* ]]; then
+    # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
+    echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
+    sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
-# If APISERVER_PRIVATE_KEY is empty, then we are not on the master
+    # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
+    apt-mark unhold walinuxagent
+fi
+
 echo "Install complete successfully"
-apt-mark unhold walinuxagent
 
 if $REBOOTREQUIRED; then
   # wait 1 minute to restart node, so that the custom script extension can complete

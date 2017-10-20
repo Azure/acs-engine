@@ -27,10 +27,12 @@ import (
 
 const (
 	kubernetesMasterCustomDataYaml           = "kubernetesmastercustomdata.yml"
+	kubernetesMasterCustomDataForCoreOSYaml  = "kubernetesmastercustomdataforcoreos.yml"
 	kubernetesMasterCustomScript             = "kubernetesmastercustomscript.sh"
 	kubernetesMountetcd                      = "kubernetes_mountetcd.sh"
 	kubernetesMasterGenerateProxyCertsScript = "kubernetesmastergenerateproxycertscript.sh"
 	kubernetesAgentCustomDataYaml            = "kubernetesagentcustomdata.yml"
+	kubernetesAgentCustomDataForCoreOSYaml   = "kubernetesagentcustomdataforcoreos.yml"
 	kubeConfigJSON                           = "kubeconfig.json"
 	kubernetesWindowsAgentCustomDataPS1      = "kuberneteswindowssetup.ps1"
 )
@@ -458,10 +460,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 
 	// Master Parameters
 	addValue(parametersMap, "location", location)
-	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[api.Ubuntu].ImageOffer)
-	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[api.Ubuntu].ImageSku)
-	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[api.Ubuntu].ImagePublisher)
-	addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig[api.Ubuntu].ImageVersion)
+	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImageOffer)
+	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImageSku)
+	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImagePublisher)
+	addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImageVersion)
 	addValue(parametersMap, "fqdnEndpointSuffix", cloudSpecConfig.EndpointConfig.ResourceManagerVMDNSSuffix)
 	addValue(parametersMap, "targetEnvironment", GetCloudTargetEnv(location))
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
@@ -929,7 +931,15 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return getBase64CustomScript(kubernetesMasterCustomScript)
 		},
 		"GetKubernetesMasterCustomData": func(profile *api.Properties) string {
-			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml, cs, profile)
+			var customDataYml string
+
+			if cs.Properties.MasterProfile.IsCoreOS() {
+				customDataYml = kubernetesMasterCustomDataForCoreOSYaml
+			} else {
+				customDataYml = kubernetesMasterCustomDataYaml
+			}
+
+			str, e := t.getSingleLineForTemplate(customDataYml, cs, profile)
 			if e != nil {
 				fmt.Printf("%#v\n", e)
 				return ""
@@ -985,7 +995,16 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
+			var customDataYml string
+
+			if profile.IsCoreOS() {
+				customDataYml = kubernetesAgentCustomDataForCoreOSYaml
+			} else {
+				customDataYml = kubernetesAgentCustomDataYaml
+			}
+
+			str, e := t.getSingleLineForTemplate(customDataYml, cs, profile)
+
 			if e != nil {
 				return ""
 			}
