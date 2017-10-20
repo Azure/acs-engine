@@ -24,6 +24,7 @@ var (
 func main() {
 	cwd, _ := os.Getwd()
 	cfg, err = config.ParseConfig()
+
 	if err != nil {
 		log.Fatalf("Error while trying to parse configuration: %s\n", err)
 	}
@@ -59,7 +60,7 @@ func main() {
 		eng = cliProvisioner.Engine
 		if err != nil {
 			teardown()
-			log.Printf("Error while trying to provision cluster:%s", err)
+			log.Fatalf("Error while trying to provision cluster:%s", err)
 		}
 	} else {
 		engCfg, err := engine.ParseConfig(cfg.CurrentWorkingDir, cfg.ClusterDefinition, cfg.Name)
@@ -80,19 +81,15 @@ func main() {
 	}
 
 	if !cfg.SkipTest {
-		g, err := runner.ParseGinkgoConfig()
+		g, err := runner.BuildGinkgoRunner(cfg, pt)
 		if err != nil {
 			teardown()
 			log.Fatalf("Error: Unable to parse ginkgo configuration!")
 		}
-		pt.SetTestStart()
 		err = g.Run()
 		if err != nil {
-			pt.RecordTestError()
 			teardown()
 			os.Exit(1)
-		} else {
-			pt.RecordTestSuccess()
 		}
 	}
 
