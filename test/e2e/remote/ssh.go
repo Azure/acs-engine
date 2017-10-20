@@ -47,6 +47,17 @@ func (c *Connection) Write(data, path string) error {
 	return nil
 }
 
+func (c *Connection) Read(path string) ([]byte, error) {
+	cmd := fmt.Sprintf("cat %s", path)
+	connectString := fmt.Sprintf("%s@%s", c.User, c.Host)
+	out, err := exec.Command("ssh", "-i", c.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", c.Port, cmd).CombinedOutput()
+	if err != nil {
+		log.Printf("Error output:%s\n", out)
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExecuteWithRetries will keep retrying a command until it does not return an error or the duration is exceeded
 func (c *Connection) ExecuteWithRetries(cmd string, sleep, duration time.Duration) ([]byte, error) {
 	outCh := make(chan []byte, 1)

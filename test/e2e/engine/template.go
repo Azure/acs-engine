@@ -23,6 +23,7 @@ type Config struct {
 	WindowsAdminPasssword string `envconfig:"WINDOWS_ADMIN_PASSWORD"`
 	OrchestratorVersion   string `envconfig:"ORCHESTRATOR_VERSION"`
 	OutputDirectory       string `envconfig:"OUTPUT_DIR" default:"_output"`
+	CreateVNET            bool   `envconfig:"CREATE_VNET" default:"false"`
 
 	ClusterDefinitionPath     string // The original template we want to use to build the cluster from.
 	ClusterDefinitionTemplate string // This is the template after we splice in the environment variables
@@ -100,7 +101,7 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 		cs.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion = config.OrchestratorVersion
 	}
 
-	if cfg.CreateVNET {
+	if config.CreateVNET {
 		cs.ContainerService.Properties.MasterProfile.VnetSubnetID = subnetID
 		for _, p := range cs.ContainerService.Properties.AgentPoolProfiles {
 			p.VnetSubnetID = subnetID

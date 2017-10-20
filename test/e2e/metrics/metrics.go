@@ -125,6 +125,11 @@ func (p *Point) RecordTotalTime() {
 	p.OverallDuration = time.Since(p.OverallStart)
 }
 
+// SetProvisionMetrics will parse the csv data retrieved from /opt/m and set appropriate fields
+func (p *Point) SetProvisionMetrics(data []byte) {
+
+}
+
 func (p *Point) Write() {
 	cfg, err := ParseConfig()
 	if err == nil {
