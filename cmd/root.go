@@ -41,6 +41,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(newDeployCmd())
 	rootCmd.AddCommand(newOrchestratorsCmd())
 	rootCmd.AddCommand(newUpgradeCmd())
+	rootCmd.AddCommand(newScaleCmd())
 
 	return rootCmd
 }
