@@ -24,7 +24,7 @@ write_files:
 
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
-  encodingP: "gzip"
+  encoding: "gzip"
   owner: "root"
   content: !!binary |
     DOCKER_DAEMON_B64_GZIP_STR
