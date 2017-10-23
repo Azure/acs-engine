@@ -24,16 +24,10 @@ write_files:
 
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
+  encodingP: "gzip"
   owner: "root"
-  content: |
-    {
-      "live-restore": true,
-      "log-driver": "json-file",
-      "log-opts":  {
-         "max-size": "50m",
-         "max-file": "5"
-      }
-    }
+  content: !!binary |
+    DOCKER_DAEMON_B64_GZIP_STR
 
 - path: "/etc/kubernetes/certs/ca.crt"
   permissions: "0644"
