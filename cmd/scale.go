@@ -93,7 +93,7 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 
 	if sc.newDesiredAgentCount == 0 {
 		cmd.Usage()
-		log.Fatal("--agent-count must be specified")
+		log.Fatal("--new-agent-count must be specified")
 	}
 
 	if sc.client, err = sc.authArgs.getClient(); err != nil {
@@ -158,7 +158,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 
 	if sc.agentPool.IsAvailabilitySets() && sc.agentPool.Count > sc.newDesiredAgentCount {
 		// TODO add scale down of VMS code path
-		log.Fatalln("Scaling down availibility sets is not currently supported")
+		log.Fatalln("Scaling down availability sets is not currently supported")
 	}
 
 	ctx := acsengine.Context{
