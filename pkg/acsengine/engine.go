@@ -100,13 +100,14 @@ var kubernetesManifestYamls = map[string]string{
 	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetesmaster-kube-controller-manager.yaml",
 	"MASTER_KUBERNETES_APISERVER_B64_GZIP_STR":          "kubernetesmaster-kube-apiserver.yaml",
 	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":      "kubernetesmaster-kube-addon-manager.yaml",
-	"MASTER_KUBERNETES_KUBECTL_EXTRACT_B64_GZIP_STR":    "kubernetesmaster-kubectl-extract.service",
 }
 
 var kubernetesAritfacts = map[string]string{
 	"MASTER_PROVISION_B64_GZIP_STR":            kubernetesMasterCustomScript,
 	"MASTER_GENERATE_PROXY_CERTS_B64_GZIP_STR": kubernetesMasterGenerateProxyCertsScript,
 	"KUBELET_SERVICE_B64_GZIP_STR":             kubernetesKubeletService,
+	"KUBECTL_EXTRACT_B64_GZIP_STR":             "kubernetes-kubectl-extract.service",
+	"DOCKER_MOUNT_PROPAGATION_B64_GZIP_STR":    "kubernetes-docker-mount-propagation-flags.conf",
 }
 
 var kubernetesAritfacts15 = map[string]string{

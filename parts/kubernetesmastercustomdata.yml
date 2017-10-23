@@ -10,10 +10,10 @@ packages:
 write_files:
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
   permissions: "0644"
+  encoding: "gzip"
   owner: "root"
-  content: |
-    [Service]
-    MountFlags=shared
+  content: !!binary |
+    DOCKER_MOUNT_PROPAGATION_B64_GZIP_STR
 
 - path: "/etc/systemd/system/docker.service.d/exec_start.conf"
   permissions: "0644"
@@ -173,7 +173,7 @@ write_files:
   encoding: gzip
   owner: "root"
   content: !!binary |
-    MASTER_KUBERNETES_KUBECTL_EXTRACT_B64_GZIP_STR
+    KUBECTL_EXTRACT_B64_GZIP_STR
 
 - path: "/etc/default/kubelet"
   permissions: "0644"
