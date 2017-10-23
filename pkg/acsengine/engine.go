@@ -100,6 +100,7 @@ var kubernetesManifestYamls = map[string]string{
 	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetesmaster-kube-controller-manager.yaml",
 	"MASTER_KUBERNETES_APISERVER_B64_GZIP_STR":          "kubernetesmaster-kube-apiserver.yaml",
 	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":      "kubernetesmaster-kube-addon-manager.yaml",
+	"MASTER_KUBERNETES_KUBECTL_EXTRACT_B64_GZIP_STR":    "kubernetesmaster-kubectl-extract.service",
 }
 
 var kubernetesAritfacts = map[string]string{

@@ -170,26 +170,10 @@ write_files:
 
 - path: "/etc/systemd/system/kubectl-extract.service"
   permissions: "0644"
+  encoding: gzip
   owner: "root"
-  content: |
-    [Unit]
-    Description=Kubectl extraction
-    Requires=docker.service
-    After=docker.service
-    ConditionPathExists=!/usr/local/bin/kubectl
-
-    [Service]
-    TimeoutStartSec=0
-    Restart=on-failure
-    RestartSec=5s
-    ExecStartPre=/bin/mkdir -p /tmp/kubectldir
-    ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
-    ExecStartPre=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
-    ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
-    ExecStart=/bin/chmod a+x /usr/local/bin/kubectl
-
-    [Install]
-    WantedBy=multi-user.target
+  content: !!binary |
+    MASTER_KUBERNETES_KUBECTL_EXTRACT_B64_GZIP_STR
 
 - path: "/etc/default/kubelet"
   permissions: "0644"
@@ -276,6 +260,7 @@ write_files:
     sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
     sed -i "s|<kubernetesTillerSpec>|{{WrapAsVariable "kubernetesTillerSpec"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubeDNSServiceIP>|{{WrapAsVariable "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/systemd/system/kubectl-extract.service"
 
 {{if .OrchestratorProfile.KubernetesConfig.EnableRbac }}
     # If RBAC enabled then add parameters to API server and Controller manager configuration
