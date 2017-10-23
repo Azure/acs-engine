@@ -131,7 +131,6 @@ func (cli *CLIProvisioner) provision() error {
 	}
 
 	// Lets start by just using the normal az group deployment cli for creating a cluster
-	log.Println("Creating deployment this make take a few minutes...")
 	err = cli.Account.CreateDeployment(cli.Name, eng)
 	if err != nil {
 		return fmt.Errorf("Error while trying to create deployment:%s", err)
@@ -174,8 +173,11 @@ func (cli *CLIProvisioner) waitForNodes() error {
 		log.Printf("SSH Key: %s\n", cli.Config.GetSSHKeyPath())
 		log.Printf("Master Node: %s@%s\n", user, host)
 		log.Printf("SSH Command: ssh -i %s -p 2200 %s@%s", cli.Config.GetSSHKeyPath(), user, host)
-		cluster := dcos.NewCluster(cli.Config, cli.Engine)
-		err := cluster.InstallDCOSClient()
+		cluster, err := dcos.NewCluster(cli.Config, cli.Engine)
+		if err != nil {
+			return err
+		}
+		err = cluster.InstallDCOSClient()
 		if err != nil {
 			return fmt.Errorf("Error trying to install dcos client:%s", err)
 		}
@@ -190,7 +192,10 @@ func (cli *CLIProvisioner) waitForNodes() error {
 }
 
 func (cli *CLIProvisioner) fetchProvisioningMetrics(path string) error {
-	conn := remote.NewConnection(fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location), "2200", cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cli.Config.GetSSHKeyPath())
+	conn, err := remote.NewConnection(fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location), "2200", cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cli.Config.GetSSHKeyPath())
+	if err != nil {
+		return err
+	}
 	data, err := conn.Read(path)
 	if err != nil {
 		return fmt.Errorf("Error reading file from path (%s):%s", path, err)
