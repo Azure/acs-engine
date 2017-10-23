@@ -30,6 +30,6 @@ This command will look the the deployment directory to find info about the clust
 |subscription-id|yes|The subscription id the cluster is deployed in.|
 |resource-group|yes|The resource group the cluster is deployed in.|
 |location|yes|The location the resource group is in.|
-|deployment-dir|yes|Relative path to the folder location for the output from the acs-engine deploy/generate.|
+|deployment-dir|yes|Relative path to the folder location for the output from the acs-engine deploy/generate command.|
 |node-pool|depends|Required if there is more than one node pool. Which node pool should be scaled.|
 |new-node-count|yes|Desired number of nodes in the node pool.|
