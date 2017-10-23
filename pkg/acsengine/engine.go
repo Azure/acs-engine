@@ -108,7 +108,7 @@ var kubernetesAritfacts = map[string]string{
 	"KUBELET_SERVICE_B64_GZIP_STR":             kubernetesKubeletService,
 	"KUBECTL_EXTRACT_B64_GZIP_STR":             "kubernetes-kubectl-extract.service",
 	"DOCKER_MOUNT_PROPAGATION_B64_GZIP_STR":    "kubernetes-docker-mount-propagation-flags.conf",
-	"DOCKER_EXEC_START_B64_GZIP_STR":           "kubernetes-docker-docker-exec-start.conf",
+	"DOCKER_EXEC_START_B64_GZIP_STR":           "kubernetes-docker-exec-start.conf",
 	"DOCKER_DAEMON_B64_GZIP_STR":               "kubernetes-docker-daemon.json",
 }
 
