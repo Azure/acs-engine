@@ -17,10 +17,6 @@
       "location": "westus"
     },
     {
-      "cluster_definition": "k8s-upgrade/kubernetes1.5-manageddisks.json",
-      "location": "westus"
-    },
-    {
       "cluster_definition": "k8s-upgrade/kubernetes1.6-manageddisks.json",
       "location": "westus"
     }
