@@ -17,11 +17,11 @@
       "location": "westus"
     },
     {
-      "cluster_definition": "k8s-upgrade/kubernetes1.5-multiagentpools.json",
+      "cluster_definition": "k8s-upgrade/kubernetes1.5-manageddisks.json",
       "location": "westus"
     },
     {
-      "cluster_definition": "k8s-upgrade/kubernetes1.6-multiagentpools.json",
+      "cluster_definition": "k8s-upgrade/kubernetes1.6-manageddisks.json",
       "location": "westus"
     }
   ]
