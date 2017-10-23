@@ -107,6 +107,7 @@ Available Commands:
   generate    Generate an Azure Resource Manager template
   help        Help about any command
   version     Print the version of ACS-Engine
+  scale       Scale a existing cluster deployed by acs-engine
 
 Flags:
       --debug   enable verbose debug logs

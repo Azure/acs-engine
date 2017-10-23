@@ -63,9 +63,9 @@ func newScaleCmd() *cobra.Command {
 	f.StringVar(&sc.location, "location", "", "location the cluster is deployed in")
 	f.StringVar(&sc.resourceGroupName, "resource-group", "", "the resource group where the cluster is deployed")
 	f.StringVar(&sc.deploymentDirectory, "deployment-dir", "", "the location of the output from `generate`")
-	f.IntVar(&sc.newDesiredAgentCount, "new-agent-count", 0, "desired number of agents")
+	f.IntVar(&sc.newDesiredAgentCount, "new-node-count", 0, "desired number of nodes")
 	f.BoolVar(&sc.classicMode, "classic-mode", false, "enable classic parameters and outputs")
-	f.StringVar(&sc.agentPoolToScale, "agent-pool", "", "agent pool to scale")
+	f.StringVar(&sc.agentPoolToScale, "node-pool", "", "node pool to scale")
 
 	addAuthFlags(&sc.authArgs, f)
 
@@ -93,7 +93,7 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 
 	if sc.newDesiredAgentCount == 0 {
 		cmd.Usage()
-		log.Fatal("--new-agent-count must be specified")
+		log.Fatal("--new-node-count must be specified")
 	}
 
 	if sc.client, err = sc.authArgs.getClient(); err != nil {
@@ -130,13 +130,13 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 	if sc.agentPoolToScale == "" {
 		agentPoolCount := len(sc.containerService.Properties.AgentPoolProfiles)
 		if agentPoolCount > 1 {
-			log.Fatal("--agent-pool is required if more than one agent pool is defined in the container service")
+			log.Fatal("--node-pool is required if more than one agent pool is defined in the container service")
 		} else if agentPoolCount == 1 {
 			sc.agentPool = sc.containerService.Properties.AgentPoolProfiles[0]
 			sc.agentPoolIndex = 0
 			sc.agentPoolToScale = sc.containerService.Properties.AgentPoolProfiles[0].Name
 		} else {
-			log.Fatal("No agent pools found to scale")
+			log.Fatal("No node pools found to scale")
 		}
 	} else {
 		agentPoolIndex := -1
@@ -148,7 +148,7 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 			}
 		}
 		if agentPoolIndex == -1 {
-			log.Fatalf("Agent pool %s wasn't in the deployed api model", sc.agentPoolToScale)
+			log.Fatalf("node pool %s wasn't in the deployed api model", sc.agentPoolToScale)
 		}
 	}
 }
