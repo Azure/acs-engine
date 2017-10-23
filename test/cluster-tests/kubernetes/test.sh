@@ -30,7 +30,7 @@ EXPECTED_LINUX_AGENTS="${EXPECTED_LINUX_AGENTS:-3}"
 EXPECTED_WINDOWS_AGENTS="${EXPECTED_WINDOWS_AGENTS:-0}"
 EXPECTED_DNS="${EXPECTED_DNS:-2}"
 EXPECTED_DASHBOARD="${EXPECTED_DASHBOARD:-1}"
-EXPECTED_ORCHESTRATOR_RELEASE="${EXPECTED_ORCHESTRATOR_RELEASE:-}"
+EXPECTED_ORCHESTRATOR_VERSION="${EXPECTED_ORCHESTRATOR_VERSION:-}"
 
 KUBE_PROXY_COUNT=$((EXPECTED_NODE_COUNT-$EXPECTED_WINDOWS_AGENTS))
 
@@ -63,12 +63,12 @@ fi
 ###### Check node count
 function check_node_count() {
   log "Checking node count"
-  count=20
+  count=120
   while (( $count > 0 )); do
     log "  ... counting down $count"
     node_count=$(kubectl get nodes --no-headers | grep -v NotReady | grep Ready | wc | awk '{print $1}')
     if (( ${node_count} == ${EXPECTED_NODE_COUNT} )); then break; fi
-    sleep 15; count=$((count-1))
+    sleep 5; count=$((count-1))
   done
   if (( $node_count != ${EXPECTED_NODE_COUNT} )); then
     log "K8S: gave up waiting for apiserver / node counts"; exit 1
@@ -78,17 +78,17 @@ function check_node_count() {
 check_node_count
 
 ###### Validate Kubernetes version
-log "Checking Kubernetes version. Expected: ${EXPECTED_ORCHESTRATOR_RELEASE}"
-if [ ! -z "${EXPECTED_ORCHESTRATOR_RELEASE}" ]; then
+log "Checking Kubernetes version. Expected: ${EXPECTED_ORCHESTRATOR_VERSION}"
+if [ ! -z "${EXPECTED_ORCHESTRATOR_VERSION}" ]; then
   kubernetes_version=$(kubectl version --short)
-  if [[ ${kubernetes_version} != *"Server Version: v${EXPECTED_ORCHESTRATOR_RELEASE}"* ]]; then
+  if [[ ${kubernetes_version} != *"Server Version: v${EXPECTED_ORCHESTRATOR_VERSION}"* ]]; then
     log "K8S: unexpected kubernetes version:\n${kubernetes_version}"; exit 1
   fi
 fi
 
 ###### Wait for no more container creating
 log "Checking containers being created"
-count=12
+count=60
 while (( $count > 0 )); do
   log "  ... counting down $count"
   creating_count=$(kubectl get nodes --no-headers | grep 'CreatingContainer' | wc | awk '{print $1}')
@@ -105,7 +105,7 @@ fi
 pods="heapster kube-addon-manager kube-apiserver kube-controller-manager kube-scheduler tiller"
 log "Checking $pods"
 
-count=12
+count=60
 while (( $count > 0 )); do
   for pod in $pods; do
     running=$(kubectl get pods --all-namespaces | grep $pod | grep Running | wc -l)
@@ -126,7 +126,7 @@ fi
 
 ###### Check for Kube-DNS
 log "Checking Kube-DNS"
-count=12
+count=60
 while (( $count > 0 )); do
   log "  ... counting down $count"
   running=$(kubectl get pods --namespace=kube-system | grep kube-dns | grep Running | wc | awk '{print $1}')
@@ -139,7 +139,7 @@ fi
 
 ###### Check for Kube-Dashboard
 log "Checking Kube-Dashboard"
-count=12
+count=60
 while (( $count > 0 )); do
   log "  ... counting down $count"
   running=$(kubectl get pods --namespace=kube-system | grep kubernetes-dashboard | grep Running | wc | awk '{print $1}')
@@ -152,7 +152,7 @@ fi
 
 ###### Check for Kube-Proxys
 log "Checking Kube-Proxys"
-count=12
+count=60
 while (( $count > 0 )); do
   log "  ... counting down $count"
   running=$(kubectl get pods --namespace=kube-system | grep kube-proxy | grep Running | wc | awk '{print $1}')
@@ -172,7 +172,7 @@ ips=$(kubectl get nodes --all-namespaces -o yaml | grep -B 1 InternalIP | grep a
 
 for ip in $ips; do
   log "Probing IP address ${ip}"
-  count=12
+  count=60
   success="n"
   while (( $count > 0 )); do
     log "  ... counting down $count"

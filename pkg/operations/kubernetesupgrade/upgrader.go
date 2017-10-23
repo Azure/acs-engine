@@ -2,27 +2,30 @@ package kubernetesupgrade
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // Upgrader holds information on upgrading an ACS cluster
 type Upgrader struct {
 	Translator *i18n.Translator
+	logger     *logrus.Entry
 	ClusterTopology
-	Client armhelpers.ACSEngineClient
+	Client     armhelpers.ACSEngineClient
+	kubeConfig string
 }
 
 // Init initializes an upgrader struct
-func (ku *Upgrader) Init(translator *i18n.Translator, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient) {
+func (ku *Upgrader) Init(translator *i18n.Translator, logger *logrus.Entry, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient, kubeConfig string) {
 	ku.Translator = translator
+	ku.logger = logger
 	ku.ClusterTopology = clusterTopology
 	ku.Client = client
+	ku.kubeConfig = kubeConfig
 }
 
 // RunUpgrade runs the upgrade pipeline
@@ -44,25 +47,29 @@ func (ku *Upgrader) Validate() error {
 }
 
 func (ku *Upgrader) upgradeMasterNodes() error {
-	log.Infoln(fmt.Sprintf("Master nodes StorageProfile: %s", ku.ClusterTopology.DataModel.Properties.MasterProfile.StorageProfile))
+	if ku.ClusterTopology.DataModel.Properties.MasterProfile == nil {
+		return nil
+	}
+	ku.logger.Infof("Master nodes StorageProfile: %s\n", ku.ClusterTopology.DataModel.Properties.MasterProfile.StorageProfile)
 	// Upgrade Master VMs
 	templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
 	if err != nil {
 		return ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 	}
 
-	log.Infoln(fmt.Sprintf("Prepping master nodes for upgrade..."))
+	ku.logger.Infof("Prepping master nodes for upgrade...\n")
 
 	transformer := &acsengine.Transformer{
 		Translator: ku.Translator,
 	}
-	if err := transformer.NormalizeResourcesForK8sMasterUpgrade(log.NewEntry(log.New()), templateMap, ku.DataModel.Properties.MasterProfile.IsManagedDisks(), nil); err != nil {
-		log.Fatalln(err)
+	if err := transformer.NormalizeResourcesForK8sMasterUpgrade(ku.logger, templateMap, ku.DataModel.Properties.MasterProfile.IsManagedDisks(), nil); err != nil {
+		ku.logger.Errorf(err.Error())
 		return err
 	}
 
 	upgradeMasterNode := UpgradeMasterNode{
 		Translator: ku.Translator,
+		logger:     ku.logger,
 	}
 	upgradeMasterNode.TemplateMap = templateMap
 	upgradeMasterNode.ParametersMap = parametersMap
@@ -74,14 +81,14 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	mastersUpgradedCount := len(*ku.ClusterTopology.UpgradedMasterVMs)
 	mastersToUgradeCount := expectedMasterCount - mastersUpgradedCount
 
-	log.Infoln(fmt.Sprintf("Total expected master count: %d", expectedMasterCount))
-	log.Infoln(fmt.Sprintf("Master nodes that need to be upgraded: %d", mastersToUgradeCount))
-	log.Infoln(fmt.Sprintf("Master nodes that have been upgraded: %d", mastersUpgradedCount))
+	ku.logger.Infof("Total expected master count: %d\n", expectedMasterCount)
+	ku.logger.Infof("Master nodes that need to be upgraded: %d\n", mastersToUgradeCount)
+	ku.logger.Infof("Master nodes that have been upgraded: %d\n", mastersUpgradedCount)
 
-	log.Infoln(fmt.Sprintf("Starting upgrade of master nodes..."))
+	ku.logger.Infof("Starting upgrade of master nodes...\n")
 
 	masterNodesInCluster := len(*ku.ClusterTopology.MasterVMs) + mastersUpgradedCount
-	log.Infoln(fmt.Sprintf("masterNodesInCluster: %d", masterNodesInCluster))
+	ku.logger.Infof("masterNodesInCluster: %d\n", masterNodesInCluster)
 	if masterNodesInCluster > expectedMasterCount {
 		return ku.Translator.Errorf("Total count of master VMs: %d exceeded expected count: %d", masterNodesInCluster, expectedMasterCount)
 	}
@@ -89,31 +96,31 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	upgradedMastersIndex := make(map[int]bool)
 
 	for _, vm := range *ku.ClusterTopology.UpgradedMasterVMs {
-		log.Infoln(fmt.Sprintf("Master VM: %s is upgraded to expected orchestrator version", *vm.Name))
+		ku.logger.Infof("Master VM: %s is upgraded to expected orchestrator version\n", *vm.Name)
 		masterIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 		upgradedMastersIndex[masterIndex] = true
 	}
 
 	for _, vm := range *ku.ClusterTopology.MasterVMs {
-		log.Infoln(fmt.Sprintf("Upgrading Master VM: %s", *vm.Name))
+		ku.logger.Infof("Upgrading Master VM: %s\n", *vm.Name)
 
 		masterIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
 		err := upgradeMasterNode.DeleteNode(vm.Name)
 		if err != nil {
-			log.Infoln(fmt.Sprintf("Error deleting master VM: %s, err: %v", *vm.Name, err))
+			ku.logger.Infof("Error deleting master VM: %s, err: %v\n", *vm.Name, err)
 			return err
 		}
 
 		err = upgradeMasterNode.CreateNode("master", masterIndex)
 		if err != nil {
-			log.Infoln(fmt.Sprintf("Error creating upgraded master VM: %s", *vm.Name))
+			ku.logger.Infof("Error creating upgraded master VM: %s\n", *vm.Name)
 			return err
 		}
 
-		err = upgradeMasterNode.Validate()
+		err = upgradeMasterNode.Validate(vm.Name)
 		if err != nil {
-			log.Infoln(fmt.Sprintf("Error validating upgraded master VM: %s", *vm.Name))
+			ku.logger.Infof("Error validating upgraded master VM: %s\n", *vm.Name)
 			return err
 		}
 
@@ -123,12 +130,12 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	// This condition is possible if the previous upgrade operation failed during master
 	// VM upgrade when a master VM was deleted but creation of upgraded master did not run.
 	if masterNodesInCluster < expectedMasterCount {
-		log.Infoln(fmt.Sprintf(
-			"Found missing master VMs in the cluster. Reconstructing names of missing master VMs for recreation during upgrade..."))
+		ku.logger.Infof(
+			"Found missing master VMs in the cluster. Reconstructing names of missing master VMs for recreation during upgrade...\n")
 	}
 
 	mastersToCreate := expectedMasterCount - masterNodesInCluster
-	log.Infoln(fmt.Sprintf("Expected master count: %d, Creating %d more master VMs", expectedMasterCount, mastersToCreate))
+	ku.logger.Infof("Expected master count: %d, Creating %d more master VMs\n", expectedMasterCount, mastersToCreate)
 
 	// NOTE: this is NOT completely idempotent because it assumes that
 	// the OS disk has been deleted
@@ -138,17 +145,18 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 			masterIndexToCreate++
 		}
 
-		log.Infoln(fmt.Sprintf("Creating upgraded master VM with index: %d", masterIndexToCreate))
+		ku.logger.Infof("Creating upgraded master VM with index: %d\n", masterIndexToCreate)
 
 		err = upgradeMasterNode.CreateNode("master", masterIndexToCreate)
 		if err != nil {
-			log.Infoln(fmt.Sprintf("Error creating upgraded master VM with index: %d", masterIndexToCreate))
+			ku.logger.Infof("Error creating upgraded master VM with index: %d\n", masterIndexToCreate)
 			return err
 		}
 
-		err = upgradeMasterNode.Validate()
+		tempVMName := ""
+		err = upgradeMasterNode.Validate(&tempVMName)
 		if err != nil {
-			log.Infoln(fmt.Sprintf("Error validating upgraded master VM with index: %d", masterIndexToCreate))
+			ku.logger.Infof("Error validating upgraded master VM with index: %d\n", masterIndexToCreate)
 			return err
 		}
 
@@ -159,6 +167,14 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 }
 
 func (ku *Upgrader) upgradeAgentPools() error {
+	// Unused until safely drain node is being called
+	// var kubeAPIServerURL string
+	// if ku.DataModel.Properties.MasterProfile != nil {
+	// 	kubeAPIServerURL = ku.DataModel.Properties.MasterProfile.FQDN
+	// }
+	// if ku.DataModel.Properties.HostedMasterProfile != nil {
+	// 	kubeAPIServerURL = ku.DataModel.Properties.HostedMasterProfile.FQDN
+	// }
 	for _, agentPool := range ku.ClusterTopology.AgentPools {
 		// Upgrade Agent VMs
 		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
@@ -166,14 +182,18 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			return ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 		}
 
-		log.Infoln(fmt.Sprintf("Prepping agent pool: %s for upgrade...", *agentPool.Name))
+		ku.logger.Infof("Prepping agent pool: %s for upgrade...\n", *agentPool.Name)
 
 		preservePools := map[string]bool{*agentPool.Name: true}
 		transformer := &acsengine.Transformer{
 			Translator: ku.Translator,
 		}
-		if err := transformer.NormalizeResourcesForK8sAgentUpgrade(log.NewEntry(log.New()), templateMap, ku.DataModel.Properties.MasterProfile.IsManagedDisks(), preservePools); err != nil {
-			log.Fatalln(err)
+		var isMasterManagedDisk bool
+		if ku.DataModel.Properties.MasterProfile != nil {
+			isMasterManagedDisk = ku.DataModel.Properties.MasterProfile.IsManagedDisks()
+		}
+		if err := transformer.NormalizeResourcesForK8sAgentUpgrade(ku.logger, templateMap, isMasterManagedDisk, preservePools); err != nil {
+			ku.logger.Errorf(err.Error())
 			return err
 		}
 
@@ -187,44 +207,46 @@ func (ku *Upgrader) upgradeAgentPools() error {
 
 		upgradeAgentNode := UpgradeAgentNode{
 			Translator: ku.Translator,
+			logger:     ku.logger,
 		}
 		upgradeAgentNode.TemplateMap = templateMap
 		upgradeAgentNode.ParametersMap = parametersMap
 		upgradeAgentNode.UpgradeContainerService = ku.ClusterTopology.DataModel
 		upgradeAgentNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 		upgradeAgentNode.Client = ku.Client
+		upgradeAgentNode.kubeConfig = ku.kubeConfig
 
 		upgradedAgentsIndex := make(map[int]bool)
 
 		for _, vm := range *agentPool.UpgradedAgentVMs {
-			log.Infoln(fmt.Sprintf("Agent VM: %s, pool name: %s on expected orchestrator version", *vm.Name, *agentPool.Name))
+			ku.logger.Infof("Agent VM: %s, pool name: %s on expected orchestrator version\n", *vm.Name, *agentPool.Name)
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 			upgradedAgentsIndex[agentIndex] = true
 		}
 
-		log.Infoln(fmt.Sprintf("Starting upgrade of agent nodes in pool identifier: %s, name: %s...",
-			*agentPool.Identifier, *agentPool.Name))
+		ku.logger.Infof("Starting upgrade of agent nodes in pool identifier: %s, name: %s...\n",
+			*agentPool.Identifier, *agentPool.Name)
 
 		for _, vm := range *agentPool.AgentVMs {
-			log.Infoln(fmt.Sprintf("Upgrading Agent VM: %s, pool name: %s", *vm.Name, *agentPool.Name))
+			ku.logger.Infof("Upgrading Agent VM: %s, pool name: %s\n", *vm.Name, *agentPool.Name)
 
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
 			err := upgradeAgentNode.DeleteNode(vm.Name)
 			if err != nil {
-				log.Infoln(fmt.Sprintf("Error deleting agent VM: %s", *vm.Name))
+				ku.logger.Infof("Error deleting agent VM: %s\n", *vm.Name)
 				return err
 			}
 
 			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
 			if err != nil {
-				log.Infoln(fmt.Sprintf("Error creating upgraded agent VM: %s", *vm.Name))
+				ku.logger.Infof("Error creating upgraded agent VM: %s\n", *vm.Name)
 				return err
 			}
 
-			err = upgradeAgentNode.Validate()
+			err = upgradeAgentNode.Validate(vm.Name)
 			if err != nil {
-				log.Infoln(fmt.Sprintf("Error validating upgraded agent VM: %s", *vm.Name))
+				ku.logger.Infof("Error validating upgraded agent VM: %s, err: %v\n", *vm.Name, err)
 				return err
 			}
 
@@ -232,7 +254,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		}
 
 		agentsToCreate := agentCount - len(upgradedAgentsIndex)
-		log.Infoln(fmt.Sprintf("Expected agent count in the pool: %d, Creating %d more agents", agentCount, agentsToCreate))
+		ku.logger.Infof("Expected agent count in the pool: %d, Creating %d more agents\n", agentCount, agentsToCreate)
 
 		// NOTE: this is NOT completely idempotent because it assumes that
 		// the OS disk has been deleted
@@ -242,17 +264,18 @@ func (ku *Upgrader) upgradeAgentPools() error {
 				agentIndexToCreate++
 			}
 
-			log.Infoln(fmt.Sprintf("Creating upgraded Agent VM with index: %d, pool name: %s", agentIndexToCreate, *agentPool.Name))
+			ku.logger.Infof("Creating upgraded Agent VM with index: %d, pool name: %s\n", agentIndexToCreate, *agentPool.Name)
 
 			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndexToCreate)
 			if err != nil {
-				log.Infoln(fmt.Sprintf("Error creating upgraded agent VM with index: %d", agentIndexToCreate))
+				ku.logger.Infof("Error creating upgraded agent VM with index: %d\n", agentIndexToCreate)
 				return err
 			}
 
-			err = upgradeAgentNode.Validate()
+			tempVMName := ""
+			err = upgradeAgentNode.Validate(&tempVMName)
 			if err != nil {
-				log.Infoln(fmt.Sprintf("Error validating upgraded agent VM with index: %d", agentIndexToCreate))
+				ku.logger.Infof("Error validating upgraded agent VM with index: %d\n", agentIndexToCreate)
 				return err
 			}
 
@@ -275,7 +298,7 @@ func (ku *Upgrader) generateUpgradeTemplate(upgradeContainerService *api.Contain
 
 	var templateJSON string
 	var parametersJSON string
-	if templateJSON, parametersJSON, _, err = templateGenerator.GenerateTemplate(upgradeContainerService); err != nil {
+	if templateJSON, parametersJSON, _, err = templateGenerator.GenerateTemplate(upgradeContainerService, acsengine.DefaultGeneratorCode); err != nil {
 		return nil, nil, ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 	}
 

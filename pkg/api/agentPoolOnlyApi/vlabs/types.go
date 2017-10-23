@@ -30,8 +30,7 @@ type ManagedCluster struct {
 // Properties represents the ACS cluster definition
 type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
-	KubernetesVersion       string                   `json:"kubernetesVersion" validate:"len=0"`
-	KubernetesRelease       string                   `json:"kubernetesRelease"`
+	KubernetesVersion       string                   `json:"kubernetesVersion"`
 	DNSPrefix               string                   `json:"dnsPrefix" validate:"required"`
 	FQDN                    string                   `json:"fqdn,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
@@ -54,7 +53,7 @@ type Properties struct {
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
 	ClientID string `json:"clientId,omitempty" validate:"required"`
-	Secret   string `json:"secret,omitempty" validate:"required"`
+	Secret   string `json:"secret,omitempty"`
 }
 
 // CertificateProfile contains cert material for the Kubernetes cluster
@@ -94,7 +93,7 @@ type PublicKey struct {
 // WindowsProfile represents the Windows configuration passed to the cluster
 type WindowsProfile struct {
 	AdminUsername string `json:"adminUsername,omitempty" validate:"required"`
-	AdminPassword string `json:"adminPassword,omitempty" validate:"required"`
+	AdminPassword string `json:"adminPassword,omitempty"`
 	ImageVersion  string `json:"imageVersion,omitempty"`
 }
 

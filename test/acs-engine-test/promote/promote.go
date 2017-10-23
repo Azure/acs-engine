@@ -168,13 +168,16 @@ func RunPromoteToFailure(sa StorageAccount, testRunPromToFail DigitalSignalFilte
 		// Update the Entity with FailureCount 0
 		// Return False
 		if err = updateEntity(entity, testRunPromToFail.FailureCount, testRunPromToFail.FailureStr); err != nil {
+			fmt.Printf("Failed to reset Failure Count for %s to : %v!\n\n", testRunPromToFail.TestName, testRunPromToFail.FailureCount)
 			return false, err
 		}
+		fmt.Printf("Reset Failure Count for %s to : %v\n\n", testRunPromToFail.TestName, testRunPromToFail.FailureCount)
 		return false, nil
 	}
 
-	fmt.Printf("Existing Failure Count : %v\n\n", existingFailureCount)
+	fmt.Printf("Existing Failure Count for %s : %v\n\n", testRunPromToFail.TestName, existingFailureCount)
 	newFailureCount := existingFailureCount.(float64) + testRunPromToFail.FailureCount
+	fmt.Printf("Incremented Failure Count for %s to : %v\n\n", testRunPromToFail.TestName, newFailureCount)
 	if err = updateEntity(entity, newFailureCount, testRunPromToFail.FailureStr); err != nil {
 		return false, err
 	}

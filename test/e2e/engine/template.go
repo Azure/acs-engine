@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -17,10 +18,12 @@ type Config struct {
 	ClientID              string `envconfig:"CLIENT_ID"`
 	ClientSecret          string `envconfig:"CLIENT_SECRET"`
 	MasterDNSPrefix       string `envconfig:"DNS_PREFIX"`
+	AgentDNSPrefix        string `envconfig:"DNS_PREFIX"`
 	PublicSSHKey          string `envconfig:"PUBLIC_SSH_KEY"`
 	WindowsAdminPasssword string `envconfig:"WINDOWS_ADMIN_PASSWORD"`
-	OrchestratorRelease   string `envconfig:"ORCHESTRATOR_RELEASE"`
+	OrchestratorVersion   string `envconfig:"ORCHESTRATOR_VERSION"`
 	OutputDirectory       string `envconfig:"OUTPUT_DIR" default:"_output"`
+	CreateVNET            bool   `envconfig:"CREATE_VNET" default:"false"`
 
 	ClusterDefinitionPath     string // The original template we want to use to build the cluster from.
 	ClusterDefinitionTemplate string // This is the template after we splice in the environment variables
@@ -70,12 +73,20 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 	}
 
 	if config.ClientID != "" && config.ClientSecret != "" {
-		cs.ContainerService.Properties.ServicePrincipalProfile.ClientID = config.ClientID
-		cs.ContainerService.Properties.ServicePrincipalProfile.Secret = config.ClientSecret
+		cs.ContainerService.Properties.ServicePrincipalProfile = &vlabs.ServicePrincipalProfile{
+			ClientID: config.ClientID,
+			Secret:   config.ClientSecret,
+		}
 	}
 
 	if config.MasterDNSPrefix != "" {
 		cs.ContainerService.Properties.MasterProfile.DNSPrefix = config.MasterDNSPrefix
+	}
+
+	if !cfg.IsKubernetes() && config.AgentDNSPrefix != "" {
+		for idx, pool := range cs.ContainerService.Properties.AgentPoolProfiles {
+			pool.DNSPrefix = fmt.Sprintf("%v-%v", config.AgentDNSPrefix, idx)
+		}
 	}
 
 	if config.PublicSSHKey != "" {
@@ -86,11 +97,11 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 		cs.ContainerService.Properties.WindowsProfile.AdminPassword = config.WindowsAdminPasssword
 	}
 
-	if config.OrchestratorRelease != "" {
-		cs.ContainerService.Properties.OrchestratorProfile.OrchestratorRelease = config.OrchestratorRelease
+	if config.OrchestratorVersion != "" {
+		cs.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion = config.OrchestratorVersion
 	}
 
-	if cfg.CreateVNET {
+	if config.CreateVNET {
 		cs.ContainerService.Properties.MasterProfile.VnetSubnetID = subnetID
 		for _, p := range cs.ContainerService.Properties.AgentPoolProfiles {
 			p.VnetSubnetID = subnetID

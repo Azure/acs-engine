@@ -2,8 +2,10 @@ package azure
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os/exec"
+	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/engine"
 
@@ -54,19 +56,12 @@ func NewAccount() (*Account, error) {
 
 // Login will login to a given subscription
 func (a *Account) Login() error {
-	cmd := exec.Command("az", "login",
+	_, err := exec.Command("az", "login",
 		"--service-principal",
 		"--username", a.User.ID,
 		"--password", a.User.Secret,
-		"--tenant", a.TenantID)
-	err := cmd.Start()
+		"--tenant", a.TenantID).CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying to start login:%s\n", err)
-		return err
-	}
-	err = cmd.Wait()
-	if err != nil {
-		log.Printf("Error occurred while waiting for login to complete:%s\n", err)
 		return err
 	}
 	return nil
@@ -74,31 +69,21 @@ func (a *Account) Login() error {
 
 // SetSubscription will call az account set --subscription for the given Account
 func (a *Account) SetSubscription() error {
-	cmd := exec.Command("az", "account", "set", "--subscription", a.SubscriptionID)
-	err := cmd.Start()
+	_, err := exec.Command("az", "account", "set", "--subscription", a.SubscriptionID).CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying to start account set for subscription %s:%s\n", a.SubscriptionID, err)
-		return err
-	}
-	err = cmd.Wait()
-	if err != nil {
-		log.Printf("Error occurred while waiting for account set for subscription %s to complete:%s\n", a.SubscriptionID, err)
 		return err
 	}
 	return nil
 }
 
 // CreateGroup will create a resource group in a given location
+//--tags "type=${RESOURCE_GROUP_TAG_TYPE:-}" "now=$(date +%s)" "job=${JOB_BASE_NAME:-}" "buildno=${BUILD_NUM:-}"
 func (a *Account) CreateGroup(name, location string) error {
-	cmd := exec.Command("az", "group", "create", "--name", name, "--location", location)
-	err := cmd.Start()
+	now := fmt.Sprintf("now=%v", time.Now().Add(-3*time.Hour).Unix())
+	out, err := exec.Command("az", "group", "create", "--name", name, "--location", location, "--tags", now).CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying to start command to create resource group (%s) in %s:%s", name, location, err)
-		return err
-	}
-	err = cmd.Wait()
-	if err != nil {
-		log.Printf("Error occurred while waiting for resource group (%s) in %s:%s", name, location, err)
+		log.Printf("Error while trying create resource group (%s) in %s:%s", name, location, err)
+		log.Printf("Output:%s\n", out)
 		return err
 	}
 	r := ResourceGroup{
@@ -125,13 +110,12 @@ func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
 		Name:              name,
 		TemplateDirectory: e.Config.GeneratedDefinitionPath,
 	}
-	cmd := exec.Command("az", "group", "deployment", "create",
+	output, err := exec.Command("az", "group", "deployment", "create",
 		"--name", d.Name,
 		"--resource-group", a.ResourceGroup.Name,
 		"--template-file", e.Config.GeneratedTemplatePath,
-		"--parameters", e.Config.GeneratedParametersPath)
+		"--parameters", e.Config.GeneratedParametersPath).CombinedOutput()
 
-	output, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to start deployment for %s in resource group %s:%s", d.Name, a.ResourceGroup.Name, err)
 		log.Printf("Command Output: %s\n", output)
@@ -185,7 +169,7 @@ func (a *Account) UpdateRouteTables(subnet, vnet string) error {
 		return err
 	}
 	rts := []RouteTable{}
-	err = json.Unmarshal(out, &rts)
+	json.Unmarshal(out, &rts)
 
 	out, err = exec.Command("az", "network", "vnet", "subnet", "update", "-n", subnet, "-g", a.ResourceGroup.Name, "--vnet-name", vnet, "--route-table", rts[0].Name).CombinedOutput()
 	if err != nil {

@@ -136,7 +136,7 @@ func (m *TestManager) Run() error {
 	for index, dep := range m.config.Deployments {
 		go func(index int, dep config.Deployment) {
 			defer m.wg.Done()
-			promToFailInfo := promote.DigitalSignalFilter{}
+			var promToFailInfo promote.DigitalSignalFilter
 			resMap := make(map[string]*ErrorStat)
 			if usePromoteToFailure {
 				errorInfo := m.testRun(dep, index, 0, timeout)
@@ -164,7 +164,10 @@ func (m *TestManager) Run() error {
 							FailureCount: 1,
 						}
 
-						result, _ := promote.RunPromoteToFailure(sa, promToFailInfo)
+						result, err := promote.RunPromoteToFailure(sa, promToFailInfo)
+						if err != nil {
+							fmt.Printf("Got error from RunPromoteToFailure: %#v\n", err)
+						}
 						if result == true {
 							success[index] = false
 						} else {
@@ -188,6 +191,12 @@ func (m *TestManager) Run() error {
 
 					promote.RunPromoteToFailure(sa, promToFailInfo)
 
+				}
+
+				if success[index] {
+					fmt.Printf("Promote to Fail passed: SUCCESS [%s]\n", testName)
+				} else {
+					fmt.Printf("Promote to Fail did not pass: ERROR [%s]\n", testName)
 				}
 
 			} else {
@@ -313,15 +322,15 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 			validateLogFile = fmt.Sprintf("%s/validate-%s.log", logDir, resourceGroup)
 			env = append(env, fmt.Sprintf("LOGFILE=%s", validateLogFile))
 
-			cmd := exec.Command("test/step.sh", "get_orchestrator_release")
+			cmd := exec.Command("test/step.sh", "get_orchestrator_version")
 			cmd.Env = env
 			out, err := cmd.Output()
 			if err != nil {
-				wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_release", resourceGroup, err)
-				errorInfo = report.NewErrorInfo(testName, step, "OrchestratorReleaseParsingError", "PreRun", d.Location)
+				wrileLog(logFile, "Error [%s:%s] %v", "get_orchestrator_version", resourceGroup, err)
+				errorInfo = report.NewErrorInfo(testName, step, "OrchestratorVersionParsingError", "PreRun", d.Location)
 				break
 			}
-			env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_RELEASE=%s", strings.TrimSpace(string(out))))
+			env = append(env, fmt.Sprintf("EXPECTED_ORCHESTRATOR_VERSION=%s", strings.TrimSpace(string(out))))
 
 			cmd = exec.Command("test/step.sh", "get_node_count")
 			cmd.Env = env
@@ -361,6 +370,8 @@ func (m *TestManager) testRun(d config.Deployment, index, attempt int, timeout t
 
 func isPromoteToFailureStep(step string) bool {
 	switch step {
+	case stepDeployTemplate:
+		return true
 	case stepValidate:
 		return true
 	case stepPostDeploy:
@@ -583,6 +594,7 @@ func mainInternal() error {
 		case "usgoviowa": // US Gov cloud
 		case "koreacentral": // TODO make sure our versions of azure-cli support this cloud
 		case "centraluseuap": // TODO determine why this region is flaky
+		case "australiasoutheast": // TODO undo when this region is not flaky
 		case "brazilsouth": // canary region
 		default:
 			regions = append(regions, region)

@@ -143,7 +143,7 @@
     <Str Cat="Text">
       <Val><![CDATA[invalid version %s for conversion back from unversioned object]]></Val>
       <Tgt Cat="Text" Stat="Loc" Orig="New">
-        <Val><![CDATA[недопустимая версия %s для обратного преобразования из объекта без управления версиями]]></Val>
+        <Val><![CDATA[недопустимая версия %s для обратного преобразования из объекта без версий]]></Val>
       </Tgt>
     </Str>
     <Disp Icon="Str" />

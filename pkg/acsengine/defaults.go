@@ -19,7 +19,6 @@ var (
 		CNIPluginsDownloadURL:            "https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-latest.tgz",
 		VnetCNILinuxPluginsDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz",
 		VnetCNIWindowsPluginsDownloadURL: "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-latest.zip",
-		CalicoConfigDownloadURL:          "https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager",
 	}
 
 	//DefaultDCOSSpecConfig is the default DC/OS binary download URL.
@@ -39,9 +38,9 @@ var (
 	//DefaultUbuntuImageConfig is the default Linux distribution.
 	DefaultUbuntuImageConfig = AzureOSImageConfig{
 		ImageOffer:     "UbuntuServer",
-		ImageSku:       "16.04-LTS",
+		ImageSku:       "16.04-DAILY-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201706191",
+		ImageVersion:   "16.04.201710110",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -117,7 +116,6 @@ var (
 			CNIPluginsDownloadURL:            "https://acsengine.blob.core.chinacloudapi.cn/cni/cni-plugins-amd64-latest.tgz",
 			VnetCNILinuxPluginsDownloadURL:   "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-linux-amd64-latest.tgz",
 			VnetCNIWindowsPluginsDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-windows-amd64-latest.zip",
-			CalicoConfigDownloadURL:          "https://acsengine.blob.core.chinacloudapi.cn/cni",
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
 			DCOS188BootstrapDownloadURL:     fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),
@@ -167,7 +165,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		return
 	}
 	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-		k8sRelease := a.OrchestratorProfile.OrchestratorRelease
+		k8sVersion := a.OrchestratorProfile.OrchestratorVersion
 		if a.OrchestratorProfile.KubernetesConfig == nil {
 			a.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
 		}
@@ -207,17 +205,20 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if a.OrchestratorProfile.KubernetesConfig.ServiceCIDR == "" {
 			a.OrchestratorProfile.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		}
+		if a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr == "" {
+			a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr = DefaultNonMasqueradeCidr
+		}
 		if a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency == "" {
-			a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sRelease]["nodestatusfreq"]
+			a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sVersion]["nodestatusfreq"]
 		}
 		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sRelease]["nodegraceperiod"]
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sVersion]["nodegraceperiod"]
 		}
 		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout = KubeConfigs[k8sRelease]["podeviction"]
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout = KubeConfigs[k8sVersion]["podeviction"]
 		}
 		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod = KubeConfigs[k8sRelease]["routeperiod"]
+			a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod = KubeConfigs[k8sVersion]["routeperiod"]
 		}
 		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
 		if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff == true {
@@ -234,11 +235,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
 			}
 		}
-		k8sVersion, _ := semver.NewVersion(api.KubernetesReleaseToVersion[k8sRelease])
+		k8sSemVer, _ := semver.NewVersion(k8sVersion)
 		constraint, _ := semver.NewConstraint(">= 1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
 		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
-		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && constraint.Check(k8sVersion) {
+		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && constraint.Check(k8sSemVer) {
 			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
 			}
@@ -246,6 +247,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
 			}
 		}
+
+		// default etcd version
+		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdVersion {
+			a.OrchestratorProfile.KubernetesConfig.EtcdVersion = "2.5.2"
+		}
+
 	} else if a.OrchestratorProfile.OrchestratorType == api.DCOS {
 		if a.OrchestratorProfile.DcosConfig == nil {
 			a.OrchestratorProfile.DcosConfig = &api.DcosConfig{}

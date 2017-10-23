@@ -143,7 +143,7 @@
     <Str Cat="Text">
       <Val><![CDATA[invalid version %s for conversion back from unversioned object]]></Val>
       <Tgt Cat="Text" Stat="Loc" Orig="New">
-        <Val><![CDATA[無法從未建立版本的物件轉換回版本 %s]]></Val>
+        <Val><![CDATA[無法從未進行版本控制的物件轉換回版本 %s]]></Val>
       </Tgt>
     </Str>
     <Disp Icon="Str" />
@@ -152,7 +152,7 @@
     <Str Cat="Text">
       <Val><![CDATA[orchestrator '%s' is unsupported]]></Val>
       <Tgt Cat="Text" Stat="Loc" Orig="New">
-        <Val><![CDATA[不支援 Orchestrator '%s']]></Val>
+        <Val><![CDATA[不支援協調器 '%s']]></Val>
       </Tgt>
     </Str>
     <Disp Icon="Str" />

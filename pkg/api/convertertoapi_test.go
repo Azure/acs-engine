@@ -2,6 +2,9 @@ package api
 
 import (
 	"testing"
+
+	"github.com/Azure/acs-engine/pkg/api/v20170701"
+	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
 func TestAddDCOSPublicAgentPool(t *testing.T) {
@@ -69,5 +72,58 @@ func getProperties(profiles []*AgentPoolProfile, master *MasterProfile) *Propert
 	return &Properties{
 		AgentPoolProfiles: profiles,
 		MasterProfile:     master,
+	}
+}
+
+func TestOrchestratorVersion(t *testing.T) {
+	// test v20170701
+	v20170701cs := &v20170701.ContainerService{
+		Properties: &v20170701.Properties{
+			OrchestratorProfile: &v20170701.OrchestratorProfile{
+				OrchestratorType: v20170701.Kubernetes,
+			},
+		},
+	}
+	cs := ConvertV20170701ContainerService(v20170701cs)
+	if cs.Properties.OrchestratorProfile.OrchestratorVersion != KubernetesDefaultVersion {
+		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
+	}
+
+	v20170701cs = &v20170701.ContainerService{
+		Properties: &v20170701.Properties{
+			OrchestratorProfile: &v20170701.OrchestratorProfile{
+				OrchestratorType:    v20170701.Kubernetes,
+				OrchestratorVersion: KubernetesVersion1Dot6Dot11,
+			},
+		},
+	}
+	cs = ConvertV20170701ContainerService(v20170701cs)
+	if cs.Properties.OrchestratorProfile.OrchestratorVersion != KubernetesVersion1Dot6Dot11 {
+		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
+	}
+	// test vlabs
+	vlabscs := &vlabs.ContainerService{
+		Properties: &vlabs.Properties{
+			OrchestratorProfile: &vlabs.OrchestratorProfile{
+				OrchestratorType: vlabs.Kubernetes,
+			},
+		},
+	}
+	cs = ConvertVLabsContainerService(vlabscs)
+	if cs.Properties.OrchestratorProfile.OrchestratorVersion != KubernetesDefaultVersion {
+		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
+	}
+
+	vlabscs = &vlabs.ContainerService{
+		Properties: &vlabs.Properties{
+			OrchestratorProfile: &vlabs.OrchestratorProfile{
+				OrchestratorType:    vlabs.Kubernetes,
+				OrchestratorVersion: KubernetesVersion1Dot6Dot11,
+			},
+		},
+	}
+	cs = ConvertVLabsContainerService(vlabscs)
+	if cs.Properties.OrchestratorProfile.OrchestratorVersion != KubernetesVersion1Dot6Dot11 {
+		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 }

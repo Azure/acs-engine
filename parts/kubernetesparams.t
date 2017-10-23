@@ -70,6 +70,22 @@
       },
       "type": "securestring"
     },
+    "generatorCode": {
+      {{PopulateClassicModeDefaultValue "generatorCode"}}
+      "metadata": {
+        "description": "The generator code used to identify the generator"
+      },
+      "type": "string"
+    },
+    "orchestratorName": {
+      {{PopulateClassicModeDefaultValue "orchestratorName"}}
+      "metadata": {
+        "description": "The orchestrator name used to identify the orchestrator.  This must be no more than 3 digits in length, otherwise it will exceed Windows Naming"
+      },
+      "minLength": 3,
+      "maxLength": 3,
+      "type": "string"
+    },
     "dockerBridgeCidr": {
       {{PopulateClassicModeDefaultValue "dockerBridgeCidr"}}
       "metadata": {
@@ -95,6 +111,12 @@
       {{PopulateClassicModeDefaultValue "kubeServiceCidr"}}
       "metadata": {
         "description": "Kubernetes service address space"
+      },
+      "type": "string"
+    },
+    "kubernetesNonMasqueradeCidr": {
+      "metadata": {
+        "description": "kubernetesNonMasqueradeCidr cluster subnet"
       },
       "type": "string"
     },
@@ -281,10 +303,6 @@
     },
     "vnetCniWindowsPluginsURL": {
       "defaultValue": "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-latest.zip",
-      "type": "string"
-    },
-    "calicoConfigURL": {
-      "defaultValue": "https://raw.githubusercontent.com/projectcalico/calico/a4ebfbad55ab1b7f10fdf3b39585471f8012e898/v2.0/getting-started/kubernetes/installation/hosted/k8s-backend-addon-manager",
       "type": "string"
     },
     "maxPods": {

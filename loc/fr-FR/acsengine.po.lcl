@@ -143,7 +143,7 @@
     <Str Cat="Text">
       <Val><![CDATA[invalid version %s for conversion back from unversioned object]]></Val>
       <Tgt Cat="Text" Stat="Loc" Orig="New">
-        <Val><![CDATA[version non valide %s pour la reconversion à partir de l'objet sans version]]></Val>
+        <Val><![CDATA[version non valide %s pour la reconversion à partir de l'objet non versionné]]></Val>
       </Tgt>
     </Str>
     <Disp Icon="Str" />
@@ -152,7 +152,7 @@
     <Str Cat="Text">
       <Val><![CDATA[orchestrator '%s' is unsupported]]></Val>
       <Tgt Cat="Text" Stat="Loc" Orig="New">
-        <Val><![CDATA[orchestrator « %s » n'est pas pris en charge]]></Val>
+        <Val><![CDATA[l'orchestrateur « %s » n'est pas pris en charge]]></Val>
       </Tgt>
     </Str>
     <Disp Icon="Str" />

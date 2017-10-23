@@ -12,17 +12,17 @@ LOCATION="${4}"
 SUBNET="${5}"
 NETWORK_SECURITY_GROUP="${6}"
 VIRTUAL_NETWORK="${7}"
-ROUTE_TABLE="${8}"
-PRIMARY_AVAILABILITY_SET="${9}"
-SERVICE_PRINCIPAL_CLIENT_ID="${10}"
-SERVICE_PRINCIPAL_CLIENT_SECRET="${11}"
-KUBELET_PRIVATE_KEY="${12}"
-TARGET_ENVIRONMENT="${13}"
-NETWORK_POLICY="${14}"
-FQDNSuffix="${15}"
-VNET_CNI_PLUGINS_URL="${16}"
-CNI_PLUGINS_URL="${17}"
-CALICO_CONFIG_URL="${18}"
+VIRTUAL_NETWORK_RESOURCE_GROUP="${8}"
+ROUTE_TABLE="${9}"
+PRIMARY_AVAILABILITY_SET="${10}"
+SERVICE_PRINCIPAL_CLIENT_ID="${11}"
+SERVICE_PRINCIPAL_CLIENT_SECRET="${12}"
+KUBELET_PRIVATE_KEY="${13}"
+TARGET_ENVIRONMENT="${14}"
+NETWORK_POLICY="${15}"
+FQDNSuffix="${16}"
+VNET_CNI_PLUGINS_URL="${17}"
+CNI_PLUGINS_URL="${18}"
 MAX_PODS="${19}"
 
 # Default values for backoff configuration
@@ -61,10 +61,8 @@ ensureRunCommandCompleted()
         sleep 1
     done
 }
-ensureRunCommandCompleted
 
-# make sure walinuxagent doesn't get updated in the middle of running this script
-apt-mark hold walinuxagent
+echo `date`,`hostname`, startscript>>/opt/m 
 
 # A delay to start the kubernetes processes is necessary
 # if a reboot is required.  Otherwise, the agents will encounter issue: 
@@ -123,6 +121,7 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "subnetName": "${SUBNET}",
     "securityGroupName": "${NETWORK_SECURITY_GROUP}",
     "vnetName": "${VIRTUAL_NETWORK}",
+    "vnetResourceGroup": "${VIRTUAL_NETWORK_RESOURCE_GROUP}",
     "routeTableName": "${ROUTE_TABLE}",
     "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
     "cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
@@ -412,12 +411,25 @@ users:
 }
 
 # master and node
+echo `date`,`hostname`, EnsureDockerStart>>/opt/m 
 ensureDocker
+echo `date`,`hostname`, configNetworkPolicyStart>>/opt/m 
 configNetworkPolicy
+echo `date`,`hostname`, setMaxPodsStart>>/opt/m 
 setMaxPods ${MAX_PODS}
+echo `date`,`hostname`, ensureKubeletStart>>/opt/m
 ensureKubelet
+echo `date`,`hostname`, extractKubctlStart>>/opt/m 
 extractKubectl
+echo `date`,`hostname`, ensureJournalStart>>/opt/m 
 ensureJournal
+echo `date`,`hostname`, ensureJournalDone>>/opt/m 
+
+ensureRunCommandCompleted
+echo `date`,`hostname`, RunCmdCompleted>>/opt/m 
+
+# make sure walinuxagent doesn't get updated in the middle of running this script
+apt-mark hold walinuxagent
 
 # master only
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
@@ -441,3 +453,5 @@ if $REBOOTREQUIRED; then
   echo 'reboot required, rebooting node in 1 minute'
   /bin/bash -c "shutdown -r 1 &"
 fi
+
+echo `date`,`hostname`, endscript>>/opt/m 

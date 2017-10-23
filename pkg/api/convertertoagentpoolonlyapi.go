@@ -1,6 +1,8 @@
 package api
 
 import (
+	"encoding/json"
+
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 )
@@ -50,7 +52,7 @@ func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Propert
 	properties.HostedMasterProfile.DNSPrefix = obj.DNSPrefix
 	properties.HostedMasterProfile.FQDN = obj.FQDN
 
-	properties.OrchestratorProfile = convertV20170831AgentPoolOnlyOrchestratorProfile(obj.KubernetesRelease)
+	properties.OrchestratorProfile = convertV20170831AgentPoolOnlyOrchestratorProfile(obj.KubernetesVersion)
 
 	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
 	for i := range obj.AgentPoolProfiles {
@@ -100,7 +102,7 @@ func convertVLabsAgentPoolOnlyResourcePurchasePlan(vlabs *vlabs.ResourcePurchase
 
 func convertVLabsAgentPoolOnlyProperties(vlabs *vlabs.Properties, api *Properties) {
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
-	api.OrchestratorProfile = convertVLabsAgentPoolOnlyOrchestratorProfile(vlabs.KubernetesRelease)
+	api.OrchestratorProfile = convertVLabsAgentPoolOnlyOrchestratorProfile(vlabs.KubernetesVersion)
 	api.MasterProfile = nil
 
 	api.HostedMasterProfile = &HostedMasterProfile{}
@@ -183,35 +185,31 @@ func convertVLabsAgentPoolOnlyWindowsProfile(vlabs *vlabs.WindowsProfile, api *W
 	// }
 }
 
-func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesRelease string) *OrchestratorProfile {
+func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
 	orchestratorProfile := &OrchestratorProfile{
 		OrchestratorType: Kubernetes,
 	}
 
-	switch kubernetesRelease {
-	case KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
-		orchestratorProfile.OrchestratorRelease = kubernetesRelease
+	switch kubernetesVersion {
+	case KubernetesVersion1Dot8Dot1, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
+		orchestratorProfile.OrchestratorVersion = kubernetesVersion
 	default:
-		orchestratorProfile.OrchestratorRelease = KubernetesDefaultRelease
+		orchestratorProfile.OrchestratorVersion = KubernetesDefaultVersion
 	}
-	orchestratorProfile.OrchestratorVersion = KubernetesReleaseToVersion[orchestratorProfile.OrchestratorRelease]
-
 	return orchestratorProfile
 }
 
-func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesRelease string) *OrchestratorProfile {
+func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
 	orchestratorProfile := &OrchestratorProfile{
 		OrchestratorType: Kubernetes,
 	}
 
-	switch kubernetesRelease {
-	case KubernetesRelease1Dot7, KubernetesRelease1Dot6, KubernetesRelease1Dot5:
-		orchestratorProfile.OrchestratorRelease = kubernetesRelease
+	switch kubernetesVersion {
+	case KubernetesVersion1Dot8Dot1, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
+		orchestratorProfile.OrchestratorVersion = kubernetesVersion
 	default:
-		orchestratorProfile.OrchestratorRelease = KubernetesDefaultRelease
+		orchestratorProfile.OrchestratorVersion = KubernetesDefaultVersion
 	}
-	orchestratorProfile.OrchestratorVersion = KubernetesReleaseToVersion[orchestratorProfile.OrchestratorRelease]
-
 	return orchestratorProfile
 }
 
@@ -263,4 +261,24 @@ func convertVLabsAgentPoolOnlyCertificateProfile(vlabs *vlabs.CertificateProfile
 	api.ClientPrivateKey = vlabs.ClientPrivateKey
 	api.KubeConfigCertificate = vlabs.KubeConfigCertificate
 	api.KubeConfigPrivateKey = vlabs.KubeConfigPrivateKey
+}
+
+func isAgentPoolOnlyClusterJSON(contents []byte) bool {
+	properties, propertiesPresent := propertiesAsMap(contents)
+	if !propertiesPresent {
+		return false
+	}
+	_, masterProfilePresent := properties["masterProfile"]
+	return !masterProfilePresent
+}
+
+func propertiesAsMap(contents []byte) (map[string]interface{}, bool) {
+	var raw interface{}
+	json.Unmarshal(contents, &raw)
+	jsonMap := raw.(map[string]interface{})
+	properties, propertiesPresent := jsonMap["properties"]
+	if !propertiesPresent {
+		return nil, false
+	}
+	return properties.(map[string]interface{}), true
 }

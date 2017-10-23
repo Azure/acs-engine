@@ -128,22 +128,45 @@ function test_windows_deployment() {
     exit 1
   fi
 
+  log "query DNS"
   count=10
   success="n"
   while (( $count > 0 )); do
     log "  ... counting down $count"
-    statuscode=$(kubectl exec $winpodname -- powershell iwr -UseBasicParsing -TimeoutSec 60 www.bing.com | grep StatusCode)
-    if [[ $(echo ${statuscode} | grep 200 | awk '{print $3}' | tr -d '\r') -eq "200" ]]; then 
+    query=$(kubectl exec $winpodname -- powershell nslookup www.bing.com)
+    if [[ $(echo ${query} | grep "DNS request timed out" | wc -l) == 0 ]] && [[ $(echo ${query} | grep "UnKnown" | wc -l) == 0 ]]; then
       success="y"
-      break 
+      break
     fi
     sleep 10; count=$((count-1))
   done
+
+  # temporarily disable breaking on errors to allow the retry
+  set +e
+  log "curl external website"
+  count=10
+  success="n"
+  while (( $count > 0 )); do
+    log "  ... counting down $count"
+    # curl without getting status first and see the response. getting status sometimes has the problem to hang
+    # and it doesn't repro when running kubectl from the node
+    kubectl exec $winpodname -- powershell iwr -UseBasicParsing -TimeoutSec 60 www.bing.com
+    statuscode=$(kubectl exec $winpodname -- powershell iwr -UseBasicParsing -TimeoutSec 60 www.bing.com | grep StatusCode)
+    if [[ ${statuscode} != "" ]] && [[ $(echo ${statuscode} | grep 200 | awk '{print $3}' | tr -d '\r') -eq "200" ]]; then
+      log "got 200 status code"
+      log "${statuscode}"
+      success="y"
+      break
+    fi
+    log "curl failed, retrying..."
+    ipconfig=$(kubectl exec $winpodname -- powershell ipconfig /all)
+    log "$ipconfig"
+    sleep 10; count=$((count-1))
+  done
+  set -e
   if [[ "${success}" != "y" ]]; then
     nslookup=$(kubectl exec $winpodname -- powershell nslookup www.bing.com)
     log "$nslookup"
-    ipconfig=$(kubectl exec $winpodname -- powershell ipconfig /all)
-    log "$ipconfig"
     log "getting the last 50 events to check timeout failure"
     hdr=$(kubectl get events | head -n 1)
     log "$hdr"
@@ -151,5 +174,7 @@ function test_windows_deployment() {
     log "$evt"
     log "K8S-Windows: failed to get outbound internet connection inside simpleweb container"
     exit 1
+  else
+    log "outbound connection succeeded!"
   fi
 }

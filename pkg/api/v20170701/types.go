@@ -115,8 +115,7 @@ const (
 // OrchestratorProfile contains Orchestrator properties
 type OrchestratorProfile struct {
 	OrchestratorType    string `json:"orchestratorType" validate:"required"`
-	OrchestratorRelease string `json:"orchestratorRelease"`
-	OrchestratorVersion string `json:"orchestratorVersion" validate:"len=0"`
+	OrchestratorVersion string `json:"orchestratorVersion,omitempty"`
 }
 
 // MasterProfile represents the definition of master cluster
@@ -183,6 +182,32 @@ type AgentPoolProfile struct {
 
 	// subnet is internal
 	subnet string
+}
+
+// PoolUpgradeProfile contains pool properties:
+//  - orchestrator type and version
+//  - pool name (for agent pool)
+//  - OS type of the VMs in the pool
+//  - list of applicable upgrades
+type PoolUpgradeProfile struct {
+	OrchestratorProfile
+	Name     string                 `json:"name,omitempty"`
+	OSType   string                 `json:"osType,omitempty"`
+	Upgrades []*OrchestratorProfile `json:"upgrades,omitempty"`
+}
+
+// UpgradeProfileProperties contains properties of UpgradeProfile
+type UpgradeProfileProperties struct {
+	MasterPoolProfile *PoolUpgradeProfile   `json:"masterPoolProfile"`
+	AgentPoolProfiles []*PoolUpgradeProfile `json:"agentPoolProfiles"`
+}
+
+// UpgradeProfile contains master and agent pools upgrade profiles
+type UpgradeProfile struct {
+	ID         string                   `json:"id,omitempty"`
+	Name       string                   `json:"name,omitempty"`
+	Type       string                   `json:"type,omitempty"`
+	Properties UpgradeProfileProperties `json:"properties"`
 }
 
 // UnmarshalJSON unmarshal json using the default behavior

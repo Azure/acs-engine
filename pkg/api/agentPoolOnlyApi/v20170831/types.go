@@ -30,8 +30,7 @@ type ManagedCluster struct {
 // Properties represents the ACS cluster definition
 type Properties struct {
 	ProvisioningState       ProvisioningState        `json:"provisioningState,omitempty"`
-	KubernetesVersion       string                   `json:"kubernetesVersion" validate:"len=0"`
-	KubernetesRelease       string                   `json:"kubernetesRelease,omitempty"`
+	KubernetesVersion       string                   `json:"kubernetesVersion"`
 	DNSPrefix               string                   `json:"dnsPrefix" validate:"required"`
 	FQDN                    string                   `json:"fqdn,omitempty"`
 	AgentPoolProfiles       []*AgentPoolProfile      `json:"agentPoolProfiles,omitempty" validate:"dive,required"`
@@ -39,6 +38,17 @@ type Properties struct {
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	AccessProfiles          map[string]AccessProfile `json:"accessProfiles,omitempty"`
+}
+
+// ManagedClusterAccessProfile represents the access profile definition for managed cluster
+// The Id captures the Role Name e.g. clusterAdmin, clusterUser
+type ManagedClusterAccessProfile struct {
+	ID       string `json:"id,omitempty"`
+	Location string `json:"location,omitempty" validate:"required"`
+	Name     string `json:"name,omitempty"`
+	Type     string `json:"type,omitempty"`
+
+	Properties *AccessProfile `json:"properties"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -53,7 +63,7 @@ type Properties struct {
 //    <VERSION> (optional) is the version of the secret (default: the latest version)
 type ServicePrincipalProfile struct {
 	ClientID string `json:"clientId,omitempty" validate:"required"`
-	Secret   string `json:"secret,omitempty" validate:"required"`
+	Secret   string `json:"secret,omitempty"`
 }
 
 // LinuxProfile represents the Linux configuration passed to the cluster
@@ -73,7 +83,7 @@ type PublicKey struct {
 // WindowsProfile represents the Windows configuration passed to the cluster
 type WindowsProfile struct {
 	AdminUsername string `json:"adminUsername,omitempty" validate:"required"`
-	AdminPassword string `json:"adminPassword,omitempty" validate:"required"`
+	AdminPassword string `json:"adminPassword,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.
@@ -95,6 +105,32 @@ const (
 	Migrating ProvisioningState = "Migrating"
 )
 
+// PoolUpgradeProfile contains pool properties:
+//  - kubernetes version
+//  - pool name (for agent pool)
+//  - OS type of the VMs in the pool
+//  - list of applicable upgrades
+type PoolUpgradeProfile struct {
+	KubernetesVersion string   `json:"kubernetesVersion"`
+	Name              string   `json:"name,omitempty"`
+	OSType            string   `json:"osType,omitempty"`
+	Upgrades          []string `json:"upgrades,omitempty"`
+}
+
+// UpgradeProfileProperties contains properties of UpgradeProfile
+type UpgradeProfileProperties struct {
+	ControlPlaneProfile *PoolUpgradeProfile   `json:"controlPlaneProfile"`
+	AgentPoolProfiles   []*PoolUpgradeProfile `json:"agentPoolProfiles"`
+}
+
+// UpgradeProfile contains controlPlane and agent pools upgrade profiles
+type UpgradeProfile struct {
+	ID         string                   `json:"id,omitempty"`
+	Name       string                   `json:"name,omitempty"`
+	Type       string                   `json:"type,omitempty"`
+	Properties UpgradeProfileProperties `json:"properties"`
+}
+
 // AgentPoolProfile represents configuration of VMs running agent
 // daemons that register with the master and offer resources to
 // host applications in containers.
@@ -103,7 +139,7 @@ type AgentPoolProfile struct {
 	Count          int    `json:"count" validate:"required,min=1,max=100"`
 	VMSize         string `json:"vmSize" validate:"required"`
 	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	StorageProfile string `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	StorageProfile string `json:"storageProfile" validate:"eq=ManagedDisks|len=0"`
 	VnetSubnetID   string `json:"vnetSubnetID,omitempty"`
 
 	// OSType is the operating system type for agents
@@ -137,8 +173,8 @@ func (a *AgentPoolProfile) UnmarshalJSON(b []byte) error {
 	}
 
 	if a.StorageProfile == "" {
-		// if StorageProfile is missing, set to default StorageAccount
-		a.StorageProfile = StorageAccount
+		// if StorageProfile is missing, set to default ManagedDisks
+		a.StorageProfile = ManagedDisks
 	}
 
 	if string(a.OSType) == "" {
@@ -195,9 +231,4 @@ func (a *AgentPoolProfile) SetSubnet(subnet string) {
 // IsManagedDisks returns true if the customer specified managed disks
 func (a *AgentPoolProfile) IsManagedDisks() bool {
 	return a.StorageProfile == ManagedDisks
-}
-
-// IsStorageAccount returns true if the customer specified storage account
-func (a *AgentPoolProfile) IsStorageAccount() bool {
-	return a.StorageProfile == StorageAccount
 }

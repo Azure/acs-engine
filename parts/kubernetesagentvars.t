@@ -7,7 +7,7 @@
     "{{.Name}}AvailabilitySet": "[concat('{{.Name}}-availabilitySet-', variables('nameSuffix'))]",
 {{if .IsWindows}}
     "winResourceNamePrefix" : "[substring(variables('nameSuffix'), 0, 5)]",
-    "{{.Name}}VMNamePrefix": "[concat(variables('winResourceNamePrefix'), 'acs', add(900,variables('{{.Name}}Index')))]",
+    "{{.Name}}VMNamePrefix": "[concat(variables('winResourceNamePrefix'), variables('orchestratorName'), add(900,variables('{{.Name}}Index')))]",
 {{else}}
     "{{.Name}}VMNamePrefix": "[concat(variables('orchestratorName'), '-{{.Name}}-', variables('nameSuffix'), '-')]", 
 {{end}}

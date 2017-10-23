@@ -13,7 +13,7 @@ import (
 
 const (
 	//ServerVersion is used to parse out the version of the API running
-	ServerVersion = `(Server Version:\s)+(v\d.\d.\d)+`
+	ServerVersion = `(Server Version:\s)+(v\d+.\d+.\d+)+`
 )
 
 // Node represents the kubernetes Node Resource
