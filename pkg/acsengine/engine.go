@@ -760,7 +760,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetAgentKubernetesLabels": func(profile *api.AgentPoolProfile) string {
 			var buf bytes.Buffer
-			buf.WriteString(fmt.Sprintf("clustername=%s", cs.Properties.MasterProfile.DNSPrefix))
+			if cs.Properties.MasterProfile != nil {
+				buf.WriteString(fmt.Sprintf("clustername=%s", cs.Properties.MasterProfile.DNSPrefix))
+			} else {
+				buf.WriteString(fmt.Sprintf("clustername=%s", cs.Properties.HostedMasterProfile.DNSPrefix))
+			}
 			buf.WriteString(fmt.Sprintf(",kubernetes.io/role=agent,agentpool=%s", profile.Name))
 			if profile.StorageProfile == api.ManagedDisks {
 				storagetier, _ := getStorageAccountType(profile.VMSize)
