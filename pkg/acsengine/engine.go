@@ -1069,6 +1069,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return false
 		},
+		"GetGPUDriversInstallScript": func(profile *api.AgentPoolProfile) string {
+			return getGPUDriversInstallScript(profile)
+		},
 		"HasLinuxSecrets": func() bool {
 			return cs.Properties.LinuxProfile.HasSecrets()
 		},
@@ -1295,6 +1298,58 @@ func getPackageGUID(orchestratorType string, orchestratorVersion string, masterC
 		}
 	}
 	return ""
+}
+
+func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
+
+	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
+	dv := "384"
+
+	/*
+		First we remove the nouveau drivers, which are the open source drivers for NVIDIA cards. Nouveau is installed on NV Series VMs by default.
+		Then we add the graphics-drivers ppa repository and get the proprietary drivers from there.
+	*/
+	ppaScript := fmt.Sprintf(`- rmmod nouveau
+- sh -c "echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf"
+- update-initramfs -u
+- sudo add-apt-repository -y ppa:graphics-drivers
+- sudo apt-get update
+- sudo apt-get install -y nvidia-%s`, dv)
+
+	// We don't have an agreement in place with NVIDIA to provide the drivers on every sku. For this VMs we simply log a warning message.
+	na := getGPUDriversNotInstalledWarningMessage(profile.VMSize)
+
+	/* If a new GPU sku becomes available, add a key to this map, but only provide an installation script if you have a confirmation
+	   that we have an agreement with NVIDIA for this specific gpu. Otherwise use the warning message.
+	*/
+	dm := map[string]string{
+		"Standard_NC6":      ppaScript,
+		"Standard_NC12":     ppaScript,
+		"Standard_NC24":     ppaScript,
+		"Standard_NC24r":    ppaScript,
+		"Standard_NV6":      ppaScript,
+		"Standard_NV12":     ppaScript,
+		"Standard_NV24":     ppaScript,
+		"Standard_NV24r":    ppaScript,
+		"Standard_NC6_v2":   na,
+		"Standard_NC12_v2":  na,
+		"Standard_NC24_v2":  na,
+		"Standard_NC24r_v2": na,
+		"Standard_ND6":      na,
+		"Standard_ND12":     na,
+		"Standard_ND24":     na,
+		"Standard_ND24r":    na,
+	}
+	if _, ok := dm[profile.VMSize]; ok {
+		return dm[profile.VMSize]
+	}
+
+	// The VM is not part of the GPU skus, no extra steps.
+	return ""
+}
+
+func getGPUDriversNotInstalledWarningMessage(VMSize string) string {
+	return fmt.Sprintf("echo 'Warning: NVIDIA Drivers for this VM SKU (%v) are not automatically installed'", VMSize)
 }
 
 func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) string {

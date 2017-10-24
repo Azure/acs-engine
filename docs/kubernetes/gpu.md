@@ -1,65 +1,75 @@
-# Microsoft Azure Container Service Engine - Kubernetes Multi-GPU support Walkthrough
+# Microsoft Azure Container Service Engine - Using GPUs with Kubernetes
 
-## Deployment
+If you created a Kubernetes cluster with one or multiple agent pool(s) whose VM size is `Standard_NC*` or `Standard_NV*` you can schedule GPU workload on your cluster.
+The NVIDIA drivers are automatically installed on every GPU agent in your cluster, so you don't need to do that manually, unless you require a specific version of the drivers. Currently, the installed driver is version 378.13.
 
-Here are the steps to deploy a simple Kubernetes cluster with multi-GPU support:
+To make sure everything is fine, run `kubectl describe node <name-of-a-gpu-node>`. You should see the correct number of GPU reported (in this example shows 2 GPU for a NC12 VM):
+```
+[...]
+Capacity:
+ alpha.kubernetes.io/nvidia-gpu:	2
+ cpu:					12
+[...]
+```
 
-1. [Install a Kubernetes cluster][Kubernetes Walkthrough](deploy.md) - shows how to create a Kubernetes cluster.
-  > NOTE: Make sure to configure the agent nodes with vm size `Standard_NC12` or above to utilize the GPUs
+If `alpha.kubernetes.io/nvidia-gpu` is `0` and you just created the cluster, you might have to wait a little bit. The driver installation takes about 12 minutes, and the node might join the cluster before the installation is completed. After a few minute the node should restart, and report the correct number of GPUs.
 
-2. Install drivers:
-  * SSH into each node and run the following scripts : 
-  install-nvidia-driver.sh
-  ```
-  curl -L -sf https://raw.githubusercontent.com/ritazh/acs-k8s-gpu/master/install-nvidia-driver.sh | sudo sh
-  ```
+## Running a GPU-enabled container
 
-  To verify, when you run `kubectl describe node <node-name>`, you should get something like the following:
+When running a GPU container, you will need to specify how many GPU you want to use. If you don't specify a GPU count, kubernetes will asumme you don't require any, and will not map the device into the container.
+You will also need to mount the drivers from the host (the kubernetes agent) into the container.
 
-  ```
-  Capacity:
-  alpha.kubernetes.io/nvidia-gpu:    2
-  cpu:                               12
-  memory:                            115505744Ki
-  pods:                              110
-  ```
+On the host, the drivers are installed under `/usr/lib/nvidia-378`.
 
-3. Scheduling a multi-GPU container
+Here is an example template running TensorFlow: 
 
-* You need to specify `alpha.kubernetes.io/nvidia-gpu: 2` as a limit
-* You need to expose the drivers to the container as a volume. If you are using TF original docker image, it is based on ubuntu 16.04, just like your cluster's VM, so you can just mount `/usr/bin` and `/usr/lib/x86_64-linux-gnu`, it's a bit dirty but it works. Ideally, improve the previous script to install the driver in a specific directory and only expose this one.
-
-``` yaml
-apiVersion: v1
-kind: Pod
+```
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  name: gpu-test
   labels:
-    app: gpu-test
+    app: tensorflow
+  name: tensorflow
 spec:
-  volumes:
-  - name: binaries
-    hostPath:
-      path: /usr/bin/
-  - name: libraries
-    hostPath:
-      path: /usr/lib/x86_64-linux-gnu
-  containers:
-  - name: tensorflow
-    image: gcr.io/tensorflow/tensorflow:latest-gpu
-    ports:
-    - containerPort: 8888
-    resources:
-      limits:
-        alpha.kubernetes.io/nvidia-gpu: 2
-    volumeMounts:
-    - mountPath: /usr/bin/
-      name: binaries
-    - mountPath: /usr/lib/x86_64-linux-gnu
-      name: libraries
+  template:
+    metadata:
+      labels:
+        app: tensorflow
+    spec:     
+      containers:
+      - name: tensorflow
+        image: tensorflow/tensorflow:latest-gpu
+        command: ["python main.py"]      
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: LD_LIBRARY_PATH
+          value: /usr/lib/nvidia:/usr/lib/x86_64-linux-gnu
+        resources:
+          requests:
+            alpha.kubernetes.io/nvidia-gpu: 2 
+        volumeMounts:
+        - mountPath: /usr/local/nvidia/bin
+          name: bin
+        - mountPath: /usr/lib/nvidia
+          name: lib
+        - mountPath: /usr/lib/x86_64-linux-gnu/libcuda.so.1
+          name: libcuda
+      volumes:
+        - name: bin
+          hostPath: 
+            path: /usr/lib/nvidia-378/bin
+        - name: lib
+          hostPath: 
+            path: /usr/lib/nvidia-378
+        - name: libcuda
+          hostPath:
+            path: /usr/lib/x86_64-linux-gnu/libcuda.so.1
 ```
-To verify, when you run `kubectl describe pod <pod-name>`, you see get the following:
 
-```
-Successfully assigned gpu-test to k8s-agentpool1-10960440-1
-```
+We specify `alpha.kubernetes.io/nvidia-gpu: 1` in the resources requests, and we mount the drivers from the host into the container.
+Note that we also modify the `LD_LIBRARY_PATH` environment variable to let python know where to find the driver's libraries.
+
+Some libraries, such as `libcuda.so` are installed under `/usr/lib/x86_64-linux-gnu` on the host, you might need to mount them separatly as shown above based on your needs.
+
+
+
