@@ -152,7 +152,7 @@
     <Str Cat="Text">
       <Val><![CDATA[orchestrator '%s' is unsupported]]></Val>
       <Tgt Cat="Text" Stat="Loc" Orig="New">
-        <Val><![CDATA[orchestrator '%s' desteklenmiyor]]></Val>
+        <Val><![CDATA[düzenleyici '%s' desteklenmiyor]]></Val>
       </Tgt>
     </Str>
     <Disp Icon="Str" />

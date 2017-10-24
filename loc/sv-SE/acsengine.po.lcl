@@ -152,7 +152,7 @@
     <Str Cat="Text">
       <Val><![CDATA[orchestrator '%s' is unsupported]]></Val>
       <Tgt Cat="Text" Stat="Loc" Orig="New">
-        <Val><![CDATA[orchestrator %s stöds inte]]></Val>
+        <Val><![CDATA[initieraren %s stöds inte]]></Val>
       </Tgt>
     </Str>
     <Disp Icon="Str" />
