@@ -97,8 +97,8 @@ const (
 
 // KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes versions (major.minor.patch)
 var KubeConfigs = map[string]map[string]string{
-	api.KubernetesVersion1Dot8Dot1: {
-		"hyperkube":       "hyperkube-amd64:v1.8.1",
+	api.KubernetesVersion1Dot8Dot2: {
+		"hyperkube":       "hyperkube-amd64:v1.8.2",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.7.0",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addonresizer":    "addon-resizer:1.7",
@@ -108,7 +108,7 @@ var KubeConfigs = map[string]map[string]string{
 		"dnsmasq":         "k8s-dns-dnsmasq-nanny-amd64:1.14.5",
 		"pause":           "pause-amd64:3.0",
 		"tiller":          DefaultTillerImage,
-		"windowszip":      "v1.8.1-1intwinnat.zip",
+		"windowszip":      "v1.8.1-1intwinnat.zip", // TODO build Windows 1.8.2 image
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,

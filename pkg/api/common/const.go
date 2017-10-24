@@ -53,8 +53,8 @@ const (
 )
 
 const (
-	// KubernetesVersion1Dot8Dot1 is the major.minor.patch string for 1.8.1 versions of kubernetes
-	KubernetesVersion1Dot8Dot1 string = "1.8.1"
+	// KubernetesVersion1Dot8Dot2 is the major.minor.patch string for 1.8.2 versions of kubernetes
+	KubernetesVersion1Dot8Dot2 string = "1.8.2"
 	// KubernetesVersion1Dot7Dot7 is the major.minor.patch string for 1.7.9 versions of kubernetes
 	KubernetesVersion1Dot7Dot7 string = "1.7.9"
 	// KubernetesVersion1Dot6Dot11 is the major.minor.patch string for 1.6.11 versions of kubernetes
@@ -67,7 +67,7 @@ const (
 
 // AllKubernetesSupportedVersions maintain a list of available k8s versions in acs-engine
 var AllKubernetesSupportedVersions = []string{
-	KubernetesVersion1Dot8Dot1,
+	KubernetesVersion1Dot8Dot2,
 	KubernetesVersion1Dot7Dot7,
 	KubernetesVersion1Dot6Dot11,
 	KubernetesVersion1Dot5Dot8,
