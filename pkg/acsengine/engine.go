@@ -915,14 +915,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
 			}
 
-
-
 			// return the custom data
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesMasterCalicoCustomData": func(profile *api.Properties) string {
 			var calicoAddon string
-			
+
 			// add calico manifests
 			if profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "calico" {
 				if profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 ||
@@ -930,8 +928,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					calicoAddonYaml = calicoAddonYaml15
 				}
 				calicoAddon = getBase64CustomScript(calicoAddonYaml)
-			}	
-			return calicoAddon 
+			}
+			return calicoAddon
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
