@@ -165,7 +165,7 @@ write_files:
   encoding: gzip
   owner: "root"
   content: !!binary |
-    MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR
+    {{WrapAsVariable "masterAddonCalicoDaemonset"}}
 {{end}}
 
 - path: "/etc/systemd/system/kubectl-extract.service"

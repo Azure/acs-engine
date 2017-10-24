@@ -132,13 +132,9 @@ var kubernetesAddonYamls15 = map[string]string{
 	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment1.5.yaml",
 }
 
-var calicoAddonYamls = map[string]string{
-	"MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR": "kubernetesmasteraddons-calico-daemonset.yaml",
-}
+var calicoAddonYaml string = "kubernetesmasteraddons-calico-daemonset.yaml"
 
-var calicoAddonYamls15 = map[string]string{
-	"MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR": "kubernetesmasteraddons-calico-daemonset1.5.yaml",
-}
+var calicoAddonYaml15 string = "kubernetesmasteraddons-calico-daemonset1.5.yaml"
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
@@ -919,20 +915,23 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
 			}
 
+
+
+			// return the custom data
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+		},
+		"GetKubernetesMasterCalicoCustomData": func(profile *api.Properties) string {
+			var calicoAddon string
+			
 			// add calico manifests
 			if profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "calico" {
 				if profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 ||
 					profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot6Dot11 {
-					calicoAddonYamls = calicoAddonYamls15
+					calicoAddonYaml = calicoAddonYaml15
 				}
-				for placeholder, filename := range calicoAddonYamls {
-					addonTextContents := getBase64CustomScript(filename)
-					str = strings.Replace(str, placeholder, addonTextContents, -1)
-				}
-			}
-
-			// return the custom data
-			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+				calicoAddon = getBase64CustomScript(calicoAddonYaml)
+			}	
+			return calicoAddon 
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
