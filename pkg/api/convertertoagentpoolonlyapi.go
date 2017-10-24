@@ -191,7 +191,7 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 	}
 
 	switch kubernetesVersion {
-	case KubernetesVersion1Dot8Dot1, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
+	case KubernetesVersion1Dot8Dot2, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
 		orchestratorProfile.OrchestratorVersion = kubernetesVersion
 	default:
 		orchestratorProfile.OrchestratorVersion = KubernetesDefaultVersion
@@ -205,7 +205,7 @@ func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *Orc
 	}
 
 	switch kubernetesVersion {
-	case KubernetesVersion1Dot8Dot1, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
+	case KubernetesVersion1Dot8Dot2, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
 		orchestratorProfile.OrchestratorVersion = kubernetesVersion
 	default:
 		orchestratorProfile.OrchestratorVersion = KubernetesDefaultVersion
