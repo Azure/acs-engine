@@ -132,9 +132,9 @@ var kubernetesAddonYamls15 = map[string]string{
 	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment1.5.yaml",
 }
 
-var calicoAddonYaml string = "kubernetesmasteraddons-calico-daemonset.yaml"
+var calicoAddonYaml = "kubernetesmasteraddons-calico-daemonset.yaml"
 
-var calicoAddonYaml15 string = "kubernetesmasteraddons-calico-daemonset1.5.yaml"
+var calicoAddonYaml15 = "kubernetesmasteraddons-calico-daemonset1.5.yaml"
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
