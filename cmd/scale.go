@@ -222,7 +222,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 			if orchestratorInfo.OrchestratorType == api.Kubernetes {
 				err = sc.drainNodes(vmsToDelete)
 				if err != nil {
-					log.Errorf("Got error %+v, while draining the nodes to be deleted")
+					log.Errorf("Got error %+v, while draining the nodes to be deleted", err)
 					return err
 				}
 			}
@@ -293,7 +293,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	}
 
 	transformer := acsengine.Transformer{Translator: ctx.Translator}
-	// Our templates generate a range of nodes based on a count and offset, it is possible for there to be holes in teh template
+	// Our templates generate a range of nodes based on a count and offset, it is possible for there to be holes in the template
 	// So we need to set the count in the template to get enough nodes for the range, if there are holes that number will be larger than the desired count
 	countForTemplate := sc.newDesiredAgentCount
 	if highestUsedIndex != 0 {
@@ -346,8 +346,8 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 
 	b, e := apiloader.SerializeContainerService(sc.containerService, apiVersion)
 
-	if err != nil {
-		return err
+	if e != nil {
+		return e
 	}
 
 	f := acsengine.FileSaver{

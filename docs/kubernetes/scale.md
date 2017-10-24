@@ -33,4 +33,4 @@ This command will look the the deployment directory to find info about the clust
 |deployment-dir|yes|Relative path to the folder location for the output from the acs-engine deploy/generate command.|
 |node-pool|depends|Required if there is more than one node pool. Which node pool should be scaled.|
 |new-node-count|yes|Desired number of nodes in the node pool.|
-|master-FQDN|depends|When scaling down a kuberentes cluster this is required. The master FDQN so that the nodes can be cordoned and drained before removal. This should be output as part of the create template or it can be found by looking at the public ip addresses in the resource group|
+|master-FQDN|depends|When scaling down a kuberentes cluster this is required. The master FDQN so that the nodes can be cordoned and drained before removal. This should be output as part of the create template or it can be found by looking at the public ip addresses in the resource group.|
