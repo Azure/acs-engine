@@ -746,9 +746,16 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			constraint, _ := semver.NewConstraint("~" + version)
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes && constraint.Check(orchestratorVersion)
 		},
-		"GetKubernetesLabels": func(profile *api.AgentPoolProfile) string {
+		"GetMasterKubernetesLabels": func() string {
 			var buf bytes.Buffer
-			buf.WriteString(fmt.Sprintf("kubernetes.io/role=agent,agentpool=%s", profile.Name))
+			buf.WriteString(fmt.Sprintf("clustername=%s", cs.Properties.MasterProfile.DNSPrefix))
+			buf.WriteString(",kubernetes.io/role=master")
+			return buf.String()
+		},
+		"GetAgentKubernetesLabels": func(profile *api.AgentPoolProfile) string {
+			var buf bytes.Buffer
+			buf.WriteString(fmt.Sprintf("clustername=%s", cs.Properties.MasterProfile.DNSPrefix))
+			buf.WriteString(fmt.Sprintf(",kubernetes.io/role=agent,agentpool=%s", profile.Name))
 			if profile.StorageProfile == api.ManagedDisks {
 				storagetier, _ := getStorageAccountType(profile.VMSize)
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
