@@ -19,7 +19,7 @@ To scale the cluster you will run a command like:
 $ acs-engine scale --subscription-id 51ac25de-afdg-9201-d923-8d8e8e8e8e8e \
     --resource-group mycluster  --location westus2 \
     --deployment-dir _output/mycluster --new-node-count 5 \
-    --node-pool agentpool1 --master-FQDN https://mycluster.westus2.cloudapp.azure.com
+    --node-pool agentpool1 --master-FQDN mycluster.westus2.cloudapp.azure.com
 ``` 
 
 This command will look the the deployment directory to find info about the cluster currently deployed. Then it will generate and deploy a template deployment to update the cluster and add the new nodes. When it is done it will update the cluster definition in the deployment directory's apimodel.json to reflect the new node count.
