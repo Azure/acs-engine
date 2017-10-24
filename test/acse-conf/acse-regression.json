@@ -58,10 +58,6 @@
       "location": "westus"
     },
     {
-      "cluster_definition": "kubernetes-releases/kubernetes1.5.json",
-      "category": "version"
-    },
-    {
       "cluster_definition": "kubernetes-releases/kubernetes1.6.json",
       "category": "version"
     },
