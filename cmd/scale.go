@@ -3,15 +3,19 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/leonelquinteros/gotext"
 
 	log "github.com/sirupsen/logrus"
@@ -38,6 +42,8 @@ type scaleCmd struct {
 	locale         *gotext.Locale
 	nameSuffix     string
 	agentPoolIndex int
+	masterFQDN     string
+	logger         *log.Entry
 }
 
 const (
@@ -66,6 +72,7 @@ func newScaleCmd() *cobra.Command {
 	f.IntVar(&sc.newDesiredAgentCount, "new-node-count", 0, "desired number of nodes")
 	f.BoolVar(&sc.classicMode, "classic-mode", false, "enable classic parameters and outputs")
 	f.StringVar(&sc.agentPoolToScale, "node-pool", "", "node pool to scale")
+	f.StringVar(&sc.masterFQDN, "master-FQDN", "", "FQDN for the master load balancer, Needed to scale down Kubernetes agent pools")
 
 	addAuthFlags(&sc.authArgs, f)
 
@@ -74,6 +81,7 @@ func newScaleCmd() *cobra.Command {
 
 func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 	log.Infoln("validating...")
+	sc.logger = log.New().WithField("source", "scaling command line")
 	var err error
 
 	sc.locale, err = i18n.LoadTranslations()
@@ -151,14 +159,102 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 			log.Fatalf("node pool %s wasn't in the deployed api model", sc.agentPoolToScale)
 		}
 	}
+
+	templatePath := path.Join(sc.deploymentDirectory, "azuredeploy.json")
+	contents, _ := ioutil.ReadFile(templatePath)
+
+	var template interface{}
+	json.Unmarshal(contents, &template)
+
+	templateMap := template.(map[string]interface{})
+	templateParameters := templateMap["parameters"].(map[string]interface{})
+
+	nameSuffixParam := templateParameters["nameSuffix"].(map[string]interface{})
+	sc.nameSuffix = nameSuffixParam["defaultValue"].(string)
+	log.Infoln(fmt.Sprintf("Name suffix: %s", sc.nameSuffix))
 }
 
 func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	sc.validate(cmd, args)
 
-	if sc.agentPool.IsAvailabilitySets() && sc.agentPool.Count > sc.newDesiredAgentCount {
-		// TODO add scale down of VMS code path
-		log.Fatalln("Scaling down availability sets is not currently supported")
+	orchestratorInfo := sc.containerService.Properties.OrchestratorProfile
+	var currentNodeCount, highestUsedIndex int
+	indexes := make([]int, 0)
+	indexToVM := make(map[int]string)
+	if sc.agentPool.IsAvailabilitySets() {
+		//TODO handle when there is a nextLink in the response and get more nodes
+		vms, err := sc.client.ListVirtualMachines(sc.resourceGroupName)
+		if err != nil {
+			log.Fatalln("failed to get vms in the resource group. Error: %s", err.Error())
+		}
+		for _, vm := range *vms.Value {
+
+			poolName, nameSuffix, index, err := armhelpers.K8sLinuxVMNameParts(*vm.Name)
+			if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.EqualFold(nameSuffix, sc.nameSuffix) {
+				continue
+			}
+
+			indexToVM[index] = *vm.Name
+			indexes = append(indexes, index)
+		}
+		sortedIndexes := sort.IntSlice(indexes)
+		sortedIndexes.Sort()
+		indexes = []int(sortedIndexes)
+		currentNodeCount = len(indexes)
+
+		if currentNodeCount == sc.newDesiredAgentCount {
+			return nil
+		}
+		highestUsedIndex = indexes[len(indexes)-1]
+
+		// Scale down Scenario
+		if currentNodeCount > sc.newDesiredAgentCount {
+			if sc.masterFQDN == "" {
+				cmd.Usage()
+				log.Fatal("master-FQDN is required to scale down a kubernetes cluster's agent pool")
+			}
+
+			vmsToDelete := make([]string, 0)
+			for i := currentNodeCount - 1; i >= sc.newDesiredAgentCount; i-- {
+				vmsToDelete = append(vmsToDelete, indexToVM[i])
+			}
+
+			if orchestratorInfo.OrchestratorType == api.Kubernetes {
+				err = sc.drainNodes(vmsToDelete)
+				if err != nil {
+					log.Errorf("Got error %+v, while draining the nodes to be deleted")
+					return err
+				}
+			}
+
+			errList := operations.ScaleDownVMs(sc.client, sc.logger, sc.resourceGroupName, vmsToDelete...)
+			if errList != nil {
+				errorMessage := ""
+				for element := errList.Front(); element != nil; element = element.Next() {
+					vmError, ok := element.Value.(*operations.VMScalingErrorDetails)
+					if ok {
+						error := fmt.Sprintf("Node '%s' failed to delete with error: '%s'", vmError.Name, vmError.Error.Error())
+						errorMessage = errorMessage + error
+					}
+				}
+				return fmt.Errorf(errorMessage)
+			}
+
+			return nil
+		}
+	} else {
+		vmssList, err := sc.client.ListVirtualMachineScaleSets(sc.resourceGroupName)
+		if err != nil {
+			log.Fatalln("failed to get vmss list in the resource group. Error: %s", err.Error())
+		}
+		for _, vmss := range *vmssList.Value {
+			poolName, nameSuffix, err := armhelpers.VmssNameParts(*vmss.Name)
+			if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.EqualFold(nameSuffix, sc.nameSuffix) {
+				continue
+			}
+			currentNodeCount = int(*vmss.Sku.Capacity)
+			highestUsedIndex = 0
+		}
 	}
 
 	ctx := acsengine.Context{
@@ -197,18 +293,23 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 	}
 
 	transformer := acsengine.Transformer{Translator: ctx.Translator}
-	orchestratorInfo := sc.containerService.Properties.OrchestratorProfile
-	addValue(parametersJSON, sc.agentPool.Name+"Count", sc.newDesiredAgentCount)
+	// Our templates generate a range of nodes based on a count and offset, it is possible for there to be holes in teh template
+	// So we need to set the count in the template to get enough nodes for the range, if there are holes that number will be larger than the desired count
+	countForTemplate := sc.newDesiredAgentCount
+	if highestUsedIndex != 0 {
+		countForTemplate += highestUsedIndex + 1 - currentNodeCount
+	}
+	addValue(parametersJSON, sc.agentPool.Name+"Count", countForTemplate)
 
 	switch orchestratorInfo.OrchestratorType {
 	case api.Kubernetes:
-		err = transformer.NormalizeForK8sVMASScalingUp(log.New().WithField("source", "scaling command line"), templateJSON)
+		err = transformer.NormalizeForK8sVMASScalingUp(sc.logger, templateJSON)
 		if err != nil {
 			log.Fatalf("error tranforming the template for scaling template %s: %s", sc.apiModelPath, err.Error())
 			os.Exit(1)
 		}
 		if sc.agentPool.IsAvailabilitySets() {
-			addValue(parametersJSON, fmt.Sprintf("%sOffset", sc.agentPool.Name), sc.agentPool.Count)
+			addValue(parametersJSON, fmt.Sprintf("%sOffset", sc.agentPool.Name), highestUsedIndex+1)
 		}
 		break
 	case api.Swarm:
@@ -218,7 +319,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 			log.Fatalf("scaling isn't supported for orchestrator %s, with availability sets", orchestratorInfo.OrchestratorType)
 			os.Exit(1)
 		}
-		transformer.NormalizeForVMSSScaling(log.New().WithField("source", "scaling command line"), templateJSON)
+		transformer.NormalizeForVMSSScaling(sc.logger, templateJSON)
 	}
 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -268,4 +369,38 @@ func addValue(m paramsMap, k string, v interface{}) {
 	m[k] = paramsMap{
 		"value": v,
 	}
+}
+
+func (sc *scaleCmd) drainNodes(vmsToDelete []string) error {
+	kubeConfig, err := acsengine.GenerateKubeConfig(sc.containerService.Properties, sc.location)
+	if err != nil {
+		log.Fatalf("failed to generate kube config") // TODO: cleanup
+	}
+	var errorMessage string
+	numVmsToDrain := len(vmsToDelete)
+	errChan := make(chan *operations.VMScalingErrorDetails, numVmsToDrain)
+	defer close(errChan)
+	for _, vmName := range vmsToDelete {
+		go func(vmName string) {
+			e := operations.SafelyDrainNode(sc.client, sc.logger,
+				sc.masterFQDN, kubeConfig, vmName, time.Duration(60)*time.Minute)
+			if e != nil {
+				log.Errorf("Failed to drain node %s, got error %s", vmName, e.Error())
+				errChan <- &operations.VMScalingErrorDetails{Error: e, Name: vmName}
+				return
+			}
+			errChan <- nil
+		}(vmName)
+	}
+
+	for i := 0; i < numVmsToDrain; i++ {
+		errDetails := <-errChan
+		if errDetails != nil {
+			error := fmt.Sprintf("Node '%s' failed to drain with error: '%s'", errDetails.Name, errDetails.Error.Error())
+			errorMessage = errorMessage + error
+			return fmt.Errorf(error)
+		}
+	}
+
+	return nil
 }

@@ -54,6 +54,30 @@ func Test_LinuxVMNameParts(t *testing.T) {
 	}
 }
 
+func Test_VmssNameParts(t *testing.T) {
+	data := []struct {
+		poolIdentifier, nameSuffix string
+	}{
+		{"agentpool1", "38988164"},
+		{"agent-pool1", "38988164"},
+		{"agent-pool-1", "38988164"},
+	}
+
+	for _, el := range data {
+		vmssName := fmt.Sprintf("swarmm-%s-%s-vmss", el.poolIdentifier, el.nameSuffix)
+		poolIdentifier, nameSuffix, err := VmssNameParts(vmssName)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		if poolIdentifier != el.poolIdentifier {
+			t.Fatalf("incorrect poolIdentifier. expected=%s actual=%s", el.poolIdentifier, poolIdentifier)
+		}
+		if nameSuffix != el.nameSuffix {
+			t.Fatalf("incorrect nameSuffix. expected=%s actual=%s", el.nameSuffix, nameSuffix)
+		}
+	}
+}
+
 func Test_WindowsVMNameParts(t *testing.T) {
 	expectedPoolPrefix := "38988"
 	expectedAcs := "k8s"
