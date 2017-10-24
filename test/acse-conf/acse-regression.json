@@ -62,6 +62,14 @@
       "category": "version"
     },
     {
+      "cluster_definition": "kubernetes-releases/kubernetes1.6.json",
+      "category": "version"
+    },
+    {
+      "cluster_definition": "kubernetes-releases/kubernetes1.8.json",
+      "category": "version"
+    },
+    {
       "cluster_definition": "networkpolicy/kubernetes-calico.json",
       "category": "network"
     },
