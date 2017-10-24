@@ -13,8 +13,8 @@
     },
     "agentPoolProfiles": [
       {
-        "name": "agentpool1",
-        "count": 1,
+        "name": "windowspool1",
+        "count": 2,
         "vmSize": "Standard_D2_v2",
         "availabilityProfile": "AvailabilitySet",
         "storageProfile" : "ManagedDisks",

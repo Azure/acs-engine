@@ -3,10 +3,10 @@
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
-      "orchestratorVersion": "1.7.7"
+      "orchestratorVersion": "1.6.11"
     },
     "masterProfile": {
-      "count": 1,
+      "count": 3,
       "dnsPrefix": "",
       "vmSize": "Standard_D2_v2",
       "storageProfile" : "ManagedDisks"
@@ -16,7 +16,15 @@
         "name": "agentpool1",
         "count": 1,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile" : "ManagedDisks"
+      },
+      {
+        "name": "agentpool2",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile" : "ManagedDisks"
       }
     ],
     "linuxProfile": {
