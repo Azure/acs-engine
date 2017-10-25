@@ -10,14 +10,15 @@ import (
 )
 
 const (
-	// CNI_PLUGIN_VER specifies version of CNI plugin, mirrored from
+	// CniPluginVer specifies version of CNI plugin, mirrored from
 	// https://github.com/containernetworking/cni/releases/download/${CNI_PLUGIN_VER}/cni-amd64-${CNI_PLUGIN_VER}.tgz
 	// to https://acs-mirror.azureedge.net/cni/
-	CNI_PLUGIN_VER = "v0.6.0"
-	// AZURE_PLUGIN_VER specifies version of Azure CNI plugin, which has been mirrored from
+	CniPluginVer = "v0.6.0"
+
+	// AzureCniPluginVer specifies version of Azure CNI plugin, which has been mirrored from
 	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-linux-amd64-${AZURE_PLUGIN_VER}.tgz
 	// to https://acs-mirror.azureedge.net/cni/
-	AZURE_PLUGIN_VER = "v0.91"
+	AzureCniPluginVer = "v0.91"
 )
 var (
 	//DefaultKubernetesSpecConfig is the default Docker image source of Kubernetes
@@ -26,9 +27,9 @@ var (
 		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
 		KubeBinariesSASURLBase:           "https://acs-mirror.azureedge.net/wink8s/",
 		WindowsTelemetryGUID:             "fb801154-36b9-41bc-89c2-f4d4f05472b0",
-		CNIPluginsDownloadURL:            "https://acs-mirror.azureedge.net/cni/cni-amd64-"+CNI_PLUGIN_VER+".tgz",
-		VnetCNILinuxPluginsDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-"+AZURE_PLUGIN_VER+".tgz",
-		VnetCNIWindowsPluginsDownloadURL: "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-"+AZURE_PLUGIN_VER+".zip",
+		CNIPluginsDownloadURL:            "https://acs-mirror.azureedge.net/cni/cni-amd64-"+CniPluginVer+".tgz",
+		VnetCNILinuxPluginsDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-"+AzureCniPluginVer+".tgz",
+		VnetCNIWindowsPluginsDownloadURL: "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-"+AzureCniPluginVer+".zip",
 	}
 
 	//DefaultDCOSSpecConfig is the default DC/OS binary download URL.
