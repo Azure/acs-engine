@@ -754,17 +754,19 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetMasterKubernetesLabels": func() string {
 			var buf bytes.Buffer
-			buf.WriteString(fmt.Sprintf("clustername=%s", cs.Properties.MasterProfile.DNSPrefix))
+			buf.WriteString(fmt.Sprintf("kubernetes.azure.com/cluster=%s", cs.Properties.MasterProfile.DNSPrefix))
 			buf.WriteString(",kubernetes.io/role=master")
 			return buf.String()
 		},
 		"GetAgentKubernetesLabels": func(profile *api.AgentPoolProfile) string {
 			var buf bytes.Buffer
+			var n string
 			if cs.Properties.MasterProfile != nil {
-				buf.WriteString(fmt.Sprintf("clustername=%s", cs.Properties.MasterProfile.DNSPrefix))
+				n = cs.Properties.MasterProfile.DNSPrefix
 			} else {
-				buf.WriteString(fmt.Sprintf("clustername=%s", cs.Properties.HostedMasterProfile.DNSPrefix))
+				n = cs.Properties.HostedMasterProfile.DNSPrefix
 			}
+			buf.WriteString(fmt.Sprintf("kubernetes.azure.com/cluster=%s", n))
 			buf.WriteString(fmt.Sprintf(",kubernetes.io/role=agent,agentpool=%s", profile.Name))
 			if profile.StorageProfile == api.ManagedDisks {
 				storagetier, _ := getStorageAccountType(profile.VMSize)
