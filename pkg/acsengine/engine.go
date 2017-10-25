@@ -1938,7 +1938,7 @@ write_files:
 	return fmt.Sprintf(clusterYamlFile, filelines)
 }
 
-// Identifies a distro to use for master paramaters
+// Identifies a distro to use for master parameters
 func getDistro(properties *api.Properties) api.Distro {
 	// Set a default distro
 	distro := api.Ubuntu
