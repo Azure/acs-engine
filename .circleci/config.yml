@@ -67,6 +67,7 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export TIMEOUT=20m' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/dcos.json' >> $BASH_ENV
           echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
@@ -114,6 +115,7 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export TIMEOUT=20m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.6' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
@@ -203,6 +205,7 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export TIMEOUT=20m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.8' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
