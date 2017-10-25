@@ -20,6 +20,7 @@ const (
 	// to https://acs-mirror.azureedge.net/cni/
 	AzureCniPluginVer = "v0.91"
 )
+
 var (
 	//DefaultKubernetesSpecConfig is the default Docker image source of Kubernetes
 	DefaultKubernetesSpecConfig = KubernetesSpecConfig{
@@ -27,9 +28,9 @@ var (
 		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
 		KubeBinariesSASURLBase:           "https://acs-mirror.azureedge.net/wink8s/",
 		WindowsTelemetryGUID:             "fb801154-36b9-41bc-89c2-f4d4f05472b0",
-		CNIPluginsDownloadURL:            "https://acs-mirror.azureedge.net/cni/cni-amd64-"+CniPluginVer+".tgz",
-		VnetCNILinuxPluginsDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-"+AzureCniPluginVer+".tgz",
-		VnetCNIWindowsPluginsDownloadURL: "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-"+AzureCniPluginVer+".zip",
+		CNIPluginsDownloadURL:            "https://acs-mirror.azureedge.net/cni/cni-amd64-" + CniPluginVer + ".tgz",
+		VnetCNILinuxPluginsDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-" + AzureCniPluginVer + ".tgz",
+		VnetCNIWindowsPluginsDownloadURL: "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-" + AzureCniPluginVer + ".zip",
 	}
 
 	//DefaultDCOSSpecConfig is the default DC/OS binary download URL.
