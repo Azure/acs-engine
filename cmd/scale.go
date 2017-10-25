@@ -131,7 +131,9 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 		},
 	}
 	sc.containerService, sc.apiVersion, err = apiloader.LoadContainerServiceFromFile(sc.apiModelPath, true, nil)
-	if err != nil {
+	if err != nil &&
+		!strings.Contains(err.Error(), "OrchestratorProfile is not able to be rationalized, check supported Release or Version") &&
+		!strings.Contains(err.Error(), "OrchestratorProfile has unknown orchestrator version") {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
 
@@ -377,13 +379,17 @@ func (sc *scaleCmd) drainNodes(vmsToDelete []string) error {
 		log.Fatalf("failed to generate kube config") // TODO: cleanup
 	}
 	var errorMessage string
+	masterURL := sc.masterFQDN
+	if !strings.HasPrefix(masterURL, "https://") {
+		masterURL = fmt.Sprintf("https://%s", masterURL)
+	}
 	numVmsToDrain := len(vmsToDelete)
 	errChan := make(chan *operations.VMScalingErrorDetails, numVmsToDrain)
 	defer close(errChan)
 	for _, vmName := range vmsToDelete {
 		go func(vmName string) {
 			e := operations.SafelyDrainNode(sc.client, sc.logger,
-				sc.masterFQDN, kubeConfig, vmName, time.Duration(60)*time.Minute)
+				masterURL, kubeConfig, vmName, time.Duration(60)*time.Minute)
 			if e != nil {
 				log.Errorf("Failed to drain node %s, got error %s", vmName, e.Error())
 				errChan <- &operations.VMScalingErrorDetails{Error: e, Name: vmName}

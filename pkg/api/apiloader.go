@@ -74,7 +74,7 @@ func (a *Apiloader) LoadContainerService(
 		}
 		setContainerServiceDefaultsv20160930(containerService)
 		if e := containerService.Properties.Validate(); validate && e != nil {
-			return nil, e
+			return ConvertV20160930ContainerService(containerService), e
 		}
 		return ConvertV20160930ContainerService(containerService), nil
 
@@ -91,7 +91,7 @@ func (a *Apiloader) LoadContainerService(
 		}
 		setContainerServiceDefaultsv20160330(containerService)
 		if e := containerService.Properties.Validate(); validate && e != nil {
-			return nil, e
+			return ConvertV20160330ContainerService(containerService), e
 		}
 		return ConvertV20160330ContainerService(containerService), nil
 
@@ -108,7 +108,7 @@ func (a *Apiloader) LoadContainerService(
 		}
 		setContainerServiceDefaultsv20170131(containerService)
 		if e := containerService.Properties.Validate(); validate && e != nil {
-			return nil, e
+			return ConvertV20170131ContainerService(containerService), e
 		}
 		return ConvertV20170131ContainerService(containerService), nil
 
@@ -124,7 +124,7 @@ func (a *Apiloader) LoadContainerService(
 			}
 		}
 		if e := containerService.Properties.Validate(); validate && e != nil {
-			return nil, e
+			return ConvertV20170701ContainerService(containerService), e
 		}
 		return ConvertV20170701ContainerService(containerService), nil
 
@@ -143,7 +143,7 @@ func (a *Apiloader) LoadContainerService(
 			}
 		}
 		if e := containerService.Properties.Validate(); validate && e != nil {
-			return nil, e
+			return ConvertVLabsContainerService(containerService), e
 		}
 		return ConvertVLabsContainerService(containerService), nil
 

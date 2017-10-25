@@ -246,9 +246,6 @@ func (a *Properties) Validate() error {
 	if e := validate.Struct(a); e != nil {
 		return handleValidationErrors(e.(validator.ValidationErrors))
 	}
-	if e := a.OrchestratorProfile.Validate(); e != nil {
-		return e
-	}
 	if e := a.validateNetworkPolicy(); e != nil {
 		return e
 	}
@@ -377,6 +374,10 @@ func (a *Properties) Validate() error {
 				return fmt.Errorf("Extension %s's keyvault secret reference is of incorrect format", extension.Name)
 			}
 		}
+	}
+
+	if e := a.OrchestratorProfile.Validate(); e != nil {
+		return e
 	}
 
 	return nil

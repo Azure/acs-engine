@@ -124,9 +124,6 @@ func (a *Properties) Validate() error {
 	if e := validate.Struct(a); e != nil {
 		return handleValidationErrors(e.(validator.ValidationErrors))
 	}
-	if e := a.OrchestratorProfile.Validate(); e != nil {
-		return e
-	}
 	if e := a.MasterProfile.Validate(); e != nil {
 		return e
 	}
@@ -188,6 +185,9 @@ func (a *Properties) Validate() error {
 		return e
 	}
 	if e := validateVNET(a); e != nil {
+		return e
+	}
+	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
 	}
 	return nil
