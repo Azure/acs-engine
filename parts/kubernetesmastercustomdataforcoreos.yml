@@ -201,9 +201,15 @@ write_files:
     KUBELET_REGISTER_NODE=--register-node=true
     KUBELET_REGISTER_WITH_TAINTS=--register-with-taints={{WrapAsVariable "registerWithTaints"}}
   {{end}}
+  {{if IsKubernetesVersionTilde "1.6.x"}}
+    KUBELET_FIX_43704_1=--cgroups-per-qos=false
+    KUBELET_FIX_43704_2=--enforce-node-allocatable=
+    KUBELET_FIX_43704_3=""
+  {{end}}
 {{else}}
     KUBELET_REGISTER_SCHEDULABLE={{WrapAsVariable "registerSchedulable"}}
 {{end}}
+
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
   encoding: gzip
@@ -280,6 +286,7 @@ write_files:
     sed -i "/requestheader-group-headers/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "/requestheader-username-headers/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{end}}
+    sed -i "s|<etcdApiVersion>|{{ .OrchestratorProfile.GetAPIServerEtcdAPIVersion }}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
@@ -290,38 +297,10 @@ write_files:
 
 - path: "/opt/azure/containers/mountetcd.sh"
   permissions: "0744"
+  encoding: gzip
   owner: "root"
-  content: |
-    #!/bin/bash
-    # Mounting is done here instead of etcd because of bug https://bugs.launchpad.net/cloud-init/+bug/1692093
-    # Once the bug is fixed, replace the below with the cloud init changes replaced in https://github.com/Azure/acs-engine/pull/661.
-    set -x
-    DISK=/dev/sdc
-    PARTITION=${DISK}1
-    MOUNTPOINT=/var/lib/etcddisk
-    udevadm settle
-    mkdir -p $MOUNTPOINT
-    mount | grep $MOUNTPOINT
-    if [ $? -eq 0 ]
-    then
-        echo "disk is already mounted"
-        exit 0
-    fi
-    # fill /etc/fstab
-    grep "/dev/sdc1" /etc/fstab
-    if [ $? -ne 0 ]
-    then
-        echo "$PARTITION       $MOUNTPOINT       auto    defaults,nofail       0       2" >> /etc/fstab
-    fi
-    # check if partition exists
-    ls $PARTITION
-    if [ $? -ne 0 ]
-    then
-        # partition does not exist
-        /sbin/sgdisk --new 1 $DISK
-        /sbin/mkfs.ext4 $PARTITION -L etcd_disk -F -E lazy_itable_init=1,lazy_journal_init=1
-    fi
-    mount $MOUNTPOINT
+  content: !!binary |
+    {{WrapAsVariable "mountetcdScript"}}
 
 - path: "/opt/azure/containers/provision-setup.sh"
   permissions: "0755"
@@ -332,11 +311,11 @@ write_files:
     sudo /bin/chown -R etcd:etcd /var/lib/etcd/default
     /opt/azure/containers/mountetcd.sh
     sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
-    systemctl stop etcd2
+    systemctl stop etcd-member
     sudo -u etcd rm -rf /var/lib/etcd/default
-    sudo /bin/sed -i s/Restart=on-abnormal/Restart=always/g /lib/systemd/system/etcd.service
+    sudo /bin/sed -i s/Restart=on-failure/Restart=always/g /lib/systemd/system/etcd-member.service
     systemctl daemon-reload
-    systemctl restart etcd2
+    systemctl restart etcd-member
     for i in $(seq 1 20); do curl --max-time 60 http://127.0.0.1:2379/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
     mkdir -p /etc/kubernetes/manifests
     usermod -aG docker {{WrapAsVariable "username"}}

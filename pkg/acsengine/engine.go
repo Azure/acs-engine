@@ -460,10 +460,14 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 
 	// Master Parameters
 	addValue(parametersMap, "location", location)
-	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImageOffer)
-	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImageSku)
-	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImagePublisher)
-	addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig[cs.Properties.MasterProfile.Distro].ImageVersion)
+
+	// Identify a distro
+	distro := getDistro(properties)
+
+	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[distro].ImageOffer)
+	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[distro].ImageSku)
+	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[distro].ImagePublisher)
+	addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig[distro].ImageVersion)
 	addValue(parametersMap, "fqdnEndpointSuffix", cloudSpecConfig.EndpointConfig.ResourceManagerVMDNSSuffix)
 	addValue(parametersMap, "targetEnvironment", GetCloudTargetEnv(location))
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
@@ -1932,6 +1936,29 @@ write_files:
 		filelines = filelines + fmt.Sprintf(writeFileBlock, b64GzipString, file)
 	}
 	return fmt.Sprintf(clusterYamlFile, filelines)
+}
+
+// Identifies a distro to use for master paramaters
+func getDistro(properties *api.Properties) api.Distro {
+	// Set a default distro
+	distro := api.Ubuntu
+
+	if properties.MasterProfile == nil {
+		// Check if AgentPoolProfiles have an assigned distro
+		// Use distro defined by first agent profile
+		if len(properties.AgentPoolProfiles) > 0 {
+			if properties.AgentPoolProfiles[0].Distro != "" {
+				distro = properties.AgentPoolProfiles[0].Distro
+			}
+		}
+	} else {
+		// If MasterProfile distro is defined, use it
+		if properties.MasterProfile.Distro != "" {
+			distro = properties.MasterProfile.Distro
+		}
+	}
+
+	return distro
 }
 
 func getKubernetesSubnets(properties *api.Properties) string {
