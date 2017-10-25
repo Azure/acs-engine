@@ -100,7 +100,14 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 				return nil, err
 			}
 			graphSpt.Refresh()
-			return getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
+
+			c := getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
+			err = c.ensureProvidersRegistered(subscriptionID)
+			if err != nil {
+				return nil, err
+			}
+
+			return c, nil
 		}
 	}
 
@@ -130,7 +137,13 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 	}
 	graphSpt.Refresh()
 
-	return getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
+	c := getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
+	err = c.ensureProvidersRegistered(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 // NewAzureClientWithClientSecret returns an AzureClient via client_id and client_secret
@@ -150,7 +163,13 @@ func NewAzureClientWithClientSecret(env azure.Environment, subscriptionID, clien
 	}
 	graphSpt.Refresh()
 
-	return getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
+	c := getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
+	err = c.ensureProvidersRegistered(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 // NewAzureClientWithClientCertificateFile returns an AzureClient via client_id and jwt certificate assertion
@@ -203,7 +222,13 @@ func NewAzureClientWithClientCertificate(env azure.Environment, subscriptionID, 
 	}
 	graphSpt.Refresh()
 
-	return getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
+	c := getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
+	err = c.ensureProvidersRegistered(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 func tokenCallback(path string) func(t adal.Token) error {
@@ -251,7 +276,7 @@ func getOAuthConfig(env azure.Environment, subscriptionID string) (*adal.OAuthCo
 	return oauthConfig, tenantID, nil
 }
 
-func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *adal.ServicePrincipalToken, graphSpt *adal.ServicePrincipalToken) (*AzureClient, error) {
+func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *adal.ServicePrincipalToken, graphSpt *adal.ServicePrincipalToken) *AzureClient {
 	c := &AzureClient{
 		environment:    env,
 		subscriptionID: subscriptionID,
@@ -292,12 +317,7 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 	c.applicationsClient.Authorizer = graphAuthorizer
 	c.servicePrincipalsClient.Authorizer = graphAuthorizer
 
-	err := c.ensureProvidersRegistered(subscriptionID)
-	if err != nil {
-		return nil, err
-	}
-
-	return c, nil
+	return c
 }
 
 func (az *AzureClient) ensureProvidersRegistered(subscriptionID string) error {
