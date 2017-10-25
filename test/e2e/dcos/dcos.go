@@ -245,7 +245,7 @@ func (c *Cluster) Version() (string, error) {
 }
 
 // InstallMarathonApp will send the marathon.json file to the remote server and install it using the dcos cli
-func (c *Cluster) InstallMarathonApp(filepath string) (int, error) {
+func (c *Cluster) InstallMarathonApp(filepath string, sleep, duration time.Duration) (int, error) {
 	port := 0
 	contents, err := ioutil.ReadFile(filepath)
 	if err != nil {
@@ -284,7 +284,7 @@ func (c *Cluster) InstallMarathonApp(filepath string) (int, error) {
 		if err != nil {
 			return 0, err
 		}
-		ready := c.WaitOnReady(app.ID, 5*time.Second, 2*time.Minute)
+		ready := c.WaitOnReady(app.ID, sleep, duration)
 		if ready == false {
 			return 0, fmt.Errorf("App %s was never installed", app.ID)
 		}
