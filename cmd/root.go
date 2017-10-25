@@ -110,6 +110,10 @@ func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = client.EnsureProvidersRegistered(authArgs.SubscriptionID.String())
+	if err != nil {
+		return nil, err
+	}
 	client.AddAcceptLanguages([]string{authArgs.language})
 	return client, nil
 }

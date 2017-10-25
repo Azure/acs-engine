@@ -101,13 +101,7 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 			}
 			graphSpt.Refresh()
 
-			c := getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
-			err = c.ensureProvidersRegistered(subscriptionID)
-			if err != nil {
-				return nil, err
-			}
-
-			return c, nil
+			return getClient(env, subscriptionID, tenantID, armSpt, graphSpt), nil
 		}
 	}
 
@@ -137,13 +131,7 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 	}
 	graphSpt.Refresh()
 
-	c := getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
-	err = c.ensureProvidersRegistered(subscriptionID)
-	if err != nil {
-		return nil, err
-	}
-
-	return c, nil
+	return getClient(env, subscriptionID, tenantID, armSpt, graphSpt), nil
 }
 
 // NewAzureClientWithClientSecret returns an AzureClient via client_id and client_secret
@@ -163,13 +151,7 @@ func NewAzureClientWithClientSecret(env azure.Environment, subscriptionID, clien
 	}
 	graphSpt.Refresh()
 
-	c := getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
-	err = c.ensureProvidersRegistered(subscriptionID)
-	if err != nil {
-		return nil, err
-	}
-
-	return c, nil
+	return getClient(env, subscriptionID, tenantID, armSpt, graphSpt), nil
 }
 
 // NewAzureClientWithClientCertificateFile returns an AzureClient via client_id and jwt certificate assertion
@@ -222,13 +204,7 @@ func NewAzureClientWithClientCertificate(env azure.Environment, subscriptionID, 
 	}
 	graphSpt.Refresh()
 
-	c := getClient(env, subscriptionID, tenantID, armSpt, graphSpt)
-	err = c.ensureProvidersRegistered(subscriptionID)
-	if err != nil {
-		return nil, err
-	}
-
-	return c, nil
+	return getClient(env, subscriptionID, tenantID, armSpt, graphSpt), nil
 }
 
 func tokenCallback(path string) func(t adal.Token) error {
@@ -320,7 +296,8 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 	return c
 }
 
-func (az *AzureClient) ensureProvidersRegistered(subscriptionID string) error {
+// EnsureProvidersRegistered checks if the AzureClient is registered to required resource providers and, if not, register subscription to providers
+func (az *AzureClient) EnsureProvidersRegistered(subscriptionID string) error {
 	registeredProviders, err := az.providersClient.List(to.Int32Ptr(100), "")
 	if err != nil {
 		return err
