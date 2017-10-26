@@ -1143,6 +1143,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["heapster"]
 				case "kubernetesTillerSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeConfigs[k8sVersion]["tiller"]
+				case "kubernetesTillerCPURequests":
+					val = DefaultTillerCPURequests
+				case "kubernetesTillerMemoryRequests":
+					val = DefaultTillerMemoryRequests
+				case "kubernetesTillerCPULimit":
+					val = DefaultTillerCPULimit
+				case "kubernetesTillerMemoryLimit":
+					val = DefaultTillerMemoryLimit
 				case "kubernetesKubeDNSSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":
