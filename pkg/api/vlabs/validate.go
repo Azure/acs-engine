@@ -74,7 +74,11 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					return err
 				}
 				if o.KubernetesConfig.EnableAggregatedAPIs {
-					if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 || o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
+					if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot7 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
 						return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 							"1.7.0", o.OrchestratorVersion)
 					}
@@ -408,8 +412,18 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	const minKubeletRetries = 4
 	// k8s versions that have cloudprovider backoff enabled
 	var backoffEnabledVersions = map[string]bool{
+		common.KubernetesVersion1Dot8Dot0:  true,
+		common.KubernetesVersion1Dot8Dot1:  true,
 		common.KubernetesVersion1Dot8Dot2:  true,
+		common.KubernetesVersion1Dot7Dot0:  true,
+		common.KubernetesVersion1Dot7Dot1:  true,
+		common.KubernetesVersion1Dot7Dot2:  true,
+		common.KubernetesVersion1Dot7Dot4:  true,
+		common.KubernetesVersion1Dot7Dot5:  true,
+		common.KubernetesVersion1Dot7Dot7:  true,
 		common.KubernetesVersion1Dot7Dot9:  true,
+		common.KubernetesVersion1Dot6Dot6:  true,
+		common.KubernetesVersion1Dot6Dot9:  true,
 		common.KubernetesVersion1Dot6Dot11: true,
 	}
 	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)

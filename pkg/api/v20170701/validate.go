@@ -40,10 +40,10 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 		case DockerCE:
 		case Kubernetes:
 			switch o.OrchestratorVersion {
-			case common.KubernetesVersion1Dot8Dot2:
-			case common.KubernetesVersion1Dot7Dot9:
-			case common.KubernetesVersion1Dot6Dot11:
-			case common.KubernetesVersion1Dot5Dot8:
+			case common.KubernetesVersion1Dot8Dot0, common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2,
+				common.KubernetesVersion1Dot7Dot0, common.KubernetesVersion1Dot7Dot1, common.KubernetesVersion1Dot7Dot2, common.KubernetesVersion1Dot7Dot4, common.KubernetesVersion1Dot7Dot5, common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9,
+				common.KubernetesVersion1Dot6Dot6, common.KubernetesVersion1Dot6Dot9, common.KubernetesVersion1Dot6Dot11,
+				common.KubernetesVersion1Dot5Dot7, common.KubernetesVersion1Dot5Dot8:
 			case "":
 			default:
 				return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
