@@ -124,7 +124,7 @@ var (
 		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase:              "crproxy.trafficmanager.net:6000/google_containers/",
-			TillerImageBase:                  "mirror.azure.cn:5000/kubernetes-helm/",
+			TillerImageBase:                  "crproxy.trafficmanager.net:6000/kubernetes-helm/",
 			CNIPluginsDownloadURL:            "https://acsengine.blob.core.chinacloudapi.cn/cni/cni-plugins-amd64-latest.tgz",
 			VnetCNILinuxPluginsDownloadURL:   "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-linux-amd64-latest.tgz",
 			VnetCNIWindowsPluginsDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-windows-amd64-latest.zip",
@@ -139,8 +139,13 @@ var (
 			ResourceManagerVMDNSSuffix: "cloudapp.chinacloudapi.cn",
 		},
 		OSImageConfig: map[api.Distro]AzureOSImageConfig{
-			api.Ubuntu: DefaultUbuntuImageConfig,
-			api.RHEL:   DefaultRHELOSImageConfig,
+			api.Ubuntu: {
+				ImageOffer:     "UbuntuServer",
+				ImageSku:       "16.04-LTS",
+				ImagePublisher: "Canonical",
+				ImageVersion:   "latest",
+			},
+			api.RHEL: DefaultRHELOSImageConfig,
 		},
 	}
 )
