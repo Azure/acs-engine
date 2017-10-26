@@ -239,61 +239,6 @@ Test-PodCIDR(`$podCIDR)
 }
 
 function
-ConvertTo-DecimalIP
-{
-  param(
-    [Parameter(Mandatory = `$true, Position = 0)]
-    [Net.IPAddress] `$IPAddress
-  )
-
-  `$i = 3; `$DecimalIP = 0;
-  `$IPAddress.GetAddressBytes() | % { `$DecimalIP += `$_ * [Math]::Pow(256, `$i); `$i-- }
-
-  return [UInt32]`$DecimalIP
-}
-
-function
-ConvertTo-DottedDecimalIP
-{
-  param(
-    [Parameter(Mandatory = `$true, Position = 0)]
-    [Uint32] `$IPAddress
-  )
-
-    `$DottedIP = `$(for (`$i = 3; `$i -gt -1; `$i--)
-    {
-      `$Remainder = `$IPAddress % [Math]::Pow(256, `$i)
-      (`$IPAddress - `$Remainder) / [Math]::Pow(256, `$i)
-      `$IPAddress = `$Remainder
-    })
-
-    return [String]::Join(".", `$DottedIP)
-}
-
-function
-ConvertTo-MaskLength
-{
-  param(
-    [Parameter(Mandatory = `$True, Position = 0)]
-    [Net.IPAddress]`$SubnetMask
-  )
-
-    `$Bits = "`$(`$SubnetMask.GetAddressBytes() | % { [Convert]::ToString(`$_, 2) } )" -replace "[\s0]"
-    return `$Bits.Length
-}
-
-function
-Get-MgmtSubnet
-{
-    `$na = Get-NetAdapter | ? Name -Like "vEthernet (Ethernet*"
-    `$addr = (Get-NetIPAddress -InterfaceAlias `$na.ifAlias -AddressFamily IPv4).IPAddress
-    `$mask = (Get-WmiObject Win32_NetworkAdapterConfiguration | ? InterfaceIndex -eq `$(`$na.ifIndex)).IPSubnet[0]
-    `$mgmtSubnet = (ConvertTo-DecimalIP `$addr) -band (ConvertTo-DecimalIP `$mask)
-    `$mgmtSubnet = ConvertTo-DottedDecimalIP `$mgmtSubnet
-    return "`$mgmtSubnet/`$(ConvertTo-MaskLength `$mask)"
-}
-
-function
 Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
 {
     `$jsonSampleConfig =
@@ -330,7 +275,7 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
     `$configJson.dns.Nameservers[0] = `$global:KubeDnsServiceIp
 
     `$configJson.AdditionalArgs[0].Value.ExceptionList[0] = `$global:KubeClusterCIDR
-    `$configJson.AdditionalArgs[0].Value.ExceptionList[1] = Get-MgmtSubnet
+    `$configJson.AdditionalArgs[0].Value.ExceptionList[1] = `$global:MasterSubnet
     `$configJson.AdditionalArgs[1].Value.DestinationPrefix  = `$global:KubeServiceCIDR
 
     if (Test-Path `$global:CNIConfig)
@@ -410,12 +355,6 @@ while (!`$hnsNetwork)
 
 c:\k\kube-proxy.exe --v=3 --proxy-mode=kernelspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
 "@
-
-    if ($global:KubeBinariesVersion -ge "1.7.0")
-    {
-        # 1.7.0 uses event-based service configuration so shorter duration (default 15m) is needed to update forwarder NIC
-        $kubeProxyStartStr += " --config-sync-period=2m"
-    }
 
     $kubeProxyStartStr | Out-File -encoding ASCII -filepath $global:KubeProxyStartFile
 }
