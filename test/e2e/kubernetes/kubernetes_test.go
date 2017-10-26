@@ -2,7 +2,6 @@ package kubernetes
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -179,18 +178,15 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			for _, node := range nodeList.Nodes {
 				success := false
-				for i := 0; i < 20; i++ {
+				for i := 0; i < 60; i++ {
 					dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
 					curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
-					output, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
-					if err != nil {
-						log.Printf("Error on iteration:%v for node (%s)\n", i, node.Metadata.Name)
-						log.Printf("Command:ssh -i %s -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s %s\n", sshKeyPath, master, curlCMD)
-						log.Printf("\nOutput:%s\n", string(output))
-					} else {
+					_, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
+					if err == nil {
 						success = true
+						break
 					}
-					time.Sleep(5 * time.Second)
+					time.Sleep(10 * time.Second)
 				}
 				Expect(success).To(BeTrue())
 			}
@@ -256,14 +252,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(s.Status.LoadBalancer.Ingress).NotTo(BeEmpty())
 
-				valid := s.Validate("(IIS Windows Server)", 5, 5*time.Second)
+				valid := s.Validate("(IIS Windows Server)", 10, 10*time.Second)
 				Expect(valid).To(BeTrue())
 
 				iisPods, err := iisDeploy.Pods()
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(iisPods)).ToNot(BeZero())
 				for _, iisPod := range iisPods {
-					pass, err := iisPod.CheckWindowsOutboundConnection(5*time.Second, cfg.Timeout)
+					pass, err := iisPod.CheckWindowsOutboundConnection(10*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(pass).To(BeTrue())
 				}
