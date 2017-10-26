@@ -237,7 +237,7 @@ func TestStrictJSONValidationIsNotAppliedToApiVersions20170701AndEarlier(t *test
 	}
 
 	for _, version := range preStrictVersions {
-		_, e := a.LoadContainerService([]byte(jsonWithTypo), version, true, nil)
+		_, e := a.LoadContainerService([]byte(jsonWithTypo), version, true, false, nil)
 		if e != nil {
 			t.Errorf("Expected mistyped 'ventSubnetID' key to be overlooked in version '%s' but it wasn't: error was %v", version, e)
 		}
@@ -250,7 +250,7 @@ func TestStrictJSONValidationIsAppliedToVersionsAbove20170701(t *testing.T) {
 		Translator: nil,
 	}
 	for _, version := range strictVersions {
-		_, e := a.LoadContainerService([]byte(jsonWithTypo), version, true, nil)
+		_, e := a.LoadContainerService([]byte(jsonWithTypo), version, true, false, nil)
 		if e == nil {
 			t.Error("Expected mistyped 'ventSubnetID' key to be detected but it wasn't")
 		} else {

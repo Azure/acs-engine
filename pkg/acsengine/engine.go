@@ -241,7 +241,12 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	var templ *template.Template
 
 	properties := containerService.Properties
-
+	// save the current orchestrator version and restore it after deploying.
+	// this allows us to deploy agents on the most recent patch without updating the orchestator version in the object
+	orchVersion := properties.OrchestratorProfile.OrchestratorVersion
+	defer func() {
+		properties.OrchestratorProfile.OrchestratorVersion = orchVersion
+	}()
 	if certsGenerated, err = SetPropertiesDefaults(containerService); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
