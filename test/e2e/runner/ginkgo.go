@@ -12,6 +12,7 @@ import (
 // Ginkgo contains all of the information needed to run the ginkgo suite of tests
 type Ginkgo struct {
 	Orchestrator string `envconfig:"ORCHESTRATOR" default:"kubernetes"`
+	GinkgoNodes  string `envconfig:"GINKGO_NODES" default:"6"`
 }
 
 // ParseGinkgoConfig creates a new TestRunner object
@@ -26,7 +27,7 @@ func ParseGinkgoConfig() (*Ginkgo, error) {
 // Run will execute an orchestrator suite of tests
 func (g *Ginkgo) Run() error {
 	testDir := fmt.Sprintf("test/e2e/%s", g.Orchestrator)
-	cmd := exec.Command("ginkgo", "-nodes", "10", "-slowSpecThreshold", "180", "-r", testDir)
+	cmd := exec.Command("ginkgo", "-nodes", g.GinkgoNodes, "-slowSpecThreshold", "180", "-r", testDir)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Start()

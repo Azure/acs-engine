@@ -176,6 +176,7 @@ runcmd:
 - systemctl restart docker
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
+{{GetGPUDriversInstallScript .}}
 - echo `date`,`hostname`, PRE-APT-SYSTEMD-DAILY>>/opt/m
 - /usr/lib/apt/apt.systemd.daily
 - echo `date`,`hostname`, POST-APT-SYSTEMD-DAILY>>/opt/m

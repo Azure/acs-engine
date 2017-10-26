@@ -38,7 +38,7 @@ func (o *OrchestratorProfile) Validate() error {
 	case DockerCE:
 	case Kubernetes:
 		switch o.OrchestratorVersion {
-		case common.KubernetesVersion1Dot8Dot1:
+		case common.KubernetesVersion1Dot8Dot2:
 		case common.KubernetesVersion1Dot7Dot7:
 		case common.KubernetesVersion1Dot6Dot11:
 		case common.KubernetesVersion1Dot5Dot8:

@@ -22,14 +22,22 @@ const (
 	k8sWindowsVMAgentPoolPrefixIndex       = 1
 	k8sWindowsVMAgentOrchestratorNameIndex = 2
 	k8sWindowsVMAgentPoolInfoIndex         = 3
+	// here there are 2 capture groups
+	//  the first is the agent pool name, which can contain -s
+	//  the second group is the Cluster ID for the cluster
+	vmssNamingFormat       = "^[0-9a-zA-Z]+-(.+)-([0-9a-fA-F]{8})-vmss$"
+	vmssAgentPoolNameIndex = 1
+	vmssClusterIDIndex     = 2
 )
 
 var vmnameLinuxRegexp *regexp.Regexp
+var vmssnameRegexp *regexp.Regexp
 var vmnameWindowsRegexp *regexp.Regexp
 
 func init() {
 	vmnameLinuxRegexp = regexp.MustCompile(k8sLinuxVMNamingFormat)
 	vmnameWindowsRegexp = regexp.MustCompile(k8sWindowsVMNamingFormat)
+	vmssnameRegexp = regexp.MustCompile(vmssNamingFormat)
 }
 
 // ResourceName returns the last segment (the resource name) for the specified resource identifier.
@@ -73,6 +81,16 @@ func K8sLinuxVMNameParts(vmName string) (poolIdentifier, nameSuffix string, agen
 	}
 
 	return vmNameParts[k8sLinuxVMAgentPoolNameIndex], vmNameParts[k8sLinuxVMAgentClusterIDIndex], vmNum, nil
+}
+
+// VmssNameParts returns parts of Linux VM name e.g: k8s-agentpool1-11290731-0
+func VmssNameParts(vmssName string) (poolIdentifier, nameSuffix string, err error) {
+	vmssNameParts := vmssnameRegexp.FindStringSubmatch(vmssName)
+	if len(vmssNameParts) != 3 {
+		return "", "", fmt.Errorf("resource name was missing from identifier")
+	}
+
+	return vmssNameParts[vmssAgentPoolNameIndex], vmssNameParts[vmssClusterIDIndex], nil
 }
 
 // WindowsVMNameParts returns parts of Windows VM name e.g: 50621k8s9000
