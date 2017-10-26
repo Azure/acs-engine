@@ -147,7 +147,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 	It("Should return error message when failing on ClusterPreflightCheck operation", func() {
 		cs := createContainerService("testcluster", api.KubernetesVersion1Dot5Dot8, 3, 3)
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot7Dot7
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = api.KubernetesVersion1Dot7Dot9
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 			Logger:     log.NewEntry(log.New()),
