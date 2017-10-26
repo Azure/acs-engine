@@ -3,8 +3,7 @@ package common
 import "testing"
 
 func Test_GetValidPatchVersion(t *testing.T) {
-	version := ""
-	version = GetValidPatchVersion(Kubernetes, "")
+	version := GetValidPatchVersion(Kubernetes, "")
 	if version != KubernetesDefaultVersion {
 		t.Errorf("It is not the default Kubernetes version")
 	}
@@ -26,8 +25,7 @@ func Test_GetValidPatchVersion(t *testing.T) {
 }
 
 func Test_RationalizeReleaseAndVersion(t *testing.T) {
-	version := ""
-	version = RationalizeReleaseAndVersion(Kubernetes, "", "")
+	version := RationalizeReleaseAndVersion(Kubernetes, "", "")
 	if version != KubernetesDefaultVersion {
 		t.Errorf("It is not the default Kubernetes version")
 	}

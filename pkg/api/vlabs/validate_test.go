@@ -51,13 +51,15 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 	}
 
 	o = &OrchestratorProfile{
-		OrchestratorType: "Kubernetes",
+		OrchestratorType:    "Kubernetes",
 		OrchestratorVersion: "1.7.3",
 	}
-	if err := o.Validate(false) ; err == nil{
+
+	if err := o.Validate(false); err == nil {
 		t.Errorf("should have failed on old patch version")
 	}
-	if err := o.Validate(true) ; err != nil{
+
+	if err := o.Validate(true); err != nil {
 		t.Errorf("should not have failed on old patch version during update valdiation")
 	}
 }
