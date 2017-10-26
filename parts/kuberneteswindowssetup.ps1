@@ -302,6 +302,7 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
   ""name"": ""<NetworkMode>"",
   ""type"": ""wincni.exe"",
   ""master"": ""Ethernet"",
+  ""capabilities"": { ""portMappings"": true },
   ""ipam"": {
      ""environment"": ""azure"",
      ""subnet"":""<PODCIDR>"",
