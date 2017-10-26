@@ -103,7 +103,7 @@ Patch-WinNATBinary()
         $winnatsys = "$env:SystemRoot\System32\drivers\winnat.sys"
         Stop-Service winnat
         takeown /f $winnatsys
-        icacls $winnatsys /grant "Administrators:(F)"    
+        icacls $winnatsys /grant "Administrators:(F)"
         Copy-Item $winnatcurr $winnatsys
         bcdedit /set TESTSIGNING on
     }
@@ -132,7 +132,7 @@ Write-AzureConfig()
 }
 "@
 
-    $azureConfig | Out-File -encoding ASCII -filepath "$azureConfigFile"    
+    $azureConfig | Out-File -encoding ASCII -filepath "$azureConfigFile"
 }
 
 function
@@ -162,14 +162,14 @@ users:
     client-key-data: "$AgentKey"
 "@
 
-    $kubeConfig | Out-File -encoding ASCII -filepath "$kubeConfigFile"    
+    $kubeConfig | Out-File -encoding ASCII -filepath "$kubeConfigFile"
 }
 
 function
 New-InfraContainer()
 {
     cd $global:KubeDir
-    docker build -t kubletwin/pause . 
+    docker build -t kubletwin/pause .
 }
 
 function
@@ -239,16 +239,64 @@ Test-PodCIDR(`$podCIDR)
 }
 
 function
-Get-MgmtIpAddress()
+ConvertTo-DecimalIP
 {
-    `$adapter = Get-NetAdapter | ? Name -Like "vEthernet (Ethernet*"
-    return (Get-NetIPAddress -InterfaceAlias `$adapter.ifAlias -AddressFamily IPv4).IPAddress
+  param(
+    [Parameter(Mandatory = `$true, Position = 0)]
+    [Net.IPAddress] `$IPAddress
+  )
+
+  `$i = 3; `$DecimalIP = 0;
+  `$IPAddress.GetAddressBytes() | % { `$DecimalIP += `$_ * [Math]::Pow(256, `$i); `$i-- }
+
+  return [UInt32]`$DecimalIP
+}
+
+function
+ConvertTo-DottedDecimalIP
+{
+  param(
+    [Parameter(Mandatory = `$true, Position = 0)]
+    [Uint32] `$IPAddress
+  )
+
+    `$DottedIP = `$(for (`$i = 3; `$i -gt -1; `$i--)
+    {
+      `$Remainder = `$IPAddress % [Math]::Pow(256, `$i)
+      (`$IPAddress - `$Remainder) / [Math]::Pow(256, `$i)
+      `$IPAddress = `$Remainder
+    })
+
+    return [String]::Join(".", `$DottedIP)
+}
+
+function
+ConvertTo-MaskLength
+{
+  param(
+    [Parameter(Mandatory = `$True, Position = 0)]
+    [Net.IPAddress]`$SubnetMask
+  )
+
+    `$Bits = "`$(`$SubnetMask.GetAddressBytes() | % { [Convert]::ToString(`$_, 2) } )" -replace "[\s0]"
+    return `$Bits.Length
+}
+
+function
+Get-MgmtSubnet
+{
+    `$na = Get-NetAdapter | ? Name -Like "vEthernet (Ethernet*"
+    `$addr = (Get-NetIPAddress -InterfaceAlias `$na.ifAlias -AddressFamily IPv4).IPAddress
+    `$mask = (Get-WmiObject Win32_NetworkAdapterConfiguration | ? InterfaceIndex -eq `$(`$na.ifIndex)).IPSubnet[0]
+    `$mgmtSubnet = (ConvertTo-DecimalIP `$addr) -band (ConvertTo-DecimalIP `$mask)
+    `$mgmtSubnet = ConvertTo-DottedDecimalIP `$mgmtSubnet
+    return "`$mgmtSubnet/`$(ConvertTo-MaskLength `$mask)"
 }
 
 function
 Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
 {
-    `$jsonSampleConfig = 
+    `$jsonSampleConfig =
 "{
   ""cniVersion"": ""0.2.0"",
   ""name"": ""<NetworkMode>"",
@@ -266,7 +314,7 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
   },
   ""AdditionalArgs"" : [
     {
-      ""Name"" : ""EndpointPolicy"", ""Value"" : { ""Type"" : ""OutBoundNAT"", ""ExceptionList"": [ ""<ClusterCIDR>"" ] }
+      ""Name"" : ""EndpointPolicy"", ""Value"" : { ""Type"" : ""OutBoundNAT"", ""ExceptionList"": [ ""<ClusterCIDR>"", ""<MgmtSubnet>"" ] }
     },
     {
       ""Name"" : ""EndpointPolicy"", ""Value"" : { ""Type"" : ""ROUTE"", ""DestinationPrefix"": ""<ServiceCIDR>"", ""NeedEncap"" : true }
@@ -274,16 +322,17 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
   ]
 }"
 
-    `$configJson = ConvertFrom-Json `$jsonSampleConfig 
+    `$configJson = ConvertFrom-Json `$jsonSampleConfig
     `$configJson.name = `$global:NetworkMode.ToLower()
     `$configJson.ipam.subnet=`$podCIDR
     `$configJson.ipam.routes[0].GW = `$masterSubnetGW
     `$configJson.dns.Nameservers[0] = `$global:KubeDnsServiceIp
 
     `$configJson.AdditionalArgs[0].Value.ExceptionList[0] = `$global:KubeClusterCIDR
+    `$configJson.AdditionalArgs[0].Value.ExceptionList[1] = Get-MgmtSubnet
     `$configJson.AdditionalArgs[1].Value.DestinationPrefix  = `$global:KubeServiceCIDR
 
-    if (Test-Path `$global:CNIConfig) 
+    if (Test-Path `$global:CNIConfig)
     {
         Clear-Content -Path `$global:CNIConfig
     }
@@ -311,15 +360,15 @@ try
         {
             Write-Host "Sleeping for 10s, and then waiting to discover pod CIDR"
             Start-Sleep 10
-            
+
             `$podCIDR=Get-PodCIDR
             `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
         }
-    
+
         # stop the kubelet process now that we have our CIDR, discard the process output
         `$process | Stop-Process | Out-Null
     }
-    
+
     # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
     netsh advfirewall set allprofiles state off
 
@@ -433,7 +482,7 @@ Set-Explorer
 try
 {
     # Set to false for debugging.  This will output the start script to
-    # c:\AzureData\CustomDataSetupScript.log, and then you can RDP 
+    # c:\AzureData\CustomDataSetupScript.log, and then you can RDP
     # to the windows machine, and run the script manually to watch
     # the output.
     if ($true) {
@@ -473,7 +522,7 @@ try
             Restart-Computer
         }
     }
-    else 
+    else
     {
         # keep for debugging purposes
         Write-Log ".\CustomDataSetupScript.ps1 -MasterIP $MasterIP -KubeDnsServiceIp $KubeDnsServiceIp -MasterFQDNPrefix $MasterFQDNPrefix -Location $Location -AgentKey $AgentKey -AzureHostname $AzureHostname -AADClientId $AADClientId -AADClientSecret $AADClientSecret"
