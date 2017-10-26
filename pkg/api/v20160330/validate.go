@@ -80,6 +80,9 @@ func (a *Properties) Validate() error {
 	if a.LinuxProfile == nil {
 		return fmt.Errorf("missing LinuxProfile")
 	}
+	if e := a.OrchestratorProfile.Validate(); e != nil {
+		return e
+	}
 	if e := a.MasterProfile.Validate(); e != nil {
 		return e
 	}
@@ -109,9 +112,6 @@ func (a *Properties) Validate() error {
 		}
 	}
 	if e := a.LinuxProfile.Validate(); e != nil {
-		return e
-	}
-	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
 	}
 	return nil

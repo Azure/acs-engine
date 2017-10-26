@@ -130,10 +130,8 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 			Locale: sc.locale,
 		},
 	}
-	sc.containerService, sc.apiVersion, err = apiloader.LoadContainerServiceFromFile(sc.apiModelPath, true, nil)
-	if err != nil &&
-		!strings.Contains(err.Error(), "OrchestratorProfile is not able to be rationalized, check supported Release or Version") &&
-		!strings.Contains(err.Error(), "OrchestratorProfile has unknown orchestrator version") {
+	sc.containerService, sc.apiVersion, err = apiloader.LoadContainerServiceFromFile(sc.apiModelPath, true, true, nil)
+	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
 
@@ -343,7 +341,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		},
 	}
 	var apiVersion string
-	sc.containerService, apiVersion, err = apiloader.LoadContainerServiceFromFile(sc.apiModelPath, true, nil)
+	sc.containerService, apiVersion, err = apiloader.LoadContainerServiceFromFile(sc.apiModelPath, false, true, nil)
 	sc.containerService.Properties.AgentPoolProfiles[sc.agentPoolIndex].Count = sc.newDesiredAgentCount
 
 	b, e := apiloader.SerializeContainerService(sc.containerService, apiVersion)

@@ -21,34 +21,46 @@ func init() {
 }
 
 // Validate implements APIObject
-func (o *OrchestratorProfile) Validate() error {
+func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 	// Don't need to call validate.Struct(o)
 	// It is handled by Properties.Validate()
-	switch o.OrchestratorType {
-	case Swarm:
-	case DCOS:
-		switch o.OrchestratorVersion {
-		case common.DCOSVersion1Dot10Dot0:
-		case common.DCOSVersion1Dot9Dot0:
-		case common.DCOSVersion1Dot8Dot8:
-		case "":
-		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
-		}
-	case DockerCE:
-	case Kubernetes:
-		switch o.OrchestratorVersion {
-		case common.KubernetesVersion1Dot8Dot2:
-		case common.KubernetesVersion1Dot7Dot9:
-		case common.KubernetesVersion1Dot6Dot11:
-		case common.KubernetesVersion1Dot5Dot8:
-		case "":
-		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
-		}
+	// On updates we only need to make sure there is a supported patch version for the minor version
+	if !isUpdate {
+		switch o.OrchestratorType {
+		case Swarm:
+		case DCOS:
+			switch o.OrchestratorVersion {
+			case common.DCOSVersion1Dot10Dot0:
+			case common.DCOSVersion1Dot9Dot0:
+			case common.DCOSVersion1Dot8Dot8:
+			case "":
+			default:
+				return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
+			}
+		case DockerCE:
+		case Kubernetes:
+			switch o.OrchestratorVersion {
+			case common.KubernetesVersion1Dot8Dot2:
+			case common.KubernetesVersion1Dot7Dot9:
+			case common.KubernetesVersion1Dot6Dot11:
+			case common.KubernetesVersion1Dot5Dot8:
+			case "":
+			default:
+				return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
+			}
 
-	default:
-		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
+		default:
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
+		}
+	} else {
+		switch o.OrchestratorType {
+		case DCOS, Kubernetes:
+			patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion)
+			// if there isn't a supported patch version for this version fail
+			if patchVersion == "" {
+				return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
+			}
+		}
 	}
 
 	return nil
@@ -120,9 +132,12 @@ func handleValidationErrors(e validator.ValidationErrors) error {
 }
 
 // Validate implements APIObject
-func (a *Properties) Validate() error {
+func (a *Properties) Validate(isUpdate bool) error {
 	if e := validate.Struct(a); e != nil {
 		return handleValidationErrors(e.(validator.ValidationErrors))
+	}
+	if e := a.OrchestratorProfile.Validate(isUpdate); e != nil {
+		return e
 	}
 	if e := a.MasterProfile.Validate(); e != nil {
 		return e
@@ -185,9 +200,6 @@ func (a *Properties) Validate() error {
 		return e
 	}
 	if e := validateVNET(a); e != nil {
-		return e
-	}
-	if e := a.OrchestratorProfile.Validate(); e != nil {
 		return e
 	}
 	return nil

@@ -43,48 +43,68 @@ func isValidEtcdVersion(etcdVersion string) error {
 }
 
 // Validate implements APIObject
-func (o *OrchestratorProfile) Validate() error {
+func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 	// Don't need to call validate.Struct(o)
 	// It is handled by Properties.Validate()
-	switch o.OrchestratorType {
-	case DCOS:
-		version := common.RationalizeReleaseAndVersion(
-			o.OrchestratorType,
-			o.OrchestratorRelease,
-			o.OrchestratorVersion)
-		if version == "" {
-			return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
-		}
-	case Swarm:
-	case SwarmMode:
-	case Kubernetes:
-		version := common.RationalizeReleaseAndVersion(
-			o.OrchestratorType,
-			o.OrchestratorRelease,
-			o.OrchestratorVersion)
-		if version == "" {
-			return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
-		}
-
-		if o.KubernetesConfig != nil {
-			err := o.KubernetesConfig.Validate(version)
-			if err != nil {
-				return err
+	// On updates we only need to make sure there is a supported patch version for the minor version
+	if !isUpdate {
+		switch o.OrchestratorType {
+		case DCOS:
+			version := common.RationalizeReleaseAndVersion(
+				o.OrchestratorType,
+				o.OrchestratorRelease,
+				o.OrchestratorVersion)
+			if version == "" {
+				return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 			}
-			if o.KubernetesConfig.EnableAggregatedAPIs {
-				if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 || o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
-					return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-						"1.7.0", o.OrchestratorVersion)
-				}
+		case Swarm:
+		case SwarmMode:
+		case Kubernetes:
+			version := common.RationalizeReleaseAndVersion(
+				o.OrchestratorType,
+				o.OrchestratorRelease,
+				o.OrchestratorVersion)
+			if version == "" {
+				return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+			}
 
-				if !o.KubernetesConfig.EnableRbac {
-					return fmt.Errorf("enableAggregatedAPIs requires the enableRbac feature as a prerequisite")
+			if o.KubernetesConfig != nil {
+				err := o.KubernetesConfig.Validate(version)
+				if err != nil {
+					return err
+				}
+				if o.KubernetesConfig.EnableAggregatedAPIs {
+					if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 || o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
+						return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+							"1.7.0", o.OrchestratorVersion)
+					}
+
+					if !o.KubernetesConfig.EnableRbac {
+						return fmt.Errorf("enableAggregatedAPIs requires the enableRbac feature as a prerequisite")
+					}
 				}
 			}
-		}
 
-	default:
-		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
+		default:
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
+		}
+	} else {
+		switch o.OrchestratorType {
+		case DCOS, Kubernetes:
+
+			version := common.RationalizeReleaseAndVersion(
+				o.OrchestratorType,
+				o.OrchestratorRelease,
+				o.OrchestratorVersion)
+			if version == "" {
+				patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion)
+				// if there isn't a supported patch version for this version fail
+				if patchVersion == "" {
+					return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+				}
+			}
+
+		}
 	}
 
 	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil && (*o.KubernetesConfig != KubernetesConfig{}) {
@@ -163,7 +183,7 @@ func (o *OrchestratorVersionProfile) Validate() error {
 	// Here we use strings.EqualFold, the other just string comparison.
 	// Rationalize orchestrator type should be done from versioned to unversioned
 	// I will go ahead to simplify this
-	return o.OrchestratorProfile.Validate()
+	return o.OrchestratorProfile.Validate(false)
 }
 
 // ValidateForUpgrade validates upgrade input data
@@ -242,9 +262,12 @@ func (profile *AADProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *Properties) Validate() error {
+func (a *Properties) Validate(isUpdate bool) error {
 	if e := validate.Struct(a); e != nil {
 		return handleValidationErrors(e.(validator.ValidationErrors))
+	}
+	if e := a.OrchestratorProfile.Validate(isUpdate); e != nil {
+		return e
 	}
 	if e := a.validateNetworkPolicy(); e != nil {
 		return e
@@ -374,10 +397,6 @@ func (a *Properties) Validate() error {
 				return fmt.Errorf("Extension %s's keyvault secret reference is of incorrect format", extension.Name)
 			}
 		}
-	}
-
-	if e := a.OrchestratorProfile.Validate(); e != nil {
-		return e
 	}
 
 	return nil
