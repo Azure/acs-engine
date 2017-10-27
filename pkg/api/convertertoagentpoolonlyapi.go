@@ -5,6 +5,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
+	"github.com/Azure/acs-engine/pkg/api/common"
 )
 
 ///////////////////////////////////////////////////////////
@@ -191,10 +192,13 @@ func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) 
 	}
 
 	switch kubernetesVersion {
-	case KubernetesVersion1Dot8Dot2, KubernetesVersion1Dot7Dot9, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
+	case common.KubernetesVersion1Dot8Dot0, common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2,
+		common.KubernetesVersion1Dot7Dot0, common.KubernetesVersion1Dot7Dot1, common.KubernetesVersion1Dot7Dot2, common.KubernetesVersion1Dot7Dot4, common.KubernetesVersion1Dot7Dot5, common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9,
+		common.KubernetesVersion1Dot6Dot6, common.KubernetesVersion1Dot6Dot9, common.KubernetesVersion1Dot6Dot11,
+		common.KubernetesVersion1Dot5Dot7, common.KubernetesVersion1Dot5Dot8:
 		orchestratorProfile.OrchestratorVersion = kubernetesVersion
 	default:
-		orchestratorProfile.OrchestratorVersion = KubernetesDefaultVersion
+		orchestratorProfile.OrchestratorVersion = common.KubernetesDefaultVersion
 	}
 	return orchestratorProfile
 }
@@ -205,10 +209,13 @@ func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *Orc
 	}
 
 	switch kubernetesVersion {
-	case KubernetesVersion1Dot8Dot2, KubernetesVersion1Dot7Dot9, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
+	case common.KubernetesVersion1Dot8Dot0, common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2,
+		common.KubernetesVersion1Dot7Dot0, common.KubernetesVersion1Dot7Dot1, common.KubernetesVersion1Dot7Dot2, common.KubernetesVersion1Dot7Dot4, common.KubernetesVersion1Dot7Dot5, common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9,
+		common.KubernetesVersion1Dot6Dot6, common.KubernetesVersion1Dot6Dot9, common.KubernetesVersion1Dot6Dot11,
+		common.KubernetesVersion1Dot5Dot7, common.KubernetesVersion1Dot5Dot8:
 		orchestratorProfile.OrchestratorVersion = kubernetesVersion
 	default:
-		orchestratorProfile.OrchestratorVersion = KubernetesDefaultVersion
+		orchestratorProfile.OrchestratorVersion = common.KubernetesDefaultVersion
 	}
 	return orchestratorProfile
 }
