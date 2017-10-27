@@ -76,6 +76,8 @@ type ACSEngineClient interface {
 	ListManagedDisksByResourceGroup(resourceGroupName string) (result disk.ListType, err error)
 
 	GetKubernetesClient(masterURL, kubeConfig string, interval, timeout time.Duration) (KubernetesClient, error)
+
+	ListProviders() (resources.ProviderListResult, error)
 }
 
 // ACSStorageClient interface models the azure storage client

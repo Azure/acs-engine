@@ -8,7 +8,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 		p := getK8sDefaultProperties()
 		p.ServicePrincipalProfile = nil
 
-		if err := p.Validate(); err == nil {
+		if err := p.Validate(false); err == nil {
 			t.Errorf("should error %v", err)
 		}
 	})
@@ -16,7 +16,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	t.Run("ServicePrincipalProfile with secret should pass", func(t *testing.T) {
 		p := getK8sDefaultProperties()
 
-		if err := p.Validate(); err != nil {
+		if err := p.Validate(false); err != nil {
 			t.Errorf("should not error %v", err)
 		}
 	})
@@ -29,7 +29,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 			SecretName:    "secret-name",
 			SecretVersion: "version",
 		}
-		if err := p.Validate(); err != nil {
+		if err := p.Validate(false); err != nil {
 			t.Errorf("should not error %v", err)
 		}
 	})
@@ -41,7 +41,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 			VaultID:    "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME",
 			SecretName: "secret-name",
 		}
-		if err := p.Validate(); err != nil {
+		if err := p.Validate(false); err != nil {
 			t.Errorf("should not error %v", err)
 		}
 	})
@@ -53,7 +53,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 			SecretName:    "secret-name",
 			SecretVersion: "version",
 		}
-		if err := p.Validate(); err == nil {
+		if err := p.Validate(false); err == nil {
 			t.Error("error should have occurred")
 		}
 	})
@@ -67,7 +67,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 			SecretVersion: "version",
 		}
 
-		if err := p.Validate(); err == nil || err.Error() != "service principal client keyvault secret reference is of incorrect format" {
+		if err := p.Validate(false); err == nil || err.Error() != "service principal client keyvault secret reference is of incorrect format" {
 			t.Error("error should have occurred")
 		}
 	})
