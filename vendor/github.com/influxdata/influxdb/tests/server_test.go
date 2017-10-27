@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
@@ -696,7 +697,32 @@ func TestServer_Write_LineProtocol_Integer(t *testing.T) {
 	}
 
 	now := now()
-	if res, err := s.Write("db0", "rp0", `cpu,host=server01 value=100 `+strconv.FormatInt(now.UnixNano(), 10), nil); err != nil {
+	if res, err := s.Write("db0", "rp0", `cpu,host=server01 value=100i `+strconv.FormatInt(now.UnixNano(), 10), nil); err != nil {
+		t.Fatal(err)
+	} else if exp := ``; exp != res {
+		t.Fatalf("unexpected results\nexp: %s\ngot: %s\n", exp, res)
+	}
+
+	// Verify the data was written.
+	if res, err := s.Query(`SELECT * FROM db0.rp0.cpu GROUP BY *`); err != nil {
+		t.Fatal(err)
+	} else if exp := fmt.Sprintf(`{"results":[{"statement_id":0,"series":[{"name":"cpu","tags":{"host":"server01"},"columns":["time","value"],"values":[["%s",100]]}]}]}`, now.Format(time.RFC3339Nano)); exp != res {
+		t.Fatalf("unexpected results\nexp: %s\ngot: %s\n", exp, res)
+	}
+}
+
+// Ensure the server can create a single point via line protocol with unsigned type and read it back.
+func TestServer_Write_LineProtocol_Unsigned(t *testing.T) {
+	t.Parallel()
+	s := OpenServer(NewConfig())
+	defer s.Close()
+
+	if err := s.CreateDatabaseAndRetentionPolicy("db0", newRetentionPolicySpec("rp0", 1, 1*time.Hour), true); err != nil {
+		t.Fatal(err)
+	}
+
+	now := now()
+	if res, err := s.Write("db0", "rp0", `cpu,host=server01 value=100u `+strconv.FormatInt(now.UnixNano(), 10), nil); err != nil {
 		t.Fatal(err)
 	} else if exp := ``; exp != res {
 		t.Fatalf("unexpected results\nexp: %s\ngot: %s\n", exp, res)
@@ -6640,6 +6666,68 @@ func TestServer_Query_Fill(t *testing.T) {
 			exp:     `{"results":[{"statement_id":0,"series":[{"name":"fills","columns":["time","count"],"values":[["2009-11-10T23:00:00Z",2],["2009-11-10T23:00:05Z",1],["2009-11-10T23:00:10Z",1],["2009-11-10T23:00:15Z",1]]}]}]}`,
 			params:  url.Values{"db": []string{"db0"}},
 		},
+		&Query{
+			name:    "fill with implicit start time",
+			command: `select mean(val) from fills where time < '2009-11-10T23:00:20Z' group by time(5s)`,
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"fills","columns":["time","mean"],"values":[["2009-11-10T23:00:00Z",4],["2009-11-10T23:00:05Z",4],["2009-11-10T23:00:10Z",null],["2009-11-10T23:00:15Z",10]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+	}...)
+
+	for i, query := range test.queries {
+		t.Run(query.name, func(t *testing.T) {
+			if i == 0 {
+				if err := test.init(s); err != nil {
+					t.Fatalf("test init failed: %s", err)
+				}
+			}
+			if query.skip {
+				t.Skipf("SKIP:: %s", query.name)
+			}
+			if err := query.Execute(s); err != nil {
+				t.Error(query.Error(err))
+			} else if !query.success() {
+				t.Error(query.failureMessage())
+			}
+		})
+	}
+}
+
+func TestServer_Query_ImplicitFill(t *testing.T) {
+	t.Parallel()
+	config := NewConfig()
+	config.Coordinator.MaxSelectBucketsN = 5
+	s := OpenServer(config)
+	defer s.Close()
+
+	if err := s.CreateDatabaseAndRetentionPolicy("db0", newRetentionPolicySpec("rp0", 1, 0), true); err != nil {
+		t.Fatal(err)
+	}
+
+	writes := []string{
+		fmt.Sprintf(`fills val=1 %d`, mustParseTime(time.RFC3339Nano, "2010-01-01T11:30:00Z").UnixNano()),
+		fmt.Sprintf(`fills val=3 %d`, mustParseTime(time.RFC3339Nano, "2010-01-01T12:00:00Z").UnixNano()),
+		fmt.Sprintf(`fills val=5 %d`, mustParseTime(time.RFC3339Nano, "2010-01-01T16:30:00Z").UnixNano()),
+	}
+
+	test := NewTest("db0", "rp0")
+	test.writes = Writes{
+		&Write{data: strings.Join(writes, "\n")},
+	}
+
+	test.addQueries([]*Query{
+		&Query{
+			name:    "fill with implicit start",
+			command: `select mean(val) from fills where time < '2010-01-01T18:00:00Z' group by time(1h)`,
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"fills","columns":["time","mean"],"values":[["2010-01-01T16:00:00Z",5],["2010-01-01T17:00:00Z",null]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    "fill with implicit start - max select buckets",
+			command: `select mean(val) from fills where time < '2010-01-01T17:00:00Z' group by time(1h)`,
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"fills","columns":["time","mean"],"values":[["2010-01-01T12:00:00Z",3],["2010-01-01T13:00:00Z",null],["2010-01-01T14:00:00Z",null],["2010-01-01T15:00:00Z",null],["2010-01-01T16:00:00Z",5]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
 	}...)
 
 	for i, query := range test.queries {
@@ -7130,7 +7218,77 @@ func TestServer_Query_ShowSeries(t *testing.T) {
 	}
 }
 
-func TestServer_Query_ShowSeriesCardinality(t *testing.T) {
+func TestServer_Query_ShowSeriesCardinalityEstimation(t *testing.T) {
+	t.Parallel()
+	s := OpenServer(NewConfig())
+	defer s.Close()
+
+	if err := s.CreateDatabaseAndRetentionPolicy("db0", newRetentionPolicySpec("rp0", 1, 0), true); err != nil {
+		t.Fatal(err)
+	}
+
+	test := NewTest("db0", "rp0")
+	test.writes = make(Writes, 0, 10)
+	// Add 1,000,000 series.
+	for j := 0; j < cap(test.writes); j++ {
+		writes := make([]string, 0, 50000)
+		for i := 0; i < cap(writes); i++ {
+			writes = append(writes, fmt.Sprintf(`cpu,l=%d,h=s%d v=1 %d`, j, i, mustParseTime(time.RFC3339Nano, "2009-11-10T23:00:01Z").UnixNano()))
+		}
+		test.writes = append(test.writes, &Write{data: strings.Join(writes, "\n")})
+	}
+
+	// These queries use index sketches to estimate cardinality.
+	test.addQueries([]*Query{
+		&Query{
+			name:    `show series cardinality`,
+			command: "SHOW SERIES CARDINALITY",
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show series cardinality on db0`,
+			command: "SHOW SERIES CARDINALITY ON db0",
+		},
+	}...)
+
+	for i, query := range test.queries {
+		t.Run(query.name, func(t *testing.T) {
+			if i == 0 {
+				if err := test.init(s); err != nil {
+					t.Fatalf("test init failed: %s", err)
+				}
+			}
+			if query.skip {
+				t.Skipf("SKIP:: %s", query.name)
+			}
+			if err := query.Execute(s); err != nil {
+				t.Error(query.Error(err))
+			}
+
+			// Manually parse result rather than comparing results string, as
+			// results are not deterministic.
+			got := struct {
+				Results []struct {
+					Series []struct {
+						Values [][]int
+					}
+				}
+			}{}
+
+			t.Log(query.act)
+			if err := json.Unmarshal([]byte(query.act), &got); err != nil {
+				t.Error(err)
+			}
+
+			cardinality := got.Results[0].Series[0].Values[0][0]
+			if cardinality < 450000 || cardinality > 550000 {
+				t.Errorf("got cardinality %d, which is 10%% or more away from expected estimation of 500,000", cardinality)
+			}
+		})
+	}
+}
+
+func TestServer_Query_ShowSeriesExactCardinality(t *testing.T) {
 	t.Parallel()
 	s := OpenServer(NewConfig())
 	defer s.Close()
@@ -7155,12 +7313,6 @@ func TestServer_Query_ShowSeriesCardinality(t *testing.T) {
 	}
 
 	test.addQueries([]*Query{
-		&Query{
-			name:    `show series cardinality`,
-			command: "SHOW SERIES CARDINALITY",
-			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[4]]},{"name":"disk","columns":["count"],"values":[[1]]},{"name":"gpu","columns":["count"],"values":[[2]]}]}]}`,
-			params:  url.Values{"db": []string{"db0"}},
-		},
 		&Query{
 			name:    `show series cardinality from measurement`,
 			command: "SHOW SERIES CARDINALITY FROM cpu",
@@ -7200,7 +7352,55 @@ func TestServer_Query_ShowSeriesCardinality(t *testing.T) {
 		&Query{
 			name:    `show series cardinality with WHERE time should fail`,
 			command: "SHOW SERIES CARDINALITY WHERE time > now() - 1h",
-			exp:     `{"results":[{"statement_id":0,"error":"SHOW SERIES CARDINALITY doesn't support time in WHERE clause"}]}`,
+			exp:     `{"results":[{"statement_id":0,"error":"SHOW SERIES EXACT CARDINALITY doesn't support time in WHERE clause"}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show series exact cardinality`,
+			command: "SHOW SERIES EXACT CARDINALITY",
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[4]]},{"name":"disk","columns":["count"],"values":[[1]]},{"name":"gpu","columns":["count"],"values":[[2]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show series exact cardinality from measurement`,
+			command: "SHOW SERIES EXACT CARDINALITY FROM cpu",
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[4]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show series exact cardinality from regular expression`,
+			command: "SHOW SERIES EXACT CARDINALITY FROM /[cg]pu/",
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[4]]},{"name":"gpu","columns":["count"],"values":[[2]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show series exact cardinality with where tag`,
+			command: "SHOW SERIES EXACT CARDINALITY WHERE region = 'uswest'",
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[1]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show series exact cardinality where tag matches regular expression`,
+			command: "SHOW SERIES EXACT CARDINALITY WHERE region =~ /ca.*/",
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"disk","columns":["count"],"values":[[1]]},{"name":"gpu","columns":["count"],"values":[[1]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show series exact cardinality`,
+			command: "SHOW SERIES EXACT CARDINALITY WHERE host !~ /server0[12]/",
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"disk","columns":["count"],"values":[[1]]},{"name":"gpu","columns":["count"],"values":[[1]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show series exact cardinality with from and where`,
+			command: "SHOW SERIES EXACT CARDINALITY FROM cpu WHERE region = 'useast'",
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[2]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show series exact cardinality with WHERE time should fail`,
+			command: "SHOW SERIES EXACT CARDINALITY WHERE time > now() - 1h",
+			exp:     `{"results":[{"statement_id":0,"error":"SHOW SERIES EXACT CARDINALITY doesn't support time in WHERE clause"}]}`,
 			params:  url.Values{"db": []string{"db0"}},
 		},
 	}...)
@@ -7347,7 +7547,81 @@ func TestServer_Query_ShowMeasurements(t *testing.T) {
 	}
 }
 
-func TestServer_Query_ShowMeasurementCardinality(t *testing.T) {
+func TestServer_Query_ShowMeasurementCardinalityEstimation(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping expensive test")
+	}
+
+	t.Parallel()
+	s := OpenServer(NewConfig())
+	defer s.Close()
+
+	if err := s.CreateDatabaseAndRetentionPolicy("db0", newRetentionPolicySpec("rp0", 1, 0), true); err != nil {
+		t.Fatal(err)
+	}
+
+	test := NewTest("db0", "rp0")
+	test.writes = make(Writes, 0, 10)
+	// Add 1,000,000 series.
+	for j := 0; j < cap(test.writes); j++ {
+		writes := make([]string, 0, 50000)
+		for i := 0; i < cap(writes); i++ {
+			writes = append(writes, fmt.Sprintf(`cpu-%d-s%d v=1 %d`, j, i, mustParseTime(time.RFC3339Nano, "2009-11-10T23:00:01Z").UnixNano()))
+		}
+		test.writes = append(test.writes, &Write{data: strings.Join(writes, "\n")})
+	}
+
+	// These queries use index sketches to estimate cardinality.
+	test.addQueries([]*Query{
+		&Query{
+			name:    `show measurement cardinality`,
+			command: "SHOW MEASUREMENT CARDINALITY",
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show measurement cardinality on db0`,
+			command: "SHOW MEASUREMENT CARDINALITY ON db0",
+		},
+	}...)
+
+	for i, query := range test.queries {
+		t.Run(query.name, func(t *testing.T) {
+			if i == 0 {
+				if err := test.init(s); err != nil {
+					t.Fatalf("test init failed: %s", err)
+				}
+			}
+			if query.skip {
+				t.Skipf("SKIP:: %s", query.name)
+			}
+			if err := query.Execute(s); err != nil {
+				t.Error(query.Error(err))
+			}
+
+			// Manually parse result rather than comparing results string, as
+			// results are not deterministic.
+			got := struct {
+				Results []struct {
+					Series []struct {
+						Values [][]int
+					}
+				}
+			}{}
+
+			t.Log(query.act)
+			if err := json.Unmarshal([]byte(query.act), &got); err != nil {
+				t.Error(err)
+			}
+
+			cardinality := got.Results[0].Series[0].Values[0][0]
+			if cardinality < 450000 || cardinality > 550000 {
+				t.Errorf("got cardinality %d, which is 10%% or more away from expected estimation of 500,000", cardinality)
+			}
+		})
+	}
+}
+
+func TestServer_Query_ShowMeasurementExactCardinality(t *testing.T) {
 	t.Parallel()
 	s := OpenServer(NewConfig())
 	defer s.Close()
@@ -7372,18 +7646,6 @@ func TestServer_Query_ShowMeasurementCardinality(t *testing.T) {
 	}
 
 	test.addQueries([]*Query{
-		&Query{
-			name:    `show measurement cardinality`,
-			command: "SHOW MEASUREMENT CARDINALITY",
-			exp:     `{"results":[{"statement_id":0,"series":[{"columns":["count"],"values":[[3]]}]}]}`,
-			params:  url.Values{"db": []string{"db0"}},
-		},
-		&Query{
-			name:    `show measurement cardinality using FROM`,
-			command: "SHOW MEASUREMENT CARDINALITY FROM cpu",
-			exp:     `{"results":[{"statement_id":0,"series":[{"columns":["count"],"values":[[1]]}]}]}`,
-			params:  url.Values{"db": []string{"db0"}},
-		},
 		&Query{
 			name:    `show measurement cardinality using FROM and regex`,
 			command: "SHOW MEASUREMENT CARDINALITY FROM /[cg]pu/",
@@ -7411,7 +7673,49 @@ func TestServer_Query_ShowMeasurementCardinality(t *testing.T) {
 		&Query{
 			name:    `show measurement cardinality with time in WHERE clauses errors`,
 			command: `SHOW MEASUREMENT CARDINALITY WHERE time > now() - 1h`,
-			exp:     `{"results":[{"statement_id":0,"error":"SHOW MEASUREMENT CARDINALITY doesn't support time in WHERE clause"}]}`,
+			exp:     `{"results":[{"statement_id":0,"error":"SHOW MEASUREMENT EXACT CARDINALITY doesn't support time in WHERE clause"}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show measurement exact cardinality`,
+			command: "SHOW MEASUREMENT EXACT CARDINALITY",
+			exp:     `{"results":[{"statement_id":0,"series":[{"columns":["count"],"values":[[3]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show measurement exact cardinality using FROM`,
+			command: "SHOW MEASUREMENT EXACT CARDINALITY FROM cpu",
+			exp:     `{"results":[{"statement_id":0,"series":[{"columns":["count"],"values":[[1]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show measurement exact cardinality using FROM and regex`,
+			command: "SHOW MEASUREMENT EXACT CARDINALITY FROM /[cg]pu/",
+			exp:     `{"results":[{"statement_id":0,"series":[{"columns":["count"],"values":[[2]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show measurement exact cardinality using FROM and regex - no matches`,
+			command: "SHOW MEASUREMENT EXACT CARDINALITY FROM /.*zzzzz.*/",
+			exp:     `{"results":[{"statement_id":0}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show measurement exact cardinality where tag matches regular expression`,
+			command: "SHOW MEASUREMENT EXACT CARDINALITY WHERE region =~ /ca.*/",
+			exp:     `{"results":[{"statement_id":0,"series":[{"columns":["count"],"values":[[2]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show measurement exact cardinality where tag does not match a regular expression`,
+			command: "SHOW MEASUREMENT EXACT CARDINALITY WHERE region !~ /ca.*/",
+			exp:     `{"results":[{"statement_id":0,"series":[{"columns":["count"],"values":[[2]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show measurement exact cardinality with time in WHERE clauses errors`,
+			command: `SHOW MEASUREMENT EXACT CARDINALITY WHERE time > now() - 1h`,
+			exp:     `{"results":[{"statement_id":0,"error":"SHOW MEASUREMENT EXACT CARDINALITY doesn't support time in WHERE clause"}]}`,
 			params:  url.Values{"db": []string{"db0"}},
 		},
 	}...)
@@ -7609,6 +7913,11 @@ func TestServer_Query_ShowTagKeyCardinality(t *testing.T) {
 			params:  url.Values{"db": []string{"db0"}},
 		},
 		&Query{
+			name:    `show tag key cardinality on db0`,
+			command: "SHOW TAG KEY CARDINALITY ON db0",
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[2]]},{"name":"disk","columns":["count"],"values":[[2]]},{"name":"gpu","columns":["count"],"values":[[2]]}]}]}`,
+		},
+		&Query{
 			name:    "show tag key cardinality from",
 			command: "SHOW TAG KEY CARDINALITY FROM cpu",
 			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[2]]}]}]}`,
@@ -7629,7 +7938,42 @@ func TestServer_Query_ShowTagKeyCardinality(t *testing.T) {
 		&Query{
 			name:    "show tag key cardinality with time in WHERE clause errors",
 			command: "SHOW TAG KEY CARDINALITY FROM cpu WHERE time > now() - 1h",
-			exp:     `{"results":[{"statement_id":0,"error":"SHOW TAG KEY CARDINALITY doesn't support time in WHERE clause"}]}`,
+			exp:     `{"results":[{"statement_id":0,"error":"SHOW TAG KEY EXACT CARDINALITY doesn't support time in WHERE clause"}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show tag key exact cardinality`,
+			command: "SHOW TAG KEY EXACT CARDINALITY",
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[2]]},{"name":"disk","columns":["count"],"values":[[2]]},{"name":"gpu","columns":["count"],"values":[[2]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show tag key exact cardinality on db0`,
+			command: "SHOW TAG KEY EXACT CARDINALITY ON db0",
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[2]]},{"name":"disk","columns":["count"],"values":[[2]]},{"name":"gpu","columns":["count"],"values":[[2]]}]}]}`,
+		},
+		&Query{
+			name:    "show tag key exact cardinality from",
+			command: "SHOW TAG KEY EXACT CARDINALITY FROM cpu",
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[2]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    "show tag key exact cardinality from regex",
+			command: "SHOW TAG KEY EXACT CARDINALITY FROM /[cg]pu/",
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[2]]},{"name":"gpu","columns":["count"],"values":[[2]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    "show tag key exact cardinality measurement not found",
+			command: "SHOW TAG KEY EXACT CARDINALITY FROM doesntexist",
+			exp:     `{"results":[{"statement_id":0}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    "show tag key exact cardinality with time in WHERE clause errors",
+			command: "SHOW TAG KEY EXACT CARDINALITY FROM cpu WHERE time > now() - 1h",
+			exp:     `{"results":[{"statement_id":0,"error":"SHOW TAG KEY EXACT CARDINALITY doesn't support time in WHERE clause"}]}`,
 			params:  url.Values{"db": []string{"db0"}},
 		},
 		&Query{
@@ -7671,6 +8015,48 @@ func TestServer_Query_ShowTagKeyCardinality(t *testing.T) {
 		&Query{
 			name:    `show tag values cardinality with key and measurement matches regular expression`,
 			command: `SHOW TAG VALUES CARDINALITY FROM /[cg]pu/ WITH KEY = host`,
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[2]]},{"name":"gpu","columns":["count"],"values":[[2]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show tag values exact cardinality with key and where matches the regular expression`,
+			command: `SHOW TAG VALUES EXACT CARDINALITY WITH KEY = host WHERE region =~ /ca.*/`,
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"disk","columns":["count"],"values":[[1]]},{"name":"gpu","columns":["count"],"values":[[1]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show tag values exact cardinality with key and where does not match the regular expression`,
+			command: `SHOW TAG VALUES EXACT CARDINALITY WITH KEY = region WHERE host !~ /server0[12]/`,
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"disk","columns":["count"],"values":[[1]]},{"name":"gpu","columns":["count"],"values":[[1]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show tag values exact cardinality with key and where partially matches the regular expression`,
+			command: `SHOW TAG VALUES EXACT CARDINALITY WITH KEY = host WHERE region =~ /us/`,
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[2]]},{"name":"gpu","columns":["count"],"values":[[1]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show tag values exact cardinality with key and where partially does not match the regular expression`,
+			command: `SHOW TAG VALUES EXACT CARDINALITY WITH KEY = host WHERE region !~ /us/`,
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"disk","columns":["count"],"values":[[1]]},{"name":"gpu","columns":["count"],"values":[[1]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show tag values exact cardinality with key in and where does not match the regular expression`,
+			command: `SHOW TAG VALUES EXACT CARDINALITY FROM cpu WITH KEY IN (host, region) WHERE region = 'uswest'`,
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[2]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show tag values exact cardinality with key regex and where does not match the regular expression`,
+			command: `SHOW TAG VALUES EXACT CARDINALITY FROM cpu WITH KEY =~ /(host|region)/ WHERE region = 'uswest'`,
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[2]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show tag values exact cardinality with key and measurement matches regular expression`,
+			command: `SHOW TAG VALUES EXACT CARDINALITY FROM /[cg]pu/ WITH KEY = host`,
 			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[2]]},{"name":"gpu","columns":["count"],"values":[[2]]}]}]}`,
 			params:  url.Values{"db": []string{"db0"}},
 		},
@@ -7799,6 +8185,24 @@ func TestServer_Query_ShowFieldKeyCardinality(t *testing.T) {
 		&Query{
 			name:    `show field key cardinality measurement with regex`,
 			command: `SHOW FIELD KEY CARDINALITY FROM /[cg]pu/`,
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[3]]},{"name":"gpu","columns":["count"],"values":[[4]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show field key exact cardinality`,
+			command: `SHOW FIELD KEY EXACT CARDINALITY`,
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[3]]},{"name":"disk","columns":["count"],"values":[[2]]},{"name":"gpu","columns":["count"],"values":[[4]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show field key exact cardinality from measurement`,
+			command: `SHOW FIELD KEY EXACT CARDINALITY FROM cpu`,
+			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[3]]}]}]}`,
+			params:  url.Values{"db": []string{"db0"}},
+		},
+		&Query{
+			name:    `show field key exact cardinality measurement with regex`,
+			command: `SHOW FIELD KEY EXACT CARDINALITY FROM /[cg]pu/`,
 			exp:     `{"results":[{"statement_id":0,"series":[{"name":"cpu","columns":["count"],"values":[[3]]},{"name":"gpu","columns":["count"],"values":[[4]]}]}]}`,
 			params:  url.Values{"db": []string{"db0"}},
 		},
@@ -8851,4 +9255,9 @@ func TestServer_NestedAggregateWithMathPanics(t *testing.T) {
 			}
 		})
 	}
+}
+
+func init() {
+	// Force uint support to be enabled for testing.
+	models.EnableUintSupport()
 }

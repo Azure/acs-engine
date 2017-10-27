@@ -17,6 +17,7 @@ import (
 
 	"github.com/influxdata/influxdb/influxql"
 	"github.com/influxdata/influxdb/models"
+	"github.com/influxdata/influxdb/pkg/bytesutil"
 	"github.com/influxdata/influxdb/pkg/estimator"
 	"github.com/influxdata/influxdb/query"
 	"github.com/influxdata/influxdb/tsdb"
@@ -402,7 +403,11 @@ func (i *Index) MeasurementExists(name []byte) (bool, error) {
 func (i *Index) MeasurementNamesByExpr(expr influxql.Expr) ([][]byte, error) {
 	fs := i.RetainFileSet()
 	defer fs.Release()
-	return fs.MeasurementNamesByExpr(expr)
+
+	names, err := fs.MeasurementNamesByExpr(expr)
+
+	// Clone byte slices since they will be used after the fileset is released.
+	return bytesutil.CloneSlice(names), err
 }
 
 func (i *Index) MeasurementNamesByRegex(re *regexp.Regexp) ([][]byte, error) {
@@ -410,10 +415,15 @@ func (i *Index) MeasurementNamesByRegex(re *regexp.Regexp) ([][]byte, error) {
 	defer fs.Release()
 
 	itr := fs.MeasurementIterator()
+	if itr == nil {
+		return nil, nil
+	}
+
 	var a [][]byte
 	for e := itr.Next(); e != nil; e = itr.Next() {
 		if re.Match(e.Name()) {
-			a = append(a, e.Name())
+			// Clone bytes since they will be used after the fileset is released.
+			a = append(a, bytesutil.Clone(e.Name()))
 		}
 	}
 	return a, nil
@@ -726,7 +736,11 @@ func (i *Index) TagKeyCardinality(name, key []byte) int {
 func (i *Index) MeasurementSeriesKeysByExpr(name []byte, expr influxql.Expr) ([][]byte, error) {
 	fs := i.RetainFileSet()
 	defer fs.Release()
-	return fs.MeasurementSeriesKeysByExpr(name, expr, i.fieldset)
+
+	keys, err := fs.MeasurementSeriesKeysByExpr(name, expr, i.fieldset)
+
+	// Clone byte slices since they will be used after the fileset is released.
+	return bytesutil.CloneSlice(keys), err
 }
 
 // TagSets returns an ordered list of tag sets for a measurement by dimension
@@ -747,9 +761,21 @@ func (i *Index) TagSets(name []byte, opt query.IteratorOptions) ([]*query.TagSet
 	// TagSet are then grouped together, because for the purpose of GROUP BY
 	// they are part of the same composite series.
 	tagSets := make(map[string]*query.TagSet, 64)
+	var seriesN int
 
 	if itr != nil {
 		for e := itr.Next(); e != nil; e = itr.Next() {
+			// Abort if the query was killed
+			select {
+			case <-opt.InterruptCh:
+				return nil, query.ErrQueryInterrupted
+			default:
+			}
+
+			if opt.MaxSeriesN > 0 && seriesN > opt.MaxSeriesN {
+				return nil, fmt.Errorf("max-select-series limit exceeded: (%d/%d)", seriesN, opt.MaxSeriesN)
+			}
+
 			if opt.Authorizer != nil && !opt.Authorizer.AuthorizeSeriesRead(i.Database, name, e.Tags()) {
 				continue
 			}
@@ -777,11 +803,19 @@ func (i *Index) TagSets(name []byte, opt query.IteratorOptions) ([]*query.TagSet
 
 			// Ensure it's back in the map.
 			tagSets[string(tagsAsKey)] = tagSet
+			seriesN++
 		}
 	}
 
 	// Sort the series in each tag set.
 	for _, t := range tagSets {
+		// Abort if the query was killed
+		select {
+		case <-opt.InterruptCh:
+			return nil, query.ErrQueryInterrupted
+		default:
+		}
+
 		sort.Sort(t)
 	}
 
@@ -1170,6 +1204,10 @@ func (itr *seriesPointIterator) Next() (*query.FloatPoint, error) {
 		// Create new series iterator, if necessary.
 		// Exit if there are no measurements remaining.
 		if itr.sitr == nil {
+			if itr.mitr == nil {
+				return nil, nil
+			}
+
 			m := itr.mitr.Next()
 			if m == nil {
 				return nil, nil

@@ -49,7 +49,7 @@ func New() locales.Translator {
 		pluralsOrdinal:         []locales.PluralRule{5, 6},
 		pluralsRange:           []locales.PluralRule{2, 6},
 		decimal:                ".",
-		group:                  "'",
+		group:                  "’",
 		minus:                  "-",
 		percent:                "%",
 		perMille:               "‰",
@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"a.C.", "d.C."},
 		erasNarrow:             []string{"aC", "dC"},
 		erasWide:               []string{"avanti Cristo", "dopo Cristo"},
-		timezones:              map[string]string{"ACDT": "Ora legale dell’Australia centrale", "ChST": "Ora di Chamorro", "MEZ": "Ora standard dell’Europa centrale", "ART": "Ora standard dell’Argentina", "HNT": "Ora standard di Terranova", "CST": "Ora standard centrale USA", "ADT": "Ora legale dell’Atlantico", "WAST": "Ora legale dell’Africa occidentale", "PST": "Ora standard del Pacifico USA", "ACWDT": "Ora legale dell’Australia centroccidentale", "JDT": "Ora legale del Giappone", "CLST": "Ora legale del Cile", "AKDT": "Ora legale dell’Alaska", "SRT": "Ora del Suriname", "MYT": "Ora della Malesia", "MST": "MST", "NZST": "Ora standard della Nuova Zelanda", "VET": "Ora del Venezuela", "GMT": "Ora del meridiano di Greenwich", "HKST": "Ora legale di Hong Kong", "AEST": "Ora standard dell’Australia orientale", "HEPM": "Ora legale di Saint-Pierre e Miquelon", "HECU": "Ora legale di Cuba", "NZDT": "Ora legale della Nuova Zelanda", "WEZ": "Ora standard dell’Europa occidentale", "EST": "Ora standard orientale USA", "AWST": "Ora standard dell’Australia occidentale", "ECT": "Ora dell’Ecuador", "PDT": "Ora legale del Pacifico USA", "ACWST": "Ora standard dell’Australia centroccidentale", "WARST": "Ora legale dell’Argentina occidentale", "MDT": "MDT", "ARST": "Ora legale dell’Argentina", "BT": "Ora del Bhutan", "HAT": "Ora legale di Terranova", "HNPM": "Ora standard di Saint-Pierre e Miquelon", "CHAST": "Ora standard delle Chatham", "JST": "Ora standard del Giappone", "WAT": "Ora standard dell’Africa occidentale", "ACST": "Ora standard dell’Australia centrale", "AKST": "Ora standard dell’Alaska", "WIB": "Ora dell’Indonesia occidentale", "CDT": "Ora legale centrale USA", "HADT": "Ora legale delle Isole Hawaii-Aleutine", "CAT": "Ora dell’Africa centrale", "WART": "Ora standard dell’Argentina occidentale", "BOT": "Ora della Bolivia", "HKT": "Ora standard di Hong Kong", "COT": "Ora standard della Colombia", "SAST": "Ora dell’Africa meridionale", "HNPMX": "Ora standard del Pacifico (Messico)", "GYT": "Ora della Guyana", "EAT": "Ora dell’Africa orientale", "CHADT": "Ora legale delle Chatham", "HNOG": "Ora standard della Groenlandia occidentale", "HENOMX": "Ora legale del Messico nord-occidentale", "CLT": "Ora standard del Cile", "HAST": "Ora standard delle Isole Hawaii-Aleutine", "MESZ": "Ora legale dell’Europa centrale", "WESZ": "Ora legale dell’Europa occidentale", "EDT": "Ora legale orientale USA", "LHDT": "Ora legale di Lord Howe", "IST": "Ora standard dell’India", "AST": "Ora standard dell’Atlantico", "TMT": "Ora standard del Turkmenistan", "TMST": "Ora legale del Turkmenistan", "COST": "Ora legale della Colombia", "∅∅∅": "∅∅∅", "WITA": "Ora dell’Indonesia centrale", "HEPMX": "Ora legale del Pacifico (Messico)", "HNCU": "Ora standard di Cuba", "SGT": "Ora di Singapore", "HNEG": "Ora standard della Groenlandia orientale", "HEEG": "Ora legale della Groenlandia orientale", "GFT": "Ora della Guiana francese", "UYT": "Ora standard dell’Uruguay", "WIT": "Ora dell’Indonesia orientale", "OESZ": "Ora legale dell’Europa orientale", "HNNOMX": "Ora standard del Messico nord-occidentale", "AEDT": "Ora legale dell’Australia orientale", "UYST": "Ora legale dell’Uruguay", "LHST": "Ora standard di Lord Howe", "AWDT": "Ora legale dell’Australia occidentale", "HEOG": "Ora legale della Groenlandia occidentale", "OEZ": "Ora standard dell’Europa orientale"},
+		timezones:              map[string]string{"ADT": "Ora legale dell’Atlantico", "AKST": "Ora standard dell’Alaska", "ACST": "Ora standard dell’Australia centrale", "AWST": "Ora standard dell’Australia occidentale", "WARST": "Ora legale dell’Argentina occidentale", "JST": "Ora standard del Giappone", "HNOG": "Ora standard della Groenlandia occidentale", "GYT": "Ora della Guyana", "AKDT": "Ora legale dell’Alaska", "∅∅∅": "Ora legale dell’Amazzonia", "WEZ": "Ora standard dell’Europa occidentale", "BOT": "Ora della Bolivia", "CST": "Ora standard centrale USA", "CDT": "Ora legale centrale USA", "NZST": "Ora standard della Nuova Zelanda", "LHDT": "Ora legale di Lord Howe", "HENOMX": "Ora legale del Messico nord-occidentale", "AST": "Ora standard dell’Atlantico", "EAT": "Ora dell’Africa orientale", "ACWST": "Ora standard dell’Australia centroccidentale", "VET": "Ora del Venezuela", "CLST": "Ora legale del Cile", "EST": "Ora standard orientale USA", "ECT": "Ora dell’Ecuador", "PDT": "Ora legale del Pacifico USA", "UYST": "Ora legale dell’Uruguay", "MEZ": "Ora standard dell’Europa centrale", "COT": "Ora standard della Colombia", "GFT": "Ora della Guiana francese", "CAT": "Ora dell’Africa centrale", "HNPM": "Ora standard di Saint-Pierre e Miquelon", "SRT": "Ora del Suriname", "TMT": "Ora standard del Turkmenistan", "HKT": "Ora standard di Hong Kong", "PST": "Ora standard del Pacifico USA", "COST": "Ora legale della Colombia", "EDT": "Ora legale orientale USA", "HNCU": "Ora standard di Cuba", "LHST": "Ora standard di Lord Howe", "IST": "Ora standard dell’India", "HNT": "Ora standard di Terranova", "HECU": "Ora legale di Cuba", "MDT": "MDT", "OEZ": "Ora standard dell’Europa orientale", "ART": "Ora standard dell’Argentina", "SGT": "Ora di Singapore", "CHAST": "Ora standard delle Chatham", "MST": "MST", "ChST": "Ora di Chamorro", "BT": "Ora del Bhutan", "ACWDT": "Ora legale dell’Australia centroccidentale", "WART": "Ora standard dell’Argentina occidentale", "AEDT": "Ora legale dell’Australia orientale", "HKST": "Ora legale di Hong Kong", "ACDT": "Ora legale dell’Australia centrale", "WESZ": "Ora legale dell’Europa occidentale", "HEPMX": "Ora legale del Pacifico (Messico)", "CHADT": "Ora legale delle Chatham", "HEPM": "Ora legale di Saint-Pierre e Miquelon", "MESZ": "Ora legale dell’Europa centrale", "WITA": "Ora dell’Indonesia centrale", "ARST": "Ora legale dell’Argentina", "HAT": "Ora legale di Terranova", "WIT": "Ora dell’Indonesia orientale", "HEEG": "Ora legale della Groenlandia orientale", "WIB": "Ora dell’Indonesia occidentale", "AWDT": "Ora legale dell’Australia occidentale", "HNNOMX": "Ora standard del Messico nord-occidentale", "AEST": "Ora standard dell’Australia orientale", "WAST": "Ora legale dell’Africa occidentale", "CLT": "Ora standard del Cile", "MYT": "Ora della Malesia", "OESZ": "Ora legale dell’Europa orientale", "JDT": "Ora legale del Giappone", "HEOG": "Ora legale della Groenlandia occidentale", "SAST": "Ora dell’Africa meridionale", "WAT": "Ora standard dell’Africa occidentale", "HNEG": "Ora standard della Groenlandia orientale", "UYT": "Ora standard dell’Uruguay", "HAST": "Ora standard delle Isole Hawaii-Aleutine", "HADT": "Ora legale delle Isole Hawaii-Aleutine", "NZDT": "Ora legale della Nuova Zelanda", "TMST": "Ora legale del Turkmenistan", "GMT": "Ora del meridiano di Greenwich", "HNPMX": "Ora standard del Pacifico (Messico)"},
 	}
 }
 
@@ -206,11 +206,26 @@ func (it *it_CH) WeekdaysWide() []string {
 	return it.daysWide
 }
 
+// Decimal returns the decimal point of number
+func (it *it_CH) Decimal() string {
+	return it.decimal
+}
+
+// Group returns the group of number
+func (it *it_CH) Group() string {
+	return it.group
+}
+
+// Group returns the minus sign of number
+func (it *it_CH) Minus() string {
+	return it.minus
+}
+
 // FmtNumber returns 'num' with digits/precision of 'v' for 'it_CH' and handles both Whole and Real numbers based on 'v'
 func (it *it_CH) FmtNumber(num float64, v uint64) string {
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
-	l := len(s) + 2 + 1*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + 2 + 3*len(s[:len(s)-int(v)-1])/3
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -225,7 +240,9 @@ func (it *it_CH) FmtNumber(num float64, v uint64) string {
 
 		if inWhole {
 			if count == 3 {
-				b = append(b, it.group[0])
+				for j := len(it.group) - 1; j >= 0; j-- {
+					b = append(b, it.group[j])
+				}
 				count = 1
 			} else {
 				count++
@@ -283,7 +300,7 @@ func (it *it_CH) FmtCurrency(num float64, v uint64, currency currency.Type) stri
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := it.currencies[currency]
-	l := len(s) + len(symbol) + 4 + 1*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 4 + 3*len(s[:len(s)-int(v)-1])/3
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -298,7 +315,9 @@ func (it *it_CH) FmtCurrency(num float64, v uint64, currency currency.Type) stri
 
 		if inWhole {
 			if count == 3 {
-				b = append(b, it.group[0])
+				for j := len(it.group) - 1; j >= 0; j-- {
+					b = append(b, it.group[j])
+				}
 				count = 1
 			} else {
 				count++
@@ -345,7 +364,7 @@ func (it *it_CH) FmtAccounting(num float64, v uint64, currency currency.Type) st
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := it.currencies[currency]
-	l := len(s) + len(symbol) + 4 + 1*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 4 + 3*len(s[:len(s)-int(v)-1])/3
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -360,7 +379,9 @@ func (it *it_CH) FmtAccounting(num float64, v uint64, currency currency.Type) st
 
 		if inWhole {
 			if count == 3 {
-				b = append(b, it.group[0])
+				for j := len(it.group) - 1; j >= 0; j-- {
+					b = append(b, it.group[j])
+				}
 				count = 1
 			} else {
 				count++
@@ -455,7 +476,7 @@ func (it *it_CH) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -474,7 +495,7 @@ func (it *it_CH) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -495,7 +516,7 @@ func (it *it_CH) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

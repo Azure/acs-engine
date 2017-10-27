@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"CC", "OC"},
 		erasNarrow:             []string{"C", "O"},
 		erasWide:               []string{"Cyn Crist", "Oed Crist"},
-		timezones:              map[string]string{"MEZ": "Amser Safonol Canolbarth Ewrop", "WARST": "Amser Haf Gorllewin Ariannin", "SRT": "Amser Suriname", "HENOMX": "Amser Haf Gogledd Orllewin Mecsico", "AEDT": "Amser Haf Dwyrain Awstralia", "GYT": "Amser Guyana", "CHAST": "Amser Safonol Chatham", "NZDT": "Amser Haf Seland Newydd", "ACWDT": "Amser Haf Canolbarth Gorllewin Awstralia", "MESZ": "Amser Haf Canolbarth Ewrop", "CLT": "Amser Safonol Chile", "ChST": "Amser Chamorro", "UYT": "Amser Safonol Uruguay", "AWST": "Amser Safonol Gorllewin Awstralia", "AWDT": "Amser Haf Gorllewin Awstralia", "HAST": "Amser Safonol Hawaii-Aleutian", "WAT": "Amser Safonol Gorllewin Affrica", "HNT": "Amser Safonol Newfoundland", "AKST": "Amser Safonol Alaska", "AST": "Amser Safonol Cefnfor yr Iwerydd", "ADT": "Amser Haf Cefnfor yr Iwerydd", "MST": "MST", "PST": "Amser Safonol Cefnfor Tawel Gogledd America", "OEZ": "Amser Safonol Dwyrain Ewrop", "WESZ": "Amser Haf Gorllewin Ewrop", "ACST": "Amser Safonol Canolbarth Awstralia", "AEST": "Amser Safonol Dwyrain Awstralia", "EAT": "Amser Dwyrain Affrica", "HNOG": "Amser Safonol Gorllewin yr Ynys Las", "EST": "Amser Safonol Dwyrain Gogledd America", "GFT": "Amser Guyane Ffrengig", "PDT": "Amser Haf Cefnfor Tawel Gogledd America", "ACDT": "Amser Haf Canolbarth Awstralia", "HNPM": "Amser Safonol Saint-Pierre-et-Miquelon", "CDT": "Amser Haf Canolbarth Gogledd America", "ECT": "Amser Ecuador", "HNPMX": "Amser Safonol Pasiffig Mecsico", "HNCU": "Amser Safonol Cuba", "CST": "Amser Safonol Canolbarth Gogledd America", "ACWST": "Amser Safonol Canolbarth Gorllewin Awstralia", "ARST": "Amser Haf Ariannin", "HEEG": "Amser Haf Dwyrain yr Ynys Las", "JDT": "Amser Haf Siapan", "CLST": "Amser Haf Chile", "ART": "Amser Safonol Ariannin", "COT": "Amser Safonol Colombia", "COST": "Amser Haf Colombia", "∅∅∅": "Amser Haf Brasília", "SGT": "Amser Singapore", "BOT": "Amser Bolivia", "WEZ": "Amser Safonol Gorllewin Ewrop", "LHST": "Amser Safonol yr Arglwydd Howe", "MDT": "MDT", "HAT": "Amser Haf Newfoundland", "WIT": "Amser Dwyrain Indonesia", "MYT": "Amser Malaysia", "WART": "Amser Safonol Gorllewin Ariannin", "HEOG": "Amser Haf Gorllewin yr Ynys Las", "TMT": "Amser Safonol Tyrcmenistan", "TMST": "Amser Haf Tyrcmenistan", "WITA": "Amser Canolbarth Indonesia", "HEPMX": "Amser Haf Pasiffig Mecsico", "LHDT": "Amser Haf yr Arglwydd Howe", "HECU": "Amser Haf Cuba", "CHADT": "Amser Haf Chatham", "IST": "Amser India", "WAST": "Amser Haf Gorllewin Affrica", "BT": "Amser Bhutan", "HEPM": "Amser Haf Saint-Pierre-et-Miquelon", "HADT": "Amser Haf Hawaii-Aleutian", "NZST": "Amser Safonol Seland Newydd", "OESZ": "Amser Haf Dwyrain Ewrop", "CAT": "Amser Canolbarth Affrica", "VET": "Amser Venezuela", "GMT": "Amser Safonol Greenwich", "HKT": "Amser Safonol Hong Kong", "AKDT": "Amser Haf Alaska", "UYST": "Amser Haf Uruguay", "WIB": "Amser Gorllewin Indonesia", "JST": "Amser Safonol Siapan", "EDT": "Amser Haf Dwyrain Gogledd America", "HKST": "Amser Haf Hong Kong", "HNNOMX": "Amser Safonol Gogledd Orllewin Mecsico", "HNEG": "Amser Safonol Dwyrain yr Ynys Las", "SAST": "Amser Safonol De Affrica"},
+		timezones:              map[string]string{"MYT": "Amser Malaysia", "UYST": "Amser Haf Uruguay", "HADT": "Amser Haf Hawaii-Aleutian", "WITA": "Amser Canolbarth Indonesia", "WARST": "Amser Haf Gorllewin Ariannin", "HEPM": "Amser Haf Saint-Pierre-et-Miquelon", "MST": "MST", "WAT": "Amser Safonol Gorllewin Affrica", "WIB": "Amser Gorllewin Indonesia", "ACWDT": "Amser Haf Canolbarth Gorllewin Awstralia", "AWST": "Amser Safonol Gorllewin Awstralia", "HENOMX": "Amser Haf Gogledd Orllewin Mecsico", "HKST": "Amser Haf Hong Kong", "GYT": "Amser Guyana", "PST": "Amser Safonol Cefnfor Tawel Gogledd America", "WART": "Amser Safonol Gorllewin Ariannin", "EST": "Amser Safonol Dwyrain Gogledd America", "WESZ": "Amser Haf Gorllewin Ewrop", "HAST": "Amser Safonol Hawaii-Aleutian", "CAT": "Amser Canolbarth Affrica", "GMT": "Amser Safonol Greenwich", "HECU": "Amser Haf Cuba", "ACWST": "Amser Safonol Canolbarth Gorllewin Awstralia", "UYT": "Amser Safonol Uruguay", "NZST": "Amser Safonol Seland Newydd", "LHST": "Amser Safonol yr Arglwydd Howe", "LHDT": "Amser Haf yr Arglwydd Howe", "SGT": "Amser Singapore", "CHAST": "Amser Safonol Chatham", "HNOG": "Amser Safonol Gorllewin yr Ynys Las", "SAST": "Amser Safonol De Affrica", "AEST": "Amser Safonol Dwyrain Awstralia", "ARST": "Amser Haf Ariannin", "HAT": "Amser Haf Newfoundland", "AKST": "Amser Safonol Alaska", "IST": "Amser India", "HEPMX": "Amser Haf Pasiffig Mecsico", "BOT": "Amser Bolivia", "HNNOMX": "Amser Safonol Gogledd Orllewin Mecsico", "ART": "Amser Safonol Ariannin", "WAST": "Amser Haf Gorllewin Affrica", "CLST": "Amser Haf Chile", "ACDT": "Amser Haf Canolbarth Awstralia", "∅∅∅": "Amser Haf Amazonas", "COST": "Amser Haf Colombia", "TMT": "Amser Safonol Tyrcmenistan", "ADT": "Amser Haf Cefnfor yr Iwerydd", "ECT": "Amser Ecuador", "CST": "Amser Safonol Canolbarth Gogledd America", "CDT": "Amser Haf Canolbarth Gogledd America", "AWDT": "Amser Haf Gorllewin Awstralia", "HNPMX": "Amser Safonol Pasiffig Mecsico", "HNCU": "Amser Safonol Cuba", "CHADT": "Amser Haf Chatham", "MDT": "MDT", "HNEG": "Amser Safonol Dwyrain yr Ynys Las", "AKDT": "Amser Haf Alaska", "PDT": "Amser Haf Cefnfor Tawel Gogledd America", "AST": "Amser Safonol Cefnfor yr Iwerydd", "CLT": "Amser Safonol Chile", "WEZ": "Amser Safonol Gorllewin Ewrop", "SRT": "Amser Suriname", "HEOG": "Amser Haf Gorllewin yr Ynys Las", "EAT": "Amser Dwyrain Affrica", "HKT": "Amser Safonol Hong Kong", "NZDT": "Amser Haf Seland Newydd", "OESZ": "Amser Haf Dwyrain Ewrop", "MESZ": "Amser Haf Canolbarth Ewrop", "ACST": "Amser Safonol Canolbarth Awstralia", "ChST": "Amser Chamorro", "WIT": "Amser Dwyrain Indonesia", "MEZ": "Amser Safonol Canolbarth Ewrop", "OEZ": "Amser Safonol Dwyrain Ewrop", "VET": "Amser Venezuela", "HEEG": "Amser Haf Dwyrain yr Ynys Las", "COT": "Amser Safonol Colombia", "EDT": "Amser Haf Dwyrain Gogledd America", "BT": "Amser Bhutan", "GFT": "Amser Guyane Ffrengig", "JST": "Amser Safonol Siapan", "JDT": "Amser Haf Siapan", "AEDT": "Amser Haf Dwyrain Awstralia", "HNT": "Amser Safonol Newfoundland", "HNPM": "Amser Safonol Saint-Pierre-et-Miquelon", "TMST": "Amser Haf Tyrcmenistan"},
 	}
 }
 
@@ -253,6 +253,21 @@ func (cy *cy_GB) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (cy *cy_GB) WeekdaysWide() []string {
 	return cy.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (cy *cy_GB) Decimal() string {
+	return cy.decimal
+}
+
+// Group returns the group of number
+func (cy *cy_GB) Group() string {
+	return cy.group
+}
+
+// Group returns the minus sign of number
+func (cy *cy_GB) Minus() string {
+	return cy.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'cy_GB' and handles both Whole and Real numbers based on 'v'
@@ -496,7 +511,7 @@ func (cy *cy_GB) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -515,7 +530,7 @@ func (cy *cy_GB) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -536,7 +551,7 @@ func (cy *cy_GB) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
