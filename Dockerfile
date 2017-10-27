@@ -26,7 +26,7 @@ RUN curl "https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_V
     && chmod +x /usr/local/bin/kubectl
 
 ENV GOPATH /gopath
-ENV PATH "${PATH}:${GOPATH}/bin"
+ENV PATH "${PATH}:${GOPATH}/bin:/usr/local/go/bin"
 
 RUN git clone https://github.com/akesterson/cmdarg.git /tmp/cmdarg \
     && cd /tmp/cmdarg && make install && rm -rf /tmp/cmdarg
