@@ -169,7 +169,7 @@ var KubeConfigs = map[string]map[string]string{
 		"dnsmasq":         "k8s-dns-dnsmasq-nanny-amd64:1.14.4",
 		"pause":           "pause-amd64:3.0",
 		"tiller":          DefaultTillerImage,
-		"windowszip":      "v1.7.2intwinnat.zip",
+		"windowszip":      "v1.7.4-1intwinnat.zip",
 		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
