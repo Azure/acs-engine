@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"ق.م.", "م."},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"", ""},
-		timezones:              map[string]string{"JST": "Yaponiya standart vaqti", "WAT": "Gʻarbiy Afrika standart vaqti", "HEPM": "Sen-Pyer va Mikelon yozgi vaqti", "HNCU": "Kuba standart vaqti", "BOT": "Boliviya vaqti", "LHST": "Lord-Xau standart vaqti", "HECU": "Kuba yozgi vaqti", "CAT": "Markaziy Afrika vaqti", "ACWDT": "Markaziy Avstraliya g‘arbiy yozgi vaqti", "OESZ": "Sharqiy Yevropa yozgi vaqti", "MDT": "MDT", "COST": "Kolumbiya yozgi vaqti", "HNPM": "Sen-Pyer va Mikelon standart vaqti", "COT": "Kolumbiya standart vaqti", "ChST": "Chamorro standart vaqti", "AKDT": "Alyaska yozgi vaqti", "AEST": "Sharqiy Avstraliya standart vaqti", "NZST": "Yangi Zelandiya standart vaqti", "HEOG": "G‘arbiy Grenlandiya yozgi vaqti", "ADT": "Atlantika yozgi vaqti", "ACDT": "Markaziy Avstraliya yozgi vaqti", "HEEG": "Sharqiy Grenlandiya yozgi vaqti", "AKST": "Alyaska standart vaqti", "SAST": "Janubiy Afrika standart vaqti", "GYT": "Gayana vaqti", "AWST": "G‘arbiy Avstraliya standart vaqti", "SGT": "Singapur vaqti", "OEZ": "Sharqiy Yevropa standart vaqti", "EAT": "Sharqiy Afrika vaqti", "HNEG": "Sharqiy Grenlandiya standart vaqti", "WART": "Gʻarbiy Argentina standart vaqti", "CLT": "Chili standart vaqti", "HNNOMX": "Shimoli-g‘arbiy Meksika standart vaqti", "HAST": "Gavayi-aleut standart vaqti", "HNOG": "G‘arbiy Grenlandiya standart vaqti", "ARST": "Argentina yozgi vaqti", "WAST": "Gʻarbiy Afrika yozgi vaqti", "HKT": "Gonkong standart vaqti", "BT": "Butan vaqti", "HNPMX": "Meksika Tinch okeani standart vaqti", "WEZ": "G‘arbiy Yevropa standart vaqti", "EST": "Sharqiy Amerika standart vaqti", "UYST": "Urugvay yozgi vaqti", "SRT": "Surinam vaqti", "CST": "Markaziy Amerika standart vaqti", "HEPMX": "Meksika Tinch okeani yozgi vaqti", "AWDT": "G‘arbiy Avstraliya yozgi vaqti", "ACWST": "Markaziy Avstraliya g‘arbiy standart vaqti", "AST": "Atlantika standart vaqti", "GMT": "Grinvich o‘rtacha vaqti", "TMST": "Turkmaniston yozgi vaqti", "EDT": "Sharqiy Amerika yozgi vaqti", "UYT": "Urugvay standart vaqti", "ECT": "Ekvador vaqti", "TMT": "Turkmaniston standart vaqti", "MST": "MST", "HADT": "Gavayi-aleut yozgi vaqti", "CLST": "Chili yozgi vaqti", "HENOMX": "Shimoli-g‘arbiy Meksika yozgi vaqti", "HNT": "Nyufaundlend standart vaqti", "HAT": "Nyufaundlend yozgi vaqti", "WIB": "Gʻarbiy Indoneziya vaqti", "PDT": "Tinch okeani yozgi vaqti", "CDT": "Markaziy Amerika yozgi vaqti", "CHAST": "Chatem standart vaqti", "NZDT": "Yangi Zelandiya yozgi vaqti", "VET": "Venesuela vaqti", "WARST": "Gʻarbiy Argentina yozgi vaqti", "WESZ": "G‘arbiy Yevropa yozgi vaqti", "HKST": "Gonkong yozgi vaqti", "GFT": "Fransuz Gvianasi vaqti", "WITA": "Markaziy Indoneziya vaqti", "LHDT": "Lord-Xau yozgi vaqti", "WIT": "Sharqiy Indoneziya vaqti", "CHADT": "Chatem yozgi vaqti", "∅∅∅": "Amazonka yozgi vaqti", "MYT": "Malayziya vaqti", "ART": "Argentina standart vaqti", "PST": "Tinch okeani standart vaqti", "IST": "Hindiston vaqti", "MEZ": "Markaziy Yevropa standart vaqti", "MESZ": "Markaziy Yevropa yozgi vaqti", "JDT": "Yaponiya yozgi vaqti", "ACST": "Markaziy Avstraliya standart vaqti", "AEDT": "Sharqiy Avstraliya yozgi vaqti"},
+		timezones:              map[string]string{"LHST": "Lord-Xau standart vaqti", "HNOG": "G‘arbiy Grenlandiya standart vaqti", "PDT": "Tinch okeani yozgi vaqti", "CDT": "Markaziy Amerika yozgi vaqti", "AWST": "G‘arbiy Avstraliya standart vaqti", "AWDT": "G‘arbiy Avstraliya yozgi vaqti", "HAST": "Gavayi-aleut standart vaqti", "TMT": "Turkmaniston standart vaqti", "HECU": "Kuba yozgi vaqti", "ACST": "Markaziy Avstraliya standart vaqti", "WIB": "Gʻarbiy Indoneziya vaqti", "WAT": "Gʻarbiy Afrika standart vaqti", "BOT": "Boliviya vaqti", "JST": "Yaponiya standart vaqti", "OEZ": "Sharqiy Yevropa standart vaqti", "ADT": "Atlantika yozgi vaqti", "ARST": "Argentina yozgi vaqti", "EST": "Sharqiy Amerika standart vaqti", "UYT": "Urugvay standart vaqti", "TMST": "Turkmaniston yozgi vaqti", "HNT": "Nyufaundlend standart vaqti", "ECT": "Ekvador vaqti", "CHADT": "Chatem yozgi vaqti", "ChST": "Chamorro standart vaqti", "NZST": "Yangi Zelandiya standart vaqti", "NZDT": "Yangi Zelandiya yozgi vaqti", "HNNOMX": "Shimoli-g‘arbiy Meksika standart vaqti", "HENOMX": "Shimoli-g‘arbiy Meksika yozgi vaqti", "AEST": "Sharqiy Avstraliya standart vaqti", "AKST": "Alyaska standart vaqti", "CAT": "Markaziy Afrika vaqti", "HNCU": "Kuba standart vaqti", "MESZ": "Markaziy Yevropa yozgi vaqti", "JDT": "Yaponiya yozgi vaqti", "VET": "Venesuela vaqti", "IST": "Hindiston vaqti", "COST": "Kolumbiya yozgi vaqti", "AST": "Atlantika standart vaqti", "GYT": "Gayana vaqti", "CHAST": "Chatem standart vaqti", "HADT": "Gavayi-aleut yozgi vaqti", "EAT": "Sharqiy Afrika vaqti", "SAST": "Janubiy Afrika standart vaqti", "CLST": "Chili yozgi vaqti", "GFT": "Fransuz Gvianasi vaqti", "PST": "Tinch okeani standart vaqti", "HEPM": "Sen-Pyer va Mikelon yozgi vaqti", "AEDT": "Sharqiy Avstraliya yozgi vaqti", "HEOG": "G‘arbiy Grenlandiya yozgi vaqti", "WAST": "Gʻarbiy Afrika yozgi vaqti", "HAT": "Nyufaundlend yozgi vaqti", "CLT": "Chili standart vaqti", "HKT": "Gonkong standart vaqti", "HKST": "Gonkong yozgi vaqti", "COT": "Kolumbiya standart vaqti", "BT": "Butan vaqti", "CST": "Markaziy Amerika standart vaqti", "∅∅∅": "∅∅∅", "WITA": "Markaziy Indoneziya vaqti", "ART": "Argentina standart vaqti", "EDT": "Sharqiy Amerika yozgi vaqti", "GMT": "Grinvich o‘rtacha vaqti", "ACWST": "Markaziy Avstraliya g‘arbiy standart vaqti", "UYST": "Urugvay yozgi vaqti", "LHDT": "Lord-Xau yozgi vaqti", "WART": "Gʻarbiy Argentina standart vaqti", "ACDT": "Markaziy Avstraliya yozgi vaqti", "WEZ": "G‘arbiy Yevropa standart vaqti", "SGT": "Singapur vaqti", "HNPMX": "Meksika Tinch okeani standart vaqti", "MDT": "MDT", "MYT": "Malayziya vaqti", "WARST": "Gʻarbiy Argentina yozgi vaqti", "HNEG": "Sharqiy Grenlandiya standart vaqti", "HEEG": "Sharqiy Grenlandiya yozgi vaqti", "HEPMX": "Meksika Tinch okeani yozgi vaqti", "HNPM": "Sen-Pyer va Mikelon standart vaqti", "MST": "MST", "WIT": "Sharqiy Indoneziya vaqti", "MEZ": "Markaziy Yevropa standart vaqti", "WESZ": "G‘arbiy Yevropa yozgi vaqti", "SRT": "Surinam vaqti", "ACWDT": "Markaziy Avstraliya g‘arbiy yozgi vaqti", "OESZ": "Sharqiy Yevropa yozgi vaqti", "AKDT": "Alyaska yozgi vaqti"},
 	}
 }
 
@@ -196,6 +196,21 @@ func (uz *uz_Arab) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (uz *uz_Arab) WeekdaysWide() []string {
 	return uz.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (uz *uz_Arab) Decimal() string {
+	return uz.decimal
+}
+
+// Group returns the group of number
+func (uz *uz_Arab) Group() string {
+	return uz.group
+}
+
+// Group returns the minus sign of number
+func (uz *uz_Arab) Minus() string {
+	return uz.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'uz_Arab' and handles both Whole and Real numbers based on 'v'
@@ -414,7 +429,7 @@ func (uz *uz_Arab) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2f}...)
@@ -438,7 +453,7 @@ func (uz *uz_Arab) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -457,7 +472,7 @@ func (uz *uz_Arab) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -471,7 +486,7 @@ func (uz *uz_Arab) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x20, 0xd9, 0x86, 0xda, 0x86, 0xdb, 0x8c, 0x20, 0xdb, 0x8c, 0xdb, 0x8c, 0xd9, 0x84, 0x20}...)

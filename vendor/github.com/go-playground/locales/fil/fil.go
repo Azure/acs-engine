@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"BC", "AD"},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"BC", "AD"},
-		timezones:              map[string]string{"HENOMX": "Daylight Time sa Hilagang-kanlurang Mexico", "ACDT": "Daylight Time ng Gitnang Australya", "∅∅∅": "∅∅∅", "JDT": "Daylight Time sa Japan", "MST": "MST", "HKT": "Standard na Oras sa Hong Kong", "EDT": "Eastern Daylight Time", "AKST": "Standard na Oras sa Alaska", "CLT": "Standard na Oras sa Chile", "TMST": "Oras sa Tag-init ng Turkmenistan", "WIB": "Oras ng Kanlurang Indonesiya", "MESZ": "Oras sa Tag-init ng Gitnang Europe", "ART": "Standard na Oras sa Argentina", "BT": "Oras sa Bhutan", "HNT": "Standard na Oras sa Newfoundland", "LHDT": "Daylight Time sa Lorde Howe", "HKST": "Oras sa Tag-init ng Hong Kong", "EST": "Eastern na Standard na Oras", "HEEG": "Oras sa Tag-init ng Silangang Greenland", "PST": "Standard na Oras sa Pasipiko", "HNPM": "Standard na Oras sa Saint Pierre and Miquelon", "EAT": "Oras sa Silangang Africa", "CHADT": "Daylight Time sa Chatham", "ADT": "Daylight Time sa Atlantiko", "WAT": "Standard na Oras sa Kanlurang Africa", "AEST": "Standard Time ng Silangang Australya", "HNOG": "Standard na Oras sa Kanlurang Greenland", "TMT": "Standard na Oras sa Turkmenistan", "WAST": "Oras sa Tag-init ng Kanlurang Africa", "HAT": "Daylight Time sa Newfoundland", "HNCU": "Standard na Oras sa Cuba", "UYT": "Standard na Oras sa Uruguay", "CST": "Sentral na Karaniwang Oras", "NZDT": "Daylight Time sa New Zealand", "IST": "Standard na Oras sa Bhutan", "JST": "Standard na Oras sa Japan", "MDT": "MDT", "ACST": "Standard Time ng Gitnang Australya", "AKDT": "Daylight Time sa Alaska", "BOT": "Oras sa Bolivia", "HAST": "Standard na Oras sa Hawaii-Aleutian", "GMT": "Greenwich Mean Time", "WART": "Standard na Oras sa Kanlurang Argentina", "AST": "Standard na Oras sa Atlantiko", "SRT": "Oras sa Suriname", "GYT": "Oras sa Guyana", "AWST": "Standard Time ng Kanlurang Australya", "HADT": "Oras sa Tag-init ng Hawaii-Aleutian", "HNNOMX": "Standard na Oras sa Hilagang-kanlurang Mexico", "HNPMX": "Standard na Oras sa Pasipiko ng Mexico", "SGT": "Standard na Oras sa Singapore", "GFT": "Oras sa French Guiana", "WITA": "Oras ng Gitnang Indonesiya", "NZST": "Standard na Oras sa New Zealand", "ARST": "Oras sa Tag-init ng Argentina", "COST": "Oras sa Tag-init ng Colombia", "HNEG": "Standard na Oras sa Silangang Greenland", "ACWDT": "Daylight Time ng Gitnang Kanluran ng Australya", "CLST": "Oras sa Tag-init ng Chile", "HEOG": "Oras sa Tag-init ng Kanlurang Greenland", "HECU": "Daylight Time sa Cuba", "CDT": "Sentral na Daylight Time", "ECT": "Oras sa Ecuador", "LHST": "Standard na Oras sa Lord Howe", "PDT": "Daylight Time sa Pasipiko", "MEZ": "Standard na Oras sa Gitnang Europe", "WEZ": "Standard na Oras sa Kanlurang Europe", "MYT": "Oras ng Malaysia", "COT": "Standard na Oras sa Colombia", "AEDT": "Daylight Time ng Silangang Australya", "HEPMX": "Daylight Time sa Pasipiko ng Mexico", "WARST": "Oras sa Tag-init ng Kanlurang Argentina", "AWDT": "Daylight Time sa Kanlurang Australya", "OESZ": "Oras sa Tag-init ng Silangang Europe", "CAT": "Oras sa Gitnang Africa", "VET": "Oras sa Venezuela", "WESZ": "Oras sa Tag-init ng Kanlurang Europe", "HEPM": "Daylight Time sa Saint Pierre and Miquelon", "CHAST": "Standard na Oras sa Chatham", "ACWST": "Standard Time ng Gitnang Kanluran ng Australya", "WIT": "Oras ng Silangang Indonesiya", "OEZ": "Standard na Oras sa Silangang Europe", "ChST": "Standard na Oras sa Chamorro", "UYST": "Oras sa Tag-init ng Uruguay", "SAST": "Oras sa Timog Africa"},
+		timezones:              map[string]string{"AST": "Standard na Oras sa Atlantiko", "EAT": "Oras sa Silangang Africa", "HKT": "Standard na Oras sa Hong Kong", "JDT": "Daylight Time sa Japan", "WAT": "Standard na Oras sa Kanlurang Africa", "AKDT": "Daylight Time sa Alaska", "CHAST": "Standard na Oras sa Chatham", "ACWST": "Standard Time ng Gitnang Kanluran ng Australya", "SAST": "Oras sa Timog Africa", "MDT": "Daylight Time sa Bundok", "COT": "Standard na Oras sa Colombia", "MYT": "Oras ng Malaysia", "WARST": "Oras sa Tag-init ng Kanlurang Argentina", "ChST": "Standard na Oras sa Chamorro", "AWDT": "Daylight Time sa Kanlurang Australya", "HNOG": "Standard na Oras sa Kanlurang Greenland", "EDT": "Eastern Daylight Time", "CAT": "Oras sa Gitnang Africa", "HENOMX": "Daylight Time sa Hilagang-kanlurang Mexico", "JST": "Standard na Oras sa Japan", "HEOG": "Oras sa Tag-init ng Kanlurang Greenland", "ACDT": "Daylight Time ng Gitnang Australya", "SGT": "Standard na Oras sa Singapore", "CST": "Sentral na Karaniwang Oras", "ACWDT": "Daylight Time ng Gitnang Kanluran ng Australya", "VET": "Oras sa Venezuela", "ADT": "Daylight Time sa Atlantiko", "HAT": "Daylight Time sa Newfoundland", "WEZ": "Standard na Oras sa Kanlurang Europe", "WESZ": "Oras sa Tag-init ng Kanlurang Europe", "HEPM": "Daylight Time sa Saint Pierre and Miquelon", "NZDT": "Daylight Time sa New Zealand", "LHST": "Standard na Oras sa Lord Howe", "∅∅∅": "Oras sa Tag-init ng Azores", "CLT": "Standard na Oras sa Chile", "EST": "Eastern na Standard na Oras", "CHADT": "Daylight Time sa Chatham", "WIT": "Oras ng Silangang Indonesiya", "LHDT": "Daylight Time sa Lorde Howe", "CDT": "Sentral na Daylight Time", "NZST": "Standard na Oras sa New Zealand", "AEST": "Standard Time ng Silangang Australya", "HNEG": "Standard na Oras sa Silangang Greenland", "GFT": "Oras sa French Guiana", "HNT": "Standard na Oras sa Newfoundland", "HKST": "Oras sa Tag-init ng Hong Kong", "HEPMX": "Daylight Time sa Pasipiko ng Mexico", "HECU": "Daylight Time sa Cuba", "HAST": "Standard na Oras sa Hawaii-Aleutian", "HNNOMX": "Standard na Oras sa Hilagang-kanlurang Mexico", "HADT": "Oras sa Tag-init ng Hawaii-Aleutian", "HEEG": "Oras sa Tag-init ng Silangang Greenland", "CLST": "Oras sa Tag-init ng Chile", "AKST": "Standard na Oras sa Alaska", "GMT": "Greenwich Mean Time", "SRT": "Oras sa Suriname", "UYST": "Oras sa Tag-init ng Uruguay", "AEDT": "Daylight Time ng Silangang Australya", "OESZ": "Oras sa Tag-init ng Silangang Europe", "HNPMX": "Standard na Oras sa Pasipiko ng Mexico", "HNPM": "Standard na Oras sa Saint Pierre and Miquelon", "BOT": "Oras sa Bolivia", "WITA": "Oras ng Gitnang Indonesiya", "ARST": "Oras sa Tag-init ng Argentina", "WAST": "Oras sa Tag-init ng Kanlurang Africa", "HNCU": "Standard na Oras sa Cuba", "TMT": "Standard na Oras sa Turkmenistan", "TMST": "Oras sa Tag-init ng Turkmenistan", "ART": "Standard na Oras sa Argentina", "MST": "Karaniwang Oras sa Bundok", "GYT": "Oras sa Guyana", "PST": "Standard na Oras sa Pasipiko", "OEZ": "Standard na Oras sa Silangang Europe", "IST": "Standard na Oras sa Bhutan", "WIB": "Oras ng Kanlurang Indonesiya", "UYT": "Standard na Oras sa Uruguay", "MESZ": "Oras sa Tag-init ng Gitnang Europe", "WART": "Standard na Oras sa Kanlurang Argentina", "ACST": "Standard Time ng Gitnang Australya", "ECT": "Oras sa Ecuador", "PDT": "Daylight Time sa Pasipiko", "BT": "Oras sa Bhutan", "AWST": "Standard Time ng Kanlurang Australya", "MEZ": "Standard na Oras sa Gitnang Europe", "COST": "Oras sa Tag-init ng Colombia"},
 	}
 }
 
@@ -209,6 +209,21 @@ func (fil *fil) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (fil *fil) WeekdaysWide() []string {
 	return fil.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (fil *fil) Decimal() string {
+	return fil.decimal
+}
+
+// Group returns the group of number
+func (fil *fil) Group() string {
+	return fil.group
+}
+
+// Group returns the minus sign of number
+func (fil *fil) Minus() string {
+	return fil.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'fil' and handles both Whole and Real numbers based on 'v'
@@ -442,7 +457,7 @@ func (fil *fil) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -461,7 +476,7 @@ func (fil *fil) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -482,7 +497,7 @@ func (fil *fil) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

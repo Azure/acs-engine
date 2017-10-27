@@ -60,7 +60,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"क्रिस्तपूर्व", "क्रिस्तशखा"},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"", ""},
-		timezones:              map[string]string{"UYST": "UYST", "SGT": "SGT", "GMT": "GMT", "ARST": "ARST", "COT": "COT", "HNNOMX": "HNNOMX", "ChST": "ChST", "PST": "PST", "PDT": "PDT", "∅∅∅": "∅∅∅", "MESZ": "MESZ", "TMST": "TMST", "BT": "BT", "WITA": "WITA", "MEZ": "MEZ", "ADT": "ADT", "MST": "MST", "EDT": "EDT", "GYT": "GYT", "ECT": "ECT", "ACWST": "ACWST", "NZDT": "NZDT", "JDT": "JDT", "MYT": "MYT", "HEOG": "HEOG", "ACST": "ACST", "LHDT": "LHDT", "WIT": "WIT", "JST": "JST", "MDT": "MDT", "WAST": "WAST", "HKST": "HKST", "ACDT": "ACDT", "HNEG": "HNEG", "HNPMX": "HNPMX", "HNPM": "HNPM", "WESZ": "WESZ", "ART": "ART", "HNT": "HNT", "AKST": "AKST", "ACWDT": "ACWDT", "WARST": "WARST", "HAT": "HAT", "HEPM": "HEPM", "SAST": "SAST", "SRT": "SRT", "HNCU": "HNCU", "HECU": "HECU", "IST": "भारतीय समय", "WEZ": "WEZ", "UYT": "UYT", "CST": "CST", "AWST": "AWST", "CHAST": "CHAST", "CAT": "CAT", "HENOMX": "HENOMX", "HEEG": "HEEG", "GFT": "GFT", "AKDT": "AKDT", "AEDT": "AEDT", "LHST": "LHST", "AWDT": "AWDT", "CHADT": "CHADT", "HAST": "HAST", "VET": "VET", "HNOG": "HNOG", "AST": "AST", "OEZ": "OEZ", "OESZ": "OESZ", "WART": "WART", "CLST": "CLST", "EST": "EST", "AEST": "AEST", "TMT": "TMT", "WAT": "WAT", "HKT": "HKT", "COST": "COST", "CDT": "CDT", "BOT": "BOT", "HADT": "HADT", "NZST": "NZST", "CLT": "CLT", "HEPMX": "HEPMX", "EAT": "EAT", "WIB": "WIB"},
+		timezones:              map[string]string{"SAST": "SAST", "CHAST": "CHAST", "BOT": "BOT", "WIT": "WIT", "VET": "VET", "HENOMX": "HENOMX", "IST": "भारतीय समय", "WAST": "WAST", "HKST": "HKST", "WIB": "WIB", "MST": "MST", "AST": "AST", "PST": "PST", "PDT": "PDT", "UYST": "UYST", "HNEG": "HNEG", "ACDT": "ACDT", "JDT": "JDT", "GYT": "GYT", "HNCU": "HNCU", "JST": "JST", "TMT": "TMT", "OEZ": "OEZ", "HNOG": "HNOG", "HEEG": "HEEG", "UYT": "UYT", "ACWST": "ACWST", "EDT": "EDT", "HNPM": "HNPM", "MYT": "MYT", "HAT": "HAT", "ECT": "ECT", "AKST": "AKST", "CDT": "CDT", "ARST": "ARST", "HEOG": "HEOG", "ADT": "ADT", "HNT": "HNT", "NZST": "NZST", "GMT": "GMT", "MDT": "MDT", "HAST": "HAST", "WART": "WART", "AWDT": "AWDT", "MEZ": "MEZ", "COST": "COST", "AKDT": "AKDT", "CAT": "CAT", "ChST": "ChST", "AEST": "AEST", "HADT": "HADT", "TMST": "TMST", "HNNOMX": "HNNOMX", "OESZ": "OESZ", "CLT": "CLT", "EST": "EST", "HECU": "HECU", "ACWDT": "ACWDT", "LHST": "LHST", "EAT": "EAT", "HEPM": "HEPM", "BT": "BT", "AWST": "AWST", "HNPMX": "HNPMX", "CST": "CST", "MESZ": "MESZ", "WARST": "WARST", "ART": "ART", "CLST": "CLST", "∅∅∅": "∅∅∅", "SGT": "SGT", "WITA": "WITA", "WESZ": "WESZ", "SRT": "SRT", "NZDT": "NZDT", "LHDT": "LHDT", "AEDT": "AEDT", "HKT": "HKT", "COT": "COT", "GFT": "GFT", "CHADT": "CHADT", "WAT": "WAT", "ACST": "ACST", "WEZ": "WEZ", "HEPMX": "HEPMX"},
 	}
 }
 
@@ -169,11 +169,26 @@ func (kok *kok) WeekdaysWide() []string {
 	return kok.daysWide
 }
 
+// Decimal returns the decimal point of number
+func (kok *kok) Decimal() string {
+	return kok.decimal
+}
+
+// Group returns the group of number
+func (kok *kok) Group() string {
+	return kok.group
+}
+
+// Group returns the minus sign of number
+func (kok *kok) Minus() string {
+	return kok.minus
+}
+
 // FmtNumber returns 'num' with digits/precision of 'v' for 'kok' and handles both Whole and Real numbers based on 'v'
 func (kok *kok) FmtNumber(num float64, v uint64) string {
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
-	l := len(s) + 0 + 0*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + 0
 	count := 0
 	inWhole := v == 0
 	inSecondary := false
@@ -255,7 +270,7 @@ func (kok *kok) FmtCurrency(num float64, v uint64, currency currency.Type) strin
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := kok.currencies[currency]
-	l := len(s) + len(symbol) + 2 + 0*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 2
 	count := 0
 	inWhole := v == 0
 	inSecondary := false
@@ -326,7 +341,7 @@ func (kok *kok) FmtAccounting(num float64, v uint64, currency currency.Type) str
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := kok.currencies[currency]
-	l := len(s) + len(symbol) + 2 + 0*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 2
 	count := 0
 	inWhole := v == 0
 	inSecondary := false
@@ -445,7 +460,7 @@ func (kok *kok) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -464,7 +479,7 @@ func (kok *kok) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -485,7 +500,7 @@ func (kok *kok) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

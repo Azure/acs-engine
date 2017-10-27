@@ -52,7 +52,7 @@ func New() locales.Translator {
 		pluralsRange:           []locales.PluralRule{3, 4, 6},
 		decimal:                ",",
 		group:                  ".",
-		minus:                  "–",
+		minus:                  "−",
 		percent:                "%",
 		perMille:               "‰",
 		timeSeparator:          ":",
@@ -75,7 +75,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"pr. Kr.", "po Kr."},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"pred Kristusom", "po Kristusu"},
-		timezones:              map[string]string{"AWST": "Avstralski zahodni standardni čas", "JDT": "Japonski poletni čas", "GMT": "Greenwiški srednji čas", "OEZ": "Vzhodnoevropski standardni čas", "WITA": "Indonezijski osrednji čas", "LHST": "Standardni čas otoka Lord Howe", "HAST": "Havajski aleutski standardni čas", "HADT": "Havajski aleutski poletni čas", "ACWDT": "Avstralski centralni zahodni poletni čas", "MEZ": "Srednjeevropski standardni čas", "UYST": "Urugvajski poletni čas", "GYT": "Gvajanski čas", "IST": "Indijski standardni čas", "EST": "Vzhodni standardni čas", "COT": "Kolumbijski standardni čas", "ChST": "Čamorski standardni čas", "HNPM": "Standardni čas: Saint Pierre in Miquelon", "HEPM": "Poletni čas: Saint Pierre in Miquelon", "MESZ": "Srednjeevropski poletni čas", "WARST": "Argentinski zahodni poletni čas", "HNEG": "Vzhodnogrenlandski standardni čas", "SAST": "Južnoafriški čas", "HAT": "Novofundlandski poletni čas", "HEEG": "Vzhodnogrenlandski poletni čas", "BOT": "Bolivijski čas", "WESZ": "Zahodnoevropski poletni čas", "WAST": "Zahodnoafriški poletni čas", "EDT": "Vzhodni poletni čas", "ACST": "Avstralski centralni standardni čas", "HNT": "Novofundlandski standardni čas", "HECU": "Kubanski poletni čas", "CDT": "Centralni poletni čas", "AWDT": "Avstralski zahodni poletni čas", "CAT": "Centralnoafriški čas", "VET": "Venezuelski čas", "ACDT": "Avstralski centralni poletni čas", "UYT": "Urugvajski standardni čas", "LHDT": "Poletni čas otoka Lord Howe", "MYT": "Malezijski čas", "AST": "Atlantski standardni čas", "HENOMX": "mehiški severozahodni poletni čas", "NZDT": "Novozelandski poletni čas", "MDT": "MDT", "BT": "Butanski čas", "GFT": "Čas: Francoska Gvajana", "AKST": "Aljaški standardni čas", "HNPMX": "mehiški pacifiški standardni čas", "HNCU": "Kubanski standardni čas", "ACWST": "Avstralski centralni zahodni standardni čas", "HKST": "Hongkonški poletni čas", "CST": "Centralni standardni čas", "ECT": "Ekvadorski čas", "ART": "Argentinski standardni čas", "WAT": "Zahodnoafriški standardni čas", "AKDT": "Aljaški poletni čas", "HEPMX": "mehiški pacifiški poletni čas", "EAT": "Vzhodnoafriški čas", "PDT": "Pacifiški poletni čas", "NZST": "Novozelandski standardni čas", "∅∅∅": "Amazonski poletni čas", "ADT": "Atlantski poletni čas", "COST": "Kolumbijski poletni čas", "WIB": "Indonezijski zahodni čas", "CHAST": "Čatamski standardni čas", "HNOG": "Zahodnogrenlandski standardni čas", "HEOG": "Zahodnogrenlandski poletni čas", "OESZ": "Vzhodnoevropski poletni čas", "TMST": "Turkmenistanski poletni čas", "AEST": "Avstralski vzhodni standardni čas", "WIT": "Indonezijski vzhodni čas", "CHADT": "Čatamski poletni čas", "PST": "Pacifiški standardni čas", "CLST": "Čilski poletni čas", "TMT": "Turkmenistanski standardni čas", "HNNOMX": "mehiški severozahodni standardni čas", "AEDT": "Avstralski vzhodni poletni čas", "SGT": "Singapurski standardni čas", "WEZ": "Zahodnoevropski standardni čas", "MST": "MST", "ARST": "Argentinski poletni čas", "HKT": "Hongkonški standardni čas", "JST": "Japonski standardni čas", "WART": "Argentinski zahodni standardni čas", "CLT": "Čilski standardni čas", "SRT": "Surinamski čas"},
+		timezones:              map[string]string{"CAT": "Centralnoafriški čas", "SRT": "Surinamski čas", "ACWST": "Avstralski centralni zahodni standardni čas", "TMST": "Turkmenistanski poletni čas", "ARST": "Argentinski poletni čas", "HEEG": "Vzhodnogrenlandski poletni čas", "GMT": "Greenwiški srednji čas", "CHAST": "Čatamski standardni čas", "HNPM": "Standardni čas: Saint Pierre in Miquelon", "MDT": "MDT", "IST": "Indijski standardni čas", "AEST": "Avstralski vzhodni standardni čas", "HAT": "Novofundlandski poletni čas", "COST": "Kolumbijski poletni čas", "LHDT": "Poletni čas otoka Lord Howe", "WARST": "Argentinski zahodni poletni čas", "CLT": "Čilski standardni čas", "ACST": "Avstralski centralni standardni čas", "CDT": "Centralni poletni čas", "HENOMX": "mehiški severozahodni poletni čas", "WAT": "Zahodnoafriški standardni čas", "HKT": "Hongkonški standardni čas", "HEPMX": "mehiški pacifiški poletni čas", "CST": "Centralni standardni čas", "AWST": "Avstralski zahodni standardni čas", "MEZ": "Srednjeevropski standardni čas", "TMT": "Turkmenistanski standardni čas", "SAST": "Južnoafriški čas", "GYT": "Gvajanski čas", "ACDT": "Avstralski centralni poletni čas", "∅∅∅": "Amazonski poletni čas", "WEZ": "Zahodnoevropski standardni čas", "OEZ": "Vzhodnoevropski standardni čas", "HNNOMX": "mehiški severozahodni standardni čas", "HNT": "Novofundlandski standardni čas", "ChST": "Čamorski standardni čas", "HNPMX": "mehiški pacifiški standardni čas", "UYT": "Urugvajski standardni čas", "LHST": "Standardni čas otoka Lord Howe", "WART": "Argentinski zahodni standardni čas", "AST": "Atlantski standardni čas", "WIB": "Indonezijski zahodni čas", "HEPM": "Poletni čas: Saint Pierre in Miquelon", "BT": "Butanski čas", "OESZ": "Vzhodnoevropski poletni čas", "ART": "Argentinski standardni čas", "ECT": "Ekvadorski čas", "HNCU": "Kubanski standardni čas", "AWDT": "Avstralski zahodni poletni čas", "MESZ": "Srednjeevropski poletni čas", "EST": "Vzhodni standardni čas", "ACWDT": "Avstralski centralni zahodni poletni čas", "MYT": "Malezijski čas", "HADT": "Havajski aleutski poletni čas", "WITA": "Indonezijski osrednji čas", "JDT": "Japonski poletni čas", "HNEG": "Vzhodnogrenlandski standardni čas", "WESZ": "Zahodnoevropski poletni čas", "UYST": "Urugvajski poletni čas", "EAT": "Vzhodnoafriški čas", "COT": "Kolumbijski standardni čas", "WAST": "Zahodnoafriški poletni čas", "CLST": "Čilski poletni čas", "AKDT": "Aljaški poletni čas", "PDT": "Pacifiški poletni čas", "CHADT": "Čatamski poletni čas", "HECU": "Kubanski poletni čas", "ADT": "Atlantski poletni čas", "AEDT": "Avstralski vzhodni poletni čas", "EDT": "Vzhodni poletni čas", "SGT": "Singapurski standardni čas", "NZDT": "Novozelandski poletni čas", "JST": "Japonski standardni čas", "GFT": "Čas: Francoska Gvajana", "AKST": "Aljaški standardni čas", "MST": "MST", "WIT": "Indonezijski vzhodni čas", "HAST": "Havajski aleutski standardni čas", "VET": "Venezuelski čas", "HNOG": "Zahodnogrenlandski standardni čas", "PST": "Pacifiški standardni čas", "BOT": "Bolivijski čas", "NZST": "Novozelandski standardni čas", "HEOG": "Zahodnogrenlandski poletni čas", "HKST": "Hongkonški poletni čas"},
 	}
 }
 
@@ -232,6 +232,21 @@ func (sl *sl_SI) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (sl *sl_SI) WeekdaysWide() []string {
 	return sl.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (sl *sl_SI) Decimal() string {
+	return sl.decimal
+}
+
+// Group returns the group of number
+func (sl *sl_SI) Group() string {
+	return sl.group
+}
+
+// Group returns the minus sign of number
+func (sl *sl_SI) Minus() string {
+	return sl.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'sl_SI' and handles both Whole and Real numbers based on 'v'
@@ -474,7 +489,7 @@ func (sl *sl_SI) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -497,7 +512,7 @@ func (sl *sl_SI) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -523,7 +538,7 @@ func (sl *sl_SI) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

@@ -37,6 +37,13 @@
 - [#8857](https://github.com/influxdata/influxdb/pull/8857): Improve performance of Bloom Filter in TSI index.
 - [#8897](https://github.com/influxdata/influxdb/pull/8897): Add message pack format for query responses.
 - [#8886](https://github.com/influxdata/influxdb/pull/8886): Improved compaction scheduling
+- [#8690](https://github.com/influxdata/influxdb/issues/8690): Implicitly decide on a lower limit for fill queries when none is present.
+- [#8947](https://github.com/influxdata/influxdb/pull/8947): Add `EXPLAIN ANALYZE` command, which produces a detailed execution plan of a `SELECT` statement.
+- [#8963](https://github.com/influxdata/influxdb/pull/8963): Streaming inmem2tsi conversion.
+- [#8995](https://github.com/influxdata/influxdb/pull/8995): Sort & validate TSI key value insertion.
+- [#8968](https://github.com/influxdata/influxdb/issues/8968): Make client errors more helpful on downstream errs. Thanks @darkliquid!
+- [#8984](https://github.com/influxdata/influxdb/pull/8984): EXACT and estimated CARDINALITY queries.
+- [#8893](https://github.com/influxdata/influxdb/pull/8893): Handle nil MeasurementIterator.
 
 ### Bugfixes
 
@@ -72,6 +79,15 @@
 - [#8900](https://github.com/influxdata/influxdb/issues/8900): Don't assume `which` is present in package post-install script.
 - [#8908](https://github.com/influxdata/influxdb/issues/8908): Fix missing man pages in new packaging output
 - [#8909](https://github.com/influxdata/influxdb/issues/8909): Fix use of `INFLUXD_OPTS` in service file
+- [#8952](https://github.com/influxdata/influxdb/issues/8952): Fix WAL panic: runtime error: makeslice: cap out of range
+- [#8975](https://github.com/influxdata/influxdb/pull/8975): Copy returned bytes from TSI meta functions.
+- [#7797](https://github.com/influxdata/influxdb/issues/7706): Fix data deleted outside of time range
+- [#8822](https://github.com/influxdata/influxdb/issues/8822): Fix data dropped incorrectly during compaction
+- [#8780](https://github.com/influxdata/influxdb/issues/8780): Prevent deadlock during collectd, graphite, opentsdb, and udp shutdown.
+- [#8983](https://github.com/influxdata/influxdb/issues/8983): Remove the pidfile after the server has exited.
+- [#9005](https://github.com/influxdata/influxdb/pull/9005): Return `query.ErrQueryInterrupted` for successful read on `InterruptCh`.
+- [#8989](https://github.com/influxdata/influxdb/issues/8989): Fix race inside Measurement index.
+- [#8819](https://github.com/influxdata/influxdb/issues/8819): Ensure retention service always removes local shards.
 
 ## v1.3.4 [unreleased]
 
@@ -141,7 +157,7 @@ The following new configuration options are available.
 * `max-body-size` was added with a default of 25,000,000, but can be disabled by setting it to 0.
   Specifies the maximum size (in bytes) of a client request body. When a client sends data that exceeds
   the configured maximum size, a `413 Request Entity Too Large` HTTP response is returned.
-  
+
 #### `[continuous_queries]` Section
 
 * `query-stats-enabled` was added with a default of `false`. When set to `true`, continuous query execution statistics are written to the default monitor store.

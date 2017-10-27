@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"a.C.", "d.C."},
 		erasNarrow:             []string{"aC", "dC"},
 		erasWide:               []string{"avanti Cristo", "dopo Cristo"},
-		timezones:              map[string]string{"∅∅∅": "Ora legale dell’Amazzonia", "VET": "Ora del Venezuela", "WITA": "Ora dell’Indonesia centrale", "AKDT": "Ora legale dell’Alaska", "UYT": "Ora standard dell’Uruguay", "AWST": "Ora standard dell’Australia occidentale", "ACWST": "Ora standard dell’Australia centroccidentale", "JDT": "Ora legale del Giappone", "WART": "Ora standard dell’Argentina occidentale", "AST": "Ora standard dell’Atlantico", "HNT": "Ora standard di Terranova", "UYST": "Ora legale dell’Uruguay", "AWDT": "Ora legale dell’Australia occidentale", "JST": "Ora standard del Giappone", "GMT": "Ora del meridiano di Greenwich", "TMST": "Ora legale del Turkmenistan", "COST": "Ora legale della Colombia", "ChST": "Ora di Chamorro", "CDT": "Ora legale centrale USA", "HECU": "Ora legale di Cuba", "BOT": "Ora della Bolivia", "HAST": "Ora standard delle Isole Hawaii-Aleutine", "CLST": "Ora legale del Cile", "HKST": "Ora legale di Hong Kong", "COT": "Ora standard della Colombia", "AKST": "Ora standard dell’Alaska", "HEPM": "Ora legale di Saint-Pierre e Miquelon", "WAST": "Ora legale dell’Africa occidentale", "HNNOMX": "Ora standard del Messico nord-occidentale", "GFT": "Ora della Guiana francese", "ACWDT": "Ora legale dell’Australia centroccidentale", "BT": "Ora del Bhutan", "HNPM": "Ora standard di Saint-Pierre e Miquelon", "PST": "Ora standard del Pacifico USA", "IST": "Ora standard dell’India", "ADT": "Ora legale dell’Atlantico", "OEZ": "Ora standard dell’Europa orientale", "ARST": "Ora legale dell’Argentina", "HEEG": "Ora legale della Groenlandia orientale", "ECT": "Ora dell’Ecuador", "NZDT": "Ora legale della Nuova Zelanda", "MESZ": "Ora legale dell’Europa centrale", "CLT": "Ora standard del Cile", "WESZ": "Ora legale dell’Europa occidentale", "WAT": "Ora standard dell’Africa occidentale", "HNOG": "Ora standard della Groenlandia occidentale", "OESZ": "Ora legale dell’Europa orientale", "ACST": "Ora standard dell’Australia centrale", "CHAST": "Ora standard delle Chatham", "HEOG": "Ora legale della Groenlandia occidentale", "MST": "MST", "LHST": "Ora standard di Lord Howe", "HNCU": "Ora standard di Cuba", "PDT": "Ora legale del Pacifico USA", "WARST": "Ora legale dell’Argentina occidentale", "EST": "Ora standard orientale USA", "AEST": "Ora standard dell’Australia orientale", "HNPMX": "Ora standard del Pacifico (Messico)", "HKT": "Ora standard di Hong Kong", "ACDT": "Ora legale dell’Australia centrale", "NZST": "Ora standard della Nuova Zelanda", "WEZ": "Ora standard dell’Europa occidentale", "EDT": "Ora legale orientale USA", "HEPMX": "Ora legale del Pacifico (Messico)", "CST": "Ora standard centrale USA", "GYT": "Ora della Guyana", "EAT": "Ora dell’Africa orientale", "MEZ": "Ora standard dell’Europa centrale", "ART": "Ora standard dell’Argentina", "HAT": "Ora legale di Terranova", "HNEG": "Ora standard della Groenlandia orientale", "AEDT": "Ora legale dell’Australia orientale", "SRT": "Ora del Suriname", "WIB": "Ora dell’Indonesia occidentale", "WIT": "Ora dell’Indonesia orientale", "CHADT": "Ora legale delle Chatham", "SGT": "Ora di Singapore", "SAST": "Ora dell’Africa meridionale", "LHDT": "Ora legale di Lord Howe", "HADT": "Ora legale delle Isole Hawaii-Aleutine", "CAT": "Ora dell’Africa centrale", "MYT": "Ora della Malesia", "TMT": "Ora standard del Turkmenistan", "MDT": "MDT", "HENOMX": "Ora legale del Messico nord-occidentale"},
+		timezones:              map[string]string{"ACST": "Ora standard dell’Australia centrale", "MEZ": "Ora standard dell’Europa centrale", "HNOG": "Ora standard della Groenlandia occidentale", "ACWDT": "Ora legale dell’Australia centroccidentale", "UYT": "Ora standard dell’Uruguay", "WIT": "Ora dell’Indonesia orientale", "JST": "Ora standard del Giappone", "HNPMX": "Ora standard del Pacifico (Messico)", "PDT": "Ora legale del Pacifico USA", "VET": "Ora del Venezuela", "HEOG": "Ora legale della Groenlandia occidentale", "HNPM": "Ora standard di Saint-Pierre e Miquelon", "CST": "Ora standard centrale USA", "AEDT": "Ora legale dell’Australia orientale", "EDT": "Ora legale orientale USA", "WEZ": "Ora standard dell’Europa occidentale", "MDT": "MDT", "MESZ": "Ora legale dell’Europa centrale", "HEEG": "Ora legale della Groenlandia orientale", "HNT": "Ora standard di Terranova", "AKST": "Ora standard dell’Alaska", "HNCU": "Ora standard di Cuba", "MST": "MST", "UYST": "Ora legale dell’Uruguay", "HENOMX": "Ora legale del Messico nord-occidentale", "WAST": "Ora legale dell’Africa occidentale", "WART": "Ora standard dell’Argentina occidentale", "CLST": "Ora legale del Cile", "WESZ": "Ora legale dell’Europa occidentale", "GMT": "Ora del meridiano di Greenwich", "TMT": "Ora standard del Turkmenistan", "OEZ": "Ora standard dell’Europa orientale", "OESZ": "Ora legale dell’Europa orientale", "LHST": "Ora standard di Lord Howe", "GFT": "Ora della Guiana francese", "AST": "Ora standard dell’Atlantico", "HAT": "Ora legale di Terranova", "CAT": "Ora dell’Africa centrale", "WIB": "Ora dell’Indonesia occidentale", "SRT": "Ora del Suriname", "HAST": "Ora standard delle Isole Hawaii-Aleutine", "TMST": "Ora legale del Turkmenistan", "WITA": "Ora dell’Indonesia centrale", "CLT": "Ora standard del Cile", "ACDT": "Ora legale dell’Australia centrale", "PST": "Ora standard del Pacifico USA", "JDT": "Ora legale del Giappone", "HKST": "Ora legale di Hong Kong", "EST": "Ora standard orientale USA", "SAST": "Ora dell’Africa meridionale", "∅∅∅": "Ora legale dell’Amazzonia", "CHADT": "Ora legale delle Chatham", "AWST": "Ora standard dell’Australia occidentale", "HADT": "Ora legale delle Isole Hawaii-Aleutine", "NZDT": "Ora legale della Nuova Zelanda", "WARST": "Ora legale dell’Argentina occidentale", "GYT": "Ora della Guyana", "BOT": "Ora della Bolivia", "CDT": "Ora legale centrale USA", "MYT": "Ora della Malesia", "IST": "Ora standard dell’India", "ARST": "Ora legale dell’Argentina", "HNEG": "Ora standard della Groenlandia orientale", "ChST": "Ora di Chamorro", "HEPMX": "Ora legale del Pacifico (Messico)", "ADT": "Ora legale dell’Atlantico", "AEST": "Ora standard dell’Australia orientale", "COT": "Ora standard della Colombia", "HEPM": "Ora legale di Saint-Pierre e Miquelon", "NZST": "Ora standard della Nuova Zelanda", "WAT": "Ora standard dell’Africa occidentale", "AKDT": "Ora legale dell’Alaska", "SGT": "Ora di Singapore", "HECU": "Ora legale di Cuba", "ART": "Ora standard dell’Argentina", "ACWST": "Ora standard dell’Australia centroccidentale", "HNNOMX": "Ora standard del Messico nord-occidentale", "EAT": "Ora dell’Africa orientale", "COST": "Ora legale della Colombia", "ECT": "Ora dell’Ecuador", "CHAST": "Ora standard delle Chatham", "BT": "Ora del Bhutan", "AWDT": "Ora legale dell’Australia occidentale", "LHDT": "Ora legale di Lord Howe", "HKT": "Ora standard di Hong Kong"},
 	}
 }
 
@@ -204,6 +204,21 @@ func (it *it_IT) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (it *it_IT) WeekdaysWide() []string {
 	return it.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (it *it_IT) Decimal() string {
+	return it.decimal
+}
+
+// Group returns the group of number
+func (it *it_IT) Group() string {
+	return it.group
+}
+
+// Group returns the minus sign of number
+func (it *it_IT) Minus() string {
+	return it.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'it_IT' and handles both Whole and Real numbers based on 'v'
@@ -446,7 +461,7 @@ func (it *it_IT) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -465,7 +480,7 @@ func (it *it_IT) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -486,7 +501,7 @@ func (it *it_IT) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
