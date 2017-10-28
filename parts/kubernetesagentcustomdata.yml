@@ -108,7 +108,7 @@ write_files:
     DOCKER_OPTS=
     CUSTOM_CMD=/bin/true
     KUBELET_REGISTER_SCHEDULABLE=true
-    KUBELET_NODE_LABELS={{ GetAgentKubernetesLabels . "[resourceGroup().name]"}}
+    KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('resourceGroup'),'"}}
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
     KUBELET_NODE_STATUS_UPDATE_FREQUENCY={{WrapAsVariable "kubernetesNodeStatusUpdateFrequency"}}
     KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD={{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
