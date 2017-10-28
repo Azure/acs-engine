@@ -20,6 +20,7 @@ import (
 
 	//log "github.com/sirupsen/logrus"
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Masterminds/semver"
 	"github.com/ghodss/yaml"
@@ -903,7 +904,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add artifacts and addons
 			var artifiacts map[string]string
-			if profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 {
+			if profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 {
 				artifiacts = kubernetesAritfacts15
 			} else {
 				artifiacts = kubernetesAritfacts
@@ -914,7 +915,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 
 			var addonYamls map[string]string
-			if profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 {
+			if profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 {
 				addonYamls = kubernetesAddonYamls15
 			} else {
 				addonYamls = kubernetesAddonYamls
@@ -926,8 +927,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add calico manifests
 			if profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "calico" {
-				if profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 ||
-					profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot6Dot11 {
+				if profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
+					profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
 					calicoAddonYamls = calicoAddonYamls15
 				}
 				for placeholder, filename := range calicoAddonYamls {
@@ -947,7 +948,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add artifacts
 			var artifiacts map[string]string
-			if cs.Properties.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 {
+			if cs.Properties.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 {
 				artifiacts = kubernetesAritfacts15
 			} else {
 				artifiacts = kubernetesAritfacts

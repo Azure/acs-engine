@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/deployment"
@@ -61,7 +61,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion != "" {
 				Expect(version).To(MatchRegexp("v" + eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion))
 			} else {
-				Expect(version).To(Equal("v" + api.KubernetesDefaultVersion))
+				Expect(version).To(Equal("v" + common.KubernetesDefaultVersion))
 			}
 		})
 

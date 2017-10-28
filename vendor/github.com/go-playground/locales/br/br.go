@@ -73,7 +73,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"a-raok J.K.", "goude J.K."},
 		erasNarrow:             []string{"a-raok J.K.", "goude J.K."},
 		erasWide:               []string{"a-raok Jezuz-Krist", "goude Jezuz-Krist"},
-		timezones:              map[string]string{"WITA": "WITA", "∅∅∅": "eur hañv an Azorez", "HEOG": "eur hañv Greunland ar Cʼhornôg", "ARST": "eur hañv Arcʼhantina", "WAST": "eur hañv Afrika ar Cʼhornôg", "HKT": "eur cʼhoañv Hong Kong", "WART": "eur cʼhoañv Arcʼhantina ar Cʼhornôg", "WARST": "eur hañv Arcʼhantina ar Cʼhornôg", "CLST": "eur hañv Chile", "AST": "AST", "WEZ": "eur cʼhoañv Europa ar Cʼhornôg", "UYT": "eur cʼhoañv Uruguay", "HECU": "eur hañv Kuba", "CHAST": "eur cʼhoañv Chatham", "NZDT": "eur hañv Zeland-Nevez", "ART": "eur cʼhoañv Arcʼhantina", "CLT": "eur cʼhoañv Chile", "EDT": "eur hañv ar Reter", "HKST": "eur hañv Hong Kong", "HENOMX": "eur hañv Gwalarn Mecʼhiko", "HAT": "eur hañv Newfoundland", "HNCU": "eur cʼhoañv Kuba", "AWDT": "eur hañv Aostralia ar Cʼhornôg", "SGT": "eur cʼhoañv Singapour", "PDT": "PDT", "VET": "eur Venezuela", "OEZ": "eur cʼhoañv Europa ar Reter", "LHDT": "LHDT", "AWST": "eur cʼhoañv Aostralia ar Cʼhornôg", "HAST": "HAST", "MESZ": "eur hañv Kreizeuropa", "ADT": "ADT", "HNEG": "eur cʼhoañv Greunland ar Reter", "AKST": "eur cʼhoañv Alaska", "HEPMX": "HEPMX", "SRT": "eur Surinam", "BOT": "eur Bolivia", "TMST": "eur hañv Turkmenistan", "CST": "CST", "HNOG": "eur cʼhoañv Greunland ar Cʼhornôg", "COST": "eur hañv Kolombia", "MST": "eur cʼhoañv ar Menezioù", "GYT": "eur Guyana", "EAT": "eur Afrika ar Reter", "COT": "eur cʼhoañv Kolombia", "NZST": "eur cʼhoañv Zeland-Nevez", "GMT": "Amzer keitat Greenwich (AKG)", "ACDT": "eur hañv Kreizaostralia", "MDT": "eur hañv ar Menezioù", "WIT": "eur Indonezia ar Reter", "HADT": "HADT", "IST": "eur cʼhoañv India", "ACWST": "eur cʼhoañv Kreizaostralia ar Cʼhornôg", "HNNOMX": "eur cʼhoañv Gwalarn Mecʼhiko", "HNT": "eur cʼhoañv Newfoundland", "HEPM": "eur hañv Sant-Pêr-ha-Mikelon", "WIB": "eur Indonezia ar Cʼhornôg", "WESZ": "eur hañv Europa ar Cʼhornôg", "ACST": "eur cʼhoañv Kreizaostralia", "HEEG": "eur hañv Greunland ar Reter", "AKDT": "eur hañv Alaska", "AEST": "eur cʼhoañv Aostralia ar Reter", "SAST": "eur cʼhoañv Suafrika", "HNPMX": "HNPMX", "MYT": "eur Malaysia", "UYST": "eur hañv Uruguay", "CHADT": "eur hañv Chatham", "ACWDT": "eur hañv Kreizaostralia ar Cʼhornôg", "MEZ": "eur cʼhoañv Kreizeuropa", "OESZ": "eur hañv Europa ar Reter", "WAT": "eur cʼhoañv Afrika ar Cʼhornôg", "ChST": "ChST", "LHST": "LHST", "ECT": "eur Ecuador", "CAT": "eur Kreizafrika", "JDT": "eur hañv Japan", "GFT": "eur Gwiana cʼhall", "HNPM": "eur cʼhoañv Sant-Pêr-ha-Mikelon", "PST": "PST", "TMT": "eur cʼhoañv Turkmenistan", "AEDT": "eur hañv Aostralia ar Reter", "CDT": "CDT", "JST": "eur cʼhoañv Japan", "EST": "eur cʼhoañv ar Reter", "BT": "eur Bhoutan"},
+		timezones:              map[string]string{"WESZ": "eur hañv Europa ar Cʼhornôg", "ChST": "ChST", "HNPMX": "HNPMX", "UYT": "eur cʼhoañv Uruguay", "HNOG": "eur cʼhoañv Greunland ar Cʼhornôg", "CLT": "eur cʼhoañv Chile", "HAT": "eur hañv Newfoundland", "HNPM": "eur cʼhoañv Sant-Pêr-ha-Mikelon", "CST": "CST", "HNNOMX": "eur cʼhoañv Gwalarn Mecʼhiko", "OESZ": "eur hañv Europa ar Reter", "IST": "eur cʼhoañv India", "AEST": "eur cʼhoañv Aostralia ar Reter", "ADT": "ADT", "ART": "eur cʼhoañv Arcʼhantina", "CLST": "eur hañv Chile", "HKST": "eur hañv Hong Kong", "AKDT": "eur hañv Alaska", "HNCU": "eur cʼhoañv Kuba", "AST": "AST", "HNEG": "eur cʼhoañv Greunland ar Reter", "SAST": "eur cʼhoañv Suafrika", "WAT": "eur cʼhoañv Afrika ar Cʼhornôg", "EDT": "eur hañv ar Reter", "CAT": "eur Kreizafrika", "AWST": "eur cʼhoañv Aostralia ar Cʼhornôg", "NZDT": "eur hañv Zeland-Nevez", "HEOG": "eur hañv Greunland ar Cʼhornôg", "HEEG": "eur hañv Greunland ar Reter", "WIB": "eur Indonezia ar Cʼhornôg", "BOT": "eur Bolivia", "TMT": "eur cʼhoañv Turkmenistan", "MESZ": "eur hañv Kreizeuropa", "HEPMX": "HEPMX", "HEPM": "eur hañv Sant-Pêr-ha-Mikelon", "AWDT": "eur hañv Aostralia ar Cʼhornôg", "ARST": "eur hañv Arcʼhantina", "HECU": "eur hañv Kuba", "CDT": "CDT", "HADT": "HADT", "EAT": "eur Afrika ar Reter", "GFT": "eur Gwiana cʼhall", "WART": "eur cʼhoañv Arcʼhantina ar Cʼhornôg", "COT": "eur cʼhoañv Kolombia", "HKT": "eur cʼhoañv Hong Kong", "GYT": "eur Guyana", "SGT": "eur cʼhoañv Singapour", "MEZ": "eur cʼhoañv Kreizeuropa", "HENOMX": "eur hañv Gwalarn Mecʼhiko", "OEZ": "eur cʼhoañv Europa ar Reter", "LHDT": "LHDT", "WEZ": "eur cʼhoañv Europa ar Cʼhornôg", "CHAST": "eur cʼhoañv Chatham", "HAST": "HAST", "WARST": "eur hañv Arcʼhantina ar Cʼhornôg", "MST": "eur cʼhoañv Macau", "ACWDT": "eur hañv Kreizaostralia ar Cʼhornôg", "EST": "eur cʼhoañv ar Reter", "∅∅∅": "eur hañv an Amazon", "AKST": "eur cʼhoañv Alaska", "ACST": "eur cʼhoañv Kreizaostralia", "ACDT": "eur hañv Kreizaostralia", "GMT": "Amzer keitat Greenwich (AKG)", "WITA": "WITA", "JDT": "eur hañv Japan", "LHST": "LHST", "HNT": "eur cʼhoañv Newfoundland", "ECT": "eur Ecuador", "BT": "eur Bhoutan", "WIT": "eur Indonezia ar Reter", "TMST": "eur hañv Turkmenistan", "JST": "eur cʼhoañv Japan", "WAST": "eur hañv Afrika ar Cʼhornôg", "PST": "PST", "ACWST": "eur cʼhoañv Kreizaostralia ar Cʼhornôg", "MYT": "eur Malaysia", "UYST": "eur hañv Uruguay", "AEDT": "eur hañv Aostralia ar Reter", "COST": "eur hañv Kolombia", "PDT": "PDT", "CHADT": "eur hañv Chatham", "SRT": "eur Surinam", "MDT": "eur hañv Macau", "NZST": "eur cʼhoañv Zeland-Nevez", "VET": "eur Venezuela"},
 	}
 }
 
@@ -101,9 +101,9 @@ func (br *br) PluralsRange() []locales.PluralRule {
 func (br *br) CardinalPluralRule(num float64, v uint64) locales.PluralRule {
 
 	n := math.Abs(num)
+	nMod1000000 := math.Mod(n, 1000000)
 	nMod10 := math.Mod(n, 10)
 	nMod100 := math.Mod(n, 100)
-	nMod1000000 := math.Mod(n, 1000000)
 
 	if nMod10 == 1 && (nMod100 != 11 && nMod100 != 71 && nMod100 != 91) {
 		return locales.PluralRuleOne
@@ -196,6 +196,21 @@ func (br *br) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (br *br) WeekdaysWide() []string {
 	return br.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (br *br) Decimal() string {
+	return br.decimal
+}
+
+// Group returns the group of number
+func (br *br) Group() string {
+	return br.group
+}
+
+// Group returns the minus sign of number
+func (br *br) Minus() string {
+	return br.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'br' and handles both Whole and Real numbers based on 'v'
@@ -408,7 +423,7 @@ func (br *br) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2d}...)
@@ -438,7 +453,7 @@ func (br *br) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x20}...)
@@ -457,7 +472,7 @@ func (br *br) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x20}...)
@@ -476,7 +491,7 @@ func (br *br) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x20}...)

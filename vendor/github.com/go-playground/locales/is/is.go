@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"f.Kr.", "e.Kr."},
 		erasNarrow:             []string{"f.k.", "e.k."},
 		erasWide:               []string{"fyrir Krist", "eftir Krist"},
-		timezones:              map[string]string{"HADT": "Sumartími á Havaí og Aleúta", "AST": "Staðaltími á Atlantshafssvæðinu", "ADT": "Sumartími á Atlantshafssvæðinu", "COST": "Sumartími í Kólumbíu", "WITA": "Mið-Indónesíutími", "AKST": "Staðaltími í Alaska", "HNCU": "Staðaltími á Kúbu", "HECU": "Sumartími á Kúbu", "CLST": "Sumartími í Síle", "HKST": "Sumartími í Hong Kong", "AEDT": "Sumartími í Austur-Ástralíu", "CLT": "Staðaltími í Síle", "HNNOMX": "Staðaltími í Norðvestur-Mexíkó", "UYT": "Staðaltími í Úrúgvæ", "BOT": "Bólivíutími", "NZDT": "Sumartími á Nýja-Sjálandi", "MEZ": "Staðaltími í Mið-Evrópu", "GMT": "Greenwich-staðaltími", "ART": "Staðaltími í Argentínu", "WAST": "Sumartími í Vestur-Afríku", "ACDT": "Sumartími í Mið-Ástralíu", "HEEG": "Sumartími á Austur-Grænlandi", "HAST": "Staðaltími á Havaí og Aleúta", "∅∅∅": "Sumartími á Amasónsvæðinu", "ACWST": "Staðaltími í miðvesturhluta Ástralíu", "WART": "Staðaltími í Vestur-Argentínu", "CDT": "Sumartími í miðhluta Bandaríkjanna og Kanada", "IST": "Indlandstími", "JST": "Staðaltími í Japan", "OEZ": "Staðaltími í Austur-Evrópu", "ARST": "Sumartími í Argentínu", "BT": "Bútantími", "GFT": "Tími í Frönsku Gvæjana", "AKDT": "Sumartími í Alaska", "ChST": "Chamorro-staðaltími", "WIT": "Austur-Indónesíutími", "ECT": "Ekvadortími", "PDT": "Sumartími á Kyrrahafssvæðinu", "MYT": "Malasíutími", "HNOG": "Staðaltími á Vestur-Grænlandi", "EST": "Staðaltími í austurhluta Bandaríkjanna og Kanada", "ACST": "Staðaltími í Mið-Ástralíu", "UYST": "Sumartími í Úrúgvæ", "AWDT": "Sumartími í Vestur-Ástralíu", "VET": "Venesúelatími", "SGT": "Singapúrtími", "MDT": "MDT", "COT": "Staðaltími í Kólumbíu", "HNEG": "Staðaltími á Austur-Grænlandi", "AEST": "Staðaltími í Austur-Ástralíu", "HEPMX": "Sumartími í Mexíkó á Kyrrahafssvæðinu", "EAT": "Austur-Afríkutími", "MESZ": "Sumartími í Mið-Evrópu", "WARST": "Sumartími í Vestur-Argentínu", "MST": "MST", "HAT": "Sumartími á Nýfundnalandi", "LHST": "Staðaltími á Lord Howe-eyju", "LHDT": "Sumartími á Lord Howe-eyju", "CST": "Staðaltími í miðhluta Bandaríkjanna og Kanada", "CHADT": "Sumartími í Chatham", "OESZ": "Sumartími í Austur-Evrópu", "WEZ": "Staðaltími í Vestur-Evrópu", "WAT": "Staðaltími í Vestur-Afríku", "HNT": "Staðaltími á Nýfundnalandi", "SAST": "Suður-Afríkutími", "PST": "Staðaltími á Kyrrahafssvæðinu", "WESZ": "Sumartími í Vestur-Evrópu", "EDT": "Sumartími í austurhluta Bandaríkjanna og Kanada", "GYT": "Gvæjanatími", "HEOG": "Sumartími á Vestur-Grænlandi", "TMST": "Sumartími í Túrkmenistan", "HENOMX": "Sumartími í Norðvestur-Mexíkó", "SRT": "Súrinamtími", "AWST": "Staðaltími í Vestur-Ástralíu", "ACWDT": "Sumartími í miðvesturhluta Ástralíu", "TMT": "Staðaltími í Túrkmenistan", "HKT": "Staðaltími í Hong Kong", "HNPM": "Staðaltími á Sankti Pierre og Miquelon", "NZST": "Staðaltími á Nýja-Sjálandi", "CAT": "Mið-Afríkutími", "JDT": "Sumartími í Japan", "HEPM": "Sumartími á Sankti Pierre og Miquelon", "HNPMX": "Staðaltími í Mexíkó á Kyrrahafssvæðinu", "WIB": "Vestur-Indónesíutími", "CHAST": "Staðaltími í Chatham"},
+		timezones:              map[string]string{"LHDT": "Sumartími á Lord Howe-eyju", "AST": "Staðaltími á Atlantshafssvæðinu", "CHADT": "Sumartími í Chatham", "BT": "Bútantími", "MST": "MST", "SRT": "Súrinamtími", "MEZ": "Staðaltími í Mið-Evrópu", "HENOMX": "Sumartími í Norðvestur-Mexíkó", "WAT": "Staðaltími í Vestur-Afríku", "HEEG": "Sumartími á Austur-Grænlandi", "COT": "Staðaltími í Kólumbíu", "ACST": "Staðaltími í Mið-Ástralíu", "GYT": "Gvæjanatími", "PDT": "Sumartími á Kyrrahafssvæðinu", "AWST": "Staðaltími í Vestur-Ástralíu", "AWDT": "Sumartími í Vestur-Ástralíu", "UYST": "Sumartími í Úrúgvæ", "WIT": "Austur-Indónesíutími", "LHST": "Staðaltími á Lord Howe-eyju", "CLST": "Sumartími í Síle", "COST": "Sumartími í Kólumbíu", "BOT": "Bólivíutími", "CDT": "Sumartími í miðhluta Bandaríkjanna og Kanada", "UYT": "Staðaltími í Úrúgvæ", "HADT": "Sumartími á Havaí og Aleúta", "JST": "Staðaltími í Japan", "WART": "Staðaltími í Vestur-Argentínu", "ECT": "Ekvadortími", "EST": "Staðaltími í austurhluta Bandaríkjanna og Kanada", "HEPMX": "Sumartími í Mexíkó á Kyrrahafssvæðinu", "HNNOMX": "Staðaltími í Norðvestur-Mexíkó", "OESZ": "Sumartími í Austur-Evrópu", "AEST": "Staðaltími í Austur-Ástralíu", "ART": "Staðaltími í Argentínu", "HEOG": "Sumartími á Vestur-Grænlandi", "CAT": "Mið-Afríkutími", "ChST": "Chamorro-staðaltími", "CHAST": "Staðaltími í Chatham", "TMT": "Staðaltími í Túrkmenistan", "IST": "Indlandstími", "ACDT": "Sumartími í Mið-Ástralíu", "SAST": "Suður-Afríkutími", "SGT": "Singapúrtími", "HNPMX": "Staðaltími í Mexíkó á Kyrrahafssvæðinu", "WIB": "Vestur-Indónesíutími", "HNCU": "Staðaltími á Kúbu", "HECU": "Sumartími á Kúbu", "WARST": "Sumartími í Vestur-Argentínu", "GMT": "Greenwich-staðaltími", "ADT": "Sumartími á Atlantshafssvæðinu", "AEDT": "Sumartími í Austur-Ástralíu", "CLT": "Staðaltími í Síle", "NZST": "Staðaltími á Nýja-Sjálandi", "AKST": "Staðaltími í Alaska", "JDT": "Sumartími í Japan", "GFT": "Tími í Frönsku Gvæjana", "MDT": "MDT", "NZDT": "Sumartími á Nýja-Sjálandi", "OEZ": "Staðaltími í Austur-Evrópu", "HNT": "Staðaltími á Nýfundnalandi", "HAT": "Sumartími á Nýfundnalandi", "HNOG": "Staðaltími á Vestur-Grænlandi", "WAST": "Sumartími í Vestur-Afríku", "HKT": "Staðaltími í Hong Kong", "HKST": "Sumartími í Hong Kong", "CST": "Staðaltími í miðhluta Bandaríkjanna og Kanada", "WEZ": "Staðaltími í Vestur-Evrópu", "∅∅∅": "Sumartími í Perú", "MYT": "Malasíutími", "MESZ": "Sumartími í Mið-Evrópu", "WITA": "Mið-Indónesíutími", "EAT": "Austur-Afríkutími", "WESZ": "Sumartími í Vestur-Evrópu", "PST": "Staðaltími á Kyrrahafssvæðinu", "VET": "Venesúelatími", "HNEG": "Staðaltími á Austur-Grænlandi", "ARST": "Sumartími í Argentínu", "EDT": "Sumartími í austurhluta Bandaríkjanna og Kanada", "HNPM": "Staðaltími á Sankti Pierre og Miquelon", "HEPM": "Sumartími á Sankti Pierre og Miquelon", "ACWST": "Staðaltími í miðvesturhluta Ástralíu", "ACWDT": "Sumartími í miðvesturhluta Ástralíu", "HAST": "Staðaltími á Havaí og Aleúta", "TMST": "Sumartími í Túrkmenistan", "AKDT": "Sumartími í Alaska"},
 	}
 }
 
@@ -202,6 +202,21 @@ func (is *is) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (is *is) WeekdaysWide() []string {
 	return is.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (is *is) Decimal() string {
+	return is.decimal
+}
+
+// Group returns the group of number
+func (is *is) Group() string {
+	return is.group
+}
+
+// Group returns the minus sign of number
+func (is *is) Minus() string {
+	return is.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'is' and handles both Whole and Real numbers based on 'v'
@@ -411,7 +426,7 @@ func (is *is) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -430,7 +445,7 @@ func (is *is) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -449,7 +464,7 @@ func (is *is) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -470,7 +485,7 @@ func (is *is) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

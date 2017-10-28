@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"BC", "AD"},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"BC", "AD"},
-		timezones:              map[string]string{"LHDT": "Isikhathi sase-Lord Howe sasemini", "HNCU": "Isikhathi sase-Cuba esijwayelekile", "PDT": "Isikhathi sase-North American Pacific sasemini", "MESZ": "Isikhathi sasehlobo sase-Central Europe", "ACDT": "Isikhathi sase-Australian Central sasemini", "HAT": "Isikhathi sase-Newfoundland sasemini", "AKDT": "Isikhathi sase-Alaska sasemini", "HNPM": "Iikhathi sase-Saint Pierre nase-Miquelon esijwayelekile", "AWST": "Isikhathi sase-Australian Western esivamile", "ECT": "Isikhathi sase-Ecuador", "ACWST": "Isikhathi sase-Australian Central West esivamile", "NZDT": "Isikhathi sasemini sase-New Zealand", "OEZ": "Isikhathi esijwayelekile sase-Eastern Europe", "WESZ": "Isikhathi sasehlobo sase-Western Europe", "MDT": "MDT", "GFT": "Isikhathi sase-French Guiana", "CDT": "Isikhathi sase-North American Central sasemini", "GMT": "Isikhathi sase-Greenwich Mean", "MYT": "Isikhathi sase-Malaysia", "ACST": "Isikhathi sase-Australian Central esivamile", "HNT": "Isikhathi sase-Newfoundland esijwayelekile", "HENOMX": "Isikhathi sase-Northwest Mexico sasemini", "WIB": "Isikhathi sase-Western Indonesia", "PST": "Isikhathi sase-North American Pacific esijwayelekile", "MEZ": "Isikhathi esijwayelekile sase-Central Europe", "WARST": "Isikhathi saseNyakatho ne-Argentina sasehlobo", "WAST": "Isikhathi sasehlobo saseNtshonalanga Afrika", "EST": "Isikhathi sase-North American East esijwayelekile", "EDT": "Isikhathi sase-North American East sasemini", "WEZ": "Isikhathi esijwayelekile sase-Western Europe", "CLST": "Isikhathi sase-Chile sasehlobo", "HKST": "Isikhathi sehlobo sase-Hong Kong", "CST": "Isikhathi sase-North American Central esijwayelekile", "ADT": "Isikhathi sase-Atlantic sasemini", "ChST": "Isikhathi esijwayelekile sase-Chamorro", "CHAST": "Isikhathi esivamile sase-Chatham", "HADT": "Isikhathi sase-Hawaii-Aleutia sasemini", "HEOG": "Isikhathi sase-West Greenland sasehlobo", "TMST": "Isikhathi sehlobo sase-Turkmenistan", "COST": "Isikhathi sase-Colombia sasehlobo", "BT": "Isikhathi sase-Bhutan", "SGT": "Isikhathi esivamile sase-Singapore", "CAT": "Isikhathi sase-Central Africa", "JST": "Isikhathi esivamile sase-Japan", "JDT": "Isikhathi semini sase-Japan", "WAT": "Isikhathi esijwayelekile saseNtshonalanga Afrika", "AKST": "Isikhathi sase-Alaska esijwayelekile", "HNPMX": "Isikhathi sase-Mexican Pacific esijwayelekile", "HEPMX": "Isikhathi sase-Mexican Pacific sasemini", "HAST": "Isikhathi sase-Hawaii-Aleutia esijwayelekile", "HNOG": "Isikhathi sase-West Greenland esijwayelekile", "CLT": "Isikhathi sase-Chile esijwayelekile", "HEEG": "Isikhathi sase-East Greenland sasemini", "AEDT": "Isikhathi sasemini sase-Australian East", "SAST": "Isikhathi esijwayelekile saseNingizimu Afrika", "GYT": "Isikhathi sase-Guyana", "EAT": "Isikhathi saseMpumalanga Afrika", "AWDT": "Isikhathi sase-Australian Western sasemini", "ART": "Isikhathi sase-Argentina esijwayelekile", "SRT": "Isikhathi sase-Suriname", "IST": "Isikhathi sase-India esivamile", "AST": "Isikhathi sase-Atlantic esijwayelekile", "COT": "Isikhathi sase-Colombia esijwayelekile", "∅∅∅": "Isikhathi sase-Amazon sasehlobo", "OESZ": "Isikhathi sasehlobo sase-Eastern Europe", "WART": "Isikhathi saseNyakatho ne-Argentina esijwayelekile", "LHST": "Isikhathi sase-Lord Howe esivamile", "BOT": "Isikhathi sase-Bolivia", "TMT": "Isikhathi esivamile sase-Turkmenistan", "WITA": "Isikhathi sase-Central Indonesia", "AEST": "Isikhathi esivamile sase-Australian East", "UYT": "Isikhathi sase-Uruguay esijwayelekile", "WIT": "Isikhathi sase-Eastern Indonesia", "NZST": "Isikhathi esivamile sase-New Zealand", "HNNOMX": "Isikhathi sase-Northwest Mexico esijwayelekile", "HEPM": "Isikhathi sase-Saint Pierre nase-Miquelon sasemini", "HECU": "Isikhathi sase-Cuba sasemini", "UYST": "Isikhathi sase-Uruguay sasehlobo", "CHADT": "Isikhathi sasemini sase-Chatham", "ACWDT": "Isikhathi sasemini sase-Australian Central West", "VET": "Isikhathi sase-Venezuela", "MST": "MST", "ARST": "Isikhathi sase-Argentina sasehlobo", "HKT": "Isikhathi esivamile sase-Hong Kong", "HNEG": "Isikhathi sase-East Greenland esijwayelekile"},
+		timezones:              map[string]string{"AWST": "Isikhathi sase-Australian Western esivamile", "AWDT": "Isikhathi sase-Australian Western sasemini", "JST": "Isikhathi esivamile sase-Japan", "LHST": "Isikhathi sase-Lord Howe esivamile", "WARST": "Isikhathi saseNyakatho ne-Argentina sasehlobo", "AEST": "Isikhathi esivamile sase-Australian East", "CHADT": "Isikhathi sasemini sase-Chatham", "CST": "Isikhathi sase-North American Central esijwayelekile", "WAST": "Isikhathi sasehlobo saseNtshonalanga Afrika", "CLT": "Isikhathi sase-Chile esijwayelekile", "CDT": "Isikhathi sase-North American Central sasemini", "SRT": "Isikhathi sase-Suriname", "NZDT": "Isikhathi sasemini sase-New Zealand", "HNNOMX": "Isikhathi sase-Northwest Mexico esijwayelekile", "AEDT": "Isikhathi sasemini sase-Australian East", "GYT": "Isikhathi sase-Guyana", "CAT": "Isikhathi sase-Central Africa", "ChST": "Isikhathi esijwayelekile sase-Chamorro", "WIB": "Isikhathi sase-Western Indonesia", "BOT": "Isikhathi sase-Bolivia", "MST": "MST", "AST": "Isikhathi sase-Atlantic esijwayelekile", "AKDT": "Isikhathi sase-Alaska sasemini", "SGT": "Isikhathi esivamile sase-Singapore", "GMT": "Isikhathi sase-Greenwich Mean", "WITA": "Isikhathi sase-Central Indonesia", "OEZ": "Isikhathi esijwayelekile sase-Eastern Europe", "ACST": "Isikhathi sase-Australian Central esivamile", "∅∅∅": "Isikhathi sase-Amazon sasehlobo", "COST": "Isikhathi sase-Colombia sasehlobo", "HEPMX": "Isikhathi sase-Mexican Pacific sasemini", "HENOMX": "Isikhathi sase-Northwest Mexico sasemini", "VET": "Isikhathi sase-Venezuela", "HEOG": "Isikhathi sase-West Greenland sasehlobo", "HNCU": "Isikhathi sase-Cuba esijwayelekile", "HNPM": "Iikhathi sase-Saint Pierre nase-Miquelon esijwayelekile", "JDT": "Isikhathi semini sase-Japan", "IST": "Isikhathi sase-India esivamile", "SAST": "Isikhathi esijwayelekile saseNingizimu Afrika", "HKST": "Isikhathi sehlobo sase-Hong Kong", "AKST": "Isikhathi sase-Alaska esijwayelekile", "ECT": "Isikhathi sase-Ecuador", "WIT": "Isikhathi sase-Eastern Indonesia", "EDT": "Isikhathi sase-North American East sasemini", "UYST": "Isikhathi sase-Uruguay sasehlobo", "OESZ": "Isikhathi sasehlobo sase-Eastern Europe", "EAT": "Isikhathi saseMpumalanga Afrika", "ACWDT": "Isikhathi sasemini sase-Australian Central West", "ADT": "Isikhathi sase-Atlantic sasemini", "MEZ": "Isikhathi esijwayelekile sase-Central Europe", "LHDT": "Isikhathi sase-Lord Howe sasemini", "ARST": "Isikhathi sase-Argentina sasehlobo", "HEEG": "Isikhathi sase-East Greenland sasemini", "HAT": "Isikhathi sase-Newfoundland sasemini", "COT": "Isikhathi sase-Colombia esijwayelekile", "HEPM": "Isikhathi sase-Saint Pierre nase-Miquelon sasemini", "MYT": "Isikhathi sase-Malaysia", "TMT": "Isikhathi esivamile sase-Turkmenistan", "WART": "Isikhathi saseNyakatho ne-Argentina esijwayelekile", "HNEG": "Isikhathi sase-East Greenland esijwayelekile", "PDT": "Isikhathi sase-North American Pacific sasemini", "ACWST": "Isikhathi sase-Australian Central West esivamile", "BT": "Isikhathi sase-Bhutan", "MDT": "MDT", "UYT": "Isikhathi sase-Uruguay esijwayelekile", "HNOG": "Isikhathi sase-West Greenland esijwayelekile", "GFT": "Isikhathi sase-French Guiana", "WEZ": "Isikhathi esijwayelekile sase-Western Europe", "PST": "Isikhathi sase-North American Pacific esijwayelekile", "ART": "Isikhathi sase-Argentina esijwayelekile", "HKT": "Isikhathi esivamile sase-Hong Kong", "MESZ": "Isikhathi sasehlobo sase-Central Europe", "NZST": "Isikhathi esivamile sase-New Zealand", "CHAST": "Isikhathi esivamile sase-Chatham", "HADT": "Isikhathi sase-Hawaii-Aleutia sasemini", "TMST": "Isikhathi sehlobo sase-Turkmenistan", "CLST": "Isikhathi sase-Chile sasehlobo", "WESZ": "Isikhathi sasehlobo sase-Western Europe", "HNPMX": "Isikhathi sase-Mexican Pacific esijwayelekile", "HECU": "Isikhathi sase-Cuba sasemini", "HAST": "Isikhathi sase-Hawaii-Aleutia esijwayelekile", "WAT": "Isikhathi esijwayelekile saseNtshonalanga Afrika", "HNT": "Isikhathi sase-Newfoundland esijwayelekile", "EST": "Isikhathi sase-North American East esijwayelekile", "ACDT": "Isikhathi sase-Australian Central sasemini"},
 	}
 }
 
@@ -197,6 +197,21 @@ func (zu *zu_ZA) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (zu *zu_ZA) WeekdaysWide() []string {
 	return zu.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (zu *zu_ZA) Decimal() string {
+	return zu.decimal
+}
+
+// Group returns the group of number
+func (zu *zu_ZA) Group() string {
+	return zu.group
+}
+
+// Group returns the minus sign of number
+func (zu *zu_ZA) Minus() string {
+	return zu.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'zu_ZA' and handles both Whole and Real numbers based on 'v'
@@ -430,7 +445,7 @@ func (zu *zu_ZA) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -449,7 +464,7 @@ func (zu *zu_ZA) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -470,7 +485,7 @@ func (zu *zu_ZA) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

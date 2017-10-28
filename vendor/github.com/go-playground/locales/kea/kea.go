@@ -73,7 +73,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"AK", "DK"},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"Antis di Kristu", "Dispos di Kristu"},
-		timezones:              map[string]string{"ECT": "ECT", "HADT": "HADT", "IST": "IST", "HNOG": "HNOG", "HNT": "HNT", "AEST": "Ora Padrãu di Australia Oriental", "SRT": "SRT", "SGT": "SGT", "OESZ": "Ora di Verãu di Europa Oriental", "GFT": "GFT", "HNPM": "HNPM", "CDT": "Ora Sentral di Verãu", "HAST": "HAST", "HKST": "HKST", "HNNOMX": "HNNOMX", "AEDT": "Ora di Verãu di Australia Oriental", "SAST": "Ora di Sul di Afrika", "ART": "ART", "UYT": "UYT", "AWDT": "Ora di Verãu di Australia Osidental", "ACWST": "Ora Padrãu di Australia Sentru-Osidental", "WARST": "WARST", "COST": "COST", "BOT": "BOT", "NZDT": "NZDT", "MESZ": "Ora di Verãu di Europa Sentral", "WAT": "Ora Padrãu di Afrika Osidental", "EST": "Ora Oriental Padrãu", "HNEG": "HNEG", "EAT": "Ora di Afrika Oriental", "CHADT": "CHADT", "CLST": "CLST", "HEOG": "HEOG", "GMT": "GMT", "TMST": "TMST", "COT": "COT", "HNPMX": "HNPMX", "WESZ": "Ora di Verãu di Europa Osidental", "MST": "MST", "HKT": "HKT", "ACST": "Ora Padrãu di Australia Sentral", "HAT": "HAT", "BT": "BT", "LHST": "LHST", "VET": "VET", "MYT": "MYT", "MDT": "MDT", "ARST": "ARST", "HEEG": "HEEG", "WIB": "WIB", "WEZ": "Ora Padrãu di Europa Osidental", "UYST": "UYST", "HEPM": "HEPM", "AWST": "Ora Padrãu di Australia Osidental", "CHAST": "CHAST", "NZST": "NZST", "OEZ": "Ora Padrãu di Europa Oriental", "TMT": "TMT", "∅∅∅": "∅∅∅", "LHDT": "LHDT", "CST": "Ora Sentral Padrãu", "PST": "Ora di Pasifiku Padrãu", "MEZ": "Ora Padrãu di Europa Sentral", "JDT": "JDT", "ACWDT": "Ora di Verãu di Australia Sentru-Osidental", "WART": "WART", "HENOMX": "HENOMX", "HNCU": "HNCU", "WIT": "WIT", "CAT": "Ora di Afrika Sentral", "PDT": "Ora di Pasifiku di Verãu", "JST": "JST", "ADT": "Ora di Verãu di Atlantiku", "ACDT": "Ora di Verãu di Australia Sentral", "AKDT": "AKDT", "ChST": "ChST", "HEPMX": "HEPMX", "AKST": "AKST", "GYT": "GYT", "HECU": "HECU", "CLT": "CLT", "AST": "Ora Padrãu di Atlantiku", "WAST": "Ora di Verão di Afrika Osidental", "EDT": "Ora Oriental di Verãu", "WITA": "WITA"},
+		timezones:              map[string]string{"JDT": "JDT", "ART": "ART", "HEPMX": "HEPMX", "UYST": "UYST", "NZDT": "NZDT", "WARST": "WARST", "NZST": "NZST", "GYT": "GYT", "ACDT": "Ora di Verãu di Australia Sentral", "SGT": "SGT", "GMT": "GMT", "PDT": "Ora di Pasifiku di Verãu", "HADT": "HADT", "COT": "COT", "CAT": "Ora di Afrika Sentral", "CHADT": "CHADT", "SRT": "SRT", "WART": "WART", "ACST": "Ora Padrãu di Australia Sentral", "AKDT": "AKDT", "∅∅∅": "∅∅∅", "HNOG": "HNOG", "COST": "COST", "HNT": "HNT", "AEST": "Ora Padrãu di Australia Oriental", "SAST": "Ora di Sul di Afrika", "WIB": "WIB", "CHAST": "CHAST", "HNPM": "HNPM", "AWST": "Ora Padrãu di Australia Osidental", "JST": "JST", "AST": "Ora Padrãu di Atlantiku", "ADT": "Ora di Verãu di Atlantiku", "HAT": "HAT", "BOT": "BOT", "AWDT": "Ora di Verãu di Australia Osidental", "MYT": "MYT", "UYT": "UYT", "WAST": "Ora di Verão di Afrika Osidental", "HKST": "HKST", "CLT": "CLT", "GFT": "GFT", "HNCU": "HNCU", "MST": "MST", "AEDT": "Ora di Verãu di Australia Oriental", "HEOG": "HEOG", "ECT": "ECT", "HEEG": "HEEG", "ACWST": "Ora Padrãu di Australia Sentru-Osidental", "MESZ": "Ora di Verãu di Europa Sentral", "OESZ": "Ora di Verãu di Europa Oriental", "IST": "IST", "HNPMX": "HNPMX", "BT": "BT", "OEZ": "Ora Padrãu di Europa Oriental", "EST": "Ora Oriental Padrãu", "CLST": "CLST", "CST": "Ora Sentral Padrãu", "ACWDT": "Ora di Verãu di Australia Sentru-Osidental", "ARST": "ARST", "WAT": "Ora Padrãu di Afrika Osidental", "EAT": "Ora di Afrika Oriental", "EDT": "Ora Oriental di Verãu", "HECU": "HECU", "TMST": "TMST", "VET": "VET", "HNNOMX": "HNNOMX", "WIT": "WIT", "TMT": "TMT", "LHDT": "LHDT", "HKT": "HKT", "WITA": "WITA", "HNEG": "HNEG", "WESZ": "Ora di Verãu di Europa Osidental", "ChST": "ChST", "HEPM": "HEPM", "MDT": "MDT", "WEZ": "Ora Padrãu di Europa Osidental", "LHST": "LHST", "HAST": "HAST", "AKST": "AKST", "PST": "Ora di Pasifiku Padrãu", "CDT": "Ora Sentral di Verãu", "MEZ": "Ora Padrãu di Europa Sentral", "HENOMX": "HENOMX"},
 	}
 }
 
@@ -180,6 +180,21 @@ func (kea *kea) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (kea *kea) WeekdaysWide() []string {
 	return kea.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (kea *kea) Decimal() string {
+	return kea.decimal
+}
+
+// Group returns the group of number
+func (kea *kea) Group() string {
+	return kea.group
+}
+
+// Group returns the minus sign of number
+func (kea *kea) Minus() string {
+	return kea.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'kea' and handles both Whole and Real numbers based on 'v'
@@ -395,7 +410,7 @@ func (kea *kea) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -414,7 +429,7 @@ func (kea *kea) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -435,7 +450,7 @@ func (kea *kea) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -458,7 +473,7 @@ func (kea *kea) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"i. e.", "i. sz."},
 		erasNarrow:             []string{"ie.", "isz."},
 		erasWide:               []string{"időszámításunk előtt", "időszámításunk szerint"},
-		timezones:              map[string]string{"SGT": "szingapúri téli idő", "MESZ": "közép-európai nyári idő", "CHADT": "chathami nyári idő", "HNNOMX": "északnyugat-mexikói zónaidő", "AEST": "kelet-ausztráliai téli idő", "HECU": "kubai nyári idő", "HAST": "hawaii-aleuti téli idő", "ACDT": "közép-ausztráliai nyári idő", "ACST": "közép-ausztráliai téli idő", "HENOMX": "északnyugat-mexikói nyári idő", "AEDT": "kelet-ausztráliai nyári idő", "WAST": "nyugat-afrikai nyári idő", "HNT": "új-fundlandi zónaidő", "CST": "középső államokbeli zónaidő", "ACWDT": "közép-nyugat-ausztráliai nyári idő", "NZST": "új-zélandi téli idő", "MYT": "malajziai idő", "TMT": "türkmenisztáni téli idő", "HKST": "hongkongi nyári idő", "AKDT": "alaszkai nyári idő", "MST": "hegyvidéki zónaidő", "SRT": "szurinámi idő", "CAT": "közép-afrikai téli idő", "WITA": "közép-indonéziai idő", "HNCU": "kubai téli idő", "WIB": "nyugat-indonéziai téli idő", "WIT": "kelet-indonéziai idő", "AWST": "nyugat-ausztráliai téli idő", "JST": "japán téli idő", "ADT": "atlanti-óceáni nyári idő", "∅∅∅": "Acre nyári idő", "HEPMX": "mexikói csendes-óceáni nyári idő", "ECT": "ecuadori téli idő", "HKT": "hongkongi téli idő", "MDT": "hegyvidéki nyári idő", "HNPMX": "mexikói csendes-óceáni zónaidő", "CHAST": "chathami téli idő", "WEZ": "nyugat-európai téli idő", "ART": "argentínai téli idő", "EDT": "keleti államokbeli nyári idő", "ACWST": "közép-nyugat-ausztráliai téli idő", "VET": "venezuelai idő", "EST": "keleti államokbeli zónaidő", "SAST": "dél-afrikai téli idő", "GYT": "guyanai téli idő", "PST": "csendes-óceáni zónaidő", "PDT": "csendes-óceáni nyári idő", "WART": "nyugat-argentínai téli idő", "WARST": "nyugat-argentínai nyári idő", "ARST": "Argentínai nyári idő", "COST": "kolumbiai nyári idő", "HNEG": "kelet-grönlandi téli idő", "AKST": "alaszkai zónaidő", "ChST": "chamorrói téli idő", "EAT": "kelet-afrikai téli idő", "IST": "indiai téli idő", "AST": "atlanti-óceáni zónaidő", "CLST": "chilei nyári idő", "HAT": "új-fundlandi nyári idő", "AWDT": "nyugat-ausztráliai nyári idő", "HNOG": "nyugat-grönlandi téli idő", "HEOG": "nyugat-grönlandi nyári idő", "WESZ": "nyugat-európai nyári idő", "GMT": "greenwichi középidő, téli idő", "CLT": "chilei téli idő", "UYT": "uruguayi téli idő", "GFT": "francia-guianai idő", "UYST": "uruguayi nyári idő", "HEPM": "Saint Pierre és Miquelon-i nyári idő", "MEZ": "közép-európai téli idő", "OESZ": "kelet-európai nyári idő", "COT": "kolumbiai téli idő", "HNPM": "Saint Pierre és Miquelon-i zónaidő", "LHST": "Lord Howe-szigeti téli idő", "CDT": "középső államokbeli nyári idő", "HADT": "hawaii-aleuti nyári idő", "JDT": "japán nyári idő", "TMST": "türkmenisztáni nyári idő", "BT": "butáni idő", "NZDT": "új-zélandi nyári idő", "HEEG": "kelet-grönlandi nyári idő", "LHDT": "Lord Howe-szigeti nyári idő", "BOT": "bolíviai téli idő", "OEZ": "kelet-európai téli idő", "WAT": "nyugat-afrikai téli idő"},
+		timezones:              map[string]string{"HEPMX": "mexikói csendes-óceáni nyári idő", "HAST": "hawaii-aleuti téli idő", "WART": "nyugat-argentínai téli idő", "WESZ": "nyugat-európai nyári idő", "HKT": "hongkongi téli idő", "GMT": "greenwichi középidő, téli idő", "WIT": "kelet-indonéziai idő", "JDT": "japán nyári idő", "HENOMX": "északnyugat-mexikói nyári idő", "HEEG": "kelet-grönlandi nyári idő", "COST": "kolumbiai nyári idő", "ChST": "chamorrói téli idő", "HADT": "hawaii-aleuti nyári idő", "HEOG": "nyugat-grönlandi nyári idő", "WAT": "nyugat-afrikai téli idő", "UYT": "uruguayi téli idő", "EST": "keleti államokbeli zónaidő", "HNPM": "Saint Pierre és Miquelon-i zónaidő", "NZST": "új-zélandi téli idő", "TMST": "türkmenisztáni nyári idő", "AEST": "kelet-ausztráliai téli idő", "WEZ": "nyugat-európai téli idő", "SGT": "szingapúri téli idő", "CDT": "középső államokbeli nyári idő", "MST": "Macaui zónaidő", "MDT": "Macaui nyári idő", "WIB": "nyugat-indonéziai téli idő", "HNCU": "kubai téli idő", "MEZ": "közép-európai téli idő", "NZDT": "új-zélandi nyári idő", "HNPMX": "mexikói csendes-óceáni zónaidő", "HEPM": "Saint Pierre és Miquelon-i nyári idő", "BT": "butáni idő", "ARST": "Argentínai nyári idő", "SAST": "dél-afrikai téli idő", "HNT": "új-fundlandi zónaidő", "UYST": "uruguayi nyári idő", "VET": "venezuelai idő", "HAT": "új-fundlandi nyári idő", "PST": "csendes-óceáni zónaidő", "PDT": "csendes-óceáni nyári idő", "LHDT": "Lord Howe-szigeti nyári idő", "WAST": "nyugat-afrikai nyári idő", "CAT": "közép-afrikai téli idő", "OEZ": "kelet-európai téli idő", "IST": "indiai téli idő", "GFT": "francia-guianai idő", "SRT": "szurinámi idő", "ACWST": "közép-nyugat-ausztráliai téli idő", "WITA": "közép-indonéziai idő", "AEDT": "kelet-ausztráliai nyári idő", "COT": "kolumbiai téli idő", "EDT": "keleti államokbeli nyári idő", "ECT": "ecuadori téli idő", "CHAST": "chathami téli idő", "TMT": "türkmenisztáni téli idő", "OESZ": "kelet-európai nyári idő", "AST": "atlanti-óceáni zónaidő", "HECU": "kubai nyári idő", "WARST": "nyugat-argentínai nyári idő", "EAT": "kelet-afrikai téli idő", "ACDT": "közép-ausztráliai nyári idő", "AWDT": "nyugat-ausztráliai nyári idő", "∅∅∅": "Acre nyári idő", "LHST": "Lord Howe-szigeti téli idő", "MYT": "malajziai idő", "JST": "japán téli idő", "ART": "argentínai téli idő", "HKST": "hongkongi nyári idő", "GYT": "guyanai téli idő", "BOT": "bolíviai téli idő", "AWST": "nyugat-ausztráliai téli idő", "ACWDT": "közép-nyugat-ausztráliai nyári idő", "HNNOMX": "északnyugat-mexikói zónaidő", "AKST": "alaszkai zónaidő", "AKDT": "alaszkai nyári idő", "ACST": "közép-ausztráliai téli idő", "MESZ": "közép-európai nyári idő", "CLT": "chilei téli idő", "CLST": "chilei nyári idő", "HNEG": "kelet-grönlandi téli idő", "CHADT": "chathami nyári idő", "CST": "középső államokbeli zónaidő", "ADT": "atlanti-óceáni nyári idő", "HNOG": "nyugat-grönlandi téli idő"},
 	}
 }
 
@@ -203,6 +203,21 @@ func (hu *hu_HU) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (hu *hu_HU) WeekdaysWide() []string {
 	return hu.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (hu *hu_HU) Decimal() string {
+	return hu.decimal
+}
+
+// Group returns the group of number
+func (hu *hu_HU) Group() string {
+	return hu.group
+}
+
+// Group returns the minus sign of number
+func (hu *hu_HU) Minus() string {
+	return hu.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'hu_HU' and handles both Whole and Real numbers based on 'v'
@@ -413,7 +428,7 @@ func (hu *hu_HU) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e, 0x20}...)
@@ -444,7 +459,7 @@ func (hu *hu_HU) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e, 0x20}...)
@@ -464,7 +479,7 @@ func (hu *hu_HU) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e, 0x20}...)
@@ -484,7 +499,7 @@ func (hu *hu_HU) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e, 0x20}...)

@@ -53,13 +53,35 @@ const (
 )
 
 const (
-	// KubernetesVersion1Dot8Dot2 is the major.minor.patch string for 1.8.2 versions of kubernetes
+	// KubernetesVersion1Dot8Dot0 is the major.minor.patch string for the 1.8.0 version of kubernetes
+	KubernetesVersion1Dot8Dot0 string = "1.8.0"
+	// KubernetesVersion1Dot8Dot1 is the major.minor.patch string for the 1.8.1 version of kubernetes
+	KubernetesVersion1Dot8Dot1 string = "1.8.1"
+	// KubernetesVersion1Dot8Dot2 is the major.minor.patch string for the 1.8.2 version of kubernetes
 	KubernetesVersion1Dot8Dot2 string = "1.8.2"
-	// KubernetesVersion1Dot7Dot9 is the major.minor.patch string for 1.7.9 versions of kubernetes
+	// KubernetesVersion1Dot7Dot0 is the major.minor.patch string for the 1.7.0 version of kubernetes
+	KubernetesVersion1Dot7Dot0 string = "1.7.0"
+	// KubernetesVersion1Dot7Dot1 is the major.minor.patch string for the 1.7.1 version of kubernetes
+	KubernetesVersion1Dot7Dot1 string = "1.7.1"
+	// KubernetesVersion1Dot7Dot2 is the major.minor.patch string for the 1.7.2 version of kubernetes
+	KubernetesVersion1Dot7Dot2 string = "1.7.2"
+	// KubernetesVersion1Dot7Dot4 is the major.minor.patch string for the 1.7.4 version of kubernetes
+	KubernetesVersion1Dot7Dot4 string = "1.7.4"
+	// KubernetesVersion1Dot7Dot5 is the major.minor.patch string for the 1.7.5 version of kubernetes
+	KubernetesVersion1Dot7Dot5 string = "1.7.5"
+	// KubernetesVersion1Dot7Dot7 is the major.minor.patch string for the 1.7.7 version of kubernetes
+	KubernetesVersion1Dot7Dot7 string = "1.7.7"
+	// KubernetesVersion1Dot7Dot9 is the major.minor.patch string for the 1.7.9 version of kubernetes
 	KubernetesVersion1Dot7Dot9 string = "1.7.9"
-	// KubernetesVersion1Dot6Dot11 is the major.minor.patch string for 1.6.11 versions of kubernetes
+	// KubernetesVersion1Dot6Dot6 is the major.minor.patch string for the 1.6.6 version of kubernetes
+	KubernetesVersion1Dot6Dot6 string = "1.6.6"
+	// KubernetesVersion1Dot6Dot9 is the major.minor.patch string for the 1.6.9 version of kubernetes
+	KubernetesVersion1Dot6Dot9 string = "1.6.9"
+	// KubernetesVersion1Dot6Dot11 is the major.minor.patch string for the 1.6.11 version of kubernetes
 	KubernetesVersion1Dot6Dot11 string = "1.6.11"
-	// KubernetesVersion1Dot5Dot8 is the major.minor.patch string for 1.5.8 versions of kubernetes
+	// KubernetesVersion1Dot5Dot7 is the major.minor.patch string for the 1.5.7 version of kubernetes
+	KubernetesVersion1Dot5Dot7 string = "1.5.7"
+	// KubernetesVersion1Dot5Dot8 is the major.minor.patch string for the 1.5.8 version of kubernetes
 	KubernetesVersion1Dot5Dot8 string = "1.5.8"
 	// KubernetesDefaultVersion is the default major.minor.patch version for kubernetes
 	KubernetesDefaultVersion string = KubernetesVersion1Dot7Dot9
@@ -67,10 +89,20 @@ const (
 
 // AllKubernetesSupportedVersions maintain a list of available k8s versions in acs-engine
 var AllKubernetesSupportedVersions = []string{
+	KubernetesVersion1Dot8Dot0,
+	KubernetesVersion1Dot8Dot1,
 	KubernetesVersion1Dot8Dot2,
+	KubernetesVersion1Dot7Dot1,
+	KubernetesVersion1Dot7Dot2,
+	KubernetesVersion1Dot7Dot4,
+	KubernetesVersion1Dot7Dot5,
+	KubernetesVersion1Dot7Dot7,
 	KubernetesVersion1Dot7Dot9,
+	KubernetesVersion1Dot6Dot6,
+	KubernetesVersion1Dot6Dot9,
 	KubernetesVersion1Dot6Dot11,
 	KubernetesVersion1Dot5Dot8,
+	KubernetesVersion1Dot5Dot7,
 }
 
 const (
