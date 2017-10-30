@@ -61,8 +61,8 @@ func (a *Apiloader) LoadContainerService(
 	validate, isUpdate bool,
 	existingContainerService *ContainerService) (*ContainerService, error) {
 	var curOrchVersion string
-	haveExistingCS := existingContainerService != nil
-	if haveExistingCS {
+	hasExistingCS := existingContainerService != nil
+	if hasExistingCS {
 		curOrchVersion = existingContainerService.Properties.OrchestratorProfile.OrchestratorVersion
 	}
 	switch version {
@@ -71,7 +71,7 @@ func (a *Apiloader) LoadContainerService(
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
-		if haveExistingCS {
+		if hasExistingCS {
 			vecs := ConvertContainerServiceToV20160930(existingContainerService)
 			if e := containerService.Merge(vecs); e != nil {
 				return nil, e
@@ -91,7 +91,7 @@ func (a *Apiloader) LoadContainerService(
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
-		if haveExistingCS {
+		if hasExistingCS {
 			vecs := ConvertContainerServiceToV20160330(existingContainerService)
 			if e := containerService.Merge(vecs); e != nil {
 				return nil, e
@@ -112,7 +112,7 @@ func (a *Apiloader) LoadContainerService(
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
-		if haveExistingCS {
+		if hasExistingCS {
 			vecs := ConvertContainerServiceToV20170131(existingContainerService)
 			if e := containerService.Merge(vecs); e != nil {
 				return nil, e
@@ -133,7 +133,7 @@ func (a *Apiloader) LoadContainerService(
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
-		if haveExistingCS {
+		if hasExistingCS {
 			vecs := ConvertContainerServiceToV20170701(existingContainerService)
 			if e := containerService.Merge(vecs); e != nil {
 				return nil, e
@@ -158,7 +158,7 @@ func (a *Apiloader) LoadContainerService(
 		if e := checkJSONKeys(contents, reflect.TypeOf(*containerService), reflect.TypeOf(TypeMeta{})); e != nil {
 			return nil, e
 		}
-		if haveExistingCS {
+		if hasExistingCS {
 			vecs := ConvertContainerServiceToVLabs(existingContainerService)
 			if e := containerService.Merge(vecs); e != nil {
 				return nil, e
