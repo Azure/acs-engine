@@ -550,6 +550,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["exechealthz"])
 		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["heapster"])
 		addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion]["tiller"])
+		addValue(parametersMap, "kubernetesTillerCPURequests", properties.OrchestratorProfile.KubernetesConfig.TillerCPURequests)
+		addValue(parametersMap, "kubernetesTillerCPULimit", properties.OrchestratorProfile.KubernetesConfig.TillerCPULimit)
+		addValue(parametersMap, "kubernetesTillerMemoryRequests", properties.OrchestratorProfile.KubernetesConfig.TillerMemoryRequests)
+		addValue(parametersMap, "kubernetesTillerMemoryLimit", properties.OrchestratorProfile.KubernetesConfig.TillerMemoryLimit)
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
 		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
@@ -1149,6 +1153,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["heapster"]
 				case "kubernetesTillerSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeConfigs[k8sVersion]["tiller"]
+				case "kubernetesTillerCPURequests":
+					val = DefaultTillerCPURequests
+				case "kubernetesTillerMemoryRequests":
+					val = DefaultTillerMemoryRequests
+				case "kubernetesTillerCPULimit":
+					val = DefaultTillerCPULimit
+				case "kubernetesTillerMemoryLimit":
+					val = DefaultTillerMemoryLimit
 				case "kubernetesKubeDNSSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":

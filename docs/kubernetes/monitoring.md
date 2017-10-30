@@ -83,17 +83,16 @@ To set up Grafana, we will need to deploy Grafana and InfluxDB. We will also nee
 1. `kubectl edit deployment/heapster --namespace=kube-system`
 1. We need to configure Heapster to use InfluxDB as the the data store. To do that under the spec > containers > command property change the command field from:
    ``` yaml
-   command:
-   - /heapster
-   - --source=kubernetes.summary_api:""
+   - command:
+     - /heapster
+     - --source=kubernetes.summary_api:""
    ```
    to this:
    ```yaml
-   command:
-   - /heapster
-   - --source=kubernetes.summary_api:""
-   - --source=kubernetes.summary_api:""
-   - --sink=influxdb:http://monitoring-influxdb.kube-system.svc:8086
+   - command:
+     - /heapster
+     - --source=kubernetes.summary_api:""
+     - --sink=influxdb:http://monitoring-influxdb.kube-system.svc:8086
    ```
 1. Save and exit from your editor to change the deployment. Now, Heapster will restart the pods and be configured to use InfluxDB. To ensure everything is ok, check the Heapster logs:
 1. `getHeapster() { kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' --namespace=kube-system | grep -i heapster; }`

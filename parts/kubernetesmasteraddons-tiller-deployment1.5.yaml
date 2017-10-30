@@ -80,10 +80,10 @@ spec:
           timeoutSeconds: 1
         resources:
           requests:
-            cpu: 50m
-            memory: 150Mi
+            cpu: <kubernetesTillerCPURequests>
+            memory: <kubernetesTillerMemoryRequests>
           limits:
-            cpu: 50m
-            memory: 150Mi
+            cpu: <kubernetesTillerCPULimit>
+            memory: <kubernetesTillerMemoryLimit>
       nodeSelector:
         beta.kubernetes.io/os: linux
