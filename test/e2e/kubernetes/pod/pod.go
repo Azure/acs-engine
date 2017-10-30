@@ -41,7 +41,6 @@ type Status struct {
 func GetAll(namespace string) (*List, error) {
 	out, err := exec.Command("kubectl", "get", "pods", "-n", namespace, "-o", "json").CombinedOutput()
 	if err != nil {
-		log.Printf("Error trying to run 'kubectl get pods':%s\n", string(out))
 		return nil, err
 	}
 	pl := List{}
@@ -57,7 +56,6 @@ func GetAll(namespace string) (*List, error) {
 func Get(podName, namespace string) (*Pod, error) {
 	out, err := exec.Command("kubectl", "get", "pods", podName, "-n", namespace, "-o", "json").CombinedOutput()
 	if err != nil {
-		log.Printf("Error trying to run 'kubectl get pods':%s\n", string(out))
 		return nil, err
 	}
 	p := Pod{}
@@ -73,7 +71,6 @@ func Get(podName, namespace string) (*Pod, error) {
 func GetAllByPrefix(prefix, namespace string) ([]Pod, error) {
 	pl, err := GetAll(namespace)
 	if err != nil {
-		log.Printf("Error while trying to check if all pods are in running state:%s", err)
 		return nil, err
 	}
 	pods := []Pod{}
@@ -94,7 +91,6 @@ func GetAllByPrefix(prefix, namespace string) ([]Pod, error) {
 func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
 	pl, err := GetAll(namespace)
 	if err != nil {
-		log.Printf("Error while trying to check if all pods are in running state:%s", err)
 		return false, err
 	}
 
@@ -139,10 +135,7 @@ func WaitOnReady(podPrefix, namespace string, sleep, duration time.Duration) (bo
 			case <-ctx.Done():
 				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pods (%s) to become ready in namespace (%s)", duration.String(), podPrefix, namespace)
 			default:
-				ready, err := AreAllPodsRunning(podPrefix, namespace)
-				if err != nil {
-					log.Printf("Error while waiting on pods to become ready:%s", err)
-				}
+				ready, _ := AreAllPodsRunning(podPrefix, namespace)
 				if ready == true {
 					readyCh <- true
 				} else {

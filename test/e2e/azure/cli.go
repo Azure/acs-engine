@@ -56,12 +56,13 @@ func NewAccount() (*Account, error) {
 
 // Login will login to a given subscription
 func (a *Account) Login() error {
-	_, err := exec.Command("az", "login",
+	output, err := exec.Command("az", "login",
 		"--service-principal",
 		"--username", a.User.ID,
 		"--password", a.User.Secret,
 		"--tenant", a.TenantID).CombinedOutput()
 	if err != nil {
+		log.Printf("output:%s\n", output)
 		return err
 	}
 	return nil
