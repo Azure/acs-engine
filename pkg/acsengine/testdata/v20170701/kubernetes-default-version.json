@@ -2,8 +2,7 @@
   "apiVersion": "2017-07-01",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "Kubernetes",
-      "orchestratorVersion": "1.6.11"
+      "orchestratorType": "Kubernetes"
     },
     "masterProfile": {
       "count": 1,
