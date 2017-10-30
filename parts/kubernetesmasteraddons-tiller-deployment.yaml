@@ -85,9 +85,9 @@ spec:
         resources:
           requests:
             cpu: <kubernetesTillerCPURequests>
-            memory: <kuberbetesTillerMemoryRequests>
+            memory: <kubernetesTillerMemoryRequests>
           limits:
             cpu: <kubernetesTillerCPULimit>
-            memory: <kunernetesTillerMemoryLimit>
+            memory: <kubernetesTillerMemoryLimit>
       nodeSelector:
         beta.kubernetes.io/os: linux
