@@ -169,6 +169,34 @@
       },
       "type": "string"
     },
+    "kubernetesTillerCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerCPURequests"}}
+      "metadata": {
+        "description": "Helm Tiller CPU Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesTillerMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerMemoryRequests"}}
+      "metadata": {
+        "description": "Helm Tiller Memory Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesTillerCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerCPULimit"}}
+      "metadata": {
+        "description": "Helm Tiller CPU Limit."
+      },
+      "type": "string"
+    },
+    "kubernetesTillerMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerMemoryLimit"}}
+      "metadata": {
+        "description": "Helm Tiller Memory Limit."
+      },
+      "type": "string"
+    },
     "kubernetesPodInfraContainerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesPodInfraContainerSpec"}}
       "metadata": {

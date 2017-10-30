@@ -275,6 +275,22 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.EtcdVersion = "2.5.2"
 		}
 
+		if "" == a.OrchestratorProfile.KubernetesConfig.TillerCPURequests {
+			a.OrchestratorProfile.KubernetesConfig.TillerCPURequests = DefaultTillerCPURequests
+		}
+
+		if "" == a.OrchestratorProfile.KubernetesConfig.TillerCPULimit {
+			a.OrchestratorProfile.KubernetesConfig.TillerCPULimit = DefaultTillerCPULimit
+		}
+
+		if "" == a.OrchestratorProfile.KubernetesConfig.TillerMemoryRequests {
+			a.OrchestratorProfile.KubernetesConfig.TillerMemoryRequests = DefaultTillerMemoryRequests
+		}
+
+		if "" == a.OrchestratorProfile.KubernetesConfig.TillerMemoryLimit {
+			a.OrchestratorProfile.KubernetesConfig.TillerMemoryLimit = DefaultTillerMemoryLimit
+		}
+
 	} else if o.OrchestratorType == api.DCOS {
 		if o.DcosConfig == nil {
 			o.DcosConfig = &api.DcosConfig{}
