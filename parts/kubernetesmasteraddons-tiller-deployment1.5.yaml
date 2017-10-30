@@ -80,7 +80,6 @@ spec:
           timeoutSeconds: 1
         resources:
           requests:
-             requests:
             cpu: <kubernetesTillerCPURequests>
             memory: <kubernetesTillerMemoryRequests>
           limits:
