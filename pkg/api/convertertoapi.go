@@ -511,7 +511,7 @@ func convertVLabsWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile
 func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = v20160930.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
-		api.OrchestratorVersion = KubernetesVersion1Dot5Dot8
+		api.OrchestratorVersion = common.KubernetesVersion1Dot5Dot8
 	} else if api.OrchestratorType == DCOS {
 		api.OrchestratorVersion = DCOSVersion1Dot9Dot0
 	}
@@ -527,7 +527,7 @@ func convertV20160330OrchestratorProfile(v20160330 *v20160330.OrchestratorProfil
 func convertV20170131OrchestratorProfile(v20170131 *v20170131.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = v20170131.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
-		api.OrchestratorVersion = KubernetesDefaultVersion
+		api.OrchestratorVersion = common.KubernetesDefaultVersion
 	} else if api.OrchestratorType == DCOS {
 		api.OrchestratorVersion = DCOSVersion1Dot9Dot0
 	}
@@ -543,10 +543,13 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 	switch api.OrchestratorType {
 	case Kubernetes:
 		switch v20170701cs.OrchestratorVersion {
-		case KubernetesVersion1Dot8Dot2, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
+		case common.KubernetesVersion1Dot8Dot0, common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2,
+			common.KubernetesVersion1Dot7Dot0, common.KubernetesVersion1Dot7Dot1, common.KubernetesVersion1Dot7Dot2, common.KubernetesVersion1Dot7Dot4, common.KubernetesVersion1Dot7Dot5, common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9,
+			common.KubernetesVersion1Dot6Dot6, common.KubernetesVersion1Dot6Dot9, common.KubernetesVersion1Dot6Dot11,
+			common.KubernetesVersion1Dot5Dot7, common.KubernetesVersion1Dot5Dot8:
 			api.OrchestratorVersion = v20170701cs.OrchestratorVersion
 		default:
-			api.OrchestratorVersion = KubernetesDefaultVersion
+			api.OrchestratorVersion = common.KubernetesDefaultVersion
 		}
 	case DCOS:
 		switch v20170701cs.OrchestratorVersion {

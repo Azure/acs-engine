@@ -25,6 +25,7 @@ type MockACSEngineClient struct {
 	FailGetStorageClient            bool
 	FailDeleteNetworkInterface      bool
 	FailGetKubernetesClient         bool
+	FailListProviders               bool
 	MockKubernetesClient            *MockKubernetesClient
 }
 
@@ -380,4 +381,13 @@ func (mc *MockACSEngineClient) GetKubernetesClient(masterURL, kubeConfig string,
 		mc.MockKubernetesClient = &MockKubernetesClient{}
 	}
 	return mc.MockKubernetesClient, nil
+}
+
+// ListProviders mock
+func (mc *MockACSEngineClient) ListProviders() (resources.ProviderListResult, error) {
+	if mc.FailListProviders {
+		return resources.ProviderListResult{}, fmt.Errorf("ListProviders failed")
+	}
+
+	return resources.ProviderListResult{}, nil
 }

@@ -2,6 +2,7 @@ package coordinator_test
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"os"
@@ -50,7 +51,7 @@ func TestQueryExecutor_ExecuteQuery_SelectStatement(t *testing.T) {
 		}
 
 		var sh MockShard
-		sh.CreateIteratorFn = func(m string, opt query.IteratorOptions) (query.Iterator, error) {
+		sh.CreateIteratorFn = func(ctx context.Context, m string, opt query.IteratorOptions) (query.Iterator, error) {
 			return &FloatIterator{Points: []query.FloatPoint{
 				{Name: "cpu", Time: int64(0 * time.Second), Aux: []interface{}{float64(100)}},
 				{Name: "cpu", Time: int64(1 * time.Second), Aux: []interface{}{float64(200)}},
@@ -103,7 +104,7 @@ func TestQueryExecutor_ExecuteQuery_MaxSelectBucketsN(t *testing.T) {
 		}
 
 		var sh MockShard
-		sh.CreateIteratorFn = func(m string, opt query.IteratorOptions) (query.Iterator, error) {
+		sh.CreateIteratorFn = func(ctx context.Context, m string, opt query.IteratorOptions) (query.Iterator, error) {
 			return &FloatIterator{
 				Points: []query.FloatPoint{{Name: "cpu", Time: int64(0 * time.Second), Aux: []interface{}{float64(100)}}},
 			}, nil
@@ -318,12 +319,14 @@ type TSDBStore struct {
 	RestoreShardFn func(id uint64, r io.Reader) error
 	BackupShardFn  func(id uint64, since time.Time, w io.Writer) error
 
-	DeleteDatabaseFn        func(name string) error
-	DeleteMeasurementFn     func(database, name string) error
-	DeleteRetentionPolicyFn func(database, name string) error
-	DeleteShardFn           func(id uint64) error
-	DeleteSeriesFn          func(database string, sources []influxql.Source, condition influxql.Expr) error
-	ShardGroupFn            func(ids []uint64) tsdb.ShardGroup
+	DeleteDatabaseFn          func(name string) error
+	DeleteMeasurementFn       func(database, name string) error
+	DeleteRetentionPolicyFn   func(database, name string) error
+	DeleteShardFn             func(id uint64) error
+	DeleteSeriesFn            func(database string, sources []influxql.Source, condition influxql.Expr) error
+	ShardGroupFn              func(ids []uint64) tsdb.ShardGroup
+	MeasurementsCardinalityFn func(database string) (int64, error)
+	SeriesCardinalityFn       func(database string) (int64, error)
 }
 
 func (s *TSDBStore) CreateShard(database, policy string, shardID uint64, enabled bool) error {
@@ -377,14 +380,22 @@ func (s *TSDBStore) MeasurementNames(database string, cond influxql.Expr) ([][]b
 	return nil, nil
 }
 
+func (s *TSDBStore) MeasurementsCardinality(database string) (int64, error) {
+	return s.MeasurementsCardinalityFn(database)
+}
+
 func (s *TSDBStore) TagValues(_ query.Authorizer, database string, cond influxql.Expr) ([]tsdb.TagValues, error) {
 	return nil, nil
+}
+
+func (s *TSDBStore) SeriesCardinality(database string) (int64, error) {
+	return s.SeriesCardinalityFn(database)
 }
 
 type MockShard struct {
 	Measurements      []string
 	FieldDimensionsFn func(measurements []string) (fields map[string]influxql.DataType, dimensions map[string]struct{}, err error)
-	CreateIteratorFn  func(m string, opt query.IteratorOptions) (query.Iterator, error)
+	CreateIteratorFn  func(ctx context.Context, m string, opt query.IteratorOptions) (query.Iterator, error)
 	IteratorCostFn    func(m string, opt query.IteratorOptions) (query.IteratorCost, error)
 	ExpandSourcesFn   func(sources influxql.Sources) (influxql.Sources, error)
 }
@@ -417,8 +428,8 @@ func (sh *MockShard) MapType(measurement, field string) influxql.DataType {
 	return influxql.Unknown
 }
 
-func (sh *MockShard) CreateIterator(measurement string, opt query.IteratorOptions) (query.Iterator, error) {
-	return sh.CreateIteratorFn(measurement, opt)
+func (sh *MockShard) CreateIterator(ctx context.Context, measurement string, opt query.IteratorOptions) (query.Iterator, error) {
+	return sh.CreateIteratorFn(ctx, measurement, opt)
 }
 
 func (sh *MockShard) IteratorCost(measurement string, opt query.IteratorOptions) (query.IteratorCost, error) {

@@ -181,93 +181,98 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	if a.OrchestratorProfile == nil {
 		return
 	}
-	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-		k8sVersion := a.OrchestratorProfile.OrchestratorVersion
-		if a.OrchestratorProfile.KubernetesConfig == nil {
-			a.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
+	o := a.OrchestratorProfile
+	o.OrchestratorVersion = common.GetValidPatchVersion(
+		o.OrchestratorType,
+		o.OrchestratorVersion)
+	if o.OrchestratorType == api.Kubernetes {
+		k8sVersion := o.OrchestratorVersion
+
+		if o.KubernetesConfig == nil {
+			o.KubernetesConfig = &api.KubernetesConfig{}
 		}
-		if a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase == "" {
-			a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
+		if o.KubernetesConfig.KubernetesImageBase == "" {
+			o.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
 		}
-		if a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "" {
-			a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+		if o.KubernetesConfig.NetworkPolicy == "" {
+			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 		}
-		if a.OrchestratorProfile.KubernetesConfig.ClusterSubnet == "" {
-			if a.OrchestratorProfile.IsVNETIntegrated() {
+		if o.KubernetesConfig.ClusterSubnet == "" {
+			if o.IsVNETIntegrated() {
 				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
-				a.OrchestratorProfile.KubernetesConfig.ClusterSubnet = DefaultKubernetesSubnet
+				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesSubnet
 			} else {
-				a.OrchestratorProfile.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
+				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
 			}
 		}
-		if a.OrchestratorProfile.KubernetesConfig.MaxPods == 0 {
-			if a.OrchestratorProfile.IsVNETIntegrated() {
-				a.OrchestratorProfile.KubernetesConfig.MaxPods = DefaultKubernetesMaxPodsVNETIntegrated
+		if o.KubernetesConfig.MaxPods == 0 {
+			if o.IsVNETIntegrated() {
+				o.KubernetesConfig.MaxPods = DefaultKubernetesMaxPodsVNETIntegrated
 			} else {
-				a.OrchestratorProfile.KubernetesConfig.MaxPods = DefaultKubernetesMaxPods
+				o.KubernetesConfig.MaxPods = DefaultKubernetesMaxPods
 			}
 		}
-		if a.OrchestratorProfile.KubernetesConfig.GCHighThreshold == 0 {
-			a.OrchestratorProfile.KubernetesConfig.GCHighThreshold = DefaultKubernetesGCHighThreshold
+		if o.KubernetesConfig.GCHighThreshold == 0 {
+			o.KubernetesConfig.GCHighThreshold = DefaultKubernetesGCHighThreshold
 		}
-		if a.OrchestratorProfile.KubernetesConfig.GCLowThreshold == 0 {
-			a.OrchestratorProfile.KubernetesConfig.GCLowThreshold = DefaultKubernetesGCLowThreshold
+		if o.KubernetesConfig.GCLowThreshold == 0 {
+			o.KubernetesConfig.GCLowThreshold = DefaultKubernetesGCLowThreshold
 		}
-		if a.OrchestratorProfile.KubernetesConfig.DNSServiceIP == "" {
-			a.OrchestratorProfile.KubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
+		if o.KubernetesConfig.DNSServiceIP == "" {
+			o.KubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
 		}
-		if a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet == "" {
-			a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
+		if o.KubernetesConfig.DockerBridgeSubnet == "" {
+			o.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 		}
-		if a.OrchestratorProfile.KubernetesConfig.ServiceCIDR == "" {
-			a.OrchestratorProfile.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
+		if o.KubernetesConfig.ServiceCIDR == "" {
+			o.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		}
-		if a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr == "" {
-			a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr = DefaultNonMasqueradeCidr
+		if o.KubernetesConfig.NonMasqueradeCidr == "" {
+			o.KubernetesConfig.NonMasqueradeCidr = DefaultNonMasqueradeCidr
 		}
-		if a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency == "" {
-			a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sVersion]["nodestatusfreq"]
+		if o.KubernetesConfig.NodeStatusUpdateFrequency == "" {
+			o.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sVersion]["nodestatusfreq"]
 		}
-		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sVersion]["nodegraceperiod"]
+		if o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
+			o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sVersion]["nodegraceperiod"]
 		}
-		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout = KubeConfigs[k8sVersion]["podeviction"]
+		if o.KubernetesConfig.CtrlMgrPodEvictionTimeout == "" {
+			o.KubernetesConfig.CtrlMgrPodEvictionTimeout = KubeConfigs[k8sVersion]["podeviction"]
 		}
-		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod = KubeConfigs[k8sVersion]["routeperiod"]
+		if o.KubernetesConfig.CtrlMgrRouteReconciliationPeriod == "" {
+			o.KubernetesConfig.CtrlMgrRouteReconciliationPeriod = KubeConfigs[k8sVersion]["routeperiod"]
 		}
 		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
-		if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff == true {
-			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration == 0 {
-				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
+		if o.KubernetesConfig.CloudProviderBackoff == true {
+			if o.KubernetesConfig.CloudProviderBackoffDuration == 0 {
+				o.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
 			}
-			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent == 0 {
-				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
+			if o.KubernetesConfig.CloudProviderBackoffExponent == 0 {
+				o.KubernetesConfig.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
 			}
-			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter == 0 {
-				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
+			if o.KubernetesConfig.CloudProviderBackoffJitter == 0 {
+				o.KubernetesConfig.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
 			}
-			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries == 0 {
-				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
+			if o.KubernetesConfig.CloudProviderBackoffRetries == 0 {
+				o.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
 			}
 		}
 		k8sSemVer, _ := semver.NewVersion(k8sVersion)
 		constraint, _ := semver.NewConstraint(">= 1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
 		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
-		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && constraint.Check(k8sSemVer) {
-			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
-				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
+		if o.KubernetesConfig.CloudProviderRateLimit == true && constraint.Check(k8sSemVer) {
+			if o.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
+				o.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
 			}
-			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket == 0 {
-				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
+			if o.KubernetesConfig.CloudProviderRateLimitBucket == 0 {
+				o.KubernetesConfig.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
 			}
 		}
 
 		// default etcd version
-		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdVersion {
-			a.OrchestratorProfile.KubernetesConfig.EtcdVersion = "2.5.2"
+		if "" == o.KubernetesConfig.EtcdVersion {
+			o.KubernetesConfig.EtcdVersion = "2.5.2"
 		}
 
 		if "" == a.OrchestratorProfile.KubernetesConfig.TillerCPURequests {
@@ -286,12 +291,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.TillerMemoryLimit = DefaultTillerMemoryLimit
 		}
 
-	} else if a.OrchestratorProfile.OrchestratorType == api.DCOS {
-		if a.OrchestratorProfile.DcosConfig == nil {
-			a.OrchestratorProfile.DcosConfig = &api.DcosConfig{}
+	} else if o.OrchestratorType == api.DCOS {
+		if o.DcosConfig == nil {
+			o.DcosConfig = &api.DcosConfig{}
 		}
-		if a.OrchestratorProfile.DcosConfig.DcosWindowsBootstrapURL == "" {
-			a.OrchestratorProfile.DcosConfig.DcosWindowsBootstrapURL = DefaultDCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
+		if o.DcosConfig.DcosWindowsBootstrapURL == "" {
+			o.DcosConfig.DcosWindowsBootstrapURL = DefaultDCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
 		}
 	}
 }

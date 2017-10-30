@@ -66,7 +66,7 @@ func New() locales.Translator {
 		daysAbbreviated:        []string{"ýb", "db", "sb", "çb", "pb", "an", "şb"},
 		daysNarrow:             []string{"Ý", "D", "S", "Ç", "P", "A", "Ş"},
 		daysWide:               []string{"ýekşenbe", "duşenbe", "sişenbe", "çarşenbe", "penşenbe", "anna", "şenbe"},
-		timezones:              map[string]string{"BOT": "Boliwiýa", "HADT": "Gawaý-Aleut, tomusky wagt", "CLT": "Çili, standart wagt", "TMST": "Türkmenistan, tomusky wagt", "HKST": "Gonkong, tomusky wagt", "∅∅∅": "Peru, tomusky wagt", "GYT": "Gaýana", "AWDT": "Günbatar Awstraliýa, tomusky wagt", "VET": "Wenesuela", "CLST": "Çili, tomusky wagt", "ADT": "Atlantika, tomusky wagt", "OEZ": "Gündogar Ýewropa, standart wagt", "WAST": "Günbatar Afrika, tomusky wagt", "CST": "Merkezi Amerika, standart wagt", "WIT": "Gündogar Indoneziýa", "OESZ": "Gündogar Ýewropa, tomusky wagt", "GMT": "Grinwiç boýunça orta wagt", "AKST": "Alýaska, standart wagt", "HEPM": "Sen Pýer we Mikelon, tomusky wagt", "JST": "Ýaponiýa, standart wagt", "HEOG": "Günbatar Grenlandiýa, tomusky wagt", "MST": "MST", "ART": "Argentina, standart wagt", "ARST": "Argentina, tomusky wagt", "WEZ": "Günbatar Ýewropa, standart wagt", "HENOMX": "D.g.-G.b. Meksika, tomusky wagt", "HEPMX": "Meksikan Ýuwaş umman, tomusky wagt", "HNCU": "Kuba, standart wagt", "MDT": "MDT", "SAST": "Günorta Afrika, standart wagt", "HAST": "Gawaý-Aleut, standart wagt", "ECT": "Ekwador", "UYST": "Urugwaý, tomusky wagt", "AWST": "Günbatar Awstraliýa, standart wagt", "CHAST": "Çatem, standart wagt", "SGT": "Singapur, standart wagt", "WAT": "Günbatar Afrika, standart wagt", "UYT": "Urugwaý, standart wagt", "LHDT": "Lord-Hau, tomusky wagt", "EST": "Günorta Amerika, standart wagt", "WIB": "Günbatar Indoneziýa", "WART": "Günbatar Argentina, standart wagt", "ACST": "Merkezi Awstraliýa, standart wagt", "CHADT": "Çatem, tomusky wagt", "NZDT": "Täze Zelandiýa, tomusky wagt", "AEDT": "Gündogar Awstraliýa, tomusky wagt", "HNPMX": "Meksikan Ýuwaş umman, standart wagt", "CAT": "Merkezi Afrika", "MYT": "Malaýziýa", "EDT": "Günorta Amerika, tomusky wagt", "COT": "Kolumbiýa, standart wagt", "BT": "Butan", "MEZ": "Merkezi Ýewropa, standart wagt", "WARST": "Günbatar Argentina, tomusky wagt", "AST": "Atlantika, standart wagt", "WITA": "Merkezi Indoneziýa", "AKDT": "Alýaska, tomusky wagt", "LHST": "Lord-Hau, standart wagt", "SRT": "Surinam", "EAT": "Gündogar Afrika", "ACDT": "Merkezi Awstraliýa, tomusky wagt", "HAT": "Nýufaundlend, tomusky wagt", "HEEG": "Gündogar Grenlandiýa, tomusky wagt", "GFT": "Fransuz Gwiana", "ACWDT": "Merkezi Awstraliýa, günbatar tarap, tomusky wagt", "NZST": "Täze Zelandiýa, standart wagt", "HNNOMX": "D.g.-G.b. Meksika, standart wagt", "HNT": "Nýufaundlend, standart wagt", "HNEG": "Gündogar Grenlandiýa, standart wagt", "MESZ": "Merkezi Ýewropa, tomusky wagt", "JDT": "Ýaponiýa, tomusky wagt", "COST": "Kolumbiýa, tomusky wagt", "HNPM": "Sen Pýer we Mikelon, standart wagt", "PST": "Ýuwaş umman, standart wagt", "IST": "Hindistan", "ACWST": "Merkezi Awstraliýa, günbatar tarap, standart wagt", "WESZ": "Günbatar Ýewropa, tomusky wagt", "TMT": "Türkmenistan, standart wagt", "HKT": "Gonkong, standart wagt", "ChST": "Çamorro", "PDT": "Ýuwaş umman, tomusky wagt", "HNOG": "Günbatar Grenlandiýa, standart wagt", "AEST": "Gündogar Awstraliýa, standart wagt", "HECU": "Kuba, tomusky wagt", "CDT": "Merkezi Amerika, tomusky wagt"},
+		timezones:              map[string]string{"CST": "Merkezi Amerika, standart wagt", "MYT": "Malaýziýa", "COT": "Kolumbiýa, standart wagt", "HKT": "Gonkong, standart wagt", "CLST": "Çili, tomusky wagt", "ACST": "Merkezi Awstraliýa, standart wagt", "ECT": "Ekwador", "BOT": "Boliwiýa", "UYST": "Urugwaý, tomusky wagt", "OEZ": "Gündogar Ýewropa, standart wagt", "IST": "Hindistan", "GFT": "Fransuz Gwiana", "EDT": "Günorta Amerika, tomusky wagt", "GMT": "Grinwiç boýunça orta wagt", "AWDT": "Günbatar Awstraliýa, tomusky wagt", "HNOG": "Günbatar Grenlandiýa, standart wagt", "MDT": "MDT", "HNNOMX": "D.g.-G.b. Meksika, standart wagt", "AST": "Atlantika, standart wagt", "ART": "Argentina, standart wagt", "HEEG": "Gündogar Grenlandiýa, tomusky wagt", "WAST": "Günbatar Afrika, tomusky wagt", "HNT": "Nýufaundlend, standart wagt", "BT": "Butan", "HAST": "Gawaý-Aleut, standart wagt", "JST": "Ýaponiýa, standart wagt", "HKST": "Gonkong, tomusky wagt", "EST": "Günorta Amerika, standart wagt", "HEPMX": "Meksikan Ýuwaş umman, tomusky wagt", "HNPM": "Sen Pýer we Mikelon, standart wagt", "HECU": "Kuba, tomusky wagt", "MEZ": "Merkezi Ýewropa, standart wagt", "OESZ": "Gündogar Ýewropa, tomusky wagt", "HNEG": "Gündogar Grenlandiýa, standart wagt", "AKDT": "Alýaska, tomusky wagt", "CAT": "Merkezi Afrika", "ChST": "Çamorro", "HNPMX": "Meksikan Ýuwaş umman, standart wagt", "JDT": "Ýaponiýa, tomusky wagt", "ADT": "Atlantika, tomusky wagt", "EAT": "Gündogar Afrika", "AKST": "Alýaska, standart wagt", "SGT": "Singapur, standart wagt", "MESZ": "Merkezi Ýewropa, tomusky wagt", "HADT": "Gawaý-Aleut, tomusky wagt", "PST": "Ýuwaş umman, standart wagt", "CHADT": "Çatem, tomusky wagt", "MST": "MST", "NZST": "Täze Zelandiýa, standart wagt", "WART": "Günbatar Argentina, standart wagt", "WITA": "Merkezi Indoneziýa", "CLT": "Çili, standart wagt", "VET": "Wenesuela", "SAST": "Günorta Afrika, standart wagt", "GYT": "Gaýana", "WEZ": "Günbatar Ýewropa, standart wagt", "WIB": "Günbatar Indoneziýa", "ACWDT": "Merkezi Awstraliýa, günbatar tarap, tomusky wagt", "LHST": "Lord-Hau, standart wagt", "ARST": "Argentina, tomusky wagt", "CHAST": "Çatem, standart wagt", "HNCU": "Kuba, standart wagt", "WARST": "Günbatar Argentina, tomusky wagt", "COST": "Kolumbiýa, tomusky wagt", "PDT": "Ýuwaş umman, tomusky wagt", "SRT": "Surinam", "AWST": "Günbatar Awstraliýa, standart wagt", "HENOMX": "D.g.-G.b. Meksika, tomusky wagt", "AEDT": "Gündogar Awstraliýa, tomusky wagt", "WAT": "Günbatar Afrika, standart wagt", "WESZ": "Günbatar Ýewropa, tomusky wagt", "CDT": "Merkezi Amerika, tomusky wagt", "TMT": "Türkmenistan, standart wagt", "TMST": "Türkmenistan, tomusky wagt", "HEOG": "Günbatar Grenlandiýa, tomusky wagt", "AEST": "Gündogar Awstraliýa, standart wagt", "ACDT": "Merkezi Awstraliýa, tomusky wagt", "UYT": "Urugwaý, standart wagt", "∅∅∅": "Azor adalary, tomusky wagt", "HAT": "Nýufaundlend, tomusky wagt", "HEPM": "Sen Pýer we Mikelon, tomusky wagt", "WIT": "Gündogar Indoneziýa", "LHDT": "Lord-Hau, tomusky wagt", "ACWST": "Merkezi Awstraliýa, günbatar tarap, standart wagt", "NZDT": "Täze Zelandiýa, tomusky wagt"},
 	}
 }
 
@@ -180,6 +180,21 @@ func (tk *tk) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (tk *tk) WeekdaysWide() []string {
 	return tk.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (tk *tk) Decimal() string {
+	return tk.decimal
+}
+
+// Group returns the group of number
+func (tk *tk) Group() string {
+	return tk.group
+}
+
+// Group returns the minus sign of number
+func (tk *tk) Minus() string {
+	return tk.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'tk' and handles both Whole and Real numbers based on 'v'
@@ -407,7 +422,7 @@ func (tk *tk) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -426,7 +441,7 @@ func (tk *tk) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -445,7 +460,7 @@ func (tk *tk) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -464,7 +479,7 @@ func (tk *tk) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x20}...)

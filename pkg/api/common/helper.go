@@ -66,6 +66,33 @@ func GetSupportedVersions(orchType string) (versions []string, defaultVersion st
 	}
 }
 
+//GetValidPatchVersion gets the current valid patch version for the minor version of the passed in version
+func GetValidPatchVersion(orchType, orchVer string) string {
+	if orchVer == "" {
+		return RationalizeReleaseAndVersion(
+			orchType,
+			"",
+			"")
+	}
+
+	// check if the current version is valid, this allows us to have multiple supported patch versions in the future if we need it
+	version := RationalizeReleaseAndVersion(
+		orchType,
+		"",
+		orchVer)
+
+	if version == "" {
+		sv, _ := semver.NewVersion(orchVer)
+		sr := fmt.Sprintf("%d.%d", sv.Major(), sv.Minor())
+
+		version = RationalizeReleaseAndVersion(
+			orchType,
+			sr,
+			"")
+	}
+	return version
+}
+
 // RationalizeReleaseAndVersion return a version when it can be rationalized from the input, otherwise ""
 func RationalizeReleaseAndVersion(orchType, orchRel, orchVer string) (version string) {
 	supportedVersions, defaultVersion := GetSupportedVersions(orchType)

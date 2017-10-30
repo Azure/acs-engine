@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"紀元前", "西暦"},
 		erasNarrow:             []string{"BC", "AD"},
 		erasWide:               []string{"紀元前", "西暦"},
-		timezones:              map[string]string{"MDT": "マカオ夏時間", "WAT": "西アフリカ標準時", "HEPM": "サンピエール・ミクロン夏時間", "AWST": "オーストラリア西部標準時", "SGT": "シンガポール標準時", "∅∅∅": "アマゾン夏時間", "WEZ": "西ヨーロッパ標準時", "JST": "日本標準時", "TMST": "トルクメニスタン夏時間", "AEST": "オーストラリア東部標準時", "AST": "大西洋標準時", "WIB": "インドネシア西部時間", "BOT": "ボリビア時間", "VET": "ベネズエラ時間", "OESZ": "東ヨーロッパ夏時間", "WART": "西部アルゼンチン標準時", "GMT": "グリニッジ標準時", "HEEG": "グリーンランド東部夏時間", "AKST": "アラスカ標準時", "HEPMX": "メキシコ太平洋夏時間", "AWDT": "オーストラリア西部夏時間", "COST": "コロンビア夏時間", "HNEG": "グリーンランド東部標準時", "GFT": "仏領ギアナ時間", "COT": "コロンビア標準時", "CST": "アメリカ中部標準時", "PDT": "アメリカ太平洋夏時間", "HADT": "ハワイ・アリューシャン夏時間", "CAT": "中央アフリカ時間", "EST": "アメリカ東部標準時", "ACWDT": "オーストラリア中西部夏時間", "HEOG": "グリーンランド西部夏時間", "HAT": "ニューファンドランド夏時間", "HENOMX": "メキシコ北西部夏時間", "WITA": "インドネシア中部時間", "JDT": "日本夏時間", "MYT": "マレーシア時間", "CLST": "チリ夏時間", "WAST": "西アフリカ夏時間", "HNCU": "キューバ標準時", "HECU": "キューバ夏時間", "MEZ": "中央ヨーロッパ標準時", "HNOG": "グリーンランド西部標準時", "ARST": "アルゼンチン夏時間", "LHDT": "ロードハウ夏時間", "WARST": "西部アルゼンチン夏時間", "AEDT": "オーストラリア東部夏時間", "AKDT": "アラスカ夏時間", "EAT": "東アフリカ時間", "HAST": "ハワイ・アリューシャン標準時", "WESZ": "西ヨーロッパ夏時間", "HKST": "香港夏時間", "HNNOMX": "メキシコ北西部標準時", "HNPM": "サンピエール・ミクロン標準時", "CDT": "アメリカ中部夏時間", "MESZ": "中央ヨーロッパ夏時間", "CLT": "チリ標準時", "HKT": "香港標準時", "ACST": "オーストラリア中部標準時", "HNT": "ニューファンドランド標準時", "UYST": "ウルグアイ夏時間", "ChST": "チャモロ時間", "WIT": "インドネシア東部時間", "PST": "アメリカ太平洋標準時", "IST": "インド標準時", "NZDT": "ニュージーランド夏時間", "ART": "アルゼンチン標準時", "EDT": "アメリカ東部夏時間", "SRT": "スリナム時間", "CHADT": "チャタム夏時間", "OEZ": "東ヨーロッパ標準時", "TMT": "トルクメニスタン標準時", "MST": "マカオ標準時", "UYT": "ウルグアイ標準時", "HNPMX": "メキシコ太平洋標準時", "GYT": "ガイアナ時間", "ADT": "大西洋夏時間", "ACDT": "オーストラリア中部夏時間", "BT": "ブータン時間", "LHST": "ロードハウ標準時", "CHAST": "チャタム標準時", "ECT": "エクアドル時間", "ACWST": "オーストラリア中西部標準時", "NZST": "ニュージーランド標準時", "SAST": "南アフリカ標準時"},
+		timezones:              map[string]string{"HAST": "ハワイ・アリューシャン標準時", "∅∅∅": "アマゾン夏時間", "HNPM": "サンピエール・ミクロン標準時", "MST": "マカオ標準時", "WARST": "西部アルゼンチン夏時間", "AEDT": "オーストラリア東部夏時間", "CLST": "チリ夏時間", "CAT": "中央アフリカ時間", "WITA": "インドネシア中部時間", "ART": "アルゼンチン標準時", "HEOG": "グリーンランド西部夏時間", "ChST": "チャモロ時間", "TMT": "トルクメニスタン標準時", "IST": "インド標準時", "HNOG": "グリーンランド西部標準時", "COST": "コロンビア夏時間", "HNPMX": "メキシコ太平洋標準時", "ACWST": "オーストラリア中西部標準時", "WAST": "西アフリカ夏時間", "UYT": "ウルグアイ標準時", "UYST": "ウルグアイ夏時間", "WESZ": "西ヨーロッパ夏時間", "PST": "アメリカ太平洋標準時", "AWDT": "オーストラリア西部夏時間", "WIT": "インドネシア東部時間", "MESZ": "中央ヨーロッパ夏時間", "WART": "西部アルゼンチン標準時", "SGT": "シンガポール標準時", "WEZ": "西ヨーロッパ標準時", "ADT": "大西洋夏時間", "COT": "コロンビア標準時", "HNNOMX": "メキシコ北西部標準時", "LHDT": "ロードハウ夏時間", "WAT": "西アフリカ標準時", "BOT": "ボリビア時間", "AEST": "オーストラリア東部標準時", "CDT": "アメリカ中部夏時間", "NZST": "ニュージーランド標準時", "NZDT": "ニュージーランド夏時間", "TMST": "トルクメニスタン夏時間", "LHST": "ロードハウ標準時", "SAST": "南アフリカ標準時", "ACDT": "オーストラリア中部夏時間", "PDT": "アメリカ太平洋夏時間", "HNT": "ニューファンドランド標準時", "VET": "ベネズエラ時間", "OEZ": "東ヨーロッパ標準時", "CLT": "チリ標準時", "HAT": "ニューファンドランド夏時間", "HEPM": "サンピエール・ミクロン夏時間", "CST": "アメリカ中部標準時", "CHAST": "チャタム標準時", "AST": "大西洋標準時", "GFT": "仏領ギアナ時間", "HKT": "香港標準時", "EST": "アメリカ東部標準時", "ACST": "オーストラリア中部標準時", "MEZ": "中央ヨーロッパ標準時", "GMT": "グリニッジ標準時", "HNCU": "キューバ標準時", "AKDT": "アラスカ夏時間", "CHADT": "チャタム夏時間", "MYT": "マレーシア時間", "HADT": "ハワイ・アリューシャン夏時間", "HENOMX": "メキシコ北西部夏時間", "HNEG": "グリーンランド東部標準時", "EDT": "アメリカ東部夏時間", "GYT": "ガイアナ時間", "HEEG": "グリーンランド東部夏時間", "JST": "日本標準時", "OESZ": "東ヨーロッパ夏時間", "ARST": "アルゼンチン夏時間", "EAT": "東アフリカ時間", "HECU": "キューバ夏時間", "BT": "ブータン時間", "MDT": "マカオ夏時間", "ACWDT": "オーストラリア中西部夏時間", "HKST": "香港夏時間", "ECT": "エクアドル時間", "WIB": "インドネシア西部時間", "AWST": "オーストラリア西部標準時", "SRT": "スリナム時間", "JDT": "日本夏時間", "AKST": "アラスカ標準時", "HEPMX": "メキシコ太平洋夏時間"},
 	}
 }
 
@@ -178,6 +178,21 @@ func (ja *ja) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (ja *ja) WeekdaysWide() []string {
 	return ja.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (ja *ja) Decimal() string {
+	return ja.decimal
+}
+
+// Group returns the group of number
+func (ja *ja) Group() string {
+	return ja.group
+}
+
+// Group returns the minus sign of number
+func (ja *ja) Minus() string {
+	return ja.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'ja' and handles both Whole and Real numbers based on 'v'
@@ -387,7 +402,7 @@ func (ja *ja) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2f}...)
@@ -417,7 +432,7 @@ func (ja *ja) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2f}...)
@@ -447,7 +462,7 @@ func (ja *ja) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0xe5, 0xb9, 0xb4}...)
@@ -467,7 +482,7 @@ func (ja *ja) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0xe5, 0xb9, 0xb4}...)

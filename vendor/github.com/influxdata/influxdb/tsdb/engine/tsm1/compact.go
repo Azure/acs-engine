@@ -1045,6 +1045,11 @@ func (c *Compactor) write(path string, iter KeyIterator) (err error) {
 		}
 	}
 
+	// Were there any errors encountered during iteration?
+	if err := iter.Err(); err != nil {
+		return err
+	}
+
 	// We're all done.  Close out the file.
 	if err := w.WriteIndex(); err != nil {
 		return err
@@ -1089,6 +1094,9 @@ type KeyIterator interface {
 
 	// Close closes the iterator.
 	Close() error
+
+	// Err returns any errors encountered during iteration.
+	Err() error
 }
 
 // tsmKeyIterator implements the KeyIterator for set of TSMReaders.  Iteration produces
@@ -1250,7 +1258,7 @@ func (k *tsmKeyIterator) Next() bool {
 
 	// Read the next block from each TSM iterator
 	for i, v := range k.buf {
-		if v == nil {
+		if len(v) == 0 {
 			iter := k.iterators[i]
 			if iter.Next() {
 				key, minTime, maxTime, typ, _, b, err := iter.Read()
@@ -1261,16 +1269,27 @@ func (k *tsmKeyIterator) Next() bool {
 				// This block may have ranges of time removed from it that would
 				// reduce the block min and max time.
 				tombstones := iter.r.TombstoneRange(key)
-				k.buf[i] = append(k.buf[i], &block{
-					minTime:    minTime,
-					maxTime:    maxTime,
-					key:        key,
-					typ:        typ,
-					b:          b,
-					tombstones: tombstones,
-					readMin:    math.MaxInt64,
-					readMax:    math.MinInt64,
-				})
+
+				var blk *block
+				if cap(k.buf[i]) > len(k.buf[i]) {
+					k.buf[i] = k.buf[i][:len(k.buf[i])+1]
+					blk = k.buf[i][len(k.buf[i])-1]
+					if blk == nil {
+						blk = &block{}
+						k.buf[i][len(k.buf[i])-1] = blk
+					}
+				} else {
+					blk = &block{}
+					k.buf[i] = append(k.buf[i], blk)
+				}
+				blk.minTime = minTime
+				blk.maxTime = maxTime
+				blk.key = key
+				blk.typ = typ
+				blk.b = b
+				blk.tombstones = tombstones
+				blk.readMin = math.MaxInt64
+				blk.readMax = math.MinInt64
 
 				blockKey := key
 				for bytes.Equal(iter.PeekNext(), blockKey) {
@@ -1282,17 +1301,32 @@ func (k *tsmKeyIterator) Next() bool {
 
 					tombstones := iter.r.TombstoneRange(key)
 
-					k.buf[i] = append(k.buf[i], &block{
-						minTime:    minTime,
-						maxTime:    maxTime,
-						key:        key,
-						typ:        typ,
-						b:          b,
-						tombstones: tombstones,
-						readMin:    math.MaxInt64,
-						readMax:    math.MinInt64,
-					})
+					var blk *block
+					if cap(k.buf[i]) > len(k.buf[i]) {
+						k.buf[i] = k.buf[i][:len(k.buf[i])+1]
+						blk = k.buf[i][len(k.buf[i])-1]
+						if blk == nil {
+							blk = &block{}
+							k.buf[i][len(k.buf[i])-1] = blk
+						}
+					} else {
+						blk = &block{}
+						k.buf[i] = append(k.buf[i], blk)
+					}
+
+					blk.minTime = minTime
+					blk.maxTime = maxTime
+					blk.key = key
+					blk.typ = typ
+					blk.b = b
+					blk.tombstones = tombstones
+					blk.readMin = math.MaxInt64
+					blk.readMax = math.MinInt64
 				}
+			}
+
+			if iter.Err() != nil {
+				k.err = iter.Err()
 			}
 		}
 	}
@@ -1322,7 +1356,7 @@ func (k *tsmKeyIterator) Next() bool {
 		}
 		if bytes.Equal(b[0].key, k.key) {
 			k.blocks = append(k.blocks, b...)
-			k.buf[i] = nil
+			k.buf[i] = k.buf[i][:0]
 		}
 	}
 
@@ -1381,6 +1415,11 @@ func (k *tsmKeyIterator) Close() error {
 	return nil
 }
 
+// Error returns any errors encountered during iteration.
+func (k *tsmKeyIterator) Err() error {
+	return k.err
+}
+
 type cacheKeyIterator struct {
 	cache *Cache
 	size  int
@@ -1390,6 +1429,7 @@ type cacheKeyIterator struct {
 	blocks    [][]cacheBlock
 	ready     []chan struct{}
 	interrupt chan struct{}
+	err       error
 }
 
 type cacheBlock struct {
@@ -1466,25 +1506,17 @@ func (c *cacheKeyIterator) encode() {
 					minTime, maxTime := values[0].UnixNano(), values[end-1].UnixNano()
 					var b []byte
 					var err error
-					tenc.Reset()
-
-					maxTime = values[end-1].UnixNano()
 
 					switch values[0].(type) {
 					case FloatValue:
-						fenc.Reset()
 						b, err = encodeFloatBlockUsing(nil, values[:end], tenc, fenc)
 					case IntegerValue:
-						ienc.Reset()
 						b, err = encodeIntegerBlockUsing(nil, values[:end], tenc, ienc)
 					case UnsignedValue:
-						uenc.Reset()
 						b, err = encodeUnsignedBlockUsing(nil, values[:end], tenc, uenc)
 					case BooleanValue:
-						benc.Reset()
 						b, err = encodeBooleanBlockUsing(nil, values[:end], tenc, benc)
 					case StringValue:
-						senc.Reset()
 						b, err = encodeStringBlockUsing(nil, values[:end], tenc, senc)
 					default:
 						b, err = Values(values[:end]).Encode(nil)
@@ -1499,6 +1531,10 @@ func (c *cacheKeyIterator) encode() {
 						b:       b,
 						err:     err,
 					})
+
+					if err != nil {
+						c.err = err
+					}
 				}
 				// Notify this key is fully encoded
 				c.ready[i] <- struct{}{}
@@ -1528,7 +1564,8 @@ func (c *cacheKeyIterator) Read() ([]byte, int64, int64, []byte, error) {
 	// See if snapshot compactions were disabled while we were running.
 	select {
 	case <-c.interrupt:
-		return nil, 0, 0, nil, errCompactionAborted{}
+		c.err = errCompactionAborted{}
+		return nil, 0, 0, nil, c.err
 	default:
 	}
 
@@ -1538,6 +1575,10 @@ func (c *cacheKeyIterator) Read() ([]byte, int64, int64, []byte, error) {
 
 func (c *cacheKeyIterator) Close() error {
 	return nil
+}
+
+func (c *cacheKeyIterator) Err() error {
+	return c.err
 }
 
 type tsmGenerations []*tsmGeneration
