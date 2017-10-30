@@ -16,13 +16,12 @@ import (
 
 // Config holds global test configuration
 type Config struct {
+	SkipTest          bool          `envconfig:"SKIP_TEST" default:"false"`
 	Orchestrator      string        `envconfig:"ORCHESTRATOR" default:"kubernetes"`
 	Name              string        `envconfig:"NAME"`                                                                  // Name allows you to set the name of a cluster already created
-	Location          string        `envconfig:"LOCATION" required:"true" default:"southcentralus"`                     // Location where you want to create the cluster
+	Location          string        `envconfig:"LOCATION"`                                                              // Location where you want to create the cluster
 	ClusterDefinition string        `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
 	CleanUpOnExit     bool          `envconfig:"CLEANUP_ON_EXIT" default:"true"`                                        // if set the tests will not clean up rgs when tests finish
-	ProvisionRetries  int           `envcofnig:"PROVISION_RETRIES" default:"3"`
-	CreateVNET        bool          `envconfig:"CREATE_VNET" default:"false"`
 	Timeout           time.Duration `envconfig:"TIMEOUT" default:"10m"`
 	CurrentWorkingDir string
 }
@@ -40,15 +39,8 @@ func ParseConfig() (*Config, error) {
 	if err := envconfig.Process("config", c); err != nil {
 		return nil, err
 	}
+	c.SetRandomRegion()
 	return c, nil
-}
-
-// GenerateName will generate a new name if one has not been set
-func (c *Config) GenerateName() string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	suffix := r.Intn(99999)
-	prefix := fmt.Sprintf("%s-%s", c.Orchestrator, c.Location)
-	return fmt.Sprintf("%s-%v", prefix, suffix)
 }
 
 // GetKubeConfig returns the absolute path to the kubeconfig for c.Location
@@ -131,4 +123,15 @@ func (c *Config) IsSwarm() bool {
 		return true
 	}
 	return false
+}
+
+// SetRandomRegion sets Location to a random region
+func (c *Config) SetRandomRegion() {
+	if c.Location == "" {
+		regions := []string{"eastus", "westcentralus", "southcentralus", "westus2", "westcentralus"}
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		c.Location = regions[r.Intn(len(regions))]
+		os.Setenv("LOCATION", c.Location)
+		log.Printf("Picked Random Region:%s\n", c.Location)
+	}
 }

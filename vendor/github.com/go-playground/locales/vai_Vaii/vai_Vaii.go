@@ -56,7 +56,7 @@ func New() locales.Translator {
 		currencyNegativeSuffix: ")",
 		monthsWide:             []string{"", "ꖨꕪꖃ ꔞꕮ", "ꕒꕡꖝꖕ", "ꕾꖺ", "ꖢꖕ", "ꖑꕱ", "6", "7", "ꗛꔕ", "ꕢꕌ", "ꕭꖃ", "ꔞꘋꕔꕿ ꕸꖃꗏ", "ꖨꕪꕱ ꗏꕮ"},
 		daysWide:               []string{"ꕞꕌꔵ", "ꗳꗡꘉ", "ꕚꕞꕚ", "ꕉꕞꕒ", "ꕉꔤꕆꕢ", "ꕉꔤꕀꕮ", "ꔻꔬꔳ"},
-		timezones:              map[string]string{"OESZ": "OESZ", "WART": "WART", "EDT": "EDT", "HKST": "HKST", "AKDT": "AKDT", "AEDT": "AEDT", "HEPMX": "HEPMX", "AWST": "AWST", "ACWDT": "ACWDT", "MESZ": "MESZ", "AST": "AST", "GMT": "GMT", "MDT": "MDT", "HNT": "HNT", "HNEG": "HNEG", "ChST": "ChST", "LHDT": "LHDT", "TMT": "TMT", "SRT": "SRT", "WIB": "WIB", "NZDT": "NZDT", "JDT": "JDT", "MST": "MST", "COST": "COST", "PDT": "PDT", "NZST": "NZST", "CLT": "CLT", "CLST": "CLST", "HNOG": "HNOG", "AWDT": "AWDT", "CHAST": "CHAST", "TMST": "TMST", "EST": "EST", "WITA": "WITA", "GYT": "GYT", "BOT": "BOT", "PST": "PST", "CAT": "CAT", "MEZ": "MEZ", "VET": "VET", "HAT": "HAT", "HNPM": "HNPM", "HNCU": "HNCU", "HAST": "HAST", "HEOG": "HEOG", "WAST": "WAST", "HNPMX": "HNPMX", "HADT": "HADT", "ECT": "ECT", "OEZ": "OEZ", "ARST": "ARST", "UYST": "UYST", "CHADT": "CHADT", "WARST": "WARST", "WAT": "WAT", "ACDT": "ACDT", "CDT": "CDT", "WIT": "WIT", "IST": "IST", "JST": "JST", "WEZ": "WEZ", "COT": "COT", "BT": "BT", "SAST": "SAST", "MYT": "MYT", "ACST": "ACST", "HEEG": "HEEG", "CST": "CST", "HKT": "HKT", "HENOMX": "HENOMX", "UYT": "UYT", "AEST": "AEST", "ACWST": "ACWST", "WESZ": "WESZ", "HNNOMX": "HNNOMX", "GFT": "GFT", "LHST": "LHST", "EAT": "EAT", "HECU": "HECU", "∅∅∅": "∅∅∅", "ADT": "ADT", "ART": "ART", "AKST": "AKST", "HEPM": "HEPM", "SGT": "SGT"},
+		timezones:              map[string]string{"MYT": "MYT", "NZDT": "NZDT", "VET": "VET", "AST": "AST", "HKST": "HKST", "WESZ": "WESZ", "HEPMX": "HEPMX", "WIT": "WIT", "JST": "JST", "WAST": "WAST", "WEZ": "WEZ", "AEDT": "AEDT", "ARST": "ARST", "HECU": "HECU", "MDT": "MDT", "SRT": "SRT", "HENOMX": "HENOMX", "WITA": "WITA", "COST": "COST", "GYT": "GYT", "ChST": "ChST", "OESZ": "OESZ", "ART": "ART", "HNEG": "HNEG", "ECT": "ECT", "SGT": "SGT", "WIB": "WIB", "HNPM": "HNPM", "HADT": "HADT", "MESZ": "MESZ", "SAST": "SAST", "HKT": "HKT", "ACWDT": "ACWDT", "WART": "WART", "OEZ": "OEZ", "HEOG": "HEOG", "HAT": "HAT", "BOT": "BOT", "TMST": "TMST", "AEST": "AEST", "COT": "COT", "EST": "EST", "GMT": "GMT", "CHAST": "CHAST", "MST": "MST", "MEZ": "MEZ", "LHST": "LHST", "WARST": "WARST", "CLST": "CLST", "CAT": "CAT", "IST": "IST", "HNOG": "HNOG", "UYT": "UYT", "UYST": "UYST", "LHDT": "LHDT", "HNPMX": "HNPMX", "HNCU": "HNCU", "ACST": "ACST", "ACDT": "ACDT", "AKST": "AKST", "HEPM": "HEPM", "CST": "CST", "HEEG": "HEEG", "EDT": "EDT", "AWDT": "AWDT", "HNNOMX": "HNNOMX", "PST": "PST", "BT": "BT", "CDT": "CDT", "NZST": "NZST", "WAT": "WAT", "GFT": "GFT", "∅∅∅": "∅∅∅", "AKDT": "AKDT", "PDT": "PDT", "AWST": "AWST", "EAT": "EAT", "CLT": "CLT", "TMT": "TMT", "CHADT": "CHADT", "HAST": "HAST", "JDT": "JDT", "ADT": "ADT", "HNT": "HNT", "ACWST": "ACWST"},
 	}
 }
 
@@ -163,6 +163,21 @@ func (vai *vai_Vaii) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (vai *vai_Vaii) WeekdaysWide() []string {
 	return vai.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (vai *vai_Vaii) Decimal() string {
+	return vai.decimal
+}
+
+// Group returns the group of number
+func (vai *vai_Vaii) Group() string {
+	return vai.group
+}
+
+// Group returns the minus sign of number
+func (vai *vai_Vaii) Minus() string {
+	return vai.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'vai_Vaii' and handles both Whole and Real numbers based on 'v'
@@ -362,7 +377,7 @@ func (vai *vai_Vaii) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -381,7 +396,7 @@ func (vai *vai_Vaii) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -400,7 +415,7 @@ func (vai *vai_Vaii) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -421,7 +436,7 @@ func (vai *vai_Vaii) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

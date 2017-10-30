@@ -70,6 +70,22 @@
       },
       "type": "securestring"
     },
+    "generatorCode": {
+      {{PopulateClassicModeDefaultValue "generatorCode"}}
+      "metadata": {
+        "description": "The generator code used to identify the generator"
+      },
+      "type": "string"
+    },
+    "orchestratorName": {
+      {{PopulateClassicModeDefaultValue "orchestratorName"}}
+      "metadata": {
+        "description": "The orchestrator name used to identify the orchestrator.  This must be no more than 3 digits in length, otherwise it will exceed Windows Naming"
+      },
+      "minLength": 3,
+      "maxLength": 3,
+      "type": "string"
+    },
     "dockerBridgeCidr": {
       {{PopulateClassicModeDefaultValue "dockerBridgeCidr"}}
       "metadata": {
@@ -150,6 +166,34 @@
       {{PopulateClassicModeDefaultValue "kubernetesTillerSpec"}}
       "metadata": {
         "description": "The container spec for Helm Tiller."
+      },
+      "type": "string"
+    },
+    "kubernetesTillerCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerCPURequests"}}
+      "metadata": {
+        "description": "Helm Tiller CPU Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesTillerMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerMemoryRequests"}}
+      "metadata": {
+        "description": "Helm Tiller Memory Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesTillerCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerCPULimit"}}
+      "metadata": {
+        "description": "Helm Tiller CPU Limit."
+      },
+      "type": "string"
+    },
+    "kubernetesTillerMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerMemoryLimit"}}
+      "metadata": {
+        "description": "Helm Tiller Memory Limit."
       },
       "type": "string"
     },

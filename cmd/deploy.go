@@ -110,7 +110,7 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 		},
 	}
 	// skip validating the model fields for now
-	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, nil)
+	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, false, nil)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}
@@ -239,7 +239,7 @@ func revalidateApimodel(apiloader *api.Apiloader, containerService *api.Containe
 	if err != nil {
 		return nil, "", err
 	}
-	return apiloader.DeserializeContainerService(rawVersionedAPIModel, true, nil)
+	return apiloader.DeserializeContainerService(rawVersionedAPIModel, true, false, nil)
 }
 
 func (dc *deployCmd) run() error {
@@ -254,7 +254,7 @@ func (dc *deployCmd) run() error {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}
 
-	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService)
+	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", dc.apimodelPath, err.Error())
 		os.Exit(1)

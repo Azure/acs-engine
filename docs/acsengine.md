@@ -93,7 +93,7 @@ make bootstrap
 make build
 ```
 
-The build process leaves the compiled `acs-engine` binary in the `bin` directory. Make sure everything completed successfully bu running `bin/acs-engine` without any arguments:
+The build process leaves the compiled `acs-engine` binary in the `bin` directory. Make sure everything completed successfully by running `bin/acs-engine` without any arguments:
 
 ```
 # ./bin/acs-engine
@@ -107,6 +107,7 @@ Available Commands:
   generate    Generate an Azure Resource Manager template
   help        Help about any command
   version     Print the version of ACS-Engine
+  scale       Scale a existing cluster deployed by acs-engine
 
 Flags:
       --debug   enable verbose debug logs

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
@@ -76,17 +77,17 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 	var upgrader UpgradeWorkFlow
 	uc.Logger.Infof("Upgrading to Kubernetes version %s\n", uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 	switch uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion {
-	case api.KubernetesVersion1Dot6Dot11:
+	case common.KubernetesVersion1Dot6Dot11:
 		upgrader16 := &Kubernetes16upgrader{}
 		upgrader16.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig)
 		upgrader = upgrader16
 
-	case api.KubernetesVersion1Dot7Dot7:
+	case common.KubernetesVersion1Dot7Dot9:
 		upgrader17 := &Kubernetes17upgrader{}
 		upgrader17.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig)
 		upgrader = upgrader17
 
-	case api.KubernetesVersion1Dot8Dot1:
+	case common.KubernetesVersion1Dot8Dot2:
 		upgrader18 := &Kubernetes18upgrader{}
 		upgrader18.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig)
 		upgrader = upgrader18

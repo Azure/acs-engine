@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"e.ə.", "y.e."},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"eramızdan əvvəl", "yeni era"},
-		timezones:              map[string]string{"COT": "Kolumbiya Standart Vaxtı", "BT": "Butan Vaxtı", "HECU": "Kuba Yay Vaxtı", "CDT": "Şimali Mərkəzi Amerika Yay Vaxtı", "CLT": "Çili Standart Vaxtı", "ACWST": "Mərkəzi Qərbi Avstraliya Standart Vaxtı", "OEZ": "Şərqi Avropa Standart Vaxtı", "EDT": "Şimali Şərqi Amerika Yay Vaxtı", "HKST": "Honq Konq Yay Vaxtı", "ACDT": "Mərkəzi Avstraliya Yay Vaxtı", "HAT": "Nyufaundlend Yay Vaxtı", "WIT": "Şərqi İndoneziya Vaxtı", "HADT": "Havay-Aleut Yay Vaxtı", "MESZ": "Mərkəzi Avropa Yay Vaxtı", "WAT": "Qərbi Afrika Standart Vaxtı", "HEEG": "Şərqi Qrenlandiya Yay Vaxtı", "PST": "Şimali Amerika Sakit Okean Standart Vaxtı", "HAST": "Havay-Aleut Standart Vaxtı", "OESZ": "Şərqi Avropa Yay Vaxtı", "WEZ": "Qərbi Avropa Standart Vaxtı", "GMT": "Qrinviç Orta Vaxtı", "UYT": "Uruqvay Standart Vaxtı", "SRT": "Surinam Vaxtı", "∅∅∅": "Braziliya Yay Vaxtı", "CHADT": "Çatham Yay Vaxtı", "HNOG": "Qərbi Qrenlandiya Standart Vaxtı", "HNEG": "Şərqi Qrenlandiya Standart Vaxtı", "LHST": "Lord Hau Standart Vaxtı", "MEZ": "Mərkəzi Avropa Standart Vaxtı", "WARST": "Qərbi Argentina Yay Vaxtı", "CAT": "Mərkəzi Afrika Vaxtı", "VET": "Venesuela Vaxtı", "JST": "Yaponiya Standart Vaxtı", "COST": "Kolumbiya Yay Vaxtı", "CST": "Şimali Mərkəzi Amerika Standart Vaxtı", "CHAST": "Çatham Standart Vaxtı", "NZST": "Yeni Zelandiya Standart Vaxtı", "TMST": "Türkmənistan Yay Vaxtı", "HKT": "Honq Konq Standart Vaxtı", "HEPM": "San Pier və Mikelon Yay Vaxtı", "HEPMX": "Meksika Sakit Okean Yay Vaxtı", "WIB": "Qərbi İndoneziya Vaxtı", "BOT": "Boliviya Vaxtı", "PDT": "Şimali Amerika Sakit Okean Yay Vaxtı", "EAT": "Şərqi Afrika Vaxtı", "MDT": "MDT", "ChST": "Çamorro Vaxtı", "ECT": "Ekvador Vaxtı", "ART": "Argentina Standart Vaxtı", "TMT": "Türkmənistan Standart Vaxtı", "MST": "MST", "HENOMX": "Şimal-Qərbi Meksika Yay Vaxtı", "HNT": "Nyufaundlend Standart Vaxtı", "GFT": "Fransız Qvianası Vaxtı", "SGT": "Sinqapur Vaxtı", "AST": "Atlantik Standart Vaxt", "EST": "Şimali Şərqi Amerika Standart Vaxtı", "SAST": "Cənubi Afrika Vaxtı", "ACWDT": "Mərkəzi Qərbi Avstraliya Yay Vaxtı", "ADT": "Atlantik Yay Vaxtı", "AKST": "Alyaska Standart Vaxtı", "GYT": "Qayana Vaxtı", "HNCU": "Kuba Standart Vaxtı", "AWDT": "Qərbi Avstraliya Yay Vaxtı", "IST": "Hindistan Vaxtı", "LHDT": "Lord Hau Yay vaxtı", "HEOG": "Qərbi Qrenlandiya Yay Vaxtı", "AEST": "Şərqi Avstraliya Standart Vaxtı", "AEDT": "Şərqi Avstraliya Yay Vaxtı", "WAST": "Qərbi Afrika Yay Vaxtı", "ACST": "Mərkəzi Avstraliya Standart Vaxtı", "HNPMX": "Meksika Sakit Okean Standart Vaxtı", "WART": "Qərbi Argentina Standart Vaxtı", "AKDT": "Alyaska Yay Vaxtı", "MYT": "Malayziya Vaxtı", "UYST": "Uruqvay Yay Vaxtı", "HNPM": "San Pier və Mikelon Standart Vaxtı", "AWST": "Qərbi Avstraliya Standart Vaxtı", "NZDT": "Yeni Zelandiya Yay Vaxtı", "CLST": "Çili Yay Vaxtı", "ARST": "Argentina Yay Vaxtı", "HNNOMX": "Şimal-Qərbi Meksika Standart Vaxtı", "WITA": "Mərkəzi İndoneziya Vaxtı", "JDT": "Yaponiya Yay Vaxtı", "WESZ": "Qərbi Avropa Yay Vaxtı"},
+		timezones:              map[string]string{"BOT": "Boliviya Vaxtı", "UYST": "Uruqvay Yay Vaxtı", "ART": "Argentina Standart Vaxtı", "SAST": "Cənubi Afrika Vaxtı", "ACST": "Mərkəzi Avstraliya Standart Vaxtı", "HEPMX": "Meksika Sakit Okean Yay Vaxtı", "HEPM": "San Pier və Mikelon Yay Vaxtı", "CAT": "Mərkəzi Afrika Vaxtı", "CHAST": "Çatham Standart Vaxtı", "HEOG": "Qərbi Qrenlandiya Yay Vaxtı", "AWST": "Qərbi Avstraliya Standart Vaxtı", "WIT": "Şərqi İndoneziya Vaxtı", "LHDT": "Lord Hau Yay vaxtı", "ARST": "Argentina Yay Vaxtı", "WAST": "Qərbi Afrika Yay Vaxtı", "HADT": "Havay-Aleut Yay Vaxtı", "JST": "Yaponiya Standart Vaxtı", "IST": "Hindistan Vaxtı", "EAT": "Şərqi Afrika Vaxtı", "GYT": "Qayana Vaxtı", "BT": "Butan Vaxtı", "HNPMX": "Meksika Sakit Okean Standart Vaxtı", "ACWST": "Mərkəzi Qərbi Avstraliya Standart Vaxtı", "LHST": "Lord Hau Standart Vaxtı", "MDT": "Şimali Dağlıq Amerika Yay Vaxtı", "AEDT": "Şərqi Avstraliya Yay Vaxtı", "HNT": "Nyufaundlend Standart Vaxtı", "ChST": "Çamorro Vaxtı", "PST": "Şimali Amerika Sakit Okean Standart Vaxtı", "MYT": "Malayziya Vaxtı", "HAST": "Havay-Aleut Standart Vaxtı", "WITA": "Mərkəzi İndoneziya Vaxtı", "JDT": "Yaponiya Yay Vaxtı", "HNEG": "Şərqi Qrenlandiya Standart Vaxtı", "GFT": "Fransız Qvianası Vaxtı", "GMT": "Qrinviç Orta Vaxtı", "NZDT": "Yeni Zelandiya Yay Vaxtı", "MEZ": "Mərkəzi Avropa Standart Vaxtı", "TMST": "Türkmənistan Yay Vaxtı", "OEZ": "Şərqi Avropa Standart Vaxtı", "WAT": "Qərbi Afrika Standart Vaxtı", "ACDT": "Mərkəzi Avstraliya Yay Vaxtı", "WEZ": "Qərbi Avropa Standart Vaxtı", "HNCU": "Kuba Standart Vaxtı", "VET": "Venesuela Vaxtı", "OESZ": "Şərqi Avropa Yay Vaxtı", "∅∅∅": "Azor Yay Vaxtı", "EST": "Şimali Şərqi Amerika Standart Vaxtı", "EDT": "Şimali Şərqi Amerika Yay Vaxtı", "MESZ": "Mərkəzi Avropa Yay Vaxtı", "HEEG": "Şərqi Qrenlandiya Yay Vaxtı", "COST": "Kolumbiya Yay Vaxtı", "WESZ": "Qərbi Avropa Yay Vaxtı", "SRT": "Surinam Vaxtı", "CST": "Şimali Mərkəzi Amerika Standart Vaxtı", "CHADT": "Çatham Yay Vaxtı", "HNPM": "San Pier və Mikelon Standart Vaxtı", "NZST": "Yeni Zelandiya Standart Vaxtı", "MST": "Şimali Dağlıq Amerika Standart Vaxtı", "HNNOMX": "Şimal-Qərbi Meksika Standart Vaxtı", "HKST": "Honq Konq Yay Vaxtı", "AKST": "Alyaska Standart Vaxtı", "AKDT": "Alyaska Yay Vaxtı", "AST": "Atlantik Standart Vaxt", "HKT": "Honq Konq Standart Vaxtı", "TMT": "Türkmənistan Standart Vaxtı", "SGT": "Sinqapur Vaxtı", "WIB": "Qərbi İndoneziya Vaxtı", "AWDT": "Qərbi Avstraliya Yay Vaxtı", "WART": "Qərbi Argentina Standart Vaxtı", "WARST": "Qərbi Argentina Yay Vaxtı", "HENOMX": "Şimal-Qərbi Meksika Yay Vaxtı", "CLT": "Çili Standart Vaxtı", "CLST": "Çili Yay Vaxtı", "UYT": "Uruqvay Standart Vaxtı", "ACWDT": "Mərkəzi Qərbi Avstraliya Yay Vaxtı", "PDT": "Şimali Amerika Sakit Okean Yay Vaxtı", "HECU": "Kuba Yay Vaxtı", "CDT": "Şimali Mərkəzi Amerika Yay Vaxtı", "HNOG": "Qərbi Qrenlandiya Standart Vaxtı", "ADT": "Atlantik Yay Vaxtı", "COT": "Kolumbiya Standart Vaxtı", "HAT": "Nyufaundlend Yay Vaxtı", "ECT": "Ekvador Vaxtı", "AEST": "Şərqi Avstraliya Standart Vaxtı"},
 	}
 }
 
@@ -211,6 +211,21 @@ func (az *az_Cyrl_AZ) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (az *az_Cyrl_AZ) WeekdaysWide() []string {
 	return az.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (az *az_Cyrl_AZ) Decimal() string {
+	return az.decimal
+}
+
+// Group returns the group of number
+func (az *az_Cyrl_AZ) Group() string {
+	return az.group
+}
+
+// Group returns the minus sign of number
+func (az *az_Cyrl_AZ) Minus() string {
+	return az.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'az_Cyrl_AZ' and handles both Whole and Real numbers based on 'v'
@@ -462,7 +477,7 @@ func (az *az_Cyrl_AZ) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -481,7 +496,7 @@ func (az *az_Cyrl_AZ) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -500,7 +515,7 @@ func (az *az_Cyrl_AZ) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2c, 0x20}...)

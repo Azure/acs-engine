@@ -20,6 +20,7 @@ import (
 
 	//log "github.com/sirupsen/logrus"
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Masterminds/semver"
 	"github.com/ghodss/yaml"
@@ -232,7 +233,7 @@ func InitializeTemplateGenerator(ctx Context, classicMode bool) (*TemplateGenera
 }
 
 // GenerateTemplate generates the template from the API Model
-func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
+func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerService, generatorCode string) (templateRaw string, parametersRaw string, certsGenerated bool, err error) {
 	// named return values are used in order to set err in case of a panic
 	templateRaw = ""
 	parametersRaw = ""
@@ -241,7 +242,12 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	var templ *template.Template
 
 	properties := containerService.Properties
-
+	// save the current orchestrator version and restore it after deploying.
+	// this allows us to deploy agents on the most recent patch without updating the orchestator version in the object
+	orchVersion := properties.OrchestratorProfile.OrchestratorVersion
+	defer func() {
+		properties.OrchestratorProfile.OrchestratorVersion = orchVersion
+	}()
 	if certsGenerated, err = SetPropertiesDefaults(containerService); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
@@ -287,7 +293,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	templateRaw = b.String()
 
 	var parametersMap paramsMap
-	if parametersMap, err = getParameters(containerService, t.ClassicMode); err != nil {
+	if parametersMap, err = getParameters(containerService, t.ClassicMode, generatorCode); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 	var parameterBytes []byte
@@ -445,7 +451,7 @@ func GetCloudTargetEnv(location string) string {
 	}
 }
 
-func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, error) {
+func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode string) (paramsMap, error) {
 	properties := cs.Properties
 	location := cs.Location
 	parametersMap := paramsMap{}
@@ -544,6 +550,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["exechealthz"])
 		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["heapster"])
 		addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion]["tiller"])
+		addValue(parametersMap, "kubernetesTillerCPURequests", properties.OrchestratorProfile.KubernetesConfig.TillerCPURequests)
+		addValue(parametersMap, "kubernetesTillerCPULimit", properties.OrchestratorProfile.KubernetesConfig.TillerCPULimit)
+		addValue(parametersMap, "kubernetesTillerMemoryRequests", properties.OrchestratorProfile.KubernetesConfig.TillerMemoryRequests)
+		addValue(parametersMap, "kubernetesTillerMemoryLimit", properties.OrchestratorProfile.KubernetesConfig.TillerMemoryLimit)
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
 		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
@@ -560,6 +570,12 @@ func getParameters(cs *api.ContainerService, isClassicMode bool) (paramsMap, err
 		addValue(parametersMap, "cloudProviderRatelimitBucket", strconv.Itoa(properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket))
 		addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
 		addValue(parametersMap, "kubernetesNonMasqueradeCidr", properties.OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr)
+		addValue(parametersMap, "generatorCode", generatorCode)
+		if properties.HostedMasterProfile != nil {
+			addValue(parametersMap, "orchestratorName", "aks")
+		} else {
+			addValue(parametersMap, "orchestratorName", DefaultOrchestratorName)
+		}
 		addValue(parametersMap, "dockerBridgeCidr", properties.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet)
 		addValue(parametersMap, "networkPolicy", properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
 		addValue(parametersMap, "cniPluginsURL", cloudSpecConfig.KubernetesSpecConfig.CNIPluginsDownloadURL)
@@ -892,7 +908,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add artifacts and addons
 			var artifiacts map[string]string
-			if profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 {
+			if profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 {
 				artifiacts = kubernetesAritfacts15
 			} else {
 				artifiacts = kubernetesAritfacts
@@ -903,7 +919,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 
 			var addonYamls map[string]string
-			if profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 {
+			if profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 {
 				addonYamls = kubernetesAddonYamls15
 			} else {
 				addonYamls = kubernetesAddonYamls
@@ -915,8 +931,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add calico manifests
 			if profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "calico" {
-				if profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 ||
-					profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot6Dot11 {
+				if profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
+					profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
 					calicoAddonYamls = calicoAddonYamls15
 				}
 				for placeholder, filename := range calicoAddonYamls {
@@ -936,7 +952,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add artifacts
 			var artifiacts map[string]string
-			if cs.Properties.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 {
+			if cs.Properties.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 {
 				artifiacts = kubernetesAritfacts15
 			} else {
 				artifiacts = kubernetesAritfacts
@@ -1063,6 +1079,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return false
 		},
+		"GetGPUDriversInstallScript": func(profile *api.AgentPoolProfile) string {
+			return getGPUDriversInstallScript(profile)
+		},
 		"HasLinuxSecrets": func() bool {
 			return cs.Properties.LinuxProfile.HasSecrets()
 		},
@@ -1134,6 +1153,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["heapster"]
 				case "kubernetesTillerSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeConfigs[k8sVersion]["tiller"]
+				case "kubernetesTillerCPURequests":
+					val = DefaultTillerCPURequests
+				case "kubernetesTillerMemoryRequests":
+					val = DefaultTillerMemoryRequests
+				case "kubernetesTillerCPULimit":
+					val = DefaultTillerCPULimit
+				case "kubernetesTillerMemoryLimit":
+					val = DefaultTillerMemoryLimit
 				case "kubernetesKubeDNSSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":
@@ -1183,6 +1210,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.GCHighThreshold)
 				case "gclowthreshold":
 					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.GCLowThreshold)
+				case "generatorCode":
+					val = DefaultGeneratorCode
+				case "orchestratorName":
+					val = DefaultOrchestratorName
 				default:
 					val = ""
 				}
@@ -1228,7 +1259,7 @@ func makeAgentExtensionScriptCommands(cs *api.ContainerService, profile *api.Age
 	if profile.IsAvailabilitySets() {
 		copyIndex = fmt.Sprintf("',copyIndex(variables('%sOffset')),'", profile.Name)
 	}
-	return makeExtensionScriptCommands(cs.Properties.MasterProfile.PreprovisionExtension,
+	return makeExtensionScriptCommands(profile.PreprovisionExtension,
 		cs.Properties.ExtensionProfiles, copyIndex)
 }
 
@@ -1285,6 +1316,58 @@ func getPackageGUID(orchestratorType string, orchestratorVersion string, masterC
 		}
 	}
 	return ""
+}
+
+func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
+
+	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
+	dv := "384"
+
+	/*
+		First we remove the nouveau drivers, which are the open source drivers for NVIDIA cards. Nouveau is installed on NV Series VMs by default.
+		Then we add the graphics-drivers ppa repository and get the proprietary drivers from there.
+	*/
+	ppaScript := fmt.Sprintf(`- rmmod nouveau
+- sh -c "echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf"
+- update-initramfs -u
+- sudo add-apt-repository -y ppa:graphics-drivers
+- sudo apt-get update
+- sudo apt-get install -y nvidia-%s`, dv)
+
+	// We don't have an agreement in place with NVIDIA to provide the drivers on every sku. For this VMs we simply log a warning message.
+	na := getGPUDriversNotInstalledWarningMessage(profile.VMSize)
+
+	/* If a new GPU sku becomes available, add a key to this map, but only provide an installation script if you have a confirmation
+	   that we have an agreement with NVIDIA for this specific gpu. Otherwise use the warning message.
+	*/
+	dm := map[string]string{
+		"Standard_NC6":      ppaScript,
+		"Standard_NC12":     ppaScript,
+		"Standard_NC24":     ppaScript,
+		"Standard_NC24r":    ppaScript,
+		"Standard_NV6":      ppaScript,
+		"Standard_NV12":     ppaScript,
+		"Standard_NV24":     ppaScript,
+		"Standard_NV24r":    ppaScript,
+		"Standard_NC6_v2":   na,
+		"Standard_NC12_v2":  na,
+		"Standard_NC24_v2":  na,
+		"Standard_NC24r_v2": na,
+		"Standard_ND6":      na,
+		"Standard_ND12":     na,
+		"Standard_ND24":     na,
+		"Standard_ND24r":    na,
+	}
+	if _, ok := dm[profile.VMSize]; ok {
+		return dm[profile.VMSize]
+	}
+
+	// The VM is not part of the GPU skus, no extra steps.
+	return ""
+}
+
+func getGPUDriversNotInstalledWarningMessage(VMSize string) string {
+	return fmt.Sprintf("echo 'Warning: NVIDIA Drivers for this VM SKU (%v) are not automatically installed'", VMSize)
 }
 
 func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) string {

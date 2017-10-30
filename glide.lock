@@ -1,12 +1,6 @@
-hash: e54c3fabaa2a79b06772f745c5483d26ec587d122e1fdbcf7c80b6c1e56bfd5b
-updated: 2017-10-09T13:13:09.911374-07:00
+hash: 2f6c0bcbc189ff33a1bc4bb1d3b71ca4cfb5d712e07dc3af96de2db5463e24f2
+updated: 2017-10-26T17:08:11.487094-07:00
 imports:
-- name: github.com/alecthomas/template
-  version: a0175ee3bccc567396460bf5acd36800cb10c49c
-  subpackages:
-  - parse
-- name: github.com/alecthomas/units
-  version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
 - name: github.com/Azure/azure-sdk-for-go
@@ -35,7 +29,7 @@ imports:
   subpackages:
   - spew
 - name: github.com/dgrijalva/jwt-go
-  version: a539ee1a749a2b895533f979515ac7e6e0f5b650
+  version: dbeaa9332f19a944acb5736b4456cfcc02140e29
 - name: github.com/docker/distribution
   version: cd27f179f2c10c5d300e6d09025b538c475b0d51
   subpackages:
@@ -62,7 +56,7 @@ imports:
 - name: github.com/go-openapi/swag
   version: 1d0bd113de87027671077d3c71eb3ac5d7dbba72
 - name: github.com/go-playground/locales
-  version: 1e5f1161c6416a5ff48840eb8724a394e48cc534
+  version: e4cbcb5d0652150d40ad0646651076b6bd2be4f6
   subpackages:
   - currency
 - name: github.com/go-playground/universal-translator
@@ -82,6 +76,12 @@ imports:
   version: 7fe0c75c13abdee74b09fcacef5ea1c6bba6a874
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/influxdata/influxdb
+  version: c38f46a4cd6c03b03be039910444bd784788d4ac
+  subpackages:
+  - client/v2
+  - models
+  - pkg/escape
 - name: github.com/JiangtianLi/gettext
   version: a8983c062be4b565d723c478922d7736e04fdba4
 - name: github.com/juju/ratelimit
@@ -165,9 +165,10 @@ imports:
   - ed25519
   - ed25519/internal/edwards25519
   - ssh
+  - ssh/agent
   - ssh/terminal
 - name: golang.org/x/net
-  version: a04bdaca5b32abe1c069418fb7088ae607de5bd0
+  version: 7b572d500b0702f1ea30a47083ce2e1e5c61edba
   repo: https://github.com/golang/net.git
   vcs: git
   subpackages:
@@ -184,10 +185,8 @@ imports:
   subpackages:
   - unix
   - windows
-  - windows/registry
-  - windows/svc/eventlog
 - name: golang.org/x/text
-  version: 825fc78a2fd6fa0a5447e300189e3219e05e1f25
+  version: 6eab0e8f74e86c598ec3b6fad4888e0c11482d48
   repo: https://github.com/golang/text.git
   vcs: git
   subpackages:
@@ -214,8 +213,6 @@ imports:
   - unicode/bidi
   - unicode/norm
   - width
-- name: gopkg.in/alecthomas/kingpin.v2
-  version: 1087e65c9441605df944fb12c33f0fe7072d18ca
 - name: gopkg.in/go-playground/validator.v9
   version: fb68f39656d7ebf8aa339ad4917aa0c260ecc237
   subpackages:
@@ -300,6 +297,7 @@ imports:
   - kubernetes/typed/storage/v1beta1
   - pkg/api
   - pkg/api/v1
+  - pkg/api/v1/node
   - pkg/api/v1/ref
   - pkg/apis/admissionregistration
   - pkg/apis/admissionregistration/v1alpha1

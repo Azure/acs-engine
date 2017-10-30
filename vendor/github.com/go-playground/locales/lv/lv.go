@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"p.m.ē.", "m.ē."},
 		erasNarrow:             []string{"p.m.ē.", "m.ē."},
 		erasWide:               []string{"pirms mūsu ēras", "mūsu ērā"},
-		timezones:              map[string]string{"AKDT": "Aļaskas vasaras laiks", "AEST": "Austrālijas austrumu ziemas laiks", "UYT": "Urugvajas ziemas laiks", "ARST": "Argentīnas vasaras laiks", "HADT": "Havaju–Aleutu vasaras laiks", "EDT": "Austrumu vasaras laiks", "ACST": "Austrālijas centrālais ziemas laiks", "MDT": "Kalnu vasaras laiks", "HNCU": "Kubas ziemas laiks", "CDT": "Centrālais vasaras laiks", "WIT": "Austrumindonēzijas laiks", "HKST": "Honkongas vasaras laiks", "HAT": "Ņūfaundlendas vasaras laiks", "HEEG": "Austrumgrenlandes vasaras laiks", "CAT": "Centrālāfrikas laiks", "MESZ": "Centrāleiropas vasaras laiks", "WAT": "Rietumāfrikas ziemas laiks", "ACDT": "Austrālijas centrālais vasaras laiks", "CHAST": "Četemas ziemas laiks", "HNOG": "Rietumgrenlandes ziemas laiks", "PDT": "Klusā okeāna vasaras laiks", "WESZ": "Rietumeiropas vasaras laiks", "TMST": "Turkmenistānas vasaras laiks", "COST": "Kolumbijas vasaras laiks", "HENOMX": "Ziemeļrietumu Meksikas vasaras laiks", "ChST": "Čamorra ziemas laiks", "AWST": "Austrālijas rietumu ziemas laiks", "CHADT": "Četemas vasaras laiks", "HNEG": "Austrumgrenlandes ziemas laiks", "HNPM": "Senpjēras un Mikelonas ziemas laiks", "LHST": "Lorda Hava salas ziemas laiks", "OESZ": "Austrumeiropas vasaras laiks", "WART": "Rietumargentīnas ziemas laiks", "WAST": "Rietumāfrikas vasaras laiks", "EST": "Austrumu ziemas laiks", "HEPMX": "Meksikas Klusā okeāna piekrastes vasaras laiks", "SGT": "Singapūras laiks", "HEOG": "Rietumgrenlandes vasaras laiks", "OEZ": "Austrumeiropas ziemas laiks", "ART": "Argentīnas ziemas laiks", "MST": "Kalnu ziemas laiks", "HNPMX": "Meksikas Klusā okeāna piekrastes ziemas laiks", "TMT": "Turkmenistānas ziemas laiks", "UYST": "Urugvajas vasaras laiks", "GYT": "Gajānas laiks", "ECT": "Ekvadoras laiks", "AST": "Atlantijas ziemas laiks", "GMT": "Griničas laiks", "AWDT": "Austrālijas rietumu vasaras laiks", "BOT": "Bolīvijas laiks", "PST": "Klusā okeāna ziemas laiks", "NZST": "Jaunzēlandes ziemas laiks", "ADT": "Atlantijas vasaras laiks", "IST": "Indijas ziemas laiks", "WIB": "Rietumindonēzijas laiks", "NZDT": "Jaunzēlandes vasaras laiks", "MEZ": "Centrāleiropas ziemas laiks", "COT": "Kolumbijas ziemas laiks", "∅∅∅": "∅∅∅", "WITA": "Centrālindonēzijas laiks", "AEDT": "Austrālijas austrumu vasaras laiks", "SRT": "Surinamas laiks", "CLT": "Čīles ziemas laiks", "WEZ": "Rietumeiropas ziemas laiks", "BT": "Butānas laiks", "AKST": "Aļaskas ziemas laiks", "HECU": "Kubas vasaras laiks", "HAST": "Havaju–Aleutu ziemas laiks", "JDT": "Japānas vasaras laiks", "JST": "Japānas ziemas laiks", "CLST": "Čīles vasaras laiks", "HNNOMX": "Ziemeļrietumu Meksikas ziemas laiks", "GFT": "Franču Gviānas laiks", "LHDT": "Lorda Hava salas vasaras laiks", "CST": "Centrālais ziemas laiks", "ACWST": "Austrālijas centrālais rietumu ziemas laiks", "HKT": "Honkongas ziemas laiks", "HEPM": "Senpjēras un Mikelonas vasaras laiks", "EAT": "Austrumāfrikas laiks", "VET": "Venecuēlas laiks", "MYT": "Malaizijas laiks", "WARST": "Rietumargentīnas vasaras laiks", "HNT": "Ņūfaundlendas ziemas laiks", "SAST": "Dienvidāfrikas ziemas laiks", "ACWDT": "Austrālijas centrālais rietumu vasaras laiks"},
+		timezones:              map[string]string{"CAT": "Centrālāfrikas laiks", "PDT": "Klusā okeāna vasaras laiks", "SRT": "Surinamas laiks", "MDT": "MDT", "HEOG": "Rietumgrenlandes vasaras laiks", "HKT": "Honkongas ziemas laiks", "GYT": "Gajānas laiks", "CHAST": "Četemas ziemas laiks", "BOT": "Bolīvijas laiks", "WIT": "Austrumindonēzijas laiks", "ACWST": "Austrālijas centrālais rietumu ziemas laiks", "ACWDT": "Austrālijas centrālais rietumu vasaras laiks", "HENOMX": "Ziemeļrietumu Meksikas vasaras laiks", "EDT": "Austrumu vasaras laiks", "ChST": "Čamorra ziemas laiks", "HNEG": "Austrumgrenlandes ziemas laiks", "HEEG": "Austrumgrenlandes vasaras laiks", "CHADT": "Četemas vasaras laiks", "NZST": "Jaunzēlandes ziemas laiks", "WAT": "Rietumāfrikas ziemas laiks", "CLT": "Čīles ziemas laiks", "GMT": "Griničas laiks", "SAST": "Dienvidāfrikas ziemas laiks", "ECT": "Ekvadoras laiks", "AWDT": "Austrālijas rietumu vasaras laiks", "MYT": "Malaizijas laiks", "WEZ": "Rietumeiropas ziemas laiks", "MST": "MST", "MEZ": "Centrāleiropas ziemas laiks", "ART": "Argentīnas ziemas laiks", "COT": "Kolumbijas ziemas laiks", "HNPM": "Senpjēras un Mikelonas ziemas laiks", "AKDT": "Aļaskas vasaras laiks", "SGT": "Singapūras laiks", "NZDT": "Jaunzēlandes vasaras laiks", "MESZ": "Centrāleiropas vasaras laiks", "WITA": "Centrālindonēzijas laiks", "OESZ": "Austrumeiropas vasaras laiks", "COST": "Kolumbijas vasaras laiks", "HNT": "Ņūfaundlendas ziemas laiks", "HNOG": "Rietumgrenlandes ziemas laiks", "∅∅∅": "Amazones vasaras laiks", "HNPMX": "Meksikas Klusā okeāna piekrastes ziemas laiks", "ACST": "Austrālijas centrālais ziemas laiks", "EAT": "Austrumāfrikas laiks", "WART": "Rietumargentīnas ziemas laiks", "LHST": "Lorda Hava salas ziemas laiks", "CDT": "Centrālais vasaras laiks", "WARST": "Rietumargentīnas vasaras laiks", "IST": "Indijas ziemas laiks", "AEDT": "Austrālijas austrumu vasaras laiks", "HNCU": "Kubas ziemas laiks", "CST": "Centrālais ziemas laiks", "HECU": "Kubas vasaras laiks", "TMT": "Turkmenistānas ziemas laiks", "JST": "Japānas ziemas laiks", "ARST": "Argentīnas vasaras laiks", "WAST": "Rietumāfrikas vasaras laiks", "HKST": "Honkongas vasaras laiks", "HEPMX": "Meksikas Klusā okeāna piekrastes vasaras laiks", "UYT": "Urugvajas ziemas laiks", "UYST": "Urugvajas vasaras laiks", "HADT": "Havaju–Aleutu vasaras laiks", "OEZ": "Austrumeiropas ziemas laiks", "AST": "Atlantijas ziemas laiks", "WESZ": "Rietumeiropas vasaras laiks", "AWST": "Austrālijas rietumu ziemas laiks", "HEPM": "Senpjēras un Mikelonas vasaras laiks", "BT": "Butānas laiks", "TMST": "Turkmenistānas vasaras laiks", "HAST": "Havaju–Aleutu ziemas laiks", "LHDT": "Lorda Hava salas vasaras laiks", "HAT": "Ņūfaundlendas vasaras laiks", "WIB": "Rietumindonēzijas laiks", "VET": "Venecuēlas laiks", "HNNOMX": "Ziemeļrietumu Meksikas ziemas laiks", "ADT": "Atlantijas vasaras laiks", "EST": "Austrumu ziemas laiks", "PST": "Klusā okeāna ziemas laiks", "AKST": "Aļaskas ziemas laiks", "ACDT": "Austrālijas centrālais vasaras laiks", "JDT": "Japānas vasaras laiks", "AEST": "Austrālijas austrumu ziemas laiks", "CLST": "Čīles vasaras laiks", "GFT": "Franču Gviānas laiks"},
 	}
 }
 
@@ -100,8 +100,8 @@ func (lv *lv) CardinalPluralRule(num float64, v uint64) locales.PluralRule {
 
 	n := math.Abs(num)
 	f := locales.F(n, v)
-	nMod10 := math.Mod(n, 10)
 	nMod100 := math.Mod(n, 100)
+	nMod10 := math.Mod(n, 10)
 	fMod100 := f % 100
 	fMod10 := f % 10
 
@@ -215,6 +215,21 @@ func (lv *lv) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (lv *lv) WeekdaysWide() []string {
 	return lv.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (lv *lv) Decimal() string {
+	return lv.decimal
+}
+
+// Group returns the group of number
+func (lv *lv) Group() string {
+	return lv.group
+}
+
+// Group returns the minus sign of number
+func (lv *lv) Minus() string {
+	return lv.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'lv' and handles both Whole and Real numbers based on 'v'
@@ -454,7 +469,7 @@ func (lv *lv) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e, 0x20, 0x67, 0x61, 0x64, 0x61}...)
@@ -474,7 +489,7 @@ func (lv *lv) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e, 0x20, 0x67, 0x61, 0x64, 0x61}...)
@@ -497,7 +512,7 @@ func (lv *lv) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e, 0x20, 0x67, 0x61, 0x64, 0x61}...)

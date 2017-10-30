@@ -194,7 +194,7 @@ func main() {
 
 	cldr, err := decoder.DecodePath("data/core")
 	if err != nil {
-		panic(err)
+		panic("failed decode CLDR data; " + err.Error())
 	}
 
 	preProcess(cldr)
@@ -233,21 +233,15 @@ func main() {
 	// after file written run gofmt on file to ensure best formatting
 	cmd := exec.Command("goimports", "-w", filename)
 	if err = cmd.Run(); err != nil {
-		log.Panic(err)
+		log.Panic("failed execute \"goimports\" for file ", filename, ": ", err)
 	}
 
 	cmd = exec.Command("gofmt", "-s", "-w", filename)
 	if err = cmd.Run(); err != nil {
-		log.Panic(err)
+		log.Panic("failed execute \"gofmt\" for file ", filename, ": ", err)
 	}
 
-	var locMap string
-
 	for _, trans := range translators {
-
-		locMap += `"` + trans.Locale + `" : ` + trans.Locale + `.New,
-`
-
 		fmt.Println("Writing Data:", trans.Locale)
 
 		if err = os.MkdirAll(fmt.Sprintf(locDir, trans.Locale), 0777); err != nil {
@@ -271,13 +265,13 @@ func main() {
 		// after file written run gofmt on file to ensure best formatting
 		cmd := exec.Command("goimports", "-w", filename)
 		if err = cmd.Run(); err != nil {
-			log.Panic(err)
+			log.Panic("failed execute \"goimports\" for file ", filename, ": ", err)
 		}
 
 		// this simplifies some syntax that I can;t find an option for in goimports, namely '-s'
 		cmd = exec.Command("gofmt", "-s", "-w", filename)
 		if err = cmd.Run(); err != nil {
-			log.Panic(err)
+			log.Panic("failed execute \"gofmt\" for file ", filename, ": ", err)
 		}
 
 		filename = fmt.Sprintf(locFilename, trans.Locale, trans.Locale+"_test")
@@ -302,13 +296,13 @@ func main() {
 		// after file written run gofmt on file to ensure best formatting
 		cmd = exec.Command("goimports", "-w", filename)
 		if err = cmd.Run(); err != nil {
-			log.Panic(err)
+			log.Panic("failed execute \"goimports\" for file ", filename, ": ", err)
 		}
 
 		// this simplifies some syntax that I can;t find an option for in goimports, namely '-s'
 		cmd = exec.Command("gofmt", "-s", "-w", filename)
 		if err = cmd.Run(); err != nil {
-			log.Panic(err)
+			log.Panic("failed execute \"gofmt\" for file ", filename, ": ", err)
 		}
 	}
 }
@@ -1666,7 +1660,7 @@ func parseDateTimeFormat(baseLocale, format string, eraScore uint8) (results str
 					if t.Year() > 0 {
 						b = strconv.AppendInt(b, int64(t.Year()), 10)
 					} else {
-						b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+						b = strconv.AppendInt(b, int64(-t.Year()), 10)
 					}
 
 				`

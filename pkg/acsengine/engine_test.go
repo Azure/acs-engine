@@ -39,7 +39,7 @@ func TestExpected(t *testing.T) {
 	}
 
 	for _, tuple := range *apiModelTestFiles {
-		containerService, version, err := apiloader.LoadContainerServiceFromFile(tuple.APIModelFilename, true, nil)
+		containerService, version, err := apiloader.LoadContainerServiceFromFile(tuple.APIModelFilename, true, false, nil)
 		if err != nil {
 			t.Errorf("Loading file %s got error: %s", tuple.APIModelFilename, err.Error())
 			continue
@@ -74,7 +74,7 @@ func TestExpected(t *testing.T) {
 			continue
 		}
 
-		armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService)
+		armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode)
 		if err != nil {
 			t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 			continue
@@ -98,7 +98,7 @@ func TestExpected(t *testing.T) {
 		}
 
 		for i := 0; i < 3; i++ {
-			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService)
+			armTemplate, params, certsGenerated, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode)
 			if err != nil {
 				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 				continue
@@ -139,7 +139,7 @@ func TestExpected(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			containerService, version, err = apiloader.DeserializeContainerService(b, true, nil)
+			containerService, version, err = apiloader.DeserializeContainerService(b, true, false, nil)
 			if err != nil {
 				t.Error(err)
 			}
@@ -281,11 +281,11 @@ func TestTemplateOutputPresence(t *testing.T) {
 		t.Fatalf("Failed to initialize template generator: %v", err)
 	}
 
-	containerService, _, err := apiloader.LoadContainerServiceFromFile("./testdata/simple/kubernetes.json", true, nil)
+	containerService, _, err := apiloader.LoadContainerServiceFromFile("./testdata/simple/kubernetes.json", true, false, nil)
 	if err != nil {
 		t.Fatalf("Failed to load container service from file: %v", err)
 	}
-	armTemplate, _, _, err := templateGenerator.GenerateTemplate(containerService)
+	armTemplate, _, _, err := templateGenerator.GenerateTemplate(containerService, DefaultGeneratorCode)
 	if err != nil {
 		t.Fatalf("Failed to generate arm template: %v", err)
 	}
@@ -315,5 +315,52 @@ func TestTemplateOutputPresence(t *testing.T) {
 		} else if element.Value != tc.value {
 			t.Fatalf("Expected %q at key %v but got: %q", tc.value, tc.key, element.Value)
 		}
+	}
+}
+
+func TestGetGPUDriversInstallScript(t *testing.T) {
+
+	// VMSize with GPU and NVIDIA agreement for drivers distribution
+	validSkus := []string{
+		"Standard_NC6",
+		"Standard_NC12",
+		"Standard_NC24",
+		"Standard_NC24r",
+		"Standard_NV6",
+		"Standard_NV12",
+		"Standard_NV24",
+		"Standard_NV24r",
+	}
+
+	// VMSize with GPU but NO NVIDIA agreement for drivers distribution
+	noLicenceSkus := []string{
+		"Standard_NC6_v2",
+		"Standard_NC12_v2",
+		"Standard_NC24_v2",
+		"Standard_NC24r_v2",
+		"Standard_ND6",
+		"Standard_ND12",
+		"Standard_ND24",
+		"Standard_ND24r",
+	}
+
+	for _, sku := range validSkus {
+		s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: sku})
+		if s == "" || s == getGPUDriversNotInstalledWarningMessage(sku) {
+			t.Fatalf("Expected NVIDIA driver install script for sku %v", sku)
+		}
+	}
+
+	for _, sku := range noLicenceSkus {
+		s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: sku})
+		if s != getGPUDriversNotInstalledWarningMessage(sku) {
+			t.Fatalf("NVIDIA driver install script was provided for a VM sku (%v) that does not meet NVIDIA agreement.", sku)
+		}
+	}
+
+	// VMSize without GPU
+	s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: "Standard_D2_v2"})
+	if s != "" {
+		t.Fatalf("VMSize without GPU should not receive a script, expected empty string, received %v", s)
 	}
 }

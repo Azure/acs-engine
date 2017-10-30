@@ -58,7 +58,7 @@ func New() locales.Translator {
 		daysWide:               []string{"দেওবাৰ", "সোমবাৰ", "মঙ্গলবাৰ", "বুধবাৰ", "বৃহষ্পতিবাৰ", "শুক্ৰবাৰ", "শনিবাৰ"},
 		periodsAbbreviated:     []string{"পূৰ্বাহ্ণ", "অপৰাহ্ণ"},
 		periodsWide:            []string{"পূৰ্বাহ্ণ", "অপৰাহ্ণ"},
-		timezones:              map[string]string{"HNEG": "HNEG", "AWDT": "AWDT", "CAT": "CAT", "NZDT": "NZDT", "VET": "VET", "COT": "COT", "HNNOMX": "HNNOMX", "LHST": "LHST", "LHDT": "LHDT", "WARST": "WARST", "TMT": "TMT", "HECU": "HECU", "CLST": "CLST", "EST": "EST", "HKST": "HKST", "EAT": "EAT", "HNCU": "HNCU", "AEST": "AEST", "AEDT": "AEDT", "HNPM": "HNPM", "SRT": "SRT", "JST": "JST", "OEZ": "OEZ", "TMST": "TMST", "GFT": "GFT", "MESZ": "MESZ", "ART": "ART", "HKT": "HKT", "HENOMX": "HENOMX", "AKDT": "AKDT", "CST": "CST", "SGT": "SGT", "PST": "PST", "PDT": "PDT", "OESZ": "OESZ", "HNOG": "HNOG", "WAT": "WAT", "ChST": "ChST", "HNPMX": "HNPMX", "WESZ": "WESZ", "GMT": "GMT", "WART": "WART", "EDT": "EDT", "HEEG": "HEEG", "AKST": "AKST", "ECT": "ECT", "ADT": "ADT", "BT": "BT", "WIB": "WIB", "WIT": "WIT", "MEZ": "MEZ", "MYT": "MYT", "ACDT": "ACDT", "UYT": "UYT", "UYST": "UYST", "CDT": "CDT", "CHAST": "CHAST", "CHADT": "CHADT", "NZST": "NZST", "WITA": "WITA", "HEPM": "HEPM", "CLT": "CLT", "ARST": "ARST", "WAST": "WAST", "GYT": "GYT", "ACWST": "ACWST", "ACWDT": "ACWDT", "MDT": "MDT", "ACST": "ACST", "HAT": "HAT", "HEPMX": "HEPMX", "HAST": "HAST", "IST": "ভাৰতীয় সময়", "AST": "AST", "WEZ": "WEZ", "HEOG": "HEOG", "MST": "MST", "COST": "COST", "SAST": "SAST", "∅∅∅": "∅∅∅", "JDT": "JDT", "HNT": "HNT", "AWST": "AWST", "BOT": "BOT", "HADT": "HADT"},
+		timezones:              map[string]string{"UYT": "UYT", "HAST": "HAST", "VET": "VET", "AKDT": "AKDT", "HEPMX": "HEPMX", "BT": "BT", "ACWDT": "ACWDT", "HENOMX": "HENOMX", "HNT": "HNT", "COST": "COST", "ECT": "ECT", "GMT": "GMT", "WART": "WART", "WARST": "WARST", "∅∅∅": "∅∅∅", "HEOG": "HEOG", "GFT": "GFT", "AWST": "AWST", "EAT": "EAT", "WAST": "WAST", "GYT": "GYT", "AKST": "AKST", "ACDT": "ACDT", "HKST": "HKST", "COT": "COT", "HNPMX": "HNPMX", "UYST": "UYST", "NZST": "NZST", "ADT": "ADT", "HKT": "HKT", "HNPM": "HNPM", "NZDT": "NZDT", "LHDT": "LHDT", "AST": "AST", "HNOG": "HNOG", "CHAST": "CHAST", "AEST": "AEST", "EDT": "EDT", "WESZ": "WESZ", "HEPM": "HEPM", "MEZ": "MEZ", "CHADT": "CHADT", "OESZ": "OESZ", "MDT": "MDT", "WAT": "WAT", "HNEG": "HNEG", "PDT": "PDT", "WEZ": "WEZ", "ChST": "ChST", "LHST": "LHST", "IST": "ভাৰতীয় সময়", "ART": "ART", "CLT": "CLT", "ACST": "ACST", "HADT": "HADT", "HNNOMX": "HNNOMX", "OEZ": "OEZ", "EST": "EST", "CST": "CST", "SRT": "SRT", "BOT": "BOT", "CDT": "CDT", "ACWST": "ACWST", "WITA": "WITA", "AEDT": "AEDT", "CLST": "CLST", "CAT": "CAT", "HECU": "HECU", "JST": "JST", "JDT": "JDT", "MESZ": "MESZ", "MST": "MST", "HAT": "HAT", "WIB": "WIB", "HNCU": "HNCU", "AWDT": "AWDT", "TMT": "TMT", "TMST": "TMST", "ARST": "ARST", "SAST": "SAST", "SGT": "SGT", "PST": "PST", "MYT": "MYT", "HEEG": "HEEG", "WIT": "WIT"},
 	}
 }
 
@@ -188,11 +188,26 @@ func (as *as_IN) WeekdaysWide() []string {
 	return as.daysWide
 }
 
+// Decimal returns the decimal point of number
+func (as *as_IN) Decimal() string {
+	return as.decimal
+}
+
+// Group returns the group of number
+func (as *as_IN) Group() string {
+	return as.group
+}
+
+// Group returns the minus sign of number
+func (as *as_IN) Minus() string {
+	return as.minus
+}
+
 // FmtNumber returns 'num' with digits/precision of 'v' for 'as_IN' and handles both Whole and Real numbers based on 'v'
 func (as *as_IN) FmtNumber(num float64, v uint64) string {
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
-	l := len(s) + 0 + 0*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + 0
 	count := 0
 	inWhole := v == 0
 	inSecondary := false
@@ -274,7 +289,7 @@ func (as *as_IN) FmtCurrency(num float64, v uint64, currency currency.Type) stri
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := as.currencies[currency]
-	l := len(s) + len(symbol) + 2 + 0*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 2
 	count := 0
 	inWhole := v == 0
 	inSecondary := false
@@ -345,7 +360,7 @@ func (as *as_IN) FmtAccounting(num float64, v uint64, currency currency.Type) st
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := as.currencies[currency]
-	l := len(s) + len(symbol) + 2 + 0*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 2
 	count := 0
 	inWhole := v == 0
 	inSecondary := false
@@ -435,7 +450,7 @@ func (as *as_IN) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -464,7 +479,7 @@ func (as *as_IN) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -483,7 +498,7 @@ func (as *as_IN) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -504,7 +519,7 @@ func (as *as_IN) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

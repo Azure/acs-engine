@@ -168,5 +168,17 @@ az group deployment create -g acs-custom-vnet --name "ClusterDeployment" --templ
 
 Depending on the number of agent you have asked for the deployment can take a while.
 
+## Post-Deployment: Attach Cluster Route Table to VNET
+
+For Kubernetes clusters, we need to update the VNET to attach to the route table created by the above `az group deployment create` command. An example in bash form:
+
+```
+#!/bin/bash
+rt=$(az network route-table list -g acs-custom-vnet | jq -r '.[].id')
+az network vnet subnet update -n KubernetesSubnet -g acs-custom-vnet --vnet-name KubernetesCustomVNET --route-table $rt
+```
+
+... where `KubernetesSubnet` is the name of the vnet subnet, and `KubernetesCustomVNET` is the name of the custom VNET itself.
+
 ## Connect to your new cluster
 Once the deployment is completed, you can follow [this documentation](https://docs.microsoft.com/en-us/azure/container-service/container-service-connect) to connect to your new Azure Container Service cluster.

@@ -67,7 +67,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"BC", "AD"},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"", ""},
-		timezones:              map[string]string{"MESZ": "Centrālas Eurōpas daggas kerdā", "AEDT": "AEDT", "WITA": "WITA", "NZST": "NZST", "TMT": "TMT", "CHADT": "CHADT", "HEOG": "HEOG", "WAST": "WAST", "ACST": "ACST", "AKST": "AKST", "CDT": "Centrālas Amērikas daggas kerdā", "WIT": "WIT", "PST": "Pacīfiskas Amērikas zēimas kerdā", "EDT": "Dēiniskas Amērikas daggas kerdā", "HNEG": "HNEG", "ChST": "ChST", "HNCU": "HNCU", "MST": "MST", "HNPM": "HNPM", "GYT": "GYT", "HECU": "HECU", "BOT": "BOT", "PDT": "Pacīfiskas Amērikas daggas kerdā", "MDT": "MDT", "EST": "Dēiniskas Amērikas zēimas kerdā", "HKT": "HKT", "WIB": "WIB", "MYT": "MYT", "ACDT": "ACDT", "HENOMX": "HENOMX", "HNT": "HNT", "SRT": "SRT", "SAST": "SAST", "∅∅∅": "∅∅∅", "IST": "IST", "MEZ": "Centrālas Eurōpas zēimas kerdā", "WARST": "WARST", "ADT": "Atlāntiska daggas kerdā", "BT": "BT", "AKDT": "AKDT", "HEPM": "HEPM", "HNPMX": "HNPMX", "HEPMX": "HEPMX", "CST": "Centrālas Amērikas zēimas kerdā", "CHAST": "CHAST", "GMT": "Greenwich kerdā", "OEZ": "Dēiniskas Eurōpas zēimas kerdā", "LHST": "LHST", "SGT": "SGT", "HADT": "HADT", "OESZ": "Dēiniskas Eurōpas daggas kerdā", "WAT": "WAT", "HKST": "HKST", "COT": "COT", "GFT": "GFT", "UYST": "UYST", "LHDT": "LHDT", "AWDT": "AWDT", "NZDT": "NZDT", "CLST": "CLST", "WEZ": "Wakkariskas Eurōpas zēimas kerdā", "ART": "ART", "HNNOMX": "HNNOMX", "HAT": "HAT", "AEST": "AEST", "ECT": "ECT", "JST": "JST", "JDT": "JDT", "WART": "WART", "HNOG": "HNOG", "UYT": "UYT", "HAST": "HAST", "CLT": "CLT", "AST": "Atlāntiska zēimas kerdā", "COST": "COST", "ACWDT": "ACWDT", "ARST": "ARST", "CAT": "CAT", "WESZ": "Wakkariskas Eurōpas daggas kerdā", "AWST": "AWST", "ACWST": "ACWST", "VET": "VET", "TMST": "TMST", "HEEG": "HEEG", "EAT": "EAT"},
+		timezones:              map[string]string{"MST": "MST", "VET": "VET", "ARST": "ARST", "AKDT": "AKDT", "CHAST": "CHAST", "HNCU": "HNCU", "HKT": "HKT", "ECT": "ECT", "HNPM": "HNPM", "HAST": "HAST", "WITA": "WITA", "ADT": "Atlāntiska daggas kerdā", "GMT": "Greenwich kerdā", "WEZ": "Wakkariskas Eurōpas zēimas kerdā", "∅∅∅": "∅∅∅", "AWST": "AWST", "LHST": "LHST", "HKST": "HKST", "AKST": "AKST", "HEPM": "HEPM", "HNEG": "HNEG", "CLST": "CLST", "WESZ": "Wakkariskas Eurōpas daggas kerdā", "HEPMX": "HEPMX", "HECU": "HECU", "AEST": "AEST", "HAT": "HAT", "JDT": "JDT", "EAT": "EAT", "COST": "COST", "CHADT": "CHADT", "BT": "BT", "SRT": "SRT", "MYT": "MYT", "MEZ": "Centrālas Eurōpas zēimas kerdā", "GYT": "GYT", "WAT": "WAT", "WAST": "WAST", "ACST": "ACST", "NZST": "NZST", "LHDT": "LHDT", "WART": "WART", "WARST": "WARST", "HEOG": "HEOG", "CDT": "Centrālas Amērikas daggas kerdā", "WIT": "WIT", "NZDT": "NZDT", "JST": "JST", "SAST": "SAST", "TMST": "TMST", "COT": "COT", "GFT": "GFT", "ACDT": "ACDT", "WIB": "WIB", "PDT": "Pacīfiskas Amērikas daggas kerdā", "TMT": "TMT", "IST": "IST", "AEDT": "AEDT", "ChST": "ChST", "CST": "Centrālas Amērikas zēimas kerdā", "ACWST": "ACWST", "OESZ": "Dēiniskas Eurōpas daggas kerdā", "HEEG": "HEEG", "EDT": "Dēiniskas Amērikas daggas kerdā", "HENOMX": "HENOMX", "OEZ": "Dēiniskas Eurōpas zēimas kerdā", "AST": "Atlāntiska zēimas kerdā", "PST": "Pacīfiskas Amērikas zēimas kerdā", "UYT": "UYT", "ACWDT": "ACWDT", "MESZ": "Centrālas Eurōpas daggas kerdā", "HNNOMX": "HNNOMX", "EST": "Dēiniskas Amērikas zēimas kerdā", "HNPMX": "HNPMX", "SGT": "SGT", "CAT": "CAT", "BOT": "BOT", "MDT": "MDT", "UYST": "UYST", "HADT": "HADT", "ART": "ART", "AWDT": "AWDT", "HNT": "HNT", "HNOG": "HNOG", "CLT": "CLT"},
 	}
 }
 
@@ -188,6 +188,21 @@ func (prg *prg_001) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (prg *prg_001) WeekdaysWide() []string {
 	return prg.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (prg *prg_001) Decimal() string {
+	return prg.decimal
+}
+
+// Group returns the group of number
+func (prg *prg_001) Group() string {
+	return prg.group
+}
+
+// Group returns the minus sign of number
+func (prg *prg_001) Minus() string {
+	return prg.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'prg_001' and handles both Whole and Real numbers based on 'v'
@@ -443,7 +458,7 @@ func (prg *prg_001) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -457,7 +472,7 @@ func (prg *prg_001) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x20, 0x6d, 0x65, 0x74, 0x74, 0x61, 0x73}...)
@@ -480,7 +495,7 @@ func (prg *prg_001) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x20, 0x6d, 0x65, 0x74, 0x74, 0x61, 0x73}...)

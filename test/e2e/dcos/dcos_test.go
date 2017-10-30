@@ -38,7 +38,8 @@ var _ = BeforeSuite(func() {
 		ClusterDefinition: cs,
 	}
 
-	cluster = NewCluster(&cfg, &eng)
+	cluster, err = NewCluster(&cfg, &eng)
+	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = Describe("Azure Container Cluster using the DCOS Orchestrator", func() {
@@ -66,7 +67,7 @@ var _ = Describe("Azure Container Cluster using the DCOS Orchestrator", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			marathonPath := filepath.Join(cfg.CurrentWorkingDir, "/test/e2e/dcos/marathon.json")
-			port, err := cluster.InstallMarathonApp(marathonPath)
+			port, err := cluster.InstallMarathonApp(marathonPath, 5*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 
 			// Need to have a wait for ready check here

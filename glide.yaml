@@ -39,7 +39,6 @@ import:
 - package: github.com/go-playground/universal-translator
   version: v0.16.0
 - package: golang.org/x/crypto
-  version: eb71ad9bd329b5ac0fd0148dd99bd62e8be8e035 # update this every release cycle
   subpackages:
   - ssh
 - package: github.com/alexcesaro/statsd
@@ -63,3 +62,4 @@ testImport:
   version: 366b072768b4e6d93c7de236464c0abe85d0b7c6
 - package: k8s.io/client-go
   version: ~4.0.0
+- package: github.com/influxdata/influxdb/client/v2

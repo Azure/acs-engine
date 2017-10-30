@@ -2,20 +2,21 @@ package kubernetes
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"time"
 
-	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/deployment"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/service"
+	"github.com/Azure/acs-engine/test/e2e/remote"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -60,7 +61,47 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion != "" {
 				Expect(version).To(MatchRegexp("v" + eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion))
 			} else {
-				Expect(version).To(Equal("v" + api.KubernetesDefaultVersion))
+				Expect(version).To(Equal("v" + common.KubernetesDefaultVersion))
+			}
+		})
+
+		/* The master nodes are hidden behind a load balancer. Therefore, we will create an ssh connection and then continue to reuse that connection for subsequent commands. We will iterate the nodes first to make sure that we ssh onto each host from a given master and then the inner loop will verify that we cannot connect to another master's etcd instance. If we see a "Host key verification failed" error this is an indication that we are trying to ssh onto a host that we are already on. Then we will just execute the etcdctl command locally. */
+		It("should not expose etcd to the internet", func() {
+			hostKeyRegex, err := regexp.Compile("Host key verification failed")
+			Expect(err).NotTo(HaveOccurred())
+
+			nodes, err := node.GetByPrefix("k8s-master")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(nodes)).NotTo(Equal(0))
+
+			conn, err := remote.NewConnection(fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location), "22", eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cfg.GetSSHKeyPath())
+			Expect(err).NotTo(HaveOccurred())
+
+			hostname, err := conn.Execute("hostname")
+			Expect(err).NotTo(HaveOccurred())
+			for _, n := range nodes {
+				for _, nprime := range nodes {
+					// I am doing this to validate that we always run these commands from the same host
+					host, err := conn.Execute("hostname")
+					Expect(err).NotTo(HaveOccurred())
+					Expect(hostname).To(Equal(host))
+
+					if n.Metadata.Name != nprime.Metadata.Name {
+						etcdCmd := fmt.Sprintf("etcdctl --endpoint=http://%s:2379 ls /registry/secrets/kube-system", nprime.Status.GetAddressByType("InternalIP").Address)
+						cmd := fmt.Sprintf("ssh %s@%s %s", eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername, n.Metadata.Name, etcdCmd)
+
+						out, err := conn.Execute(cmd)
+						matched := hostKeyRegex.MatchString(string(out))
+						if !matched {
+							Expect(err).To(HaveOccurred())
+							Expect(out).To(MatchRegexp("connection refused"))
+						} else {
+							out, err := conn.Execute(etcdCmd)
+							Expect(err).To(HaveOccurred())
+							Expect(out).To(MatchRegexp("connection refused"))
+						}
+					}
+				}
 			}
 		})
 
@@ -137,18 +178,15 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 			for _, node := range nodeList.Nodes {
 				success := false
-				for i := 0; i < 20; i++ {
+				for i := 0; i < 60; i++ {
 					dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
 					curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
-					output, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
-					if err != nil {
-						log.Printf("Error on iteration:%v for node (%s)\n", i, node.Metadata.Name)
-						log.Printf("Command:ssh -i %s -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s %s\n", sshKeyPath, master, curlCMD)
-						log.Printf("\nOutput:%s\n", string(output))
-					} else {
+					_, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
+					if err == nil {
 						success = true
+						break
 					}
-					time.Sleep(5 * time.Second)
+					time.Sleep(10 * time.Second)
 				}
 				Expect(success).To(BeTrue())
 			}
@@ -214,14 +252,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(s.Status.LoadBalancer.Ingress).NotTo(BeEmpty())
 
-				valid := s.Validate("(IIS Windows Server)", 5, 5*time.Second)
+				valid := s.Validate("(IIS Windows Server)", 10, 10*time.Second)
 				Expect(valid).To(BeTrue())
 
 				iisPods, err := iisDeploy.Pods()
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(iisPods)).ToNot(BeZero())
 				for _, iisPod := range iisPods {
-					pass, err := iisPod.CheckWindowsOutboundConnection(5*time.Second, cfg.Timeout)
+					pass, err := iisPod.CheckWindowsOutboundConnection(10*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(pass).To(BeTrue())
 				}

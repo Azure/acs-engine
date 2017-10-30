@@ -41,6 +41,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(newDeployCmd())
 	rootCmd.AddCommand(newOrchestratorsCmd())
 	rootCmd.AddCommand(newUpgradeCmd())
+	rootCmd.AddCommand(newScaleCmd())
 
 	return rootCmd
 }
@@ -106,6 +107,10 @@ func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
 		log.Fatalf("--auth-method: ERROR: method unsupported. method=%q.", authArgs.AuthMethod)
 		return nil, nil // unreachable
 	}
+	if err != nil {
+		return nil, err
+	}
+	err = client.EnsureProvidersRegistered(authArgs.SubscriptionID.String())
 	if err != nil {
 		return nil, err
 	}

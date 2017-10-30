@@ -73,7 +73,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"eKr", "pKr"},
 		erasNarrow:             []string{"eKr", "pKr"},
 		erasWide:               []string{"enne Kristust", "pärast Kristust"},
-		timezones:              map[string]string{"SAST": "Lõuna-Aafrika standardaeg", "SGT": "Singapuri standardaeg", "PST": "Vaikse ookeani standardaeg", "MEZ": "Kesk-Euroopa standardaeg", "OEZ": "Ida-Euroopa standardaeg", "OESZ": "Ida-Euroopa suveaeg", "MST": "MST", "∅∅∅": "Assooride suveaeg", "HEEG": "Ida-Gröönimaa suveaeg", "HKST": "Hongkongi suveaeg", "CHAST": "Chathami standardaeg", "NZST": "Uus-Meremaa standardaeg", "JDT": "Jaapani suveaeg", "MDT": "MDT", "COST": "Colombia suveaeg", "WIB": "Lääne-Indoneesia aeg", "AWST": "Lääne-Austraalia standardaeg", "CLT": "Tšiili standardaeg", "HNNOMX": "Loode-Mehhiko standardaeg", "HAT": "Newfoundlandi suveaeg", "AKST": "Alaska standardaeg", "AKDT": "Alaska suveaeg", "SRT": "Suriname aeg", "WIT": "Ida-Indoneesia aeg", "WESZ": "Lääne-Euroopa suveaeg", "ACDT": "Kesk-Austraalia suveaeg", "HEPMX": "Mehhiko Vaikse ookeani suveaeg", "HECU": "Kuuba suveaeg", "ACWST": "Kesk-Lääne Austraalia standardaeg", "HEOG": "Lääne-Gröönimaa suveaeg", "HEPM": "Saint-Pierre’i ja Miqueloni suveaeg", "GYT": "Guyana aeg", "HAST": "Hawaii-Aleuudi standardaeg", "ACWDT": "Kesk-Lääne Austraalia suveaeg", "GMT": "Greenwichi aeg", "MYT": "Malaisia \u200b\u200baeg", "ART": "Argentina standardaeg", "CST": "Kesk-Ameerika standardaeg", "EAT": "Ida-Aafrika aeg", "NZDT": "Uus-Meremaa suveaeg", "TMT": "Türkmenistani standardaeg", "TMST": "Türkmenistani suveaeg", "LHDT": "Lord Howe’i suveaeg", "WITA": "Kesk-Indoneesia aeg", "EDT": "Idaranniku suveaeg", "HNCU": "Kuuba standardaeg", "CDT": "Kesk-Ameerika suveaeg", "WART": "Lääne-Argentina standardaeg", "HNOG": "Lääne-Gröönimaa standardaeg", "HNPM": "Saint-Pierre’i ja Miqueloni standardaeg", "HNPMX": "Mehhiko Vaikse ookeani standardaeg", "CHADT": "Chathami suveaeg", "HADT": "Hawaii-Aleuudi suveaeg", "VET": "Venezuela aeg", "EST": "Idaranniku standardaeg", "HENOMX": "Loode-Mehhiko suveaeg", "AWDT": "Lääne-Austraalia suveaeg", "CAT": "Kesk-Aafrika aeg", "MESZ": "Kesk-Euroopa suveaeg", "CLST": "Tšiili suveaeg", "ADT": "Atlandi suveaeg", "WAT": "Lääne-Aafrika standardaeg", "GFT": "Prantsuse Guajaana aeg", "ChST": "Tšamorro standardaeg", "ECT": "Ecuadori aeg", "UYST": "Uruguay suveaeg", "ARST": "Argentina suveaeg", "HKT": "Hongkongi standardaeg", "AEST": "Ida-Austraalia standardaeg", "AEDT": "Ida-Austraalia suveaeg", "PDT": "Vaikse ookeani suveaeg", "ACST": "Kesk-Austraalia standardaeg", "HNEG": "Ida-Gröönimaa standardaeg", "AST": "Atlandi standardaeg", "WEZ": "Lääne-Euroopa standardaeg", "WAST": "Lääne-Aafrika suveaeg", "HNT": "Newfoundlandi standardaeg", "BOT": "Boliivia aeg", "JST": "Jaapani standardaeg", "WARST": "Lääne-Argentina suveaeg", "COT": "Colombia standardaeg", "BT": "Bhutani aeg", "UYT": "Uruguay standardaeg", "IST": "India aeg", "LHST": "Lord Howe’i standardaeg"},
+		timezones:              map[string]string{"ART": "Argentina standardaeg", "CAT": "Kesk-Aafrika aeg", "OEZ": "Ida-Euroopa standardaeg", "EST": "Idaranniku standardaeg", "ECT": "Ecuadori aeg", "HAST": "Hawaii-Aleuudi standardaeg", "COT": "Colombia standardaeg", "COST": "Colombia suveaeg", "NZST": "Uus-Meremaa standardaeg", "HEPMX": "Mehhiko Vaikse ookeani suveaeg", "AWDT": "Lääne-Austraalia suveaeg", "CST": "Kesk-Ameerika standardaeg", "CDT": "Kesk-Ameerika suveaeg", "WITA": "Kesk-Indoneesia aeg", "HEOG": "Lääne-Gröönimaa suveaeg", "ACWST": "Kesk-Lääne Austraalia standardaeg", "LHDT": "Lord Howe’i suveaeg", "HNNOMX": "Loode-Mehhiko standardaeg", "AEST": "Ida-Austraalia standardaeg", "HEEG": "Ida-Gröönimaa suveaeg", "ACDT": "Kesk-Austraalia suveaeg", "WIB": "Lääne-Indoneesia aeg", "GMT": "Greenwichi aeg", "UYST": "Uruguay suveaeg", "HADT": "Hawaii-Aleuudi suveaeg", "NZDT": "Uus-Meremaa suveaeg", "CHAST": "Chathami standardaeg", "HENOMX": "Loode-Mehhiko suveaeg", "HKST": "Hongkongi suveaeg", "ACWDT": "Kesk-Lääne Austraalia suveaeg", "TMT": "Türkmenistani standardaeg", "MEZ": "Kesk-Euroopa standardaeg", "BT": "Bhutani aeg", "HKT": "Hongkongi standardaeg", "HNPM": "Saint-Pierre’i ja Miqueloni standardaeg", "LHST": "Lord Howe’i standardaeg", "HNOG": "Lääne-Gröönimaa standardaeg", "WESZ": "Lääne-Euroopa suveaeg", "CHADT": "Chathami suveaeg", "MST": "MST", "∅∅∅": "Acre suveaeg", "WIT": "Ida-Indoneesia aeg", "BOT": "Boliivia aeg", "HNT": "Newfoundlandi standardaeg", "AKST": "Alaska standardaeg", "HNEG": "Ida-Gröönimaa standardaeg", "HNPMX": "Mehhiko Vaikse ookeani standardaeg", "PST": "Vaikse ookeani standardaeg", "MESZ": "Kesk-Euroopa suveaeg", "WARST": "Lääne-Argentina suveaeg", "ARST": "Argentina suveaeg", "WAST": "Lääne-Aafrika suveaeg", "HNCU": "Kuuba standardaeg", "HECU": "Kuuba suveaeg", "PDT": "Vaikse ookeani suveaeg", "SRT": "Suriname aeg", "OESZ": "Ida-Euroopa suveaeg", "IST": "India aeg", "CLT": "Tšiili standardaeg", "GFT": "Prantsuse Guajaana aeg", "HAT": "Newfoundlandi suveaeg", "GYT": "Guyana aeg", "WEZ": "Lääne-Euroopa standardaeg", "MDT": "MDT", "AWST": "Lääne-Austraalia standardaeg", "JST": "Jaapani standardaeg", "SGT": "Singapuri standardaeg", "ChST": "Tšamorro standardaeg", "HEPM": "Saint-Pierre’i ja Miqueloni suveaeg", "TMST": "Türkmenistani suveaeg", "WAT": "Lääne-Aafrika standardaeg", "CLST": "Tšiili suveaeg", "ACST": "Kesk-Austraalia standardaeg", "JDT": "Jaapani suveaeg", "AST": "Atlandi standardaeg", "EAT": "Ida-Aafrika aeg", "VET": "Venezuela aeg", "AEDT": "Ida-Austraalia suveaeg", "ADT": "Atlandi suveaeg", "SAST": "Lõuna-Aafrika standardaeg", "EDT": "Idaranniku suveaeg", "MYT": "Malaisia \u200b\u200baeg", "UYT": "Uruguay standardaeg", "WART": "Lääne-Argentina standardaeg", "AKDT": "Alaska suveaeg"},
 	}
 }
 
@@ -188,6 +188,21 @@ func (et *et) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (et *et) WeekdaysWide() []string {
 	return et.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (et *et) Decimal() string {
+	return et.decimal
+}
+
+// Group returns the group of number
+func (et *et) Group() string {
+	return et.group
+}
+
+// Group returns the minus sign of number
+func (et *et) Minus() string {
+	return et.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'et' and handles both Whole and Real numbers based on 'v'
@@ -438,7 +453,7 @@ func (et *et) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -457,7 +472,7 @@ func (et *et) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -478,7 +493,7 @@ func (et *et) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

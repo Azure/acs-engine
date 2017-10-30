@@ -56,12 +56,13 @@ func NewAccount() (*Account, error) {
 
 // Login will login to a given subscription
 func (a *Account) Login() error {
-	_, err := exec.Command("az", "login",
+	output, err := exec.Command("az", "login",
 		"--service-principal",
 		"--username", a.User.ID,
 		"--password", a.User.Secret,
 		"--tenant", a.TenantID).CombinedOutput()
 	if err != nil {
+		log.Printf("output:%s\n", output)
 		return err
 	}
 	return nil
@@ -106,22 +107,38 @@ func (a *Account) DeleteGroup(name string) error {
 
 // CreateDeployment will deploy a cluster to a given resource group using the template and parameters on disk
 func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
+	log.Print("Creating deployment this make take a few minutes.")
 	d := Deployment{
 		Name:              name,
 		TemplateDirectory: e.Config.GeneratedDefinitionPath,
 	}
+
+	ticker := time.NewTicker(1 * time.Minute)
+	quit := make(chan bool)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				fmt.Print(".")
+			case <-quit:
+				fmt.Print("\n")
+				ticker.Stop()
+				return
+			}
+		}
+	}()
+
 	output, err := exec.Command("az", "group", "deployment", "create",
 		"--name", d.Name,
 		"--resource-group", a.ResourceGroup.Name,
 		"--template-file", e.Config.GeneratedTemplatePath,
 		"--parameters", e.Config.GeneratedParametersPath).CombinedOutput()
-
 	if err != nil {
 		log.Printf("Error while trying to start deployment for %s in resource group %s:%s", d.Name, a.ResourceGroup.Name, err)
 		log.Printf("Command Output: %s\n", output)
 		return err
 	}
-
+	quit <- true
 	a.Deployment = d
 	return nil
 }

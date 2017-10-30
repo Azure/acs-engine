@@ -5,11 +5,10 @@ RUN apt-get update \
     && apt-get -y install python-pip make build-essential curl openssl vim jq gettext \
     && rm -rf /var/lib/apt/lists/*
 
-ENV GO_VERSION 1.8
-RUN mkdir /tmp/godeb \
-    && curl "https://godeb.s3.amazonaws.com/godeb-amd64.tar.gz" > /tmp/godeb/godeb.tar.gz \
-    && (cd /tmp/godeb; tar zvxf godeb.tar.gz; ./godeb install "${GO_VERSION}") \
-    && rm -rf /tmp/godeb
+ENV GO_VERSION 1.8.3
+
+RUN wget -q https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz \
+    && tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && rm go${GO_VERSION}.linux-amd64.tar.gz
 
 # See: https://github.com/Azure/azure-cli/blob/master/packaged_releases/bundled/README.md#using-the-bundled-installer
 ENV AZURE_CLI_BUNDLE_VERSION 0.2.10-1
@@ -27,7 +26,7 @@ RUN curl "https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_V
     && chmod +x /usr/local/bin/kubectl
 
 ENV GOPATH /gopath
-ENV PATH "${PATH}:${GOPATH}/bin"
+ENV PATH "${PATH}:${GOPATH}/bin:/usr/local/go/bin"
 
 RUN git clone https://github.com/akesterson/cmdarg.git /tmp/cmdarg \
     && cd /tmp/cmdarg && make install && rm -rf /tmp/cmdarg
