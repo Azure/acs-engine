@@ -134,6 +134,7 @@ endif
 
 build-vendor:
 	${DEV_ENV_CMD} rm -f glide.lock && rm -Rf vendor/ && glide --debug install --force --strip-vendor
+	rm -rf vendor/github.com/docker/distribution/contrib/docker-integration/generated_certs.d
 
 ci: bootstrap test-style build test lint
 	./scripts/coverage.sh --coveralls
