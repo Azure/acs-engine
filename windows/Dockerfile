@@ -1,4 +1,4 @@
-FROM microsoft/nanoserver:1709
+FROM microsoft/windowsservercore:1709
 
 ADD pause.ps1 /pause/pause.ps1
 
