@@ -116,7 +116,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 	orchs := []*OrchestratorVersionProfile{}
 	if csOrch.OrchestratorVersion == "" {
 		// get info for all supported versions
-		for _, ver := range common.AllKubernetesSupportedVersions {
+		for _, ver := range common.GetAllSupportedKubernetesVersions() {
 			upgrades, err := kubernetesUpgrades(&OrchestratorProfile{OrchestratorVersion: ver})
 			if err != nil {
 				return nil, err
