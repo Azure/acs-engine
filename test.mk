@@ -29,4 +29,4 @@ test-dcos:
 	@ORCHESTRATOR=dcos go run ./test/e2e/runner.go
 
 test-azure-constants:
-	@./scripts/azure-const.sh
+	./scripts/azure-const.sh

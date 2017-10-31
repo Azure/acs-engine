@@ -14,12 +14,10 @@ if [ -z "$TENANT_ID" ]; then
     exit 1;
 fi
 
-if [ -z "$SUBSCRIPTION_ID_TO_CLEANUP" ]; then
-    echo "must provide a SUBSCRIPTION_ID_TO_CLEANUP env var"
+if [ -z "$SUBSCRIPTION_ID" ]; then
+    echo "must provide a SUBSCRIPTION_ID env var"
     exit 1;
 fi
-
-set -eu -o pipefail
 
 az login --service-principal \
 		--username "${CLIENT_ID}" \
@@ -33,8 +31,9 @@ python pkg/acsengine/Get-AzureConstants.py
 git status | grep pkg/acsengine/azureconst.go
 exit_code=$?
 if [ $exit_code -gt "0" ]; then
+  echo "No modifications found! Exiting 0"
   exit 0
 else
-  echo "File was modified, failing test"
+  echo "File was modified! Exiting 1"
   exit 1
 fi 
