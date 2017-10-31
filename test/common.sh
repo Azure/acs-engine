@@ -103,6 +103,7 @@ function create_resource_group() {
 	[[ ! -z "${LOCATION:-}" ]] || (echo "Must specify LOCATION" && exit -1)
 	[[ ! -z "${RESOURCE_GROUP:-}" ]] || (echo "Must specify RESOURCE_GROUP" && exit -1)
 
+    az --help
 	# Create resource group if doesn't exist
 	rg=$(az group show --name="${RESOURCE_GROUP}")
 	if [ -z "$rg" ]; then
