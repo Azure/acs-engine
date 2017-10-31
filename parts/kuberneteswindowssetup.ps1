@@ -61,7 +61,6 @@ $global:RouteTableName = "{{WrapAsVariable "routeTableName"}}"
 $global:PrimaryAvailabilitySetName = "{{WrapAsVariable "primaryAvailabilitySetName"}}"
 $global:KubeClusterCIDR = "{{WrapAsVariable "kubeClusterCidr"}}"
 $global:KubeServiceCIDR = "{{WrapAsVariable "kubeServiceCidr"}}"
-$global:NeedPatchWinNAT = $false
 
 $global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
 $global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
@@ -91,22 +90,6 @@ Get-KubeBinaries()
     $zipfile = "c:\k.zip"
     Invoke-WebRequest -Uri $global:KubeBinariesSASURL -OutFile $zipfile
     Expand-Archive -path $zipfile -DestinationPath C:\
-}
-
-function
-Patch-WinNATBinary()
-{
-    $winnatcurr = $global:KubeDir + "\winnat.sys"
-    if (Test-Path $winnatcurr)
-    {
-        $global:NeedPatchWinNAT = $true
-        $winnatsys = "$env:SystemRoot\System32\drivers\winnat.sys"
-        Stop-Service winnat
-        takeown /f $winnatsys
-        icacls $winnatsys /grant "Administrators:(F)"
-        Copy-Item $winnatcurr $winnatsys
-        bcdedit /set TESTSIGNING on
-    }
 }
 
 function
@@ -380,10 +363,7 @@ New-NSSMService
     c:\k\nssm set Kubelet AppRotateOnline 1
     c:\k\nssm set Kubelet AppRotateSeconds 86400
     c:\k\nssm set Kubelet AppRotateBytes 1048576
-    if ($global:NeedPatchWinNAT -eq $false)
-    {
-        net start Kubelet
-    }
+    net start Kubelet
 
     # setup kubeproxy
     c:\k\nssm install Kubeproxy C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
@@ -402,10 +382,7 @@ New-NSSMService
     c:\k\nssm set Kubeproxy AppRotateOnline 1
     c:\k\nssm set Kubeproxy AppRotateSeconds 86400
     c:\k\nssm set Kubeproxy AppRotateBytes 1048576
-    if ($global:NeedPatchWinNAT -eq $false)
-    {
-        net start Kubeproxy
-    }
+    net start Kubeproxy
 }
 
 function
@@ -446,9 +423,6 @@ try
         Write-Log "write kubelet startfile with pod CIDR of $podCIDR"
         Write-KubernetesStartFiles $podCIDR
 
-        Write-Log "Patch winnat binary"
-        Patch-WinNATBinary
-
         Write-Log "install the NSSM service"
         New-NSSMService
 
@@ -456,11 +430,6 @@ try
         Set-Explorer
 
         Write-Log "Setup Complete"
-        if ($global:NeedPatchWinNAT -eq $true)
-        {
-            Write-Log "Reboot for patching winnat to be effective and start kubelet/kubeproxy service"
-            Restart-Computer
-        }
     }
     else
     {
