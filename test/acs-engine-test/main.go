@@ -405,7 +405,9 @@ func (m *TestManager) runStep(name, step string, env []string, timeout time.Dura
 	// prevent ARM throttling
 	m.lock.Lock()
 	go func() {
-		time.Sleep(2 * time.Second)
+		duration := rand.Intn(10)
+		fmt.Printf("Sleeping for %d seconds...\n", duration)
+		time.Sleep(time.Duration(duration) * time.Second)
 		m.lock.Unlock()
 	}()
 	start := time.Now()
