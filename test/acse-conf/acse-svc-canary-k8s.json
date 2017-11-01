@@ -4,6 +4,11 @@
       "cluster_definition": "kubernetes.json",
       "category": "canary",
       "location": "eastus2euap"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "category": "canary",
+      "location": "centraluseuap"
     }
   ]
 }
