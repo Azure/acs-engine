@@ -6,7 +6,7 @@
       "location": "eastus2euap"
     },
     {
-      "cluster_definition": "kubernetes.json",
+      "cluster_definition": "kubernetes-D2.json",
       "category": "canary",
       "location": "centraluseuap"
     }
