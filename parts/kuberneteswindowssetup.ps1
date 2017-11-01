@@ -170,21 +170,12 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
         $KubeletCommandLine += " --api-servers=https://`${global:MasterIP}:443"
     }
 
-    if ($global:KubeBinariesVersion -ge "1.6.0")
-    {
-        # stop using container runtime interface from 1.6.0+ (officially deprecated from 1.7.0)
-        if ($global:KubeBinariesVersion -lt "1.7.0")
-        {
-            $KubeletArgList += "--enable-cri=false"
-            $KubeletCommandLine += " --enable-cri=false"
-        }
-        else
-        {
-            $KubeletCommandLine += " --network-plugin=cni --cni-bin-dir=`$global:CNIPath --cni-conf-dir `$global:CNIPath\config"
-        }
-        # more time is needed to pull windows server images (flag supported from 1.6.0)
-        $KubeletCommandLine += " --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
-    }
+    # network plugin config
+    $KubeletCommandLine += " --network-plugin=cni --cni-bin-dir=`$global:CNIPath --cni-conf-dir `$global:CNIPath\config"
+
+    # more time is needed to pull windows server images
+    $KubeletCommandLine += " --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
+
     $KubeletArgListStr = "`"" + ($KubeletArgList -join "`",`"") + "`""
 
     $KubeletArgListStr = "@`($KubeletArgListStr`)"
