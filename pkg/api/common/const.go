@@ -105,6 +105,19 @@ var AllKubernetesSupportedVersions = []string{
 	KubernetesVersion1Dot5Dot7,
 }
 
+// AllKubernetesWindowsSupportedVersions maintain a set of available k8s Windows versions in acs-engine
+var AllKubernetesWindowsSupportedVersions = map[string]bool{
+	KubernetesVersion1Dot8Dot0: true,
+	KubernetesVersion1Dot8Dot1: true,
+	KubernetesVersion1Dot8Dot2: true,
+	KubernetesVersion1Dot7Dot1: true,
+	KubernetesVersion1Dot7Dot2: true,
+	KubernetesVersion1Dot7Dot4: true,
+	KubernetesVersion1Dot7Dot5: true,
+	KubernetesVersion1Dot7Dot7: true,
+	KubernetesVersion1Dot7Dot9: true,
+}
+
 const (
 	// DCOSVersion1Dot10Dot0 is the major.minor.patch string for 1.10.0 versions of DCOS
 	DCOSVersion1Dot10Dot0 string = "1.10.0"
