@@ -11,8 +11,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/influxdata/influxdb/influxql"
 	"github.com/influxdata/influxdb/models"
+	"github.com/influxdata/influxql"
 	"github.com/uber-go/zap"
 )
 
@@ -355,7 +355,7 @@ LOOP:
 
 		// Rewrite statements, if necessary.
 		// This can occur on meta read statements which convert to SELECT statements.
-		newStmt, err := influxql.RewriteStatement(stmt)
+		newStmt, err := RewriteStatement(stmt)
 		if err != nil {
 			results <- &Result{Err: err}
 			break
