@@ -85,6 +85,12 @@ chmod 0644 "${APISERVER_PUBLIC_KEY_PATH}"
 chown root:root "${APISERVER_PUBLIC_KEY_PATH}"
 echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
 
+CLIENT_CERTIFICATE_PATH="/etc/kubernetes/certs/apiserver.crt"
+touch "${CLIENT_CERTIFICATE_PATH}"
+chmod 0644 "${CLIENT_CERTIFICATE_PATH}"
+chown root:root "${CLIENT_CERTIFICATE_PATH}"
+echo "${CLIENT_CERTIFICATE}" | base64 --decode > "${CLIENT_CERTIFICATE_PATH}"
+
 AZURE_JSON_PATH="/etc/kubernetes/azure.json"
 touch "${AZURE_JSON_PATH}"
 chmod 0600 "${AZURE_JSON_PATH}"
