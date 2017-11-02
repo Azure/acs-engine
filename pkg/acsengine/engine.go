@@ -1332,7 +1332,9 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - update-initramfs -u
 - sudo add-apt-repository -y ppa:graphics-drivers
 - sudo apt-get update
-- sudo apt-get install -y nvidia-%s`, dv)
+- sudo apt-get install -y nvidia-%s
+- sudo nvidia-smi
+- sudo systemctl restart kubelet`, dv)
 
 	// We don't have an agreement in place with NVIDIA to provide the drivers on every sku. For this VMs we simply log a warning message.
 	na := getGPUDriversNotInstalledWarningMessage(profile.VMSize)
