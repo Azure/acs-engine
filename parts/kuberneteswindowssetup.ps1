@@ -264,6 +264,7 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
 
 try
 {
+    `$masterSubnetGW = Get-DefaultGateway `$global:MasterSubnet
     `$podCIDR=Get-PodCIDR
     `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
 
@@ -299,7 +300,6 @@ try
     {
         Write-Host "No HNS network found, creating a new one..."
         ipmo `$global:HNSModule
-        `$masterSubnetGW = Get-DefaultGateway `$global:MasterSubnet
 
         `$hnsNetwork = New-HNSNetwork -Type `$global:NetworkMode -AddressPrefix `$podCIDR -Gateway `$masterSubnetGW -Name `$global:NetworkMode.ToLower() -Verbose
     }
