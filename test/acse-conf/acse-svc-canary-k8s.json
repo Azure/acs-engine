@@ -1,6 +1,11 @@
 {
   "deployments": [
     {
+      "cluster_definition": "disks-storageaccount/kubernetes-master-sa.json",
+      "category": "canary",
+      "location": "centraluseuap"
+    },
+    {
       "cluster_definition": "kubernetes.json",
       "category": "canary",
       "location": "eastus2euap"
