@@ -87,22 +87,40 @@ const (
 	KubernetesDefaultVersion string = KubernetesVersion1Dot7Dot9
 )
 
-// AllKubernetesSupportedVersions maintain a list of available k8s versions in acs-engine
-var AllKubernetesSupportedVersions = []string{
-	KubernetesVersion1Dot8Dot0,
-	KubernetesVersion1Dot8Dot1,
-	KubernetesVersion1Dot8Dot2,
-	KubernetesVersion1Dot7Dot1,
-	KubernetesVersion1Dot7Dot2,
-	KubernetesVersion1Dot7Dot4,
-	KubernetesVersion1Dot7Dot5,
-	KubernetesVersion1Dot7Dot7,
-	KubernetesVersion1Dot7Dot9,
-	KubernetesVersion1Dot6Dot6,
-	KubernetesVersion1Dot6Dot9,
-	KubernetesVersion1Dot6Dot11,
-	KubernetesVersion1Dot5Dot8,
-	KubernetesVersion1Dot5Dot7,
+// AllKubernetesSupportedVersions is a whitelist map of supported Kubernetes version strings
+var AllKubernetesSupportedVersions = map[string]bool{
+	KubernetesVersion1Dot5Dot7:  true,
+	KubernetesVersion1Dot5Dot8:  true,
+	KubernetesVersion1Dot6Dot6:  true,
+	KubernetesVersion1Dot6Dot9:  true,
+	KubernetesVersion1Dot6Dot11: true,
+	KubernetesVersion1Dot7Dot0:  true,
+	KubernetesVersion1Dot7Dot1:  true,
+	KubernetesVersion1Dot7Dot2:  true,
+	KubernetesVersion1Dot7Dot4:  true,
+	KubernetesVersion1Dot7Dot5:  true,
+	KubernetesVersion1Dot7Dot7:  true,
+	KubernetesVersion1Dot7Dot9:  true,
+	KubernetesVersion1Dot8Dot0:  true,
+	KubernetesVersion1Dot8Dot1:  true,
+	KubernetesVersion1Dot8Dot2:  true,
+}
+
+// GetSupportedKubernetesVersion verifies that a passed-in version string is supported, or returns a default version string if not
+func GetSupportedKubernetesVersion(version string) string {
+	if k8sVersion := version; AllKubernetesSupportedVersions[k8sVersion] {
+		return k8sVersion
+	}
+	return KubernetesDefaultVersion
+}
+
+// GetAllSupportedKubernetesVersions returns a slice of all supported Kubernetes versions
+func GetAllSupportedKubernetesVersions() []string {
+	versions := make([]string, 0, len(AllKubernetesSupportedVersions))
+	for k := range AllKubernetesSupportedVersions {
+		versions = append(versions, k)
+	}
+	return versions
 }
 
 const (
