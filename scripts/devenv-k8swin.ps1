@@ -7,6 +7,14 @@ if (!(Test-Path -Path $k8spath))
 	exit
 }
 
+$makefile = Join-Path -Path $k8spath -ChildPath "Makefile"
+if (!((Get-Item $makefile).Attributes.ToString() -match "ReparsePoint"))
+{
+	Write-Host "Kubernetes Makefile $makefile is not a symlink!"
+	Write-Host "Please use -c core.symlinks in git clone."
+	exit
+}
+
 Get-Content Dockerfile.k8swin | docker build --pull -t k8swin -
 docker run --security-opt seccomp:unconfined -it `
 	-v ${k8spath}:/gopath/src/k8s.io/kubernetes `
