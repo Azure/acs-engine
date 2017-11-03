@@ -395,7 +395,7 @@ func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
 		FQDNFormat = AzureChinaCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
 	} else if location == "germanynortheast" || location == "germanycentral" {
 		FQDNFormat = AzureGermanCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
-	} else if location == "usgovvirginia" || location == "usgoviowa" || location == "usgovarizona" || location = "usgovtexas" {
+	} else if location == "usgovvirginia" || location == "usgoviowa" || location == "usgovarizona" || location == "usgovtexas" {
 		FQDNFormat = AzureUSGovernmentCloud.EndpointConfig.ResourceManagerVMDNSSuffix
 	}
 	return fmt.Sprintf("%s.%s."+FQDNFormat, fqdnPrefix, location)
