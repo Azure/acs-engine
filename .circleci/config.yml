@@ -116,13 +116,13 @@ jobs:
     steps:
       - checkout
       - run: |
-          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export TIMEOUT=20m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.6' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
-          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
-          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
           name: ginkgo k8s e2e tests
           command: make build-binary test-kubernetes
