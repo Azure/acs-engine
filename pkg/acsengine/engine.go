@@ -1940,25 +1940,13 @@ write_files:
 
 // Identifies a distro to use for master parameters
 func getDistro(properties *api.Properties) api.Distro {
-	// Set a default distro
-	distro := api.Ubuntu
-
+	// Use Ubuntu as the default distro if nothing is set
 	if properties.MasterProfile == nil {
-		// Check if AgentPoolProfiles have an assigned distro
-		// Use distro defined by first agent profile
-		if len(properties.AgentPoolProfiles) > 0 {
-			if properties.AgentPoolProfiles[0].Distro != "" {
-				distro = properties.AgentPoolProfiles[0].Distro
-			}
-		}
+		return api.Ubuntu
 	} else {
-		// If MasterProfile distro is defined, use it
-		if properties.MasterProfile.Distro != "" {
-			distro = properties.MasterProfile.Distro
-		}
+		// MasterProfile.Distro should then be configured by setMasterNetworkDefaults
+		return properties.MasterProfile.Distro
 	}
-
-	return distro
 }
 
 func getKubernetesSubnets(properties *api.Properties) string {
