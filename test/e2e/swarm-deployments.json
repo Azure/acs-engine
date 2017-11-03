@@ -1,12 +1,10 @@
 {
 	"deployments": [
 		{
-			"cluster_definition": "swarm.json",
-			"location": "westus2"
+			"cluster_definition": "swarm.json"
 		},
 		{
-			"cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json",
-			"location": "westus2"
+			"cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json"
 		}
 	]
 }
