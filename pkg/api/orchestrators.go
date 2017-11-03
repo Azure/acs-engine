@@ -176,7 +176,10 @@ func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, er
 		nextMajor = 1
 		nextMinor = 8
 	}
-	for _, ver := range common.AllKubernetesSupportedVersions {
+	for ver, supported := range common.AllKubernetesSupportedVersions {
+		if !supported {
+			continue
+		}
 		nextVersion, err := semver.NewVersion(ver)
 		if err != nil {
 			continue
