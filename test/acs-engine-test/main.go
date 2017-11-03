@@ -139,9 +139,12 @@ func (m *TestManager) Run() error {
 			var promToFailInfo promote.DigitalSignalFilter
 			resMap := make(map[string]*ErrorStat)
 			if usePromoteToFailure {
+				testName := strings.Replace(dep.ClusterDefinition, "/", "-", -1)
+				if dep.Location != "" {
+					testName += fmt.Sprintf("-%s", dep.Location)
+				}
 				errorInfo := m.testRun(dep, index, 0, timeout)
 				var failureStr string
-				testName := strings.Replace(dep.ClusterDefinition, "/", "-", -1)
 				if errorInfo != nil {
 					if errorStat, ok := resMap[errorInfo.ErrName]; !ok {
 						resMap[errorInfo.ErrName] = &ErrorStat{errorInfo: errorInfo, testCategory: dep.TestCategory, count: 1}
