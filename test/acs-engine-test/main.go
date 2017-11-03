@@ -595,6 +595,8 @@ func mainInternal() error {
 		case "germanynortheast": // Germany cloud
 		case "usgovvirginia": // US Gov cloud
 		case "usgoviowa": // US Gov cloud
+		case "usgovarizona": // US Gov cloud
+		case "usgovtexas": // US Gov cloud
 		case "koreacentral": // TODO make sure our versions of azure-cli support this cloud
 		case "centraluseuap": // TODO determine why this region is flaky
 		case "australiasoutheast": // TODO undo when this region is not flaky
