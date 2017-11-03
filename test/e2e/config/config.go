@@ -128,7 +128,7 @@ func (c *Config) IsSwarm() bool {
 // SetRandomRegion sets Location to a random region
 func (c *Config) SetRandomRegion() {
 	if c.Location == "" {
-		regions := []string{"eastus", "westcentralus", "southcentralus", "westus2", "westcentralus"}
+		regions := []string{"eastus", "southcentralus", "westcentralus", "southeastasia", "westus2", "westeurope"}
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		c.Location = regions[r.Intn(len(regions))]
 		os.Setenv("LOCATION", c.Location)
