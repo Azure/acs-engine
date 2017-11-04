@@ -1940,13 +1940,13 @@ write_files:
 
 // Identifies a distro to use for master parameters
 func getDistro(properties *api.Properties) api.Distro {
-	// Use Ubuntu as the default distro if nothing is set
+	// Use Ubuntu distro if none is set
 	if properties.MasterProfile == nil {
 		return api.Ubuntu
-	} else {
-		// MasterProfile.Distro should then be configured by setMasterNetworkDefaults
-		return properties.MasterProfile.Distro
 	}
+
+	// MasterProfile.Distro should then be configured by setMasterNetworkDefaults
+	return properties.MasterProfile.Distro
 }
 
 func getKubernetesSubnets(properties *api.Properties) string {
