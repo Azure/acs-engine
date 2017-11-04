@@ -201,7 +201,7 @@ write_files:
     KUBELET_NETWORK_PLUGIN=
     KUBELET_MAX_PODS=110
     DOCKER_OPTS=
-    KUBELET_NODE_LABELS={{GetMasterKubernetesLabels "',variables('resourceGroup'),'"}}
+    KUBELET_NODE_LABELS=kubernetes.io/role=master
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
     KUBELET_NODE_STATUS_UPDATE_FREQUENCY={{WrapAsVariable "kubernetesNodeStatusUpdateFrequency"}}
     KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD={{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
