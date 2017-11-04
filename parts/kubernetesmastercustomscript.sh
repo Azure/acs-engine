@@ -22,15 +22,18 @@
 # APISERVER_PRIVATE_KEY CA_CERTIFICATE CA_PRIVATE_KEY MASTER_FQDN KUBECONFIG_CERTIFICATE
 # KUBECONFIG_KEY ADMINUSER
 
-# Handling for different OSes
-shopt -s nocasematch
-OS=$(cat /etc/*release | grep ^NAME | tr -d 'NAME="')
+# Find distro name via ID value in releases files and upcase
+OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
+UBUNTU_OS_NAME="UBUNTU"
+RHEL_OS_NAME="RHEL"
+COREOS_OS_NAME="COREOS"
 
-KUBECTL=$KUBECTL
+# Set default kubectl
+KUBECTL=/usr/local/bin/kubectl
 
 # CoreOS: /usr is read-only; therefore kubectl is installed at /opt/kubectl
-#   Details on install at kubernetets[master/agent]customdataforcoreos.yml
-if [[ $OS == *"CoreOS"* ]]; then
+#   Details on install at kubernetetsmastercustomdataforcoreos.yml
+if [[ $OS == $COREOS_OS_NAME ]]; then
     echo "Changing default kubectl bin location"
     KUBECTL=/opt/kubectl
 fi
@@ -421,7 +424,7 @@ echo `date`,`hostname`, ensureJournalDone>>/opt/m
 ensureRunCommandCompleted
 echo `date`,`hostname`, RunCmdCompleted>>/opt/m 
 
-if [[ $OS == *"Ubuntu"* ]]; then
+if [[ $OS == $UBUNTU_OS_NAME ]]; then
     # make sure walinuxagent doesn't get updated in the middle of running this script
     apt-mark hold walinuxagent
 fi
@@ -435,8 +438,7 @@ if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     ensureApiserver
 fi
 
-# Ubuntu specific logic
-if [[ $OS == *"Ubuntu"* ]]; then
+if [[ $OS == $UBUNTU_OS_NAME ]]; then
     # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
     echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
     sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
