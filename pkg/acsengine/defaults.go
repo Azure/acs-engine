@@ -154,7 +154,6 @@ var (
 				ImageVersion:   "latest",
 			},
 			api.RHEL:   DefaultRHELOSImageConfig,
-			api.RHEL:   DefaultRHELOSImageConfig,
 			api.CoreOS: DefaultCoreOSImageConfig,
 		},
 	}
