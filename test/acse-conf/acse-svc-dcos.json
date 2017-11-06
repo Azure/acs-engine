@@ -1,11 +1,6 @@
 {
   "deployments": [
     {
-      "cluster_definition": "dcos-D2.json",
-      "category": "service-availability",
-      "location": "australiaeast"
-    },
-    {
       "cluster_definition": "dcos.json",
       "category": "service-availability",
       "location": "australiaeast"
