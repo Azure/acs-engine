@@ -136,10 +136,11 @@ download_nssm() {
 }
 
 download_wincni() {
-	az storage blob download -f ${DIST_DIR}/wincni.exe -c ${AZURE_STORAGE_CONTAINER_NAME} -n wincni.exe
+	mkdir -p ${DIST_DIR}/cni/config
+	az storage blob download -f ${DIST_DIR}/cni/wincni.exe -c ${AZURE_STORAGE_CONTAINER_NAME} -n wincni.exe
 }
 
-copy_dockerfile_and_pause_ps1() {
+copy_dockerfile_and_hns_psm1() {
   cp ${ACS_ENGINE_HOME}/windows/* ${DIST_DIR}
 }
 
@@ -174,7 +175,7 @@ build_kubeproxy
 download_kubectl
 download_nssm
 download_wincni
-copy_dockerfile_and_pause_ps1
+copy_dockerfile_and_hns_psm1
 create_zip
 upload_zip_to_blob_storage
 push_acs_branch
