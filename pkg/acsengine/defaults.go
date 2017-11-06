@@ -106,7 +106,7 @@ var (
 		KubernetesSpecConfig: DefaultKubernetesSpecConfig,
 		DCOSSpecConfig:       DefaultDCOSSpecConfig,
 		EndpointConfig: AzureEndpointConfig{
-			ResourceManagerVMDNSSuffix: "cloudapp.windowsazure.us",
+			ResourceManagerVMDNSSuffix: "cloudapp.usgovcloudapi.net",
 		},
 		OSImageConfig: map[api.Distro]AzureOSImageConfig{
 			api.Ubuntu: DefaultUbuntuImageConfig,

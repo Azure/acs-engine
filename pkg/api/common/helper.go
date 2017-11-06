@@ -58,7 +58,7 @@ func HandleValidationErrors(e validator.ValidationErrors) error {
 func GetSupportedVersions(orchType string) (versions []string, defaultVersion string) {
 	switch orchType {
 	case Kubernetes:
-		return AllKubernetesSupportedVersions, KubernetesDefaultVersion
+		return GetAllSupportedKubernetesVersions(), string(KubernetesDefaultVersion)
 	case DCOS:
 		return AllDCOSSupportedVersions, DCOSDefaultVersion
 	default:
