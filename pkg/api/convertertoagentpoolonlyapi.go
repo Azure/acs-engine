@@ -187,37 +187,17 @@ func convertVLabsAgentPoolOnlyWindowsProfile(vlabs *vlabs.WindowsProfile, api *W
 }
 
 func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
-	orchestratorProfile := &OrchestratorProfile{
-		OrchestratorType: Kubernetes,
+	return &OrchestratorProfile{
+		OrchestratorType:    Kubernetes,
+		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
 	}
-
-	switch kubernetesVersion {
-	case common.KubernetesVersion1Dot8Dot0, common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2,
-		common.KubernetesVersion1Dot7Dot0, common.KubernetesVersion1Dot7Dot1, common.KubernetesVersion1Dot7Dot2, common.KubernetesVersion1Dot7Dot4, common.KubernetesVersion1Dot7Dot5, common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9,
-		common.KubernetesVersion1Dot6Dot6, common.KubernetesVersion1Dot6Dot9, common.KubernetesVersion1Dot6Dot11,
-		common.KubernetesVersion1Dot5Dot7, common.KubernetesVersion1Dot5Dot8:
-		orchestratorProfile.OrchestratorVersion = kubernetesVersion
-	default:
-		orchestratorProfile.OrchestratorVersion = common.KubernetesDefaultVersion
-	}
-	return orchestratorProfile
 }
 
 func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
-	orchestratorProfile := &OrchestratorProfile{
-		OrchestratorType: Kubernetes,
+	return &OrchestratorProfile{
+		OrchestratorType:    Kubernetes,
+		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
 	}
-
-	switch kubernetesVersion {
-	case common.KubernetesVersion1Dot8Dot0, common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2,
-		common.KubernetesVersion1Dot7Dot0, common.KubernetesVersion1Dot7Dot1, common.KubernetesVersion1Dot7Dot2, common.KubernetesVersion1Dot7Dot4, common.KubernetesVersion1Dot7Dot5, common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9,
-		common.KubernetesVersion1Dot6Dot6, common.KubernetesVersion1Dot6Dot9, common.KubernetesVersion1Dot6Dot11,
-		common.KubernetesVersion1Dot5Dot7, common.KubernetesVersion1Dot5Dot8:
-		orchestratorProfile.OrchestratorVersion = kubernetesVersion
-	default:
-		orchestratorProfile.OrchestratorVersion = common.KubernetesDefaultVersion
-	}
-	return orchestratorProfile
 }
 
 func convertV20170831AgentPoolOnlyAgentPoolProfile(v20170831 *v20170831.AgentPoolProfile, availabilityProfile string) *AgentPoolProfile {

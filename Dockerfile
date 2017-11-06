@@ -10,15 +10,6 @@ ENV GO_VERSION 1.8.3
 RUN wget -q https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz \
     && tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && rm go${GO_VERSION}.linux-amd64.tar.gz
 
-# See: https://github.com/Azure/azure-cli/blob/master/packaged_releases/bundled/README.md#using-the-bundled-installer
-ENV AZURE_CLI_BUNDLE_VERSION 0.2.10-1
-RUN mkdir /tmp/azurecli \
-    && curl "https://azurecliprod.blob.core.windows.net/bundled/azure-cli_bundle_${AZURE_CLI_BUNDLE_VERSION}.tar.gz" > /tmp/azurecli/azure-cli_bundle.tar.gz \
-    && (cd /tmp/azurecli \
-      && tar -xvzf azure-cli_bundle.tar.gz \
-      && azure-cli_bundle_*/installer --bin-dir /usr/local/bin) \
-    && rm -rf /tmp/azurecli
-
 RUN curl -fsSL https://get.docker.com/ | sh
 
 ENV KUBECTL_VERSION 1.7.5
@@ -44,5 +35,13 @@ RUN echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-releas
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893 \
     && apt-get update \
     && apt-get -y install dotnet-sdk-2.0.0-preview2-006497
+
+# See: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest#install-on-debianubuntu-with-apt-get
+RUN apt-get update \
+    && apt-get install apt-transport-https \
+    && echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ wheezy main" > /etc/apt/sources.list.d/azure-cli.list \
+    && apt-key adv --keyserver packages.microsoft.com --recv-keys 52E16F86FEE04B979B07E28DB02C46DF417A0893 \
+    && apt-get update \
+    && apt-get install azure-cli
 
 ADD . /gopath/src/github.com/Azure/acs-engine
