@@ -194,7 +194,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			if eng.HasWindowsAgents() {
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
-				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis", deploymentName, "default", 80)
+				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1709", deploymentName, "default", 80)
 				Expect(err).NotTo(HaveOccurred())
 
 				running, err := pod.WaitOnReady(deploymentName, "default", 5*time.Second, cfg.Timeout)
