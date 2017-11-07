@@ -218,7 +218,7 @@ func (m *TestManager) Run() error {
 				}
 			}
 
-			sendErrorMetrics(resMap)
+			sendErrorMetrics(resMap, usePromoteToFailure)
 		}(index, dep)
 	}
 	m.wg.Wait()
@@ -453,13 +453,13 @@ func wrileLog(fname string, format string, args ...interface{}) {
 	}
 }
 
-func sendErrorMetrics(resMap map[string]*ErrorStat) {
+func sendErrorMetrics(resMap map[string]*ErrorStat, usePromoteToFailure bool) {
 	if !enableMetrics {
 		return
 	}
 	for _, errorStat := range resMap {
 		var severity string
-		if errorStat.count > 1 {
+		if usePromoteToFailure || errorStat.count > 1 {
 			severity = "Critical"
 		} else {
 			severity = "Intermittent"
