@@ -56,7 +56,7 @@
       "location": "northcentralus"
     },
     {
-      "cluster_definition": "kubernetes-D1.json",
+      "cluster_definition": "kubernetes-D12.json",
       "category": "service-availability",
       "location": "southcentralus"
     },
