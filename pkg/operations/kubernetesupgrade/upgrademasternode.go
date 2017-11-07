@@ -54,10 +54,11 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	deploymentSuffix := random.Int31()
+	deploymentName := fmt.Sprintf("master-%s-%d", time.Now().Format("06-01-02T15:04:05"), deploymentSuffix)
 
 	_, err := kmn.Client.DeployTemplate(
 		kmn.ResourceGroup,
-		fmt.Sprintf("%s-%d", kmn.ResourceGroup, deploymentSuffix),
+		deploymentName,
 		kmn.TemplateMap,
 		kmn.ParametersMap,
 		nil)
