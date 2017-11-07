@@ -203,6 +203,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		currentNodeCount = len(indexes)
 
 		if currentNodeCount == sc.newDesiredAgentCount {
+			log.Info("Cluster is currently at the desired agent count. If some nodes aren't joining the cluster either debug them or delete them and try the scale command again")
 			return nil
 		}
 		highestUsedIndex = indexes[len(indexes)-1]
