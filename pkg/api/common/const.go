@@ -131,15 +131,16 @@ func GetAllSupportedKubernetesVersions() []string {
 
 // AllKubernetesWindowsSupportedVersions maintain a set of available k8s Windows versions in acs-engine
 var AllKubernetesWindowsSupportedVersions = map[string]bool{
-	KubernetesVersion1Dot8Dot0: true,
-	KubernetesVersion1Dot8Dot1: true,
-	KubernetesVersion1Dot8Dot2: true,
-	KubernetesVersion1Dot7Dot1: true,
-	KubernetesVersion1Dot7Dot2: true,
-	KubernetesVersion1Dot7Dot4: true,
-	KubernetesVersion1Dot7Dot5: true,
-	KubernetesVersion1Dot7Dot7: true,
-	KubernetesVersion1Dot7Dot9: true,
+	KubernetesVersion1Dot8Dot0:  true,
+	KubernetesVersion1Dot8Dot1:  true,
+	KubernetesVersion1Dot8Dot2:  true,
+	KubernetesVersion1Dot7Dot1:  true,
+	KubernetesVersion1Dot7Dot2:  true,
+	KubernetesVersion1Dot7Dot4:  true,
+	KubernetesVersion1Dot7Dot5:  true,
+	KubernetesVersion1Dot7Dot7:  true,
+	KubernetesVersion1Dot7Dot9:  true,
+	KubernetesVersion1Dot7Dot10: true,
 }
 
 const (
