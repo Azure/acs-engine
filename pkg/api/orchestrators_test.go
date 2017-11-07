@@ -57,8 +57,8 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	}
 	orch, e := GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
-	// 1.5.7, 1.5.8, 1.6.6, 1.6.9, 1.6.11,
-	Expect(len(orch.Upgrades)).To(Equal(5))
+	// 1.5.7, 1.5.8, 1.6.6, 1.6.9, 1.6.11, 1.6.12
+	Expect(len(orch.Upgrades)).To(Equal(6))
 
 	// 1.6.8 is upgradable to 1.6.x and 1.7.x
 	csOrch = &OrchestratorProfile{
@@ -67,8 +67,8 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	}
 	orch, e = GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
-	// 1.6.9, 1.6.11, 1.7.0, 1.7.1, 1.7.2, 1.7.4, 1.7.5, 1.7.7, 1.7.9
-	Expect(len(orch.Upgrades)).To(Equal(9))
+	// 1.6.9, 1.6.11, 1.6.12, 1.7.0, 1.7.1, 1.7.2, 1.7.4, 1.7.5, 1.7.7, 1.7.9, 1.7.10
+	Expect(len(orch.Upgrades)).To(Equal(11))
 
 	// 1.7.0 is upgradable to 1.7.x and 1.8.x
 	csOrch = &OrchestratorProfile{
@@ -77,8 +77,8 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	}
 	orch, e = GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
-	// 1.7.1, 1.7.2, 1.7.4, 1.7.5, 1.7.7, 1.7.9, 1.8.0, 1.8.1, 1.8.2
-	Expect(len(orch.Upgrades)).To(Equal(9))
+	// 1.7.1, 1.7.2, 1.7.4, 1.7.5, 1.7.7, 1.7.9, 1.7.10, 1.8.0, 1.8.1, 1.8.2
+	Expect(len(orch.Upgrades)).To(Equal(10))
 
 	// 1.7.9 is upgradable to 1.8.x
 	csOrch = &OrchestratorProfile{
