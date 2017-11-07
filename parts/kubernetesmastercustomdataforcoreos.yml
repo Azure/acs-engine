@@ -261,6 +261,10 @@ write_files:
     sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsVariable "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsVariable "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
     sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
     sed -i "s|<kubernetesTillerSpec>|{{WrapAsVariable "kubernetesTillerSpec"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<kubernetesTillerCPURequests>|{{WrapAsVariable "kubernetesTillerCPURequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<kubernetesTillerMemoryRequests>|{{WrapAsVariable "kubernetesTillerMemoryRequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<kubernetesTillerCPULimit>|{{WrapAsVariable "kubernetesTillerCPULimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<kubernetesTillerMemoryLimit>|{{WrapAsVariable "kubernetesTillerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubeDNSServiceIP>|{{WrapAsVariable "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
 
 {{if .OrchestratorProfile.KubernetesConfig.EnableRbac }}
@@ -324,7 +328,6 @@ write_files:
     sudo bash /etc/kubernetes/generate-proxy-certs.sh
     {{end}}
     
-    # Simulates runcmd completion
     touch /opt/azure/containers/runcmd.complete
 
 coreos:
