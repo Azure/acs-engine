@@ -250,6 +250,20 @@ func handleValidationErrors(e validator.ValidationErrors) error {
 }
 
 // Validate implements APIObject
+func (w *WindowsProfile) Validate() error {
+	if e := validate.Var(w.AdminUsername, "required"); e != nil {
+		return fmt.Errorf("WindowsProfile.AdminUsername is required, when agent pool specifies windows")
+	}
+	if e := validate.Var(w.AdminPassword, "required"); e != nil {
+		return fmt.Errorf("WindowsProfile.AdminPassword is required, when agent pool specifies windows")
+	}
+	if e := validateKeyVaultSecrets(w.Secrets, true); e != nil {
+		return e
+	}
+	return nil
+}
+
+// Validate implements APIObject
 func (profile *AADProfile) Validate() error {
 	if _, err := uuid.FromString(profile.ClientAppID); err != nil {
 		return fmt.Errorf("clientAppID '%v' is invalid", profile.ClientAppID)
@@ -359,16 +373,20 @@ func (a *Properties) Validate(isUpdate bool) error {
 			case Swarm:
 			case SwarmMode:
 			case Kubernetes:
+				version := common.RationalizeReleaseAndVersion(
+					a.OrchestratorProfile.OrchestratorType,
+					a.OrchestratorProfile.OrchestratorRelease,
+					a.OrchestratorProfile.OrchestratorVersion)
+				if version == "" {
+					return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+				}
+				if _, ok := common.AllKubernetesWindowsSupportedVersions[version]; !ok {
+					return fmt.Errorf("Orchestrator %s version %s does not support Windows", a.OrchestratorProfile.OrchestratorType, version)
+				}
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
-			if e := validate.Var(a.WindowsProfile.AdminUsername, "required"); e != nil {
-				return fmt.Errorf("WindowsProfile.AdminUsername is required, when agent pool specifies windows")
-			}
-			if e := validate.Var(a.WindowsProfile.AdminPassword, "required"); e != nil {
-				return fmt.Errorf("WindowsProfile.AdminPassword is required, when agent pool specifies windows")
-			}
-			if e := validateKeyVaultSecrets(a.WindowsProfile.Secrets, true); e != nil {
+			if e := a.WindowsProfile.Validate(); e != nil {
 				return e
 			}
 		}
