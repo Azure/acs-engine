@@ -7,7 +7,7 @@
     "masterProfile": {
       "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2"
+      "vmSize": "Standard_D1_v2"
     },
     "agentPoolProfiles": [
       {
