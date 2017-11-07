@@ -58,11 +58,6 @@
     {
       "cluster_definition": "swarmmode.json",
       "category": "service-availability",
-      "location": "southcentralus"
-    },
-    {
-      "cluster_definition": "swarmmode.json",
-      "category": "service-availability",
       "location": "westcentralus"
     },
     {
