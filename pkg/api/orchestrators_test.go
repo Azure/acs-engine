@@ -80,10 +80,10 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	// 1.7.1, 1.7.2, 1.7.4, 1.7.5, 1.7.7, 1.7.9, 1.7.10, 1.8.0, 1.8.1, 1.8.2
 	Expect(len(orch.Upgrades)).To(Equal(10))
 
-	// 1.7.9 is upgradable to 1.8.x
+	// 1.7.10 is upgradable to 1.8.x
 	csOrch = &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
-		OrchestratorVersion: "1.7.9",
+		OrchestratorVersion: "1.7.10",
 	}
 	orch, e = GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
@@ -102,10 +102,10 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	// v20170930 - all orchestrators
 	list, e := GetOrchestratorVersionProfileListV20170930("", "")
 	Expect(e).To(BeNil())
-	Expect(len(list.Properties.Orchestrators)).To(Equal(20))
+	Expect(len(list.Properties.Orchestrators)).To(Equal(22))
 
 	// v20170930 - kubernetes only
 	list, e = GetOrchestratorVersionProfileListV20170930(common.Kubernetes, "")
 	Expect(e).To(BeNil())
-	Expect(len(list.Properties.Orchestrators)).To(Equal(15))
+	Expect(len(list.Properties.Orchestrators)).To(Equal(17))
 }
