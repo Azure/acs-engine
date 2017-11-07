@@ -769,7 +769,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				storagetier, _ := getStorageAccountType(profile.VMSize)
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
 			}
-			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
+			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", string(rg[0:63])))
 			for k, v := range profile.CustomNodeLabels {
 				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
 			}
