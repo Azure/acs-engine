@@ -69,7 +69,7 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	deploymentSuffix := random.Int31()
-	deploymentName := fmt.Sprintf("agent-%s-%d", time.Now().Format("07-01-31"), deploymentSuffix),
+	deploymentName := fmt.Sprintf("agent-%s-%d", time.Now().Format("07-01-31"), deploymentSuffix)
 
 	_, err := kan.Client.DeployTemplate(
 		kan.ResourceGroup,
