@@ -100,7 +100,7 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 		return err
 	}
 
-	uc.Logger.Infof("Cluster upraded successfully to Kubernetes version %s\n", upgradeVersion)
+	uc.Logger.Infof("Cluster upgraded successfully to Kubernetes version %s\n", upgradeVersion)
 	return nil
 }
 
