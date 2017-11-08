@@ -75,7 +75,7 @@ k8s_17_cherry_pick() {
 	# In 1.7.10, the following commit is not needed and has conflict with 137f4cb16e
 	# due to the out-of-order back porting into Azure 1.7. So removing it.
 	# cee32e92f7 fix#50150: azure disk mount failure on coreos
-	git revert --no-edit cee32e92f7
+	git revert --no-edit cee32e92f7 || true
 
     # cce920d45e merge#54334: fix azure disk mount failure on coreos and some other distros
     # ...
