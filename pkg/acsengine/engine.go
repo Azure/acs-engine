@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"unicode/utf8"
 
 	//log "github.com/sirupsen/logrus"
 	"github.com/Azure/acs-engine/pkg/api"
@@ -764,6 +765,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
 			}
 			for k, v := range profile.CustomNodeLabels {
+				if utf8.RuneCountInString(v) > 63 {
+					v = string(v[0:63])
+				}
 				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
 			}
 
