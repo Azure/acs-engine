@@ -115,6 +115,8 @@ Get-Locations() {
 	$locationList += "germanynortheast"
 	$locationList += "usgoviowa"
 	$locationList += "usgovvirginia"
+	$locationList += "usgovarizona"
+	$locationList += "usgovtexas"
 	return $locationList
 }
 
