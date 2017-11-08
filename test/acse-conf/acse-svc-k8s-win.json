@@ -3,11 +3,6 @@
     {
       "cluster_definition": "windows/kubernetes.json",
       "category": "service-availability",
-      "location": "australiaeast"
-    },
-    {
-      "cluster_definition": "windows/kubernetes.json",
-      "category": "service-availability",
       "location": "brazilsouth"
     },
     {
@@ -49,11 +44,6 @@
       "cluster_definition": "windows/kubernetes.json",
       "category": "service-availability",
       "location": "eastus"
-    },
-    {
-      "cluster_definition": "windows/kubernetes.json",
-      "category": "service-availability",
-      "location": "northcentralus"
     },
     {
       "cluster_definition": "windows/kubernetes.json",
@@ -114,11 +104,6 @@
       "cluster_definition": "windows/kubernetes.json",
       "category": "service-availability",
       "location": "uksouth"
-    },
-    {
-      "cluster_definition": "windows/kubernetes.json",
-      "category": "service-availability",
-      "location": "ukwest"
     }
   ]
 }

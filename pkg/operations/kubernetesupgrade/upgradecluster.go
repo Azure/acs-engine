@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
@@ -75,34 +74,33 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 	}
 
 	var upgrader UpgradeWorkFlow
-	uc.Logger.Infof("Upgrading to Kubernetes version %s\n", uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
-	switch uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion {
-	case common.KubernetesVersion1Dot6Dot12:
+	upgradeVersion := uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion
+	uc.Logger.Infof("Upgrading to Kubernetes version %s\n", upgradeVersion)
+	switch {
+	case strings.HasPrefix(upgradeVersion, "1.6"):
 		upgrader16 := &Kubernetes16upgrader{}
 		upgrader16.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig)
 		upgrader = upgrader16
 
-	case common.KubernetesVersion1Dot7Dot10:
+	case strings.HasPrefix(upgradeVersion, "1.7"):
 		upgrader17 := &Kubernetes17upgrader{}
 		upgrader17.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig)
 		upgrader = upgrader17
 
-	case common.KubernetesVersion1Dot8Dot2:
+	case strings.HasPrefix(upgradeVersion, "1.8"):
 		upgrader18 := &Kubernetes18upgrader{}
 		upgrader18.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig)
 		upgrader = upgrader18
 
 	default:
-		return uc.Translator.Errorf("Upgrade to Kubernetes version %s is not supported",
-			uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+		return uc.Translator.Errorf("Upgrade to Kubernetes version %s is not supported", upgradeVersion)
 	}
 
 	if err := upgrader.RunUpgrade(); err != nil {
 		return err
 	}
 
-	uc.Logger.Infof("Cluster upraded successfully to Kubernetes version %s\n",
-		uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+	uc.Logger.Infof("Cluster upraded successfully to Kubernetes version %s\n", upgradeVersion)
 	return nil
 }
 

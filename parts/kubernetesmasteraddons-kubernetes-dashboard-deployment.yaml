@@ -62,6 +62,7 @@ spec:
     spec:
       containers:
       - args: 
+        - --heapster-host=http://heapster.kube-system:80
         image: <kubernetesDashboardSpec>
         imagePullPolicy: Always
         livenessProbe:
