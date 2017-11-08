@@ -18,7 +18,7 @@
 		},
 		{
 			"cluster_definition": "disks-storageaccount/dcos.json",
-			"location": "southcentralus"
+			"location": "eastus"
 		},
 		{
 			"cluster_definition": "vnet/dcosvnet.json",

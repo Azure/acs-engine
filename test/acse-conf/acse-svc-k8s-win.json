@@ -53,16 +53,6 @@
     {
       "cluster_definition": "windows/kubernetes.json",
       "category": "service-availability",
-      "location": "northcentralus"
-    },
-    {
-      "cluster_definition": "windows/kubernetes.json",
-      "category": "service-availability",
-      "location": "southcentralus"
-    },
-    {
-      "cluster_definition": "windows/kubernetes.json",
-      "category": "service-availability",
       "location": "westcentralus"
     },
     {
