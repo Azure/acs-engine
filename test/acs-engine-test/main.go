@@ -601,6 +601,9 @@ func mainInternal() error {
 		case "centraluseuap": // TODO determine why this region is flaky
 		case "australiasoutheast": // TODO undo when this region is not flaky
 		case "brazilsouth": // canary region
+		case "ukwest": // no D2V2 capacity
+		case "southcentralus": // no D2V2 capacity
+		case "northcentralus": // no D2V2 capacity
 		default:
 			regions = append(regions, region)
 		}
