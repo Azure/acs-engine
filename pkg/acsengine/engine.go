@@ -765,6 +765,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
 			}
 			for k, v := range profile.CustomNodeLabels {
+				// kubernetes label values can only be 63 characters or less
 				if utf8.RuneCountInString(v) > 63 {
 					v = string(v[0:63])
 				}
