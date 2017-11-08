@@ -783,22 +783,6 @@
       },
       "type": "string"
     },
-    "generatorCode": {
-      "defaultValue": "acsengine",
-      "metadata": {
-        "description": "The generator code used to identify the generator"
-      },
-      "type": "string"
-    },
-    "orchestratorName": {
-      "defaultValue": "k8s",
-      "metadata": {
-        "description": "The orchestrator name used to identify the orchestrator.  This must be no more than 3 digits in length, otherwise it will exceed Windows Naming"
-      },
-      "minLength": 3,
-      "maxLength": 3,
-      "type": "string"
-    },
     "dockerBridgeCidr": {
       "defaultValue": "",
       "metadata": {
@@ -817,6 +801,13 @@
       "defaultValue": "10.239.255.239",
       "metadata": {
         "description": "Sets the static IP of the first master"
+      },
+      "type": "string"
+    },
+    "generatorCode": {
+      "defaultValue": "acsengine",
+      "metadata": {
+        "description": "The generator code used to identify the generator"
       },
       "type": "string"
     },
@@ -1103,6 +1094,15 @@
       "metadata": {
         "description": "The network policy enforcement to use (none|azure|calico)"
       },
+      "type": "string"
+    },
+    "orchestratorName": {
+      "defaultValue": "k8s",
+      "maxLength": 3,
+      "metadata": {
+        "description": "The orchestrator name used to identify the orchestrator.  This must be no more than 3 digits in length, otherwise it will exceed Windows Naming"
+      },
+      "minLength": 3,
       "type": "string"
     },
     "servicePrincipalClientId": {
@@ -1683,7 +1683,6 @@
         "count": "[sub(variables('agentpriCount'), variables('agentpriOffset'))]",
         "name": "loop"
       },
-      "dependsOn": [],
       "location": "[variables('location')]",
       "name": "[concat(variables('agentpriVMNamePrefix'), 'nic-', copyIndex(variables('agentpriOffset')))]",
       "properties": {
@@ -1826,7 +1825,6 @@
         "count": "[sub(variables('agentpri2Count'), variables('agentpri2Offset'))]",
         "name": "loop"
       },
-      "dependsOn": [],
       "location": "[variables('location')]",
       "name": "[concat(variables('agentpri2VMNamePrefix'), 'nic-', copyIndex(variables('agentpri2Offset')))]",
       "properties": {
@@ -1973,12 +1971,6 @@
         "platformUpdateDomainCount": "3"
       },
       "type": "Microsoft.Compute/availabilitySets"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[variables('location')]",
-      "name": "[variables('routeTableName')]",
-      "type": "Microsoft.Network/routeTables"
     },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
