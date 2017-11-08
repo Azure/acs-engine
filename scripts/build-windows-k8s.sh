@@ -72,19 +72,19 @@ k8s_16_cherry_pick() {
 }
 
 k8s_17_cherry_pick() {
-    # e3532bdeb2 Fixing 'targetport' to service 'port' mapping
+    # cce920d45e merge#54334: fix azure disk mount failure on coreos and some other distros
     # ...
 	# b8fe713754 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
 
-	git cherry-pick --allow-empty --keep-redundant-commits b8fe713754^..e3532bdeb2
+	git cherry-pick --allow-empty --keep-redundant-commits b8fe713754^..cce920d45e
 }
 
 k8s_18_cherry_pick() {
-    # cb29df51c0 Fixing 'targetport' to service 'port' mapping
+    # d75ef50170 merge#54334: fix azure disk mount failure on coreos and some other distros
     # ...
     # 69644018c8 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
 
-    git cherry-pick --allow-empty --keep-redundant-commits 69644018c8^..cb29df51c0
+    git cherry-pick --allow-empty --keep-redundant-commits 69644018c8^..d75ef50170
 }
 
 apply_acs_cherry_picks() {
