@@ -146,6 +146,7 @@ func GetDCOSMasterAllowedSizes() string {
         "Standard_L32s",
         "Standard_L4s",
         "Standard_L8s",
+        "Standard_M128ms",
         "Standard_M128s",
         "Standard_M64-16ms",
         "Standard_M64-32ms",
@@ -312,6 +313,7 @@ func GetMasterAgentAllowedSizes() string {
         "Standard_L32s",
         "Standard_L4s",
         "Standard_L8s",
+        "Standard_M128ms",
         "Standard_M128s",
         "Standard_M64-16ms",
         "Standard_M64-32ms",
@@ -489,6 +491,7 @@ func GetKubernetesAgentAllowedSizes() string {
         "Standard_L32s",
         "Standard_L4s",
         "Standard_L8s",
+        "Standard_M128ms",
         "Standard_M128s",
         "Standard_M64-16ms",
         "Standard_M64-32ms",
@@ -966,6 +969,9 @@ func GetSizeMap() string {
     "Standard_L8s": {
       "storageAccountType": "Premium_LRS"
     },
+    "Standard_M128ms": {
+      "storageAccountType": "Premium_LRS"
+    },
     "Standard_M128s": {
       "storageAccountType": "Premium_LRS"
     },
@@ -1183,6 +1189,7 @@ func GetClassicAllowedSizes() string {
         "Standard_L32s",
         "Standard_L4s",
         "Standard_L8s",
+        "Standard_M128ms",
         "Standard_M128s",
         "Standard_M64-16ms",
         "Standard_M64-32ms",
@@ -1658,6 +1665,9 @@ func GetClassicSizeMap() string {
       "storageAccountType": "Standard_LRS"
     },
         "Standard_L8s": {
+      "storageAccountType": "Standard_LRS"
+    },
+        "Standard_M128ms": {
       "storageAccountType": "Standard_LRS"
     },
         "Standard_M128s": {
