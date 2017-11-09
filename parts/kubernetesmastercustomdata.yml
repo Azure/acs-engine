@@ -1,16 +1,20 @@
 #cloud-config
 
+{{if not IsCoreOS}}
 packages:
  - jq
  - traceroute
+{{end}}
 
 write_files:
+{{if not IsCoreOS}}
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
   permissions: "0644"
   owner: "root"
   content: |
     [Service]
     MountFlags=shared
+{{end}}
 
 - path: "/etc/systemd/system/docker.service.d/exec_start.conf"
   permissions: "0644"
@@ -18,8 +22,11 @@ write_files:
   content: |
     [Service]
     ExecStart=
+{{if IsCoreOS}}    
+    ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/dockerd --host=fd:// --containerd=/var/run/docker/libcontainerd/docker-containerd.sock --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}} $DOCKER_SELINUX $DOCKER_OPTS $DOCKER_CGROUPS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
+{{else}}    
     ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
-
+{{end}}
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
   owner: "root"
@@ -170,7 +177,11 @@ write_files:
     Description=Kubectl extraction
     Requires=docker.service
     After=docker.service
+{{if IsCoreOS}}
+    ConditionPathExists=!/opt/kubectl
+{{else}}
     ConditionPathExists=!/usr/local/bin/kubectl
+{{end}}
 
     [Service]
     TimeoutStartSec=0
@@ -179,8 +190,13 @@ write_files:
     ExecStartPre=/bin/mkdir -p /tmp/kubectldir
     ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
     ExecStartPre=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
+{{if IsCoreOS}} 
+    ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /opt/kubectl
+    ExecStart=/bin/chmod a+x /opt/kubectl
+{{else}}    
     ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
     ExecStart=/bin/chmod a+x /usr/local/bin/kubectl
+{{end}}
 
     [Install]
     WantedBy=multi-user.target
@@ -363,6 +379,43 @@ write_files:
     systemctl daemon-reload 
     systemctl enable etcd.service
 
+{{if IsCoreOS}}
+- path: "/opt/azure/containers/provision-setup.sh"
+  permissions: "0755"
+  owner: "root"
+  content: |
+    #!/bin/bash
+    /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',http://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
+    sudo /bin/chown -R etcd:etcd /var/lib/etcd/default
+    /opt/azure/containers/mountetcd.sh
+    sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
+    systemctl stop etcd-member
+    sudo -u etcd rm -rf /var/lib/etcd/default
+    sudo /bin/sed -i s/Restart=on-failure/Restart=always/g /lib/systemd/system/etcd-member.service
+    systemctl daemon-reload
+    systemctl restart etcd-member
+    for i in $(seq 1 20); do curl --max-time 60 http://127.0.0.1:2379/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
+    mkdir -p /etc/kubernetes/manifests
+    usermod -aG docker {{WrapAsVariable "username"}}
+    
+    {{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
+    sudo bash /etc/kubernetes/generate-proxy-certs.sh
+    {{end}}
+    
+    touch /opt/azure/containers/runcmd.complete
+
+coreos:
+  units:
+    - name: start-provision-setup.service
+      command: "start"
+      content: |
+        # Note: Initiated as a service since there is no runcmd within CoreOS on cloud-config/Ignition
+        [Unit] 
+        Description=Start provision setup service
+
+        [Service]
+        ExecStart=/opt/azure/containers/provision-setup.sh
+{{else}}
 runcmd: 
 - /opt/azure/containers/setup-etcd.sh
 - apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
@@ -394,3 +447,4 @@ runcmd:
 {{end}}
 - apt-mark unhold walinuxagent
 - touch /opt/azure/containers/runcmd.complete
+{{end}}

@@ -27,12 +27,10 @@ import (
 
 const (
 	kubernetesMasterCustomDataYaml           = "kubernetesmastercustomdata.yml"
-	kubernetesMasterCustomDataForCoreOSYaml  = "kubernetesmastercustomdataforcoreos.yml"
 	kubernetesMasterCustomScript             = "kubernetesmastercustomscript.sh"
 	kubernetesMountetcd                      = "kubernetes_mountetcd.sh"
 	kubernetesMasterGenerateProxyCertsScript = "kubernetesmastergenerateproxycertscript.sh"
 	kubernetesAgentCustomDataYaml            = "kubernetesagentcustomdata.yml"
-	kubernetesAgentCustomDataForCoreOSYaml   = "kubernetesagentcustomdataforcoreos.yml"
 	kubeConfigJSON                           = "kubeconfig.json"
 	kubernetesWindowsAgentCustomDataPS1      = "kuberneteswindowssetup.ps1"
 )
@@ -806,6 +804,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
 		},
+		"IsCoreOS": func() bool {
+			if cs.Properties.MasterProfile == nil {
+				return false
+			}
+
+			return cs.Properties.MasterProfile.IsCoreOS()
+		},
 		"IsSwarmMode": func() bool {
 			return cs.Properties.OrchestratorProfile.IsSwarmMode()
 		},
@@ -935,15 +940,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return getBase64CustomScript(kubernetesMasterCustomScript)
 		},
 		"GetKubernetesMasterCustomData": func(profile *api.Properties) string {
-			var customDataYml string
-
-			if cs.Properties.MasterProfile.IsCoreOS() {
-				customDataYml = kubernetesMasterCustomDataForCoreOSYaml
-			} else {
-				customDataYml = kubernetesMasterCustomDataYaml
-			}
-
-			str, e := t.getSingleLineForTemplate(customDataYml, cs, profile)
+			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml, cs, profile)
 			if e != nil {
 				fmt.Printf("%#v\n", e)
 				return ""
@@ -999,15 +996,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			var customDataYml string
-
-			if profile.IsCoreOS() {
-				customDataYml = kubernetesAgentCustomDataForCoreOSYaml
-			} else {
-				customDataYml = kubernetesAgentCustomDataYaml
-			}
-
-			str, e := t.getSingleLineForTemplate(customDataYml, cs, profile)
+			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
 
 			if e != nil {
 				return ""

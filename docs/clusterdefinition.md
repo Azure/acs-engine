@@ -142,7 +142,7 @@ Finally, the `addons.enabled` boolean property was omitted above; that's by desi
 |vnetSubnetId|no|specifies the Id of an alternate VNET subnet.  The subnet id must specify a valid VNET ID owned by the same subscription. ([bring your own VNET examples](../examples/vnet))|
 |extensions|no|This is an array of extensions.  This indicates that the extension be run on a single master.  The name in the extensions array must exactly match the extension name in the extensionProfiles.|
 |vnetCidr|no| specifies the vnet cidr when using custom Vnets ([bring your own VNET examples](../examples/vnet))|
-|distro|no| Allows OS selection for Master nodes. Currently supported values are: `ubuntu` and `coreos`. If undefined, `ubuntu` is used as the OS type for Master nodes.|
+|distro|no| Allows OS selection for Master nodes. Currently supported values are: `ubuntu` and `coreos`. If undefined, `ubuntu` is used as the OS type for Master and Agent nodes. Agent OS is determined by the Master node distro. Supported Orchestrators: Kubernetes |
 
 ### agentPoolProfiles
 A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for creating agents with different capabilities such as VMSizes, VMSS or Availability Set, Public/Private access, [attached storage disks](../examples/disks-storageaccount), [attached managed disks](../examples/disks-managed), or [Windows](../examples/windows).
