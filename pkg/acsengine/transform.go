@@ -3,6 +3,7 @@ package acsengine
 import (
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/i18n"
@@ -31,12 +32,14 @@ const (
 
 	// ARM resource Types
 	nsgResourceType  = "Microsoft.Network/networkSecurityGroups"
+	rtResourceType   = "Microsoft.Network/routeTables"
 	vmResourceType   = "Microsoft.Compute/virtualMachines"
 	vmssResourceType = "Microsoft.Compute/virtualMachineScaleSets"
 	vmExtensionType  = "Microsoft.Compute/virtualMachines/extensions"
 
 	// resource ids
 	nsgID = "nsgID"
+	rtID  = "routeTableID"
 )
 
 // Transformer represents the object that transforms template
@@ -87,6 +90,7 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 	if err := t.NormalizeMasterResourcesForScaling(logger, templateMap); err != nil {
 		return err
 	}
+	rtIndex := -1
 	nsgIndex := -1
 	resources := templateMap[resourcesFieldName].([]interface{})
 	for index, resource := range resources {
@@ -105,29 +109,54 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 			}
 			nsgIndex = index
 		}
+		if ok && resourceType == rtResourceType {
+			if rtIndex != -1 {
+				err := t.Translator.Errorf("Found 2 resources with type %s in the template. There should only be 1", rtResourceType)
+				logger.Warnf(err.Error())
+				return err
+			}
+			rtIndex = index
+		}
 
 		dependencies, ok := resourceMap[dependsOnFieldName].([]interface{})
 		if !ok {
-			logger.Warnf("%s field not found for type: %s. Continue...", dependsOnFieldName, resourceType)
 			continue
 		}
 
 		for dIndex := len(dependencies) - 1; dIndex >= 0; dIndex-- {
 			dependency := dependencies[dIndex].(string)
-			if strings.Contains(dependency, nsgResourceType) || strings.Contains(dependency, nsgID) {
+			if strings.Contains(dependency, nsgResourceType) || strings.Contains(dependency, nsgID) ||
+				strings.Contains(dependency, rtResourceType) || strings.Contains(dependency, rtID) {
 				dependencies = append(dependencies[:dIndex], dependencies[dIndex+1:]...)
 			}
 		}
 
-		resourceMap[dependsOnFieldName] = dependencies
+		if len(dependencies) > 0 {
+			resourceMap[dependsOnFieldName] = dependencies
+		} else {
+			delete(resourceMap, dependsOnFieldName)
+		}
 	}
+
+	indexesToRemove := []int{}
 	if nsgIndex == -1 {
 		err := t.Translator.Errorf("Found no resources with type %s in the template. There should have been 1", nsgResourceType)
 		logger.Errorf(err.Error())
 		return err
 	}
+	if rtIndex == -1 {
+		logger.Infof("Found no resources with type %s in the template.", rtResourceType)
+	} else {
+		indexesToRemove = append(indexesToRemove, rtIndex)
+	}
+	indexesToRemove = append(indexesToRemove, nsgIndex)
 
-	templateMap[resourcesFieldName] = append(resources[:nsgIndex], resources[nsgIndex+1:]...)
+	sort.Sort(sort.Reverse(sort.IntSlice(indexesToRemove)))
+	for _, resourceIndex := range indexesToRemove {
+
+		resources = append(resources[:resourceIndex], resources[resourceIndex+1:]...)
+	}
+	templateMap[resourcesFieldName] = resources
 
 	return nil
 }
