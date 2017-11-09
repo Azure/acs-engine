@@ -15,17 +15,9 @@ type Config struct {
 	Password   string `envconfig:"INFLUX_PASSWORD" required:"true"`
 	Database   string `envconfig:"INFLUX_DATABASE" required:"true"`
 	IsCircle   bool   `envconfig:"CIRCLECI"`
-	JenkinsURL string `envconfig:"JENKINS_URL"`
+	IsJenkins  bool   `envconfig:"IS_JENKINS"`
 	CircleEnv  *CircleCIEnvironment
 	JenkinsEnv *JenkinsCIEnvironment
-}
-
-// IsJenkins returns true if running in jenkins env
-func (c *Config) IsJenkins() bool {
-	if c.JenkinsURL == "" {
-		return false
-	}
-	return true
 }
 
 // CircleCIEnvironment holds information about a test run within circleci
@@ -75,7 +67,7 @@ func ParseConfig() (*Config, error) {
 		c.CircleEnv = circleci
 	}
 
-	if c.IsJenkins() {
+	if c.IsJenkins {
 		jenkinsci := new(JenkinsCIEnvironment)
 		if err := envconfig.Process("jenkinsci-config", jenkinsci); err != nil {
 			return nil, err
@@ -165,7 +157,7 @@ func (p *Point) Write() {
 	cfg, err := ParseConfig()
 	if err == nil {
 		log.Printf("Circle?:%v\n", cfg.IsCircle)
-		log.Printf("Jenkins?:%v\n", cfg.IsJenkins())
+		log.Printf("Jenkins?:%v\n", cfg.IsJenkins)
 
 		if cfg.IsCircle {
 			p.Tags["branch"] = cfg.CircleEnv.Branch
@@ -175,7 +167,7 @@ func (p *Point) Write() {
 			p.Tags["ci"] = "circleci"
 		}
 
-		if cfg.IsJenkins() {
+		if cfg.IsJenkins {
 			p.Tags["branch"] = cfg.JenkinsEnv.Branch
 			p.Tags["commit-sha"] = cfg.JenkinsEnv.CommitSha
 			p.Tags["build_number"] = cfg.JenkinsEnv.BuildNumber
