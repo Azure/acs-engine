@@ -247,6 +247,24 @@ func TestGetStorageAccountType(t *testing.T) {
 	}
 }
 
+func TestIsKubernetesLabelValueValid(t *testing.T) {
+
+	validLabels := []string{"", "a", "a1", "this--valid--label--is--exactly--sixty--three--characters--long", "123456", "my-label_valid.com"}
+	invalidLabels := []string{"a$$b", "-abc", "not.valid.", "This____long____label___is______sixty______four_____chararacters", "Label with spaces"}
+
+	for _, l := range validLabels {
+		if !isKubernetesLabelValueValid(l) {
+			t.Fatalf("Expected label %v to return valid", l)
+		}
+	}
+
+	for _, l := range invalidLabels {
+		if isKubernetesLabelValueValid(l) {
+			t.Fatalf("Expected label %v to return invalid", l)
+		}
+	}
+}
+
 type TestARMTemplate struct {
 	Outputs map[string]OutputElement `json:"outputs"`
 	//Parameters *json.RawMessage `json:"parameters"`
