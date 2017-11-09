@@ -24,9 +24,6 @@ jobs:
           name: Run linting rules
           command: make test-style
       - run:
-          name: Test Azure Constants
-          command: make test-azure-constants
-      - run:
           name: Build binaries
           command: make build-binary
       - run:
