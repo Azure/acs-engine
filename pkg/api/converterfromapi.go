@@ -675,8 +675,6 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.TillerMemoryRequests = api.TillerMemoryRequests
 	vlabs.TillerMemoryLimit = api.TillerMemoryLimit
 	convertDisabledAddonsToVLabs(&api.DisabledAddons, &vlabs.DisabledAddons)
-	fmt.Printf("convertKubernetesConfigToVLabs: %+v\n", vlabs.DisabledAddons)
-
 }
 
 func convertDisabledAddonsToVLabs(api *DisabledAddons, vlabs *vlabs.DisabledAddons) {

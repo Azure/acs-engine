@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -618,7 +617,6 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.TillerMemoryRequests = vlabs.TillerMemoryRequests
 	api.TillerMemoryLimit = vlabs.TillerMemoryLimit
 	convertVLabsDisabledAddons(&vlabs.DisabledAddons, &api.DisabledAddons)
-	fmt.Printf("convertVLabsKubernetesConfig: %+v\n", api.DisabledAddons)
 }
 
 func convertVLabsDisabledAddons(vlabs *vlabs.DisabledAddons, api *DisabledAddons) {

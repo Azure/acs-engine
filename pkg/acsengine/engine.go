@@ -238,7 +238,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	templateRaw = ""
 	parametersRaw = ""
 	err = nil
-	fmt.Println("-> in GenerateTemplate")
+
 	var templ *template.Template
 
 	properties := containerService.Properties
@@ -928,7 +928,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				delete(addonYamls, "MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR")
 			}
 			for placeholder, filename := range addonYamls {
-				fmt.Printf("Adding %s\n", filename)
 				addonTextContents := getBase64CustomScript(filename)
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
 			}
