@@ -187,7 +187,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		o.OrchestratorVersion)
 	if o.OrchestratorType == api.Kubernetes {
 		k8sVersion := o.OrchestratorVersion
-		fmt.Printf("-->%v\n", o.KubernetesConfig.DisabledAddons)
+		fmt.Printf("setOrchestratorDefaults --> %+v\n", o.KubernetesConfig.DisabledAddons)
 		if o.KubernetesConfig == nil {
 			o.KubernetesConfig = &api.KubernetesConfig{}
 		}
