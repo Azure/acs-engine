@@ -101,7 +101,7 @@ fi
 
 ###### Check existence and status of essential pods
 
-# we test other essential pods (kube-dns, kube-proxy, kubernetes-dashboard) separately
+# we test other essential pods (kube-dns, kube-proxy) separately
 pods="heapster kube-addon-manager kube-apiserver kube-controller-manager kube-scheduler tiller"
 log "Checking $pods"
 
@@ -138,16 +138,20 @@ if (( ${running} != ${EXPECTED_DNS} )); then
 fi
 
 ###### Check for Kube-Dashboard
-log "Checking Kube-Dashboard"
-count=60
-while (( $count > 0 )); do
-  log "  ... counting down $count"
-  running=$(kubectl get pods --namespace=kube-system | grep kubernetes-dashboard | grep Running | wc | awk '{print $1}')
-  if (( ${running} == ${EXPECTED_DASHBOARD} )); then break; fi
-  sleep 5; count=$((count-1))
-done
-if (( ${running} != ${EXPECTED_DASHBOARD} )); then
-  log "K8S: gave up waiting for kubernetes-dashboard"; exit 1
+if (( ${EXPECTED_DASHBOARD} != 0 )); then
+  log "Checking Kube-Dashboard"
+  count=60
+  while (( $count > 0 )); do
+    log "  ... counting down $count"
+    running=$(kubectl get pods --namespace=kube-system | grep kubernetes-dashboard | grep Running | wc | awk '{print $1}')
+    if (( ${running} == ${EXPECTED_DASHBOARD} )); then break; fi
+    sleep 5; count=$((count-1))
+  done
+  if (( ${running} != ${EXPECTED_DASHBOARD} )); then
+    log "K8S: gave up waiting for kubernetes-dashboard"; exit 1
+  fi
+else
+  log "Expecting no dashboard"
 fi
 
 ###### Check for Kube-Proxys
