@@ -428,4 +428,6 @@ if $REBOOTREQUIRED; then
   /bin/bash -c "shutdown -r 1 &"
 fi
 
-echo `date`,`hostname`, endscript>>/opt/m 
+echo `date`,`hostname`, endscript>>/opt/m
+
+mkdir -p /opt/azure/containers && touch /opt/azure/containers/provision.complete
