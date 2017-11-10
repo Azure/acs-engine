@@ -925,6 +925,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				addonYamls = kubernetesAddonYamls
 			}
 			for placeholder, filename := range addonYamls {
+				fmt.Printf("Adding %s\n", filename)
 				addonTextContents := getBase64CustomScript(filename)
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
 			}

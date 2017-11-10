@@ -676,6 +676,10 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.TillerMemoryLimit = api.TillerMemoryLimit
 }
 
+func convertDisabledAddonsToVLabs(api *DisabledAddons, vlabs *vlabs.DisabledAddons) {
+	vlabs.Dashboard = api.Dashboard
+}
+
 func convertMasterProfileToV20160930(api *MasterProfile, v20160930 *v20160930.MasterProfile) {
 	v20160930.Count = api.Count
 	v20160930.DNSPrefix = api.DNSPrefix
