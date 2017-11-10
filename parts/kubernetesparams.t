@@ -388,4 +388,11 @@
         "description": "The offset into the master pool where to start creating master VMs.  This value can be from 0 to 4, but must be less than masterCount."
       },
       "type": "int"
+    },
+    "etcdDiskSizeGB": {
+      {{PopulateClassicModeDefaultValue "etcdDiskSizeGB"}}
+      "metadata": {
+        "description": "Size in GB to allocate for etcd volume"
+      },
+      "type": "string"
     }

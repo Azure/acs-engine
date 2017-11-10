@@ -1,3 +1,4 @@
+    "etcdDiskSizeGB": "[parameters('etcdDiskSizeGB')]",
     "maxVMsPerPool": 100,
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
 {{ if not IsHostedMaster }}
