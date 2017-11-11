@@ -729,20 +729,6 @@ func getStorageAccountType(sizeName string) (string, error) {
 	return "Standard_LRS", nil
 }
 
-// isKubernetesLabelValueValid checks if a given value string is a valid Kubernetes label value
-// Valid label values must be 63 characters or less and must be empty or begin and end with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between
-func isKubernetesLabelValueValid(v string) bool {
-	if len(v) < 3 {
-		labelIdentifierFmt := "[a-z0-9A-Z]*"
-		var regexp = regexp.MustCompile("^" + labelIdentifierFmt + "$")
-		return regexp.MatchString(v)
-	}
-	labelValueMaxLength := 63
-	labelIdentifierFmt := "[a-z0-9A-Z][a-z0-9A-Z-_.]*[a-z0-9A-Z]"
-	var regexp = regexp.MustCompile("^" + labelIdentifierFmt + "$")
-	return len(v) <= labelValueMaxLength && regexp.MatchString(v)
-}
-
 // getTemplateFuncMap returns all functions used in template generation
 func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) template.FuncMap {
 	return template.FuncMap{
@@ -772,19 +758,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetKubernetesLabels": func(profile *api.AgentPoolProfile) string {
 			var buf bytes.Buffer
-			if isKubernetesLabelValueValid(profile.Name) {
-				buf.WriteString(fmt.Sprintf("kubernetes.io/role=agent,agentpool=%s", profile.Name))
-			}
+			buf.WriteString(fmt.Sprintf("kubernetes.io/role=agent,agentpool=%s", profile.Name))
 			if profile.StorageProfile == api.ManagedDisks {
 				storagetier, _ := getStorageAccountType(profile.VMSize)
-				if isKubernetesLabelValueValid(storagetier) {
-					buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
-				}
+				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
 			}
 			for k, v := range profile.CustomNodeLabels {
-				if isKubernetesLabelValueValid(v) {
-					buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
-				}
+				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
 			}
 			return buf.String()
 		},
