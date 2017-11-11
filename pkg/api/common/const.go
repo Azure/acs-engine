@@ -88,7 +88,7 @@ const (
 	// KubernetesVersion1Dot5Dot8 is the major.minor.patch string for the 1.5.8 version of kubernetes
 	KubernetesVersion1Dot5Dot8 string = "1.5.8"
 	// KubernetesDefaultVersion is the default major.minor.patch version for kubernetes
-	KubernetesDefaultVersion string = KubernetesVersion1Dot7Dot10
+	KubernetesDefaultVersion string = KubernetesVersion1Dot7Dot9
 )
 
 // AllKubernetesSupportedVersions is a whitelist map of supported Kubernetes version strings
