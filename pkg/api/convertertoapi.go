@@ -612,6 +612,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.GCHighThreshold = vlabs.GCHighThreshold
 	api.GCLowThreshold = vlabs.GCLowThreshold
 	api.EtcdVersion = vlabs.EtcdVersion
+	api.EtcdDiskSizeGB = vlabs.EtcdDiskSizeGB
 	api.TillerCPURequests = vlabs.TillerCPURequests
 	api.TillerCPULimit = vlabs.TillerCPULimit
 	api.TillerMemoryRequests = vlabs.TillerMemoryRequests

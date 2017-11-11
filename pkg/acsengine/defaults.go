@@ -291,6 +291,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.TillerMemoryLimit = DefaultTillerMemoryLimit
 		}
 
+		if a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB == "" {
+			fmt.Println("didn't find EtcdDiskSizeGB")
+			a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
+		}
+
 	} else if o.OrchestratorType == api.DCOS {
 		if o.DcosConfig == nil {
 			o.DcosConfig = &api.DcosConfig{}
