@@ -670,11 +670,16 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.GCHighThreshold = api.GCHighThreshold
 	vlabs.GCLowThreshold = api.GCLowThreshold
 	vlabs.EtcdVersion = api.EtcdVersion
+	vlabs.EtcdDiskSizeGB = api.EtcdDiskSizeGB
 	vlabs.TillerCPURequests = api.TillerCPURequests
 	vlabs.TillerCPULimit = api.TillerCPULimit
 	vlabs.TillerMemoryRequests = api.TillerMemoryRequests
 	vlabs.TillerMemoryLimit = api.TillerMemoryLimit
-	vlabs.EtcdDiskSizeGB = api.EtcdDiskSizeGB
+	convertDisabledAddonsToVLabs(&api.DisabledAddons, &vlabs.DisabledAddons)
+}
+
+func convertDisabledAddonsToVLabs(api *DisabledAddons, vlabs *vlabs.DisabledAddons) {
+	vlabs.Dashboard = api.Dashboard
 }
 
 func convertMasterProfileToV20160930(api *MasterProfile, v20160930 *v20160930.MasterProfile) {

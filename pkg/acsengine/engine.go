@@ -20,7 +20,6 @@ import (
 
 	//log "github.com/sirupsen/logrus"
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Masterminds/semver"
 	"github.com/ghodss/yaml"
@@ -909,7 +908,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add artifacts and addons
 			var artifiacts map[string]string
-			if profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 {
+			if strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.5.") {
 				artifiacts = kubernetesAritfacts15
 			} else {
 				artifiacts = kubernetesAritfacts
@@ -920,10 +919,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 
 			var addonYamls map[string]string
-			if profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 {
+			if strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.5.") {
 				addonYamls = kubernetesAddonYamls15
 			} else {
 				addonYamls = kubernetesAddonYamls
+			}
+			if profile.OrchestratorProfile.KubernetesConfig.DisabledAddons.Dashboard {
+				delete(addonYamls, "MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR")
 			}
 			for placeholder, filename := range addonYamls {
 				addonTextContents := getBase64CustomScript(filename)
@@ -932,8 +934,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add calico manifests
 			if profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "calico" {
-				if profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
-					profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
+				if strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.5.") ||
+					strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.6.") {
 					calicoAddonYamls = calicoAddonYamls15
 				}
 				for placeholder, filename := range calicoAddonYamls {
@@ -953,7 +955,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add artifacts
 			var artifiacts map[string]string
-			if cs.Properties.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 {
+			if strings.HasPrefix(cs.Properties.OrchestratorProfile.OrchestratorVersion, "1.5.") {
 				artifiacts = kubernetesAritfacts15
 			} else {
 				artifiacts = kubernetesAritfacts
