@@ -192,6 +192,7 @@ type KubernetesConfig struct {
 	TillerMemoryRequests             string  `json:"tillerMemoryRequests,omitempty"`
 	TillerMemoryLimit                string  `json:"tillerMemoryLimit,omitempty"`
 	EtcdDiskSizeGB                   string  `json:"etcdDiskSizeGB,omitempty"`
+	DisableDashboard                 bool    `json:"disableDashboard,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS

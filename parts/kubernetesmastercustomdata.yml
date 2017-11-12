@@ -131,12 +131,14 @@ write_files:
   content: !!binary |
     MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR
 
+{{if not .OrchestratorProfile.KubernetesConfig.DisableDashboard}}
 - path: /etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml
   permissions: "0644"
   encoding: gzip
   owner: "root"
   content: !!binary |
     MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR
+{{end}}
 
 - path: /etc/kubernetes/addons/kube-heapster-deployment.yaml
   permissions: "0644"
@@ -273,7 +275,9 @@ write_files:
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
     sed -i "s|<kubernetesKubeDNSSpec>|{{WrapAsVariable "kubernetesKubeDNSSpec"}}|g; s|<kubernetesDNSMasqSpec>|{{WrapAsVariable "kubernetesDNSMasqSpec"}}|g; s|<kubernetesExecHealthzSpec>|{{WrapAsVariable "kubernetesExecHealthzSpec"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
     sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsVariable "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsVariable "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
+{{if not .OrchestratorProfile.KubernetesConfig.DisableDashboard}}
     sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+{{end}}
     sed -i "s|<kubernetesTillerSpec>|{{WrapAsVariable "kubernetesTillerSpec"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubernetesTillerCPURequests>|{{WrapAsVariable "kubernetesTillerCPURequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubernetesTillerMemoryRequests>|{{WrapAsVariable "kubernetesTillerMemoryRequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
