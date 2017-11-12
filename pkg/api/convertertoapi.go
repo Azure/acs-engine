@@ -617,6 +617,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.TillerMemoryRequests = vlabs.TillerMemoryRequests
 	api.TillerMemoryLimit = vlabs.TillerMemoryLimit
 	api.EtcdDiskSizeGB = vlabs.EtcdDiskSizeGB
+	api.DisableDashboard = vlabs.DisableDashboard
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {
