@@ -418,6 +418,11 @@ func (a *AgentPoolProfile) IsRHEL() bool {
 	return a.OSType == Linux && a.Distro == RHEL
 }
 
+// IsCoreOS returns true if the agent specified a CoreOS distro
+func (a *AgentPoolProfile) IsCoreOS() bool {
+	return a.OSType == Linux && a.Distro == CoreOS
+}
+
 // IsAvailabilitySets returns true if the customer specified disks
 func (a *AgentPoolProfile) IsAvailabilitySets() bool {
 	return a.AvailabilityProfile == AvailabilitySet

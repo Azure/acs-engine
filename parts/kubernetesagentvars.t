@@ -20,3 +20,8 @@
     "{{.Name}}VnetSubnetID": "[variables('vnetSubnetID')]",
     "{{.Name}}SubnetName": "[variables('subnetName')]",
 {{end}}
+    "{{.Name}}osImageOffer": "[parameters('{{.Name}}osImageOffer')]",
+    "{{.Name}}osImageSKU": "[parameters('{{.Name}}osImageSKU')]",
+    "{{.Name}}osImagePublisher": "[parameters('{{.Name}}osImagePublisher')]",
+    "{{.Name}}osImageVersion": "[parameters('{{.Name}}osImageVersion')]",
+

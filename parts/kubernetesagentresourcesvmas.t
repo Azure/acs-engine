@@ -176,10 +176,10 @@
         "storageProfile": {
           {{GetDataDisks .}}
           "imageReference": {
-            "offer": "[variables('osImageOffer')]",
-            "publisher": "[variables('osImagePublisher')]",
-            "sku": "[variables('osImageSKU')]",
-            "version": "[variables('osImageVersion')]"
+            "offer": "[variables('{{.Name}}osImageOffer')]",
+            "publisher": "[variables('{{.Name}}osImagePublisher')]",
+            "sku": "[variables('{{.Name}}osImageSKU')]",
+            "version": "[variables('{{.Name}}osImageVersion')]"
           },
           "osDisk": {
             "createOption": "FromImage"

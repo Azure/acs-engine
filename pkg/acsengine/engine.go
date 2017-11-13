@@ -459,13 +459,13 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 	// Master Parameters
 	addValue(parametersMap, "location", location)
 
-	// Identify a distro
-	distro := getDistro(properties)
+	// Identify Master distro
+	masterDistro := getMasterDistro(properties.MasterProfile)
+	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[masterDistro].ImageOffer)
+	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[masterDistro].ImageSku)
+	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[masterDistro].ImagePublisher)
+	addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig[masterDistro].ImageVersion)
 
-	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[distro].ImageOffer)
-	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[distro].ImageSku)
-	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[distro].ImagePublisher)
-	addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig[distro].ImageVersion)
 	addValue(parametersMap, "fqdnEndpointSuffix", cloudSpecConfig.EndpointConfig.ResourceManagerVMDNSSuffix)
 	addValue(parametersMap, "targetEnvironment", GetCloudTargetEnv(location))
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
@@ -667,6 +667,15 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		}
 		if len(agentProfile.Ports) > 0 {
 			addValue(parametersMap, fmt.Sprintf("%sEndpointDNSNamePrefix", agentProfile.Name), agentProfile.DNSPrefix)
+		}
+
+		// Unless distro is defined, default distro is configured by defaults#setAgentNetworkDefaults
+		//   Ignores Windows OS
+		if !(agentProfile.OSType == api.Windows) {
+			addValue(parametersMap, fmt.Sprintf("%sosImageOffer", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImageOffer)
+			addValue(parametersMap, fmt.Sprintf("%sosImageSKU", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImageSku)
+			addValue(parametersMap, fmt.Sprintf("%sosImagePublisher", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImagePublisher)
+			addValue(parametersMap, fmt.Sprintf("%sosImageVersion", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImageVersion)
 		}
 	}
 
@@ -1927,15 +1936,15 @@ write_files:
 	return fmt.Sprintf(clusterYamlFile, filelines)
 }
 
-// Identifies a distro to use for master parameters
-func getDistro(properties *api.Properties) api.Distro {
-	// Use Ubuntu distro if none is set
-	if properties.MasterProfile == nil {
+// Identifies Master distro to use for master parameters
+func getMasterDistro(m *api.MasterProfile) api.Distro {
+	// Use Ubuntu distro if MasterProfile is not defined (e.g. agents-only)
+	if m == nil {
 		return api.Ubuntu
 	}
 
-	// MasterProfile.Distro should then be configured by setMasterNetworkDefaults
-	return properties.MasterProfile.Distro
+	// MasterProfile.Distro configured by defaults#setMasterNetworkDefaults
+	return m.Distro
 }
 
 func getKubernetesSubnets(properties *api.Properties) string {
