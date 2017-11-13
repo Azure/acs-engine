@@ -47,7 +47,7 @@ func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
 	}
 
 	// Currently in a single node cluster the api server will not be running when this point is reached on the first node so it will always fail.
-	err := operations.SafelyDrainNode(kan.Client, logrus.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vmName)
+	err := operations.SafelyDrainNode(kan.Client, logrus.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vmName, time.Minute)
 	if err != nil {
 		kan.logger.Errorf(fmt.Sprintf("Error draining agent VM: %s", *vmName))
 		return err
