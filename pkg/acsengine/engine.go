@@ -788,7 +788,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 		},
 		"UseInstanceMetadata": func() bool {
-			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata
+			if cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata == nil {
+				return true
+			} else if *cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata {
+				return true
+			}
+			return false
 		},
 		"GetVNETSubnetDependencies": func() string {
 			return getVNETSubnetDependencies(cs.Properties)
