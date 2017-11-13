@@ -39,11 +39,11 @@ type UpgradeAgentNode struct {
 // the node
 func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
 	var kubeAPIServerURL string
-	if ku.DataModel.Properties.MasterProfile != nil {
-		kubeAPIServerURL = ku.DataModel.Properties.MasterProfile.FQDN
+	if kan.DataModel.Properties.MasterProfile != nil {
+		kubeAPIServerURL = kan.DataModel.Properties.MasterProfile.FQDN
 	}
-	if ku.DataModel.Properties.HostedMasterProfile != nil {
-		kubeAPIServerURL = ku.DataModel.Properties.HostedMasterProfile.FQDN
+	if kan.DataModel.Properties.HostedMasterProfile != nil {
+		kubeAPIServerURL = kan.DataModel.Properties.HostedMasterProfile.FQDN
 	}
 
 	// Currently in a single node cluster the api server will not be running when this point is reached on the first node so it will always fail.
