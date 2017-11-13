@@ -12,7 +12,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -39,6 +39,13 @@ type UpgradeAgentNode struct {
 // backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 // the node
 func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
+	var kubeAPIServerURL string
+	if ku.DataModel.Properties.MasterProfile != nil {
+		kubeAPIServerURL = ku.DataModel.Properties.MasterProfile.FQDN
+	}
+	if ku.DataModel.Properties.HostedMasterProfile != nil {
+		kubeAPIServerURL = ku.DataModel.Properties.HostedMasterProfile.FQDN
+	}
 
 	// Currently in a single node cluster the api server will not be running when this point is reached on the first node so it will always fail.
 	err := operations.SafelyDrainNode(kan.Client, log.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vmName)
