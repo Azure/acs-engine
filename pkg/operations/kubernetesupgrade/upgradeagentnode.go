@@ -2,7 +2,6 @@ package kubernetesupgrade
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"time"
 
@@ -12,7 +11,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
-	log "github.com/sirupsen/logrus"
+	logrus "github.com/sirupsen/logrus"
 )
 
 const (
@@ -48,7 +47,7 @@ func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
 	}
 
 	// Currently in a single node cluster the api server will not be running when this point is reached on the first node so it will always fail.
-	err := operations.SafelyDrainNode(kan.Client, log.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vmName)
+	err := operations.SafelyDrainNode(kan.Client, logrus.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vmName)
 	if err != nil {
 		kan.logger.Errorf(fmt.Sprintf("Error draining agent VM: %s", *vmName))
 		return err
