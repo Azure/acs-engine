@@ -167,14 +167,14 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 }
 
 func (ku *Upgrader) upgradeAgentPools() error {
-	// Unused until safely drain node is being called
-	var kubeAPIServerURL string
-	if ku.DataModel.Properties.MasterProfile != nil {
-		kubeAPIServerURL = ku.DataModel.Properties.MasterProfile.FQDN
-	}
-	if ku.DataModel.Properties.HostedMasterProfile != nil {
-		kubeAPIServerURL = ku.DataModel.Properties.HostedMasterProfile.FQDN
-	}
+	// // Unused until safely drain node is being called
+	// var kubeAPIServerURL string
+	// if ku.DataModel.Properties.MasterProfile != nil {
+	// 	kubeAPIServerURL = ku.DataModel.Properties.MasterProfile.FQDN
+	// }
+	// if ku.DataModel.Properties.HostedMasterProfile != nil {
+	// 	kubeAPIServerURL = ku.DataModel.Properties.HostedMasterProfile.FQDN
+	// }
 
 	for _, agentPool := range ku.ClusterTopology.AgentPools {
 		// Upgrade Agent VMs
