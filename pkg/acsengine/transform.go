@@ -150,22 +150,25 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 		indexesToRemove = append(indexesToRemove, rtIndex)
 	}
 	indexesToRemove = append(indexesToRemove, nsgIndex)
-
-	sort.Sort(sort.Reverse(sort.IntSlice(indexesToRemove)))
-	for _, resourceIndex := range indexesToRemove {
-
-		resources = append(resources[:resourceIndex], resources[resourceIndex+1:]...)
-	}
-	templateMap[resourcesFieldName] = resources
+	templateMap[resourcesFieldName] = removeIndexesFromArray(resources, indexesToRemove)
 
 	return nil
+}
+
+func removeIndexesFromArray(array []interface{}, indexes []int) []interface{} {
+	sort.Sort(sort.Reverse(sort.IntSlice(indexes)))
+	for _, index := range indexes {
+		array = append(array[:index], array[index+1:]...)
+	}
+	return array
 }
 
 // NormalizeMasterResourcesForScaling takes a template and removes elements that are unwanted in any scale up/down case
 func (t *Transformer) NormalizeMasterResourcesForScaling(logger *logrus.Entry, templateMap map[string]interface{}) error {
 	resources := templateMap[resourcesFieldName].([]interface{})
+	indexesToRemove := []int{}
 	//update master nodes resources
-	for _, resource := range resources {
+	for index, resource := range resources {
 		resourceMap, ok := resource.(map[string]interface{})
 		if !ok {
 			logger.Warnf("Template improperly formatted")
@@ -174,6 +177,14 @@ func (t *Transformer) NormalizeMasterResourcesForScaling(logger *logrus.Entry, t
 
 		resourceType, ok := resourceMap[typeFieldName].(string)
 		if !ok || resourceType != vmResourceType {
+			resourceName, ok := resourceMap[nameFieldName].(string)
+			if !ok {
+				logger.Warnf("Template improperly formatted")
+				continue
+			}
+			if strings.Contains(resourceName, "variables('masterVMNamePrefix')") && resourceType == vmExtensionType {
+				indexesToRemove = append(indexesToRemove, index)
+			}
 			continue
 		}
 
@@ -208,6 +219,7 @@ func (t *Transformer) NormalizeMasterResourcesForScaling(logger *logrus.Entry, t
 			continue
 		}
 	}
+	templateMap[resourcesFieldName] = removeIndexesFromArray(resources, indexesToRemove)
 
 	return nil
 }

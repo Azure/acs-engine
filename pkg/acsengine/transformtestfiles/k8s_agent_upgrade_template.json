@@ -2078,29 +2078,6 @@
         "resourceNameSuffix": "[variables('nameSuffix')]"
       },
       "type": "Microsoft.Compute/virtualMachines"
-    },
-    {
-      "apiVersion": "[variables('apiVersionDefault')]",
-      "copy": {
-        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
-        "name": "vmLoopNode"
-      },
-      "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]"
-      ],
-      "location": "[variables('location')]",
-      "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'/cse', copyIndex(variables('masterOffset')))]",
-      "properties": {
-        "autoUpgradeMinorVersion": true,
-        "protectedSettings": {
-          "commandToExecute": "[concat('/usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh ',variables('tenantID'),' ',variables('subscriptionId'),' ',variables('resourceGroup'),' ',variables('location'),' ',variables('subnetName'),' ',variables('nsgName'),' ',variables('virtualNetworkName'),' ',variables('routeTableName'),' ',variables('primaryAvailabilitySetName'),' ',variables('servicePrincipalClientId'),' ',variables('servicePrincipalClientSecret'),' ',variables('clientPrivateKey'),' ',variables('targetEnvironment'),' ',variables('networkPolicy'),' ',variables('cloudProviderBackoff'),' ',variables('cloudProviderBackoffRetries'),' ',variables('cloudProviderBackoffExponent'),' ',variables('cloudProviderBackoffDuration'),' ',variables('cloudProviderBackoffJitter'),' ',variables('cloudProviderRatelimit'),' ',variables('cloudProviderRatelimitQPS'),' ',variables('cloudProviderRatelimitBucket'),' ',variables('useManagedIdentityExtension'),' ',variables('useInstanceMetadata'),' ',variables('apiServerPrivateKey'),' ',variables('caCertificate'),' ',variables('caPrivateKey'),' ',variables('masterFqdnPrefix'),' ',variables('kubeConfigCertificate'),' ',variables('kubeConfigPrivateKey'),' ',variables('username'),' \u003e\u003e /var/log/azure/cluster-provision.log 2\u003e\u00261\"')]"
-        },
-        "publisher": "Microsoft.Azure.Extensions",
-        "settings": {},
-        "type": "CustomScript",
-        "typeHandlerVersion": "2.0"
-      },
-      "type": "Microsoft.Compute/virtualMachines/extensions"
     }
   ],
   "outputs": {
