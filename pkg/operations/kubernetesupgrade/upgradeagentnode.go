@@ -2,6 +2,7 @@ package kubernetesupgrade
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"time"
 
@@ -40,9 +41,9 @@ type UpgradeAgentNode struct {
 func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
 
 	// Currently in a single node cluster the api server will not be running when this point is reached on the first node so it will always fail.
-	err := operations.SafelyDrainNode(kan.Client, log.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vm.Name)
+	err := operations.SafelyDrainNode(kan.Client, log.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vmName)
 	if err != nil {
-		log.Infoln(fmt.Sprintf("Error draining agent VM: %s", *vm.Name))
+		kan.logger.Errorf(fmt.Sprintf("Error draining agent VM: %s", *vmName))
 		return err
 	}
 
