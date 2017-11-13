@@ -78,11 +78,6 @@
     {
       "cluster_definition": "dcos.json",
       "category": "service-availability",
-      "location": "koreasouth"
-    },
-    {
-      "cluster_definition": "dcos.json",
-      "category": "service-availability",
       "location": "japaneast"
     },
     {
