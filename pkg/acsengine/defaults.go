@@ -153,11 +153,15 @@ var (
 	DefaultTillerAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultTillerAddonName,
 		Enabled: pointerToBool(true),
-		// There is no general "default" tiller image, the values are Kubernetes version-specific
-		CPURequests:    "50m",
-		MemoryRequests: "150Mi",
-		CPULimits:      "50m",
-		MemoryLimits:   "150Mi",
+		Containers: []api.KubernetesContainerSpec{
+			api.KubernetesContainerSpec{
+				Name:           DefaultTillerAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "150Mi",
+			},
+		},
 	}
 )
 
@@ -575,22 +579,38 @@ func getAddonsIndexByName(addons []api.KubernetesAddon, name string) int {
 	return -1
 }
 
+func getAddonContainersIndexByName(containers []api.KubernetesContainerSpec, name string) int {
+	for i := range containers {
+		if containers[i].Name == name {
+			return i
+		}
+	}
+	return -1
+}
+
 // assignDefaultAddonVals will assign default values to addon from defaults, for each property in addon that has a zero value
 func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesAddon {
-	if addon.Image == "" {
-		addon.Image = defaults.Image
-	}
-	if addon.CPURequests == "" {
-		addon.CPURequests = defaults.CPURequests
-	}
-	if addon.MemoryRequests == "" {
-		addon.MemoryRequests = defaults.MemoryRequests
-	}
-	if addon.CPULimits == "" {
-		addon.CPULimits = defaults.CPULimits
-	}
-	if addon.MemoryLimits == "" {
-		addon.MemoryLimits = defaults.MemoryLimits
+	for i := range defaults.Containers {
+		c := getAddonContainersIndexByName(addon.Containers, defaults.Containers[i].Name)
+		if c < 0 {
+			addon.Containers = append(addon.Containers, defaults.Containers[i])
+		} else {
+			if addon.Containers[c].Image == "" {
+				addon.Containers[c].Image = defaults.Containers[i].Image
+			}
+			if addon.Containers[c].CPURequests == "" {
+				addon.Containers[c].CPURequests = defaults.Containers[i].CPURequests
+			}
+			if addon.Containers[c].MemoryRequests == "" {
+				addon.Containers[c].MemoryRequests = defaults.Containers[i].MemoryRequests
+			}
+			if addon.Containers[c].CPULimits == "" {
+				addon.Containers[c].CPULimits = defaults.Containers[i].CPULimits
+			}
+			if addon.Containers[c].MemoryLimits == "" {
+				addon.Containers[c].MemoryLimits = defaults.Containers[i].MemoryLimits
+			}
+		}
 	}
 	return addon
 }

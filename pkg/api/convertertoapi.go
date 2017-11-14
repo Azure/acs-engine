@@ -625,14 +625,19 @@ func convertAddonsToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
 	a.Addons = []KubernetesAddon{}
 	for i := range v.Addons {
 		a.Addons = append(a.Addons, KubernetesAddon{
-			Name:           v.Addons[i].Name,
-			Enabled:        v.Addons[i].Enabled,
-			Image:          v.Addons[i].Image,
-			CPURequests:    v.Addons[i].CPURequests,
-			MemoryRequests: v.Addons[i].MemoryRequests,
-			CPULimits:      v.Addons[i].CPULimits,
-			MemoryLimits:   v.Addons[i].MemoryLimits,
+			Name:    v.Addons[i].Name,
+			Enabled: v.Addons[i].Enabled,
 		})
+		for j := range v.Addons[i].Containers {
+			a.Addons[i].Containers = append(a.Addons[i].Containers, KubernetesContainerSpec{
+				Name:           v.Addons[i].Containers[j].Name,
+				Image:          v.Addons[i].Containers[j].Image,
+				CPURequests:    v.Addons[i].Containers[j].CPURequests,
+				MemoryRequests: v.Addons[i].Containers[j].MemoryRequests,
+				CPULimits:      v.Addons[i].Containers[j].CPULimits,
+				MemoryLimits:   v.Addons[i].Containers[j].MemoryLimits,
+			})
+		}
 	}
 }
 

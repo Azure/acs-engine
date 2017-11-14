@@ -156,15 +156,21 @@ type OrchestratorVersionProfile struct {
 	Upgrades []*OrchestratorProfile `json:"upgrades,omitempty"`
 }
 
-// KubernetesAddon defines a list of addons w/ configuration to include with the cluster deployment
-type KubernetesAddon struct {
+// KubernetesContainerSpec defines configuration for a container spec
+type KubernetesContainerSpec struct {
 	Name           string `json:"name,omitempty"`
-	Enabled        *bool  `json:"enabled,omitempty"`
 	Image          string `json:"image,omitempty"`
 	CPURequests    string `json:"cpuRequests,omitempty"`
 	MemoryRequests string `json:"memoryRequests,omitempty"`
 	CPULimits      string `json:"cpuLimits,omitempty"`
 	MemoryLimits   string `json:"memoryLimits,omitempty"`
+}
+
+// KubernetesAddon defines a list of addons w/ configuration to include with the cluster deployment
+type KubernetesAddon struct {
+	Name       string                    `json:"name,omitempty"`
+	Enabled    *bool                     `json:"enabled,omitempty"`
+	Containers []KubernetesContainerSpec `json:"containers,omitempty"`
 }
 
 // IsEnabled returns if the addon is explicitly enabled, or the user-provided default if non explicitly enabled
