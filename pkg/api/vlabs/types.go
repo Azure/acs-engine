@@ -177,12 +177,20 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 // KubernetesAddon defines a list of addons w/ configuration to include with the cluster deployment
 type KubernetesAddon struct {
 	Name           string `json:"name,omitempty"`
-	Enabled        bool   `json:"enabled,omitempty"`
+	Enabled        *bool  `json:"enabled,omitempty"`
 	Image          string `json:"image,omitempty"`
 	CPURequests    string `json:"cpuRequests,omitempty"`
 	MemoryRequests string `json:"memoryRequests,omitempty"`
 	CPULimits      string `json:"cpuLimits,omitempty"`
 	MemoryLimits   string `json:"memoryLimits,omitempty"`
+}
+
+// IsEnabled returns if the addon is explicitly enabled, or the user-provided default if non explicitly enabled
+func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
+	if a.Enabled == nil {
+		return ifNil
+	}
+	return *a.Enabled
 }
 
 // DisabledAddons specifies which addons are disabled

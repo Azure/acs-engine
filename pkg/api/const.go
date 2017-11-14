@@ -80,3 +80,6 @@ const (
 
 // To identify programmatically generated public agent pools
 const publicAgentPoolSuffix = "-public"
+
+// DefaultTillerAddonEnabled determines the acs-engine provided default for enabling tiller addon
+const DefaultTillerAddonEnabled = true

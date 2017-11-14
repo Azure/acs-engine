@@ -152,7 +152,7 @@ var (
 	// DefaultTillerAddonsConfig is the default tiller Kubernetes addon Config
 	DefaultTillerAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultTillerAddonName,
-		Enabled: true,
+		Enabled: pointerToBool(true),
 		// There is no general "default" tiller image, the values are Kubernetes version-specific
 		CPURequests:    "50m",
 		MemoryRequests: "150Mi",
@@ -203,12 +203,16 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig = &api.KubernetesConfig{}
 		}
 
+		// Add default addons specification, if no user-provided spec exists
 		if o.KubernetesConfig.Addons == nil {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{
 				DefaultTillerAddonsConfig,
 			}
 		} else {
-			if getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultTillerAddonName) < 0 {
+			// For each addon, provide default configuration if user didn't provide its own config
+			t := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultTillerAddonName)
+			if t < 0 {
+				// Provide default acs-engine config for Tiller
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultTillerAddonsConfig)
 			}
 		}
@@ -296,8 +300,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.EtcdVersion = "2.5.2"
 		}
 
+		// For each addon, produce a synthesized config between user-provided and acs-engine defaults
 		t := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
-		if a.OrchestratorProfile.KubernetesConfig.Addons[t].Enabled {
+		if a.OrchestratorProfile.KubernetesConfig.Addons[t].IsEnabled(api.DefaultTillerAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[t] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[t], DefaultTillerAddonsConfig)
 		}
 
@@ -588,4 +593,10 @@ func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesA
 		addon.MemoryLimits = defaults.MemoryLimits
 	}
 	return addon
+}
+
+// pointerToBool returns a pointer to a bool
+func pointerToBool(b bool) *bool {
+	p := b
+	return &p
 }
