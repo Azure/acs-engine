@@ -154,7 +154,7 @@ var (
 		Name:    DefaultTillerAddonName,
 		Enabled: pointerToBool(true),
 		Containers: []api.KubernetesContainerSpec{
-			api.KubernetesContainerSpec{
+			{
 				Name:           DefaultTillerAddonName,
 				CPURequests:    "50m",
 				MemoryRequests: "150Mi",
