@@ -550,14 +550,16 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["heapster"])
 		tillerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
 		c := getAddonContainersIndexByName(tillerAddon.Containers, DefaultTillerAddonName)
-		addValue(parametersMap, "kubernetesTillerCPURequests", tillerAddon.Containers[c].CPURequests)
-		addValue(parametersMap, "kubernetesTillerCPULimit", tillerAddon.Containers[c].CPULimits)
-		addValue(parametersMap, "kubernetesTillerMemoryRequests", tillerAddon.Containers[c].MemoryRequests)
-		addValue(parametersMap, "kubernetesTillerMemoryLimit", tillerAddon.Containers[c].MemoryLimits)
-		if tillerAddon.Containers[c].Image != "" {
-			addValue(parametersMap, "kubernetesTillerSpec", tillerAddon.Containers[c].Image)
-		} else {
-			addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion][DefaultTillerAddonName])
+		if c > -1 {
+			addValue(parametersMap, "kubernetesTillerCPURequests", tillerAddon.Containers[c].CPURequests)
+			addValue(parametersMap, "kubernetesTillerCPULimit", tillerAddon.Containers[c].CPULimits)
+			addValue(parametersMap, "kubernetesTillerMemoryRequests", tillerAddon.Containers[c].MemoryRequests)
+			addValue(parametersMap, "kubernetesTillerMemoryLimit", tillerAddon.Containers[c].MemoryLimits)
+			if tillerAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "kubernetesTillerSpec", tillerAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion][DefaultTillerAddonName])
+			}
 		}
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
@@ -1171,13 +1173,29 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				case "kubernetesTillerSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeConfigs[k8sVersion][DefaultTillerAddonName]
 				case "kubernetesTillerCPURequests":
-					val = tillerAddon.Containers[c].CPURequests
+					if c > -1 {
+						val = tillerAddon.Containers[c].CPURequests
+					} else {
+						val = ""
+					}
 				case "kubernetesTillerMemoryRequests":
-					val = tillerAddon.Containers[c].MemoryRequests
+					if c > -1 {
+						val = tillerAddon.Containers[c].MemoryRequests
+					} else {
+						val = ""
+					}
 				case "kubernetesTillerCPULimit":
-					val = tillerAddon.Containers[c].CPULimits
+					if c > -1 {
+						val = tillerAddon.Containers[c].CPULimits
+					} else {
+						val = ""
+					}
 				case "kubernetesTillerMemoryLimit":
-					val = tillerAddon.Containers[c].MemoryLimits
+					if c > -1 {
+						val = tillerAddon.Containers[c].MemoryLimits
+					} else {
+						val = ""
+					}
 				case "kubernetesKubeDNSSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":
