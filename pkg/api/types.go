@@ -575,15 +575,12 @@ func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
 }
 
 // IsTillerEnabled checks if the tiller addon is enabled
-func (o *OrchestratorProfile) IsTillerEnabled() bool {
+func (k *KubernetesConfig) IsTillerEnabled() bool {
 	var tillerAddon KubernetesAddon
-	if o.IsKubernetes() {
-		for i := range o.KubernetesConfig.Addons {
-			if o.KubernetesConfig.Addons[i].Name == "tiller" {
-				tillerAddon = o.KubernetesConfig.Addons[i]
-			}
+	for i := range k.Addons {
+		if k.Addons[i].Name == "tiller" {
+			tillerAddon = k.Addons[i]
 		}
-		return tillerAddon.Enabled
 	}
-	return false
+	return tillerAddon.Enabled
 }
