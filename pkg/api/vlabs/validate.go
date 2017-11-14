@@ -676,7 +676,7 @@ func validateKubernetesLabelValue(v string) error {
 	labelIdentifierFmt := "([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]"
 	var re = regexp.MustCompile("^" + labelIdentifierFmt + "$")
 	if len(v) > labelValueMaxLength || !re.MatchString(v) {
-		return fmt.Errorf("Label '%s' is invalid. Valid label values must be 63 characters or less and must be empty or begin and end with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between", v)
+		return fmt.Errorf("Label '%s' is invalid. Valid label values must be 63 characters or less and must begin and end with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between", v)
 	}
 	return nil
 }
