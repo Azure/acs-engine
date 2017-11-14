@@ -16,13 +16,20 @@ import (
 var (
 	validate        *validator.Validate
 	keyvaultIDRegex *regexp.Regexp
+	labelValueRegex *regexp.Regexp
 	// Any version has to be mirrored in https://acs-mirror.azureedge.net/github-coreos/etcd-v[Version]-linux-amd64.tar.gz
 	etcdValidVersions = [...]string{"2.5.2", "3.1.10"}
+)
+
+const (
+	labelValueMaxLength = 63
+	labelValueFormat    = "^([A-Za-z0-9][-A-Za-z0-9_.]{0,61})?[A-Za-z0-9]$"
 )
 
 func init() {
 	validate = validator.New()
 	keyvaultIDRegex = regexp.MustCompile(`^/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/[^/\s]+$`)
+	labelValueRegex = regexp.MustCompile(labelValueFormat)
 }
 
 func isValidEtcdVersion(etcdVersion string) error {
@@ -672,11 +679,8 @@ func validateUniquePorts(ports []int, name string) error {
 }
 
 func validateKubernetesLabelValue(v string) error {
-	labelValueMaxLength := 63
-	labelIdentifierFmt := "([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]"
-	var re = regexp.MustCompile("^" + labelIdentifierFmt + "$")
-	if len(v) > labelValueMaxLength || !re.MatchString(v) {
-		return fmt.Errorf("Label '%s' is invalid. Valid label values must be 63 characters or less and must begin and end with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between", v)
+	if !(len(v) == 0) && !labelValueRegex.MatchString(v) {
+		return fmt.Errorf("Label '%s' is invalid. Valid label values must be 63 characters or less and must be empty or begin and end with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between", v)
 	}
 	return nil
 }
