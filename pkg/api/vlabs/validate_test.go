@@ -351,6 +351,24 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 }
 
+func TestValidateKubernetesLabelValue(t *testing.T) {
+
+	validLabels := []string{"a", "a1", "this--valid--label--is--exactly--sixty--three--characters--long", "123456", "my-label_valid.com"}
+	invalidLabels := []string{"a$$b", "-abc", "not.valid.", "This____long____label___is______sixty______four_____chararacters", "Label with spaces"}
+
+	for _, l := range validLabels {
+		if err := validateKubernetesLabelValue(l); err != nil {
+			t.Fatalf("Label %v should not return error: %v", l, err)
+		}
+	}
+
+	for _, l := range invalidLabels {
+		if err := validateKubernetesLabelValue(l); err == nil {
+			t.Fatalf("Label %v should return an error", l)
+		}
+	}
+}
+
 func Test_AadProfile_Validate(t *testing.T) {
 	t.Run("Valid aadProfile should pass", func(t *testing.T) {
 		for _, aadProfile := range []AADProfile{

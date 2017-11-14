@@ -766,7 +766,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			for k, v := range profile.CustomNodeLabels {
 				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
 			}
-
 			return buf.String()
 		},
 		"RequiresFakeAgentOutput": func() bool {

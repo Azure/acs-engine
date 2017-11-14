@@ -357,6 +357,11 @@ func (a *Properties) Validate(isUpdate bool) error {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
 			case Kubernetes:
+				for _, l := range agentPoolProfile.CustomNodeLabels {
+					if e := validateKubernetesLabelValue(l); e != nil {
+						return e
+					}
+				}
 			default:
 				return fmt.Errorf("Agent Type attributes are only supported for DCOS and Kubernetes")
 			}
@@ -662,6 +667,16 @@ func validateUniquePorts(ports []int, name string) error {
 			return fmt.Errorf("agent profile '%s' has duplicate port '%d', ports must be unique", name, port)
 		}
 		portMap[port] = true
+	}
+	return nil
+}
+
+func validateKubernetesLabelValue(v string) error {
+	labelValueMaxLength := 63
+	labelIdentifierFmt := "([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]"
+	var re = regexp.MustCompile("^" + labelIdentifierFmt + "$")
+	if len(v) > labelValueMaxLength || !re.MatchString(v) {
+		return fmt.Errorf("Label '%s' is invalid. Valid label values must be 63 characters or less and must begin and end with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between", v)
 	}
 	return nil
 }
