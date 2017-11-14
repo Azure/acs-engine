@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/sirupsen/logrus"
 )
 
@@ -167,15 +168,6 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 }
 
 func (ku *Upgrader) upgradeAgentPools() error {
-	// // Unused until safely drain node is being called
-	// var kubeAPIServerURL string
-	// if ku.DataModel.Properties.MasterProfile != nil {
-	// 	kubeAPIServerURL = ku.DataModel.Properties.MasterProfile.FQDN
-	// }
-	// if ku.DataModel.Properties.HostedMasterProfile != nil {
-	// 	kubeAPIServerURL = ku.DataModel.Properties.HostedMasterProfile.FQDN
-	// }
-
 	for _, agentPool := range ku.ClusterTopology.AgentPools {
 		// Upgrade Agent VMs
 		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
@@ -228,9 +220,18 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		ku.logger.Infof("Starting upgrade of agent nodes in pool identifier: %s, name: %s...\n",
 			*agentPool.Identifier, *agentPool.Name)
 
+		// Create an auxiliary extra node
+		err = upgradeAgentNode.CreateNode(*agentPool.Name, agentCount)
+		if err != nil {
+			ku.logger.Infof("Error creating auxiliary VM\n")
+			return err
+		}
+		var agentOsType compute.OperatingSystemTypes
+
+		// Upgrade nodes in agent pool
 		for _, vm := range *agentPool.AgentVMs {
 			ku.logger.Infof("Upgrading Agent VM: %s, pool name: %s\n", *vm.Name, *agentPool.Name)
-
+			agentOsType = vm.StorageProfile.OsDisk.OsType
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
 			err := upgradeAgentNode.DeleteNode(vm.Name)
@@ -252,6 +253,18 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			}
 
 			upgradedAgentsIndex[agentIndex] = true
+		}
+
+		// Delete the auxiliary VM
+		auxVMName, err := armhelpers.GetK8sVMName(agentOsType, *agentPool.Name, ku.NameSuffix, agentCount)
+		if err != nil {
+			ku.logger.Infof("Failed to get AUX VM name")
+			return err
+		}
+		err = upgradeAgentNode.DeleteNode(&auxVMName)
+		if err != nil {
+			ku.logger.Infof("Error auxiliary agent VM\n")
+			return err
 		}
 
 		agentsToCreate := agentCount - len(upgradedAgentsIndex)

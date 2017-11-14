@@ -72,27 +72,5 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 
 // Validate will verify the that master/agent node has been upgraded as expected.
 func (kmn *UpgradeMasterNode) Validate(vmName *string) error {
-	// Added in Validation for single master scenario.
-
-	// if vmName == nil || *vmName == "" {
-	// 	kan.logger.Warningf(fmt.Sprintf("VM name was empty. Skipping node condition check"))
-	// 	return nil
-	// }
-
-	// var masterURL string
-	// if kan.UpgradeContainerService.Properties.HostedMasterProfile != nil {
-	// 	masterURL = kan.UpgradeContainerService.Properties.HostedMasterProfile.FQDN
-	// } else {
-	// 	masterURL = kan.UpgradeContainerService.Properties.MasterProfile.FQDN
-	// }
-
-	// if masterURL == "" {
-	// 	kan.Translator.Errorf("Control plane FQDN was not set.")
-	// }
-
-	// client, err := kan.Client.GetKubernetesClient(masterURL, kan.kubeConfig, interval, timeout)
-	// if err != nil {
-	// 	return err
-	// }
 	return nil
 }

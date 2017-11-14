@@ -2,29 +2,19 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "Kubernetes",
-      "orchestratorVersion": "1.7.7"
+      "orchestratorType": "Kubernetes"
     },
     "masterProfile": {
-      "count": 3,
+      "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2",
-      "storageProfile" : "ManagedDisks"
+      "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
         "name": "agentpool1",
-        "count": 2,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet",
-        "storageProfile" : "ManagedDisks"
-      },
-      {
-        "name": "agentpool2",
         "count": 3,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet",
-        "storageProfile" : "ManagedDisks"
+        "availabilityProfile": "AvailabilitySet"
       }
     ],
     "linuxProfile": {
