@@ -48,6 +48,10 @@ dev:
 generate: bootstrap
 	go generate $(GOFLAGS) -v `glide novendor | xargs go list`
 
+.PHONY: generate-azure-constants
+generate-azure-constants:
+	python pkg/acsengine/Get-AzureConstants.py
+
 .PHONY: build
 build: generate
 	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -ldflags '$(LDFLAGS)'

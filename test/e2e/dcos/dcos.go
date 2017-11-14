@@ -235,6 +235,9 @@ func (c *Cluster) AppCount() (int, error) {
 // Version will return the node count for a dcos cluster
 func (c *Cluster) Version() (string, error) {
 	out, err := c.Connection.Execute("curl -s http://localhost:80/dcos-metadata/dcos-version.json")
+	if err != nil {
+		log.Printf("Error while executing connection:%s\n", err)
+	}
 	version := Version{}
 	err = json.Unmarshal(out, &version)
 	if err != nil {

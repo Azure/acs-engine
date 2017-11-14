@@ -72,28 +72,24 @@ k8s_16_cherry_pick() {
 }
 
 k8s_17_cherry_pick() {
-        # d9f95d1152 Add start time for root container spec
-        # ee4e187451 Fix windows docker stats cpu units issue
-	# f33e310ede Implement metrics for Windows Containers
-	# 08ab2f2636 Use dns policy to determine setting DNS servers on the correct NIC in Windows container
-	# 1d4a5780cb Fix network config due to the split of start POD sandbox and start container from 1.7.0
-	# 4d00a52142 Workaround for Outbound Internet traffic in Azure Kubernetes (*) Connect a Nat Network to the container (Second adapter) (*) Modify the route so that internet traffic goes via Nat network, and POD traffic goes over the CONTAINER_NETWORK (*) Modify getContainerIP to return the IP corresponding to POD network, and ignore Nat Network (*) DNS Fix for ACS Kubernetes in Windows
+	# In 1.7.10, the following commit is not needed and has conflict with 137f4cb16e
+	# due to the out-of-order back porting into Azure 1.7. So removing it.
+	# cee32e92f7 fix#50150: azure disk mount failure on coreos
+	git revert --no-edit cee32e92f7 || true
+
+    # cce920d45e merge#54334: fix azure disk mount failure on coreos and some other distros
+    # ...
 	# b8fe713754 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
 
-	git cherry-pick b8fe713754^..d9f95d1152
+	git cherry-pick --allow-empty --keep-redundant-commits b8fe713754^..cce920d45e
 }
 
 k8s_18_cherry_pick() {
-        # d07a7d498f Resolve merge conflict
-        # f96286ae9e Add start time for root container spec
-        # 6d9542b1d6 Fix windows docker stats cpu units issue
-        # 6800851a7e Implement metrics for Windows Containers
-        # 9802a3178c Use dns policy to determine setting DNS servers on the correct NIC in Windows container
-        # cba79368f9 Fix network config due to the split of start POD sandbox and start container from 1.7.0
-        # 0e9f3ac18c Workaround for Outbound Internet traffic in Azure Kubernetes (*) Connect a Nat Network to the container (Second adapter) (*) Modify the route so that internet traffic goes via Nat network, and POD traffic goes over the CONTAINER_NETWORK (*) Modify getContainerIP to return the IP corresponding to POD network, and ignore Nat Network (*) DNS Fix for ACS Kubernetes in Windows
-        # 69644018c8 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
+    # d75ef50170 merge#54334: fix azure disk mount failure on coreos and some other distros
+    # ...
+    # 69644018c8 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
 
-        git cherry-pick 69644018c8^..d07a7d498f
+    git cherry-pick --allow-empty --keep-redundant-commits 69644018c8^..d75ef50170
 }
 
 apply_acs_cherry_picks() {
@@ -144,22 +140,23 @@ download_nssm() {
 	rm -rf /tmp/nssm-${NSSM_VERSION}*
 }
 
-download_winnat() {
-	az storage blob download -f ${DIST_DIR}/winnat.sys -c ${AZURE_STORAGE_CONTAINER_NAME} -n winnat.sys
+download_wincni() {
+	mkdir -p ${DIST_DIR}/cni/config
+	az storage blob download -f ${DIST_DIR}/cni/wincni.exe -c ${AZURE_STORAGE_CONTAINER_NAME} -n wincni.exe
 }
 
-copy_dockerfile_and_pause_ps1() {
+copy_dockerfile_and_hns_psm1() {
   cp ${ACS_ENGINE_HOME}/windows/* ${DIST_DIR}
 }
 
 create_zip() {
 	cd ${DIST_DIR}/..
-	zip -r ../v${ACS_VERSION}intwinnat.zip k/*
+	zip -r ../v${ACS_VERSION}int.zip k/*
 	cd -
 }
 
 upload_zip_to_blob_storage() {
-	az storage blob upload -f ${DIST_DIR}/../../v${ACS_VERSION}intwinnat.zip -c ${AZURE_STORAGE_CONTAINER_NAME} -n v${ACS_VERSION}intwinnat.zip
+	az storage blob upload -f ${DIST_DIR}/../../v${ACS_VERSION}int.zip -c ${AZURE_STORAGE_CONTAINER_NAME} -n v${ACS_VERSION}int.zip
 }
 
 push_acs_branch() {
@@ -182,8 +179,8 @@ build_kubelet
 build_kubeproxy
 download_kubectl
 download_nssm
-download_winnat
-copy_dockerfile_and_pause_ps1
+download_wincni
+copy_dockerfile_and_hns_psm1
 create_zip
 upload_zip_to_blob_storage
 push_acs_branch

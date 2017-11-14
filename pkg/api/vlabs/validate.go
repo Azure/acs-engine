@@ -197,8 +197,8 @@ func (o *OrchestratorProfile) ValidateForUpgrade() error {
 		return fmt.Errorf("Upgrade is not supported for orchestrator %s", o.OrchestratorType)
 	case Kubernetes:
 		switch o.OrchestratorVersion {
-		case common.KubernetesVersion1Dot6Dot11:
-		case common.KubernetesVersion1Dot7Dot9:
+		case common.KubernetesVersion1Dot6Dot12:
+		case common.KubernetesVersion1Dot7Dot10:
 		default:
 			return fmt.Errorf("Upgrade to Kubernetes version %s is not supported", o.OrchestratorVersion)
 		}
@@ -247,6 +247,20 @@ func handleValidationErrors(e validator.ValidationErrors) error {
 
 	// common.HandleValidationErrors if the validation error message is general
 	return common.HandleValidationErrors(e)
+}
+
+// Validate implements APIObject
+func (w *WindowsProfile) Validate() error {
+	if e := validate.Var(w.AdminUsername, "required"); e != nil {
+		return fmt.Errorf("WindowsProfile.AdminUsername is required, when agent pool specifies windows")
+	}
+	if e := validate.Var(w.AdminPassword, "required"); e != nil {
+		return fmt.Errorf("WindowsProfile.AdminPassword is required, when agent pool specifies windows")
+	}
+	if e := validateKeyVaultSecrets(w.Secrets, true); e != nil {
+		return e
+	}
+	return nil
 }
 
 // Validate implements APIObject
@@ -359,16 +373,20 @@ func (a *Properties) Validate(isUpdate bool) error {
 			case Swarm:
 			case SwarmMode:
 			case Kubernetes:
+				version := common.RationalizeReleaseAndVersion(
+					a.OrchestratorProfile.OrchestratorType,
+					a.OrchestratorProfile.OrchestratorRelease,
+					a.OrchestratorProfile.OrchestratorVersion)
+				if version == "" {
+					return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+				}
+				if _, ok := common.AllKubernetesWindowsSupportedVersions[version]; !ok {
+					return fmt.Errorf("Orchestrator %s version %s does not support Windows", a.OrchestratorProfile.OrchestratorType, version)
+				}
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
-			if e := validate.Var(a.WindowsProfile.AdminUsername, "required"); e != nil {
-				return fmt.Errorf("WindowsProfile.AdminUsername is required, when agent pool specifies windows")
-			}
-			if e := validate.Var(a.WindowsProfile.AdminPassword, "required"); e != nil {
-				return fmt.Errorf("WindowsProfile.AdminPassword is required, when agent pool specifies windows")
-			}
-			if e := validateKeyVaultSecrets(a.WindowsProfile.Secrets, true); e != nil {
+			if e := a.WindowsProfile.Validate(); e != nil {
 				return e
 			}
 		}
@@ -422,9 +440,11 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot7Dot5:  true,
 		common.KubernetesVersion1Dot7Dot7:  true,
 		common.KubernetesVersion1Dot7Dot9:  true,
+		common.KubernetesVersion1Dot7Dot10: true,
 		common.KubernetesVersion1Dot6Dot6:  true,
 		common.KubernetesVersion1Dot6Dot9:  true,
 		common.KubernetesVersion1Dot6Dot11: true,
+		common.KubernetesVersion1Dot6Dot12: true,
 	}
 	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
 	ratelimitEnabledVersions := backoffEnabledVersions

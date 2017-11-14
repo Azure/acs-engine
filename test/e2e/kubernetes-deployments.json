@@ -2,7 +2,7 @@
 	"deployments": [
 		{
 			"cluster_definition": "windows/kubernetes-hybrid.json",
-			"location": "southcentralus"
+			"location": "eastus"
 		},
 		{
 			"cluster_definition": "windows/kubernetes.json",
@@ -14,7 +14,7 @@
 		},
 		{
 			"cluster_definition": "disks-managed/kubernetes-vmas.json",
-			"location": "southcentralus"
+			"location": "eastus"
 		},
 		{
 			"cluster_definition": "disks-storageaccount/kubernetes.json",
@@ -26,7 +26,7 @@
 		},
 		{
 			"cluster_definition": "networkpolicy/kubernetes-calico.json",
-			"location": "southcentralus"
+			"location": "eastus"
 		},
 		{
 			"cluster_definition": "kubernetes-config/kubernetes-clustersubnet.json",

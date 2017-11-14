@@ -434,7 +434,7 @@
           "dataDisks": [
             {
               "createOption": "Empty"
-              ,"diskSizeGB": "128"
+              ,"diskSizeGB": "[variables('etcdDiskSizeGB')]"
               ,"lun": 0
               ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
           {{if .MasterProfile.IsStorageAccount}}
@@ -530,7 +530,7 @@
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
-          "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'),' /usr/bin/nohup /bin/bash -c \"stat /opt/azure/containers/provision.complete || /bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
         }
       }
     }{{WriteLinkedTemplatesForExtensions}}

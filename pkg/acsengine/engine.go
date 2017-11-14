@@ -20,7 +20,6 @@ import (
 
 	//log "github.com/sirupsen/logrus"
 	"github.com/Azure/acs-engine/pkg/api"
-	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Masterminds/semver"
 	"github.com/ghodss/yaml"
@@ -395,7 +394,7 @@ func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
 		FQDNFormat = AzureChinaCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
 	} else if location == "germanynortheast" || location == "germanycentral" {
 		FQDNFormat = AzureGermanCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
-	} else if location == "usgovvirginia" || location == "usgoviowa" {
+	} else if location == "usgovvirginia" || location == "usgoviowa" || location == "usgovarizona" || location == "usgovtexas" {
 		FQDNFormat = AzureUSGovernmentCloud.EndpointConfig.ResourceManagerVMDNSSuffix
 	}
 	return fmt.Sprintf("%s.%s."+FQDNFormat, fqdnPrefix, location)
@@ -584,6 +583,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "maxPods", properties.OrchestratorProfile.KubernetesConfig.MaxPods)
 		addValue(parametersMap, "gchighthreshold", properties.OrchestratorProfile.KubernetesConfig.GCHighThreshold)
 		addValue(parametersMap, "gclowthreshold", properties.OrchestratorProfile.KubernetesConfig.GCLowThreshold)
+		addValue(parametersMap, "etcdDiskSizeGB", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB)
 
 		if properties.OrchestratorProfile.KubernetesConfig == nil ||
 			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
@@ -794,7 +794,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 		},
 		"UseInstanceMetadata": func() bool {
-			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata
+			if cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata == nil {
+				return true
+			} else if *cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata {
+				return true
+			}
+			return false
 		},
 		"GetVNETSubnetDependencies": func() string {
 			return getVNETSubnetDependencies(cs.Properties)
@@ -914,7 +919,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add artifacts and addons
 			var artifiacts map[string]string
-			if profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 {
+			if strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.5.") {
 				artifiacts = kubernetesAritfacts15
 			} else {
 				artifiacts = kubernetesAritfacts
@@ -925,10 +930,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 
 			var addonYamls map[string]string
-			if profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 {
+			if strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.5.") {
 				addonYamls = kubernetesAddonYamls15
 			} else {
 				addonYamls = kubernetesAddonYamls
+			}
+			if profile.OrchestratorProfile.KubernetesConfig.DisabledAddons.Dashboard {
+				delete(addonYamls, "MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR")
 			}
 			for placeholder, filename := range addonYamls {
 				addonTextContents := getBase64CustomScript(filename)
@@ -937,8 +945,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add calico manifests
 			if profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "calico" {
-				if profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
-					profile.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
+				if strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.5.") ||
+					strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.6.") {
 					calicoAddonYamls = calicoAddonYamls15
 				}
 				for placeholder, filename := range calicoAddonYamls {
@@ -958,7 +966,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add artifacts
 			var artifiacts map[string]string
-			if cs.Properties.OrchestratorProfile.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 {
+			if strings.HasPrefix(cs.Properties.OrchestratorProfile.OrchestratorVersion, "1.5.") {
 				artifiacts = kubernetesAritfacts15
 			} else {
 				artifiacts = kubernetesAritfacts
@@ -1220,6 +1228,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = DefaultGeneratorCode
 				case "orchestratorName":
 					val = DefaultOrchestratorName
+				case "etcdDiskSizeGB":
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB
 				default:
 					val = ""
 				}

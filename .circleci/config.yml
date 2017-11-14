@@ -13,7 +13,10 @@ jobs:
           GOPATH: /go
     steps:
       - checkout
-      - run: echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
+      - run: |
+          echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
+          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
       - run:
           name: Install dependencies
           command: make bootstrap
