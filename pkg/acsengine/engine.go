@@ -756,17 +756,23 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			constraint, _ := semver.NewConstraint("~" + version)
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes && constraint.Check(orchestratorVersion)
 		},
-		"GetKubernetesLabels": func(profile *api.AgentPoolProfile) string {
+		"GetMasterKubernetesLabels": func(rg string) string {
+			var buf bytes.Buffer
+			buf.WriteString("kubernetes.io/role=master")
+			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
+			return buf.String()
+		},
+		"GetAgentKubernetesLabels": func(profile *api.AgentPoolProfile, rg string) string {
 			var buf bytes.Buffer
 			buf.WriteString(fmt.Sprintf("kubernetes.io/role=agent,agentpool=%s", profile.Name))
 			if profile.StorageProfile == api.ManagedDisks {
 				storagetier, _ := getStorageAccountType(profile.VMSize)
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
 			}
+			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
 			for k, v := range profile.CustomNodeLabels {
 				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
 			}
-
 			return buf.String()
 		},
 		"RequiresFakeAgentOutput": func() bool {
