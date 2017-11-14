@@ -43,6 +43,13 @@ write_files:
   content: |
     {{WrapAsVariable "caCertificate"}}
 
+- path: "/etc/kubernetes/certs/client.crt"
+  permissions: "0644"
+  encoding: "base64"
+  owner: "root"
+  content: |
+    {{WrapAsVariable "clientCertificate"}}
+
 {{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
 - path: "/etc/kubernetes/generate-proxy-certs.sh"
   permissions: "0744"
