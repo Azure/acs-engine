@@ -17,7 +17,6 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
-	"unicode/utf8"
 
 	//log "github.com/sirupsen/logrus"
 	"github.com/Azure/acs-engine/pkg/api"
@@ -769,10 +768,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			if profile.StorageProfile == api.ManagedDisks {
 				storagetier, _ := getStorageAccountType(profile.VMSize)
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
-			}
-			// kubernetes label values must be 63 characters or less
-			if utf8.RuneCountInString(rg) > 63 {
-				rg = string(rg[0:63])
 			}
 			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
 			for k, v := range profile.CustomNodeLabels {
