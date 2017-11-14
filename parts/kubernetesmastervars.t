@@ -90,7 +90,8 @@
     "osImageSKU": "[parameters('osImageSKU')]", 
     "osImageVersion": "[parameters('osImageVersion')]",
     "resourceGroup": "[resourceGroup().name]",
-    "truncatedResourceGroup": "[substring(replace(replace(resourceGroup().name, '(', '-'), ')', '-'), 0, 63)]",
+    "truncatedResourceGroup": "[take(replace(replace(resourceGroup().name, '(', '-'), ')', '-'), 63)]",
+    "labelResourceGroup": "[if(or(or(endsWith(variables('truncatedResourceGroup'), '-'), endsWith(variables('truncatedResourceGroup'), '_')), endsWith(variables('truncatedResourceGroup'), '.')), concat(take(variables('truncatedResourceGroup'), 62), '0'), variables('truncatedResourceGroup'))]",
 {{if not IsHostedMaster}}
     "routeTableName": "[concat(variables('masterVMNamePrefix'),'routetable')]",
 {{else}}
