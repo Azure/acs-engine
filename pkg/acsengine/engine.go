@@ -548,11 +548,16 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dnsmasq"])
 		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["exechealthz"])
 		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["heapster"])
-		addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion]["tiller"])
-		addValue(parametersMap, "kubernetesTillerCPURequests", properties.OrchestratorProfile.KubernetesConfig.TillerCPURequests)
-		addValue(parametersMap, "kubernetesTillerCPULimit", properties.OrchestratorProfile.KubernetesConfig.TillerCPULimit)
-		addValue(parametersMap, "kubernetesTillerMemoryRequests", properties.OrchestratorProfile.KubernetesConfig.TillerMemoryRequests)
-		addValue(parametersMap, "kubernetesTillerMemoryLimit", properties.OrchestratorProfile.KubernetesConfig.TillerMemoryLimit)
+		tillerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
+		addValue(parametersMap, "kubernetesTillerCPURequests", tillerAddon.CPURequests)
+		addValue(parametersMap, "kubernetesTillerCPULimit", tillerAddon.CPULimits)
+		addValue(parametersMap, "kubernetesTillerMemoryRequests", tillerAddon.MemoryRequests)
+		addValue(parametersMap, "kubernetesTillerMemoryLimit", tillerAddon.MemoryLimits)
+		if tillerAddon.Image != "" {
+			addValue(parametersMap, "kubernetesTillerSpec", tillerAddon.Image)
+		} else {
+			addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion][DefaultTillerAddonName])
+		}
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
 		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
@@ -1141,6 +1146,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			} else {
 				k8sVersion := cs.Properties.OrchestratorProfile.OrchestratorVersion
 				cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+				tillerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
@@ -1160,15 +1166,15 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				case "kubernetesHeapsterSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["heapster"]
 				case "kubernetesTillerSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeConfigs[k8sVersion]["tiller"]
+					val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeConfigs[k8sVersion][DefaultTillerAddonName]
 				case "kubernetesTillerCPURequests":
-					val = DefaultTillerCPURequests
+					val = tillerAddon.CPURequests
 				case "kubernetesTillerMemoryRequests":
-					val = DefaultTillerMemoryRequests
+					val = tillerAddon.MemoryRequests
 				case "kubernetesTillerCPULimit":
-					val = DefaultTillerCPULimit
+					val = tillerAddon.CPULimits
 				case "kubernetesTillerMemoryLimit":
-					val = DefaultTillerMemoryLimit
+					val = tillerAddon.MemoryLimits
 				case "kubernetesKubeDNSSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":
@@ -2055,4 +2061,13 @@ func stringInSlice(a string, list []string) bool {
 
 func getSwarmVersions(orchestratorVersion, dockerComposeVersion string) string {
 	return fmt.Sprintf("\"orchestratorVersion\": \"%s\",\n\"dockerComposeVersion\": \"%s\",\n", orchestratorVersion, dockerComposeVersion)
+}
+
+func getAddonByName(addons []api.KubernetesAddon, name string) api.KubernetesAddon {
+	for i := range addons {
+		if addons[i].Name == name {
+			return addons[i]
+		}
+	}
+	return api.KubernetesAddon{}
 }

@@ -613,15 +613,27 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.GCLowThreshold = vlabs.GCLowThreshold
 	api.EtcdVersion = vlabs.EtcdVersion
 	api.EtcdDiskSizeGB = vlabs.EtcdDiskSizeGB
-	api.TillerCPURequests = vlabs.TillerCPURequests
-	api.TillerCPULimit = vlabs.TillerCPULimit
-	api.TillerMemoryRequests = vlabs.TillerMemoryRequests
-	api.TillerMemoryLimit = vlabs.TillerMemoryLimit
 	convertVLabsDisabledAddons(&vlabs.DisabledAddons, &api.DisabledAddons)
+	convertAddonsToAPI(vlabs, api)
 }
 
 func convertVLabsDisabledAddons(vlabs *vlabs.DisabledAddons, api *DisabledAddons) {
 	api.Dashboard = vlabs.Dashboard
+}
+
+func convertAddonsToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
+	a.Addons = []KubernetesAddon{}
+	for i := range v.Addons {
+		a.Addons = append(a.Addons, KubernetesAddon{
+			Name:           v.Addons[i].Name,
+			Enabled:        v.Addons[i].Enabled,
+			Image:          v.Addons[i].Image,
+			CPURequests:    v.Addons[i].CPURequests,
+			MemoryRequests: v.Addons[i].MemoryRequests,
+			CPULimits:      v.Addons[i].CPULimits,
+			MemoryLimits:   v.Addons[i].MemoryLimits,
+		})
+	}
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {
