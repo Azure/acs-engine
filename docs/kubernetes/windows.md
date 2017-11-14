@@ -122,7 +122,7 @@ After completing this walkthrough you will know how to:
       spec:
         containers:
         - name: windowswebserver
-          image: microsoft/windowsservercore
+          image: microsoft/windowsservercore:1709
           command:
           - powershell.exe
           - -command

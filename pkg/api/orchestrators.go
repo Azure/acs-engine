@@ -116,7 +116,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 	orchs := []*OrchestratorVersionProfile{}
 	if csOrch.OrchestratorVersion == "" {
 		// get info for all supported versions
-		for _, ver := range common.AllKubernetesSupportedVersions {
+		for _, ver := range common.GetAllSupportedKubernetesVersions() {
 			upgrades, err := kubernetesUpgrades(&OrchestratorProfile{OrchestratorVersion: ver})
 			if err != nil {
 				return nil, err
@@ -157,57 +157,49 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 
 func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, error) {
 	ret := []*OrchestratorProfile{}
-	var err error
+
+	currentVer, err := semver.NewVersion(csOrch.OrchestratorVersion)
+	if err != nil {
+		return nil, err
+	}
+	currentMajor, currentMinor, currentPatch := currentVer.Major(), currentVer.Minor(), currentVer.Patch()
+	var nextMajor, nextMinor int64
 
 	switch {
-	case strings.HasPrefix(csOrch.OrchestratorVersion, "1.5"):
-		// add next version
-		ret = append(ret, &OrchestratorProfile{
-			OrchestratorType:    Kubernetes,
-			OrchestratorVersion: common.KubernetesVersion1Dot6Dot11,
-		})
-	case strings.HasPrefix(csOrch.OrchestratorVersion, "1.6"):
-		// check for patch upgrade
-		if ret, err = addPatchUpgrade(ret, csOrch.OrchestratorVersion, common.KubernetesVersion1Dot6Dot11); err != nil {
-			return ret, err
+	case currentMajor == 1 && currentMinor == 5:
+		nextMajor = 1
+		nextMinor = 6
+	case currentMajor == 1 && currentMinor == 6:
+		nextMajor = 1
+		nextMinor = 7
+	case currentMajor == 1 && currentMinor == 7:
+		nextMajor = 1
+		nextMinor = 8
+	}
+	for ver, supported := range common.AllKubernetesSupportedVersions {
+		if !supported {
+			continue
+		}
+		nextVersion, err := semver.NewVersion(ver)
+		if err != nil {
+			continue
+		}
+		// add patch upgrade
+		if nextVersion.Major() == currentMajor && nextVersion.Minor() == currentMinor && currentPatch < nextVersion.Patch() {
+			ret = append(ret, &OrchestratorProfile{
+				OrchestratorType:    Kubernetes,
+				OrchestratorVersion: ver,
+			})
 		}
 		// add next version
-		ret = append(ret, &OrchestratorProfile{
-			OrchestratorType:    Kubernetes,
-			OrchestratorVersion: common.KubernetesVersion1Dot7Dot9,
-		})
-	case strings.HasPrefix(csOrch.OrchestratorVersion, "1.7"):
-		// check for patch upgrade
-		if ret, err = addPatchUpgrade(ret, csOrch.OrchestratorVersion, common.KubernetesVersion1Dot7Dot9); err != nil {
-			return ret, err
-		}
-		// add next version
-		ret = append(ret, &OrchestratorProfile{
-			OrchestratorType:    Kubernetes,
-			OrchestratorVersion: common.KubernetesVersion1Dot8Dot2,
-		})
-	case strings.HasPrefix(csOrch.OrchestratorVersion, "1.8"):
-		// check for patch upgrade
-		if ret, err = addPatchUpgrade(ret, csOrch.OrchestratorVersion, common.KubernetesVersion1Dot8Dot2); err != nil {
-			return ret, err
+		if nextVersion.Major() == nextMajor && nextVersion.Minor() == nextMinor {
+			ret = append(ret, &OrchestratorProfile{
+				OrchestratorType:    Kubernetes,
+				OrchestratorVersion: ver,
+			})
 		}
 	}
 	return ret, nil
-}
-
-func addPatchUpgrade(upgrades []*OrchestratorProfile, version, targetVersion string) ([]*OrchestratorProfile, error) {
-	pVer, err := semver.NewVersion(targetVersion)
-	if err != nil {
-		return upgrades, err
-	}
-	constraint, err := semver.NewConstraint(">" + version)
-	if err != nil {
-		return upgrades, err
-	}
-	if constraint.Check(pVer) {
-		upgrades = append(upgrades, &OrchestratorProfile{OrchestratorVersion: targetVersion})
-	}
-	return upgrades, nil
 }
 
 func dcosInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error) {

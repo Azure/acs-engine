@@ -1,3 +1,4 @@
+    "etcdDiskSizeGB": "[parameters('etcdDiskSizeGB')]",
     "maxVMsPerPool": 100,
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
 {{ if not IsHostedMaster }}
@@ -278,8 +279,8 @@
     "kubeBinariesVersion": "[parameters('kubeBinariesVersion')]",
     "windowsTelemetryGUID": "[parameters('windowsTelemetryGUID')]",
     "agentWindowsPublisher": "MicrosoftWindowsServer",
-    "agentWindowsOffer": "WindowsServer",
-    "agentWindowsSku": "2016-Datacenter-with-Containers",
+    "agentWindowsOffer": "WindowsServerSemiAnnual",
+    "agentWindowsSku": "Datacenter-Core-1709-with-Containers-smalldisk",
     "agentWindowsVersion": "[parameters('agentWindowsVersion')]",
     "singleQuote": "'",
     "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Copy-Item $inputFile $outputFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "

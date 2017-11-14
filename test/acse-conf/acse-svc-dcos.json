@@ -1,16 +1,6 @@
 {
   "deployments": [
     {
-      "cluster_definition": "dcos-D2.json",
-      "category": "service-availability",
-      "location": "australiaeast"
-    },
-    {
-      "cluster_definition": "dcos.json",
-      "category": "service-availability",
-      "location": "australiaeast"
-    },
-    {
       "cluster_definition": "dcos.json",
       "category": "service-availability",
       "location": "brazilsouth"
@@ -58,16 +48,6 @@
     {
       "cluster_definition": "dcos.json",
       "category": "service-availability",
-      "location": "northcentralus"
-    },
-    {
-      "cluster_definition": "dcos.json",
-      "category": "service-availability",
-      "location": "southcentralus"
-    },
-    {
-      "cluster_definition": "dcos.json",
-      "category": "service-availability",
       "location": "westcentralus"
     },
     {
@@ -98,11 +78,6 @@
     {
       "cluster_definition": "dcos.json",
       "category": "service-availability",
-      "location": "koreasouth"
-    },
-    {
-      "cluster_definition": "dcos.json",
-      "category": "service-availability",
       "location": "japaneast"
     },
     {
@@ -124,11 +99,6 @@
       "cluster_definition": "dcos.json",
       "category": "service-availability",
       "location": "uksouth"
-    },
-    {
-      "cluster_definition": "dcos.json",
-      "category": "service-availability",
-      "location": "ukwest"
     }
   ]
 }

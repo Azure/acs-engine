@@ -542,15 +542,7 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 
 	switch api.OrchestratorType {
 	case Kubernetes:
-		switch v20170701cs.OrchestratorVersion {
-		case common.KubernetesVersion1Dot8Dot0, common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2,
-			common.KubernetesVersion1Dot7Dot0, common.KubernetesVersion1Dot7Dot1, common.KubernetesVersion1Dot7Dot2, common.KubernetesVersion1Dot7Dot4, common.KubernetesVersion1Dot7Dot5, common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9,
-			common.KubernetesVersion1Dot6Dot6, common.KubernetesVersion1Dot6Dot9, common.KubernetesVersion1Dot6Dot11,
-			common.KubernetesVersion1Dot5Dot7, common.KubernetesVersion1Dot5Dot8:
-			api.OrchestratorVersion = v20170701cs.OrchestratorVersion
-		default:
-			api.OrchestratorVersion = common.KubernetesDefaultVersion
-		}
+		api.OrchestratorVersion = common.GetSupportedKubernetesVersion(v20170701cs.OrchestratorVersion)
 	case DCOS:
 		switch v20170701cs.OrchestratorVersion {
 		case DCOSVersion1Dot10Dot0, DCOSVersion1Dot9Dot0, DCOSVersion1Dot8Dot8:
@@ -620,10 +612,16 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.GCHighThreshold = vlabs.GCHighThreshold
 	api.GCLowThreshold = vlabs.GCLowThreshold
 	api.EtcdVersion = vlabs.EtcdVersion
+	api.EtcdDiskSizeGB = vlabs.EtcdDiskSizeGB
 	api.TillerCPURequests = vlabs.TillerCPURequests
 	api.TillerCPULimit = vlabs.TillerCPULimit
 	api.TillerMemoryRequests = vlabs.TillerMemoryRequests
 	api.TillerMemoryLimit = vlabs.TillerMemoryLimit
+	convertVLabsDisabledAddons(&vlabs.DisabledAddons, &api.DisabledAddons)
+}
+
+func convertVLabsDisabledAddons(vlabs *vlabs.DisabledAddons, api *DisabledAddons) {
+	api.Dashboard = vlabs.Dashboard
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {

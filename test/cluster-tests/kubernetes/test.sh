@@ -101,7 +101,7 @@ fi
 
 ###### Check existence and status of essential pods
 
-# we test other essential pods (kube-dns, kube-proxy, kubernetes-dashboard) separately
+# we test other essential pods (kube-dns, kube-proxy) separately
 pods="heapster kube-addon-manager kube-apiserver kube-controller-manager kube-scheduler tiller"
 log "Checking $pods"
 
@@ -138,16 +138,20 @@ if (( ${running} != ${EXPECTED_DNS} )); then
 fi
 
 ###### Check for Kube-Dashboard
-log "Checking Kube-Dashboard"
-count=60
-while (( $count > 0 )); do
-  log "  ... counting down $count"
-  running=$(kubectl get pods --namespace=kube-system | grep kubernetes-dashboard | grep Running | wc | awk '{print $1}')
-  if (( ${running} == ${EXPECTED_DASHBOARD} )); then break; fi
-  sleep 5; count=$((count-1))
-done
-if (( ${running} != ${EXPECTED_DASHBOARD} )); then
-  log "K8S: gave up waiting for kubernetes-dashboard"; exit 1
+if (( ${EXPECTED_DASHBOARD} != 0 )); then
+  log "Checking Kube-Dashboard"
+  count=60
+  while (( $count > 0 )); do
+    log "  ... counting down $count"
+    running=$(kubectl get pods --namespace=kube-system | grep kubernetes-dashboard | grep Running | wc | awk '{print $1}')
+    if (( ${running} == ${EXPECTED_DASHBOARD} )); then break; fi
+    sleep 5; count=$((count-1))
+  done
+  if (( ${running} != ${EXPECTED_DASHBOARD} )); then
+    log "K8S: gave up waiting for kubernetes-dashboard"; exit 1
+  fi
+else
+  log "Expecting no dashboard"
 fi
 
 ###### Check for Kube-Proxys
@@ -163,30 +167,32 @@ if (( ${running} != ${KUBE_PROXY_COUNT} )); then
   log "K8S: gave up waiting for kube-proxy"; exit 1
 fi
 
-# get master public hostname
-master=$(kubectl config view | grep server | cut -f 3- -d "/" | tr -d " ")
-# get dashboard port
-port=$(kubectl get svc --namespace=kube-system | grep dashboard | awk '{print $4}' | sed -n 's/^80:\(.*\)\/TCP$/\1/p')
-# get internal IPs of the nodes
-ips=$(kubectl get nodes --all-namespaces -o yaml | grep -B 1 InternalIP | grep address | awk '{print $3}')
+if (( ${EXPECTED_DASHBOARD} != 0 )); then
+  # get master public hostname
+  master=$(kubectl config view | grep server | cut -f 3- -d "/" | tr -d " ")
+  # get dashboard port
+  port=$(kubectl get svc --namespace=kube-system | grep dashboard | awk '{print $4}' | sed -n 's/^80:\(.*\)\/TCP$/\1/p')
+  # get internal IPs of the nodes
+  ips=$(kubectl get nodes --all-namespaces -o yaml | grep -B 1 InternalIP | grep address | awk '{print $3}')
 
-for ip in $ips; do
-  log "Probing IP address ${ip}"
-  count=60
-  success="n"
-  while (( $count > 0 )); do
-    log "  ... counting down $count"
-    ret=$(ssh -i "${OUTPUT}/id_rsa" -o ConnectTimeout=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "azureuser@${master}" "curl --max-time 60 http://${ip}:${port}" || echo "curl_error")
-    if [[ ! $ret =~ .*curl_error.* ]]; then
-      success="y"
-      break
+  for ip in $ips; do
+    log "Probing IP address ${ip}"
+    count=60
+    success="n"
+    while (( $count > 0 )); do
+      log "  ... counting down $count"
+      ret=$(ssh -i "${OUTPUT}/id_rsa" -o ConnectTimeout=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "azureuser@${master}" "curl --max-time 60 http://${ip}:${port}" || echo "curl_error")
+      if [[ ! $ret =~ .*curl_error.* ]]; then
+        success="y"
+        break
+      fi
+      sleep 5; count=$((count-1))
+    done
+    if [[ "${success}" == "n" ]]; then
+      log "K8S: gave up verifying proxy"; exit 1
     fi
-    sleep 5; count=$((count-1))
   done
-  if [[ "${success}" == "n" ]]; then
-    log "K8S: gave up verifying proxy"; exit 1
-  fi
-done
+fi
 
 if [ $EXPECTED_LINUX_AGENTS -gt 0 ] ; then
   test_linux_deployment

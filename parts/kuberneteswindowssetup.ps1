@@ -43,28 +43,32 @@ param(
 $global:CACertificate = "{{WrapAsVariable "caCertificate"}}"
 $global:AgentCertificate = "{{WrapAsVariable "clientCertificate"}}"
 $global:DockerServiceName = "Docker"
-$global:RRASServiceName = "RemoteAccess"
 $global:KubeDir = "c:\k"
 $global:KubeBinariesSASURL = "{{WrapAsVariable "kubeBinariesSASURL"}}"
 $global:KubeBinariesVersion = "{{WrapAsVariable "kubeBinariesVersion"}}"
 $global:WindowsTelemetryGUID = "{{WrapAsVariable "windowsTelemetryGUID"}}"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
 $global:KubeProxyStartFile = $global:KubeDir + "\kubeproxystart.ps1"
-$global:NatNetworkName="nat"
-$global:TransparentNetworkName="transparentNet"
 
 $global:TenantId = "{{WrapAsVariable "tenantID"}}"
 $global:SubscriptionId = "{{WrapAsVariable "subscriptionId"}}"
 $global:ResourceGroup = "{{WrapAsVariable "resourceGroup"}}"
 $global:SubnetName = "{{WrapAsVariable "subnetName"}}"
+$global:MasterSubnet = "{{WrapAsVariable "subnet"}}"
 $global:SecurityGroupName = "{{WrapAsVariable "nsgName"}}"
 $global:VNetName = "{{WrapAsVariable "virtualNetworkName"}}"
 $global:RouteTableName = "{{WrapAsVariable "routeTableName"}}"
 $global:PrimaryAvailabilitySetName = "{{WrapAsVariable "primaryAvailabilitySetName"}}"
-$global:NeedPatchWinNAT = $false
+$global:KubeClusterCIDR = "{{WrapAsVariable "kubeClusterCidr"}}"
+$global:KubeServiceCIDR = "{{WrapAsVariable "kubeServiceCidr"}}"
 
 $global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
 $global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
+
+$global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
+$global:NetworkMode = "L2Bridge"
+$global:CNIConfig = [Io.path]::Combine($global:CNIPath, "config", "`$global:NetworkMode.conf")
+$global:HNSModule = [Io.path]::Combine("$global:KubeDir", "hns.psm1")
 
 filter Timestamp {"$(Get-Date -Format o): $_"}
 
@@ -81,38 +85,11 @@ function Set-TelemetrySetting()
 }
 
 function
-Expand-ZIPFile($file, $destination)
-{
-    $shell = new-object -com shell.application
-    $zip = $shell.NameSpace($file)
-    foreach($item in $zip.items())
-    {
-        $shell.Namespace($destination).copyhere($item)
-    }
-}
-
-function
 Get-KubeBinaries()
 {
     $zipfile = "c:\k.zip"
     Invoke-WebRequest -Uri $global:KubeBinariesSASURL -OutFile $zipfile
-    Expand-ZIPFile -File $zipfile -Destination C:\
-}
-
-function
-Patch-WinNATBinary()
-{
-    $winnatcurr = $global:KubeDir + "\winnat.sys"
-    if (Test-Path $winnatcurr)
-    {
-        $global:NeedPatchWinNAT = $true
-        $winnatsys = "$env:SystemRoot\System32\drivers\winnat.sys"
-        Stop-Service winnat
-        takeown /f $winnatsys
-        icacls $winnatsys /grant "Administrators:(F)"    
-        Copy-Item $winnatcurr $winnatsys
-        bcdedit /set TESTSIGNING on
-    }
+    Expand-Archive -path $zipfile -DestinationPath C:\
 }
 
 function
@@ -138,7 +115,7 @@ Write-AzureConfig()
 }
 "@
 
-    $azureConfig | Out-File -encoding ASCII -filepath "$azureConfigFile"    
+    $azureConfig | Out-File -encoding ASCII -filepath "$azureConfigFile"
 }
 
 function
@@ -168,14 +145,14 @@ users:
     client-key-data: "$AgentKey"
 "@
 
-    $kubeConfig | Out-File -encoding ASCII -filepath "$kubeConfigFile"    
+    $kubeConfig | Out-File -encoding ASCII -filepath "$kubeConfigFile"
 }
 
 function
 New-InfraContainer()
 {
     cd $global:KubeDir
-    docker build -t kubletwin/pause . 
+    docker build -t kubletwin/pause .
 }
 
 function
@@ -193,65 +170,39 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
         $KubeletCommandLine += " --api-servers=https://`${global:MasterIP}:443"
     }
 
-    if ($global:KubeBinariesVersion -ge "1.6.0")
-    {
-        # stop using container runtime interface from 1.6.0+ (officially deprecated from 1.7.0)
-        if ($global:KubeBinariesVersion -lt "1.7.0")
-        {
-            $KubeletArgList += "--enable-cri=false"
-            $KubeletCommandLine += " --enable-cri=false"
-        }
-        # more time is needed to pull windows server images (flag supported from 1.6.0)
-        $KubeletCommandLine += " --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
-    }
+    # network plugin config
+    $KubeletCommandLine += " --network-plugin=cni --cni-bin-dir=`$global:CNIPath --cni-conf-dir `$global:CNIPath\config"
+
+    # more time is needed to pull windows server images
+    $KubeletCommandLine += " --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
+
     $KubeletArgListStr = "`"" + ($KubeletArgList -join "`",`"") + "`""
 
     $KubeletArgListStr = "@`($KubeletArgListStr`)"
 
     $kubeStartStr = @"
-`$global:TransparentNetworkName="$global:TransparentNetworkName"
-`$global:AzureHostname="$AzureHostname"
-`$global:MasterIP="$MasterIP"
-`$global:NatNetworkName="$global:NatNetworkName"
-`$global:KubeDnsServiceIp="$KubeDnsServiceIp"
-`$global:KubeBinariesVersion="$global:KubeBinariesVersion"
+`$global:AzureHostname = "$AzureHostname"
+`$global:MasterIP = "$MasterIP"
+`$global:KubeDnsServiceIp = "$KubeDnsServiceIp"
+`$global:MasterSubnet = "$global:MasterSubnet"
+`$global:KubeClusterCIDR = "$global:KubeClusterCIDR"
+`$global:KubeServiceCIDR = "$global:KubeServiceCIDR"
+`$global:KubeBinariesVersion = "$global:KubeBinariesVersion"
+`$global:CNIPath = "$global:CNIPath"
+`$global:NetworkMode = "$global:NetworkMode"
+`$global:CNIConfig = "$global:CNIConfig"
+`$global:HNSModule = "$global:HNSModule"
 
 function
-Get-PodGateway(`$podCIDR)
+Get-DefaultGateway(`$CIDR)
 {
-    return `$podCIDR.substring(0,`$podCIDR.lastIndexOf(".")) + ".1"
-}
-
-function
-Set-DockerNetwork(`$podCIDR)
-{
-    # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
-    netsh advfirewall set allprofiles state off
-
-    `$dockerTransparentNet=docker network ls --quiet --filter "NAME=`$global:TransparentNetworkName"
-    if (`$dockerTransparentNet.length -eq 0)
-    {
-        `$podGW=Get-PodGateway(`$podCIDR)
-
-        # create new transparent network
-        docker network create --driver=transparent --subnet=`$podCIDR --gateway=`$podGW `$global:TransparentNetworkName
-
-        
-        `$vmswitch = get-vmSwitch  | ? SwitchType -EQ External
-        # create host vnic for gateway ip to forward the traffic and kubeproxy to listen over VIP
-        Add-VMNetworkAdapter -ManagementOS -Name forwarder -SwitchName `$vmswitch.Name
-
-        # Assign gateway IP to new adapter and enable forwarding on host adapters:
-        netsh interface ipv4 add address "vEthernet (forwarder)" `$podGW 255.255.255.0
-        netsh interface ipv4 set interface "vEthernet (forwarder)" for=en
-        netsh interface ipv4 set interface "vEthernet (HNSTransparent)" for=en
-    }
+    return `$CIDR.substring(0,`$CIDR.lastIndexOf(".")) + ".1"
 }
 
 function
 Get-PodCIDR()
 {
-    `$podCIDR=c:\k\kubectl.exe --kubeconfig=c:\k\config get nodes/`$(`$global:AzureHostname.ToLower()) -o custom-columns=podCidr:.spec.podCIDR --no-headers
+    `$podCIDR = c:\k\kubectl.exe --kubeconfig=c:\k\config get nodes/`$(`$global:AzureHostname.ToLower()) -o custom-columns=podCidr:.spec.podCIDR --no-headers
     return `$podCIDR
 }
 
@@ -261,8 +212,59 @@ Test-PodCIDR(`$podCIDR)
     return `$podCIDR.length -gt 0
 }
 
+function
+Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
+{
+    `$jsonSampleConfig =
+"{
+  ""cniVersion"": ""0.2.0"",
+  ""name"": ""<NetworkMode>"",
+  ""type"": ""wincni.exe"",
+  ""master"": ""Ethernet"",
+  ""capabilities"": { ""portMappings"": true },
+  ""ipam"": {
+     ""environment"": ""azure"",
+     ""subnet"":""<PODCIDR>"",
+     ""routes"": [{
+        ""GW"":""<PODGW>""
+     }]
+  },
+  ""dns"" : {
+    ""Nameservers"" : [ ""<NameServers>"" ]
+  },
+  ""AdditionalArgs"" : [
+    {
+      ""Name"" : ""EndpointPolicy"", ""Value"" : { ""Type"" : ""OutBoundNAT"", ""ExceptionList"": [ ""<ClusterCIDR>"", ""<MgmtSubnet>"" ] }
+    },
+    {
+      ""Name"" : ""EndpointPolicy"", ""Value"" : { ""Type"" : ""ROUTE"", ""DestinationPrefix"": ""<ServiceCIDR>"", ""NeedEncap"" : true }
+    }
+  ]
+}"
+
+    `$configJson = ConvertFrom-Json `$jsonSampleConfig
+    `$configJson.name = `$global:NetworkMode.ToLower()
+    `$configJson.ipam.subnet=`$podCIDR
+    `$configJson.ipam.routes[0].GW = `$masterSubnetGW
+    `$configJson.dns.Nameservers[0] = `$global:KubeDnsServiceIp
+
+    `$configJson.AdditionalArgs[0].Value.ExceptionList[0] = `$global:KubeClusterCIDR
+    `$configJson.AdditionalArgs[0].Value.ExceptionList[1] = `$global:MasterSubnet
+    `$configJson.AdditionalArgs[1].Value.DestinationPrefix  = `$global:KubeServiceCIDR
+
+    if (Test-Path `$global:CNIConfig)
+    {
+        Clear-Content -Path `$global:CNIConfig
+    }
+
+    Write-Host "Generated CNI Config [`$configJson]"
+
+    Add-Content -Path `$global:CNIConfig -Value (ConvertTo-Json `$configJson -Depth 20)
+}
+
 try
 {
+    `$masterSubnetGW = Get-DefaultGateway `$global:MasterSubnet
     `$podCIDR=Get-PodCIDR
     `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
 
@@ -278,24 +280,33 @@ try
         while (-not `$podCidrDiscovered)
         {
             Write-Host "Sleeping for 10s, and then waiting to discover pod CIDR"
-            Start-Sleep -sec 10
-            
+            Start-Sleep 10
+
             `$podCIDR=Get-PodCIDR
             `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
         }
-    
+
         # stop the kubelet process now that we have our CIDR, discard the process output
         `$process | Stop-Process | Out-Null
     }
-    
-    Set-DockerNetwork(`$podCIDR)
+
+    # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
+    netsh advfirewall set allprofiles state off
 
     # startup the service
-    `$podGW=Get-PodGateway(`$podCIDR)
-    `$env:CONTAINER_NETWORK="`$global:TransparentNetworkName"
-    `$env:NAT_NETWORK="`$global:NatNetworkName"
-    `$env:POD_GW="`$podGW"
-    `$env:VIP_CIDR="10.0.0.0/8"
+    `$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:NetworkMode.ToLower()
+
+    if (!`$hnsNetwork)
+    {
+        Write-Host "No HNS network found, creating a new one..."
+        ipmo `$global:HNSModule
+
+        `$hnsNetwork = New-HNSNetwork -Type `$global:NetworkMode -AddressPrefix `$podCIDR -Gateway `$masterSubnetGW -Name `$global:NetworkMode.ToLower() -Verbose
+    }
+
+    Start-Sleep 10
+    # Add route to all other POD networks
+    Update-CNIConfig `$podCIDR `$masterSubnetGW
 
     $KubeletCommandLine
 }
@@ -307,15 +318,17 @@ catch
     $kubeStartStr | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
     $kubeProxyStartStr = @"
-`$env:INTERFACE_TO_ADD_SERVICE_IP="vEthernet (forwarder)"
-c:\k\kube-proxy.exe --v=3 --proxy-mode=userspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
-"@
+`$env:KUBE_NETWORK = "l2bridge"
+`$global:NetworkMode = "L2Bridge"
+`$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:NetworkMode.ToLower()
+while (!`$hnsNetwork)
+{
+    Start-Sleep 10
+    `$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:NetworkMode.ToLower()
+}
 
-    if ($global:KubeBinariesVersion -ge "1.7.0")
-    {
-        # 1.7.0 uses event-based service configuration so shorter duration (default 15m) is needed to update forwarder NIC
-        $kubeProxyStartStr += " --config-sync-period=2m"
-    }
+c:\k\kube-proxy.exe --v=3 --proxy-mode=kernelspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
+"@
 
     $kubeProxyStartStr | Out-File -encoding ASCII -filepath $global:KubeProxyStartFile
 }
@@ -341,10 +354,7 @@ New-NSSMService
     c:\k\nssm set Kubelet AppRotateOnline 1
     c:\k\nssm set Kubelet AppRotateSeconds 86400
     c:\k\nssm set Kubelet AppRotateBytes 1048576
-    if ($global:NeedPatchWinNAT -eq $false)
-    {
-        net start Kubelet
-    }
+    net start Kubelet
 
     # setup kubeproxy
     c:\k\nssm install Kubeproxy C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
@@ -363,10 +373,7 @@ New-NSSMService
     c:\k\nssm set Kubeproxy AppRotateOnline 1
     c:\k\nssm set Kubeproxy AppRotateSeconds 86400
     c:\k\nssm set Kubeproxy AppRotateBytes 1048576
-    if ($global:NeedPatchWinNAT -eq $false)
-    {
-        net start Kubeproxy
-    }
+    net start Kubeproxy
 }
 
 function
@@ -383,7 +390,7 @@ Set-Explorer
 try
 {
     # Set to false for debugging.  This will output the start script to
-    # c:\AzureData\CustomDataSetupScript.log, and then you can RDP 
+    # c:\AzureData\CustomDataSetupScript.log, and then you can RDP
     # to the windows machine, and run the script manually to watch
     # the output.
     if ($true) {
@@ -413,17 +420,9 @@ try
         Write-Log "Set Internet Explorer"
         Set-Explorer
 
-        Write-Log "Patch winnat binary"
-        Patch-WinNATBinary
-
         Write-Log "Setup Complete"
-        if ($global:NeedPatchWinNAT -eq $true)
-        {
-            Write-Log "Reboot for patching winnat to be effective and start kubelet/kubeproxy service"
-            Restart-Computer
-        }
     }
-    else 
+    else
     {
         # keep for debugging purposes
         Write-Log ".\CustomDataSetupScript.ps1 -MasterIP $MasterIP -KubeDnsServiceIp $KubeDnsServiceIp -MasterFQDNPrefix $MasterFQDNPrefix -Location $Location -AgentKey $AgentKey -AzureHostname $AzureHostname -AADClientId $AADClientId -AADClientSecret $AADClientSecret"

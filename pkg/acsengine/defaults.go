@@ -50,9 +50,9 @@ var (
 	//DefaultUbuntuImageConfig is the default Linux distribution.
 	DefaultUbuntuImageConfig = AzureOSImageConfig{
 		ImageOffer:     "UbuntuServer",
-		ImageSku:       "16.04-DAILY-LTS",
+		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201710110",
+		ImageVersion:   "16.04.201711072",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -106,7 +106,7 @@ var (
 		KubernetesSpecConfig: DefaultKubernetesSpecConfig,
 		DCOSSpecConfig:       DefaultDCOSSpecConfig,
 		EndpointConfig: AzureEndpointConfig{
-			ResourceManagerVMDNSSuffix: "cloudapp.windowsazure.us",
+			ResourceManagerVMDNSSuffix: "cloudapp.usgovcloudapi.net",
 		},
 		OSImageConfig: map[api.Distro]AzureOSImageConfig{
 			api.Ubuntu: DefaultUbuntuImageConfig,
@@ -289,6 +289,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 		if "" == a.OrchestratorProfile.KubernetesConfig.TillerMemoryLimit {
 			a.OrchestratorProfile.KubernetesConfig.TillerMemoryLimit = DefaultTillerMemoryLimit
+		}
+
+		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
+			a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
 		}
 
 	} else if o.OrchestratorType == api.DCOS {
