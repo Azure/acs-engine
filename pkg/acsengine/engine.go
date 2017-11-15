@@ -554,7 +554,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "kubernetesTillerCPULimit", properties.OrchestratorProfile.KubernetesConfig.TillerCPULimit)
 		addValue(parametersMap, "kubernetesTillerMemoryRequests", properties.OrchestratorProfile.KubernetesConfig.TillerMemoryRequests)
 		addValue(parametersMap, "kubernetesTillerMemoryLimit", properties.OrchestratorProfile.KubernetesConfig.TillerMemoryLimit)
-		addValue(parametersMap, "kubernetesReschedulerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeImages[KubernetesVersion]["rescheduler"])
+		addValue(parametersMap, "kubernetesReschedulerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["rescheduler"])
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
 		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
@@ -1178,7 +1178,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				case "kubernetesTillerMemoryLimit":
 					val = DefaultTillerMemoryLimit
 				case "kubernetesReschedulerSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeImages[kubernetesVersion]["rescheduler"]
+					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["rescheduler"]
 				case "kubernetesKubeDNSSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":
