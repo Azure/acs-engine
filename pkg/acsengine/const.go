@@ -89,7 +89,7 @@ const (
 	// DefaultEtcdDiskSize specifies the default size for Kubernetes master etcd disk volumes in GB
 	DefaultEtcdDiskSize = "128"
 	// DefaultReschedulerImage defines the rescheduler deployment version on Kubernetes Clusters
-	DefaultReschedulerImage = "rescheduler:v0.3.1", 
+	DefaultReschedulerImage = "rescheduler:v0.3.1"
 )
 
 const (
