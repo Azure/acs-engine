@@ -155,8 +155,7 @@ func (cli *CLIProvisioner) generateName() string {
 
 func (cli *CLIProvisioner) waitForNodes() error {
 	if cli.Config.IsKubernetes() {
-		os.Setenv("KUBECONFIG", cli.Config.GetKubeConfig())
-		log.Printf("Kubeconfig:%s\n", cli.Config.GetKubeConfig())
+		cli.Config.SetKubeConfig()
 		log.Println("Waiting on nodes to go into ready state...")
 		ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
 		if ready == false {
