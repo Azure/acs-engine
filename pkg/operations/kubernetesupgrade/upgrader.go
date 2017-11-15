@@ -282,9 +282,9 @@ func (ku *Upgrader) upgradeAgentPools() error {
 					ku.logger.Infof("Error validating upgraded agent VM: %s, err: %v\n", vm.Name, err)
 					return err
 				}
-				upgradedCount++
 				vm.Upgraded = true
 			}
+			upgradedCount++
 		}
 
 		agentsToCreate := agentCount - upgradedCount
