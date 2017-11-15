@@ -38,13 +38,20 @@ type UpgradeAgentNode struct {
 // backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 // the node
 func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
+	var kubeAPIServerURL string
+
+	if kan.UpgradeContainerService.Properties.HostedMasterProfile != nil {
+		kubeAPIServerURL = kan.UpgradeContainerService.Properties.HostedMasterProfile.FQDN
+	} else {
+		kubeAPIServerURL = kan.UpgradeContainerService.Properties.MasterProfile.FQDN
+	}
 
 	// Currently in a single node cluster the api server will not be running when this point is reached on the first node so it will always fail.
-	// err := operations.SafelyDrainNode(kan.Client, log.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vm.Name)
-	// if err != nil {
-	// 	log.Infoln(fmt.Sprintf("Error draining agent VM: %s", *vm.Name))
-	// 	return err
-	// }
+	err := operations.SafelyDrainNode(kan.Client, logrus.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vmName, time.Minute)
+	if err != nil {
+		kan.logger.Errorf(fmt.Sprintf("Error draining agent VM: %s", *vmName))
+		return err
+	}
 
 	if err := operations.CleanDeleteVirtualMachine(kan.Client, kan.logger, kan.ResourceGroup, *vmName); err != nil {
 		return err
