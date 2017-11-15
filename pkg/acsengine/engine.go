@@ -813,13 +813,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
 		},
-		"IsCoreOS": func() bool {
-			if cs.Properties.MasterProfile == nil {
-				return false
-			}
-
-			return cs.Properties.MasterProfile.IsCoreOS()
-		},
 		"IsSwarmMode": func() bool {
 			return cs.Properties.OrchestratorProfile.IsSwarmMode()
 		},

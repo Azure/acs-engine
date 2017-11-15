@@ -1,7 +1,7 @@
 #cloud-config
 
 write_files:
-{{if not IsCoreOS}}
+{{if not .IsCoreOS}}
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
   permissions: "0644"
   owner: "root"
@@ -75,7 +75,7 @@ write_files:
     Description=Kubectl extraction
     Requires=docker.service
     After=docker.service
-{{if IsCoreOS}}
+{{if .IsCoreOS}}
     ConditionPathExists=!/opt/kubectl
 {{else}}
     ConditionPathExists=!/usr/local/bin/kubectl
@@ -88,7 +88,7 @@ write_files:
     ExecStartPre=/bin/mkdir -p /tmp/kubectldir
     ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
     ExecStartPre=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
-{{if IsCoreOS}}
+{{if .IsCoreOS}}
     ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /opt/kubectl
     ExecStart=/bin/chmod a+x /opt/kubectl
 {{else}}    
@@ -156,7 +156,7 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionScript"}}
 
-{{if IsCoreOS}}
+{{if .IsCoreOS}}
 - path: "/opt/azure/containers/provision-setup.sh"
   permissions: "0755"
   owner: "root"

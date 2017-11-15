@@ -1,13 +1,13 @@
 #cloud-config
 
-{{if not IsCoreOS}}
+{{if not .MasterProfile.IsCoreOS}}
 packages:
  - jq
  - traceroute
 {{end}}
 
 write_files:
-{{if not IsCoreOS}}
+{{if not .MasterProfile.IsCoreOS}}
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
   permissions: "0644"
   owner: "root"
@@ -22,7 +22,7 @@ write_files:
   content: |
     [Service]
     ExecStart=
-{{if IsCoreOS}}    
+{{if .MasterProfile.IsCoreOS}}    
     ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/dockerd --host=fd:// --containerd=/var/run/docker/libcontainerd/docker-containerd.sock --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}} $DOCKER_SELINUX $DOCKER_OPTS $DOCKER_CGROUPS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
 {{else}}    
     ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
@@ -177,7 +177,7 @@ write_files:
     Description=Kubectl extraction
     Requires=docker.service
     After=docker.service
-{{if IsCoreOS}}
+{{if .MasterProfile.IsCoreOS}}
     ConditionPathExists=!/opt/kubectl
 {{else}}
     ConditionPathExists=!/usr/local/bin/kubectl
@@ -190,7 +190,7 @@ write_files:
     ExecStartPre=/bin/mkdir -p /tmp/kubectldir
     ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
     ExecStartPre=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
-{{if IsCoreOS}} 
+{{if .MasterProfile.IsCoreOS}} 
     ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /opt/kubectl
     ExecStart=/bin/chmod a+x /opt/kubectl
 {{else}}    
@@ -379,7 +379,7 @@ write_files:
     systemctl daemon-reload 
     systemctl enable etcd.service
 
-{{if IsCoreOS}}
+{{if .MasterProfile.IsCoreOS}}
 - path: "/opt/azure/containers/provision-setup.sh"
   permissions: "0755"
   owner: "root"
