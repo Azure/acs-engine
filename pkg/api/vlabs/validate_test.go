@@ -27,16 +27,10 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 		KubernetesConfig: &KubernetesConfig{},
 	}
 
-	if err := o.Validate(false); err != nil {
-		t.Errorf("should not error with empty object: %v", err)
-	}
-
 	o.KubernetesConfig.ClusterSubnet = "10.0.0.0/16"
-	// TODO determine if this validation is important
-	/*
-		if err := o.Validate(false); err == nil {
-			t.Errorf("should error when KubernetesConfig populated for non-Kubernetes OrchestratorType")
-		}*/
+	if err := o.Validate(false); err == nil {
+		t.Errorf("should error when KubernetesConfig populated for non-Kubernetes OrchestratorType")
+	}
 
 	o = &OrchestratorProfile{
 		OrchestratorType: "Kubernetes",

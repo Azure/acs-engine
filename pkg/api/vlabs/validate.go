@@ -111,10 +111,9 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 		}
 	}
 
-	// TODO determine if this validation is important
-	/*if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil && (*o.KubernetesConfig != KubernetesConfig{}) {
+	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil {
 		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
-	}*/
+	}
 
 	if o.OrchestratorType != DCOS && o.DcosConfig != nil && (*o.DcosConfig != DcosConfig{}) {
 		return fmt.Errorf("DcosConfig can be specified only when OrchestratorType is DCOS")
