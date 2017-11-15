@@ -4,6 +4,7 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
+        "enableRbac": true,
         "networkPolicy": "calico",
         "clusterSubnet": "10.230.0.0/16"
       }

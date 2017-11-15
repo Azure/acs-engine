@@ -46,7 +46,7 @@ Once your Kubernetes cluster has been created you will have a resource group con
 
 1. 1 master accessible by SSH on port 22 or kubectl on port 443
 
-2. a set of windows and linux nodes.  The windows nodes can be accessed through an RDP SSH tunnel via the master node.  To do this, follow these [instructions](../ssh.md#create-port-80-tunnel-to-the-master), replacing port 80 with 3389.  Since your windows machine is already using port 3389, it is recommended to use 3390 to Windows Node 0, 10.240.245.5, 3391 to Windows Node 1, 10.240.245.6, and so on as shown in the following image:
+2. a set of windows and linux nodes.  The windows nodes can be accessed through an RDP SSH tunnel via the master node.  To do this, follow these [instructions](../ssh.md#ssh-to-the-machine), replacing port 80 with 3389.  Since your windows machine is already using port 3389, it is recommended to use 3390 to Windows Node 0, 10.240.0.4, 3391 to Windows Node 1, 10.240.0.5, and so on as shown in the following image:
 
 ![Image of Windows RDP tunnels](../images/rdptunnels.png)
 

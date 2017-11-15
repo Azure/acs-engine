@@ -78,11 +78,6 @@
     {
       "cluster_definition": "swarmmode.json",
       "category": "service-availability",
-      "location": "koreasouth"
-    },
-    {
-      "cluster_definition": "swarmmode.json",
-      "category": "service-availability",
       "location": "japaneast"
     },
     {

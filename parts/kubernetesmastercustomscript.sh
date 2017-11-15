@@ -79,6 +79,12 @@ chmod 0600 "${KUBELET_PRIVATE_KEY_PATH}"
 chown root:root "${KUBELET_PRIVATE_KEY_PATH}"
 echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
 
+APISERVER_PUBLIC_KEY_PATH="/etc/kubernetes/certs/apiserver.crt"
+touch "${APISERVER_PUBLIC_KEY_PATH}"
+chmod 0644 "${APISERVER_PUBLIC_KEY_PATH}"
+chown root:root "${APISERVER_PUBLIC_KEY_PATH}"
+echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
+
 AZURE_JSON_PATH="/etc/kubernetes/azure.json"
 touch "${AZURE_JSON_PATH}"
 chmod 0600 "${AZURE_JSON_PATH}"
@@ -428,4 +434,6 @@ if $REBOOTREQUIRED; then
   /bin/bash -c "shutdown -r 1 &"
 fi
 
-echo `date`,`hostname`, endscript>>/opt/m 
+echo `date`,`hostname`, endscript>>/opt/m
+
+mkdir -p /opt/azure/containers && touch /opt/azure/containers/provision.complete
