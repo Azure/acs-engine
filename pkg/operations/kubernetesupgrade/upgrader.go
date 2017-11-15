@@ -19,6 +19,7 @@ type Upgrader struct {
 	kubeConfig string
 }
 
+// UpgradeVM holds VM name and upgrade status
 type UpgradeVM struct {
 	Name     string
 	Upgraded bool
@@ -259,7 +260,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 				return err
 			}
 
-			// do not create last node in favor of auxillary node
+			// do not create last node in favor of auxiliary node
 			if addedNode && upgradedCount == toBeUpgraded-1 {
 				ku.logger.Infof("Skipping creation of VM %s (indx %d) in favor of auxiliary node", vm.Name, agentIndex)
 				delete(upgradeVMs, agentIndex)
@@ -339,7 +340,7 @@ func (ku *Upgrader) generateUpgradeTemplate(upgradeContainerService *api.Contain
 	return templateMap, parametersMap, nil
 }
 
-// return unused index withing the range of agent indices, or subsequent index
+// return unused index within the range of agent indices, or subsequent index
 func getAvailableIndex(vms map[int]*UpgradeVM) int {
 	maxIndex := 0
 
