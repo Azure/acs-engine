@@ -39,7 +39,7 @@
       "type": "string"
     }, 
     "{{.Name}}osImageSKU": {
-      "defaultValue": "16.04-DAILY-LTS",
+      "defaultValue": "16.04-LTS",
       "metadata": {
         "description": "OS image SKU."
       },
