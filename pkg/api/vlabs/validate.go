@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -17,19 +18,22 @@ var (
 	validate        *validator.Validate
 	keyvaultIDRegex *regexp.Regexp
 	labelValueRegex *regexp.Regexp
+	labelKeyRegex   *regexp.Regexp
 	// Any version has to be mirrored in https://acs-mirror.azureedge.net/github-coreos/etcd-v[Version]-linux-amd64.tar.gz
 	etcdValidVersions = [...]string{"2.5.2", "3.1.10"}
 )
 
 const (
-	labelValueMaxLength = 63
-	labelValueFormat    = "^([A-Za-z0-9][-A-Za-z0-9_.]{0,61})?[A-Za-z0-9]$"
+	labelKeyPrefixMaxLength = 253
+	labelValueFormat        = "^([A-Za-z0-9][-A-Za-z0-9_.]{0,61})?[A-Za-z0-9]$"
+	labelKeyFormat          = "^(([a-zA-Z0-9-]+[.])*[a-zA-Z0-9-]+[/])?([A-Za-z0-9][-A-Za-z0-9_.]{0,61})?[A-Za-z0-9]$"
 )
 
 func init() {
 	validate = validator.New()
 	keyvaultIDRegex = regexp.MustCompile(`^/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/[^/\s]+$`)
 	labelValueRegex = regexp.MustCompile(labelValueFormat)
+	labelKeyRegex = regexp.MustCompile(labelKeyFormat)
 }
 
 func isValidEtcdVersion(etcdVersion string) error {
@@ -364,8 +368,11 @@ func (a *Properties) Validate(isUpdate bool) error {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
 			case Kubernetes:
-				for _, l := range agentPoolProfile.CustomNodeLabels {
-					if e := validateKubernetesLabelValue(l); e != nil {
+				for k, v := range agentPoolProfile.CustomNodeLabels {
+					if e := validateKubernetesLabelKey(k); e != nil {
+						return e
+					}
+					if e := validateKubernetesLabelValue(v); e != nil {
 						return e
 					}
 				}
@@ -680,7 +687,18 @@ func validateUniquePorts(ports []int, name string) error {
 
 func validateKubernetesLabelValue(v string) error {
 	if !(len(v) == 0) && !labelValueRegex.MatchString(v) {
-		return fmt.Errorf("Label '%s' is invalid. Valid label values must be 63 characters or less and must be empty or begin and end with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between", v)
+		return fmt.Errorf("Label value '%s' is invalid. Valid label values must be 63 characters or less and must be empty or begin and end with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between", v)
+	}
+	return nil
+}
+
+func validateKubernetesLabelKey(k string) error {
+	if !labelKeyRegex.MatchString(k) {
+		return fmt.Errorf("Label key '%s' is invalid. Valid label keys have two segments: an optional prefix and name, separated by a slash (/). The name segment is required and must be 63 characters or less, beginning and ending with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between. The prefix is optional. If specified, the prefix must be a DNS subdomain: a series of DNS labels separated by dots (.), not longer than 253 characters in total, followed by a slash (/)", k)
+	}
+	prefix := strings.Split(k, "/")
+	if len(prefix) != 1 && len(prefix[0]) > labelKeyPrefixMaxLength {
+		return fmt.Errorf("Label key prefix '%s' is invalid. If specified, the prefix must be no longer than 253 characters in total", k)
 	}
 	return nil
 }
