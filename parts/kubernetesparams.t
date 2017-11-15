@@ -197,6 +197,13 @@
       },
       "type": "string"
     },
+    "kubernetesReschedulerSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesReschedulerSpec"}}
+      "metadata": {
+        "description": "The container spec for rescheduler."
+      },
+      "type": "string"
+    },
     "kubernetesPodInfraContainerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesPodInfraContainerSpec"}}
       "metadata": {

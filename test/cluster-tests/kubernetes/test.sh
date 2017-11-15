@@ -102,7 +102,7 @@ fi
 ###### Check existence and status of essential pods
 
 # we test other essential pods (kube-dns, kube-proxy) separately
-pods="heapster kube-addon-manager kube-apiserver kube-controller-manager kube-scheduler tiller"
+pods="heapster rescheduler kube-addon-manager kube-apiserver kube-controller-manager kube-scheduler tiller"
 log "Checking $pods"
 
 count=60

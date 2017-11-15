@@ -140,6 +140,13 @@ write_files:
   content: !!binary |
     MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR
 
+- path: /etc/kubernetes/addons/kube-rescheduler-deployment.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_RESCHEDULER_DEPLOYMENT_B64_GZIP_STR
+
 - path: /etc/kubernetes/addons/azure-storage-classes.yaml
   permissions: "0644"
   encoding: gzip
@@ -271,6 +278,7 @@ write_files:
 {{if not .OrchestratorProfile.KubernetesConfig.DisabledAddons.Dashboard}}
     sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
 {{end}}
+    sed -i "s|<kubernetesReschedulerSpec>|{{WrapAsVariable "kubernetesReschedulerSpec"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
     sed -i "s|<kubernetesTillerSpec>|{{WrapAsVariable "kubernetesTillerSpec"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubernetesTillerCPURequests>|{{WrapAsVariable "kubernetesTillerCPURequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubernetesTillerMemoryRequests>|{{WrapAsVariable "kubernetesTillerMemoryRequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
