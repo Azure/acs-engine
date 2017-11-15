@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"time"
 
+	"k8s.io/client-go/pkg/api/v1/node"
+
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
@@ -24,6 +26,7 @@ type UpgradeMasterNode struct {
 	UpgradeContainerService *api.ContainerService
 	ResourceGroup           string
 	Client                  armhelpers.ACSEngineClient
+	kubeConfig              string
 }
 
 // DeleteNode takes state/resources of the master/agent node from ListNodeResources
@@ -72,5 +75,51 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 
 // Validate will verify the that master/agent node has been upgraded as expected.
 func (kmn *UpgradeMasterNode) Validate(vmName *string) error {
-	return nil
+	if vmName == nil || *vmName == "" {
+		kmn.logger.Warningf("VM name was empty. Skipping node condition check")
+		return nil
+	}
+
+	var masterURL string
+	if kmn.UpgradeContainerService.Properties.HostedMasterProfile != nil {
+		masterURL = kmn.UpgradeContainerService.Properties.HostedMasterProfile.FQDN
+	} else {
+		masterURL = kmn.UpgradeContainerService.Properties.MasterProfile.FQDN
+	}
+
+	if masterURL == "" {
+		kmn.Translator.Errorf("Control plane FQDN was not set.")
+	}
+
+	client, err := kmn.Client.GetKubernetesClient(masterURL, kmn.kubeConfig, interval, timeout)
+	if err != nil {
+		return err
+	}
+
+	ch := make(chan struct{}, 1)
+	go func() {
+		for {
+			agentNode, err := client.GetNode(*vmName)
+			if err != nil {
+				kmn.logger.Infof("Master VM: %s status error: %v\n", *vmName, err)
+				time.Sleep(time.Second * 5)
+			} else if node.IsNodeReady(agentNode) {
+				kmn.logger.Infof("Master VM: %s is ready", *vmName)
+				ch <- struct{}{}
+			} else {
+				kmn.logger.Infof("Master VM: %s not ready yet...", *vmName)
+				time.Sleep(time.Second * 5)
+			}
+		}
+	}()
+
+	for {
+		select {
+		case <-ch:
+			return nil
+		case <-time.After(timeout):
+			kmn.logger.Errorf("Node was not ready within %v", timeout)
+			return fmt.Errorf("Node was not ready within %v", timeout)
+		}
+	}
 }
