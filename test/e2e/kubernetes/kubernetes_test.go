@@ -228,9 +228,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Skip("No windows agent was provisioned for this Cluster Definition")
 			}
 		})
-	})
 
-	Describe("with a windows agent pool", func() {
 		It("should be able to reach hostport in an iis webserver", func() {
 			if eng.HasWindowsAgents() {
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
