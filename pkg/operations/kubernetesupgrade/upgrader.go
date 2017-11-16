@@ -231,14 +231,11 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			upgradeVMs[agentIndex] = &UpgradeVM{*vm.Name, false}
 		}
 
-		// Create an auxiliary node if hasn't been created yet.
-		// This node is used to take on the load from deleting nodes
-		addedNode := false
+		// Create an auxiliary node if hasn't been created yet. This node is used to take on the load from deleting nodes.
 		// In a normal mode of operation the actual number of VMs in the pool [len(upgradeVMs)] is equal to agentCount.
 		// However, if the upgrade failed in the middle, the actual number of VMs might be agentCount+1 to include auxiliary node.
 		// In the later case we don't create an extra node.
 		if agentCount > 0 && len(upgradeVMs) == agentCount {
-			addedNode = true
 			agentIndex := getAvailableIndex(upgradeVMs)
 			ku.logger.Infof("Adding auxiliary agent node with index %d", agentIndex)
 
@@ -267,7 +264,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			}
 
 			// do not create last node in favor of auxiliary node
-			if addedNode && upgradedCount == toBeUpgraded-1 {
+			if upgradedCount == toBeUpgraded-1 {
 				ku.logger.Infof("Skipping creation of VM %s (indx %d) in favor of auxiliary node", vm.Name, agentIndex)
 				delete(upgradeVMs, agentIndex)
 			} else {
