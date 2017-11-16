@@ -213,10 +213,6 @@ type KubernetesConfig struct {
 	GCLowThreshold                   int               `json:"gclowthreshold,omitempty"`
 	EtcdVersion                      string            `json:"etcdVersion,omitempty"`
 	EtcdDiskSizeGB                   string            `json:"etcdDiskSizeGB,omitempty"`
-	TillerCPURequests                string            `json:"tillerCPURequests,omitempty"`
-	TillerCPULimit                   string            `json:"tillerCPULimit,omitempty"`
-	TillerMemoryRequests             string            `json:"tillerMemoryRequests,omitempty"`
-	TillerMemoryLimit                string            `json:"tillerMemoryLimit,omitempty"`
 	Addons                           []KubernetesAddon `json:"addons,omitempty"`
 }
 
