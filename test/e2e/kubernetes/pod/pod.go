@@ -18,6 +18,7 @@ type List struct {
 // Pod is used to parse data from kubectl get pods
 type Pod struct {
 	Metadata Metadata `json:"metadata"`
+	Spec     Spec     `json:"spec"`
 	Status   Status   `json:"status"`
 }
 
@@ -27,6 +28,23 @@ type Metadata struct {
 	Labels    map[string]string `json:"labels"`
 	Name      string            `json:"name"`
 	Namespace string            `json:"namespace"`
+}
+
+// Spec holds information like containers
+type Spec struct {
+	Containers []Container `json:"containers"`
+}
+
+// Container holds information like image and ports
+type Container struct {
+	Image string `json:"image"`
+	Ports []Port `json:"ports"`
+}
+
+// Port represents a container port definition
+type Port struct {
+	ContainerPort int `json:"containerPort"`
+	HostPort      int `json:"hostPort"`
 }
 
 // Status holds information like hostIP and phase
@@ -259,4 +277,28 @@ func (p *Pod) CheckWindowsOutboundConnection(sleep, duration time.Duration) (boo
 			return ready, nil
 		}
 	}
+}
+
+// ValidateHostPort will attempt to run curl against the POD's hostIP and hostPort
+func (p *Pod) ValidateHostPort(check string, attempts int, sleep time.Duration, master, sshKeyPath string) bool {
+	hostIP := p.Status.HostIP
+	if len(p.Spec.Containers) == 0 || len(p.Spec.Containers[0].Ports) == 0 {
+		log.Printf("Unexpectd POD container spec: %v. Should have hostPort.\n", p.Spec)
+		return false
+	}
+	hostPort := p.Spec.Containers[0].Ports[0].HostPort
+
+	url := fmt.Sprintf("http://%s:%d", hostIP, hostPort)
+	curlCMD := fmt.Sprintf("curl --max-time 60 %s", url)
+
+	for i := 0; i < attempts; i++ {
+		resp, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
+		if err == nil {
+			matched, _ := regexp.MatchString(check, string(resp))
+			if matched == true {
+				return true
+			}
+		}
+	}
+	return false
 }
