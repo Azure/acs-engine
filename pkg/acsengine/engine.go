@@ -572,7 +572,20 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			if dashboardAddon.Containers[c].Image != "" {
 				addValue(parametersMap, "kubernetesDashboardSpec", dashboardAddon.Containers[c].Image)
 			} else {
-				addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dashboard"])
+				addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultDashboardAddonName])
+			}
+		}
+		reschedulerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
+		c = getAddonContainersIndexByName(reschedulerAddon.Containers, DefaultReschedulerAddonName)
+		if c > -1 {
+			addValue(parametersMap, "kubernetesReschedulerCPURequests", reschedulerAddon.Containers[c].CPURequests)
+			addValue(parametersMap, "kubernetesReschedulerCPULimit", reschedulerAddon.Containers[c].CPULimits)
+			addValue(parametersMap, "kubernetesReschedulerMemoryRequests", reschedulerAddon.Containers[c].MemoryRequests)
+			addValue(parametersMap, "kubernetesReschedulerMemoryLimit", reschedulerAddon.Containers[c].MemoryLimits)
+			if reschedulerAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "kubernetesReschedulerSpec", dashboardAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "kubernetesReschedulerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultReschedulerAddonName])
 			}
 		}
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
@@ -964,6 +977,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			if !profile.OrchestratorProfile.KubernetesConfig.IsDashboardEnabled() {
 				delete(addonYamls, "MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR")
 			}
+			if !profile.OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled() {
+				delete(addonYamls, "MASTER_ADDON_RESCHEDULER_DEPLOYMENT_B64_GZIP_STR")
+			}
 			for placeholder, filename := range addonYamls {
 				addonTextContents := getBase64CustomScript(filename)
 				str = strings.Replace(str, placeholder, addonTextContents, -1)
@@ -1177,6 +1193,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				tC := getAddonContainersIndexByName(tillerAddon.Containers, DefaultTillerAddonName)
 				dashboardAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 				dC := getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
+				reschedulerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
+				rC := getAddonContainersIndexByName(reschedulerAddon.Containers, DefaultReschedulerAddonName)
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
@@ -1193,7 +1211,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 							val = dashboardAddon.Containers[dC].Image
 						}
 					} else {
-						val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dashboard"]
+						val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultDashboardAddonName]
 					}
 				case "kubernetesDashboardCPURequests":
 					if dC > -1 {
@@ -1258,7 +1276,37 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						val = ""
 					}
 				case "kubernetesReschedulerSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["rescheduler"]
+					if rC > -1 {
+						if dashboardAddon.Containers[rC].Image != "" {
+							val = dashboardAddon.Containers[rC].Image
+						}
+					} else {
+						val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultReschedulerAddonName]
+					}
+				case "kubernetesReschedulerCPURequests":
+					if rC > -1 {
+						val = dashboardAddon.Containers[rC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesReschedulerMemoryRequests":
+					if rC > -1 {
+						val = dashboardAddon.Containers[rC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesReschedulerCPULimit":
+					if rC > -1 {
+						val = dashboardAddon.Containers[rC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesReschedulerMemoryLimit":
+					if rC > -1 {
+						val = dashboardAddon.Containers[rC].MemoryLimits
+					} else {
+						val = ""
+					}
 				case "kubernetesKubeDNSSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":

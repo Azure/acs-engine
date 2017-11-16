@@ -178,6 +178,21 @@ var (
 			},
 		},
 	}
+
+	// DefaultReschedulerAddonsConfig is the default rescheduler Kubernetes addon Config
+	DefaultReschedulerAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultReschedulerAddonName,
+		Enabled: pointerToBool(true),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultReschedulerAddonName,
+				CPURequests:    "300m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "300m",
+				MemoryLimits:   "150Mi",
+			},
+		},
+	}
 )
 
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
@@ -227,6 +242,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{
 				DefaultTillerAddonsConfig,
 				DefaultDashboardAddonsConfig,
+				DefaultReschedulerAddonsConfig,
 			}
 		} else {
 			// For each addon, provide default configuration if user didn't provide its own config
@@ -239,6 +255,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if d < 0 {
 				// Provide default acs-engine config for Dashboard
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultDashboardAddonsConfig)
+			}
+			r := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultReschedulerAddonName)
+			if r < 0 {
+				// Provide default acs-engine config for Rescheduler
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultReschedulerAddonsConfig)
 			}
 		}
 		if o.KubernetesConfig.KubernetesImageBase == "" {
@@ -333,6 +354,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		d := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[d].IsEnabled(api.DefaultDashboardAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[d] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[d], DefaultDashboardAddonsConfig)
+		}
+		r := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[r].IsEnabled(api.DefaultReschedulerAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[r] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[r], DefaultDashboardAddonsConfig)
 		}
 
 		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {

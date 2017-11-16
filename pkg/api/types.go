@@ -599,3 +599,14 @@ func (k *KubernetesConfig) IsDashboardEnabled() bool {
 	}
 	return dashboardAddon.IsEnabled(DefaultDashboardAddonEnabled)
 }
+
+// IsReschedulerEnabled checks if the rescheduler addon is enabled
+func (k *KubernetesConfig) IsReschedulerEnabled() bool {
+	var reschedulerAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == "rescheduler" {
+			reschedulerAddon = k.Addons[i]
+		}
+	}
+	return reschedulerAddon.IsEnabled(DefaultReschedulerAddonEnabled)
+}
