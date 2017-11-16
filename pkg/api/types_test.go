@@ -156,21 +156,21 @@ func TestIsReschedulerEnabled(t *testing.T) {
 	}
 	c.Addons = append(c.Addons, getMockAddon("rescheduler"))
 	e = c.IsReschedulerEnabled()
-	if e != true {
+	if e != false {
 		t.Fatalf("KubernetesConfig.IsReschedulerEnabled() should return true when a custom rescheduler addon has been specified, instead returned %t", e)
 	}
-	f := false
+	t := true
 	c = KubernetesConfig{
 		Addons: []KubernetesAddon{
 			{
 				Name:    "rescheduler",
-				Enabled: &f,
+				Enabled: &t,
 			},
 		},
 	}
 	e = c.IsReschedulerEnabled()
-	if e != false {
-		t.Fatalf("KubernetesConfig.IsReschedulerEnabled() should return false when a custom rescheduler addon has been specified as disabled, instead returned %t", e)
+	if e != true {
+		t.Fatalf("KubernetesConfig.IsReschedulerEnabled() should return false when a custom rescheduler addon has been specified as enabled, instead returned %t", e)
 	}
 }
 
