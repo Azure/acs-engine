@@ -171,9 +171,9 @@ var (
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           DefaultDashboardAddonName,
-				CPURequests:    "50m",
+				CPURequests:    "300m",
 				MemoryRequests: "150Mi",
-				CPULimits:      "50m",
+				CPULimits:      "300m",
 				MemoryLimits:   "150Mi",
 			},
 		},
