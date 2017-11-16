@@ -73,22 +73,22 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 	return nil
 }
 
-// Validate will verify the that master/agent node has been upgraded as expected.
+// Validate will verify the that master node has been upgraded as expected.
 func (kmn *UpgradeMasterNode) Validate(vmName *string) error {
 	if vmName == nil || *vmName == "" {
 		kmn.logger.Warningf("VM name was empty. Skipping node condition check")
 		return nil
 	}
 
-	var masterURL string
-	if kmn.UpgradeContainerService.Properties.HostedMasterProfile != nil {
-		masterURL = kmn.UpgradeContainerService.Properties.HostedMasterProfile.FQDN
-	} else {
-		masterURL = kmn.UpgradeContainerService.Properties.MasterProfile.FQDN
+	if kmn.UpgradeContainerService.Properties.MasterProfile == nil {
+		kmn.logger.Warningf("Master profile was empty. Skipping node condition check")
+		return nil
 	}
 
+	masterURL := kmn.UpgradeContainerService.Properties.MasterProfile.FQDN
+
 	if masterURL == "" {
-		kmn.Translator.Errorf("Control plane FQDN was not set.")
+		return kmn.Translator.Errorf("Control plane FQDN was not set.")
 	}
 
 	client, err := kmn.Client.GetKubernetesClient(masterURL, kmn.kubeConfig, interval, timeout)
@@ -99,11 +99,11 @@ func (kmn *UpgradeMasterNode) Validate(vmName *string) error {
 	ch := make(chan struct{}, 1)
 	go func() {
 		for {
-			agentNode, err := client.GetNode(*vmName)
+			masterNode, err := client.GetNode(*vmName)
 			if err != nil {
 				kmn.logger.Infof("Master VM: %s status error: %v\n", *vmName, err)
 				time.Sleep(time.Second * 5)
-			} else if node.IsNodeReady(agentNode) {
+			} else if node.IsNodeReady(masterNode) {
 				kmn.logger.Infof("Master VM: %s is ready", *vmName)
 				ch <- struct{}{}
 			} else {

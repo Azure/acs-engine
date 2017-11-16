@@ -106,7 +106,7 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 	}
 
 	if masterURL == "" {
-		kan.Translator.Errorf("Control plane FQDN was not set.")
+		return kan.Translator.Errorf("Control plane FQDN was not set.")
 	}
 
 	client, err := kan.Client.GetKubernetesClient(masterURL, kan.kubeConfig, interval, timeout)
