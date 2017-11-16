@@ -3,11 +3,6 @@
     {
       "cluster_definition": "kubernetes.json",
       "category": "service-availability",
-      "location": "brazilsouth"
-    },
-    {
-      "cluster_definition": "kubernetes.json",
-      "category": "service-availability",
       "location": "canadacentral"
     },
     {
@@ -99,6 +94,36 @@
       "cluster_definition": "kubernetes.json",
       "category": "service-availability",
       "location": "uksouth"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "category": "service-availability",
+      "location": "australiaeast"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "category": "service-availability",
+      "location": "australiasoutheast"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "category": "service-availability",
+      "location": "koreasouth"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "category": "service-availability",
+      "location": "northcentralus"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "category": "service-availability",
+      "location": "southcentralus"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "category": "service-availability",
+      "location": "ukwest"
     }
   ]
 }
