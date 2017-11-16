@@ -1310,7 +1310,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = DefaultGeneratorCode
 				case "orchestratorName":
 					val = DefaultOrchestratorName
-				case "etcImageBase":
+				case "etcdImageBase":
 					val = cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase
 				case "etcdVersion":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion
