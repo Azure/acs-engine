@@ -40,6 +40,10 @@ func init() {
 }
 
 func isValidEtcdVersion(etcdVersion string) error {
+	// "" is a valid etcdVersion that maps to DefaultEtcdVersion
+	if etcdVersion == "" {
+		return nil
+	}
 	for _, ver := range etcdValidVersions {
 		if ver == etcdVersion {
 			return nil
