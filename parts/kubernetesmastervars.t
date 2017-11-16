@@ -1,4 +1,5 @@
     "etcdDiskSizeGB": "[parameters('etcdDiskSizeGB')]",
+    "etcdDownloadURLBase": "[parameters('etcdDownloadURLBase')]",
     "etcdVersion": "[parameters('etcdVersion')]",
     "maxVMsPerPool": 100,
     "apiServerCertificate": "[parameters('apiServerCertificate')]",

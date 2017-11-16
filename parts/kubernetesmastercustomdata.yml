@@ -353,7 +353,7 @@ write_files:
     #!/bin/bash
     set -x
     ETCD_VER=v{{WrapAsVariable "etcdVersion"}}
-    DOWNLOAD_URL=https://acs-mirror.azureedge.net/github-coreos
+    DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
     mkdir -p /tmp/etcd-download
     curl -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1

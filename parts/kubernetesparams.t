@@ -424,6 +424,13 @@
       },
       "type": "string"
     },
+    "etcdDownloadURLBase": {
+      {{PopulateClassicModeDefaultValue "etcdDownloadURLBase"}}
+      "metadata": {
+        "description": "etcd image base URL"
+      },
+      "type": "string"
+    },
     "etcdVersion": {
       {{PopulateClassicModeDefaultValue "etcdVersion"}}
       "metadata": {
