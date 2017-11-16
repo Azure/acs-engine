@@ -194,7 +194,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			if eng.HasWindowsAgents() {
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
-				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1709", deploymentName, "default", 80)
+				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1709", deploymentName, "default", 80, -1)
 				Expect(err).NotTo(HaveOccurred())
 
 				running, err := pod.WaitOnReady(deploymentName, "default", 5*time.Second, cfg.Timeout)
@@ -221,6 +221,42 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(err).NotTo(HaveOccurred())
 					Expect(pass).To(BeTrue())
 				}
+
+				err = iisDeploy.Delete()
+				Expect(err).NotTo(HaveOccurred())
+			} else {
+				Skip("No windows agent was provisioned for this Cluster Definition")
+			}
+		})
+
+		It("should be able to reach hostport in an iis webserver", func() {
+			if eng.HasWindowsAgents() {
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				hostport := 8123
+				deploymentName := fmt.Sprintf("iis-%s-%v", cfg.Name, r.Intn(99999))
+				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1709", deploymentName, "default", 80, hostport)
+				Expect(err).NotTo(HaveOccurred())
+
+				running, err := pod.WaitOnReady(deploymentName, "default", 5*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+
+				iisPods, err := iisDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(iisPods)).ToNot(BeZero())
+
+				kubeConfig, err := GetConfig()
+				Expect(err).NotTo(HaveOccurred())
+				master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
+				sshKeyPath := cfg.GetSSHKeyPath()
+
+				for _, iisPod := range iisPods {
+					valid := iisPod.ValidateHostPort("(IIS Windows Server)", 10, 10*time.Second, master, sshKeyPath)
+					Expect(valid).To(BeTrue())
+				}
+
+				err = iisDeploy.Delete()
+				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
 			}
