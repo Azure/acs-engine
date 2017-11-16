@@ -99,12 +99,12 @@ func TestIsTillerEnabled(t *testing.T) {
 	if e != true {
 		t.Fatalf("KubernetesConfig.IsTillerEnabled() should return true when a custom tiller addon has been specified, instead returned %t", e)
 	}
-	f := false
+	b := false
 	c = KubernetesConfig{
 		Addons: []KubernetesAddon{
 			{
 				Name:    "tiller",
-				Enabled: &f,
+				Enabled: &b,
 			},
 		},
 	}
@@ -129,12 +129,12 @@ func TestIsDashboardEnabled(t *testing.T) {
 	if e != true {
 		t.Fatalf("KubernetesConfig.IsDashboardEnabled() should return true when a custom kubernetes-dashboard addon has been specified, instead returned %t", e)
 	}
-	f := false
+	b := false
 	c = KubernetesConfig{
 		Addons: []KubernetesAddon{
 			{
 				Name:    "kubernetes-dashboard",
-				Enabled: &f,
+				Enabled: &b,
 			},
 		},
 	}
@@ -159,12 +159,12 @@ func TestIsReschedulerEnabled(t *testing.T) {
 	if e != false {
 		t.Fatalf("KubernetesConfig.IsReschedulerEnabled() should return true when a custom rescheduler addon has been specified, instead returned %t", e)
 	}
-	t := true
+	b := true
 	c = KubernetesConfig{
 		Addons: []KubernetesAddon{
 			{
 				Name:    "rescheduler",
-				Enabled: &t,
+				Enabled: &b,
 			},
 		},
 	}
