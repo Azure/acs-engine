@@ -174,48 +174,64 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// DisabledAddons specifies which addons are disabled
-type DisabledAddons struct {
-	Dashboard bool `json:"dashboard,omitempty"`
+// KubernetesContainerSpec defines configuration for a container spec
+type KubernetesContainerSpec struct {
+	Name           string `json:"name,omitempty"`
+	Image          string `json:"image,omitempty"`
+	CPURequests    string `json:"cpuRequests,omitempty"`
+	MemoryRequests string `json:"memoryRequests,omitempty"`
+	CPULimits      string `json:"cpuLimits,omitempty"`
+	MemoryLimits   string `json:"memoryLimits,omitempty"`
+}
+
+// KubernetesAddon defines a list of addons w/ configuration to include with the cluster deployment
+type KubernetesAddon struct {
+	Name       string                    `json:"name,omitempty"`
+	Enabled    *bool                     `json:"enabled,omitempty"`
+	Containers []KubernetesContainerSpec `json:"containers,omitempty"`
+}
+
+// IsEnabled returns if the addon is explicitly enabled, or the user-provided default if non explicitly enabled
+func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
+	if a.Enabled == nil {
+		return ifNil
+	}
+	return *a.Enabled
 }
 
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
-	KubernetesImageBase              string         `json:"kubernetesImageBase,omitempty"`
-	ClusterSubnet                    string         `json:"clusterSubnet,omitempty"`
-	DNSServiceIP                     string         `json:"dnsServiceIP,omitempty"`
-	ServiceCidr                      string         `json:"serviceCidr,omitempty"`
-	NetworkPolicy                    string         `json:"networkPolicy,omitempty"`
-	NonMasqueradeCidr                string         `json:"nonMasqueradeCidr,omitempty"`
-	MaxPods                          int            `json:"maxPods,omitempty"`
-	DockerBridgeSubnet               string         `json:"dockerBridgeSubnet,omitempty"`
-	NodeStatusUpdateFrequency        string         `json:"nodeStatusUpdateFrequency,omitempty"`
-	CtrlMgrNodeMonitorGracePeriod    string         `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
-	CtrlMgrPodEvictionTimeout        string         `json:"ctrlMgrPodEvictionTimeout,omitempty"`
-	CtrlMgrRouteReconciliationPeriod string         `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
-	CloudProviderBackoff             bool           `json:"cloudProviderBackoff,omitempty"`
-	CloudProviderBackoffRetries      int            `json:"cloudProviderBackoffRetries,omitempty"`
-	CloudProviderBackoffJitter       float64        `json:"cloudProviderBackoffJitter,omitempty"`
-	CloudProviderBackoffDuration     int            `json:"cloudProviderBackoffDuration,omitempty"`
-	CloudProviderBackoffExponent     float64        `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit           bool           `json:"cloudProviderRateLimit,omitempty"`
-	CloudProviderRateLimitQPS        float64        `json:"cloudProviderRateLimitQPS,omitempty"`
-	CloudProviderRateLimitBucket     int            `json:"cloudProviderRateLimitBucket,omitempty"`
-	UseManagedIdentity               bool           `json:"useManagedIdentity,omitempty"`
-	CustomHyperkubeImage             string         `json:"customHyperkubeImage,omitempty"`
-	UseInstanceMetadata              *bool          `json:"useInstanceMetadata,omitempty"`
-	EnableRbac                       bool           `json:"enableRbac,omitempty"`
-	EnableAggregatedAPIs             bool           `json:"enableAggregatedAPIs,omitempty"`
-	GCHighThreshold                  int            `json:"gchighthreshold,omitempty"`
-	GCLowThreshold                   int            `json:"gclowthreshold,omitempty"`
-	EtcdVersion                      string         `json:"etcdVersion,omitempty"`
-	EtcdDiskSizeGB                   string         `json:"etcdDiskSizeGB,omitempty"`
-	TillerCPURequests                string         `json:"tillerCPURequests,omitempty"`
-	TillerCPULimit                   string         `json:"tillerCPULimit,omitempty"`
-	TillerMemoryRequests             string         `json:"tillerMemoryRequests,omitempty"`
-	TillerMemoryLimit                string         `json:"tillerMemoryLimit,omitempty"`
-	DisabledAddons                   DisabledAddons `json:"disabledAddons,omitempty"`
+	KubernetesImageBase              string            `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet                    string            `json:"clusterSubnet,omitempty"`
+	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
+	ServiceCidr                      string            `json:"serviceCidr,omitempty"`
+	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
+	NonMasqueradeCidr                string            `json:"nonMasqueradeCidr,omitempty"`
+	MaxPods                          int               `json:"maxPods,omitempty"`
+	DockerBridgeSubnet               string            `json:"dockerBridgeSubnet,omitempty"`
+	NodeStatusUpdateFrequency        string            `json:"nodeStatusUpdateFrequency,omitempty"`
+	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
+	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
+	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
+	CloudProviderBackoff             bool              `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries      int               `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter       float64           `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration     int               `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent     float64           `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit           bool              `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS        float64           `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket     int               `json:"cloudProviderRateLimitBucket,omitempty"`
+	UseManagedIdentity               bool              `json:"useManagedIdentity,omitempty"`
+	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
+	UseInstanceMetadata              *bool             `json:"useInstanceMetadata,omitempty"`
+	EnableRbac                       bool              `json:"enableRbac,omitempty"`
+	EnableAggregatedAPIs             bool              `json:"enableAggregatedAPIs,omitempty"`
+	GCHighThreshold                  int               `json:"gchighthreshold,omitempty"`
+	GCLowThreshold                   int               `json:"gclowthreshold,omitempty"`
+	EtcdVersion                      string            `json:"etcdVersion,omitempty"`
+	EtcdDiskSizeGB                   string            `json:"etcdDiskSizeGB,omitempty"`
+	Addons                           []KubernetesAddon `json:"addons,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS

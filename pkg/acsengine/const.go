@@ -62,16 +62,13 @@ const (
 	DefaultKubernetesCloudProviderRateLimitQPS = 3.0
 	// DefaultKubernetesCloudProviderRateLimitBucket is 10, takes effect if DefaultKubernetesCloudProviderRateLimit is true
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
+	// DefaultTillerAddonName is the name of the tiller addon deployment
+	DefaultTillerAddonName = "tiller"
+	// DefaultDashboardAddonName is the name of the kubernetes-dashboard addon deployment
+	DefaultDashboardAddonName = "kubernetes-dashboard"
 	// DefaultTillerImage defines the Helm Tiller deployment version on Kubernetes Clusters
+	// TODO deprecate this usage, we should be favoring a more frequent upgrade cycle that pins fresh tiller versions to specific k8s versions
 	DefaultTillerImage = "tiller:v2.6.2"
-	// DefaultTillerCPURequests defines the value of Helm Tiller CPU requests resource
-	DefaultTillerCPURequests = "50m"
-	// DefaultTillerMemoryRequests defines the value of Helm Tiller memory requests resource
-	DefaultTillerMemoryRequests = "150Mi"
-	// DefaultTillerCPULimit defines the value of Helm Tiller CPU limit resource
-	DefaultTillerCPULimit = "50m"
-	// DefaultTillerMemoryLimit defines the value of Helm Tiller memory limit resource
-	DefaultTillerMemoryLimit = "150Mi"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
 	// listens on by default. must by in the default Service CIDR range.
 	DefaultKubernetesDNSServiceIP = "10.0.0.10"

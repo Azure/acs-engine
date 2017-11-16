@@ -148,6 +148,36 @@ var (
 			api.RHEL: DefaultRHELOSImageConfig,
 		},
 	}
+
+	// DefaultTillerAddonsConfig is the default tiller Kubernetes addon Config
+	DefaultTillerAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultTillerAddonName,
+		Enabled: pointerToBool(true),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultTillerAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "150Mi",
+			},
+		},
+	}
+
+	// DefaultDashboardAddonsConfig is the default kubernetes-dashboard addon Config
+	DefaultDashboardAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultDashboardAddonName,
+		Enabled: pointerToBool(true),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultDashboardAddonName,
+				CPURequests:    "300m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "300m",
+				MemoryLimits:   "150Mi",
+			},
+		},
+	}
 )
 
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
@@ -190,6 +220,26 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 		if o.KubernetesConfig == nil {
 			o.KubernetesConfig = &api.KubernetesConfig{}
+		}
+
+		// Add default addons specification, if no user-provided spec exists
+		if o.KubernetesConfig.Addons == nil {
+			o.KubernetesConfig.Addons = []api.KubernetesAddon{
+				DefaultTillerAddonsConfig,
+				DefaultDashboardAddonsConfig,
+			}
+		} else {
+			// For each addon, provide default configuration if user didn't provide its own config
+			t := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultTillerAddonName)
+			if t < 0 {
+				// Provide default acs-engine config for Tiller
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultTillerAddonsConfig)
+			}
+			d := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultDashboardAddonName)
+			if d < 0 {
+				// Provide default acs-engine config for Dashboard
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultDashboardAddonsConfig)
+			}
 		}
 		if o.KubernetesConfig.KubernetesImageBase == "" {
 			o.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
@@ -275,20 +325,14 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.EtcdVersion = "2.5.2"
 		}
 
-		if "" == a.OrchestratorProfile.KubernetesConfig.TillerCPURequests {
-			a.OrchestratorProfile.KubernetesConfig.TillerCPURequests = DefaultTillerCPURequests
+		// For each addon, produce a synthesized config between user-provided and acs-engine defaults
+		t := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[t].IsEnabled(api.DefaultTillerAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[t] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[t], DefaultTillerAddonsConfig)
 		}
-
-		if "" == a.OrchestratorProfile.KubernetesConfig.TillerCPULimit {
-			a.OrchestratorProfile.KubernetesConfig.TillerCPULimit = DefaultTillerCPULimit
-		}
-
-		if "" == a.OrchestratorProfile.KubernetesConfig.TillerMemoryRequests {
-			a.OrchestratorProfile.KubernetesConfig.TillerMemoryRequests = DefaultTillerMemoryRequests
-		}
-
-		if "" == a.OrchestratorProfile.KubernetesConfig.TillerMemoryLimit {
-			a.OrchestratorProfile.KubernetesConfig.TillerMemoryLimit = DefaultTillerMemoryLimit
+		d := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[d].IsEnabled(api.DefaultDashboardAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[d] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[d], DefaultDashboardAddonsConfig)
 		}
 
 		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
@@ -549,4 +593,55 @@ func getFirstConsecutiveStaticIPAddress(subnetStr string) string {
 	subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffset
 
 	return subnet.IP.String()
+}
+
+func getAddonsIndexByName(addons []api.KubernetesAddon, name string) int {
+	for i := range addons {
+		if addons[i].Name == name {
+			return i
+		}
+	}
+	return -1
+}
+
+func getAddonContainersIndexByName(containers []api.KubernetesContainerSpec, name string) int {
+	for i := range containers {
+		if containers[i].Name == name {
+			return i
+		}
+	}
+	return -1
+}
+
+// assignDefaultAddonVals will assign default values to addon from defaults, for each property in addon that has a zero value
+func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesAddon {
+	for i := range defaults.Containers {
+		c := getAddonContainersIndexByName(addon.Containers, defaults.Containers[i].Name)
+		if c < 0 {
+			addon.Containers = append(addon.Containers, defaults.Containers[i])
+		} else {
+			if addon.Containers[c].Image == "" {
+				addon.Containers[c].Image = defaults.Containers[i].Image
+			}
+			if addon.Containers[c].CPURequests == "" {
+				addon.Containers[c].CPURequests = defaults.Containers[i].CPURequests
+			}
+			if addon.Containers[c].MemoryRequests == "" {
+				addon.Containers[c].MemoryRequests = defaults.Containers[i].MemoryRequests
+			}
+			if addon.Containers[c].CPULimits == "" {
+				addon.Containers[c].CPULimits = defaults.Containers[i].CPULimits
+			}
+			if addon.Containers[c].MemoryLimits == "" {
+				addon.Containers[c].MemoryLimits = defaults.Containers[i].MemoryLimits
+			}
+		}
+	}
+	return addon
+}
+
+// pointerToBool returns a pointer to a bool
+func pointerToBool(b bool) *bool {
+	p := b
+	return &p
 }

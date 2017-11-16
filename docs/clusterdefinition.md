@@ -42,7 +42,92 @@ Here are the valid values for the orchestrator types:
 |gcHighThreshold|no|Sets the --image-gc-high-threshold value on the kublet configuration. Default is 85. [See kubelet Garbage Collection](https://kubernetes.io/docs/concepts/cluster-administration/kubelet-garbage-collection/) |
 |gcLowThreshold|no|Sets the --image-gc-low-threshold value on the kublet configuration. Default is 80. [See kubelet Garbage Collection](https://kubernetes.io/docs/concepts/cluster-administration/kubelet-garbage-collection/) |
 |useInstanceMetadata|no|Use the Azure cloudprovider instance metadata service for appropriate resource discovery operations. Default is `true`.|
-|disabledAddons.dashboard|no|Disable dashboard addon (boolean - default == false, i.e. not disabled)|
+|addons|no|Configure various Kubernetes addons configuration (currently supported: tiller, kubernetes-dashboard). See `addons` configuration below.|
+
+`addons` describes various addons configuration. It is a child property of `kubernetesConfig`. Below is a list of currently available addons:
+
+|Name of addon|Enabled by default?|How many containers|Description|
+|tiller|true|Delivers the Helm server-side component: tiller. See https://github.com/kubernetes/helm for more info.|
+|kubernetes-dashboard|true|1|Delivers the kubernetes dashboard component. See https://github.com/kubernetes/dashboard for more info.|
+
+To give a bit more info on the `addons` property: We've tried to expose the basic bits of data that allow useful configuration of these cluster features. Here are some example usage patterns that will unpack what `addons` provide:
+
+To enable an addon (using "tiller" as an example):
+
+```
+"kubernetesConfig": {
+    "addons": [
+        {
+            "name": "tiller",
+            "enabled" : true
+        }
+    ]
+}
+```
+
+As you can see above, `addons` is an array child property of `kubernetesConfig`. Each addon that you want to add custom configuration to would be represented as an object item in the array. For example, to disable both tiller and dashboard:
+
+```
+"kubernetesConfig": {
+    "addons": [
+        {
+            "name": "tiller",
+            "enabled" : false
+        },
+        {
+            "name": "dashboard",
+            "enabled" : false
+        }
+    ]
+}
+```
+
+More usefully, let's add some custom configuration to both of the above addons:
+
+```
+"kubernetesConfig": {
+    "addons": [
+        {
+            "name": "tiller",
+            "containers": [
+                {
+                  "name": "tiller",
+                  "image": "myDockerHubUser/tiller:v3.0.0-alpha
+                  "cpuRequests": "1",
+                  "memoryRequests": "1024Mi",
+                  "cpuLimits": "1",
+                  "memoryLimits": "1024Mi"
+                }
+              ]
+        },
+        {
+            "name": "kubernetes-dashboard",
+            "containers": [
+                {
+                  "name": "kubernetes-dashboard",
+                  "cpuRequests": "50m",
+                  "memoryRequests": "512Mi",
+                  "cpuLimits": "50m",
+                  "memoryLimits": "512Mi"
+                }
+              ]
+        }
+    ]
+}
+```
+
+Above you see custom configuration for both tiller and kubernetes-dashboard. Both include specific resource limit values across the following dimensions:
+
+- cpuRequests
+- memoryRequests
+- cpuLimits
+- memoryLimits
+
+See https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/ for more on Kubernetes resource limits.
+
+Additionally above, we specified a custom docker image for tiller, let's say we want to build a cluster and test an alpha version of tiller in it.
+
+Finally, the `addons.enabled` boolean property was omitted above; that's by design. If you specify a `containers` configuration, acs-engine assumes you're enabling the addon. The very first example above demonstrates a simple "enable this addon with default configuration" declaration.
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.

@@ -4,9 +4,12 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
-        "disabledAddons": {
-          "dashboard": true
-        }
+        "addons": [
+          {
+            "name": "dashboard",
+            "enabled" : false
+          }
+        ]
       }
     },
     "masterProfile": {
