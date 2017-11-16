@@ -124,7 +124,7 @@ write_files:
   content: !!binary |
     MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR
 
-{{if not .OrchestratorProfile.KubernetesConfig.DisabledAddons.Dashboard}}
+{{if .OrchestratorProfile.KubernetesConfig.IsDashboardEnabled}}
 - path: /etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml
   permissions: "0644"
   encoding: gzip
@@ -147,12 +147,14 @@ write_files:
   content: !!binary |
     MASTER_ADDON_AZURE_STORAGE_CLASSES_B64_GZIP_STR
 
+{{if .OrchestratorProfile.KubernetesConfig.IsTillerEnabled}}
 - path: /etc/kubernetes/addons/kube-tiller-deployment.yaml
   permissions: "0644"
   encoding: gzip
   owner: "root"
   content: !!binary |
     MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR
+{{end}}
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
 - path: /etc/kubernetes/addons/calico-daemonset.yaml
@@ -268,14 +270,20 @@ write_files:
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
     sed -i "s|<kubernetesKubeDNSSpec>|{{WrapAsVariable "kubernetesKubeDNSSpec"}}|g; s|<kubernetesDNSMasqSpec>|{{WrapAsVariable "kubernetesDNSMasqSpec"}}|g; s|<kubernetesExecHealthzSpec>|{{WrapAsVariable "kubernetesExecHealthzSpec"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
     sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsVariable "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsVariable "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
-{{if not .OrchestratorProfile.KubernetesConfig.DisabledAddons.Dashboard}}
+{{if .OrchestratorProfile.KubernetesConfig.IsDashboardEnabled}}
     sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+    sed -i "s|<kubernetesDashboardCPURequests>|{{WrapAsVariable "kubernetesDashboardCPURequests"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+    sed -i "s|<kubernetesDashboardMemoryRequests>|{{WrapAsVariable "kubernetesDashboardMemoryRequests"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+    sed -i "s|<kubernetesDashboardCPULimit>|{{WrapAsVariable "kubernetesDashboardCPULimit"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+    sed -i "s|<kubernetesDashboardMemoryLimit>|{{WrapAsVariable "kubernetesDashboardMemoryLimit"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
 {{end}}
+{{if .OrchestratorProfile.KubernetesConfig.IsTillerEnabled}}
     sed -i "s|<kubernetesTillerSpec>|{{WrapAsVariable "kubernetesTillerSpec"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubernetesTillerCPURequests>|{{WrapAsVariable "kubernetesTillerCPURequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubernetesTillerMemoryRequests>|{{WrapAsVariable "kubernetesTillerMemoryRequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubernetesTillerCPULimit>|{{WrapAsVariable "kubernetesTillerCPULimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubernetesTillerMemoryLimit>|{{WrapAsVariable "kubernetesTillerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+{{end}}
     sed -i "s|<kubeDNSServiceIP>|{{WrapAsVariable "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
 
 {{if .OrchestratorProfile.KubernetesConfig.EnableRbac }}

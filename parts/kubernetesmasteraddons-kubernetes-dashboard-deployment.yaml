@@ -75,6 +75,13 @@ spec:
         ports:
         - containerPort: 9090
           protocol: TCP
+        resources:
+          requests:
+            cpu: <kubernetesDashboardCPURequests>
+            memory: <kubernetesDashboardMemoryRequests>
+          limits:
+            cpu: <kubernetesDashboardCPULimit>
+            memory: <kubernetesDashboardMemoryLimit>
       serviceAccountName: kubernetes-dashboard
       nodeSelector:
         beta.kubernetes.io/os: linux 

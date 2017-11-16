@@ -148,6 +148,34 @@
       },
       "type": "string"
     },
+    "kubernetesDashboardCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesDashboardCPURequests"}}
+      "metadata": {
+        "description": "Dashboard CPU Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesDashboardMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesDashboardMemoryRequests"}}
+      "metadata": {
+        "description": "Dashboard Memory Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesDashboardCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesDashboardCPULimit"}}
+      "metadata": {
+        "description": "Dashboard CPU Limit."
+      },
+      "type": "string"
+    },
+    "kubernetesDashboardMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesDashboardMemoryLimit"}}
+      "metadata": {
+        "description": "Dashboard Memory Limit."
+      },
+      "type": "string"
+    },
     "kubernetesExecHealthzSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesExecHealthzSpec"}}
       "metadata": {
