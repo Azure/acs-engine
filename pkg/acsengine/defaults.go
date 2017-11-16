@@ -244,6 +244,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig.KubernetesImageBase == "" {
 			o.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
 		}
+		if o.KubernetesConfig.EtcdVersion == "" {
+			o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
+		}
 		if o.KubernetesConfig.NetworkPolicy == "" {
 			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 		}

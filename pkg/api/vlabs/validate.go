@@ -40,20 +40,12 @@ func init() {
 }
 
 func isValidEtcdVersion(etcdVersion string) error {
-	// Empty versions is defaulted to 2.5.2 on the generalized api model
-	// after vlabs validation. Empty "" version is a valid version for etcd
-	if "" == etcdVersion {
-		return nil
-	}
-	// We have a version set by user
-	validVersions := "" // a bag of valid versions
 	for _, ver := range etcdValidVersions {
 		if ver == etcdVersion {
 			return nil
 		}
-		validVersions = fmt.Sprintf("%s %s", validVersions, ver)
 	}
-	return fmt.Errorf("Invalid etcd version(%s), valid versions are%s", etcdVersion, validVersions)
+	return fmt.Errorf("Invalid etcd version(%s), valid versions are%s", etcdVersion, etcdValidVersions)
 }
 
 // Validate implements APIObject

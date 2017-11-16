@@ -423,4 +423,11 @@
         "description": "Size in GB to allocate for etcd volume"
       },
       "type": "string"
+    },
+    "etcdVersion": {
+      {{PopulateClassicModeDefaultValue "etcdVersion"}}
+      "metadata": {
+        "description": "etcd version"
+      },
+      "type": "string"
     }
