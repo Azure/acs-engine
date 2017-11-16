@@ -24,8 +24,11 @@ spec:
         name: rescheduler
         resources:
           requests:
-            cpu: 10m
-            memory: 100Mi
+            cpu: <kubernetesReschedulerCPURequests>
+            memory: <kubernetesReschedulerCPULimit>
+          limits:
+            cpu: <kubernetesReschedulerCPULimit>
+            memory: <kubernetesReschedulerMemoryLimit>
         command:
         - sh
         - -c

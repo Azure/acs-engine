@@ -87,5 +87,5 @@ const (
 	// DefaultDashboardAddonEnabled determines the acs-engine provided default for enabling kubernetes-dashboard addon
 	DefaultDashboardAddonEnabled = true
 	// DefaultReschedulerAddonEnabled determines the acs-engine provided default for enabling kubernetes-rescheduler addon
-	DefaultReschedulerAddonEnabled = true
+	DefaultReschedulerAddonEnabled = false
 )

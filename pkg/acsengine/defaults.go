@@ -152,7 +152,7 @@ var (
 	// DefaultTillerAddonsConfig is the default tiller Kubernetes addon Config
 	DefaultTillerAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultTillerAddonName,
-		Enabled: pointerToBool(true),
+		Enabled: pointerToBool(api.DefaultTillerAddonEnabled),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           DefaultTillerAddonName,
@@ -167,7 +167,7 @@ var (
 	// DefaultDashboardAddonsConfig is the default kubernetes-dashboard addon Config
 	DefaultDashboardAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultDashboardAddonName,
-		Enabled: pointerToBool(true),
+		Enabled: pointerToBool(api.DefaultDashboardAddonEnabled),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           DefaultDashboardAddonName,
@@ -182,14 +182,14 @@ var (
 	// DefaultReschedulerAddonsConfig is the default rescheduler Kubernetes addon Config
 	DefaultReschedulerAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultReschedulerAddonName,
-		Enabled: pointerToBool(true),
+		Enabled: pointerToBool(api.DefaultReschedulerAddonEnabled),
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           DefaultReschedulerAddonName,
-				CPURequests:    "300m",
-				MemoryRequests: "150Mi",
-				CPULimits:      "300m",
-				MemoryLimits:   "150Mi",
+				CPURequests:    "10m",
+				MemoryRequests: "100Mi",
+				CPULimits:      "10m",
+				MemoryLimits:   "100Mi",
 			},
 		},
 	}

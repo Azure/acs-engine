@@ -140,12 +140,14 @@ write_files:
   content: !!binary |
     MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR
 
+{{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
 - path: /etc/kubernetes/addons/kube-rescheduler-deployment.yaml
   permissions: "0644"
   encoding: gzip
   owner: "root"
   content: !!binary |
     MASTER_ADDON_RESCHEDULER_DEPLOYMENT_B64_GZIP_STR
+{{end}}
 
 - path: /etc/kubernetes/addons/azure-storage-classes.yaml
   permissions: "0644"
@@ -291,7 +293,13 @@ write_files:
     sed -i "s|<kubernetesTillerCPULimit>|{{WrapAsVariable "kubernetesTillerCPULimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubernetesTillerMemoryLimit>|{{WrapAsVariable "kubernetesTillerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
 {{end}}
+{{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
     sed -i "s|<kubernetesReschedulerSpec>|{{WrapAsVariable "kubernetesReschedulerSpec"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
+    sed -i "s|<kubernetesReschedulerCPURequests>|{{WrapAsVariable "kubernetesReschedulerCPURequests"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
+    sed -i "s|<kubernetesReschedulerMemoryRequests>|{{WrapAsVariable "kubernetesReschedulerMemoryRequests"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
+    sed -i "s|<kubernetesReschedulerCPULimit>|{{WrapAsVariable "kubernetesReschedulerCPULimit"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
+    sed -i "s|<kubernetesReschedulerMemoryLimit>|{{WrapAsVariable "kubernetesReschedulerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
+    {{end}}
     sed -i "s|<kubeDNSServiceIP>|{{WrapAsVariable "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
 
 {{if .OrchestratorProfile.KubernetesConfig.EnableRbac }}
