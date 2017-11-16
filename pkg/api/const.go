@@ -81,5 +81,9 @@ const (
 // To identify programmatically generated public agent pools
 const publicAgentPoolSuffix = "-public"
 
-// DefaultTillerAddonEnabled determines the acs-engine provided default for enabling tiller addon
-const DefaultTillerAddonEnabled = true
+const (
+	// DefaultTillerAddonEnabled determines the acs-engine provided default for enabling tiller addon
+	DefaultTillerAddonEnabled = true
+	// DefaultDashboardAddonEnabled determines the acs-engine provided default for enabling kubernetes-dashboard addon
+	DefaultDashboardAddonEnabled = true
+)

@@ -181,11 +181,6 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
-// DisabledAddons specifies which addons are disabled
-type DisabledAddons struct {
-	Dashboard bool `json:"dashboard,omitempty"`
-}
-
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
@@ -222,7 +217,6 @@ type KubernetesConfig struct {
 	TillerCPULimit                   string            `json:"tillerCPULimit,omitempty"`
 	TillerMemoryRequests             string            `json:"tillerMemoryRequests,omitempty"`
 	TillerMemoryLimit                string            `json:"tillerMemoryLimit,omitempty"`
-	DisabledAddons                   DisabledAddons    `json:"disabledAddons,omitempty"`
 	Addons                           []KubernetesAddon `json:"addons,omitempty"`
 }
 
@@ -597,4 +591,15 @@ func (k *KubernetesConfig) IsTillerEnabled() bool {
 		}
 	}
 	return tillerAddon.IsEnabled(DefaultTillerAddonEnabled)
+}
+
+// IsDashboardEnabled checks if the kubernetes-dashboard addon is enabled
+func (k *KubernetesConfig) IsDashboardEnabled() bool {
+	var dashboardAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == "kubernetes-dashboard" {
+			dashboardAddon = k.Addons[i]
+		}
+	}
+	return dashboardAddon.IsEnabled(DefaultDashboardAddonEnabled)
 }

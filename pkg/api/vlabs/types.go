@@ -199,11 +199,6 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
-// DisabledAddons specifies which addons are disabled
-type DisabledAddons struct {
-	Dashboard bool `json:"dashboard,omitempty"`
-}
-
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
@@ -240,7 +235,6 @@ type KubernetesConfig struct {
 	TillerCPULimit                   string            `json:"tillerCPULimit,omitempty"`
 	TillerMemoryRequests             string            `json:"tillerMemoryRequests,omitempty"`
 	TillerMemoryLimit                string            `json:"tillerMemoryLimit,omitempty"`
-	DisabledAddons                   DisabledAddons    `json:"disabledAddons,omitempty"`
 	Addons                           []KubernetesAddon `json:"addons,omitempty"`
 }
 

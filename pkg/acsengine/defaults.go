@@ -163,6 +163,21 @@ var (
 			},
 		},
 	}
+
+	// DefaultDashboardAddonsConfig is the default kubernetes-dashboard addon Config
+	DefaultDashboardAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultDashboardAddonName,
+		Enabled: pointerToBool(true),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultDashboardAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "150Mi",
+			},
+		},
+	}
 )
 
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
@@ -211,6 +226,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig.Addons == nil {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{
 				DefaultTillerAddonsConfig,
+				DefaultDashboardAddonsConfig,
 			}
 		} else {
 			// For each addon, provide default configuration if user didn't provide its own config
@@ -218,6 +234,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if t < 0 {
 				// Provide default acs-engine config for Tiller
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultTillerAddonsConfig)
+			}
+			d := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultDashboardAddonName)
+			if d < 0 {
+				// Provide default acs-engine config for Dashboard
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultDashboardAddonsConfig)
 			}
 		}
 		if o.KubernetesConfig.KubernetesImageBase == "" {
@@ -308,6 +329,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		t := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[t].IsEnabled(api.DefaultTillerAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[t] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[t], DefaultTillerAddonsConfig)
+		}
+		d := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[d].IsEnabled(api.DefaultDashboardAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[d] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[d], DefaultDashboardAddonsConfig)
 		}
 
 		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {

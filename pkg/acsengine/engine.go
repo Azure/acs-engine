@@ -544,7 +544,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["addonmanager"])
 		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["addonresizer"])
-		addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dashboard"])
 		addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dnsmasq"])
 		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["exechealthz"])
 		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["heapster"])
@@ -559,6 +558,19 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 				addValue(parametersMap, "kubernetesTillerSpec", tillerAddon.Containers[c].Image)
 			} else {
 				addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion][DefaultTillerAddonName])
+			}
+		}
+		dashboardAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
+		c = getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
+		if c > -1 {
+			addValue(parametersMap, "kubernetesDashboardCPURequests", dashboardAddon.Containers[c].CPURequests)
+			addValue(parametersMap, "kubernetesDashboardCPULimit", dashboardAddon.Containers[c].CPULimits)
+			addValue(parametersMap, "kubernetesDashboardMemoryRequests", dashboardAddon.Containers[c].MemoryRequests)
+			addValue(parametersMap, "kubernetesDashboardMemoryLimit", dashboardAddon.Containers[c].MemoryLimits)
+			if dashboardAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "kubernetesDashboardSpec", dashboardAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dashboard"])
 			}
 		}
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
@@ -938,7 +950,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			} else {
 				addonYamls = kubernetesAddonYamls
 			}
-			if profile.OrchestratorProfile.KubernetesConfig.DisabledAddons.Dashboard {
+			if !profile.OrchestratorProfile.KubernetesConfig.IsTillerEnabled() {
+				delete(addonYamls, "MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR")
+			}
+			if !profile.OrchestratorProfile.KubernetesConfig.IsDashboardEnabled() {
 				delete(addonYamls, "MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR")
 			}
 			for placeholder, filename := range addonYamls {
@@ -1151,7 +1166,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				k8sVersion := cs.Properties.OrchestratorProfile.OrchestratorVersion
 				cloudSpecConfig := GetCloudSpecConfig(cs.Location)
 				tillerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
-				c := getAddonContainersIndexByName(tillerAddon.Containers, DefaultTillerAddonName)
+				tC := getAddonContainersIndexByName(tillerAddon.Containers, DefaultTillerAddonName)
+				dashboardAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
+				dC := getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
@@ -1163,7 +1180,37 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				case "kubernetesAddonResizerSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["addonresizer"]
 				case "kubernetesDashboardSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dashboard"]
+					if dC > -1 {
+						if dashboardAddon.Containers[dC].Image != "" {
+							val = dashboardAddon.Containers[dC].Image
+						}
+					} else {
+						val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dashboard"]
+					}
+				case "kubernetesDashboardCPURequests":
+					if dC > -1 {
+						val = dashboardAddon.Containers[dC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesDashboardMemoryRequests":
+					if dC > -1 {
+						val = dashboardAddon.Containers[dC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesDashboardCPULimit":
+					if dC > -1 {
+						val = dashboardAddon.Containers[dC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesDashboardMemoryLimit":
+					if dC > -1 {
+						val = dashboardAddon.Containers[dC].MemoryLimits
+					} else {
+						val = ""
+					}
 				case "kubernetesDNSMasqSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dnsmasq"]
 				case "kubernetesExecHealthzSpec":
@@ -1171,28 +1218,34 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				case "kubernetesHeapsterSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["heapster"]
 				case "kubernetesTillerSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeConfigs[k8sVersion][DefaultTillerAddonName]
+					if tC > -1 {
+						if tillerAddon.Containers[tC].Image != "" {
+							val = tillerAddon.Containers[tC].Image
+						} else {
+							val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeConfigs[k8sVersion][DefaultTillerAddonName]
+						}
+					}
 				case "kubernetesTillerCPURequests":
-					if c > -1 {
-						val = tillerAddon.Containers[c].CPURequests
+					if tC > -1 {
+						val = tillerAddon.Containers[tC].CPURequests
 					} else {
 						val = ""
 					}
 				case "kubernetesTillerMemoryRequests":
-					if c > -1 {
-						val = tillerAddon.Containers[c].MemoryRequests
+					if tC > -1 {
+						val = tillerAddon.Containers[tC].MemoryRequests
 					} else {
 						val = ""
 					}
 				case "kubernetesTillerCPULimit":
-					if c > -1 {
-						val = tillerAddon.Containers[c].CPULimits
+					if tC > -1 {
+						val = tillerAddon.Containers[tC].CPULimits
 					} else {
 						val = ""
 					}
 				case "kubernetesTillerMemoryLimit":
-					if c > -1 {
-						val = tillerAddon.Containers[c].MemoryLimits
+					if tC > -1 {
+						val = tillerAddon.Containers[tC].MemoryLimits
 					} else {
 						val = ""
 					}

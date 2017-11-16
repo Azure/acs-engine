@@ -114,6 +114,36 @@ func TestIsTillerEnabled(t *testing.T) {
 	}
 }
 
+func TestIsDashboardEnabled(t *testing.T) {
+	c := KubernetesConfig{
+		Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+	}
+	e := c.IsDashboardEnabled()
+	if e != DefaultDashboardAddonEnabled {
+		t.Fatalf("KubernetesConfig.IsDashboardEnabled() should return %t when no kubernetes-dashboard addon has been specified, instead returned %t", DefaultDashboardAddonEnabled, e)
+	}
+	c.Addons = append(c.Addons, getMockAddon("kubernetes-dashboard"))
+	e = c.IsDashboardEnabled()
+	if e != true {
+		t.Fatalf("KubernetesConfig.IsDashboardEnabled() should return true when a custom kubernetes-dashboard addon has been specified, instead returned %t", e)
+	}
+	f := false
+	c = KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name:    "kubernetes-dashboard",
+				Enabled: &f,
+			},
+		},
+	}
+	e = c.IsDashboardEnabled()
+	if e != false {
+		t.Fatalf("KubernetesConfig.IsDashboardEnabled() should return false when a custom kubernetes-dashboard addon has been specified as disabled, instead returned %t", e)
+	}
+}
+
 func getMockAddon(name string) KubernetesAddon {
 	return KubernetesAddon{
 		Name: name,

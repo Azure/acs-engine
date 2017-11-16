@@ -613,12 +613,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.GCLowThreshold = vlabs.GCLowThreshold
 	api.EtcdVersion = vlabs.EtcdVersion
 	api.EtcdDiskSizeGB = vlabs.EtcdDiskSizeGB
-	convertVLabsDisabledAddons(&vlabs.DisabledAddons, &api.DisabledAddons)
 	convertAddonsToAPI(vlabs, api)
-}
-
-func convertVLabsDisabledAddons(vlabs *vlabs.DisabledAddons, api *DisabledAddons) {
-	api.Dashboard = vlabs.Dashboard
 }
 
 func convertAddonsToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
