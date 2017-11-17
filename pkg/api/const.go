@@ -24,6 +24,7 @@ const (
 const (
 	Ubuntu Distro = "ubuntu"
 	RHEL   Distro = "rhel"
+	CoreOS Distro = "coreos"
 )
 
 const (
