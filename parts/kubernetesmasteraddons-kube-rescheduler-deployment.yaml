@@ -25,7 +25,7 @@ spec:
         resources:
           requests:
             cpu: <kubernetesReschedulerCPURequests>
-            memory: <kubernetesReschedulerCPULimit>
+            memory: <kubernetesReschedulerMemoryRequests>
           limits:
             cpu: <kubernetesReschedulerCPULimit>
             memory: <kubernetesReschedulerMemoryLimit>
