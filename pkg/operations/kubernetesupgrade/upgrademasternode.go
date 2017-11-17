@@ -87,10 +87,6 @@ func (kmn *UpgradeMasterNode) Validate(vmName *string) error {
 
 	masterURL := kmn.UpgradeContainerService.Properties.MasterProfile.FQDN
 
-	if masterURL == "" {
-		return kmn.Translator.Errorf("Control plane FQDN was not set.")
-	}
-
 	client, err := kmn.Client.GetKubernetesClient(masterURL, kmn.kubeConfig, interval, timeout)
 	if err != nil {
 		return err

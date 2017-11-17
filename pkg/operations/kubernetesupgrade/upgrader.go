@@ -241,24 +241,24 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		// However, if the upgrade failed in the middle, the actual number of VMs might be less than that.
 		for agentCount > 0 && len(upgradeVMs) <= agentCount {
 			agentIndex := getAvailableIndex(upgradeVMs)
-			ku.logger.Infof("Adding auxiliary agent node with index %d", agentIndex)
 
 			vmName, err := armhelpers.GetK8sVMName(agentOsType, ku.DataModel.Properties.HostedMasterProfile != nil,
 				ku.NameSuffix, agentPoolName, agentPoolIndex, agentIndex)
 			if err != nil {
-				ku.logger.Infof("Error reconstructing VM name\n")
+				ku.logger.Infof("Error reconstructing agent VM name with index %d\n", agentIndex)
 				return err
 			}
+			ku.logger.Infof("Adding agent node %s (index %d)", vmName, agentIndex)
 
 			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
 			if err != nil {
-				ku.logger.Infof("Error creating agent VM[%d] %s: %v\n", agentIndex, vmName, err)
+				ku.logger.Infof("Error creating agent node %s (index %d): %v\n", vmName, agentIndex, err)
 				return err
 			}
 
 			err = upgradeAgentNode.Validate(&vmName)
 			if err != nil {
-				ku.logger.Infof("Error validating agent VM[%d] %s: %v\n", agentIndex, vmName, err)
+				ku.logger.Infof("Error validating agent node %s (index %d): %v\n", vmName, agentIndex, err)
 				return err
 			}
 
