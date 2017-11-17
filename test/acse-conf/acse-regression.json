@@ -100,7 +100,7 @@
     {
       "cluster_definition": "coreos/kubernetes-coreos.json",
       "category": "distro"
-    }
+    },
     {
       "cluster_definition": "coreos/kubernetes-coreos-hybrid.json",
       "category": "distro"
