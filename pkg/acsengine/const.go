@@ -36,8 +36,10 @@ const (
 	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP
 	// address relative to the first consecutive Kubernetes static IP
 	DefaultInternalLbStaticIPOffset = 10
-	// DefaultNetworkPolicy is disabling network policy enforcement
-	DefaultNetworkPolicy = "none"
+	// DefaultNetworkPolicy defines the network policy to use by default
+	DefaultNetworkPolicy = "azure"
+	// DefaultNetworkPolicyWindows defines the network policy to use by default for clusters with Windows agent pools
+	DefaultNetworkPolicyWindows = "none"
 	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/
 	DefaultKubernetesNodeStatusUpdateFrequency = "10s"
 	// DefaultKubernetesHardEvictionThreshold is memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%, see --eviction-hard at https://kubernetes.io/docs/admin/kubelet/
