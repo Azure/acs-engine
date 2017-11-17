@@ -582,7 +582,7 @@ func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
 func (k *KubernetesConfig) IsTillerEnabled() bool {
 	var tillerAddon KubernetesAddon
 	for i := range k.Addons {
-		if k.Addons[i].Name == "tiller" {
+		if k.Addons[i].Name == DefaultTillerAddonName {
 			tillerAddon = k.Addons[i]
 		}
 	}
@@ -593,7 +593,7 @@ func (k *KubernetesConfig) IsTillerEnabled() bool {
 func (k *KubernetesConfig) IsDashboardEnabled() bool {
 	var dashboardAddon KubernetesAddon
 	for i := range k.Addons {
-		if k.Addons[i].Name == "kubernetes-dashboard" {
+		if k.Addons[i].Name == DefaultDashboardAddonName {
 			dashboardAddon = k.Addons[i]
 		}
 	}
@@ -604,7 +604,7 @@ func (k *KubernetesConfig) IsDashboardEnabled() bool {
 func (k *KubernetesConfig) IsReschedulerEnabled() bool {
 	var reschedulerAddon KubernetesAddon
 	for i := range k.Addons {
-		if k.Addons[i].Name == "rescheduler" {
+		if k.Addons[i].Name == DefaultReschedulerAddonName {
 			reschedulerAddon = k.Addons[i]
 		}
 	}

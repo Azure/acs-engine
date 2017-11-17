@@ -357,7 +357,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 		r := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[r].IsEnabled(api.DefaultReschedulerAddonEnabled) {
-			a.OrchestratorProfile.KubernetesConfig.Addons[r] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[r], DefaultDashboardAddonsConfig)
+			a.OrchestratorProfile.KubernetesConfig.Addons[r] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[r], DefaultReschedulerAddonsConfig)
 		}
 
 		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
