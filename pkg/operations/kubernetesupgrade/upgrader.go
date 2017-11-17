@@ -196,10 +196,15 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			return err
 		}
 
-		var agentCount int
-		for _, app := range ku.ClusterTopology.DataModel.Properties.AgentPoolProfiles {
+		var agentCount, agentPoolIndex int
+		var agentOsType api.OSType
+		var agentPoolName string
+		for indx, app := range ku.ClusterTopology.DataModel.Properties.AgentPoolProfiles {
 			if app.Name == *agentPool.Name {
 				agentCount = app.Count
+				agentOsType = app.OSType
+				agentPoolName = app.Name
+				agentPoolIndex = indx
 				break
 			}
 		}
@@ -231,22 +236,33 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			upgradeVMs[agentIndex] = &UpgradeVM{*vm.Name, false}
 		}
 
-		// Create an auxiliary node if hasn't been created yet. This node is used to take on the load from deleting nodes.
+		// Create missing nodes *plus* one auxiliary node, which will be used to take on the load from upgrading nodes.
 		// In a normal mode of operation the actual number of VMs in the pool [len(upgradeVMs)] is equal to agentCount.
-		// However, if the upgrade failed in the middle, the actual number of VMs might be agentCount+1 to include auxiliary node.
-		// In the later case we don't create an extra node.
-		if agentCount > 0 && len(upgradeVMs) == agentCount {
+		// However, if the upgrade failed in the middle, the actual number of VMs might be less than that.
+		for agentCount > 0 && len(upgradeVMs) <= agentCount {
 			agentIndex := getAvailableIndex(upgradeVMs)
 			ku.logger.Infof("Adding auxiliary agent node with index %d", agentIndex)
 
-			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
+			vmName, err := armhelpers.GetK8sVMName(agentOsType, ku.DataModel.Properties.HostedMasterProfile != nil,
+				ku.NameSuffix, agentPoolName, agentPoolIndex, agentIndex)
 			if err != nil {
-				ku.logger.Infof("Error creating auxiliary node\n")
+				ku.logger.Infof("Error reconstructing VM name\n")
 				return err
 			}
-			// It is possible to reconstruct VM name, but we don't have to.
-			// The VM name is need for nodes that require upgrade. However this node already has desired orchestrator version.
-			upgradeVMs[agentIndex] = &UpgradeVM{"", true}
+
+			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
+			if err != nil {
+				ku.logger.Infof("Error creating agent VM[%d] %s: %v\n", agentIndex, vmName, err)
+				return err
+			}
+
+			err = upgradeAgentNode.Validate(&vmName)
+			if err != nil {
+				ku.logger.Infof("Error validating agent VM[%d] %s: %v\n", agentIndex, vmName, err)
+				return err
+			}
+
+			upgradeVMs[agentIndex] = &UpgradeVM{vmName, true}
 		}
 
 		// Upgrade nodes in agent pool
@@ -263,7 +279,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 				return err
 			}
 
-			// do not create last node in favor of auxiliary node
+			// do not create last node in favor of the auxiliary node
 			if upgradedCount == toBeUpgraded-1 {
 				ku.logger.Infof("Skipping creation of VM %s (indx %d) in favor of auxiliary node", vm.Name, agentIndex)
 				delete(upgradeVMs, agentIndex)
@@ -282,35 +298,6 @@ func (ku *Upgrader) upgradeAgentPools() error {
 				vm.Upgraded = true
 			}
 			upgradedCount++
-		}
-
-		agentsToCreate := agentCount - upgradedCount
-		ku.logger.Infof("Expected agent count in the pool: %d, Creating %d more agents\n", agentCount, agentsToCreate)
-
-		// NOTE: this is NOT completely idempotent because it assumes that
-		// the OS disk has been deleted
-		for i := 0; i < agentsToCreate; i++ {
-			agentIndexToCreate := 0
-			for upgradeVMs[agentIndexToCreate].Upgraded == true {
-				agentIndexToCreate++
-			}
-
-			ku.logger.Infof("Creating upgraded Agent VM with index: %d, pool name: %s\n", agentIndexToCreate, *agentPool.Name)
-
-			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndexToCreate)
-			if err != nil {
-				ku.logger.Infof("Error creating upgraded agent VM with index: %d\n", agentIndexToCreate)
-				return err
-			}
-
-			tempVMName := ""
-			err = upgradeAgentNode.Validate(&tempVMName)
-			if err != nil {
-				ku.logger.Infof("Error validating upgraded agent VM with index: %d\n", agentIndexToCreate)
-				return err
-			}
-
-			upgradeVMs[agentIndexToCreate].Upgraded = true
 		}
 	}
 
