@@ -1277,33 +1277,33 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					}
 				case "kubernetesReschedulerSpec":
 					if rC > -1 {
-						if dashboardAddon.Containers[rC].Image != "" {
-							val = dashboardAddon.Containers[rC].Image
+						if reschedulerAddon.Containers[rC].Image != "" {
+							val = reschedulerAddon.Containers[rC].Image
 						}
 					} else {
 						val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultReschedulerAddonName]
 					}
 				case "kubernetesReschedulerCPURequests":
 					if rC > -1 {
-						val = dashboardAddon.Containers[rC].CPURequests
+						val = reschedulerAddon.Containers[rC].CPURequests
 					} else {
 						val = ""
 					}
 				case "kubernetesReschedulerMemoryRequests":
 					if rC > -1 {
-						val = dashboardAddon.Containers[rC].MemoryRequests
+						val = reschedulerAddon.Containers[rC].MemoryRequests
 					} else {
 						val = ""
 					}
 				case "kubernetesReschedulerCPULimit":
 					if rC > -1 {
-						val = dashboardAddon.Containers[rC].CPULimits
+						val = reschedulerAddon.Containers[rC].CPULimits
 					} else {
 						val = ""
 					}
 				case "kubernetesReschedulerMemoryLimit":
 					if rC > -1 {
-						val = dashboardAddon.Containers[rC].MemoryLimits
+						val = reschedulerAddon.Containers[rC].MemoryLimits
 					} else {
 						val = ""
 					}
