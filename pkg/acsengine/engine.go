@@ -603,6 +603,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "maxPods", properties.OrchestratorProfile.KubernetesConfig.MaxPods)
 		addValue(parametersMap, "gchighthreshold", properties.OrchestratorProfile.KubernetesConfig.GCHighThreshold)
 		addValue(parametersMap, "gclowthreshold", properties.OrchestratorProfile.KubernetesConfig.GCLowThreshold)
+		addValue(parametersMap, "etcdDownloadURLBase", cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase)
+		addValue(parametersMap, "etcdVersion", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion)
 		addValue(parametersMap, "etcdDiskSizeGB", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB)
 
 		if properties.OrchestratorProfile.KubernetesConfig == nil ||
@@ -1308,6 +1310,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = DefaultGeneratorCode
 				case "orchestratorName":
 					val = DefaultOrchestratorName
+				case "etcdImageBase":
+					val = cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase
+				case "etcdVersion":
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion
 				case "etcdDiskSizeGB":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB
 				default:

@@ -563,11 +563,6 @@ func (p *Properties) HasAadProfile() bool {
 	return p.AADProfile != nil
 }
 
-// IsCustomEtcdVersion Checks if etcd version is NOT default 2.5.2
-func (o *OrchestratorProfile) IsCustomEtcdVersion() bool {
-	return "2.5.2" != o.KubernetesConfig.EtcdVersion
-}
-
 // GetAPIServerEtcdAPIVersion Used to set apiserver's etcdapi version
 func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
 	// if we are here, version has already been validated..

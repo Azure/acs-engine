@@ -20,7 +20,10 @@ var (
 	labelValueRegex *regexp.Regexp
 	labelKeyRegex   *regexp.Regexp
 	// Any version has to be mirrored in https://acs-mirror.azureedge.net/github-coreos/etcd-v[Version]-linux-amd64.tar.gz
-	etcdValidVersions = [...]string{"2.5.2", "3.1.10"}
+	etcdValidVersions = [...]string{"2.2.5", "2.3.0", "2.3.1", "2.3.2", "2.3.3", "2.3.4", "2.3.5", "2.3.6", "2.3.7", "2.3.8",
+		"3.0.0", "3.0.1", "3.0.2", "3.0.3", "3.0.4", "3.0.5", "3.0.6", "3.0.7", "3.0.8", "3.0.9", "3.0.10", "3.0.11", "3.0.12", "3.0.13", "3.0.14", "3.0.15", "3.0.16", "3.0.17",
+		"3.1.0", "3.1.1", "3.1.2", "3.1.2", "3.1.3", "3.1.4", "3.1.5", "3.1.6", "3.1.7", "3.1.8", "3.1.9", "3.1.10",
+		"3.2.0", "3.2.1", "3.2.2", "3.2.3", "3.2.4", "3.2.5", "3.2.6", "3.2.7", "3.2.8", "3.2.9"}
 )
 
 const (
@@ -37,20 +40,16 @@ func init() {
 }
 
 func isValidEtcdVersion(etcdVersion string) error {
-	// Empty versions is defaulted to 2.5.2 on the generalized api model
-	// after vlabs validation. Empty "" version is a valid version for etcd
-	if "" == etcdVersion {
+	// "" is a valid etcdVersion that maps to DefaultEtcdVersion
+	if etcdVersion == "" {
 		return nil
 	}
-	// We have a version set by user
-	validVersions := "" // a bag of valid versions
 	for _, ver := range etcdValidVersions {
 		if ver == etcdVersion {
 			return nil
 		}
-		validVersions = fmt.Sprintf("%s %s", validVersions, ver)
 	}
-	return fmt.Errorf("Invalid etcd version(%s), valid versions are%s", etcdVersion, validVersions)
+	return fmt.Errorf("Invalid etcd version(%s), valid versions are%s", etcdVersion, etcdValidVersions)
 }
 
 // Validate implements APIObject

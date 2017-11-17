@@ -1,9 +1,6 @@
 #cloud-config
 
 packages:
-{{if not .OrchestratorProfile.IsCustomEtcdVersion}}
- - etcd
-{{end}}
  - jq
  - traceroute
 
@@ -325,7 +322,6 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "mountetcdScript"}}
 
-{{if .OrchestratorProfile.IsCustomEtcdVersion}}
 - path: "/etc/systemd/system/etcd.service"
   permissions: "0644"
   owner: "root"
@@ -355,27 +351,20 @@ write_files:
   owner: "root"
   content: |
     #!/bin/bash
-    # if provisioning using any etcd version other than 2.5.2
-    # We download it and set it up here 
     set -x
-    ETCD_VER=v{{ .OrchestratorProfile.KubernetesConfig.EtcdVersion }}
-    DOWNLOAD_URL=https://acs-mirror.azureedge.net/github-coreos # we use mirror to github
+    ETCD_VER=v{{WrapAsVariable "etcdVersion"}}
+    DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
     mkdir -p /tmp/etcd-download
     curl -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
-    #create etcd user
     useradd -U "etcd"
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
     passwd -u "$etcd" > /dev/null
-    # update systemctl and start service
     systemctl daemon-reload 
     systemctl enable etcd.service
-{{end}}
 
 runcmd: 
-{{ if .OrchestratorProfile.IsCustomEtcdVersion }}
 - /opt/azure/containers/setup-etcd.sh
-{{end}}
 - apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
 - /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',http://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
 - sudo /bin/chown -R etcd:etcd /var/lib/etcd/default

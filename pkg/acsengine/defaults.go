@@ -26,6 +26,7 @@ var (
 	DefaultKubernetesSpecConfig = KubernetesSpecConfig{
 		KubernetesImageBase:              "gcrio.azureedge.net/google_containers/",
 		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
+		EtcdDownloadURLBase:              "https://acs-mirror.azureedge.net/github-coreos",
 		KubeBinariesSASURLBase:           "https://acs-mirror.azureedge.net/wink8s/",
 		WindowsTelemetryGUID:             "fb801154-36b9-41bc-89c2-f4d4f05472b0",
 		CNIPluginsDownloadURL:            "https://acs-mirror.azureedge.net/cni/cni-amd64-" + CniPluginVer + ".tgz",
@@ -125,6 +126,7 @@ var (
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase:              "crproxy.trafficmanager.net:6000/google_containers/",
 			TillerImageBase:                  "crproxy.trafficmanager.net:6000/kubernetes-helm/",
+			EtcdDownloadURLBase:              "https://acsengine.blob.core.chinacloudapi.cn/github-coreos",
 			CNIPluginsDownloadURL:            "https://acsengine.blob.core.chinacloudapi.cn/cni/cni-plugins-amd64-latest.tgz",
 			VnetCNILinuxPluginsDownloadURL:   "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-linux-amd64-latest.tgz",
 			VnetCNIWindowsPluginsDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-windows-amd64-latest.zip",
@@ -243,6 +245,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 		if o.KubernetesConfig.KubernetesImageBase == "" {
 			o.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
+		}
+		if o.KubernetesConfig.EtcdVersion == "" {
+			o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
 		}
 		if o.KubernetesConfig.NetworkPolicy == "" {
 			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
