@@ -70,6 +70,10 @@
       "category": "network"
     },
     {
+      "cluster_definition": "networkpolicy/kubernetes-azure.json",
+      "category": "network"
+    },
+    {
       "cluster_definition": "kubernetes-config/kubernetes-clustersubnet.json",
       "category": "network"
     },
