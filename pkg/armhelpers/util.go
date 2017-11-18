@@ -151,7 +151,7 @@ func GetK8sVMName(osType api.OSType, isAKS bool, nameSuffix, agentPoolName strin
 		return fmt.Sprintf("%s-%s-%s-%d", prefix, agentPoolName, nameSuffix, agentIndex), nil
 	}
 	if osType == api.Windows {
-		return fmt.Sprintf("%s%s90%d%d", nameSuffix[:5], prefix, 900+agentPoolIndex, agentIndex), nil
+		return fmt.Sprintf("%s%s%d%d", nameSuffix[:5], prefix, 900+agentPoolIndex, agentIndex), nil
 	}
 	return "", fmt.Errorf("Failed to reconstruct VM Name")
 }
