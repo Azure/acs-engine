@@ -30,6 +30,7 @@ EXPECTED_LINUX_AGENTS="${EXPECTED_LINUX_AGENTS:-3}"
 EXPECTED_WINDOWS_AGENTS="${EXPECTED_WINDOWS_AGENTS:-0}"
 EXPECTED_DNS="${EXPECTED_DNS:-2}"
 EXPECTED_DASHBOARD="${EXPECTED_DASHBOARD:-1}"
+EXPECTED_RESCHEDULER="${EXPECTED_RESCHEDULER:-0}"
 EXPECTED_ORCHESTRATOR_VERSION="${EXPECTED_ORCHESTRATOR_VERSION:-}"
 
 KUBE_PROXY_COUNT=$((EXPECTED_NODE_COUNT-$EXPECTED_WINDOWS_AGENTS))
@@ -102,7 +103,7 @@ fi
 ###### Check existence and status of essential pods
 
 # we test other essential pods (kube-dns, kube-proxy) separately
-pods="heapster rescheduler kube-addon-manager kube-apiserver kube-controller-manager kube-scheduler tiller"
+pods="heapster kube-addon-manager kube-apiserver kube-controller-manager kube-scheduler tiller"
 log "Checking $pods"
 
 count=60
@@ -152,6 +153,23 @@ if (( ${EXPECTED_DASHBOARD} != 0 )); then
   fi
 else
   log "Expecting no dashboard"
+fi
+
+###### Check for Rescheduler
+if (( ${EXPECTED_RESCHEDULER} != 0 )); then
+  log "Checking Rescheduler"
+  count=60
+  while (( $count > 0 )); do
+    log "  ... counting down $count"
+    running=$(kubectl get pods --namespace=kube-system | grep rescheduler | grep Running | wc | awk '{print $1}')
+    if (( ${running} == ${EXPECTED_RESCHEDULER} )); then break; fi
+    sleep 5; count=$((count-1))
+  done
+  if (( ${running} != ${EXPECTED_RESCHEDULER} )); then
+    log "K8S: gave up waiting for rescheduler"; exit 1
+  fi
+else
+  log "Expecting no rescheduler"
 fi
 
 ###### Check for Kube-Proxys
