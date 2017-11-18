@@ -141,21 +141,21 @@ if (( ${running} != ${EXPECTED_DNS} )); then
   log "K8S: gave up waiting for kube-dns"; exit 1
 fi
 
-###### Check for Rescheduler
-if (( ${EXPECTED_RESCHEDULER} != 0 )); then
-  log "Checking Rescheduler"
+###### Check for Kube-Dashboard
+if (( ${EXPECTED_DASHBOARD} != 0 )); then
+  log "Checking Kube-Dashboard"
   count=60
   while (( $count > 0 )); do
     log "  ... counting down $count"
-    running=$(kubectl get pods --namespace=kube-system | grep rescheduler | grep Running | wc | awk '{print $1}')
-    if (( ${running} == ${EXPECTED_RESCHEDULER} )); then break; fi
+    running=$(kubectl get pods --namespace=kube-system | grep kubernetes-dashboard | grep Running | wc | awk '{print $1}')
+    if (( ${running} == ${EXPECTED_DASHBOARD} )); then break; fi
     sleep 5; count=$((count-1))
   done
-  if (( ${running} != ${EXPECTED_RESCHEDULER} )); then
-    log "K8S: gave up waiting for rescheduler"; exit 1
+  if (( ${running} != ${EXPECTED_DASHBOARD} )); then
+    log "K8S: gave up waiting for kubernetes-dashboard"; exit 1
   fi
 else
-  log "Expecting no rescheduler"
+  log "Expecting no dashboard"
 fi
 
 ###### Check for Kube-Proxys
