@@ -104,6 +104,9 @@ fi
 
 # we test other essential pods (kube-dns, kube-proxy) separately
 pods="heapster kube-addon-manager kube-apiserver kube-controller-manager kube-scheduler tiller"
+if (( ${EXPECTED_RESCHEDULER} != 0 )); then
+    pods="$pods rescheduler"
+fi
 log "Checking $pods"
 
 count=60
@@ -136,23 +139,6 @@ while (( $count > 0 )); do
 done
 if (( ${running} != ${EXPECTED_DNS} )); then
   log "K8S: gave up waiting for kube-dns"; exit 1
-fi
-
-###### Check for Kube-Dashboard
-if (( ${EXPECTED_DASHBOARD} != 0 )); then
-  log "Checking Kube-Dashboard"
-  count=60
-  while (( $count > 0 )); do
-    log "  ... counting down $count"
-    running=$(kubectl get pods --namespace=kube-system | grep kubernetes-dashboard | grep Running | wc | awk '{print $1}')
-    if (( ${running} == ${EXPECTED_DASHBOARD} )); then break; fi
-    sleep 5; count=$((count-1))
-  done
-  if (( ${running} != ${EXPECTED_DASHBOARD} )); then
-    log "K8S: gave up waiting for kubernetes-dashboard"; exit 1
-  fi
-else
-  log "Expecting no dashboard"
 fi
 
 ###### Check for Rescheduler
