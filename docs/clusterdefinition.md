@@ -47,10 +47,10 @@ Here are the valid values for the orchestrator types:
 `addons` describes various addons configuration. It is a child property of `kubernetesConfig`. Below is a list of currently available addons:
 
 |Name of addon|Enabled by default?|How many containers|Description|
-|---|---|---|
-|tiller|true|Delivers the Helm server-side component: tiller. See https://github.com/kubernetes/helm for more info.|
+|---|---|---|---|
+|tiller|true|1|Delivers the Helm server-side component: tiller. See https://github.com/kubernetes/helm for more info.|
 |kubernetes-dashboard|true|1|Delivers the kubernetes dashboard component. See https://github.com/kubernetes/dashboard for more info.|
-|rescheduler|false|Delivers the kubernetes rescheduler component.|
+|rescheduler|false|1|Delivers the kubernetes rescheduler component.|
 
 To give a bit more info on the `addons` property: We've tried to expose the basic bits of data that allow useful configuration of these cluster features. Here are some example usage patterns that will unpack what `addons` provide:
 
