@@ -225,6 +225,41 @@
       },
       "type": "string"
     },
+    "kubernetesReschedulerSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesReschedulerSpec"}}
+      "metadata": {
+        "description": "The container spec for rescheduler."
+      },
+      "type": "string"
+    },
+    "kubernetesReschedulerCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesReschedulerCPURequests"}}
+      "metadata": {
+        "description": "Rescheduler CPU Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesReschedulerMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesReschedulerMemoryRequests"}}
+      "metadata": {
+        "description": "Rescheduler Memory Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesReschedulerCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesReschedulerCPULimit"}}
+      "metadata": {
+        "description": "Rescheduler CPU Limit."
+      },
+      "type": "string"
+    },
+    "kubernetesReschedulerMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesReschedulerMemoryLimit"}}
+      "metadata": {
+        "description": "Rescheduler Memory Limit."
+      },
+      "type": "string"
+    },
     "kubernetesPodInfraContainerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesPodInfraContainerSpec"}}
       "metadata": {

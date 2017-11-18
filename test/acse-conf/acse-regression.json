@@ -82,6 +82,10 @@
       "category": "config"
     },
     {
+      "cluster_definition": "kubernetes-config/kubernetes-rescheduler.json",
+      "category": "config"
+    },
+    {
       "cluster_definition": "v20170131/swarmmode.json",
       "category": "version"
     },
