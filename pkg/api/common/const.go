@@ -1,5 +1,6 @@
 package common
 
+// ClusterContext e.g., "acs", "aks", or "vlabs"
 type ClusterContext string
 
 // the orchestrators supported
