@@ -25,14 +25,14 @@ func Test_GetAllSupportedKubernetesVersions(t *testing.T) {
 func Test_GetSupportedKubernetesVersion(t *testing.T) {
 	versions := GetAllSupportedKubernetesVersions()
 	for _, version := range versions {
-		supportedVersion := GetSupportedKubernetesVersion(version)
+		supportedVersion := GetSupportedKubernetesVersion(version, ACSContext)
 		if supportedVersion != version {
-			t.Errorf("GetSupportedKubernetesVersion(%s) should return the same passed-in string, instead returned %s", version, supportedVersion)
+			t.Errorf("GetSupportedKubernetesVersion(%s, %s) should return the same passed-in string, instead returned %s", version, ACSContext, supportedVersion)
 		}
 	}
 
-	defaultVersion := GetSupportedKubernetesVersion("")
-	if defaultVersion != KubernetesDefaultVersion {
-		t.Errorf("GetSupportedKubernetesVersion(\"\") should return the default version %s, instead returned %s", KubernetesDefaultVersion, defaultVersion)
+	defaultVersion := GetSupportedKubernetesVersion("", ACSContext)
+	if defaultVersion != KubernetesDefaultVersions[ACSContext] {
+		t.Errorf("GetSupportedKubernetesVersion(\"\", %s) should return the default version %s, instead returned %s", KubernetesDefaultVersions[ACSContext], ACSContext, defaultVersion)
 	}
 }
