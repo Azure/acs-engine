@@ -5,17 +5,17 @@
 This document describes how to upgrade kubernetes version for an existing cluster.
 
 *acs-engine* supports Kubernetes version upgrades starting from 1.5 release.
-During the upgrade, *acs-engine* successively visits virtual machines that constitute the cluster and performs the following operations:
+During the upgrade, *acs-engine* successively visits virtual machines that constitute the cluster (first the master nodes, then the agent nodes) and performs the following operations:
  - cordon the node and drain existing workload
  - delete the VM
  - create new VM and install desired orchestrator version
  - add the new VM to the cluster
 
-*acs-engine* allows a subsequent minor version upgrade at a time, for example, from 1.5.x to 1.6.x.
+*acs-engine* allows one subsequent minor version upgrade at a time, for example, from *1.5.x* to *1.6.y*.
 
-For upgrade that spans over more than a single minor version, this operation should be called several times, each time advancing the minor version by one. For example, to upgrade from 1.6.* to 1.8.* one should first upgrade the cluster to 1.7.*, following by upgrading it to 1.8.*
+For upgrade that spans over more than a single minor version, this operation should be called several times, each time advancing the minor version by one. For example, to upgrade from *1.6.x* to *1.8.y* one should first upgrade the cluster to *1.7.z*, followed by upgrading it to *1.8.y*
 
-To get the list of all available Kubernetes versions and upgrades, run the *orchestrators* command and specify Kubernetes orchestrator type. The output is a JSON document:
+To get the list of all available Kubernetes versions and upgrades, run the *orchestrators* command and specify Kubernetes orchestrator type. The output is a JSON object:
 ```
 ./bin/acs-engine orchestrators --orchestrator Kubernetes
 {
@@ -106,6 +106,18 @@ Once the desired Kubernetes version is finalized, call the *upgrade* command:
   --auth-method client_secret \
   --client-id <service principal id> \
   --client-secret <service principal secret>
+```
+For example,
+```
+./bin/acs-engine upgrade \
+  --subscription-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+  --deployment-dir ./_output/test \
+  --location westus \
+  --resource-group test-upgrade \
+  --upgrade-version 1.8.2 \
+  --auth-method client_secret \
+  --client-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+  --client-secret xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
 By its nature, the upgrade operation is long running and potentially could fail for various reasons, such as temporary lack of resources, etc. In this case, rerun the command. The *upgrade* command is idempotent, and will pick up execution from the point it failed on. 
