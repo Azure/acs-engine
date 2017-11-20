@@ -38,13 +38,19 @@ type UpgradeAgentNode struct {
 // backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 // the node
 func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
+	var kubeAPIServerURL string
 
-	// Currently in a single node cluster the api server will not be running when this point is reached on the first node so it will always fail.
-	// err := operations.SafelyDrainNode(kan.Client, log.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vm.Name)
-	// if err != nil {
-	// 	log.Infoln(fmt.Sprintf("Error draining agent VM: %s", *vm.Name))
-	// 	return err
-	// }
+	if kan.UpgradeContainerService.Properties.HostedMasterProfile != nil {
+		kubeAPIServerURL = kan.UpgradeContainerService.Properties.HostedMasterProfile.FQDN
+	} else {
+		kubeAPIServerURL = kan.UpgradeContainerService.Properties.MasterProfile.FQDN
+	}
+
+	err := operations.SafelyDrainNode(kan.Client, logrus.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vmName, time.Minute)
+	if err != nil {
+		kan.logger.Errorf(fmt.Sprintf("Error draining agent VM: %s", *vmName))
+		return err
+	}
 
 	if err := operations.CleanDeleteVirtualMachine(kan.Client, kan.logger, kan.ResourceGroup, *vmName); err != nil {
 		return err
@@ -85,10 +91,10 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 	return nil
 }
 
-// Validate will verify the that master/agent node has been upgraded as expected.
+// Validate will verify that agent node has been upgraded as expected.
 func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 	if vmName == nil || *vmName == "" {
-		kan.logger.Warningf(fmt.Sprintf("VM name was empty. Skipping node condition check"))
+		kan.logger.Warningf("VM name was empty. Skipping node condition check")
 		return nil
 	}
 
@@ -97,10 +103,6 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 		masterURL = kan.UpgradeContainerService.Properties.HostedMasterProfile.FQDN
 	} else {
 		masterURL = kan.UpgradeContainerService.Properties.MasterProfile.FQDN
-	}
-
-	if masterURL == "" {
-		kan.Translator.Errorf("Control plane FQDN was not set.")
 	}
 
 	client, err := kan.Client.GetKubernetesClient(masterURL, kan.kubeConfig, interval, timeout)
@@ -113,13 +115,13 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 		for {
 			agentNode, err := client.GetNode(*vmName)
 			if err != nil {
-				kan.logger.Infof(fmt.Sprintf("Agent VM: %s status error: %v\n", *vmName, err))
+				kan.logger.Infof("Agent VM: %s status error: %v\n", *vmName, err)
 				time.Sleep(time.Second * 5)
 			} else if node.IsNodeReady(agentNode) {
-				kan.logger.Infof(fmt.Sprintf("Agent VM: %s is ready", *vmName))
+				kan.logger.Infof("Agent VM: %s is ready", *vmName)
 				ch <- struct{}{}
 			} else {
-				kan.logger.Infof(fmt.Sprintf("Agent VM: %s not ready yet...", *vmName))
+				kan.logger.Infof("Agent VM: %s not ready yet...", *vmName)
 				time.Sleep(time.Second * 5)
 			}
 		}
@@ -130,7 +132,7 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 		case <-ch:
 			return nil
 		case <-time.After(timeout):
-			kan.logger.Errorf(fmt.Sprintf("Node was not ready within %v", timeout))
+			kan.logger.Errorf("Node was not ready within %v", timeout)
 			return fmt.Errorf("Node was not ready within %v", timeout)
 		}
 	}
