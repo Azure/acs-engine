@@ -1,8 +1,5 @@
-# Script file to install prometheus and grafana
-
 #!/bin/bash
-
-set -e
+set -x
 
 echo $(date) " - Starting Script"
 
@@ -35,25 +32,97 @@ then
     exit 1
 fi
 
+install_helm() {
+    echo $(date) " - Downloading helm"
+    curl https://storage.googleapis.com/kubernetes-helm/helm-v2.6.2-linux-amd64.tar.gz > helm-v2.6.2-linux-amd64.tar.gz
+    tar -zxvf helm-v2.6.2-linux-amd64.tar.gz
+    mv linux-amd64/helm /usr/local/bin/helm
+    echo $(date) " - Downloading prometheus values"
+
+    # TODO: replace this
+    curl https://raw.githubusercontent.com/ritazh/acs-engine/feat-monitor/extensions/prometheus-grafana-k8s/v1/prometheus_values.yaml > prometheus_values.yaml 
+
+    sleep 10
+
+    echo $(date) " - helm version"
+    helm version
+    helm init
+
+    echo $(date) " - helm installed"
+}
+
+update_helm() {
+    echo $(date) " - Updating Helm repositories"
+    helm repo update
+}
+
+install_prometheus() {
+    PROM_RELEASE_NAME=monitoring
+    NAMESPACE=$1
+
+    echo $(date) " - Installing the Prometheus Helm chart"
+    helm install -f prometheus_values.yaml \
+        --name $PROM_RELEASE_NAME \
+        --namespace $NAMESPACE stable/prometheus
+
+    PROM_POD_PREFIX="$PROM_RELEASE_NAME-prometheus-server"
+    DESIRED_POD_STATE=Running
+
+    ATTEMPTS=30
+    SLEEP_TIME=10
+
+    ITERATION=0
+    while [[ $ITERATION -lt $ATTEMPTS ]]; do
+        echo $(date) " - Is the prometheus server pod ($PROM_POD_PREFIX-*) running? (attempt $(( $ITERATION + 1 )) of $ATTEMPTS)"
+
+        kubectl get po -n $NAMESPACE --no-headers |
+            awk '{print $1 " " $3}' |
+            grep $PROM_POD_PREFIX |
+            grep -q $DESIRED_POD_STATE
+
+        if [[ $? -eq 0 ]]; then
+            echo $(date) " - $PROM_POD_PREFIX-* is $DESIRED_POD_STATE"
+            break
+        fi
+
+        ITERATION=$(( $ITERATION + 1 ))
+        sleep $SLEEP_TIME
+    done
+}
+
+install_grafana() {
+    GF_RELEASE_NAME=dashboard
+    NAMESPACE=$1
+
+    echo $(date) " - Installing the Grafana Helm chart"
+    helm install --name $GF_RELEASE_NAME --namespace $NAMESPACE stable/grafana
+
+    GF_POD_PREFIX="$GF_RELEASE_NAME-grafana"
+    DESIRED_POD_STATE=Running
+
+    ATTEMPTS=30
+    SLEEP_TIME=10
+
+    ITERATION=0
+    while [[ $ITERATION -lt $ATTEMPTS ]]; do
+        echo $(date) " - Is the grafana pod ($GF_POD_PREFIX-*) running? (attempt $(( $ITERATION + 1 )) of $ATTEMPTS)"
+
+        kubectl get po -n $NAMESPACE --no-headers |
+            awk '{print $1 " " $3}' |
+            grep $GF_POD_PREFIX |
+            grep -q $DESIRED_POD_STATE
+
+        if [[ $? -eq 0 ]]; then
+            echo $(date) " - $GF_POD_PREFIX-* is $DESIRED_POD_STATE"
+            break
+        fi
+
+        ITERATION=$(( $ITERATION + 1 ))
+        sleep $SLEEP_TIME
+    done
+}
+
 # Deploy container
-echo $(date) " - Downloading helm"
-
-curl https://storage.googleapis.com/kubernetes-helm/helm-v2.6.2-linux-amd64.tar.gz > helm-v2.6.2-linux-amd64.tar.gz
-tar -zxvf helm-v2.6.2-linux-amd64.tar.gz
-mv linux-amd64/helm /usr/local/bin/helm
-echo $(date) " - Downloading prometheus values"
-
-# TODO: replace this
-curl https://raw.githubusercontent.com/ritazh/acs-engine/feat-monitor/extensions/prometheus-grafana-k8s/v1/prometheus_values.yaml > prometheus_values.yaml 
-pwd
-
-sleep 60
-
-echo $(date) " - helm version"
-helm version
-helm init
-
-echo $(date) " - helm installed"
 
 NAMESPACE=default
 K8S_SECRET_NAME=dashboard-grafana
@@ -62,14 +131,10 @@ DS_NAME=prometheus1
 
 PROM_URL=http://monitoring-prometheus-server
 
-echo $(date) " - Deploying prometheus chart"
-helm install --name monitoring -f prometheus_values.yaml stable/prometheus
-
-echo $(date) " - Deploying grafana chart"
-
-helm install --name dashboard stable/grafana
-
-echo $(date) " - Installed grafana chart"
+install_helm
+update_helm
+install_prometheus $NAMESPACE
+install_grafana $NAMESPACE
 
 sleep 5
 
@@ -101,12 +166,30 @@ DS_RAW=$(cat << EOF
 EOF
 )
 
-curl \
-    -X POST \
-    --user "$GF_USER_NAME:$GF_PASSWORD" \
-    -H "Content-Type: application/json" \
-    -d "$DS_RAW" \
-    "$GF_URL/api/datasources"
+
+
+ATTEMPTS=30
+SLEEP_TIME=10
+
+ITERATION=0
+while [[ $ITERATION -lt $ATTEMPTS ]]; do
+    echo $(date) " - Is the grafana api running? (attempt $(( $ITERATION + 1 )) of $ATTEMPTS)"
+
+    response=$(curl \
+        -X POST \
+        --user "$GF_USER_NAME:$GF_PASSWORD" \
+        -H "Content-Type: application/json" \
+        -d "$DS_RAW" \
+        "$GF_URL/api/datasources")
+
+    if [[ $response == *"Datasource added"* ]]; then
+        echo $(date) " - Data source added successfully"
+        break
+    fi
+
+    ITERATION=$(( $ITERATION + 1 ))
+    sleep $SLEEP_TIME
+done
 
 echo $(date) " - Creating the Kubernetes dashboard in Grafana"
 
@@ -119,7 +202,7 @@ import json
 dashboard = json.loads(''.join(fileinput.input()))
 dashboard.pop('__inputs')
 dashboard.pop('__requires')
-print(json.dumps(dashboard).replace('${DS_PROMETHEUS}', 'prometheus1'))
+print(json.dumps(dashboard).replace('\${DS_PROMETHEUS}', 'prometheus1'))
 
 EOF
 
