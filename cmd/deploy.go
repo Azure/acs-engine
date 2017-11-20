@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
@@ -298,8 +299,11 @@ func (dc *deployCmd) run() error {
 		templateJSON,
 		parametersJSON,
 		nil); err != nil {
-		b, _ := json.Marshal(res)
-		log.Errorf(string(b))
+		if res != nil && res.Response.Response != nil && res.Body != nil {
+			defer res.Body.Close()
+			body, _ := ioutil.ReadAll(res.Body)
+			log.Errorf(string(body))
+		}
 		log.Fatalln(err)
 	}
 
