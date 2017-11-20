@@ -30,6 +30,7 @@ EXPECTED_LINUX_AGENTS="${EXPECTED_LINUX_AGENTS:-3}"
 EXPECTED_WINDOWS_AGENTS="${EXPECTED_WINDOWS_AGENTS:-0}"
 EXPECTED_DNS="${EXPECTED_DNS:-2}"
 EXPECTED_DASHBOARD="${EXPECTED_DASHBOARD:-1}"
+EXPECTED_RESCHEDULER="${EXPECTED_RESCHEDULER:-0}"
 EXPECTED_ORCHESTRATOR_VERSION="${EXPECTED_ORCHESTRATOR_VERSION:-}"
 
 KUBE_PROXY_COUNT=$((EXPECTED_NODE_COUNT-$EXPECTED_WINDOWS_AGENTS))
@@ -102,7 +103,10 @@ fi
 ###### Check existence and status of essential pods
 
 # we test other essential pods (kube-dns, kube-proxy) separately
-pods="heapster rescheduler kube-addon-manager kube-apiserver kube-controller-manager kube-scheduler tiller"
+pods="heapster kube-addon-manager kube-apiserver kube-controller-manager kube-scheduler tiller"
+if (( ${EXPECTED_RESCHEDULER} != 0 )); then
+    pods="$pods rescheduler"
+fi
 log "Checking $pods"
 
 count=60
