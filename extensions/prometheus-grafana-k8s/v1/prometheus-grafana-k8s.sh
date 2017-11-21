@@ -76,7 +76,7 @@ install_prometheus() {
     PROM_POD_PREFIX="$PROM_RELEASE_NAME-prometheus-server"
     DESIRED_POD_STATE=Running
 
-    ATTEMPTS=30
+    ATTEMPTS=90
     SLEEP_TIME=10
 
     ITERATION=0
@@ -108,7 +108,7 @@ install_grafana() {
     GF_POD_PREFIX="$GF_RELEASE_NAME-grafana"
     DESIRED_POD_STATE=Running
 
-    ATTEMPTS=30
+    ATTEMPTS=90
     SLEEP_TIME=10
 
     ITERATION=0
@@ -176,7 +176,7 @@ EOF
 
 
 
-ATTEMPTS=30
+ATTEMPTS=90
 SLEEP_TIME=10
 
 ITERATION=0
