@@ -30,7 +30,7 @@ type PkiKeyCertPair struct {
 }
 
 // CreatePki creates PKI certificates
-func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
+func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
 	start := time.Now()
 	defer func(s time.Time) {
 		log.Debugf("pki: PKI asset creation took %s", time.Since(s))
@@ -52,17 +52,21 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		clientPrivateKey      *rsa.PrivateKey
 		kubeConfigCertificate *x509.Certificate
 		kubeConfigPrivateKey  *rsa.PrivateKey
+		etcdCertificate       *x509.Certificate
+		etcdPrivateKey        *rsa.PrivateKey
+		etcdClientCertificate *x509.Certificate
+		etcdClientPrivateKey  *rsa.PrivateKey
 	)
 	errors := make(chan error)
 
 	var err error
 	caCertificate, err = pemToCertificate(caPair.CertificatePem)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, nil, err
 	}
 	caPrivateKey, err = pemToKey(caPair.PrivateKeyPem)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, nil, err
 	}
 
 	go func() {
@@ -87,22 +91,48 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		errors <- err
 	}()
 
+	go func() {
+		var err error
+		organization := make([]string, 1)
+		organization[0] = "system:masters"
+		etcdCertificate, etcdPrivateKey, err = createCertificate("etcd", caCertificate, caPrivateKey, false, nil, nil, organization)
+		errors <- err
+	}()
+
+	go func() {
+		var err error
+		organization := make([]string, 1)
+		organization[0] = "system:masters"
+		etcdClientCertificate, etcdClientPrivateKey, err = createCertificate("etcdclient", caCertificate, caPrivateKey, false, nil, nil, organization)
+		errors <- err
+	}()
+
 	e1 := <-errors
 	e2 := <-errors
 	e3 := <-errors
+	e4 := <-errors
+	e5 := <-errors
 	if e1 != nil {
-		return nil, nil, nil, e1
+		return nil, nil, nil, nil, nil, e1
 	}
 	if e2 != nil {
-		return nil, nil, nil, e2
+		return nil, nil, nil, nil, nil, e2
 	}
 	if e3 != nil {
-		return nil, nil, nil, e2
+		return nil, nil, nil, nil, nil, e2
+	}
+	if e4 != nil {
+		return nil, nil, nil, nil, nil, e4
+	}
+	if e5 != nil {
+		return nil, nil, nil, nil, nil, e5
 	}
 
 	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(clientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(clientPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(kubeConfigCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(kubeConfigPrivateKey))},
+		&PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdPrivateKey))},
+		&PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdClientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdClientPrivateKey))},
 		nil
 }
 
