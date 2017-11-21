@@ -246,6 +246,27 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			t.Error("should not error when basic backoff and rate limiting are set to true with no options")
 		}
 	}
+
+	trueVal := true
+	// Tests that apply to pre-1.8 releases
+	for _, k8sVersion := range []string{common.KubernetesVersion1Dot5Dot8, common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot7Dot7} {
+		c := KubernetesConfig{
+			UseCloudControllerManager: &trueVal,
+		}
+		if err := c.Validate(k8sVersion); err == nil {
+			t.Error("should error because UseCloudControllerManager is not available before v1.8")
+		}
+	}
+
+	// Tests that apply to 1.8 and later releases
+	for _, k8sVersion := range []string{common.KubernetesVersion1Dot8Dot1} {
+		c := KubernetesConfig{
+			UseCloudControllerManager: &trueVal,
+		}
+		if err := c.Validate(k8sVersion); err != nil {
+			t.Error("should not error because UseCloudControllerManager is available since v1.8")
+		}
+	}
 }
 
 func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
