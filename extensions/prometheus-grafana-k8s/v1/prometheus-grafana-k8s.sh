@@ -69,9 +69,20 @@ install_prometheus() {
 
     echo $(date) " - Installing the Prometheus Helm chart"
 
+    STORAGECLASS_PARAM=$(storageclass_param)
+
+    echo $(date) " - Checking to see if this is an unitiated installation"
+    helm get $PROM_RELEASE_NAME > /dev/null 2> /dev/null
+    if [[ $? -eq 0 ]]; then
+        echo $(date) " - Monitoring extension has already started"
+        return 1
+    else
+        echo $(date) " - Initial master node extension, continuing with installation"
+    fi
+
     helm install -f prometheus_values.yaml \
         --name $PROM_RELEASE_NAME \
-        --namespace $NAMESPACE stable/prometheus $(storageclass_param)
+        --namespace $NAMESPACE stable/prometheus $STORAGECLASS_PARAM
 
     PROM_POD_PREFIX="$PROM_RELEASE_NAME-prometheus-server"
     DESIRED_POD_STATE=Running
@@ -142,6 +153,10 @@ PROM_URL=http://monitoring-prometheus-server
 install_helm
 update_helm
 install_prometheus $NAMESPACE
+if [[ $? -eq 1 ]]; then
+    echo $(date) " - Not the first master to attempt monitoring initialization. Exiting"
+    exit 1
+fi
 install_grafana $NAMESPACE
 
 sleep 5
