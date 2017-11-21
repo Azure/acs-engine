@@ -32,6 +32,13 @@ then
     exit 1
 fi
 
+storageclass_param() {
+	kubectl get no -l kubernetes.io/role=agent -l storageprofile=managed --no-headers -o jsonpath="{.items[0].metadata.name}" > /dev/null 2> /dev/null
+	if [[ $? -eq 0 ]]; then
+		echo '--set server.persistentVolume.storageClass=managed-standard'
+	fi
+}
+
 install_helm() {
     echo $(date) " - Downloading helm"
     curl https://storage.googleapis.com/kubernetes-helm/helm-v2.6.2-linux-amd64.tar.gz > helm-v2.6.2-linux-amd64.tar.gz
@@ -61,9 +68,10 @@ install_prometheus() {
     NAMESPACE=$1
 
     echo $(date) " - Installing the Prometheus Helm chart"
+
     helm install -f prometheus_values.yaml \
         --name $PROM_RELEASE_NAME \
-        --namespace $NAMESPACE stable/prometheus
+        --namespace $NAMESPACE stable/prometheus $(storageclass_param)
 
     PROM_POD_PREFIX="$PROM_RELEASE_NAME-prometheus-server"
     DESIRED_POD_STATE=Running
@@ -95,7 +103,7 @@ install_grafana() {
     NAMESPACE=$1
 
     echo $(date) " - Installing the Grafana Helm chart"
-    helm install --name $GF_RELEASE_NAME --namespace $NAMESPACE stable/grafana
+    helm install --name $GF_RELEASE_NAME --namespace $NAMESPACE stable/grafana $(storageclass_param)
 
     GF_POD_PREFIX="$GF_RELEASE_NAME-grafana"
     DESIRED_POD_STATE=Running
