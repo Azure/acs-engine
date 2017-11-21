@@ -39,6 +39,29 @@ storageclass_param() {
 	fi
 }
 
+wait_for_tiller() {
+    ATTEMPTS=90
+    SLEEP_TIME=10
+
+    ITERATION=0
+    while [[ $ITERATION -lt $ATTEMPTS ]]; do
+        echo $(date) " - Is Helm running? (attempt $(( $ITERATION + 1 )) of $ATTEMPTS)"
+
+        helm version > /dev/null 2> /dev/null
+
+        if [[ $? -eq 0 ]]; then
+            echo $(date) " - Helm is running"
+            return
+        fi
+
+        ITERATION=$(( $ITERATION + 1 ))
+        sleep $SLEEP_TIME
+    done
+
+    echo $(date) " - Helm failed to start in the alotted time"
+    return 1
+}
+
 install_helm() {
     echo $(date) " - Downloading helm"
     curl https://storage.googleapis.com/kubernetes-helm/helm-v2.6.2-linux-amd64.tar.gz > helm-v2.6.2-linux-amd64.tar.gz
@@ -151,6 +174,11 @@ DS_NAME=prometheus1
 PROM_URL=http://monitoring-prometheus-server
 
 install_helm
+wait_for_tiller
+if [[ $? -ne 0 ]]; then
+    echo $(date) " - Tiller did not respond in a timely manner. Exiting"
+    exit 1
+fi
 update_helm
 install_prometheus $NAMESPACE
 if [[ $? -eq 1 ]]; then
