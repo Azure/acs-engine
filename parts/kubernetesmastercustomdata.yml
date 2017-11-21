@@ -54,7 +54,7 @@ write_files:
   content: |
     {{WrapAsVariable "clientCertificate"}}
 
-- path: "/etc/kubernetes/certs/client.crt"
+- path: "/etc/kubernetes/certs/etcdclient.crt"
   permissions: "0644"
   encoding: "base64"
   owner: "root"
