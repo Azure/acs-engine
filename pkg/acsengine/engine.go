@@ -545,7 +545,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)
 		}
 
-		if properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager {
+		if properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager {
 			kubernetesCcmSpec := properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["ccm"]
 			if properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage != "" {
 				kubernetesCcmSpec = properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage
@@ -1399,7 +1399,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return fmt.Sprintf("\"defaultValue\": \"%s\",", val)
 		},
 		"UseCloudControllerManager": func() bool {
-			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager
+			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager
 		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {

@@ -207,7 +207,7 @@ type KubernetesConfig struct {
 	UseManagedIdentity               bool              `json:"useManagedIdentity,omitempty"`
 	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
 	CustomCcmImage                   string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager
-	UseCloudControllerManager        bool              `json:"useCloudControllerManager,omitempty"`
+	UseCloudControllerManager        *bool             `json:"useCloudControllerManager,omitempty"`
 	UseInstanceMetadata              *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                       bool              `json:"enableRbac,omitempty"`
 	EnableAggregatedAPIs             bool              `json:"enableAggregatedAPIs,omitempty"`
