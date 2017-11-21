@@ -54,7 +54,6 @@ $global:TenantId = "{{WrapAsVariable "tenantID"}}"
 $global:SubscriptionId = "{{WrapAsVariable "subscriptionId"}}"
 $global:ResourceGroup = "{{WrapAsVariable "resourceGroup"}}"
 $global:SubnetName = "{{WrapAsVariable "subnetName"}}"
-$global:MasterSubnet = "{{WrapAsVariable "subnet"}}"
 $global:SecurityGroupName = "{{WrapAsVariable "nsgName"}}"
 $global:VNetName = "{{WrapAsVariable "virtualNetworkName"}}"
 $global:RouteTableName = "{{WrapAsVariable "routeTableName"}}"
@@ -155,6 +154,14 @@ New-InfraContainer()
     docker build -t kubletwin/pause .
 }
 
+function Get-AgentpoolSubnet()
+{
+    $netIPAddr = Get-NetIPAddress -InterfaceIndex (Get-NetAdapter| ? ifAlias -like "Ethernet*").ifIndex -AddressFamily IPv4
+    [IPAddress]$ipAddr = $netIPAddr.IPAddress
+    $ipAddr.Address = $ipAddr.Address -band (([UInt32]::MaxValue) -shr (32 - $netIPAddr.PrefixLength))
+    return $ipAddr.IPAddressToString + "/" + $netIPAddr.PrefixLength
+}
+
 function
 Write-KubernetesStartFiles($podCIDR)
 {
@@ -180,11 +187,13 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
 
     $KubeletArgListStr = "@`($KubeletArgListStr`)"
 
+    $agentpoolSubnet = Get-AgentpoolSubnet
+
     $kubeStartStr = @"
 `$global:AzureHostname = "$AzureHostname"
 `$global:MasterIP = "$MasterIP"
 `$global:KubeDnsServiceIp = "$KubeDnsServiceIp"
-`$global:MasterSubnet = "$global:MasterSubnet"
+`$global:AgentPoolSubnet = "$agentpoolSubnet"
 `$global:KubeClusterCIDR = "$global:KubeClusterCIDR"
 `$global:KubeServiceCIDR = "$global:KubeServiceCIDR"
 `$global:KubeBinariesVersion = "$global:KubeBinariesVersion"
@@ -213,7 +222,7 @@ Test-PodCIDR(`$podCIDR)
 }
 
 function
-Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
+Update-CNIConfig(`$podCIDR, `$agentpoolSubnetGW)
 {
     `$jsonSampleConfig =
 "{
@@ -245,11 +254,11 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
     `$configJson = ConvertFrom-Json `$jsonSampleConfig
     `$configJson.name = `$global:NetworkMode.ToLower()
     `$configJson.ipam.subnet=`$podCIDR
-    `$configJson.ipam.routes[0].GW = `$masterSubnetGW
+    `$configJson.ipam.routes[0].GW = `$agentpoolSubnetGW
     `$configJson.dns.Nameservers[0] = `$global:KubeDnsServiceIp
 
     `$configJson.AdditionalArgs[0].Value.ExceptionList[0] = `$global:KubeClusterCIDR
-    `$configJson.AdditionalArgs[0].Value.ExceptionList[1] = `$global:MasterSubnet
+    `$configJson.AdditionalArgs[0].Value.ExceptionList[1] = `$global:AgentPoolSubnet
     `$configJson.AdditionalArgs[1].Value.DestinationPrefix  = `$global:KubeServiceCIDR
 
     if (Test-Path `$global:CNIConfig)
@@ -264,7 +273,7 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
 
 try
 {
-    `$masterSubnetGW = Get-DefaultGateway `$global:MasterSubnet
+    `$agentpoolSubnetGW = Get-DefaultGateway `$global:AgentPoolSubnet
     `$podCIDR=Get-PodCIDR
     `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
 
@@ -301,12 +310,12 @@ try
         Write-Host "No HNS network found, creating a new one..."
         ipmo `$global:HNSModule
 
-        `$hnsNetwork = New-HNSNetwork -Type `$global:NetworkMode -AddressPrefix `$podCIDR -Gateway `$masterSubnetGW -Name `$global:NetworkMode.ToLower() -Verbose
+        `$hnsNetwork = New-HNSNetwork -Type `$global:NetworkMode -AddressPrefix `$podCIDR -Gateway `$agentpoolSubnetGW -Name `$global:NetworkMode.ToLower() -Verbose
     }
 
     Start-Sleep 10
     # Add route to all other POD networks
-    Update-CNIConfig `$podCIDR `$masterSubnetGW
+    Update-CNIConfig `$podCIDR `$agentpoolSubnetGW
 
     $KubeletCommandLine
 }
