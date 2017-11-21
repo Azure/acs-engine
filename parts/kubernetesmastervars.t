@@ -143,7 +143,7 @@
 {{end}}
     "generateProxyCertsScript": "{{GetKubernetesB64GenerateProxyCerts}}",
     "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
-{{if IsVNETIntegrated}}
+{{if IsAzureCNI}}
     "allocateNodeCidrs": false,
 {{else}}
     "allocateNodeCidrs": true,

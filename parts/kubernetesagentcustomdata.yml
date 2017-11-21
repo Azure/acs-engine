@@ -142,7 +142,7 @@ write_files:
   content: |
     #!/bin/bash
 
-{{if IsVNETIntegrated}}
+{{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
 {{end}}

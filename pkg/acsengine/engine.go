@@ -836,8 +836,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsPublic": func(ports []int) bool {
 			return len(ports) > 0
 		},
-		"IsVNETIntegrated": func() bool {
-			return cs.Properties.OrchestratorProfile.IsVNETIntegrated()
+		"IsAzureCNI": func() bool {
+			return cs.Properties.OrchestratorProfile.IsAzureCNI()
 		},
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
