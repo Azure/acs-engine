@@ -37,21 +37,23 @@ type UpgradeAgentNode struct {
 // DeleteNode takes state/resources of the master/agent node from ListNodeResources
 // backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 // the node
-func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
-	var kubeAPIServerURL string
+// The 'drain' flag is used to invoke 'cordon and drain' flow.
+func (kan *UpgradeAgentNode) DeleteNode(vmName *string, drain bool) error {
+	if drain {
+		var kubeAPIServerURL string
 
-	if kan.UpgradeContainerService.Properties.HostedMasterProfile != nil {
-		kubeAPIServerURL = kan.UpgradeContainerService.Properties.HostedMasterProfile.FQDN
-	} else {
-		kubeAPIServerURL = kan.UpgradeContainerService.Properties.MasterProfile.FQDN
+		if kan.UpgradeContainerService.Properties.HostedMasterProfile != nil {
+			kubeAPIServerURL = kan.UpgradeContainerService.Properties.HostedMasterProfile.FQDN
+		} else {
+			kubeAPIServerURL = kan.UpgradeContainerService.Properties.MasterProfile.FQDN
+		}
+
+		err := operations.SafelyDrainNode(kan.Client, kan.logger, kubeAPIServerURL, kan.kubeConfig, *vmName, time.Minute)
+		if err != nil {
+			kan.logger.Warningf("Error draining agent VM %s. Proceeding with deletion. Error: %v", *vmName, err)
+			// Proceed with deletion anyways
+		}
 	}
-
-	err := operations.SafelyDrainNode(kan.Client, logrus.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vmName, time.Minute)
-	if err != nil {
-		kan.logger.Errorf(fmt.Sprintf("Error draining agent VM: %s", *vmName))
-		return err
-	}
-
 	if err := operations.CleanDeleteVirtualMachine(kan.Client, kan.logger, kan.ResourceGroup, *vmName); err != nil {
 		return err
 	}

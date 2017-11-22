@@ -113,7 +113,7 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 
 		masterIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
-		err := upgradeMasterNode.DeleteNode(vm.Name)
+		err := upgradeMasterNode.DeleteNode(vm.Name, false)
 		if err != nil {
 			ku.logger.Infof("Error deleting master VM: %s, err: %v\n", *vm.Name, err)
 			return err
@@ -234,7 +234,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 
 			if vmProvisioningState != string(api.Succeeded) {
 				ku.logger.Infof("Deleting agent VM %s in provisioning state %s\n", *vm.Name, vmProvisioningState)
-				err := upgradeAgentNode.DeleteNode(vm.Name)
+				err := upgradeAgentNode.DeleteNode(vm.Name, false)
 				if err != nil {
 					ku.logger.Errorf("Error deleting agent VM %s: %v\n", *vm.Name, err)
 					return err
@@ -290,7 +290,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			}
 			ku.logger.Infof("Upgrading Agent VM: %s, pool name: %s\n", vm.Name, *agentPool.Name)
 
-			err := upgradeAgentNode.DeleteNode(&vm.Name)
+			err := upgradeAgentNode.DeleteNode(&vm.Name, true)
 			if err != nil {
 				ku.logger.Errorf("Error deleting agent VM %s: %v\n", vm.Name, err)
 				return err

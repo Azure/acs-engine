@@ -31,8 +31,9 @@ type UpgradeMasterNode struct {
 
 // DeleteNode takes state/resources of the master/agent node from ListNodeResources
 // backs up/preserves state as needed by a specific version of Kubernetes and then deletes
-// the node
-func (kmn *UpgradeMasterNode) DeleteNode(vmName *string) error {
+// the node.
+// The 'drain' flag is not used for deleting master nodes.
+func (kmn *UpgradeMasterNode) DeleteNode(vmName *string, drain bool) error {
 	if err := operations.CleanDeleteVirtualMachine(kmn.Client, kmn.logger, kmn.ResourceGroup, *vmName); err != nil {
 		return err
 	}
