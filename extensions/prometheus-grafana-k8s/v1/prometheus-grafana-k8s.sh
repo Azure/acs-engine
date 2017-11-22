@@ -32,6 +32,17 @@ then
     exit 1
 fi
 
+should_this_node_run_extension() {
+    FIRST_K8S_MASTER=$(kubectl get no -L kubernetes.io/role -l kubernetes.io/role=master --no-headers -o jsonpath="{.items[*].metadata.name}" | tr " " "\n" | sort | head -n 1)
+    if [[ $FIRST_K8S_MASTER = $(hostname) ]]; then
+        echo $(date) " - Local node $(hostname) is found to be the first master node $FIRST_K8S_MASTER"
+        return
+    else
+        echo $(date) " - Local node $(hostname) is not the first master node $FIRST_K8S_MASTER"
+        return 1
+    fi
+}
+
 storageclass_param() {
 	kubectl get no -l kubernetes.io/role=agent -l storageprofile=managed --no-headers -o jsonpath="{.items[0].metadata.name}" > /dev/null 2> /dev/null
 	if [[ $? -eq 0 ]]; then
@@ -92,20 +103,9 @@ install_prometheus() {
 
     echo $(date) " - Installing the Prometheus Helm chart"
 
-    STORAGECLASS_PARAM=$(storageclass_param)
-
-    echo $(date) " - Checking to see if this is an unitiated installation"
-    helm get $PROM_RELEASE_NAME > /dev/null 2> /dev/null
-    if [[ $? -eq 0 ]]; then
-        echo $(date) " - Monitoring extension has already started"
-        return 1
-    else
-        echo $(date) " - Initial master node extension, continuing with installation"
-    fi
-
     helm install -f prometheus_values.yaml \
         --name $PROM_RELEASE_NAME \
-        --namespace $NAMESPACE stable/prometheus $STORAGECLASS_PARAM
+        --namespace $NAMESPACE stable/prometheus $(storageclass_param)
 
     PROM_POD_PREFIX="$PROM_RELEASE_NAME-prometheus-server"
     DESIRED_POD_STATE=Running
@@ -164,6 +164,17 @@ install_grafana() {
     done
 }
 
+# this extension should only run on a single node
+# the logic to decide whether or not this current node
+# should run the extension is to alphabetically determine
+# if this local machine is the first in the list of master nodes
+# if it is, then run the extension. if not, exit
+should_this_node_run_extension
+if [[ $? -ne 0 ]]; then
+    echo $(date) " - Not the first master node, no longer continuing extension. Exiting"
+    exit 1
+fi
+
 # Deploy container
 
 NAMESPACE=default
@@ -181,10 +192,6 @@ if [[ $? -ne 0 ]]; then
 fi
 update_helm
 install_prometheus $NAMESPACE
-if [[ $? -eq 1 ]]; then
-    echo $(date) " - Not the first master to attempt monitoring initialization. Exiting"
-    exit 1
-fi
 install_grafana $NAMESPACE
 
 sleep 5
