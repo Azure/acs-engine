@@ -50,8 +50,8 @@ func (kan *UpgradeAgentNode) DeleteNode(vmName *string, drain bool) error {
 
 		err := operations.SafelyDrainNode(kan.Client, logrus.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vmName, time.Minute)
 		if err != nil {
-			kan.logger.Errorf(fmt.Sprintf("Error draining agent VM %s: %v", *vmName, err))
-			return err
+			kan.logger.Warningf("Error draining agent VM %s. Proceeding with deletion. Error: %v", *vmName, err)
+			// Proceed with deletion anyways
 		}
 	}
 	if err := operations.CleanDeleteVirtualMachine(kan.Client, kan.logger, kan.ResourceGroup, *vmName); err != nil {
