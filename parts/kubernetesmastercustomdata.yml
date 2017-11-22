@@ -59,7 +59,7 @@ write_files:
   encoding: "base64"
   owner: "root"
   content: |
-    {{WrapAsVariable "clientCertificate"}}
+    {{WrapAsVariable "etcdClientCertificate"}}
 
 - path: "/etc/kubernetes/certs/etcd.crt"
   permissions: "0644"
@@ -452,7 +452,7 @@ coreos:
 runcmd: 
 - /opt/azure/containers/setup-etcd.sh
 - apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
-- /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file="/etc/kubernetes/certs/ca.crt" --ca-file="/etc/kubernetes/certs/ca.crt" --cert-file="/etc/kubernetes/certs/etcd.crt" --key-file="/etc/kubernetes/certs/etcd.key" --peer-cert-file="/etc/kubernetes/certs/etcd.crt" --peer-key-file="/etc/kubernetes/certs/etcd.key" --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',https://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
+- /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file="/etc/kubernetes/certs/ca.crt" --cert-file="/etc/kubernetes/certs/etcd.crt" --key-file="/etc/kubernetes/certs/etcd.key" --peer-cert-file="/etc/kubernetes/certs/etcdclient.crt" --peer-key-file="/etc/kubernetes/certs/etcdclient.key" --initial-advertise-peer-urls=https://10.0.1.10:2380 --listen-peer-urls=https://10.0.1.10:2380 --advertise-client-urls https://127.0.0.1:2379 --listen-client-urls https://127.0.0.1:2379 --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
 - sudo /bin/chown -R etcd:etcd /var/lib/etcd/default
 - /opt/azure/containers/mountetcd.sh
 - sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
