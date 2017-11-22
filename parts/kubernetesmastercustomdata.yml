@@ -100,6 +100,15 @@ write_files:
   content: !!binary |
     MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR
 
+{{if UseCloudControllerManager }}
+- path: /etc/kubernetes/manifests/cloud-controller-manager.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_KUBERNETES_CLOUD_CONTROLLER_MANAGER_B64_GZIP_STR
+{{end}}
+
 - path: /etc/kubernetes/manifests/kube-scheduler.yaml
   permissions: "0644"
   encoding: gzip
@@ -242,6 +251,11 @@ write_files:
 {{else}}
     KUBELET_REGISTER_SCHEDULABLE={{WrapAsVariable "registerSchedulable"}}
 {{end}}
+{{if UseCloudControllerManager }}
+    CLOUD_PROVIDER=external
+{{else}}
+    CLOUD_PROVIDER=azure
+{{end}}
 
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
@@ -264,7 +278,7 @@ write_files:
     iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443
 {{end}}
 
-{{if IsVNETIntegrated}}
+{{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
 {{end}}
@@ -342,6 +356,16 @@ write_files:
     sed -i "/requestheader-username-headers/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{end}}
     sed -i "s|<etcdApiVersion>|{{ .OrchestratorProfile.GetAPIServerEtcdAPIVersion }}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+
+{{if UseCloudControllerManager }}
+    sed -i "s|<kubernetesCcmImageSpec>|{{WrapAsVariable "kubernetesCcmImageSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g; s|<kubernetesCtrlMgrRouteReconciliationPeriod>|{{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}|g" \
+      /etc/kubernetes/manifests/cloud-controller-manager.yaml
+
+    sed -i "/--\(cloud-config\|cloud-provider\|route-reconciliation-period\)=/d" \
+      /etc/kubernetes/manifests/kube-controller-manager.yaml
+    sed -i "/--\(cloud-config\|cloud-provider\)=/d" \
+      /etc/kubernetes/manifests/kube-apiserver.yaml
+{{end}}
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"

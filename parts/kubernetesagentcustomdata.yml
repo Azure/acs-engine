@@ -128,6 +128,11 @@ write_files:
     KUBELET_FIX_43704_3=""
   {{end}}
 {{end}}
+{{if UseCloudControllerManager }}
+    CLOUD_PROVIDER=external
+{{else}}
+    CLOUD_PROVIDER=azure
+{{end}}
 
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
@@ -142,7 +147,7 @@ write_files:
   content: |
     #!/bin/bash
 
-{{if IsVNETIntegrated}}
+{{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
 {{end}}

@@ -13,6 +13,7 @@
     "kubeConfigCertificate": "[parameters('kubeConfigCertificate')]",
     "kubeConfigPrivateKey": "[parameters('kubeConfigPrivateKey')]",
     "kubernetesHyperkubeSpec": "[parameters('kubernetesHyperkubeSpec')]",
+    "kubernetesCcmImageSpec": "[parameters('kubernetesCcmImageSpec')]",
     "kubernetesAddonManagerSpec": "[parameters('kubernetesAddonManagerSpec')]",
     "kubernetesAddonResizerSpec": "[parameters('kubernetesAddonResizerSpec')]",
     "kubernetesDashboardSpec": "[parameters('kubernetesDashboardSpec')]",
@@ -143,7 +144,7 @@
 {{end}}
     "generateProxyCertsScript": "{{GetKubernetesB64GenerateProxyCerts}}",
     "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
-{{if IsVNETIntegrated}}
+{{if IsAzureCNI}}
     "allocateNodeCidrs": false,
 {{else}}
     "allocateNodeCidrs": true,

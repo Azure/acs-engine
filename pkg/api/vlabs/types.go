@@ -224,6 +224,8 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitBucket     int               `json:"cloudProviderRateLimitBucket,omitempty"`
 	UseManagedIdentity               bool              `json:"useManagedIdentity,omitempty"`
 	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
+	CustomCcmImage                   string            `json:"customCcmImage,omitempty"`
+	UseCloudControllerManager        *bool             `json:"useCloudControllerManager,omitempty"`
 	UseInstanceMetadata              *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                       bool              `json:"enableRbac,omitempty"`
 	EnableAggregatedAPIs             bool              `json:"enableAggregatedAPIs,omitempty"`

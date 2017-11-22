@@ -127,6 +127,13 @@
       },
       "type": "string"
     },
+    "kubernetesCcmImageSpec": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The container spec for cloud-controller-manager."
+      },
+      "type": "string"
+    },
     "kubernetesAddonManagerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesAddonManagerSpec"}}
       "metadata": {

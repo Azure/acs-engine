@@ -281,7 +281,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 		}
 		if o.KubernetesConfig.ClusterSubnet == "" {
-			if o.IsVNETIntegrated() {
+			if o.IsAzureCNI() {
 				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
 				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesSubnet
 			} else {
@@ -289,7 +289,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 		if o.KubernetesConfig.MaxPods == 0 {
-			if o.IsVNETIntegrated() {
+			if o.IsAzureCNI() {
 				o.KubernetesConfig.MaxPods = DefaultKubernetesMaxPodsVNETIntegrated
 			} else {
 				o.KubernetesConfig.MaxPods = DefaultKubernetesMaxPods
@@ -418,7 +418,7 @@ func setMasterNetworkDefaults(a *api.Properties) {
 
 	if !a.MasterProfile.IsCustomVNET() {
 		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-			if a.OrchestratorProfile.IsVNETIntegrated() {
+			if a.OrchestratorProfile.IsAzureCNI() {
 				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
 				a.MasterProfile.Subnet = a.OrchestratorProfile.KubernetesConfig.ClusterSubnet
 				a.MasterProfile.FirstConsecutiveStaticIP = getFirstConsecutiveStaticIPAddress(a.MasterProfile.Subnet)
@@ -441,7 +441,7 @@ func setMasterNetworkDefaults(a *api.Properties) {
 		a.MasterProfile.IPAddressCount = 1
 
 		// Allocate IP addresses for pods if VNET integration is enabled.
-		if a.OrchestratorProfile.IsVNETIntegrated() {
+		if a.OrchestratorProfile.IsAzureCNI() {
 			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 				a.MasterProfile.IPAddressCount += a.OrchestratorProfile.KubernetesConfig.MaxPods
 			}
@@ -485,7 +485,7 @@ func setAgentNetworkDefaults(a *api.Properties) {
 			profile.IPAddressCount = 1
 
 			// Allocate IP addresses for pods if VNET integration is enabled.
-			if a.OrchestratorProfile.IsVNETIntegrated() {
+			if a.OrchestratorProfile.IsAzureCNI() {
 				if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 					profile.IPAddressCount += a.OrchestratorProfile.KubernetesConfig.MaxPods
 				}
