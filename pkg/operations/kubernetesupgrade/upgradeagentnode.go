@@ -37,7 +37,7 @@ type UpgradeAgentNode struct {
 // DeleteNode takes state/resources of the master/agent node from ListNodeResources
 // backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 // the node
-func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
+func (kan *UpgradeAgentNode) DeleteNode(vmName *string, drain bool) error {
 	var kubeAPIServerURL string
 
 	if kan.UpgradeContainerService.Properties.HostedMasterProfile != nil {
@@ -48,7 +48,7 @@ func (kan *UpgradeAgentNode) DeleteNode(vmName *string) error {
 
 	err := operations.SafelyDrainNode(kan.Client, logrus.New().WithField("operation", "upgrade"), kubeAPIServerURL, kan.kubeConfig, *vmName, time.Minute)
 	if err != nil {
-		kan.logger.Errorf(fmt.Sprintf("Error draining agent VM: %s", *vmName))
+		kan.logger.Errorf(fmt.Sprintf("Error draining agent VM %s: %v", *vmName, err))
 		return err
 	}
 

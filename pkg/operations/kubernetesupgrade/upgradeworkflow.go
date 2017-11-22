@@ -16,7 +16,7 @@ type UpgradeNode interface {
 	// DeleteNode takes state/resources of the master/agent node from ListNodeResources
 	// backs up/preserves state as needed by a specific version of Kubernetes and then deletes
 	// the node
-	DeleteNode(*string) error
+	DeleteNode(*string, bool) error
 
 	// CreateNode creates a new master/agent node with the targeted version of Kubernetes
 	CreateNode(string, int) error
