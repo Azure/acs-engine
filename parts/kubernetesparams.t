@@ -25,13 +25,13 @@
       },
       "type": "securestring"
     },
-    "etcdCertificate": {
+    "etcdServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"
       }, 
       "type": "string"
     }, 
-    "etcdPrivateKey": {
+    "etcdServerPrivateKey": {
       "metadata": {
         "description": "The base 64 server private key used on the master."
       }, 

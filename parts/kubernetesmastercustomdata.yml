@@ -61,12 +61,12 @@ write_files:
   content: |
     {{WrapAsVariable "etcdClientCertificate"}}
 
-- path: "/etc/kubernetes/certs/etcd.crt"
+- path: "/etc/kubernetes/certs/etcdserver.crt"
   permissions: "0644"
   encoding: "base64"
   owner: "root"
   content: |
-    {{WrapAsVariable "etcdCertificate"}}
+    {{WrapAsVariable "etcdServerCertificate"}}
 
 {{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
 - path: "/etc/kubernetes/generate-proxy-certs.sh"
@@ -300,7 +300,7 @@ write_files:
     sed -i "/--oidc-client-id\|--oidc-issuer-url\|--oidc-username-claim/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{end}}
     sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsVariable "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
-    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeServiceCidr>|{{WrapAsVariable "kubeServiceCidr"}}|g; s|<masterEtcdClientUrl>|"{{WrapAsVerbatim "concat('https://', variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))], ':', variables('masterEtcdClientPort'))"}}"|g; s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeServiceCidr>|{{WrapAsVariable "kubeServiceCidr"}}|g; s|<masterEtcdClientUrl>|"{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"|g; s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g; s|<kubernetesCtrlMgrNodeMonitorGracePeriod>|{{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}|g; s|<kubernetesCtrlMgrPodEvictionTimeout>|{{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}|g; s|<kubernetesCtrlMgrRouteReconciliationPeriod>|{{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
@@ -452,7 +452,7 @@ coreos:
 runcmd: 
 - /opt/azure/containers/setup-etcd.sh
 - apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
-- /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file="/etc/kubernetes/certs/ca.crt" --cert-file="/etc/kubernetes/certs/etcd.crt" --key-file="/etc/kubernetes/certs/etcd.key" --peer-cert-file="/etc/kubernetes/certs/etcdclient.crt" --peer-key-file="/etc/kubernetes/certs/etcdclient.key" --initial-advertise-peer-urls=https://10.0.1.10:2380 --listen-peer-urls=https://10.0.1.10:2380 --advertise-client-urls https://127.0.0.1:2379 --listen-client-urls https://127.0.0.1:2379 --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
+- /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file "/etc/kubernetes/certs/client.crt" --cert-file="/etc/kubernetes/certs/etcdclient.crt" --key-file="/etc/kubernetes/certs/etcdclient.key" --peer-client-cert-auth --peer-trusted-ca-file=client.crt --peer-cert-file "/etc/kubernetes/certs/etcdclient.crt" --peer-key-file "/etc/kubernetes/certs/etcdclient.key" --initial-advertise-peer-urls=https://10.0.1.10:2380 --listen-peer-urls https://10.0.1.10:2380 --advertise-client-urls https://10.0.1.10:2379 --listen-client-urls https://127.0.0.1:2379,https://10.0.1.10:2379 --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
 - sudo /bin/chown -R etcd:etcd /var/lib/etcd/default
 - /opt/azure/containers/mountetcd.sh
 - sudo /bin/chown -R etcd:etcd /var/lib/etcddisk

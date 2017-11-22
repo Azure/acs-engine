@@ -20,7 +20,7 @@
 
 # Master only secrets
 # APISERVER_PRIVATE_KEY CA_CERTIFICATE CA_PRIVATE_KEY MASTER_FQDN KUBECONFIG_CERTIFICATE
-# KUBECONFIG_KEY ETCD_PRIVATE_KEY ETCD_CLIENT_PRIVATE_KEY ADMINUSER
+# KUBECONFIG_KEY ETCD_SERVER_PRIVATE_KEY ETCD_CLIENT_PRIVATE_KEY ADMINUSER
 
 # Find distro name via ID value in releases files and upcase
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
@@ -89,11 +89,11 @@ else
     echo "CA_PRIVATE_KEY is empty, assuming worker node"
 fi
 
-ETCD_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcd.key"
-touch "${ETCD_PRIVATE_KEY_PATH}"
-chmod 0644 "${ETCD_PRIVATE_KEY_PATH}"
-chown root:root "${ETCD_PRIVATE_KEY_PATH}"
-echo "${ETCD_PRIVATE_KEY}" | base64 --decode > "${ETCD_PRIVATE_KEY_PATH}"
+ETCD_SERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdserver.key"
+touch "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+chmod 0644 "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+chown root:root "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+echo "${ETCD__SERVER_PRIVATE_KEY}" | base64 --decode > "${ETCD_SERVER_PRIVATE_KEY_PATH}"
 
 ETCD_CLIENT_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdclient.key"
 touch "${ETCD_CLIENT_PRIVATE_KEY_PATH}"

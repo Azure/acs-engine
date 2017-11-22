@@ -52,8 +52,8 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		clientPrivateKey      *rsa.PrivateKey
 		kubeConfigCertificate *x509.Certificate
 		kubeConfigPrivateKey  *rsa.PrivateKey
-		etcdCertificate       *x509.Certificate
-		etcdPrivateKey        *rsa.PrivateKey
+		etcdServerCertificate *x509.Certificate
+		etcdServerPrivateKey  *rsa.PrivateKey
 		etcdClientCertificate *x509.Certificate
 		etcdClientPrivateKey  *rsa.PrivateKey
 	)
@@ -95,7 +95,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		var err error
 		organization := make([]string, 1)
 		organization[0] = "system:masters"
-		etcdCertificate, etcdPrivateKey, err = createCertificate("etcd", caCertificate, caPrivateKey, false, nil, nil, organization)
+		etcdServerCertificate, etcdServerPrivateKey, err = createCertificate("etcdserver", caCertificate, caPrivateKey, false, nil, nil, organization)
 		errors <- err
 	}()
 
@@ -131,7 +131,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(clientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(clientPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(kubeConfigCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(kubeConfigPrivateKey))},
-		&PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdPrivateKey))},
+		&PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdServerPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdClientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdClientPrivateKey))},
 		nil
 }

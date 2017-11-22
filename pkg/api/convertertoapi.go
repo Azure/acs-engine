@@ -932,8 +932,8 @@ func convertVLabsCertificateProfile(vlabs *vlabs.CertificateProfile, api *Certif
 	api.ClientPrivateKey = vlabs.ClientPrivateKey
 	api.KubeConfigCertificate = vlabs.KubeConfigCertificate
 	api.KubeConfigPrivateKey = vlabs.KubeConfigPrivateKey
-	api.EtcdCertificate = vlabs.EtcdCertificate
-	api.EtcdPrivateKey = vlabs.EtcdPrivateKey
+	api.EtcdServerCertificate = vlabs.EtcdServerCertificate
+	api.EtcdServerPrivateKey = vlabs.EtcdServerPrivateKey
 	api.EtcdClientCertificate = vlabs.EtcdClientCertificate
 	api.EtcdClientPrivateKey = vlabs.EtcdClientPrivateKey
 }

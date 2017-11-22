@@ -539,8 +539,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addSecret(parametersMap, "clientPrivateKey", properties.CertificateProfile.ClientPrivateKey, true)
 			addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
 			addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
-			addSecret(parametersMap, "etcdCertificate", properties.CertificateProfile.EtcdCertificate, true)
-			addSecret(parametersMap, "etcdPrivateKey", properties.CertificateProfile.EtcdPrivateKey, true)
+			addSecret(parametersMap, "etcdServerCertificate", properties.CertificateProfile.EtcdServerCertificate, true)
+			addSecret(parametersMap, "etcdServerPrivateKey", properties.CertificateProfile.EtcdServerPrivateKey, true)
 			addSecret(parametersMap, "etcdClientCertificate", properties.CertificateProfile.EtcdClientCertificate, true)
 			addSecret(parametersMap, "etcdClientPrivateKey", properties.CertificateProfile.EtcdClientPrivateKey, true)
 		}
