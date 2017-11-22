@@ -178,6 +178,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		// Upgrade Agent VMs
 		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
 		if err != nil {
+			ku.logger.Errorf("Error generating upgrade template: %v", err)
 			return ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 		}
 
@@ -222,10 +223,26 @@ func (ku *Upgrader) upgradeAgentPools() error {
 
 		upgradeVMs := make(map[int]*UpgradeVM)
 
+		// Go over upgraded VMs and verify provisioning state. Delete the VM if the state is not 'Succeeded'.
+		// Such a VM will be re-created later in this function.
 		for _, vm := range *agentPool.UpgradedAgentVMs {
 			ku.logger.Infof("Agent VM: %s, pool name: %s on expected orchestrator version\n", *vm.Name, *agentPool.Name)
-			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
-			upgradeVMs[agentIndex] = &UpgradeVM{*vm.Name, true}
+			var vmProvisioningState string
+			if vm.VirtualMachineProperties != nil && vm.VirtualMachineProperties.ProvisioningState != nil {
+				vmProvisioningState = *vm.VirtualMachineProperties.ProvisioningState
+			}
+
+			if vmProvisioningState != string(api.Succeeded) {
+				ku.logger.Infof("Deleting agent VM %s in provisioning state %s\n", *vm.Name, vmProvisioningState)
+				err := upgradeAgentNode.DeleteNode(vm.Name)
+				if err != nil {
+					ku.logger.Errorf("Error deleting agent VM %s: %v\n", *vm.Name, err)
+					return err
+				}
+			} else {
+				agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
+				upgradeVMs[agentIndex] = &UpgradeVM{*vm.Name, true}
+			}
 		}
 
 		ku.logger.Infof("Starting upgrade of agent nodes in pool identifier: %s, name: %s...\n",
@@ -236,23 +253,23 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			upgradeVMs[agentIndex] = &UpgradeVM{*vm.Name, false}
 		}
 
-		// Create missing nodes *plus* one auxiliary node, which will be used to take on the load from upgrading nodes.
+		// Create missing nodes *plus* one extra node, which will be used to take on the load from upgrading nodes.
 		// In a normal mode of operation the actual number of VMs in the pool [len(upgradeVMs)] is equal to agentCount.
-		// However, if the upgrade failed in the middle, the actual number of VMs might be less than that.
+		// However, if the upgrade failed in the middle, the actual number of VMs might differ.
 		for agentCount > 0 && len(upgradeVMs) <= agentCount {
 			agentIndex := getAvailableIndex(upgradeVMs)
 
 			vmName, err := armhelpers.GetK8sVMName(agentOsType, ku.DataModel.Properties.HostedMasterProfile != nil,
 				ku.NameSuffix, agentPoolName, agentPoolIndex, agentIndex)
 			if err != nil {
-				ku.logger.Infof("Error reconstructing agent VM name with index %d\n", agentIndex)
+				ku.logger.Errorf("Error reconstructing agent VM name with index %d: %v\n", agentIndex, err)
 				return err
 			}
 			ku.logger.Infof("Adding agent node %s (index %d)", vmName, agentIndex)
 
 			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
 			if err != nil {
-				ku.logger.Infof("Error creating agent node %s (index %d): %v\n", vmName, agentIndex, err)
+				ku.logger.Errorf("Error creating agent node %s (index %d): %v\n", vmName, agentIndex, err)
 				return err
 			}
 
@@ -275,24 +292,24 @@ func (ku *Upgrader) upgradeAgentPools() error {
 
 			err := upgradeAgentNode.DeleteNode(&vm.Name)
 			if err != nil {
-				ku.logger.Infof("Error deleting agent VM: %s\n", vm.Name)
+				ku.logger.Errorf("Error deleting agent VM %s: %v\n", vm.Name, err)
 				return err
 			}
 
-			// do not create last node in favor of the auxiliary node
+			// do not create last node in favor of already created extra node.
 			if upgradedCount == toBeUpgraded-1 {
-				ku.logger.Infof("Skipping creation of VM %s (indx %d) in favor of auxiliary node", vm.Name, agentIndex)
+				ku.logger.Infof("Skipping creation of VM %s (index %d)", vm.Name, agentIndex)
 				delete(upgradeVMs, agentIndex)
 			} else {
 				err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
 				if err != nil {
-					ku.logger.Infof("Error creating upgraded agent VM: %s\n", vm.Name)
+					ku.logger.Errorf("Error creating upgraded agent VM %s: %v\n", vm.Name, err)
 					return err
 				}
 
 				err = upgradeAgentNode.Validate(&vm.Name)
 				if err != nil {
-					ku.logger.Infof("Error validating upgraded agent VM: %s, err: %v\n", vm.Name, err)
+					ku.logger.Errorf("Error validating upgraded agent VM %s: %v\n", vm.Name, err)
 					return err
 				}
 				vm.Upgraded = true
