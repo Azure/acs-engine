@@ -26,10 +26,11 @@ parameters:
 apiVersion: storage.k8s.io/v1beta1
 kind: StorageClass
 metadata:
-  name: unmanaged-standard
+  name: managed-standard
   annotations:
   labels:
     kubernetes.io/cluster-service: "true"
 provisioner: kubernetes.io/azure-disk
 parameters:
+  kind: Managed
   storageaccounttype: Standard_LRS
