@@ -11,6 +11,10 @@ import (
 	"time"
 )
 
+const (
+	testDir string = "testdirectory"
+)
+
 // List is a container that holds all pods returned from doing a kubectl get pods
 type List struct {
 	Pods []Pod `json:"items"`
@@ -372,10 +376,10 @@ func (p *Pod) ValidateAzureFile(mountPath string, sleep, duration time.Duration)
 			case <-ctx.Done():
 				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check azure file mounted", duration.String(), p.Metadata.Name)
 			default:
-				out, err := p.Exec("--", "powershell", "mkdir", mountPath+"\\testdir")
-				if err == nil && strings.Contains(string(out), "testdir") {
+				out, err := p.Exec("--", "powershell", "mkdir", mountPath+"\\"+testDir)
+				if err == nil && strings.Contains(string(out), testDir) {
 					out, err := p.Exec("--", "powershell", "ls", mountPath)
-					if err == nil && strings.Contains(string(out), "testdir") {
+					if err == nil && strings.Contains(string(out), testDir) {
 						readyCh <- true
 					} else {
 						log.Printf("Error:%s\n", err)
