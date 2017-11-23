@@ -68,11 +68,15 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 			return err
 		}
 	} else if managedDisk != nil {
-		logger.Infof("deleting managed disk: %s/%s", resourceGroup, *osDiskName)
-		_, diskErrChan := az.DeleteManagedDisk(resourceGroup, *osDiskName, nil)
+		if osDiskName == nil {
+			logger.Warnf("osDisk is not set for VM %s/%s", resourceGroup, name)
+		} else {
+			logger.Infof("deleting managed disk: %s/%s", resourceGroup, *osDiskName)
+			_, diskErrChan := az.DeleteManagedDisk(resourceGroup, *osDiskName, nil)
 
-		if err := <-diskErrChan; err != nil {
-			return err
+			if err := <-diskErrChan; err != nil {
+				return err
+			}
 		}
 	}
 
