@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 )
 
@@ -125,5 +126,27 @@ func Test_GetVMNameIndexWindows(t *testing.T) {
 	}
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
+	}
+}
+
+func Test_GetK8sVMName(t *testing.T) {
+
+	for _, s := range []struct {
+		osType                     api.OSType
+		isAKS                      bool
+		nameSuffix, agentPoolName  string
+		agentPoolIndex, agentIndex int
+		expected                   string
+	}{
+		{api.Linux, true, "35953384", "agentpool1", 0, 2, "aks-agentpool1-35953384-2"},
+		{api.Windows, false, "35953384", "agentpool1", 0, 2, "35953k8s9002"},
+	} {
+		vmName, err := GetK8sVMName(s.osType, s.isAKS, s.nameSuffix, s.agentPoolName, s.agentPoolIndex, s.agentIndex)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		if vmName != s.expected {
+			t.Fatalf("vmName %s, expected %s", vmName, s.expected)
+		}
 	}
 }

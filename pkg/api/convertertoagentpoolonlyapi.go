@@ -5,6 +5,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
+	"github.com/Azure/acs-engine/pkg/api/common"
 )
 
 ///////////////////////////////////////////////////////////
@@ -186,31 +187,17 @@ func convertVLabsAgentPoolOnlyWindowsProfile(vlabs *vlabs.WindowsProfile, api *W
 }
 
 func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
-	orchestratorProfile := &OrchestratorProfile{
-		OrchestratorType: Kubernetes,
+	return &OrchestratorProfile{
+		OrchestratorType:    Kubernetes,
+		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
 	}
-
-	switch kubernetesVersion {
-	case KubernetesVersion1Dot8Dot2, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
-		orchestratorProfile.OrchestratorVersion = kubernetesVersion
-	default:
-		orchestratorProfile.OrchestratorVersion = KubernetesDefaultVersion
-	}
-	return orchestratorProfile
 }
 
 func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
-	orchestratorProfile := &OrchestratorProfile{
-		OrchestratorType: Kubernetes,
+	return &OrchestratorProfile{
+		OrchestratorType:    Kubernetes,
+		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
 	}
-
-	switch kubernetesVersion {
-	case KubernetesVersion1Dot8Dot2, KubernetesVersion1Dot7Dot7, KubernetesVersion1Dot6Dot11, KubernetesVersion1Dot5Dot8:
-		orchestratorProfile.OrchestratorVersion = kubernetesVersion
-	default:
-		orchestratorProfile.OrchestratorVersion = KubernetesDefaultVersion
-	}
-	return orchestratorProfile
 }
 
 func convertV20170831AgentPoolOnlyAgentPoolProfile(v20170831 *v20170831.AgentPoolProfile, availabilityProfile string) *AgentPoolProfile {

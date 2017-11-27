@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,7 +19,8 @@ type Config struct {
 	SkipTest          bool          `envconfig:"SKIP_TEST" default:"false"`
 	Orchestrator      string        `envconfig:"ORCHESTRATOR" default:"kubernetes"`
 	Name              string        `envconfig:"NAME"`                                                                  // Name allows you to set the name of a cluster already created
-	Location          string        `envconfig:"LOCATION" required:"true" default:"southcentralus"`                     // Location where you want to create the cluster
+	Location          string        `envconfig:"LOCATION"`                                                              // Location where you want to create the cluster
+	Regions           []string      `envconfig:"REGIONS"`                                                               // A whitelist of availableregions
 	ClusterDefinition string        `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
 	CleanUpOnExit     bool          `envconfig:"CLEANUP_ON_EXIT" default:"true"`                                        // if set the tests will not clean up rgs when tests finish
 	Timeout           time.Duration `envconfig:"TIMEOUT" default:"10m"`
@@ -38,6 +40,9 @@ func ParseConfig() (*Config, error) {
 	if err := envconfig.Process("config", c); err != nil {
 		return nil, err
 	}
+	if c.Location == "" {
+		c.SetRandomRegion()
+	}
 	return c, nil
 }
 
@@ -46,6 +51,12 @@ func (c *Config) GetKubeConfig() string {
 	file := fmt.Sprintf("kubeconfig.%s.json", c.Location)
 	kubeconfig := filepath.Join(c.CurrentWorkingDir, "_output", c.Name, "kubeconfig", file)
 	return kubeconfig
+}
+
+// SetKubeConfig will set the KUBECONIFG env var
+func (c *Config) SetKubeConfig() {
+	os.Setenv("KUBECONFIG", c.GetKubeConfig())
+	log.Printf("Kubeconfig:%s\n", c.GetKubeConfig())
 }
 
 // GetSSHKeyPath will return the absolute path to the ssh private key
@@ -121,4 +132,19 @@ func (c *Config) IsSwarm() bool {
 		return true
 	}
 	return false
+}
+
+// SetRandomRegion sets Location to a random region
+func (c *Config) SetRandomRegion() {
+	var regions []string
+	if c.Regions == nil {
+		regions = []string{"eastus", "southcentralus", "westcentralus", "southeastasia", "westus2", "westeurope"}
+	} else {
+		regions = c.Regions
+	}
+	log.Printf("Picking Random Region from list %s\n", regions)
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	c.Location = regions[r.Intn(len(regions))]
+	os.Setenv("LOCATION", c.Location)
+	log.Printf("Picked Random Region:%s\n", c.Location)
 }

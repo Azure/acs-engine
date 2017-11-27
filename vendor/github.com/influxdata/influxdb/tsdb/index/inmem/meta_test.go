@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/influxdata/influxdb/influxql"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/query"
 	"github.com/influxdata/influxdb/tsdb/index/inmem"
+	"github.com/influxdata/influxql"
 )
 
 // Test comparing SeriesIDs for equality.
@@ -90,6 +90,13 @@ func TestSeriesIDs_Reject(t *testing.T) {
 
 	if !exp.Equals(got) {
 		t.Fatalf("exp=%v, got=%v", exp, got)
+	}
+}
+
+func TestMeasurement_AddSeries_Nil(t *testing.T) {
+	m := inmem.NewMeasurement("foo", "cpu")
+	if m.AddSeries(nil) {
+		t.Fatalf("AddSeries mismatch: exp false, got true")
 	}
 }
 

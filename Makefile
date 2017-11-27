@@ -40,9 +40,17 @@ BINARY_DEST_DIR ?= bin
 
 all: build
 
+.PHONY: dev
+dev:
+	$(DEV_ENV_CMD_IT) bash
+
 .PHONY: generate
 generate: bootstrap
 	go generate $(GOFLAGS) -v `glide novendor | xargs go list`
+
+.PHONY: generate-azure-constants
+generate-azure-constants:
+	python pkg/acsengine/Get-AzureConstants.py
 
 .PHONY: build
 build: generate
@@ -129,7 +137,8 @@ ifndef HAS_GINKGO
 endif
 
 build-vendor:
-	${DEV_ENV_CMD} rm -f glide.lock && rm -Rf vendor/ && glide --debug install --force
+	${DEV_ENV_CMD} rm -f glide.lock && rm -Rf vendor/ && glide --debug install --force --strip-vendor
+	rm -rf vendor/github.com/docker/distribution/contrib/docker-integration/generated_certs.d
 
 ci: bootstrap test-style build test lint
 	./scripts/coverage.sh --coveralls

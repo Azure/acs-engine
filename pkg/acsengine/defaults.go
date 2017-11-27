@@ -9,16 +9,24 @@ import (
 	"github.com/Masterminds/semver"
 )
 
+const (
+	// AzureCniPluginVer specifies version of Azure CNI plugin, which has been mirrored from
+	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-linux-amd64-${AZURE_PLUGIN_VER}.tgz
+	// to https://acs-mirror.azureedge.net/cni/
+	AzureCniPluginVer = "v0.91"
+)
+
 var (
 	//DefaultKubernetesSpecConfig is the default Docker image source of Kubernetes
 	DefaultKubernetesSpecConfig = KubernetesSpecConfig{
 		KubernetesImageBase:              "gcrio.azureedge.net/google_containers/",
 		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
+		EtcdDownloadURLBase:              "https://acs-mirror.azureedge.net/github-coreos",
 		KubeBinariesSASURLBase:           "https://acs-mirror.azureedge.net/wink8s/",
 		WindowsTelemetryGUID:             "fb801154-36b9-41bc-89c2-f4d4f05472b0",
 		CNIPluginsDownloadURL:            "https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-latest.tgz",
-		VnetCNILinuxPluginsDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-latest.tgz",
-		VnetCNIWindowsPluginsDownloadURL: "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-latest.zip",
+		VnetCNILinuxPluginsDownloadURL:   "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-linux-amd64-" + AzureCniPluginVer + ".tgz",
+		VnetCNIWindowsPluginsDownloadURL: "https://acs-mirror.azureedge.net/cni/azure-vnet-cni-windows-amd64-" + AzureCniPluginVer + ".zip",
 	}
 
 	//DefaultDCOSSpecConfig is the default DC/OS binary download URL.
@@ -38,9 +46,9 @@ var (
 	//DefaultUbuntuImageConfig is the default Linux distribution.
 	DefaultUbuntuImageConfig = AzureOSImageConfig{
 		ImageOffer:     "UbuntuServer",
-		ImageSku:       "16.04-DAILY-LTS",
+		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201710110",
+		ImageVersion:   "16.04.201711072",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -48,6 +56,14 @@ var (
 		ImageOffer:     "RHEL",
 		ImageSku:       "7.3",
 		ImagePublisher: "RedHat",
+		ImageVersion:   "latest",
+	}
+
+	//DefaultCoreOSImageConfig is the CoreOS Linux distribution.
+	DefaultCoreOSImageConfig = AzureOSImageConfig{
+		ImageOffer:     "CoreOS",
+		ImageSku:       "Stable",
+		ImagePublisher: "CoreOS",
 		ImageVersion:   "latest",
 	}
 
@@ -66,6 +82,7 @@ var (
 		OSImageConfig: map[api.Distro]AzureOSImageConfig{
 			api.Ubuntu: DefaultUbuntuImageConfig,
 			api.RHEL:   DefaultRHELOSImageConfig,
+			api.CoreOS: DefaultCoreOSImageConfig,
 		},
 	}
 
@@ -84,7 +101,8 @@ var (
 				ImagePublisher: "Canonical",
 				ImageVersion:   "16.04.201701130",
 			},
-			api.RHEL: DefaultRHELOSImageConfig,
+			api.RHEL:   DefaultRHELOSImageConfig,
+			api.CoreOS: DefaultCoreOSImageConfig,
 		},
 	}
 
@@ -94,11 +112,12 @@ var (
 		KubernetesSpecConfig: DefaultKubernetesSpecConfig,
 		DCOSSpecConfig:       DefaultDCOSSpecConfig,
 		EndpointConfig: AzureEndpointConfig{
-			ResourceManagerVMDNSSuffix: "cloudapp.windowsazure.us",
+			ResourceManagerVMDNSSuffix: "cloudapp.usgovcloudapi.net",
 		},
 		OSImageConfig: map[api.Distro]AzureOSImageConfig{
 			api.Ubuntu: DefaultUbuntuImageConfig,
 			api.RHEL:   DefaultRHELOSImageConfig,
+			api.CoreOS: DefaultCoreOSImageConfig,
 		},
 	}
 
@@ -113,6 +132,7 @@ var (
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase:              "crproxy.trafficmanager.net:6000/google_containers/",
 			TillerImageBase:                  "crproxy.trafficmanager.net:6000/kubernetes-helm/",
+			EtcdDownloadURLBase:              "https://acsengine.blob.core.chinacloudapi.cn/github-coreos",
 			CNIPluginsDownloadURL:            "https://acsengine.blob.core.chinacloudapi.cn/cni/cni-plugins-amd64-latest.tgz",
 			VnetCNILinuxPluginsDownloadURL:   "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-linux-amd64-latest.tgz",
 			VnetCNIWindowsPluginsDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-windows-amd64-latest.zip",
@@ -133,7 +153,53 @@ var (
 				ImagePublisher: "Canonical",
 				ImageVersion:   "latest",
 			},
-			api.RHEL: DefaultRHELOSImageConfig,
+			api.RHEL:   DefaultRHELOSImageConfig,
+			api.CoreOS: DefaultCoreOSImageConfig,
+		},
+	}
+
+	// DefaultTillerAddonsConfig is the default tiller Kubernetes addon Config
+	DefaultTillerAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultTillerAddonName,
+		Enabled: pointerToBool(api.DefaultTillerAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultTillerAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "150Mi",
+			},
+		},
+	}
+
+	// DefaultDashboardAddonsConfig is the default kubernetes-dashboard addon Config
+	DefaultDashboardAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultDashboardAddonName,
+		Enabled: pointerToBool(api.DefaultDashboardAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultDashboardAddonName,
+				CPURequests:    "300m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "300m",
+				MemoryLimits:   "150Mi",
+			},
+		},
+	}
+
+	// DefaultReschedulerAddonsConfig is the default rescheduler Kubernetes addon Config
+	DefaultReschedulerAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultReschedulerAddonName,
+		Enabled: pointerToBool(api.DefaultReschedulerAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultReschedulerAddonName,
+				CPURequests:    "10m",
+				MemoryRequests: "100Mi",
+				CPULimits:      "10m",
+				MemoryLimits:   "100Mi",
+			},
 		},
 	}
 )
@@ -169,101 +235,153 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	if a.OrchestratorProfile == nil {
 		return
 	}
-	if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-		k8sVersion := a.OrchestratorProfile.OrchestratorVersion
-		if a.OrchestratorProfile.KubernetesConfig == nil {
-			a.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
+	o := a.OrchestratorProfile
+	o.OrchestratorVersion = common.GetValidPatchVersion(
+		o.OrchestratorType,
+		o.OrchestratorVersion)
+	if o.OrchestratorType == api.Kubernetes {
+		k8sVersion := o.OrchestratorVersion
+
+		if o.KubernetesConfig == nil {
+			o.KubernetesConfig = &api.KubernetesConfig{}
 		}
-		if a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase == "" {
-			a.OrchestratorProfile.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
+
+		// Add default addons specification, if no user-provided spec exists
+		if o.KubernetesConfig.Addons == nil {
+			o.KubernetesConfig.Addons = []api.KubernetesAddon{
+				DefaultTillerAddonsConfig,
+				DefaultDashboardAddonsConfig,
+				DefaultReschedulerAddonsConfig,
+			}
+		} else {
+			// For each addon, provide default configuration if user didn't provide its own config
+			t := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultTillerAddonName)
+			if t < 0 {
+				// Provide default acs-engine config for Tiller
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultTillerAddonsConfig)
+			}
+			d := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultDashboardAddonName)
+			if d < 0 {
+				// Provide default acs-engine config for Dashboard
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultDashboardAddonsConfig)
+			}
+			r := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultReschedulerAddonName)
+			if r < 0 {
+				// Provide default acs-engine config for Rescheduler
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultReschedulerAddonsConfig)
+			}
 		}
-		if a.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "" {
-			a.OrchestratorProfile.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+		if o.KubernetesConfig.KubernetesImageBase == "" {
+			o.KubernetesConfig.KubernetesImageBase = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase
 		}
-		if a.OrchestratorProfile.KubernetesConfig.ClusterSubnet == "" {
-			if a.OrchestratorProfile.IsVNETIntegrated() {
+		if o.KubernetesConfig.EtcdVersion == "" {
+			o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
+		}
+		if o.KubernetesConfig.NetworkPolicy == "" {
+			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+		}
+		if o.KubernetesConfig.ClusterSubnet == "" {
+			if o.IsAzureCNI() {
 				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
-				a.OrchestratorProfile.KubernetesConfig.ClusterSubnet = DefaultKubernetesSubnet
+				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesSubnet
 			} else {
-				a.OrchestratorProfile.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
+				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesClusterSubnet
 			}
 		}
-		if a.OrchestratorProfile.KubernetesConfig.MaxPods == 0 {
-			if a.OrchestratorProfile.IsVNETIntegrated() {
-				a.OrchestratorProfile.KubernetesConfig.MaxPods = DefaultKubernetesMaxPodsVNETIntegrated
+		if o.KubernetesConfig.MaxPods == 0 {
+			if o.IsAzureCNI() {
+				o.KubernetesConfig.MaxPods = DefaultKubernetesMaxPodsVNETIntegrated
 			} else {
-				a.OrchestratorProfile.KubernetesConfig.MaxPods = DefaultKubernetesMaxPods
+				o.KubernetesConfig.MaxPods = DefaultKubernetesMaxPods
 			}
 		}
-		if a.OrchestratorProfile.KubernetesConfig.GCHighThreshold == 0 {
-			a.OrchestratorProfile.KubernetesConfig.GCHighThreshold = DefaultKubernetesGCHighThreshold
+		if o.KubernetesConfig.GCHighThreshold == 0 {
+			o.KubernetesConfig.GCHighThreshold = DefaultKubernetesGCHighThreshold
 		}
-		if a.OrchestratorProfile.KubernetesConfig.GCLowThreshold == 0 {
-			a.OrchestratorProfile.KubernetesConfig.GCLowThreshold = DefaultKubernetesGCLowThreshold
+		if o.KubernetesConfig.GCLowThreshold == 0 {
+			o.KubernetesConfig.GCLowThreshold = DefaultKubernetesGCLowThreshold
 		}
-		if a.OrchestratorProfile.KubernetesConfig.DNSServiceIP == "" {
-			a.OrchestratorProfile.KubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
+		if o.KubernetesConfig.DNSServiceIP == "" {
+			o.KubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
 		}
-		if a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet == "" {
-			a.OrchestratorProfile.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
+		if o.KubernetesConfig.DockerBridgeSubnet == "" {
+			o.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 		}
-		if a.OrchestratorProfile.KubernetesConfig.ServiceCIDR == "" {
-			a.OrchestratorProfile.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
+		if o.KubernetesConfig.ServiceCIDR == "" {
+			o.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		}
-		if a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr == "" {
-			a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr = DefaultNonMasqueradeCidr
+		if o.KubernetesConfig.NonMasqueradeCidr == "" {
+			o.KubernetesConfig.NonMasqueradeCidr = DefaultNonMasqueradeCidr
 		}
-		if a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency == "" {
-			a.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sVersion]["nodestatusfreq"]
+		if o.KubernetesConfig.NodeStatusUpdateFrequency == "" {
+			o.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sVersion]["nodestatusfreq"]
 		}
-		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sVersion]["nodegraceperiod"]
+		if o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
+			o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sVersion]["nodegraceperiod"]
 		}
-		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout = KubeConfigs[k8sVersion]["podeviction"]
+		if o.KubernetesConfig.CtrlMgrPodEvictionTimeout == "" {
+			o.KubernetesConfig.CtrlMgrPodEvictionTimeout = KubeConfigs[k8sVersion]["podeviction"]
 		}
-		if a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod == "" {
-			a.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod = KubeConfigs[k8sVersion]["routeperiod"]
+		if o.KubernetesConfig.CtrlMgrRouteReconciliationPeriod == "" {
+			o.KubernetesConfig.CtrlMgrRouteReconciliationPeriod = KubeConfigs[k8sVersion]["routeperiod"]
 		}
 		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
-		if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoff == true {
-			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration == 0 {
-				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
+		if o.KubernetesConfig.CloudProviderBackoff == true {
+			if o.KubernetesConfig.CloudProviderBackoffDuration == 0 {
+				o.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
 			}
-			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent == 0 {
-				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
+			if o.KubernetesConfig.CloudProviderBackoffExponent == 0 {
+				o.KubernetesConfig.CloudProviderBackoffExponent = DefaultKubernetesCloudProviderBackoffExponent
 			}
-			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter == 0 {
-				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
+			if o.KubernetesConfig.CloudProviderBackoffJitter == 0 {
+				o.KubernetesConfig.CloudProviderBackoffJitter = DefaultKubernetesCloudProviderBackoffJitter
 			}
-			if a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries == 0 {
-				a.OrchestratorProfile.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
+			if o.KubernetesConfig.CloudProviderBackoffRetries == 0 {
+				o.KubernetesConfig.CloudProviderBackoffRetries = DefaultKubernetesCloudProviderBackoffRetries
 			}
 		}
 		k8sSemVer, _ := semver.NewVersion(k8sVersion)
 		constraint, _ := semver.NewConstraint(">= 1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
 		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
-		if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimit == true && constraint.Check(k8sSemVer) {
-			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
-				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
+		if o.KubernetesConfig.CloudProviderRateLimit == true && constraint.Check(k8sSemVer) {
+			if o.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
+				o.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
 			}
-			if a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket == 0 {
-				a.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
+			if o.KubernetesConfig.CloudProviderRateLimitBucket == 0 {
+				o.KubernetesConfig.CloudProviderRateLimitBucket = DefaultKubernetesCloudProviderRateLimitBucket
 			}
 		}
 
 		// default etcd version
-		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdVersion {
-			a.OrchestratorProfile.KubernetesConfig.EtcdVersion = "2.5.2"
+		if "" == o.KubernetesConfig.EtcdVersion {
+			o.KubernetesConfig.EtcdVersion = "2.5.2"
 		}
 
-	} else if a.OrchestratorProfile.OrchestratorType == api.DCOS {
-		if a.OrchestratorProfile.DcosConfig == nil {
-			a.OrchestratorProfile.DcosConfig = &api.DcosConfig{}
+		// For each addon, produce a synthesized config between user-provided and acs-engine defaults
+		t := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[t].IsEnabled(api.DefaultTillerAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[t] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[t], DefaultTillerAddonsConfig)
 		}
-		if a.OrchestratorProfile.DcosConfig.DcosWindowsBootstrapURL == "" {
-			a.OrchestratorProfile.DcosConfig.DcosWindowsBootstrapURL = DefaultDCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
+		d := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[d].IsEnabled(api.DefaultDashboardAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[d] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[d], DefaultDashboardAddonsConfig)
+		}
+		r := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[r].IsEnabled(api.DefaultReschedulerAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[r] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[r], DefaultReschedulerAddonsConfig)
+		}
+
+		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
+			a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
+		}
+
+	} else if o.OrchestratorType == api.DCOS {
+		if o.DcosConfig == nil {
+			o.DcosConfig = &api.DcosConfig{}
+		}
+		if o.DcosConfig.DcosWindowsBootstrapURL == "" {
+			o.DcosConfig.DcosWindowsBootstrapURL = DefaultDCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
 		}
 	}
 }
@@ -300,7 +418,7 @@ func setMasterNetworkDefaults(a *api.Properties) {
 
 	if !a.MasterProfile.IsCustomVNET() {
 		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-			if a.OrchestratorProfile.IsVNETIntegrated() {
+			if a.OrchestratorProfile.IsAzureCNI() {
 				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
 				a.MasterProfile.Subnet = a.OrchestratorProfile.KubernetesConfig.ClusterSubnet
 				a.MasterProfile.FirstConsecutiveStaticIP = getFirstConsecutiveStaticIPAddress(a.MasterProfile.Subnet)
@@ -323,7 +441,7 @@ func setMasterNetworkDefaults(a *api.Properties) {
 		a.MasterProfile.IPAddressCount = 1
 
 		// Allocate IP addresses for pods if VNET integration is enabled.
-		if a.OrchestratorProfile.IsVNETIntegrated() {
+		if a.OrchestratorProfile.IsAzureCNI() {
 			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 				a.MasterProfile.IPAddressCount += a.OrchestratorProfile.KubernetesConfig.MaxPods
 			}
@@ -367,7 +485,7 @@ func setAgentNetworkDefaults(a *api.Properties) {
 			profile.IPAddressCount = 1
 
 			// Allocate IP addresses for pods if VNET integration is enabled.
-			if a.OrchestratorProfile.IsVNETIntegrated() {
+			if a.OrchestratorProfile.IsAzureCNI() {
 				if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 					profile.IPAddressCount += a.OrchestratorProfile.KubernetesConfig.MaxPods
 				}
@@ -512,4 +630,55 @@ func getFirstConsecutiveStaticIPAddress(subnetStr string) string {
 	subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffset
 
 	return subnet.IP.String()
+}
+
+func getAddonsIndexByName(addons []api.KubernetesAddon, name string) int {
+	for i := range addons {
+		if addons[i].Name == name {
+			return i
+		}
+	}
+	return -1
+}
+
+func getAddonContainersIndexByName(containers []api.KubernetesContainerSpec, name string) int {
+	for i := range containers {
+		if containers[i].Name == name {
+			return i
+		}
+	}
+	return -1
+}
+
+// assignDefaultAddonVals will assign default values to addon from defaults, for each property in addon that has a zero value
+func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesAddon {
+	for i := range defaults.Containers {
+		c := getAddonContainersIndexByName(addon.Containers, defaults.Containers[i].Name)
+		if c < 0 {
+			addon.Containers = append(addon.Containers, defaults.Containers[i])
+		} else {
+			if addon.Containers[c].Image == "" {
+				addon.Containers[c].Image = defaults.Containers[i].Image
+			}
+			if addon.Containers[c].CPURequests == "" {
+				addon.Containers[c].CPURequests = defaults.Containers[i].CPURequests
+			}
+			if addon.Containers[c].MemoryRequests == "" {
+				addon.Containers[c].MemoryRequests = defaults.Containers[i].MemoryRequests
+			}
+			if addon.Containers[c].CPULimits == "" {
+				addon.Containers[c].CPULimits = defaults.Containers[i].CPULimits
+			}
+			if addon.Containers[c].MemoryLimits == "" {
+				addon.Containers[c].MemoryLimits = defaults.Containers[i].MemoryLimits
+			}
+		}
+	}
+	return addon
+}
+
+// pointerToBool returns a pointer to a bool
+func pointerToBool(b bool) *bool {
+	p := b
+	return &p
 }

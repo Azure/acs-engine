@@ -1,13 +1,14 @@
 package coordinator
 
 import (
+	"context"
 	"io"
 	"time"
 
-	"github.com/influxdata/influxdb/influxql"
 	"github.com/influxdata/influxdb/query"
 	"github.com/influxdata/influxdb/services/meta"
 	"github.com/influxdata/influxdb/tsdb"
+	"github.com/influxdata/influxql"
 )
 
 // IteratorCreator is an interface that combines mapping fields and creating iterators.
@@ -39,6 +40,7 @@ func (e *LocalShardMapper) MapShards(sources influxql.Sources, t influxql.TimeRa
 	if err := e.mapShards(a, sources, tmin, tmax); err != nil {
 		return nil, err
 	}
+	a.MinTime, a.MaxTime = tmin, tmax
 	return a, nil
 }
 
@@ -85,6 +87,16 @@ func (e *LocalShardMapper) mapShards(a *LocalShardMapping, sources influxql.Sour
 // ShardMapper maps data sources to a list of shard information.
 type LocalShardMapping struct {
 	ShardMap map[Source]tsdb.ShardGroup
+
+	// MinTime is the minimum time that this shard mapper will allow.
+	// Any attempt to use a time before this one will automatically result in using
+	// this time instead.
+	MinTime time.Time
+
+	// MaxTime is the maximum time that this shard mapper will allow.
+	// Any attempt to use a time after this one will automatically result in using
+	// this time instead.
+	MaxTime time.Time
 }
 
 func (a *LocalShardMapping) FieldDimensions(m *influxql.Measurement) (fields map[string]influxql.DataType, dimensions map[string]struct{}, err error) {
@@ -149,7 +161,7 @@ func (a *LocalShardMapping) MapType(m *influxql.Measurement, field string) influ
 	return typ
 }
 
-func (a *LocalShardMapping) CreateIterator(m *influxql.Measurement, opt query.IteratorOptions) (query.Iterator, error) {
+func (a *LocalShardMapping) CreateIterator(ctx context.Context, m *influxql.Measurement, opt query.IteratorOptions) (query.Iterator, error) {
 	source := Source{
 		Database:        m.Database,
 		RetentionPolicy: m.RetentionPolicy,
@@ -160,12 +172,20 @@ func (a *LocalShardMapping) CreateIterator(m *influxql.Measurement, opt query.It
 		return nil, nil
 	}
 
+	// Override the time constraints if they don't match each other.
+	if !a.MinTime.IsZero() && opt.StartTime < a.MinTime.UnixNano() {
+		opt.StartTime = a.MinTime.UnixNano()
+	}
+	if !a.MaxTime.IsZero() && opt.EndTime > a.MaxTime.UnixNano() {
+		opt.EndTime = a.MaxTime.UnixNano()
+	}
+
 	if m.Regex != nil {
 		measurements := sg.MeasurementsByRegex(m.Regex.Val)
 		inputs := make([]query.Iterator, 0, len(measurements))
 		if err := func() error {
 			for _, measurement := range measurements {
-				input, err := sg.CreateIterator(measurement, opt)
+				input, err := sg.CreateIterator(ctx, measurement, opt)
 				if err != nil {
 					return err
 				}
@@ -178,7 +198,7 @@ func (a *LocalShardMapping) CreateIterator(m *influxql.Measurement, opt query.It
 		}
 		return query.Iterators(inputs).Merge(opt)
 	}
-	return sg.CreateIterator(m.Name, opt)
+	return sg.CreateIterator(ctx, m.Name, opt)
 }
 
 func (a *LocalShardMapping) IteratorCost(m *influxql.Measurement, opt query.IteratorOptions) (query.IteratorCost, error) {
@@ -190,6 +210,14 @@ func (a *LocalShardMapping) IteratorCost(m *influxql.Measurement, opt query.Iter
 	sg := a.ShardMap[source]
 	if sg == nil {
 		return query.IteratorCost{}, nil
+	}
+
+	// Override the time constraints if they don't match each other.
+	if !a.MinTime.IsZero() && opt.StartTime < a.MinTime.UnixNano() {
+		opt.StartTime = a.MinTime.UnixNano()
+	}
+	if !a.MaxTime.IsZero() && opt.EndTime > a.MaxTime.UnixNano() {
+		opt.EndTime = a.MaxTime.UnixNano()
 	}
 
 	if m.Regex != nil {

@@ -139,9 +139,12 @@ func (m *TestManager) Run() error {
 			var promToFailInfo promote.DigitalSignalFilter
 			resMap := make(map[string]*ErrorStat)
 			if usePromoteToFailure {
+				testName := strings.Replace(dep.ClusterDefinition, "/", "-", -1)
+				if dep.Location != "" {
+					testName += fmt.Sprintf("-%s", dep.Location)
+				}
 				errorInfo := m.testRun(dep, index, 0, timeout)
 				var failureStr string
-				testName := strings.Replace(dep.ClusterDefinition, "/", "-", -1)
 				if errorInfo != nil {
 					if errorStat, ok := resMap[errorInfo.ErrName]; !ok {
 						resMap[errorInfo.ErrName] = &ErrorStat{errorInfo: errorInfo, testCategory: dep.TestCategory, count: 1}
@@ -215,7 +218,7 @@ func (m *TestManager) Run() error {
 				}
 			}
 
-			sendErrorMetrics(resMap)
+			sendErrorMetrics(resMap, usePromoteToFailure)
 		}(index, dep)
 	}
 	m.wg.Wait()
@@ -450,13 +453,13 @@ func wrileLog(fname string, format string, args ...interface{}) {
 	}
 }
 
-func sendErrorMetrics(resMap map[string]*ErrorStat) {
+func sendErrorMetrics(resMap map[string]*ErrorStat, usePromoteToFailure bool) {
 	if !enableMetrics {
 		return
 	}
 	for _, errorStat := range resMap {
 		var severity string
-		if errorStat.count > 1 {
+		if usePromoteToFailure || errorStat.count > 1 {
 			severity = "Critical"
 		} else {
 			severity = "Intermittent"
@@ -584,7 +587,6 @@ func mainInternal() error {
 	for _, region := range acsengine.AzureLocations {
 		switch region {
 		case "eastus2euap": // initial deploy region for all RPs, known to be less stable
-		case "australiaeast": // no D2V2 support
 		case "japanwest": // no D2V2 support
 		case "chinaeast": // private cloud
 		case "chinanorth": // private cloud
@@ -592,9 +594,10 @@ func mainInternal() error {
 		case "germanynortheast": // Germany cloud
 		case "usgovvirginia": // US Gov cloud
 		case "usgoviowa": // US Gov cloud
+		case "usgovarizona": // US Gov cloud
+		case "usgovtexas": // US Gov cloud
 		case "koreacentral": // TODO make sure our versions of azure-cli support this cloud
 		case "centraluseuap": // TODO determine why this region is flaky
-		case "australiasoutheast": // TODO undo when this region is not flaky
 		case "brazilsouth": // canary region
 		default:
 			regions = append(regions, region)

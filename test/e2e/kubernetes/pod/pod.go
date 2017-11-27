@@ -18,6 +18,7 @@ type List struct {
 // Pod is used to parse data from kubectl get pods
 type Pod struct {
 	Metadata Metadata `json:"metadata"`
+	Spec     Spec     `json:"spec"`
 	Status   Status   `json:"status"`
 }
 
@@ -27,6 +28,23 @@ type Metadata struct {
 	Labels    map[string]string `json:"labels"`
 	Name      string            `json:"name"`
 	Namespace string            `json:"namespace"`
+}
+
+// Spec holds information like containers
+type Spec struct {
+	Containers []Container `json:"containers"`
+}
+
+// Container holds information like image and ports
+type Container struct {
+	Image string `json:"image"`
+	Ports []Port `json:"ports"`
+}
+
+// Port represents a container port definition
+type Port struct {
+	ContainerPort int `json:"containerPort"`
+	HostPort      int `json:"hostPort"`
 }
 
 // Status holds information like hostIP and phase
@@ -41,7 +59,6 @@ type Status struct {
 func GetAll(namespace string) (*List, error) {
 	out, err := exec.Command("kubectl", "get", "pods", "-n", namespace, "-o", "json").CombinedOutput()
 	if err != nil {
-		log.Printf("Error trying to run 'kubectl get pods':%s\n", string(out))
 		return nil, err
 	}
 	pl := List{}
@@ -57,7 +74,6 @@ func GetAll(namespace string) (*List, error) {
 func Get(podName, namespace string) (*Pod, error) {
 	out, err := exec.Command("kubectl", "get", "pods", podName, "-n", namespace, "-o", "json").CombinedOutput()
 	if err != nil {
-		log.Printf("Error trying to run 'kubectl get pods':%s\n", string(out))
 		return nil, err
 	}
 	p := Pod{}
@@ -73,7 +89,6 @@ func Get(podName, namespace string) (*Pod, error) {
 func GetAllByPrefix(prefix, namespace string) ([]Pod, error) {
 	pl, err := GetAll(namespace)
 	if err != nil {
-		log.Printf("Error while trying to check if all pods are in running state:%s", err)
 		return nil, err
 	}
 	pods := []Pod{}
@@ -94,7 +109,6 @@ func GetAllByPrefix(prefix, namespace string) ([]Pod, error) {
 func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
 	pl, err := GetAll(namespace)
 	if err != nil {
-		log.Printf("Error while trying to check if all pods are in running state:%s", err)
 		return false, err
 	}
 
@@ -139,10 +153,7 @@ func WaitOnReady(podPrefix, namespace string, sleep, duration time.Duration) (bo
 			case <-ctx.Done():
 				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pods (%s) to become ready in namespace (%s)", duration.String(), podPrefix, namespace)
 			default:
-				ready, err := AreAllPodsRunning(podPrefix, namespace)
-				if err != nil {
-					log.Printf("Error while waiting on pods to become ready:%s", err)
-				}
+				ready, _ := AreAllPodsRunning(podPrefix, namespace)
 				if ready == true {
 					readyCh <- true
 				} else {
@@ -266,4 +277,28 @@ func (p *Pod) CheckWindowsOutboundConnection(sleep, duration time.Duration) (boo
 			return ready, nil
 		}
 	}
+}
+
+// ValidateHostPort will attempt to run curl against the POD's hostIP and hostPort
+func (p *Pod) ValidateHostPort(check string, attempts int, sleep time.Duration, master, sshKeyPath string) bool {
+	hostIP := p.Status.HostIP
+	if len(p.Spec.Containers) == 0 || len(p.Spec.Containers[0].Ports) == 0 {
+		log.Printf("Unexpectd POD container spec: %v. Should have hostPort.\n", p.Spec)
+		return false
+	}
+	hostPort := p.Spec.Containers[0].Ports[0].HostPort
+
+	url := fmt.Sprintf("http://%s:%d", hostIP, hostPort)
+	curlCMD := fmt.Sprintf("curl --max-time 60 %s", url)
+
+	for i := 0; i < attempts; i++ {
+		resp, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
+		if err == nil {
+			matched, _ := regexp.MatchString(check, string(resp))
+			if matched == true {
+				return true
+			}
+		}
+	}
+	return false
 }

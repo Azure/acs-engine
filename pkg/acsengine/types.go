@@ -44,6 +44,7 @@ type DCOSSpecConfig struct {
 type KubernetesSpecConfig struct {
 	KubernetesImageBase              string
 	TillerImageBase                  string
+	EtcdDownloadURLBase              string
 	KubeBinariesSASURLBase           string
 	WindowsTelemetryGUID             string
 	CNIPluginsDownloadURL            string

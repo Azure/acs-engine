@@ -1,6 +1,7 @@
 package tsdb_test
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -16,7 +17,6 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/influxdata/influxdb/influxql"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/pkg/deep"
 	"github.com/influxdata/influxdb/query"
@@ -24,6 +24,7 @@ import (
 	_ "github.com/influxdata/influxdb/tsdb/engine"
 	_ "github.com/influxdata/influxdb/tsdb/index"
 	"github.com/influxdata/influxdb/tsdb/index/inmem"
+	"github.com/influxdata/influxql"
 )
 
 func TestShardWriteAndIndex(t *testing.T) {
@@ -464,7 +465,7 @@ func TestShard_WritePoints_FieldConflictConcurrentQuery(t *testing.T) {
 
 			sh.WritePoints(points)
 
-			iter, err := sh.CreateIterator("cpu", query.IteratorOptions{
+			iter, err := sh.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
 				Expr:       influxql.MustParseExpr(`value`),
 				Aux:        []influxql.VarRef{{Val: "value"}},
 				Dimensions: []string{},
@@ -525,7 +526,7 @@ func TestShard_WritePoints_FieldConflictConcurrentQuery(t *testing.T) {
 
 			sh.WritePoints(points)
 
-			iter, err := sh.CreateIterator("cpu", query.IteratorOptions{
+			iter, err := sh.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
 				Expr:       influxql.MustParseExpr(`value`),
 				Aux:        []influxql.VarRef{{Val: "value"}},
 				Dimensions: []string{},
@@ -609,7 +610,7 @@ func TestShard_CreateIterator_Ascending(t *testing.T) {
 
 		// Calling CreateIterator when the engine is not open will return
 		// ErrEngineClosed.
-		_, got := sh.CreateIterator("cpu", query.IteratorOptions{})
+		_, got := sh.CreateIterator(context.Background(), "cpu", query.IteratorOptions{})
 		if exp := tsdb.ErrEngineClosed; got != exp {
 			t.Fatalf("got %v, expected %v", got, exp)
 		}
@@ -626,7 +627,7 @@ cpu,host=serverB,region=uswest value=25  0
 
 		// Create iterator.
 		var err error
-		itr, err = sh.CreateIterator("cpu", query.IteratorOptions{
+		itr, err = sh.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
 			Expr:       influxql.MustParseExpr(`value`),
 			Aux:        []influxql.VarRef{{Val: "val2"}},
 			Dimensions: []string{"host"},
@@ -694,7 +695,7 @@ func TestShard_CreateIterator_Descending(t *testing.T) {
 
 		// Calling CreateIterator when the engine is not open will return
 		// ErrEngineClosed.
-		_, got := sh.CreateIterator("cpu", query.IteratorOptions{})
+		_, got := sh.CreateIterator(context.Background(), "cpu", query.IteratorOptions{})
 		if exp := tsdb.ErrEngineClosed; got != exp {
 			t.Fatalf("got %v, expected %v", got, exp)
 		}
@@ -711,7 +712,7 @@ cpu,host=serverB,region=uswest value=25  0
 
 		// Create iterator.
 		var err error
-		itr, err = sh.CreateIterator("cpu", query.IteratorOptions{
+		itr, err = sh.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
 			Expr:       influxql.MustParseExpr(`value`),
 			Aux:        []influxql.VarRef{{Val: "val2"}},
 			Dimensions: []string{"host"},
@@ -795,7 +796,7 @@ func TestShard_Disabled_WriteQuery(t *testing.T) {
 			t.Fatalf(err.Error())
 		}
 
-		_, got := sh.CreateIterator("cpu", query.IteratorOptions{})
+		_, got := sh.CreateIterator(context.Background(), "cpu", query.IteratorOptions{})
 		if err == nil {
 			t.Fatalf("expected shard disabled error")
 		}
@@ -810,7 +811,7 @@ func TestShard_Disabled_WriteQuery(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		if _, err = sh.CreateIterator("cpu", query.IteratorOptions{}); err != nil {
+		if _, err = sh.CreateIterator(context.Background(), "cpu", query.IteratorOptions{}); err != nil {
 			t.Fatalf("unexpected error: %v", got)
 		}
 	}

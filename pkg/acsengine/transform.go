@@ -3,6 +3,7 @@ package acsengine
 import (
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/i18n"
@@ -31,12 +32,14 @@ const (
 
 	// ARM resource Types
 	nsgResourceType  = "Microsoft.Network/networkSecurityGroups"
+	rtResourceType   = "Microsoft.Network/routeTables"
 	vmResourceType   = "Microsoft.Compute/virtualMachines"
 	vmssResourceType = "Microsoft.Compute/virtualMachineScaleSets"
 	vmExtensionType  = "Microsoft.Compute/virtualMachines/extensions"
 
 	// resource ids
 	nsgID = "nsgID"
+	rtID  = "routeTableID"
 )
 
 // Transformer represents the object that transforms template
@@ -87,6 +90,7 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 	if err := t.NormalizeMasterResourcesForScaling(logger, templateMap); err != nil {
 		return err
 	}
+	rtIndex := -1
 	nsgIndex := -1
 	resources := templateMap[resourcesFieldName].([]interface{})
 	for index, resource := range resources {
@@ -105,38 +109,66 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 			}
 			nsgIndex = index
 		}
+		if ok && resourceType == rtResourceType {
+			if rtIndex != -1 {
+				err := t.Translator.Errorf("Found 2 resources with type %s in the template. There should only be 1", rtResourceType)
+				logger.Warnf(err.Error())
+				return err
+			}
+			rtIndex = index
+		}
 
 		dependencies, ok := resourceMap[dependsOnFieldName].([]interface{})
 		if !ok {
-			logger.Warnf("%s field not found for type: %s. Continue...", dependsOnFieldName, resourceType)
 			continue
 		}
 
 		for dIndex := len(dependencies) - 1; dIndex >= 0; dIndex-- {
 			dependency := dependencies[dIndex].(string)
-			if strings.Contains(dependency, nsgResourceType) || strings.Contains(dependency, nsgID) {
+			if strings.Contains(dependency, nsgResourceType) || strings.Contains(dependency, nsgID) ||
+				strings.Contains(dependency, rtResourceType) || strings.Contains(dependency, rtID) {
 				dependencies = append(dependencies[:dIndex], dependencies[dIndex+1:]...)
 			}
 		}
 
-		resourceMap[dependsOnFieldName] = dependencies
+		if len(dependencies) > 0 {
+			resourceMap[dependsOnFieldName] = dependencies
+		} else {
+			delete(resourceMap, dependsOnFieldName)
+		}
 	}
+
+	indexesToRemove := []int{}
 	if nsgIndex == -1 {
 		err := t.Translator.Errorf("Found no resources with type %s in the template. There should have been 1", nsgResourceType)
 		logger.Errorf(err.Error())
 		return err
 	}
-
-	templateMap[resourcesFieldName] = append(resources[:nsgIndex], resources[nsgIndex+1:]...)
+	if rtIndex == -1 {
+		logger.Infof("Found no resources with type %s in the template.", rtResourceType)
+	} else {
+		indexesToRemove = append(indexesToRemove, rtIndex)
+	}
+	indexesToRemove = append(indexesToRemove, nsgIndex)
+	templateMap[resourcesFieldName] = removeIndexesFromArray(resources, indexesToRemove)
 
 	return nil
+}
+
+func removeIndexesFromArray(array []interface{}, indexes []int) []interface{} {
+	sort.Sort(sort.Reverse(sort.IntSlice(indexes)))
+	for _, index := range indexes {
+		array = append(array[:index], array[index+1:]...)
+	}
+	return array
 }
 
 // NormalizeMasterResourcesForScaling takes a template and removes elements that are unwanted in any scale up/down case
 func (t *Transformer) NormalizeMasterResourcesForScaling(logger *logrus.Entry, templateMap map[string]interface{}) error {
 	resources := templateMap[resourcesFieldName].([]interface{})
+	indexesToRemove := []int{}
 	//update master nodes resources
-	for _, resource := range resources {
+	for index, resource := range resources {
 		resourceMap, ok := resource.(map[string]interface{})
 		if !ok {
 			logger.Warnf("Template improperly formatted")
@@ -145,6 +177,14 @@ func (t *Transformer) NormalizeMasterResourcesForScaling(logger *logrus.Entry, t
 
 		resourceType, ok := resourceMap[typeFieldName].(string)
 		if !ok || resourceType != vmResourceType {
+			resourceName, ok := resourceMap[nameFieldName].(string)
+			if !ok {
+				logger.Warnf("Template improperly formatted")
+				continue
+			}
+			if strings.Contains(resourceName, "variables('masterVMNamePrefix')") && resourceType == vmExtensionType {
+				indexesToRemove = append(indexesToRemove, index)
+			}
 			continue
 		}
 
@@ -179,6 +219,7 @@ func (t *Transformer) NormalizeMasterResourcesForScaling(logger *logrus.Entry, t
 			continue
 		}
 	}
+	templateMap[resourcesFieldName] = removeIndexesFromArray(resources, indexesToRemove)
 
 	return nil
 }

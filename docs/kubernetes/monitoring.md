@@ -73,27 +73,25 @@ Another option to see stats is via Grafana and Influx DB. Grafana is a powerful 
 
 To set up Grafana, we will need to deploy Grafana and InfluxDB. We will also need to configure Heapster to use InfluxDB as its storage backend. 
 
-1. `git clone https://github.com/kubernetes/Heapster.git $HOME/heapster`
-1. `cd $HOME/heapster`
-1. `git checkout release-1.4`
-1. `git cherry-pick c674a16f74782b326f02345486b5f9520891f395` (This works around the [open issue](https://github.com/kubernetes/Heapster/issues/1783) with Grafana deployments currently)
-1. `kubectl create -f deploy/kube-config/influxdb/influxdb.yaml`
-1. `kubectl create -f deploy/kube-config/influxdb/grafana.yaml`
+1. `wget https://raw.githubusercontent.com/kubernetes/heapster/release-1.5/deploy/kube-config/influxdb/influxdb.yaml`
+1. `wget https://raw.githubusercontent.com/kubernetes/heapster/release-1.5/deploy/kube-config/influxdb/grafana.yaml`
+1. `kubectl create -f influxdb.yaml`
+1. `kubectl create -f grafana.yaml`
 1. `kubectl get pods --namespace=kube-system` Ensure that Heapster, Grafana and InfluxDB are in the `Running` state
 1. `kubectl edit deployment/heapster --namespace=kube-system`
-1. We need to configure Heapster to use InfluxDB as the the data store. To do that under the spec > containers > command property change the command field from:
+    
+    We need to configure Heapster to use InfluxDB as the the data store. To do that under the spec > containers > command property change the command field from:
    ``` yaml
-   command:
-   - /heapster
-   - --source=kubernetes.summary_api:""
+   - command:
+     - /heapster
+     - --source=kubernetes.summary_api:""
    ```
    to this:
    ```yaml
-   command:
-   - /heapster
-   - --source=kubernetes.summary_api:""
-   - --source=kubernetes.summary_api:""
-   - --sink=influxdb:http://monitoring-influxdb.kube-system.svc:8086
+   - command:
+     - /heapster
+     - --source=kubernetes.summary_api:""
+     - --sink=influxdb:http://monitoring-influxdb.kube-system.svc:8086
    ```
 1. Save and exit from your editor to change the deployment. Now, Heapster will restart the pods and be configured to use InfluxDB. To ensure everything is ok, check the Heapster logs:
 1. `getHeapster() { kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' --namespace=kube-system | grep -i heapster; }`

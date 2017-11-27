@@ -27,12 +27,8 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 		KubernetesConfig: &KubernetesConfig{},
 	}
 
-	if err := o.Validate(); err != nil {
-		t.Errorf("should not error with empty object: %v", err)
-	}
-
 	o.KubernetesConfig.ClusterSubnet = "10.0.0.0/16"
-	if err := o.Validate(); err == nil {
+	if err := o.Validate(false); err == nil {
 		t.Errorf("should error when KubernetesConfig populated for non-Kubernetes OrchestratorType")
 	}
 
@@ -41,19 +37,32 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 		DcosConfig:       &DcosConfig{},
 	}
 
-	if err := o.Validate(); err != nil {
+	if err := o.Validate(false); err != nil {
 		t.Errorf("should not error with empty object: %v", err)
 	}
 
 	o.DcosConfig.DcosWindowsBootstrapURL = "http://www.microsoft.com"
-	if err := o.Validate(); err == nil {
+	if err := o.Validate(false); err == nil {
 		t.Errorf("should error when DcosConfig populated for non-Kubernetes OrchestratorType")
+	}
+
+	o = &OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: "1.7.3",
+	}
+
+	if err := o.Validate(false); err == nil {
+		t.Errorf("should have failed on old patch version")
+	}
+
+	if err := o.Validate(true); err != nil {
+		t.Errorf("should not have failed on old patch version during update valdiation")
 	}
 }
 
 func Test_KubernetesConfig_Validate(t *testing.T) {
 	// Tests that should pass across all versions
-	for _, k8sVersion := range []string{common.KubernetesVersion1Dot5Dot8, common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot8Dot2} {
+	for _, k8sVersion := range common.GetAllSupportedKubernetesVersions() {
 		c := KubernetesConfig{}
 		if err := c.Validate(k8sVersion); err != nil {
 			t.Errorf("should not error on empty KubernetesConfig: %v, version %s", err, k8sVersion)
@@ -226,13 +235,36 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	}
 
 	// Tests that apply to 1.6 and later releases
-	for _, k8sVersion := range []string{common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot8Dot2} {
+	for _, k8sVersion := range []string{common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot6Dot12,
+		common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9, common.KubernetesVersion1Dot7Dot10,
+		common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
 		}
 		if err := c.Validate(k8sVersion); err != nil {
 			t.Error("should not error when basic backoff and rate limiting are set to true with no options")
+		}
+	}
+
+	trueVal := true
+	// Tests that apply to pre-1.8 releases
+	for _, k8sVersion := range []string{common.KubernetesVersion1Dot5Dot8, common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot7Dot7} {
+		c := KubernetesConfig{
+			UseCloudControllerManager: &trueVal,
+		}
+		if err := c.Validate(k8sVersion); err == nil {
+			t.Error("should error because UseCloudControllerManager is not available before v1.8")
+		}
+	}
+
+	// Tests that apply to 1.8 and later releases
+	for _, k8sVersion := range []string{common.KubernetesVersion1Dot8Dot1} {
+		c := KubernetesConfig{
+			UseCloudControllerManager: &trueVal,
+		}
+		if err := c.Validate(k8sVersion); err != nil {
+			t.Error("should not error because UseCloudControllerManager is available since v1.8")
 		}
 	}
 }
@@ -278,7 +310,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	t.Run("ServicePrincipalProfile with secret should pass", func(t *testing.T) {
 		p := getK8sDefaultProperties()
 
-		if err := p.Validate(); err != nil {
+		if err := p.Validate(false); err != nil {
 			t.Errorf("should not error %v", err)
 		}
 	})
@@ -291,7 +323,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 			SecretName:    "secret-name",
 			SecretVersion: "version",
 		}
-		if err := p.Validate(); err != nil {
+		if err := p.Validate(false); err != nil {
 			t.Errorf("should not error %v", err)
 		}
 	})
@@ -304,7 +336,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 			SecretName: "secret-name",
 		}
 
-		if err := p.Validate(); err != nil {
+		if err := p.Validate(false); err != nil {
 			t.Errorf("should not error %v", err)
 		}
 	})
@@ -317,7 +349,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 			SecretName: "secret-name",
 		}
 
-		if err := p.Validate(); err == nil {
+		if err := p.Validate(false); err == nil {
 			t.Error("error should have occurred")
 		}
 	})
@@ -330,10 +362,46 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 			SecretName: "secret-name",
 		}
 
-		if err := p.Validate(); err == nil || err.Error() != "service principal client keyvault secret reference is of incorrect format" {
+		if err := p.Validate(false); err == nil || err.Error() != "service principal client keyvault secret reference is of incorrect format" {
 			t.Error("error should have occurred")
 		}
 	})
+}
+
+func TestValidateKubernetesLabelValue(t *testing.T) {
+
+	validLabelValues := []string{"", "a", "a1", "this--valid--label--is--exactly--sixty--three--characters--long", "123456", "my-label_valid.com"}
+	invalidLabelValues := []string{"a$$b", "-abc", "not.valid.", "This____long____label___is______sixty______four_____chararacters", "Label with spaces"}
+
+	for _, l := range validLabelValues {
+		if err := validateKubernetesLabelValue(l); err != nil {
+			t.Fatalf("Label value %v should not return error: %v", l, err)
+		}
+	}
+
+	for _, l := range invalidLabelValues {
+		if err := validateKubernetesLabelValue(l); err == nil {
+			t.Fatalf("Label value %v should return an error", l)
+		}
+	}
+}
+
+func TestValidateKubernetesLabelKey(t *testing.T) {
+
+	validLabelKeys := []string{"a", "a1", "this--valid--label--is--exactly--sixty--three--characters--long", "123456", "my-label_valid.com", "foo.bar/name", "1.2321.324/key_name.foo", "valid.long.253.characters.label.key.prefix.12345678910.fooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo/my-key"}
+	invalidLabelKeys := []string{"", "a/b/c", ".startswithdot", "spaces in key", "foo/", "/name", "$.$/com", "too-long-254-characters-key-prefix-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------123/name", "wrong-slash\\foo"}
+
+	for _, l := range validLabelKeys {
+		if err := validateKubernetesLabelKey(l); err != nil {
+			t.Fatalf("Label key %v should not return error: %v", l, err)
+		}
+	}
+
+	for _, l := range invalidLabelKeys {
+		if err := validateKubernetesLabelKey(l); err == nil {
+			t.Fatalf("Label key %v should return an error", l)
+		}
+	}
 }
 
 func Test_AadProfile_Validate(t *testing.T) {

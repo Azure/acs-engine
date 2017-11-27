@@ -2,6 +2,7 @@ package query_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"math"
 	"reflect"
@@ -10,9 +11,9 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/influxdata/influxdb/influxql"
 	"github.com/influxdata/influxdb/pkg/deep"
 	"github.com/influxdata/influxdb/query"
+	"github.com/influxdata/influxql"
 )
 
 // Ensure that a set of iterators can be merged together, sorted by window and name/tag.
@@ -834,6 +835,35 @@ func TestLimitIterator(t *testing.T) {
 	}
 }
 
+func TestFillIterator_ImplicitStartTime(t *testing.T) {
+	opt := query.IteratorOptions{
+		StartTime: influxql.MinTime,
+		EndTime:   mustParseTime("2000-01-01T01:00:00Z").UnixNano() - 1,
+		Interval: query.Interval{
+			Duration: 20 * time.Minute,
+		},
+		Ascending: true,
+	}
+	start := mustParseTime("2000-01-01T00:00:00Z").UnixNano()
+	itr := query.NewFillIterator(
+		&FloatIterator{Points: []query.FloatPoint{
+			{Time: start, Value: 0},
+		}},
+		nil,
+		opt,
+	)
+
+	if a, err := (Iterators{itr}).ReadAll(); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	} else if !deep.Equal(a, [][]query.Point{
+		{&query.FloatPoint{Time: start, Value: 0}},
+		{&query.FloatPoint{Time: start + int64(20*time.Minute), Nil: true}},
+		{&query.FloatPoint{Time: start + int64(40*time.Minute), Nil: true}},
+	}) {
+		t.Fatalf("unexpected points: %s", spew.Sdump(a))
+	}
+}
+
 func TestFillIterator_DST(t *testing.T) {
 	for _, tt := range []struct {
 		name       string
@@ -1496,7 +1526,7 @@ func TestIterator_EncodeDecode(t *testing.T) {
 	}
 
 	// Decode from the buffer.
-	dec := query.NewReaderIterator(&buf, influxql.Float, itr.Stats())
+	dec := query.NewReaderIterator(context.Background(), &buf, influxql.Float, itr.Stats())
 
 	// Initial stats should exist immediately.
 	fdec := dec.(query.FloatIterator)
@@ -1524,12 +1554,12 @@ func TestIterator_EncodeDecode(t *testing.T) {
 
 // IteratorCreator is a mockable implementation of SelectStatementExecutor.IteratorCreator.
 type IteratorCreator struct {
-	CreateIteratorFn  func(m *influxql.Measurement, opt query.IteratorOptions) (query.Iterator, error)
+	CreateIteratorFn  func(ctx context.Context, m *influxql.Measurement, opt query.IteratorOptions) (query.Iterator, error)
 	FieldDimensionsFn func(m *influxql.Measurement) (fields map[string]influxql.DataType, dimensions map[string]struct{}, err error)
 }
 
-func (ic *IteratorCreator) CreateIterator(m *influxql.Measurement, opt query.IteratorOptions) (query.Iterator, error) {
-	return ic.CreateIteratorFn(m, opt)
+func (ic *IteratorCreator) CreateIterator(ctx context.Context, m *influxql.Measurement, opt query.IteratorOptions) (query.Iterator, error) {
+	return ic.CreateIteratorFn(ctx, m, opt)
 }
 
 func (ic *IteratorCreator) FieldDimensions(m *influxql.Measurement) (fields map[string]influxql.DataType, dimensions map[string]struct{}, err error) {

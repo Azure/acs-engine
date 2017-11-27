@@ -37,7 +37,7 @@
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
-{{if not IsVNETIntegrated}}
+{{if not IsAzureCNI}}
         ,
         "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
 {{end}}
@@ -58,7 +58,7 @@
               "networkSecurityGroup": {
                 "id": "[variables('nsgID')]"
               }
-{{if not IsVNETIntegrated}}
+{{if not IsAzureCNI}}
               ,
               "routeTable": {
                 "id": "[variables('routeTableID')]"
@@ -125,7 +125,7 @@
       },
       "type": "Microsoft.Network/networkSecurityGroups"
     },
-{{if not IsVNETIntegrated}}
+{{if not IsAzureCNI}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
@@ -337,7 +337,7 @@
               }
             }
           }
-{{if IsVNETIntegrated}}
+{{if IsAzureCNI}}
           {{range $seq := loop 2 .MasterProfile.IPAddressCount}}
           ,
           {
@@ -353,7 +353,7 @@
           {{end}}
 {{end}}
         ]
-{{if not IsVNETIntegrated}}
+{{if not IsAzureCNI}}
         ,
         "enableIPForwarding": true
 {{end}}
@@ -434,7 +434,7 @@
           "dataDisks": [
             {
               "createOption": "Empty"
-              ,"diskSizeGB": "128"
+              ,"diskSizeGB": "[variables('etcdDiskSizeGB')]"
               ,"lun": 0
               ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
           {{if .MasterProfile.IsStorageAccount}}
@@ -530,7 +530,7 @@
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
-          "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'),' /usr/bin/nohup /bin/bash -c \"/bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'),' /usr/bin/nohup /bin/bash -c \"stat /opt/azure/containers/provision.complete || /bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
         }
       }
     }{{WriteLinkedTemplatesForExtensions}}

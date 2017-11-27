@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -16,78 +17,111 @@ import (
 var (
 	validate        *validator.Validate
 	keyvaultIDRegex *regexp.Regexp
+	labelValueRegex *regexp.Regexp
+	labelKeyRegex   *regexp.Regexp
 	// Any version has to be mirrored in https://acs-mirror.azureedge.net/github-coreos/etcd-v[Version]-linux-amd64.tar.gz
-	etcdValidVersions = [...]string{"2.5.2", "3.1.10"}
+	etcdValidVersions = [...]string{"2.2.5", "2.3.0", "2.3.1", "2.3.2", "2.3.3", "2.3.4", "2.3.5", "2.3.6", "2.3.7", "2.3.8",
+		"3.0.0", "3.0.1", "3.0.2", "3.0.3", "3.0.4", "3.0.5", "3.0.6", "3.0.7", "3.0.8", "3.0.9", "3.0.10", "3.0.11", "3.0.12", "3.0.13", "3.0.14", "3.0.15", "3.0.16", "3.0.17",
+		"3.1.0", "3.1.1", "3.1.2", "3.1.2", "3.1.3", "3.1.4", "3.1.5", "3.1.6", "3.1.7", "3.1.8", "3.1.9", "3.1.10",
+		"3.2.0", "3.2.1", "3.2.2", "3.2.3", "3.2.4", "3.2.5", "3.2.6", "3.2.7", "3.2.8", "3.2.9"}
+)
+
+const (
+	labelKeyPrefixMaxLength = 253
+	labelValueFormat        = "^([A-Za-z0-9][-A-Za-z0-9_.]{0,61})?[A-Za-z0-9]$"
+	labelKeyFormat          = "^(([a-zA-Z0-9-]+[.])*[a-zA-Z0-9-]+[/])?([A-Za-z0-9][-A-Za-z0-9_.]{0,61})?[A-Za-z0-9]$"
 )
 
 func init() {
 	validate = validator.New()
 	keyvaultIDRegex = regexp.MustCompile(`^/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/[^/\s]+$`)
+	labelValueRegex = regexp.MustCompile(labelValueFormat)
+	labelKeyRegex = regexp.MustCompile(labelKeyFormat)
 }
 
 func isValidEtcdVersion(etcdVersion string) error {
-	// Empty versions is defaulted to 2.5.2 on the generalized api model
-	// after vlabs validation. Empty "" version is a valid version for etcd
-	if "" == etcdVersion {
+	// "" is a valid etcdVersion that maps to DefaultEtcdVersion
+	if etcdVersion == "" {
 		return nil
 	}
-	// We have a version set by user
-	validVersions := "" // a bag of valid versions
 	for _, ver := range etcdValidVersions {
 		if ver == etcdVersion {
 			return nil
 		}
-		validVersions = fmt.Sprintf("%s %s", validVersions, ver)
 	}
-	return fmt.Errorf("Invalid etcd version(%s), valid versions are%s", etcdVersion, validVersions)
+	return fmt.Errorf("Invalid etcd version(%s), valid versions are%s", etcdVersion, etcdValidVersions)
 }
 
 // Validate implements APIObject
-func (o *OrchestratorProfile) Validate() error {
+func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 	// Don't need to call validate.Struct(o)
 	// It is handled by Properties.Validate()
-	switch o.OrchestratorType {
-	case DCOS:
-		version := common.RationalizeReleaseAndVersion(
-			o.OrchestratorType,
-			o.OrchestratorRelease,
-			o.OrchestratorVersion)
-		if version == "" {
-			return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
-		}
-	case Swarm:
-	case SwarmMode:
-	case Kubernetes:
-		version := common.RationalizeReleaseAndVersion(
-			o.OrchestratorType,
-			o.OrchestratorRelease,
-			o.OrchestratorVersion)
-		if version == "" {
-			return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
-		}
-
-		if o.KubernetesConfig != nil {
-			err := o.KubernetesConfig.Validate(version)
-			if err != nil {
-				return err
+	// On updates we only need to make sure there is a supported patch version for the minor version
+	if !isUpdate {
+		switch o.OrchestratorType {
+		case DCOS:
+			version := common.RationalizeReleaseAndVersion(
+				o.OrchestratorType,
+				o.OrchestratorRelease,
+				o.OrchestratorVersion)
+			if version == "" {
+				return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 			}
-			if o.KubernetesConfig.EnableAggregatedAPIs {
-				if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 || o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
-					return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
-						"1.7.0", o.OrchestratorVersion)
-				}
+		case Swarm:
+		case SwarmMode:
+		case Kubernetes:
+			version := common.RationalizeReleaseAndVersion(
+				o.OrchestratorType,
+				o.OrchestratorRelease,
+				o.OrchestratorVersion)
+			if version == "" {
+				return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+			}
 
-				if !o.KubernetesConfig.EnableRbac {
-					return fmt.Errorf("enableAggregatedAPIs requires the enableRbac feature as a prerequisite")
+			if o.KubernetesConfig != nil {
+				err := o.KubernetesConfig.Validate(version)
+				if err != nil {
+					return err
+				}
+				if o.KubernetesConfig.EnableAggregatedAPIs {
+					if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot7 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
+						return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+							"1.7.0", o.OrchestratorVersion)
+					}
+
+					if !o.KubernetesConfig.EnableRbac {
+						return fmt.Errorf("enableAggregatedAPIs requires the enableRbac feature as a prerequisite")
+					}
 				}
 			}
-		}
 
-	default:
-		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
+		default:
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
+		}
+	} else {
+		switch o.OrchestratorType {
+		case DCOS, Kubernetes:
+
+			version := common.RationalizeReleaseAndVersion(
+				o.OrchestratorType,
+				o.OrchestratorRelease,
+				o.OrchestratorVersion)
+			if version == "" {
+				patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion)
+				// if there isn't a supported patch version for this version fail
+				if patchVersion == "" {
+					return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+				}
+			}
+
+		}
 	}
 
-	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil && (*o.KubernetesConfig != KubernetesConfig{}) {
+	if o.OrchestratorType != Kubernetes && o.KubernetesConfig != nil {
 		return fmt.Errorf("KubernetesConfig can be specified only when OrchestratorType is Kubernetes")
 	}
 
@@ -163,7 +197,7 @@ func (o *OrchestratorVersionProfile) Validate() error {
 	// Here we use strings.EqualFold, the other just string comparison.
 	// Rationalize orchestrator type should be done from versioned to unversioned
 	// I will go ahead to simplify this
-	return o.OrchestratorProfile.Validate()
+	return o.OrchestratorProfile.Validate(false)
 }
 
 // ValidateForUpgrade validates upgrade input data
@@ -173,8 +207,8 @@ func (o *OrchestratorProfile) ValidateForUpgrade() error {
 		return fmt.Errorf("Upgrade is not supported for orchestrator %s", o.OrchestratorType)
 	case Kubernetes:
 		switch o.OrchestratorVersion {
-		case common.KubernetesVersion1Dot6Dot11:
-		case common.KubernetesVersion1Dot7Dot7:
+		case common.KubernetesVersion1Dot6Dot12:
+		case common.KubernetesVersion1Dot7Dot10:
 		default:
 			return fmt.Errorf("Upgrade to Kubernetes version %s is not supported", o.OrchestratorVersion)
 		}
@@ -226,6 +260,20 @@ func handleValidationErrors(e validator.ValidationErrors) error {
 }
 
 // Validate implements APIObject
+func (w *WindowsProfile) Validate() error {
+	if e := validate.Var(w.AdminUsername, "required"); e != nil {
+		return fmt.Errorf("WindowsProfile.AdminUsername is required, when agent pool specifies windows")
+	}
+	if e := validate.Var(w.AdminPassword, "required"); e != nil {
+		return fmt.Errorf("WindowsProfile.AdminPassword is required, when agent pool specifies windows")
+	}
+	if e := validateKeyVaultSecrets(w.Secrets, true); e != nil {
+		return e
+	}
+	return nil
+}
+
+// Validate implements APIObject
 func (profile *AADProfile) Validate() error {
 	if _, err := uuid.FromString(profile.ClientAppID); err != nil {
 		return fmt.Errorf("clientAppID '%v' is invalid", profile.ClientAppID)
@@ -242,11 +290,11 @@ func (profile *AADProfile) Validate() error {
 }
 
 // Validate implements APIObject
-func (a *Properties) Validate() error {
+func (a *Properties) Validate(isUpdate bool) error {
 	if e := validate.Struct(a); e != nil {
 		return handleValidationErrors(e.(validator.ValidationErrors))
 	}
-	if e := a.OrchestratorProfile.Validate(); e != nil {
+	if e := a.OrchestratorProfile.Validate(isUpdate); e != nil {
 		return e
 	}
 	if e := a.validateNetworkPolicy(); e != nil {
@@ -319,6 +367,14 @@ func (a *Properties) Validate() error {
 			switch a.OrchestratorProfile.OrchestratorType {
 			case DCOS:
 			case Kubernetes:
+				for k, v := range agentPoolProfile.CustomNodeLabels {
+					if e := validateKubernetesLabelKey(k); e != nil {
+						return e
+					}
+					if e := validateKubernetesLabelValue(v); e != nil {
+						return e
+					}
+				}
 			default:
 				return fmt.Errorf("Agent Type attributes are only supported for DCOS and Kubernetes")
 			}
@@ -335,16 +391,20 @@ func (a *Properties) Validate() error {
 			case Swarm:
 			case SwarmMode:
 			case Kubernetes:
+				version := common.RationalizeReleaseAndVersion(
+					a.OrchestratorProfile.OrchestratorType,
+					a.OrchestratorProfile.OrchestratorRelease,
+					a.OrchestratorProfile.OrchestratorVersion)
+				if version == "" {
+					return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
+				}
+				if _, ok := common.AllKubernetesWindowsSupportedVersions[version]; !ok {
+					return fmt.Errorf("Orchestrator %s version %s does not support Windows", a.OrchestratorProfile.OrchestratorType, version)
+				}
 			default:
 				return fmt.Errorf("Orchestrator %s does not support Windows", a.OrchestratorProfile.OrchestratorType)
 			}
-			if e := validate.Var(a.WindowsProfile.AdminUsername, "required"); e != nil {
-				return fmt.Errorf("WindowsProfile.AdminUsername is required, when agent pool specifies windows")
-			}
-			if e := validate.Var(a.WindowsProfile.AdminPassword, "required"); e != nil {
-				return fmt.Errorf("WindowsProfile.AdminPassword is required, when agent pool specifies windows")
-			}
-			if e := validateKeyVaultSecrets(a.WindowsProfile.Secrets, true); e != nil {
+			if e := a.WindowsProfile.Validate(); e != nil {
 				return e
 			}
 		}
@@ -388,9 +448,21 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	const minKubeletRetries = 4
 	// k8s versions that have cloudprovider backoff enabled
 	var backoffEnabledVersions = map[string]bool{
+		common.KubernetesVersion1Dot8Dot0:  true,
+		common.KubernetesVersion1Dot8Dot1:  true,
 		common.KubernetesVersion1Dot8Dot2:  true,
+		common.KubernetesVersion1Dot7Dot0:  true,
+		common.KubernetesVersion1Dot7Dot1:  true,
+		common.KubernetesVersion1Dot7Dot2:  true,
+		common.KubernetesVersion1Dot7Dot4:  true,
+		common.KubernetesVersion1Dot7Dot5:  true,
 		common.KubernetesVersion1Dot7Dot7:  true,
+		common.KubernetesVersion1Dot7Dot9:  true,
+		common.KubernetesVersion1Dot7Dot10: true,
+		common.KubernetesVersion1Dot6Dot6:  true,
+		common.KubernetesVersion1Dot6Dot9:  true,
 		common.KubernetesVersion1Dot6Dot11: true,
+		common.KubernetesVersion1Dot6Dot12: true,
 	}
 	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
 	ratelimitEnabledVersions := backoffEnabledVersions
@@ -522,6 +594,18 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		return e
 	}
 
+	var ccmEnabledVersions = map[string]bool{
+		common.KubernetesVersion1Dot8Dot0: true,
+		common.KubernetesVersion1Dot8Dot1: true,
+		common.KubernetesVersion1Dot8Dot2: true,
+	}
+
+	if a.UseCloudControllerManager != nil && *a.UseCloudControllerManager || a.CustomCcmImage != "" {
+		if !ccmEnabledVersions[k8sVersion] {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.UseCloudControllerManager and OrchestratorProfile.KubernetesConfig.CustomCcmImage not available in kubernetes version %s", k8sVersion)
+		}
+	}
+
 	return nil
 }
 
@@ -608,6 +692,24 @@ func validateUniquePorts(ports []int, name string) error {
 			return fmt.Errorf("agent profile '%s' has duplicate port '%d', ports must be unique", name, port)
 		}
 		portMap[port] = true
+	}
+	return nil
+}
+
+func validateKubernetesLabelValue(v string) error {
+	if !(len(v) == 0) && !labelValueRegex.MatchString(v) {
+		return fmt.Errorf("Label value '%s' is invalid. Valid label values must be 63 characters or less and must be empty or begin and end with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between", v)
+	}
+	return nil
+}
+
+func validateKubernetesLabelKey(k string) error {
+	if !labelKeyRegex.MatchString(k) {
+		return fmt.Errorf("Label key '%s' is invalid. Valid label keys have two segments: an optional prefix and name, separated by a slash (/). The name segment is required and must be 63 characters or less, beginning and ending with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between. The prefix is optional. If specified, the prefix must be a DNS subdomain: a series of DNS labels separated by dots (.), not longer than 253 characters in total, followed by a slash (/)", k)
+	}
+	prefix := strings.Split(k, "/")
+	if len(prefix) != 1 && len(prefix[0]) > labelKeyPrefixMaxLength {
+		return fmt.Errorf("Label key prefix '%s' is invalid. If specified, the prefix must be no longer than 253 characters in total", k)
 	}
 	return nil
 }

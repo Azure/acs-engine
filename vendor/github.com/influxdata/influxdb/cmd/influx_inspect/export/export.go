@@ -16,10 +16,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/influxdata/influxdb/influxql"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/pkg/escape"
 	"github.com/influxdata/influxdb/tsdb/engine/tsm1"
+	"github.com/influxdata/influxql"
 )
 
 // Command represents the program execution for "influx_inspect export".
@@ -390,6 +390,9 @@ func (cmd *Command) writeValues(w io.Writer, seriesKey []byte, field string, val
 		case int64:
 			buf = strconv.AppendInt(buf, v, 10)
 			buf = append(buf, 'i')
+		case uint64:
+			buf = strconv.AppendUint(buf, v, 10)
+			buf = append(buf, 'u')
 		case bool:
 			buf = strconv.AppendBool(buf, v)
 		case string:

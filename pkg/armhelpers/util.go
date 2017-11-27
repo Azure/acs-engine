@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	log "github.com/sirupsen/logrus"
 )
@@ -138,4 +139,19 @@ func GetVMNameIndex(osType compute.OperatingSystemTypes, vmName string) (int, er
 	}
 
 	return agentIndex, nil
+}
+
+// GetK8sVMName reconstructs VM name
+func GetK8sVMName(osType api.OSType, isAKS bool, nameSuffix, agentPoolName string, agentPoolIndex, agentIndex int) (string, error) {
+	prefix := "k8s"
+	if isAKS {
+		prefix = "aks"
+	}
+	if osType == api.Linux {
+		return fmt.Sprintf("%s-%s-%s-%d", prefix, agentPoolName, nameSuffix, agentIndex), nil
+	}
+	if osType == api.Windows {
+		return fmt.Sprintf("%s%s%d%d", nameSuffix[:5], prefix, 900+agentPoolIndex, agentIndex), nil
+	}
+	return "", fmt.Errorf("Failed to reconstruct VM Name")
 }

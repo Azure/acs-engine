@@ -22,27 +22,27 @@ type Apiloader struct {
 }
 
 // LoadContainerServiceFromFile loads an ACS Cluster API Model from a JSON file
-func (a *Apiloader) LoadContainerServiceFromFile(jsonFile string, validate bool, existingContainerService *ContainerService) (*ContainerService, string, error) {
+func (a *Apiloader) LoadContainerServiceFromFile(jsonFile string, validate, isUpdate bool, existingContainerService *ContainerService) (*ContainerService, string, error) {
 	contents, e := ioutil.ReadFile(jsonFile)
 	if e != nil {
 		return nil, "", a.Translator.Errorf("error reading file %s: %s", jsonFile, e.Error())
 	}
-	return a.DeserializeContainerService(contents, validate, existingContainerService)
+	return a.DeserializeContainerService(contents, validate, isUpdate, existingContainerService)
 }
 
 // DeserializeContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
-func (a *Apiloader) DeserializeContainerService(contents []byte, validate bool, existingContainerService *ContainerService) (*ContainerService, string, error) {
+func (a *Apiloader) DeserializeContainerService(contents []byte, validate, isUpdate bool, existingContainerService *ContainerService) (*ContainerService, string, error) {
 	m := &TypeMeta{}
 	if err := json.Unmarshal(contents, &m); err != nil {
 		return nil, "", err
 	}
 
 	version := m.APIVersion
-	service, err := a.LoadContainerService(contents, version, validate, existingContainerService)
+	service, err := a.LoadContainerService(contents, version, validate, isUpdate, existingContainerService)
 	if service == nil || err != nil {
 		if isAgentPoolOnlyClusterJSON(contents) {
 			log.Info("No masterProfile: interpreting API model as agent pool only")
-			service, err := a.LoadContainerServiceForAgentPoolOnlyCluster(contents, version, validate)
+			service, err := a.LoadContainerServiceForAgentPoolOnlyCluster(contents, version, validate, isUpdate)
 			if service == nil || err != nil {
 				log.Infof("Error returned by LoadContainerServiceForAgentPoolOnlyCluster: %+v", err)
 			}
@@ -58,15 +58,20 @@ func (a *Apiloader) DeserializeContainerService(contents []byte, validate bool, 
 func (a *Apiloader) LoadContainerService(
 	contents []byte,
 	version string,
-	validate bool,
+	validate, isUpdate bool,
 	existingContainerService *ContainerService) (*ContainerService, error) {
+	var curOrchVersion string
+	hasExistingCS := existingContainerService != nil
+	if hasExistingCS {
+		curOrchVersion = existingContainerService.Properties.OrchestratorProfile.OrchestratorVersion
+	}
 	switch version {
 	case v20160930.APIVersion:
 		containerService := &v20160930.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
-		if existingContainerService != nil {
+		if hasExistingCS {
 			vecs := ConvertContainerServiceToV20160930(existingContainerService)
 			if e := containerService.Merge(vecs); e != nil {
 				return nil, e
@@ -76,14 +81,17 @@ func (a *Apiloader) LoadContainerService(
 		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
-		return ConvertV20160930ContainerService(containerService), nil
-
+		unversioned := ConvertV20160930ContainerService(containerService)
+		if curOrchVersion != "" {
+			unversioned.Properties.OrchestratorProfile.OrchestratorVersion = curOrchVersion
+		}
+		return unversioned, nil
 	case v20160330.APIVersion:
 		containerService := &v20160330.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
-		if existingContainerService != nil {
+		if hasExistingCS {
 			vecs := ConvertContainerServiceToV20160330(existingContainerService)
 			if e := containerService.Merge(vecs); e != nil {
 				return nil, e
@@ -93,14 +101,18 @@ func (a *Apiloader) LoadContainerService(
 		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
-		return ConvertV20160330ContainerService(containerService), nil
+		unversioned := ConvertV20160330ContainerService(containerService)
+		if curOrchVersion != "" {
+			unversioned.Properties.OrchestratorProfile.OrchestratorVersion = curOrchVersion
+		}
+		return unversioned, nil
 
 	case v20170131.APIVersion:
 		containerService := &v20170131.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
-		if existingContainerService != nil {
+		if hasExistingCS {
 			vecs := ConvertContainerServiceToV20170131(existingContainerService)
 			if e := containerService.Merge(vecs); e != nil {
 				return nil, e
@@ -110,23 +122,33 @@ func (a *Apiloader) LoadContainerService(
 		if e := containerService.Properties.Validate(); validate && e != nil {
 			return nil, e
 		}
-		return ConvertV20170131ContainerService(containerService), nil
+		unversioned := ConvertV20170131ContainerService(containerService)
+		if curOrchVersion != "" {
+			unversioned.Properties.OrchestratorProfile.OrchestratorVersion = curOrchVersion
+		}
+		return unversioned, nil
 
 	case v20170701.APIVersion:
 		containerService := &v20170701.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
 			return nil, e
 		}
-		if existingContainerService != nil {
+		if hasExistingCS {
 			vecs := ConvertContainerServiceToV20170701(existingContainerService)
 			if e := containerService.Merge(vecs); e != nil {
 				return nil, e
 			}
 		}
-		if e := containerService.Properties.Validate(); validate && e != nil {
+		if e := containerService.Properties.Validate(isUpdate); validate && e != nil {
 			return nil, e
 		}
-		return ConvertV20170701ContainerService(containerService), nil
+		unversioned := ConvertV20170701ContainerService(containerService)
+		if curOrchVersion != "" &&
+			(containerService.Properties.OrchestratorProfile == nil ||
+				containerService.Properties.OrchestratorProfile.OrchestratorVersion == "") {
+			unversioned.Properties.OrchestratorProfile.OrchestratorVersion = curOrchVersion
+		}
+		return unversioned, nil
 
 	case vlabs.APIVersion:
 		containerService := &vlabs.ContainerService{}
@@ -136,16 +158,23 @@ func (a *Apiloader) LoadContainerService(
 		if e := checkJSONKeys(contents, reflect.TypeOf(*containerService), reflect.TypeOf(TypeMeta{})); e != nil {
 			return nil, e
 		}
-		if existingContainerService != nil {
+		if hasExistingCS {
 			vecs := ConvertContainerServiceToVLabs(existingContainerService)
 			if e := containerService.Merge(vecs); e != nil {
 				return nil, e
 			}
 		}
-		if e := containerService.Properties.Validate(); validate && e != nil {
+		if e := containerService.Properties.Validate(isUpdate); validate && e != nil {
 			return nil, e
 		}
-		return ConvertVLabsContainerService(containerService), nil
+		unversioned := ConvertVLabsContainerService(containerService)
+		if curOrchVersion != "" &&
+			(containerService.Properties.OrchestratorProfile == nil ||
+				(containerService.Properties.OrchestratorProfile.OrchestratorVersion == "" &&
+					containerService.Properties.OrchestratorProfile.OrchestratorRelease == "")) {
+			unversioned.Properties.OrchestratorProfile.OrchestratorVersion = curOrchVersion
+		}
+		return unversioned, nil
 
 	default:
 		return nil, a.Translator.Errorf("unrecognized APIVersion '%s'", version)
@@ -153,7 +182,7 @@ func (a *Apiloader) LoadContainerService(
 }
 
 // LoadContainerServiceForAgentPoolOnlyCluster loads an ACS Cluster API Model, validates it, and returns the unversioned representation
-func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte, version string, validate bool) (*ContainerService, error) {
+func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte, version string, validate, isUpdate bool) (*ContainerService, error) {
 	switch version {
 	case v20170831.APIVersion:
 		managedCluster := &v20170831.ManagedCluster{}

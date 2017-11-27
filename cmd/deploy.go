@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
@@ -110,7 +111,7 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 		},
 	}
 	// skip validating the model fields for now
-	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, nil)
+	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, false, nil)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}
@@ -239,7 +240,7 @@ func revalidateApimodel(apiloader *api.Apiloader, containerService *api.Containe
 	if err != nil {
 		return nil, "", err
 	}
-	return apiloader.DeserializeContainerService(rawVersionedAPIModel, true, nil)
+	return apiloader.DeserializeContainerService(rawVersionedAPIModel, true, false, nil)
 }
 
 func (dc *deployCmd) run() error {
@@ -292,13 +293,17 @@ func (dc *deployCmd) run() error {
 
 	deploymentSuffix := dc.random.Int31()
 
-	_, err = dc.client.DeployTemplate(
+	if res, err := dc.client.DeployTemplate(
 		dc.resourceGroup,
 		fmt.Sprintf("%s-%d", dc.resourceGroup, deploymentSuffix),
 		templateJSON,
 		parametersJSON,
-		nil)
-	if err != nil {
+		nil); err != nil {
+		if res != nil && res.Response.Response != nil && res.Body != nil {
+			defer res.Body.Close()
+			body, _ := ioutil.ReadAll(res.Body)
+			log.Errorf(string(body))
+		}
 		log.Fatalln(err)
 	}
 

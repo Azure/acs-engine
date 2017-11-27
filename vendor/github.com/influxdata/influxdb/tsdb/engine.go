@@ -1,6 +1,7 @@
 package tsdb
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -9,11 +10,11 @@ import (
 	"sort"
 	"time"
 
-	"github.com/influxdata/influxdb/influxql"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/pkg/estimator"
 	"github.com/influxdata/influxdb/pkg/limiter"
 	"github.com/influxdata/influxdb/query"
+	"github.com/influxdata/influxql"
 	"github.com/uber-go/zap"
 )
 
@@ -43,7 +44,8 @@ type Engine interface {
 	Restore(r io.Reader, basePath string) error
 	Import(r io.Reader, basePath string) error
 
-	CreateIterator(measurement string, opt query.IteratorOptions) (query.Iterator, error)
+	CreateIterator(ctx context.Context, measurement string, opt query.IteratorOptions) (query.Iterator, error)
+	CreateCursor(ctx context.Context, r *CursorRequest) (Cursor, error)
 	IteratorCost(measurement string, opt query.IteratorOptions) (query.IteratorCost, error)
 	WritePoints(points []models.Point) error
 

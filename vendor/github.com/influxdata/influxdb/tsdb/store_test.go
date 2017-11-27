@@ -2,6 +2,7 @@ package tsdb_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"math"
@@ -16,11 +17,11 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/influxdata/influxdb/influxql"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/pkg/deep"
 	"github.com/influxdata/influxdb/query"
 	"github.com/influxdata/influxdb/tsdb"
+	"github.com/influxdata/influxql"
 	"github.com/uber-go/zap"
 )
 
@@ -353,7 +354,7 @@ func TestShards_CreateIterator(t *testing.T) {
 		shards := s.ShardGroup([]uint64{0, 1})
 
 		// Create iterator.
-		itr, err := shards.CreateIterator("cpu", query.IteratorOptions{
+		itr, err := shards.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
 			Expr:       influxql.MustParseExpr(`value`),
 			Dimensions: []string{"host"},
 			Ascending:  true,
@@ -443,7 +444,7 @@ func TestStore_BackupRestoreShard(t *testing.T) {
 		}
 
 		// Read data from
-		itr, err := s0.Shard(100).CreateIterator("cpu", query.IteratorOptions{
+		itr, err := s0.Shard(100).CreateIterator(context.Background(), "cpu", query.IteratorOptions{
 			Expr:      influxql.MustParseExpr(`value`),
 			Ascending: true,
 			StartTime: influxql.MinTime,

@@ -1,13 +1,14 @@
 #cloud-config
 
 write_files:
+{{if not .IsCoreOS}}
 - path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
   permissions: "0644"
   owner: "root"
   content: |
     [Service]
     MountFlags=shared
-
+{{end}}
 - path: "/etc/systemd/system/docker.service.d/exec_start.conf"
   permissions: "0644"
   owner: "root"
@@ -35,13 +36,6 @@ write_files:
   owner: "root"
   content: |
     {{WrapAsVariable "caCertificate"}}
-
-- path: "/etc/kubernetes/certs/apiserver.crt"
-  permissions: "0644"
-  encoding: "base64"
-  owner: "root"
-  content: |
-    {{WrapAsVariable "apiserverCertificate"}}
 
 - path: "/etc/kubernetes/certs/client.crt"
   permissions: "0644"
@@ -81,7 +75,11 @@ write_files:
     Description=Kubectl extraction
     Requires=docker.service
     After=docker.service
+{{if .IsCoreOS}}
+    ConditionPathExists=!/opt/kubectl
+{{else}}
     ConditionPathExists=!/usr/local/bin/kubectl
+{{end}}
 
     [Service]
     TimeoutStartSec=0
@@ -90,8 +88,13 @@ write_files:
     ExecStartPre=/bin/mkdir -p /tmp/kubectldir
     ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
     ExecStartPre=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
+{{if .IsCoreOS}}
+    ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /opt/kubectl
+    ExecStart=/bin/chmod a+x /opt/kubectl
+{{else}}    
     ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
     ExecStart=/bin/chmod a+x /usr/local/bin/kubectl
+{{end}}
 
     [Install]
     WantedBy=multi-user.target
@@ -108,7 +111,7 @@ write_files:
     DOCKER_OPTS=
     CUSTOM_CMD=/bin/true
     KUBELET_REGISTER_SCHEDULABLE=true
-    KUBELET_NODE_LABELS={{ GetKubernetesLabels . }}
+    KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
     KUBELET_NODE_STATUS_UPDATE_FREQUENCY={{WrapAsVariable "kubernetesNodeStatusUpdateFrequency"}}
     KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD={{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
@@ -125,6 +128,11 @@ write_files:
     KUBELET_FIX_43704_3=""
   {{end}}
 {{end}}
+{{if UseCloudControllerManager }}
+    CLOUD_PROVIDER=external
+{{else}}
+    CLOUD_PROVIDER=azure
+{{end}}
 
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
@@ -139,7 +147,7 @@ write_files:
   content: |
     #!/bin/bash
 
-{{if IsVNETIntegrated}}
+{{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
 {{end}}
@@ -153,6 +161,35 @@ write_files:
   content: !!binary |
     {{WrapAsVariable "provisionScript"}}
 
+{{if .IsCoreOS}}
+- path: "/opt/azure/containers/provision-setup.sh"
+  permissions: "0755"
+  owner: "root"
+  content: |
+    #!/bin/bash
+    /usr/bin/mkdir -p /etc/kubernetes/manifests
+    usermod -aG docker {{WrapAsVariable "username"}}
+
+    systemctl enable rpcbind
+    systemctl enable rpc-statd
+    systemctl start rpcbind
+    systemctl start rpc-statd
+
+    # Simulates runcmd completion
+    touch /opt/azure/containers/runcmd.complete
+
+coreos:
+  units:
+    - name: start-provision-setup.service
+      command: "start"
+      content: |
+        # Note: Initiated as a service since there is no runcmd within CoreOS on cloud-config/Ignition
+        [Unit] 
+        Description=Start provision setup service
+
+        [Service]
+        ExecStart=/opt/azure/containers/provision-setup.sh
+{{else}}
 runcmd:
 - echo `date`,`hostname`, startruncmd>>/opt/m 
 - apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
@@ -183,3 +220,4 @@ runcmd:
 - apt-mark unhold walinuxagent
 - mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete
 - echo `date`,`hostname`, endruncmd>>/opt/m 
+{{end}}

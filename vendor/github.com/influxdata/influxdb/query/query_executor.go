@@ -1,6 +1,7 @@
 package query
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -10,8 +11,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/influxdata/influxdb/influxql"
 	"github.com/influxdata/influxdb/models"
+	"github.com/influxdata/influxql"
 	"github.com/uber-go/zap"
 )
 
@@ -35,6 +36,9 @@ var (
 
 	// ErrQueryTimeoutLimitExceeded is an error when a query hits the max time allowed to run.
 	ErrQueryTimeoutLimitExceeded = errors.New("query-timeout limit exceeded")
+
+	// ErrAlreadyKilled is returned when attempting to kill a query that has already been killed.
+	ErrAlreadyKilled = errors.New("already killed")
 )
 
 // Statistics for the QueryExecutor
@@ -169,6 +173,26 @@ func (ctx *ExecutionContext) Send(result *Result) error {
 	case ctx.Results <- result:
 	}
 	return nil
+}
+
+type contextKey int
+
+const (
+	iteratorsContextKey contextKey = iota
+)
+
+// NewContextWithIterators returns a new context.Context with the *Iterators slice added.
+// The query planner will add instances of AuxIterator to the Iterators slice.
+func NewContextWithIterators(ctx context.Context, itr *Iterators) context.Context {
+	return context.WithValue(ctx, iteratorsContextKey, itr)
+}
+
+// tryAddAuxIteratorToContext will capture itr in the *Iterators slice, when configured
+// with a call to NewContextWithIterators.
+func tryAddAuxIteratorToContext(ctx context.Context, itr AuxIterator) {
+	if v, ok := ctx.Value(iteratorsContextKey).(*Iterators); ok {
+		*v = append(*v, itr)
+	}
 }
 
 // StatementExecutor executes a statement within the QueryExecutor.
@@ -331,7 +355,7 @@ LOOP:
 
 		// Rewrite statements, if necessary.
 		// This can occur on meta read statements which convert to SELECT statements.
-		newStmt, err := influxql.RewriteStatement(stmt)
+		newStmt, err := RewriteStatement(stmt)
 		if err != nil {
 			results <- &Result{Err: err}
 			break
@@ -478,4 +502,25 @@ func (q *QueryTask) monitor(fn QueryMonitorFunc) {
 		case q.monitorCh <- err:
 		}
 	}
+}
+
+// close closes the query task closing channel if the query hasn't been previously killed.
+func (q *QueryTask) close() {
+	q.mu.Lock()
+	if q.status != KilledTask {
+		close(q.closing)
+	}
+	q.mu.Unlock()
+}
+
+func (q *QueryTask) kill() error {
+	q.mu.Lock()
+	if q.status == KilledTask {
+		q.mu.Unlock()
+		return ErrAlreadyKilled
+	}
+	q.status = KilledTask
+	close(q.closing)
+	q.mu.Unlock()
+	return nil
 }

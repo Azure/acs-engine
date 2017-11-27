@@ -73,7 +73,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"eKr.", "jKr."},
 		erasNarrow:             []string{"eKr", "jKr"},
 		erasWide:               []string{"ennen Kristuksen syntymää", "jälkeen Kristuksen syntymän"},
-		timezones:              map[string]string{"ACST": "Keski-Australian normaaliaika", "AKDT": "Alaskan kesäaika", "UYT": "Uruguayn normaaliaika", "SAST": "Etelä-Afrikan aika", "OEZ": "Itä-Euroopan normaaliaika", "WIT": "Itä-Indonesian aika", "BOT": "Bolivian aika", "WAST": "Länsi-Afrikan kesäaika", "HKST": "Hongkongin kesäaika", "HEEG": "Itä-Grönlannin kesäaika", "UYST": "Uruguayn kesäaika", "CST": "Yhdysvaltain keskinen normaaliaika", "ACWDT": "Läntisen Keski-Australian kesäaika", "COST": "Kolumbian kesäaika", "HENOMX": "Luoteis-Meksikon kesäaika", "WITA": "Keski-Indonesian aika", "HNCU": "Kuuban normaaliaika", "HECU": "Kuuban kesäaika", "ACDT": "Keski-Australian kesäaika", "HNOG": "Länsi-Grönlannin normaaliaika", "WEZ": "Länsi-Euroopan normaaliaika", "GMT": "Greenwichin normaaliaika", "∅∅∅": "Perun kesäaika", "AEST": "Itä-Australian normaaliaika", "WIB": "Länsi-Indonesian aika", "HAST": "Havaijin-Aleuttien normaaliaika", "MESZ": "Keski-Euroopan kesäaika", "HEPM": "Saint-Pierren ja Miquelonin kesäaika", "AWST": "Länsi-Australian normaaliaika", "VET": "Venezuelan aika", "MDT": "Macaon kesäaika", "WAT": "Länsi-Afrikan normaaliaika", "ChST": "Tšamorron aika", "LHDT": "Lord Howen kesäaika", "HNPMX": "Meksikon Tyynenmeren normaaliaika", "HAT": "Newfoundlandin kesäaika", "HEPMX": "Meksikon Tyynenmeren kesäaika", "EAT": "Itä-Afrikan aika", "CDT": "Yhdysvaltain keskinen kesäaika", "EDT": "Yhdysvaltain itäinen kesäaika", "AWDT": "Länsi-Australian kesäaika", "WART": "Länsi-Argentiinan normaaliaika", "MYT": "Malesian aika", "IST": "Intian aika", "ACWST": "Läntisen Keski-Australian normaaliaika", "ARST": "Argentiinan kesäaika", "GFT": "Ranskan Guayanan aika", "SRT": "Surinamen aika", "CHADT": "Chathamin kesäaika", "PST": "Yhdysvaltain Tyynenmeren normaaliaika", "CLT": "Chilen normaaliaika", "BT": "Bhutanin aika", "LHST": "Lord Howen normaaliaika", "PDT": "Yhdysvaltain Tyynenmeren kesäaika", "CAT": "Keski-Afrikan aika", "WARST": "Länsi-Argentiinan kesäaika", "AEDT": "Itä-Australian kesäaika", "ECT": "Ecuadorin aika", "NZST": "Uuden-Seelannin normaaliaika", "MEZ": "Keski-Euroopan normaaliaika", "JST": "Japanin normaaliaika", "EST": "Yhdysvaltain itäinen normaaliaika", "HNT": "Newfoundlandin normaaliaika", "GYT": "Guyanan aika", "CLST": "Chilen kesäaika", "ADT": "Kanadan Atlantin kesäaika", "WESZ": "Länsi-Euroopan kesäaika", "TMT": "Turkmenistanin normaaliaika", "TMST": "Turkmenistanin kesäaika", "MST": "Macaon normaaliaika", "COT": "Kolumbian normaaliaika", "AKST": "Alaskan normaaliaika", "HNPM": "Saint-Pierren ja Miquelonin normaaliaika", "CHAST": "Chathamin normaaliaika", "JDT": "Japanin kesäaika", "HEOG": "Länsi-Grönlannin kesäaika", "AST": "Kanadan Atlantin normaaliaika", "HKT": "Hongkongin normaaliaika", "HNNOMX": "Luoteis-Meksikon normaaliaika", "HNEG": "Itä-Grönlannin normaaliaika", "HADT": "Havaijin-Aleuttien kesäaika", "NZDT": "Uuden-Seelannin kesäaika", "ART": "Argentiinan normaaliaika", "SGT": "Singaporen aika", "OESZ": "Itä-Euroopan kesäaika"},
+		timezones:              map[string]string{"WAST": "Länsi-Afrikan kesäaika", "HECU": "Kuuban kesäaika", "AWDT": "Länsi-Australian kesäaika", "ACWDT": "Läntisen Keski-Australian kesäaika", "UYST": "Uruguayn kesäaika", "JST": "Japanin normaaliaika", "HEOG": "Länsi-Grönlannin kesäaika", "SAST": "Etelä-Afrikan aika", "AEST": "Itä-Australian normaaliaika", "HAT": "Newfoundlandin kesäaika", "HNPM": "Saint-Pierren ja Miquelonin normaaliaika", "MESZ": "Keski-Euroopan kesäaika", "ADT": "Kanadan Atlantin kesäaika", "HNEG": "Itä-Grönlannin normaaliaika", "CLT": "Chilen normaaliaika", "CAT": "Keski-Afrikan aika", "CHADT": "Chathamin kesäaika", "HKST": "Hongkongin kesäaika", "HEPMX": "Meksikon Tyynenmeren kesäaika", "MDT": "Macaon kesäaika", "HAST": "Havaijin-Aleuttien normaaliaika", "HNNOMX": "Luoteis-Meksikon normaaliaika", "EAT": "Itä-Afrikan aika", "HNT": "Newfoundlandin normaaliaika", "CHAST": "Chathamin normaaliaika", "TMST": "Turkmenistanin kesäaika", "PST": "Yhdysvaltain Tyynenmeren normaaliaika", "OESZ": "Itä-Euroopan kesäaika", "WAT": "Länsi-Afrikan normaaliaika", "COT": "Kolumbian normaaliaika", "ACST": "Keski-Australian normaaliaika", "ChST": "Tšamorron aika", "MEZ": "Keski-Euroopan normaaliaika", "NZST": "Uuden-Seelannin normaaliaika", "AST": "Kanadan Atlantin normaaliaika", "GYT": "Guyanan aika", "GMT": "Greenwichin normaaliaika", "WIB": "Länsi-Indonesian aika", "BOT": "Bolivian aika", "HEEG": "Itä-Grönlannin kesäaika", "HEPM": "Saint-Pierren ja Miquelonin kesäaika", "ACWST": "Läntisen Keski-Australian normaaliaika", "WIT": "Itä-Indonesian aika", "GFT": "Ranskan Guayanan aika", "WEZ": "Länsi-Euroopan normaaliaika", "AWST": "Länsi-Australian normaaliaika", "NZDT": "Uuden-Seelannin kesäaika", "LHDT": "Lord Howen kesäaika", "WARST": "Länsi-Argentiinan kesäaika", "AEDT": "Itä-Australian kesäaika", "ACDT": "Keski-Australian kesäaika", "HNCU": "Kuuban normaaliaika", "CDT": "Yhdysvaltain keskinen kesäaika", "MYT": "Malesian aika", "UYT": "Uruguayn normaaliaika", "OEZ": "Itä-Euroopan normaaliaika", "WART": "Länsi-Argentiinan normaaliaika", "AKDT": "Alaskan kesäaika", "HENOMX": "Luoteis-Meksikon kesäaika", "LHST": "Lord Howen normaaliaika", "IST": "Intian aika", "ARST": "Argentiinan kesäaika", "WESZ": "Länsi-Euroopan kesäaika", "∅∅∅": "Brasilian kesäaika", "HADT": "Havaijin-Aleuttien kesäaika", "ART": "Argentiinan normaaliaika", "COST": "Kolumbian kesäaika", "EDT": "Yhdysvaltain itäinen kesäaika", "AKST": "Alaskan normaaliaika", "CLST": "Chilen kesäaika", "BT": "Bhutanin aika", "CST": "Yhdysvaltain keskinen normaaliaika", "MST": "Macaon normaaliaika", "TMT": "Turkmenistanin normaaliaika", "WITA": "Keski-Indonesian aika", "JDT": "Japanin kesäaika", "HNOG": "Länsi-Grönlannin normaaliaika", "EST": "Yhdysvaltain itäinen normaaliaika", "ECT": "Ecuadorin aika", "SGT": "Singaporen aika", "HNPMX": "Meksikon Tyynenmeren normaaliaika", "PDT": "Yhdysvaltain Tyynenmeren kesäaika", "SRT": "Surinamen aika", "VET": "Venezuelan aika", "HKT": "Hongkongin normaaliaika"},
 	}
 }
 
@@ -188,6 +188,21 @@ func (fi *fi_FI) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (fi *fi_FI) WeekdaysWide() []string {
 	return fi.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (fi *fi_FI) Decimal() string {
+	return fi.decimal
+}
+
+// Group returns the group of number
+func (fi *fi_FI) Group() string {
+	return fi.group
+}
+
+// Group returns the minus sign of number
+func (fi *fi_FI) Minus() string {
+	return fi.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'fi_FI' and handles both Whole and Real numbers based on 'v'
@@ -413,7 +428,7 @@ func (fi *fi_FI) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -432,7 +447,7 @@ func (fi *fi_FI) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -451,7 +466,7 @@ func (fi *fi_FI) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -471,7 +486,7 @@ func (fi *fi_FI) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

@@ -96,10 +96,11 @@ const (
 )
 
 var kubernetesManifestYamls = map[string]string{
-	"MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR":          "kubernetesmaster-kube-scheduler.yaml",
-	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetesmaster-kube-controller-manager.yaml",
-	"MASTER_KUBERNETES_APISERVER_B64_GZIP_STR":          "kubernetesmaster-kube-apiserver.yaml",
-	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":      "kubernetesmaster-kube-addon-manager.yaml",
+	"MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR":                "kubernetesmaster-kube-scheduler.yaml",
+	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR":       "kubernetesmaster-kube-controller-manager.yaml",
+	"MASTER_KUBERNETES_CLOUD_CONTROLLER_MANAGER_B64_GZIP_STR": "kubernetesmaster-cloud-controller-manager.yaml",
+	"MASTER_KUBERNETES_APISERVER_B64_GZIP_STR":                "kubernetesmaster-kube-apiserver.yaml",
+	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":            "kubernetesmaster-kube-addon-manager.yaml",
 }
 
 var kubernetesAritfacts = map[string]string{
@@ -121,6 +122,7 @@ var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
 	"MASTER_ADDON_AZURE_STORAGE_CLASSES_B64_GZIP_STR":           "kubernetesmasteraddons-azure-storage-classes.yaml",
 	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment.yaml",
+	"MASTER_ADDON_RESCHEDULER_DEPLOYMENT_B64_GZIP_STR":          "kubernetesmasteraddons-kube-rescheduler-deployment.yaml",
 }
 
 var kubernetesAddonYamls15 = map[string]string{
@@ -241,7 +243,12 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	var templ *template.Template
 
 	properties := containerService.Properties
-
+	// save the current orchestrator version and restore it after deploying.
+	// this allows us to deploy agents on the most recent patch without updating the orchestator version in the object
+	orchVersion := properties.OrchestratorProfile.OrchestratorVersion
+	defer func() {
+		properties.OrchestratorProfile.OrchestratorVersion = orchVersion
+	}()
 	if certsGenerated, err = SetPropertiesDefaults(containerService); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
@@ -389,7 +396,7 @@ func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
 		FQDNFormat = AzureChinaCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
 	} else if location == "germanynortheast" || location == "germanycentral" {
 		FQDNFormat = AzureGermanCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
-	} else if location == "usgovvirginia" || location == "usgoviowa" {
+	} else if location == "usgovvirginia" || location == "usgoviowa" || location == "usgovarizona" || location == "usgovtexas" {
 		FQDNFormat = AzureUSGovernmentCloud.EndpointConfig.ResourceManagerVMDNSSuffix
 	}
 	return fmt.Sprintf("%s.%s."+FQDNFormat, fqdnPrefix, location)
@@ -453,10 +460,14 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 
 	// Master Parameters
 	addValue(parametersMap, "location", location)
-	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[api.Ubuntu].ImageOffer)
-	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[api.Ubuntu].ImageSku)
-	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[api.Ubuntu].ImagePublisher)
-	addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig[api.Ubuntu].ImageVersion)
+
+	// Identify Master distro
+	masterDistro := getMasterDistro(properties.MasterProfile)
+	addValue(parametersMap, "osImageOffer", cloudSpecConfig.OSImageConfig[masterDistro].ImageOffer)
+	addValue(parametersMap, "osImageSKU", cloudSpecConfig.OSImageConfig[masterDistro].ImageSku)
+	addValue(parametersMap, "osImagePublisher", cloudSpecConfig.OSImageConfig[masterDistro].ImagePublisher)
+	addValue(parametersMap, "osImageVersion", cloudSpecConfig.OSImageConfig[masterDistro].ImageVersion)
+
 	addValue(parametersMap, "fqdnEndpointSuffix", cloudSpecConfig.EndpointConfig.ResourceManagerVMDNSSuffix)
 	addValue(parametersMap, "targetEnvironment", GetCloudTargetEnv(location))
 	addValue(parametersMap, "linuxAdminUsername", properties.LinuxProfile.AdminUsername)
@@ -533,17 +544,64 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		if properties.HostedMasterProfile != nil && properties.HostedMasterProfile.FQDN != "" {
 			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)
 		}
+
+		if properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager {
+			kubernetesCcmSpec := properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["ccm"]
+			if properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage != "" {
+				kubernetesCcmSpec = properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage
+			}
+
+			addValue(parametersMap, "kubernetesCcmImageSpec", kubernetesCcmSpec)
+		}
+
 		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
 		addValue(parametersMap, "kubeDNSServiceIP", properties.OrchestratorProfile.KubernetesConfig.DNSServiceIP)
 		addValue(parametersMap, "kubeServiceCidr", properties.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
 		addValue(parametersMap, "kubernetesAddonManagerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["addonmanager"])
 		addValue(parametersMap, "kubernetesAddonResizerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["addonresizer"])
-		addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dashboard"])
 		addValue(parametersMap, "kubernetesDNSMasqSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dnsmasq"])
 		addValue(parametersMap, "kubernetesExecHealthzSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["exechealthz"])
 		addValue(parametersMap, "kubernetesHeapsterSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["heapster"])
-		addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion]["tiller"])
+		tillerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
+		c := getAddonContainersIndexByName(tillerAddon.Containers, DefaultTillerAddonName)
+		if c > -1 {
+			addValue(parametersMap, "kubernetesTillerCPURequests", tillerAddon.Containers[c].CPURequests)
+			addValue(parametersMap, "kubernetesTillerCPULimit", tillerAddon.Containers[c].CPULimits)
+			addValue(parametersMap, "kubernetesTillerMemoryRequests", tillerAddon.Containers[c].MemoryRequests)
+			addValue(parametersMap, "kubernetesTillerMemoryLimit", tillerAddon.Containers[c].MemoryLimits)
+			if tillerAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "kubernetesTillerSpec", tillerAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion][DefaultTillerAddonName])
+			}
+		}
+		dashboardAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
+		c = getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
+		if c > -1 {
+			addValue(parametersMap, "kubernetesDashboardCPURequests", dashboardAddon.Containers[c].CPURequests)
+			addValue(parametersMap, "kubernetesDashboardCPULimit", dashboardAddon.Containers[c].CPULimits)
+			addValue(parametersMap, "kubernetesDashboardMemoryRequests", dashboardAddon.Containers[c].MemoryRequests)
+			addValue(parametersMap, "kubernetesDashboardMemoryLimit", dashboardAddon.Containers[c].MemoryLimits)
+			if dashboardAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "kubernetesDashboardSpec", dashboardAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "kubernetesDashboardSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultDashboardAddonName])
+			}
+		}
+		reschedulerAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
+		c = getAddonContainersIndexByName(reschedulerAddon.Containers, DefaultReschedulerAddonName)
+		if c > -1 {
+			addValue(parametersMap, "kubernetesReschedulerCPURequests", reschedulerAddon.Containers[c].CPURequests)
+			addValue(parametersMap, "kubernetesReschedulerCPULimit", reschedulerAddon.Containers[c].CPULimits)
+			addValue(parametersMap, "kubernetesReschedulerMemoryRequests", reschedulerAddon.Containers[c].MemoryRequests)
+			addValue(parametersMap, "kubernetesReschedulerMemoryLimit", reschedulerAddon.Containers[c].MemoryLimits)
+			if reschedulerAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "kubernetesReschedulerSpec", dashboardAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "kubernetesReschedulerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion][DefaultReschedulerAddonName])
+			}
+		}
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
 		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
@@ -574,6 +632,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "maxPods", properties.OrchestratorProfile.KubernetesConfig.MaxPods)
 		addValue(parametersMap, "gchighthreshold", properties.OrchestratorProfile.KubernetesConfig.GCHighThreshold)
 		addValue(parametersMap, "gclowthreshold", properties.OrchestratorProfile.KubernetesConfig.GCLowThreshold)
+		addValue(parametersMap, "etcdDownloadURLBase", cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase)
+		addValue(parametersMap, "etcdVersion", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion)
+		addValue(parametersMap, "etcdDiskSizeGB", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB)
 
 		if properties.OrchestratorProfile.KubernetesConfig == nil ||
 			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
@@ -631,6 +692,15 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		}
 		if len(agentProfile.Ports) > 0 {
 			addValue(parametersMap, fmt.Sprintf("%sEndpointDNSNamePrefix", agentProfile.Name), agentProfile.DNSPrefix)
+		}
+
+		// Unless distro is defined, default distro is configured by defaults#setAgentNetworkDefaults
+		//   Ignores Windows OS
+		if !(agentProfile.OSType == api.Windows) {
+			addValue(parametersMap, fmt.Sprintf("%sosImageOffer", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImageOffer)
+			addValue(parametersMap, fmt.Sprintf("%sosImageSKU", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImageSku)
+			addValue(parametersMap, fmt.Sprintf("%sosImagePublisher", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImagePublisher)
+			addValue(parametersMap, fmt.Sprintf("%sosImageVersion", agentProfile.Name), cloudSpecConfig.OSImageConfig[agentProfile.Distro].ImageVersion)
 		}
 	}
 
@@ -746,17 +816,23 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			constraint, _ := semver.NewConstraint("~" + version)
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes && constraint.Check(orchestratorVersion)
 		},
-		"GetKubernetesLabels": func(profile *api.AgentPoolProfile) string {
+		"GetMasterKubernetesLabels": func(rg string) string {
+			var buf bytes.Buffer
+			buf.WriteString("kubernetes.io/role=master")
+			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
+			return buf.String()
+		},
+		"GetAgentKubernetesLabels": func(profile *api.AgentPoolProfile, rg string) string {
 			var buf bytes.Buffer
 			buf.WriteString(fmt.Sprintf("kubernetes.io/role=agent,agentpool=%s", profile.Name))
 			if profile.StorageProfile == api.ManagedDisks {
 				storagetier, _ := getStorageAccountType(profile.VMSize)
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
 			}
+			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
 			for k, v := range profile.CustomNodeLabels {
 				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
 			}
-
 			return buf.String()
 		},
 		"RequiresFakeAgentOutput": func() bool {
@@ -771,14 +847,19 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsPublic": func(ports []int) bool {
 			return len(ports) > 0
 		},
-		"IsVNETIntegrated": func() bool {
-			return cs.Properties.OrchestratorProfile.IsVNETIntegrated()
+		"IsAzureCNI": func() bool {
+			return cs.Properties.OrchestratorProfile.IsAzureCNI()
 		},
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 		},
 		"UseInstanceMetadata": func() bool {
-			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata
+			if cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata == nil {
+				return true
+			} else if *cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata {
+				return true
+			}
+			return false
 		},
 		"GetVNETSubnetDependencies": func() string {
 			return getVNETSubnetDependencies(cs.Properties)
@@ -888,6 +969,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetKubernetesMasterCustomData": func(profile *api.Properties) string {
 			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml, cs, profile)
 			if e != nil {
+				fmt.Printf("%#v\n", e)
 				return ""
 			}
 
@@ -898,7 +980,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add artifacts and addons
 			var artifiacts map[string]string
-			if profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 {
+			if strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.5.") {
 				artifiacts = kubernetesAritfacts15
 			} else {
 				artifiacts = kubernetesAritfacts
@@ -909,10 +991,19 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 
 			var addonYamls map[string]string
-			if profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 {
+			if strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.5.") {
 				addonYamls = kubernetesAddonYamls15
 			} else {
 				addonYamls = kubernetesAddonYamls
+			}
+			if !profile.OrchestratorProfile.KubernetesConfig.IsTillerEnabled() {
+				delete(addonYamls, "MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR")
+			}
+			if !profile.OrchestratorProfile.KubernetesConfig.IsDashboardEnabled() {
+				delete(addonYamls, "MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR")
+			}
+			if !profile.OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled() {
+				delete(addonYamls, "MASTER_ADDON_RESCHEDULER_DEPLOYMENT_B64_GZIP_STR")
 			}
 			for placeholder, filename := range addonYamls {
 				addonTextContents := getBase64CustomScript(filename)
@@ -921,8 +1012,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 
 			// add calico manifests
 			if profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "calico" {
-				if profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 ||
-					profile.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot6Dot11 {
+				if strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.5.") ||
+					strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.6.") {
 					calicoAddonYamls = calicoAddonYamls15
 				}
 				for placeholder, filename := range calicoAddonYamls {
@@ -936,13 +1027,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
+
 			if e != nil {
 				return ""
 			}
 
 			// add artifacts
 			var artifiacts map[string]string
-			if cs.Properties.OrchestratorProfile.OrchestratorVersion == api.KubernetesVersion1Dot5Dot8 {
+			if strings.HasPrefix(cs.Properties.OrchestratorProfile.OrchestratorVersion, "1.5.") {
 				artifiacts = kubernetesAritfacts15
 			} else {
 				artifiacts = kubernetesAritfacts
@@ -1123,6 +1215,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			} else {
 				k8sVersion := cs.Properties.OrchestratorProfile.OrchestratorVersion
 				cloudSpecConfig := GetCloudSpecConfig(cs.Location)
+				tillerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
+				tC := getAddonContainersIndexByName(tillerAddon.Containers, DefaultTillerAddonName)
+				dashboardAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
+				dC := getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
+				reschedulerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
+				rC := getAddonContainersIndexByName(reschedulerAddon.Containers, DefaultReschedulerAddonName)
 				switch attr {
 				case "kubernetesHyperkubeSpec":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["hyperkube"]
@@ -1134,7 +1232,37 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				case "kubernetesAddonResizerSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["addonresizer"]
 				case "kubernetesDashboardSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dashboard"]
+					if dC > -1 {
+						if dashboardAddon.Containers[dC].Image != "" {
+							val = dashboardAddon.Containers[dC].Image
+						}
+					} else {
+						val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultDashboardAddonName]
+					}
+				case "kubernetesDashboardCPURequests":
+					if dC > -1 {
+						val = dashboardAddon.Containers[dC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesDashboardMemoryRequests":
+					if dC > -1 {
+						val = dashboardAddon.Containers[dC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesDashboardCPULimit":
+					if dC > -1 {
+						val = dashboardAddon.Containers[dC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesDashboardMemoryLimit":
+					if dC > -1 {
+						val = dashboardAddon.Containers[dC].MemoryLimits
+					} else {
+						val = ""
+					}
 				case "kubernetesDNSMasqSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dnsmasq"]
 				case "kubernetesExecHealthzSpec":
@@ -1142,7 +1270,69 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				case "kubernetesHeapsterSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["heapster"]
 				case "kubernetesTillerSpec":
-					val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeConfigs[k8sVersion]["tiller"]
+					if tC > -1 {
+						if tillerAddon.Containers[tC].Image != "" {
+							val = tillerAddon.Containers[tC].Image
+						} else {
+							val = cloudSpecConfig.KubernetesSpecConfig.TillerImageBase + KubeConfigs[k8sVersion][DefaultTillerAddonName]
+						}
+					}
+				case "kubernetesTillerCPURequests":
+					if tC > -1 {
+						val = tillerAddon.Containers[tC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesTillerMemoryRequests":
+					if tC > -1 {
+						val = tillerAddon.Containers[tC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesTillerCPULimit":
+					if tC > -1 {
+						val = tillerAddon.Containers[tC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesTillerMemoryLimit":
+					if tC > -1 {
+						val = tillerAddon.Containers[tC].MemoryLimits
+					} else {
+						val = ""
+					}
+				case "kubernetesReschedulerSpec":
+					if rC > -1 {
+						if reschedulerAddon.Containers[rC].Image != "" {
+							val = reschedulerAddon.Containers[rC].Image
+						}
+					} else {
+						val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion][DefaultReschedulerAddonName]
+					}
+				case "kubernetesReschedulerCPURequests":
+					if rC > -1 {
+						val = reschedulerAddon.Containers[rC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesReschedulerMemoryRequests":
+					if rC > -1 {
+						val = reschedulerAddon.Containers[rC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesReschedulerCPULimit":
+					if rC > -1 {
+						val = reschedulerAddon.Containers[rC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesReschedulerMemoryLimit":
+					if rC > -1 {
+						val = reschedulerAddon.Containers[rC].MemoryLimits
+					} else {
+						val = ""
+					}
 				case "kubernetesKubeDNSSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":
@@ -1196,11 +1386,20 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = DefaultGeneratorCode
 				case "orchestratorName":
 					val = DefaultOrchestratorName
+				case "etcdImageBase":
+					val = cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase
+				case "etcdVersion":
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion
+				case "etcdDiskSizeGB":
+					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB
 				default:
 					val = ""
 				}
 			}
 			return fmt.Sprintf("\"defaultValue\": \"%s\",", val)
+		},
+		"UseCloudControllerManager": func() bool {
+			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager
 		},
 		// inspired by http://stackoverflow.com/questions/18276173/calling-a-template-with-several-pipeline-parameters/18276968#18276968
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
@@ -1241,7 +1440,7 @@ func makeAgentExtensionScriptCommands(cs *api.ContainerService, profile *api.Age
 	if profile.IsAvailabilitySets() {
 		copyIndex = fmt.Sprintf("',copyIndex(variables('%sOffset')),'", profile.Name)
 	}
-	return makeExtensionScriptCommands(cs.Properties.MasterProfile.PreprovisionExtension,
+	return makeExtensionScriptCommands(profile.PreprovisionExtension,
 		cs.Properties.ExtensionProfiles, copyIndex)
 }
 
@@ -1314,7 +1513,9 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - update-initramfs -u
 - sudo add-apt-repository -y ppa:graphics-drivers
 - sudo apt-get update
-- sudo apt-get install -y nvidia-%s`, dv)
+- sudo apt-get install -y nvidia-%s
+- sudo nvidia-smi
+- sudo systemctl restart kubelet`, dv)
 
 	// We don't have an agreement in place with NVIDIA to provide the drivers on every sku. For this VMs we simply log a warning message.
 	na := getGPUDriversNotInstalledWarningMessage(profile.VMSize)
@@ -1793,6 +1994,17 @@ write_files:
 	return fmt.Sprintf(clusterYamlFile, filelines)
 }
 
+// Identifies Master distro to use for master parameters
+func getMasterDistro(m *api.MasterProfile) api.Distro {
+	// Use Ubuntu distro if MasterProfile is not defined (e.g. agents-only)
+	if m == nil {
+		return api.Ubuntu
+	}
+
+	// MasterProfile.Distro configured by defaults#setMasterNetworkDefaults
+	return m.Distro
+}
+
 func getKubernetesSubnets(properties *api.Properties) string {
 	subnetString := `{
             "name": "podCIDR%d",
@@ -2025,4 +2237,13 @@ func stringInSlice(a string, list []string) bool {
 
 func getSwarmVersions(orchestratorVersion, dockerComposeVersion string) string {
 	return fmt.Sprintf("\"orchestratorVersion\": \"%s\",\n\"dockerComposeVersion\": \"%s\",\n", orchestratorVersion, dockerComposeVersion)
+}
+
+func getAddonByName(addons []api.KubernetesAddon, name string) api.KubernetesAddon {
+	for i := range addons {
+		if addons[i].Name == name {
+			return addons[i]
+		}
+	}
+	return api.KubernetesAddon{}
 }

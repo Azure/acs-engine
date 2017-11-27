@@ -1,7 +1,6 @@
 package run
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -26,9 +25,12 @@ import (
 	"github.com/influxdata/influxdb/services/opentsdb"
 	"github.com/influxdata/influxdb/services/precreator"
 	"github.com/influxdata/influxdb/services/retention"
+	"github.com/influxdata/influxdb/services/storage"
 	"github.com/influxdata/influxdb/services/subscriber"
 	"github.com/influxdata/influxdb/services/udp"
 	"github.com/influxdata/influxdb/tsdb"
+	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/transform"
 )
 
 const (
@@ -47,6 +49,7 @@ type Config struct {
 	Monitor        monitor.Config    `toml:"monitor"`
 	Subscriber     subscriber.Config `toml:"subscriber"`
 	HTTPD          httpd.Config      `toml:"http"`
+	Storage        storage.Config    `toml:"storage"`
 	GraphiteInputs []graphite.Config `toml:"graphite"`
 	CollectdInputs []collectd.Config `toml:"collectd"`
 	OpenTSDBInputs []opentsdb.Config `toml:"opentsdb"`
@@ -72,6 +75,7 @@ func NewConfig() *Config {
 	c.Monitor = monitor.NewConfig()
 	c.Subscriber = subscriber.NewConfig()
 	c.HTTPD = httpd.NewConfig()
+	c.Storage = storage.NewConfig()
 
 	c.GraphiteInputs = []graphite.Config{graphite.NewConfig()}
 	c.CollectdInputs = []collectd.Config{collectd.NewConfig()}
@@ -107,20 +111,22 @@ func NewDemoConfig() (*Config, error) {
 	return c, nil
 }
 
-// trimBOM trims the Byte-Order-Marks from the beginning of the file.
-// This is for Windows compatability only.
-// See https://github.com/influxdata/telegraf/issues/1378.
-func trimBOM(f []byte) []byte {
-	return bytes.TrimPrefix(f, []byte("\xef\xbb\xbf"))
-}
-
 // FromTomlFile loads the config from a TOML file.
 func (c *Config) FromTomlFile(fpath string) error {
 	bs, err := ioutil.ReadFile(fpath)
 	if err != nil {
 		return err
 	}
-	bs = trimBOM(bs)
+
+	// Handle any potential Byte-Order-Marks that may be in the config file.
+	// This is for Windows compatibility only.
+	// See https://github.com/influxdata/telegraf/issues/1378 and
+	// https://github.com/influxdata/influxdb/issues/8965.
+	bom := unicode.BOMOverride(transform.Nop)
+	bs, _, err = transform.Bytes(bom, bs)
+	if err != nil {
+		return err
+	}
 	return c.FromToml(string(bs))
 }
 
@@ -185,18 +191,21 @@ func (c *Config) Validate() error {
 }
 
 // ApplyEnvOverrides apply the environment configuration on top of the config.
-func (c *Config) ApplyEnvOverrides() error {
-	return c.applyEnvOverrides("INFLUXDB", reflect.ValueOf(c), "")
+func (c *Config) ApplyEnvOverrides(getenv func(string) string) error {
+	if getenv == nil {
+		getenv = os.Getenv
+	}
+	return c.applyEnvOverrides(getenv, "INFLUXDB", reflect.ValueOf(c), "")
 }
 
-func (c *Config) applyEnvOverrides(prefix string, spec reflect.Value, structKey string) error {
+func (c *Config) applyEnvOverrides(getenv func(string) string, prefix string, spec reflect.Value, structKey string) error {
 	// If we have a pointer, dereference it
 	element := spec
 	if spec.Kind() == reflect.Ptr {
 		element = spec.Elem()
 	}
 
-	value := os.Getenv(prefix)
+	value := getenv(prefix)
 
 	switch element.Kind() {
 	case reflect.String:
@@ -244,11 +253,11 @@ func (c *Config) applyEnvOverrides(prefix string, spec reflect.Value, structKey 
 		// If the type is s slice, apply to each using the index as a suffix, e.g. GRAPHITE_0, GRAPHITE_0_TEMPLATES_0 or GRAPHITE_0_TEMPLATES="item1,item2"
 		for j := 0; j < element.Len(); j++ {
 			f := element.Index(j)
-			if err := c.applyEnvOverrides(prefix, f, structKey); err != nil {
+			if err := c.applyEnvOverrides(getenv, prefix, f, structKey); err != nil {
 				return err
 			}
 
-			if err := c.applyEnvOverrides(fmt.Sprintf("%s_%d", prefix, j), f, structKey); err != nil {
+			if err := c.applyEnvOverrides(getenv, fmt.Sprintf("%s_%d", prefix, j), f, structKey); err != nil {
 				return err
 			}
 		}
@@ -285,19 +294,19 @@ func (c *Config) applyEnvOverrides(prefix string, spec reflect.Value, structKey 
 			// If it's a sub-config, recursively apply
 			if field.Kind() == reflect.Struct || field.Kind() == reflect.Ptr ||
 				field.Kind() == reflect.Slice || field.Kind() == reflect.Array {
-				if err := c.applyEnvOverrides(envKey, field, fieldName); err != nil {
+				if err := c.applyEnvOverrides(getenv, envKey, field, fieldName); err != nil {
 					return err
 				}
 				continue
 			}
 
-			value := os.Getenv(envKey)
+			value := getenv(envKey)
 			// Skip any fields we don't have a value to set
 			if len(value) == 0 {
 				continue
 			}
 
-			if err := c.applyEnvOverrides(envKey, field, fieldName); err != nil {
+			if err := c.applyEnvOverrides(getenv, envKey, field, fieldName); err != nil {
 				return err
 			}
 		}

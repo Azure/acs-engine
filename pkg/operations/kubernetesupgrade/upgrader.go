@@ -19,6 +19,12 @@ type Upgrader struct {
 	kubeConfig string
 }
 
+// UpgradeVM holds VM name and upgrade status
+type UpgradeVM struct {
+	Name     string
+	Upgraded bool
+}
+
 // Init initializes an upgrader struct
 func (ku *Upgrader) Init(translator *i18n.Translator, logger *logrus.Entry, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient, kubeConfig string) {
 	ku.Translator = translator
@@ -76,6 +82,7 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	upgradeMasterNode.UpgradeContainerService = ku.ClusterTopology.DataModel
 	upgradeMasterNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 	upgradeMasterNode.Client = ku.Client
+	upgradeMasterNode.kubeConfig = ku.kubeConfig
 
 	expectedMasterCount := ku.ClusterTopology.DataModel.Properties.MasterProfile.Count
 	mastersUpgradedCount := len(*ku.ClusterTopology.UpgradedMasterVMs)
@@ -106,7 +113,7 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 
 		masterIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
-		err := upgradeMasterNode.DeleteNode(vm.Name)
+		err := upgradeMasterNode.DeleteNode(vm.Name, false)
 		if err != nil {
 			ku.logger.Infof("Error deleting master VM: %s, err: %v\n", *vm.Name, err)
 			return err
@@ -167,18 +174,11 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 }
 
 func (ku *Upgrader) upgradeAgentPools() error {
-	// Unused until safely drain node is being called
-	// var kubeAPIServerURL string
-	// if ku.DataModel.Properties.MasterProfile != nil {
-	// 	kubeAPIServerURL = ku.DataModel.Properties.MasterProfile.FQDN
-	// }
-	// if ku.DataModel.Properties.HostedMasterProfile != nil {
-	// 	kubeAPIServerURL = ku.DataModel.Properties.HostedMasterProfile.FQDN
-	// }
 	for _, agentPool := range ku.ClusterTopology.AgentPools {
 		// Upgrade Agent VMs
 		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
 		if err != nil {
+			ku.logger.Errorf("Error generating upgrade template: %v", err)
 			return ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
 		}
 
@@ -197,10 +197,15 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			return err
 		}
 
-		var agentCount int
-		for _, app := range ku.ClusterTopology.DataModel.Properties.AgentPoolProfiles {
+		var agentCount, agentPoolIndex int
+		var agentOsType api.OSType
+		var agentPoolName string
+		for indx, app := range ku.ClusterTopology.DataModel.Properties.AgentPoolProfiles {
 			if app.Name == *agentPool.Name {
 				agentCount = app.Count
+				agentOsType = app.OSType
+				agentPoolName = app.Name
+				agentPoolIndex = indx
 				break
 			}
 		}
@@ -216,70 +221,100 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		upgradeAgentNode.Client = ku.Client
 		upgradeAgentNode.kubeConfig = ku.kubeConfig
 
-		upgradedAgentsIndex := make(map[int]bool)
+		upgradeVMs := make(map[int]*UpgradeVM)
 
+		// Go over upgraded VMs and verify provisioning state. Delete the VM if the state is not 'Succeeded'.
+		// Such a VM will be re-created later in this function.
 		for _, vm := range *agentPool.UpgradedAgentVMs {
 			ku.logger.Infof("Agent VM: %s, pool name: %s on expected orchestrator version\n", *vm.Name, *agentPool.Name)
-			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
-			upgradedAgentsIndex[agentIndex] = true
+			var vmProvisioningState string
+			if vm.VirtualMachineProperties != nil && vm.VirtualMachineProperties.ProvisioningState != nil {
+				vmProvisioningState = *vm.VirtualMachineProperties.ProvisioningState
+			}
+
+			if vmProvisioningState != string(api.Succeeded) {
+				ku.logger.Infof("Deleting agent VM %s in provisioning state %s\n", *vm.Name, vmProvisioningState)
+				err := upgradeAgentNode.DeleteNode(vm.Name, false)
+				if err != nil {
+					ku.logger.Errorf("Error deleting agent VM %s: %v\n", *vm.Name, err)
+					return err
+				}
+			} else {
+				agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
+				upgradeVMs[agentIndex] = &UpgradeVM{*vm.Name, true}
+			}
 		}
 
 		ku.logger.Infof("Starting upgrade of agent nodes in pool identifier: %s, name: %s...\n",
 			*agentPool.Identifier, *agentPool.Name)
 
 		for _, vm := range *agentPool.AgentVMs {
-			ku.logger.Infof("Upgrading Agent VM: %s, pool name: %s\n", *vm.Name, *agentPool.Name)
-
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
+			upgradeVMs[agentIndex] = &UpgradeVM{*vm.Name, false}
+		}
 
-			err := upgradeAgentNode.DeleteNode(vm.Name)
+		// Create missing nodes *plus* one extra node, which will be used to take on the load from upgrading nodes.
+		// In a normal mode of operation the actual number of VMs in the pool [len(upgradeVMs)] is equal to agentCount.
+		// However, if the upgrade failed in the middle, the actual number of VMs might differ.
+		for agentCount > 0 && len(upgradeVMs) <= agentCount {
+			agentIndex := getAvailableIndex(upgradeVMs)
+
+			vmName, err := armhelpers.GetK8sVMName(agentOsType, ku.DataModel.Properties.HostedMasterProfile != nil,
+				ku.NameSuffix, agentPoolName, agentPoolIndex, agentIndex)
 			if err != nil {
-				ku.logger.Infof("Error deleting agent VM: %s\n", *vm.Name)
+				ku.logger.Errorf("Error reconstructing agent VM name with index %d: %v\n", agentIndex, err)
 				return err
 			}
+			ku.logger.Infof("Adding agent node %s (index %d)", vmName, agentIndex)
 
 			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
 			if err != nil {
-				ku.logger.Infof("Error creating upgraded agent VM: %s\n", *vm.Name)
+				ku.logger.Errorf("Error creating agent node %s (index %d): %v\n", vmName, agentIndex, err)
 				return err
 			}
 
-			err = upgradeAgentNode.Validate(vm.Name)
+			err = upgradeAgentNode.Validate(&vmName)
 			if err != nil {
-				ku.logger.Infof("Error validating upgraded agent VM: %s, err: %v\n", *vm.Name, err)
+				ku.logger.Infof("Error validating agent node %s (index %d): %v\n", vmName, agentIndex, err)
 				return err
 			}
 
-			upgradedAgentsIndex[agentIndex] = true
+			upgradeVMs[agentIndex] = &UpgradeVM{vmName, true}
 		}
 
-		agentsToCreate := agentCount - len(upgradedAgentsIndex)
-		ku.logger.Infof("Expected agent count in the pool: %d, Creating %d more agents\n", agentCount, agentsToCreate)
-
-		// NOTE: this is NOT completely idempotent because it assumes that
-		// the OS disk has been deleted
-		for i := 0; i < agentsToCreate; i++ {
-			agentIndexToCreate := 0
-			for upgradedAgentsIndex[agentIndexToCreate] == true {
-				agentIndexToCreate++
+		// Upgrade nodes in agent pool
+		upgradedCount, toBeUpgraded := 0, len(*agentPool.AgentVMs)
+		for agentIndex, vm := range upgradeVMs {
+			if vm.Upgraded {
+				continue
 			}
+			ku.logger.Infof("Upgrading Agent VM: %s, pool name: %s\n", vm.Name, *agentPool.Name)
 
-			ku.logger.Infof("Creating upgraded Agent VM with index: %d, pool name: %s\n", agentIndexToCreate, *agentPool.Name)
-
-			err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndexToCreate)
+			err := upgradeAgentNode.DeleteNode(&vm.Name, true)
 			if err != nil {
-				ku.logger.Infof("Error creating upgraded agent VM with index: %d\n", agentIndexToCreate)
+				ku.logger.Errorf("Error deleting agent VM %s: %v\n", vm.Name, err)
 				return err
 			}
 
-			tempVMName := ""
-			err = upgradeAgentNode.Validate(&tempVMName)
-			if err != nil {
-				ku.logger.Infof("Error validating upgraded agent VM with index: %d\n", agentIndexToCreate)
-				return err
-			}
+			// do not create last node in favor of already created extra node.
+			if upgradedCount == toBeUpgraded-1 {
+				ku.logger.Infof("Skipping creation of VM %s (index %d)", vm.Name, agentIndex)
+				delete(upgradeVMs, agentIndex)
+			} else {
+				err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
+				if err != nil {
+					ku.logger.Errorf("Error creating upgraded agent VM %s: %v\n", vm.Name, err)
+					return err
+				}
 
-			upgradedAgentsIndex[agentIndexToCreate] = true
+				err = upgradeAgentNode.Validate(&vm.Name)
+				if err != nil {
+					ku.logger.Errorf("Error validating upgraded agent VM %s: %v\n", vm.Name, err)
+					return err
+				}
+				vm.Upgraded = true
+			}
+			upgradedCount++
 		}
 	}
 
@@ -310,4 +345,23 @@ func (ku *Upgrader) generateUpgradeTemplate(upgradeContainerService *api.Contain
 	parametersMap := parameters.(map[string]interface{})
 
 	return templateMap, parametersMap, nil
+}
+
+// return unused index within the range of agent indices, or subsequent index
+func getAvailableIndex(vms map[int]*UpgradeVM) int {
+	maxIndex := 0
+
+	for indx := range vms {
+		if indx > maxIndex {
+			maxIndex = indx
+		}
+	}
+
+	for indx := 0; indx < maxIndex; indx++ {
+		if _, found := vms[indx]; !found {
+			return indx
+		}
+	}
+
+	return maxIndex + 1
 }

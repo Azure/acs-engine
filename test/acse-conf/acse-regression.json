@@ -29,10 +29,6 @@
       "category": "managed-disk"
     },
     {
-      "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json",
-      "category": "managed-disk"
-    },
-    {
       "cluster_definition": "disks-managed/swarmmode-vmas.json",
       "category": "managed-disk"
     },
@@ -70,8 +66,16 @@
       "category": "network"
     },
     {
+      "cluster_definition": "networkpolicy/kubernetes-azure.json",
+      "category": "network"
+    },
+    {
       "cluster_definition": "kubernetes-config/kubernetes-clustersubnet.json",
       "category": "network"
+    },
+    {
+      "cluster_definition": "kubernetes-config/kubernetes-no-dashboard.json",
+      "category": "config"
     },
     {
       "cluster_definition": "v20170131/swarmmode.json",
@@ -88,6 +92,14 @@
     {
       "cluster_definition": "vnet/swarmmodevnet.json",
       "category": "network"
+    },
+    {
+      "cluster_definition": "coreos/kubernetes-coreos.json",
+      "category": "distro"
+    },
+    {
+      "cluster_definition": "coreos/kubernetes-coreos-hybrid.json",
+      "category": "distro"
     }
   ]
 }

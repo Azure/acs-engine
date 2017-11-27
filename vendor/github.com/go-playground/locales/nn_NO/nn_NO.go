@@ -73,7 +73,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"f.Kr.", "e.Kr."},
 		erasNarrow:             []string{"f.Kr.", "e.Kr."},
 		erasWide:               []string{"f.Kr.", "e.Kr."},
-		timezones:              map[string]string{"CLT": "CLT", "COST": "COST", "AEST": "austaustralsk standardtid", "WITA": "WITA", "SRT": "SRT", "CDT": "CDT", "PDT": "PDT", "HADT": "HADT", "CLST": "CLST", "WESZ": "vesteuropeisk sommartid", "WAST": "vestafrikansk sommartid", "EDT": "EDT", "MST": "MST", "SAST": "sørafrikansk tid", "SGT": "SGT", "HAST": "HAST", "JDT": "JDT", "GYT": "GYT", "CHADT": "CHADT", "ECT": "ECT", "MYT": "MYT", "AST": "AST", "WIT": "WIT", "CAT": "sentralafrikansk tid", "WARST": "WARST", "HEOG": "HEOG", "HKST": "HKST", "ACST": "sentralaustralsk standardtid", "COT": "COT", "AKDT": "AKDT", "HECU": "HECU", "HNOG": "HNOG", "HAT": "HAT", "AEDT": "austaustralsk sommartid", "UYT": "UYT", "HEPM": "HEPM", "EAT": "austafrikansk tid", "HENOMX": "HENOMX", "CST": "CST", "EST": "EST", "MDT": "MDT", "AWST": "vestaustralsk standardtid", "PST": "PST", "HEEG": "HEEG", "ChST": "ChST", "BOT": "BOT", "ADT": "ADT", "ACDT": "sentralaustralsk sommartid", "AWDT": "vestaustralsk sommartid", "CHAST": "CHAST", "JST": "JST", "WAT": "vestafrikansk standardtid", "∅∅∅": "∅∅∅", "BT": "BT", "UYST": "UYST", "NZST": "NZST", "OESZ": "austeuropeisk sommartid", "GFT": "GFT", "AKST": "AKST", "HNPM": "HNPM", "LHST": "LHST", "LHDT": "LHDT", "HEPMX": "HEPMX", "MESZ": "sentraleuropeisk sommartid", "WEZ": "vesteuropeisk standardtid", "ART": "ART", "HNNOMX": "HNNOMX", "HNPMX": "HNPMX", "WIB": "WIB", "ACWDT": "vest-sentralaustralsk sommartid", "WART": "WART", "TMT": "TMT", "ARST": "ARST", "NZDT": "NZDT", "ACWST": "vest-sentralaustralsk standardtid", "HNT": "HNT", "GMT": "greenwich middeltid", "OEZ": "austeuropeisk standardtid", "TMST": "TMST", "HKT": "HKT", "HNEG": "HNEG", "HNCU": "HNCU", "IST": "IST", "MEZ": "sentraleuropeisk standardtid", "VET": "VET"},
+		timezones:              map[string]string{"PDT": "PDT", "HADT": "HADT", "HNNOMX": "HNNOMX", "MDT": "MDT", "HEEG": "HEEG", "COST": "COST", "EST": "EST", "COT": "COT", "PST": "PST", "AWST": "vestaustralsk standardtid", "UYT": "UYT", "JST": "JST", "HNOG": "HNOG", "ACDT": "sentralaustralsk sommartid", "WEZ": "vesteuropeisk standardtid", "WESZ": "vesteuropeisk sommartid", "∅∅∅": "∅∅∅", "HNPM": "HNPM", "MST": "MST", "WAT": "vestafrikansk standardtid", "WIB": "WIB", "ECT": "ECT", "UYST": "UYST", "MESZ": "sentraleuropeisk sommartid", "JDT": "JDT", "LHST": "LHST", "LHDT": "LHDT", "WAST": "vestafrikansk sommartid", "GFT": "GFT", "OEZ": "austeuropeisk standardtid", "AEDT": "austaustralsk sommartid", "AKST": "AKST", "HECU": "HECU", "WART": "WART", "HKT": "HKT", "GMT": "greenwich middeltid", "ChST": "ChST", "BT": "BT", "WIT": "WIT", "WITA": "WITA", "WARST": "WARST", "HNT": "HNT", "AKDT": "AKDT", "ACWST": "vest-sentralaustralsk standardtid", "AEST": "austaustralsk standardtid", "SGT": "SGT", "CST": "CST", "VET": "VET", "AST": "AST", "HNCU": "HNCU", "HAST": "HAST", "TMT": "TMT", "ART": "ART", "EAT": "austafrikansk tid", "SAST": "sørafrikansk tid", "BOT": "BOT", "MYT": "MYT", "NZST": "NZST", "ARST": "ARST", "CAT": "sentralafrikansk tid", "HNPMX": "HNPMX", "CHAST": "CHAST", "SRT": "SRT", "CLST": "CLST", "EDT": "EDT", "ACST": "sentralaustralsk standardtid", "HENOMX": "HENOMX", "OESZ": "austeuropeisk sommartid", "HNEG": "HNEG", "HKST": "HKST", "CLT": "CLT", "CDT": "CDT", "AWDT": "vestaustralsk sommartid", "IST": "IST", "HAT": "HAT", "HEPMX": "HEPMX", "HEPM": "HEPM", "MEZ": "sentraleuropeisk standardtid", "NZDT": "NZDT", "TMST": "TMST", "ADT": "ADT", "HEOG": "HEOG", "GYT": "GYT", "CHADT": "CHADT", "ACWDT": "vest-sentralaustralsk sommartid"},
 	}
 }
 
@@ -187,6 +187,21 @@ func (nn *nn_NO) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (nn *nn_NO) WeekdaysWide() []string {
 	return nn.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (nn *nn_NO) Decimal() string {
+	return nn.decimal
+}
+
+// Group returns the group of number
+func (nn *nn_NO) Group() string {
+	return nn.group
+}
+
+// Group returns the minus sign of number
+func (nn *nn_NO) Minus() string {
+	return nn.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'nn_NO' and handles both Whole and Real numbers based on 'v'
@@ -422,7 +437,7 @@ func (nn *nn_NO) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -441,7 +456,7 @@ func (nn *nn_NO) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -460,7 +475,7 @@ func (nn *nn_NO) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -481,7 +496,7 @@ func (nn *nn_NO) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

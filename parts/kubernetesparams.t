@@ -127,6 +127,13 @@
       },
       "type": "string"
     },
+    "kubernetesCcmImageSpec": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The container spec for cloud-controller-manager."
+      },
+      "type": "string"
+    },
     "kubernetesAddonManagerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesAddonManagerSpec"}}
       "metadata": {
@@ -148,6 +155,34 @@
       },
       "type": "string"
     },
+    "kubernetesDashboardCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesDashboardCPURequests"}}
+      "metadata": {
+        "description": "Dashboard CPU Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesDashboardMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesDashboardMemoryRequests"}}
+      "metadata": {
+        "description": "Dashboard Memory Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesDashboardCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesDashboardCPULimit"}}
+      "metadata": {
+        "description": "Dashboard CPU Limit."
+      },
+      "type": "string"
+    },
+    "kubernetesDashboardMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesDashboardMemoryLimit"}}
+      "metadata": {
+        "description": "Dashboard Memory Limit."
+      },
+      "type": "string"
+    },
     "kubernetesExecHealthzSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesExecHealthzSpec"}}
       "metadata": {
@@ -166,6 +201,69 @@
       {{PopulateClassicModeDefaultValue "kubernetesTillerSpec"}}
       "metadata": {
         "description": "The container spec for Helm Tiller."
+      },
+      "type": "string"
+    },
+    "kubernetesTillerCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerCPURequests"}}
+      "metadata": {
+        "description": "Helm Tiller CPU Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesTillerMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerMemoryRequests"}}
+      "metadata": {
+        "description": "Helm Tiller Memory Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesTillerCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerCPULimit"}}
+      "metadata": {
+        "description": "Helm Tiller CPU Limit."
+      },
+      "type": "string"
+    },
+    "kubernetesTillerMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerMemoryLimit"}}
+      "metadata": {
+        "description": "Helm Tiller Memory Limit."
+      },
+      "type": "string"
+    },
+    "kubernetesReschedulerSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesReschedulerSpec"}}
+      "metadata": {
+        "description": "The container spec for rescheduler."
+      },
+      "type": "string"
+    },
+    "kubernetesReschedulerCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesReschedulerCPURequests"}}
+      "metadata": {
+        "description": "Rescheduler CPU Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesReschedulerMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesReschedulerMemoryRequests"}}
+      "metadata": {
+        "description": "Rescheduler Memory Requests."
+      },
+      "type": "string"
+    },
+    "kubernetesReschedulerCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesReschedulerCPULimit"}}
+      "metadata": {
+        "description": "Rescheduler CPU Limit."
+      },
+      "type": "string"
+    },
+    "kubernetesReschedulerMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesReschedulerMemoryLimit"}}
+      "metadata": {
+        "description": "Rescheduler Memory Limit."
       },
       "type": "string"
     },
@@ -360,4 +458,25 @@
         "description": "The offset into the master pool where to start creating master VMs.  This value can be from 0 to 4, but must be less than masterCount."
       },
       "type": "int"
+    },
+    "etcdDiskSizeGB": {
+      {{PopulateClassicModeDefaultValue "etcdDiskSizeGB"}}
+      "metadata": {
+        "description": "Size in GB to allocate for etcd volume"
+      },
+      "type": "string"
+    },
+    "etcdDownloadURLBase": {
+      {{PopulateClassicModeDefaultValue "etcdDownloadURLBase"}}
+      "metadata": {
+        "description": "etcd image base URL"
+      },
+      "type": "string"
+    },
+    "etcdVersion": {
+      {{PopulateClassicModeDefaultValue "etcdVersion"}}
+      "metadata": {
+        "description": "etcd version"
+      },
+      "type": "string"
     }

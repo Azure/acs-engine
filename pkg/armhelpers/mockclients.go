@@ -25,6 +25,7 @@ type MockACSEngineClient struct {
 	FailGetStorageClient            bool
 	FailDeleteNetworkInterface      bool
 	FailGetKubernetesClient         bool
+	FailListProviders               bool
 	MockKubernetesClient            *MockKubernetesClient
 }
 
@@ -60,7 +61,9 @@ func (mkc *MockKubernetesClient) GetNode(name string) (*v1.Node, error) {
 	if mkc.FailGetNode {
 		return nil, fmt.Errorf("GetNode failed")
 	}
-	return &v1.Node{}, nil
+	node := &v1.Node{}
+	node.Status.Conditions = append(node.Status.Conditions, v1.NodeCondition{Type: v1.NodeReady, Status: v1.ConditionTrue})
+	return node, nil
 }
 
 //UpdateNode updates the node in the api server with the passed in info
@@ -380,4 +383,13 @@ func (mc *MockACSEngineClient) GetKubernetesClient(masterURL, kubeConfig string,
 		mc.MockKubernetesClient = &MockKubernetesClient{}
 	}
 	return mc.MockKubernetesClient, nil
+}
+
+// ListProviders mock
+func (mc *MockACSEngineClient) ListProviders() (resources.ProviderListResult, error) {
+	if mc.FailListProviders {
+		return resources.ProviderListResult{}, fmt.Errorf("ListProviders failed")
+	}
+
+	return resources.ProviderListResult{}, nil
 }

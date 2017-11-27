@@ -10,12 +10,14 @@ import (
 
 // Config holds information on how to talk to influxdb
 type Config struct {
-	Address   string `envconfig:"INFLUX_ADDRESS" required:"true"`
-	Username  string `envconfig:"INFLUX_USERNAME" required:"true"`
-	Password  string `envconfig:"INFLUX_PASSWORD" required:"true"`
-	Database  string `envconfig:"INFLUX_DATABASE" required:"true"`
-	IsCircle  bool   `envconfig:"CIRCLECI"`
-	CircleEnv *CircleCIEnvironment
+	Address    string `envconfig:"INFLUX_ADDRESS" required:"true"`
+	Username   string `envconfig:"INFLUX_USERNAME" required:"true"`
+	Password   string `envconfig:"INFLUX_PASSWORD" required:"true"`
+	Database   string `envconfig:"INFLUX_DATABASE" required:"true"`
+	IsCircle   bool   `envconfig:"CIRCLECI"`
+	IsJenkins  bool   `envconfig:"IS_JENKINS"`
+	CircleEnv  *CircleCIEnvironment
+	JenkinsEnv *JenkinsCIEnvironment
 }
 
 // CircleCIEnvironment holds information about a test run within circleci
@@ -24,6 +26,14 @@ type CircleCIEnvironment struct {
 	BuildNumber string `envconfig:"CIRCLE_BUILD_NUM"`
 	CommitSha   string `envconfig:"CIRCLE_SHA1"`
 	Job         string `envconfig:"CIRCLE_JOB"`
+}
+
+// JenkinsCIEnvironment holds information about a test run within jenkins
+type JenkinsCIEnvironment struct {
+	Branch      string `envconfig:"GIT_BRANCH"`
+	BuildNumber string `envconfig:"BUILD_NUMBER"`
+	CommitSha   string `envconfig:"GIT_COMMIT"`
+	Job         string `envconfig:"JOB_NAME"`
 }
 
 // Point holds data that will be written to influx
@@ -38,6 +48,7 @@ type Point struct {
 	OverallDuration     time.Duration
 	TestErrorCount      float64
 	ProvisionErrorCount float64
+	NodeWaitErrorCount  float64
 	Tags                map[string]string
 }
 
@@ -55,6 +66,14 @@ func ParseConfig() (*Config, error) {
 		}
 		c.CircleEnv = circleci
 	}
+
+	if c.IsJenkins {
+		jenkinsci := new(JenkinsCIEnvironment)
+		if err := envconfig.Process("jenkinsci-config", jenkinsci); err != nil {
+			return nil, err
+		}
+		c.JenkinsEnv = jenkinsci
+	}
 	return c, nil
 }
 
@@ -68,6 +87,7 @@ func BuildPoint(orchestrator, location, clusterDefinition, subscriptionID string
 		OverallDuration:     0 * time.Second,
 		ProvisionErrorCount: 0,
 		TestErrorCount:      0,
+		NodeWaitErrorCount:  0,
 		Tags: map[string]string{
 			"orchestrator":    orchestrator,
 			"location":        location,
@@ -105,7 +125,10 @@ func (p *Point) SetNodeWaitStart() {
 }
 
 // RecordNodeWait will set NodeWaitDuration to time.Since(p.NodeWaitStart)
-func (p *Point) RecordNodeWait() {
+func (p *Point) RecordNodeWait(err error) {
+	if err != nil {
+		p.NodeWaitErrorCount = p.NodeWaitErrorCount + 1
+	}
 	p.NodeWaitDuration = time.Since(p.NodeWaitStart)
 }
 
@@ -133,11 +156,23 @@ func (p *Point) SetProvisionMetrics(data []byte) {
 func (p *Point) Write() {
 	cfg, err := ParseConfig()
 	if err == nil {
+		log.Printf("Circle?:%v\n", cfg.IsCircle)
+		log.Printf("Jenkins?:%v\n", cfg.IsJenkins)
+
 		if cfg.IsCircle {
 			p.Tags["branch"] = cfg.CircleEnv.Branch
 			p.Tags["commit-sha"] = cfg.CircleEnv.CommitSha
 			p.Tags["build_number"] = cfg.CircleEnv.BuildNumber
 			p.Tags["job"] = cfg.CircleEnv.Job
+			p.Tags["ci"] = "circleci"
+		}
+
+		if cfg.IsJenkins {
+			p.Tags["branch"] = cfg.JenkinsEnv.Branch
+			p.Tags["commit-sha"] = cfg.JenkinsEnv.CommitSha
+			p.Tags["build_number"] = cfg.JenkinsEnv.BuildNumber
+			p.Tags["job"] = cfg.JenkinsEnv.Job
+			p.Tags["ci"] = "jenkins"
 		}
 
 		fields := map[string]interface{}{
@@ -147,6 +182,7 @@ func (p *Point) Write() {
 			"total-secs":            p.OverallDuration.Seconds(),
 			"test-error-count":      p.TestErrorCount,
 			"provision-error-count": p.ProvisionErrorCount,
+			"node-wait-error-count": p.NodeWaitErrorCount,
 		}
 
 		c, err := client.NewHTTPClient(client.HTTPConfig{

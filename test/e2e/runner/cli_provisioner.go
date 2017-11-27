@@ -22,9 +22,6 @@ import (
 
 // CLIProvisioner holds the configuration needed to provision a clusters
 type CLIProvisioner struct {
-	Name              string `envconfig:"NAME"`
-	Orchestrator      string `envconfig:"ORCHESTRATOR" default:"kubernetes"`                                     // Name allows you to set the name of a cluster already created
-	Location          string `envconfig:"LOCATION" required:"true" default:"southcentralus"`                     // Location where you want to create the cluster
 	ClusterDefinition string `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
 	ProvisionRetries  int    `envcofnig:"PROVISION_RETRIES" default:"3"`
 	CreateVNET        bool   `envconfig:"CREATE_VNET" default:"false"`
@@ -53,7 +50,7 @@ func (cli *CLIProvisioner) Run() error {
 	for i := 1; i <= cli.ProvisionRetries; i++ {
 		cli.Point.SetProvisionStart()
 		err := cli.provision()
-		rgs = append(rgs, cli.Name)
+		rgs = append(rgs, cli.Config.Name)
 		cli.ResourceGroups = rgs
 		if err != nil {
 			if i < cli.ProvisionRetries {
@@ -64,8 +61,11 @@ func (cli *CLIProvisioner) Run() error {
 			}
 		} else {
 			cli.Point.RecordProvisionSuccess()
+			cli.Point.SetNodeWaitStart()
 			err := cli.waitForNodes()
+			cli.Point.RecordNodeWait(err)
 			if err != nil {
+
 				return err
 			}
 			return nil
@@ -75,10 +75,9 @@ func (cli *CLIProvisioner) Run() error {
 }
 
 func (cli *CLIProvisioner) provision() error {
-	cli.Name = cli.generateName()
-	cli.Config.Name = cli.Name
-	os.Setenv("NAME", cli.Name)
-	log.Printf("Cluster name:%s\n", cli.Name)
+	cli.Config.Name = cli.generateName()
+	os.Setenv("NAME", cli.Config.Name)
+	log.Printf("Cluster name:%s\n", cli.Config.Name)
 
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
 	os.RemoveAll(outputPath)
@@ -95,16 +94,16 @@ func (cli *CLIProvisioner) provision() error {
 		return fmt.Errorf("Error while trying to read public ssh key: %s", err)
 	}
 	os.Setenv("PUBLIC_SSH_KEY", publicSSHKey)
-	os.Setenv("DNS_PREFIX", cli.Name)
+	os.Setenv("DNS_PREFIX", cli.Config.Name)
 
-	err = cli.Account.CreateGroup(cli.Name, cli.Location)
+	err = cli.Account.CreateGroup(cli.Config.Name, cli.Config.Location)
 	if err != nil {
 		return fmt.Errorf("Error while trying to create resource group: %s", err)
 	}
 
 	subnetID := ""
-	vnetName := fmt.Sprintf("%sCustomVnet", cli.Name)
-	subnetName := fmt.Sprintf("%sCustomSubnet", cli.Name)
+	vnetName := fmt.Sprintf("%sCustomVnet", cli.Config.Name)
+	subnetName := fmt.Sprintf("%sCustomSubnet", cli.Config.Name)
 	if cli.CreateVNET {
 		err = cli.Account.CreateVnet(vnetName, "10.239.0.0/16", subnetName, "10.239.0.0/16")
 		if err != nil {
@@ -131,7 +130,7 @@ func (cli *CLIProvisioner) provision() error {
 	}
 
 	// Lets start by just using the normal az group deployment cli for creating a cluster
-	err = cli.Account.CreateDeployment(cli.Name, eng)
+	err = cli.Account.CreateDeployment(cli.Config.Name, eng)
 	if err != nil {
 		return fmt.Errorf("Error while trying to create deployment:%s", err)
 	}
@@ -150,19 +149,16 @@ func (cli *CLIProvisioner) provision() error {
 func (cli *CLIProvisioner) generateName() string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	suffix := r.Intn(99999)
-	prefix := fmt.Sprintf("%s-%s", cli.Orchestrator, cli.Location)
+	prefix := fmt.Sprintf("%s-%s", cli.Config.Orchestrator, cli.Config.Location)
 	return fmt.Sprintf("%s-%v", prefix, suffix)
 }
 
 func (cli *CLIProvisioner) waitForNodes() error {
-	cli.Point.SetNodeWaitStart()
 	if cli.Config.IsKubernetes() {
-		os.Setenv("KUBECONFIG", cli.Config.GetKubeConfig())
-		log.Printf("Kubeconfig:%s\n", cli.Config.GetKubeConfig())
+		cli.Config.SetKubeConfig()
 		log.Println("Waiting on nodes to go into ready state...")
 		ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
 		if ready == false {
-			cli.Point.RecordNodeWait()
 			return errors.New("Error: Not all nodes in a healthy state")
 		}
 	}
@@ -183,11 +179,9 @@ func (cli *CLIProvisioner) waitForNodes() error {
 		}
 		ready := cluster.WaitForNodes(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
 		if ready == false {
-			cli.Point.RecordNodeWait()
 			return errors.New("Error: Not all nodes in a healthy state")
 		}
 	}
-	cli.Point.RecordNodeWait()
 	return nil
 }
 

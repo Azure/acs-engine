@@ -664,12 +664,36 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.CloudProviderRateLimitQPS = api.CloudProviderRateLimitQPS
 	vlabs.UseManagedIdentity = api.UseManagedIdentity
 	vlabs.CustomHyperkubeImage = api.CustomHyperkubeImage
+	vlabs.CustomCcmImage = api.CustomCcmImage
+	vlabs.UseCloudControllerManager = api.UseCloudControllerManager
 	vlabs.UseInstanceMetadata = api.UseInstanceMetadata
 	vlabs.EnableRbac = api.EnableRbac
 	vlabs.EnableAggregatedAPIs = api.EnableAggregatedAPIs
 	vlabs.GCHighThreshold = api.GCHighThreshold
 	vlabs.GCLowThreshold = api.GCLowThreshold
 	vlabs.EtcdVersion = api.EtcdVersion
+	vlabs.EtcdDiskSizeGB = api.EtcdDiskSizeGB
+	convertAddonsToVlabs(api, vlabs)
+}
+
+func convertAddonsToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
+	v.Addons = []vlabs.KubernetesAddon{}
+	for i := range a.Addons {
+		v.Addons = append(v.Addons, vlabs.KubernetesAddon{
+			Name:    a.Addons[i].Name,
+			Enabled: a.Addons[i].Enabled,
+		})
+		for j := range a.Addons[i].Containers {
+			v.Addons[i].Containers = append(v.Addons[i].Containers, vlabs.KubernetesContainerSpec{
+				Name:           a.Addons[i].Containers[j].Name,
+				Image:          a.Addons[i].Containers[j].Image,
+				CPURequests:    a.Addons[i].Containers[j].CPURequests,
+				MemoryRequests: a.Addons[i].Containers[j].MemoryRequests,
+				CPULimits:      a.Addons[i].Containers[j].CPULimits,
+				MemoryLimits:   a.Addons[i].Containers[j].MemoryLimits,
+			})
+		}
+	}
 }
 
 func convertMasterProfileToV20160930(api *MasterProfile, v20160930 *v20160930.MasterProfile) {

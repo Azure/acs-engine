@@ -130,7 +130,7 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 			Locale: sc.locale,
 		},
 	}
-	sc.containerService, sc.apiVersion, err = apiloader.LoadContainerServiceFromFile(sc.apiModelPath, true, nil)
+	sc.containerService, sc.apiVersion, err = apiloader.LoadContainerServiceFromFile(sc.apiModelPath, true, true, nil)
 	if err != nil {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
@@ -203,6 +203,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		currentNodeCount = len(indexes)
 
 		if currentNodeCount == sc.newDesiredAgentCount {
+			log.Info("Cluster is currently at the desired agent count.")
 			return nil
 		}
 		highestUsedIndex = indexes[len(indexes)-1]
@@ -341,7 +342,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		},
 	}
 	var apiVersion string
-	sc.containerService, apiVersion, err = apiloader.LoadContainerServiceFromFile(sc.apiModelPath, true, nil)
+	sc.containerService, apiVersion, err = apiloader.LoadContainerServiceFromFile(sc.apiModelPath, false, true, nil)
 	sc.containerService.Properties.AgentPoolProfiles[sc.agentPoolIndex].Count = sc.newDesiredAgentCount
 
 	b, e := apiloader.SerializeContainerService(sc.containerService, apiVersion)
@@ -377,13 +378,17 @@ func (sc *scaleCmd) drainNodes(vmsToDelete []string) error {
 		log.Fatalf("failed to generate kube config") // TODO: cleanup
 	}
 	var errorMessage string
+	masterURL := sc.masterFQDN
+	if !strings.HasPrefix(masterURL, "https://") {
+		masterURL = fmt.Sprintf("https://%s", masterURL)
+	}
 	numVmsToDrain := len(vmsToDelete)
 	errChan := make(chan *operations.VMScalingErrorDetails, numVmsToDrain)
 	defer close(errChan)
 	for _, vmName := range vmsToDelete {
 		go func(vmName string) {
 			e := operations.SafelyDrainNode(sc.client, sc.logger,
-				sc.masterFQDN, kubeConfig, vmName, time.Duration(60)*time.Minute)
+				masterURL, kubeConfig, vmName, time.Duration(60)*time.Minute)
 			if e != nil {
 				log.Errorf("Failed to drain node %s, got error %s", vmName, e.Error())
 				errChan <- &operations.VMScalingErrorDetails{Error: e, Name: vmName}

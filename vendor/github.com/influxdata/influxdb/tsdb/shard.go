@@ -2,6 +2,7 @@ package tsdb
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -16,12 +17,12 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
-	"github.com/influxdata/influxdb/influxql"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/pkg/estimator"
 	"github.com/influxdata/influxdb/pkg/limiter"
 	"github.com/influxdata/influxdb/query"
 	internal "github.com/influxdata/influxdb/tsdb/internal"
+	"github.com/influxdata/influxql"
 	"github.com/uber-go/zap"
 )
 
@@ -817,19 +818,26 @@ func (s *Shard) WriteTo(w io.Writer) (int64, error) {
 }
 
 // CreateIterator returns an iterator for the data in the shard.
-func (s *Shard) CreateIterator(measurement string, opt query.IteratorOptions) (query.Iterator, error) {
+func (s *Shard) CreateIterator(ctx context.Context, measurement string, opt query.IteratorOptions) (query.Iterator, error) {
 	engine, err := s.engine()
 	if err != nil {
 		return nil, err
 	}
-
 	if strings.HasPrefix(measurement, "_") {
 		if itr, ok, err := s.createSystemIterator(engine, measurement, opt); ok {
 			return itr, err
 		}
 		// Unknown system source so pass this to the engine.
 	}
-	return engine.CreateIterator(measurement, opt)
+	return engine.CreateIterator(ctx, measurement, opt)
+}
+
+func (s *Shard) CreateCursor(ctx context.Context, r *CursorRequest) (Cursor, error) {
+	engine, err := s.engine()
+	if err != nil {
+		return nil, err
+	}
+	return engine.CreateCursor(ctx, r)
 }
 
 // createSystemIterator returns an iterator for a field of system source.
@@ -1164,7 +1172,7 @@ type ShardGroup interface {
 	MeasurementsByRegex(re *regexp.Regexp) []string
 	FieldDimensions(measurements []string) (fields map[string]influxql.DataType, dimensions map[string]struct{}, err error)
 	MapType(measurement, field string) influxql.DataType
-	CreateIterator(measurement string, opt query.IteratorOptions) (query.Iterator, error)
+	CreateIterator(ctx context.Context, measurement string, opt query.IteratorOptions) (query.Iterator, error)
 	IteratorCost(measurement string, opt query.IteratorOptions) (query.IteratorCost, error)
 	ExpandSources(sources influxql.Sources) (influxql.Sources, error)
 }
@@ -1245,10 +1253,10 @@ func (a Shards) MapType(measurement, field string) influxql.DataType {
 	return typ
 }
 
-func (a Shards) CreateIterator(measurement string, opt query.IteratorOptions) (query.Iterator, error) {
+func (a Shards) CreateIterator(ctx context.Context, measurement string, opt query.IteratorOptions) (query.Iterator, error) {
 	itrs := make([]query.Iterator, 0, len(a))
 	for _, sh := range a {
-		itr, err := sh.CreateIterator(measurement, opt)
+		itr, err := sh.CreateIterator(ctx, measurement, opt)
 		if err != nil {
 			query.Iterators(itrs).Close()
 			return nil, err
@@ -1260,7 +1268,7 @@ func (a Shards) CreateIterator(measurement string, opt query.IteratorOptions) (q
 		select {
 		case <-opt.InterruptCh:
 			query.Iterators(itrs).Close()
-			return nil, err
+			return nil, query.ErrQueryInterrupted
 		default:
 		}
 

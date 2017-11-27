@@ -8,16 +8,14 @@ package query
 
 import (
 	"container/heap"
-	"encoding/binary"
-	"fmt"
+	"context"
 	"io"
 	"sort"
 	"sync"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
-	"github.com/influxdata/influxdb/influxql"
-	internal "github.com/influxdata/influxdb/query/internal"
+	"github.com/influxdata/influxql"
 )
 
 // DefaultStatsInterval is the default value for IteratorEncoder.StatsInterval.
@@ -664,6 +662,9 @@ func (itr *floatFillIterator) Next() (*FloatPoint, error) {
 		}
 		itr.window.name, itr.window.tags = p.Name, p.Tags
 		itr.window.time = itr.startTime
+		if itr.startTime == influxql.MinTime {
+			itr.window.time, _ = itr.opt.Window(p.Time)
+		}
 		if itr.opt.Location != nil {
 			_, itr.window.offset = itr.opt.Zone(itr.window.time)
 		}
@@ -686,7 +687,7 @@ func (itr *floatFillIterator) Next() (*FloatPoint, error) {
 				break
 			}
 		} else {
-			if itr.window.time >= itr.endTime {
+			if itr.window.time >= itr.endTime && itr.endTime != influxql.MinTime {
 				itr.input.unread(p)
 				p = nil
 				break
@@ -702,6 +703,9 @@ func (itr *floatFillIterator) Next() (*FloatPoint, error) {
 		// Set the new interval.
 		itr.window.name, itr.window.tags = p.Name, p.Tags
 		itr.window.time = itr.startTime
+		if itr.window.time == influxql.MinTime {
+			itr.window.time, _ = itr.opt.Window(p.Time)
+		}
 		if itr.opt.Location != nil {
 			_, itr.window.offset = itr.opt.Zone(itr.window.time)
 		}
@@ -903,6 +907,7 @@ type floatAuxIterator struct {
 	output     chan auxFloatPoint
 	fields     *auxIteratorFields
 	background bool
+	closer     sync.Once
 }
 
 func newFloatAuxIterator(input FloatIterator, opt IteratorOptions) *floatAuxIterator {
@@ -921,7 +926,13 @@ func (itr *floatAuxIterator) Background() {
 
 func (itr *floatAuxIterator) Start()               { go itr.stream() }
 func (itr *floatAuxIterator) Stats() IteratorStats { return itr.input.Stats() }
-func (itr *floatAuxIterator) Close() error         { return itr.input.Close() }
+
+func (itr *floatAuxIterator) Close() error {
+	var err error
+	itr.closer.Do(func() { err = itr.input.Close() })
+	return err
+}
+
 func (itr *floatAuxIterator) Next() (*FloatPoint, error) {
 	p := <-itr.output
 	return p.point, p.err
@@ -3378,8 +3389,8 @@ type floatReaderIterator struct {
 }
 
 // newFloatReaderIterator returns a new instance of floatReaderIterator.
-func newFloatReaderIterator(r io.Reader, stats IteratorStats) *floatReaderIterator {
-	dec := NewFloatPointDecoder(r)
+func newFloatReaderIterator(ctx context.Context, r io.Reader, stats IteratorStats) *floatReaderIterator {
+	dec := NewFloatPointDecoder(ctx, r)
 	dec.stats = stats
 
 	return &floatReaderIterator{
@@ -4054,6 +4065,9 @@ func (itr *integerFillIterator) Next() (*IntegerPoint, error) {
 		}
 		itr.window.name, itr.window.tags = p.Name, p.Tags
 		itr.window.time = itr.startTime
+		if itr.startTime == influxql.MinTime {
+			itr.window.time, _ = itr.opt.Window(p.Time)
+		}
 		if itr.opt.Location != nil {
 			_, itr.window.offset = itr.opt.Zone(itr.window.time)
 		}
@@ -4076,7 +4090,7 @@ func (itr *integerFillIterator) Next() (*IntegerPoint, error) {
 				break
 			}
 		} else {
-			if itr.window.time >= itr.endTime {
+			if itr.window.time >= itr.endTime && itr.endTime != influxql.MinTime {
 				itr.input.unread(p)
 				p = nil
 				break
@@ -4092,6 +4106,9 @@ func (itr *integerFillIterator) Next() (*IntegerPoint, error) {
 		// Set the new interval.
 		itr.window.name, itr.window.tags = p.Name, p.Tags
 		itr.window.time = itr.startTime
+		if itr.window.time == influxql.MinTime {
+			itr.window.time, _ = itr.opt.Window(p.Time)
+		}
 		if itr.opt.Location != nil {
 			_, itr.window.offset = itr.opt.Zone(itr.window.time)
 		}
@@ -4293,6 +4310,7 @@ type integerAuxIterator struct {
 	output     chan auxIntegerPoint
 	fields     *auxIteratorFields
 	background bool
+	closer     sync.Once
 }
 
 func newIntegerAuxIterator(input IntegerIterator, opt IteratorOptions) *integerAuxIterator {
@@ -4311,7 +4329,13 @@ func (itr *integerAuxIterator) Background() {
 
 func (itr *integerAuxIterator) Start()               { go itr.stream() }
 func (itr *integerAuxIterator) Stats() IteratorStats { return itr.input.Stats() }
-func (itr *integerAuxIterator) Close() error         { return itr.input.Close() }
+
+func (itr *integerAuxIterator) Close() error {
+	var err error
+	itr.closer.Do(func() { err = itr.input.Close() })
+	return err
+}
+
 func (itr *integerAuxIterator) Next() (*IntegerPoint, error) {
 	p := <-itr.output
 	return p.point, p.err
@@ -6765,8 +6789,8 @@ type integerReaderIterator struct {
 }
 
 // newIntegerReaderIterator returns a new instance of integerReaderIterator.
-func newIntegerReaderIterator(r io.Reader, stats IteratorStats) *integerReaderIterator {
-	dec := NewIntegerPointDecoder(r)
+func newIntegerReaderIterator(ctx context.Context, r io.Reader, stats IteratorStats) *integerReaderIterator {
+	dec := NewIntegerPointDecoder(ctx, r)
 	dec.stats = stats
 
 	return &integerReaderIterator{
@@ -7441,6 +7465,9 @@ func (itr *unsignedFillIterator) Next() (*UnsignedPoint, error) {
 		}
 		itr.window.name, itr.window.tags = p.Name, p.Tags
 		itr.window.time = itr.startTime
+		if itr.startTime == influxql.MinTime {
+			itr.window.time, _ = itr.opt.Window(p.Time)
+		}
 		if itr.opt.Location != nil {
 			_, itr.window.offset = itr.opt.Zone(itr.window.time)
 		}
@@ -7463,7 +7490,7 @@ func (itr *unsignedFillIterator) Next() (*UnsignedPoint, error) {
 				break
 			}
 		} else {
-			if itr.window.time >= itr.endTime {
+			if itr.window.time >= itr.endTime && itr.endTime != influxql.MinTime {
 				itr.input.unread(p)
 				p = nil
 				break
@@ -7479,6 +7506,9 @@ func (itr *unsignedFillIterator) Next() (*UnsignedPoint, error) {
 		// Set the new interval.
 		itr.window.name, itr.window.tags = p.Name, p.Tags
 		itr.window.time = itr.startTime
+		if itr.window.time == influxql.MinTime {
+			itr.window.time, _ = itr.opt.Window(p.Time)
+		}
 		if itr.opt.Location != nil {
 			_, itr.window.offset = itr.opt.Zone(itr.window.time)
 		}
@@ -7680,6 +7710,7 @@ type unsignedAuxIterator struct {
 	output     chan auxUnsignedPoint
 	fields     *auxIteratorFields
 	background bool
+	closer     sync.Once
 }
 
 func newUnsignedAuxIterator(input UnsignedIterator, opt IteratorOptions) *unsignedAuxIterator {
@@ -7698,7 +7729,13 @@ func (itr *unsignedAuxIterator) Background() {
 
 func (itr *unsignedAuxIterator) Start()               { go itr.stream() }
 func (itr *unsignedAuxIterator) Stats() IteratorStats { return itr.input.Stats() }
-func (itr *unsignedAuxIterator) Close() error         { return itr.input.Close() }
+
+func (itr *unsignedAuxIterator) Close() error {
+	var err error
+	itr.closer.Do(func() { err = itr.input.Close() })
+	return err
+}
+
 func (itr *unsignedAuxIterator) Next() (*UnsignedPoint, error) {
 	p := <-itr.output
 	return p.point, p.err
@@ -10152,8 +10189,8 @@ type unsignedReaderIterator struct {
 }
 
 // newUnsignedReaderIterator returns a new instance of unsignedReaderIterator.
-func newUnsignedReaderIterator(r io.Reader, stats IteratorStats) *unsignedReaderIterator {
-	dec := NewUnsignedPointDecoder(r)
+func newUnsignedReaderIterator(ctx context.Context, r io.Reader, stats IteratorStats) *unsignedReaderIterator {
+	dec := NewUnsignedPointDecoder(ctx, r)
 	dec.stats = stats
 
 	return &unsignedReaderIterator{
@@ -10828,6 +10865,9 @@ func (itr *stringFillIterator) Next() (*StringPoint, error) {
 		}
 		itr.window.name, itr.window.tags = p.Name, p.Tags
 		itr.window.time = itr.startTime
+		if itr.startTime == influxql.MinTime {
+			itr.window.time, _ = itr.opt.Window(p.Time)
+		}
 		if itr.opt.Location != nil {
 			_, itr.window.offset = itr.opt.Zone(itr.window.time)
 		}
@@ -10850,7 +10890,7 @@ func (itr *stringFillIterator) Next() (*StringPoint, error) {
 				break
 			}
 		} else {
-			if itr.window.time >= itr.endTime {
+			if itr.window.time >= itr.endTime && itr.endTime != influxql.MinTime {
 				itr.input.unread(p)
 				p = nil
 				break
@@ -10866,6 +10906,9 @@ func (itr *stringFillIterator) Next() (*StringPoint, error) {
 		// Set the new interval.
 		itr.window.name, itr.window.tags = p.Name, p.Tags
 		itr.window.time = itr.startTime
+		if itr.window.time == influxql.MinTime {
+			itr.window.time, _ = itr.opt.Window(p.Time)
+		}
 		if itr.opt.Location != nil {
 			_, itr.window.offset = itr.opt.Zone(itr.window.time)
 		}
@@ -11053,6 +11096,7 @@ type stringAuxIterator struct {
 	output     chan auxStringPoint
 	fields     *auxIteratorFields
 	background bool
+	closer     sync.Once
 }
 
 func newStringAuxIterator(input StringIterator, opt IteratorOptions) *stringAuxIterator {
@@ -11071,7 +11115,13 @@ func (itr *stringAuxIterator) Background() {
 
 func (itr *stringAuxIterator) Start()               { go itr.stream() }
 func (itr *stringAuxIterator) Stats() IteratorStats { return itr.input.Stats() }
-func (itr *stringAuxIterator) Close() error         { return itr.input.Close() }
+
+func (itr *stringAuxIterator) Close() error {
+	var err error
+	itr.closer.Do(func() { err = itr.input.Close() })
+	return err
+}
+
 func (itr *stringAuxIterator) Next() (*StringPoint, error) {
 	p := <-itr.output
 	return p.point, p.err
@@ -13525,8 +13575,8 @@ type stringReaderIterator struct {
 }
 
 // newStringReaderIterator returns a new instance of stringReaderIterator.
-func newStringReaderIterator(r io.Reader, stats IteratorStats) *stringReaderIterator {
-	dec := NewStringPointDecoder(r)
+func newStringReaderIterator(ctx context.Context, r io.Reader, stats IteratorStats) *stringReaderIterator {
+	dec := NewStringPointDecoder(ctx, r)
 	dec.stats = stats
 
 	return &stringReaderIterator{
@@ -14201,6 +14251,9 @@ func (itr *booleanFillIterator) Next() (*BooleanPoint, error) {
 		}
 		itr.window.name, itr.window.tags = p.Name, p.Tags
 		itr.window.time = itr.startTime
+		if itr.startTime == influxql.MinTime {
+			itr.window.time, _ = itr.opt.Window(p.Time)
+		}
 		if itr.opt.Location != nil {
 			_, itr.window.offset = itr.opt.Zone(itr.window.time)
 		}
@@ -14223,7 +14276,7 @@ func (itr *booleanFillIterator) Next() (*BooleanPoint, error) {
 				break
 			}
 		} else {
-			if itr.window.time >= itr.endTime {
+			if itr.window.time >= itr.endTime && itr.endTime != influxql.MinTime {
 				itr.input.unread(p)
 				p = nil
 				break
@@ -14239,6 +14292,9 @@ func (itr *booleanFillIterator) Next() (*BooleanPoint, error) {
 		// Set the new interval.
 		itr.window.name, itr.window.tags = p.Name, p.Tags
 		itr.window.time = itr.startTime
+		if itr.window.time == influxql.MinTime {
+			itr.window.time, _ = itr.opt.Window(p.Time)
+		}
 		if itr.opt.Location != nil {
 			_, itr.window.offset = itr.opt.Zone(itr.window.time)
 		}
@@ -14426,6 +14482,7 @@ type booleanAuxIterator struct {
 	output     chan auxBooleanPoint
 	fields     *auxIteratorFields
 	background bool
+	closer     sync.Once
 }
 
 func newBooleanAuxIterator(input BooleanIterator, opt IteratorOptions) *booleanAuxIterator {
@@ -14444,7 +14501,13 @@ func (itr *booleanAuxIterator) Background() {
 
 func (itr *booleanAuxIterator) Start()               { go itr.stream() }
 func (itr *booleanAuxIterator) Stats() IteratorStats { return itr.input.Stats() }
-func (itr *booleanAuxIterator) Close() error         { return itr.input.Close() }
+
+func (itr *booleanAuxIterator) Close() error {
+	var err error
+	itr.closer.Do(func() { err = itr.input.Close() })
+	return err
+}
+
 func (itr *booleanAuxIterator) Next() (*BooleanPoint, error) {
 	p := <-itr.output
 	return p.point, p.err
@@ -16898,8 +16961,8 @@ type booleanReaderIterator struct {
 }
 
 // newBooleanReaderIterator returns a new instance of booleanReaderIterator.
-func newBooleanReaderIterator(r io.Reader, stats IteratorStats) *booleanReaderIterator {
-	dec := NewBooleanPointDecoder(r)
+func newBooleanReaderIterator(ctx context.Context, r io.Reader, stats IteratorStats) *booleanReaderIterator {
+	dec := NewBooleanPointDecoder(ctx, r)
 	dec.stats = stats
 
 	return &booleanReaderIterator{
@@ -16931,39 +16994,6 @@ func (itr *booleanReaderIterator) Next() (*BooleanPoint, error) {
 		return nil, err
 	}
 	return p, nil
-}
-
-// IteratorEncoder is an encoder for encoding an iterator's points to w.
-type IteratorEncoder struct {
-	w io.Writer
-
-	// Frequency with which stats are emitted.
-	StatsInterval time.Duration
-}
-
-// NewIteratorEncoder encodes an iterator's points to w.
-func NewIteratorEncoder(w io.Writer) *IteratorEncoder {
-	return &IteratorEncoder{
-		w: w,
-
-		StatsInterval: DefaultStatsInterval,
-	}
-}
-
-// EncodeIterator encodes and writes all of itr's points to the underlying writer.
-func (enc *IteratorEncoder) EncodeIterator(itr Iterator) error {
-	switch itr := itr.(type) {
-	case FloatIterator:
-		return enc.encodeFloatIterator(itr)
-	case IntegerIterator:
-		return enc.encodeIntegerIterator(itr)
-	case StringIterator:
-		return enc.encodeStringIterator(itr)
-	case BooleanIterator:
-		return enc.encodeBooleanIterator(itr)
-	default:
-		panic(fmt.Sprintf("unsupported iterator for encoder: %T", itr))
-	}
 }
 
 // encodeFloatIterator encodes all points from itr to the underlying writer.
@@ -17176,29 +17206,6 @@ func (enc *IteratorEncoder) encodeBooleanIterator(itr BooleanIterator) error {
 
 	// Emit final stats.
 	if err := enc.encodeStats(itr.Stats()); err != nil {
-		return err
-	}
-	return nil
-}
-
-// encode a stats object in the point stream.
-func (enc *IteratorEncoder) encodeStats(stats IteratorStats) error {
-	buf, err := proto.Marshal(&internal.Point{
-		Name: proto.String(""),
-		Tags: proto.String(""),
-		Time: proto.Int64(0),
-		Nil:  proto.Bool(false),
-
-		Stats: encodeIteratorStats(&stats),
-	})
-	if err != nil {
-		return err
-	}
-
-	if err := binary.Write(enc.w, binary.BigEndian, uint32(len(buf))); err != nil {
-		return err
-	}
-	if _, err := enc.w.Write(buf); err != nil {
 		return err
 	}
 	return nil

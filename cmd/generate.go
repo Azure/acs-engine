@@ -94,7 +94,7 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 			Locale: gc.locale,
 		},
 	}
-	gc.containerService, gc.apiVersion, err = apiloader.LoadContainerServiceFromFile(gc.apimodelPath, true, nil)
+	gc.containerService, gc.apiVersion, err = apiloader.LoadContainerServiceFromFile(gc.apimodelPath, true, false, nil)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}

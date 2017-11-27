@@ -13,7 +13,10 @@ jobs:
           GOPATH: /go
     steps:
       - checkout
-      - run: echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
+      - run: |
+          echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
+          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
       - run:
           name: Install dependencies
           command: make bootstrap
@@ -46,11 +49,11 @@ jobs:
           echo 'export SKIP_METRICS=y' >> $BASH_ENV
           echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
           echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
-          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_SWARM}' >> $BASH_ENV
-          echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_SWARM}' >> $BASH_ENV
-          echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_SWARM}' >> $BASH_ENV
-          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_SWARM}' >> $BASH_ENV
-          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_SWARM}' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_PR_E2E}' >> $BASH_ENV
+          echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_PR_E2E_2}' >> $BASH_ENV
+          echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_PR_E2E_2}' >> $BASH_ENV
+          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID_2}' >> $BASH_ENV
+          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET_2}' >> $BASH_ENV
           echo 'export TEST_CONFIG=test/e2e/swarm-deployments.json' >> $BASH_ENV
       - run:
           name: Swarm feature validation tests
@@ -67,9 +70,11 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export TIMEOUT=20m' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/dcos.json' >> $BASH_ENV
-          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
-          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_DCOS}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_DCOS}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_DCOS}' >> $BASH_ENV
       - run:
           name: ginkgo dcos e2e tests
           command: make build-binary test-dcos
@@ -93,11 +98,11 @@ jobs:
           echo 'export SKIP_METRICS=y' >> $BASH_ENV
           echo 'export STAGE_TIMEOUT_MIN=30' >> $BASH_ENV
           echo 'export NUM_OF_RETRIES=2' >> $BASH_ENV
-          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_SWARMMODE}' >> $BASH_ENV
-          echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_SWARMMODE}' >> $BASH_ENV
-          echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_SWARMMODE}' >> $BASH_ENV
-          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_SWARMMODE}' >> $BASH_ENV
-          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_SWARMMODE}' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_PR_E2E}' >> $BASH_ENV
+          echo 'export SERVICE_PRINCIPAL_CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_PR_E2E_2}' >> $BASH_ENV
+          echo 'export SERVICE_PRINCIPAL_CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_PR_E2E_2}' >> $BASH_ENV
+          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID_2}' >> $BASH_ENV
+          echo 'export CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET_2}' >> $BASH_ENV
           echo 'export TEST_CONFIG=test/e2e/swarmmode-deployments.json' >> $BASH_ENV
       - run:
           name: Swarm Mode feature validation tests
@@ -114,11 +119,13 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export TIMEOUT=20m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.6' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
-          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
-          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
           name: ginkgo k8s e2e tests
           command: make build-binary test-kubernetes
@@ -136,11 +143,13 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export TIMEOUT=20m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
-          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
-          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
           name: ginkgo k8s e2e tests
           command: make build-binary test-kubernetes
@@ -161,8 +170,9 @@ jobs:
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
-          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
-          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
           name: ginkgo k8s windows e2e tests
           command: make build-binary test-kubernetes
@@ -183,8 +193,9 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes-hybrid.json' >> $BASH_ENV
-          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
-          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
           name: ginkgo k8s hybrid e2e tests
           command: make build-binary test-kubernetes
@@ -202,11 +213,13 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo 'export TIMEOUT=20m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.8' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
-          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
-          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
           name: ginkgo k8s e2e tests
           command: make build-binary test-kubernetes
@@ -227,8 +240,9 @@ jobs:
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.8' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
-          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
-          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
           name: ginkgo k8s windows e2e tests
           command: make build-binary test-kubernetes
@@ -249,8 +263,9 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.8' >> $BASH_ENV
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes-hybrid.json' >> $BASH_ENV
-          echo 'export CLIENT_ID=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_ID}' >> $BASH_ENV
-          echo 'export CLIENT_SECRET=${CLUSTER_SERVICE_PRINCIPAL_CLIENT_SECRET}' >> $BASH_ENV
+          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
+          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
           name: ginkgo k8s hybrid e2e tests
           command: make build-binary test-kubernetes

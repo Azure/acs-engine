@@ -1,11 +1,5 @@
 package acsengine
 
-import (
-	"strconv"
-
-	"github.com/Azure/acs-engine/pkg/api"
-)
-
 const (
 	// DefaultMasterSubnet specifies the default master subnet for DCOS or Swarm
 	DefaultMasterSubnet = "172.16.0.0/24"
@@ -68,7 +62,12 @@ const (
 	DefaultKubernetesCloudProviderRateLimitQPS = 3.0
 	// DefaultKubernetesCloudProviderRateLimitBucket is 10, takes effect if DefaultKubernetesCloudProviderRateLimit is true
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
+	// DefaultTillerAddonName is the name of the tiller addon deployment
+	DefaultTillerAddonName = "tiller"
+	// DefaultDashboardAddonName is the name of the kubernetes-dashboard addon deployment
+	DefaultDashboardAddonName = "kubernetes-dashboard"
 	// DefaultTillerImage defines the Helm Tiller deployment version on Kubernetes Clusters
+	// TODO deprecate this usage, we should be favoring a more frequent upgrade cycle that pins fresh tiller versions to specific k8s versions
 	DefaultTillerImage = "tiller:v2.6.2"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
 	// listens on by default. must by in the default Service CIDR range.
@@ -84,6 +83,14 @@ const (
 	DefaultGeneratorCode = "acsengine"
 	// DefaultOrchestratorName specifies the 3 character orchestrator code of the cluster template and affects resource naming.
 	DefaultOrchestratorName = "k8s"
+	// DefaultEtcdVersion specifies the default etcd version to install
+	DefaultEtcdVersion = "2.2.5"
+	// DefaultEtcdDiskSize specifies the default size for Kubernetes master etcd disk volumes in GB
+	DefaultEtcdDiskSize = "128"
+	// DefaultReschedulerImage defines the rescheduler deployment version on Kubernetes Clusters
+	DefaultReschedulerImage = "rescheduler:v0.3.1"
+	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
+	DefaultReschedulerAddonName = "rescheduler"
 )
 
 const (
@@ -94,104 +101,6 @@ const (
 	// DCOSPublicAgent represents the public agent node type
 	DCOSPublicAgent DCOSNodeType = "DCOSPublicAgent"
 )
-
-// KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes versions (major.minor.patch)
-var KubeConfigs = map[string]map[string]string{
-	api.KubernetesVersion1Dot8Dot2: {
-		"hyperkube":       "hyperkube-amd64:v1.8.2",
-		"dashboard":       "kubernetes-dashboard-amd64:v1.7.0",
-		"exechealthz":     "exechealthz-amd64:1.2",
-		"addonresizer":    "addon-resizer:1.7",
-		"heapster":        "heapster-amd64:v1.4.2",
-		"dns":             "k8s-dns-kube-dns-amd64:1.14.5",
-		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":         "k8s-dns-dnsmasq-nanny-amd64:1.14.5",
-		"pause":           "pause-amd64:3.0",
-		"tiller":          DefaultTillerImage,
-		"windowszip":      "v1.8.2-1intwinnat.zip",
-		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
-		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
-		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
-		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-		"backoffretries":  strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
-		"backoffjitter":   strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
-		"backoffduration": strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
-		"backoffexponent": strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
-		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
-		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
-		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
-		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
-	},
-	api.KubernetesVersion1Dot7Dot7: {
-		"hyperkube":       "hyperkube-amd64:v1.7.9",
-		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
-		"exechealthz":     "exechealthz-amd64:1.2",
-		"addonresizer":    "addon-resizer:1.7",
-		"heapster":        "heapster-amd64:v1.4.2",
-		"dns":             "k8s-dns-kube-dns-amd64:1.14.5",
-		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":         "k8s-dns-dnsmasq-nanny-amd64:1.14.5",
-		"pause":           "pause-amd64:3.0",
-		"tiller":          DefaultTillerImage,
-		"windowszip":      "v1.7.9-1intwinnat.zip",
-		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
-		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
-		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
-		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-		"backoffretries":  strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
-		"backoffjitter":   strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
-		"backoffduration": strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
-		"backoffexponent": strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
-		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
-		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
-		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
-		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
-	},
-	api.KubernetesVersion1Dot6Dot11: {
-		"hyperkube":       "hyperkube-amd64:v1.6.11",
-		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
-		"exechealthz":     "exechealthz-amd64:1.2",
-		"addonresizer":    "addon-resizer:1.7",
-		"heapster":        "heapster-amd64:v1.3.0",
-		"dns":             "k8s-dns-kube-dns-amd64:1.14.5",
-		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":         "k8s-dns-dnsmasq-nanny-amd64:1.14.5",
-		"pause":           "pause-amd64:3.0",
-		"tiller":          DefaultTillerImage,
-		"windowszip":      "v1.6.11-1intwinnat.zip",
-		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
-		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
-		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
-		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-		"backoffretries":  strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
-		"backoffjitter":   strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
-		"backoffduration": strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
-		"backoffexponent": strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
-		"ratelimitqps":    strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
-		"ratelimitbucket": strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
-		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
-		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
-	},
-	api.KubernetesVersion1Dot5Dot8: {
-		"hyperkube":       "hyperkube-amd64:v1.5.8",
-		"dashboard":       "kubernetes-dashboard-amd64:v1.5.1",
-		"exechealthz":     "exechealthz-amd64:1.2",
-		"addonresizer":    "addon-resizer:1.6",
-		"heapster":        "heapster:v1.2.0",
-		"dns":             "kubedns-amd64:1.7",
-		"addonmanager":    "kube-addon-manager-amd64:v6.4-beta.2",
-		"dnsmasq":         "kube-dnsmasq-amd64:1.3",
-		"pause":           "pause-amd64:3.0",
-		"tiller":          "tiller:v2.5.1",
-		"windowszip":      "v1.5.7intwinnat.zip",
-		"nodestatusfreq":  DefaultKubernetesNodeStatusUpdateFrequency,
-		"nodegraceperiod": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
-		"podeviction":     DefaultKubernetesCtrlMgrPodEvictionTimeout,
-		"routeperiod":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-		"gchighthreshold": strconv.Itoa(DefaultKubernetesGCHighThreshold),
-		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
-	},
-}
 
 const (
 	//DefaultExtensionsRootURL  Root URL for extensions

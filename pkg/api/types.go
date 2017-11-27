@@ -156,37 +156,66 @@ type OrchestratorVersionProfile struct {
 	Upgrades []*OrchestratorProfile `json:"upgrades,omitempty"`
 }
 
+// KubernetesContainerSpec defines configuration for a container spec
+type KubernetesContainerSpec struct {
+	Name           string `json:"name,omitempty"`
+	Image          string `json:"image,omitempty"`
+	CPURequests    string `json:"cpuRequests,omitempty"`
+	MemoryRequests string `json:"memoryRequests,omitempty"`
+	CPULimits      string `json:"cpuLimits,omitempty"`
+	MemoryLimits   string `json:"memoryLimits,omitempty"`
+}
+
+// KubernetesAddon defines a list of addons w/ configuration to include with the cluster deployment
+type KubernetesAddon struct {
+	Name       string                    `json:"name,omitempty"`
+	Enabled    *bool                     `json:"enabled,omitempty"`
+	Containers []KubernetesContainerSpec `json:"containers,omitempty"`
+}
+
+// IsEnabled returns if the addon is explicitly enabled, or the user-provided default if non explicitly enabled
+func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
+	if a.Enabled == nil {
+		return ifNil
+	}
+	return *a.Enabled
+}
+
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
-	KubernetesImageBase              string  `json:"kubernetesImageBase,omitempty"`
-	ClusterSubnet                    string  `json:"clusterSubnet,omitempty"`
-	NonMasqueradeCidr                string  `json:"nonMasqueradeCidr,omitempty"`
-	NetworkPolicy                    string  `json:"networkPolicy,omitempty"`
-	MaxPods                          int     `json:"maxPods,omitempty"`
-	DockerBridgeSubnet               string  `json:"dockerBridgeSubnet,omitempty"`
-	DNSServiceIP                     string  `json:"dnsServiceIP,omitempty"`
-	ServiceCIDR                      string  `json:"serviceCidr,omitempty"`
-	NodeStatusUpdateFrequency        string  `json:"nodeStatusUpdateFrequency,omitempty"`
-	CtrlMgrNodeMonitorGracePeriod    string  `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
-	CtrlMgrPodEvictionTimeout        string  `json:"ctrlMgrPodEvictionTimeout,omitempty"`
-	CtrlMgrRouteReconciliationPeriod string  `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
-	CloudProviderBackoff             bool    `json:"cloudProviderBackoff,omitempty"`
-	CloudProviderBackoffRetries      int     `json:"cloudProviderBackoffRetries,omitempty"`
-	CloudProviderBackoffJitter       float64 `json:"cloudProviderBackoffJitter,omitempty"`
-	CloudProviderBackoffDuration     int     `json:"cloudProviderBackoffDuration,omitempty"`
-	CloudProviderBackoffExponent     float64 `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit           bool    `json:"cloudProviderRateLimit,omitempty"`
-	CloudProviderRateLimitQPS        float64 `json:"cloudProviderRateLimitQPS,omitempty"`
-	CloudProviderRateLimitBucket     int     `json:"cloudProviderRateLimitBucket,omitempty"`
-	UseManagedIdentity               bool    `json:"useManagedIdentity,omitempty"`
-	CustomHyperkubeImage             string  `json:"customHyperkubeImage,omitempty"`
-	UseInstanceMetadata              bool    `json:"useInstanceMetadata,omitempty"`
-	EnableRbac                       bool    `json:"enableRbac,omitempty"`
-	EnableAggregatedAPIs             bool    `json:"enableAggregatedAPIs,omitempty"`
-	GCHighThreshold                  int     `json:"gchighthreshold,omitempty"`
-	GCLowThreshold                   int     `json:"gclowthreshold,omitempty"`
-	EtcdVersion                      string  `json:"etcdVersion,omitempty"`
+	KubernetesImageBase              string            `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet                    string            `json:"clusterSubnet,omitempty"`
+	NonMasqueradeCidr                string            `json:"nonMasqueradeCidr,omitempty"`
+	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
+	MaxPods                          int               `json:"maxPods,omitempty"`
+	DockerBridgeSubnet               string            `json:"dockerBridgeSubnet,omitempty"`
+	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
+	ServiceCIDR                      string            `json:"serviceCidr,omitempty"`
+	NodeStatusUpdateFrequency        string            `json:"nodeStatusUpdateFrequency,omitempty"`
+	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
+	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
+	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
+	CloudProviderBackoff             bool              `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries      int               `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter       float64           `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration     int               `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent     float64           `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit           bool              `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS        float64           `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket     int               `json:"cloudProviderRateLimitBucket,omitempty"`
+	UseManagedIdentity               bool              `json:"useManagedIdentity,omitempty"`
+	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
+	CustomCcmImage                   string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager
+	UseCloudControllerManager        *bool             `json:"useCloudControllerManager,omitempty"`
+	UseInstanceMetadata              *bool             `json:"useInstanceMetadata,omitempty"`
+	EnableRbac                       bool              `json:"enableRbac,omitempty"`
+	EnableAggregatedAPIs             bool              `json:"enableAggregatedAPIs,omitempty"`
+	GCHighThreshold                  int               `json:"gchighthreshold,omitempty"`
+	GCLowThreshold                   int               `json:"gclowthreshold,omitempty"`
+	EtcdVersion                      string            `json:"etcdVersion,omitempty"`
+	EtcdDiskSizeGB                   string            `json:"etcdDiskSizeGB,omitempty"`
+	Addons                           []KubernetesAddon `json:"addons,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS
@@ -456,6 +485,11 @@ func (m *MasterProfile) IsRHEL() bool {
 	return m.Distro == RHEL
 }
 
+// IsCoreOS returns true if the master specified a CoreOS distro
+func (m *MasterProfile) IsCoreOS() bool {
+	return m.Distro == CoreOS
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (a *AgentPoolProfile) IsCustomVNET() bool {
 	return len(a.VnetSubnetID) > 0
@@ -474,6 +508,11 @@ func (a *AgentPoolProfile) IsLinux() bool {
 // IsRHEL returns true if the agent pool specified a RHEL distro
 func (a *AgentPoolProfile) IsRHEL() bool {
 	return a.OSType == Linux && a.Distro == RHEL
+}
+
+// IsCoreOS returns true if the agent specified a CoreOS distro
+func (a *AgentPoolProfile) IsCoreOS() bool {
+	return a.OSType == Linux && a.Distro == CoreOS
 }
 
 // IsAvailabilitySets returns true if the customer specified disks
@@ -521,8 +560,8 @@ func (o *OrchestratorProfile) IsDCOS() bool {
 	return o.OrchestratorType == DCOS
 }
 
-// IsVNETIntegrated returns true if Azure VNET integration is enabled
-func (o *OrchestratorProfile) IsVNETIntegrated() bool {
+// IsAzureCNI returns true if Azure VNET integration is enabled
+func (o *OrchestratorProfile) IsAzureCNI() bool {
 	switch o.OrchestratorType {
 	case Kubernetes:
 		return o.KubernetesConfig.NetworkPolicy == "azure"
@@ -536,11 +575,6 @@ func (p *Properties) HasAadProfile() bool {
 	return p.AADProfile != nil
 }
 
-// IsCustomEtcdVersion Checks if etcd version is NOT default 2.5.2
-func (o *OrchestratorProfile) IsCustomEtcdVersion() bool {
-	return "2.5.2" != o.KubernetesConfig.EtcdVersion
-}
-
 // GetAPIServerEtcdAPIVersion Used to set apiserver's etcdapi version
 func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
 	// if we are here, version has already been validated..
@@ -549,4 +583,37 @@ func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
 		return "etcd2"
 	}
 	return "etcd3"
+}
+
+// IsTillerEnabled checks if the tiller addon is enabled
+func (k *KubernetesConfig) IsTillerEnabled() bool {
+	var tillerAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultTillerAddonName {
+			tillerAddon = k.Addons[i]
+		}
+	}
+	return tillerAddon.IsEnabled(DefaultTillerAddonEnabled)
+}
+
+// IsDashboardEnabled checks if the kubernetes-dashboard addon is enabled
+func (k *KubernetesConfig) IsDashboardEnabled() bool {
+	var dashboardAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultDashboardAddonName {
+			dashboardAddon = k.Addons[i]
+		}
+	}
+	return dashboardAddon.IsEnabled(DefaultDashboardAddonEnabled)
+}
+
+// IsReschedulerEnabled checks if the rescheduler addon is enabled
+func (k *KubernetesConfig) IsReschedulerEnabled() bool {
+	var reschedulerAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultReschedulerAddonName {
+			reschedulerAddon = k.Addons[i]
+		}
+	}
+	return reschedulerAddon.IsEnabled(DefaultReschedulerAddonEnabled)
 }
