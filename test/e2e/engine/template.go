@@ -143,6 +143,11 @@ func (e *Engine) HasWindowsAgents() bool {
 	return false
 }
 
+// OrchestratorVersion1Dot8AndUp will return true if the orchestrator version is 1.8 and up
+func (e *Engine) OrchestratorVersion1Dot8AndUp() bool {
+	return e.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion >= "1.8"
+}
+
 // Write will write the cluster definition to disk
 func (e *Engine) Write() error {
 	json, err := json.Marshal(e.ClusterDefinition)

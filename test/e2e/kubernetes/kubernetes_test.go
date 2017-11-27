@@ -270,33 +270,37 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 		It("should be able to attach azure file", func() {
 			if eng.HasWindowsAgents() {
-				storageclassName := "azurefile" // should be the same as in storageclass-azurefile.yaml
-				sc, err := storageclass.CreateStorageClassFromFile(filepath.Join(WorkloadDir, "storageclass-azurefile.yaml"), storageclassName)
-				Expect(err).NotTo(HaveOccurred())
-				ready, err := sc.WaitOnReady(5*time.Second, cfg.Timeout)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(ready).To(Equal(true))
+				if eng.OrchestratorVersion1Dot8AndUp() {
+					storageclassName := "azurefile" // should be the same as in storageclass-azurefile.yaml
+					sc, err := storageclass.CreateStorageClassFromFile(filepath.Join(WorkloadDir, "storageclass-azurefile.yaml"), storageclassName)
+					Expect(err).NotTo(HaveOccurred())
+					ready, err := sc.WaitOnReady(5*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(ready).To(Equal(true))
 
-				pvcName := "pvc-azurefile" // should be the same as in pvc-azurefile.yaml
-				pvc, err := persistentvolumeclaims.CreatePersistentVolumeClaimsFromFile(filepath.Join(WorkloadDir, "pvc-azurefile.yaml"), pvcName, "default")
-				Expect(err).NotTo(HaveOccurred())
-				ready, err = pvc.WaitOnReady("default", 5*time.Second, cfg.Timeout)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(ready).To(Equal(true))
+					pvcName := "pvc-azurefile" // should be the same as in pvc-azurefile.yaml
+					pvc, err := persistentvolumeclaims.CreatePersistentVolumeClaimsFromFile(filepath.Join(WorkloadDir, "pvc-azurefile.yaml"), pvcName, "default")
+					Expect(err).NotTo(HaveOccurred())
+					ready, err = pvc.WaitOnReady("default", 5*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(ready).To(Equal(true))
 
-				podName := "iis-azurefile" // should be the same as in iis-azurefile.yaml
-				iisPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "iis-azurefile.yaml"), podName, "default")
-				Expect(err).NotTo(HaveOccurred())
-				ready, err = iisPod.WaitOnReady("default", 5*time.Second, cfg.Timeout)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(ready).To(Equal(true))
+					podName := "iis-azurefile" // should be the same as in iis-azurefile.yaml
+					iisPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "iis-azurefile.yaml"), podName, "default")
+					Expect(err).NotTo(HaveOccurred())
+					ready, err = iisPod.WaitOnReady("default", 5*time.Second, cfg.Timeout)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(ready).To(Equal(true))
 
-				valid, err := iisPod.ValidateAzureFile("mnt\\azure", 10, 10*time.Second)
-				Expect(valid).To(BeTrue())
-				Expect(err).NotTo(HaveOccurred())
+					valid, err := iisPod.ValidateAzureFile("mnt\\azure", 10, 10*time.Second)
+					Expect(valid).To(BeTrue())
+					Expect(err).NotTo(HaveOccurred())
 
-				err = iisPod.Delete()
-				Expect(err).NotTo(HaveOccurred())
+					err = iisPod.Delete()
+					Expect(err).NotTo(HaveOccurred())
+				} else {
+					Skip("Kubernetes version needs to be 1.8 and up for Azure File test")
+				}
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
 			}
