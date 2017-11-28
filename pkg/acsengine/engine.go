@@ -30,6 +30,7 @@ const (
 	kubernetesMasterCustomScript             = "kubernetesmastercustomscript.sh"
 	kubernetesMountetcd                      = "kubernetes_mountetcd.sh"
 	kubernetesMasterGenerateProxyCertsScript = "kubernetesmastergenerateproxycertscript.sh"
+	kubernetesMasterGenerateEtcdCertsScript  = "kubernetesmastergenerateetcdcertscript.sh"
 	kubernetesAgentCustomDataYaml            = "kubernetesagentcustomdata.yml"
 	kubeConfigJSON                           = "kubeconfig.json"
 	kubernetesWindowsAgentCustomDataPS1      = "kuberneteswindowssetup.ps1"
@@ -106,12 +107,14 @@ var kubernetesManifestYamls = map[string]string{
 var kubernetesAritfacts = map[string]string{
 	"MASTER_PROVISION_B64_GZIP_STR":            kubernetesMasterCustomScript,
 	"MASTER_GENERATE_PROXY_CERTS_B64_GZIP_STR": kubernetesMasterGenerateProxyCertsScript,
+	"MASTER_GENERATE_ETCD_CERTS_B64_GZIP_STR":  kubernetesMasterGenerateEtcdCertsScript,
 	"KUBELET_SERVICE_B64_GZIP_STR":             kubernetesKubeletService,
 }
 
 var kubernetesAritfacts15 = map[string]string{
 	"MASTER_PROVISION_B64_GZIP_STR":            kubernetesMasterCustomScript,
 	"MASTER_GENERATE_PROXY_CERTS_B64_GZIP_STR": kubernetesMasterGenerateProxyCertsScript,
+	"MASTER_GENERATE_ETCD_CERTS_B64_GZIP_STR":  kubernetesMasterGenerateEtcdCertsScript,
 	"KUBELET_SERVICE_B64_GZIP_STR":             "kuberneteskubelet1.5.service",
 }
 
@@ -1058,6 +1061,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetKubernetesB64GenerateProxyCerts": func() string {
 			return getBase64CustomScript(kubernetesMasterGenerateProxyCertsScript)
+		},
+		"GetKubernetesB64GenerateEtcdCerts": func() string {
+			return getBase64CustomScript(kubernetesMasterGenerateEtcdCertsScript)
 		},
 		"GetKubernetesMasterPreprovisionYaml": func() string {
 			str := ""
