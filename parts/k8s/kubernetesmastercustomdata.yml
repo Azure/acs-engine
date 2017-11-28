@@ -63,6 +63,13 @@ write_files:
     {{WrapAsVariable "generateProxyCertsScript"}}
 {{end}}
 
+- path: "/etc/kubernetes/generate-etcd-certs.sh"
+  permissions: "0744"
+  encoding: "gzip"
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "generateEtcdCertsScript"}}
+
 - path: "/var/lib/kubelet/kubeconfig"
   permissions: "0644"
   owner: "root"
@@ -492,7 +499,6 @@ runcmd:
 - sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
 - systemctl stop etcd
 - sudo -u etcd rm -rf /var/lib/etcd/default
-- sudo /bin/sed -i s/Restart=on-abnormal/Restart=always/g /lib/systemd/system/etcd.service
 - systemctl daemon-reload
 - systemctl restart etcd
 - for i in $(seq 1 20); do curl --max-time 60 http://127.0.0.1:2379/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
@@ -512,6 +518,7 @@ runcmd:
 {{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
 - sudo bash /etc/kubernetes/generate-proxy-certs.sh
 {{end}}
+- sudo bash /etc/kubernetes/generate-etcd-certs.sh
 - apt-mark unhold walinuxagent
 - touch /opt/azure/containers/runcmd.complete
 {{end}}

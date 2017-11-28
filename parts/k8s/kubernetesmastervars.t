@@ -155,6 +155,7 @@
     "provisionScriptParametersMaster": "[concat('APISERVER_PRIVATE_KEY=',variables('apiServerPrivateKey'),' CA_CERTIFICATE=',variables('caCertificate'),' CA_PRIVATE_KEY=',variables('caPrivateKey'),' MASTER_FQDN=',variables('masterFqdnPrefix'),' KUBECONFIG_CERTIFICATE=',variables('kubeConfigCertificate'),' KUBECONFIG_KEY=',variables('kubeConfigPrivateKey'),' ADMINUSER=',variables('username'))]",
 {{end}}
     "generateProxyCertsScript": "{{GetKubernetesB64GenerateProxyCerts}}",
+    "generateEtcdCertsScript": "{{GetKubernetesB64GenerateEtcdCerts}}",
     "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
 {{if IsAzureCNI}}
     "allocateNodeCidrs": false,
