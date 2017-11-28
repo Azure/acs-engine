@@ -1,8 +1,6 @@
 #!/bin/bash
 set -x
 
-echo "$1" > /tmp/extensionParameters
-
 echo $(date) " - Starting Script"
 
 echo $(date) " - Waiting for API Server to start"
