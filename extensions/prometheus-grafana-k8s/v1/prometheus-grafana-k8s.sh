@@ -166,7 +166,7 @@ install_grafana() {
     done
 }
 
-ensure_k8s_namespace() {
+ensure_k8s_namespace_exists() {
     NAMESPACE_TO_EXIST="$1"
 
     kubectl get ns $NAMESPACE_TO_EXIST > /dev/null 2> /dev/null
@@ -191,11 +191,16 @@ fi
 
 # Deploy container
 
+# the user can pass a non-default namespace through
+# extensionParameters as a string. we need to create
+# this namespace if it doesn't already exist
 if [[ -n "$1" ]]; then
     NAMESPACE=$1
 else
     NAMESPACE=default
 fi
+ensure_k8s_namespace_exists $NAMESPACE
+
 K8S_SECRET_NAME=dashboard-grafana
 DS_TYPE=prometheus
 DS_NAME=prometheus1
