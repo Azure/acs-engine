@@ -161,7 +161,8 @@ function test_windows_deployment() {
     log "curl failed, retrying..."
     ipconfig=$(kubectl exec $winpodname -- powershell ipconfig /all)
     log "$ipconfig"
-    sleep 10; count=$((count-1))
+    # TODO: reduce sleep time when outbound connection delay is fixed
+    sleep 100; count=$((count-1))
   done
   set -e
   if [[ "${success}" != "y" ]]; then
