@@ -693,6 +693,16 @@ func convertAddonsToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
 				MemoryLimits:   a.Addons[i].Containers[j].MemoryLimits,
 			})
 		}
+		for k := range a.Addons[i].Environment {
+			v.Addons[i].Environment = append(v.Addons[i].Environment, vlabs.KubernetesEnvironmentSpec{
+				ClientId:       a.Addons[i].Environment[k].ClientId,
+				ClientKey:      a.Addons[i].Environment[k].ClientKey,
+				TenantId:       a.Addons[i].Environment[k].TenantId,
+				SubscriptionId: a.Addons[i].Environment[k].SubscriptionId,
+				ResourceGroup:  a.Addons[i].Environment[k].ResourceGroup,
+				Region:         a.Addons[i].Environment[k].Region,
+			})
+		}
 	}
 }
 

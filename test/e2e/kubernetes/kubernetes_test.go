@@ -123,6 +123,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(running).To(Equal(true))
 		})
 
+		It("should have aci-connector running", func() {
+			running, err := pod.WaitOnReady("aci-connector", "kube-system", 5*time.Second, cfg.Timeout)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(running).To(Equal(true))
+		})
+
 		It("should be able to access the dashboard from each node", func() {
 			running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 5*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())

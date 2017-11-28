@@ -122,6 +122,7 @@ var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
 	"MASTER_ADDON_AZURE_STORAGE_CLASSES_B64_GZIP_STR":           "kubernetesmasteraddons-azure-storage-classes.yaml",
 	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment.yaml",
+	"MASTER_ADDON_ACI_CONNECTOR_DEPLOYMENT_B64_GZIP_STR":        "kubernetesmasteraddons-aci-connector-deployment.yaml",
 	"MASTER_ADDON_RESCHEDULER_DEPLOYMENT_B64_GZIP_STR":          "kubernetesmasteraddons-kube-rescheduler-deployment.yaml",
 }
 
@@ -132,6 +133,7 @@ var kubernetesAddonYamls15 = map[string]string{
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment1.5.yaml",
 	"MASTER_ADDON_AZURE_STORAGE_CLASSES_B64_GZIP_STR":           "kubernetesmasteraddons-azure-storage-classes.yaml",
 	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment1.5.yaml",
+	"MASTER_ADDON_ACI_CONNECTOR_DEPLOYMENT_B64_GZIP_STR":        "kubernetesmasteraddons-aci-connector-deployment1.5.yaml",
 }
 
 var calicoAddonYamls = map[string]string{
@@ -576,6 +578,25 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 				addValue(parametersMap, "kubernetesTillerSpec", cloudSpecConfig.KubernetesSpecConfig.TillerImageBase+KubeConfigs[k8sVersion][DefaultTillerAddonName])
 			}
 		}
+		aciConnectorAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
+		c = getAddonContainersIndexByName(aciConnectorAddon.Containers, DefaultACIConnectorAddonName)
+		if c > -1 {
+			addValue(parametersMap, "kubernetesACIConnectorClientId", aciConnectorAddon.Environment[c].ClientId)
+			addValue(parametersMap, "kubernetesACIConnectorClientKey", aciConnectorAddon.Environment[c].ClientKey)
+			addValue(parametersMap, "kubernetesACIConnectorTenantId", aciConnectorAddon.Environment[c].TenantId)
+			addValue(parametersMap, "kubernetesACIConnectorSubscriptionId", aciConnectorAddon.Environment[c].SubscriptionId)
+			addValue(parametersMap, "kubernetesACIConnectorResourceGroup", aciConnectorAddon.Environment[c].ResourceGroup)
+			addValue(parametersMap, "kubernetesACIConnectorRegion", aciConnectorAddon.Environment[c].Region)
+			addValue(parametersMap, "kubernetesACIConnectorCPURequests", aciConnectorAddon.Containers[c].CPURequests)
+			addValue(parametersMap, "kubernetesACIConnectorCPULimit", aciConnectorAddon.Containers[c].CPULimits)
+			addValue(parametersMap, "kubernetesACIConnectorMemoryRequests", aciConnectorAddon.Containers[c].MemoryRequests)
+			addValue(parametersMap, "kubernetesACIConnectorMemoryLimit", aciConnectorAddon.Containers[c].MemoryLimits)
+			if aciConnectorAddon.Containers[c].Image != "" {
+				addValue(parametersMap, "kubernetesACIConnectorSpec", aciConnectorAddon.Containers[c].Image)
+			} else {
+				addValue(parametersMap, "kubernetesACIConnectorSpec", cloudSpecConfig.KubernetesSpecConfig.ACIConnectorImageBase+KubeConfigs[k8sVersion][DefaultACIConnectorAddonName])
+			}
+		}
 		dashboardAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 		c = getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
 		if c > -1 {
@@ -999,6 +1020,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			if !profile.OrchestratorProfile.KubernetesConfig.IsTillerEnabled() {
 				delete(addonYamls, "MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR")
 			}
+			if !profile.OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled() {
+				delete(addonYamls, "MASTER_ADDON_ACI_CONNECTOR_DEPLOYMENT_B64_GZIP_STR")
+			}
 			if !profile.OrchestratorProfile.KubernetesConfig.IsDashboardEnabled() {
 				delete(addonYamls, "MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR")
 			}
@@ -1217,6 +1241,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				cloudSpecConfig := GetCloudSpecConfig(cs.Location)
 				tillerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
 				tC := getAddonContainersIndexByName(tillerAddon.Containers, DefaultTillerAddonName)
+				aciConnectorAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
+				aC := getAddonContainersIndexByName(aciConnectorAddon.Containers, DefaultACIConnectorAddonName)
 				dashboardAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 				dC := getAddonContainersIndexByName(dashboardAddon.Containers, DefaultDashboardAddonName)
 				reschedulerAddon := getAddonByName(cs.Properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
@@ -1269,6 +1295,74 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["exechealthz"]
 				case "kubernetesHeapsterSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["heapster"]
+				case "kubernetesACIConnectorSpec":
+					if aC > -1 {
+						if aciConnectorAddon.Containers[aC].Image != "" {
+							val = aciConnectorAddon.Containers[aC].Image
+						} else {
+							val = cloudSpecConfig.KubernetesSpecConfig.ACIConnectorImageBase + KubeConfigs[k8sVersion][DefaultACIConnectorAddonName]
+						}
+					}
+				case "kubernetesACIConnectorClientId":
+					if aC > -1 {
+						val = aciConnectorAddon.Environment[aC].ClientId
+					} else {
+						val = ""
+					}
+				case "kubernetesACIConnectorClientKey":
+					if aC > -1 {
+						val = aciConnectorAddon.Environment[aC].ClientKey
+					} else {
+						val = ""
+					}
+				case "kubernetesACIConnectorTenantId":
+					if aC > -1 {
+						val = aciConnectorAddon.Environment[aC].TenantId
+					} else {
+						val = ""
+					}
+				case "kubernetesACIConnectorSubscriptionId":
+					if aC > -1 {
+						val = aciConnectorAddon.Environment[aC].SubscriptionId
+					} else {
+						val = ""
+					}
+				case "kubernetesACIConnectorResourceGroup":
+					if aC > -1 {
+						val = aciConnectorAddon.Environment[aC].ResourceGroup
+					} else {
+						val = ""
+					}
+				case "kubernetesACIConnectorRegion":
+					if aC > -1 {
+						val = aciConnectorAddon.Environment[aC].Region
+					} else {
+						val = ""
+					}
+				case "kubernetesACIConnectorCPURequests":
+					if aC > -1 {
+						val = aciConnectorAddon.Containers[aC].CPURequests
+					} else {
+						val = ""
+					}
+				case "kubernetesACIConnectorMemoryRequests":
+					if aC > -1 {
+						val = aciConnectorAddon.Containers[aC].MemoryRequests
+					} else {
+						val = ""
+					}
+				case "kubernetesACIConnectorCPULimit":
+					if aC > -1 {
+						val = aciConnectorAddon.Containers[aC].CPULimits
+					} else {
+						val = ""
+					}
+				case "kubernetesACIConnectorMemoryLimit":
+					if aC > -1 {
+						val = aciConnectorAddon.Containers[aC].MemoryLimits
+					} else {
+						val = ""
+					}
 				case "kubernetesTillerSpec":
 					if tC > -1 {
 						if tillerAddon.Containers[tC].Image != "" {

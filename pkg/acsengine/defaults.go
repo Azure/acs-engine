@@ -21,6 +21,7 @@ var (
 	DefaultKubernetesSpecConfig = KubernetesSpecConfig{
 		KubernetesImageBase:              "gcrio.azureedge.net/google_containers/",
 		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
+		ACIConnectorImageBase:            "microsoft/",
 		EtcdDownloadURLBase:              "https://acs-mirror.azureedge.net/github-coreos",
 		KubeBinariesSASURLBase:           "https://acs-mirror.azureedge.net/wink8s/",
 		WindowsTelemetryGUID:             "fb801154-36b9-41bc-89c2-f4d4f05472b0",
@@ -132,6 +133,7 @@ var (
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase:              "crproxy.trafficmanager.net:6000/google_containers/",
 			TillerImageBase:                  "crproxy.trafficmanager.net:6000/kubernetes-helm/",
+			ACIConnectorImageBase:            "microsoft/",
 			EtcdDownloadURLBase:              "https://acsengine.blob.core.chinacloudapi.cn/github-coreos",
 			CNIPluginsDownloadURL:            "https://acsengine.blob.core.chinacloudapi.cn/cni/cni-plugins-amd64-latest.tgz",
 			VnetCNILinuxPluginsDownloadURL:   "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-linux-amd64-latest.tgz",
@@ -165,6 +167,31 @@ var (
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           DefaultTillerAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "150Mi",
+			},
+		},
+	}
+
+	// DefaultACIConnectorAddonsConfig is the default ACI Connector Kubernetes addon Config
+	DefaultACIConnectorAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultACIConnectorAddonName,
+		Enabled: pointerToBool(api.DefaultACIConnectorAddonEnabled),
+		Environment: []api.KubernetesEnvironmentSpec{
+			{
+				ClientId:       "",
+				ClientKey:      "",
+				TenantId:       "",
+				SubscriptionId: "",
+				ResourceGroup:  "",
+				Region:         "westus",
+			},
+		},
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultACIConnectorAddonName,
 				CPURequests:    "50m",
 				MemoryRequests: "150Mi",
 				CPULimits:      "50m",
@@ -250,6 +277,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig.Addons == nil {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{
 				DefaultTillerAddonsConfig,
+				DefaultACIConnectorAddonsConfig,
 				DefaultDashboardAddonsConfig,
 				DefaultReschedulerAddonsConfig,
 			}
@@ -259,6 +287,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if t < 0 {
 				// Provide default acs-engine config for Tiller
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultTillerAddonsConfig)
+			}
+			a := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
+			if a < 0 {
+				// Provide default acs-engine config for ACI Connector
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultACIConnectorAddonsConfig)
 			}
 			d := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultDashboardAddonName)
 			if d < 0 {
@@ -362,6 +395,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		t := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[t].IsEnabled(api.DefaultTillerAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[t] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[t], DefaultTillerAddonsConfig)
+		}
+		c := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[c].IsEnabled(api.DefaultACIConnectorAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[c] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[c], DefaultACIConnectorAddonsConfig)
 		}
 		d := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[d].IsEnabled(api.DefaultDashboardAddonEnabled) {
