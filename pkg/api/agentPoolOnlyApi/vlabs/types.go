@@ -114,6 +114,8 @@ const (
 	// Migrating means resource is being migrated from one subscription or
 	// resource group to another
 	Migrating ProvisioningState = "Migrating"
+	// Upgrading means an existing resource is being upgraded
+	Upgrading ProvisioningState = "Upgrading"
 )
 
 // AgentPoolProfile represents configuration of VMs running agent
