@@ -49,6 +49,10 @@ const (
 
 	swarmModeProvision        = "configure-swarmmode-cluster.sh"
 	swarmModeWindowsProvision = "Join-SwarmMode-cluster.ps1"
+
+	masterAddonAzureStorageClasses              = "MASTER_ADDON_AZURE_STORAGE_CLASSES_B64_GZIP_STR"
+	masterAddonAzureStorageClassesFileUnmanaged = "kubernetesmasteraddons-unmanaged-azure-storage-classes.yaml"
+	masterAddonAzureStorageClassesFileManaged   = "kubernetesmasteraddons-managed-azure-storage-classes.yaml"
 )
 
 const (
@@ -120,7 +124,7 @@ var kubernetesAddonYamls = map[string]string{
 	"MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR":             "kubernetesmasteraddons-kube-dns-deployment.yaml",
 	"MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR":            "kubernetesmasteraddons-kube-proxy-daemonset.yaml",
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
-	"MASTER_ADDON_AZURE_STORAGE_CLASSES_B64_GZIP_STR":           "kubernetesmasteraddons-azure-storage-classes.yaml",
+	masterAddonAzureStorageClasses:                              masterAddonAzureStorageClassesFileUnmanaged,
 	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment.yaml",
 	"MASTER_ADDON_RESCHEDULER_DEPLOYMENT_B64_GZIP_STR":          "kubernetesmasteraddons-kube-rescheduler-deployment.yaml",
 }
@@ -130,7 +134,7 @@ var kubernetesAddonYamls15 = map[string]string{
 	"MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR":             "kubernetesmasteraddons-kube-dns-deployment1.5.yaml",
 	"MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR":            "kubernetesmasteraddons-kube-proxy-daemonset1.5.yaml",
 	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "kubernetesmasteraddons-kubernetes-dashboard-deployment1.5.yaml",
-	"MASTER_ADDON_AZURE_STORAGE_CLASSES_B64_GZIP_STR":           "kubernetesmasteraddons-azure-storage-classes.yaml",
+	masterAddonAzureStorageClasses:                              masterAddonAzureStorageClassesFileUnmanaged,
 	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "kubernetesmasteraddons-tiller-deployment1.5.yaml",
 }
 
@@ -828,6 +832,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			if profile.StorageProfile == api.ManagedDisks {
 				storagetier, _ := getStorageAccountType(profile.VMSize)
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
+				// change default storage class for managed disk agent pool
+				kubernetesAddonYamls[masterAddonAzureStorageClasses] = masterAddonAzureStorageClassesFileManaged
 			}
 			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
 			for k, v := range profile.CustomNodeLabels {
