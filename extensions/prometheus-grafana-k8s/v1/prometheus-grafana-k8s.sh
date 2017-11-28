@@ -166,6 +166,18 @@ install_grafana() {
     done
 }
 
+ensure_k8s_namespace() {
+    NAMESPACE_TO_EXIST="$1"
+
+    kubectl get ns $NAMESPACE_TO_EXIST > /dev/null 2> /dev/null
+    if [[ $? -ne 0 ]]; then
+        echo $(date) " - Creating namespace $NAMESPACE_TO_EXIST"
+        kubectl create ns $NAMESPACE_TO_EXIST
+    else
+        echo $(date) " - Namespace $NAMESPACE_TO_EXIST already exists"
+    fi
+}
+
 # this extension should only run on a single node
 # the logic to decide whether or not this current node
 # should run the extension is to alphabetically determine
@@ -179,7 +191,11 @@ fi
 
 # Deploy container
 
-NAMESPACE=default
+if [[ -n "$1" ]]; then
+    NAMESPACE=$1
+else
+    NAMESPACE=default
+fi
 K8S_SECRET_NAME=dashboard-grafana
 DS_TYPE=prometheus
 DS_NAME=prometheus1
