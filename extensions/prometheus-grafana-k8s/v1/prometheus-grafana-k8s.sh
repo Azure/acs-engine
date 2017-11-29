@@ -80,8 +80,7 @@ install_helm() {
     mv linux-amd64/helm /usr/local/bin/helm
     echo $(date) " - Downloading prometheus values"
 
-    # TODO: replace this
-    curl https://raw.githubusercontent.com/ritazh/acs-engine/feat-monitor/extensions/prometheus-grafana-k8s/v1/prometheus_values.yaml > prometheus_values.yaml 
+    curl https://raw.githubusercontent.com/Azure/acs-engine/master/extensions/prometheus-grafana-k8s/v1/prometheus_values.yaml > prometheus_values.yaml 
 
     sleep 10
 
