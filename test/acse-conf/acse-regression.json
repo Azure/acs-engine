@@ -28,6 +28,10 @@
       "cluster_definition": "disks-managed/kubernetes-vmas.json",
       "category": "managed-disk"
     },
+    { 
+      "cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json", 
+      "category": "managed-disk" 
+    },
     {
       "cluster_definition": "disks-managed/swarmmode-vmas.json",
       "category": "managed-disk"
