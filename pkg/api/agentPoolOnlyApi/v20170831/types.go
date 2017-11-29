@@ -103,6 +103,8 @@ const (
 	// Migrating means resource is being migrated from one subscription or
 	// resource group to another
 	Migrating ProvisioningState = "Migrating"
+	// Upgrading means an existing resource is being upgraded
+	Upgrading ProvisioningState = "Upgrading"
 )
 
 // PoolUpgradeProfile contains pool properties:
