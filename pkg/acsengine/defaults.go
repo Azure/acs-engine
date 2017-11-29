@@ -349,11 +349,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 
-		// default etcd version
-		if "" == o.KubernetesConfig.EtcdVersion {
-			o.KubernetesConfig.EtcdVersion = "2.5.2"
-		}
-
 		// For each addon, produce a synthesized config between user-provided and acs-engine defaults
 		t := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[t].IsEnabled(api.DefaultTillerAddonEnabled) {
