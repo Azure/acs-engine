@@ -637,10 +637,10 @@ func convertAddonsToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
 		}
 		for k := range v.Addons[i].Environment {
 			a.Addons[i].Environment = append(a.Addons[i].Environment, KubernetesEnvironmentSpec{
-				ClientId:       v.Addons[i].Environment[k].ClientId,
+				ClientID:       v.Addons[i].Environment[k].ClientID,
 				ClientKey:      v.Addons[i].Environment[k].ClientKey,
-				TenantId:       v.Addons[i].Environment[k].TenantId,
-				SubscriptionId: v.Addons[i].Environment[k].SubscriptionId,
+				TenantID:       v.Addons[i].Environment[k].TenantID,
+				SubscriptionID: v.Addons[i].Environment[k].SubscriptionID,
 				ResourceGroup:  v.Addons[i].Environment[k].ResourceGroup,
 				Region:         v.Addons[i].Environment[k].Region,
 			})

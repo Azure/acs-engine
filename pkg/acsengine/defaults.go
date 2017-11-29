@@ -181,10 +181,10 @@ var (
 		Enabled: pointerToBool(api.DefaultACIConnectorAddonEnabled),
 		Environment: []api.KubernetesEnvironmentSpec{
 			{
-				ClientId:       "",
+				ClientID:       "",
 				ClientKey:      "",
-				TenantId:       "",
-				SubscriptionId: "",
+				TenantID:       "",
+				SubscriptionID: "",
 				ResourceGroup:  "",
 				Region:         "westus",
 			},

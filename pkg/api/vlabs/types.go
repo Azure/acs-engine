@@ -184,11 +184,12 @@ type KubernetesContainerSpec struct {
 	MemoryLimits   string `json:"memoryLimits,omitempty"`
 }
 
+// KubernetesEnvironmentSpec defines configuration for environment variables spec for ACI Connector
 type KubernetesEnvironmentSpec struct {
-	ClientId       string `json:"clientid,omitempty"`
+	ClientID       string `json:"clientid,omitempty"`
 	ClientKey      string `json:"clientkey,omitempty"`
-	TenantId       string `json:"tenantid,omitempty"`
-	SubscriptionId string `json:"subscriptionid,omitempty"`
+	TenantID       string `json:"tenantid,omitempty"`
+	SubscriptionID string `json:"subscriptionid,omitempty"`
 	ResourceGroup  string `json:"resourcegroup,omitempty"`
 	Region         string `json:"region,omitempty"`
 }

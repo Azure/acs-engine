@@ -695,10 +695,10 @@ func convertAddonsToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
 		}
 		for k := range a.Addons[i].Environment {
 			v.Addons[i].Environment = append(v.Addons[i].Environment, vlabs.KubernetesEnvironmentSpec{
-				ClientId:       a.Addons[i].Environment[k].ClientId,
+				ClientID:       a.Addons[i].Environment[k].ClientID,
 				ClientKey:      a.Addons[i].Environment[k].ClientKey,
-				TenantId:       a.Addons[i].Environment[k].TenantId,
-				SubscriptionId: a.Addons[i].Environment[k].SubscriptionId,
+				TenantID:       a.Addons[i].Environment[k].TenantID,
+				SubscriptionID: a.Addons[i].Environment[k].SubscriptionID,
 				ResourceGroup:  a.Addons[i].Environment[k].ResourceGroup,
 				Region:         a.Addons[i].Environment[k].Region,
 			})
