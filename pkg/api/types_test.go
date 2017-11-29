@@ -126,10 +126,10 @@ func TestIsACIConnectorEnabled(t *testing.T) {
 	}
 	c.Addons = append(c.Addons, getMockAddon(DefaultACIConnectorAddonName))
 	e = c.IsACIConnectorEnabled()
-	if e != true {
-		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return true when ACI connector has been specified, instead returned %t", e)
+	if e != false {
+		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled()  should return true when ACI connector has been specified, instead returned %t", e)
 	}
-	b := false
+	b := true
 	c = KubernetesConfig{
 		Addons: []KubernetesAddon{
 			{
@@ -139,7 +139,7 @@ func TestIsACIConnectorEnabled(t *testing.T) {
 		},
 	}
 	e = c.IsACIConnectorEnabled()
-	if e != false {
+	if e != true {
 		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return false when ACI connector addon has been specified as disabled, instead returned %t", e)
 	}
 }
