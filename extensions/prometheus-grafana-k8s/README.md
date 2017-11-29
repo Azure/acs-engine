@@ -89,9 +89,11 @@ $ kubectl port-forward $GF_POD_NAME 3000:3000 &
 |extensionParameters|no||
 |rootURL|optional||
 
+_Note_: specify a string for `extensionParameters` for a non-default namespace in the Kubernetes cluster
+
 # Example
 ``` javascript
-{ "name": "prometheus-grafana-k8s", "version": "v1" }
+{ "name": "prometheus-grafana-k8s", "version": "v1", "extensionParameters": "monitoring" }
 ```
 
 # Supported Orchestrators
