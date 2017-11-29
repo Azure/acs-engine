@@ -133,7 +133,6 @@ var (
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase:              "crproxy.trafficmanager.net:6000/google_containers/",
 			TillerImageBase:                  "crproxy.trafficmanager.net:6000/kubernetes-helm/",
-			ACIConnectorImageBase:            "microsoft/",
 			EtcdDownloadURLBase:              "https://acsengine.blob.core.chinacloudapi.cn/github-coreos",
 			CNIPluginsDownloadURL:            "https://acsengine.blob.core.chinacloudapi.cn/cni/cni-plugins-amd64-latest.tgz",
 			VnetCNILinuxPluginsDownloadURL:   "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-linux-amd64-latest.tgz",
@@ -179,16 +178,7 @@ var (
 	DefaultACIConnectorAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultACIConnectorAddonName,
 		Enabled: pointerToBool(api.DefaultACIConnectorAddonEnabled),
-		Environment: []api.KubernetesEnvironmentSpec{
-			{
-				ClientID:       "",
-				ClientKey:      "",
-				TenantID:       "",
-				SubscriptionID: "",
-				ResourceGroup:  "",
-				Region:         "westus",
-			},
-		},
+		Config:  map[string]string{},
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           DefaultACIConnectorAddonName,

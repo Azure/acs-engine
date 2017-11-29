@@ -184,22 +184,12 @@ type KubernetesContainerSpec struct {
 	MemoryLimits   string `json:"memoryLimits,omitempty"`
 }
 
-// KubernetesEnvironmentSpec defines configuration for environment variables spec for ACI Connector
-type KubernetesEnvironmentSpec struct {
-	ClientID       string `json:"clientid,omitempty"`
-	ClientKey      string `json:"clientkey,omitempty"`
-	TenantID       string `json:"tenantid,omitempty"`
-	SubscriptionID string `json:"subscriptionid,omitempty"`
-	ResourceGroup  string `json:"resourcegroup,omitempty"`
-	Region         string `json:"region,omitempty"`
-}
-
 // KubernetesAddon defines a list of addons w/ configuration to include with the cluster deployment
 type KubernetesAddon struct {
-	Name        string                      `json:"name,omitempty"`
-	Enabled     *bool                       `json:"enabled,omitempty"`
-	Containers  []KubernetesContainerSpec   `json:"containers,omitempty"`
-	Environment []KubernetesEnvironmentSpec `json:"environment,omitempty"`
+	Name       string                    `json:"name,omitempty"`
+	Enabled    *bool                     `json:"enabled,omitempty"`
+	Containers []KubernetesContainerSpec `json:"containers,omitempty"`
+	Config     map[string]string         `json:"config,omitempty"`
 }
 
 // IsEnabled returns if the addon is explicitly enabled, or the user-provided default if non explicitly enabled

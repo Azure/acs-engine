@@ -585,12 +585,13 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		aciConnectorAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
 		c = getAddonContainersIndexByName(aciConnectorAddon.Containers, DefaultACIConnectorAddonName)
 		if c > -1 {
-			addValue(parametersMap, "kubernetesACIConnectorClientId", aciConnectorAddon.Environment[c].ClientID)
-			addValue(parametersMap, "kubernetesACIConnectorClientKey", aciConnectorAddon.Environment[c].ClientKey)
-			addValue(parametersMap, "kubernetesACIConnectorTenantId", aciConnectorAddon.Environment[c].TenantID)
-			addValue(parametersMap, "kubernetesACIConnectorSubscriptionId", aciConnectorAddon.Environment[c].SubscriptionID)
-			addValue(parametersMap, "kubernetesACIConnectorResourceGroup", aciConnectorAddon.Environment[c].ResourceGroup)
-			addValue(parametersMap, "kubernetesACIConnectorRegion", aciConnectorAddon.Environment[c].Region)
+			addValue(parametersMap, "kubernetesACIConnectorClientId", aciConnectorAddon.Config["clientId"])
+			addValue(parametersMap, "kubernetesACIConnectorClientKey", aciConnectorAddon.Config["clientKey"])
+			addValue(parametersMap, "kubernetesACIConnectorTenantId", aciConnectorAddon.Config["tenantId"])
+			addValue(parametersMap, "kubernetesACIConnectorSubscriptionId", aciConnectorAddon.Config["subscriptionId"])
+			addValue(parametersMap, "kubernetesACIConnectorResourceGroup", aciConnectorAddon.Config["resourceGroup"])
+			addValue(parametersMap, "kubernetesACIConnectorRegion", aciConnectorAddon.Config["region"])
+
 			addValue(parametersMap, "kubernetesACIConnectorCPURequests", aciConnectorAddon.Containers[c].CPURequests)
 			addValue(parametersMap, "kubernetesACIConnectorCPULimit", aciConnectorAddon.Containers[c].CPULimits)
 			addValue(parametersMap, "kubernetesACIConnectorMemoryRequests", aciConnectorAddon.Containers[c].MemoryRequests)
@@ -1311,37 +1312,37 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					}
 				case "kubernetesACIConnectorClientId":
 					if aC > -1 {
-						val = aciConnectorAddon.Environment[aC].ClientID
+						val = aciConnectorAddon.Config["clientId"]
 					} else {
 						val = ""
 					}
 				case "kubernetesACIConnectorClientKey":
 					if aC > -1 {
-						val = aciConnectorAddon.Environment[aC].ClientKey
+						val = aciConnectorAddon.Config["clientKey"]
 					} else {
 						val = ""
 					}
 				case "kubernetesACIConnectorTenantId":
 					if aC > -1 {
-						val = aciConnectorAddon.Environment[aC].TenantID
+						val = aciConnectorAddon.Config["tenantId"]
 					} else {
 						val = ""
 					}
 				case "kubernetesACIConnectorSubscriptionId":
 					if aC > -1 {
-						val = aciConnectorAddon.Environment[aC].SubscriptionID
+						val = aciConnectorAddon.Config["subscriptionId"]
 					} else {
 						val = ""
 					}
 				case "kubernetesACIConnectorResourceGroup":
 					if aC > -1 {
-						val = aciConnectorAddon.Environment[aC].ResourceGroup
+						val = aciConnectorAddon.Config["resourceGroup"]
 					} else {
 						val = ""
 					}
 				case "kubernetesACIConnectorRegion":
 					if aC > -1 {
-						val = aciConnectorAddon.Environment[aC].Region
+						val = aciConnectorAddon.Config["region"]
 					} else {
 						val = ""
 					}
