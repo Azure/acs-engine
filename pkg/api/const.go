@@ -86,7 +86,7 @@ const (
 	// DefaultTillerAddonEnabled determines the acs-engine provided default for enabling tiller addon
 	DefaultTillerAddonEnabled = true
 	// DefaultACIConnectorAddonEnabled determines the acs-engine provided default for enabling aci connector addon
-	DefaultACIConnectorAddonEnabled = true
+	DefaultACIConnectorAddonEnabled = false
 	// DefaultDashboardAddonEnabled determines the acs-engine provided default for enabling kubernetes-dashboard addon
 	DefaultDashboardAddonEnabled = true
 	// DefaultReschedulerAddonEnabled determines the acs-engine provided default for enabling kubernetes-rescheduler addon
