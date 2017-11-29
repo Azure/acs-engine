@@ -42,7 +42,7 @@ This is the prometheus-grafana extension.  Add this extension to the api model y
       { 
         "name": "prometheus-grafana-k8s", 
         "version": "v1",
-        "rootURL": "https://raw.githubusercontent.com/ritazh/acs-engine/feat-monitor/"
+        "rootURL": "https://raw.githubusercontent.com/Azure/acs-engine/master/"
       }
     ],
     "servicePrincipalProfile": {
