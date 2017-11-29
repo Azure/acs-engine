@@ -568,7 +568,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		}
 
 		addValue(parametersMap, "dockerEngineDownloadRepo", cloudSpecConfig.DockerSpecConfig.DockerEngineRepo)
-		addValue(parametersMap, "kubeDNSServiceIP", properties.OrchestratorProfile.KubernetesConfig.DNSServiceIP)
 		addValue(parametersMap, "kubeServiceCidr", properties.OrchestratorProfile.KubernetesConfig.ServiceCIDR)
 		addValue(parametersMap, "kubernetesHyperkubeSpec", kubernetesHyperkubeSpec)
 		addValue(parametersMap, "dockerEngineVersion", dockerEngineVersion)
@@ -690,6 +689,15 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		if properties.AADProfile != nil {
 			addValue(parametersMap, "aadTenantId", properties.AADProfile.TenantID)
 			addValue(parametersMap, "aadServerAppId", properties.AADProfile.ServerAppID)
+		}
+
+		if properties.OrchestratorProfile.KubernetesConfig.KubeletConfig != nil {
+			for key, val := range properties.OrchestratorProfile.KubernetesConfig.KubeletConfig {
+				switch key {
+				case "--cluster-dns":
+					addValue(parametersMap, "kubeDNSServiceIP", val)
+				}
+			}
 		}
 	}
 

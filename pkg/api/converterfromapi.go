@@ -644,7 +644,6 @@ func convertDcosConfigToVLabs(api *DcosConfig, vlabs *vlabs.DcosConfig) {
 func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {
 	vlabs.KubernetesImageBase = api.KubernetesImageBase
 	vlabs.ClusterSubnet = api.ClusterSubnet
-	vlabs.DNSServiceIP = api.DNSServiceIP
 	vlabs.ServiceCidr = api.ServiceCIDR
 	vlabs.NonMasqueradeCidr = api.NonMasqueradeCidr
 	vlabs.NetworkPolicy = api.NetworkPolicy
@@ -676,6 +675,14 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.EtcdVersion = api.EtcdVersion
 	vlabs.EtcdDiskSizeGB = api.EtcdDiskSizeGB
 	convertAddonsToVlabs(api, vlabs)
+	convertKubeletConfigToVlabs(api, vlabs)
+}
+
+func convertKubeletConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
+	v.KubeletConfig = map[string]string{}
+	for key, val := range a.KubeletConfig {
+		v.KubeletConfig[key] = val
+	}
 }
 
 func convertAddonsToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {

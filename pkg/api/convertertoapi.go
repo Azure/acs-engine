@@ -589,7 +589,6 @@ func convertVLabsKubernetesConfig(vp *vlabs.Properties, api *KubernetesConfig) {
 	vlabs := vp.OrchestratorProfile.KubernetesConfig
 	api.KubernetesImageBase = vlabs.KubernetesImageBase
 	api.ClusterSubnet = vlabs.ClusterSubnet
-	api.DNSServiceIP = vlabs.DNSServiceIP
 	api.ServiceCIDR = vlabs.ServiceCidr
 	api.NonMasqueradeCidr = vlabs.NonMasqueradeCidr
 	api.NetworkPolicy = vlabs.NetworkPolicy
@@ -621,6 +620,7 @@ func convertVLabsKubernetesConfig(vp *vlabs.Properties, api *KubernetesConfig) {
 	api.EtcdVersion = vlabs.EtcdVersion
 	api.EtcdDiskSizeGB = vlabs.EtcdDiskSizeGB
 	convertAddonsToAPI(vlabs, api)
+	convertKubeletConfigToAPI(vlabs, api)
 }
 
 func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) {
@@ -660,6 +660,13 @@ func convertAddonsToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
 				a.Addons[i].Config[key] = val
 			}
 		}
+	}
+}
+
+func convertKubeletConfigToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
+	a.KubeletConfig = map[string]string{}
+	for key, val := range v.KubeletConfig {
+		a.KubeletConfig[key] = val
 	}
 }
 

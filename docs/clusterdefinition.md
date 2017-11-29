@@ -34,7 +34,6 @@ Here are the valid values for the orchestrator types:
 |dockerEngineVersion|no|Which version of docker-engine to use in your cluster, e.g.. "17.03.*"|
 |networkPolicy|no|Specifies the network policy tool for the cluster. Valid values are:<br>`"azure"` (default), which provides an Azure native networking experience,<br>`none` for not enforcing any network policy,<br>`calico` for Calico network policy (clusters with Linux agents only).<br>See [network policy examples](../examples/networkpolicy) for more information.|
 |clusterSubnet|no|The IP subnet used for allocating IP addresses for pod network interfaces. The subnet must be in the VNET address space. Default value is 10.244.0.0/16.|
-|dnsServiceIP|no|IP address for kube-dns to listen on. If specified must be in the range of `serviceCidr`.|
 |dockerBridgeSubnet|no|The specific IP and subnet used for allocating IP addresses for the docker bridge network created on the kubernetes master and agents. Default value is 172.17.0.1/16. This value is used to configure the docker daemon using the [--bip flag](https://docs.docker.com/engine/userguide/networking/default_network/custom-docker0).|
 |serviceCidr|no|IP range for Service IPs, Default is "10.0.0.0/16". This range is never routed outside of a node so does not need to lie within clusterSubnet or the VNet.|
 |nonMasqueradeCidr|no|CIDR block to exclude from default source NAT, Default is "10.0.0.0/8".|
@@ -46,6 +45,7 @@ Here are the valid values for the orchestrator types:
 |hardEvictionThreshold|no|Sets the --eviction-hard value on the kublet configuration. Default is `memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%`. [See Hard Eviction Thesholds](https://kubernetes.io/docs/tasks/administer-cluster/out-of-resource/#hard-eviction-thresholds) |
 |useInstanceMetadata|no|Use the Azure cloudprovider instance metadata service for appropriate resource discovery operations. Default is `true`.|
 |addons|no|Configure various Kubernetes addons configuration (currently supported: tiller, kubernetes-dashboard). See `addons` configuration below.|
+|kubeletConfig|no|Configure various runtime configuration for kubelet. See `kubeletConfig` below.|
 
 `addons` describes various addons configuration. It is a child property of `kubernetesConfig`. Below is a list of currently available addons:
 
@@ -54,6 +54,14 @@ Here are the valid values for the orchestrator types:
 |tiller|true|1|Delivers the Helm server-side component: tiller. See https://github.com/kubernetes/helm for more info.|
 |kubernetes-dashboard|true|1|Delivers the kubernetes dashboard component. See https://github.com/kubernetes/dashboard for more info.|
 |rescheduler|false|1|Delivers the kubernetes rescheduler component.|
+
+`kubeletConfig` declares runtime configuration for the kubelet running on all master and agent nodes. It is a generic key/value object, and achild property of `kubernetesConfig`. Below is a list of currently supported kubelet configuration keys:
+
+|Configuration key|Default value|
+|---|---|
+|"--cluster-dns"|"10.0.0.10"|
+
+Definitive kubelet configuration description is at (https://kubernetes.io/docs/reference/generated/kubelet/).
 
 To give a bit more info on the `addons` property: We've tried to expose the basic bits of data that allow useful configuration of these cluster features. Here are some example usage patterns that will unpack what `addons` provide:
 

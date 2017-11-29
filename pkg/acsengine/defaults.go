@@ -336,9 +336,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig.GCLowThreshold == 0 {
 			o.KubernetesConfig.GCLowThreshold = DefaultKubernetesGCLowThreshold
 		}
-		if o.KubernetesConfig.DNSServiceIP == "" {
-			o.KubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
-		}
 		if o.KubernetesConfig.DockerBridgeSubnet == "" {
 			o.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 		}
@@ -411,6 +408,24 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
 			a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
+		}
+
+		// Default Kubelet config
+		defaultKubeletConfig := map[string]string{
+			"--cluster-dns": DefaultKubernetesDNSServiceIP,
+		}
+
+		// If no user-configurable kubelet config values exists, use the defaults
+		if o.KubernetesConfig.KubeletConfig == nil {
+			o.KubernetesConfig.KubeletConfig = defaultKubeletConfig
+		} else {
+			for key, val := range defaultKubeletConfig {
+				// If we don't have a user-configurable kubelet config for each option
+				if _, ok := o.KubernetesConfig.KubeletConfig[key]; !ok {
+					// then assign the default value
+					o.KubernetesConfig.KubeletConfig[key] = val
+				}
+			}
 		}
 
 	} else if o.OrchestratorType == api.DCOS {
