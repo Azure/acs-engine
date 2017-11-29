@@ -218,11 +218,11 @@ install_grafana $NAMESPACE
 sleep 5
 
 echo $(date) " - Creating the Prometheus datasource in Grafana"
-GF_USER_NAME=$(kubectl get secret $K8S_SECRET_NAME -o jsonpath="{.data.grafana-admin-user}" | base64 --decode)
+GF_USER_NAME=$(kubectl get secret -n $NAMESPACE $K8S_SECRET_NAME -o jsonpath="{.data.grafana-admin-user}" | base64 --decode)
 echo $GF_USER_NAME
-GF_PASSWORD=$(kubectl get secret $K8S_SECRET_NAME -o jsonpath="{.data.grafana-admin-password}" | base64 --decode)
+GF_PASSWORD=$(kubectl get secret -n $NAMESPACE $K8S_SECRET_NAME -o jsonpath="{.data.grafana-admin-password}" | base64 --decode)
 echo $GF_PASSWORD
-GF_URL=$(kubectl get svc -l "app=dashboard-grafana,component=grafana" -o jsonpath="{.items[0].spec.clusterIP}")
+GF_URL=$(kubectl get svc -n $NAMESPACE -l "app=dashboard-grafana,component=grafana" -o jsonpath="{.items[0].spec.clusterIP}")
 echo $GF_URL
 
 echo retrieving current data sources...
