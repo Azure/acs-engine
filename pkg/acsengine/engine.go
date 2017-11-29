@@ -585,10 +585,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		aciConnectorAddon := getAddonByName(properties.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
 		c = getAddonContainersIndexByName(aciConnectorAddon.Containers, DefaultACIConnectorAddonName)
 		if c > -1 {
-			addValue(parametersMap, "kubernetesACIConnectorClientId", aciConnectorAddon.Environment[c].ClientId)
+			addValue(parametersMap, "kubernetesACIConnectorClientId", aciConnectorAddon.Environment[c].ClientID)
 			addValue(parametersMap, "kubernetesACIConnectorClientKey", aciConnectorAddon.Environment[c].ClientKey)
-			addValue(parametersMap, "kubernetesACIConnectorTenantId", aciConnectorAddon.Environment[c].TenantId)
-			addValue(parametersMap, "kubernetesACIConnectorSubscriptionId", aciConnectorAddon.Environment[c].SubscriptionId)
+			addValue(parametersMap, "kubernetesACIConnectorTenantId", aciConnectorAddon.Environment[c].TenantID)
+			addValue(parametersMap, "kubernetesACIConnectorSubscriptionId", aciConnectorAddon.Environment[c].SubscriptionID)
 			addValue(parametersMap, "kubernetesACIConnectorResourceGroup", aciConnectorAddon.Environment[c].ResourceGroup)
 			addValue(parametersMap, "kubernetesACIConnectorRegion", aciConnectorAddon.Environment[c].Region)
 			addValue(parametersMap, "kubernetesACIConnectorCPURequests", aciConnectorAddon.Containers[c].CPURequests)
@@ -1311,7 +1311,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					}
 				case "kubernetesACIConnectorClientId":
 					if aC > -1 {
-						val = aciConnectorAddon.Environment[aC].ClientId
+						val = aciConnectorAddon.Environment[aC].ClientID
 					} else {
 						val = ""
 					}
@@ -1323,13 +1323,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					}
 				case "kubernetesACIConnectorTenantId":
 					if aC > -1 {
-						val = aciConnectorAddon.Environment[aC].TenantId
+						val = aciConnectorAddon.Environment[aC].TenantID
 					} else {
 						val = ""
 					}
 				case "kubernetesACIConnectorSubscriptionId":
 					if aC > -1 {
-						val = aciConnectorAddon.Environment[aC].SubscriptionId
+						val = aciConnectorAddon.Environment[aC].SubscriptionID
 					} else {
 						val = ""
 					}
