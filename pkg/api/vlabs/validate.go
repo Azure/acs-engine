@@ -473,9 +473,11 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' is an invalid subnet", a.ClusterSubnet)
 		}
 
-		ones, bits := subnet.Mask.Size()
-		if bits-ones <= 8 {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' must reserve at least 9 bits for nodes", a.ClusterSubnet)
+		if a.NetworkPolicy == "azure" {
+			ones, bits := subnet.Mask.Size()
+			if bits-ones <= 8 {
+				return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' must reserve at least 9 bits for nodes", a.ClusterSubnet)
+			}
 		}
 	}
 
