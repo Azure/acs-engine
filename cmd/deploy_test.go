@@ -15,7 +15,7 @@ import (
 const ExampleAPIModel = `{
   "apiVersion": "vlabs",
   "properties": {
-		"orchestratorProfile": { "orchestratorType": "Kubernetes", "kubernetesConfig": { "useManagedIdentity": %s, "etcdVersion" : "2.2.5" } },
+		"orchestratorProfile": { "orchestratorType": "Kubernetes", "kubernetesConfig": { "useManagedIdentity": %s, "etcdVersion" : "2.3.8" } },
     "masterProfile": { "count": 1, "dnsPrefix": "", "vmSize": "Standard_D2_v2" },
     "agentPoolProfiles": [ { "name": "linuxpool1", "count": 2, "vmSize": "Standard_D2_v2", "availabilityProfile": "AvailabilitySet" } ],
     "windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
