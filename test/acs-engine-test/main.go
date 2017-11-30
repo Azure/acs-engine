@@ -109,6 +109,7 @@ func (m *TestManager) Run() error {
 	timeout := time.Duration(time.Minute * time.Duration(timeoutMin))
 
 	usePromoteToFailure := os.Getenv("PROMOTE_TO_FAILURE") == "true"
+	promoteToFailureTestSuffix := os.Getenv("PROMOTE_TO_FAILURE_TEST_SUFFIX")
 
 	var retries int
 	if usePromoteToFailure {
@@ -140,9 +141,13 @@ func (m *TestManager) Run() error {
 			resMap := make(map[string]*ErrorStat)
 			if usePromoteToFailure {
 				testName := strings.Replace(dep.ClusterDefinition, "/", "-", -1)
+				if promoteToFailureTestSuffix != "" {
+					testName += fmt.Sprintf("-%s", promoteToFailureTestSuffix)
+				}
 				if dep.Location != "" {
 					testName += fmt.Sprintf("-%s", dep.Location)
 				}
+
 				errorInfo := m.testRun(dep, index, 0, timeout)
 				var failureStr string
 				if errorInfo != nil {
