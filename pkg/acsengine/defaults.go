@@ -179,12 +179,7 @@ var (
 		Name:    DefaultACIConnectorAddonName,
 		Enabled: pointerToBool(api.DefaultACIConnectorAddonEnabled),
 		Config: map[string]string{
-			"clientId":       "",
-			"clientKey":      "",
-			"tenantId":       "",
-			"subscriptionId": "",
-			"resourceGroup":  "",
-			"region":         "westus",
+			"region": "westus",
 		},
 		Containers: []api.KubernetesContainerSpec{
 			{
