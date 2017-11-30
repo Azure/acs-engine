@@ -693,8 +693,14 @@ func convertAddonsToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
 				MemoryLimits:   a.Addons[i].Containers[j].MemoryLimits,
 			})
 		}
+
 		for key, val := range a.Addons[i].Config {
-			v.Addons[i].Config[key] = val
+			if v.Addons[i].Config == nil {
+				v.Addons[i].Config = make(map[string]string, 0)
+			}
+			if m, ok := v.Addons[i].Config[key]; !ok || m == "" {
+				v.Addons[i].Config[key] = val
+			}
 		}
 	}
 }

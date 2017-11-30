@@ -636,8 +636,13 @@ func convertAddonsToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
 			})
 		}
 
-		for key, val := range v.Addons[i].Config {
-			v.Addons[i].Config[key] = val
+		for key, val := range a.Addons[i].Config {
+			if a.Addons[i].Config == nil {
+				a.Addons[i].Config = make(map[string]string, 0)
+			}
+			if m, ok := v.Addons[i].Config[key]; !ok || m == "" {
+				a.Addons[i].Config[key] = val
+			}
 		}
 	}
 }

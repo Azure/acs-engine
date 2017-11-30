@@ -709,7 +709,10 @@ func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesA
 		}
 	}
 	for key, val := range defaults.Config {
-		if addon.Config[key] == "" {
+		if addon.Config == nil {
+			addon.Config = make(map[string]string, 0)
+		}
+		if v, ok := addon.Config[key]; !ok || v == "" {
 			addon.Config[key] = val
 		}
 	}
