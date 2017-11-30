@@ -19,10 +19,17 @@ type Upgrader struct {
 	kubeConfig string
 }
 
-// UpgradeVM holds VM name and upgrade status
-type UpgradeVM struct {
-	Name     string
-	Upgraded bool
+type vmStatus int
+
+const (
+	vmStatusUpgraded vmStatus = iota
+	vmStatusNotUpgraded
+	vmStatusIgnored
+)
+
+type vmInfo struct {
+	name   string
+	status vmStatus
 }
 
 // Init initializes an upgrader struct
@@ -226,44 +233,52 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		upgradeAgentNode.Client = ku.Client
 		upgradeAgentNode.kubeConfig = ku.kubeConfig
 
-		upgradeVMs := make(map[int]*UpgradeVM)
-		// Go over upgraded VMs and verify provisioning state. Delete VMs in 'bad' state.
-		// Such a VM will be re-created later in this function.
+		agentVMs := make(map[int]*vmInfo)
+		// Go over upgraded VMs and verify provisioning state
+		// per https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-state :
+		//  - Creating: Indicates the virtual Machine is being created.
+		//  - Updating: Indicates that there is an update operation in progress on the Virtual Machine.
+		//  - Succeeded: Indicates that the operation executed on the virtual machine succeeded.
+		//  - Deleting: Indicates that the virtual machine is being deleted.
+		//  - Failed: Indicates that the update operation on the Virtual Machine failed.
+		// Delete VMs in 'bad' state. Such VMs will be re-created later in this function.
+		upgradedCount := 0
 		for _, vm := range *agentPool.UpgradedAgentVMs {
 			ku.logger.Infof("Agent VM: %s, pool name: %s on expected orchestrator version", *vm.Name, *agentPool.Name)
-			vmProvisioningState := "Invalid"
+			var vmProvisioningState string
 			if vm.VirtualMachineProperties != nil && vm.VirtualMachineProperties.ProvisioningState != nil {
 				vmProvisioningState = *vm.VirtualMachineProperties.ProvisioningState
 			}
+			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
 			switch vmProvisioningState {
-			case "Succeeded":
-				fallthrough
 			case "Creating":
-				agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
-				upgradeVMs[agentIndex] = &UpgradeVM{*vm.Name, true}
+				fallthrough
+			case "Updating":
+				fallthrough
+			case "Succeeded":
+				agentVMs[agentIndex] = &vmInfo{*vm.Name, vmStatusUpgraded}
+				upgradedCount++
 
 			case "Failed":
-				fallthrough
-			case "Invalid":
 				ku.logger.Infof("Deleting agent VM %s in provisioning state %s", *vm.Name, vmProvisioningState)
 				err := upgradeAgentNode.DeleteNode(vm.Name, false)
 				if err != nil {
-					ku.logger.Warnf("Error deleting agent VM %s: %v", *vm.Name, err)
+					ku.logger.Errorf("Error deleting agent VM %s: %v", *vm.Name, err)
+					return err
 				}
 
-			case "Cancelled":
-				fallthrough
 			case "Deleting":
 				fallthrough
 			default:
 				ku.logger.Infof("Ignoring agent VM %s in provisioning state %s", *vm.Name, vmProvisioningState)
+				agentVMs[agentIndex] = &vmInfo{*vm.Name, vmStatusIgnored}
 			}
 		}
 
 		for _, vm := range *agentPool.AgentVMs {
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
-			upgradeVMs[agentIndex] = &UpgradeVM{*vm.Name, false}
+			agentVMs[agentIndex] = &vmInfo{*vm.Name, vmStatusNotUpgraded}
 		}
 		toBeUpgradedCount := len(*agentPool.AgentVMs)
 
@@ -275,8 +290,8 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		if toBeUpgradedCount > 0 {
 			agentCount++
 		}
-		for len(upgradeVMs) < agentCount {
-			agentIndex := getAvailableIndex(upgradeVMs)
+		for upgradedCount+toBeUpgradedCount < agentCount {
+			agentIndex := getAvailableIndex(agentVMs)
 
 			vmName, err := armhelpers.GetK8sVMName(agentOsType, ku.DataModel.Properties.HostedMasterProfile != nil,
 				ku.NameSuffix, agentPoolName, agentPoolIndex, agentIndex)
@@ -298,7 +313,8 @@ func (ku *Upgrader) upgradeAgentPools() error {
 				return err
 			}
 
-			upgradeVMs[agentIndex] = &UpgradeVM{vmName, true}
+			agentVMs[agentIndex] = &vmInfo{vmName, vmStatusUpgraded}
+			upgradedCount++
 		}
 
 		if toBeUpgradedCount == 0 {
@@ -307,36 +323,36 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		}
 
 		// Upgrade nodes in agent pool
-		upgradedCount := 0
-		for agentIndex, vm := range upgradeVMs {
-			if vm.Upgraded {
+		upgradedCount = 0
+		for agentIndex, vm := range agentVMs {
+			if vm.status != vmStatusNotUpgraded {
 				continue
 			}
-			ku.logger.Infof("Upgrading Agent VM: %s, pool name: %s", vm.Name, *agentPool.Name)
+			ku.logger.Infof("Upgrading Agent VM: %s, pool name: %s", vm.name, *agentPool.Name)
 
-			err := upgradeAgentNode.DeleteNode(&vm.Name, true)
+			err := upgradeAgentNode.DeleteNode(&vm.name, true)
 			if err != nil {
-				ku.logger.Errorf("Error deleting agent VM %s: %v", vm.Name, err)
+				ku.logger.Errorf("Error deleting agent VM %s: %v", vm.name, err)
 				return err
 			}
 
 			// do not create last node in favor of already created extra node.
 			if upgradedCount == toBeUpgradedCount-1 {
-				ku.logger.Infof("Skipping creation of VM %s (index %d)", vm.Name, agentIndex)
-				delete(upgradeVMs, agentIndex)
+				ku.logger.Infof("Skipping creation of VM %s (index %d)", vm.name, agentIndex)
+				delete(agentVMs, agentIndex)
 			} else {
 				err = upgradeAgentNode.CreateNode(*agentPool.Name, agentIndex)
 				if err != nil {
-					ku.logger.Errorf("Error creating upgraded agent VM %s: %v", vm.Name, err)
+					ku.logger.Errorf("Error creating upgraded agent VM %s: %v", vm.name, err)
 					return err
 				}
 
-				err = upgradeAgentNode.Validate(&vm.Name)
+				err = upgradeAgentNode.Validate(&vm.name)
 				if err != nil {
-					ku.logger.Errorf("Error validating upgraded agent VM %s: %v", vm.Name, err)
+					ku.logger.Errorf("Error validating upgraded agent VM %s: %v", vm.name, err)
 					return err
 				}
-				vm.Upgraded = true
+				vm.status = vmStatusUpgraded
 			}
 			upgradedCount++
 		}
@@ -372,7 +388,7 @@ func (ku *Upgrader) generateUpgradeTemplate(upgradeContainerService *api.Contain
 }
 
 // return unused index within the range of agent indices, or subsequent index
-func getAvailableIndex(vms map[int]*UpgradeVM) int {
+func getAvailableIndex(vms map[int]*vmInfo) int {
 	maxIndex := 0
 
 	for indx := range vms {
