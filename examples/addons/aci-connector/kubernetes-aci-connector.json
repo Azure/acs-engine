@@ -8,16 +8,14 @@
             {
               "name": "aci-connector",
               "enabled" : true,
-              "environment": [
-                {
+              "config": {
                   "clientId": "",
                   "clientKey": "",
                   "tenantId": "",
                   "subscriptionId": "",
                   "resourceGroup": "",
                   "region": "eastus"
-                }
-              ],
+              },
               "containers": [
                 {
                   "name": "aci-connector",
