@@ -14,16 +14,14 @@ This is the ACI Connector add-on.  Add this add-on to your json file as shown be
             {
               "name": "aci-connector",
               "enabled" : true,
-              "environment": [
-                {
+              "environment": {
                   "clientId": "",
                   "clientKey": "",
                   "tenantId": "",
                   "subscriptionId": "",
                   "resourceGroup": "",
                   "region": ""
-                }
-              ],
+              },
               "containers": [
                 {
                   "name": "aci-connector",
