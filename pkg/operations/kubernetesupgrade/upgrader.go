@@ -252,11 +252,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
 			switch vmProvisioningState {
-			case "Creating":
-				fallthrough
-			case "Updating":
-				fallthrough
-			case "Succeeded":
+			case "Creating", "Updating", "Succeeded":
 				agentVMs[agentIndex] = &vmInfo{*vm.Name, vmStatusUpgraded}
 				upgradedCount++
 
