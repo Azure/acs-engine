@@ -207,7 +207,7 @@ func (o *OrchestratorProfile) ValidateForUpgrade() error {
 		return fmt.Errorf("Upgrade is not supported for orchestrator %s", o.OrchestratorType)
 	case Kubernetes:
 		switch o.OrchestratorVersion {
-		case common.KubernetesVersion1Dot6Dot12:
+		case common.KubernetesVersion1Dot6Dot13:
 		case common.KubernetesVersion1Dot7Dot10:
 		default:
 			return fmt.Errorf("Upgrade to Kubernetes version %s is not supported", o.OrchestratorVersion)
@@ -464,6 +464,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot6Dot9:  true,
 		common.KubernetesVersion1Dot6Dot11: true,
 		common.KubernetesVersion1Dot6Dot12: true,
+		common.KubernetesVersion1Dot6Dot13: true,
 	}
 	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
 	ratelimitEnabledVersions := backoffEnabledVersions

@@ -57,6 +57,9 @@ To get the list of all available Kubernetes versions and upgrades, run the *orch
           "orchestratorVersion": "1.6.12"
         },
         {
+          "orchestratorVersion": "1.6.13"
+        },
+        {
           "orchestratorVersion": "1.6.6"
         }
       ]
