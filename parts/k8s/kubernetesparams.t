@@ -463,6 +463,13 @@
       },
       "type": "string"
     },
+    "dockerEngineVersion": {
+      {{PopulateClassicModeDefaultValue "dockerEngineVersion"}}
+      "metadata": {
+        "description": "The docker engine version to install."
+      },
+      "type": "string"
+    },
     "networkPolicy": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.NetworkPolicy}}",
       "metadata": {
