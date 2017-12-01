@@ -171,6 +171,7 @@ type KubernetesAddon struct {
 	Name       string                    `json:"name,omitempty"`
 	Enabled    *bool                     `json:"enabled,omitempty"`
 	Containers []KubernetesContainerSpec `json:"containers,omitempty"`
+	Config     map[string]string         `json:"config,omitempty"`
 }
 
 // IsEnabled returns if the addon is explicitly enabled, or the user-provided default if non explicitly enabled
@@ -594,6 +595,17 @@ func (k *KubernetesConfig) IsTillerEnabled() bool {
 		}
 	}
 	return tillerAddon.IsEnabled(DefaultTillerAddonEnabled)
+}
+
+// IsACIConnectorEnabled checks if the ACI Connector addon is enabled
+func (k *KubernetesConfig) IsACIConnectorEnabled() bool {
+	var aciConnectorAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultACIConnectorAddonName {
+			aciConnectorAddon = k.Addons[i]
+		}
+	}
+	return aciConnectorAddon.IsEnabled(DefaultACIConnectorAddonEnabled)
 }
 
 // IsDashboardEnabled checks if the kubernetes-dashboard addon is enabled
