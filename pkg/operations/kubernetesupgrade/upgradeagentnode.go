@@ -16,6 +16,7 @@ import (
 
 const (
 	interval = time.Second * 1
+	retry    = time.Second * 5
 	timeout  = time.Minute * 10
 )
 
@@ -124,14 +125,14 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 			agentNode, err := client.GetNode(*vmName)
 			if err != nil {
 				kan.logger.Infof("Agent VM: %s status error: %v\n", *vmName, err)
-				retryTimer.Reset(time.Second * 5)
+				retryTimer.Reset(retry)
 			} else if node.IsNodeReady(agentNode) {
 				kan.logger.Infof("Agent VM: %s is ready", *vmName)
 				timeoutTimer.Stop()
 				return nil
 			} else {
 				kan.logger.Infof("Agent VM: %s not ready yet...", *vmName)
-				retryTimer.Reset(time.Second * 5)
+				retryTimer.Reset(retry)
 			}
 		}
 	}
