@@ -39,18 +39,15 @@ spec:
       containers:
       - name: tensorflow
         image: <SOME_IMAGE>
-        command: ["python main.py"]      
+        command: <SOME_COMMAND>    
         imagePullPolicy: IfNotPresent
-        env:
-        - name: LD_LIBRARY_PATH
-          value: /usr/lib/nvidia:/usr/lib/x86_64-linux-gnu
         resources:
           limits:
             alpha.kubernetes.io/nvidia-gpu: 1
         volumeMounts:
         - mountPath: /usr/local/nvidia/bin
           name: bin
-        - mountPath: /usr/lib/nvidia
+        - mountPath: /usr/local/nvidia/lib64
           name: lib
         - mountPath: /usr/lib/x86_64-linux-gnu/libcuda.so.1
           name: libcuda
