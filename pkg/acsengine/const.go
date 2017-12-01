@@ -40,8 +40,8 @@ const (
 	DefaultNetworkPolicy = "none"
 	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/
 	DefaultKubernetesNodeStatusUpdateFrequency = "10s"
-	// DefaultKubernetesHardEvictionThreshold is "memory.available<10%, see --eviction-hard at https://kubernetes.io/docs/admin/kubelet/
-	DefaultKubernetesHardEvictionThreshold = "memory.available<10%"
+	// DefaultKubernetesHardEvictionThreshold is memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%, see --eviction-hard at https://kubernetes.io/docs/admin/kubelet/
+	DefaultKubernetesHardEvictionThreshold = "memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%"
 	// DefaultKubernetesCtrlMgrNodeMonitorGracePeriod is 40s, see --node-monitor-grace-period at https://kubernetes.io/docs/admin/kube-controller-manager/
 	DefaultKubernetesCtrlMgrNodeMonitorGracePeriod = "40s"
 	// DefaultKubernetesCtrlMgrPodEvictionTimeout is 5m0s, see --pod-eviction-timeout at https://kubernetes.io/docs/admin/kube-controller-manager/
