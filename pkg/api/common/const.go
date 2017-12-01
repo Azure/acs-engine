@@ -143,7 +143,7 @@ var AllKubernetesWindowsSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot8Dot0:  true,
 	KubernetesVersion1Dot8Dot1:  true,
 	KubernetesVersion1Dot8Dot2:  true,
-	KubernetesVersion1Dot8Dot4:  false,
+	KubernetesVersion1Dot8Dot4:  true,
 }
 
 const (
