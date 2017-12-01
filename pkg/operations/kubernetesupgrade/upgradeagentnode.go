@@ -3,7 +3,6 @@ package kubernetesupgrade
 import (
 	"fmt"
 	"math/rand"
-	"sync"
 	"time"
 
 	"k8s.io/client-go/pkg/api/v1/node"
@@ -113,42 +112,27 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 		return err
 	}
 
-	ch := make(chan struct{}, 1)
-	var wg sync.WaitGroup
-	wg.Add(1)
-	running := true
-
-	go func(running *bool) {
-		defer wg.Done()
-		for *running {
+	retryTimer := time.NewTimer(time.Millisecond)
+	timeoutTimer := time.NewTimer(timeout)
+	for {
+		select {
+		case <-timeoutTimer.C:
+			retryTimer.Stop()
+			kan.logger.Errorf("Node was not ready within %v", timeout)
+			return fmt.Errorf("Node was not ready within %v", timeout)
+		case <-retryTimer.C:
 			agentNode, err := client.GetNode(*vmName)
 			if err != nil {
 				kan.logger.Infof("Agent VM: %s status error: %v\n", *vmName, err)
-				time.Sleep(time.Second * 5)
+				retryTimer.Reset(time.Second * 5)
 			} else if node.IsNodeReady(agentNode) {
 				kan.logger.Infof("Agent VM: %s is ready", *vmName)
-				ch <- struct{}{}
+				timeoutTimer.Stop()
+				return nil
 			} else {
 				kan.logger.Infof("Agent VM: %s not ready yet...", *vmName)
-				time.Sleep(time.Second * 5)
+				retryTimer.Reset(time.Second * 5)
 			}
 		}
-	}(&running)
-
-	for running {
-		select {
-		case <-ch:
-			err = nil
-			running = false
-		case <-time.After(timeout):
-			err = fmt.Errorf("Node was not ready within %v", timeout)
-			running = false
-		}
 	}
-
-	if err != nil {
-		kan.logger.Errorf(err.Error())
-	}
-	wg.Wait()
-	return err
 }
