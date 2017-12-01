@@ -22,7 +22,7 @@ spec:
         - "--cloud-provider=azure"
         - "--cloud-config=/etc/kubernetes/azure.json"
         - "--service-cluster-ip-range=<kubeServiceCidr>"
-        - "--etcd-servers=<masterEtcdClientUrl>" 
+        - "--etcd-servers=<masterEtcdTLSClientUrl>" 
         - "--etcd-cafile=/etc/kubernetes/certs/etcd-ca.crt" 
         - "--etcd-certfile=/etc/kubernetes/certs/etcd-client.crt" 
         - "--etcd-keyfile=/etc/kubernetes/certs/etcd-client.key" 
