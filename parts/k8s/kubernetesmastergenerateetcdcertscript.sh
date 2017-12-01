@@ -13,11 +13,11 @@ K8S_ETCD_SERVER_CRT_FILEPATH="${K8S_ETCD_SERVER_CRT_FILEPATH:=/etc/kubernetes/ce
 K8S_ETCD_SERVER_KEY_FILEPATH="${K8S_ETCD_SERVER_KEY_FILEPATH:=/etc/kubernetes/certs/etcd-server.key}"
 
 # etcd tls peer certs
-# ETCD_SERVER_PEER_KEY="${ETCD_SERVER_PEER_KEY:=/tmp/etcd-server-peer.key}"
-# ETCD_SERVER_PEER_CSR="${ETCD_SERVER_PEER_CSR:=/tmp/etcd-server-peer.csr}"
-# ETCD_SERVER_PEER_CRT="${ETCD_SERVER_PEER_CRT:=/tmp/etcd-server-peer.crt}"
-# K8S_ETCD_SERVER_PEER_CRT_FILEPATH="${K8S_ETCD_SERVER_PEER_CRT_FILEPATH:=/etc/kubernetes/certs/etcd-server-peer.crt}"
-# K8S_ETCD_SERVER_PEER_KEY_FILEPATH="${K8S_ETCD_SERVER_PEER_KEY_FILEPATH:=/etc/kubernetes/certs/etcd-server-peer.key}"
+ETCD_PEER_KEY="${ETCD_PEER_KEY:=/tmp/etcd-peer.key}"
+ETCD_PEER_CSR="${ETCD_PEER_CSR:=/tmp/etcd-peer.csr}"
+ETCD_PEER_CRT="${ETCD_PEER_CRT:=/tmp/etcd-peer.crt}"
+K8S_ETCD_PEER_CRT_FILEPATH="${K8S_ETCD_PEER_CRT_FILEPATH:=/etc/kubernetes/certs/etcd-peer.crt}"
+K8S_ETCD_PEER_KEY_FILEPATH="${K8S_ETCD_PEER_KEY_FILEPATH:=/etc/kubernetes/certs/etcd-peer.key}"
 
 # etcd tls client certs
 ETCD_CLIENT_KEY="${ETCD_CLIENT_KEY:=/tmp/etcd-client.key}"
@@ -32,6 +32,8 @@ ETCD_SERVER_CERT_FILE="${ETCD_SERVER_CERT_FILE:=/etcdcerts/etcd-server-cert-file
 ETCD_SERVER_KEY_FILE="${ETCD_SERVER_KEY_FILE:=/etcdcerts/etcd-server-key-file}"
 ETCD_CLIENT_CERT_FILE="${ETCD_CLIENT_CERT_FILE:=/etcdcerts/etcd-client-cert-file}"
 ETCD_CLIENT_KEY_FILE="${ETCD_CLIENT_KEY_FILE:=/etcdcerts/etcd-client-key-file}"
+ETCD_PEER_CERT_FILE="${ETCD_PEER_CERT_FILE:=/etcdcerts/etcd-peer-cert-file}"
+ETCD_PEER_KEY_FILE="${ETCD_PEER_KEY_FILE:=/etcdcerts/etcd-peer-key-file}"
 
 # generate root CA
 openssl genrsa -out $ETCD_CA_KEY 2048
@@ -40,12 +42,12 @@ openssl req -new -x509 -days 1826 -key $ETCD_CA_KEY -out $ETCD_CA_CRT -subj '/CN
 openssl genrsa -out $ETCD_SERVER_KEY 2048
 openssl req -new -key $ETCD_SERVER_KEY -out $ETCD_SERVER_CSR -subj '/CN=127.0.0.1/O=system:masters'
 openssl x509 -req -days 730 -in $ETCD_SERVER_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_SERVER_CRT
-openssl genrsa -out $ETCD_SERVER_PEER_KEY 2048
-openssl req -new -key $ETCD_SERVER_PEER_KEY -out $ETCD_SERVER_PEER_CSR -subj '/CN=127.0.0.1/O=system:masters'
-openssl x509 -req -days 730 -in $ETCD_SERVER_PEER_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_SERVER_PEER_CRT
 openssl genrsa -out $ETCD_CLIENT_KEY 2048
 openssl req -new -key $ETCD_CLIENT_KEY -out $ETCD_CLIENT_CSR -subj '/CN=127.0.0.1/O=system:masters'
 openssl x509 -req -days 730 -in $ETCD_CLIENT_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_CLIENT_CRT
+openssl genrsa -out $ETCD_PEER_KEY 2048
+openssl req -new -key $ETCD_PEER_KEY -out $ETCD_PEER_CSR -subj '/CN=127.0.0.1/O=system:masters'
+openssl x509 -req -days 730 -in $ETCD_PEER_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_PEER_CRT
 
 retrycmd_if_failure() { for i in 1 2 3 4 5 6 7 8 9 10; do $@; [ $? -eq 0  ] && break || sleep 30; done ; }
 
@@ -55,12 +57,16 @@ write_certs_to_disk() {
     etcdctl get $ETCD_SERVER_KEY_FILE > $K8S_ETCD_SERVER_KEY_FILEPATH
     etcdctl get $ETCD_CLIENT_CERT_FILE > $K8S_ETCD_CLIENT_CRT_FILEPATH
     etcdctl get $ETCD_CLIENT_KEY_FILE > $K8S_ETCD_CLIENT_KEY_FILEPATH
+    etcdctl get $ETCD_PEER_CERT_FILE > $K8S_ETCD_PEER_CRT_FILEPATH
+    etcdctl get $ETCD_PEER_KEY_FILE > $K8S_ETCD_PEER_KEY_FILEPATH
     # Remove whitespace padding at beginning of 1st line
-    sed -i '1s/\s//' $K8S_ETCD_CA_CRT_FILEPATH $K8S_ETCD_SERVER_CRT_FILEPATH $K8S_ETCD_SERVER_KEY_FILEPATH $K8S_ETCD_CLIENT_CRT_FILEPATH $K8S_ETCD_CLIENT_KEY_FILEPATH
+    sed -i '1s/\s//' $K8S_ETCD_CA_CRT_FILEPATH $K8S_ETCD_SERVER_CRT_FILEPATH $K8S_ETCD_SERVER_KEY_FILEPATH $K8S_ETCD_CLIENT_CRT_FILEPATH $K8S_ETCD_CLIENT_KEY_FILEPATH $K8S_ETCD_PEER_CRT_FILEPATH $K8S_ETCD_PEER_KEY_FILEPATH
     chmod 600 $K8S_ETCD_SERVER_KEY_FILEPATH
     chmod 600 $K8S_ETCD_CLIENT_KEY_FILEPATH
+    chmod 600 $K8S_ETCD_PEER_KEY_FILEPATH
     chown etcd:etcd $K8S_ETCD_SERVER_KEY_FILEPATH
     chown etcd:etcd $K8S_ETCD_CLIENT_KEY_FILEPATH
+    chown etcd:etcd $K8S_ETCD_PEER_KEY_FILEPATH
 }
 
 write_certs_to_disk_with_retry() {
@@ -78,6 +84,8 @@ if etcdctl mk $ETCD_REQUESTHEADER_CA " $(cat ${ETCD_CA_CRT})"; then
     etcdctl mk $ETCD_SERVER_CERT_FILE " $(cat ${ETCD_SERVER_CRT})"
     etcdctl mk $ETCD_CLIENT_KEY_FILE " $(cat ${ETCD_CLIENT_KEY})"
     etcdctl mk $ETCD_CLIENT_CERT_FILE " $(cat ${ETCD_CLIENT_CRT})"
+    etcdctl mk $ETCD_PEER_KEY_FILE " $(cat ${ETCD_PEER_KEY})"
+    etcdctl mk $ETCD_PEER_CERT_FILE " $(cat ${ETCD_PEER_CRT})"
     sleep 5
     write_certs_to_disk_with_retry
 # If the etcdtl mk command failed, that means the key already exists
