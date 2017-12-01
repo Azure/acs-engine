@@ -3,6 +3,7 @@ package kubernetesupgrade
 import (
 	"fmt"
 	"math/rand"
+	"sync"
 	"time"
 
 	"k8s.io/client-go/pkg/api/v1/node"
@@ -113,8 +114,13 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 	}
 
 	ch := make(chan struct{}, 1)
-	go func() {
-		for {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	running := true
+
+	go func(running *bool) {
+		defer wg.Done()
+		for *running {
 			agentNode, err := client.GetNode(*vmName)
 			if err != nil {
 				kan.logger.Infof("Agent VM: %s status error: %v\n", *vmName, err)
@@ -127,15 +133,22 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 				time.Sleep(time.Second * 5)
 			}
 		}
-	}()
+	}(&running)
 
-	for {
+	for running {
 		select {
 		case <-ch:
-			return nil
+			err = nil
+			running = false
 		case <-time.After(timeout):
-			kan.logger.Errorf("Node was not ready within %v", timeout)
-			return fmt.Errorf("Node was not ready within %v", timeout)
+			err = fmt.Errorf("Node was not ready within %v", timeout)
+			running = false
 		}
 	}
+
+	if err != nil {
+		kan.logger.Errorf(err.Error())
+	}
+	wg.Wait()
+	return err
 }
