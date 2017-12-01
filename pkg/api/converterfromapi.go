@@ -651,6 +651,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.MaxPods = api.MaxPods
 	vlabs.DockerBridgeSubnet = api.DockerBridgeSubnet
 	vlabs.NodeStatusUpdateFrequency = api.NodeStatusUpdateFrequency
+	vlabs.HardEvictionThreshold = api.HardEvictionThreshold
 	vlabs.CtrlMgrNodeMonitorGracePeriod = api.CtrlMgrNodeMonitorGracePeriod
 	vlabs.CtrlMgrPodEvictionTimeout = api.CtrlMgrPodEvictionTimeout
 	vlabs.CtrlMgrRouteReconciliationPeriod = api.CtrlMgrRouteReconciliationPeriod

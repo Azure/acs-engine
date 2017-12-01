@@ -358,6 +358,13 @@
       },
       "type": "string"
     },
+    "kubernetesHardEvictionThreshold": {
+      {{PopulateClassicModeDefaultValue "kubernetesHardEvictionThreshold"}}
+      "metadata": {
+        "description": "Kubelet Hard Eviction threshold."
+      },
+       "type": "string"
+    },
     "kubernetesCtrlMgrNodeMonitorGracePeriod": {
       {{PopulateClassicModeDefaultValue "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
       "metadata": {
