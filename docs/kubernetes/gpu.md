@@ -64,7 +64,6 @@ spec:
 ```
 
 We specify `alpha.kubernetes.io/nvidia-gpu: 1` in the resources limits, and we mount the drivers from the host into the container.
-Note that we also modify the `LD_LIBRARY_PATH` environment variable to let python know where to find the driver's libraries.
 
 Some libraries, such as `libcuda.so` are installed under `/usr/lib/x86_64-linux-gnu` on the host, you might need to mount them separatly as shown above based on your needs.
 
