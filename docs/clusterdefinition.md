@@ -95,7 +95,7 @@ More usefully, let's add some custom configuration to both of the above addons:
             "containers": [
                 {
                   "name": "tiller",
-                  "image": "myDockerHubUser/tiller:v3.0.0-alpha
+                  "image": "myDockerHubUser/tiller:v3.0.0-alpha",
                   "cpuRequests": "1",
                   "memoryRequests": "1024Mi",
                   "cpuLimits": "1",

@@ -123,7 +123,7 @@ Per default Calico still allows all communication within the cluster. Using Kube
 
 * [NetworkPolicy User Guide](https://kubernetes.io/docs/user-guide/networkpolicies/)
 * [NetworkPolicy Example Walkthrough](https://kubernetes.io/docs/getting-started-guides/network-policy/walkthrough/)
-* [Calico Kubernetes](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/)
+* [Calico Kubernetes](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy)
 
 <a name="feat-custom-vnet"></a>
 

@@ -232,6 +232,83 @@
       },
       "type": "string"
     },
+    "kubernetesACIConnectorSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorSpec"}}
+      "metadata": {
+        "description": "The container spec for ACI Connector."
+      },
+      "type": "string"
+    },
+    "kubernetesACIConnectorClientId": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorClientId"}}
+      "metadata": {
+        "description": "Client id for ACI Connector."
+      },
+      "type": "string"
+    },
+    "kubernetesACIConnectorClientKey": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorClientKey"}}
+      "metadata": {
+        "description": "Client key for ACI Connector."
+      },
+      "type": "string"
+    },
+    "kubernetesACIConnectorTenantId": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorTenantId"}}
+      "metadata": {
+        "description": "Tenant id for ACI Connector."
+      },
+      "type": "string"
+    },
+    "kubernetesACIConnectorSubscriptionId": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorSubscriptionId"}}
+      "metadata": {
+        "description": "Subscription id for ACI Connector."
+      },
+      "type": "string"
+    },
+    "kubernetesACIConnectorResourceGroup": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorResourceGroup"}}
+      "metadata": {
+        "description": "Resource group for ACI Connector."
+      },
+      "type": "string"
+    },
+    "kubernetesACIConnectorRegion": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorRegion"}}
+      "metadata": {
+        "description": "Region for ACI Connector."
+      },
+      "type": "string"
+    },
+    "kubernetesACIConnectorCPURequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorCPURequests"}}
+      "metadata": {
+        "description": "ACI Connector CPU Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesACIConnectorMemoryRequests": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorMemoryRequests"}}
+      "metadata": {
+        "description": "ACI Connector Memory Requests"
+      },
+      "type": "string"
+    },
+    "kubernetesACIConnectorCPULimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorCPULimit"}}
+      "metadata": {
+        "description": "ACI Connector CPU Limit"
+      },
+      "type": "string"
+    },
+    "kubernetesACIConnectorMemoryLimit": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorMemoryLimit"}}
+      "metadata": {
+        "description": "ACI Connector Memory Limit"
+      },
+      "type": "string"
+    },
     "kubernetesReschedulerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesReschedulerSpec"}}
       "metadata": {
@@ -280,6 +357,13 @@
         "description": "Kubelet config for node status update frequency interval."
       },
       "type": "string"
+    },
+    "kubernetesHardEvictionThreshold": {
+      {{PopulateClassicModeDefaultValue "kubernetesHardEvictionThreshold"}}
+      "metadata": {
+        "description": "Kubelet Hard Eviction threshold."
+      },
+       "type": "string"
     },
     "kubernetesCtrlMgrNodeMonitorGracePeriod": {
       {{PopulateClassicModeDefaultValue "kubernetesCtrlMgrNodeMonitorGracePeriod"}}

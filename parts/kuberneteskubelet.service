@@ -49,6 +49,7 @@ ExecStart=/usr/bin/docker run \
         --azure-container-registry-config=/etc/kubernetes/azure.json \
         --network-plugin=${KUBELET_NETWORK_PLUGIN} \
         --max-pods=${KUBELET_MAX_PODS} \
+        --eviction-hard="${KUBELET_HARD_EVICTION_THRESHOLD}" \
         --node-status-update-frequency=${KUBELET_NODE_STATUS_UPDATE_FREQUENCY} \
         --image-gc-high-threshold=${KUBELET_IMAGE_GC_HIGH_THRESHOLD} \
         --image-gc-low-threshold=${KUBELET_IMAGE_GC_LOW_THRESHOLD} \

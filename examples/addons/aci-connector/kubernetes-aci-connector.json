@@ -1,0 +1,61 @@
+{
+    "apiVersion": "vlabs",
+    "properties": {
+      "orchestratorProfile": {
+        "orchestratorType": "Kubernetes",
+        "kubernetesConfig": {
+          "addons": [
+            {
+              "name": "aci-connector",
+              "enabled" : true,
+              "config": {
+                  "clientId": "",
+                  "clientKey": "",
+                  "tenantId": "",
+                  "subscriptionId": "",
+                  "resourceGroup": "",
+                  "region": "eastus"
+              },
+              "containers": [
+                {
+                  "name": "aci-connector",
+                  "image": "microsoft/aci-connector-k8s:latest",
+                  "cpuRequests": "50m",
+                  "memoryRequests": "150Mi",
+                  "cpuLimits": "50m",
+                  "memoryLimits": "150Mi"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "masterProfile": {
+        "count": 1,
+        "dnsPrefix": "",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "agentPoolProfiles": [
+        {
+          "name": "agentpool",
+          "count": 3,
+          "vmSize": "Standard_DS2_v2",
+          "availabilityProfile": "AvailabilitySet"
+        }
+      ],
+      "linuxProfile": {
+        "adminUsername": "azureuser",
+        "ssh": {
+          "publicKeys": [
+            {
+              "keyData": ""
+            }
+          ]
+        }
+      },
+      "servicePrincipalProfile": {
+        "clientId": "",
+        "secret": ""
+      }
+    }
+  }

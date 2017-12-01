@@ -1,12 +1,37 @@
 bootcmd:
 - bash -c "if [ ! -f /var/lib/sdb-gpt ];then echo DCOS-5890;parted -s /dev/sdb mklabel
   gpt;touch /var/lib/sdb-gpt;fi"
+- bash -c "if [ ! -f /var/lib/sdc-gpt ];then echo DCOS-5890;parted -s /dev/sdc mklabel
+  gpt&&touch /var/lib/sdc-gpt;fi"
+- bash -c "if [ ! -f /var/lib/sdd-gpt ];then echo DCOS-5890;parted -s /dev/sdd mklabel
+  gpt&&touch /var/lib/sdd-gpt;fi"
+- bash -c "if [ ! -f /var/lib/sde-gpt ];then echo DCOS-5890;parted -s /dev/sde mklabel
+  gpt&&touch /var/lib/sde-gpt;fi"
+- bash -c "if [ ! -f /var/lib/sdf-gpt ];then echo DCOS-5890;parted -s /dev/sdf mklabel
+  gpt&&touch /var/lib/sdf-gpt;fi"
+- bash -c "mkdir -p /dcos/volume{0,1,2,3}"
 disk_setup:
   ephemeral0:
     layout:
     - 45
     - 45
     - 10
+    overwrite: true
+    table_type: gpt
+  /dev/sdc:
+    layout: true
+    overwrite: true
+    table_type: gpt
+  /dev/sdd:
+    layout: true
+    overwrite: true
+    table_type: gpt
+  /dev/sde:
+    layout: true
+    overwrite: true
+    table_type: gpt
+  /dev/sdf:
+    layout: true
     overwrite: true
     table_type: gpt
 fs_setup:
@@ -19,6 +44,18 @@ fs_setup:
 - device: ephemeral0.3
   filesystem: ext4
   overwrite: true
+- device: /dev/sdc1
+  filesystem: ext4
+  overwrite: true
+- device: /dev/sdd1
+  filesystem: ext4
+  overwrite: true
+- device: /dev/sde1
+  filesystem: ext4
+  overwrite: true
+- device: /dev/sdf1
+  filesystem: ext4
+  overwrite: true
 mounts:
 - - ephemeral0.1
   - /var/lib/mesos
@@ -26,6 +63,14 @@ mounts:
   - /var/lib/docker
 - - ephemeral0.3
   - /var/tmp
+- - /dev/sdc1
+  - /dcos/volume0
+- - /dev/sdd1
+  - /dcos/volume1
+- - /dev/sde1
+  - /dcos/volume2
+- - /dev/sdf1
+  - /dcos/volume3
 runcmd:
 - - ln
   - -s
@@ -289,6 +334,10 @@ write_files:
   permissions: '0644'
 - content: ''
   path: /etc/mesosphere/roles/azure
+- path: /var/lib/dcos/mesos-slave-common
+  content: 'ATTRIBUTES_STR'
+  permissions: "0644"
+  owner: "root"
 - content: 'PROVISION_STR'
   path: /opt/azure/containers/provision.sh
   permissions: "0744"
