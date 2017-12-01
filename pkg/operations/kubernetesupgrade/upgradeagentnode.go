@@ -66,7 +66,7 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 	poolCountParameter := kan.ParametersMap[poolName+"Count"].(map[string]interface{})
 	poolCountParameter["value"] = agentNo + 1
 	agentCount, _ := poolCountParameter["value"]
-	kan.logger.Infof("Agent pool: %s, set count to: %d temporarily during upgrade. Upgrading agent: %d\n",
+	kan.logger.Infof("Agent pool: %s, set count to: %d temporarily during upgrade. Upgrading agent: %d",
 		poolName, agentCount, agentNo)
 
 	poolOffsetVarName := poolName + "Offset"
@@ -119,12 +119,13 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 		select {
 		case <-timeoutTimer.C:
 			retryTimer.Stop()
-			kan.logger.Errorf("Node was not ready within %v", timeout)
-			return fmt.Errorf("Node was not ready within %v", timeout)
+			err := fmt.Errorf("Node was not ready within %v", timeout)
+			kan.logger.Errorf(err.Error())
+			return err
 		case <-retryTimer.C:
 			agentNode, err := client.GetNode(*vmName)
 			if err != nil {
-				kan.logger.Infof("Agent VM: %s status error: %v\n", *vmName, err)
+				kan.logger.Infof("Agent VM: %s status error: %v", *vmName, err)
 				retryTimer.Reset(retry)
 			} else if node.IsNodeReady(agentNode) {
 				kan.logger.Infof("Agent VM: %s is ready", *vmName)
