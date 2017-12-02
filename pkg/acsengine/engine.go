@@ -303,7 +303,10 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	if parametersMap, err = getParameters(containerService, t.ClassicMode, generatorCode); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
+
 	var parameterBytes []byte
+	// TODO use our own encoder with SetEscapeHTML to false
+	// https://golang.org/pkg/encoding/json/#Encoder.SetEscapeHTML
 	if parameterBytes, err = json.Marshal(parametersMap); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
