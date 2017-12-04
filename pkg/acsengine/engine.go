@@ -304,13 +304,15 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
-	var parameterBytes []byte
 	// TODO use our own encoder with SetEscapeHTML to false
 	// https://golang.org/pkg/encoding/json/#Encoder.SetEscapeHTML
-	if parameterBytes, err = json.Marshal(parametersMap); err != nil {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(parametersMap); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
-	parametersRaw = string(parameterBytes)
+	parametersRaw = string(buf.Bytes())
 
 	return templateRaw, parametersRaw, certsGenerated, err
 }

@@ -2,6 +2,7 @@ package acsengine
 
 import (
 	// "fmt"
+	"bytes"
 	"encoding/json"
 	"strings"
 )
@@ -55,11 +56,19 @@ func BuildAzureParametersFile(content string) (string, error) {
 	parametersAll["contentVersion"] = "1.0.0.0"
 	parametersAll["parameters"] = parametersMap
 
-	prettyprint, err := json.MarshalIndent(parametersAll, "", "  ")
-	if err != nil {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(parametersAll); err != nil {
 		return "", err
 	}
-	return string(prettyprint), nil
+	var bufIndent bytes.Buffer
+	if err := json.Indent(&bufIndent, buf.Bytes(), "", "  "); err != nil {
+		return "", err
+	}
+	prettyprint := string(bufIndent.Bytes())
+
+	return prettyprint, nil
 }
 
 func translateJSON(content string, translateParams [][]string, reverseTranslate bool) string {
