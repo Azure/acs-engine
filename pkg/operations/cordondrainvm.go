@@ -18,6 +18,7 @@ const (
 
 	// This is checked into K8s code but I was getting into vendoring issues so I copied it here instead
 	kubernetesOptimisticLockErrorMsg = "the object has been modified; please apply your changes to the latest version and try again"
+	cordonMaxRetries                 = 5
 )
 
 type drainOperation struct {
@@ -39,7 +40,7 @@ func SafelyDrainNode(az armhelpers.ACSEngineClient, logger *log.Entry, masterURL
 
 	//Mark the node unschedulable
 	var node *v1.Node
-	for i := 0; i < 5; i++ {
+	for i := 0; i < cordonMaxRetries; i++ {
 		node, err = client.GetNode(nodeName)
 		if err != nil {
 			return err
