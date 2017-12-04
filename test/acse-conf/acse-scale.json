@@ -5,6 +5,12 @@
     },
     {
       "cluster_definition": "azure-cni/k8s-scaledown.json"
+    },
+    {
+      "cluster_definition": "azure-cni/k8s-vnet-scaleup.json"
+    },
+    {
+      "cluster_definition": "azure-cni/k8s-vnet-scaledown.json"
     }
   ]
 }
