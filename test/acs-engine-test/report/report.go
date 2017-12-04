@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 // ErrorInfo represents the CI error
@@ -149,7 +151,7 @@ func (h *Manager) addFailure(key string, locations map[string]int) {
 // CreateTestReport TBD needs definition
 func (h *Manager) CreateTestReport(filepath string) error {
 	h.Duration = time.Now().UTC().Sub(h.StartTime).String()
-	data, err := json.MarshalIndent(h, "", "  ")
+	data, err := helpers.JSONMarshalIndent(h, "", "  ", false)
 	if err != nil {
 		return err
 	}

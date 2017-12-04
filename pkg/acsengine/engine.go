@@ -20,6 +20,7 @@ import (
 
 	//log "github.com/sirupsen/logrus"
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Masterminds/semver"
 	"github.com/ghodss/yaml"
@@ -304,15 +305,11 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 
-	// TODO use our own encoder with SetEscapeHTML to false
-	// https://golang.org/pkg/encoding/json/#Encoder.SetEscapeHTML
-	var buf bytes.Buffer
-	enc := json.NewEncoder(&buf)
-	enc.SetEscapeHTML(false)
-	if err := enc.Encode(parametersMap); err != nil {
+	j, err := helpers.JSONMarshal(parametersMap, false)
+	if err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
-	parametersRaw = string(buf.Bytes())
+	parametersRaw = string(j)
 
 	return templateRaw, parametersRaw, certsGenerated, err
 }
