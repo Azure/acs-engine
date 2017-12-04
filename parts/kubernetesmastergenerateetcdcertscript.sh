@@ -35,19 +35,21 @@ ETCD_CLIENT_KEY_FILE="${ETCD_CLIENT_KEY_FILE:=/etcdcerts/etcd-client-key-file}"
 ETCD_PEER_CERT_FILE="${ETCD_PEER_CERT_FILE:=/etcdcerts/etcd-peer-cert-file}"
 ETCD_PEER_KEY_FILE="${ETCD_PEER_KEY_FILE:=/etcdcerts/etcd-peer-key-file}"
 
+echo subjectAltName = IP:127.0.0.1 > extfile.cnf
+
 # generate root CA
 openssl genrsa -out $ETCD_CA_KEY 2048
 openssl req -new -x509 -days 1826 -key $ETCD_CA_KEY -out $ETCD_CA_CRT -subj '/CN=etcdCA'
 # generate new cert
 openssl genrsa -out $ETCD_SERVER_KEY 2048
 openssl req -new -key $ETCD_SERVER_KEY -out $ETCD_SERVER_CSR -subj '/CN=127.0.0.1/O=system:masters'
-openssl x509 -req -days 730 -in $ETCD_SERVER_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_SERVER_CRT
+openssl x509 -req -days 730 -in $ETCD_SERVER_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_SERVER_CRT -extfile extfile.cnf
 openssl genrsa -out $ETCD_CLIENT_KEY 2048
 openssl req -new -key $ETCD_CLIENT_KEY -out $ETCD_CLIENT_CSR -subj '/CN=127.0.0.1/O=system:masters'
-openssl x509 -req -days 730 -in $ETCD_CLIENT_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_CLIENT_CRT
+openssl x509 -req -days 730 -in $ETCD_CLIENT_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_CLIENT_CRT -extfile extfile.cnf
 openssl genrsa -out $ETCD_PEER_KEY 2048
 openssl req -new -key $ETCD_PEER_KEY -out $ETCD_PEER_CSR -subj '/CN=127.0.0.1/O=system:masters'
-openssl x509 -req -days 730 -in $ETCD_PEER_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_PEER_CRT
+openssl x509 -req -days 730 -in $ETCD_PEER_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_PEER_CRT -extfile extfile.cnf
 
 retrycmd_if_failure() { for i in 1 2 3 4 5 6 7 8 9 10; do $@; [ $? -eq 0  ] && break || sleep 30; done ; }
 
