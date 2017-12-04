@@ -58,12 +58,12 @@ func BuildAzureParametersFile(content string) (string, error) {
 	parametersAll["contentVersion"] = "1.0.0.0"
 	parametersAll["parameters"] = parametersMap
 
-	b, err := helpers.JSONMarshalIndent(parametersAll, "", "  ", false)
+	prettyprint, err := helpers.JSONMarshalIndent(parametersAll, "", "  ", false)
 	if err != nil {
 		return "", err
 	}
 
-	return string(b), nil
+	return string(prettyprint), nil
 }
 
 func translateJSON(content string, translateParams [][]string, reverseTranslate bool) string {
