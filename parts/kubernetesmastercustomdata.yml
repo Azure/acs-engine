@@ -240,6 +240,7 @@ write_files:
     DOCKER_OPTS=
     KUBELET_NODE_LABELS={{GetMasterKubernetesLabels "',variables('labelResourceGroup'),'"}}
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
+    KUBELET_HARD_EVICTION_THRESHOLD={{WrapAsVariable "kubernetesHardEvictionThreshold"}}
     KUBELET_NODE_STATUS_UPDATE_FREQUENCY={{WrapAsVariable "kubernetesNodeStatusUpdateFrequency"}}
     KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD={{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
     KUBE_CTRL_MGR_POD_EVICTION_TIMEOUT={{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}
