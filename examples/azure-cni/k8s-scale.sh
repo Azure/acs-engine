@@ -12,6 +12,9 @@ fi
 
 OUTPUT="_output/${INSTANCE_NAME}"
 
+# allow nodes to run for a while before scaling
+sleep 180
+
 ./bin/acs-engine scale \
   --subscription-id ${SUBSCRIPTION_ID} \
   --deployment-dir ${OUTPUT} \
