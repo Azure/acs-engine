@@ -1,6 +1,7 @@
 package operations
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
@@ -21,6 +22,19 @@ var _ = Describe("Safely Drain node operation tests", func() {
 		mockClient.MockKubernetesClient.FailGetNode = true
 		err := SafelyDrainNode(mockClient, log.NewEntry(log.New()), "http://bad.com/", "bad", "node", time.Minute)
 		Expect(err).Should(HaveOccurred())
+	})
+	It("Should retry on resource conflict when updating node ", func() {
+		mockClient := &armhelpers.MockACSEngineClient{MockKubernetesClient: &armhelpers.MockKubernetesClient{}}
+		i := 3
+		mockClient.MockKubernetesClient.UpdateNodeFunc = func(node *v1.Node) (*v1.Node, error) {
+			if i > 0 {
+				i--
+				return node, fmt.Errorf(kubernetesOptimisticLockErrorMsg)
+			}
+			return node, nil
+		}
+		err := SafelyDrainNode(mockClient, log.NewEntry(log.New()), "http://bad.com/", "bad", "node", time.Minute)
+		Expect(err).ShouldNot(HaveOccurred())
 	})
 	It("Should return error messages for Failure to update node ", func() {
 		mockClient := &armhelpers.MockACSEngineClient{MockKubernetesClient: &armhelpers.MockKubernetesClient{}}

@@ -9,7 +9,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apiserver/pkg/registry/generic/registry"
 	"k8s.io/client-go/pkg/api/v1"
 )
 
@@ -17,9 +16,8 @@ const (
 	interval            = time.Second * 1
 	mirrorPodAnnotation = "kubernetes.io/config.mirror"
 
-	// This is checked into their code but I was getting into vendoring issues trying to get the code into the vendor directory
-	kubernetesOptimisticLockErrorMsg = 
-	"the object has been modified; please apply your changes to the latest version and try again"
+	// This is checked into K8s code but I was getting into vendoring issues so I copied it here instead
+	kubernetesOptimisticLockErrorMsg = "the object has been modified; please apply your changes to the latest version and try again"
 )
 
 type drainOperation struct {
@@ -40,8 +38,9 @@ func SafelyDrainNode(az armhelpers.ACSEngineClient, logger *log.Entry, masterURL
 	}
 
 	//Mark the node unschedulable
-	for int i := 0 ; i < 5; i++ {
-		node, err := client.GetNode(nodeName)
+	var node *v1.Node
+	for i := 0; i < 5; i++ {
+		node, err = client.GetNode(nodeName)
 		if err != nil {
 			return err
 		}
