@@ -3,7 +3,7 @@
     "etcdVersion": "[parameters('etcdVersion')]",
     "etcdClientCertFilepath": "/etc/kubernetes/certs/etcd-client.crt",
     "etcdClientKeyFilepath": "/etc/kubernetes/certs/etcd-client.key",
-    "etcdServerCertFilepath": "/etc/kubernetes/certs/etcd-server.cert",
+    "etcdServerCertFilepath": "/etc/kubernetes/certs/etcd-server.crt",
     "etcdServerKeyFilepath": "/etc/kubernetes/certs/etcd-server.key",
     "etcdPeerCertFilepath":[
         "/etc/kubernetes/certs/etcd-peer0.crt",
