@@ -36,7 +36,7 @@
           {{if lt $seq $.IPAddressCount}},{{end}}
           {{end}}
         ]
-{{if not IsVNETIntegrated}}
+{{if not IsAzureCNI}}
         ,
         "enableIPForwarding": true
 {{end}}

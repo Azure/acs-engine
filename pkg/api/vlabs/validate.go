@@ -207,7 +207,7 @@ func (o *OrchestratorProfile) ValidateForUpgrade() error {
 		return fmt.Errorf("Upgrade is not supported for orchestrator %s", o.OrchestratorType)
 	case Kubernetes:
 		switch o.OrchestratorVersion {
-		case common.KubernetesVersion1Dot6Dot12:
+		case common.KubernetesVersion1Dot6Dot13:
 		case common.KubernetesVersion1Dot7Dot10:
 		default:
 			return fmt.Errorf("Upgrade to Kubernetes version %s is not supported", o.OrchestratorVersion)
@@ -451,6 +451,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot8Dot0:  true,
 		common.KubernetesVersion1Dot8Dot1:  true,
 		common.KubernetesVersion1Dot8Dot2:  true,
+		common.KubernetesVersion1Dot8Dot4:  true,
 		common.KubernetesVersion1Dot7Dot0:  true,
 		common.KubernetesVersion1Dot7Dot1:  true,
 		common.KubernetesVersion1Dot7Dot2:  true,
@@ -463,6 +464,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot6Dot9:  true,
 		common.KubernetesVersion1Dot6Dot11: true,
 		common.KubernetesVersion1Dot6Dot12: true,
+		common.KubernetesVersion1Dot6Dot13: true,
 	}
 	// k8s versions that have cloudprovider rate limiting enabled (currently identical with backoff enabled versions)
 	ratelimitEnabledVersions := backoffEnabledVersions
@@ -473,9 +475,11 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' is an invalid subnet", a.ClusterSubnet)
 		}
 
-		ones, bits := subnet.Mask.Size()
-		if bits-ones <= 8 {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' must reserve at least 9 bits for nodes", a.ClusterSubnet)
+		if a.NetworkPolicy == "azure" {
+			ones, bits := subnet.Mask.Size()
+			if bits-ones <= 8 {
+				return fmt.Errorf("OrchestratorProfile.KubernetesConfig.ClusterSubnet '%s' must reserve at least 9 bits for nodes", a.ClusterSubnet)
+			}
 		}
 	}
 
@@ -592,6 +596,19 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	// Validate that we have a valid etcd version
 	if e := isValidEtcdVersion(a.EtcdVersion); e != nil {
 		return e
+	}
+
+	var ccmEnabledVersions = map[string]bool{
+		common.KubernetesVersion1Dot8Dot0: true,
+		common.KubernetesVersion1Dot8Dot1: true,
+		common.KubernetesVersion1Dot8Dot2: true,
+		common.KubernetesVersion1Dot8Dot4: true,
+	}
+
+	if a.UseCloudControllerManager != nil && *a.UseCloudControllerManager || a.CustomCcmImage != "" {
+		if !ccmEnabledVersions[k8sVersion] {
+			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.UseCloudControllerManager and OrchestratorProfile.KubernetesConfig.CustomCcmImage not available in kubernetes version %s", k8sVersion)
+		}
 	}
 
 	return nil

@@ -171,6 +171,7 @@ type KubernetesAddon struct {
 	Name       string                    `json:"name,omitempty"`
 	Enabled    *bool                     `json:"enabled,omitempty"`
 	Containers []KubernetesContainerSpec `json:"containers,omitempty"`
+	Config     map[string]string         `json:"config,omitempty"`
 }
 
 // IsEnabled returns if the addon is explicitly enabled, or the user-provided default if non explicitly enabled
@@ -193,6 +194,7 @@ type KubernetesConfig struct {
 	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
 	ServiceCIDR                      string            `json:"serviceCidr,omitempty"`
 	NodeStatusUpdateFrequency        string            `json:"nodeStatusUpdateFrequency,omitempty"`
+	HardEvictionThreshold            string            `json:"hardEvictionThreshold,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
@@ -206,6 +208,8 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitBucket     int               `json:"cloudProviderRateLimitBucket,omitempty"`
 	UseManagedIdentity               bool              `json:"useManagedIdentity,omitempty"`
 	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
+	CustomCcmImage                   string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager
+	UseCloudControllerManager        *bool             `json:"useCloudControllerManager,omitempty"`
 	UseInstanceMetadata              *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                       bool              `json:"enableRbac,omitempty"`
 	EnableAggregatedAPIs             bool              `json:"enableAggregatedAPIs,omitempty"`
@@ -558,8 +562,8 @@ func (o *OrchestratorProfile) IsDCOS() bool {
 	return o.OrchestratorType == DCOS
 }
 
-// IsVNETIntegrated returns true if Azure VNET integration is enabled
-func (o *OrchestratorProfile) IsVNETIntegrated() bool {
+// IsAzureCNI returns true if Azure VNET integration is enabled
+func (o *OrchestratorProfile) IsAzureCNI() bool {
 	switch o.OrchestratorType {
 	case Kubernetes:
 		return o.KubernetesConfig.NetworkPolicy == "azure"
@@ -592,6 +596,17 @@ func (k *KubernetesConfig) IsTillerEnabled() bool {
 		}
 	}
 	return tillerAddon.IsEnabled(DefaultTillerAddonEnabled)
+}
+
+// IsACIConnectorEnabled checks if the ACI Connector addon is enabled
+func (k *KubernetesConfig) IsACIConnectorEnabled() bool {
+	var aciConnectorAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultACIConnectorAddonName {
+			aciConnectorAddon = k.Addons[i]
+		}
+	}
+	return aciConnectorAddon.IsEnabled(DefaultACIConnectorAddonEnabled)
 }
 
 // IsDashboardEnabled checks if the kubernetes-dashboard addon is enabled

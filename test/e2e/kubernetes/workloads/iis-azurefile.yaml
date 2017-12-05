@@ -1,0 +1,20 @@
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: iis-azurefile
+  labels:
+    name: storage
+spec:
+  containers:
+  - image: microsoft/iis:windowsservercore-1709
+    name: iis-azurefile
+    volumeMounts:
+    - name: azurefilevol
+      mountPath: '/mnt/azure'
+  nodeSelector:
+    beta.kubernetes.io/os: windows
+  volumes:
+  - name: azurefilevol
+    persistentVolumeClaim:
+      claimName: pvc-azurefile

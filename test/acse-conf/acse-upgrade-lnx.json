@@ -1,16 +1,21 @@
 {
   "deployments": [
     {
-      "cluster_definition": "k8s-upgrade/v1.5.8.json",
-      "location": "westus"
+      "cluster_definition": "k8s-upgrade/v1.6.11.json",
+      "location": "centralus"
     },
     {
-      "cluster_definition": "k8s-upgrade/v1.6.11.json",
-      "location": "eastus"
+      "cluster_definition": "k8s-upgrade/v1.6.13.json",
+      "location": "westus2"
     },
     {
       "cluster_definition": "k8s-upgrade/v1.7.7.json",
-      "location": "westus"
+      "location": "eastus"
+    },
+    {
+      "cluster_definition": "k8s-upgrade/v1.7.9.json",
+      "location": "centralus"
     }
   ]
 }
+

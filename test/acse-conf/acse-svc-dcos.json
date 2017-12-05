@@ -58,11 +58,6 @@
     {
       "cluster_definition": "dcos.json",
       "category": "service-availability",
-      "location": "eastasia"
-    },
-    {
-      "cluster_definition": "dcos.json",
-      "category": "service-availability",
       "location": "southeastasia"
     },
     {

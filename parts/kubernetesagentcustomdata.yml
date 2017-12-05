@@ -113,6 +113,7 @@ write_files:
     KUBELET_REGISTER_SCHEDULABLE=true
     KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
+    KUBELET_HARD_EVICTION_THRESHOLD={{WrapAsVariable "kubernetesHardEvictionThreshold"}}
     KUBELET_NODE_STATUS_UPDATE_FREQUENCY={{WrapAsVariable "kubernetesNodeStatusUpdateFrequency"}}
     KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD={{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
     KUBE_CTRL_MGR_POD_EVICTION_TIMEOUT={{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}
@@ -128,6 +129,11 @@ write_files:
     KUBELET_FIX_43704_3=""
   {{end}}
 {{end}}
+{{if UseCloudControllerManager }}
+    CLOUD_PROVIDER=external
+{{else}}
+    CLOUD_PROVIDER=azure
+{{end}}
 
 - path: "/etc/systemd/system/kubelet.service"
   permissions: "0644"
@@ -142,7 +148,7 @@ write_files:
   content: |
     #!/bin/bash
 
-{{if IsVNETIntegrated}}
+{{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
 {{end}}

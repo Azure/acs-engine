@@ -59,7 +59,7 @@
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
-    {{if not IsVNETIntegrated}}
+    {{if not IsAzureCNI}}
         ,
         "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
     {{end}}
@@ -80,7 +80,7 @@
               "networkSecurityGroup": {
                 "id": "[variables('nsgID')]"
               }
-    {{if not IsVNETIntegrated}}
+    {{if not IsAzureCNI}}
               ,
               "routeTable": {
                 "id": "[variables('routeTableID')]"
@@ -92,7 +92,7 @@
       },
       "type": "Microsoft.Network/virtualNetworks"
     },
-    {{if not IsVNETIntegrated}}
+    {{if not IsAzureCNI}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",

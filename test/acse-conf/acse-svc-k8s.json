@@ -58,11 +58,6 @@
     {
       "cluster_definition": "kubernetes.json",
       "category": "service-availability",
-      "location": "eastasia"
-    },
-    {
-      "cluster_definition": "kubernetes.json",
-      "category": "service-availability",
       "location": "southeastasia"
     },
     {

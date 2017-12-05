@@ -1,0 +1,68 @@
+{
+   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+   "contentVersion": "1.0.0.0",
+   "parameters": {  
+		"artifactsLocation": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Artifacts Location - URL"
+			}
+        },
+		"apiVersionCompute": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Compute API Version"
+			}
+		},
+		"targetVMName":{
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Name of the vm to run the "
+			}
+		},
+		"extensionParameters": {
+			"type": "securestring",
+			"minLength": 0,
+			"metadata": {
+				"description": "Custom Parameter for Extension - for prometheus-grafana-k8s, this is empty"
+			}
+		},
+		"vmIndex": {
+			"type": "int",
+			"metadata": {
+				"description": "index in the pool of the current agent, used so that we can get the extension name right"
+			}
+		}
+   },
+   "variables": {  
+		"singleQuote": "'",
+		"initScriptUrl": "[concat(parameters('artifactsLocation'), 'extensions/prometheus-grafana-k8s/v1/prometheus-grafana-k8s.sh')]"
+   },
+   "resources": [  
+	{
+      "apiVersion": "[parameters('apiVersionCompute')]",
+      "dependsOn": [],
+      "location": "[resourceGroup().location]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+	  "name": "[concat(parameters('targetVMName'),'/cse', parameters('vmIndex'))]",
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+			"fileUris": [ 
+			   "[variables('initScriptUrl')]" 
+			 ]
+		},
+        "protectedSettings": {
+			"commandToExecute": "[concat('/bin/bash -c \"/bin/bash ./prometheus-grafana-k8s.sh ', variables('singleQuote'), parameters('extensionParameters'), variables('singleQuote'), ' >> /var/log/azure/prometheus-grafana-k8s.log 2>&1 &\" &')]"
+        }
+      }
+    }
+	],
+   "outputs": {  }
+}

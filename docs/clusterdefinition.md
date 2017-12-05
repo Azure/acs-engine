@@ -38,6 +38,7 @@ Here are the valid values for the orchestrator types:
 |serviceCidr|no|IP range for Service IPs, Default is "10.0.0.0/16". This range is never routed outside of a node so does not need to lie within clusterSubnet or the VNet.|
 |nonMasqueradeCidr|no|CIDR block to exclude from default source NAT, Default is "10.0.0.0/8".|
 |enableRbac|no|Enable [Kubernetes RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) (boolean - default == false) |
+|enableAggregatedAPIs|no|Enable [Kubernetes Aggregated APIs](https://kubernetes.io/docs/concepts/api-extension/apiserver-aggregation/).This is required by [Service Catalog](https://github.com/kubernetes-incubator/service-catalog/blob/master/README.md). (boolean - default == false) |
 |maxPods|no|The maximum number of pods per node. The minimum valid value, necessary for running kube-system pods, is 5. Default value is 30 when networkPolicy equals azure, 110 otherwise.|
 |gcHighThreshold|no|Sets the --image-gc-high-threshold value on the kublet configuration. Default is 85. [See kubelet Garbage Collection](https://kubernetes.io/docs/concepts/cluster-administration/kubelet-garbage-collection/) |
 |gcLowThreshold|no|Sets the --image-gc-low-threshold value on the kublet configuration. Default is 80. [See kubelet Garbage Collection](https://kubernetes.io/docs/concepts/cluster-administration/kubelet-garbage-collection/) |
@@ -94,7 +95,7 @@ More usefully, let's add some custom configuration to both of the above addons:
             "containers": [
                 {
                   "name": "tiller",
-                  "image": "myDockerHubUser/tiller:v3.0.0-alpha
+                  "image": "myDockerHubUser/tiller:v3.0.0-alpha",
                   "cpuRequests": "1",
                   "memoryRequests": "1024Mi",
                   "cpuLimits": "1",

@@ -103,11 +103,13 @@ Usage:
   acs-engine [command]
 
 Available Commands:
-  deploy      deploy an Azure Resource Manager template
-  generate    Generate an Azure Resource Manager template
-  help        Help about any command
-  version     Print the version of ACS-Engine
-  scale       Scale a existing cluster deployed by acs-engine
+  deploy        deploy an Azure Resource Manager template
+  generate      Generate an Azure Resource Manager template
+  help          Help about any command
+  orchestrators provide info about supported orchestrators
+  scale         scale a deployed cluster
+  upgrade       upgrades an existing Kubernetes cluster
+  version       Print the version of ACS-Engine
 
 Flags:
       --debug   enable verbose debug logs
@@ -115,6 +117,8 @@ Flags:
 
 Use "acs-engine [command] --help" for more information about a command.
 ```
+
+[Here is a reference to the information on Kubernetes cluster upgrade.](https://github.com/Azure/acs-engine/blob/master/examples/k8s-upgrade/README.md)
 
 [Here's a quick demo video showing the dev/build/test cycle with this setup.](https://www.youtube.com/watch?v=lc6UZmqxQMs)
 

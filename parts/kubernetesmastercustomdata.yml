@@ -22,9 +22,9 @@ write_files:
   content: |
     [Service]
     ExecStart=
-{{if .MasterProfile.IsCoreOS}}    
+{{if .MasterProfile.IsCoreOS}}
     ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/dockerd --host=fd:// --containerd=/var/run/docker/libcontainerd/docker-containerd.sock --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}} $DOCKER_SELINUX $DOCKER_OPTS $DOCKER_CGROUPS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
-{{else}}    
+{{else}}
     ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
 {{end}}
 - path: "/etc/docker/daemon.json"
@@ -100,6 +100,15 @@ write_files:
   content: !!binary |
     MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR
 
+{{if UseCloudControllerManager }}
+- path: /etc/kubernetes/manifests/cloud-controller-manager.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_KUBERNETES_CLOUD_CONTROLLER_MANAGER_B64_GZIP_STR
+{{end}}
+
 - path: /etc/kubernetes/manifests/kube-scheduler.yaml
   permissions: "0644"
   encoding: gzip
@@ -169,6 +178,15 @@ write_files:
     MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR
 {{end}}
 
+{{if .OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled}}
+- path: /etc/kubernetes/addons/aci-connector-deployment.yaml
+  permissions: "0644"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    MASTER_ADDON_ACI_CONNECTOR_DEPLOYMENT_B64_GZIP_STR
+{{end}}
+
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
 - path: /etc/kubernetes/addons/calico-daemonset.yaml
   permissions: "0644"
@@ -199,10 +217,10 @@ write_files:
     ExecStartPre=/bin/mkdir -p /tmp/kubectldir
     ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
     ExecStartPre=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
-{{if .MasterProfile.IsCoreOS}} 
+{{if .MasterProfile.IsCoreOS}}
     ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /opt/kubectl
     ExecStart=/bin/chmod a+x /opt/kubectl
-{{else}}    
+{{else}}
     ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
     ExecStart=/bin/chmod a+x /usr/local/bin/kubectl
 {{end}}
@@ -222,6 +240,7 @@ write_files:
     DOCKER_OPTS=
     KUBELET_NODE_LABELS={{GetMasterKubernetesLabels "',variables('labelResourceGroup'),'"}}
     KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
+    KUBELET_HARD_EVICTION_THRESHOLD={{WrapAsVariable "kubernetesHardEvictionThreshold"}}
     KUBELET_NODE_STATUS_UPDATE_FREQUENCY={{WrapAsVariable "kubernetesNodeStatusUpdateFrequency"}}
     KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD={{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
     KUBE_CTRL_MGR_POD_EVICTION_TIMEOUT={{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}
@@ -241,6 +260,11 @@ write_files:
   {{end}}
 {{else}}
     KUBELET_REGISTER_SCHEDULABLE={{WrapAsVariable "registerSchedulable"}}
+{{end}}
+{{if UseCloudControllerManager }}
+    CLOUD_PROVIDER=external
+{{else}}
+    CLOUD_PROVIDER=azure
 {{end}}
 
 - path: "/etc/systemd/system/kubelet.service"
@@ -264,7 +288,7 @@ write_files:
     iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443
 {{end}}
 
-{{if IsVNETIntegrated}}
+{{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
 {{end}}
@@ -280,7 +304,7 @@ write_files:
         AAD_ISSUER_HOST="sts.chinacloudapi.cn"
     fi
 
-    OIDC_ISSUER_URL="https://$AAD_ISSUER_HOST/$AAD_TENANT_ID/" 
+    OIDC_ISSUER_URL="https://$AAD_ISSUER_HOST/$AAD_TENANT_ID/"
     perl -pi -e "s|--oidc-client-id=\K(?=\")|$OIDC_CLIENT_ID| || s|--oidc-issuer-url=\K(?=\")|$OIDC_ISSUER_URL|" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{else}}
     sed -i "/--oidc-client-id\|--oidc-issuer-url\|--oidc-username-claim/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
@@ -308,6 +332,20 @@ write_files:
     sed -i "s|<kubernetesTillerMemoryRequests>|{{WrapAsVariable "kubernetesTillerMemoryRequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubernetesTillerCPULimit>|{{WrapAsVariable "kubernetesTillerCPULimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubernetesTillerMemoryLimit>|{{WrapAsVariable "kubernetesTillerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+{{end}}
+
+{{if .OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled}}
+    sed -i "s|<kubernetesACIConnectorSpec>|{{WrapAsVariable "kubernetesACIConnectorSpec"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorClientId>|{{WrapAsVariable "kubernetesACIConnectorClientId"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorClientKey>|{{WrapAsVariable "kubernetesACIConnectorClientKey"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorTenantId>|{{WrapAsVariable "kubernetesACIConnectorTenantId"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorSubscriptionId>|{{WrapAsVariable "kubernetesACIConnectorSubscriptionId"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorResourceGroup>|{{WrapAsVariable "kubernetesACIConnectorResourceGroup"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorRegion>|{{WrapAsVariable "kubernetesACIConnectorRegion"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorCPURequests>|{{WrapAsVariable "kubernetesACIConnectorCPURequests"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorMemoryRequests>|{{WrapAsVariable "kubernetesACIConnectorMemoryRequests"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorCPULimit>|{{WrapAsVariable "kubernetesACIConnectorCPULimit"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorMemoryLimit>|{{WrapAsVariable "kubernetesACIConnectorMemoryLimit"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
@@ -342,6 +380,16 @@ write_files:
     sed -i "/requestheader-username-headers/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{end}}
     sed -i "s|<etcdApiVersion>|{{ .OrchestratorProfile.GetAPIServerEtcdAPIVersion }}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+
+{{if UseCloudControllerManager }}
+    sed -i "s|<kubernetesCcmImageSpec>|{{WrapAsVariable "kubernetesCcmImageSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g; s|<kubernetesCtrlMgrRouteReconciliationPeriod>|{{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}|g" \
+      /etc/kubernetes/manifests/cloud-controller-manager.yaml
+
+    sed -i "/--\(cloud-config\|cloud-provider\|route-reconciliation-period\)=/d" \
+      /etc/kubernetes/manifests/kube-controller-manager.yaml
+    sed -i "/--\(cloud-config\|cloud-provider\)=/d" \
+      /etc/kubernetes/manifests/kube-apiserver.yaml
+{{end}}
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
@@ -395,7 +443,7 @@ write_files:
     useradd -U "etcd"
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
     passwd -u "$etcd" > /dev/null
-    systemctl daemon-reload 
+    systemctl daemon-reload
     systemctl enable etcd.service
 
 {{if .MasterProfile.IsCoreOS}}
@@ -416,11 +464,11 @@ write_files:
     for i in $(seq 1 20); do curl --max-time 60 http://127.0.0.1:2379/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
     mkdir -p /etc/kubernetes/manifests
     usermod -aG docker {{WrapAsVariable "username"}}
-    
+
     {{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
     sudo bash /etc/kubernetes/generate-proxy-certs.sh
     {{end}}
-    
+
     touch /opt/azure/containers/runcmd.complete
 
 coreos:
@@ -429,13 +477,13 @@ coreos:
       command: "start"
       content: |
         # Note: Initiated as a service since there is no runcmd within CoreOS on cloud-config/Ignition
-        [Unit] 
+        [Unit]
         Description=Start provision setup service
 
         [Service]
         ExecStart=/opt/azure/containers/provision-setup.sh
 {{else}}
-runcmd: 
+runcmd:
 - /opt/azure/containers/setup-etcd.sh
 - apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
 - /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',http://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
