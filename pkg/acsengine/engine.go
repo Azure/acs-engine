@@ -20,6 +20,7 @@ import (
 
 	//log "github.com/sirupsen/logrus"
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Masterminds/semver"
 	"github.com/ghodss/yaml"
@@ -303,8 +304,9 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	if parametersMap, err = getParameters(containerService, t.ClassicMode, generatorCode); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
+
 	var parameterBytes []byte
-	if parameterBytes, err = json.Marshal(parametersMap); err != nil {
+	if parameterBytes, err = helpers.JSONMarshal(parametersMap, false); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 	parametersRaw = string(parameterBytes)

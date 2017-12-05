@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/remote"
@@ -270,7 +271,7 @@ func (c *Cluster) InstallMarathonApp(filepath string, sleep, duration time.Durat
 		}
 	}
 
-	appJSON, err := json.Marshal(app)
+	appJSON, err := helpers.JSONMarshal(app, false)
 	if err != nil {
 		log.Printf("Error marshalling json:%s\n", err)
 		return port, err

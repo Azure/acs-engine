@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 
+	"github.com/Azure/acs-engine/pkg/helpers"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
@@ -48,7 +48,7 @@ func getHumanVersion() string {
 }
 
 func getJSONVersion() string {
-	jsonVersion, _ := json.MarshalIndent(version, "", "  ")
+	jsonVersion, _ := helpers.JSONMarshalIndent(version, "", "  ", false)
 	return string(jsonVersion)
 }
 
