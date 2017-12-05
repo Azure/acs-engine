@@ -16,8 +16,8 @@ K8S_ETCD_SERVER_KEY_FILEPATH="${K8S_ETCD_SERVER_KEY_FILEPATH:=/etc/kubernetes/ce
 ETCD_PEER_KEY="${ETCD_PEER_KEY:=/tmp/etcd-peer.key}"
 ETCD_PEER_CSR="${ETCD_PEER_CSR:=/tmp/etcd-peer.csr}"
 ETCD_PEER_CRT="${ETCD_PEER_CRT:=/tmp/etcd-peer.crt}"
-K8S_ETCD_PEER_CRT_FILEPATH="${K8S_ETCD_PEER_CRT_FILEPATH:=/etc/kubernetes/certs/etcd-peer.crt}"
-K8S_ETCD_PEER_KEY_FILEPATH="${K8S_ETCD_PEER_KEY_FILEPATH:=/etc/kubernetes/certs/etcd-peer.key}"
+K8S_ETCD_PEER_CRT_FILEPATH="${K8S_ETCD_PEER_CRT_FILEPATH:=/etc/kubernetes/certs/etcd-peer${1}.crt}"
+K8S_ETCD_PEER_KEY_FILEPATH="${K8S_ETCD_PEER_KEY_FILEPATH:=/etc/kubernetes/certs/etcd-peer${1}.key}"
 
 # etcd tls client certs
 ETCD_CLIENT_KEY="${ETCD_CLIENT_KEY:=/tmp/etcd-client.key}"
@@ -32,8 +32,8 @@ ETCD_SERVER_CERT_FILE="${ETCD_SERVER_CERT_FILE:=/etcdcerts/etcd-server-cert-file
 ETCD_SERVER_KEY_FILE="${ETCD_SERVER_KEY_FILE:=/etcdcerts/etcd-server-key-file}"
 ETCD_CLIENT_CERT_FILE="${ETCD_CLIENT_CERT_FILE:=/etcdcerts/etcd-client-cert-file}"
 ETCD_CLIENT_KEY_FILE="${ETCD_CLIENT_KEY_FILE:=/etcdcerts/etcd-client-key-file}"
-ETCD_PEER_CERT_FILE="${ETCD_PEER_CERT_FILE:=/etcdcerts/etcd-peer-cert-file}"
-ETCD_PEER_KEY_FILE="${ETCD_PEER_KEY_FILE:=/etcdcerts/etcd-peer-key-file}"
+ETCD_PEER_CERT_FILE="${ETCD_PEER_CERT_FILE:=/etcdcerts/etcd-peer-cert-file-${1}}"
+ETCD_PEER_KEY_FILE="${ETCD_PEER_KEY_FILE:=/etcdcerts/etcd-peer-key-file-${1}}"
 
 echo subjectAltName = IP:127.0.0.1 > extfile.cnf
 
@@ -81,13 +81,13 @@ write_certs_to_disk_with_retry() {
 # block until all etcd is ready
 retrycmd_if_failure etcdctl cluster-health
 # Make etcd keys, adding a leading whitespace because etcd won't accept a val that begins with a '-' (hyphen)!
+etcdctl mk $ETCD_PEER_KEY_FILE " $(cat ${ETCD_PEER_KEY})"
+etcdctl mk $ETCD_PEER_CERT_FILE " $(cat ${ETCD_PEER_CRT})"
 if etcdctl mk $ETCD_REQUESTHEADER_CA " $(cat ${ETCD_CA_CRT})"; then
     etcdctl mk $ETCD_SERVER_KEY_FILE " $(cat ${ETCD_SERVER_KEY})"
     etcdctl mk $ETCD_SERVER_CERT_FILE " $(cat ${ETCD_SERVER_CRT})"
     etcdctl mk $ETCD_CLIENT_KEY_FILE " $(cat ${ETCD_CLIENT_KEY})"
     etcdctl mk $ETCD_CLIENT_CERT_FILE " $(cat ${ETCD_CLIENT_CRT})"
-    etcdctl mk $ETCD_PEER_KEY_FILE " $(cat ${ETCD_PEER_KEY})"
-    etcdctl mk $ETCD_PEER_CERT_FILE " $(cat ${ETCD_PEER_CRT})"
     sleep 5
     write_certs_to_disk_with_retry
 # If the etcdtl mk command failed, that means the key already exists
