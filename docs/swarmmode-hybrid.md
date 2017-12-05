@@ -22,7 +22,7 @@ SSH into one of the masters (`ssh yourlinuxuser@masterfqdn.yourregion.cloudapp.a
 
 ![](images/swarmmode-hybrid-docker-node-ls.png)
 
-> NOTE - if you only see the Linux masters and agents, a working solution is to reimage the Windows agents scale set - that is restoring the VMs to the initial state and restart them. This will reapply all the steps in the installation, [mainly this one that installs the container host and joins the Swarm](https://github.com/Azure/acs-engine/blob/master/parts/Install-ContainerHost-And-Join-Swarm.ps1).
+> NOTE - if you only see the Linux masters and agents, a working solution is to reimage the Windows agents scale set - that is restoring the VMs to the initial state and restart them. This will reapply all the steps in the installation, [mainly this one that installs the container host and joins the Swarm](https://github.com/Azure/acs-engine/blob/master/parts/swarm/Install-ContainerHost-And-Join-Swarm.ps1).
 
 Now you can inspect one of the Windows agents with `docker node inspect <hostname or id of node>`:
 
