@@ -7,16 +7,16 @@
     "etcdServerKeyFilepath": "/etc/kubernetes/certs/etcd-server.key",
     "etcdPeerCertFilepath":[
         "/etc/kubernetes/certs/etcd-peer0.crt",
-        "/etc/kubernetes/certs/etcd-peer1.crt"
-        "/etc/kubernetes/certs/etcd-peer2.crt"
-        "/etc/kubernetes/certs/etcd-peer3.crt"
+        "/etc/kubernetes/certs/etcd-peer1.crt",
+        "/etc/kubernetes/certs/etcd-peer2.crt",
+        "/etc/kubernetes/certs/etcd-peer3.crt",
         "/etc/kubernetes/certs/etcd-peer4.crt"
     ],
     "etcdPeerKeyFilepath":[
         "/etc/kubernetes/certs/etcd-peer0.key",
-        "/etc/kubernetes/certs/etcd-peer1.key"
-        "/etc/kubernetes/certs/etcd-peer2.key"
-        "/etc/kubernetes/certs/etcd-peer3.key"
+        "/etc/kubernetes/certs/etcd-peer1.key",
+        "/etc/kubernetes/certs/etcd-peer2.key",
+        "/etc/kubernetes/certs/etcd-peer3.key",
         "/etc/kubernetes/certs/etcd-peer4.key"
     ],
     "etcdCaFilepath": "/etc/kubernetes/certs/etcd-ca.crt",
