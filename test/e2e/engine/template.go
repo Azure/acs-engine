@@ -9,6 +9,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -150,7 +151,7 @@ func (e *Engine) OrchestratorVersion1Dot8AndUp() bool {
 
 // Write will write the cluster definition to disk
 func (e *Engine) Write() error {
-	json, err := json.Marshal(e.ClusterDefinition)
+	json, err := helpers.JSONMarshal(e.ClusterDefinition, true)
 	if err != nil {
 		log.Printf("Error while trying to serialize Container Service object to json:%s\n%+v\n", err, e.ClusterDefinition)
 		return err
