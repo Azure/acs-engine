@@ -99,93 +99,9 @@ spec:
             - managed
 ```
 
-<a name="feat-calico"></a>
-
-## Network Policy Enforcement with Calico
-
-Using the default configuration, Kubernetes allows communication between all
-Pods within a cluster. To ensure that Pods can only be accessed by authorized
-Pods, a policy enforcement is needed. To enable policy enforcement using Calico refer to the [cluster definition](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig) document under networkPolicy. There is also a reference cluster definition available [here](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy/kubernetes-calico.json).
-
-This will deploy a Calico node controller to every instance of the cluster
-using a Kubernetes DaemonSet. After a successful deployment you should be able
-to see these Pods running in your cluster:
-
-```
-kubectl get pods --namespace kube-system -l k8s-app=calico-node -o wide
-NAME                READY     STATUS    RESTARTS   AGE       IP             NODE
-calico-node-034zh   2/2       Running   0          2h        10.240.255.5   k8s-master-30179930-0
-calico-node-qmr7n   2/2       Running   0          2h        10.240.0.4     k8s-agentpool1-30179930-1
-calico-node-z3p02   2/2       Running   0          2h        10.240.0.5     k8s-agentpool1-30179930-0
-```
-
-Per default Calico still allows all communication within the cluster. Using Kubernetes' NetworkPolicy API, you can define stricter policies. Good resources to get information about that are:
-
-* [NetworkPolicy User Guide](https://kubernetes.io/docs/user-guide/networkpolicies/)
-* [NetworkPolicy Example Walkthrough](https://kubernetes.io/docs/getting-started-guides/network-policy/walkthrough/)
-* [Calico Kubernetes](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy)
-
-<a name="feat-custom-vnet"></a>
-
-## Custom VNET
-
-ACS Engine supports deploying into an existing VNET. Operators must specify the ARM path/id of Subnets for the `masterProfile` and  any `agentPoolProfiles`. After the cluster is provisioned there are some required modifications to VNET Route Tables.
-
-Before provisioning, modify the `masterProfile` and `agentPoolProfiles` sections in the cluster definition to place masters and agents into your desired subnets:
-
-```json
-"masterProfile": {
-  ...
-  "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/MASTER_SUBNET_NAME",
-  "firstConsecutiveStaticIP": "10.239.255.239"
-  ...
-},
-...
-"agentPoolProfiles": [
-  {
-    ...
-    "name": "agentpri",
-    "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/AGENT_SUBNET_NAME",
-    ...
-  },
-```
-
-After a cluster finishes provisioning, fetch the id of the Route Table resource from `Microsoft.Network` provider in your new cluster's Resource Group.
-
-The route table resource id is of the format: `/subscriptions/SUBSCRIPTIONID/resourceGroups/RESOURCEGROUPNAME/providers/Microsoft.Network/routeTables/ROUTETABLENAME`
-
-Existing subnets will need to use the Kubernetes-based Route Table so that machines can route to Kubernetes-based workloads.
-
-Update properties of all subnets in the existing VNET he route table resource by appending the following to subnet properties:
-
-```json
-"routeTable": {
-        "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/k8s-master-<SOMEID>-routetable>"
-      }
-```
-
-E.g.:
-```json
-"subnets": [
-    {
-      "name": "subnetname",
-      "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/virtualNetworks/<VirtualNetworkName>/subnets/<SubnetName>",
-      "properties": {
-        "provisioningState": "Succeeded",
-        "addressPrefix": "10.240.0.0/16",
-        "routeTable": {
-          "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/k8s-master-<SOMEID>-routetable"
-        }
-      ...
-      }
-      ...
-    }
-]
-```
-
 ## Using Azure integrated networking (CNI)
 
-Kubernetes clusters can be configured to use the [Azure CNI plugin](https://github.com/Azure/azure-container-networking) which provides a Azure native networking experience. Pods will receive IP addresses directly from the vnet subnet on which they're hosted. To enable Azure integrated networking the following must be added to your cluster definition:
+Kubernetes clusters are configured by default to use the [Azure CNI plugin](https://github.com/Azure/azure-container-networking) which provides an Azure native networking experience. Pods will receive IP addresses directly from the vnet subnet on which they're hosted. If the api model doesn't specify explicitly, acs-engine will automatically provide the following `networkPolicy` configuration in `kubernetesConfig`:
 
 ```
       "kubernetesConfig": {
@@ -218,4 +134,91 @@ When using Azure integrated networking the maxPods setting will be set to 30 by 
       "kubernetesConfig": {
         "maxPods": 50
       }
+```
+
+<a name="feat-calico"></a>
+
+## Network Policy Enforcement with Calico
+
+Using the default configuration, Kubernetes allows communication between all
+Pods within a cluster. To ensure that Pods can only be accessed by authorized
+Pods, a policy enforcement is needed. To enable policy enforcement using Calico refer to the [cluster definition](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig) document under networkPolicy. There is also a reference cluster definition available [here](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy/kubernetes-calico.json).
+
+This will deploy a Calico node controller to every instance of the cluster
+using a Kubernetes DaemonSet. After a successful deployment you should be able
+to see these Pods running in your cluster:
+
+```
+kubectl get pods --namespace kube-system -l k8s-app=calico-node -o wide
+NAME                READY     STATUS    RESTARTS   AGE       IP             NODE
+calico-node-034zh   2/2       Running   0          2h        10.240.255.5   k8s-master-30179930-0
+calico-node-qmr7n   2/2       Running   0          2h        10.240.0.4     k8s-agentpool1-30179930-1
+calico-node-z3p02   2/2       Running   0          2h        10.240.0.5     k8s-agentpool1-30179930-0
+```
+
+Per default Calico still allows all communication within the cluster. Using Kubernetes' NetworkPolicy API, you can define stricter policies. Good resources to get information about that are:
+
+* [NetworkPolicy User Guide](https://kubernetes.io/docs/user-guide/networkpolicies/)
+* [NetworkPolicy Example Walkthrough](https://kubernetes.io/docs/getting-started-guides/network-policy/walkthrough/)
+* [Calico Kubernetes](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy)
+
+<a name="feat-custom-vnet"></a>
+
+## Custom VNET
+
+ACS Engine supports deploying into an existing VNET. Operators must specify the ARM path/id of Subnets for the `masterProfile` and  any `agentPoolProfiles`, as well as the first IP address to use for IP allocation in `firstConsecutiveStaticIP`. Additionally, to prevent source address NAT'ing within the VNET, we assign to the `vnetCidr` property in `masterProfile` the CIDR block that represents the usable address space in the existing VNET.
+
+Before provisioning, modify the `masterProfile` and `agentPoolProfiles` to match the above requirements, with the below being a representative example:
+
+```json
+"masterProfile": {
+  ...
+  "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/MASTER_SUBNET_NAME",
+  "firstConsecutiveStaticIP": "10.239.255.239",
+  "vnetCidr": "10.239.0.0/16",
+  ...
+},
+...
+"agentPoolProfiles": [
+  {
+    ...
+    "name": "agentpri",
+    "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/AGENT_SUBNET_NAME",
+    ...
+  },
+```
+
+### Kubenet Networking Custom VNET
+
+If you're not using Azure CNI (e.g., `"networkPolicy": "nono"` in the `kubernetesConfig` api model configuration object): After a custom VNET-configured cluster finishes provisioning, fetch the id of the Route Table resource from `Microsoft.Network` provider in your new cluster's Resource Group.
+
+The route table resource id is of the format: `/subscriptions/SUBSCRIPTIONID/resourceGroups/RESOURCEGROUPNAME/providers/Microsoft.Network/routeTables/ROUTETABLENAME`
+
+Existing subnets will need to use the Kubernetes-based Route Table so that machines can route to Kubernetes-based workloads.
+
+Update properties of all subnets in the existing VNET he route table resource by appending the following to subnet properties:
+
+```json
+"routeTable": {
+        "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/k8s-master-<SOMEID>-routetable>"
+      }
+```
+
+E.g.:
+```json
+"subnets": [
+    {
+      "name": "subnetname",
+      "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/virtualNetworks/<VirtualNetworkName>/subnets/<SubnetName>",
+      "properties": {
+        "provisioningState": "Succeeded",
+        "addressPrefix": "10.240.0.0/16",
+        "routeTable": {
+          "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/k8s-master-<SOMEID>-routetable"
+        }
+      ...
+      }
+      ...
+    }
+]
 ```

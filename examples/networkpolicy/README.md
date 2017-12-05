@@ -2,6 +2,25 @@
 
 ## Overview
 
+By default (currently Linux clusters only), CNI implementation is the native Azure package:
+
+https://github.com/Azure/azure-container-networking
+
+Also available is the Kubernetes-native kubenet implementation, which is declared as configuration thusly:
+
+```
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "kubernetesConfig": {
+        "networkPolicy": "none"
+      }
+```
+
+Read below for the Calico NetworkPolicy option.
+
+## Calico
+
 The kubernetes-calico deployment template enables Calico networking and policies for the ACS-engine cluster via `"networkPolicy": "calico"` being present inside the `kubernetesConfig`.
 
 ```
