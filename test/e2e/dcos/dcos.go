@@ -271,7 +271,7 @@ func (c *Cluster) InstallMarathonApp(filepath string, sleep, duration time.Durat
 		}
 	}
 
-	appJSON, err := helpers.JSONMarshal(app, false)
+	appJSON, err := helpers.JSONMarshal(app, true)
 	if err != nil {
 		log.Printf("Error marshalling json:%s\n", err)
 		return port, err
