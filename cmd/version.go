@@ -48,7 +48,7 @@ func getHumanVersion() string {
 }
 
 func getJSONVersion() string {
-	jsonVersion, _ := helpers.JSONMarshalIndent(version, "", "  ", false)
+	jsonVersion, _ := helpers.JSONMarshalIndent(version, "", "  ", true)
 	return string(jsonVersion)
 }
 

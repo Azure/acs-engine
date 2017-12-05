@@ -151,7 +151,7 @@ func (h *Manager) addFailure(key string, locations map[string]int) {
 // CreateTestReport TBD needs definition
 func (h *Manager) CreateTestReport(filepath string) error {
 	h.Duration = time.Now().UTC().Sub(h.StartTime).String()
-	data, err := helpers.JSONMarshalIndent(h, "", "  ", false)
+	data, err := helpers.JSONMarshalIndent(h, "", "  ", true)
 	if err != nil {
 		return err
 	}

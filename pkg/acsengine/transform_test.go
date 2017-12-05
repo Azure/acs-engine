@@ -112,7 +112,7 @@ func TestNormalizeResourcesForK8sAgentUpgrade(t *testing.T) {
 }
 
 func ValidateTemplate(templateMap map[string]interface{}, expectedFileContents []byte, testFileName string) {
-	output, e := helpers.JSONMarshal(templateMap, false)
+	output, e := helpers.JSONMarshal(templateMap, true)
 	Expect(e).To(BeNil())
 	prettyOutput, e := PrettyPrintArmTemplate(string(output))
 	Expect(e).To(BeNil())

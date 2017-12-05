@@ -45,7 +45,7 @@ func (oc *orchestratorsCmd) run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	data, err := helpers.JSONMarshalIndent(orchs, "", "  ", false)
+	data, err := helpers.JSONMarshalIndent(orchs, "", "  ", true)
 	if err != nil {
 		return err
 	}

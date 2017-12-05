@@ -223,7 +223,7 @@ func (a *Apiloader) SerializeContainerService(containerService *ContainerService
 		armContainerService := &V20160930ARMContainerService{}
 		armContainerService.ContainerService = v20160930ContainerService
 		armContainerService.APIVersion = version
-		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", false)
+		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", true)
 		if err != nil {
 			return nil, err
 		}
@@ -234,7 +234,7 @@ func (a *Apiloader) SerializeContainerService(containerService *ContainerService
 		armContainerService := &V20160330ARMContainerService{}
 		armContainerService.ContainerService = v20160330ContainerService
 		armContainerService.APIVersion = version
-		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", false)
+		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", true)
 		if err != nil {
 			return nil, err
 		}
@@ -245,7 +245,7 @@ func (a *Apiloader) SerializeContainerService(containerService *ContainerService
 		armContainerService := &V20170131ARMContainerService{}
 		armContainerService.ContainerService = v20170131ContainerService
 		armContainerService.APIVersion = version
-		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", false)
+		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", true)
 		if err != nil {
 			return nil, err
 		}
@@ -256,7 +256,7 @@ func (a *Apiloader) SerializeContainerService(containerService *ContainerService
 		armContainerService := &V20170701ARMContainerService{}
 		armContainerService.ContainerService = v20170701ContainerService
 		armContainerService.APIVersion = version
-		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", false)
+		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", true)
 		if err != nil {
 			return nil, err
 		}
@@ -267,7 +267,7 @@ func (a *Apiloader) SerializeContainerService(containerService *ContainerService
 		armContainerService := &VlabsARMContainerService{}
 		armContainerService.ContainerService = vlabsContainerService
 		armContainerService.APIVersion = version
-		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", false)
+		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", true)
 		if err != nil {
 			return nil, err
 		}
@@ -285,7 +285,7 @@ func (a *Apiloader) serializeHostedContainerService(containerService *ContainerS
 		armContainerService := &V20170831ARMManagedContainerService{}
 		armContainerService.ManagedCluster = v20170831ContainerService
 		armContainerService.APIVersion = version
-		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", false)
+		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", true)
 		if err != nil {
 			return nil, err
 		}

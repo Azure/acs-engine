@@ -40,7 +40,7 @@ func PrettyPrintJSON(content string) (string, error) {
 	if err := json.Unmarshal([]byte(content), &data); err != nil {
 		return "", err
 	}
-	prettyprint, err := helpers.JSONMarshalIndent(data, "", "  ", false)
+	prettyprint, err := helpers.JSONMarshalIndent(data, "", "  ", true)
 	if err != nil {
 		return "", err
 	}
@@ -58,7 +58,7 @@ func BuildAzureParametersFile(content string) (string, error) {
 	parametersAll["contentVersion"] = "1.0.0.0"
 	parametersAll["parameters"] = parametersMap
 
-	prettyprint, err := helpers.JSONMarshalIndent(parametersAll, "", "  ", false)
+	prettyprint, err := helpers.JSONMarshalIndent(parametersAll, "", "  ", true)
 	if err != nil {
 		return "", err
 	}

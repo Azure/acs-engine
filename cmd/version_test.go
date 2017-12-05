@@ -23,7 +23,7 @@ var _ = Describe("the version command", func() {
 	It("should print a json version of ACS-Engine", func() {
 		output := getVersion("json")
 
-		expectedOutput, _ := helpers.JSONMarshalIndent(version, "", "  ", false)
+		expectedOutput, _ := helpers.JSONMarshalIndent(version, "", "  ", true)
 
 		Expect(output).Should(Equal(string(expectedOutput)))
 	})

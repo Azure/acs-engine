@@ -306,7 +306,7 @@ func (t *TemplateGenerator) GenerateTemplate(containerService *api.ContainerServ
 	}
 
 	var parameterBytes []byte
-	if parameterBytes, err = helpers.JSONMarshal(parametersMap, false); err != nil {
+	if parameterBytes, err = helpers.JSONMarshal(parametersMap, true); err != nil {
 		return templateRaw, parametersRaw, certsGenerated, err
 	}
 	parametersRaw = string(parameterBytes)

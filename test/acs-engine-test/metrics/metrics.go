@@ -19,7 +19,7 @@ func AddMetric(endpoint, namespace, metric string, count int64, dims map[string]
 		Namespace: namespace,
 		Metric:    metric,
 		Dims:      dims}
-	data, err := helpers.JSONMarshal(bucket, false)
+	data, err := helpers.JSONMarshal(bucket, true)
 	if err != nil {
 		return err
 	}
