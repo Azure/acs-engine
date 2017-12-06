@@ -299,7 +299,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
 		}
 		if o.KubernetesConfig.NetworkPolicy == "" {
-			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			if a.HasWindows() {
+				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicyWindows
+			} else {
+				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			}
 		}
 		if o.KubernetesConfig.ClusterSubnet == "" {
 			if o.IsAzureCNI() {
