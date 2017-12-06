@@ -8,6 +8,33 @@ import (
 
 // KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes versions (major.minor.patch)
 var KubeConfigs = map[string]map[string]string{
+	common.KubernetesVersion1Dot9Beta1: {
+		"hyperkube": "hyperkube-amd64:v1.9.0-beta.1",
+		"ccm":       "cloud-controller-manager-amd64:v1.9.0",
+		DefaultDashboardAddonName:   "kubernetes-dashboard-amd64:v1.9.0",
+		"exechealthz":               "exechealthz-amd64:1.2",
+		"addonresizer":              "addon-resizer:1.7",
+		"heapster":                  "heapster-amd64:v1.4.2",
+		"dns":                       "k8s-dns-kube-dns-amd64:1.14.5",
+		"addonmanager":              "kube-addon-manager-amd64:v6.4-beta.2",
+		"dnsmasq":                   "k8s-dns-dnsmasq-nanny-amd64:1.14.5",
+		"pause":                     "pause-amd64:3.0",
+		DefaultTillerAddonName:      DefaultTillerImage,
+		DefaultReschedulerAddonName: DefaultReschedulerImage,
+		"windowszip":                "v1.8.4-1int.zip", // TODO add Windows image
+		"nodestatusfreq":            DefaultKubernetesNodeStatusUpdateFrequency,
+		"nodegraceperiod":           DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
+		"podeviction":               DefaultKubernetesCtrlMgrPodEvictionTimeout,
+		"routeperiod":               DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
+		"backoffretries":            strconv.Itoa(DefaultKubernetesCloudProviderBackoffRetries),
+		"backoffjitter":             strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffJitter, 'f', -1, 64),
+		"backoffduration":           strconv.Itoa(DefaultKubernetesCloudProviderBackoffDuration),
+		"backoffexponent":           strconv.FormatFloat(DefaultKubernetesCloudProviderBackoffExponent, 'f', -1, 64),
+		"ratelimitqps":              strconv.FormatFloat(DefaultKubernetesCloudProviderRateLimitQPS, 'f', -1, 64),
+		"ratelimitbucket":           strconv.Itoa(DefaultKubernetesCloudProviderRateLimitBucket),
+		"gchighthreshold":           strconv.Itoa(DefaultKubernetesGCHighThreshold),
+		"gclowthreshold":            strconv.Itoa(DefaultKubernetesGCLowThreshold),
+	},
 	common.KubernetesVersion1Dot8Dot4: {
 		"hyperkube": "hyperkube-amd64:v1.8.4",
 		"ccm":       "cloud-controller-manager-amd64:v1.8.4",
