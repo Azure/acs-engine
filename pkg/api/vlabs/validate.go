@@ -727,6 +727,11 @@ func validateVNET(a *Properties) error {
 		}
 	}
 	if isCustomVNET {
+		if a.OrchestratorProfile.IsAzureCNI() {
+			if a.MasterProfile.VnetCidr == "" {
+				return fmt.Errorf("MasterProfile.VnetCidr required for custom VNET configuration")
+			}
+		}
 		subscription, resourcegroup, vnetname, _, e := GetVNETSubnetIDComponents(a.MasterProfile.VnetSubnetID)
 		if e != nil {
 			return e
