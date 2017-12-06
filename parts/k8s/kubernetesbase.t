@@ -28,12 +28,12 @@
       {{template "windowsparams.t"}},
     {{end}}
     {{template "masterparams.t" .}},
-    {{template "kubernetesparams.t" .}}
+    {{template "k8s/kubernetesparams.t" .}}
   },
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}
         "{{.Name}}Index": {{$index}},
-        {{template "kubernetesagentvars.t" .}}
+        {{template "k8s/kubernetesagentvars.t" .}}
         {{if .IsStorageAccount}}
           {{if .HasDisks}}
             "{{.Name}}DataAccountName": "[concat(variables('storageAccountBaseName'), 'data{{$index}}')]",
@@ -41,19 +41,19 @@
           "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]",
         {{end}}
     {{end}}
-    {{template "kubernetesmastervars.t" .}}
+    {{template "k8s/kubernetesmastervars.t" .}}
   },
   "resources": [
     {{ range $index, $element := .AgentPoolProfiles}}
       {{if $index}}, {{end}}
       {{if .IsWindows}}
-        {{template "kuberneteswinagentresourcesvmas.t" .}}
+        {{template "k8s/kuberneteswinagentresourcesvmas.t" .}}
       {{else}}
-        {{template "kubernetesagentresourcesvmas.t" .}}
+        {{template "k8s/kubernetesagentresourcesvmas.t" .}}
       {{end}}
     {{end}}
     {{if not IsHostedMaster}}
-      ,{{template "kubernetesmasterresources.t" .}}
+      ,{{template "k8s/kubernetesmasterresources.t" .}}
     {{else}}
     ,{
       "apiVersion": "[variables('apiVersionDefault')]",

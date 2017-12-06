@@ -20,13 +20,13 @@
       },
       {{template "windowsparams.t"}},
     {{end}}
-    {{template "dcosparams.t" .}}
+    {{template "dcos/dcosparams.t" .}}
     {{template "masterparams.t" .}}
   },
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}
         "{{.Name}}Index": {{$index}},
-        {{template "dcosagentvars.t" .}}
+        {{template "dcos/dcosagentvars.t" .}}
         {{if .IsStorageAccount}}
           "{{.Name}}StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),{{$index}})]",
           "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]",
@@ -36,25 +36,25 @@
         {{end}}
     {{end}}
     
-    {{template "dcosmastervars.t" .}}
+    {{template "dcos/dcosmastervars.t" .}}
   },
   "resources": [
     {{range .AgentPoolProfiles}}
       {{if .IsWindows}}
         {{if .IsAvailabilitySets}}
-          {{template "dcosWindowsAgentResourcesVmas.t" .}},
+          {{template "dcos/dcosWindowsAgentResourcesVmas.t" .}},
         {{else}}
-          {{template "dcosWindowsAgentResourcesVmss.t" .}},
+          {{template "dcos/dcosWindowsAgentResourcesVmss.t" .}},
         {{end}}
       {{else}}
         {{if .IsAvailabilitySets}}
-          {{template "dcosagentresourcesvmas.t" .}},
+          {{template "dcos/dcosagentresourcesvmas.t" .}},
         {{else}}
-          {{template "dcosagentresourcesvmss.t" .}},
+          {{template "dcos/dcosagentresourcesvmss.t" .}},
         {{end}}
       {{end}}
     {{end}}
-    {{template "dcosmasterresources.t" .}}
+    {{template "dcos/dcosmasterresources.t" .}}
   ],
   "outputs": {
     {{range .AgentPoolProfiles}}{{template "agentoutputs.t" .}}

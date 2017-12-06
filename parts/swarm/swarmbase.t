@@ -7,12 +7,12 @@
       {{template "windowsparams.t"}},
     {{end}}
     {{template "masterparams.t" .}}
-    {{template "swarmparams.t" .}}
+    {{template "swarm/swarmparams.t" .}}
   },
   "variables": {
     {{range $index, $agent := .AgentPoolProfiles}}
         "{{.Name}}Index": {{$index}},
-        {{template "swarmagentvars.t" .}}
+        {{template "swarm/swarmagentvars.t" .}}
         {{if .IsStorageAccount}}
           "{{.Name}}StorageAccountOffset": "[mul(variables('maxStorageAccountsPerAgent'),{{$index}})]",
           "{{.Name}}AccountName": "[concat(variables('storageAccountBaseName'), 'agnt{{$index}}')]",
@@ -22,25 +22,25 @@
         {{end}}
     {{end}}
 
-    {{template "swarmmastervars.t" .}}
+    {{template "swarm/swarmmastervars.t" .}}
   },
   "resources": [
     {{range .AgentPoolProfiles}}
       {{if .IsWindows}}
         {{if .IsAvailabilitySets}}
-          {{template "swarmwinagentresourcesvmas.t" .}},
+          {{template "swarm/swarmwinagentresourcesvmas.t" .}},
         {{else}}
-          {{template "swarmwinagentresourcesvmss.t" .}},
+          {{template "swarm/swarmwinagentresourcesvmss.t" .}},
         {{end}}
       {{else}}
         {{if .IsAvailabilitySets}}
-          {{template "swarmagentresourcesvmas.t" .}},
+          {{template "swarm/swarmagentresourcesvmas.t" .}},
         {{else}}
-          {{template "swarmagentresourcesvmss.t" .}},
+          {{template "swarm/swarmagentresourcesvmss.t" .}},
         {{end}}
       {{end}}      
     {{end}}
-    {{template "swarmmasterresources.t" .}}
+    {{template "swarm/swarmmasterresources.t" .}}
   ],
   "outputs": {
     {{range .AgentPoolProfiles}}{{template "agentoutputs.t" .}}

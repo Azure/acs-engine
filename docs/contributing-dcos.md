@@ -28,7 +28,7 @@ You should now have a clean yaml.
 under the `parts` directory, create a new file called `dcoscustomdataXXX.t` replacing `XXX` by the correct version number.  
 Paste the yaml from the previous step inside.  
 
-In the new file, under the `runcmd` section you should find 4 sucessive `curl` calls downloading some `.deb` packages followed by a bash script installing each one of them. This is handled by `parts\dcosprovision.sh` in ACS-Engine, so make sure the dependencies didn't change and replace the `curl` and `bash` calls by a link to the script.
+In the new file, under the `runcmd` section you should find 4 sucessive `curl` calls downloading some `.deb` packages followed by a bash script installing each one of them. This is handled by `parts\dcos\dcosprovision.sh` in ACS-Engine, so make sure the dependencies didn't change and replace the `curl` and `bash` calls by a link to the script.
 
 For example, in DC/OS 1.9:  
 ```yaml
@@ -89,11 +89,11 @@ DCOS110BootstrapDownloadURL: fmt.Sprintf(AzureEdgeDCOSBootstrapDownloadURL, "sta
 
 ### pkg/acsengine/engine.go
 
-- Around line 39, add `dcosCustomDataXXX    = "dcoscustomdataXXX.t"` variable
+- Around line 39, add `dcosCustomDataXXX    = "dcos/dcoscustomdataXXX.t"` variable
 
 Example for version 1.10:
 ```
-dcosCustomData110    = "dcoscustomdata110.t"
+dcosCustomData110    = "dcos/dcoscustomdata110.t"
 ```
 
 - Around line  578, add the code case block for your version.
