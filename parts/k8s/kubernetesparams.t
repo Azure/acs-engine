@@ -274,6 +274,27 @@
       },
       "type": "string"
     },
+    "kubernetesACIConnectorNodeName": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorNodeName"}}
+      "metadata": {
+        "description": "Node name for ACI Connector."
+      },
+      "type": "string"
+    },
+    "kubernetesACIConnectorOS": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorOS"}}
+      "metadata": {
+        "description": "OS for ACI Connector."
+      },
+      "type": "string"
+    },
+    "kubernetesACIConnectorTaint": {
+      {{PopulateClassicModeDefaultValue "kubernetesACIConnectorTaint"}}
+      "metadata": {
+        "description": "Taint for ACI Connector."
+      },
+      "type": "string"
+    },
     "kubernetesACIConnectorRegion": {
       {{PopulateClassicModeDefaultValue "kubernetesACIConnectorRegion"}}
       "metadata": {

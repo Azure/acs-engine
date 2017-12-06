@@ -335,12 +335,13 @@ write_files:
 {{end}}
 
 {{if .OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled}}
+    ACI_CONNECTOR_CREDENTIALS=$(printf "{\"clientId\": \"{{WrapAsVariable "kubernetesACIConnectorClientId"}}\", \"clientSecret\": \"{{WrapAsVariable "kubernetesACIConnectorClientKey"}}\", \"tenantId\": \"{{WrapAsVariable "kubernetesACIConnectorTenantId"}}\", \"subscriptionId\": \"{{WrapAsVariable "kubernetesACIConnectorSubscriptionId"}}\", \"activeDirectoryEndpointUrl\": \"https://login.microsoftonline.com\",\"resourceManagerEndpointUrl\": \"https://management.azure.com/\", \"activeDirectoryGraphResourceId\": \"https://graph.windows.net/\", \"sqlManagementEndpointUrl\": \"https://management.core.windows.net:8443/\", \"galleryEndpointUrl\": \"https://gallery.azure.com/\", \"managementEndpointUrl\": \"https://management.core.windows.net/\"}" | base64 -w 0)
     sed -i "s|<kubernetesACIConnectorSpec>|{{WrapAsVariable "kubernetesACIConnectorSpec"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<kubernetesACIConnectorClientId>|{{WrapAsVariable "kubernetesACIConnectorClientId"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<kubernetesACIConnectorClientKey>|{{WrapAsVariable "kubernetesACIConnectorClientKey"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<kubernetesACIConnectorTenantId>|{{WrapAsVariable "kubernetesACIConnectorTenantId"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
-    sed -i "s|<kubernetesACIConnectorSubscriptionId>|{{WrapAsVariable "kubernetesACIConnectorSubscriptionId"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorCredentials>|$ACI_CONNECTOR_CREDENTIALS|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
     sed -i "s|<kubernetesACIConnectorResourceGroup>|{{WrapAsVariable "kubernetesACIConnectorResourceGroup"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorNodeName>|{{WrapAsVariable "kubernetesACIConnectorNodeName"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorOS>|{{WrapAsVariable "kubernetesACIConnectorOS"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorTaint>|{{WrapAsVariable "kubernetesACIConnectorTaint"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
     sed -i "s|<kubernetesACIConnectorRegion>|{{WrapAsVariable "kubernetesACIConnectorRegion"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
     sed -i "s|<kubernetesACIConnectorCPURequests>|{{WrapAsVariable "kubernetesACIConnectorCPURequests"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
     sed -i "s|<kubernetesACIConnectorMemoryRequests>|{{WrapAsVariable "kubernetesACIConnectorMemoryRequests"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"

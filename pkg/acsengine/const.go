@@ -76,7 +76,7 @@ const (
 	// TODO deprecate this usage, we should be favoring a more frequent upgrade cycle that pins fresh tiller versions to specific k8s versions
 	DefaultTillerImage = "tiller:v2.6.2"
 	// DefaultACIConnectorImage defines the ACI Connector deployment version on Kubernetes Clusters
-	DefaultACIConnectorImage = "aci-connector-k8s:latest"
+	DefaultACIConnectorImage = "virtual-kubelet:latest"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
 	// listens on by default. must by in the default Service CIDR range.
 	DefaultKubernetesDNSServiceIP = "10.0.0.10"
