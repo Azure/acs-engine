@@ -126,7 +126,7 @@
     "sshKeyPath": "[concat('/home/',variables('username'),'/.ssh/authorized_keys')]",
 
 {{if .HasStorageAccountDisks}}
-    "apiVersionStorage": "2015-06-15",
+    "apiVersionStorage": "2016-12-01",
     "maxVMsPerStorageAccount": 20,
     "maxStorageAccountsPerAgent": "[div(variables('maxVMsPerPool'),variables('maxVMsPerStorageAccount'))]",
     "dataStorageAccountPrefixSeed": 97,
