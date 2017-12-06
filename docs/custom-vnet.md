@@ -174,7 +174,7 @@ For Kubernetes clusters, we need to update the VNET to attach to the route table
 
 ```
 #!/bin/bash
-rt=$(az network route-table list -g acs-custom-vnet | jq -r '.[].id')
+rt=$(az network route-table list -g acs-custom-vnet -o json | jq -r '.[].id')
 az network vnet subnet update -n KubernetesSubnet -g acs-custom-vnet --vnet-name KubernetesCustomVNET --route-table $rt
 ```
 
