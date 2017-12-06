@@ -643,6 +643,12 @@ func (a *Properties) validateNetworkPolicy() error {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 
+	if networkPolicy == "azure" {
+		if a.MasterProfile.VnetCidr == "" {
+			return fmt.Errorf("MasterProfile.VnetCidr required for custom VNET configuration")
+		}
+	}
+
 	return nil
 }
 
@@ -727,11 +733,6 @@ func validateVNET(a *Properties) error {
 		}
 	}
 	if isCustomVNET {
-		if a.OrchestratorProfile.IsAzureCNI() {
-			if a.MasterProfile.VnetCidr == "" {
-				return fmt.Errorf("MasterProfile.VnetCidr required for custom VNET configuration")
-			}
-		}
 		subscription, resourcegroup, vnetname, _, e := GetVNETSubnetIDComponents(a.MasterProfile.VnetSubnetID)
 		if e != nil {
 			return e

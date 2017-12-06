@@ -461,13 +461,3 @@ func (a *AgentPoolProfile) SetSubnet(subnet string) {
 func (o *OrchestratorProfile) IsSwarmMode() bool {
 	return o.OrchestratorType == SwarmMode
 }
-
-// IsAzureCNI returns true if Azure VNET integration is enabled
-func (o *OrchestratorProfile) IsAzureCNI() bool {
-	switch o.OrchestratorType {
-	case Kubernetes:
-		return o.KubernetesConfig.NetworkPolicy == "azure"
-	default:
-		return false
-	}
-}
