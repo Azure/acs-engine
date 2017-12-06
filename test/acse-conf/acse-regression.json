@@ -98,6 +98,10 @@
       "category": "network"
     },
     {
+      "cluster_definition": "vnet/kubernetesvnet-windows.json",
+      "category": "network"
+    },
+    {
       "cluster_definition": "vnet/swarmmodevnet.json",
       "category": "network"
     },
