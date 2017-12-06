@@ -643,12 +643,6 @@ func (a *Properties) validateNetworkPolicy() error {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 
-	if networkPolicy == "azure" {
-		if a.MasterProfile.VnetCidr == "" {
-			return fmt.Errorf("MasterProfile.VnetCidr required for custom VNET configuration")
-		}
-	}
-
 	return nil
 }
 
