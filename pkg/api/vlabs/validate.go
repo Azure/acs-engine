@@ -612,6 +612,15 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		}
 	}
 
+	if a.KubeletConfig != nil {
+		blacklist := []string{"--address", "--allow-privileged", "--pod-manifest-path", "--cluster-domain", "--cloud-provider", "--network-plugin", "--cgroups-per-qos", "--enforce-node-allocatable"}
+		for _, configOption := range blacklist {
+			if _, ok := a.KubeletConfig[configOption]; ok {
+				return fmt.Errorf("%s is not a supported user-configurable kubelet option", configOption)
+			}
+		}
+	}
+
 	return nil
 }
 

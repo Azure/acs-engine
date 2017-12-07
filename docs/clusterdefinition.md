@@ -48,6 +48,8 @@ Here are the valid values for the orchestrator types:
 |addons|no|Configure various Kubernetes addons configuration (currently supported: tiller, kubernetes-dashboard). See `addons` configuration below.|
 |kubeletConfig|no|Configure various runtime configuration for kubelet. See `kubeletConfig` below.|
 
+#### addons
+
 `addons` describes various addons configuration. It is a child property of `kubernetesConfig`. Below is a list of currently available addons:
 
 |Name of addon|Enabled by default?|How many containers|Description|
@@ -55,14 +57,6 @@ Here are the valid values for the orchestrator types:
 |tiller|true|1|Delivers the Helm server-side component: tiller. See https://github.com/kubernetes/helm for more info.|
 |kubernetes-dashboard|true|1|Delivers the kubernetes dashboard component. See https://github.com/kubernetes/dashboard for more info.|
 |rescheduler|false|1|Delivers the kubernetes rescheduler component.|
-
-`kubeletConfig` declares runtime configuration for the kubelet running on all master and agent nodes. It is a generic key/value object, and achild property of `kubernetesConfig`. Below is a list of currently supported kubelet configuration keys:
-
-|Configuration key|Default value|
-|---|---|
-|"--cluster-dns"|"10.0.0.10"|
-
-Definitive kubelet configuration description is at (https://kubernetes.io/docs/reference/generated/kubelet/).
 
 To give a bit more info on the `addons` property: We've tried to expose the basic bits of data that allow useful configuration of these cluster features. Here are some example usage patterns that will unpack what `addons` provide:
 
@@ -142,6 +136,23 @@ See https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-c
 Additionally above, we specified a custom docker image for tiller, let's say we want to build a cluster and test an alpha version of tiller in it.
 
 Finally, the `addons.enabled` boolean property was omitted above; that's by design. If you specify a `containers` configuration, acs-engine assumes you're enabling the addon. The very first example above demonstrates a simple "enable this addon with default configuration" declaration.
+
+#### kubeletConfig
+
+`kubeletConfig` declares runtime configuration for the kubelet running on all master and agent nodes. It is a generic key/value object, and achild property of `kubernetesConfig`. See [here](https://kubernetes.io/docs/reference/generated/kubelet/) for a reference of supported kubelet options. Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
+
+|Configuration key|
+|---|---|
+|"--address"|
+|"--allow-privileged"|
+|"--pod-manifest-path"|
+|"--cluster-domain"|
+|"--cloud-provider"|
+|"--network-plugin"|
+|"--cgroups-per-qos"|
+|"--enforce-node-allocatable"|
+
+We consider `kubeletConfig` to be a generic convenience that is powerful and comes with no operational guarantees when used! It is a manual tuning feature that enables low-level configuration of a kubernetes cluster.
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.

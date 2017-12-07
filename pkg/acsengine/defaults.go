@@ -423,7 +423,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			"--pod-manifest-path":            "/etc/kubernetes/manifests",
 			"--cluster-dns":                  DefaultKubernetesDNSServiceIP,
 			"--cluster-domain":               "cluster.local",
-			"--cloud-provider":               "azure", // TODO "external" if UseCloudControllerManager
+			"--cloud-provider":               "azure",
 			"--network-plugin":               "cni",
 			"--max-pods":                     "110",
 			"--eviction-hard":                DefaultKubernetesHardEvictionThreshold,
@@ -433,7 +433,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 
 		if isKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.6.0") {
-			defaultKubeletConfig["--feature-gates"] = "Accelerators=true"
 			if isKubernetesVersionTilde(a.OrchestratorProfile.OrchestratorVersion, "1.6.x") {
 				defaultKubeletConfig["--cgroups-per-qos"] = "false"
 				defaultKubeletConfig["--enforce-node-allocatable"] = ""
