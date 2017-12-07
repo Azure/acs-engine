@@ -306,9 +306,17 @@ write_files:
     --volume=/var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro \
         ${KUBELET_IMAGE} \
         /hyperkube kubelet \
+            --v=2
+            --kubeconfig=/var/lib/kubelet/kubeconfig \
+            --require-kubeconfig \
+            --pod-manifest-path=/etc/kubernetes/manifests \
+            --cloud-config=/etc/kubernetes/azure.json \
+            --azure-container-registry-config=/etc/kubernetes/azure.json \
+            --node-labels="${KUBELET_NODE_LABELS}" \
             {{range  $key, $val := .OrchestratorProfile.KubernetesConfig.KubeletConfig}}
                 {{$key}}={{$val}} \
             {{end}}
+            --enable-server
 
     [Install]
     WantedBy=multi-user.target

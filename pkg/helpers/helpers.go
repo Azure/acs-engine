@@ -32,3 +32,11 @@ func JSONMarshal(content interface{}, escape bool) ([]byte, error) {
 
 	return buf.Bytes(), nil
 }
+
+// IsTrueBoolPointer is a simple boolean helper function for boolean pointers
+func IsTrueBoolPointer(b *bool) bool {
+	if b != nil && *b {
+		return true
+	}
+	return false
+}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Masterminds/semver"
 )
 
@@ -412,7 +413,34 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 		// Default Kubelet config
 		defaultKubeletConfig := map[string]string{
-			"--cluster-dns": DefaultKubernetesDNSServiceIP,
+			"--pod-infra-container-image":    cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["pause"],
+			"--address":                      "0.0.0.0",
+			"--allow-privileged":             "true",
+			"--pod-manifest-path":            "/etc/kubernetes/manifests",
+			"--cluster-dns":                  DefaultKubernetesDNSServiceIP,
+			"--cluster-domain":               "cluster.local",
+			"--cloud-provider":               "azure", // TODO "external" if UseCloudControllerManager
+			"--network-plugin":               "cni",
+			"--max-pods":                     "110",
+			"--eviction-hard":                DefaultKubernetesHardEvictionThreshold,
+			"--node-status-update-frequency": DefaultKubernetesNodeStatusUpdateFrequency,
+			"--image-gc-high-threshold":      string(DefaultKubernetesGCHighThreshold),
+			"--image-gc-low-threshold":       string(DefaultKubernetesGCLowThreshold),
+			"--non-masquerade-cidr":          a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr,
+			"--register-node":                "true",
+		}
+
+		if isKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.6.0") {
+			defaultKubeletConfig["--register-with-taints"] = "node-role.kubernetes.io/master=true:NoSchedule"
+			defaultKubeletConfig["--feature-gates"] = "Accelerators=true"
+			if isKubernetesVersionTilde(a.OrchestratorProfile.OrchestratorVersion, "1.6.x") {
+				defaultKubeletConfig["--cgroups-per-qos"] = "false"
+				defaultKubeletConfig["--enforce-node-allocatable"] = ""
+			}
+		}
+
+		if helpers.IsTrueBoolPointer(a.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager) {
+			defaultKubeletConfig["--cloud-provider"] = "external"
 		}
 
 		// If no user-configurable kubelet config values exists, use the defaults
@@ -741,4 +769,19 @@ func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesA
 func pointerToBool(b bool) *bool {
 	p := b
 	return &p
+}
+
+func isKubernetesVersionGe(actualVersion, version string) bool {
+	orchestratorVersion, _ := semver.NewVersion(actualVersion)
+	constraint, _ := semver.NewConstraint(">=" + version)
+	return constraint.Check(orchestratorVersion)
+}
+
+func isKubernetesVersionTilde(actualVersion, version string) bool {
+	// examples include
+	// ~2.3 is equivalent to >= 2.3, < 2.4
+	// ~1.2.x is equivalent to >= 1.2.0, < 1.3.0
+	orchestratorVersion, _ := semver.NewVersion(actualVersion)
+	constraint, _ := semver.NewConstraint("~" + version)
+	return constraint.Check(orchestratorVersion)
 }
