@@ -35,7 +35,7 @@ ETCD_CLIENT_KEY_FILE="${ETCD_CLIENT_KEY_FILE:=/etcdcerts/etcd-client-key-file}"
 ETCD_PEER_CERT_FILES=("${ETCD_PEER_CERT_FILE_0:=/etcdcerts/etcd-peer-cert-file-0}" "${ETCD_PEER_CERT_FILE_1:=/etcdcerts/etcd-peer-cert-file-1}" "${ETCD_PEER_CERT_FILE_2:=/etcdcerts/etcd-peer-cert-file-2}" "${ETCD_PEER_CERT_FILE_3:=/etcdcerts/etcd-peer-cert-file-3}" "${ETCD_PEER_CERT_FILE_4:=/etcdcerts/etcd-peer-cert-file-4}")
 ETCD_PEER_KEY_FILES=("${ETCD_PEER_KEY_FILE_0:=/etcdcerts/etcd-peer-key-file-0}" "${ETCD_PEER_KEY_FILE_1:=/etcdcerts/etcd-peer-key-file-1}" "${ETCD_PEER_KEY_FILE_2:=/etcdcerts/etcd-peer-key-file-2}" "${ETCD_PEER_KEY_FILE_3:=/etcdcerts/etcd-peer-key-file-3}" "${ETCD_PEER_KEY_FILE_4:=/etcdcerts/etcd-peer-key-file-4}")
 
-echo subjectAltName = IP:127.0.0.1 > extfile.cnf
+echo subjectAltName = ${2} > extfile.cnf
 
 # generate root CA
 openssl genrsa -out $ETCD_CA_KEY 2048

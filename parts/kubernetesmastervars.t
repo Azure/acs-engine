@@ -292,6 +292,11 @@
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdTLSPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdTLSPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdTLSPeerURLs')[2])]",
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdTLSPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdTLSPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdTLSPeerURLs')[2], ',', variables('masterVMNames')[3], '=', variables('masterEtcdTLSPeerURLs')[3], ',', variables('masterVMNames')[4], '=', variables('masterEtcdTLSPeerURLs')[4])]"
     ],
+     "masterEtcdTLSIPs": [
+      "[concat('IP:127.0.0.1,IP:', variables('masterPrivateIpAddrs')[0])]",
+      "[concat('IP:127.0.0.1,IP:', variables('masterPrivateIpAddrs')[0], ',IP:', variables('masterPrivateIpAddrs')[1], ',IP:', variables('masterPrivateIpAddrs')[2])]",
+      "[concat('IP:127.0.0.1,IP:', variables('masterPrivateIpAddrs')[0], ',IP:', variables('masterPrivateIpAddrs')[1], ',IP:', variables('masterPrivateIpAddrs')[2], ',IP:', variables('masterPrivateIpAddrs')[3], ',IP:', variables('masterPrivateIpAddrs')[4])]"
+    ],
 {{else}}
     "kubernetesAPIServerIP": "[parameters('kubernetesEndpoint')]",
     "agentNamePrefix": "[concat(variables('orchestratorName'), '-agentpool-', variables('nameSuffix'), '-')]",
