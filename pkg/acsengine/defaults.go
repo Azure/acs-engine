@@ -3,6 +3,7 @@ package acsengine
 import (
 	"fmt"
 	"net"
+	"strconv"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -337,6 +338,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig.GCLowThreshold == 0 {
 			o.KubernetesConfig.GCLowThreshold = DefaultKubernetesGCLowThreshold
 		}
+		if o.KubernetesConfig.DNSServiceIP == "" {
+			o.KubernetesConfig.DNSServiceIP = DefaultKubernetesDNSServiceIP
+		}
 		if o.KubernetesConfig.DockerBridgeSubnet == "" {
 			o.KubernetesConfig.DockerBridgeSubnet = DefaultDockerBridgeSubnet
 		}
@@ -424,14 +428,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			"--max-pods":                     "110",
 			"--eviction-hard":                DefaultKubernetesHardEvictionThreshold,
 			"--node-status-update-frequency": DefaultKubernetesNodeStatusUpdateFrequency,
-			"--image-gc-high-threshold":      string(DefaultKubernetesGCHighThreshold),
-			"--image-gc-low-threshold":       string(DefaultKubernetesGCLowThreshold),
-			"--non-masquerade-cidr":          a.OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr,
-			"--register-node":                "true",
+			"--image-gc-high-threshold":      strconv.Itoa(DefaultKubernetesGCHighThreshold),
+			"--image-gc-low-threshold":       strconv.Itoa(DefaultKubernetesGCLowThreshold),
 		}
 
 		if isKubernetesVersionGe(a.OrchestratorProfile.OrchestratorVersion, "1.6.0") {
-			defaultKubeletConfig["--register-with-taints"] = "node-role.kubernetes.io/master=true:NoSchedule"
 			defaultKubeletConfig["--feature-gates"] = "Accelerators=true"
 			if isKubernetesVersionTilde(a.OrchestratorProfile.OrchestratorVersion, "1.6.x") {
 				defaultKubeletConfig["--cgroups-per-qos"] = "false"
@@ -784,4 +785,13 @@ func isKubernetesVersionTilde(actualVersion, version string) bool {
 	orchestratorVersion, _ := semver.NewVersion(actualVersion)
 	constraint, _ := semver.NewConstraint("~" + version)
 	return constraint.Check(orchestratorVersion)
+}
+
+func hasLinuxAgents(profiles []*api.AgentPoolProfile) bool {
+	for _, agentProfile := range profiles {
+		if agentProfile.IsLinux() {
+			return true
+		}
+	}
+	return false
 }

@@ -644,6 +644,7 @@ func convertDcosConfigToVLabs(api *DcosConfig, vlabs *vlabs.DcosConfig) {
 func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.KubernetesConfig) {
 	vlabs.KubernetesImageBase = api.KubernetesImageBase
 	vlabs.ClusterSubnet = api.ClusterSubnet
+	vlabs.DNSServiceIP = api.DNSServiceIP
 	vlabs.ServiceCidr = api.ServiceCIDR
 	vlabs.NonMasqueradeCidr = api.NonMasqueradeCidr
 	vlabs.NetworkPolicy = api.NetworkPolicy

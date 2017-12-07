@@ -191,6 +191,7 @@ type KubernetesConfig struct {
 	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
 	MaxPods                          int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string            `json:"dockerBridgeSubnet,omitempty"`
+	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
 	ServiceCIDR                      string            `json:"serviceCidr,omitempty"`
 	NodeStatusUpdateFrequency        string            `json:"nodeStatusUpdateFrequency,omitempty"`
 	HardEvictionThreshold            string            `json:"hardEvictionThreshold,omitempty"`

@@ -205,6 +205,7 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 type KubernetesConfig struct {
 	KubernetesImageBase              string            `json:"kubernetesImageBase,omitempty"`
 	ClusterSubnet                    string            `json:"clusterSubnet,omitempty"`
+	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
 	ServiceCidr                      string            `json:"serviceCidr,omitempty"`
 	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
 	NonMasqueradeCidr                string            `json:"nonMasqueradeCidr,omitempty"`

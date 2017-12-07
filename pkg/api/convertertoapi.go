@@ -589,6 +589,7 @@ func convertVLabsKubernetesConfig(vp *vlabs.Properties, api *KubernetesConfig) {
 	vlabs := vp.OrchestratorProfile.KubernetesConfig
 	api.KubernetesImageBase = vlabs.KubernetesImageBase
 	api.ClusterSubnet = vlabs.ClusterSubnet
+	api.DNSServiceIP = vlabs.DNSServiceIP
 	api.ServiceCIDR = vlabs.ServiceCidr
 	api.NonMasqueradeCidr = vlabs.NonMasqueradeCidr
 	api.NetworkPolicy = vlabs.NetworkPolicy
