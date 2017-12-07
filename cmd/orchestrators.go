@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/spf13/cobra"
 )
 
@@ -44,10 +44,12 @@ func (oc *orchestratorsCmd) run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	data, err := json.MarshalIndent(orchs, "", "  ")
+
+	data, err := helpers.JSONMarshalIndent(orchs, "", "  ", false)
 	if err != nil {
 		return err
 	}
+
 	fmt.Println(string(data))
 	return nil
 }

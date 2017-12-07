@@ -331,6 +331,12 @@ workflows:
           filters:
             branches:
               ignore: master
+      - swarm-e2e:
+          requires:
+            - pr-e2e-hold
+          filters:
+            branches:
+              ignore: master
       - swarmmode-e2e:
           requires:
             - pr-e2e-hold
@@ -386,6 +392,12 @@ workflows:
             branches:
               only: master
       - k8s-hybrid-1.8-release-e2e:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - swarm-e2e:
           requires:
             - test
           filters:

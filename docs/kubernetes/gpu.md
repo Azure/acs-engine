@@ -19,7 +19,7 @@ If `alpha.kubernetes.io/nvidia-gpu` is `0` and you just created the cluster, you
 When running a GPU container, you will need to specify how many GPU you want to use. If you don't specify a GPU count, kubernetes will asumme you don't require any, and will not map the device into the container.
 You will also need to mount the drivers from the host (the kubernetes agent) into the container.
 
-On the host, the drivers are installed under `/usr/lib/nvidia-378`.
+On the host, the drivers are installed under `/usr/lib/nvidia-384`.
 
 Here is an example template running TensorFlow: 
 
@@ -38,36 +38,32 @@ spec:
     spec:     
       containers:
       - name: tensorflow
-        image: tensorflow/tensorflow:latest-gpu
-        command: ["python main.py"]      
+        image: <SOME_IMAGE>
+        command: <SOME_COMMAND>    
         imagePullPolicy: IfNotPresent
-        env:
-        - name: LD_LIBRARY_PATH
-          value: /usr/lib/nvidia:/usr/lib/x86_64-linux-gnu
         resources:
-          requests:
-            alpha.kubernetes.io/nvidia-gpu: 2 
+          limits:
+            alpha.kubernetes.io/nvidia-gpu: 1
         volumeMounts:
         - mountPath: /usr/local/nvidia/bin
           name: bin
-        - mountPath: /usr/lib/nvidia
+        - mountPath: /usr/local/nvidia/lib64
           name: lib
         - mountPath: /usr/lib/x86_64-linux-gnu/libcuda.so.1
           name: libcuda
       volumes:
         - name: bin
           hostPath: 
-            path: /usr/lib/nvidia-378/bin
+            path: /usr/lib/nvidia-384/bin
         - name: lib
           hostPath: 
-            path: /usr/lib/nvidia-378
+            path: /usr/lib/nvidia-384
         - name: libcuda
           hostPath:
             path: /usr/lib/x86_64-linux-gnu/libcuda.so.1
 ```
 
-We specify `alpha.kubernetes.io/nvidia-gpu: 1` in the resources requests, and we mount the drivers from the host into the container.
-Note that we also modify the `LD_LIBRARY_PATH` environment variable to let python know where to find the driver's libraries.
+We specify `alpha.kubernetes.io/nvidia-gpu: 1` in the resources limits, and we mount the drivers from the host into the container.
 
 Some libraries, such as `libcuda.so` are installed under `/usr/lib/x86_64-linux-gnu` on the host, you might need to mount them separatly as shown above based on your needs.
 

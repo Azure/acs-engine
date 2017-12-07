@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -111,7 +112,7 @@ func TestNormalizeResourcesForK8sAgentUpgrade(t *testing.T) {
 }
 
 func ValidateTemplate(templateMap map[string]interface{}, expectedFileContents []byte, testFileName string) {
-	output, e := json.Marshal(templateMap)
+	output, e := helpers.JSONMarshal(templateMap, false)
 	Expect(e).To(BeNil())
 	prettyOutput, e := PrettyPrintArmTemplate(string(output))
 	Expect(e).To(BeNil())

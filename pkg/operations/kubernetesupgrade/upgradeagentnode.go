@@ -16,6 +16,7 @@ import (
 
 const (
 	interval = time.Second * 1
+	retry    = time.Second * 5
 	timeout  = time.Minute * 10
 )
 
@@ -65,7 +66,7 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 	poolCountParameter := kan.ParametersMap[poolName+"Count"].(map[string]interface{})
 	poolCountParameter["value"] = agentNo + 1
 	agentCount, _ := poolCountParameter["value"]
-	kan.logger.Infof("Agent pool: %s, set count to: %d temporarily during upgrade. Upgrading agent: %d\n",
+	kan.logger.Infof("Agent pool: %s, set count to: %d temporarily during upgrade. Upgrading agent: %d",
 		poolName, agentCount, agentNo)
 
 	poolOffsetVarName := poolName + "Offset"
@@ -112,30 +113,28 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 		return err
 	}
 
-	ch := make(chan struct{}, 1)
-	go func() {
-		for {
-			agentNode, err := client.GetNode(*vmName)
-			if err != nil {
-				kan.logger.Infof("Agent VM: %s status error: %v\n", *vmName, err)
-				time.Sleep(time.Second * 5)
-			} else if node.IsNodeReady(agentNode) {
-				kan.logger.Infof("Agent VM: %s is ready", *vmName)
-				ch <- struct{}{}
-			} else {
-				kan.logger.Infof("Agent VM: %s not ready yet...", *vmName)
-				time.Sleep(time.Second * 5)
-			}
-		}
-	}()
-
+	retryTimer := time.NewTimer(time.Millisecond)
+	timeoutTimer := time.NewTimer(timeout)
 	for {
 		select {
-		case <-ch:
-			return nil
-		case <-time.After(timeout):
-			kan.logger.Errorf("Node was not ready within %v", timeout)
-			return fmt.Errorf("Node was not ready within %v", timeout)
+		case <-timeoutTimer.C:
+			retryTimer.Stop()
+			err := fmt.Errorf("Node was not ready within %v", timeout)
+			kan.logger.Errorf(err.Error())
+			return err
+		case <-retryTimer.C:
+			agentNode, err := client.GetNode(*vmName)
+			if err != nil {
+				kan.logger.Infof("Agent VM: %s status error: %v", *vmName, err)
+				retryTimer.Reset(retry)
+			} else if node.IsNodeReady(agentNode) {
+				kan.logger.Infof("Agent VM: %s is ready", *vmName)
+				timeoutTimer.Stop()
+				return nil
+			} else {
+				kan.logger.Infof("Agent VM: %s not ready yet...", *vmName)
+				retryTimer.Reset(retry)
+			}
 		}
 	}
 }
