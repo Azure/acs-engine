@@ -120,11 +120,7 @@ var kubernetesAritfacts15 = map[string]string{
 	"MASTER_PROVISION_B64_GZIP_STR":            kubernetesMasterCustomScript,
 	"MASTER_GENERATE_PROXY_CERTS_B64_GZIP_STR": kubernetesMasterGenerateProxyCertsScript,
 	"MASTER_GENERATE_ETCD_CERTS_B64_GZIP_STR":  kubernetesMasterGenerateEtcdCertsScript,
-<<<<<<< HEAD
-	"KUBELET_SERVICE_B64_GZIP_STR":             "kuberneteskubelet1.5.service",
-=======
 	"KUBELET_SERVICE_B64_GZIP_STR":             "k8s/kuberneteskubelet1.5.service",
->>>>>>> 095694460051e3b1b38ab29c5099b8f4d2e98a96
 }
 
 var kubernetesAddonYamls = map[string]string{
