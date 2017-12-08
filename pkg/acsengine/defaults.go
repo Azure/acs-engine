@@ -415,17 +415,19 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
 		}
 
+		staticKubeletConfig := map[string]string{
+			"--address":           "0.0.0.0",
+			"--allow-privileged":  "true",
+			"--pod-manifest-path": "/etc/kubernetes/manifests",
+			"--cluster-domain":    "cluster.local",
+			"--network-plugin":    "cni",
+			"--cluster-dns":       DefaultKubernetesDNSServiceIP,
+		}
+
 		// Default Kubelet config
 		defaultKubeletConfig := map[string]string{
 			"--pod-infra-container-image":    cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["pause"],
-			"--address":                      "0.0.0.0",
-			"--allow-privileged":             "true",
-			"--pod-manifest-path":            "/etc/kubernetes/manifests",
-			"--cluster-dns":                  DefaultKubernetesDNSServiceIP,
-			"--cluster-domain":               "cluster.local",
-			"--cloud-provider":               "azure",
-			"--network-plugin":               "cni",
-			"--max-pods":                     "110",
+			"--max-pods":                     strconv.Itoa(DefaultKubernetesKubeletMaxPods),
 			"--eviction-hard":                DefaultKubernetesHardEvictionThreshold,
 			"--node-status-update-frequency": DefaultKubernetesNodeStatusUpdateFrequency,
 			"--image-gc-high-threshold":      strconv.Itoa(DefaultKubernetesGCHighThreshold),
@@ -441,6 +443,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 		if helpers.IsTrueBoolPointer(a.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager) {
 			defaultKubeletConfig["--cloud-provider"] = "external"
+		} else {
+			defaultKubeletConfig["--cloud-provider"] = "azure"
 		}
 
 		// If no user-configurable kubelet config values exists, use the defaults
@@ -454,6 +458,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 					o.KubernetesConfig.KubeletConfig[key] = val
 				}
 			}
+		}
+
+		// We don't support user-configurable values for the following,
+		// so any of the value assignments below will override user-provided values
+		for key, val := range staticKubeletConfig {
+			o.KubernetesConfig.KubeletConfig[key] = val
 		}
 
 	} else if o.OrchestratorType == api.DCOS {

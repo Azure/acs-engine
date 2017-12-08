@@ -99,6 +99,8 @@ const (
 	DefaultReschedulerImage = "rescheduler:v0.3.1"
 	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
 	DefaultReschedulerAddonName = "rescheduler"
+	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
+	DefaultKubernetesKubeletMaxPods = 110
 )
 
 const (
