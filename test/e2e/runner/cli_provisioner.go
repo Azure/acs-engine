@@ -135,13 +135,6 @@ func (cli *CLIProvisioner) provision() error {
 		return fmt.Errorf("Error while trying to create deployment:%s", err)
 	}
 
-	if cli.CreateVNET {
-		err = cli.Account.UpdateRouteTables(subnetName, vnetName)
-		if err != nil {
-			return fmt.Errorf("Error while trying to update route table:%s", err)
-		}
-	}
-
 	return nil
 }
 

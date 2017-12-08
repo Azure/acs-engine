@@ -1,5 +1,15 @@
 # Microsoft Azure Container Service Engine - Kubernetes Windows Walkthrough
 
+## Supported Windows versions
+Prior to acs-engine v0.9.2, Kubernetes Windows cluster uses Windows Server 2016. There are a few restrictions in Windows Networking for Kubernetes as documented in https://blogs.technet.microsoft.com/networking/2017/04/04/windows-networking-for-kubernetes/. Besides, Windows POD deployment performanace is limited due to the bottleneck of container image size and configuration at container start time. 
+
+With the release of new Windows Server version 1709 (a.k.a, RS3), acs-engine v0.9.2 and beyond has leveraged the new Windows version to deploy Kubernetes Windows cluster with signifcant improvement in Windows container and networking performance, as well as new features in storage. Specifically,
+1. Windows is now on par with Linux in terms of networking. New features including hostport have been implemented in kube-proxy and Windows platform and CNI to enhance networking performance. Please refer to http://blog.kubernetes.io/2017/09/windows-networking-at-parity-with-linux.html for details.
+2. Azure Files and Disks are now supported to mount on Kubernetes Windows cluster with the new SMB feature in Windows.
+3. Multiple containers in POD are now supported on Kubernetes Windows cluster.
+
+Note, with the rollout of new Windows version in acs-engine, the workload deployed on Windows cluster requires compatible container image, as documented here: https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/version-compatibility
+
 ## Deployment
 
 Here are the steps to deploy a simple Kubernetes cluster with Windows:
@@ -135,91 +145,139 @@ After completing this walkthrough you will know how to:
 
 6. Type `watch kubectl get svc` to watch the addition of the external IP address that will take about 2-5 minutes.  Once there, you can take the external IP and view in your web browser.
 
-7. The next step in this walkthrough is to deploy a hybrid Linux / Windows app.  This application uses a Windows ASP.Net WebAPI front end, and a linux redis database as the backend.  The ASP.Net WebAPI looks up the redis database via the fqdn redis-master.default.svc.cluster.local.  To run this app, paste the contents below into a file named `hybrid.yaml` and type `kubectl apply -f hybrid.yaml`.  This will take about 10 minutes to pull down the images.
+## Example using Azure Files and Azure Disks
+### Create Azure File workload
+This example is modified after https://github.com/andyzhangx/Demo/tree/master/windows/azurefile/rs3
 
-  ```yaml
-  apiVersion: v1
-  kind: Service
-  metadata:
-    name: redis-master
-    labels:
-      app: redis
-      tier: backend
-      role: master
-  spec:
-    ports:
-      # the port that this service should serve on
-    - port: 6379
-      targetPort: 6379
-    selector:
-      app: redis
-      tier: backend
-      role: master
-  ---
-  apiVersion: extensions/v1beta1
-  kind: Deployment
-  metadata:
-    name: redis-master
-  spec:
-    replicas: 1
-    template:
-      metadata:
-        labels:
-          app: redis
-          role: master
-          tier: backend
-      spec:
-        containers:
-        - name: master
-          image: redis
-          resources:
-            requests:
-              cpu: 100m
-              memory: 100Mi
-          ports:
-          - containerPort: 6379
-        nodeSelector:
-          beta.kubernetes.io/os: linux
-  ---
-  apiVersion: v1
-  kind: Service
-  metadata:
-    name: aspnet-webapi-todo
-    labels:
-      app: aspnet-webapi-todo
-      tier: frontend
-  spec:
-    ports:
-      # the port that this service should serve on
-    - port: 80
-      targetPort: 80
-    selector:
-      app: aspnet-webapi-todo
-      tier: frontend
-    type: LoadBalancer
-  ---
-  apiVersion: extensions/v1beta1
-  kind: Deployment
-  metadata:
-    name: aspnet-webapi-todo
-  spec:
-    replicas: 1
-    template:
-      metadata:
-        labels:
-          app: aspnet-webapi-todo
-          tier: frontend
-      spec:
-        containers:
-        - name: aspnet-webapi-todo
-          image: anhowe/aspnet-web-api-todo2:latest
-        nodeSelector:
-          beta.kubernetes.io/os: windows
-  ```
+#### 1. Create an azure file storage class
+```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azurefile/storageclass-azurefile.yaml```
 
-8. Type `watch kubectl get pods` to watch the deployment of the service that takes about 10 minutes.  Once running, type `kubectl get svc` and for the app names `aspnet-webapi-todo` copy the external address and open in your webbrowser.  As shown in the following image, the traffic flows from your webbrowser to the ASP.Net WebAPI frontend and then to the hybrid container.
+#### make sure storageclass is created successfully
+```
+kubectl get storageclass/azurefile -o wide
+```
 
-   ![Image of hybrid traffic flow](../images/hybrid-trafficflow.png)
+#### 2. Create a pvc for azure file
+```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azurefile/pvc-azurefile.yaml```
+
+#### make sure pvc is created successfully
+```
+kubectl get pvc/pvc-azurefile -o wide
+```
+
+#### 3. Create a pod with azure file pvc
+```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azurefile/iis-azurefile.yaml```
+
+#### watch the status of pod until its `STATUS` is `Running`
+```
+watch kubectl get po/iis-azurefile -o wide
+```
+
+#### 4. Enter the pod container to validate
+```
+kubectl exec -it iis-azurefile -- cmd
+```
+
+```
+C:\>dir c:\mnt\azure
+ Volume in drive C has no label.
+ Volume Serial Number is F878-8D74
+
+ Directory of c:\mnt\azure
+
+11/16/2017  09:45 PM    <DIR>          .
+11/16/2017  09:45 PM    <DIR>          ..
+               0 File(s)              0 bytes
+               2 Dir(s)   5,368,709,120 bytes free
+
+```
+
+### Create Azure Disk workload
+This example is modified after https://github.com/andyzhangx/Demo/tree/master/windows/azuredisk/rs3
+
+#### 1. Create an azure disk storage class
+
+##### option#1: k8s agent pool is based on blob disk VM
+```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azuredisk/storageclass-azuredisk.yaml```
+
+##### option#2: k8s agent pool is based on managed disk VM
+```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azuredisk/storageclass-azuredisk-managed.yaml```
+
+#### make sure storageclass is created successfully
+```
+kubectl get storageclass/azuredisk -o wide
+```
+
+#### 2. Create a pvc for azure disk
+```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azuredisk/pvc-azuredisk.yaml```
+
+#### make sure pvc is created successfully
+```
+kubectl get pvc/pvc-azuredisk -o wide
+```
+
+#### 3. Create a pod with azure disk pvc
+```kubectl apply -f https://raw.githubusercontent.com/JiangtianLi/Examples/master/windows/azuredisk/iis-azuredisk.yaml```
+
+#### watch the status of pod until its `STATUS` is `Running`
+```
+watch kubectl get po/iis-azuredisk -o wide
+```
+
+#### 4. Enter the pod container to validate
+```
+kubectl exec -it iis-azuredisk -- cmd
+```
+
+
+## Example using multiple containers in a POD
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: two-containers
+  name: two-containers
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: two-containers
+      name: two-containers
+    spec:
+      volumes:
+      - name: shared-data
+        emptyDir: {}
+
+      containers:
+
+        - name: iis-container
+          image: microsoft/iis:windowsservercore-1709
+          volumeMounts:
+          - name: shared-data
+            mountPath: /wwwcache
+          command: 
+          - powershell.exe
+          - -command 
+          - "while ($true) { Start-Sleep -Seconds 10; Copy-Item -Path C:\\wwwcache\\iisstart.htm -Destination C:\\inetpub\\wwwroot\\iisstart.htm; }"            
+
+        - name: servercore-container
+          image: microsoft/windowsservercore:1709
+          volumeMounts:
+          - name: shared-data
+            mountPath: /poddata
+          command: 
+          - powershell.exe
+          - -command 
+          - "$i=0; while ($true) { Start-Sleep -Seconds 10; $msg = 'Hello from the servercore container, count is {0}' -f $i; Set-Content -Path C:\\poddata\\iisstart.htm -Value $msg; $i++; }"
+
+      nodeSelector:
+        beta.kubernetes.io/os: windows
+```
+
+## Real-world Workload
+TODO
 
 ## Troubleshooting
 

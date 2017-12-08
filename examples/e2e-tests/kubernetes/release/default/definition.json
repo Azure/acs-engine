@@ -5,7 +5,6 @@
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
         "enableRbac": true,
-        "networkPolicy": "calico",
         "clusterSubnet": "10.230.0.0/16"
       }
     },
@@ -15,7 +14,8 @@
       "vmSize": "Standard_D2_v2",
       "OSDiskSizeGB": 200,
       "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME",
-      "firstConsecutiveStaticIP": "10.239.255.239" 
+      "firstConsecutiveStaticIP": "10.239.255.239",
+      "vnetCidr": "10.230.0.0/16"
     },
     "agentPoolProfiles": [
       {

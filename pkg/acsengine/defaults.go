@@ -131,8 +131,15 @@ var (
 		},
 		//KubernetesSpecConfig - Due to Chinese firewall issue, the default containers from google is blocked, use the Chinese local mirror instead
 		KubernetesSpecConfig: KubernetesSpecConfig{
-			KubernetesImageBase: "crproxy.trafficmanager.net:6000/google_containers/",
-			TillerImageBase:     "crproxy.trafficmanager.net:6000/kubernetes-helm/",
+			KubernetesImageBase:              "crproxy.trafficmanager.net:6000/google_containers/",
+			TillerImageBase:                  "crproxy.trafficmanager.net:6000/kubernetes-helm/",
+			ACIConnectorImageBase:            DefaultKubernetesSpecConfig.ACIConnectorImageBase,
+			EtcdDownloadURLBase:              DefaultKubernetesSpecConfig.EtcdDownloadURLBase,
+			KubeBinariesSASURLBase:           DefaultKubernetesSpecConfig.KubeBinariesSASURLBase,
+			WindowsTelemetryGUID:             DefaultKubernetesSpecConfig.WindowsTelemetryGUID,
+			CNIPluginsDownloadURL:            DefaultKubernetesSpecConfig.CNIPluginsDownloadURL,
+			VnetCNILinuxPluginsDownloadURL:   DefaultKubernetesSpecConfig.VnetCNILinuxPluginsDownloadURL,
+			VnetCNIWindowsPluginsDownloadURL: DefaultKubernetesSpecConfig.VnetCNIWindowsPluginsDownloadURL,
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
 			DCOS188BootstrapDownloadURL:     fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),
@@ -299,7 +306,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
 		}
 		if o.KubernetesConfig.NetworkPolicy == "" {
-			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			if a.HasWindows() {
+				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicyWindows
+			} else {
+				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			}
 		}
 		if o.KubernetesConfig.ClusterSubnet == "" {
 			if o.IsAzureCNI() {
