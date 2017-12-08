@@ -691,15 +691,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addValue(parametersMap, "aadTenantId", properties.AADProfile.TenantID)
 			addValue(parametersMap, "aadServerAppId", properties.AADProfile.ServerAppID)
 		}
-
-		if properties.OrchestratorProfile.KubernetesConfig.KubeletConfig != nil {
-			for key, val := range properties.OrchestratorProfile.KubernetesConfig.KubeletConfig {
-				switch key {
-				case "--cluster-dns":
-					addValue(parametersMap, "kubeDNSServiceIP", val)
-				}
-			}
-		}
 	}
 
 	if strings.HasPrefix(properties.OrchestratorProfile.OrchestratorType, api.DCOS) {
