@@ -353,9 +353,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig.NodeStatusUpdateFrequency == "" {
 			o.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sVersion]["nodestatusfreq"]
 		}
-		if a.OrchestratorProfile.KubernetesConfig.HardEvictionThreshold == "" {
-			a.OrchestratorProfile.KubernetesConfig.HardEvictionThreshold = DefaultKubernetesHardEvictionThreshold
-		}
 		if o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
 			o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sVersion]["nodegraceperiod"]
 		}
