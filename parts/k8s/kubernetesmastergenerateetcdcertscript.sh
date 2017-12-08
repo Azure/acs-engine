@@ -97,3 +97,13 @@ else
     sleep 5
     write_certs_to_disk_with_retry
 fi
+
+cat /tmp/etcdtls > /etc/default/etcd
+MEMBER_LIST="$(etcdctl member list | grep -Eo '^[^ ]+' | cut -d':' -f 1)"
+echo ${MEMBER_LIST} >> /opt/etcdtls
+index=$((${1}+1))
+MEMBER="$(echo ${MEMBER_LIST} | cut -d' ' -f ${index})"
+echo ${MEMBER} ${3} >> /opt/etcdtls
+sleep 120 #TODO: fix this 
+etcdctl member update ${MEMBER} ${3}
+systemctl restart etcd
