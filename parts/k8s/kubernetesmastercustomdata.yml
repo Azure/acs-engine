@@ -291,7 +291,7 @@ write_files:
             --azure-container-registry-config=/etc/kubernetes/azure.json \
             --node-labels="${KUBELET_NODE_LABELS}" \
             --non-masquerade-cidr=${KUBELET_NON_MASQUERADE_CIDR} \
-            {{range $key, $val := .OrchestratorProfile.KubernetesConfig.KubeletConfig}}{{$key}}={{$val}} {{end}}\
+            {{range $key, $val := .MasterProfile.KubernetesConfig.KubeletConfig}}{{$key}}={{$val}} {{end}}\
             --enable-server ${KUBELET_REGISTER_NODE} ${KUBELET_REGISTER_WITH_TAINTS}
 
     [Install]
