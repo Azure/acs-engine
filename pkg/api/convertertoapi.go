@@ -593,6 +593,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.MaxPods = vlabs.MaxPods
 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
 	api.NodeStatusUpdateFrequency = vlabs.NodeStatusUpdateFrequency
+	api.HardEvictionThreshold = vlabs.HardEvictionThreshold
 	api.CtrlMgrNodeMonitorGracePeriod = vlabs.CtrlMgrNodeMonitorGracePeriod
 	api.CtrlMgrPodEvictionTimeout = vlabs.CtrlMgrPodEvictionTimeout
 	api.CtrlMgrRouteReconciliationPeriod = vlabs.CtrlMgrRouteReconciliationPeriod
@@ -624,6 +625,7 @@ func convertAddonsToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
 		a.Addons = append(a.Addons, KubernetesAddon{
 			Name:    v.Addons[i].Name,
 			Enabled: v.Addons[i].Enabled,
+			Config:  map[string]string{},
 		})
 		for j := range v.Addons[i].Containers {
 			a.Addons[i].Containers = append(a.Addons[i].Containers, KubernetesContainerSpec{
@@ -634,6 +636,12 @@ func convertAddonsToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
 				CPULimits:      v.Addons[i].Containers[j].CPULimits,
 				MemoryLimits:   v.Addons[i].Containers[j].MemoryLimits,
 			})
+		}
+
+		if v.Addons[i].Config != nil {
+			for key, val := range v.Addons[i].Config {
+				a.Addons[i].Config[key] = val
+			}
 		}
 	}
 }

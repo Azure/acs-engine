@@ -14,7 +14,8 @@
       "dnsPrefix": "masterdns1",
       "vmSize": "Standard_D2_v2",
       "vnetSubnetId": "/subscriptions/SUBSCRIPTION/resourceGroups/KubeVnet/providers/Microsoft.Network/virtualNetworks/KubernetesCustomVNET/subnets/KubernetesSubnet",
-      "firstConsecutiveStaticIP": "10.239.255.245" 
+      "firstConsecutiveStaticIP": "10.239.255.245",
+      "vnetCidr": "172.40.0.0/16"
     },
     "agentPoolProfiles": [
       {

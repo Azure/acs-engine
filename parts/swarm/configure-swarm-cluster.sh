@@ -20,6 +20,7 @@ POSTINSTALLSCRIPTURI=${7}
 BASESUBNET=${8}
 DOCKERENGINEDOWNLOADREPO=${9}
 DOCKERCOMPOSEDOWNLOADURL=${10}
+DOCKER_CE_VERSION=17.03.*
 VMNAME=`hostname`
 VMNUMBER=`echo $VMNAME | sed 's/.*[^0-9]\([0-9]\+\)*$/\1/'`
 VMPREFIX=`echo $VMNAME | sed 's/\(.*[^0-9]\)*[0-9]\+$/\1/'`
@@ -167,7 +168,11 @@ retrycmd_if_failure() { for i in 1 2 3 4 5; do $@; [ $? -eq 0  ] && break || sle
 installDocker()
 {
   for i in {1..10}; do
-    wget --tries 4 --retry-connrefused --waitretry=15 -qO- https://get.docker.com | sh
+    apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+    curl --max-time 60 -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - 
+    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    apt-get update
+    apt-get install -y docker-ce=${DOCKER_CE_VERSION}
     if [ $? -eq 0 ]
     then
       # hostname has been found continue

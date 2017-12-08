@@ -21,6 +21,7 @@ var (
 	DefaultKubernetesSpecConfig = KubernetesSpecConfig{
 		KubernetesImageBase:              "gcrio.azureedge.net/google_containers/",
 		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
+		ACIConnectorImageBase:            "microsoft/",
 		EtcdDownloadURLBase:              "https://acs-mirror.azureedge.net/github-coreos",
 		KubeBinariesSASURLBase:           "https://acs-mirror.azureedge.net/wink8s/",
 		WindowsTelemetryGUID:             "fb801154-36b9-41bc-89c2-f4d4f05472b0",
@@ -48,7 +49,7 @@ var (
 		ImageOffer:     "UbuntuServer",
 		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201711072",
+		ImageVersion:   "16.04.201711211",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -169,6 +170,24 @@ var (
 		},
 	}
 
+	// DefaultACIConnectorAddonsConfig is the default ACI Connector Kubernetes addon Config
+	DefaultACIConnectorAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultACIConnectorAddonName,
+		Enabled: pointerToBool(api.DefaultACIConnectorAddonEnabled),
+		Config: map[string]string{
+			"region": "westus",
+		},
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultACIConnectorAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "150Mi",
+			},
+		},
+	}
+
 	// DefaultDashboardAddonsConfig is the default kubernetes-dashboard addon Config
 	DefaultDashboardAddonsConfig = api.KubernetesAddon{
 		Name:    DefaultDashboardAddonName,
@@ -246,6 +265,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig.Addons == nil {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{
 				DefaultTillerAddonsConfig,
+				DefaultACIConnectorAddonsConfig,
 				DefaultDashboardAddonsConfig,
 				DefaultReschedulerAddonsConfig,
 			}
@@ -255,6 +275,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if t < 0 {
 				// Provide default acs-engine config for Tiller
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultTillerAddonsConfig)
+			}
+			a := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
+			if a < 0 {
+				// Provide default acs-engine config for ACI Connector
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultACIConnectorAddonsConfig)
 			}
 			d := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultDashboardAddonName)
 			if d < 0 {
@@ -274,7 +299,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
 		}
 		if o.KubernetesConfig.NetworkPolicy == "" {
-			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			if a.HasWindows() {
+				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicyWindows
+			} else {
+				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			}
 		}
 		if o.KubernetesConfig.ClusterSubnet == "" {
 			if o.IsAzureCNI() {
@@ -311,6 +340,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 		if o.KubernetesConfig.NodeStatusUpdateFrequency == "" {
 			o.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sVersion]["nodestatusfreq"]
+		}
+		if a.OrchestratorProfile.KubernetesConfig.HardEvictionThreshold == "" {
+			a.OrchestratorProfile.KubernetesConfig.HardEvictionThreshold = DefaultKubernetesHardEvictionThreshold
 		}
 		if o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
 			o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sVersion]["nodegraceperiod"]
@@ -349,15 +381,14 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 
-		// default etcd version
-		if "" == o.KubernetesConfig.EtcdVersion {
-			o.KubernetesConfig.EtcdVersion = "2.5.2"
-		}
-
 		// For each addon, produce a synthesized config between user-provided and acs-engine defaults
 		t := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[t].IsEnabled(api.DefaultTillerAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[t] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[t], DefaultTillerAddonsConfig)
+		}
+		c := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[c].IsEnabled(api.DefaultACIConnectorAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[c] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[c], DefaultACIConnectorAddonsConfig)
 		}
 		d := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[d].IsEnabled(api.DefaultDashboardAddonEnabled) {
@@ -668,6 +699,14 @@ func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesA
 			if addon.Containers[c].MemoryLimits == "" {
 				addon.Containers[c].MemoryLimits = defaults.Containers[i].MemoryLimits
 			}
+		}
+	}
+	for key, val := range defaults.Config {
+		if addon.Config == nil {
+			addon.Config = make(map[string]string, 0)
+		}
+		if v, ok := addon.Config[key]; !ok || v == "" {
+			addon.Config[key] = val
 		}
 	}
 	return addon
