@@ -350,9 +350,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig.NonMasqueradeCidr == "" {
 			o.KubernetesConfig.NonMasqueradeCidr = DefaultNonMasqueradeCidr
 		}
-		if o.KubernetesConfig.NodeStatusUpdateFrequency == "" {
-			o.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sVersion]["nodestatusfreq"]
-		}
 		if o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
 			o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sVersion]["nodegraceperiod"]
 		}
@@ -426,7 +423,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			"--pod-infra-container-image":    cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["pause"],
 			"--max-pods":                     strconv.Itoa(DefaultKubernetesKubeletMaxPods),
 			"--eviction-hard":                DefaultKubernetesHardEvictionThreshold,
-			"--node-status-update-frequency": DefaultKubernetesNodeStatusUpdateFrequency,
+			"--node-status-update-frequency": KubeConfigs[k8sVersion]["nodestatusfreq"],
 			"--image-gc-high-threshold":      strconv.Itoa(DefaultKubernetesGCHighThreshold),
 			"--image-gc-low-threshold":       strconv.Itoa(DefaultKubernetesGCLowThreshold),
 		}

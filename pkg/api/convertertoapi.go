@@ -595,7 +595,6 @@ func convertVLabsKubernetesConfig(vp *vlabs.Properties, api *KubernetesConfig) {
 	api.NetworkPolicy = vlabs.NetworkPolicy
 	api.MaxPods = vlabs.MaxPods
 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
-	api.NodeStatusUpdateFrequency = vlabs.NodeStatusUpdateFrequency
 	api.CtrlMgrNodeMonitorGracePeriod = vlabs.CtrlMgrNodeMonitorGracePeriod
 	api.CtrlMgrPodEvictionTimeout = vlabs.CtrlMgrPodEvictionTimeout
 	api.CtrlMgrRouteReconciliationPeriod = vlabs.CtrlMgrRouteReconciliationPeriod

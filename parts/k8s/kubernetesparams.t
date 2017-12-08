@@ -372,13 +372,6 @@
       },
       "type": "string"
     },
-    "kubernetesNodeStatusUpdateFrequency": {
-      {{PopulateClassicModeDefaultValue "kubernetesNodeStatusUpdateFrequency"}}
-      "metadata": {
-        "description": "Kubelet config for node status update frequency interval."
-      },
-      "type": "string"
-    },
     "kubernetesCtrlMgrNodeMonitorGracePeriod": {
       {{PopulateClassicModeDefaultValue "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
       "metadata": {

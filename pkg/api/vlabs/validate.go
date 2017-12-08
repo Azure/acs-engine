@@ -502,13 +502,16 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		}
 	}
 
-	if a.NodeStatusUpdateFrequency != "" {
-		_, err := time.ParseDuration(a.NodeStatusUpdateFrequency)
-		if err != nil {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency '%s' is not a valid duration", a.NodeStatusUpdateFrequency)
-		}
-		if a.CtrlMgrNodeMonitorGracePeriod == "" {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency was set to '%s' but OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod was not set", a.NodeStatusUpdateFrequency)
+	if a.KubeletConfig != nil {
+		if _, ok := a.KubeletConfig["--node-status-update-frequency"]; ok {
+			val := a.KubeletConfig["--node-status-update-frequency"]
+			_, err := time.ParseDuration(val)
+			if err != nil {
+				return fmt.Errorf("--node-status-update-frequency '%s' is not a valid duration", val)
+			}
+			if a.CtrlMgrNodeMonitorGracePeriod == "" {
+				return fmt.Errorf("--node-status-update-frequency was set to '%s' but OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod was not set", val)
+			}
 		}
 	}
 
@@ -517,17 +520,23 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		if err != nil {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod '%s' is not a valid duration", a.CtrlMgrNodeMonitorGracePeriod)
 		}
-		if a.NodeStatusUpdateFrequency == "" {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod was set to '%s' but OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency was not set", a.NodeStatusUpdateFrequency)
+		if a.KubeletConfig != nil {
+			if _, ok := a.KubeletConfig["--node-status-update-frequency"]; !ok {
+				return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod was set to '%s' but kubelet config --node-status-update-frequency was not set", a.CtrlMgrNodeMonitorGracePeriod)
+			}
 		}
 	}
 
-	if a.NodeStatusUpdateFrequency != "" && a.CtrlMgrNodeMonitorGracePeriod != "" {
-		nodeStatusUpdateFrequency, _ := time.ParseDuration(a.NodeStatusUpdateFrequency)
-		ctrlMgrNodeMonitorGracePeriod, _ := time.ParseDuration(a.CtrlMgrNodeMonitorGracePeriod)
-		kubeletRetries := ctrlMgrNodeMonitorGracePeriod.Seconds() / nodeStatusUpdateFrequency.Seconds()
-		if kubeletRetries < minKubeletRetries {
-			return fmt.Errorf("acs-engine requires that ctrlMgrNodeMonitorGracePeriod(%f)s be larger than nodeStatusUpdateFrequency(%f)s by at least a factor of %d; ", ctrlMgrNodeMonitorGracePeriod.Seconds(), nodeStatusUpdateFrequency.Seconds(), minKubeletRetries)
+	if a.KubeletConfig != nil {
+		if _, ok := a.KubeletConfig["--node-status-update-frequency"]; ok {
+			if a.CtrlMgrNodeMonitorGracePeriod != "" {
+				nodeStatusUpdateFrequency, _ := time.ParseDuration(a.KubeletConfig["--node-status-update-frequency"])
+				ctrlMgrNodeMonitorGracePeriod, _ := time.ParseDuration(a.CtrlMgrNodeMonitorGracePeriod)
+				kubeletRetries := ctrlMgrNodeMonitorGracePeriod.Seconds() / nodeStatusUpdateFrequency.Seconds()
+				if kubeletRetries < minKubeletRetries {
+					return fmt.Errorf("acs-engine requires that ctrlMgrNodeMonitorGracePeriod(%f)s be larger than nodeStatusUpdateFrequency(%f)s by at least a factor of %d; ", ctrlMgrNodeMonitorGracePeriod.Seconds(), nodeStatusUpdateFrequency.Seconds(), minKubeletRetries)
+				}
+			}
 		}
 	}
 

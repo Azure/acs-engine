@@ -48,7 +48,6 @@
     "kubernetesReschedulerCPULimit": "[parameters('kubernetesReschedulerCPULimit')]",
     "kubernetesReschedulerMemoryLimit": "[parameters('kubernetesReschedulerMemoryLimit')]",
     "kubernetesPodInfraContainerSpec": "[parameters('kubernetesPodInfraContainerSpec')]",
-    "kubernetesNodeStatusUpdateFrequency": "[parameters('kubernetesNodeStatusUpdateFrequency')]",
     "kubernetesCtrlMgrNodeMonitorGracePeriod": "[parameters('kubernetesCtrlMgrNodeMonitorGracePeriod')]",
     "kubernetesCtrlMgrPodEvictionTimeout": "[parameters('kubernetesCtrlMgrPodEvictionTimeout')]",
     "kubernetesCtrlMgrRouteReconciliationPeriod": "[parameters('kubernetesCtrlMgrRouteReconciliationPeriod')]",

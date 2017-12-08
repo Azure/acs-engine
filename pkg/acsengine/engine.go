@@ -640,7 +640,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		}
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
-		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
 		addValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod)
 		addValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout)
 		addValue(parametersMap, "kubernetesCtrlMgrRouteReconciliationPeriod", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod)
@@ -1471,8 +1470,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["pause"]
-				case "kubernetesNodeStatusUpdateFrequency":
-					val = cs.Properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency
 				case "kubernetesCtrlMgrNodeMonitorGracePeriod":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod
 				case "kubernetesCtrlMgrPodEvictionTimeout":

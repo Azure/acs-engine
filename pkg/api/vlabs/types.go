@@ -211,7 +211,6 @@ type KubernetesConfig struct {
 	NonMasqueradeCidr                string            `json:"nonMasqueradeCidr,omitempty"`
 	MaxPods                          int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string            `json:"dockerBridgeSubnet,omitempty"`
-	NodeStatusUpdateFrequency        string            `json:"nodeStatusUpdateFrequency,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`

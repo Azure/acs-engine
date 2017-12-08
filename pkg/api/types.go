@@ -193,7 +193,6 @@ type KubernetesConfig struct {
 	DockerBridgeSubnet               string            `json:"dockerBridgeSubnet,omitempty"`
 	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
 	ServiceCIDR                      string            `json:"serviceCidr,omitempty"`
-	NodeStatusUpdateFrequency        string            `json:"nodeStatusUpdateFrequency,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
