@@ -106,4 +106,10 @@ MEMBER="$(echo ${MEMBER_LIST} | cut -d' ' -f ${index})"
 echo ${MEMBER} ${3} >> /opt/etcdtls
 sleep 120 #TODO: fix this 
 etcdctl member update ${MEMBER} ${3}
+sed -i "11iEnvironment=ETCD_CA_FILE=$K8S_ETCD_CA_CRT_FILEPATH" /etc/systemd/system/etcd.service
+sed -i "11iEnvironment=ETCD_CERT_FILE=$K8S_ETCD_CLIENT_CRT_FILEPATH" /etc/systemd/system/etcd.service
+sed -i "11iEnvironment=ETCD_KEY_FILE=$K8S_ETCD_CLIENT_KEY_FILEPATH" /etc/systemd/system/etcd.service
+sed -i "11iEnvironment=ETCD_ENDPOINTS=https://127.0.0.1:2379" /etc/systemd/system/etcd.service
+systemctl daemon-reload
 systemctl restart etcd
+rm /tmp/etcd*
