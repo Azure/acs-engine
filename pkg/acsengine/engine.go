@@ -108,13 +108,13 @@ var kubernetesManifestYamls = map[string]string{
 	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":            "k8s/kubernetesmaster-kube-addon-manager.yaml",
 }
 
-var kubernetesAritfacts = map[string]string{
+var kubernetesArtifacts = map[string]string{
 	"MASTER_PROVISION_B64_GZIP_STR":            kubernetesMasterCustomScript,
 	"MASTER_GENERATE_PROXY_CERTS_B64_GZIP_STR": kubernetesMasterGenerateProxyCertsScript,
 	"KUBELET_SERVICE_B64_GZIP_STR":             kubernetesKubeletService,
 }
 
-var kubernetesAritfacts15 = map[string]string{
+var kubernetesArtifacts15 = map[string]string{
 	"MASTER_PROVISION_B64_GZIP_STR":            kubernetesMasterCustomScript,
 	"MASTER_GENERATE_PROXY_CERTS_B64_GZIP_STR": kubernetesMasterGenerateProxyCertsScript,
 	"KUBELET_SERVICE_B64_GZIP_STR":             "k8s/kuberneteskubelet1.5.service",
@@ -1012,9 +1012,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			// add artifacts and addons
 			var artifiacts map[string]string
 			if strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.5.") {
-				artifiacts = kubernetesAritfacts15
+				artifiacts = kubernetesArtifacts15
 			} else {
-				artifiacts = kubernetesAritfacts
+				artifiacts = kubernetesArtifacts
 			}
 			for placeholder, filename := range artifiacts {
 				addonTextContents := getBase64CustomScript(filename)
@@ -1069,9 +1069,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			// add artifacts
 			var artifiacts map[string]string
 			if strings.HasPrefix(cs.Properties.OrchestratorProfile.OrchestratorVersion, "1.5.") {
-				artifiacts = kubernetesAritfacts15
+				artifiacts = kubernetesArtifacts15
 			} else {
-				artifiacts = kubernetesAritfacts
+				artifiacts = kubernetesArtifacts
 			}
 			for placeholder, filename := range artifiacts {
 				addonTextContents := getBase64CustomScript(filename)
