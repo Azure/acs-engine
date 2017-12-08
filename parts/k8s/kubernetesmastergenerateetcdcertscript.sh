@@ -35,22 +35,20 @@ ETCD_CLIENT_KEY_FILE="${ETCD_CLIENT_KEY_FILE:=/etcdcerts/etcd-client-key-file}"
 ETCD_PEER_CERT_FILES=("${ETCD_PEER_CERT_FILE_0:=/etcdcerts/etcd-peer-cert-file-0}" "${ETCD_PEER_CERT_FILE_1:=/etcdcerts/etcd-peer-cert-file-1}" "${ETCD_PEER_CERT_FILE_2:=/etcdcerts/etcd-peer-cert-file-2}" "${ETCD_PEER_CERT_FILE_3:=/etcdcerts/etcd-peer-cert-file-3}" "${ETCD_PEER_CERT_FILE_4:=/etcdcerts/etcd-peer-cert-file-4}")
 ETCD_PEER_KEY_FILES=("${ETCD_PEER_KEY_FILE_0:=/etcdcerts/etcd-peer-key-file-0}" "${ETCD_PEER_KEY_FILE_1:=/etcdcerts/etcd-peer-key-file-1}" "${ETCD_PEER_KEY_FILE_2:=/etcdcerts/etcd-peer-key-file-2}" "${ETCD_PEER_KEY_FILE_3:=/etcdcerts/etcd-peer-key-file-3}" "${ETCD_PEER_KEY_FILE_4:=/etcdcerts/etcd-peer-key-file-4}")
 
-echo subjectAltName = IP:127.0.0.1 > extfile.cnf
-
 # generate root CA
 openssl genrsa -out $ETCD_CA_KEY 2048
 openssl req -new -x509 -days 1826 -key $ETCD_CA_KEY -out $ETCD_CA_CRT -subj '/CN=etcdCA'
 # generate new cert
 openssl genrsa -out $ETCD_SERVER_KEY 2048
 openssl req -new -key $ETCD_SERVER_KEY -out $ETCD_SERVER_CSR -subj '/CN=127.0.0.1/O=system:masters'
-openssl x509 -req -days 730 -in $ETCD_SERVER_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_SERVER_CRT -extfile extfile.cnf
+openssl x509 -req -days 730 -in $ETCD_SERVER_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_SERVER_CRT -extfile <(printf "subjectAltName=${2}")
 openssl genrsa -out $ETCD_CLIENT_KEY 2048
 openssl req -new -key $ETCD_CLIENT_KEY -out $ETCD_CLIENT_CSR -subj '/CN=127.0.0.1/O=system:masters'
-openssl x509 -req -days 730 -in $ETCD_CLIENT_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_CLIENT_CRT -extfile extfile.cnf
+openssl x509 -req -days 730 -in $ETCD_CLIENT_CSR -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out $ETCD_CLIENT_CRT -extfile <(printf "subjectAltName=${2}")
 for ((i = 0; i < ${#ETCD_PEER_KEYS[@]}; ++i)); do
     openssl genrsa -out ${ETCD_PEER_KEYS[$i]} 2048
     openssl req -new -key ${ETCD_PEER_KEYS[$i]} -out ${ETCD_PEER_CSRS[$i]} -subj '/CN=127.0.0.1/O=system:masters'
-    openssl x509 -req -days 730 -in ${ETCD_PEER_CSRS[$i]} -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out ${ETCD_PEER_CRTS[$i]} -extfile extfile.cnf
+    openssl x509 -req -days 730 -in ${ETCD_PEER_CSRS[$i]} -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out ${ETCD_PEER_CRTS[$i]} -extfile <(printf "subjectAltName=${2}")
 done
 
 retrycmd_if_failure() { for i in 1 2 3 4 5 6 7 8 9 10; do $@; [ $? -eq 0  ] && break || sleep 30; done ; }
