@@ -139,18 +139,26 @@ Finally, the `addons.enabled` boolean property was omitted above; that's by desi
 
 #### kubeletConfig
 
-`kubeletConfig` declares runtime configuration for the kubelet running on all master and agent nodes. It is a generic key/value object, and achild property of `kubernetesConfig`. See [here](https://kubernetes.io/docs/reference/generated/kubelet/) for a reference of supported kubelet options. Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
+`kubeletConfig` declares runtime configuration for the kubelet running on all master and agent nodes. It is a generic key/value object, and a child property of `kubernetesConfig`. An example custom kubelet config:
 
-|Configuration key|
-|---|---|
-|"--address"|
-|"--allow-privileged"|
-|"--pod-manifest-path"|
-|"--cluster-domain"|
-|"--cloud-provider"|
-|"--network-plugin"|
-|"--cgroups-per-qos"|
-|"--enforce-node-allocatable"|
+```
+"kubernetesConfig": {
+    "kubeletConfig": {
+        "--eviction-hard": "memory.available<250Mi,nodefs.available<20%,nodefs.inodesFree<10%"
+    }
+}
+```
+
+See [here](https://kubernetes.io/docs/reference/generated/kubelet/) for a reference of supported kubelet options. Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
+
+- "--address"
+- "--allow-privileged"
+- "--pod-manifest-path"
+- "--cluster-domain"
+- "--cloud-provider"
+- "--network-plugin"
+- "--cgroups-per-qos"
+- "--enforce-node-allocatable"
 
 We consider `kubeletConfig` to be a generic convenience that is powerful and comes with no operational guarantees when used! It is a manual tuning feature that enables low-level configuration of a kubernetes cluster.
 
