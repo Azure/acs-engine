@@ -158,7 +158,7 @@ write_files:
             --node-labels="${KUBELET_NODE_LABELS}" \
             --non-masquerade-cidr=${KUBELET_NON_MASQUERADE_CIDR} \
             {{range $key, $val := .OrchestratorProfile.KubernetesConfig.KubeletConfig}}{{$key}}={{$val}} {{end}}\
-            --enable-server ${KUBELET_REGISTER_NODE} ${KUBELET_REGISTER_WITH_TAINTS} \
+            --enable-server \
             --feature-gates=Accelerators=true
 
     [Install]
