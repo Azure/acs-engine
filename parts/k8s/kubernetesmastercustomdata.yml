@@ -63,12 +63,12 @@ write_files:
     {{WrapAsVariable "generateProxyCertsScript"}}
 {{end}}
 
-- path: "/etc/kubernetes/generate-etcd-certs.sh"
+- path: "/etc/kubernetes/reconfigure-etcd-tls.sh"
   permissions: "0744"
   encoding: "gzip"
   owner: "root"
   content: !!binary |
-    {{WrapAsVariable "generateEtcdCertsScript"}}
+    {{WrapAsVariable "etcdTLSScript"}}
 
 - path: "/var/lib/kubelet/kubeconfig"
   permissions: "0644"
@@ -519,7 +519,7 @@ runcmd:
 - sudo bash /etc/kubernetes/generate-proxy-certs.sh
 {{end}}
 - /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --peer-client-cert-auth --peer-trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --peer-cert-file={{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}} --peer-key-file={{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}} --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdTLSPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdTLSPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --cert-file={{WrapAsVariable "etcdServerCertFilepath"}} --key-file={{WrapAsVariable "etcdServerKeyFilepath"}} --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdTLSClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdTLSClientURLs')[copyIndex(variables('masterOffset'))], ',https://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdTLSClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "existing" > /tmp/etcdtls
-- sudo bash /etc/kubernetes/generate-etcd-certs.sh {{WrapAsVerbatim "copyIndex(variables('masterOffset'))"}} {{WrapAsVerbatim "variables('masterEtcdTLSIPs')[div(variables('masterCount'), 2)]"}} {{WrapAsVerbatim "variables('masterEtcdTLSPeerURLs')[copyIndex(variables('masterOffset'))]"}}
+- sudo bash /etc/kubernetes/reconfigure-etcd-tls.sh {{WrapAsVerbatim "copyIndex(variables('masterOffset'))"}} {{WrapAsVerbatim "variables('masterEtcdTLSIPs')[div(variables('masterCount'), 2)]"}} {{WrapAsVerbatim "variables('masterEtcdTLSPeerURLs')[copyIndex(variables('masterOffset'))]"}}
 - apt-mark unhold walinuxagent
 - touch /opt/azure/containers/runcmd.complete
 {{end}}
