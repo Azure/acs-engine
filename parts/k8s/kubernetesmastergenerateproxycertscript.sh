@@ -20,7 +20,7 @@ openssl genrsa -out $PROXY_CLIENT_KEY 2048
 openssl req -new -key $PROXY_CLIENT_KEY -out $PROXY_CLIENT_CSR -subj '/CN=aggregator/O=system:masters'
 openssl x509 -req -days 730 -in $PROXY_CLIENT_CSR -CA $PROXY_CRT -CAkey $PROXY_CA_KEY -set_serial 02 -out $PROXY_CLIENT_CRT
 
-retrycmd_if_failure() { for i in 1 2 3 4 5 6 7 8 9 10; do $@; [ $? -eq 0  ] && break || sleep 30; done ; }
+retrycmd_if_failure() { for i in {1..10}; do $@; [ $? -eq 0  ] && break || sleep 30; done ; }
 
 write_certs_to_disk() {
     etcdctl get $ETCD_REQUESTHEADER_CLIENT_CA > $K8S_PROXY_CA_CRT_FILEPATH

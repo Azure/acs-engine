@@ -51,7 +51,7 @@ for ((i = 0; i < ${#ETCD_PEER_KEYS[@]}; ++i)); do
     openssl x509 -req -days 730 -in ${ETCD_PEER_CSRS[$i]} -CA $ETCD_CA_CRT -CAkey $ETCD_CA_KEY -set_serial 02 -out ${ETCD_PEER_CRTS[$i]} -extfile <(printf "subjectAltName=${2}")
 done
 
-retrycmd_if_failure() { for i in 1 2 3 4 5 6 7 8 9 10; do $@; [ $? -eq 0  ] && break || sleep 30; done ; }
+retrycmd_if_failure() { for i in {1..10}; do $@; [ $? -eq 0  ] && break || sleep 30; done ; }
 
 write_certs_to_disk() {
     etcdctl get $ETCD_REQUESTHEADER_CA > $K8S_ETCD_CA_CRT_FILEPATH
