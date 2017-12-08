@@ -502,7 +502,7 @@ runcmd:
 - systemctl daemon-reload
 - systemctl restart etcd
 - for i in $(seq 1 20); do curl --max-time 60 http://127.0.0.1:2379/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
-- retrycmd_if_failure() { for i in 1 2 3 4 5; do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
+- retrycmd_if_failure() { for i in {1..5}; do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
 - retrycmd_if_failure apt-get update
 - retrycmd_if_failure apt-get install -y apt-transport-https ca-certificates
 - retrycmd_if_failure curl --max-time 60 -fsSL https://aptdocker.azureedge.net/gpg | apt-key add -

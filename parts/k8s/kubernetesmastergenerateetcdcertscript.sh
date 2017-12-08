@@ -72,7 +72,7 @@ write_certs_to_disk() {
 }
 
 write_certs_to_disk_with_retry() {
-    for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+   for i in {1..12}; do
         write_certs_to_disk
         [ $? -eq 0  ] && break || sleep 5
     done
