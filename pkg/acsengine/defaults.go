@@ -785,12 +785,3 @@ func isKubernetesVersionTilde(actualVersion, version string) bool {
 	constraint, _ := semver.NewConstraint("~" + version)
 	return constraint.Check(orchestratorVersion)
 }
-
-func hasLinuxAgents(profiles []*api.AgentPoolProfile) bool {
-	for _, agentProfile := range profiles {
-		if agentProfile.IsLinux() {
-			return true
-		}
-	}
-	return false
-}
