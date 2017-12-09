@@ -565,8 +565,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		}
 	}
 
-	// TODO: fix these validations
-	/*if a.DNSServiceIP != "" || a.ServiceCidr != "" {
+	if a.DNSServiceIP != "" || a.ServiceCidr != "" {
 		if a.DNSServiceIP == "" {
 			return errors.New("OrchestratorProfile.KubernetesConfig.ServiceCidr must be specified when DNSServiceIP is")
 		}
@@ -600,7 +599,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		if firstServiceIP.Equal(dnsIP) {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.DNSServiceIP '%s' cannot be the first IP of ServiceCidr '%s'", a.DNSServiceIP, a.ServiceCidr)
 		}
-	}*/
+	}
 
 	// Validate that we have a valid etcd version
 	if e := isValidEtcdVersion(a.EtcdVersion); e != nil {
