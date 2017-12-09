@@ -99,17 +99,20 @@ else
 fi
 
 cat /tmp/etcdtls > /etc/default/etcd
-MEMBER_LIST="$(etcdctl member list | grep -Eo '^[^ ]+' | cut -d':' -f 1)"
-echo ${MEMBER_LIST} >> /opt/etcdtls
-index=$((${1}+1))
-MEMBER="$(echo ${MEMBER_LIST} | cut -d' ' -f ${index})"
+MEMBER="$(etcdctl member list | grep -E ${4} | cut -d':' -f 1)"
 echo ${MEMBER} ${3} >> /opt/etcdtls
-sleep 120 #TODO: fix this 
+sleep 60 #TODO: fix this 
 etcdctl member update ${MEMBER} ${3}
 sed -i "11iEnvironment=ETCD_CA_FILE=$K8S_ETCD_CA_CRT_FILEPATH" /etc/systemd/system/etcd.service
 sed -i "11iEnvironment=ETCD_CERT_FILE=$K8S_ETCD_CLIENT_CRT_FILEPATH" /etc/systemd/system/etcd.service
 sed -i "11iEnvironment=ETCD_KEY_FILE=$K8S_ETCD_CLIENT_KEY_FILEPATH" /etc/systemd/system/etcd.service
 sed -i "11iEnvironment=ETCD_ENDPOINTS=https://127.0.0.1:2379" /etc/systemd/system/etcd.service
+
+#ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
+# azureuser@k8s-master-19135580-0:~$ ETCDCTL_CA_FILE=/etc/kubernetes/certs/etcd-ca.crt
+# azureuser@k8s-master-19135580-0:~$ ETCDCTL_KEY_FILE=/etc/kubernetes/certs/etcd-client.key
+# azureuser@k8s-master-19135580-0:~$ ETCDCTL_CERT_FILE=/etc/kubernetes/certs/etcd-client.crt
+
 systemctl daemon-reload
 systemctl restart etcd
 rm /tmp/etcd*
