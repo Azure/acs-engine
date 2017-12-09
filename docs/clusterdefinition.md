@@ -153,6 +153,7 @@ See [here](https://kubernetes.io/docs/reference/generated/kubelet/) for a refere
 Below is a list of kubelet options that acs-engine will configure by default:
 
 |kubelet option|default value|
+|---|---|
 |"--pod-infra-container-image"|"pause-amd64:<version>"|
 |"--max-pods"|"110"|
 |"--eviction-hard"|"memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%"|
@@ -164,6 +165,7 @@ Below is a list of kubelet options that acs-engine will configure by default:
 Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
 
 |kubelet option|default value|
+|---|---|
 |"--address"|"0.0.0.0"|
 |"--allow-privileged"|"true"|
 |"--pod-manifest-path"|"/etc/kubernetes/manifests"|
