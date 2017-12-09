@@ -167,13 +167,20 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 |kubelet option|default value|
 |---|---|
 |"--address"|"0.0.0.0"|
+|"--azure-container-registry-config"|"/etc/kubernetes/azure.json"|
 |"--allow-privileged"|"true"|
 |"--pod-manifest-path"|"/etc/kubernetes/manifests"|
 |"--cluster-domain"|"cluster.local"|
+|"--cloud-config"|"/etc/kubernetes/azure.json"|
 |"--cloud-provider"|"azure"|
 |"--network-plugin"|"cni"|
+|"--node-labels"|(based on Azure node metadata)|
 |"--cgroups-per-qos"|"false"|
 |"--enforce-node-allocatable"|""|
+|"--kubeconfig"|"/var/lib/kubelet/kubeconfig"|
+|"--register-node" (master nodes only)|"true"|
+|"--register-with-taints" (master nodes only)|"node-role.kubernetes.io/master=true:NoSchedule"|
+|"--feature-gates" (agent nodes only)|"Accelerators=true"|
 
 We consider `kubeletConfig` to be a generic convenience that is powerful and comes with no operational guarantees when used! It is a manual tuning feature that enables low-level configuration of a kubernetes cluster.
 

@@ -284,11 +284,7 @@ write_files:
         ${KUBELET_IMAGE} \
         /hyperkube kubelet \
             --v=2 \
-            --kubeconfig=/var/lib/kubelet/kubeconfig \
             --require-kubeconfig \
-            --pod-manifest-path=/etc/kubernetes/manifests \
-            --cloud-config=/etc/kubernetes/azure.json \
-            --azure-container-registry-config=/etc/kubernetes/azure.json \
             --node-labels="${KUBELET_NODE_LABELS}" \
             --non-masquerade-cidr=${KUBELET_NON_MASQUERADE_CIDR} \
             {{range $key, $val := .MasterProfile.KubernetesConfig.KubeletConfig}}{{$key}}={{$val}} {{end}}\

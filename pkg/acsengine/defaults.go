@@ -407,14 +407,17 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 
 		staticKubeletConfig := map[string]string{
-			"--address":                  "0.0.0.0",
-			"--allow-privileged":         "true",
-			"--pod-manifest-path":        "/etc/kubernetes/manifests",
-			"--cluster-domain":           "cluster.local",
-			"--network-plugin":           "cni",
-			"--cluster-dns":              DefaultKubernetesDNSServiceIP,
-			"--cgroups-per-qos":          "false",
-			"--enforce-node-allocatable": "",
+			"--address":                         "0.0.0.0",
+			"--allow-privileged":                "true",
+			"--pod-manifest-path":               "/etc/kubernetes/manifests",
+			"--cloud-config":                    "/etc/kubernetes/azure.json",
+			"--cluster-domain":                  "cluster.local",
+			"--network-plugin":                  "cni",
+			"--cluster-dns":                     DefaultKubernetesDNSServiceIP,
+			"--cgroups-per-qos":                 "false",
+			"--enforce-node-allocatable":        "",
+			"--kubeconfig":                      "/var/lib/kubelet/kubeconfig",
+			"--azure-container-registry-config": "/etc/kubernetes/azure.json",
 		}
 
 		if helpers.IsTrueBoolPointer(a.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager) {
