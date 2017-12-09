@@ -455,7 +455,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.KubeletConfig[key] = val
 		}
 
-		a.MasterProfile.KubernetesConfig.KubeletConfig = o.KubernetesConfig.KubeletConfig
+		if a.MasterProfile != nil {
+			a.MasterProfile.KubernetesConfig.KubeletConfig = o.KubernetesConfig.KubeletConfig
+		}
 		for _, profile := range a.AgentPoolProfiles {
 			profile.KubernetesConfig.KubeletConfig = o.KubernetesConfig.KubeletConfig
 		}
