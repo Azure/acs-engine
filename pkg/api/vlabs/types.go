@@ -208,7 +208,6 @@ type KubernetesConfig struct {
 	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
 	ServiceCidr                      string            `json:"serviceCidr,omitempty"`
 	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
-	NonMasqueradeCidr                string            `json:"nonMasqueradeCidr,omitempty"`
 	MaxPods                          int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string            `json:"dockerBridgeSubnet,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`

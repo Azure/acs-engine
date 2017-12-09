@@ -106,17 +106,21 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
-			NonMasqueradeCidr: "10.120.1.0/24",
+			KubeletConfig: map[string]string{
+				"--non-masquerade-cidr": "10.120.1.0/24",
+			},
 		}
 		if err := c.Validate(k8sVersion); err != nil {
-			t.Error("should not error on valid NonMasqueradeCidr")
+			t.Error("should not error on valid --non-masquerade-cidr")
 		}
 
 		c = KubernetesConfig{
-			NonMasqueradeCidr: "10.120.1.0/invalid",
+			KubeletConfig: map[string]string{
+				"--non-masquerade-cidr": "10.120.1.0/invalid",
+			},
 		}
 		if err := c.Validate(k8sVersion); err == nil {
-			t.Error("should error on invalid NonMasqueradeCidr")
+			t.Error("should error on invalid --non-masquerade-cidr")
 		}
 
 		c = KubernetesConfig{

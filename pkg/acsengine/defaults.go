@@ -347,9 +347,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig.ServiceCIDR == "" {
 			o.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		}
-		if o.KubernetesConfig.NonMasqueradeCidr == "" {
-			o.KubernetesConfig.NonMasqueradeCidr = DefaultNonMasqueradeCidr
-		}
 		if o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
 			o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sVersion]["nodegraceperiod"]
 		}
@@ -434,6 +431,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			"--node-status-update-frequency": KubeConfigs[k8sVersion]["nodestatusfreq"],
 			"--image-gc-high-threshold":      strconv.Itoa(DefaultKubernetesGCHighThreshold),
 			"--image-gc-low-threshold":       strconv.Itoa(DefaultKubernetesGCLowThreshold),
+			"--non-masquerade-cidr":          DefaultNonMasqueradeCidr,
 		}
 
 		// If no user-configurable kubelet config values exists, use the defaults

@@ -37,7 +37,6 @@ Here are the valid values for the orchestrator types:
 |dnsServiceIP|no|IP address for kube-dns to listen on. If specified must be in the range of `serviceCidr`.|
 |dockerBridgeSubnet|no|The specific IP and subnet used for allocating IP addresses for the docker bridge network created on the kubernetes master and agents. Default value is 172.17.0.1/16. This value is used to configure the docker daemon using the [--bip flag](https://docs.docker.com/engine/userguide/networking/default_network/custom-docker0).|
 |serviceCidr|no|IP range for Service IPs, Default is "10.0.0.0/16". This range is never routed outside of a node so does not need to lie within clusterSubnet or the VNet.|
-|nonMasqueradeCidr|no|CIDR block to exclude from default source NAT, Default is "10.0.0.0/8".|
 |enableRbac|no|Enable [Kubernetes RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) (boolean - default == false) |
 |enableAggregatedAPIs|no|Enable [Kubernetes Aggregated APIs](https://kubernetes.io/docs/concepts/api-extension/apiserver-aggregation/).This is required by [Service Catalog](https://github.com/kubernetes-incubator/service-catalog/blob/master/README.md). (boolean - default == false) |
 |maxPods|no|The maximum number of pods per node. The minimum valid value, necessary for running kube-system pods, is 5. Default value is 30 when networkPolicy equals azure, 110 otherwise.|
@@ -149,16 +148,30 @@ Finally, the `addons.enabled` boolean property was omitted above; that's by desi
 }
 ```
 
-See [here](https://kubernetes.io/docs/reference/generated/kubelet/) for a reference of supported kubelet options. Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
+See [here](https://kubernetes.io/docs/reference/generated/kubelet/) for a reference of supported kubelet options.
 
-- "--address"
-- "--allow-privileged"
-- "--pod-manifest-path"
-- "--cluster-domain"
-- "--cloud-provider"
-- "--network-plugin"
-- "--cgroups-per-qos"
-- "--enforce-node-allocatable"
+Below is a list of kubelet options that acs-engine will configure by default:
+
+|kubelet option|default value|
+|"--pod-infra-container-image"|"pause-amd64:<version>"|
+|"--max-pods"|"110"|
+|"--eviction-hard"|"memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%"|
+|"--node-status-update-frequency"|"10s"|
+|"--image-gc-high-threshold"|"85"|
+|"--image-gc-low-threshold"|"850"|
+|"--non-masquerade-cidr"|"10.0.0.0/8"|
+
+Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
+
+|kubelet option|default value|
+|"--address"|"0.0.0.0"|
+|"--allow-privileged"|"true"|
+|"--pod-manifest-path"|"/etc/kubernetes/manifests"|
+|"--cluster-domain"|"cluster.local"|
+|"--cloud-provider"|"azure"|
+|"--network-plugin"|"cni"|
+|"--cgroups-per-qos"|"false"|
+|"--enforce-node-allocatable"|""|
 
 We consider `kubeletConfig` to be a generic convenience that is powerful and comes with no operational guarantees when used! It is a manual tuning feature that enables low-level configuration of a kubernetes cluster.
 

@@ -490,12 +490,6 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		}
 	}
 
-	if a.NonMasqueradeCidr != "" {
-		if _, _, err := net.ParseCIDR(a.NonMasqueradeCidr); err != nil {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr '%s' is an invalid CIDR string", a.NonMasqueradeCidr)
-		}
-	}
-
 	if a.MaxPods != 0 {
 		if a.MaxPods < KubernetesMinMaxPods {
 			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.MaxPods '%v' must be at least %v", a.MaxPods, KubernetesMinMaxPods)
@@ -536,6 +530,11 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 				if kubeletRetries < minKubeletRetries {
 					return fmt.Errorf("acs-engine requires that ctrlMgrNodeMonitorGracePeriod(%f)s be larger than nodeStatusUpdateFrequency(%f)s by at least a factor of %d; ", ctrlMgrNodeMonitorGracePeriod.Seconds(), nodeStatusUpdateFrequency.Seconds(), minKubeletRetries)
 				}
+			}
+		}
+		if _, ok := a.KubeletConfig["--non-masquerade-cidr"]; ok {
+			if _, _, err := net.ParseCIDR(a.KubeletConfig["--non-masquerade-cidr"]); err != nil {
+				return fmt.Errorf("--non-masquerade-cidr kubelet config '%s' is an invalid CIDR string", a.KubeletConfig["--non-masquerade-cidr"])
 			}
 		}
 	}
