@@ -5,7 +5,7 @@
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
         "enableRbac": true,
-        "clusterSubnet": "10.230.0.0/16"
+        "clusterSubnet": "10.239.0.0/16"
       }
     },
     "masterProfile": {
