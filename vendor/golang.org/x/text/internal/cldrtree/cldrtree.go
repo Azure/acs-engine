@@ -186,8 +186,12 @@ func (b *Builder) Gen(w *gen.CodeWriter) error {
 	if err != nil {
 		return err
 	}
-	generate(b, t, w)
-	return nil
+	return generate(b, t, w)
+}
+
+// GenTestData generates tables useful for testing data generated with Gen.
+func (b *Builder) GenTestData(w *gen.CodeWriter) error {
+	return generateTestData(b, w)
 }
 
 type locale struct {

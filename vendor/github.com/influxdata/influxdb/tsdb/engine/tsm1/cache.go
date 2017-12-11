@@ -11,7 +11,7 @@ import (
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/tsdb"
 	"github.com/influxdata/influxql"
-	"github.com/uber-go/zap"
+	"go.uber.org/zap"
 )
 
 // ringShards specifies the number of partitions that the hash ring used to
@@ -136,6 +136,9 @@ func (e *entry) count() int {
 // filter removes all values with timestamps between min and max inclusive.
 func (e *entry) filter(min, max int64) {
 	e.mu.Lock()
+	if len(e.values) > 1 {
+		e.values = e.values.Deduplicate()
+	}
 	e.values = e.values.Exclude(min, max)
 	e.mu.Unlock()
 }
@@ -670,14 +673,14 @@ func (c *Cache) ApplyEntryFn(f func(key []byte, entry *entry) error) error {
 type CacheLoader struct {
 	files []string
 
-	Logger zap.Logger
+	Logger *zap.Logger
 }
 
 // NewCacheLoader returns a new instance of a CacheLoader.
 func NewCacheLoader(files []string) *CacheLoader {
 	return &CacheLoader{
 		files:  files,
-		Logger: zap.New(zap.NullEncoder()),
+		Logger: zap.NewNop(),
 	}
 }
 
@@ -747,7 +750,7 @@ func (cl *CacheLoader) Load(cache *Cache) error {
 }
 
 // WithLogger sets the logger on the CacheLoader.
-func (cl *CacheLoader) WithLogger(log zap.Logger) {
+func (cl *CacheLoader) WithLogger(log *zap.Logger) {
 	cl.Logger = log.With(zap.String("service", "cacheloader"))
 }
 

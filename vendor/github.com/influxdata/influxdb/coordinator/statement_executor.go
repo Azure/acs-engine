@@ -188,6 +188,8 @@ func (e *StatementExecutor) ExecuteStatement(stmt influxql.Statement, ctx query.
 		rows, err = e.executeShowStatsStatement(stmt)
 	case *influxql.ShowSubscriptionsStatement:
 		rows, err = e.executeShowSubscriptionsStatement(stmt)
+	case *influxql.ShowTagKeysStatement:
+		return e.executeShowTagKeys(stmt, &ctx)
 	case *influxql.ShowTagValuesStatement:
 		return e.executeShowTagValues(stmt, &ctx)
 	case *influxql.ShowUsersStatement:
@@ -740,7 +742,7 @@ func (e *StatementExecutor) executeShowMeasurementsStatement(q *influxql.ShowMea
 		return ErrDatabaseNameRequired
 	}
 
-	names, err := e.TSDBStore.MeasurementNames(q.Database, q.Condition)
+	names, err := e.TSDBStore.MeasurementNames(ctx.Authorizer, q.Database, q.Condition)
 	if err != nil || len(names) == 0 {
 		return ctx.Send(&query.Result{
 			StatementID: ctx.StatementID,
@@ -932,12 +934,135 @@ func (e *StatementExecutor) executeShowSubscriptionsStatement(stmt *influxql.Sho
 	return rows, nil
 }
 
+func (e *StatementExecutor) executeShowTagKeys(q *influxql.ShowTagKeysStatement, ctx *query.ExecutionContext) error {
+	if q.Database == "" {
+		return ErrDatabaseNameRequired
+	}
+
+	// Determine shard set based on database and time range.
+	// SHOW TAG KEYS returns all tag keys for the default retention policy.
+	di := e.MetaClient.Database(q.Database)
+	if di == nil {
+		return fmt.Errorf("database not found: %s", q.Database)
+	}
+
+	// Determine appropriate time range. If one or fewer time boundaries provided
+	// then min/max possible time should be used instead.
+	valuer := &influxql.NowValuer{Now: time.Now()}
+	cond, timeRange, err := influxql.ConditionExpr(q.Condition, valuer)
+	if err != nil {
+		return err
+	}
+
+	// Get all shards for all retention policies.
+	var allGroups []meta.ShardGroupInfo
+	for _, rpi := range di.RetentionPolicies {
+		sgis, err := e.MetaClient.ShardGroupsByTimeRange(q.Database, rpi.Name, timeRange.MinTime(), timeRange.MaxTime())
+		if err != nil {
+			return err
+		}
+		allGroups = append(allGroups, sgis...)
+	}
+
+	var shardIDs []uint64
+	for _, sgi := range allGroups {
+		for _, si := range sgi.Shards {
+			shardIDs = append(shardIDs, si.ID)
+		}
+	}
+
+	tagKeys, err := e.TSDBStore.TagKeys(ctx.Authorizer, shardIDs, cond)
+	if err != nil {
+		return ctx.Send(&query.Result{
+			StatementID: ctx.StatementID,
+			Err:         err,
+		})
+	}
+
+	emitted := false
+	for _, m := range tagKeys {
+		keys := m.Keys
+
+		if q.Offset > 0 {
+			if q.Offset >= len(keys) {
+				keys = nil
+			} else {
+				keys = keys[q.Offset:]
+			}
+		}
+		if q.Limit > 0 && q.Limit < len(keys) {
+			keys = keys[:q.Limit]
+		}
+
+		if len(keys) == 0 {
+			continue
+		}
+
+		row := &models.Row{
+			Name:    m.Measurement,
+			Columns: []string{"tagKey"},
+			Values:  make([][]interface{}, len(keys)),
+		}
+		for i, key := range keys {
+			row.Values[i] = []interface{}{key}
+		}
+
+		if err := ctx.Send(&query.Result{
+			StatementID: ctx.StatementID,
+			Series:      []*models.Row{row},
+		}); err != nil {
+			return err
+		}
+		emitted = true
+	}
+
+	// Ensure at least one result is emitted.
+	if !emitted {
+		return ctx.Send(&query.Result{
+			StatementID: ctx.StatementID,
+		})
+	}
+	return nil
+}
+
 func (e *StatementExecutor) executeShowTagValues(q *influxql.ShowTagValuesStatement, ctx *query.ExecutionContext) error {
 	if q.Database == "" {
 		return ErrDatabaseNameRequired
 	}
 
-	tagValues, err := e.TSDBStore.TagValues(ctx.Authorizer, q.Database, q.Condition)
+	// Determine shard set based on database and time range.
+	// SHOW TAG VALUES returns all tag values for the default retention policy.
+	di := e.MetaClient.Database(q.Database)
+	if di == nil {
+		return fmt.Errorf("database not found: %s", q.Database)
+	}
+
+	// Determine appropriate time range. If one or fewer time boundaries provided
+	// then min/max possible time should be used instead.
+	valuer := &influxql.NowValuer{Now: time.Now()}
+	cond, timeRange, err := influxql.ConditionExpr(q.Condition, valuer)
+	if err != nil {
+		return err
+	}
+
+	// Get all shards for all retention policies.
+	var allGroups []meta.ShardGroupInfo
+	for _, rpi := range di.RetentionPolicies {
+		sgis, err := e.MetaClient.ShardGroupsByTimeRange(q.Database, rpi.Name, timeRange.MinTime(), timeRange.MaxTime())
+		if err != nil {
+			return err
+		}
+		allGroups = append(allGroups, sgis...)
+	}
+
+	var shardIDs []uint64
+	for _, sgi := range allGroups {
+		for _, si := range sgi.Shards {
+			shardIDs = append(shardIDs, si.ID)
+		}
+	}
+
+	tagValues, err := e.TSDBStore.TagValues(ctx.Authorizer, shardIDs, cond)
 	if err != nil {
 		return ctx.Send(&query.Result{
 			StatementID: ctx.StatementID,
@@ -1170,6 +1295,10 @@ func (e *StatementExecutor) NormalizeStatement(stmt influxql.Statement, defaultD
 			if node.Database == "" {
 				node.Database = defaultDatabase
 			}
+		case *influxql.ShowTagKeysStatement:
+			if node.Database == "" {
+				node.Database = defaultDatabase
+			}
 		case *influxql.ShowTagValuesStatement:
 			if node.Database == "" {
 				node.Database = defaultDatabase
@@ -1198,7 +1327,7 @@ func (e *StatementExecutor) NormalizeStatement(stmt influxql.Statement, defaultD
 func (e *StatementExecutor) normalizeMeasurement(m *influxql.Measurement, defaultDatabase string) error {
 	// Targets (measurements in an INTO clause) can have blank names, which means it will be
 	// the same as the measurement name it came from in the FROM clause.
-	if !m.IsTarget && m.Name == "" && m.Regex == nil {
+	if !m.IsTarget && m.Name == "" && m.SystemIterator == "" && m.Regex == nil {
 		return errors.New("invalid measurement")
 	}
 
@@ -1225,7 +1354,6 @@ func (e *StatementExecutor) normalizeMeasurement(m *influxql.Measurement, defaul
 		}
 		m.RetentionPolicy = di.DefaultRetentionPolicy
 	}
-
 	return nil
 }
 
@@ -1250,8 +1378,9 @@ type TSDBStore interface {
 	DeleteSeries(database string, sources []influxql.Source, condition influxql.Expr) error
 	DeleteShard(id uint64) error
 
-	MeasurementNames(database string, cond influxql.Expr) ([][]byte, error)
-	TagValues(auth query.Authorizer, database string, cond influxql.Expr) ([]tsdb.TagValues, error)
+	MeasurementNames(auth query.Authorizer, database string, cond influxql.Expr) ([][]byte, error)
+	TagKeys(auth query.Authorizer, shardIDs []uint64, cond influxql.Expr) ([]tsdb.TagKeys, error)
+	TagValues(auth query.Authorizer, shardIDs []uint64, cond influxql.Expr) ([]tsdb.TagValues, error)
 
 	SeriesCardinality(database string) (int64, error)
 	MeasurementsCardinality(database string) (int64, error)
