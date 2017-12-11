@@ -27,6 +27,7 @@ K8S_ETCD_CLIENT_CRT_FILEPATH="${K8S_ETCD_CLIENT_CRT_FILEPATH:=/etc/kubernetes/ce
 K8S_ETCD_CLIENT_KEY_FILEPATH="${K8S_ETCD_CLIENT_KEY_FILEPATH:=/etc/kubernetes/certs/etcd-client.key}"
 
 # etcd files for writing certs to disk
+ETCD_SYNC_COUNTER="${ETCD_SYNC_COUNTER:=/etcdcerts/sync-counter}"
 ETCD_REQUESTHEADER_CA="${ETCD_REQUESTHEADER_CA:=/etcdcerts/requestheader-etcd-ca-file}"
 ETCD_SERVER_CERT_FILE="${ETCD_SERVER_CERT_FILE:=/etcdcerts/etcd-server-cert-file}"
 ETCD_SERVER_KEY_FILE="${ETCD_SERVER_KEY_FILE:=/etcdcerts/etcd-server-key-file}"
@@ -82,6 +83,7 @@ write_certs_to_disk_with_retry() {
 retrycmd_if_failure etcdctl cluster-health
 # Make etcd keys, adding a leading whitespace because etcd won't accept a val that begins with a '-' (hyphen)!
 if etcdctl mk $ETCD_REQUESTHEADER_CA " $(cat ${ETCD_CA_CRT})"; then
+    etcdctl mk $ETCD_SYNC_COUNTER "0"
     etcdctl mk $ETCD_SERVER_KEY_FILE " $(cat ${ETCD_SERVER_KEY})"
     etcdctl mk $ETCD_SERVER_CERT_FILE " $(cat ${ETCD_SERVER_CRT})"
     etcdctl mk $ETCD_CLIENT_KEY_FILE " $(cat ${ETCD_CLIENT_KEY})"
@@ -100,18 +102,19 @@ fi
 
 cat /tmp/etcdtls > /etc/default/etcd
 MEMBER="$(etcdctl member list | grep -E ${4} | cut -d':' -f 1)"
-echo ${MEMBER} ${3} >> /opt/etcdtls
-sleep 60 #TODO: fix this 
+CURR="$(etcdctl get $ETCD_SYNC_COUNTER)"
+etcdctl set $ETCD_SYNC_COUNTER $((${CURR} + 1))
+while ("${CURR}" != "${5}") {
+    echo ${CURR} is not equal to ${5} >> /opt/etcdtls 
+    sleep 5
+    CURR="$(etcdctl get $ETCD_SYNC_COUNTER)"
+}
 etcdctl member update ${MEMBER} ${3}
-sed -i "11iEnvironment=ETCD_CA_FILE=$K8S_ETCD_CA_CRT_FILEPATH" /etc/systemd/system/etcd.service
-sed -i "11iEnvironment=ETCD_CERT_FILE=$K8S_ETCD_CLIENT_CRT_FILEPATH" /etc/systemd/system/etcd.service
-sed -i "11iEnvironment=ETCD_KEY_FILE=$K8S_ETCD_CLIENT_KEY_FILEPATH" /etc/systemd/system/etcd.service
-sed -i "11iEnvironment=ETCD_ENDPOINTS=https://127.0.0.1:2379" /etc/systemd/system/etcd.service
 
-#ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
-# azureuser@k8s-master-19135580-0:~$ ETCDCTL_CA_FILE=/etc/kubernetes/certs/etcd-ca.crt
-# azureuser@k8s-master-19135580-0:~$ ETCDCTL_KEY_FILE=/etc/kubernetes/certs/etcd-client.key
-# azureuser@k8s-master-19135580-0:~$ ETCDCTL_CERT_FILE=/etc/kubernetes/certs/etcd-client.crt
+export ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
+export ETCDCTL_CA_FILE=/etc/kubernetes/certs/etcd-ca.crt
+export ETCDCTL_KEY_FILE=/etc/kubernetes/certs/etcd-client.key
+export ETCDCTL_CERT_FILE=/etc/kubernetes/certs/etcd-client.crt
 
 systemctl daemon-reload
 systemctl restart etcd
