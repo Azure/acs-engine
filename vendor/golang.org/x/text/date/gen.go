@@ -47,15 +47,24 @@ func main() {
 		log.Fatalf("DecodeZip: %v", err)
 	}
 
+	dates := cldrtree.New("dates")
+	buildCLDRTree(data, dates)
+
 	w := gen.NewCodeWriter()
-	defer w.WriteGoFile("tables.go", "date")
-	genCLDRTree(w, data)
+	if err := dates.Gen(w); err != nil {
+		log.Fatal(err)
+	}
 	gen.WriteCLDRVersion(w)
+	w.WriteGoFile("tables.go", "date")
+
+	w = gen.NewCodeWriter()
+	if err := dates.GenTestData(w); err != nil {
+		log.Fatal(err)
+	}
+	w.WriteGoFile("data_test.go", "date")
 }
 
-func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
-	dates := cldrtree.New("dates")
-
+func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 	context := cldrtree.Enum("context")
 	widthMap := func(s string) string {
 		// Align era with width values.
@@ -70,8 +79,9 @@ func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
 		return "width" + strings.Title(s)
 	}
 	width := cldrtree.EnumFunc("width", widthMap, "abbreviated", "narrow", "wide")
-	length := cldrtree.Enum("length")
-	relative := cldrtree.EnumFunc("relative", func(s string) string {
+	length := cldrtree.Enum("length", "short", "long")
+	month := cldrtree.Enum("month", "leap7")
+	relTime := cldrtree.EnumFunc("relTime", func(s string) string {
 		x, err := strconv.ParseInt(s, 10, 8)
 		if err != nil {
 			log.Fatal("Invalid number:", err)
@@ -85,9 +95,22 @@ func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
 			"after3",
 		}[x+2]
 	})
+	// Disambiguate keys like 'months' and 'sun'.
+	cycleType := cldrtree.EnumFunc("cycleType", func(s string) string {
+		return s + "CycleType"
+	})
+	field := cldrtree.EnumFunc("field", func(s string) string {
+		return s + "Field"
+	})
+	timeType := cldrtree.EnumFunc("timeType", func(s string) string {
+		if s == "" {
+			return "genericTime"
+		}
+		return s + "Time"
+	}, "generic")
 
-	zoneType := cldrtree.SharedType()
-	metaZoneType := cldrtree.SharedType()
+	zoneType := []cldrtree.Option{cldrtree.SharedType(), timeType}
+	metaZoneType := []cldrtree.Option{cldrtree.SharedType(), timeType}
 
 	for _, lang := range data.Locales() {
 		tag := language.Make(lang)
@@ -105,7 +128,7 @@ func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
 						for _, mw := range mc.MonthWidth {
 							x := x.IndexFromType(mw, width)
 							for _, m := range mw.Month {
-								x.SetValue(m.Type+m.Yeartype, m)
+								x.SetValue(m.Yeartype+m.Type, m, month)
 							}
 						}
 					}
@@ -124,7 +147,7 @@ func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
 				}
 				if x := x.Index(cal.CyclicNameSets); x != nil {
 					for _, cns := range cal.CyclicNameSets.CyclicNameSet {
-						x := x.IndexFromType(cns)
+						x := x.IndexFromType(cns, cycleType)
 						for _, cc := range cns.CyclicNameContext {
 							x := x.IndexFromType(cc, context)
 							for _, cw := range cc.CyclicNameWidth {
@@ -164,7 +187,7 @@ func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
 						for _, dw := range dc.DayPeriodWidth {
 							x := x.IndexFromType(dw, width)
 							for _, d := range dw.DayPeriod {
-								x.SetValue(d.Type, d)
+								x.IndexFromType(d).SetValue(d.Alt, d)
 							}
 						}
 					}
@@ -189,27 +212,30 @@ func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
 				}
 				if x := x.Index(cal.DateFormats); x != nil {
 					for _, dfl := range cal.DateFormats.DateFormatLength {
+						x := x.IndexFromType(dfl, length)
 						for _, df := range dfl.DateFormat {
 							for _, p := range df.Pattern {
-								x.SetValue(dfl.Type, p, length)
+								x.SetValue(p.Alt, p)
 							}
 						}
 					}
 				}
 				if x := x.Index(cal.TimeFormats); x != nil {
 					for _, tfl := range cal.TimeFormats.TimeFormatLength {
+						x := x.IndexFromType(tfl, length)
 						for _, tf := range tfl.TimeFormat {
 							for _, p := range tf.Pattern {
-								x.SetValue(tfl.Type, p, length)
+								x.SetValue(p.Alt, p)
 							}
 						}
 					}
 				}
 				if x := x.Index(cal.DateTimeFormats); x != nil {
 					for _, dtfl := range cal.DateTimeFormats.DateTimeFormatLength {
+						x := x.IndexFromType(dtfl, length)
 						for _, dtf := range dtfl.DateTimeFormat {
 							for _, p := range dtf.Pattern {
-								x.SetValue(dtfl.Type, p, length)
+								x.SetValue(p.Alt, p)
 							}
 						}
 					}
@@ -223,12 +249,12 @@ func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
 		// Store this somewhere else.
 		if x := x.Index(ldml.Dates.Fields); x != nil {
 			for _, f := range ldml.Dates.Fields.Field {
-				x := x.IndexFromType(f)
+				x := x.IndexFromType(f, field)
 				for _, d := range f.DisplayName {
-					x.Index(d).SetValue("", d)
+					x.Index(d).SetValue(d.Alt, d)
 				}
 				for _, r := range f.Relative {
-					x.Index(r).SetValue(r.Type, r, relative)
+					x.Index(r).SetValue(r.Type, r, relTime)
 				}
 				for _, rt := range f.RelativeTime {
 					x := x.Index(rt).IndexFromType(rt)
@@ -237,7 +263,7 @@ func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
 					}
 				}
 				for _, rp := range f.RelativePeriod {
-					x.Index(rp).SetValue("", rp)
+					x.Index(rp).SetValue(rp.Alt, rp)
 				}
 			}
 		}
@@ -253,25 +279,25 @@ func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
 				format.SetValue(g.Element(), g)
 			}
 			for _, r := range ldml.Dates.TimeZoneNames.RegionFormat {
-				x.Index(r).SetValue(r.Type, r)
+				x.Index(r).SetValue(r.Type, r, timeType)
 			}
 
 			set := func(x *cldrtree.Index, e []*cldr.Common, zone string) {
 				for _, n := range e {
-					x.Index(n, zoneType).SetValue(zone, n)
+					x.Index(n, zoneType...).SetValue(zone, n)
 				}
 			}
-			zoneWidth := cldrtree.SharedType()
+			zoneWidth := []cldrtree.Option{length, cldrtree.SharedType()}
 			zs := x.IndexWithName("zone")
 			for _, z := range ldml.Dates.TimeZoneNames.Zone {
 				for _, l := range z.Long {
-					x := zs.Index(l, zoneWidth)
+					x := zs.Index(l, zoneWidth...)
 					set(x, l.Generic, z.Type)
 					set(x, l.Standard, z.Type)
 					set(x, l.Daylight, z.Type)
 				}
 				for _, s := range z.Short {
-					x := zs.Index(s, zoneWidth)
+					x := zs.Index(s, zoneWidth...)
 					set(x, s.Generic, z.Type)
 					set(x, s.Standard, z.Type)
 					set(x, s.Daylight, z.Type)
@@ -279,20 +305,20 @@ func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
 			}
 			set = func(x *cldrtree.Index, e []*cldr.Common, zone string) {
 				for _, n := range e {
-					x.Index(n, metaZoneType).SetValue(zone, n)
+					x.Index(n, metaZoneType...).SetValue(zone, n)
 				}
 			}
-			zoneWidth = cldrtree.SharedType()
+			zoneWidth = []cldrtree.Option{length, cldrtree.SharedType()}
 			zs = x.IndexWithName("metaZone")
 			for _, z := range ldml.Dates.TimeZoneNames.Metazone {
 				for _, l := range z.Long {
-					x := zs.Index(l, zoneWidth)
+					x := zs.Index(l, zoneWidth...)
 					set(x, l.Generic, z.Type)
 					set(x, l.Standard, z.Type)
 					set(x, l.Daylight, z.Type)
 				}
 				for _, s := range z.Short {
-					x := zs.Index(s, zoneWidth)
+					x := zs.Index(s, zoneWidth...)
 					set(x, s.Generic, z.Type)
 					set(x, s.Standard, z.Type)
 					set(x, s.Daylight, z.Type)
@@ -300,5 +326,4 @@ func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
 			}
 		}
 	}
-	dates.Gen(w)
 }

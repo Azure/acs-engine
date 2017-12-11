@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/influxdata/influxdb/services/meta"
-	"github.com/uber-go/zap"
+	"go.uber.org/zap"
 )
 
 // Service represents the retention policy enforcement service.
@@ -26,14 +26,14 @@ type Service struct {
 	wg     sync.WaitGroup
 	done   chan struct{}
 
-	logger zap.Logger
+	logger *zap.Logger
 }
 
 // NewService returns a configured retention policy enforcement service.
 func NewService(c Config) *Service {
 	return &Service{
 		config: c,
-		logger: zap.New(zap.NullEncoder()),
+		logger: zap.NewNop(),
 	}
 }
 
@@ -43,7 +43,7 @@ func (s *Service) Open() error {
 		return nil
 	}
 
-	s.logger.Info(fmt.Sprint("Starting retention policy enforcement service with check interval of ", s.config.CheckInterval))
+	s.logger.Info("Starting retention policy enforcement service", zap.String("check-interval", s.config.CheckInterval.String()))
 	s.done = make(chan struct{})
 
 	s.wg.Add(1)
@@ -66,7 +66,7 @@ func (s *Service) Close() error {
 }
 
 // WithLogger sets the logger on the service.
-func (s *Service) WithLogger(log zap.Logger) {
+func (s *Service) WithLogger(log *zap.Logger) {
 	s.logger = log.With(zap.String("service", "retention"))
 }
 

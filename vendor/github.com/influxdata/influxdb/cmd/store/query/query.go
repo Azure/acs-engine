@@ -3,24 +3,22 @@ package query
 import (
 	"bufio"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strconv"
-	"time"
-
-	"errors"
-
 	"strings"
+	"time"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/services/storage"
 	"github.com/influxdata/influxql"
 	"github.com/influxdata/yarpc"
-	"github.com/uber-go/zap"
+	"go.uber.org/zap"
 )
 
 // Command represents the program execution for "influx_inspect export".
@@ -28,7 +26,7 @@ type Command struct {
 	// Standard input/output, overridden for testing.
 	Stderr io.Writer
 	Stdout io.Writer
-	Logger zap.Logger
+	Logger *zap.Logger
 
 	addr            string
 	cpuProfile      string
@@ -240,7 +238,7 @@ func (cmd *Command) query(c storage.StorageClient) error {
 
 func (cmd *Command) processFramesSilent(frames []storage.ReadResponse_Frame) {
 	for _, frame := range frames {
-		switch f := frame.GetData().(type) {
+		switch f := frame.Data.(type) {
 		case *storage.ReadResponse_Frame_IntegerPoints:
 			for _, v := range f.IntegerPoints.Values {
 				cmd.integerSum += v
@@ -273,7 +271,7 @@ func (cmd *Command) processFrames(wr *bufio.Writer, frames []storage.ReadRespons
 	var line []byte
 
 	for _, frame := range frames {
-		switch f := frame.GetData().(type) {
+		switch f := frame.Data.(type) {
 		case *storage.ReadResponse_Frame_Series:
 			s := f.Series
 			wr.WriteString("\033[36m")

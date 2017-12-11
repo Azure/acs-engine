@@ -18,7 +18,7 @@ import (
 	"github.com/influxdata/influxdb/query"
 	"github.com/influxdata/influxdb/tsdb"
 	"github.com/influxdata/influxql"
-	"github.com/uber-go/zap"
+	"go.uber.org/zap"
 )
 
 type cursor interface {
@@ -125,19 +125,20 @@ const statsBufferCopyIntervalN = 100
 
 type floatFinalizerIterator struct {
 	query.FloatIterator
-	logger zap.Logger
+	logger *zap.Logger
 }
 
-func newFloatFinalizerIterator(inner query.FloatIterator, logger zap.Logger) *floatFinalizerIterator {
+func newFloatFinalizerIterator(inner query.FloatIterator, logger *zap.Logger) *floatFinalizerIterator {
 	itr := &floatFinalizerIterator{FloatIterator: inner, logger: logger}
 	runtime.SetFinalizer(itr, (*floatFinalizerIterator).closeGC)
 	return itr
 }
 
 func (itr *floatFinalizerIterator) closeGC() {
-	runtime.SetFinalizer(itr, nil)
-	itr.logger.Error("FloatIterator finalized by GC")
-	itr.Close()
+	go func() {
+		itr.logger.Error("FloatIterator finalized by GC")
+		itr.Close()
+	}()
 }
 
 func (itr *floatFinalizerIterator) Close() error {
@@ -588,19 +589,20 @@ func (c *floatDescendingCursor) nextTSM() {
 
 type integerFinalizerIterator struct {
 	query.IntegerIterator
-	logger zap.Logger
+	logger *zap.Logger
 }
 
-func newIntegerFinalizerIterator(inner query.IntegerIterator, logger zap.Logger) *integerFinalizerIterator {
+func newIntegerFinalizerIterator(inner query.IntegerIterator, logger *zap.Logger) *integerFinalizerIterator {
 	itr := &integerFinalizerIterator{IntegerIterator: inner, logger: logger}
 	runtime.SetFinalizer(itr, (*integerFinalizerIterator).closeGC)
 	return itr
 }
 
 func (itr *integerFinalizerIterator) closeGC() {
-	runtime.SetFinalizer(itr, nil)
-	itr.logger.Error("IntegerIterator finalized by GC")
-	itr.Close()
+	go func() {
+		itr.logger.Error("IntegerIterator finalized by GC")
+		itr.Close()
+	}()
 }
 
 func (itr *integerFinalizerIterator) Close() error {
@@ -1051,19 +1053,20 @@ func (c *integerDescendingCursor) nextTSM() {
 
 type unsignedFinalizerIterator struct {
 	query.UnsignedIterator
-	logger zap.Logger
+	logger *zap.Logger
 }
 
-func newUnsignedFinalizerIterator(inner query.UnsignedIterator, logger zap.Logger) *unsignedFinalizerIterator {
+func newUnsignedFinalizerIterator(inner query.UnsignedIterator, logger *zap.Logger) *unsignedFinalizerIterator {
 	itr := &unsignedFinalizerIterator{UnsignedIterator: inner, logger: logger}
 	runtime.SetFinalizer(itr, (*unsignedFinalizerIterator).closeGC)
 	return itr
 }
 
 func (itr *unsignedFinalizerIterator) closeGC() {
-	runtime.SetFinalizer(itr, nil)
-	itr.logger.Error("UnsignedIterator finalized by GC")
-	itr.Close()
+	go func() {
+		itr.logger.Error("UnsignedIterator finalized by GC")
+		itr.Close()
+	}()
 }
 
 func (itr *unsignedFinalizerIterator) Close() error {
@@ -1514,19 +1517,20 @@ func (c *unsignedDescendingCursor) nextTSM() {
 
 type stringFinalizerIterator struct {
 	query.StringIterator
-	logger zap.Logger
+	logger *zap.Logger
 }
 
-func newStringFinalizerIterator(inner query.StringIterator, logger zap.Logger) *stringFinalizerIterator {
+func newStringFinalizerIterator(inner query.StringIterator, logger *zap.Logger) *stringFinalizerIterator {
 	itr := &stringFinalizerIterator{StringIterator: inner, logger: logger}
 	runtime.SetFinalizer(itr, (*stringFinalizerIterator).closeGC)
 	return itr
 }
 
 func (itr *stringFinalizerIterator) closeGC() {
-	runtime.SetFinalizer(itr, nil)
-	itr.logger.Error("StringIterator finalized by GC")
-	itr.Close()
+	go func() {
+		itr.logger.Error("StringIterator finalized by GC")
+		itr.Close()
+	}()
 }
 
 func (itr *stringFinalizerIterator) Close() error {
@@ -1977,19 +1981,20 @@ func (c *stringDescendingCursor) nextTSM() {
 
 type booleanFinalizerIterator struct {
 	query.BooleanIterator
-	logger zap.Logger
+	logger *zap.Logger
 }
 
-func newBooleanFinalizerIterator(inner query.BooleanIterator, logger zap.Logger) *booleanFinalizerIterator {
+func newBooleanFinalizerIterator(inner query.BooleanIterator, logger *zap.Logger) *booleanFinalizerIterator {
 	itr := &booleanFinalizerIterator{BooleanIterator: inner, logger: logger}
 	runtime.SetFinalizer(itr, (*booleanFinalizerIterator).closeGC)
 	return itr
 }
 
 func (itr *booleanFinalizerIterator) closeGC() {
-	runtime.SetFinalizer(itr, nil)
-	itr.logger.Error("BooleanIterator finalized by GC")
-	itr.Close()
+	go func() {
+		itr.logger.Error("BooleanIterator finalized by GC")
+		itr.Close()
+	}()
 }
 
 func (itr *booleanFinalizerIterator) Close() error {
