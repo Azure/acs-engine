@@ -114,6 +114,36 @@ func TestIsTillerEnabled(t *testing.T) {
 	}
 }
 
+func TestIsACIConnectorEnabled(t *testing.T) {
+	c := KubernetesConfig{
+		Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+	}
+	e := c.IsACIConnectorEnabled()
+	if e != DefaultACIConnectorAddonEnabled {
+		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return %t when no ACI connector addon has been specified, instead returned %t", DefaultACIConnectorAddonEnabled, e)
+	}
+	c.Addons = append(c.Addons, getMockAddon(DefaultACIConnectorAddonName))
+	e = c.IsACIConnectorEnabled()
+	if e != false {
+		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return true when ACI connector has been specified, instead returned %t", e)
+	}
+	b := true
+	c = KubernetesConfig{
+		Addons: []KubernetesAddon{
+			{
+				Name:    DefaultACIConnectorAddonName,
+				Enabled: &b,
+			},
+		},
+	}
+	e = c.IsACIConnectorEnabled()
+	if e != true {
+		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return false when ACI connector addon has been specified as disabled, instead returned %t", e)
+	}
+}
+
 func TestIsDashboardEnabled(t *testing.T) {
 	c := KubernetesConfig{
 		Addons: []KubernetesAddon{

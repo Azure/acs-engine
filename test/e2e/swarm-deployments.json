@@ -2,8 +2,8 @@
 	"deployments": [
 		{
 			"cluster_definition": "swarm.json"
-		},
-		{
+		}, 
+		{ 
 			"cluster_definition": "disks-managed/swarm-preAttachedDisks-vmss.json"
 		}
 	]

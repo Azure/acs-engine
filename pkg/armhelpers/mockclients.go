@@ -36,6 +36,7 @@ type MockStorageClient struct{}
 type MockKubernetesClient struct {
 	FailListPods          bool
 	FailGetNode           bool
+	UpdateNodeFunc        func(*v1.Node) (*v1.Node, error)
 	FailUpdateNode        bool
 	FailSupportEviction   bool
 	FailDeletePod         bool
@@ -61,11 +62,16 @@ func (mkc *MockKubernetesClient) GetNode(name string) (*v1.Node, error) {
 	if mkc.FailGetNode {
 		return nil, fmt.Errorf("GetNode failed")
 	}
-	return &v1.Node{}, nil
+	node := &v1.Node{}
+	node.Status.Conditions = append(node.Status.Conditions, v1.NodeCondition{Type: v1.NodeReady, Status: v1.ConditionTrue})
+	return node, nil
 }
 
 //UpdateNode updates the node in the api server with the passed in info
 func (mkc *MockKubernetesClient) UpdateNode(node *v1.Node) (*v1.Node, error) {
+	if mkc.UpdateNodeFunc != nil {
+		return mkc.UpdateNodeFunc(node)
+	}
 	if mkc.FailUpdateNode {
 		return nil, fmt.Errorf("UpdateNode failed")
 	}

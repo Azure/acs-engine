@@ -21,6 +21,7 @@ var (
 	DefaultKubernetesSpecConfig = KubernetesSpecConfig{
 		KubernetesImageBase:              "gcrio.azureedge.net/google_containers/",
 		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
+		ACIConnectorImageBase:            "microsoft/",
 		EtcdDownloadURLBase:              "https://acs-mirror.azureedge.net/github-coreos",
 		KubeBinariesSASURLBase:           "https://acs-mirror.azureedge.net/wink8s/",
 		WindowsTelemetryGUID:             "fb801154-36b9-41bc-89c2-f4d4f05472b0",
@@ -48,7 +49,7 @@ var (
 		ImageOffer:     "UbuntuServer",
 		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201711072",
+		ImageVersion:   "16.04.201711211",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -132,10 +133,13 @@ var (
 		KubernetesSpecConfig: KubernetesSpecConfig{
 			KubernetesImageBase:              "crproxy.trafficmanager.net:6000/google_containers/",
 			TillerImageBase:                  "crproxy.trafficmanager.net:6000/kubernetes-helm/",
-			EtcdDownloadURLBase:              "https://acsengine.blob.core.chinacloudapi.cn/github-coreos",
-			CNIPluginsDownloadURL:            "https://acsengine.blob.core.chinacloudapi.cn/cni/cni-plugins-amd64-latest.tgz",
-			VnetCNILinuxPluginsDownloadURL:   "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-linux-amd64-latest.tgz",
-			VnetCNIWindowsPluginsDownloadURL: "https://acsengine.blob.core.chinacloudapi.cn/cni/azure-vnet-cni-windows-amd64-latest.zip",
+			ACIConnectorImageBase:            DefaultKubernetesSpecConfig.ACIConnectorImageBase,
+			EtcdDownloadURLBase:              DefaultKubernetesSpecConfig.EtcdDownloadURLBase,
+			KubeBinariesSASURLBase:           DefaultKubernetesSpecConfig.KubeBinariesSASURLBase,
+			WindowsTelemetryGUID:             DefaultKubernetesSpecConfig.WindowsTelemetryGUID,
+			CNIPluginsDownloadURL:            DefaultKubernetesSpecConfig.CNIPluginsDownloadURL,
+			VnetCNILinuxPluginsDownloadURL:   DefaultKubernetesSpecConfig.VnetCNILinuxPluginsDownloadURL,
+			VnetCNIWindowsPluginsDownloadURL: DefaultKubernetesSpecConfig.VnetCNIWindowsPluginsDownloadURL,
 		},
 		DCOSSpecConfig: DCOSSpecConfig{
 			DCOS188BootstrapDownloadURL:     fmt.Sprintf(AzureChinaCloudDCOSBootstrapDownloadURL, "5df43052907c021eeb5de145419a3da1898c58a5"),
@@ -165,6 +169,24 @@ var (
 		Containers: []api.KubernetesContainerSpec{
 			{
 				Name:           DefaultTillerAddonName,
+				CPURequests:    "50m",
+				MemoryRequests: "150Mi",
+				CPULimits:      "50m",
+				MemoryLimits:   "150Mi",
+			},
+		},
+	}
+
+	// DefaultACIConnectorAddonsConfig is the default ACI Connector Kubernetes addon Config
+	DefaultACIConnectorAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultACIConnectorAddonName,
+		Enabled: pointerToBool(api.DefaultACIConnectorAddonEnabled),
+		Config: map[string]string{
+			"region": "westus",
+		},
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name:           DefaultACIConnectorAddonName,
 				CPURequests:    "50m",
 				MemoryRequests: "150Mi",
 				CPULimits:      "50m",
@@ -250,6 +272,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig.Addons == nil {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{
 				DefaultTillerAddonsConfig,
+				DefaultACIConnectorAddonsConfig,
 				DefaultDashboardAddonsConfig,
 				DefaultReschedulerAddonsConfig,
 			}
@@ -259,6 +282,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if t < 0 {
 				// Provide default acs-engine config for Tiller
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultTillerAddonsConfig)
+			}
+			a := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
+			if a < 0 {
+				// Provide default acs-engine config for ACI Connector
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultACIConnectorAddonsConfig)
 			}
 			d := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultDashboardAddonName)
 			if d < 0 {
@@ -278,10 +306,14 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
 		}
 		if o.KubernetesConfig.NetworkPolicy == "" {
-			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			if a.HasWindows() {
+				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicyWindows
+			} else {
+				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
+			}
 		}
 		if o.KubernetesConfig.ClusterSubnet == "" {
-			if o.IsVNETIntegrated() {
+			if o.IsAzureCNI() {
 				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
 				o.KubernetesConfig.ClusterSubnet = DefaultKubernetesSubnet
 			} else {
@@ -289,7 +321,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 		if o.KubernetesConfig.MaxPods == 0 {
-			if o.IsVNETIntegrated() {
+			if o.IsAzureCNI() {
 				o.KubernetesConfig.MaxPods = DefaultKubernetesMaxPodsVNETIntegrated
 			} else {
 				o.KubernetesConfig.MaxPods = DefaultKubernetesMaxPods
@@ -315,6 +347,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 		if o.KubernetesConfig.NodeStatusUpdateFrequency == "" {
 			o.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sVersion]["nodestatusfreq"]
+		}
+		if a.OrchestratorProfile.KubernetesConfig.HardEvictionThreshold == "" {
+			a.OrchestratorProfile.KubernetesConfig.HardEvictionThreshold = DefaultKubernetesHardEvictionThreshold
 		}
 		if o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
 			o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sVersion]["nodegraceperiod"]
@@ -353,15 +388,14 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 
-		// default etcd version
-		if "" == o.KubernetesConfig.EtcdVersion {
-			o.KubernetesConfig.EtcdVersion = "2.5.2"
-		}
-
 		// For each addon, produce a synthesized config between user-provided and acs-engine defaults
 		t := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultTillerAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[t].IsEnabled(api.DefaultTillerAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[t] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[t], DefaultTillerAddonsConfig)
+		}
+		c := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultACIConnectorAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[c].IsEnabled(api.DefaultACIConnectorAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[c] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[c], DefaultACIConnectorAddonsConfig)
 		}
 		d := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultDashboardAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[d].IsEnabled(api.DefaultDashboardAddonEnabled) {
@@ -418,7 +452,7 @@ func setMasterNetworkDefaults(a *api.Properties) {
 
 	if !a.MasterProfile.IsCustomVNET() {
 		if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
-			if a.OrchestratorProfile.IsVNETIntegrated() {
+			if a.OrchestratorProfile.IsAzureCNI() {
 				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
 				a.MasterProfile.Subnet = a.OrchestratorProfile.KubernetesConfig.ClusterSubnet
 				a.MasterProfile.FirstConsecutiveStaticIP = getFirstConsecutiveStaticIPAddress(a.MasterProfile.Subnet)
@@ -441,7 +475,7 @@ func setMasterNetworkDefaults(a *api.Properties) {
 		a.MasterProfile.IPAddressCount = 1
 
 		// Allocate IP addresses for pods if VNET integration is enabled.
-		if a.OrchestratorProfile.IsVNETIntegrated() {
+		if a.OrchestratorProfile.IsAzureCNI() {
 			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 				a.MasterProfile.IPAddressCount += a.OrchestratorProfile.KubernetesConfig.MaxPods
 			}
@@ -485,7 +519,7 @@ func setAgentNetworkDefaults(a *api.Properties) {
 			profile.IPAddressCount = 1
 
 			// Allocate IP addresses for pods if VNET integration is enabled.
-			if a.OrchestratorProfile.IsVNETIntegrated() {
+			if a.OrchestratorProfile.IsAzureCNI() {
 				if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 					profile.IPAddressCount += a.OrchestratorProfile.KubernetesConfig.MaxPods
 				}
@@ -676,6 +710,14 @@ func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesA
 			if addon.Containers[c].MemoryLimits == "" {
 				addon.Containers[c].MemoryLimits = defaults.Containers[i].MemoryLimits
 			}
+		}
+	}
+	for key, val := range defaults.Config {
+		if addon.Config == nil {
+			addon.Config = make(map[string]string, 0)
+		}
+		if v, ok := addon.Config[key]; !ok || v == "" {
+			addon.Config[key] = val
 		}
 	}
 	return addon

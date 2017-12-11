@@ -36,10 +36,14 @@ const (
 	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP
 	// address relative to the first consecutive Kubernetes static IP
 	DefaultInternalLbStaticIPOffset = 10
-	// DefaultNetworkPolicy is disabling network policy enforcement
-	DefaultNetworkPolicy = "none"
+	// DefaultNetworkPolicy defines the network policy to use by default
+	DefaultNetworkPolicy = "azure"
+	// DefaultNetworkPolicyWindows defines the network policy to use by default for clusters with Windows agent pools
+	DefaultNetworkPolicyWindows = "none"
 	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/
 	DefaultKubernetesNodeStatusUpdateFrequency = "10s"
+	// DefaultKubernetesHardEvictionThreshold is memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%, see --eviction-hard at https://kubernetes.io/docs/admin/kubelet/
+	DefaultKubernetesHardEvictionThreshold = "memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%"
 	// DefaultKubernetesCtrlMgrNodeMonitorGracePeriod is 40s, see --node-monitor-grace-period at https://kubernetes.io/docs/admin/kube-controller-manager/
 	DefaultKubernetesCtrlMgrNodeMonitorGracePeriod = "40s"
 	// DefaultKubernetesCtrlMgrPodEvictionTimeout is 5m0s, see --pod-eviction-timeout at https://kubernetes.io/docs/admin/kube-controller-manager/
@@ -64,11 +68,15 @@ const (
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
+	// DefaultACIConnectorAddonName is the name of the tiller addon deployment
+	DefaultACIConnectorAddonName = "aci-connector"
 	// DefaultDashboardAddonName is the name of the kubernetes-dashboard addon deployment
 	DefaultDashboardAddonName = "kubernetes-dashboard"
 	// DefaultTillerImage defines the Helm Tiller deployment version on Kubernetes Clusters
 	// TODO deprecate this usage, we should be favoring a more frequent upgrade cycle that pins fresh tiller versions to specific k8s versions
 	DefaultTillerImage = "tiller:v2.6.2"
+	// DefaultACIConnectorImage defines the ACI Connector deployment version on Kubernetes Clusters
+	DefaultACIConnectorImage = "aci-connector-k8s:latest"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
 	// listens on by default. must by in the default Service CIDR range.
 	DefaultKubernetesDNSServiceIP = "10.0.0.10"
@@ -84,7 +92,7 @@ const (
 	// DefaultOrchestratorName specifies the 3 character orchestrator code of the cluster template and affects resource naming.
 	DefaultOrchestratorName = "k8s"
 	// DefaultEtcdVersion specifies the default etcd version to install
-	DefaultEtcdVersion = "2.2.5"
+	DefaultEtcdVersion = "2.3.8"
 	// DefaultEtcdDiskSize specifies the default size for Kubernetes master etcd disk volumes in GB
 	DefaultEtcdDiskSize = "128"
 	// DefaultReschedulerImage defines the rescheduler deployment version on Kubernetes Clusters

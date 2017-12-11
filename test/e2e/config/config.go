@@ -138,7 +138,7 @@ func (c *Config) IsSwarm() bool {
 func (c *Config) SetRandomRegion() {
 	var regions []string
 	if c.Regions == nil {
-		regions = []string{"eastus", "westcentralus", "southeastasia", "westus2", "westeurope"}
+		regions = []string{"eastus", "southcentralus", "westcentralus", "southeastasia", "westus2", "westeurope"}
 	} else {
 		regions = c.Regions
 	}

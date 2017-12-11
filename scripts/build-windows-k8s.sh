@@ -85,7 +85,7 @@ k8s_17_cherry_pick() {
 }
 
 k8s_18_cherry_pick() {
-    # d75ef50170 merge#54334: fix azure disk mount failure on coreos and some other distros
+    # 4647f2f616 merge #52401: add windows implementation of GetMountRefs
     # ...
     # 69644018c8 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
 

@@ -20,7 +20,7 @@ import (
 func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.ManagedCluster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = v20170831.ID
-	c.Location = v20170831.Location
+	c.Location = NormalizeAzureRegion(v20170831.Location)
 	c.Name = v20170831.Name
 	if v20170831.Plan != nil {
 		c.Plan = convertv20170831AgentPoolOnlyResourcePurchasePlan(v20170831.Plan)
@@ -77,7 +77,7 @@ func convertV20170831AgentPoolOnlyProperties(obj *v20170831.Properties) *Propert
 func ConvertVLabsAgentPoolOnly(vlabs *vlabs.ManagedCluster) *ContainerService {
 	c := &ContainerService{}
 	c.ID = vlabs.ID
-	c.Location = vlabs.Location
+	c.Location = NormalizeAzureRegion(vlabs.Location)
 	c.Name = vlabs.Name
 	if vlabs.Plan != nil {
 		c.Plan = &ResourcePurchasePlan{}

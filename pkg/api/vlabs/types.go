@@ -197,6 +197,7 @@ type KubernetesAddon struct {
 	Name       string                    `json:"name,omitempty"`
 	Enabled    *bool                     `json:"enabled,omitempty"`
 	Containers []KubernetesContainerSpec `json:"containers,omitempty"`
+	Config     map[string]string         `json:"config,omitempty"`
 }
 
 // IsEnabled returns if the addon is explicitly enabled, or the user-provided default if non explicitly enabled
@@ -219,6 +220,7 @@ type KubernetesConfig struct {
 	MaxPods                          int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string            `json:"dockerBridgeSubnet,omitempty"`
 	NodeStatusUpdateFrequency        string            `json:"nodeStatusUpdateFrequency,omitempty"`
+	HardEvictionThreshold            string            `json:"hardEvictionThreshold,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
@@ -232,6 +234,9 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitBucket     int               `json:"cloudProviderRateLimitBucket,omitempty"`
 	UseManagedIdentity               bool              `json:"useManagedIdentity,omitempty"`
 	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
+	DockerEngineVersion              string            `json:"dockerEngineVersion,omitempty"`
+	CustomCcmImage                   string            `json:"customCcmImage,omitempty"`
+	UseCloudControllerManager        *bool             `json:"useCloudControllerManager,omitempty"`
 	UseInstanceMetadata              *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                       bool              `json:"enableRbac,omitempty"`
 	EnableAggregatedAPIs             bool              `json:"enableAggregatedAPIs,omitempty"`

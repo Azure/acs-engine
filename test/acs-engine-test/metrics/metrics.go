@@ -1,9 +1,9 @@
 package metrics
 
 import (
-	"encoding/json"
 	"fmt"
 
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/alexcesaro/statsd"
 )
 
@@ -19,7 +19,7 @@ func AddMetric(endpoint, namespace, metric string, count int64, dims map[string]
 		Namespace: namespace,
 		Metric:    metric,
 		Dims:      dims}
-	data, err := json.Marshal(bucket)
+	data, err := helpers.JSONMarshal(bucket, false)
 	if err != nil {
 		return err
 	}

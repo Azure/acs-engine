@@ -2,8 +2,11 @@ package acsengine
 
 import (
 	// "fmt"
+
 	"encoding/json"
 	"strings"
+
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 // PrettyPrintArmTemplate will pretty print the arm template ensuring ordered by params, vars, resources, and outputs
@@ -37,7 +40,7 @@ func PrettyPrintJSON(content string) (string, error) {
 	if err := json.Unmarshal([]byte(content), &data); err != nil {
 		return "", err
 	}
-	prettyprint, err := json.MarshalIndent(data, "", "  ")
+	prettyprint, err := helpers.JSONMarshalIndent(data, "", "  ", false)
 	if err != nil {
 		return "", err
 	}
@@ -55,10 +58,11 @@ func BuildAzureParametersFile(content string) (string, error) {
 	parametersAll["contentVersion"] = "1.0.0.0"
 	parametersAll["parameters"] = parametersMap
 
-	prettyprint, err := json.MarshalIndent(parametersAll, "", "  ")
+	prettyprint, err := helpers.JSONMarshalIndent(parametersAll, "", "  ", false)
 	if err != nil {
 		return "", err
 	}
+
 	return string(prettyprint), nil
 }
 

@@ -23,14 +23,17 @@ func (az *AzureClient) DeployTemplate(resourceGroupName, deploymentName string, 
 		deploymentName,
 		deployment,
 		cancel)
-	if err := <-errChan; err != nil {
+
+	err := <-errChan
+	res, ok := <-resChan
+	if !ok {
+		// This path is taken when validation is failed before calling ARM
 		return nil, err
 	}
-	res := <-resChan
 
 	log.Infof("Finished ARM Deployment (%s).", deploymentName)
 
-	return &res, nil
+	return &res, err
 }
 
 // ValidateTemplate validate the template and parameters
