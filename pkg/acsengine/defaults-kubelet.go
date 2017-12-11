@@ -1,7 +1,11 @@
 package acsengine
 
 import (
+	"bytes"
+	"fmt"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/helpers"
@@ -93,6 +97,17 @@ func setKubeletConfig(cs *api.ContainerService) {
 			profile.KubernetesConfig = &api.KubernetesConfig{}
 		}
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
+
+		// For versions >= 1.6.0 we add the accelerators=true feature gate
+		// (previously this was handled in parts/k8s/kubernetesagentcustomdata.yml)
+		if isKubernetesVersionGe(o.OrchestratorVersion, "1.6.0") {
+			profileFeatureGates := profile.KubernetesConfig.KubeletConfig["--feature-gates"]
+			if profileFeatureGates != "" {
+				profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig) // make a copy before changing to avoid changing other references (e.g. master)
+				profile.KubernetesConfig.KubeletConfig["--feature-gates"] = combineValues(profileFeatureGates, "Accelerators=true")
+			}
+		}
+		// TODO - should we perform a merge on the --feature-gates values between o.KubernetesConfig.KubeletConfig and profile.KubernetesConfig?
 	}
 }
 
@@ -108,4 +123,41 @@ func setMissingKubeletValues(p *api.KubernetesConfig, d map[string]string) {
 			}
 		}
 	}
+}
+func copyMap(input map[string]string) map[string]string {
+	copy := map[string]string{}
+	for key, value := range input {
+		copy[key] = value
+	}
+	return copy
+}
+func combineValues(inputs ...string) string {
+	var valueMap map[string]string
+	valueMap = make(map[string]string)
+	for _, input := range inputs {
+		applyValueStringToMap(valueMap, input)
+	}
+	return mapToString(valueMap)
+}
+func applyValueStringToMap(valueMap map[string]string, input string) {
+	values := strings.Split(input, ",")
+	for index := 0; index < len(values); index++ {
+		// trim spaces (e.g. if the input was "foo=true, bar=true" - we want to drop the space after the comma)
+		value := strings.Trim(values[index], " ")
+		valueParts := strings.Split(value, "=") // TODO validate that there are two parts
+		valueMap[valueParts[0]] = valueParts[1]
+	}
+}
+func mapToString(valueMap map[string]string) string {
+	// Order by key for consistency
+	keys := []string{}
+	for key := range valueMap {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	var buf bytes.Buffer
+	for _, key := range keys {
+		buf.WriteString(fmt.Sprintf("%s=%s,", key, valueMap[key]))
+	}
+	return strings.TrimSuffix(buf.String(), ",")
 }
