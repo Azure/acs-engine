@@ -310,10 +310,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig.EtcdVersion == "" {
 			o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
 		}
-		if o.KubernetesConfig.NetworkPolicy == "" {
-			if a.HasWindows() {
-				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicyWindows
-			} else {
+		if a.HasWindows() {
+			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicyWindows
+		} else {
+			if o.KubernetesConfig.NetworkPolicy == "" {
 				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 			}
 		}
@@ -406,7 +406,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
 		}
 
-		staticKubeletConfig := map[string]string{
+		staticLinuxKubeletConfig := map[string]string{
 			"--address":                         "0.0.0.0",
 			"--allow-privileged":                "true",
 			"--pod-manifest-path":               "/etc/kubernetes/manifests",
@@ -421,10 +421,17 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 
 		if helpers.IsTrueBoolPointer(a.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager) {
-			staticKubeletConfig["--cloud-provider"] = "external"
+			staticLinuxKubeletConfig["--cloud-provider"] = "external"
 		} else {
-			staticKubeletConfig["--cloud-provider"] = "azure"
+			staticLinuxKubeletConfig["--cloud-provider"] = "azure"
 		}
+
+		staticWindowsKubeletConfig := make(map[string]string)
+		for key, val := range staticLinuxKubeletConfig {
+			staticWindowsKubeletConfig[key] = val
+		}
+		// Windows kubelet config overrides
+		staticWindowsKubeletConfig["--network-plugin"] = "kubenet"
 
 		// Default Kubelet config
 		defaultKubeletConfig := map[string]string{
@@ -452,7 +459,13 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 		// We don't support user-configurable values for the following,
 		// so any of the value assignments below will override user-provided values
-		for key, val := range staticKubeletConfig {
+		var overrideKubeletConfig map[string]string
+		if a.HasWindows() {
+			overrideKubeletConfig = staticWindowsKubeletConfig
+		} else {
+			overrideKubeletConfig = staticLinuxKubeletConfig
+		}
+		for key, val := range overrideKubeletConfig {
 			o.KubernetesConfig.KubeletConfig[key] = val
 		}
 
