@@ -872,6 +872,13 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return buf.String()
 		},
+		"GetKubeletConfigKeyVals": func(kubeletConfig map[string]string) string {
+			var buf bytes.Buffer
+			for key, val := range kubeletConfig {
+				buf.WriteString(fmt.Sprintf("%s=%s ", key, val))
+			}
+			return buf.String()
+		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
 		},

@@ -17,46 +17,29 @@ ExecStartPre=/sbin/sysctl -w net.ipv4.tcp_retries2=8
 ExecStartPre=-/sbin/ebtables -t nat --list
 ExecStartPre=-/sbin/iptables -t nat --list
 ExecStart=/usr/bin/docker run \
-  --net=host \
-  --pid=host \
-  --privileged \
-  --rm \
-  --volume=/dev:/dev \
-  --volume=/sys:/sys:ro \
-  --volume=/var/run:/var/run:rw \
-  --volume=/var/lib/docker/:/var/lib/docker:rw \
-  --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \
-  --volume=/var/log:/var/log:rw \
-  --volume=/etc/kubernetes/:/etc/kubernetes:ro \
-  --volume=/srv/kubernetes/:/srv/kubernetes:ro $DOCKER_OPTS \
-  --volume=/var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro \
-  --volume=/usr/libexec/kubernetes/kubelet-plugins:/usr/libexec/kubernetes/kubelet-plugins \
+--net=host \
+--pid=host \
+--privileged \
+--rm \
+--volume=/dev:/dev \
+--volume=/sys:/sys:ro \
+--volume=/var/run:/var/run:rw \
+--volume=/var/lib/docker/:/var/lib/docker:rw \
+--volume=/var/lib/kubelet/:/var/lib/kubelet:shared \
+--volume=/var/log:/var/log:rw \
+--volume=/etc/kubernetes/:/etc/kubernetes:ro \
+--volume=/srv/kubernetes/:/srv/kubernetes:ro $DOCKER_OPTS \
+--volume=/var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro \
+--volume=/usr/libexec/kubernetes/kubelet-plugins:/usr/libexec/kubernetes/kubelet-plugins \
     ${KUBELET_IMAGE} \
-      /hyperkube kubelet \
-        --kubeconfig=/var/lib/kubelet/kubeconfig \
+    /hyperkube kubelet \
+        --v=2 \
         --require-kubeconfig \
-        --pod-infra-container-image="${KUBELET_POD_INFRA_CONTAINER_IMAGE}" \
-        --address=0.0.0.0 \
-        --allow-privileged=true \
-        ${KUBELET_FIX_43704_1} \
-        ${KUBELET_FIX_43704_2}${KUBELET_FIX_43704_3} \
         --enable-server \
-        --pod-manifest-path=/etc/kubernetes/manifests \
-        --cluster-dns=${KUBELET_CLUSTER_DNS} \
-        --cluster-domain=cluster.local \
         --node-labels="${KUBELET_NODE_LABELS}" \
-        --cloud-provider=${CLOUD_PROVIDER} \
-        --cloud-config=/etc/kubernetes/azure.json \
-        --azure-container-registry-config=/etc/kubernetes/azure.json \
-        --network-plugin=${KUBELET_NETWORK_PLUGIN} \
-        --max-pods=${KUBELET_MAX_PODS} \
-        --eviction-hard="${KUBELET_HARD_EVICTION_THRESHOLD}" \
-        --node-status-update-frequency=${KUBELET_NODE_STATUS_UPDATE_FREQUENCY} \
-        --image-gc-high-threshold=${KUBELET_IMAGE_GC_HIGH_THRESHOLD} \
-        --image-gc-low-threshold=${KUBELET_IMAGE_GC_LOW_THRESHOLD} \
-        --v=2 ${KUBELET_FEATURE_GATES} \
-        ${KUBELET_NON_MASQUERADE_CIDR} \
-        ${KUBELET_REGISTER_NODE} ${KUBELET_REGISTER_WITH_TAINTS}
+        --non-masquerade-cidr=${KUBELET_NON_MASQUERADE_CIDR} \
+        ${KUBELET_CONFIG} \
+        ${KUBELET_REGISTER_NODE} ${KUBELET_REGISTER_WITH_TAINTS} ${KUBELET_FEATURE_GATES}
 
 [Install]
 WantedBy=multi-user.target

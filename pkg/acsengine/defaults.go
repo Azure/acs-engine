@@ -469,9 +469,18 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.KubeletConfig[key] = val
 		}
 
+		// Get rid of values not supported in v1.5 clusters
+		if isKubernetesVersionGe(o.OrchestratorVersion, "1.6.0") {
+			for _, key := range []string{"--non-masquerade-cidr", "--cgroups-per-qos", "--enforce-node-allocatable"} {
+				delete(o.KubernetesConfig.KubeletConfig, key)
+			}
+		}
+
+		// Master-specific kubelet config changes go here
 		if a.MasterProfile != nil {
 			a.MasterProfile.KubernetesConfig.KubeletConfig = o.KubernetesConfig.KubeletConfig
 		}
+		// Agent-specific kubelet config changes go here
 		for _, profile := range a.AgentPoolProfiles {
 			profile.KubernetesConfig.KubeletConfig = o.KubernetesConfig.KubeletConfig
 		}
@@ -789,4 +798,10 @@ func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesA
 func pointerToBool(b bool) *bool {
 	p := b
 	return &p
+}
+
+func isKubernetesVersionGe(actualVersion, version string) bool {
+	orchestratorVersion, _ := semver.NewVersion(actualVersion)
+	constraint, _ := semver.NewConstraint(">=" + version)
+	return constraint.Check(orchestratorVersion)
 }
