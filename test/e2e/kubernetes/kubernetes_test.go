@@ -70,61 +70,61 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have kube-dns running", func() {
-			running, err := pod.WaitOnReady("kube-dns", "kube-system", 5*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-dns", "kube-system", 3, 30*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-dashboard running", func() {
-			running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 5*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 3, 30*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-proxy running", func() {
-			running, err := pod.WaitOnReady("kube-proxy", "kube-system", 5*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-proxy", "kube-system", 3, 30*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have heapster running", func() {
-			running, err := pod.WaitOnReady("heapster", "kube-system", 5*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("heapster", "kube-system", 3, 30*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-addon-manager running", func() {
-			running, err := pod.WaitOnReady("kube-addon-manager", "kube-system", 5*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-addon-manager", "kube-system", 3, 30*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-apiserver running", func() {
-			running, err := pod.WaitOnReady("kube-apiserver", "kube-system", 5*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-apiserver", "kube-system", 3, 30*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-controller-manager running", func() {
-			running, err := pod.WaitOnReady("kube-controller-manager", "kube-system", 5*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-controller-manager", "kube-system", 3, 30*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have kube-scheduler running", func() {
-			running, err := pod.WaitOnReady("kube-scheduler", "kube-system", 5*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kube-scheduler", "kube-system", 3, 30*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should have tiller running", func() {
-			running, err := pod.WaitOnReady("tiller", "kube-system", 5*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("tiller", "kube-system", 3, 30*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 		})
 
 		It("should be able to access the dashboard from each node", func() {
-			running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 5*time.Second, cfg.Timeout)
+			running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 3, 30*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 
@@ -165,7 +165,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				nginxDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", deploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
 
-				running, err := pod.WaitOnReady(deploymentName, "default", 5*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
@@ -203,7 +203,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1709", deploymentName, "default", 80, -1)
 				Expect(err).NotTo(HaveOccurred())
 
-				running, err := pod.WaitOnReady(deploymentName, "default", 5*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
@@ -243,7 +243,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				iisDeploy, err := deployment.CreateWindowsDeploy("microsoft/iis:windowsservercore-1709", deploymentName, "default", 80, hostport)
 				Expect(err).NotTo(HaveOccurred())
 
-				running, err := pod.WaitOnReady(deploymentName, "default", 5*time.Second, cfg.Timeout)
+				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
@@ -288,7 +288,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					podName := "iis-azurefile" // should be the same as in iis-azurefile.yaml
 					iisPod, err := pod.CreatePodFromFile(filepath.Join(WorkloadDir, "iis-azurefile.yaml"), podName, "default")
 					Expect(err).NotTo(HaveOccurred())
-					ready, err = iisPod.WaitOnReady("default", 5*time.Second, cfg.Timeout)
+					ready, err = iisPod.WaitOnReady(5*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(ready).To(Equal(true))
 
