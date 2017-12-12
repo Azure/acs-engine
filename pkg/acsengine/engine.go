@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"regexp"
 	"runtime/debug"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -873,9 +874,15 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return buf.String()
 		},
 		"GetKubeletConfigKeyVals": func(kubeletConfig map[string]string) string {
+			// Order by key for consistency
+			keys := make([]string, len(kubeletConfig))
+			for key := range kubeletConfig {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
 			var buf bytes.Buffer
-			for key, val := range kubeletConfig {
-				buf.WriteString(fmt.Sprintf("%s=%s ", key, val))
+			for _, key := range keys {
+				buf.WriteString(fmt.Sprintf("%s=%s ", key, kubeletConfig[key]))
 			}
 			return buf.String()
 		},
