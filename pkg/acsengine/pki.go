@@ -136,7 +136,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		return nil, nil, nil, nil, nil, nil, e2
 	}
 	if e3 != nil {
-		return nil, nil, nil, nil, nil, nil, e2
+		return nil, nil, nil, nil, nil, nil, e3
 	}
 	if e4 != nil {
 		return nil, nil, nil, nil, nil, nil, e4
