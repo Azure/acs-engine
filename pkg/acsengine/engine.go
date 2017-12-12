@@ -875,7 +875,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetKubeletConfigKeyVals": func(kubeletConfig map[string]string) string {
 			// Order by key for consistency
-			keys := make([]string, len(kubeletConfig))
+			keys := []string{}
 			for key := range kubeletConfig {
 				keys = append(keys, key)
 			}
