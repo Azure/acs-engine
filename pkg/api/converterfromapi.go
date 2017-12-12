@@ -968,6 +968,8 @@ func convertCertificateProfileToVLabs(api *CertificateProfile, vlabs *vlabs.Cert
 	vlabs.EtcdServerPrivateKey = api.EtcdServerPrivateKey
 	vlabs.EtcdClientCertificate = api.EtcdClientCertificate
 	vlabs.EtcdClientPrivateKey = api.EtcdClientPrivateKey
+	vlabs.EtcdPeerCertificate = api.EtcdPeerCertificate
+	vlabs.EtcdPeerPrivateKey = api.EtcdPeerPrivateKey
 }
 
 func convertAADProfileToVLabs(api *AADProfile, vlabs *vlabs.AADProfile) {

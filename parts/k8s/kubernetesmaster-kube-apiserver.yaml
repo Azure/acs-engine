@@ -25,7 +25,7 @@ spec:
         - "--etcd-cafile=/etc/kubernetes/certs/ca.crt"
         - "--etcd-certfile=/etc/kubernetes/certs/etcdclient.crt"
         - "--etcd-keyfile=/etc/kubernetes/certs/etcdclient.key"
-        - "--etcd-servers=<masterEtcdClientUrl>"
+        - "--etcd-servers=https://127.0.0.1:<masterEtcdClientPort>"
         - "--etcd-quorum-read=true"
         - "--advertise-address=<kubernetesAPIServerIP>"
         - "--tls-cert-file=/etc/kubernetes/certs/apiserver.crt"

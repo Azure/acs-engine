@@ -48,7 +48,19 @@
         "description": "The base 64 server private key used on the master."
       }, 
       "type": "securestring"
+    },
+    "etcdPeerCertificate": {
+      "metadata": {
+        "description": "The base 64 server certificate used on the master"
+      }, 
+      "type": "string"
     }, 
+    "etcdPeerPrivateKey": {
+      "metadata": {
+        "description": "The base 64 server private key used on the master."
+      }, 
+      "type": "securestring"
+    },
     "caCertificate": {
       "metadata": {
         "description": "The base 64 certificate authority certificate"

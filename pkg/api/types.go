@@ -99,6 +99,10 @@ type CertificateProfile struct {
 	EtcdClientCertificate string `json:"etcdClientCertificate,omitempty"`
 	// EtcdClientPrivateKey is the etcd client private key, and signed by the CA
 	EtcdClientPrivateKey string `json:"etcdClientPrivateKey,omitempty"`
+	// EtcdPeerCertificate is etcd peer certificate, and signed by the CA
+	EtcdPeerCertificate string `json:"etcdPeerCertificate,omitempty"`
+	// EtcdPeerPrivateKey is the etcd peer private key, and signed by the CA
+	EtcdPeerPrivateKey string `json:"etcdPeerPrivateKey,omitempty"`
 }
 
 // LinuxProfile represents the linux parameters passed to the cluster
