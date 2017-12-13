@@ -97,22 +97,34 @@ func (w *ArtifactWriter) WriteTLSArtifacts(containerService *api.ContainerServic
 		if e := f.SaveFileString(artifactsDir, "kubectlClient.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
 			return e
 		}
-		if e := f.SaveFileString(artifactsDir, "etcdserver.key", properties.CertificateProfile.KubeConfigPrivateKey); e != nil {
+		if e := f.SaveFileString(artifactsDir, "etcdserver.key", properties.CertificateProfile.EtcdServerPrivateKey); e != nil {
 			return e
 		}
-		if e := f.SaveFileString(artifactsDir, "etcdserver.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
+		if e := f.SaveFileString(artifactsDir, "etcdserver.crt", properties.CertificateProfile.EtcdServerCertificate); e != nil {
 			return e
 		}
-		if e := f.SaveFileString(artifactsDir, "etcdclient.key", properties.CertificateProfile.KubeConfigPrivateKey); e != nil {
+		if e := f.SaveFileString(artifactsDir, "etcdclient.key", properties.CertificateProfile.EtcdClientPrivateKey); e != nil {
 			return e
 		}
-		if e := f.SaveFileString(artifactsDir, "etcdclient.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
+		if e := f.SaveFileString(artifactsDir, "etcdclient.crt", properties.CertificateProfile.EtcdClientCertificate); e != nil {
 			return e
 		}
-		if e := f.SaveFileString(artifactsDir, "etcdpeer.key", properties.CertificateProfile.KubeConfigPrivateKey); e != nil {
+		if e := f.SaveFileString(artifactsDir, "etcdpeer0.key", properties.CertificateProfile.EtcdPeer0PrivateKey); e != nil {
 			return e
 		}
-		if e := f.SaveFileString(artifactsDir, "etcdpeer.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
+		if e := f.SaveFileString(artifactsDir, "etcdpeer0.crt", properties.CertificateProfile.EtcdPeer0Certificate); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdpeer1.key", properties.CertificateProfile.EtcdPeer1PrivateKey); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdpeer1.crt", properties.CertificateProfile.EtcdPeer1Certificate); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdpeer2.key", properties.CertificateProfile.EtcdPeer2PrivateKey); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdpeer2.crt", properties.CertificateProfile.EtcdPeer2Certificate); e != nil {
 			return e
 		}
 	}

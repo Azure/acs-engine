@@ -30,7 +30,7 @@ type PkiKeyCertPair struct {
 }
 
 // CreatePki creates PKI certificates
-func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
+func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caPair *PkiKeyCertPair) (*PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, *PkiKeyCertPair, error) {
 	start := time.Now()
 	defer func(s time.Time) {
 		log.Debugf("pki: PKI asset creation took %s", time.Since(s))
@@ -56,19 +56,23 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		etcdServerPrivateKey  *rsa.PrivateKey
 		etcdClientCertificate *x509.Certificate
 		etcdClientPrivateKey  *rsa.PrivateKey
-		etcdPeerCertificate   *x509.Certificate
-		etcdPeerPrivateKey    *rsa.PrivateKey
+		etcdPeer0Certificate  *x509.Certificate
+		etcdPeer0PrivateKey   *rsa.PrivateKey
+		etcdPeer1Certificate  *x509.Certificate
+		etcdPeer1PrivateKey   *rsa.PrivateKey
+		etcdPeer2Certificate  *x509.Certificate
+		etcdPeer2PrivateKey   *rsa.PrivateKey
 	)
 	errors := make(chan error)
 
 	var err error
 	caCertificate, err = pemToCertificate(caPair.CertificatePem)
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, nil, err
 	}
 	caPrivateKey, err = pemToKey(caPair.PrivateKeyPem)
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	go func() {
@@ -119,7 +123,9 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		organization[0] = "system:masters"
 		ip := net.ParseIP("127.0.0.1").To4()
 		peerIPs := append(extraIPs, ip)
-		etcdPeerCertificate, etcdPeerPrivateKey, err = createCertificate("etcdpeer", caCertificate, caPrivateKey, true, nil, peerIPs, organization)
+		etcdPeer0Certificate, etcdPeer0PrivateKey, err = createCertificate("etcdpeer", caCertificate, caPrivateKey, true, nil, peerIPs, organization)
+		etcdPeer1Certificate, etcdPeer1PrivateKey, err = createCertificate("etcdpeer", caCertificate, caPrivateKey, true, nil, peerIPs, organization)
+		etcdPeer2Certificate, etcdPeer2PrivateKey, err = createCertificate("etcdpeer", caCertificate, caPrivateKey, true, nil, peerIPs, organization)
 		errors <- err
 	}()
 
@@ -130,22 +136,22 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 	e5 := <-errors
 	e6 := <-errors
 	if e1 != nil {
-		return nil, nil, nil, nil, nil, nil, e1
+		return nil, nil, nil, nil, nil, nil, nil, nil, e1
 	}
 	if e2 != nil {
-		return nil, nil, nil, nil, nil, nil, e2
+		return nil, nil, nil, nil, nil, nil, nil, nil, e2
 	}
 	if e3 != nil {
-		return nil, nil, nil, nil, nil, nil, e3
+		return nil, nil, nil, nil, nil, nil, nil, nil, e3
 	}
 	if e4 != nil {
-		return nil, nil, nil, nil, nil, nil, e4
+		return nil, nil, nil, nil, nil, nil, nil, nil, e4
 	}
 	if e5 != nil {
-		return nil, nil, nil, nil, nil, nil, e5
+		return nil, nil, nil, nil, nil, nil, nil, nil, e5
 	}
 	if e6 != nil {
-		return nil, nil, nil, nil, nil, nil, e5
+		return nil, nil, nil, nil, nil, nil, nil, nil, e5
 	}
 
 	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
@@ -153,7 +159,9 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(kubeConfigCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(kubeConfigPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdServerPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdClientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdClientPrivateKey))},
-		&PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdPeerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdPeerPrivateKey))},
+		&PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdPeer0Certificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdPeer0PrivateKey))},
+		&PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdPeer1Certificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdPeer1PrivateKey))},
+		&PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdPeer2Certificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdPeer2PrivateKey))},
 		nil
 }
 
