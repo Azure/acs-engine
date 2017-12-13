@@ -151,7 +151,7 @@ chown root:root "${ETCD_PEER_2_CERTIFICATE_PATH}"
 echo "${ETCD_PEER_2_CERTIFICATE}" | base64 --decode > "${ETCD_PEER_2_CERTIFICATE_PATH}"
 
 echo `date`,`hostname`, finishedGettingEtcdCerts>>/opt/m
-touch /opt/azure/containers/etcdcerts.complete
+mkdir -p /opt/azure/containers && touch /opt/azure/containers/etcdcerts.complete
 
 KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
 touch "${KUBELET_PRIVATE_KEY_PATH}"

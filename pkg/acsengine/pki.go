@@ -103,7 +103,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		organization[0] = "system:masters"
 		ip := net.ParseIP("127.0.0.1").To4()
 		peerIPs := append(extraIPs, ip)
-		etcdServerCertificate, etcdServerPrivateKey, err = createCertificate("etcdserver", caCertificate, caPrivateKey, true, nil, peerIPs, organization)
+		etcdServerCertificate, etcdServerPrivateKey, err = createCertificate("etcd", caCertificate, caPrivateKey, false, nil, peerIPs, organization)
 		errors <- err
 	}()
 
@@ -113,7 +113,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		organization[0] = "system:masters"
 		ip := net.ParseIP("127.0.0.1").To4()
 		peerIPs := append(extraIPs, ip)
-		etcdClientCertificate, etcdClientPrivateKey, err = createCertificate("etcdclient", caCertificate, caPrivateKey, false, nil, peerIPs, organization)
+		etcdClientCertificate, etcdClientPrivateKey, err = createCertificate("etcd", caCertificate, caPrivateKey, false, nil, peerIPs, organization)
 		errors <- err
 	}()
 
@@ -123,9 +123,9 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		organization[0] = "system:masters"
 		ip := net.ParseIP("127.0.0.1").To4()
 		peerIPs := append(extraIPs, ip)
-		etcdPeer0Certificate, etcdPeer0PrivateKey, err = createCertificate("etcdpeer", caCertificate, caPrivateKey, true, nil, peerIPs, organization)
-		etcdPeer1Certificate, etcdPeer1PrivateKey, err = createCertificate("etcdpeer", caCertificate, caPrivateKey, true, nil, peerIPs, organization)
-		etcdPeer2Certificate, etcdPeer2PrivateKey, err = createCertificate("etcdpeer", caCertificate, caPrivateKey, true, nil, peerIPs, organization)
+		etcdPeer0Certificate, etcdPeer0PrivateKey, err = createCertificate("etcd", caCertificate, caPrivateKey, false, nil, peerIPs, organization)
+		etcdPeer1Certificate, etcdPeer1PrivateKey, err = createCertificate("etcd", caCertificate, caPrivateKey, false, nil, peerIPs, organization)
+		etcdPeer2Certificate, etcdPeer2PrivateKey, err = createCertificate("etcd", caCertificate, caPrivateKey, false, nil, peerIPs, organization)
 		errors <- err
 	}()
 
@@ -192,9 +192,10 @@ func createCertificate(commonName string, caCertificate *x509.Certificate, caPri
 		template.DNSNames = extraFQDNs
 		template.IPAddresses = extraIPs
 		template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageServerAuth)
-	} else if commonName == "etcdclient" {
+	} else if commonName == "etcd" {
 		template.IPAddresses = extraIPs
 		template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
+		template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageServerAuth)
 	} else {
 		template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
 	}
