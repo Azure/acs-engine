@@ -97,6 +97,24 @@ func (w *ArtifactWriter) WriteTLSArtifacts(containerService *api.ContainerServic
 		if e := f.SaveFileString(artifactsDir, "kubectlClient.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
 			return e
 		}
+		if e := f.SaveFileString(artifactsDir, "etcdserver.key", properties.CertificateProfile.KubeConfigPrivateKey); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdserver.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdclient.key", properties.CertificateProfile.KubeConfigPrivateKey); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdclient.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdpeer.key", properties.CertificateProfile.KubeConfigPrivateKey); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdpeer.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
+			return e
+		}
 	}
 
 	return nil

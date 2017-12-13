@@ -485,18 +485,19 @@ coreos:
         ExecStart=/opt/azure/containers/provision-setup.sh
 {{else}}
 runcmd:
+- retrycmd_if_failure() { for i in {1..5}; do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
 - /opt/azure/containers/setup-etcd.sh
 - apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
 - /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --peer-client-cert-auth --peer-trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --peer-cert-file={{WrapAsVariable "etcdPeerCertFilepath"}} --peer-key-file={{WrapAsVariable "etcdPeerKeyFilepath"}} --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --cert-file={{WrapAsVariable "etcdServerCertFilepath"}} --key-file={{WrapAsVariable "etcdServerKeyFilepath"}} --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',https://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
-- sudo /bin/chown -R etcd:etcd /var/lib/etcd/default
+- sleep 30
+- sudo /bin/chown etcd:etcd /etc/kubernetes/certs/etcd*.key
 - /opt/azure/containers/mountetcd.sh
 - sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
 - systemctl stop etcd
 - sudo -u etcd rm -rf /var/lib/etcd/default
 - systemctl daemon-reload
-- systemctl restart etcd
+- sudo systemctl start etcd
 - for i in $(seq 1 20); do curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
-- retrycmd_if_failure() { for i in {1..5}; do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
 - retrycmd_if_failure apt-get update
 - retrycmd_if_failure apt-get install -y apt-transport-https ca-certificates
 - retrycmd_if_failure curl --max-time 60 -fsSL https://aptdocker.azureedge.net/gpg | apt-key add -
