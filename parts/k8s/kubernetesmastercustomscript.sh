@@ -336,7 +336,7 @@ function ensureApiserver() {
 
 function ensureEtcd() {
     for i in {1..600}; do
-        curl --max-time 60 http://127.0.0.1:2379/v2/machines;
+        curl --cacert /etc/kubernetes/certs/etcd-ca.crt --cert /etc/kubernetes/certs/etcd-client.crt --key /etc/kubernetes/certs/etcd-client.key --max-time 60 https://127.0.0.1:2379/v2/machines;
         if [ $? -eq 0 ]
         then
             echo "Etcd setup successfully"

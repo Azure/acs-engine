@@ -63,6 +63,13 @@ write_files:
     {{WrapAsVariable "generateProxyCertsScript"}}
 {{end}}
 
+- path: "/etc/kubernetes/reconfigure-etcd-tls.sh"
+  permissions: "0744"
+  encoding: "gzip"
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "etcdTLSScript"}}
+
 - path: "/var/lib/kubelet/kubeconfig"
   permissions: "0644"
   owner: "root"
@@ -492,11 +499,10 @@ runcmd:
 - sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
 - systemctl stop etcd
 - sudo -u etcd rm -rf /var/lib/etcd/default
-- sudo /bin/sed -i s/Restart=on-abnormal/Restart=always/g /lib/systemd/system/etcd.service
 - systemctl daemon-reload
 - systemctl restart etcd
 - for i in $(seq 1 20); do curl --max-time 60 http://127.0.0.1:2379/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
-- retrycmd_if_failure() { for i in 1 2 3 4 5; do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
+- retrycmd_if_failure() { for i in {1..5}; do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
 - retrycmd_if_failure apt-get update
 - retrycmd_if_failure apt-get install -y apt-transport-https ca-certificates
 - retrycmd_if_failure curl --max-time 60 -fsSL https://aptdocker.azureedge.net/gpg | apt-key add -
@@ -512,6 +518,10 @@ runcmd:
 {{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
 - sudo bash /etc/kubernetes/generate-proxy-certs.sh
 {{end}}
+- /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --peer-client-cert-auth --peer-trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --peer-cert-file={{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}} --peer-key-file={{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}} --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdTLSPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdTLSPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --cert-file={{WrapAsVariable "etcdServerCertFilepath"}} --key-file={{WrapAsVariable "etcdServerKeyFilepath"}} --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdTLSClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdTLSClientURLs')[copyIndex(variables('masterOffset'))], ',https://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdTLSClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "existing" > /tmp/etcdtls
+- echo `date`,`hostname`, startEtcdTLSScript>>/opt/m
+- sudo bash /etc/kubernetes/reconfigure-etcd-tls.sh {{WrapAsVerbatim "copyIndex(variables('masterOffset'))"}} {{WrapAsVerbatim "variables('masterEtcdTLSIPs')[div(variables('masterCount'), 2)]"}} {{WrapAsVerbatim "variables('masterEtcdTLSPeerURLs')[copyIndex(variables('masterOffset'))]"}} {{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}} {{WrapAsVariable "masterCount"}}
+- echo `date`,`hostname`, endEtcdTLSScript>>/opt/m
 - apt-mark unhold walinuxagent
 - touch /opt/azure/containers/runcmd.complete
 {{end}}

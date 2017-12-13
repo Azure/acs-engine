@@ -1,6 +1,25 @@
     "etcdDiskSizeGB": "[parameters('etcdDiskSizeGB')]",
     "etcdDownloadURLBase": "[parameters('etcdDownloadURLBase')]",
     "etcdVersion": "[parameters('etcdVersion')]",
+    "etcdClientCertFilepath": "/etc/kubernetes/certs/etcd-client.crt",
+    "etcdClientKeyFilepath": "/etc/kubernetes/certs/etcd-client.key",
+    "etcdServerCertFilepath": "/etc/kubernetes/certs/etcd-server.crt",
+    "etcdServerKeyFilepath": "/etc/kubernetes/certs/etcd-server.key",
+    "etcdPeerCertFilepath":[
+        "/etc/kubernetes/certs/etcd-peer0.crt",
+        "/etc/kubernetes/certs/etcd-peer1.crt",
+        "/etc/kubernetes/certs/etcd-peer2.crt",
+        "/etc/kubernetes/certs/etcd-peer3.crt",
+        "/etc/kubernetes/certs/etcd-peer4.crt"
+    ],
+    "etcdPeerKeyFilepath":[
+        "/etc/kubernetes/certs/etcd-peer0.key",
+        "/etc/kubernetes/certs/etcd-peer1.key",
+        "/etc/kubernetes/certs/etcd-peer2.key",
+        "/etc/kubernetes/certs/etcd-peer3.key",
+        "/etc/kubernetes/certs/etcd-peer4.key"
+    ],
+    "etcdCaFilepath": "/etc/kubernetes/certs/etcd-ca.crt",
     "maxVMsPerPool": 100,
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
 {{ if not IsHostedMaster }}
@@ -155,6 +174,7 @@
     "provisionScriptParametersMaster": "[concat('APISERVER_PRIVATE_KEY=',variables('apiServerPrivateKey'),' CA_CERTIFICATE=',variables('caCertificate'),' CA_PRIVATE_KEY=',variables('caPrivateKey'),' MASTER_FQDN=',variables('masterFqdnPrefix'),' KUBECONFIG_CERTIFICATE=',variables('kubeConfigCertificate'),' KUBECONFIG_KEY=',variables('kubeConfigPrivateKey'),' ADMINUSER=',variables('username'))]",
 {{end}}
     "generateProxyCertsScript": "{{GetKubernetesB64GenerateProxyCerts}}",
+    "etcdTLSScript": "{{GetKubernetesB64EtcdTLS}}",
     "orchestratorNameVersionTag": "{{.OrchestratorProfile.OrchestratorType}}:{{.OrchestratorProfile.OrchestratorVersion}}",
 {{if IsAzureCNI}}
     "allocateNodeCidrs": false,
@@ -260,10 +280,34 @@
       "[concat('http://', variables('masterPrivateIpAddrs')[3], ':', variables('masterEtcdClientPort'))]",
       "[concat('http://', variables('masterPrivateIpAddrs')[4], ':', variables('masterEtcdClientPort'))]"
     ],
+    "masterEtcdTLSPeerURLs":[
+      "[concat('https://', variables('masterPrivateIpAddrs')[0], ':', variables('masterEtcdServerPort'))]",
+      "[concat('https://', variables('masterPrivateIpAddrs')[1], ':', variables('masterEtcdServerPort'))]",
+      "[concat('https://', variables('masterPrivateIpAddrs')[2], ':', variables('masterEtcdServerPort'))]",
+      "[concat('https://', variables('masterPrivateIpAddrs')[3], ':', variables('masterEtcdServerPort'))]",
+      "[concat('https://', variables('masterPrivateIpAddrs')[4], ':', variables('masterEtcdServerPort'))]"
+    ],
+    "masterEtcdTLSClientURLs":[
+      "[concat('https://', variables('masterPrivateIpAddrs')[0], ':', variables('masterEtcdClientPort'))]",
+      "[concat('https://', variables('masterPrivateIpAddrs')[1], ':', variables('masterEtcdClientPort'))]",
+      "[concat('https://', variables('masterPrivateIpAddrs')[2], ':', variables('masterEtcdClientPort'))]",
+      "[concat('https://', variables('masterPrivateIpAddrs')[3], ':', variables('masterEtcdClientPort'))]",
+      "[concat('https://', variables('masterPrivateIpAddrs')[4], ':', variables('masterEtcdClientPort'))]"
+    ],
     "masterEtcdClusterStates": [
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0])]",
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdPeerURLs')[2])]",
       "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdPeerURLs')[2], ',', variables('masterVMNames')[3], '=', variables('masterEtcdPeerURLs')[3], ',', variables('masterVMNames')[4], '=', variables('masterEtcdPeerURLs')[4])]"
+    ],
+    "masterEtcdTLSClusterStates": [
+      "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdTLSPeerURLs')[0])]",
+      "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdTLSPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdTLSPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdTLSPeerURLs')[2])]",
+      "[concat(variables('masterVMNames')[0], '=', variables('masterEtcdTLSPeerURLs')[0], ',', variables('masterVMNames')[1], '=', variables('masterEtcdTLSPeerURLs')[1], ',', variables('masterVMNames')[2], '=', variables('masterEtcdTLSPeerURLs')[2], ',', variables('masterVMNames')[3], '=', variables('masterEtcdTLSPeerURLs')[3], ',', variables('masterVMNames')[4], '=', variables('masterEtcdTLSPeerURLs')[4])]"
+    ],
+     "masterEtcdTLSIPs": [
+      "[concat('IP:127.0.0.1,IP:', variables('masterPrivateIpAddrs')[0])]",
+      "[concat('IP:127.0.0.1,IP:', variables('masterPrivateIpAddrs')[0], ',IP:', variables('masterPrivateIpAddrs')[1], ',IP:', variables('masterPrivateIpAddrs')[2])]",
+      "[concat('IP:127.0.0.1,IP:', variables('masterPrivateIpAddrs')[0], ',IP:', variables('masterPrivateIpAddrs')[1], ',IP:', variables('masterPrivateIpAddrs')[2], ',IP:', variables('masterPrivateIpAddrs')[3], ',IP:', variables('masterPrivateIpAddrs')[4])]"
     ],
 {{else}}
     "kubernetesAPIServerIP": "[parameters('kubernetesEndpoint')]",
