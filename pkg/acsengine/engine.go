@@ -557,9 +557,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addSecret(parametersMap, "etcdServerPrivateKey", properties.CertificateProfile.EtcdServerPrivateKey, true)
 			addSecret(parametersMap, "etcdClientCertificate", properties.CertificateProfile.EtcdClientCertificate, true)
 			addSecret(parametersMap, "etcdClientPrivateKey", properties.CertificateProfile.EtcdClientPrivateKey, true)
-			addSecret(parametersMap, "etcdPeerCertificates", properties.CertificateProfile.EtcdPeerCertificates, true)
-			addSecret(parametersMap, "etcdPeerPrivateKeys", properties.CertificateProfile.EtcdPeerPrivateKeys, true)
+			addArraySecret(parametersMap, "etcdPeerCertificates", properties.CertificateProfile.EtcdPeerCertificates, true)
+			addArraySecret(parametersMap, "etcdPeerPrivateKeys", properties.CertificateProfile.EtcdPeerPrivateKeys, true)
 		}
+
 		if properties.HostedMasterProfile != nil && properties.HostedMasterProfile.FQDN != "" {
 			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)
 		}
@@ -815,6 +816,27 @@ func addSecret(m paramsMap, k string, v interface{}, encode bool) {
 		return
 	}
 	addKeyvaultReference(m, k, parts[1], parts[2], parts[4])
+}
+
+func addArraySecret(m paramsMap, k string, v interface{}, encode bool) {
+	arr, ok := v.([]string)
+	if !ok {
+		addValue(m, k, v)
+		return
+	}
+	values := make([]string, len(arr))
+	for i := 0; i < len(arr); i++ {
+		str := arr[i]
+		parts := keyvaultSecretPathRe.FindStringSubmatch(str)
+		if parts == nil || len(parts) != 5 {
+			if encode {
+				values[i] = base64.StdEncoding.EncodeToString([]byte(str))
+			} else {
+				values[i] = str
+			}
+		}
+	}
+	addValue(m, k, values)
 }
 
 // getStorageAccountType returns the support managed disk storage tier for a give VM size

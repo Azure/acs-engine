@@ -153,7 +153,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 	}
 
 	time.Sleep(10 * time.Second)
-	log.Infoln("returning")
+
 	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(clientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(clientPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(kubeConfigCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(kubeConfigPrivateKey))},

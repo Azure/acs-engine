@@ -53,13 +53,13 @@
       "metadata": {
         "description": "The base 64 server certificates used on the master"
       }, 
-      "type": "[]string"
+      "type": "array"
     }, 
     "etcdPeerPrivateKeys": {
       "metadata": {
         "description": "The base 64 server private keys used on the master."
       }, 
-      "type": "[]securestring"
+      "type": "array"
     },
     "caCertificate": {
       "metadata": {
