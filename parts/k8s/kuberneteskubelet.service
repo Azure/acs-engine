@@ -37,7 +37,7 @@ ExecStart=/usr/bin/docker run \
         --require-kubeconfig \
         --node-labels="${KUBELET_NODE_LABELS}" \
         --non-masquerade-cidr=${KUBELET_NON_MASQUERADE_CIDR} \
-        ${KUBELET_CONFIG} \
+        $KUBELET_CONFIG \
         --enable-server \
         ${KUBELET_REGISTER_NODE} ${KUBELET_REGISTER_WITH_TAINTS} ${KUBELET_FEATURE_GATES}
 
