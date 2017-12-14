@@ -172,7 +172,7 @@ Depending upon the size of the VNET address space, during deployment, it is poss
 
 First, the detail:
 
-* Azure CNI assigns dynamic IP addresses from the "beginning" of the subnet IP address space (for example, nearer "1" in "10.0.0.0/24)
+* Azure CNI assigns dynamic IP addresses from the "beginning" of the subnet IP address space (specifically, it looks for available addresses starting at ".4" ["10.0.0.4" in a "10.0.0.0/24" network])
 * acs-engine will require a range of up to 16 unused IP addresses in multi-master scenarios (1 per master for up to 5 masters, and then the next 10 IP addresses immediately following the "last" master for headroom reservation, and finally 1 more for the load balancer immediately adjacent to the afore-described _n_ masters+10 sequence) to successfully scaffold the network stack for your cluster
 
 A guideline that will remove the danger of IP address allocation collision during deployment:
