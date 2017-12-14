@@ -530,7 +530,7 @@
         "autoUpgradeMinorVersion": true,
         "settings": {},
         "protectedSettings": {
-          "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'),' /usr/bin/nohup /bin/bash -c \"stat /opt/azure/containers/provision.complete || /bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
+          "commandToExecute": "[concat(variables('provisionScriptParametersCommon'),' ',variables('provisionScriptParametersMaster'), ' MASTER_INDEX=',copyIndex(variables('masterOffset')),' /usr/bin/nohup /bin/bash -c \"stat /opt/azure/containers/provision.complete || /bin/bash /opt/azure/containers/provision.sh >> /var/log/azure/cluster-provision.log 2>&1\"')]"
         }
       }
     }{{WriteLinkedTemplatesForExtensions}}
