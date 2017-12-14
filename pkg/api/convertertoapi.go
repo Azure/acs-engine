@@ -355,7 +355,7 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 	api.ProvisioningState = ProvisioningState(vlabs.ProvisioningState)
 	if vlabs.OrchestratorProfile != nil {
 		api.OrchestratorProfile = &OrchestratorProfile{}
-		convertVLabsOrchestratorProfile(vlabs.OrchestratorProfile, api.OrchestratorProfile)
+		convertVLabsOrchestratorProfile(vlabs, api.OrchestratorProfile)
 	}
 	if vlabs.MasterProfile != nil {
 		api.MasterProfile = &MasterProfile{}
@@ -555,13 +555,14 @@ func convertV20170701OrchestratorProfile(v20170701cs *v20170701.OrchestratorProf
 	}
 }
 
-func convertVLabsOrchestratorProfile(vlabscs *vlabs.OrchestratorProfile, api *OrchestratorProfile) {
+func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProfile) {
+	vlabscs := vp.OrchestratorProfile
 	api.OrchestratorType = vlabscs.OrchestratorType
 	switch api.OrchestratorType {
 	case Kubernetes:
 		if vlabscs.KubernetesConfig != nil {
 			api.KubernetesConfig = &KubernetesConfig{}
-			convertVLabsKubernetesConfig(vlabscs.KubernetesConfig, api.KubernetesConfig)
+			convertVLabsKubernetesConfig(vp, api.KubernetesConfig)
 		}
 		api.OrchestratorVersion = common.RationalizeReleaseAndVersion(
 			vlabscs.OrchestratorType,
@@ -583,7 +584,8 @@ func convertVLabsDcosConfig(vlabs *vlabs.DcosConfig, api *DcosConfig) {
 	api.DcosWindowsBootstrapURL = vlabs.DcosWindowsBootstrapURL
 }
 
-func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *KubernetesConfig) {
+func convertVLabsKubernetesConfig(vp *vlabs.Properties, api *KubernetesConfig) {
+	vlabs := vp.OrchestratorProfile.KubernetesConfig
 	api.KubernetesImageBase = vlabs.KubernetesImageBase
 	api.ClusterSubnet = vlabs.ClusterSubnet
 	api.DNSServiceIP = vlabs.DNSServiceIP
@@ -618,6 +620,17 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.EtcdVersion = vlabs.EtcdVersion
 	api.EtcdDiskSizeGB = vlabs.EtcdDiskSizeGB
 	convertAddonsToAPI(vlabs, api)
+	setVlabsDefaultsKubernetesConfig(vp, api)
+}
+
+func setVlabsDefaultsKubernetesConfig(vp *vlabs.Properties, api *KubernetesConfig) {
+	if api.NetworkPolicy == "" {
+		if vp.HasWindows() {
+			api.NetworkPolicy = vlabs.DefaultNetworkPolicyWindows
+		} else {
+			api.NetworkPolicy = vlabs.DefaultNetworkPolicy
+		}
+	}
 }
 
 func convertAddonsToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
