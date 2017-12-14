@@ -557,12 +557,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addSecret(parametersMap, "etcdServerPrivateKey", properties.CertificateProfile.EtcdServerPrivateKey, true)
 			addSecret(parametersMap, "etcdClientCertificate", properties.CertificateProfile.EtcdClientCertificate, true)
 			addSecret(parametersMap, "etcdClientPrivateKey", properties.CertificateProfile.EtcdClientPrivateKey, true)
-			addSecret(parametersMap, "etcdPeer0Certificate", properties.CertificateProfile.EtcdPeer0Certificate, true)
-			addSecret(parametersMap, "etcdPeer0PrivateKey", properties.CertificateProfile.EtcdPeer0PrivateKey, true)
-			addSecret(parametersMap, "etcdPeer1Certificate", properties.CertificateProfile.EtcdPeer1Certificate, true)
-			addSecret(parametersMap, "etcdPeer1PrivateKey", properties.CertificateProfile.EtcdPeer1PrivateKey, true)
-			addSecret(parametersMap, "etcdPeer2Certificate", properties.CertificateProfile.EtcdPeer2Certificate, true)
-			addSecret(parametersMap, "etcdPeer2PrivateKey", properties.CertificateProfile.EtcdPeer2PrivateKey, true)
+			addSecret(parametersMap, "etcdPeerCertificates", properties.CertificateProfile.EtcdPeerCertificates, true)
+			addSecret(parametersMap, "etcdPeerPrivateKeys", properties.CertificateProfile.EtcdPeerPrivateKeys, true)
 		}
 		if properties.HostedMasterProfile != nil && properties.HostedMasterProfile.FQDN != "" {
 			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)

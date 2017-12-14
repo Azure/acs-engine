@@ -99,18 +99,10 @@ type CertificateProfile struct {
 	EtcdClientCertificate string `json:"etcdClientCertificate,omitempty"`
 	// EtcdClientPrivateKey is the etcd client private key, and signed by the CA
 	EtcdClientPrivateKey string `json:"etcdClientPrivateKey,omitempty"`
-	// EtcdPeer0Certificate is etcd peer certificate, and signed by the CA
-	EtcdPeer0Certificate string `json:"etcdPeer0Certificate,omitempty"`
-	// EtcdPeer0PrivateKey is the etcd peer private key, and signed by the CA
-	EtcdPeer0PrivateKey string `json:"etcdPeer0PrivateKey,omitempty"`
-	// EtcdPeer1Certificate is etcd peer certificate, and signed by the CA
-	EtcdPeer1Certificate string `json:"etcdPeer1Certificate,omitempty"`
-	// EtcdPeer1PrivateKey is the etcd peer private key, and signed by the CA
-	EtcdPeer1PrivateKey string `json:"etcdPeer1PrivateKey,omitempty"`
-	// EtcdPeer2Certificate is etcd peer certificate, and signed by the CA
-	EtcdPeer2Certificate string `json:"etcdPeer2Certificate,omitempty"`
-	// EtcdPeer2PrivateKey is the etcd peer private key, and signed by the CA
-	EtcdPeer2PrivateKey string `json:"etcdPeer2PrivateKey,omitempty"`
+	// EtcdPeerCertificates is list of etcd peer certificates, and signed by the CA
+	EtcdPeerCertificates []string `json:"etcdPeerCertificates,omitempty"`
+	// EtcdPeerPrivateKeys is list of etcd peer private keys, and signed by the CA
+	EtcdPeerPrivateKeys []string `json:"etcdPeerPrivateKeys,omitempty"`
 }
 
 // LinuxProfile represents the linux parameters passed to the cluster

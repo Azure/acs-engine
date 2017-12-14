@@ -49,41 +49,17 @@
       }, 
       "type": "securestring"
     },
-    "etcdPeer0Certificate": {
+    "etcdPeerCertificates": {
       "metadata": {
-        "description": "The base 64 server certificate used on the master"
+        "description": "The base 64 server certificates used on the master"
       }, 
-      "type": "string"
+      "type": "[]string"
     }, 
-    "etcdPeer0PrivateKey": {
+    "etcdPeerPrivateKeys": {
       "metadata": {
-        "description": "The base 64 server private key used on the master."
+        "description": "The base 64 server private keys used on the master."
       }, 
-      "type": "securestring"
-    },
-    "etcdPeer1Certificate": {
-      "metadata": {
-        "description": "The base 64 server certificate used on the master"
-      }, 
-      "type": "string"
-    }, 
-    "etcdPeer1PrivateKey": {
-      "metadata": {
-        "description": "The base 64 server private key used on the master."
-      }, 
-      "type": "securestring"
-    },
-    "etcdPeer2Certificate": {
-      "metadata": {
-        "description": "The base 64 server certificate used on the master"
-      }, 
-      "type": "string"
-    }, 
-    "etcdPeer2PrivateKey": {
-      "metadata": {
-        "description": "The base 64 server private key used on the master."
-      }, 
-      "type": "securestring"
+      "type": "[]securestring"
     },
     "caCertificate": {
       "metadata": {
