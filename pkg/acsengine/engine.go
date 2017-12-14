@@ -598,8 +598,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addValue(parametersMap, "kubernetesACIConnectorTenantId", aciConnectorAddon.Config["tenantId"])
 			addValue(parametersMap, "kubernetesACIConnectorSubscriptionId", aciConnectorAddon.Config["subscriptionId"])
 			addValue(parametersMap, "kubernetesACIConnectorResourceGroup", aciConnectorAddon.Config["resourceGroup"])
+			addValue(parametersMap, "kubernetesACIConnectorNodeName", aciConnectorAddon.Config["nodeName"])
+			addValue(parametersMap, "kubernetesACIConnectorOS", aciConnectorAddon.Config["os"])
+			addValue(parametersMap, "kubernetesACIConnectorTaint", aciConnectorAddon.Config["taint"])
 			addValue(parametersMap, "kubernetesACIConnectorRegion", aciConnectorAddon.Config["region"])
-
 			addValue(parametersMap, "kubernetesACIConnectorCPURequests", aciConnectorAddon.Containers[c].CPURequests)
 			addValue(parametersMap, "kubernetesACIConnectorCPULimit", aciConnectorAddon.Containers[c].CPULimits)
 			addValue(parametersMap, "kubernetesACIConnectorMemoryRequests", aciConnectorAddon.Containers[c].MemoryRequests)
@@ -1351,6 +1353,24 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				case "kubernetesACIConnectorResourceGroup":
 					if aC > -1 {
 						val = aciConnectorAddon.Config["resourceGroup"]
+					} else {
+						val = ""
+					}
+				case "kubernetesACIConnectorNodeName":
+					if aC > -1 {
+						val = aciConnectorAddon.Config["nodeName"]
+					} else {
+						val = ""
+					}
+				case "kubernetesACIConnectorOS":
+					if aC > -1 {
+						val = aciConnectorAddon.Config["os"]
+					} else {
+						val = ""
+					}
+				case "kubernetesACIConnectorTaint":
+					if aC > -1 {
+						val = aciConnectorAddon.Config["taint"]
 					} else {
 						val = ""
 					}

@@ -20,7 +20,10 @@ This is the ACI Connector add-on.  Add this add-on to your json file as shown be
                   "tenantId": "",
                   "subscriptionId": "",
                   "resourceGroup": "",
-                  "region": ""
+                  "region": "",
+                  "nodeName": "",
+                  "os": "",
+                  "taint": ""
               },
               "containers": [
                 {
@@ -86,7 +89,7 @@ You should see ACI Connector node after running:
 $ kubectl get nodes
 ```
 
-Follow the README at https://github.com/Azure/aci-connector-k8s for examples.
+Follow the README at https://github.com/virtual-kubelet/virtual-kubelet for examples.
 
 # Configuration
 |Name|Required|Description|Default Value|
@@ -95,9 +98,12 @@ Follow the README at https://github.com/Azure/aci-connector-k8s for examples.
 |clientKey|yes|your client key||
 |tenantId|yes|your tenant id||
 |resourceGroup|yes|your resource group||
-|region|yes|Azure region|"westus"|
+|region|no|Azure region|"westus"|
+|nodeName|no|node name|"aci-connector"|
+|os|no|operating system (Linux/Windows)|"Linux"|
+|taint|no|apply taint to node, making scheduling explicit|"azure.com/aci"|
 |name|no|container name|"aci-connector"|
-|image|no|image|"microsoft/aci-connector-k8s:latest"|
+|image|no|image|"microsoft/virtual-kubelet:latest"|
 |cpuRequests|no|cpu requests for the container|"50m"|
 |memoryRequests|no|memory requests for the container|"150Mi"|
 |cpuLimits|no|cpu limits for the container|"50m"|
