@@ -37,7 +37,7 @@ const (
 	// address relative to the first consecutive Kubernetes static IP
 	DefaultInternalLbStaticIPOffset = 10
 	// DefaultNetworkPolicy defines the network policy to use by default
-	DefaultNetworkPolicy = "azure"
+	DefaultNetworkPolicy = "none"
 	// DefaultNetworkPolicyWindows defines the network policy to use by default for clusters with Windows agent pools
 	DefaultNetworkPolicyWindows = "none"
 	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/
