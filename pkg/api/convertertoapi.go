@@ -564,6 +564,7 @@ func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProf
 			api.KubernetesConfig = &KubernetesConfig{}
 			convertVLabsKubernetesConfig(vp, api.KubernetesConfig)
 		}
+		setVlabsKubernetesDefaults(vp, api)
 		api.OrchestratorVersion = common.RationalizeReleaseAndVersion(
 			vlabscs.OrchestratorType,
 			vlabscs.OrchestratorRelease,
@@ -620,15 +621,17 @@ func convertVLabsKubernetesConfig(vp *vlabs.Properties, api *KubernetesConfig) {
 	api.EtcdVersion = vlabs.EtcdVersion
 	api.EtcdDiskSizeGB = vlabs.EtcdDiskSizeGB
 	convertAddonsToAPI(vlabs, api)
-	setVlabsDefaultsKubernetesConfig(vp, api)
 }
 
-func setVlabsDefaultsKubernetesConfig(vp *vlabs.Properties, api *KubernetesConfig) {
-	if api.NetworkPolicy == "" {
+func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) {
+	if api.KubernetesConfig == nil {
+		api.KubernetesConfig = &KubernetesConfig{}
+	}
+	if api.KubernetesConfig.NetworkPolicy == "" {
 		if vp.HasWindows() {
-			api.NetworkPolicy = vlabs.DefaultNetworkPolicyWindows
+			api.KubernetesConfig.NetworkPolicy = vlabs.DefaultNetworkPolicyWindows
 		} else {
-			api.NetworkPolicy = vlabs.DefaultNetworkPolicy
+			api.KubernetesConfig.NetworkPolicy = vlabs.DefaultNetworkPolicy
 		}
 	}
 }
