@@ -110,7 +110,7 @@ func (w *ArtifactWriter) WriteTLSArtifacts(containerService *api.ContainerServic
 		if e := f.SaveFileString(artifactsDir, "etcdclient.crt", properties.CertificateProfile.EtcdClientCertificate); e != nil {
 			return e
 		}
-		for i := 0; i < 5; i++ {
+		for i := 0; i < properties.MasterProfile.Count; i++ {
 			k := "etcdpeer" + strconv.Itoa(i) + ".key"
 			if e := f.SaveFileString(artifactsDir, k, properties.CertificateProfile.EtcdPeerPrivateKeys[i]); e != nil {
 				return e
