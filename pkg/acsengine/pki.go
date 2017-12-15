@@ -88,7 +88,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		var err error
 		organization := make([]string, 1)
 		organization[0] = "system:masters"
-		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("etcdclient", caCertificate, caPrivateKey, false, false, nil, nil, organization)
+		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, false, nil, nil, organization)
 		errors <- err
 	}()
 
