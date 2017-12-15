@@ -112,8 +112,9 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		errors <- err
 	}()
 
+	etcdPeerCertPairs = make([]*PkiKeyCertPair, masterCount)
 	for i := 0; i < masterCount; i++ {
-		go func() {
+		go func(i int) {
 			var err error
 			organization := make([]string, 1)
 			organization[0] = "system:masters"
@@ -122,9 +123,9 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 			etcdPeerCertificate := new(x509.Certificate)
 			etcdPeerPrivateKey := new(rsa.PrivateKey)
 			etcdPeerCertificate, etcdPeerPrivateKey, err = createCertificate("etcd", caCertificate, caPrivateKey, false, nil, peerIPs, organization)
-			etcdPeerCertPairs = append(etcdPeerCertPairs, &PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdPeerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdPeerPrivateKey))})
+			etcdPeerCertPairs[i] = &PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdPeerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdPeerPrivateKey))}
 			errors <- err
-		}()
+		}(i)
 	}
 
 	e1 := <-errors
