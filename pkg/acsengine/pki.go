@@ -149,7 +149,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		return nil, nil, nil, nil, nil, nil, e5
 	}
 	if e6 != nil {
-		return nil, nil, nil, nil, nil, nil, e5
+		return nil, nil, nil, nil, nil, nil, e6
 	}
 
 	time.Sleep(10 * time.Second)
