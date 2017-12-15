@@ -182,7 +182,10 @@ var (
 		Name:    DefaultACIConnectorAddonName,
 		Enabled: pointerToBool(api.DefaultACIConnectorAddonEnabled),
 		Config: map[string]string{
-			"region": "westus",
+			"region":   "westus",
+			"nodeName": "aci-connector",
+			"os":       "Linux",
+			"taint":    "azure.com/aci",
 		},
 		Containers: []api.KubernetesContainerSpec{
 			{

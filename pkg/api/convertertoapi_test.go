@@ -128,3 +128,41 @@ func TestOrchestratorVersion(t *testing.T) {
 		t.Fatalf("incorrect OrchestratorVersion '%s'", cs.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
 }
+
+func TestKubernetesVlabsDefaults(t *testing.T) {
+	vp := makeKubernetesPropertiesVlabs()
+	ap := makeKubernetesProperties()
+	setVlabsKubernetesDefaults(vp, ap.OrchestratorProfile)
+	if ap.OrchestratorProfile.KubernetesConfig == nil {
+		t.Fatalf("KubernetesConfig cannot be nil after vlabs default conversion")
+	}
+	if ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy != vlabs.DefaultNetworkPolicy {
+		t.Fatalf("vlabs defaults not applied, expected NetworkPolicy: %s, instead got: %s", vlabs.DefaultNetworkPolicy, ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
+	}
+
+	vp = makeKubernetesPropertiesVlabs()
+	vp.WindowsProfile = &vlabs.WindowsProfile{}
+	vp.AgentPoolProfiles = append(vp.AgentPoolProfiles, &vlabs.AgentPoolProfile{OSType: "Windows"})
+	ap = makeKubernetesProperties()
+	setVlabsKubernetesDefaults(vp, ap.OrchestratorProfile)
+	if ap.OrchestratorProfile.KubernetesConfig == nil {
+		t.Fatalf("KubernetesConfig cannot be nil after vlabs default conversion")
+	}
+	if ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy != vlabs.DefaultNetworkPolicyWindows {
+		t.Fatalf("vlabs defaults not applied, expected NetworkPolicy: %s, instead got: %s", vlabs.DefaultNetworkPolicyWindows, ap.OrchestratorProfile.KubernetesConfig.NetworkPolicy)
+	}
+}
+
+func makeKubernetesProperties() *Properties {
+	ap := &Properties{}
+	ap.OrchestratorProfile = &OrchestratorProfile{}
+	ap.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	return ap
+}
+
+func makeKubernetesPropertiesVlabs() *vlabs.Properties {
+	vp := &vlabs.Properties{}
+	vp.OrchestratorProfile = &vlabs.OrchestratorProfile{}
+	vp.OrchestratorProfile.OrchestratorType = "Kubernetes"
+	return vp
+}

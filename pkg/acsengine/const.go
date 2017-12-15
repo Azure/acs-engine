@@ -37,7 +37,7 @@ const (
 	// address relative to the first consecutive Kubernetes static IP
 	DefaultInternalLbStaticIPOffset = 10
 	// DefaultNetworkPolicy defines the network policy to use by default
-	DefaultNetworkPolicy = "azure"
+	DefaultNetworkPolicy = "none"
 	// DefaultNetworkPolicyWindows defines the network policy to use by default for clusters with Windows agent pools
 	DefaultNetworkPolicyWindows = "none"
 	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/
@@ -76,7 +76,7 @@ const (
 	// TODO deprecate this usage, we should be favoring a more frequent upgrade cycle that pins fresh tiller versions to specific k8s versions
 	DefaultTillerImage = "tiller:v2.6.2"
 	// DefaultACIConnectorImage defines the ACI Connector deployment version on Kubernetes Clusters
-	DefaultACIConnectorImage = "aci-connector-k8s:latest"
+	DefaultACIConnectorImage = "virtual-kubelet:latest"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
 	// listens on by default. must by in the default Service CIDR range.
 	DefaultKubernetesDNSServiceIP = "10.0.0.10"

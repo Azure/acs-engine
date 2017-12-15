@@ -15,7 +15,7 @@ import (
 	"golang.org/x/text/internal/gen"
 )
 
-func generate(b *Builder, t *Tree, w *gen.CodeWriter) {
+func generate(b *Builder, t *Tree, w *gen.CodeWriter) error {
 	fmt.Fprintln(w, `import "golang.org/x/text/internal/cldrtree"`)
 	fmt.Fprintln(w)
 
@@ -28,14 +28,18 @@ func generate(b *Builder, t *Tree, w *gen.CodeWriter) {
 	for _, e := range b.enums {
 		// Build enum types.
 		w.WriteComment("%s specifies a property of a CLDR field.", e.name)
-		fmt.Fprintf(w, "type %s int\n", e.name)
-		fmt.Fprintln(w, "const (")
-		fmt.Fprintf(w, "%v %v = iota\n", toCamel(e.keys[0]), e.name)
-		for _, s := range e.keys[1:] {
-			fmt.Fprintln(w, toCamel(s))
-		}
-		fmt.Fprintln(w, ")")
+		fmt.Fprintf(w, "type %s uint16\n", e.name)
 	}
+
+	d, err := getEnumData(b)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(w, "const (")
+	for i, k := range d.keys {
+		fmt.Fprintf(w, "%s %s = %d // %s\n", toCamel(k), d.enums[i], d.m[k], k)
+	}
+	fmt.Fprintln(w, ")")
 
 	w.WriteVar("locales", t.Locales)
 	w.WriteVar("indices", t.Indices)
@@ -52,6 +56,23 @@ func generate(b *Builder, t *Tree, w *gen.CodeWriter) {
 	for i, bucket := range t.Buckets {
 		w.WriteVar(fmt.Sprint("bucket", i), bucket)
 	}
+	return nil
+}
+
+func generateTestData(b *Builder, w *gen.CodeWriter) error {
+	d, err := getEnumData(b)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "var enumMap = map[string]uint16{")
+	fmt.Fprintln(w, `"": 0,`)
+	for _, k := range d.keys {
+		fmt.Fprintf(w, "%q: %d,\n", k, d.m[k])
+	}
+	fmt.Fprintln(w, "}")
+	return nil
 }
 
 func toCamel(s string) string {
@@ -59,7 +80,7 @@ func toCamel(s string) string {
 	for i, s := range p[1:] {
 		p[i+1] = strings.Title(s)
 	}
-	return strings.Join(p, "")
+	return strings.Replace(strings.Join(p, ""), "/", "", -1)
 }
 
 func (b *Builder) stats() string {
@@ -68,9 +89,7 @@ func (b *Builder) stats() string {
 	b.rootMeta.validate()
 	for _, es := range b.enums {
 		fmt.Fprintf(w, "<%s>\n", es.name)
-		for _, s := range es.keys {
-			fmt.Fprintf(w, "  - %s\n", s)
-		}
+		printEnumValues(w, es, 1, nil)
 	}
 	fmt.Fprintln(w)
 	printEnums(w, b.rootMeta.typeInfo, 0)
@@ -95,39 +114,7 @@ func printEnums(w io.Writer, s *typeInfo, indent int) {
 	if e.name != "" {
 		fmt.Fprintf(w, "%s<%s>\n", idStr, e.name)
 	} else {
-		for i := 0; i < len(e.keys); i++ {
-			fmt.Fprint(w, idStr)
-			// fmt.Fprint(w, "- ")
-			k := e.keys[i]
-			if u, err := strconv.ParseUint(k, 10, 16); err == nil {
-				fmt.Fprintf(w, "%s", k)
-				// Skip contiguous integers
-				var v, last uint64
-				for i++; i < len(e.keys); i++ {
-					k = e.keys[i]
-					if v, err = strconv.ParseUint(k, 10, 16); err != nil {
-						break
-					}
-					last = v
-				}
-				if u < last {
-					fmt.Fprintf(w, `..%d`, last)
-				}
-				fmt.Fprintln(w)
-				if err != nil {
-					fmt.Fprintf(w, "%s%s\n", idStr, k)
-				}
-			} else if k == "" {
-				fmt.Fprintln(w, `""`)
-			} else {
-				fmt.Fprintf(w, "%s\n", k)
-			}
-			if !s.sharedKeys() {
-				if e := s.entries[enumIndex(i)]; e != nil {
-					printEnums(w, e, indent+1)
-				}
-			}
-		}
+		printEnumValues(w, e, indent, s)
 	}
 	if s.sharedKeys() {
 		for _, v := range s.entries {
@@ -135,4 +122,87 @@ func printEnums(w io.Writer, s *typeInfo, indent int) {
 			break
 		}
 	}
+}
+
+func printEnumValues(w io.Writer, e *enum, indent int, info *typeInfo) {
+	idStr := strings.Repeat("  ", indent) + "- "
+	for i := 0; i < len(e.keys); i++ {
+		fmt.Fprint(w, idStr)
+		k := e.keys[i]
+		if u, err := strconv.ParseUint(k, 10, 16); err == nil {
+			fmt.Fprintf(w, "%s", k)
+			// Skip contiguous integers
+			var v, last uint64
+			for i++; i < len(e.keys); i++ {
+				k = e.keys[i]
+				if v, err = strconv.ParseUint(k, 10, 16); err != nil {
+					break
+				}
+				last = v
+			}
+			if u < last {
+				fmt.Fprintf(w, `..%d`, last)
+			}
+			fmt.Fprintln(w)
+			if err != nil {
+				fmt.Fprintf(w, "%s%s\n", idStr, k)
+			}
+		} else if k == "" {
+			fmt.Fprintln(w, `""`)
+		} else {
+			fmt.Fprintf(w, "%s\n", k)
+		}
+		if info != nil && !info.sharedKeys() {
+			if e := info.entries[enumIndex(i)]; e != nil {
+				printEnums(w, e, indent+1)
+			}
+		}
+	}
+}
+
+func getEnumData(b *Builder) (*enumData, error) {
+	d := &enumData{m: map[string]int{}}
+	if errStr := d.insert(b.rootMeta.typeInfo); errStr != "" {
+		// TODO: consider returning the error.
+		return nil, fmt.Errorf("cldrtree: %s", errStr)
+	}
+	return d, nil
+}
+
+type enumData struct {
+	m     map[string]int
+	keys  []string
+	enums []string
+}
+
+func (d *enumData) insert(t *typeInfo) (errStr string) {
+	e := t.enum
+	if e == nil {
+		return ""
+	}
+	for i, k := range e.keys {
+		if _, err := strconv.ParseUint(k, 10, 16); err == nil {
+			// We don't include any enum that has integer values.
+			break
+		}
+		if v, ok := d.m[k]; ok {
+			if v != i {
+				return fmt.Sprintf("%q has value %d and %d", k, i, v)
+			}
+		} else {
+			d.m[k] = i
+			if k != "" {
+				d.keys = append(d.keys, k)
+				d.enums = append(d.enums, e.name)
+			}
+		}
+	}
+	for i := range t.enum.keys {
+		if e := t.entries[enumIndex(i)]; e != nil {
+			if errStr := d.insert(e); errStr != "" {
+				return fmt.Sprintf("%q>%v", t.enum.keys[i], errStr)
+			}
+		}
+	}
+	return ""
 }

@@ -21,7 +21,7 @@ import (
 	"github.com/influxdata/influxdb/query"
 	"github.com/influxdata/influxdb/tsdb"
 	"github.com/influxdata/influxql"
-	"github.com/uber-go/zap"
+	"go.uber.org/zap"
 )
 
 const (
@@ -100,7 +100,7 @@ type Index struct {
 	CompactionEnabled         bool
 	CompactionMonitorInterval time.Duration
 
-	logger zap.Logger
+	logger *zap.Logger
 
 	// Index's version.
 	version int
@@ -115,7 +115,7 @@ func NewIndex() *Index {
 		MaxLogFileSize:    DefaultMaxLogFileSize,
 		CompactionEnabled: true,
 
-		logger:  zap.New(zap.NullEncoder()),
+		logger:  zap.NewNop(),
 		version: Version,
 	}
 }
@@ -141,9 +141,9 @@ func (i *Index) Open() error {
 	}
 
 	// Read manifest file.
-	m, err := ReadManifestFile(filepath.Join(i.Path, ManifestFileName))
+	m, err := ReadManifestFile(i.ManifestPath())
 	if os.IsNotExist(err) {
-		m = NewManifest()
+		m = NewManifest(i.ManifestPath())
 	} else if err != nil {
 		return err
 	}
@@ -189,6 +189,7 @@ func (i *Index) Open() error {
 	if err != nil {
 		return err
 	}
+	fs.manifestSize = m.size
 	i.fileSet = fs
 
 	// Set initial sequnce number.
@@ -309,6 +310,7 @@ func (i *Index) Manifest() *Manifest {
 		Levels:  i.levels,
 		Files:   make([]string, len(i.fileSet.files)),
 		Version: i.version,
+		path:    i.ManifestPath(),
 	}
 
 	for j, f := range i.fileSet.files {
@@ -318,14 +320,11 @@ func (i *Index) Manifest() *Manifest {
 	return m
 }
 
-// writeManifestFile writes the manifest to the appropriate file path.
-func (i *Index) writeManifestFile() error {
-	return WriteManifestFile(i.ManifestPath(), i.Manifest())
-}
-
 // WithLogger sets the logger for the index.
-func (i *Index) WithLogger(logger zap.Logger) {
+func (i *Index) WithLogger(logger *zap.Logger) {
+	i.mu.Lock()
 	i.logger = logger.With(zap.String("index", "tsi"))
+	i.mu.Unlock()
 }
 
 // SetFieldSet sets a shared field set from the engine.
@@ -365,10 +364,12 @@ func (i *Index) prependActiveLogFile() error {
 	i.fileSet = i.fileSet.PrependLogFile(f)
 
 	// Write new manifest.
-	if err := i.writeManifestFile(); err != nil {
+	m := i.Manifest()
+	if err = m.Write(); err != nil {
 		// TODO: Close index if write fails.
 		return err
 	}
+	i.fileSet.manifestSize = m.size
 
 	return nil
 }
@@ -400,11 +401,11 @@ func (i *Index) MeasurementExists(name []byte) (bool, error) {
 	return m != nil && !m.Deleted(), nil
 }
 
-func (i *Index) MeasurementNamesByExpr(expr influxql.Expr) ([][]byte, error) {
+func (i *Index) MeasurementNamesByExpr(auth query.Authorizer, expr influxql.Expr) ([][]byte, error) {
 	fs := i.RetainFileSet()
 	defer fs.Release()
 
-	names, err := fs.MeasurementNamesByExpr(expr)
+	names, err := fs.MeasurementNamesByExpr(auth, expr)
 
 	// Clone byte slices since they will be used after the fileset is released.
 	return bytesutil.CloneSlice(names), err
@@ -559,7 +560,7 @@ func (i *Index) CreateSeriesIfNotExists(key, name []byte, tags models.Tags) erro
 	return nil
 }
 
-func (i *Index) DropSeries(key []byte) error {
+func (i *Index) DropSeries(key []byte, ts int64) error {
 	if err := func() error {
 		i.mu.RLock()
 		defer i.mu.RUnlock()
@@ -575,11 +576,8 @@ func (i *Index) DropSeries(key []byte) error {
 		fs := i.retainFileSet()
 		defer fs.Release()
 
-		// Check if that was the last series for the measurement in the entire index.
-		itr := fs.MeasurementSeriesIterator(mname)
-		if itr == nil {
-			return nil
-		} else if e := itr.Next(); e != nil {
+		mm := fs.Measurement(mname)
+		if mm == nil || mm.HasSeries() {
 			return nil
 		}
 
@@ -643,6 +641,29 @@ func (i *Index) MeasurementTagKeysByExpr(name []byte, expr influxql.Expr) (map[s
 	fs := i.RetainFileSet()
 	defer fs.Release()
 	return fs.MeasurementTagKeysByExpr(name, expr)
+}
+
+// TagKeyHasAuthorizedSeries determines if there exist authorized series for the
+// provided measurement name and tag key.
+func (i *Index) TagKeyHasAuthorizedSeries(auth query.Authorizer, name []byte, key string) bool {
+	fs := i.RetainFileSet()
+	defer fs.Release()
+
+	itr := fs.TagValueIterator(name, []byte(key))
+	for val := itr.Next(); val != nil; val = itr.Next() {
+		if auth == nil || auth == query.OpenAuthorizer {
+			return true
+		}
+
+		// Identify an authorized series.
+		si := fs.TagValueSeriesIterator(name, []byte(key), val.Value())
+		for se := si.Next(); se != nil; se = si.Next() {
+			if auth.AuthorizeSeriesRead(i.Database, se.Name(), se.Tags()) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // MeasurementTagKeyValuesByExpr returns a set of tag values filtered by an expression.
@@ -730,6 +751,19 @@ func (i *Index) ForEachMeasurementTagKey(name []byte, fn func(key []byte) error)
 // It is not possible to determine cardinality of tags across index files.
 func (i *Index) TagKeyCardinality(name, key []byte) int {
 	return 0
+}
+
+func (i *Index) MeasurementSeriesKeysByExprIterator(name []byte, condition influxql.Expr) (tsdb.SeriesIterator, error) {
+	fs := i.RetainFileSet()
+	defer fs.Release()
+
+	itr, err := fs.MeasurementSeriesByExprIterator(name, condition, i.fieldset)
+	if err != nil {
+		return nil, err
+	} else if itr == nil {
+		return nil, nil
+	}
+	return itr, err
 }
 
 // MeasurementSeriesKeysByExpr returns a list of series keys matching expr.
@@ -830,6 +864,13 @@ func (i *Index) TagSets(name []byte, opt query.IteratorOptions) ([]*query.TagSet
 	return sortedTagsSets, nil
 }
 
+// DiskSizeBytes returns the size of the index on disk.
+func (i *Index) DiskSizeBytes() int64 {
+	fs := i.RetainFileSet()
+	defer fs.Release()
+	return fs.Size()
+}
+
 // SnapshotTo creates hard links to the file set into path.
 func (i *Index) SnapshotTo(path string) error {
 	i.mu.Lock()
@@ -866,9 +907,9 @@ func (i *Index) SetFieldName(measurement []byte, name string) {}
 func (i *Index) RemoveShard(shardID uint64)                   {}
 func (i *Index) AssignShard(k string, shardID uint64)         {}
 
-func (i *Index) UnassignShard(k string, shardID uint64) error {
+func (i *Index) UnassignShard(k string, shardID uint64, ts int64) error {
 	// This can be called directly once inmem is gone.
-	return i.DropSeries([]byte(k))
+	return i.DropSeries([]byte(k), ts)
 }
 
 // SeriesPointIterator returns an influxql iterator over all series.
@@ -1002,10 +1043,13 @@ func (i *Index) compactToLevel(files []*IndexFile, level int) {
 		i.fileSet = i.fileSet.MustReplace(IndexFiles(files).Files(), file)
 
 		// Write new manifest.
-		if err := i.writeManifestFile(); err != nil {
+		var err error
+		m := i.Manifest()
+		if err = m.Write(); err != nil {
 			// TODO: Close index if write fails.
 			return err
 		}
+		i.fileSet.manifestSize = m.size
 		return nil
 	}(); err != nil {
 		logger.Error("cannot write manifest", zap.Error(err))
@@ -1135,10 +1179,13 @@ func (i *Index) compactLogFile(logFile *LogFile) {
 		i.fileSet = i.fileSet.MustReplace([]File{logFile}, file)
 
 		// Write new manifest.
-		if err := i.writeManifestFile(); err != nil {
+		var err error
+		m := i.Manifest()
+		if err = m.Write(); err != nil {
 			// TODO: Close index if write fails.
 			return err
 		}
+		i.fileSet.manifestSize = m.size
 		return nil
 	}(); err != nil {
 		logger.Error("cannot update manifest", zap.Error(err))
@@ -1170,7 +1217,7 @@ type seriesPointIterator struct {
 	fs       *FileSet
 	fieldset *tsdb.MeasurementFieldSet
 	mitr     MeasurementIterator
-	sitr     SeriesIterator
+	sitr     tsdb.SeriesIterator
 	opt      query.IteratorOptions
 
 	point query.FloatPoint // reusable point
@@ -1226,6 +1273,14 @@ func (itr *seriesPointIterator) Next() (*query.FloatPoint, error) {
 		e := itr.sitr.Next()
 		if e == nil {
 			itr.sitr = nil
+			continue
+		}
+
+		// TODO(edd): It seems to me like this authorisation check should be
+		// further down in the index. At this point we're going to be filtering
+		// series that have already been materialised in the LogFiles and
+		// IndexFiles.
+		if itr.opt.Authorizer != nil && !itr.opt.Authorizer.AuthorizeSeriesRead(itr.fs.database, e.Name(), e.Tags()) {
 			continue
 		}
 
@@ -1288,18 +1343,20 @@ func ParseFilename(name string) (level, id int) {
 // Manifest represents the list of log & index files that make up the index.
 // The files are listed in time order, not necessarily ID order.
 type Manifest struct {
-	Levels []CompactionLevel `json:"levels,omitempty"`
-	Files  []string          `json:"files,omitempty"`
+	Levels  []CompactionLevel `json:"levels,omitempty"`
+	Files   []string          `json:"files,omitempty"`
+	Version int               `json:"version,omitempty"` // Version should be updated whenever the TSI format has changed.
 
-	// Version should be updated whenever the TSI format has changed.
-	Version int `json:"version,omitempty"`
+	size int64  // Holds the on-disk size of the manifest.
+	path string // location on disk of the manifest.
 }
 
 // NewManifest returns a new instance of Manifest with default compaction levels.
-func NewManifest() *Manifest {
+func NewManifest(path string) *Manifest {
 	m := &Manifest{
 		Levels:  make([]CompactionLevel, len(DefaultCompactionLevels)),
 		Version: Version,
+		path:    path,
 	}
 	copy(m.Levels, DefaultCompactionLevels[:])
 	return m
@@ -1327,6 +1384,19 @@ func (m *Manifest) Validate() error {
 }
 
 // ReadManifestFile reads a manifest from a file path.
+// Write writes the manifest file to the provided path.
+func (m *Manifest) Write() error {
+	buf, err := json.MarshalIndent(m, "", "  ")
+	if err != nil {
+		return err
+	}
+	buf = append(buf, '\n')
+	m.size = int64(len(buf))
+	return ioutil.WriteFile(m.path, buf, 0666)
+}
+
+// ReadManifestFile reads a manifest from a file path and returns the manifest
+// along with its size and any error.
 func ReadManifestFile(path string) (*Manifest, error) {
 	buf, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -1338,23 +1408,11 @@ func ReadManifestFile(path string) (*Manifest, error) {
 	if err := json.Unmarshal(buf, &m); err != nil {
 		return nil, err
 	}
+	// Set the size of the manifest.
+	m.size = int64(len(buf))
+	m.path = path
 
 	return &m, nil
-}
-
-// WriteManifestFile writes a manifest to a file path.
-func WriteManifestFile(path string, m *Manifest) error {
-	buf, err := json.MarshalIndent(m, "", "  ")
-	if err != nil {
-		return err
-	}
-	buf = append(buf, '\n')
-
-	if err := ioutil.WriteFile(path, buf, 0666); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func joinIntSlice(a []int, sep string) string {

@@ -1,5 +1,5 @@
 hash: 2f6c0bcbc189ff33a1bc4bb1d3b71ca4cfb5d712e07dc3af96de2db5463e24f2
-updated: 2017-10-31T16:37:00.059742197-06:00
+updated: 2017-12-11T14:07:08.309118-08:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -29,7 +29,7 @@ imports:
   subpackages:
   - spew
 - name: github.com/dgrijalva/jwt-go
-  version: 24c63f56522a87ec5339cc3567883f1039378fdb
+  version: dbeaa9332f19a944acb5736b4456cfcc02140e29
 - name: github.com/docker/distribution
   version: cd27f179f2c10c5d300e6d09025b538c475b0d51
   subpackages:
@@ -77,7 +77,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/influxdata/influxdb
-  version: fade2ba9a8a131c532c20f8b6412ef2962768825
+  version: 0be32d5fd91ad7d7ce0d07ebd25069081e75f91b
   subpackages:
   - client/v2
   - models
@@ -107,7 +107,7 @@ imports:
 - name: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - name: github.com/onsi/ginkgo
-  version: 67b9df7f55fe1165fd9ad49aca7754cce01a42b8
+  version: 11459a886d9cd66b319dac7ef1e917ee221372c9
   subpackages:
   - config
   - internal/codelocation
@@ -127,7 +127,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: d59fa0ac68bb5dd932ee8d24eed631cdd519efc3
+  version: dcabb60a477c2b6f456df65037cb6708210fbb02
   subpackages:
   - format
   - internal/assertion
@@ -159,7 +159,7 @@ imports:
   subpackages:
   - codec
 - name: golang.org/x/crypto
-  version: 122d919ec1efcfb58483215da23f815853e24b81
+  version: eb71ad9bd329b5ac0fd0148dd99bd62e8be8e035
   subpackages:
   - curve25519
   - ed25519
@@ -168,11 +168,14 @@ imports:
   - ssh/agent
   - ssh/terminal
 - name: golang.org/x/net
-  version: c73622c77280266305273cb545f54516ced95b93
+  version: dc871a5d77e227f5bbf6545176ef3eeebf87e76e
   repo: https://github.com/golang/net.git
   vcs: git
   subpackages:
   - .
+  - html
+  - html/atom
+  - html/charset
   - http2
   - http2/hpack
   - idna
@@ -181,15 +184,27 @@ imports:
   version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:
   - unix
+  - windows
 - name: golang.org/x/text
-  version: 3cfc6c0d6bf80d724d98c26c4822f4a35d37598e
+  version: 3b24cac7bc3a458991ab409aa2a339ac9e0d60d6
   repo: https://github.com/golang/text.git
   vcs: git
   subpackages:
   - .
   - cases
+  - encoding
+  - encoding/charmap
+  - encoding/htmlindex
+  - encoding/internal
+  - encoding/internal/identifier
+  - encoding/japanese
+  - encoding/korean
+  - encoding/simplifiedchinese
+  - encoding/traditionalchinese
+  - encoding/unicode
   - internal
   - internal/tag
+  - internal/utf8internal
   - language
   - runes
   - secure/bidirule
@@ -205,7 +220,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
+  version: 287cf08546ab5e7e37d55a84f7ed3fd1db036de5
 - name: k8s.io/apimachinery
   version: 1fd2e63a9a370677308a42f24fd40c86438afddf
   subpackages:

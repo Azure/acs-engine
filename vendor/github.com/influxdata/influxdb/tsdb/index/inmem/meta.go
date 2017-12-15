@@ -6,8 +6,11 @@ import (
 	"regexp"
 	"sort"
 	"sync"
+	"sync/atomic"
+	"time"
 
 	"github.com/influxdata/influxdb/models"
+	"github.com/influxdata/influxdb/pkg/bytesutil"
 	"github.com/influxdata/influxdb/query"
 	"github.com/influxdata/influxdb/tsdb"
 	"github.com/influxdata/influxql"
@@ -48,6 +51,28 @@ func NewMeasurement(database, name string) *Measurement {
 		seriesByID:          make(map[uint64]*Series),
 		seriesByTagKeyValue: make(map[string]*TagKeyValue),
 	}
+}
+
+// Authorized determines if this Measurement is authorized to be read, according
+// to the provided Authorizer. A measurement is authorized to be read if at
+// least one series from the measurement is authorized to be read.
+func (m *Measurement) Authorized(auth query.Authorizer) bool {
+	if auth == nil {
+		return true
+	}
+
+	// Note(edd): the cost of this check scales linearly with the number of series
+	// belonging to a measurement, which means it may become expensive when there
+	// are large numbers of series on a measurement.
+	//
+	// In the future we might want to push the set of series down into the
+	// authorizer, but that will require an API change.
+	for _, s := range m.SeriesByIDMap() {
+		if auth.AuthorizeSeriesRead(m.database, m.name, s.tags) {
+			return true
+		}
+	}
+	return false
 }
 
 func (m *Measurement) HasField(name string) bool {
@@ -106,6 +131,11 @@ func (m *Measurement) SeriesKeysByID(ids SeriesIDs) [][]byte {
 		}
 		keys = append(keys, []byte(s.Key))
 	}
+
+	if !bytesutil.IsSorted(keys) {
+		bytesutil.Sort(keys)
+	}
+
 	return keys
 }
 
@@ -120,6 +150,11 @@ func (m *Measurement) SeriesKeys() [][]byte {
 		}
 		keys = append(keys, []byte(s.Key))
 	}
+
+	if !bytesutil.IsSorted(keys) {
+		bytesutil.Sort(keys)
+	}
+
 	return keys
 }
 
@@ -279,11 +314,23 @@ func (m *Measurement) Rebuild() *Measurement {
 	m.mu.RUnlock()
 
 	// Re-add each series to allow the measurement indexes to get re-created.  If there were
-	// deletes, the existing measurment may have references to deleted series that need to be
-	// expunged.  Note: we're using SeriesIDs which returns the series in sorted order so that
-	// re-adding does not incur a sort for each series added.
-	for _, id := range m.SeriesIDs() {
-		if s := m.SeriesByID(id); s != nil {
+	// deletes, the existing measurement may have references to deleted series that need to be
+	// expunged.  Note: we're NOT using SeriesIDs which returns the series in sorted order because
+	// we need to do this under a write lock to prevent races.  The series are added in sorted
+	// order to prevent resorting them again after they are all re-added.
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	for k, v := range m.seriesByID {
+		if v.Deleted() {
+			continue
+		}
+		m.sortedSeriesIDs = append(m.sortedSeriesIDs, k)
+	}
+	sort.Sort(m.sortedSeriesIDs)
+
+	for _, id := range m.sortedSeriesIDs {
+		if s := m.seriesByID[id]; s != nil {
 			nm.AddSeries(s)
 		}
 	}
@@ -884,6 +931,14 @@ func (m *Measurement) SeriesIDsAllOrByExpr(expr influxql.Expr) (SeriesIDs, error
 
 // tagKeysByExpr extracts the tag keys wanted by the expression.
 func (m *Measurement) TagKeysByExpr(expr influxql.Expr) (map[string]struct{}, error) {
+	if expr == nil {
+		set := make(map[string]struct{})
+		for _, key := range m.TagKeys() {
+			set[key] = struct{}{}
+		}
+		return set, nil
+	}
+
 	switch e := expr.(type) {
 	case *influxql.BinaryExpr:
 		switch e.Op {
@@ -1129,18 +1184,25 @@ type Series struct {
 	measurement *Measurement
 	shardIDs    map[uint64]struct{} // shards that have this series defined
 	deleted     bool
+
+	// lastModified tracks the last time the series was created.  If the series
+	// already exists and a request to create is received (a no-op), lastModified
+	// is increased to track that it is still in use.
+	lastModified int64
 }
 
 // NewSeries returns an initialized series struct
 func NewSeries(key []byte, tags models.Tags) *Series {
 	return &Series{
-		Key:      string(key),
-		tags:     tags,
-		shardIDs: make(map[uint64]struct{}),
+		Key:          string(key),
+		tags:         tags,
+		shardIDs:     make(map[uint64]struct{}),
+		lastModified: time.Now().UTC().UnixNano(),
 	}
 }
 
-func (s *Series) AssignShard(shardID uint64) {
+func (s *Series) AssignShard(shardID uint64, ts int64) {
+	atomic.StoreInt64(&s.lastModified, ts)
 	if s.Assigned(shardID) {
 		return
 	}
@@ -1148,13 +1210,16 @@ func (s *Series) AssignShard(shardID uint64) {
 	s.mu.Lock()
 	// Skip the existence check under the write lock because we're just storing
 	// and empty struct.
+	s.deleted = false
 	s.shardIDs[shardID] = struct{}{}
 	s.mu.Unlock()
 }
 
-func (s *Series) UnassignShard(shardID uint64) {
+func (s *Series) UnassignShard(shardID uint64, ts int64) {
 	s.mu.Lock()
-	delete(s.shardIDs, shardID)
+	if s.LastModified() < ts {
+		delete(s.shardIDs, shardID)
+	}
 	s.mu.Unlock()
 }
 
@@ -1163,6 +1228,10 @@ func (s *Series) Assigned(shardID uint64) bool {
 	_, ok := s.shardIDs[shardID]
 	s.mu.RUnlock()
 	return ok
+}
+
+func (s *Series) LastModified() int64 {
+	return atomic.LoadInt64(&s.lastModified)
 }
 
 func (s *Series) ShardN() int {
@@ -1213,9 +1282,11 @@ func (s *Series) GetTagString(key string) string {
 }
 
 // Delete marks this series as deleted.  A deleted series should not be returned for queries.
-func (s *Series) Delete() {
+func (s *Series) Delete(ts int64) {
 	s.mu.Lock()
-	s.deleted = true
+	if s.LastModified() < ts {
+		s.deleted = true
+	}
 	s.mu.Unlock()
 }
 
@@ -1291,15 +1362,15 @@ func (t *TagKeyValue) LoadByte(value []byte) SeriesIDs {
 // TagKeyValue is a no-op.
 //
 // If f returns false then iteration over any remaining keys or values will cease.
-func (t *TagKeyValue) Range(f func(k string, a SeriesIDs) bool) {
+func (t *TagKeyValue) Range(f func(tagValue string, a SeriesIDs) bool) {
 	if t == nil {
 		return
 	}
 
 	t.mu.RLock()
 	defer t.mu.RUnlock()
-	for k, a := range t.valueIDs {
-		if !f(k, a) {
+	for tagValue, a := range t.valueIDs {
+		if !f(tagValue, a) {
 			return
 		}
 	}

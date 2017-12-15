@@ -109,3 +109,27 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	Expect(e).To(BeNil())
 	Expect(len(list.Properties.Orchestrators)).To(Equal(19))
 }
+
+func TestKubernetesInfo(t *testing.T) {
+	RegisterTestingT(t)
+
+	invalid := []string{
+		"invalid number",
+		"invalid.number",
+		"a4.b7.c3",
+		"31.29.",
+		".17.02",
+		"43.156.89.",
+		"1.2.a"}
+
+	for _, v := range invalid {
+		csOrch := &OrchestratorProfile{
+			OrchestratorType:    Kubernetes,
+			OrchestratorVersion: v,
+		}
+
+		_, e := kubernetesInfo(csOrch)
+		Expect(e).NotTo(BeNil())
+	}
+
+}
