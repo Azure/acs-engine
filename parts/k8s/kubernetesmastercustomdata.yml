@@ -446,6 +446,12 @@ write_files:
     passwd -u "$etcd" > /dev/null
     systemctl daemon-reload
     systemctl enable etcd.service
+    for i in {1..60}; do
+        if [ -e /opt/azure/containers/etcdcerts.complete ]; then
+            break
+        fi
+        sleep 1
+    done
 
 {{if .MasterProfile.IsCoreOS}}
 - path: "/opt/azure/containers/provision-setup.sh"
@@ -494,7 +500,6 @@ runcmd:
 - systemctl stop etcd
 - sudo -u etcd rm -rf /var/lib/etcd/default
 - systemctl daemon-reload
-- retrycmd_if_failure cat /opt/azure/containers/etcdcerts.complete
 - sudo /bin/chown etcd:etcd /etc/kubernetes/certs/etcd*.key
 - systemctl restart etcd
 - for i in $(seq 1 20); do curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
