@@ -828,15 +828,12 @@ func addArraySecret(m paramsMap, k string, v interface{}, encode bool) {
 	}
 	values := make([]string, len(arr))
 	for i := 0; i < len(arr); i++ {
-		str := arr[i]
-		parts := keyvaultSecretPathRe.FindStringSubmatch(str)
-		if parts == nil || len(parts) != 5 {
-			if encode {
-				values[i] = base64.StdEncoding.EncodeToString([]byte(str))
-			} else {
-				values[i] = str
-			}
+		if encode {
+			values[i] = base64.StdEncoding.EncodeToString([]byte(arr[i]))
+		} else {
+			values[i] = arr[i]
 		}
+
 	}
 	addValue(m, k, values)
 }
