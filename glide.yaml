@@ -39,6 +39,7 @@ import:
 - package: github.com/go-playground/universal-translator
   version: v0.16.0
 - package: golang.org/x/crypto
+  version: 122d919ec1efcfb58483215da23f815853e24b81
   subpackages:
   - ssh
 - package: github.com/alexcesaro/statsd

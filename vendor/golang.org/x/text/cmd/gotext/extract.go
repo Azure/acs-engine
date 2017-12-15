@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 
 	"golang.org/x/text/internal"
-	"golang.org/x/text/language"
 	"golang.org/x/text/message/pipeline"
 )
 
@@ -22,12 +21,10 @@ import (
 // - message rewriting
 
 var (
-	srcLang *string
-	lang    *string
+	lang *string
 )
 
 func init() {
-	srcLang = cmdExtract.Flag.String("srclang", "en-US", "the source-code language")
 	lang = cmdExtract.Flag.String("lang", "en-US", "comma-separated list of languages to process")
 }
 
@@ -37,30 +34,15 @@ var cmdExtract = &Command{
 	Short:     "extracts strings to be translated from code",
 }
 
-func runExtract(cmd *Command, args []string) error {
-	tag, err := language.Parse(*srcLang)
+func runExtract(cmd *Command, config *pipeline.Config, args []string) error {
+	config.Packages = args
+	state, err := pipeline.Extract(config)
 	if err != nil {
-		return wrap(err, "")
+		return wrap(err, "extract failed")
 	}
-	config := &pipeline.Config{
-		SourceLanguage: tag,
-		Packages:       args,
-	}
-	out, err := pipeline.Extract(config)
+	out := state.Extracted
 
-	data, err := json.MarshalIndent(out, "", "    ")
-	if err != nil {
-		return wrap(err, "")
-	}
-	os.MkdirAll(*dir, 0755)
-	// TODO: this file can probably go if we replace the extract + generate
-	// cycle with a init once and update cycle.
-	file := filepath.Join(*dir, extractFile)
-	if err := ioutil.WriteFile(file, data, 0644); err != nil {
-		return wrap(err, "could not create file")
-	}
-
-	langs := append(getLangs(), tag)
+	langs := append(getLangs(), config.SourceLanguage)
 	langs = internal.UniqueTags(langs)
 	for _, tag := range langs {
 		// TODO: inject translations from existing files to avoid retranslation.
