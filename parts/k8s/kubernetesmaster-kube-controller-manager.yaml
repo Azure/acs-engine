@@ -30,6 +30,7 @@ spec:
         - "--node-monitor-grace-period=<kubernetesCtrlMgrNodeMonitorGracePeriod>"
         - "--pod-eviction-timeout=<kubernetesCtrlMgrPodEvictionTimeout>"
         - "--route-reconciliation-period=<kubernetesCtrlMgrRouteReconciliationPeriod>"
+        - "--profiling=false"
       volumeMounts: 
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"
