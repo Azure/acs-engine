@@ -578,7 +578,7 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 	if len(a.CertificateProfile.CaCertificate) != 0 && len(a.CertificateProfile.CaPrivateKey) != 0 {
 		caPair = &PkiKeyCertPair{CertificatePem: a.CertificateProfile.CaCertificate, PrivateKeyPem: a.CertificateProfile.CaPrivateKey}
 	} else {
-		caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, nil, nil, nil)
+		caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, false, nil, nil, nil)
 		if err != nil {
 			return false, err
 		}

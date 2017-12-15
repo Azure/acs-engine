@@ -72,7 +72,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 
 	go func() {
 		var err error
-		apiServerCertificate, apiServerPrivateKey, err = createCertificate("apiserver", caCertificate, caPrivateKey, true, extraFQDNs, extraIPs, nil)
+		apiServerCertificate, apiServerPrivateKey, err = createCertificate("apiserver", caCertificate, caPrivateKey, false, true, extraFQDNs, extraIPs, nil)
 		errors <- err
 	}()
 
@@ -80,7 +80,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		var err error
 		organization := make([]string, 1)
 		organization[0] = "system:masters"
-		clientCertificate, clientPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil, organization)
+		clientCertificate, clientPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, false, nil, nil, organization)
 		errors <- err
 	}()
 
@@ -88,17 +88,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		var err error
 		organization := make([]string, 1)
 		organization[0] = "system:masters"
-		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil, organization)
-		errors <- err
-	}()
-
-	go func() {
-		var err error
-		organization := make([]string, 1)
-		organization[0] = "system:masters"
-		ip := net.ParseIP("127.0.0.1").To4()
-		peerIPs := append(extraIPs, ip)
-		etcdServerCertificate, etcdServerPrivateKey, err = createCertificate("etcd", caCertificate, caPrivateKey, false, nil, peerIPs, organization)
+		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("clientclient", caCertificate, caPrivateKey, false, false, nil, nil, organization)
 		errors <- err
 	}()
 
@@ -108,7 +98,17 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		organization[0] = "system:masters"
 		ip := net.ParseIP("127.0.0.1").To4()
 		peerIPs := append(extraIPs, ip)
-		etcdClientCertificate, etcdClientPrivateKey, err = createCertificate("etcd", caCertificate, caPrivateKey, false, nil, peerIPs, organization)
+		etcdServerCertificate, etcdServerPrivateKey, err = createCertificate("etcdserver", caCertificate, caPrivateKey, true, true, nil, peerIPs, organization)
+		errors <- err
+	}()
+
+	go func() {
+		var err error
+		organization := make([]string, 1)
+		organization[0] = "system:masters"
+		ip := net.ParseIP("127.0.0.1").To4()
+		peerIPs := append(extraIPs, ip)
+		etcdClientCertificate, etcdClientPrivateKey, err = createCertificate("etcdclient", caCertificate, caPrivateKey, true, false, nil, peerIPs, organization)
 		errors <- err
 	}()
 
@@ -122,7 +122,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 			peerIPs := append(extraIPs, ip)
 			etcdPeerCertificate := new(x509.Certificate)
 			etcdPeerPrivateKey := new(rsa.PrivateKey)
-			etcdPeerCertificate, etcdPeerPrivateKey, err = createCertificate("etcd", caCertificate, caPrivateKey, false, nil, peerIPs, organization)
+			etcdPeerCertificate, etcdPeerPrivateKey, err = createCertificate("etcdpeer", caCertificate, caPrivateKey, true, false, nil, peerIPs, organization)
 			etcdPeerCertPairs[i] = &PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdPeerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdPeerPrivateKey))}
 			errors <- err
 		}(i)
@@ -164,7 +164,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		nil
 }
 
-func createCertificate(commonName string, caCertificate *x509.Certificate, caPrivateKey *rsa.PrivateKey, isServer bool, extraFQDNs []string, extraIPs []net.IP, organization []string) (*x509.Certificate, *rsa.PrivateKey, error) {
+func createCertificate(commonName string, caCertificate *x509.Certificate, caPrivateKey *rsa.PrivateKey, isEtcd bool, isServer bool, extraFQDNs []string, extraIPs []net.IP, organization []string) (*x509.Certificate, *rsa.PrivateKey, error) {
 	var err error
 
 	isCA := (caCertificate == nil)
@@ -187,13 +187,21 @@ func createCertificate(commonName string, caCertificate *x509.Certificate, caPri
 	if isCA {
 		template.KeyUsage |= x509.KeyUsageCertSign
 		template.IsCA = isCA
+	} else if isEtcd {
+		if commonName == "etcdServer" {
+			template.IPAddresses = extraIPs
+			template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageServerAuth)
+		} else if commonName == "etcdClient" {
+			template.IPAddresses = extraIPs
+			template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
+		} else {
+			template.IPAddresses = extraIPs
+			template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageServerAuth)
+			template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
+		}
 	} else if isServer {
 		template.DNSNames = extraFQDNs
 		template.IPAddresses = extraIPs
-		template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageServerAuth)
-	} else if commonName == "etcd" {
-		template.IPAddresses = extraIPs
-		template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
 		template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageServerAuth)
 	} else {
 		template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
