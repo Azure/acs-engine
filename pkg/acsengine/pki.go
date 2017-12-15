@@ -88,7 +88,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		var err error
 		organization := make([]string, 1)
 		organization[0] = "system:masters"
-		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("clientclient", caCertificate, caPrivateKey, false, false, nil, nil, organization)
+		kubeConfigCertificate, kubeConfigPrivateKey, err = createCertificate("etcdclient", caCertificate, caPrivateKey, false, false, nil, nil, organization)
 		errors <- err
 	}()
 
@@ -134,6 +134,8 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 	e4 := <-errors
 	e5 := <-errors
 	e6 := <-errors
+	e7 := <-errors
+	e8 := <-errors
 	if e1 != nil {
 		return nil, nil, nil, nil, nil, nil, e1
 	}
@@ -152,8 +154,12 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 	if e6 != nil {
 		return nil, nil, nil, nil, nil, nil, e6
 	}
-
-	time.Sleep(10 * time.Second)
+	if e7 != nil {
+		return nil, nil, nil, nil, nil, nil, e7
+	}
+	if e8 != nil {
+		return nil, nil, nil, nil, nil, nil, e8
+	}
 
 	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
 		&PkiKeyCertPair{CertificatePem: string(certificateToPem(clientCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(clientPrivateKey))},
