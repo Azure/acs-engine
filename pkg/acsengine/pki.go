@@ -128,37 +128,12 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 		}(i)
 	}
 
-	e1 := <-errors
-	e2 := <-errors
-	e3 := <-errors
-	e4 := <-errors
-	e5 := <-errors
-	e6 := <-errors
-	e7 := <-errors
-	e8 := <-errors
-	if e1 != nil {
-		return nil, nil, nil, nil, nil, nil, e1
-	}
-	if e2 != nil {
-		return nil, nil, nil, nil, nil, nil, e2
-	}
-	if e3 != nil {
-		return nil, nil, nil, nil, nil, nil, e3
-	}
-	if e4 != nil {
-		return nil, nil, nil, nil, nil, nil, e4
-	}
-	if e5 != nil {
-		return nil, nil, nil, nil, nil, nil, e5
-	}
-	if e6 != nil {
-		return nil, nil, nil, nil, nil, nil, e6
-	}
-	if e7 != nil {
-		return nil, nil, nil, nil, nil, nil, e7
-	}
-	if e8 != nil {
-		return nil, nil, nil, nil, nil, nil, e8
+	e := make([]error, (masterCount + 5))
+	for i := 0; i < len(e); i++ {
+		e[i] = <-errors
+		if e[i] != nil {
+			return nil, nil, nil, nil, nil, nil, e[i]
+		}
 	}
 
 	return &PkiKeyCertPair{CertificatePem: string(certificateToPem(apiServerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(apiServerPrivateKey))},
