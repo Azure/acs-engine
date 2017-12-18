@@ -5,6 +5,7 @@
 |Managed Disks|Beta|`vlabs`|[kubernetes-vmas.json](../../examples/disks-managed/kubernetes-vmss.json)|[Description](#feat-managed-disks)|
 |Calico Network Policy|Alpha|`vlabs`|[kubernetes-calico.json](../../examples/networkpolicy/kubernetes-calico.json)|[Description](#feat-calico)|
 |Custom VNET|Beta|`vlabs`|[kubernetesvnet-azure-cni.json](../../examples/vnet/kubernetesvnet-azure-cni.json)|[Description](#feat-custom-vnet)|
+|Clear Containers Runtime|Alpha|`vlabs`|[kubernetes-clear-containers.json](../../examples/kubernetes-clear-containers.json)|[Description](#feat-clear-containers)|
 
 <a name="feat-kubernetes-msi"></a>
 
@@ -235,4 +236,38 @@ E.g.:
       ...
     }
 ]
+```
+
+<a name="feat-clear-containers"></a>
+
+## Clear Containers
+
+You can designate kubernetes agents to use Intel's Clear Containers as the
+container runtime by setting:
+
+```
+      "kubernetesConfig": {
+        "containerRuntime": "clear-containers"
+      }
+```
+
+You will need to make sure your agents are using a `vmSize` that [supports
+nested
+virtualization](https://azure.microsoft.com/en-us/blog/nested-virtualization-in-azure/).
+These are the `Dv3` or `Ev3` series nodes.
+
+You will also need to attach a disk to those nodes for the device-mapper disk that clear containers will use.
+This should look like:
+
+```
+"agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D4s_v3",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "ManagedDisks",
+        "diskSizesGB": [1023]
+      }
+    ],
 ```
