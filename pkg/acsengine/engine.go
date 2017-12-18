@@ -873,7 +873,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return buf.String()
 		},
-		"GetKubeletConfigKeyVals": func(kubeletConfig map[string]string) string {
+		"GetKubeletConfigKeyVals": func() string {
+			kubeletConfig := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
 			// Order by key for consistency
 			keys := []string{}
 			for key := range kubeletConfig {

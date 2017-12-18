@@ -476,15 +476,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 
-		// Master-specific kubelet config changes go here
-		if a.MasterProfile != nil {
-			a.MasterProfile.KubernetesConfig.KubeletConfig = o.KubernetesConfig.KubeletConfig
-		}
-		// Agent-specific kubelet config changes go here
-		for _, profile := range a.AgentPoolProfiles {
-			profile.KubernetesConfig.KubeletConfig = o.KubernetesConfig.KubeletConfig
-		}
-
 	} else if o.OrchestratorType == api.DCOS {
 		if o.DcosConfig == nil {
 			o.DcosConfig = &api.DcosConfig{}

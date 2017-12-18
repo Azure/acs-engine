@@ -232,7 +232,7 @@ write_files:
   permissions: "0644"
   owner: "root"
   content: |
-    KUBELET_CONFIG={{GetKubeletConfigKeyVals .MasterProfile.KubernetesConfig.KubeletConfig}}
+    KUBELET_CONFIG={{GetKubeletConfigKeyVals}}
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
     DOCKER_OPTS=
     KUBELET_NODE_LABELS={{GetMasterKubernetesLabels "',variables('labelResourceGroup'),'"}}
