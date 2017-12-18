@@ -20,7 +20,7 @@
 
 # Master only secrets
 # APISERVER_PRIVATE_KEY CA_CERTIFICATE CA_PRIVATE_KEY MASTER_FQDN KUBECONFIG_CERTIFICATE
-# KUBECONFIG_KEY ETCD_SERVER_CERTIFICATE ETCD_SERVER_PRIVATE_KEY ETCD_CLIENT_CERTIFICATE ETCD_CLIENT_PRIVATE_KEY 
+# KUBECONFIG_KEY ETCD_SERVER_CERTIFICATE ETCD_SERVER_PRIVATE_KEY ETCD_CLIENT_CERTIFICATE ETCD_CLIENT_PRIVATE_KEY
 # ETCD_PEER_CERTIFICATES ETCD_PEER_PRIVATE_KEYS ADMINUSER MASTER_INDEX
 
 # Find distro name via ID value in releases files and upcase
@@ -38,59 +38,59 @@ ETCD_PEER_KEY=$(echo ${ETCD_PEER_PRIVATE_KEYS} | cut -d'[' -f 2 | cut -d']' -f 1
 # CoreOS: /usr is read-only; therefore kubectl is installed at /opt/kubectl
 #   Details on install at kubernetetsmastercustomdataforcoreos.yml
 if [[ $OS == $COREOS_OS_NAME ]]; then
-    echo "Changing default kubectl bin location"
-    KUBECTL=/opt/kubectl
+	echo "Changing default kubectl bin location"
+	KUBECTL=/opt/kubectl
 fi
 
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
 ensureRunCommandCompleted()
 {
-    echo "waiting for runcmd to finish"
-    for i in {1..900}; do
-        if [ -e /opt/azure/containers/runcmd.complete ]; then
-            echo "runcmd finished"
-            break
-        fi
-        sleep 1
-    done
+	echo "waiting for runcmd to finish"
+	for i in {1..900}; do
+		if [ -e /opt/azure/containers/runcmd.complete ]; then
+			echo "runcmd finished"
+			break
+		fi
+		sleep 1
+	done
 }
 
 echo `date`,`hostname`, startscript>>/opt/m
 
 # A delay to start the kubernetes processes is necessary
-# if a reboot is required.  Otherwise, the agents will encounter issue: 
+# if a reboot is required.  Otherwise, the agents will encounter issue:
 # https://github.com/kubernetes/kubernetes/issues/41185
 if [ -f /var/run/reboot-required ]; then
-    REBOOTREQUIRED=true
+	REBOOTREQUIRED=true
 else
-    REBOOTREQUIRED=false
+	REBOOTREQUIRED=false
 fi
 
 # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
-    echo "APISERVER_PRIVATE_KEY is non-empty, assuming master node"
+	echo "APISERVER_PRIVATE_KEY is non-empty, assuming master node"
 
-    APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
-    touch "${APISERVER_PRIVATE_KEY_PATH}"
-    chmod 0600 "${APISERVER_PRIVATE_KEY_PATH}"
-    chown root:root "${APISERVER_PRIVATE_KEY_PATH}"
-    echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
+	APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
+	touch "${APISERVER_PRIVATE_KEY_PATH}"
+	chmod 0600 "${APISERVER_PRIVATE_KEY_PATH}"
+	chown root:root "${APISERVER_PRIVATE_KEY_PATH}"
+	echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
 else
-    echo "APISERVER_PRIVATE_KEY is empty, assuming worker node"
+	echo "APISERVER_PRIVATE_KEY is empty, assuming worker node"
 fi
 
 # If CA_PRIVATE_KEY is empty, then we are not on the master
 if [[ ! -z "${CA_PRIVATE_KEY}" ]]; then
-    echo "CA_KEY is non-empty, assuming master node"
+	echo "CA_KEY is non-empty, assuming master node"
 
-    CA_PRIVATE_KEY_PATH="/etc/kubernetes/certs/ca.key"
-    touch "${CA_PRIVATE_KEY_PATH}"
-    chmod 0600 "${CA_PRIVATE_KEY_PATH}"
-    chown root:root "${CA_PRIVATE_KEY_PATH}"
-    echo "${CA_PRIVATE_KEY}" | base64 --decode > "${CA_PRIVATE_KEY_PATH}"
+	CA_PRIVATE_KEY_PATH="/etc/kubernetes/certs/ca.key"
+	touch "${CA_PRIVATE_KEY_PATH}"
+	chmod 0600 "${CA_PRIVATE_KEY_PATH}"
+	chown root:root "${CA_PRIVATE_KEY_PATH}"
+	echo "${CA_PRIVATE_KEY}" | base64 --decode > "${CA_PRIVATE_KEY_PATH}"
 else
-    echo "CA_PRIVATE_KEY is empty, assuming worker node"
+	echo "CA_PRIVATE_KEY is empty, assuming worker node"
 fi
 
 ETCD_SERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdserver.key"
@@ -150,29 +150,29 @@ chmod 0600 "${AZURE_JSON_PATH}"
 chown root:root "${AZURE_JSON_PATH}"
 cat << EOF > "${AZURE_JSON_PATH}"
 {
-    "cloud":"${TARGET_ENVIRONMENT}",
-    "tenantId": "${TENANT_ID}",
-    "subscriptionId": "${SUBSCRIPTION_ID}",
-    "aadClientId": "${SERVICE_PRINCIPAL_CLIENT_ID}",
-    "aadClientSecret": "${SERVICE_PRINCIPAL_CLIENT_SECRET}",
-    "resourceGroup": "${RESOURCE_GROUP}",
-    "location": "${LOCATION}",
-    "subnetName": "${SUBNET}",
-    "securityGroupName": "${NETWORK_SECURITY_GROUP}",
-    "vnetName": "${VIRTUAL_NETWORK}",
-    "vnetResourceGroup": "${VIRTUAL_NETWORK_RESOURCE_GROUP}",
-    "routeTableName": "${ROUTE_TABLE}",
-    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
-    "cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
-    "cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
-    "cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
-    "cloudProviderBackoffDuration": ${CLOUDPROVIDER_BACKOFF_DURATION},
-    "cloudProviderBackoffJitter": ${CLOUDPROVIDER_BACKOFF_JITTER},
-    "cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
-    "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
-    "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
-    "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
-    "useInstanceMetadata": ${USE_INSTANCE_METADATA}
+	"cloud":"${TARGET_ENVIRONMENT}",
+	"tenantId": "${TENANT_ID}",
+	"subscriptionId": "${SUBSCRIPTION_ID}",
+	"aadClientId": "${SERVICE_PRINCIPAL_CLIENT_ID}",
+	"aadClientSecret": "${SERVICE_PRINCIPAL_CLIENT_SECRET}",
+	"resourceGroup": "${RESOURCE_GROUP}",
+	"location": "${LOCATION}",
+	"subnetName": "${SUBNET}",
+	"securityGroupName": "${NETWORK_SECURITY_GROUP}",
+	"vnetName": "${VIRTUAL_NETWORK}",
+	"vnetResourceGroup": "${VIRTUAL_NETWORK_RESOURCE_GROUP}",
+	"routeTableName": "${ROUTE_TABLE}",
+	"primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
+	"cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
+	"cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
+	"cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
+	"cloudProviderBackoffDuration": ${CLOUDPROVIDER_BACKOFF_DURATION},
+	"cloudProviderBackoffJitter": ${CLOUDPROVIDER_BACKOFF_JITTER},
+	"cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
+	"cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
+	"cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
+	"useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
+	"useInstanceMetadata": ${USE_INSTANCE_METADATA}
 }
 EOF
 
@@ -184,26 +184,26 @@ set -x
 
 # wait for kubectl to report successful cluster health
 function ensureKubectl() {
-    if $REBOOTREQUIRED; then
-        return
-    fi
-    kubectlfound=1
-    for i in {1..600}; do
-        if [ -e $KUBECTL ]
-        then
-            kubectlfound=0
-            break
-        fi
-        sleep 1
-    done
-    if [ $kubectlfound -ne 0 ]
-    then
-        if [ ! -e /usr/bin/docker ]
-        then
-            echo "kubectl nor docker did not install successfully"
-            exit 1
-        fi
-    fi
+	if $REBOOTREQUIRED; then
+		return
+	fi
+	kubectlfound=1
+	for i in {1..600}; do
+		if [ -e $KUBECTL ]
+		then
+			kubectlfound=0
+			break
+		fi
+		sleep 1
+	done
+	if [ $kubectlfound -ne 0 ]
+	then
+		if [ ! -e /usr/bin/docker ]
+		then
+			echo "kubectl nor docker did not install successfully"
+			exit 1
+		fi
+	fi
 }
 
 function downloadUrl () {
@@ -213,27 +213,31 @@ function downloadUrl () {
 }
 
 function setMaxPods () {
-    sed -i "s/^KUBELET_MAX_PODS=.*/KUBELET_MAX_PODS=${1}/" /etc/default/kubelet
+	sed -i "s/^KUBELET_MAX_PODS=.*/KUBELET_MAX_PODS=${1}/" /etc/default/kubelet
 }
 
 function setNetworkPlugin () {
-    sed -i "s/^KUBELET_NETWORK_PLUGIN=.*/KUBELET_NETWORK_PLUGIN=${1}/" /etc/default/kubelet
+	sed -i "s/^KUBELET_NETWORK_PLUGIN=.*/KUBELET_NETWORK_PLUGIN=${1}/" /etc/default/kubelet
+}
+
+function setKubeletOpts () {
+	sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
 }
 
 function setDockerOpts () {
-    sed -i "s#^DOCKER_OPTS=.*#DOCKER_OPTS=${1}#" /etc/default/kubelet
+	sed -i "s#^DOCKER_OPTS=.*#DOCKER_OPTS=${1}#" /etc/default/kubelet
 }
 
 function configAzureNetworkPolicy() {
-    CNI_CONFIG_DIR=/etc/cni/net.d
-    mkdir -p $CNI_CONFIG_DIR
+	CNI_CONFIG_DIR=/etc/cni/net.d
+	mkdir -p $CNI_CONFIG_DIR
 
-    chown -R root:root $CNI_CONFIG_DIR
-    chmod 755 $CNI_CONFIG_DIR
+	chown -R root:root $CNI_CONFIG_DIR
+	chmod 755 $CNI_CONFIG_DIR
 
-    # Download Azure VNET CNI plugins.
-    CNI_BIN_DIR=/opt/cni/bin
-    mkdir -p $CNI_BIN_DIR
+	# Download Azure VNET CNI plugins.
+	CNI_BIN_DIR=/opt/cni/bin
+	mkdir -p $CNI_BIN_DIR
 
     # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
     downloadUrl ${VNET_CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR
@@ -242,97 +246,284 @@ function configAzureNetworkPolicy() {
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
 
-    # Copy config file
-    mv $CNI_BIN_DIR/10-azure.conf $CNI_CONFIG_DIR/
-    chmod 600 $CNI_CONFIG_DIR/10-azure.conf
+	# Copy config file
+	mv $CNI_BIN_DIR/10-azure.conf $CNI_CONFIG_DIR/
+	chmod 600 $CNI_CONFIG_DIR/10-azure.conf
 
-    # Dump ebtables rules.
-    /sbin/ebtables -t nat --list
+	# Dump ebtables rules.
+	/sbin/ebtables -t nat --list
 
-    # Enable CNI.
-    setNetworkPlugin cni
-    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+	# Enable CNI.
+	setNetworkPlugin cni
+	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
 # Configures Kubelet to use CNI and mount the appropriate hostpaths
 function configCalicoNetworkPolicy() {
-    setNetworkPlugin cni
-    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+	setNetworkPlugin cni
+	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
 function configNetworkPolicy() {
-    if [[ "${NETWORK_POLICY}" = "azure" ]]; then
-        configAzureNetworkPolicy
-    elif [[ "${NETWORK_POLICY}" = "calico" ]]; then
-        configCalicoNetworkPolicy
-    else
-        # No policy, defaults to kubenet.
-        setNetworkPlugin kubenet
-        setDockerOpts ""
-    fi
+	if [[ "${NETWORK_POLICY}" = "azure" ]]; then
+		configAzureNetworkPolicy
+	elif [[ "${NETWORK_POLICY}" = "calico" ]]; then
+		configCalicoNetworkPolicy
+	else
+		# No policy, defaults to kubenet.
+		setNetworkPlugin kubenet
+		setDockerOpts ""
+	fi
+}
+
+# Install the Clear Containers runtime
+function installClearContainersRuntime() {
+	# Add Clear Containers repository key
+	echo "Adding Clear Containers repository key..."
+	curl -sSL "https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key" | apt-key add -
+
+	# Add Clear Container repository
+	echo "Adding Clear Containers repository..."
+	echo 'deb http://download.opensuse.org/repositories/home:/clearcontainers:/clear-containers-3/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/cc-runtime.list
+
+	# Install Clear Containers runtime
+	echo "Installing Clear Containers runtime..."
+	apt-get update
+	apt-get install --no-install-recommends -y \
+		cc-runtime
+
+	# Install thin tools for devicemapper configuration
+	echo "Installing thin tools to provision devicemapper..."
+	apt-get install --no-install-recommends -y \
+		lvm2 \
+		thin-provisioning-tools
+
+	# Load butts changes
+	echo "Loading changes to butts service files..."
+	systemctl daemon-reload
+
+	# Enable and start Clear Containers proxy service
+	echo "Enabling and starting Clear Containers proxy service..."
+	systemctl enable cc-proxy
+	systemctl start cc-proxy
+
+	installCNI
+	setNetworkPlugin cni
+	setKubeletOpts " --container-runtime=remote --container-runtime-endpoint=/var/run/crio.sock"
+	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+}
+
+# Install Go from source
+function installGo() {
+	export GO_SRC=/usr/local/go
+	export GOPATH="${HOME}/.go"
+
+	# Remove any old version of Go
+	if [[ -d "$GO_SRC" ]]; then
+		rm -rf "$GO_SRC"
+	fi
+
+	# Remove any old GOPATH
+	if [[ -d "$GOPATH" ]]; then
+		rm -rf "$GOPATH"
+	fi
+
+	# Get the latest Go version
+	GO_VERSION=$(curl -sSL "https://golang.org/VERSION?m=text")
+
+	echo "Installing Go version $GO_VERSION..."
+
+	# subshell
+	(
+	curl -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
+	)
+
+	# Set GOPATH and update PATH
+	echo "Setting GOPATH and updating PATH"
+	export PATH="${GO_SRC}/bin:${PATH}:${GOPATH}/bin"
+}
+
+# Build and install runc
+function buildRunc() {
+	# Clone the runc source
+	echo "Cloning the runc source..."
+	mkdir -p "${GOPATH}/src/github.com/opencontainers"
+	(
+	cd "${GOPATH}/src/github.com/opencontainers"
+	git clone "https://github.com/opencontainers/runc.git"
+	cd runc
+	git reset --hard v1.0.0-rc4
+	make BUILDTAGS="seccomp apparmor"
+	make install
+	)
+
+	echo "Successfully built and installed runc..."
+}
+
+# Build and install CRI-O
+function buildCRIO() {
+	installGo;
+
+	# Add CRI-O repositories
+	echo "Adding repositories required for cri-o..."
+	add-apt-repository -y ppa:projectatomic/ppa
+	add-apt-repository -y ppa:alexlarsson/flatpak
+	apt-get update
+
+	# Install CRI-O dependencies
+	echo "Installing dependencies for CRI-O..."
+	apt-get install --no-install-recommends -y \
+		btrfs-tools \
+		gcc \
+		git \
+		libapparmor-dev \
+		libassuan-dev \
+		libc6-dev \
+		libdevmapper-dev \
+		libglib2.0-dev \
+		libgpg-error-dev \
+		libgpgme11-dev \
+		libostree-dev \
+		libseccomp-dev \
+		libselinux1-dev \
+		make \
+		pkg-config \
+		skopeo-containers
+
+	# Install md2man
+	go get github.com/cpuguy83/go-md2man
+
+	# Fix for templates dependency
+	(
+	go get -u github.com/docker/docker/daemon/logger/templates
+	cd "${GOPATH}/src/github.com/docker/docker"
+	mkdir -p utils
+	cp -r daemon/logger/templates utils/
+	)
+
+	buildRunc;
+
+	# Clone the CRI-O source
+	echo "Cloning the CRI-O source..."
+	mkdir -p "${GOPATH}/src/github.com/kubernetes-incubator"
+	(
+	cd "${GOPATH}/src/github.com/kubernetes-incubator"
+	git clone "https://github.com/kubernetes-incubator/cri-o.git"
+	cd cri-o
+	git reset --hard v1.0.0
+	make BUILDTAGS="seccomp apparmor"
+	make install
+	make install.config
+	make install.butts
+	)
+
+	echo "Successfully built and installed CRI-O..."
+
+	# Cleanup the temporary directory
+	rm -vrf "$tmpd"
+
+	# Cleanup the Go install
+	rm -vrf "$GO_SRC" "$GOPATH"
+
+	setupCRIO;
+}
+
+# Setup CRI-O
+function setupCRIO() {
+	# Configure CRI-O
+	echo "Configuring CRI-O..."
+
+	# Configure crio butts service file
+	BUTTS_CRI_O_SERVICE_FILE="/usr/local/lib/butts/system/crio.service"
+	sed -i 's#ExecStart=/usr/local/bin/crio#ExecStart=/usr/local/bin/crio -log-level debug#' "$BUTTS_CRI_O_SERVICE_FILE"
+
+	# Configure /etc/crio/crio.conf
+	CRI_O_CONFIG="/etc/crio/crio.conf"
+	sed -i 's#storage_driver = ""#storage_driver = "devicemapper"#' "$CRI_O_CONFIG"
+	sed -i 's#storage_option = \[#storage_option = \["dm.directlvm_device=/dev/sdc", "dm.thinp_percent=95", "dm.thinp_metapercent=1", "dm.thinp_autoextend_threshold=80", "dm.thinp_autoextend_percent=20", "dm.directlvm_device_force=true"#' "$CRI_O_CONFIG"
+	sed -i 's#runtime = "/usr/bin/runc"#runtime = "/usr/local/sbin/runc"#' "$CRI_O_CONFIG"
+	sed -i 's#runtime_untrusted_workload = ""#runtime_untrusted_workload = "/usr/bin/cc-runtime"#' "$CRI_O_CONFIG"
+	sed -i 's#default_workload_trust = "trusted"#default_workload_trust = "untrusted"#' "$CRI_O_CONFIG"
+
+	# Load butts changes
+	echo "Loading changes to butts service files..."
+	systemctl daemon-reload
+}
+
+function ensureCRIO() {
+	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
+		# Make sure we can nest virtualization
+		if grep -q vmx /proc/cpuinfo; then
+			# Enable and start cri-o service
+			# Make sure this is done after networking plugins are installed
+			echo "Enabling and starting cri-o service..."
+			systemctl enable crio crio-shutdown
+			systemctl start crio
+		fi
+	fi
 }
 
 function systemctlEnableAndCheck() {
-    systemctl enable $1
-    systemctl is-enabled $1
-    enabled=$?
-    for i in {1..900}; do
-        if [ $enabled -ne 0 ]; then
-            systemctl enable $1
-            systemctl is-enabled $1
-            enabled=$?
-        else
-            break
-        fi
-        sleep 1
-    done
-    if [ $enabled -ne 0 ]
-    then
-        echo "$1 could not be enabled by systemctl"
-        exit 5
-    fi
-    systemctl enable $1
+	systemctl enable $1
+	systemctl is-enabled $1
+	enabled=$?
+	for i in {1..900}; do
+		if [ $enabled -ne 0 ]; then
+			systemctl enable $1
+			systemctl is-enabled $1
+			enabled=$?
+		else
+			break
+		fi
+		sleep 1
+	done
+	if [ $enabled -ne 0 ]
+	then
+		echo "$1 could not be enabled by systemctl"
+		exit 5
+	fi
+	systemctl enable $1
 }
 
 function ensureDocker() {
-    systemctlEnableAndCheck docker
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        systemctl restart docker
-        dockerStarted=1
-        for i in {1..900}; do
-            if ! /usr/bin/docker info; then
-                echo "status $?"
-                /bin/systemctl restart docker
-            else
-                echo "docker started"
-                dockerStarted=0
-                break
-            fi
-            sleep 1
-        done
-        if [ $dockerStarted -ne 0 ]
-        then
-            echo "docker did not start"
-            exit 2
-        fi
-    fi
+	systemctlEnableAndCheck docker
+	# only start if a reboot is not required
+	if ! $REBOOTREQUIRED; then
+		systemctl restart docker
+		dockerStarted=1
+		for i in {1..900}; do
+			if ! /usr/bin/docker info; then
+				echo "status $?"
+				/bin/systemctl restart docker
+			else
+				echo "docker started"
+				dockerStarted=0
+				break
+			fi
+			sleep 1
+		done
+		if [ $dockerStarted -ne 0 ]
+		then
+			echo "docker did not start"
+			exit 2
+		fi
+	fi
 }
 
 function ensureKubelet() {
-    systemctlEnableAndCheck kubelet
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        systemctl restart kubelet
-    fi
+	systemctlEnableAndCheck kubelet
+	# only start if a reboot is not required
+	if ! $REBOOTREQUIRED; then
+		systemctl restart kubelet
+	fi
 }
 
 function extractKubectl(){
-    systemctlEnableAndCheck kubectl-extract
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        systemctl restart kubectl-extract
-    fi
+	systemctlEnableAndCheck kubectl-extract
+	# only start if a reboot is not required
+	if ! $REBOOTREQUIRED; then
+		systemctl restart kubectl-extract
+	fi
 }
 
 function ensureJournal(){
@@ -349,36 +540,36 @@ function ensureJournal(){
 }
 
 function ensureApiserver() {
-    if $REBOOTREQUIRED; then
-        return
-    fi
-    kubernetesStarted=1
-    for i in {1..600}; do
-        if [ -e $KUBECTL ]
-        then
-            $KUBECTL cluster-info
-            if [ "$?" = "0" ]
-            then
-                echo "kubernetes started"
-                kubernetesStarted=0
-                break
-            fi
-        else
-            /usr/bin/docker ps | grep apiserver
-            if [ "$?" = "0" ]
-            then
-                echo "kubernetes started"
-                kubernetesStarted=0
-                break
-            fi
-        fi
-        sleep 1
-    done
-    if [ $kubernetesStarted -ne 0 ]
-    then
-        echo "kubernetes did not start"
-        exit 3
-    fi
+	if $REBOOTREQUIRED; then
+		return
+	fi
+	kubernetesStarted=1
+	for i in {1..600}; do
+		if [ -e $KUBECTL ]
+		then
+			$KUBECTL cluster-info
+			if [ "$?" = "0" ]
+			then
+				echo "kubernetes started"
+				kubernetesStarted=0
+				break
+			fi
+		else
+			/usr/bin/docker ps | grep apiserver
+			if [ "$?" = "0" ]
+			then
+				echo "kubernetes started"
+				kubernetesStarted=0
+				break
+			fi
+		fi
+		sleep 1
+	done
+	if [ $kubernetesStarted -ne 0 ]
+	then
+		echo "kubernetes did not start"
+		exit 3
+	fi
 }
 
 function ensureEtcd() {
@@ -394,112 +585,123 @@ function ensureEtcd() {
 }
 
 function ensureEtcdDataDir() {
-    mount | grep /dev/sdc1 | grep /var/lib/etcddisk
-    if [ "$?" = "0" ]
-    then
-        echo "Etcd is running with data dir at: /var/lib/etcddisk"
-        return
-    else
-        echo "/var/lib/etcddisk was not found at /dev/sdc1. Trying to mount all devices."
-        for i in {1..60}; do
-            sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
-            if [ "$?" = "0" ]
-            then
-                echo "/var/lib/etcddisk mounted at: /dev/sdc1"
-                return
-            fi
-            sleep 5
-        done
-    fi
+	mount | grep /dev/sdc1 | grep /var/lib/etcddisk
+	if [ "$?" = "0" ]
+	then
+		echo "Etcd is running with data dir at: /var/lib/etcddisk"
+		return
+	else
+		echo "/var/lib/etcddisk was not found at /dev/sdc1. Trying to mount all devices."
+		for i in {1..60}; do
+			sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
+			if [ "$?" = "0" ]
+			then
+				echo "/var/lib/etcddisk mounted at: /dev/sdc1"
+				return
+			fi
+			sleep 5
+		done
+	fi
 
-   echo "Etcd data dir was not found at: /var/lib/etcddisk"
-   exit 4
+	echo "Etcd data dir was not found at: /var/lib/etcddisk"
+	exit 4
 }
 
 function writeKubeConfig() {
-    KUBECONFIGDIR=/home/$ADMINUSER/.kube
-    KUBECONFIGFILE=$KUBECONFIGDIR/config
-    mkdir -p $KUBECONFIGDIR
-    touch $KUBECONFIGFILE
-    chown $ADMINUSER:$ADMINUSER $KUBECONFIGDIR
-    chown $ADMINUSER:$ADMINUSER $KUBECONFIGFILE
-    chmod 700 $KUBECONFIGDIR
-    chmod 600 $KUBECONFIGFILE
-    
-    # disable logging after secret output
-    set +x
-    echo "
----
-apiVersion: v1
-clusters:
-- cluster:
-    certificate-authority-data: \"$CA_CERTIFICATE\"
-    server: https://$MASTER_FQDN.$LOCATION.$FQDNSuffix
-  name: \"$MASTER_FQDN\"
-contexts:
-- context:
-    cluster: \"$MASTER_FQDN\"
-    user: \"$MASTER_FQDN-admin\"
-  name: \"$MASTER_FQDN\"
-current-context: \"$MASTER_FQDN\"
-kind: Config
-users:
-- name: \"$MASTER_FQDN-admin\"
-  user:
-    client-certificate-data: \"$KUBECONFIG_CERTIFICATE\"
-    client-key-data: \"$KUBECONFIG_KEY\"
-" > $KUBECONFIGFILE
-    # renable logging after secrets
-    set -x
+	KUBECONFIGDIR=/home/$ADMINUSER/.kube
+	KUBECONFIGFILE=$KUBECONFIGDIR/config
+	mkdir -p $KUBECONFIGDIR
+	touch $KUBECONFIGFILE
+	chown $ADMINUSER:$ADMINUSER $KUBECONFIGDIR
+	chown $ADMINUSER:$ADMINUSER $KUBECONFIGFILE
+	chmod 700 $KUBECONFIGDIR
+	chmod 600 $KUBECONFIGFILE
+
+	# disable logging after secret output
+	set +x
+	echo "
+	---
+	apiVersion: v1
+	clusters:
+	- cluster:
+	certificate-authority-data: \"$CA_CERTIFICATE\"
+	server: https://$MASTER_FQDN.$LOCATION.$FQDNSuffix
+	name: \"$MASTER_FQDN\"
+	contexts:
+	- context:
+	cluster: \"$MASTER_FQDN\"
+	user: \"$MASTER_FQDN-admin\"
+	name: \"$MASTER_FQDN\"
+	current-context: \"$MASTER_FQDN\"
+	kind: Config
+	users:
+	- name: \"$MASTER_FQDN-admin\"
+	user:
+	client-certificate-data: \"$KUBECONFIG_CERTIFICATE\"
+	client-key-data: \"$KUBECONFIG_KEY\"
+	" > $KUBECONFIGFILE
+	# renable logging after secrets
+	set -x
 }
 
 # master and node
-echo `date`,`hostname`, EnsureDockerStart>>/opt/m 
+echo `date`,`hostname`, EnsureDockerStart>>/opt/m
 ensureDocker
-echo `date`,`hostname`, configNetworkPolicyStart>>/opt/m 
+echo `date`,`hostname`, configNetworkPolicyStart>>/opt/m
 configNetworkPolicy
-echo `date`,`hostname`, setMaxPodsStart>>/opt/m 
+if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
+	# Ensure we can nest virtualization
+	if grep -q vmx /proc/cpuinfo; then
+		echo `date`,`hostname`, installClearContainersRuntimeStart>>/opt/m
+		installClearContainersRuntime
+		echo `date`,`hostname`, buildCRIOStart>>/opt/m
+		buildCRIO
+	fi
+fi
+echo `date`,`hostname`, setMaxPodsStart>>/opt/m
 setMaxPods ${MAX_PODS}
+echo `date`,`hostname`, ensureCRIOStart>>/opt/m
+ensureCRIO
 echo `date`,`hostname`, ensureKubeletStart>>/opt/m
 ensureKubelet
-echo `date`,`hostname`, extractKubctlStart>>/opt/m 
+echo `date`,`hostname`, extractKubctlStart>>/opt/m
 extractKubectl
-echo `date`,`hostname`, ensureJournalStart>>/opt/m 
+echo `date`,`hostname`, ensureJournalStart>>/opt/m
 ensureJournal
-echo `date`,`hostname`, ensureJournalDone>>/opt/m 
+echo `date`,`hostname`, ensureJournalDone>>/opt/m
 
 ensureRunCommandCompleted
-echo `date`,`hostname`, RunCmdCompleted>>/opt/m 
+echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
-    # make sure walinuxagent doesn't get updated in the middle of running this script
-    apt-mark hold walinuxagent
+	# make sure walinuxagent doesn't get updated in the middle of running this script
+	apt-mark hold walinuxagent
 fi
 
 # master only
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
-    writeKubeConfig
-    ensureKubectl
-    ensureEtcdDataDir
-    ensureEtcd
-    ensureApiserver
+	writeKubeConfig
+	ensureKubectl
+	ensureEtcdDataDir
+	ensureEtcd
+	ensureApiserver
 fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
-    # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
-    echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
-    sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
+	# mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
+	echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
+	sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
-    # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
-    apt-mark unhold walinuxagent
+	# If APISERVER_PRIVATE_KEY is empty, then we are not on the master
+	apt-mark unhold walinuxagent
 fi
 
 echo "Install complete successfully"
 
 if $REBOOTREQUIRED; then
-  # wait 1 minute to restart node, so that the custom script extension can complete
-  echo 'reboot required, rebooting node in 1 minute'
-  /bin/bash -c "shutdown -r 1 &"
+	# wait 1 minute to restart node, so that the custom script extension can complete
+	echo 'reboot required, rebooting node in 1 minute'
+	/bin/bash -c "shutdown -r 1 &"
 fi
 
 echo `date`,`hostname`, endscript>>/opt/m
