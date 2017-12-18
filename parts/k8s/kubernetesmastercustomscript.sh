@@ -307,8 +307,8 @@ function installClearContainersRuntime() {
 	systemctl enable cc-proxy
 	systemctl start cc-proxy
 
-	installCNI
-	setNetworkPlugin cni
+	# CRIO has only been tested with the azure plugin
+	configAzureNetworkPolicy
 	setKubeletOpts " --container-runtime=remote --container-runtime-endpoint=/var/run/crio.sock"
 	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
