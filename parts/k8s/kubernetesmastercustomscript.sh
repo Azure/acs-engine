@@ -362,8 +362,6 @@ function buildRunc() {
 
 # Build and install CRI-O
 function buildCRIO() {
-	installGo;
-
 	# Add CRI-O repositories
 	echo "Adding repositories required for cri-o..."
 	add-apt-repository -y ppa:projectatomic/ppa
@@ -389,6 +387,8 @@ function buildCRIO() {
 		make \
 		pkg-config \
 		skopeo-containers
+
+	installGo;
 
 	# Install md2man
 	go get github.com/cpuguy83/go-md2man
@@ -644,6 +644,14 @@ function writeKubeConfig() {
 	set -x
 }
 
+ensureRunCommandCompleted
+echo `date`,`hostname`, RunCmdCompleted>>/opt/m
+
+if [[ $OS == $UBUNTU_OS_NAME ]]; then
+	# make sure walinuxagent doesn't get updated in the middle of running this script
+	apt-mark hold walinuxagent
+fi
+
 # master and node
 echo `date`,`hostname`, EnsureDockerStart>>/opt/m
 ensureDocker
@@ -669,14 +677,6 @@ extractKubectl
 echo `date`,`hostname`, ensureJournalStart>>/opt/m
 ensureJournal
 echo `date`,`hostname`, ensureJournalDone>>/opt/m
-
-ensureRunCommandCompleted
-echo `date`,`hostname`, RunCmdCompleted>>/opt/m
-
-if [[ $OS == $UBUNTU_OS_NAME ]]; then
-	# make sure walinuxagent doesn't get updated in the middle of running this script
-	apt-mark hold walinuxagent
-fi
 
 # master only
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
