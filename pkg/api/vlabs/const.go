@@ -68,9 +68,10 @@ const (
 	ManagedDisks = "ManagedDisks"
 )
 
-// Network policy
 var (
 	NetworkPolicyValues = [...]string{"", "none", "azure", "calico"}
+
+	ContainerRuntimeValues = [...]string{"", "docker", "clear-containers"}
 )
 
 // Kubernetes configuration

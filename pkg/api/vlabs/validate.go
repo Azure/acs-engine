@@ -315,6 +315,9 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.validateNetworkPolicy(); e != nil {
 		return e
 	}
+	if e := a.validateContainerRuntime(); e != nil {
+		return e
+	}
 	if e := a.MasterProfile.Validate(); e != nil {
 		return e
 	}
@@ -667,6 +670,38 @@ func (a *Properties) validateNetworkPolicy() error {
 	// Temporary safety check, to be removed when Windows support is added.
 	if (networkPolicy == "calico" || networkPolicy == "azure") && a.HasWindows() {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
+	}
+
+	return nil
+}
+
+func (a *Properties) validateContainerRuntime() error {
+	var containerRuntime string
+
+	switch a.OrchestratorProfile.OrchestratorType {
+	case Kubernetes:
+		if a.OrchestratorProfile.KubernetesConfig != nil {
+			containerRuntime = a.OrchestratorProfile.KubernetesConfig.ContainerRuntime
+		}
+	default:
+		return nil
+	}
+
+	// Check ContainerRuntime has a valid value.
+	valid := false
+	for _, runtime := range ContainerRuntimeValues {
+		if containerRuntime == runtime {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return fmt.Errorf("unknown containerRuntime %q specified", containerRuntime)
+	}
+
+	// Make sure we don't use clear containers on windows.
+	if containerRuntime == "clear-containers" && a.HasWindows() {
+		return fmt.Errorf("containerRuntime %q is not supporting windows agents", containerRuntime)
 	}
 
 	return nil
