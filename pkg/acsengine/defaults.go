@@ -431,7 +431,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			staticWindowsKubeletConfig[key] = val
 		}
 		// Windows kubelet config overrides
-		staticWindowsKubeletConfig["--network-plugin"] = "kubenet"
+		staticWindowsKubeletConfig["--network-plugin"] = NetworkPluginKubenet
 
 		// Default Kubelet config
 		defaultKubeletConfig := map[string]string{
@@ -455,6 +455,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 					o.KubernetesConfig.KubeletConfig[key] = val
 				}
 			}
+		}
+
+		// Infer --network-plugin kubelet option from KubernetesConfig.NetworkPolicy
+		if o.KubernetesConfig.NetworkPolicy == NetworkPolicyNone {
+			o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
 		}
 
 		// We don't support user-configurable values for the following,
