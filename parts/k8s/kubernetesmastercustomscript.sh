@@ -298,8 +298,8 @@ function installClearContainersRuntime() {
 		lvm2 \
 		thin-provisioning-tools
 
-	# Load butts changes
-	echo "Loading changes to butts service files..."
+	# Load systemd changes
+	echo "Loading changes to systemd service files..."
 	systemctl daemon-reload
 
 	# Enable and start Clear Containers proxy service
@@ -414,7 +414,7 @@ function buildCRIO() {
 	make BUILDTAGS="seccomp apparmor"
 	make install
 	make install.config
-	make install.butts
+	make install.systemd
 	)
 
 	echo "Successfully built and installed CRI-O..."
@@ -433,9 +433,9 @@ function setupCRIO() {
 	# Configure CRI-O
 	echo "Configuring CRI-O..."
 
-	# Configure crio butts service file
-	BUTTS_CRI_O_SERVICE_FILE="/usr/local/lib/butts/system/crio.service"
-	sed -i 's#ExecStart=/usr/local/bin/crio#ExecStart=/usr/local/bin/crio -log-level debug#' "$BUTTS_CRI_O_SERVICE_FILE"
+	# Configure crio systemd service file
+	SYSTEMD_CRI_O_SERVICE_FILE="/usr/local/lib/systemd/system/crio.service"
+	sed -i 's#ExecStart=/usr/local/bin/crio#ExecStart=/usr/local/bin/crio -log-level debug#' "$SYSTEMD_CRI_O_SERVICE_FILE"
 
 	# Configure /etc/crio/crio.conf
 	CRI_O_CONFIG="/etc/crio/crio.conf"
@@ -445,8 +445,8 @@ function setupCRIO() {
 	sed -i 's#runtime_untrusted_workload = ""#runtime_untrusted_workload = "/usr/bin/cc-runtime"#' "$CRI_O_CONFIG"
 	sed -i 's#default_workload_trust = "trusted"#default_workload_trust = "untrusted"#' "$CRI_O_CONFIG"
 
-	# Load butts changes
-	echo "Loading changes to butts service files..."
+	# Load systemd changes
+	echo "Loading changes to systemd service files..."
 	systemctl daemon-reload
 }
 
