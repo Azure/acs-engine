@@ -412,18 +412,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			"--pod-manifest-path":               "/etc/kubernetes/manifests",
 			"--cloud-config":                    "/etc/kubernetes/azure.json",
 			"--cluster-domain":                  "cluster.local",
-			"--network-plugin":                  "cni",
 			"--cluster-dns":                     DefaultKubernetesDNSServiceIP,
 			"--cgroups-per-qos":                 "false",
 			"--enforce-node-allocatable":        "",
 			"--kubeconfig":                      "/var/lib/kubelet/kubeconfig",
 			"--azure-container-registry-config": "/etc/kubernetes/azure.json",
-		}
-
-		if helpers.IsTrueBoolPointer(a.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager) {
-			staticLinuxKubeletConfig["--cloud-provider"] = "external"
-		} else {
-			staticLinuxKubeletConfig["--cloud-provider"] = "azure"
 		}
 
 		staticWindowsKubeletConfig := make(map[string]string)
@@ -435,6 +428,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 		// Default Kubelet config
 		defaultKubeletConfig := map[string]string{
+			"--network-plugin":               "cni",
 			"--pod-infra-container-image":    cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["pause"],
 			"--max-pods":                     strconv.Itoa(DefaultKubernetesKubeletMaxPods),
 			"--eviction-hard":                DefaultKubernetesHardEvictionThreshold,
@@ -442,6 +436,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			"--image-gc-high-threshold":      strconv.Itoa(DefaultKubernetesGCHighThreshold),
 			"--image-gc-low-threshold":       strconv.Itoa(DefaultKubernetesGCLowThreshold),
 			"--non-masquerade-cidr":          DefaultNonMasqueradeCidr,
+			"--cloud-provider":               "azure",
 		}
 
 		// If no user-configurable kubelet config values exists, use the defaults
@@ -457,7 +452,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 
-		// Infer --network-plugin kubelet option from KubernetesConfig.NetworkPolicy
+		// Override default cloud-provider?
+		if helpers.IsTrueBoolPointer(a.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager) {
+			staticLinuxKubeletConfig["--cloud-provider"] = "external"
+		}
+
+		// Override default --network-plugin?
 		if o.KubernetesConfig.NetworkPolicy == NetworkPolicyNone {
 			o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
 		}
