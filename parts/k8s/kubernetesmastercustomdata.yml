@@ -86,115 +86,9 @@ write_files:
       name: localclustercontext
     current-context: localclustercontext
 
-- path: /etc/kubernetes/manifests/kube-apiserver.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_KUBERNETES_APISERVER_B64_GZIP_STR
+MASTER_MANIFESTS_CONFIG_PLACEHOLDER
 
-- path: /etc/kubernetes/manifests/kube-controller-manager.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR
-
-{{if UseCloudControllerManager }}
-- path: /etc/kubernetes/manifests/cloud-controller-manager.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_KUBERNETES_CLOUD_CONTROLLER_MANAGER_B64_GZIP_STR
-{{end}}
-
-- path: /etc/kubernetes/manifests/kube-scheduler.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR
-
-- path: /etc/kubernetes/manifests/kube-addon-manager.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR
-
-- path: /etc/kubernetes/addons/kube-dns-deployment.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR
-
-- path: /etc/kubernetes/addons/kube-proxy-daemonset.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR
-
-{{if .OrchestratorProfile.KubernetesConfig.IsDashboardEnabled}}
-- path: /etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR
-{{end}}
-
-- path: /etc/kubernetes/addons/kube-heapster-deployment.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR
-
-{{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
-- path: /etc/kubernetes/addons/kube-rescheduler-deployment.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_RESCHEDULER_DEPLOYMENT_B64_GZIP_STR
-{{end}}
-
-- path: /etc/kubernetes/addons/azure-storage-classes.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_AZURE_STORAGE_CLASSES_B64_GZIP_STR
-
-{{if .OrchestratorProfile.KubernetesConfig.IsTillerEnabled}}
-- path: /etc/kubernetes/addons/kube-tiller-deployment.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR
-{{end}}
-
-{{if .OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled}}
-- path: /etc/kubernetes/addons/aci-connector-deployment.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_ACI_CONNECTOR_DEPLOYMENT_B64_GZIP_STR
-{{end}}
-
-{{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
-- path: /etc/kubernetes/addons/calico-daemonset.yaml
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR
-{{end}}
+MASTER_ADDONS_CONFIG_PLACEHOLDER
 
 - path: "/etc/systemd/system/kubectl-extract.service"
   permissions: "0644"
@@ -246,12 +140,7 @@ write_files:
     KUBELET_REGISTER_SCHEDULABLE={{WrapAsVariable "registerSchedulable"}}
 {{end}}
 
-- path: "/etc/systemd/system/kubelet.service"
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    KUBELET_SERVICE_B64_GZIP_STR
+MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 
 - path: "/opt/azure/containers/kubelet.sh"
   permissions: "0755"

@@ -51,10 +51,6 @@ const (
 
 	swarmModeProvision        = "swarm/configure-swarmmode-cluster.sh"
 	swarmModeWindowsProvision = "swarm/Join-SwarmMode-cluster.ps1"
-
-	masterAddonAzureStorageClasses              = "MASTER_ADDON_AZURE_STORAGE_CLASSES_B64_GZIP_STR"
-	masterAddonAzureStorageClassesFileUnmanaged = "k8s/kubernetesmasteraddons-unmanaged-azure-storage-classes.yaml"
-	masterAddonAzureStorageClassesFileManaged   = "k8s/kubernetesmasteraddons-managed-azure-storage-classes.yaml"
 )
 
 const (
@@ -78,7 +74,6 @@ const (
 	kubernetesMasterVars          = "k8s/kubernetesmastervars.t"
 	kubernetesParams              = "k8s/kubernetesparams.t"
 	kubernetesWinAgentVars        = "k8s/kuberneteswinagentresourcesvmas.t"
-	kubernetesKubeletService      = "k8s/kuberneteskubelet.service"
 	masterOutputs                 = "masteroutputs.t"
 	masterParams                  = "masterparams.t"
 	swarmBaseFile                 = "swarm/swarmbase.t"
@@ -100,55 +95,6 @@ const (
 	azureGermanCloud       = "AzureGermanCloud"
 	azureUSGovernmentCloud = "AzureUSGovernmentCloud"
 )
-
-var kubernetesManifestYamls = map[string]string{
-	"MASTER_KUBERNETES_SCHEDULER_B64_GZIP_STR":                "k8s/kubernetesmaster-kube-scheduler.yaml",
-	"MASTER_KUBERNETES_CONTROLLER_MANAGER_B64_GZIP_STR":       "k8s/kubernetesmaster-kube-controller-manager.yaml",
-	"MASTER_KUBERNETES_CLOUD_CONTROLLER_MANAGER_B64_GZIP_STR": "k8s/kubernetesmaster-cloud-controller-manager.yaml",
-	"MASTER_KUBERNETES_APISERVER_B64_GZIP_STR":                "k8s/kubernetesmaster-kube-apiserver.yaml",
-	"MASTER_KUBERNETES_ADDON_MANAGER_B64_GZIP_STR":            "k8s/kubernetesmaster-kube-addon-manager.yaml",
-}
-
-var kubernetesArtifacts = map[string]string{
-	"MASTER_PROVISION_B64_GZIP_STR":            kubernetesMasterCustomScript,
-	"MASTER_GENERATE_PROXY_CERTS_B64_GZIP_STR": kubernetesMasterGenerateProxyCertsScript,
-	"KUBELET_SERVICE_B64_GZIP_STR":             kubernetesKubeletService,
-}
-
-var kubernetesArtifacts15 = map[string]string{
-	"MASTER_PROVISION_B64_GZIP_STR":            kubernetesMasterCustomScript,
-	"MASTER_GENERATE_PROXY_CERTS_B64_GZIP_STR": kubernetesMasterGenerateProxyCertsScript,
-	"KUBELET_SERVICE_B64_GZIP_STR":             "k8s/kuberneteskubelet1.5.service",
-}
-
-var kubernetesAddonYamls = map[string]string{
-	"MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR":             "k8s/kubernetesmasteraddons-heapster-deployment.yaml",
-	"MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR":             "k8s/kubernetesmasteraddons-kube-dns-deployment.yaml",
-	"MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR":            "k8s/kubernetesmasteraddons-kube-proxy-daemonset.yaml",
-	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "k8s/kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
-	masterAddonAzureStorageClasses:                              masterAddonAzureStorageClassesFileUnmanaged,
-	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "k8s/kubernetesmasteraddons-tiller-deployment.yaml",
-	"MASTER_ADDON_ACI_CONNECTOR_DEPLOYMENT_B64_GZIP_STR":        "k8s/kubernetesmasteraddons-aci-connector-deployment.yaml",
-	"MASTER_ADDON_RESCHEDULER_DEPLOYMENT_B64_GZIP_STR":          "k8s/kubernetesmasteraddons-kube-rescheduler-deployment.yaml",
-}
-
-var kubernetesAddonYamls15 = map[string]string{
-	"MASTER_ADDON_HEAPSTER_DEPLOYMENT_B64_GZIP_STR":             "k8s/kubernetesmasteraddons-heapster-deployment1.5.yaml",
-	"MASTER_ADDON_KUBE_DNS_DEPLOYMENT_B64_GZIP_STR":             "k8s/kubernetesmasteraddons-kube-dns-deployment1.5.yaml",
-	"MASTER_ADDON_KUBE_PROXY_DAEMONSET_B64_GZIP_STR":            "k8s/kubernetesmasteraddons-kube-proxy-daemonset1.5.yaml",
-	"MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR": "k8s/kubernetesmasteraddons-kubernetes-dashboard-deployment1.5.yaml",
-	masterAddonAzureStorageClasses:                              masterAddonAzureStorageClassesFileUnmanaged,
-	"MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR":               "k8s/kubernetesmasteraddons-tiller-deployment1.5.yaml",
-	"MASTER_ADDON_ACI_CONNECTOR_DEPLOYMENT_B64_GZIP_STR":        "k8s/kubernetesmasteraddons-aci-connector-deployment1.5.yaml",
-}
-
-var calicoAddonYamls = map[string]string{
-	"MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR": "k8s/kubernetesmasteraddons-calico-daemonset.yaml",
-}
-
-var calicoAddonYamls15 = map[string]string{
-	"MASTER_ADDON_CALICO_DAEMONSET_B64_GZIP_STR": "k8s/kubernetesmasteraddons-calico-daemonset1.5.yaml",
-}
 
 var commonTemplateFiles = []string{agentOutputs, agentParams, classicParams, masterOutputs, iaasOutputs, masterParams, windowsParams}
 var dcosTemplateFiles = []string{dcosBaseFile, dcosAgentResourcesVMAS, dcosAgentResourcesVMSS, dcosAgentVars, dcosMasterResources, dcosMasterVars, dcosParams, dcosWindowsAgentResourcesVMAS, dcosWindowsAgentResourcesVMSS}
@@ -892,8 +838,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			if profile.StorageProfile == api.ManagedDisks {
 				storagetier, _ := getStorageAccountType(profile.VMSize)
 				buf.WriteString(fmt.Sprintf(",storageprofile=managed,storagetier=%s", storagetier))
-				// change default storage class for managed disk agent pool
-				kubernetesAddonYamls[masterAddonAzureStorageClasses] = masterAddonAzureStorageClassesFileManaged
 			}
 			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
 			for k, v := range profile.CustomNodeLabels {
@@ -1046,9 +990,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetDefaultInternalLbStaticIPOffset": func() int {
 			return DefaultInternalLbStaticIPOffset
 		},
-		"GetKubernetesMasterCustomScript": func() string {
-			return getBase64CustomScript(kubernetesMasterCustomScript)
-		},
 		"GetKubernetesMasterCustomData": func(profile *api.Properties) string {
 			str, e := t.getSingleLineForTemplate(kubernetesMasterCustomDataYaml, cs, profile)
 			if e != nil {
@@ -1056,57 +997,29 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				return ""
 			}
 
-			for placeholder, filename := range kubernetesManifestYamls {
-				manifestTextContents := getBase64CustomScript(filename)
-				str = strings.Replace(str, placeholder, manifestTextContents, -1)
-			}
+			// add manifests
+			str = substituteConfigString(str,
+				kubernetesManifestSettingsInit(profile),
+				"k8s/manifests",
+				"/etc/kubernetes/manifests",
+				"MASTER_MANIFESTS_CONFIG_PLACEHOLDER",
+				profile.OrchestratorProfile.OrchestratorVersion)
 
-			// add artifacts and addons
-			var artifiacts map[string]string
-			if strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.5.") {
-				artifiacts = kubernetesArtifacts15
-			} else {
-				artifiacts = kubernetesArtifacts
-			}
-			for placeholder, filename := range artifiacts {
-				addonTextContents := getBase64CustomScript(filename)
-				str = strings.Replace(str, placeholder, addonTextContents, -1)
-			}
+			// add artifacts
+			str = substituteConfigString(str,
+				kubernetesArtifactSettingsInit(profile),
+				"k8s/artifacts",
+				"/etc/systemd/system",
+				"MASTER_ARTIFACTS_CONFIG_PLACEHOLDER",
+				profile.OrchestratorProfile.OrchestratorVersion)
 
-			var addonYamls map[string]string
-			if strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.5.") {
-				addonYamls = kubernetesAddonYamls15
-			} else {
-				addonYamls = kubernetesAddonYamls
-			}
-			if !profile.OrchestratorProfile.KubernetesConfig.IsTillerEnabled() {
-				delete(addonYamls, "MASTER_ADDON_TILLER_DEPLOYMENT_B64_GZIP_STR")
-			}
-			if !profile.OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled() {
-				delete(addonYamls, "MASTER_ADDON_ACI_CONNECTOR_DEPLOYMENT_B64_GZIP_STR")
-			}
-			if !profile.OrchestratorProfile.KubernetesConfig.IsDashboardEnabled() {
-				delete(addonYamls, "MASTER_ADDON_KUBERNETES_DASHBOARD_DEPLOYMENT_B64_GZIP_STR")
-			}
-			if !profile.OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled() {
-				delete(addonYamls, "MASTER_ADDON_RESCHEDULER_DEPLOYMENT_B64_GZIP_STR")
-			}
-			for placeholder, filename := range addonYamls {
-				addonTextContents := getBase64CustomScript(filename)
-				str = strings.Replace(str, placeholder, addonTextContents, -1)
-			}
-
-			// add calico manifests
-			if profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "calico" {
-				if strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.5.") ||
-					strings.HasPrefix(profile.OrchestratorProfile.OrchestratorVersion, "1.6.") {
-					calicoAddonYamls = calicoAddonYamls15
-				}
-				for placeholder, filename := range calicoAddonYamls {
-					addonTextContents := getBase64CustomScript(filename)
-					str = strings.Replace(str, placeholder, addonTextContents, -1)
-				}
-			}
+			// add addons
+			str = substituteConfigString(str,
+				kubernetesAddonSettingsInit(profile),
+				"k8s/addons",
+				"/etc/kubernetes/addons",
+				"MASTER_ADDONS_CONFIG_PLACEHOLDER",
+				profile.OrchestratorProfile.OrchestratorVersion)
 
 			// return the custom data
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
@@ -1119,16 +1032,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 
 			// add artifacts
-			var artifiacts map[string]string
-			if strings.HasPrefix(cs.Properties.OrchestratorProfile.OrchestratorVersion, "1.5.") {
-				artifiacts = kubernetesArtifacts15
-			} else {
-				artifiacts = kubernetesArtifacts
-			}
-			for placeholder, filename := range artifiacts {
-				addonTextContents := getBase64CustomScript(filename)
-				str = strings.Replace(str, placeholder, addonTextContents, -1)
-			}
+			str = substituteConfigString(str,
+				kubernetesArtifactSettingsInit(cs.Properties),
+				"k8s/artifacts",
+				"/etc/systemd/system",
+				"AGENT_ARTIFACTS_CONFIG_PLACEHOLDER",
+				cs.Properties.OrchestratorProfile.OrchestratorVersion)
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},

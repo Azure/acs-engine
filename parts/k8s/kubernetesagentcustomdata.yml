@@ -113,12 +113,7 @@ write_files:
     KUBELET_FEATURE_GATES=--feature-gates=Accelerators=true
 {{end}}
 
-- path: "/etc/systemd/system/kubelet.service"
-  permissions: "0644"
-  encoding: gzip
-  owner: "root"
-  content: !!binary |
-    KUBELET_SERVICE_B64_GZIP_STR
+AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
 
 - path: "/opt/azure/containers/kubelet.sh"
   permissions: "0755"
