@@ -103,36 +103,14 @@ write_files:
   permissions: "0644"
   owner: "root"
   content: |
-    KUBELET_CLUSTER_DNS={{WrapAsVariable "kubeDNSServiceIP"}}
-    KUBELET_API_SERVERS=https://{{WrapAsVariable "kubernetesAPIServerIP"}}:443
+    KUBELET_CONFIG={{GetKubeletConfigKeyVals}}
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
-    KUBELET_NETWORK_PLUGIN=kubenet
-    KUBELET_MAX_PODS=110
     DOCKER_OPTS=
-    CUSTOM_CMD=/bin/true
     KUBELET_REGISTER_SCHEDULABLE=true
     KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}
-    KUBELET_POD_INFRA_CONTAINER_IMAGE={{WrapAsVariable "kubernetesPodInfraContainerSpec"}}
-    KUBELET_HARD_EVICTION_THRESHOLD={{WrapAsVariable "kubernetesHardEvictionThreshold"}}
-    KUBELET_NODE_STATUS_UPDATE_FREQUENCY={{WrapAsVariable "kubernetesNodeStatusUpdateFrequency"}}
-    KUBE_CTRL_MGR_NODE_MONITOR_GRACE_PERIOD={{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}
-    KUBE_CTRL_MGR_POD_EVICTION_TIMEOUT={{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}
-    KUBE_CTRL_MGR_ROUTE_RECONCILIATION_PERIOD={{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}
-    KUBELET_IMAGE_GC_HIGH_THRESHOLD={{WrapAsVariable "gchighthreshold"}}
-    KUBELET_IMAGE_GC_LOW_THRESHOLD={{WrapAsVariable "gclowthreshold"}}
 {{if IsKubernetesVersionGe "1.6.0"}}
-    KUBELET_NON_MASQUERADE_CIDR=--non-masquerade-cidr={{WrapAsVariable "kubernetesNonMasqueradeCidr"}}
+    KUBELET_NON_MASQUERADE_CIDR={{WrapAsVariable "kubernetesNonMasqueradeCidr"}}
     KUBELET_FEATURE_GATES=--feature-gates=Accelerators=true
-  {{if IsKubernetesVersionTilde "1.6.x"}}
-    KUBELET_FIX_43704_1=--cgroups-per-qos=false
-    KUBELET_FIX_43704_2=--enforce-node-allocatable=
-    KUBELET_FIX_43704_3=""
-  {{end}}
-{{end}}
-{{if UseCloudControllerManager }}
-    CLOUD_PROVIDER=external
-{{else}}
-    CLOUD_PROVIDER=azure
 {{end}}
 
 - path: "/etc/systemd/system/kubelet.service"

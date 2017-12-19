@@ -591,12 +591,9 @@ func convertVLabsKubernetesConfig(vp *vlabs.Properties, api *KubernetesConfig) {
 	api.ClusterSubnet = vlabs.ClusterSubnet
 	api.DNSServiceIP = vlabs.DNSServiceIP
 	api.ServiceCIDR = vlabs.ServiceCidr
-	api.NonMasqueradeCidr = vlabs.NonMasqueradeCidr
 	api.NetworkPolicy = vlabs.NetworkPolicy
 	api.MaxPods = vlabs.MaxPods
 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
-	api.NodeStatusUpdateFrequency = vlabs.NodeStatusUpdateFrequency
-	api.HardEvictionThreshold = vlabs.HardEvictionThreshold
 	api.CtrlMgrNodeMonitorGracePeriod = vlabs.CtrlMgrNodeMonitorGracePeriod
 	api.CtrlMgrPodEvictionTimeout = vlabs.CtrlMgrPodEvictionTimeout
 	api.CtrlMgrRouteReconciliationPeriod = vlabs.CtrlMgrRouteReconciliationPeriod
@@ -621,6 +618,7 @@ func convertVLabsKubernetesConfig(vp *vlabs.Properties, api *KubernetesConfig) {
 	api.EtcdVersion = vlabs.EtcdVersion
 	api.EtcdDiskSizeGB = vlabs.EtcdDiskSizeGB
 	convertAddonsToAPI(vlabs, api)
+	convertKubeletConfigToAPI(vlabs, api)
 }
 
 func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) {
@@ -660,6 +658,13 @@ func convertAddonsToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
 				a.Addons[i].Config[key] = val
 			}
 		}
+	}
+}
+
+func convertKubeletConfigToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
+	a.KubeletConfig = map[string]string{}
+	for key, val := range v.KubeletConfig {
+		a.KubeletConfig[key] = val
 	}
 }
 

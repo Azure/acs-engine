@@ -208,11 +208,8 @@ type KubernetesConfig struct {
 	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
 	ServiceCidr                      string            `json:"serviceCidr,omitempty"`
 	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
-	NonMasqueradeCidr                string            `json:"nonMasqueradeCidr,omitempty"`
 	MaxPods                          int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string            `json:"dockerBridgeSubnet,omitempty"`
-	NodeStatusUpdateFrequency        string            `json:"nodeStatusUpdateFrequency,omitempty"`
-	HardEvictionThreshold            string            `json:"hardEvictionThreshold,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
@@ -237,6 +234,7 @@ type KubernetesConfig struct {
 	EtcdVersion                      string            `json:"etcdVersion,omitempty"`
 	EtcdDiskSizeGB                   string            `json:"etcdDiskSizeGB,omitempty"`
 	Addons                           []KubernetesAddon `json:"addons,omitempty"`
+	KubeletConfig                    map[string]string `json:"kubeletConfig,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS

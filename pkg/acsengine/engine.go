@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"regexp"
 	"runtime/debug"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -640,8 +641,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		}
 		addValue(parametersMap, "kubernetesKubeDNSSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["dns"])
 		addValue(parametersMap, "kubernetesPodInfraContainerSpec", cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase+KubeConfigs[k8sVersion]["pause"])
-		addValue(parametersMap, "kubernetesNodeStatusUpdateFrequency", properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency)
-		addValue(parametersMap, "kubernetesHardEvictionThreshold", properties.OrchestratorProfile.KubernetesConfig.HardEvictionThreshold)
 		addValue(parametersMap, "kubernetesCtrlMgrNodeMonitorGracePeriod", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod)
 		addValue(parametersMap, "kubernetesCtrlMgrPodEvictionTimeout", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout)
 		addValue(parametersMap, "kubernetesCtrlMgrRouteReconciliationPeriod", properties.OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod)
@@ -654,7 +653,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "cloudProviderRatelimitQPS", strconv.FormatFloat(properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitQPS, 'f', -1, 64))
 		addValue(parametersMap, "cloudProviderRatelimitBucket", strconv.Itoa(properties.OrchestratorProfile.KubernetesConfig.CloudProviderRateLimitBucket))
 		addValue(parametersMap, "kubeClusterCidr", properties.OrchestratorProfile.KubernetesConfig.ClusterSubnet)
-		addValue(parametersMap, "kubernetesNonMasqueradeCidr", properties.OrchestratorProfile.KubernetesConfig.NonMasqueradeCidr)
+		addValue(parametersMap, "kubernetesNonMasqueradeCidr", properties.OrchestratorProfile.KubernetesConfig.KubeletConfig["--non-masquerade-cidr"])
 		addValue(parametersMap, "generatorCode", generatorCode)
 		if properties.HostedMasterProfile != nil {
 			addValue(parametersMap, "orchestratorName", "aks")
@@ -871,6 +870,20 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			buf.WriteString(fmt.Sprintf(",kubernetes.azure.com/cluster=%s", rg))
 			for k, v := range profile.CustomNodeLabels {
 				buf.WriteString(fmt.Sprintf(",%s=%s", k, v))
+			}
+			return buf.String()
+		},
+		"GetKubeletConfigKeyVals": func() string {
+			kubeletConfig := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+			// Order by key for consistency
+			keys := []string{}
+			for key := range kubeletConfig {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
+			var buf bytes.Buffer
+			for _, key := range keys {
+				buf.WriteString(fmt.Sprintf("%s=%s ", key, kubeletConfig[key]))
 			}
 			return buf.String()
 		},
@@ -1472,10 +1485,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["dns"]
 				case "kubernetesPodInfraContainerSpec":
 					val = cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["pause"]
-				case "kubernetesNodeStatusUpdateFrequency":
-					val = cs.Properties.OrchestratorProfile.KubernetesConfig.NodeStatusUpdateFrequency
-				case "kubernetesHardEvictionThreshold":
-					val = cs.Properties.OrchestratorProfile.KubernetesConfig.HardEvictionThreshold
 				case "kubernetesCtrlMgrNodeMonitorGracePeriod":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod
 				case "kubernetesCtrlMgrPodEvictionTimeout":
