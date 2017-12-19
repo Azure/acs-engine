@@ -3,6 +3,9 @@ set -x
 
 echo $(date) " - Starting Script"
 
+echo $(date) " - Setting kubeconfig"
+export KUBECONFIG=/var/lib/kubelet/kubeconfig
+
 echo $(date) " - Waiting for API Server to start"
 kubernetesStarted=1
 for i in {1..600}; do
@@ -207,16 +210,16 @@ ensure_k8s_namespace_exists() {
 # should run the extension is to alphabetically determine
 # if this local machine is the first in the list of master nodes
 # if it is, then run the extension. if not, exit
-wait_for_master_nodes
-if [[ $? -ne 0 ]]; then
-    echo $(date) " - Error while waiting for kubectl to output master nodes. Exiting"
-    exit 1
-fi
-should_this_node_run_extension
-if [[ $? -ne 0 ]]; then
-    echo $(date) " - Not the first master node, no longer continuing extension. Exiting"
-    exit 1
-fi
+# wait_for_master_nodes
+# if [[ $? -ne 0 ]]; then
+#     echo $(date) " - Error while waiting for kubectl to output master nodes. Exiting"
+#     exit 1
+# fi
+# should_this_node_run_extension
+# if [[ $? -ne 0 ]]; then
+#     echo $(date) " - Not the first master node, no longer continuing extension. Exiting"
+#     exit 1
+# fi
 
 # Deploy container
 
