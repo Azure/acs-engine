@@ -53,8 +53,8 @@ const (
 )
 
 const (
-	// KubernetesVersion1Dot9Beta1 is the major.minor.patch string for the 1.9.0-beta.1 version of kubernetes
-	KubernetesVersion1Dot9Beta1 string = "1.9.0-beta.1"
+	// KubernetesVersion1Dot9Dot0 is the major.minor.patch string for the 1.9.0 version of kubernetes
+	KubernetesVersion1Dot9Dot0 string = "1.9.0"
 	// KubernetesVersion1Dot8Dot0 is the major.minor.patch string for the 1.8.0 version of kubernetes
 	KubernetesVersion1Dot8Dot0 string = "1.8.0"
 	// KubernetesVersion1Dot8Dot1 is the major.minor.patch string for the 1.8.1 version of kubernetes
@@ -118,7 +118,7 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot8Dot1:  true,
 	KubernetesVersion1Dot8Dot2:  true,
 	KubernetesVersion1Dot8Dot4:  true,
-	KubernetesVersion1Dot9Beta1: true,
+	KubernetesVersion1Dot9Dot0:  true,
 }
 
 // GetSupportedKubernetesVersion verifies that a passed-in version string is supported, or returns a default version string if not
@@ -150,7 +150,7 @@ var AllKubernetesWindowsSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot8Dot1:  true,
 	KubernetesVersion1Dot8Dot2:  true,
 	KubernetesVersion1Dot8Dot4:  true,
-	// TODO add KubernetesVersion1Dot9Beta1 when Windows image is built
+	// TODO add KubernetesVersion1Dot9Dot0 when Windows image is built
 }
 
 const (
