@@ -8,7 +8,7 @@ import (
 
 // KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes versions (major.minor.patch)
 var KubeConfigs = map[string]map[string]string{
-	common.KubernetesVersion1Dot9Beta1: {
+	common.KubernetesVersion1Dot9Dot0: {
 		"hyperkube": "hyperkube-amd64:v1.9.0",
 		"ccm":       "cloud-controller-manager-amd64:v1.9.0",
 		DefaultDashboardAddonName:   "kubernetes-dashboard-amd64:v1.9.0",
