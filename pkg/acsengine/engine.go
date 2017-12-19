@@ -711,6 +711,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			if properties.OrchestratorProfile.DcosConfig.DcosWindowsBootstrapURL != "" {
 				dcosWindowsBootstrapURL = properties.OrchestratorProfile.DcosConfig.DcosWindowsBootstrapURL
 			}
+			if properties.OrchestratorProfile.DcosConfig.DcosBootstrapURL != "" {
+				dcosBootstrapURL = properties.OrchestratorProfile.DcosConfig.DcosBootstrapURL
+			}
 		}
 
 		addValue(parametersMap, "dcosBootstrapURL", dcosBootstrapURL)

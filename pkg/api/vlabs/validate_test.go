@@ -46,6 +46,11 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 		t.Errorf("should error when DcosConfig populated for non-Kubernetes OrchestratorType")
 	}
 
+	o.DcosConfig.DcosBootstrapURL = "http://www.microsoft.com"
+	if err := o.Validate(false); err == nil {
+		t.Errorf("should error when DcosConfig populated for non-Kubernetes OrchestratorType")
+	}
+
 	o = &OrchestratorProfile{
 		OrchestratorType:    "Kubernetes",
 		OrchestratorVersion: "1.7.3",
