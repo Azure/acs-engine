@@ -7,34 +7,44 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestCertAlreadyPresent(t *testing.T) {
+func TestAllCertsAlreadyPresent(t *testing.T) {
 	RegisterTestingT(t)
 	var cert *api.CertificateProfile
 
-	Expect(certAlreadyPresent(nil)).To(BeFalse())
+	Expect(allCertAlreadyPresent(nil)).To(BeFalse())
 
 	cert = &api.CertificateProfile{}
-	Expect(certAlreadyPresent(cert)).To(BeFalse())
+	Expect(allCertAlreadyPresent(cert)).To(BeFalse())
 
 	cert = &api.CertificateProfile{
 		APIServerCertificate: "a",
 	}
-	Expect(certAlreadyPresent(cert)).To(BeTrue())
+	Expect(allCertAlreadyPresent(cert)).To(BeFalse())
 
 	cert = &api.CertificateProfile{
+		APIServerCertificate: "a",
+		CaCertificate: "c",
+		CaPrivateKey: "d",
+		ClientCertificate: "e",
+		ClientPrivateKey: "f",
+		KubeConfigCertificate: "g",
+		KubeConfigPrivateKey: "h"	
+	}
+	Expect(allCertAlreadyPresent(cert)).To(BeFalse())
+
+	cert = &api.CertificateProfile{
+		APIServerCertificate: "a",
 		APIServerPrivateKey: "b",
+		CaCertificate: "c",
+		CaPrivateKey: "d",
+		ClientCertificate: "e",
+		ClientPrivateKey: "f",
+		KubeConfigCertificate: "g",
+		KubeConfigPrivateKey: "h"	
 	}
-	Expect(certAlreadyPresent(cert)).To(BeTrue())
+	Expect(allCertAlreadyPresent(cert)).To(BeTrue())
 
-	cert = &api.CertificateProfile{
-		ClientCertificate: "c",
-	}
-	Expect(certAlreadyPresent(cert)).To(BeTrue())
 
-	cert = &api.CertificateProfile{
-		ClientPrivateKey: "d",
-	}
-	Expect(certAlreadyPresent(cert)).To(BeTrue())
 }
 
 func TestAddonsIndexByName(t *testing.T) {

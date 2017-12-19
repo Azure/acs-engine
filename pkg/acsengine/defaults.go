@@ -575,8 +575,10 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 
 	// use the specified Certificate Authority pair, or generate a new pair
 	var caPair *PkiKeyCertPair
-	if len(a.CertificateProfile.CaCertificate) != 0 && len(a.CertificateProfile.CaPrivateKey) != 0 {
+	caProvided := false
+	if len(a.CertificateProfile.CaCertificate) > 0 && len(a.CertificateProfile.CaPrivateKey) > 0 {
 		caPair = &PkiKeyCertPair{CertificatePem: a.CertificateProfile.CaCertificate, PrivateKeyPem: a.CertificateProfile.CaPrivateKey}
+		caProvided = true
 	} else {
 		caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, nil, nil, nil)
 		if err != nil {
@@ -598,18 +600,33 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		return false, err
 	}
 
-	a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
-	a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
-	a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
-	a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
-	a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
-	a.CertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
+	// If no Certificate Authority pair, use genereted cert/key pairs signed by generated Certificate Authority pair
+	if !caProvided {
+		a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
+		a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
+		a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
+		a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
+		a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
+		a.CertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
+	} else {
+		// Only use the generated cert/key pair if no cert/key pair was provided
+		if len(a.CertificateProfile.APIServerCertificate) == 0 || len(a.CertificateProfile.APIServerPrivateKey) == 0 {
+			a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
+			a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
+		} if len(a.CertificateProfile.ClientCertificate) == 0 || len(a.CertificateProfile.ClientPrivateKey) == 0 {
+			a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
+			a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
+		} if len(a.CertificateProfile.KubeConfigCertificate) == 0 || len(a.CertificateProfile.KubeConfigPrivateKey) == 0 {
+			a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
+			a.CertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
+		} 
+	}
 
 	return true, nil
 }
 
 func certGenerationRequired(a *api.Properties) bool {
-	if certAlreadyPresent(a.CertificateProfile) {
+	if allCertsAlreadyPresent(a.CertificateProfile) {
 		return false
 	}
 	if a.MasterProfile == nil {
@@ -624,24 +641,13 @@ func certGenerationRequired(a *api.Properties) bool {
 	}
 }
 
-// certAlreadyPresent determines if the passed in CertificateProfile includes certificate data
-// TODO actually verify valid/useable certificate data
-func certAlreadyPresent(c *api.CertificateProfile) bool {
-	if c != nil {
-		switch {
-		case len(c.APIServerCertificate) > 0:
-			return true
-		case len(c.APIServerPrivateKey) > 0:
-			return true
-		case len(c.ClientCertificate) > 0:
-			return true
-		case len(c.ClientPrivateKey) > 0:
-			return true
-		default:
-			return false
-		}
+func allCertsAlreadyPresent(c *api.CertificateProfile) bool {
+	if c == nil {
+		return false
 	}
-	return false
+	return len(c.CaCertificate) > 0 && len(c.CaPrivateKey) && len(c.APIServerCertificate) > 0 
+	&& len(c.APIServerPrivateKey) > 0 && len(c.ClientCertificate) > 0 && len(c.ClientPrivateKey) > 0 
+	&& len(c.KubeConfigCertificate) > 0 && len(c.KubeConfigPrivateKey) > 0
 }
 
 // getFirstConsecutiveStaticIPAddress returns the first static IP address of the given subnet.
