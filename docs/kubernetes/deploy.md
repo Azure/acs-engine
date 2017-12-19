@@ -93,6 +93,8 @@ Edit the [simple Kubernetes cluster definition](/examples/kubernetes.json) and f
 * `clientId`: this is the service principal's appId uuid or name from step 2
 * `secret`: this is the service principal's password or randomly-generated password from step 2
 
+Optional: attach to an existing virtual network (VNET). Details [here](features.md#feat-custom-vnet)
+
 ### Step 4: Generate the Templates
 
 The generate command takes a cluster definition and outputs a number of templates which describe your Kubernetes cluster. By default, `generate` will create a new directory named after your cluster nested in the `_output` directory. If my dnsPrefix was `larry` my cluster templates would be found in `_output/larry-`.
