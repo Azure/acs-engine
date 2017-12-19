@@ -23,7 +23,7 @@ If would prefer to build `acs-engine` from source or are you are interested in c
 
 ACS Engine consumes a cluster definition which outlines the desired shape, size, and configuration of Kubernetes. There are a number of features that can be enabled through the cluster definition.
 
-See [ACS Engine The Long Way](kubernetes/deploy.md#the-long-way) for an example on generating templates by hand.
+See [ACS Engine The Long Way](kubernetes/deploy.md#acs-engine-the-long-way) for an example on generating templates by hand.
 
 <a href="#deployment-usage"></a>
 
