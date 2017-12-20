@@ -74,22 +74,24 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
-			ClusterSubnet:      "10.120.0.0/16",
-			DockerBridgeSubnet: "10.120.1.0/16",
-			MaxPods:            42,
-			CtrlMgrNodeMonitorGracePeriod:    ValidKubernetesCtrlMgrNodeMonitorGracePeriod,
-			CtrlMgrPodEvictionTimeout:        ValidKubernetesCtrlMgrPodEvictionTimeout,
-			CtrlMgrRouteReconciliationPeriod: ValidKubernetesCtrlMgrRouteReconciliationPeriod,
-			CloudProviderBackoff:             ValidKubernetesCloudProviderBackoff,
-			CloudProviderBackoffRetries:      ValidKubernetesCloudProviderBackoffRetries,
-			CloudProviderBackoffJitter:       ValidKubernetesCloudProviderBackoffJitter,
-			CloudProviderBackoffDuration:     ValidKubernetesCloudProviderBackoffDuration,
-			CloudProviderBackoffExponent:     ValidKubernetesCloudProviderBackoffExponent,
-			CloudProviderRateLimit:           ValidKubernetesCloudProviderRateLimit,
-			CloudProviderRateLimitQPS:        ValidKubernetesCloudProviderRateLimitQPS,
-			CloudProviderRateLimitBucket:     ValidKubernetesCloudProviderRateLimitBucket,
+			ClusterSubnet:                "10.120.0.0/16",
+			DockerBridgeSubnet:           "10.120.1.0/16",
+			MaxPods:                      42,
+			CloudProviderBackoff:         ValidKubernetesCloudProviderBackoff,
+			CloudProviderBackoffRetries:  ValidKubernetesCloudProviderBackoffRetries,
+			CloudProviderBackoffJitter:   ValidKubernetesCloudProviderBackoffJitter,
+			CloudProviderBackoffDuration: ValidKubernetesCloudProviderBackoffDuration,
+			CloudProviderBackoffExponent: ValidKubernetesCloudProviderBackoffExponent,
+			CloudProviderRateLimit:       ValidKubernetesCloudProviderRateLimit,
+			CloudProviderRateLimitQPS:    ValidKubernetesCloudProviderRateLimitQPS,
+			CloudProviderRateLimitBucket: ValidKubernetesCloudProviderRateLimitBucket,
 			KubeletConfig: map[string]string{
 				"--node-status-update-frequency": ValidKubernetesNodeStatusUpdateFrequency,
+			},
+			ControllerManagerConfig: map[string]string{
+				"--node-monitor-grace-period":   ValidKubernetesCtrlMgrNodeMonitorGracePeriod,
+				"--pod-eviction-timeout":        ValidKubernetesCtrlMgrPodEvictionTimeout,
+				"--route-reconciliation-period": ValidKubernetesCtrlMgrRouteReconciliationPeriod,
 			},
 		}
 		if err := c.Validate(k8sVersion); err != nil {
@@ -145,20 +147,24 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
-			CtrlMgrNodeMonitorGracePeriod: "invalid",
+			ControllerManagerConfig: map[string]string{
+				"--node-monitor-grace-period": "invalid",
+			},
 		}
 		if err := c.Validate(k8sVersion); err == nil {
-			t.Error("should error on invalid CtrlMgrNodeMonitorGracePeriod")
+			t.Error("should error on invalid --node-monitor-grace-period")
 		}
 
 		c = KubernetesConfig{
-			CtrlMgrNodeMonitorGracePeriod: "30s",
+			ControllerManagerConfig: map[string]string{
+				"--node-monitor-grace-period": "30s",
+			},
 			KubeletConfig: map[string]string{
 				"--node-status-update-frequency": "10s",
 			},
 		}
 		if err := c.Validate(k8sVersion); err == nil {
-			t.Error("should error when CtrlMgrRouteReconciliationPeriod is not sufficiently larger than --node-status-update-frequency kubelet config")
+			t.Error("should error when --node-monitor-grace-period is not sufficiently larger than --node-status-update-frequency kubelet config")
 		}
 
 		c = KubernetesConfig{

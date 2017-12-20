@@ -594,9 +594,6 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.NetworkPolicy = vlabs.NetworkPolicy
 	api.MaxPods = vlabs.MaxPods
 	api.DockerBridgeSubnet = vlabs.DockerBridgeSubnet
-	api.CtrlMgrNodeMonitorGracePeriod = vlabs.CtrlMgrNodeMonitorGracePeriod
-	api.CtrlMgrPodEvictionTimeout = vlabs.CtrlMgrPodEvictionTimeout
-	api.CtrlMgrRouteReconciliationPeriod = vlabs.CtrlMgrRouteReconciliationPeriod
 	api.CloudProviderBackoff = vlabs.CloudProviderBackoff
 	api.CloudProviderBackoffDuration = vlabs.CloudProviderBackoffDuration
 	api.CloudProviderBackoffExponent = vlabs.CloudProviderBackoffExponent
@@ -619,6 +616,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.EtcdDiskSizeGB = vlabs.EtcdDiskSizeGB
 	convertAddonsToAPI(vlabs, api)
 	convertKubeletConfigToAPI(vlabs, api)
+	convertControllerManagerConfigToAPI(vlabs, api)
 }
 
 func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) {
@@ -665,6 +663,13 @@ func convertKubeletConfigToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
 	a.KubeletConfig = map[string]string{}
 	for key, val := range v.KubeletConfig {
 		a.KubeletConfig[key] = val
+	}
+}
+
+func convertControllerManagerConfigToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
+	a.ControllerManagerConfig = map[string]string{}
+	for key, val := range v.ControllerManagerConfig {
+		a.ControllerManagerConfig[key] = val
 	}
 }
 

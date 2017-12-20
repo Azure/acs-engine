@@ -846,27 +846,6 @@
       },
       "type": "string"
     },
-    "kubernetesCtrlMgrNodeMonitorGracePeriod": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "Kubernetes controller manager grace period for node status updates."
-      },
-      "type": "string"
-    },
-    "kubernetesCtrlMgrPodEvictionTimeout": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "Kubernetes controller manager pod eviction timeout."
-      },
-      "type": "string"
-    },
-    "kubernetesCtrlMgrRouteReconciliationPeriod": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "Kubernetes controller manager route reconciliation period."
-      },
-      "type": "string"
-    },
     "kubernetesDNSMasqSpec": {
       "defaultValue": "",
       "metadata": {
@@ -1181,9 +1160,6 @@
     "kubernetesAPIServerIP": "[concat(variables('masterFirstAddrPrefix'), add(variables('masterInternalLbIPOffset'), int(variables('masterFirstAddrOctet4'))))]",
     "kubernetesAddonManagerSpec": "[parameters('kubernetesAddonManagerSpec')]",
     "kubernetesAddonResizerSpec": "[parameters('kubernetesAddonResizerSpec')]",
-    "kubernetesCtrlMgrNodeMonitorGracePeriod": "[parameters('kubernetesCtrlMgrNodeMonitorGracePeriod')]",
-    "kubernetesCtrlMgrPodEvictionTimeout": "[parameters('kubernetesCtrlMgrPodEvictionTimeout')]",
-    "kubernetesCtrlMgrRouteReconciliationPeriod": "[parameters('kubernetesCtrlMgrRouteReconciliationPeriod')]",
     "kubernetesDNSMasqSpec": "[parameters('kubernetesDNSMasqSpec')]",
     "kubernetesDashboardSpec": "[parameters('kubernetesDashboardSpec')]",
     "kubernetesExecHealthzSpec": "[parameters('kubernetesExecHealthzSpec')]",

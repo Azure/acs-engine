@@ -14,23 +14,20 @@ spec:
       command: 
         - "/hyperkube"
         - "controller-manager"
-        - "--kubeconfig=/var/lib/kubelet/kubeconfig"
-        - "--allocate-node-cidrs=<allocateNodeCidrs>"
-        - "--cluster-cidr=<kubeClusterCidr>"
+        - "--kubeconfig=/var/lib/kubelet/kubeconfig" # genericize
+        - "--allocate-node-cidrs=<allocateNodeCidrs>" # genericize
+        - "--cluster-cidr=<kubeClusterCidr>" # genericize
         - "--cluster-name=<masterFqdnPrefix>"
-        - "--cloud-provider=azure"
-        - "--cloud-config=/etc/kubernetes/azure.json"
-        - "--root-ca-file=/etc/kubernetes/certs/ca.crt"
-        - "--cluster-signing-cert-file=/etc/kubernetes/certs/ca.crt"
-        - "--cluster-signing-key-file=/etc/kubernetes/certs/ca.key"
-        - "--service-account-private-key-file=/etc/kubernetes/certs/apiserver.key"
-        - "--leader-elect=true"
+        - "--cloud-provider=azure" # genericize
+        - "--cloud-config=/etc/kubernetes/azure.json" # genericize
+        - "--root-ca-file=/etc/kubernetes/certs/ca.crt" # genericize
+        - "--cluster-signing-cert-file=/etc/kubernetes/certs/ca.crt" # genericize
+        - "--cluster-signing-key-file=/etc/kubernetes/certs/ca.key" # genericize
+        - "--service-account-private-key-file=/etc/kubernetes/certs/apiserver.key" # genericize
+        - "--leader-elect=true" # genericize
         - "<kubernetesEnableRbac>"
-        - "--v=2"
-        - "--node-monitor-grace-period=<kubernetesCtrlMgrNodeMonitorGracePeriod>"
-        - "--pod-eviction-timeout=<kubernetesCtrlMgrPodEvictionTimeout>"
-        - "--route-reconciliation-period=<kubernetesCtrlMgrRouteReconciliationPeriod>"
-        - "--profiling=false"
+        - "--v=2" # genericize
+        - "--profiling=false" # genericize
       volumeMounts: 
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"

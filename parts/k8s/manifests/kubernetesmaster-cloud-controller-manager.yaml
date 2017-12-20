@@ -22,7 +22,7 @@ spec:
         - "--leader-elect=true"
 # TODO: RBAC support
 #        - "<kubernetesEnableRbac>"
-        - "--route-reconciliation-period=<kubernetesCtrlMgrRouteReconciliationPeriod>"
+# TODO   - "--route-reconciliation-period="
         - "--v=2"
       volumeMounts: 
         - name: "etc-kubernetes"
