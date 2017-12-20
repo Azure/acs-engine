@@ -562,7 +562,7 @@ func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProf
 	case Kubernetes:
 		if vlabscs.KubernetesConfig != nil {
 			api.KubernetesConfig = &KubernetesConfig{}
-			convertVLabsKubernetesConfig(vp, api.KubernetesConfig)
+			convertVLabsKubernetesConfig(vlabscs.KubernetesConfig, api.KubernetesConfig)
 		}
 		setVlabsKubernetesDefaults(vp, api)
 		api.OrchestratorVersion = common.RationalizeReleaseAndVersion(
@@ -586,8 +586,7 @@ func convertVLabsDcosConfig(vlabs *vlabs.DcosConfig, api *DcosConfig) {
 	api.DcosWindowsBootstrapURL = vlabs.DcosWindowsBootstrapURL
 }
 
-func convertVLabsKubernetesConfig(vp *vlabs.Properties, api *KubernetesConfig) {
-	vlabs := vp.OrchestratorProfile.KubernetesConfig
+func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *KubernetesConfig) {
 	api.KubernetesImageBase = vlabs.KubernetesImageBase
 	api.ClusterSubnet = vlabs.ClusterSubnet
 	api.DNSServiceIP = vlabs.DNSServiceIP
@@ -746,6 +745,10 @@ func convertVLabsMasterProfile(vlabs *vlabs.MasterProfile, api *MasterProfile) {
 	}
 
 	api.Distro = Distro(vlabs.Distro)
+	if vlabs.KubernetesConfig != nil {
+		api.KubernetesConfig = &KubernetesConfig{}
+		convertVLabsKubernetesConfig(vlabs.KubernetesConfig, api.KubernetesConfig)
+	}
 }
 
 func convertV20160930AgentPoolProfile(v20160930 *v20160930.AgentPoolProfile, availabilityProfile string, api *AgentPoolProfile) {
@@ -843,6 +846,10 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 		api.Extensions = append(api.Extensions, *apiExtension)
 	}
 	api.Distro = Distro(vlabs.Distro)
+	if vlabs.KubernetesConfig != nil {
+		api.KubernetesConfig = &KubernetesConfig{}
+		convertVLabsKubernetesConfig(vlabs.KubernetesConfig, api.KubernetesConfig)
+	}
 }
 
 func convertVLabsKeyVaultSecrets(vlabs *vlabs.KeyVaultSecrets, api *KeyVaultSecrets) {

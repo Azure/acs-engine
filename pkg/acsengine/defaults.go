@@ -440,17 +440,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 
 		// If no user-configurable kubelet config values exists, use the defaults
-		if o.KubernetesConfig.KubeletConfig == nil {
-			o.KubernetesConfig.KubeletConfig = defaultKubeletConfig
-		} else {
-			for key, val := range defaultKubeletConfig {
-				// If we don't have a user-configurable kubelet config for each option
-				if _, ok := o.KubernetesConfig.KubeletConfig[key]; !ok {
-					// then assign the default value
-					o.KubernetesConfig.KubeletConfig[key] = val
-				}
-			}
-		}
+		setMissingKubeletValues(o.KubernetesConfig, defaultKubeletConfig)
 
 		// Override default cloud-provider?
 		if helpers.IsTrueBoolPointer(a.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager) {
@@ -481,12 +471,41 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			}
 		}
 
+		// Master-specific kubelet config changes go here
+		if a.MasterProfile != nil {
+			if a.MasterProfile.KubernetesConfig == nil {
+				a.MasterProfile.KubernetesConfig = &api.KubernetesConfig{}
+			}
+			setMissingKubeletValues(a.MasterProfile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
+		}
+		// Agent-specific kubelet config changes go here
+		for _, profile := range a.AgentPoolProfiles {
+			if profile.KubernetesConfig == nil {
+				profile.KubernetesConfig = &api.KubernetesConfig{}
+			}
+			setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
+		}
+
 	} else if o.OrchestratorType == api.DCOS {
 		if o.DcosConfig == nil {
 			o.DcosConfig = &api.DcosConfig{}
 		}
 		if o.DcosConfig.DcosWindowsBootstrapURL == "" {
 			o.DcosConfig.DcosWindowsBootstrapURL = DefaultDCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
+		}
+	}
+}
+
+func setMissingKubeletValues(p *api.KubernetesConfig, d map[string]string) {
+	if p.KubeletConfig == nil {
+		p.KubeletConfig = d
+	} else {
+		for key, val := range d {
+			// If we don't have a user-configurable value for each option
+			if _, ok := p.KubeletConfig[key]; !ok {
+				// then assign the default value
+				p.KubeletConfig[key] = val
+			}
 		}
 	}
 }
