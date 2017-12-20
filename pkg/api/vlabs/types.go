@@ -94,6 +94,18 @@ type CertificateProfile struct {
 	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty"`
 	// KubeConfigPrivateKey is the client private key used for kubectl cli and signed by the CA
 	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
+	// EtcdServerCertificate is the server certificate for etcd, and signed by the CA
+	EtcdServerCertificate string `json:"etcdServerCertificate,omitempty"`
+	// EtcdServerPrivateKey is the server private key for etcd, and signed by the CA
+	EtcdServerPrivateKey string `json:"etcdServerPrivateKey,omitempty"`
+	// EtcdClientCertificate is etcd client certificate, and signed by the CA
+	EtcdClientCertificate string `json:"etcdClientCertificate,omitempty"`
+	// EtcdClientPrivateKey is the etcd client private key, and signed by the CA
+	EtcdClientPrivateKey string `json:"etcdClientPrivateKey,omitempty"`
+	// EtcdPeerCertificates is list of etcd peer certificates, and signed by the CA
+	EtcdPeerCertificates []string `json:"etcdPeerCertificates,omitempty"`
+	// EtcdPeerPrivateKeys is list of etcd peer private keys, and signed by the CA
+	EtcdPeerPrivateKeys []string `json:"etcdPeerPrivateKeys,omitempty"`
 }
 
 // LinuxProfile represents the linux parameters passed to the cluster

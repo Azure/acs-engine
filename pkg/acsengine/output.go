@@ -3,6 +3,7 @@ package acsengine
 import (
 	"fmt"
 	"path"
+	"strconv"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
@@ -97,6 +98,29 @@ func (w *ArtifactWriter) WriteTLSArtifacts(containerService *api.ContainerServic
 		if e := f.SaveFileString(artifactsDir, "kubectlClient.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
 			return e
 		}
+		if e := f.SaveFileString(artifactsDir, "etcdserver.key", properties.CertificateProfile.EtcdServerPrivateKey); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdserver.crt", properties.CertificateProfile.EtcdServerCertificate); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdclient.key", properties.CertificateProfile.EtcdClientPrivateKey); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdclient.crt", properties.CertificateProfile.EtcdClientCertificate); e != nil {
+			return e
+		}
+		for i := 0; i < properties.MasterProfile.Count; i++ {
+			k := "etcdpeer" + strconv.Itoa(i) + ".key"
+			if e := f.SaveFileString(artifactsDir, k, properties.CertificateProfile.EtcdPeerPrivateKeys[i]); e != nil {
+				return e
+			}
+			c := "etcdpeer" + strconv.Itoa(i) + ".crt"
+			if e := f.SaveFileString(artifactsDir, c, properties.CertificateProfile.EtcdPeerCertificates[i]); e != nil {
+				return e
+			}
+		}
+
 	}
 
 	return nil

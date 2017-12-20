@@ -20,7 +20,8 @@
 
 # Master only secrets
 # APISERVER_PRIVATE_KEY CA_CERTIFICATE CA_PRIVATE_KEY MASTER_FQDN KUBECONFIG_CERTIFICATE
-# KUBECONFIG_KEY ADMINUSER
+# KUBECONFIG_KEY ETCD_SERVER_CERTIFICATE ETCD_SERVER_PRIVATE_KEY ETCD_CLIENT_CERTIFICATE ETCD_CLIENT_PRIVATE_KEY 
+# ETCD_PEER_CERTIFICATES ETCD_PEER_PRIVATE_KEYS ADMINUSER MASTER_INDEX
 
 # Find distro name via ID value in releases files and upcase
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
@@ -30,6 +31,9 @@ COREOS_OS_NAME="COREOS"
 
 # Set default kubectl
 KUBECTL=/usr/local/bin/kubectl
+
+ETCD_PEER_CERT=$(echo ${ETCD_PEER_CERTIFICATES} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
+ETCD_PEER_KEY=$(echo ${ETCD_PEER_PRIVATE_KEYS} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
 
 # CoreOS: /usr is read-only; therefore kubectl is installed at /opt/kubectl
 #   Details on install at kubernetetsmastercustomdataforcoreos.yml
@@ -88,6 +92,45 @@ if [[ ! -z "${CA_PRIVATE_KEY}" ]]; then
 else
     echo "CA_PRIVATE_KEY is empty, assuming worker node"
 fi
+
+ETCD_SERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdserver.key"
+touch "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+chmod 0600 "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+chown root:root "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+echo "${ETCD_SERVER_PRIVATE_KEY}" | base64 --decode > "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+
+ETCD_CLIENT_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdclient.key"
+touch "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+chmod 0600 "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+chown root:root "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+echo "${ETCD_CLIENT_PRIVATE_KEY}" | base64 --decode > "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+
+ETCD_PEER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.key"
+touch "${ETCD_PEER_PRIVATE_KEY_PATH}"
+chmod 0600 "${ETCD_PEER_PRIVATE_KEY_PATH}"
+chown root:root "${ETCD_PEER_PRIVATE_KEY_PATH}"
+echo "${ETCD_PEER_KEY}" | base64 --decode > "${ETCD_PEER_PRIVATE_KEY_PATH}"
+
+ETCD_SERVER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdserver.crt"
+touch "${ETCD_SERVER_CERTIFICATE_PATH}"
+chmod 0644 "${ETCD_SERVER_CERTIFICATE_PATH}"
+chown root:root "${ETCD_SERVER_CERTIFICATE_PATH}"
+echo "${ETCD_SERVER_CERTIFICATE}" | base64 --decode > "${ETCD_SERVER_CERTIFICATE_PATH}"
+
+ETCD_CLIENT_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdclient.crt"
+touch "${ETCD_CLIENT_CERTIFICATE_PATH}"
+chmod 0644 "${ETCD_CLIENT_CERTIFICATE_PATH}"
+chown root:root "${ETCD_CLIENT_CERTIFICATE_PATH}"
+echo "${ETCD_CLIENT_CERTIFICATE}" | base64 --decode > "${ETCD_CLIENT_CERTIFICATE_PATH}"
+
+ETCD_PEER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.crt"
+touch "${ETCD_PEER_CERTIFICATE_PATH}"
+chmod 0644 "${ETCD_PEER_CERTIFICATE_PATH}"
+chown root:root "${ETCD_PEER_CERTIFICATE_PATH}"
+echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
+
+echo `date`,`hostname`, finishedGettingEtcdCerts>>/opt/m
+mkdir -p /opt/azure/containers && touch /opt/azure/containers/etcdcerts.complete
 
 KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
 touch "${KUBELET_PRIVATE_KEY_PATH}"
@@ -336,7 +379,7 @@ function ensureApiserver() {
 
 function ensureEtcd() {
     for i in {1..600}; do
-        curl --max-time 60 http://127.0.0.1:2379/v2/machines;
+        curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 https://127.0.0.1:2379/v2/machines;
         if [ $? -eq 0 ]
         then
             echo "Etcd setup successfully"

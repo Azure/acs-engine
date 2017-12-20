@@ -547,7 +547,9 @@ func setStorageDefaults(a *api.Properties) {
 }
 
 func setDefaultCerts(a *api.Properties) (bool, error) {
-	if !certGenerationRequired(a) {
+
+	provided := make(*map[string]bool)
+	if !certGenerationRequired(a, provided) {
 		return false, nil
 	}
 
@@ -575,12 +577,10 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 
 	// use the specified Certificate Authority pair, or generate a new pair
 	var caPair *PkiKeyCertPair
-	caProvided := false
-	if len(a.CertificateProfile.CaCertificate) > 0 && len(a.CertificateProfile.CaPrivateKey) > 0 {
+	if provided["ca"] {
 		caPair = &PkiKeyCertPair{CertificatePem: a.CertificateProfile.CaCertificate, PrivateKeyPem: a.CertificateProfile.CaPrivateKey}
-		caProvided = true
 	} else {
-		caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, nil, nil, nil)
+		caCertificate, caPrivateKey, err := createCertificate("ca", nil, nil, false, false, nil, nil, nil)
 		if err != nil {
 			return false, err
 		}
@@ -595,44 +595,75 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 	}
 	ips = append(ips, cidrFirstIP)
 
-	apiServerPair, clientPair, kubeConfigPair, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair)
+	apiServerPair, clientPair, kubeConfigPair, etcdServerPair, etcdClientPair, etcdPeerPairs, err := CreatePki(masterExtraFQDNs, ips, DefaultKubernetesClusterDomain, caPair, a.MasterProfile.Count)
 	if err != nil {
 		return false, err
 	}
 
-	// If no Certificate Authority pair, use genereted cert/key pairs signed by generated Certificate Authority pair
-	if !caProvided {
+	// If no Certificate Authority pair, use genereted cert/key pairs signed by provided Certificate Authority pair
+	if !provided["ca"] {
 		a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
 		a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
 		a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
 		a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
 		a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
 		a.CertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
+		a.CertificateProfile.EtcdServerCertificate = etcdServerPair.CertificatePem
+		a.CertificateProfile.EtcdServerPrivateKey = etcdServerPair.PrivateKeyPem
+		a.CertificateProfile.EtcdClientCertificate = etcdClientPair.CertificatePem
+		a.CertificateProfile.EtcdClientPrivateKey = etcdClientPair.PrivateKeyPem
+		a.CertificateProfile.EtcdPeerCertificates = make([]string, a.MasterProfile.Count)
+		a.CertificateProfile.EtcdPeerPrivateKeys = make([]string, a.MasterProfile.Count)
+		for i, v := range etcdPeerPairs {
+			a.CertificateProfile.EtcdPeerCertificates[i] = v.CertificatePem
+			a.CertificateProfile.EtcdPeerPrivateKeys[i] = v.PrivateKeyPem
+		}
 	} else {
 		// Only use the generated cert/key pair if no cert/key pair was provided
-		if len(a.CertificateProfile.APIServerCertificate) == 0 || len(a.CertificateProfile.APIServerPrivateKey) == 0 {
+		if provided["apiserver"] {
 			a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
 			a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
 		}
-		if len(a.CertificateProfile.ClientCertificate) == 0 || len(a.CertificateProfile.ClientPrivateKey) == 0 {
+		if provided["client"] {
 			a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
 			a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
 		}
-		if len(a.CertificateProfile.KubeConfigCertificate) == 0 || len(a.CertificateProfile.KubeConfigPrivateKey) == 0 {
+		if provided["kubeconfig"] {
 			a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
 			a.CertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
+		}
+		if provided["etcd"] {
+			a.CertificateProfile.EtcdServerCertificate = etcdServerPair.CertificatePem
+			a.CertificateProfile.EtcdServerPrivateKey = etcdServerPair.PrivateKeyPem
+			a.CertificateProfile.EtcdClientCertificate = etcdClientPair.CertificatePem
+			a.CertificateProfile.EtcdClientPrivateKey = etcdClientPair.PrivateKeyPem
+			a.CertificateProfile.EtcdPeerCertificates = make([]string, a.MasterProfile.Count)
+			a.CertificateProfile.EtcdPeerPrivateKeys = make([]string, a.MasterProfile.Count)
+			for i, v := range etcdPeerPairs {
+				a.CertificateProfile.EtcdPeerCertificates[i] = v.CertificatePem
+				a.CertificateProfile.EtcdPeerPrivateKeys[i] = v.PrivateKeyPem
+			}
 		}
 	}
 
 	return true, nil
 }
 
-func certGenerationRequired(a *api.Properties) bool {
-	if allCertsAlreadyPresent(a.CertificateProfile) {
-		return false
-	}
+func certGenerationRequired(a *api.Properties, g *map[string]bool) bool {
 	if a.MasterProfile == nil {
 		return false
+	}
+	if a.CertificateProfile != nil {
+		certsAlreadyPresent(a.CertificateProfile, a.MasterProfile.Count, g)
+		all := true
+		for _, b := range g {
+			if !b {
+				all = false
+			}
+		}
+		if all {
+			return false
+		}
 	}
 
 	switch a.OrchestratorProfile.OrchestratorType {
@@ -643,11 +674,22 @@ func certGenerationRequired(a *api.Properties) bool {
 	}
 }
 
-func allCertsAlreadyPresent(c *api.CertificateProfile) bool {
-	if c == nil {
-		return false
+func certsAlreadyPresent(c *api.CertificateProfile, m int, g *map[string]bool) {
+	etcdPeer := true
+	if len(c.EtcdPeerCertificates) != m || len(c.EtcdPeerPrivateKeys) != m {
+		etcdPeer = false
+	} else {
+		for i, p := range c.EtcdPeerCertificates {
+			if !len(p) > 0 || !len(c.EtcdPeerPrivateKeys[i]) > 0 {
+				etcdPeer = false
+			}
+		}
 	}
-	return len(c.CaCertificate) > 0 && len(c.CaPrivateKey) > 0 && len(c.APIServerCertificate) > 0 && len(c.APIServerPrivateKey) > 0 && len(c.ClientCertificate) > 0 && len(c.ClientPrivateKey) > 0 && len(c.KubeConfigCertificate) > 0 && len(c.KubeConfigPrivateKey) > 0
+	g["ca"] = len(c.CaCertificate) > 0 && len(c.CaPrivateKey) > 0
+	g["apiserver"] = len(c.APIServerCertificate) > 0 && len(c.APIServerPrivateKey) > 0
+	g["kubeconfig"] = len(c.KubeConfigCertificate) > 0 && len(c.KubeConfigPrivateKey) > 0
+	g["client"] = len(c.ClientCertificate) > 0 && len(c.ClientPrivateKey) > 0
+	g["etcd"] = etcdPeer && len(c.EtcdClientCertificate) > 0 && len(c.EtcdClientPrivateKey) > 0 && len(c.EtcdServerCertificate) > 0 && len(c.EtcdServerPrivateKey)
 }
 
 // getFirstConsecutiveStaticIPAddress returns the first static IP address of the given subnet.
