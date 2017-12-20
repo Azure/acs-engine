@@ -873,10 +873,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return buf.String()
 		},
-		"GetKubeletConfigKeyVals": func(isMaster bool, kc *api.KubernetesConfig) string {
+		"GetKubeletConfigKeyVals": func(profile *api.AgentPoolProfile) string {
 			kubeletConfig := cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig
-			if !isMaster {
-				kubeletConfig = kc.KubeletConfig
+			if profile != nil {
+				kubeletConfig = profile.KubernetesConfig.KubeletConfig
 			}
 			// Order by key for consistency
 			keys := []string{}

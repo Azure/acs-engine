@@ -103,7 +103,7 @@ write_files:
   permissions: "0644"
   owner: "root"
   content: |
-    KUBELET_CONFIG={{GetKubeletConfigKeyVals false .KubernetesConfig}}
+    KUBELET_CONFIG={{GetKubeletConfigKeyVals . }}
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
     DOCKER_OPTS=
     KUBELET_REGISTER_SCHEDULABLE=true
