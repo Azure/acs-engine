@@ -734,7 +734,7 @@ func allCertsAlreadyPresent(c *api.CertificateProfile) bool {
 	if c == nil {
 		return false
 	}
-	return len(c.CaCertificate) > 0 && len(c.CaPrivateKey) && len(c.APIServerCertificate) > 0 && len(c.APIServerPrivateKey) > 0 && len(c.ClientCertificate) > 0 && len(c.ClientPrivateKey) > 0 && len(c.KubeConfigCertificate) > 0 && len(c.KubeConfigPrivateKey) > 0
+	return len(c.CaCertificate) > 0 && len(c.CaPrivateKey) > 0 && len(c.APIServerCertificate) > 0 && len(c.APIServerPrivateKey) > 0 && len(c.ClientCertificate) > 0 && len(c.ClientPrivateKey) > 0 && len(c.KubeConfigCertificate) > 0 && len(c.KubeConfigPrivateKey) > 0
 }
 
 // getFirstConsecutiveStaticIPAddress returns the first static IP address of the given subnet.
