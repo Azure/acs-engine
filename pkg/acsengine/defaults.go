@@ -634,7 +634,9 @@ func setStorageDefaults(a *api.Properties) {
 }
 
 func setDefaultCerts(a *api.Properties) (bool, error) {
-	if !certGenerationRequired(a) {
+
+	provided := certsAlreadyPresent(a.CertificateProfile, a.MasterProfile.Count)
+	if !certGenerationRequired(a, provided) {
 		return false, nil
 	}
 
@@ -697,28 +699,46 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		a.CertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
 	} else {
 		// Only use the generated cert/key pair if no cert/key pair was provided
-		if len(a.CertificateProfile.APIServerCertificate) == 0 || len(a.CertificateProfile.APIServerPrivateKey) == 0 {
+		if !provided["apiserver"] {
 			a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
 			a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
 		}
-		if len(a.CertificateProfile.ClientCertificate) == 0 || len(a.CertificateProfile.ClientPrivateKey) == 0 {
+		if !provided["client"] {
 			a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
 			a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
 		}
-		if len(a.CertificateProfile.KubeConfigCertificate) == 0 || len(a.CertificateProfile.KubeConfigPrivateKey) == 0 {
+		if !provided["kubeconfig"] {
 			a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
 			a.CertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
+		}
+		if !provided["etcd"] {
+			a.CertificateProfile.EtcdServerCertificate = etcdServerPair.CertificatePem
+			a.CertificateProfile.EtcdServerPrivateKey = etcdServerPair.PrivateKeyPem
+			a.CertificateProfile.EtcdClientCertificate = etcdClientPair.CertificatePem
+			a.CertificateProfile.EtcdClientPrivateKey = etcdClientPair.PrivateKeyPem
+			a.CertificateProfile.EtcdPeerCertificates = make([]string, a.MasterProfile.Count)
+			a.CertificateProfile.EtcdPeerPrivateKeys = make([]string, a.MasterProfile.Count)
+			for i, v := range etcdPeerPairs {
+				a.CertificateProfile.EtcdPeerCertificates[i] = v.CertificatePem
+				a.CertificateProfile.EtcdPeerPrivateKeys[i] = v.PrivateKeyPem
+			}
 		}
 	}
 
 	return true, nil
 }
 
-func certGenerationRequired(a *api.Properties) bool {
-	if allCertsAlreadyPresent(a.CertificateProfile) {
+func certGenerationRequired(a *api.Properties, g map[string]bool) bool {
+	if a.MasterProfile == nil {
 		return false
 	}
-	if a.MasterProfile == nil {
+	all := true
+	for _, b := range g {
+		if !b {
+			all = false
+		}
+	}
+	if len(g) > 0 && all {
 		return false
 	}
 
@@ -730,11 +750,27 @@ func certGenerationRequired(a *api.Properties) bool {
 	}
 }
 
-func allCertsAlreadyPresent(c *api.CertificateProfile) bool {
-	if c == nil {
-		return false
+// certsAlreadyPresent already present return a map where each key is a type of cert and each value is true is that cert/key pair is user-provided
+func certsAlreadyPresent(c *api.CertificateProfile, m int) map[string]bool {
+	g := make(map[string]bool)
+	if c != nil {
+		etcdPeer := true
+		if len(c.EtcdPeerCertificates) != m || len(c.EtcdPeerPrivateKeys) != m {
+			etcdPeer = false
+		} else {
+			for i, p := range c.EtcdPeerCertificates {
+				if !(len(p) > 0) || !(len(c.EtcdPeerPrivateKeys[i]) > 0) {
+					etcdPeer = false
+				}
+			}
+		}
+		g["ca"] = len(c.CaCertificate) > 0 && len(c.CaPrivateKey) > 0
+		g["apiserver"] = len(c.APIServerCertificate) > 0 && len(c.APIServerPrivateKey) > 0
+		g["kubeconfig"] = len(c.KubeConfigCertificate) > 0 && len(c.KubeConfigPrivateKey) > 0
+		g["client"] = len(c.ClientCertificate) > 0 && len(c.ClientPrivateKey) > 0
+		g["etcd"] = etcdPeer && len(c.EtcdClientCertificate) > 0 && len(c.EtcdClientPrivateKey) > 0 && len(c.EtcdServerCertificate) > 0 && len(c.EtcdServerPrivateKey) > 0
 	}
-	return len(c.CaCertificate) > 0 && len(c.CaPrivateKey) > 0 && len(c.APIServerCertificate) > 0 && len(c.APIServerPrivateKey) > 0 && len(c.ClientCertificate) > 0 && len(c.ClientPrivateKey) > 0 && len(c.KubeConfigCertificate) > 0 && len(c.KubeConfigPrivateKey) > 0
+	return g
 }
 
 // getFirstConsecutiveStaticIPAddress returns the first static IP address of the given subnet.
