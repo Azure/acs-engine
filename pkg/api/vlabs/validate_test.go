@@ -168,17 +168,21 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
-			CtrlMgrPodEvictionTimeout: "invalid",
+			ControllerManagerConfig: map[string]string{
+				"--pod-eviction-timeout": "invalid",
+			},
 		}
 		if err := c.Validate(k8sVersion); err == nil {
-			t.Error("should error on invalid CtrlMgrPodEvictionTimeout")
+			t.Error("should error on invalid --pod-eviction-timeout")
 		}
 
 		c = KubernetesConfig{
-			CtrlMgrRouteReconciliationPeriod: "invalid",
+			ControllerManagerConfig: map[string]string{
+				"--route-reconciliation-period": "invalid",
+			},
 		}
 		if err := c.Validate(k8sVersion); err == nil {
-			t.Error("should error on invalid CtrlMgrRouteReconciliationPeriod")
+			t.Error("should error on invalid --route-reconciliation-period")
 		}
 
 		c = KubernetesConfig{
