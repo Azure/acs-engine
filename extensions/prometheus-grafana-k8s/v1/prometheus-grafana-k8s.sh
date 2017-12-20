@@ -165,15 +165,28 @@ install_prometheus() {
 
     echo $(date) " - Installing the Prometheus Helm chart"
 
-    helm install -f prometheus_values.yaml \
-        --name $PROM_RELEASE_NAME \
-        --namespace $NAMESPACE stable/prometheus $(storageclass_param)
+    ATTEMPTS=90
+    SLEEP_TIME=10
+
+    ITERATION=0
+    while [[ $ITERATION -lt $ATTEMPTS ]]; do
+        helm install -f prometheus_values.yaml \
+            --name $PROM_RELEASE_NAME \
+            --namespace $NAMESPACE stable/prometheus $(storageclass_param)
+
+        if [[ $? -eq 0 ]]; then
+            echo $(date) " - Helm install successfully completed"
+            break
+        else
+            echo $(date) " - Helm install returned a non-zero exit code. Retrying."
+        fi
+
+        ITERATION=$(( $ITERATION + 1 ))
+        sleep $SLEEP_TIME
+    done
 
     PROM_POD_PREFIX="$PROM_RELEASE_NAME-prometheus-server"
     DESIRED_POD_STATE=Running
-
-    ATTEMPTS=90
-    SLEEP_TIME=10
 
     ITERATION=0
     while [[ $ITERATION -lt $ATTEMPTS ]]; do
