@@ -62,14 +62,47 @@ wait_for_master_nodes() {
     return 1
 }
 
+agent_nodes() {
+    kubectl get no -L kubernetes.io/role -l kubernetes.io/role=agent --no-headers -o jsonpath="{.items[*].metadata.name}" | tr " " "\n" | sort | head -n 1
+}
+
+wait_for_agent_nodes() {
+    ATTEMPTS=90
+    SLEEP_TIME=10
+
+    ITERATION=0
+    while [[ $ITERATION -lt $ATTEMPTS ]]; do
+        echo $(date) " - Is kubectl returning agent nodes? (attempt $(( $ITERATION + 1 )) of $ATTEMPTS)"
+
+        FIRST_K8S_AGENT=$(agent_nodes)
+
+        if [[ -n $FIRST_K8S_AGENT ]]; then
+            echo $(date) " - kubectl is returning agent nodes"
+            return
+        fi
+
+        ITERATION=$(( $ITERATION + 1 ))
+        sleep $SLEEP_TIME
+    done
+
+    echo $(date) " - kubectl failed to return agent nodes in the alotted time"
+    return 1
+}
+
 should_this_node_run_extension() {
     FIRST_K8S_MASTER=$(master_nodes)
     if [[ $FIRST_K8S_MASTER = $(hostname) ]]; then
         echo $(date) " - Local node $(hostname) is found to be the first master node $FIRST_K8S_MASTER"
         return
     else
-        echo $(date) " - Local node $(hostname) is not the first master node $FIRST_K8S_MASTER"
-        return 1
+        FIRST_K8S_AGENT=$(agent_nodes)
+        if [[ $FIRST_K8S_AGENT = $(hostname) ]]; then
+            echo $(date) " - Local node $(hostname) is found to be the first agent node $FIRST_K8S_AGENT"
+            return
+        else
+            echo $(date) " - Local node $(hostname) is not the first master node $FIRST_K8S_MASTER or the first agent node $FIRST_K8S_AGENT"
+            return 1
+        fi
     fi
 }
 
@@ -210,16 +243,23 @@ ensure_k8s_namespace_exists() {
 # should run the extension is to alphabetically determine
 # if this local machine is the first in the list of master nodes
 # if it is, then run the extension. if not, exit
-# wait_for_master_nodes
-# if [[ $? -ne 0 ]]; then
-#     echo $(date) " - Error while waiting for kubectl to output master nodes. Exiting"
-#     exit 1
-# fi
-# should_this_node_run_extension
-# if [[ $? -ne 0 ]]; then
-#     echo $(date) " - Not the first master node, no longer continuing extension. Exiting"
-#     exit 1
-# fi
+wait_for_master_nodes
+if [[ $? -ne 0 ]]; then
+    echo $(date) " - Error while waiting for kubectl to output master nodes. Exiting"
+    exit 1
+fi
+
+wait_for_agent_nodes
+if [[ $? -ne 0 ]]; then
+    echo $(date) " - Error while waiting for kubectl to output agent nodes. Exiting"
+    exit 1
+fi
+
+should_this_node_run_extension
+if [[ $? -ne 0 ]]; then
+    echo $(date) " - Not the first master node or the first agent node, no longer continuing extension. Exiting"
+    exit 1
+fi
 
 # Deploy container
 
