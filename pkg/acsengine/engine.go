@@ -874,7 +874,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return buf.String()
 		},
 		"GetKubeletConfigKeyVals": func(profile *api.AgentPoolProfile) string {
-			kubeletConfig := cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig
+			kubeletConfig := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
+			if cs.Properties.MasterProfile != nil {
+				kubeletConfig = cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig
+			}
 			if profile != nil {
 				kubeletConfig = profile.KubernetesConfig.KubeletConfig
 			}
