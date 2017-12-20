@@ -7,44 +7,57 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestAllCertsAlreadyPresent(t *testing.T) {
+func TestCertsAlreadyPresent(t *testing.T) {
 	RegisterTestingT(t)
 	var cert *api.CertificateProfile
 
-	Expect(allCertAlreadyPresent(nil)).To(BeFalse())
+	//Expect(allCertAlreadyPresent(nil, 1)).To(BeFalse())
 
 	cert = &api.CertificateProfile{}
-	Expect(allCertAlreadyPresent(cert)).To(BeFalse())
+	//Expect(certsAlreadyPresent(cert, 1)).To(BeFalse())
 
 	cert = &api.CertificateProfile{
 		APIServerCertificate: "a",
 	}
-	Expect(allCertAlreadyPresent(cert)).To(BeFalse())
+	//Expect(allCertAlreadyPresent(cert)).To(BeFalse())
 
 	cert = &api.CertificateProfile{
-		APIServerCertificate: "a",
-		CaCertificate: "c",
-		CaPrivateKey: "d",
-		ClientCertificate: "e",
-		ClientPrivateKey: "f",
+		APIServerCertificate:  "a",
+		CaCertificate:         "c",
+		CaPrivateKey:          "d",
+		ClientCertificate:     "e",
+		ClientPrivateKey:      "f",
 		KubeConfigCertificate: "g",
-		KubeConfigPrivateKey: "h"	
+		KubeConfigPrivateKey:  "h",
 	}
-	Expect(allCertAlreadyPresent(cert)).To(BeFalse())
+	//Expect(allCertAlreadyPresent(cert)).To(BeFalse())
 
 	cert = &api.CertificateProfile{
-		APIServerCertificate: "a",
-		APIServerPrivateKey: "b",
-		CaCertificate: "c",
-		CaPrivateKey: "d",
-		ClientCertificate: "e",
-		ClientPrivateKey: "f",
+		APIServerCertificate:  "a",
+		APIServerPrivateKey:   "b",
+		CaCertificate:         "c",
+		CaPrivateKey:          "d",
+		ClientCertificate:     "e",
+		ClientPrivateKey:      "f",
 		KubeConfigCertificate: "g",
-		KubeConfigPrivateKey: "h"	
+		KubeConfigPrivateKey:  "h",
 	}
-	Expect(allCertAlreadyPresent(cert)).To(BeTrue())
+	//Expect(allCertAlreadyPresent(cert)).To(BeTrue())
+}
 
-
+func TestCertGenerationRequired(t *testing.T) {
+	RegisterTestingT(t)
+	var a *api.Properties
+	a = &api.Properties{
+		MasterProfile: *api.MasterProfile{
+			Count: 3,
+		},
+		OrchestratorProfile: *api.OrchestratorProfile{
+			OrchestratorType: "Kubernetes",
+		},
+	}
+	userCerts := make(map[string]bool)
+	Expect(certGenerationRequired(a, userCerts)).To(BeTrue())
 }
 
 func TestAddonsIndexByName(t *testing.T) {
