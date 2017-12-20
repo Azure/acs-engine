@@ -886,7 +886,11 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			sort.Strings(keys)
 			var buf bytes.Buffer
 			for _, key := range keys {
-				buf.WriteString(fmt.Sprintf("%s=%s ", key, kubeletConfig[key]))
+				if kubeletConfig[key] == "" {
+					buf.WriteString(fmt.Sprintf("%s=\"\" ", key))
+				} else {
+					buf.WriteString(fmt.Sprintf("%s=%s ", key, kubeletConfig[key]))
+				}
 			}
 			return buf.String()
 		},
