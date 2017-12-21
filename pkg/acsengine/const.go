@@ -36,10 +36,14 @@ const (
 	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP
 	// address relative to the first consecutive Kubernetes static IP
 	DefaultInternalLbStaticIPOffset = 10
+	// NetworkPolicyNone is the string expression for no network policy
+	NetworkPolicyNone = "none"
+	// NetworkPluginKubenet is the string expression for kubenet network plugin
+	NetworkPluginKubenet = "kubenet"
 	// DefaultNetworkPolicy defines the network policy to use by default
-	DefaultNetworkPolicy = "none"
+	DefaultNetworkPolicy = NetworkPolicyNone
 	// DefaultNetworkPolicyWindows defines the network policy to use by default for clusters with Windows agent pools
-	DefaultNetworkPolicyWindows = "none"
+	DefaultNetworkPolicyWindows = NetworkPolicyNone
 	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/
 	DefaultKubernetesNodeStatusUpdateFrequency = "10s"
 	// DefaultKubernetesHardEvictionThreshold is memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%, see --eviction-hard at https://kubernetes.io/docs/admin/kubelet/
@@ -92,13 +96,15 @@ const (
 	// DefaultOrchestratorName specifies the 3 character orchestrator code of the cluster template and affects resource naming.
 	DefaultOrchestratorName = "k8s"
 	// DefaultEtcdVersion specifies the default etcd version to install
-	DefaultEtcdVersion = "2.3.8"
+	DefaultEtcdVersion = "3.2.11"
 	// DefaultEtcdDiskSize specifies the default size for Kubernetes master etcd disk volumes in GB
 	DefaultEtcdDiskSize = "128"
 	// DefaultReschedulerImage defines the rescheduler deployment version on Kubernetes Clusters
 	DefaultReschedulerImage = "rescheduler:v0.3.1"
 	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
 	DefaultReschedulerAddonName = "rescheduler"
+	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
+	DefaultKubernetesKubeletMaxPods = 110
 )
 
 const (

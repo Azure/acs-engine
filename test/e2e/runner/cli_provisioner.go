@@ -80,7 +80,6 @@ func (cli *CLIProvisioner) provision() error {
 	log.Printf("Cluster name:%s\n", cli.Config.Name)
 
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
-	os.RemoveAll(outputPath)
 	os.Mkdir(outputPath, 0755)
 
 	out, err := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa").CombinedOutput()

@@ -28,8 +28,12 @@ import (
 // - handle features (gender, plural)
 // - message rewriting
 
+// - %m substitutions
+// - `msg:"etc"` tags
+// - msg/Msg top-level vars and strings.
+
 // Extract extracts all strings form the package defined in Config.
-func Extract(c *Config) (*Locale, error) {
+func Extract(c *Config) (*State, error) {
 	conf := loader.Config{}
 	prog, err := loadPackages(&conf, c.Packages)
 	if err != nil {
@@ -141,9 +145,11 @@ func Extract(c *Config) (*Locale, error) {
 
 				ph := placeholders{index: map[string]string{}}
 
+				trimmed, _, _ := trimWS(fmtMsg)
+
 				p := fmtparser.Parser{}
 				p.Reset(simArgs)
-				for p.SetFormat(fmtMsg); p.Scan(); {
+				for p.SetFormat(trimmed); p.Scan(); {
 					switch p.Status {
 					case fmtparser.StatusText:
 						msg += p.Text()
@@ -189,11 +195,14 @@ func Extract(c *Config) (*Locale, error) {
 		}
 	}
 
-	out := &Locale{
-		Language: c.SourceLanguage,
-		Messages: messages,
-	}
-	return out, nil
+	return &State{
+		Config:  *c,
+		program: prog,
+		Extracted: Messages{
+			Language: c.SourceLanguage,
+			Messages: messages,
+		},
+	}, nil
 }
 
 func posString(conf loader.Config, info *loader.PackageInfo, pos token.Pos) string {
@@ -242,7 +251,7 @@ func strip(s string) string {
 		if unicode.IsSpace(r) || r == '-' {
 			return '_'
 		}
-		if !unicode.In(r, unicode.Letter, unicode.Mark) {
+		if !unicode.In(r, unicode.Letter, unicode.Mark, unicode.Number) {
 			return -1
 		}
 		return r

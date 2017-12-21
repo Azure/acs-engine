@@ -199,14 +199,11 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 type KubernetesConfig struct {
 	KubernetesImageBase              string            `json:"kubernetesImageBase,omitempty"`
 	ClusterSubnet                    string            `json:"clusterSubnet,omitempty"`
-	NonMasqueradeCidr                string            `json:"nonMasqueradeCidr,omitempty"`
 	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
 	MaxPods                          int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string            `json:"dockerBridgeSubnet,omitempty"`
 	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
 	ServiceCIDR                      string            `json:"serviceCidr,omitempty"`
-	NodeStatusUpdateFrequency        string            `json:"nodeStatusUpdateFrequency,omitempty"`
-	HardEvictionThreshold            string            `json:"hardEvictionThreshold,omitempty"`
 	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
 	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
 	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
@@ -231,30 +228,33 @@ type KubernetesConfig struct {
 	EtcdVersion                      string            `json:"etcdVersion,omitempty"`
 	EtcdDiskSizeGB                   string            `json:"etcdDiskSizeGB,omitempty"`
 	Addons                           []KubernetesAddon `json:"addons,omitempty"`
+	KubeletConfig                    map[string]string `json:"kubeletConfig,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS
 type DcosConfig struct {
+	DcosBootstrapURL        string `json:"dcosBootstrapURL,omitempty"`
 	DcosWindowsBootstrapURL string `json:"dcosWindowsBootstrapURL,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int         `json:"count"`
-	DNSPrefix                string      `json:"dnsPrefix"`
-	VMSize                   string      `json:"vmSize"`
-	OSDiskSizeGB             int         `json:"osDiskSizeGB,omitempty"`
-	VnetSubnetID             string      `json:"vnetSubnetID,omitempty"`
-	VnetCidr                 string      `json:"vnetCidr,omitempty"`
-	FirstConsecutiveStaticIP string      `json:"firstConsecutiveStaticIP,omitempty"`
-	Subnet                   string      `json:"subnet"`
-	IPAddressCount           int         `json:"ipAddressCount,omitempty"`
-	StorageProfile           string      `json:"storageProfile,omitempty"`
-	HTTPSourceAddressPrefix  string      `json:"HTTPSourceAddressPrefix,omitempty"`
-	OAuthEnabled             bool        `json:"oauthEnabled"`
-	PreprovisionExtension    *Extension  `json:"preProvisionExtension"`
-	Extensions               []Extension `json:"extensions"`
-	Distro                   Distro      `json:"distro,omitempty"`
+	Count                    int               `json:"count"`
+	DNSPrefix                string            `json:"dnsPrefix"`
+	VMSize                   string            `json:"vmSize"`
+	OSDiskSizeGB             int               `json:"osDiskSizeGB,omitempty"`
+	VnetSubnetID             string            `json:"vnetSubnetID,omitempty"`
+	VnetCidr                 string            `json:"vnetCidr,omitempty"`
+	FirstConsecutiveStaticIP string            `json:"firstConsecutiveStaticIP,omitempty"`
+	Subnet                   string            `json:"subnet"`
+	IPAddressCount           int               `json:"ipAddressCount,omitempty"`
+	StorageProfile           string            `json:"storageProfile,omitempty"`
+	HTTPSourceAddressPrefix  string            `json:"HTTPSourceAddressPrefix,omitempty"`
+	OAuthEnabled             bool              `json:"oauthEnabled"`
+	PreprovisionExtension    *Extension        `json:"preProvisionExtension"`
+	Extensions               []Extension       `json:"extensions"`
+	Distro                   Distro            `json:"distro,omitempty"`
+	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 
 	// Master LB public endpoint/FQDN with port
 	// The format will be FQDN:2376
@@ -302,6 +302,7 @@ type AgentPoolProfile struct {
 	CustomNodeLabels      map[string]string `json:"customNodeLabels,omitempty"`
 	PreprovisionExtension *Extension        `json:"preProvisionExtension"`
 	Extensions            []Extension       `json:"extensions"`
+	KubernetesConfig      *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 }
 
 // DiagnosticsProfile setting to enable/disable capturing

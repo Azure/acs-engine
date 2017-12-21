@@ -5,7 +5,6 @@
       "orchestratorType": "Kubernetes",
       "orchestratorRelease": "1.6",
       "kubernetesConfig": {
-        "nodeStatusUpdateFrequency": "1m",
         "ctrlMgrNodeMonitorGracePeriod": "5m",
         "ctrlMgrPodEvictionTimeout": "1m",
         "ctrlMgrRouteReconciliationPeriod": "1m",
@@ -16,7 +15,10 @@
         "cloudProviderBackoffExponent": 1.5,
         "cloudProviderRateLimit": true,
         "cloudProviderRateLimitQPS": 3,
-        "cloudProviderRateLimitBucket": 10
+        "cloudProviderRateLimitBucket": 10,
+        "kubeletConfig": {
+          "--node-status-update-frequency": "1m"
+        }
       }
     },
     "masterProfile": {

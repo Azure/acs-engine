@@ -25,6 +25,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"golang.org/x/text/message/pipeline"
+
 	"golang.org/x/text/language"
 	"golang.org/x/tools/go/buildutil"
 )
@@ -33,7 +35,22 @@ func init() {
 	flag.Var((*buildutil.TagsFlag)(&build.Default.BuildTags), "tags", buildutil.TagsFlagDoc)
 }
 
-var dir = flag.String("dir", "locales", "default subdirectory to store translation files")
+var (
+	srcLang = flag.String("srclang", "en-US", "the source-code language")
+	dir     = flag.String("dir", "locales", "default subdirectory to store translation files")
+)
+
+func config() (*pipeline.Config, error) {
+	tag, err := language.Parse(*srcLang)
+	if err != nil {
+		return nil, wrap(err, "invalid srclang")
+	}
+	return &pipeline.Config{
+		SourceLanguage:      tag,
+		TranslationsPattern: `messages\.(.*)\.json`,
+		GenFile:             *out,
+	}, nil
+}
 
 // NOTE: the Command struct is copied from the go tool in core.
 
@@ -42,7 +59,7 @@ var dir = flag.String("dir", "locales", "default subdirectory to store translati
 type Command struct {
 	// Run runs the command.
 	// The args are the arguments after the command name.
-	Run func(cmd *Command, args []string) error
+	Run func(cmd *Command, c *pipeline.Config, args []string) error
 
 	// UsageLine is the one-line usage message.
 	// The first word in the line is taken to be the command name.
@@ -124,7 +141,11 @@ func main() {
 			cmd.Flag.Usage = func() { cmd.Usage() }
 			cmd.Flag.Parse(args[1:])
 			args = cmd.Flag.Args()
-			if err := cmd.Run(cmd, args); err != nil {
+			config, err := config()
+			if err != nil {
+				fatalf("gotext: %+v", err)
+			}
+			if err := cmd.Run(cmd, config, args); err != nil {
 				fatalf("gotext: %+v", err)
 			}
 			exit()

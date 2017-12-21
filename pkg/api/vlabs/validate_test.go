@@ -46,6 +46,11 @@ func Test_OrchestratorProfile_Validate(t *testing.T) {
 		t.Errorf("should error when DcosConfig populated for non-Kubernetes OrchestratorType")
 	}
 
+	o.DcosConfig.DcosBootstrapURL = "http://www.microsoft.com"
+	if err := o.Validate(false); err == nil {
+		t.Errorf("should error when DcosConfig populated for non-Kubernetes OrchestratorType")
+	}
+
 	o = &OrchestratorProfile{
 		OrchestratorType:    "Kubernetes",
 		OrchestratorVersion: "1.7.3",
@@ -69,10 +74,9 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
-			ClusterSubnet:                    "10.120.0.0/16",
-			DockerBridgeSubnet:               "10.120.1.0/16",
-			MaxPods:                          42,
-			NodeStatusUpdateFrequency:        ValidKubernetesNodeStatusUpdateFrequency,
+			ClusterSubnet:      "10.120.0.0/16",
+			DockerBridgeSubnet: "10.120.1.0/16",
+			MaxPods:            42,
 			CtrlMgrNodeMonitorGracePeriod:    ValidKubernetesCtrlMgrNodeMonitorGracePeriod,
 			CtrlMgrPodEvictionTimeout:        ValidKubernetesCtrlMgrPodEvictionTimeout,
 			CtrlMgrRouteReconciliationPeriod: ValidKubernetesCtrlMgrRouteReconciliationPeriod,
@@ -84,6 +88,9 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 			CloudProviderRateLimit:           ValidKubernetesCloudProviderRateLimit,
 			CloudProviderRateLimitQPS:        ValidKubernetesCloudProviderRateLimitQPS,
 			CloudProviderRateLimitBucket:     ValidKubernetesCloudProviderRateLimitBucket,
+			KubeletConfig: map[string]string{
+				"--node-status-update-frequency": ValidKubernetesNodeStatusUpdateFrequency,
+			},
 		}
 		if err := c.Validate(k8sVersion); err != nil {
 			t.Errorf("should not error on a KubernetesConfig with valid param values: %v", err)
@@ -104,17 +111,21 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
-			NonMasqueradeCidr: "10.120.1.0/24",
+			KubeletConfig: map[string]string{
+				"--non-masquerade-cidr": "10.120.1.0/24",
+			},
 		}
 		if err := c.Validate(k8sVersion); err != nil {
-			t.Error("should not error on valid NonMasqueradeCidr")
+			t.Error("should not error on valid --non-masquerade-cidr")
 		}
 
 		c = KubernetesConfig{
-			NonMasqueradeCidr: "10.120.1.0/invalid",
+			KubeletConfig: map[string]string{
+				"--non-masquerade-cidr": "10.120.1.0/invalid",
+			},
 		}
 		if err := c.Validate(k8sVersion); err == nil {
-			t.Error("should error on invalid NonMasqueradeCidr")
+			t.Error("should error on invalid --non-masquerade-cidr")
 		}
 
 		c = KubernetesConfig{
@@ -125,10 +136,12 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
-			NodeStatusUpdateFrequency: "invalid",
+			KubeletConfig: map[string]string{
+				"--node-status-update-frequency": "invalid",
+			},
 		}
 		if err := c.Validate(k8sVersion); err == nil {
-			t.Error("should error on invalid NodeStatusUpdateFrequency")
+			t.Error("should error on invalid --node-status-update-frequency kubelet config")
 		}
 
 		c = KubernetesConfig{
@@ -139,11 +152,13 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 
 		c = KubernetesConfig{
-			NodeStatusUpdateFrequency:     "10s",
 			CtrlMgrNodeMonitorGracePeriod: "30s",
+			KubeletConfig: map[string]string{
+				"--node-status-update-frequency": "10s",
+			},
 		}
 		if err := c.Validate(k8sVersion); err == nil {
-			t.Error("should error when CtrlMgrRouteReconciliationPeriod is not sufficiently larger than NodeStatusUpdateFrequency")
+			t.Error("should error when CtrlMgrRouteReconciliationPeriod is not sufficiently larger than --node-status-update-frequency kubelet config")
 		}
 
 		c = KubernetesConfig{

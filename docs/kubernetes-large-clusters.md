@@ -46,8 +46,8 @@ The following configuration parameters are available in the `properties.orchestr
     "kubernetesCtrlMgrRouteReconciliationPeriod": {
       "value": "1m" // how often to reconcile cloudprovider-originating node routes
     },
-    "kubernetesNodeStatusUpdateFrequency": {
-      "value": "1m" // how often kubelet posts node status to master
+    "kubeletConfig": {
+      "--node-status-update-frequency": "1m" // how often kubelet posts node status to master
     }
 ```
 The [examples/largeclusters/kubernetes.json](https://github.com/Azure/acs-engine/blob/master/examples/largeclusters/kubernetes.json) api model example suggests how you might opt into these large cluster features following the guidelines above.
