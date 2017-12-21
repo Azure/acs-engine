@@ -669,8 +669,7 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 
 	// use the specified Certificate Authority pair, or generate a new pair
 	var caPair *PkiKeyCertPair
-	caProvided := false
-	if len(a.CertificateProfile.CaCertificate) > 0 && len(a.CertificateProfile.CaPrivateKey) > 0 {
+	if provided["ca"] {
 		caPair = &PkiKeyCertPair{CertificatePem: a.CertificateProfile.CaCertificate, PrivateKeyPem: a.CertificateProfile.CaPrivateKey}
 		caProvided = true
 	} else {
