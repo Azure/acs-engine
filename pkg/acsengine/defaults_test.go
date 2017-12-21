@@ -106,6 +106,61 @@ func TestCertsAlreadyPresent(t *testing.T) {
 	}
 }
 
+func TestSetMissingKubeletValues(t *testing.T) {
+	config := &api.KubernetesConfig{}
+	defaultKubeletConfig := map[string]string{
+		"--network-plugin":               "1",
+		"--pod-infra-container-image":    "2",
+		"--max-pods":                     "3",
+		"--eviction-hard":                "4",
+		"--node-status-update-frequency": "5",
+		"--image-gc-high-threshold":      "6",
+		"--image-gc-low-threshold":       "7",
+		"--non-masquerade-cidr":          "8",
+		"--cloud-provider":               "9",
+	}
+	setMissingKubeletValues(config, defaultKubeletConfig)
+	for key, val := range defaultKubeletConfig {
+		if config.KubeletConfig[key] != val {
+			t.Fatalf("setMissingKubeletValue() did not return the expected value %s for key %s, instead returned: %s", val, key, config.KubeletConfig[key])
+		}
+	}
+
+	config = &api.KubernetesConfig{
+		KubeletConfig: map[string]string{
+			"--network-plugin":            "a",
+			"--pod-infra-container-image": "b",
+			"--cloud-provider":            "c",
+		},
+	}
+	expectedResult := map[string]string{
+		"--network-plugin":               "a",
+		"--pod-infra-container-image":    "b",
+		"--max-pods":                     "3",
+		"--eviction-hard":                "4",
+		"--node-status-update-frequency": "5",
+		"--image-gc-high-threshold":      "6",
+		"--image-gc-low-threshold":       "7",
+		"--non-masquerade-cidr":          "8",
+		"--cloud-provider":               "c",
+	}
+	setMissingKubeletValues(config, defaultKubeletConfig)
+	for key, val := range expectedResult {
+		if config.KubeletConfig[key] != val {
+			t.Fatalf("setMissingKubeletValue() did not return the expected value %s for key %s, instead returned: %s", val, key, config.KubeletConfig[key])
+		}
+	}
+	config = &api.KubernetesConfig{
+		KubeletConfig: map[string]string{},
+	}
+	setMissingKubeletValues(config, defaultKubeletConfig)
+	for key, val := range defaultKubeletConfig {
+		if config.KubeletConfig[key] != val {
+			t.Fatalf("setMissingKubeletValue() did not return the expected value %s for key %s, instead returned: %s", val, key, config.KubeletConfig[key])
+		}
+	}
+}
+
 func TestAddonsIndexByName(t *testing.T) {
 	addonName := "testaddon"
 	addons := []api.KubernetesAddon{

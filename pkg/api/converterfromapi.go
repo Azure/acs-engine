@@ -638,6 +638,7 @@ func convertOrchestratorProfileToVLabs(api *OrchestratorProfile, o *vlabs.Orches
 }
 
 func convertDcosConfigToVLabs(api *DcosConfig, vlabs *vlabs.DcosConfig) {
+	vlabs.DcosBootstrapURL = api.DcosBootstrapURL
 	vlabs.DcosWindowsBootstrapURL = api.DcosWindowsBootstrapURL
 }
 
@@ -766,6 +767,10 @@ func convertMasterProfileToVLabs(api *MasterProfile, vlabsProfile *vlabs.MasterP
 		vlabsProfile.Extensions = append(vlabsProfile.Extensions, *vlabsExtension)
 	}
 	vlabsProfile.Distro = vlabs.Distro(api.Distro)
+	if api.KubernetesConfig != nil {
+		vlabsProfile.KubernetesConfig = &vlabs.KubernetesConfig{}
+		convertKubernetesConfigToVLabs(api.KubernetesConfig, vlabsProfile.KubernetesConfig)
+	}
 }
 
 func convertKeyVaultSecretsToVlabs(api *KeyVaultSecrets, vlabsSecrets *vlabs.KeyVaultSecrets) {
@@ -858,6 +863,10 @@ func convertAgentPoolProfileToVLabs(api *AgentPoolProfile, p *vlabs.AgentPoolPro
 		p.Extensions = append(p.Extensions, *vlabsExtension)
 	}
 	p.Distro = vlabs.Distro(api.Distro)
+	if api.KubernetesConfig != nil {
+		p.KubernetesConfig = &vlabs.KubernetesConfig{}
+		convertKubernetesConfigToVLabs(api.KubernetesConfig, p.KubernetesConfig)
+	}
 }
 
 func convertDiagnosticsProfileToV20160930(api *DiagnosticsProfile, dp *v20160930.DiagnosticsProfile) {
