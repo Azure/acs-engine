@@ -15,7 +15,7 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 		"--cloud-provider":                   "azure",
 		"--cloud-config":                     "/etc/kubernetes/azure.json",
 		"--root-ca-file":                     "/etc/kubernetes/certs/ca.crt",
-		"--cluster-signing-cert-file":        "--cluster-signing-cert-file",
+		"--cluster-signing-cert-file":        "/etc/kubernetes/certs/ca.crt",
 		"--cluster-signing-key-file":         "/etc/kubernetes/certs/ca.key",
 		"--service-account-private-key-file": "/etc/kubernetes/certs/apiserver.key",
 		"--leader-elect":                     "true",
@@ -60,5 +60,9 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 	}
 	for key, val := range overrideControllerManagerConfig {
 		o.KubernetesConfig.ControllerManagerConfig[key] = val
+	}
+
+	if o.KubernetesConfig.EnableRbac {
+		o.KubernetesConfig.ControllerManagerConfig["--use-service-account-credentials"] = "true"
 	}
 }

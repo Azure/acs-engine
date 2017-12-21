@@ -223,6 +223,7 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 |"--leader-elect"|"true"|
 |"--v"|"2"|
 |"--profiling"|"false"|
+|"--use-service-account-credentials"|"false" ("true" if kubernetesConfig.enableRbac is true)|
 
 We consider `kubeletConfig` and `controllerManagerConfig` to be generic conveniences that add power/flexibility to cluster deployments. Their usage comes with no operational guarantees! They are manual tuning features that enable low-level configuration of a kubernetes cluster.
 

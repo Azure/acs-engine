@@ -14,20 +14,8 @@ spec:
       command: 
         - "/hyperkube"
         - "controller-manager"
-        - "--kubeconfig=/var/lib/kubelet/kubeconfig" # genericize
-        - "--allocate-node-cidrs=<allocateNodeCidrs>" # genericize
-        - "--cluster-cidr=<kubeClusterCidr>" # genericize
         - "--cluster-name=<masterFqdnPrefix>"
-        - "--cloud-provider=azure" # genericize
-        - "--cloud-config=/etc/kubernetes/azure.json" # genericize
-        - "--root-ca-file=/etc/kubernetes/certs/ca.crt" # genericize
-        - "--cluster-signing-cert-file=/etc/kubernetes/certs/ca.crt" # genericize
-        - "--cluster-signing-key-file=/etc/kubernetes/certs/ca.key" # genericize
-        - "--service-account-private-key-file=/etc/kubernetes/certs/apiserver.key" # genericize
-        - "--leader-elect=true" # genericize
-        - "<kubernetesEnableRbac>"
-        - "--v=2" # genericize
-        - "--profiling=false" # genericize
+        - "<controllerManagerConfig>"
       volumeMounts: 
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"
