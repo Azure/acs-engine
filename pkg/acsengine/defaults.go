@@ -3,9 +3,11 @@ package acsengine
 import (
 	"fmt"
 	"net"
+	"strconv"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Masterminds/semver"
 )
 
@@ -308,10 +310,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig.EtcdVersion == "" {
 			o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
 		}
-		if o.KubernetesConfig.NetworkPolicy == "" {
-			if a.HasWindows() {
-				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicyWindows
-			} else {
+		if a.HasWindows() {
+			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicyWindows
+		} else {
+			if o.KubernetesConfig.NetworkPolicy == "" {
 				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 			}
 		}
@@ -344,15 +346,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 		if o.KubernetesConfig.ServiceCIDR == "" {
 			o.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
-		}
-		if o.KubernetesConfig.NonMasqueradeCidr == "" {
-			o.KubernetesConfig.NonMasqueradeCidr = DefaultNonMasqueradeCidr
-		}
-		if o.KubernetesConfig.NodeStatusUpdateFrequency == "" {
-			o.KubernetesConfig.NodeStatusUpdateFrequency = KubeConfigs[k8sVersion]["nodestatusfreq"]
-		}
-		if a.OrchestratorProfile.KubernetesConfig.HardEvictionThreshold == "" {
-			a.OrchestratorProfile.KubernetesConfig.HardEvictionThreshold = DefaultKubernetesHardEvictionThreshold
 		}
 		if o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod == "" {
 			o.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod = KubeConfigs[k8sVersion]["nodegraceperiod"]
@@ -411,6 +404,81 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
 			a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
+		}
+
+		staticLinuxKubeletConfig := map[string]string{
+			"--address":                         "0.0.0.0",
+			"--allow-privileged":                "true",
+			"--pod-manifest-path":               "/etc/kubernetes/manifests",
+			"--cloud-config":                    "/etc/kubernetes/azure.json",
+			"--cluster-domain":                  "cluster.local",
+			"--cluster-dns":                     DefaultKubernetesDNSServiceIP,
+			"--cgroups-per-qos":                 "false",
+			"--enforce-node-allocatable":        "",
+			"--kubeconfig":                      "/var/lib/kubelet/kubeconfig",
+			"--azure-container-registry-config": "/etc/kubernetes/azure.json",
+		}
+
+		staticWindowsKubeletConfig := make(map[string]string)
+		for key, val := range staticLinuxKubeletConfig {
+			staticWindowsKubeletConfig[key] = val
+		}
+		// Windows kubelet config overrides
+		staticWindowsKubeletConfig["--network-plugin"] = NetworkPluginKubenet
+
+		// Default Kubelet config
+		defaultKubeletConfig := map[string]string{
+			"--network-plugin":               "cni",
+			"--pod-infra-container-image":    cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["pause"],
+			"--max-pods":                     strconv.Itoa(DefaultKubernetesKubeletMaxPods),
+			"--eviction-hard":                DefaultKubernetesHardEvictionThreshold,
+			"--node-status-update-frequency": KubeConfigs[k8sVersion]["nodestatusfreq"],
+			"--image-gc-high-threshold":      strconv.Itoa(DefaultKubernetesGCHighThreshold),
+			"--image-gc-low-threshold":       strconv.Itoa(DefaultKubernetesGCLowThreshold),
+			"--non-masquerade-cidr":          DefaultNonMasqueradeCidr,
+			"--cloud-provider":               "azure",
+		}
+
+		// If no user-configurable kubelet config values exists, use the defaults
+		if o.KubernetesConfig.KubeletConfig == nil {
+			o.KubernetesConfig.KubeletConfig = defaultKubeletConfig
+		} else {
+			for key, val := range defaultKubeletConfig {
+				// If we don't have a user-configurable kubelet config for each option
+				if _, ok := o.KubernetesConfig.KubeletConfig[key]; !ok {
+					// then assign the default value
+					o.KubernetesConfig.KubeletConfig[key] = val
+				}
+			}
+		}
+
+		// Override default cloud-provider?
+		if helpers.IsTrueBoolPointer(a.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager) {
+			staticLinuxKubeletConfig["--cloud-provider"] = "external"
+		}
+
+		// Override default --network-plugin?
+		if o.KubernetesConfig.NetworkPolicy == NetworkPolicyNone {
+			o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet
+		}
+
+		// We don't support user-configurable values for the following,
+		// so any of the value assignments below will override user-provided values
+		var overrideKubeletConfig map[string]string
+		if a.HasWindows() {
+			overrideKubeletConfig = staticWindowsKubeletConfig
+		} else {
+			overrideKubeletConfig = staticLinuxKubeletConfig
+		}
+		for key, val := range overrideKubeletConfig {
+			o.KubernetesConfig.KubeletConfig[key] = val
+		}
+
+		// Get rid of values not supported in v1.5 clusters
+		if !isKubernetesVersionGe(o.OrchestratorVersion, "1.6.0") {
+			for _, key := range []string{"--non-masquerade-cidr", "--cgroups-per-qos", "--enforce-node-allocatable"} {
+				delete(o.KubernetesConfig.KubeletConfig, key)
+			}
 		}
 
 	} else if o.OrchestratorType == api.DCOS {
@@ -754,4 +822,10 @@ func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesA
 func pointerToBool(b bool) *bool {
 	p := b
 	return &p
+}
+
+func isKubernetesVersionGe(actualVersion, version string) bool {
+	orchestratorVersion, _ := semver.NewVersion(actualVersion)
+	constraint, _ := semver.NewConstraint(">=" + version)
+	return constraint.Check(orchestratorVersion)
 }
