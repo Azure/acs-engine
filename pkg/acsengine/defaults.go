@@ -395,6 +395,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
 		}
 
+		if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {
+			a.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(api.DefaultRBACEnabled)
+		}
+
 		// Configure kubelet
 		setKubeletConfig(cs)
 		// Configure controller-manager
