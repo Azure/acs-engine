@@ -861,9 +861,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetControllerManagerConfigKeyVals": func(kc *api.KubernetesConfig) string {
 			controllerManagerConfig := cs.Properties.OrchestratorProfile.KubernetesConfig.ControllerManagerConfig
-			if kc.ControllerManagerConfig != nil {
-				controllerManagerConfig = kc.ControllerManagerConfig
-			}
 			// Order by key for consistency
 			keys := []string{}
 			for key := range controllerManagerConfig {
@@ -872,9 +869,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			sort.Strings(keys)
 			var buf bytes.Buffer
 			for _, key := range keys {
-				buf.WriteString(fmt.Sprintf("%s=%s ", key, controllerManagerConfig[key]))
+				buf.WriteString(fmt.Sprintf("\"%s=%s\", ", key, controllerManagerConfig[key]))
 			}
-			return buf.String()
+			return strings.TrimSuffix(buf.String(), ", ")
 		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes

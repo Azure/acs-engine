@@ -11,11 +11,8 @@ spec:
   containers:
     - name: "kube-controller-manager"
       image: "<kubernetesHyperkubeSpec>"
-      command: 
-        - "/hyperkube"
-        - "controller-manager"
-        - "--cluster-name=<masterFqdnPrefix>"
-        - "<controllerManagerConfig>"
+      command: ["/hyperkube", "controller-manager"]
+      args: [<kubernetesControllerManagerConfig>]
       volumeMounts: 
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"

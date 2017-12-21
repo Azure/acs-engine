@@ -20,7 +20,14 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 		"--service-account-private-key-file": "/etc/kubernetes/certs/apiserver.key",
 		"--leader-elect":                     "true",
 		"--v":                                "2",
-		"--profiling":                        "false",
+		"--profiling":                        "False",
+	}
+
+	// Set --cluster-name based on appropriate DNS prefix
+	if cs.Properties.MasterProfile != nil {
+		staticLinuxControllerManagerConfig["--cluster-name"] = cs.Properties.MasterProfile.DNSPrefix
+	} else if cs.Properties.HostedMasterProfile != nil {
+		staticLinuxControllerManagerConfig["--cluster-name"] = cs.Properties.HostedMasterProfile.DNSPrefix
 	}
 
 	staticWindowsControllerManagerConfig := make(map[string]string)
@@ -28,7 +35,7 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 		staticWindowsControllerManagerConfig[key] = val
 	}
 	// Windows controller-manager config overrides
-	// TODO
+	// TODO placeholder for specific config overrides for Windows clusters
 
 	// Default controller-manager config
 	defaultControllerManagerConfig := map[string]string{
