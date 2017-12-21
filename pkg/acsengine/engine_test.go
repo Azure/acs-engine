@@ -211,6 +211,12 @@ func addTestCertificateProfile(api *api.CertificateProfile) {
 	api.ClientPrivateKey = "clientPrivateKey"
 	api.KubeConfigCertificate = "kubeConfigCertificate"
 	api.KubeConfigPrivateKey = "kubeConfigPrivateKey"
+	api.EtcdClientCertificate = "etcdClientCertificate"
+	api.EtcdClientPrivateKey = "etcdClientPrivateKey"
+	api.EtcdServerCertificate = "etcdServerCertificate"
+	api.EtcdServerPrivateKey = "etcdServerPrivateKey"
+	api.EtcdPeerCertificates = []string{"etcdPeerCertificate0"}
+	api.EtcdPeerPrivateKeys = []string{"etcdPeerPrivateKey0"}
 }
 
 func TestGetStorageAccountType(t *testing.T) {

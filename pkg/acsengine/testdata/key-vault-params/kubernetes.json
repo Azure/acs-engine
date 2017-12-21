@@ -47,12 +47,23 @@
     },
     "certificateProfile": {
       "caCertificate": "caCertificate",
+      "caPrivateKey": "caPrivateKey",
       "apiServerCertificate": "/subscriptions/my-sub/resourceGroups/my-rg/providers/Microsoft.KeyVault/vaults/my-kv/secrets/my-secret1/ver1",
       "apiServerPrivateKey": "apiServerPrivateKey",
       "clientCertificate": "clientCertificate",
       "clientPrivateKey": "clientPrivateKey",
       "kubeConfigCertificate": "kubeConfigCertificate",
-      "kubeConfigPrivateKey": "kubeConfigPrivateKey"
+      "kubeConfigPrivateKey": "kubeConfigPrivateKey",
+      "etcdClientCertificate": "etcdClientCertificate",
+      "etcdClientPrivateKey": "etcdClientPrivateKey",
+      "etcdServerCertificate": "etcdServerCertificate",
+      "etcdServerPrivateKey": "etcdServerPrivateKey",
+      "etcdPeerCertificates": [
+        "etcdPeerCertificate0"
+      ],
+      "etcdPeerPrivateKeys": [
+        "etcdPeerPrivateKey0"
+      ]
     }
   }
 }
