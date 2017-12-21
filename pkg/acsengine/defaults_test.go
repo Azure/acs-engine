@@ -1,25 +1,55 @@
 package acsengine
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	. "github.com/onsi/gomega"
 )
 
 func TestCertsAlreadyPresent(t *testing.T) {
-	RegisterTestingT(t)
 	var cert *api.CertificateProfile
 
-	//Expect(allCertAlreadyPresent(nil, 1)).To(BeFalse())
+	result := certsAlreadyPresent(nil, 1)
+	expected := map[string]bool{
+		"ca":         false,
+		"apiserver":  false,
+		"client":     false,
+		"kubeconfig": false,
+		"etcd":       false,
+	}
 
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("certsAlreadyPresent() did not return false for all certs for a non-existent CertificateProfile")
+	}
 	cert = &api.CertificateProfile{}
-	//Expect(certsAlreadyPresent(cert, 1)).To(BeFalse())
+	result = certsAlreadyPresent(cert, 1)
+	expected = map[string]bool{
+		"ca":         false,
+		"apiserver":  false,
+		"client":     false,
+		"kubeconfig": false,
+		"etcd":       false,
+	}
 
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("certsAlreadyPresent() did not return false for all certs for empty CertificateProfile")
+	}
 	cert = &api.CertificateProfile{
 		APIServerCertificate: "a",
 	}
-	//Expect(allCertAlreadyPresent(cert)).To(BeFalse())
+	result = certsAlreadyPresent(cert, 1)
+	expected = map[string]bool{
+		"ca":         false,
+		"apiserver":  false,
+		"client":     false,
+		"kubeconfig": false,
+		"etcd":       false,
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("certsAlreadyPresent() did not return false for all certs for 1 cert in CertificateProfile")
+	}
 
 	cert = &api.CertificateProfile{
 		APIServerCertificate:  "a",
@@ -29,9 +59,23 @@ func TestCertsAlreadyPresent(t *testing.T) {
 		ClientPrivateKey:      "f",
 		KubeConfigCertificate: "g",
 		KubeConfigPrivateKey:  "h",
+		EtcdClientCertificate: "i",
+		EtcdClientPrivateKey:  "j",
+		EtcdServerCertificate: "k",
+		EtcdServerPrivateKey:  "l",
 	}
-	//Expect(allCertAlreadyPresent(cert)).To(BeFalse())
+	result = certsAlreadyPresent(cert, 3)
+	expected = map[string]bool{
+		"ca":         true,
+		"apiserver":  false,
+		"client":     true,
+		"kubeconfig": true,
+		"etcd":       false,
+	}
 
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("certsAlreadyPresent() did not return expected result for some certs in CertificateProfile")
+	}
 	cert = &api.CertificateProfile{
 		APIServerCertificate:  "a",
 		APIServerPrivateKey:   "b",
@@ -41,23 +85,25 @@ func TestCertsAlreadyPresent(t *testing.T) {
 		ClientPrivateKey:      "f",
 		KubeConfigCertificate: "g",
 		KubeConfigPrivateKey:  "h",
+		EtcdClientCertificate: "i",
+		EtcdClientPrivateKey:  "j",
+		EtcdServerCertificate: "k",
+		EtcdServerPrivateKey:  "l",
+		EtcdPeerCertificates:  []string{"0", "1", "2"},
+		EtcdPeerPrivateKeys:   []string{"0", "1", "2"},
 	}
-	//Expect(allCertAlreadyPresent(cert)).To(BeTrue())
-}
+	result = certsAlreadyPresent(cert, 3)
+	expected = map[string]bool{
+		"ca":         true,
+		"apiserver":  true,
+		"client":     true,
+		"kubeconfig": true,
+		"etcd":       true,
+	}
 
-func TestCertGenerationRequired(t *testing.T) {
-	RegisterTestingT(t)
-	var a *api.Properties
-	a = &api.Properties{
-		MasterProfile: *api.MasterProfile{
-			Count: 3,
-		},
-		OrchestratorProfile: *api.OrchestratorProfile{
-			OrchestratorType: "Kubernetes",
-		},
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("certsAlreadyPresent() did not return expected result for all certs in CertificateProfile")
 	}
-	userCerts := make(map[string]bool)
-	Expect(certGenerationRequired(a, userCerts)).To(BeTrue())
 }
 
 func TestAddonsIndexByName(t *testing.T) {

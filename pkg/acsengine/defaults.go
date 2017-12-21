@@ -548,8 +548,13 @@ func setStorageDefaults(a *api.Properties) {
 
 func setDefaultCerts(a *api.Properties) (bool, error) {
 
+	if a.MasterProfile == nil || a.OrchestratorProfile.OrchestratorType != api.Kubernetes {
+		return false, nil
+	}
+
 	provided := certsAlreadyPresent(a.CertificateProfile, a.MasterProfile.Count)
-	if !certGenerationRequired(a, provided) {
+
+	if areAllTrue(provided) {
 		return false, nil
 	}
 
@@ -600,14 +605,20 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 		return false, err
 	}
 
-	// If no Certificate Authority pair, use genereted cert/key pairs signed by provided Certificate Authority pair
-	if !provided["ca"] {
+	// If no Certificate Authority pair or no cert/key pair was provided, use generated cert/key pairs signed by provided Certificate Authority pair
+	if !provided["apiserver"] || !provided["ca"] {
 		a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
 		a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
+	}
+	if !provided["client"] || !provided["ca"] {
 		a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
 		a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
+	}
+	if !provided["kubeconfig"] || !provided["ca"] {
 		a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
 		a.CertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
+	}
+	if !provided["etcd"] || !provided["ca"] {
 		a.CertificateProfile.EtcdServerCertificate = etcdServerPair.CertificatePem
 		a.CertificateProfile.EtcdServerPrivateKey = etcdServerPair.PrivateKeyPem
 		a.CertificateProfile.EtcdClientCertificate = etcdClientPair.CertificatePem
@@ -618,62 +629,29 @@ func setDefaultCerts(a *api.Properties) (bool, error) {
 			a.CertificateProfile.EtcdPeerCertificates[i] = v.CertificatePem
 			a.CertificateProfile.EtcdPeerPrivateKeys[i] = v.PrivateKeyPem
 		}
-	} else {
-		// Only use the generated cert/key pair if no cert/key pair was provided
-		if !provided["apiserver"] {
-			a.CertificateProfile.APIServerCertificate = apiServerPair.CertificatePem
-			a.CertificateProfile.APIServerPrivateKey = apiServerPair.PrivateKeyPem
-		}
-		if !provided["client"] {
-			a.CertificateProfile.ClientCertificate = clientPair.CertificatePem
-			a.CertificateProfile.ClientPrivateKey = clientPair.PrivateKeyPem
-		}
-		if !provided["kubeconfig"] {
-			a.CertificateProfile.KubeConfigCertificate = kubeConfigPair.CertificatePem
-			a.CertificateProfile.KubeConfigPrivateKey = kubeConfigPair.PrivateKeyPem
-		}
-		if !provided["etcd"] {
-			a.CertificateProfile.EtcdServerCertificate = etcdServerPair.CertificatePem
-			a.CertificateProfile.EtcdServerPrivateKey = etcdServerPair.PrivateKeyPem
-			a.CertificateProfile.EtcdClientCertificate = etcdClientPair.CertificatePem
-			a.CertificateProfile.EtcdClientPrivateKey = etcdClientPair.PrivateKeyPem
-			a.CertificateProfile.EtcdPeerCertificates = make([]string, a.MasterProfile.Count)
-			a.CertificateProfile.EtcdPeerPrivateKeys = make([]string, a.MasterProfile.Count)
-			for i, v := range etcdPeerPairs {
-				a.CertificateProfile.EtcdPeerCertificates[i] = v.CertificatePem
-				a.CertificateProfile.EtcdPeerPrivateKeys[i] = v.PrivateKeyPem
-			}
-		}
 	}
 
 	return true, nil
 }
 
-func certGenerationRequired(a *api.Properties, g map[string]bool) bool {
-	if a.MasterProfile == nil {
-		return false
-	}
-	all := true
-	for _, b := range g {
-		if !b {
-			all = false
+func areAllTrue(m map[string]bool) bool {
+	for _, v := range m {
+		if !v {
+			return false
 		}
 	}
-	if len(g) > 0 && all {
-		return false
-	}
-
-	switch a.OrchestratorProfile.OrchestratorType {
-	case api.Kubernetes:
-		return true
-	default:
-		return false
-	}
+	return true
 }
 
-// certsAlreadyPresent already present return a map where each key is a type of cert and each value is true is that cert/key pair is user-provided
+// certsAlreadyPresent already present returns a map where each key is a type of cert and each value is true if that cert/key pair is user-provided
 func certsAlreadyPresent(c *api.CertificateProfile, m int) map[string]bool {
-	g := make(map[string]bool)
+	g := map[string]bool{
+		"ca":         false,
+		"apiserver":  false,
+		"kubeconfig": false,
+		"client":     false,
+		"etcd":       false,
+	}
 	if c != nil {
 		etcdPeer := true
 		if len(c.EtcdPeerCertificates) != m || len(c.EtcdPeerPrivateKeys) != m {
