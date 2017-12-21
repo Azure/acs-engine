@@ -447,6 +447,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			staticLinuxKubeletConfig["--cloud-provider"] = "external"
 		}
 
+		if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {
+			a.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(api.DefaultRBACEnabled)
+		}
+
 		// Override default --network-plugin?
 		if o.KubernetesConfig.NetworkPolicy == NetworkPolicyNone {
 			o.KubernetesConfig.KubeletConfig["--network-plugin"] = NetworkPluginKubenet

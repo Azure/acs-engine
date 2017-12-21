@@ -91,6 +91,8 @@ const (
 	DefaultDashboardAddonEnabled = true
 	// DefaultReschedulerAddonEnabled determines the acs-engine provided default for enabling kubernetes-rescheduler addon
 	DefaultReschedulerAddonEnabled = false
+	// DefaultRBACEnabled determines the acs-engine provided default for enabling kubernetes RBAC
+	DefaultRBACEnabled = true
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
 	// DefaultACIConnectorAddonName is the name of the tiller addon deployment

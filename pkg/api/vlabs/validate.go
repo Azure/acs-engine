@@ -93,8 +93,10 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 							"1.7.0", o.OrchestratorVersion)
 					}
 
-					if !o.KubernetesConfig.EnableRbac {
-						return fmt.Errorf("enableAggregatedAPIs requires the enableRbac feature as a prerequisite")
+					if o.KubernetesConfig.EnableRbac != nil {
+						if !*o.KubernetesConfig.EnableRbac {
+							return fmt.Errorf("enableAggregatedAPIs requires the enableRbac feature as a prerequisite")
+						}
 					}
 				}
 			}
