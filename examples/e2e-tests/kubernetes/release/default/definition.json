@@ -4,7 +4,6 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
-        "enableRbac": true,
         "clusterSubnet": "10.239.0.0/16"
       }
     },
