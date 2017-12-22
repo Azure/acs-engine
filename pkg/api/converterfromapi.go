@@ -650,9 +650,6 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.NetworkPolicy = api.NetworkPolicy
 	vlabs.MaxPods = api.MaxPods
 	vlabs.DockerBridgeSubnet = api.DockerBridgeSubnet
-	vlabs.CtrlMgrNodeMonitorGracePeriod = api.CtrlMgrNodeMonitorGracePeriod
-	vlabs.CtrlMgrPodEvictionTimeout = api.CtrlMgrPodEvictionTimeout
-	vlabs.CtrlMgrRouteReconciliationPeriod = api.CtrlMgrRouteReconciliationPeriod
 	vlabs.CloudProviderBackoff = api.CloudProviderBackoff
 	vlabs.CloudProviderBackoffDuration = api.CloudProviderBackoffDuration
 	vlabs.CloudProviderBackoffExponent = api.CloudProviderBackoffExponent
@@ -675,12 +672,20 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.EtcdDiskSizeGB = api.EtcdDiskSizeGB
 	convertAddonsToVlabs(api, vlabs)
 	convertKubeletConfigToVlabs(api, vlabs)
+	convertControllerManagerConfigToVlabs(api, vlabs)
 }
 
 func convertKubeletConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
 	v.KubeletConfig = map[string]string{}
 	for key, val := range a.KubeletConfig {
 		v.KubeletConfig[key] = val
+	}
+}
+
+func convertControllerManagerConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
+	v.ControllerManagerConfig = map[string]string{}
+	for key, val := range a.ControllerManagerConfig {
+		v.ControllerManagerConfig[key] = val
 	}
 }
 

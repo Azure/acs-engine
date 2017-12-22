@@ -505,32 +505,24 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 			if err != nil {
 				return fmt.Errorf("--node-status-update-frequency '%s' is not a valid duration", val)
 			}
-			if a.CtrlMgrNodeMonitorGracePeriod == "" {
-				return fmt.Errorf("--node-status-update-frequency was set to '%s' but OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod was not set", val)
-			}
 		}
 	}
 
-	if a.CtrlMgrNodeMonitorGracePeriod != "" {
-		_, err := time.ParseDuration(a.CtrlMgrNodeMonitorGracePeriod)
+	if _, ok := a.ControllerManagerConfig["--node-monitor-grace-period"]; ok {
+		_, err := time.ParseDuration(a.ControllerManagerConfig["--node-monitor-grace-period"])
 		if err != nil {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod '%s' is not a valid duration", a.CtrlMgrNodeMonitorGracePeriod)
-		}
-		if a.KubeletConfig != nil {
-			if _, ok := a.KubeletConfig["--node-status-update-frequency"]; !ok {
-				return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrNodeMonitorGracePeriod was set to '%s' but kubelet config --node-status-update-frequency was not set", a.CtrlMgrNodeMonitorGracePeriod)
-			}
+			return fmt.Errorf("--node-monitor-grace-period '%s' is not a valid duration", a.ControllerManagerConfig["--node-monitor-grace-period"])
 		}
 	}
 
 	if a.KubeletConfig != nil {
 		if _, ok := a.KubeletConfig["--node-status-update-frequency"]; ok {
-			if a.CtrlMgrNodeMonitorGracePeriod != "" {
+			if _, ok := a.ControllerManagerConfig["--node-monitor-grace-period"]; ok {
 				nodeStatusUpdateFrequency, _ := time.ParseDuration(a.KubeletConfig["--node-status-update-frequency"])
-				ctrlMgrNodeMonitorGracePeriod, _ := time.ParseDuration(a.CtrlMgrNodeMonitorGracePeriod)
+				ctrlMgrNodeMonitorGracePeriod, _ := time.ParseDuration(a.ControllerManagerConfig["--node-monitor-grace-period"])
 				kubeletRetries := ctrlMgrNodeMonitorGracePeriod.Seconds() / nodeStatusUpdateFrequency.Seconds()
 				if kubeletRetries < minKubeletRetries {
-					return fmt.Errorf("acs-engine requires that ctrlMgrNodeMonitorGracePeriod(%f)s be larger than nodeStatusUpdateFrequency(%f)s by at least a factor of %d; ", ctrlMgrNodeMonitorGracePeriod.Seconds(), nodeStatusUpdateFrequency.Seconds(), minKubeletRetries)
+					return fmt.Errorf("acs-engine requires that --node-monitor-grace-period(%f)s be larger than nodeStatusUpdateFrequency(%f)s by at least a factor of %d; ", ctrlMgrNodeMonitorGracePeriod.Seconds(), nodeStatusUpdateFrequency.Seconds(), minKubeletRetries)
 				}
 			}
 		}
@@ -541,17 +533,17 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		}
 	}
 
-	if a.CtrlMgrPodEvictionTimeout != "" {
-		_, err := time.ParseDuration(a.CtrlMgrPodEvictionTimeout)
+	if _, ok := a.ControllerManagerConfig["--pod-eviction-timeout"]; ok {
+		_, err := time.ParseDuration(a.ControllerManagerConfig["--pod-eviction-timeout"])
 		if err != nil {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrPodEvictionTimeout '%s' is not a valid duration", a.CtrlMgrPodEvictionTimeout)
+			return fmt.Errorf("--pod-eviction-timeout '%s' is not a valid duration", a.ControllerManagerConfig["--pod-eviction-timeout"])
 		}
 	}
 
-	if a.CtrlMgrRouteReconciliationPeriod != "" {
-		_, err := time.ParseDuration(a.CtrlMgrRouteReconciliationPeriod)
+	if _, ok := a.ControllerManagerConfig["--route-reconciliation-period"]; ok {
+		_, err := time.ParseDuration(a.ControllerManagerConfig["--route-reconciliation-period"])
 		if err != nil {
-			return fmt.Errorf("OrchestratorProfile.KubernetesConfig.CtrlMgrRouteReconciliationPeriod '%s' is not a valid duration", a.CtrlMgrRouteReconciliationPeriod)
+			return fmt.Errorf("--route-reconciliation-period '%s' is not a valid duration", a.ControllerManagerConfig["--route-reconciliation-period"])
 		}
 	}
 

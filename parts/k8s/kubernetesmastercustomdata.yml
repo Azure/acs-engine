@@ -179,7 +179,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
     sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsVariable "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeServiceCidr>|{{WrapAsVariable "kubeServiceCidr"}}|g; s|<masterEtcdClientPort>|{{WrapAsVariable "masterEtcdClientPort"}}|g; s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g; s|<kubernetesCtrlMgrNodeMonitorGracePeriod>|{{WrapAsVariable "kubernetesCtrlMgrNodeMonitorGracePeriod"}}|g; s|<kubernetesCtrlMgrPodEvictionTimeout>|{{WrapAsVariable "kubernetesCtrlMgrPodEvictionTimeout"}}|g; s|<kubernetesCtrlMgrRouteReconciliationPeriod>|{{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
     sed -i "s|<kubernetesKubeDNSSpec>|{{WrapAsVariable "kubernetesKubeDNSSpec"}}|g; s|<kubernetesDNSMasqSpec>|{{WrapAsVariable "kubernetesDNSMasqSpec"}}|g; s|<kubernetesExecHealthzSpec>|{{WrapAsVariable "kubernetesExecHealthzSpec"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
@@ -228,10 +228,8 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{if .OrchestratorProfile.KubernetesConfig.EnableRbac }}
     # If RBAC enabled then add parameters to API server and Controller manager configuration
     sed -i "s|<kubernetesEnableRbac>|--authorization-mode=RBAC|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    sed -i "s|<kubernetesEnableRbac>|--use-service-account-credentials|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
 {{else}}
     sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
 {{end}}
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
@@ -251,7 +249,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<etcdApiVersion>|{{ .OrchestratorProfile.GetAPIServerEtcdAPIVersion }}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 
 {{if UseCloudControllerManager }}
-    sed -i "s|<kubernetesCcmImageSpec>|{{WrapAsVariable "kubernetesCcmImageSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g; s|<kubernetesCtrlMgrRouteReconciliationPeriod>|{{WrapAsVariable "kubernetesCtrlMgrRouteReconciliationPeriod"}}|g" \
+    sed -i "s|<kubernetesCcmImageSpec>|{{WrapAsVariable "kubernetesCcmImageSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g; s|<kubernetesCtrlMgrRouteReconciliationPeriod>|{{GetCloudControllerManagerRouteReconciliationPeriod .OrchestratorProfile.KubernetesConfig}}|g" \
       /etc/kubernetes/manifests/cloud-controller-manager.yaml
 
     sed -i "/--\(cloud-config\|cloud-provider\|route-reconciliation-period\)=/d" \
@@ -259,6 +257,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "/--\(cloud-config\|cloud-provider\)=/d" \
       /etc/kubernetes/manifests/kube-apiserver.yaml
 {{end}}
+    sed -i "s|<kubernetesControllerManagerConfig>|{{GetControllerManagerConfigKeyVals .OrchestratorProfile.KubernetesConfig}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"

@@ -11,26 +11,8 @@ spec:
   containers:
     - name: "kube-controller-manager"
       image: "<kubernetesHyperkubeSpec>"
-      command: 
-        - "/hyperkube"
-        - "controller-manager"
-        - "--kubeconfig=/var/lib/kubelet/kubeconfig"
-        - "--allocate-node-cidrs=<allocateNodeCidrs>"
-        - "--cluster-cidr=<kubeClusterCidr>"
-        - "--cluster-name=<masterFqdnPrefix>"
-        - "--cloud-provider=azure"
-        - "--cloud-config=/etc/kubernetes/azure.json"
-        - "--root-ca-file=/etc/kubernetes/certs/ca.crt"
-        - "--cluster-signing-cert-file=/etc/kubernetes/certs/ca.crt"
-        - "--cluster-signing-key-file=/etc/kubernetes/certs/ca.key"
-        - "--service-account-private-key-file=/etc/kubernetes/certs/apiserver.key"
-        - "--leader-elect=true"
-        - "<kubernetesEnableRbac>"
-        - "--v=2"
-        - "--node-monitor-grace-period=<kubernetesCtrlMgrNodeMonitorGracePeriod>"
-        - "--pod-eviction-timeout=<kubernetesCtrlMgrPodEvictionTimeout>"
-        - "--route-reconciliation-period=<kubernetesCtrlMgrRouteReconciliationPeriod>"
-        - "--profiling=false"
+      command: ["/hyperkube", "controller-manager"]
+      args: [<kubernetesControllerManagerConfig>]
       volumeMounts: 
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"
