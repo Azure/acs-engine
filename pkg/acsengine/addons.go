@@ -2,8 +2,6 @@ package acsengine
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
@@ -129,19 +127,14 @@ func substituteConfigString(input string, kubernetesFeatureSettings []kubernetes
 }
 
 func buildConfigString(sourceFile string, destinationFile string, sourcePath string, destinationPath string, version string) string {
-	sourceFileNoSuffix := strings.TrimSuffix(sourceFile, filepath.Ext(sourceFile))
-	sourceFileVersioned := sourcePath + "/" + sourceFile
-	sourcePathVersioned := "parts/" + sourcePath + "/" + version
+	sourceFileFullPath := sourcePath + "/" + sourceFile
+	sourceFileFullPathVersioned := sourcePath + "/" + version + "/" + sourceFile
 
-	filepath.Walk(sourcePathVersioned, func(path string, info os.FileInfo, err error) error {
-		if err == nil {
-			if strings.HasPrefix(info.Name(), sourceFileNoSuffix) {
-				sourceFileVersioned = sourcePath + "/" + version + "/" + info.Name()
-			}
-			return nil
-		}
-		return err
-	})
+	// Test to check if the versioned file can be read.
+	_, err := Asset(sourceFileFullPathVersioned)
+	if err == nil {
+		sourceFileFullPath = sourceFileFullPathVersioned
+	}
 
 	contents := []string{
 		fmt.Sprintf("- path: %s/%s", destinationPath, destinationFile),
@@ -149,7 +142,7 @@ func buildConfigString(sourceFile string, destinationFile string, sourcePath str
 		"  encoding: gzip",
 		"  owner: \\\"root\\\"",
 		"  content: !!binary |",
-		fmt.Sprintf("    %s\\n\\n", getBase64CustomScript(sourceFileVersioned)),
+		fmt.Sprintf("    %s\\n\\n", getBase64CustomScript(sourceFileFullPath)),
 	}
 
 	return strings.Join(contents, "\\n")
