@@ -12,7 +12,7 @@ var KubeConfigs = map[string]map[string]string{
 		"hyperkube": "hyperkube-amd64:v1.9.0",
 		"ccm":       "cloud-controller-manager-amd64:v1.9.0",
 		"dockerEngineVersion":       "1.12.*",
-		DefaultDashboardAddonName:   "kubernetes-dashboard-amd64:v1.9.0",
+		DefaultDashboardAddonName:   "kubernetes-dashboard-amd64:v1.9.0", // TODO fix missing gcrio.azureedge.net/google_containers/kubernetes-dashboard-amd64:v1.9.0
 		"exechealthz":               "exechealthz-amd64:1.2",
 		"addonresizer":              "addon-resizer:1.7",
 		"heapster":                  "heapster-amd64:v1.4.2",
