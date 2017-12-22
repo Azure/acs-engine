@@ -150,7 +150,7 @@ var AllKubernetesWindowsSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot8Dot1:  true,
 	KubernetesVersion1Dot8Dot2:  true,
 	KubernetesVersion1Dot8Dot4:  true,
-	// TODO add KubernetesVersion1Dot9Dot0 when Windows image is built
+	KubernetesVersion1Dot9Dot0:  true,
 }
 
 const (
