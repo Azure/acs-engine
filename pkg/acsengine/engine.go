@@ -873,6 +873,14 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return strings.TrimSuffix(buf.String(), ", ")
 		},
+		// temporary until we genericise cloud controller manager config
+		"GetCloudControllerManagerRouteReconciliationPeriod": func(kc *api.KubernetesConfig) string {
+			controllerManagerConfig := cs.Properties.OrchestratorProfile.KubernetesConfig.ControllerManagerConfig
+			if kc.ControllerManagerConfig != nil {
+				controllerManagerConfig = kc.ControllerManagerConfig
+			}
+			return controllerManagerConfig["--route-reconciliation-period"]
+		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
 		},
