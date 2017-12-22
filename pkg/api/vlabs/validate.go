@@ -505,11 +505,6 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 			if err != nil {
 				return fmt.Errorf("--node-status-update-frequency '%s' is not a valid duration", val)
 			}
-			if a.ControllerManagerConfig != nil {
-				if a.ControllerManagerConfig["--node-monitor-grace-period"] == "" {
-					return fmt.Errorf("--node-status-update-frequency was set to '%s' but --node-monitor-grace-period was not set", val)
-				}
-			}
 		}
 	}
 
@@ -517,11 +512,6 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		_, err := time.ParseDuration(a.ControllerManagerConfig["--node-monitor-grace-period"])
 		if err != nil {
 			return fmt.Errorf("--node-monitor-grace-period '%s' is not a valid duration", a.ControllerManagerConfig["--node-monitor-grace-period"])
-		}
-		if a.KubeletConfig != nil {
-			if _, ok := a.KubeletConfig["--node-status-update-frequency"]; !ok {
-				return fmt.Errorf("--node-monitor-grace-period was set to '%s' but kubelet config --node-status-update-frequency was not set", a.ControllerManagerConfig["--node-monitor-grace-period"])
-			}
 		}
 	}
 

@@ -860,7 +860,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return buf.String()
 		},
 		"GetControllerManagerConfigKeyVals": func(kc *api.KubernetesConfig) string {
-			controllerManagerConfig := cs.Properties.OrchestratorProfile.KubernetesConfig.ControllerManagerConfig
+			controllerManagerConfig := kc.ControllerManagerConfig
 			// Order by key for consistency
 			keys := []string{}
 			for key := range controllerManagerConfig {
