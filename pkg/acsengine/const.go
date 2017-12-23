@@ -18,7 +18,7 @@ const (
 	// DefaultNonMasqueradeCidr specifies the subnet that should not be masqueraded on host
 	DefaultNonMasqueradeCidr = "10.0.0.0/8"
 	// DefaultFirstConsecutiveKubernetesStaticIP specifies the static IP address on Kubernetes master 0
-	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.255.5"
+	DefaultFirstConsecutiveKubernetesStaticIP = "10.240.0.4"
 	// DefaultAgentSubnetTemplate specifies a default agent subnet
 	DefaultAgentSubnetTemplate = "10.%d.0.0/16"
 	// DefaultKubernetesSubnet specifies the default subnet used for all masters, agents and pods

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"regexp"
 	"runtime/debug"
@@ -873,6 +875,54 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				buf.WriteString(fmt.Sprintf("\\\"%s=%s\\\", ", key, config[key]))
 			}
 			return strings.TrimSuffix(buf.String(), ", ")
+		},
+		"GetMasterCount": func() int {
+			masterProfile := cs.Properties.MasterProfile
+			return masterProfile.Count
+		},
+		"GetMasterSecondaryIP": func() string {
+			var ips string
+			var ipint uint32
+
+			profile := cs.Properties.MasterProfile
+
+			ip := net.ParseIP(profile.FirstConsecutiveStaticIP)
+			ipv4 := ip.To4()
+			if ipv4 != nil {
+				ipint = binary.BigEndian.Uint32(ipv4)
+			} else {
+				log.Fatalf("Net IP To4() function returns nil")
+			}
+
+			ipint += uint32(profile.Count) + uint32(DefaultInternalLbStaticIPOffset) - 1
+			startIP := make(net.IP, 4)
+			binary.BigEndian.PutUint32(startIP, ipint)
+
+			totalIpCount := profile.Count * profile.IPAddressCount
+			ipint = 0
+
+			for count := totalIpCount; count > 0; count-- {
+				ipv4 = startIP.To4()
+				if ipv4 != nil {
+					ipint = binary.BigEndian.Uint32(ipv4)
+				} else {
+					log.Fatalf("Net IP To4() function returns nil for startIP")
+				}
+
+				ipint += 1
+				newIP := make(net.IP, 4)
+				binary.BigEndian.PutUint32(newIP, ipint)
+
+				if ips != "" {
+					ips = ips + "," + "\"" + newIP.String() + "\""
+				} else {
+					ips = "\"" + newIP.String() + "\""
+				}
+
+				startIP = newIP
+			}
+
+			return ips
 		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
