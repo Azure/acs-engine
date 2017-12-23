@@ -682,6 +682,8 @@ func getFirstConsecutiveStaticIPAddress(subnetStr string) string {
 	}
 
 	ipint := binary.BigEndian.Uint32(ipv4)
+
+	// First 4 IPs will be reserved in Azure and cannot use.
 	ipint += 4
 	startIP := make(net.IP, 4)
 	binary.BigEndian.PutUint32(startIP, ipint)

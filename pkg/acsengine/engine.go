@@ -878,6 +878,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetMasterCount": func() int {
 			masterProfile := cs.Properties.MasterProfile
+			if masterProfile == nil {
+				return 0
+			}
 			return masterProfile.Count
 		},
 		"GetMasterSecondaryIP": func() string {
@@ -885,6 +888,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			var ipint uint32
 
 			profile := cs.Properties.MasterProfile
+			if profile == nil {
+				return ""
+			}
 
 			ip := net.ParseIP(profile.FirstConsecutiveStaticIP)
 			ipv4 := ip.To4()
@@ -894,6 +900,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				log.Fatalf("Net IP To4() function returns nil")
 			}
 
+			// Make space for first few IPs.
 			ipint += uint32(profile.Count) + uint32(DefaultInternalLbStaticIPOffset) - 1
 			startIP := make(net.IP, 4)
 			binary.BigEndian.PutUint32(startIP, ipint)
@@ -901,6 +908,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			totalIPCount := profile.Count * profile.IPAddressCount
 			ipint = 0
 
+			// Generate All secondary IPs that master will use.
 			for count := totalIPCount; count > 0; count-- {
 				ipv4 = startIP.To4()
 				if ipv4 != nil {
