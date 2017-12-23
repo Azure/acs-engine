@@ -898,10 +898,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			startIP := make(net.IP, 4)
 			binary.BigEndian.PutUint32(startIP, ipint)
 
-			totalIpCount := profile.Count * profile.IPAddressCount
+			totalIPCount := profile.Count * profile.IPAddressCount
 			ipint = 0
 
-			for count := totalIpCount; count > 0; count-- {
+			for count := totalIPCount; count > 0; count-- {
 				ipv4 = startIP.To4()
 				if ipv4 != nil {
 					ipint = binary.BigEndian.Uint32(ipv4)
@@ -909,7 +909,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					log.Fatalf("Net IP To4() function returns nil for startIP")
 				}
 
-				ipint += 1
+				ipint++
 				newIP := make(net.IP, 4)
 				binary.BigEndian.PutUint32(newIP, ipint)
 
