@@ -338,6 +338,10 @@ function extractKubectl(){
 function ensureJournal(){
     systemctl daemon-reload
     systemctlEnableAndCheck systemd-journald.service
+    echo "Storage=persistent" >> /etc/systemd/journald.conf
+    echo "SystemMaxUse=1G" >> /etc/systemd/journald.conf
+    echo "RuntimeMaxUse=1G" >> /etc/systemd/journald.conf
+    echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
         systemctl restart systemd-journald.service
