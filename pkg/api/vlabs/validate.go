@@ -98,6 +98,17 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 							return fmt.Errorf("enableAggregatedAPIs requires the enableRbac feature as a prerequisite")
 						}
 					}
+
+					if o.KubernetesConfig.EnableEtcdEncryption {
+						if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot7 ||
+							o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
+							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
+							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
+							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
+							return fmt.Errorf("enableEtcdEncryption is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+								"1.7.0", o.OrchestratorVersion)
+						}
+					}
 				}
 			}
 

@@ -666,6 +666,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.UseInstanceMetadata = api.UseInstanceMetadata
 	vlabs.EnableRbac = api.EnableRbac
 	vlabs.EnableAggregatedAPIs = api.EnableAggregatedAPIs
+	vlabs.EnableEtcdEncryption = api.EnableEtcdEncryption
 	vlabs.GCHighThreshold = api.GCHighThreshold
 	vlabs.GCLowThreshold = api.GCLowThreshold
 	vlabs.EtcdVersion = api.EtcdVersion

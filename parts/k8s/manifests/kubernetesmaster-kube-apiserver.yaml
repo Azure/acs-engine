@@ -41,6 +41,7 @@ spec:
         - "--storage-backend=<etcdApiVersion>"
         - "--v=4"
         - "<kubernetesEnableRbac>"
+        - "<kubernetesEnableEtcdEncryption>"
         - "--requestheader-allowed-names="
         - "--requestheader-extra-headers-prefix=X-Remote-Extra-"
         - "--requestheader-group-headers=X-Remote-Group"
