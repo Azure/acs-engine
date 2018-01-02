@@ -102,12 +102,12 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	// v20170930 - all orchestrators
 	list, e := GetOrchestratorVersionProfileListV20170930("", "")
 	Expect(e).To(BeNil())
-	Expect(len(list.Properties.Orchestrators)).To(Equal(25))
+	Expect(len(list.Properties.Orchestrators)).To(Equal(26))
 
 	// v20170930 - kubernetes only
 	list, e = GetOrchestratorVersionProfileListV20170930(common.Kubernetes, "")
 	Expect(e).To(BeNil())
-	Expect(len(list.Properties.Orchestrators)).To(Equal(20))
+	Expect(len(list.Properties.Orchestrators)).To(Equal(21))
 }
 
 func TestKubernetesInfo(t *testing.T) {
