@@ -35,6 +35,8 @@ spec:
         - "--proxy-client-cert-file=/etc/kubernetes/certs/proxy.crt"
         - "--proxy-client-key-file=/etc/kubernetes/certs/proxy.key"
         - "--service-account-key-file=/etc/kubernetes/certs/apiserver.key"
+        - "--kubelet-client-certificate=/etc/kubernetes/certs/client.crt"
+        - "--kubelet-client-key=/etc/kubernetes/certs/client.key"
         - "--oidc-client-id="
         - "--oidc-issuer-url="
         - "--oidc-username-claim=oid"
