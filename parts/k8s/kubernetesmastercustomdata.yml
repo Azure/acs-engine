@@ -86,7 +86,7 @@ write_files:
       name: localclustercontext
     current-context: localclustercontext
 
-{{if .OrchestratorProfile.KubernetesConfig.EnableEtcdEncryption}}
+{{if EnableDataEncryptionAtRest}}
 - path: "/etc/kubernetes/encryption-config.yaml"
   permissions: "0600"
   owner: "root"
@@ -252,7 +252,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{end}}
 
-{{if .OrchestratorProfile.KubernetesConfig.EnableEtcdEncryption }}
+{{if EnableDataEncryptionAtRest }}
     ETCD_ENCRYPTION_SECRET="$(head -c 32 /dev/urandom | base64)"
     sed -i "s|<etcdEncryptionSecret>|$ETCD_ENCRYPTION_SECRET|g" "/etc/kubernetes/encryption-config.yaml"
     sed -i "s|<kubernetesEnableEtcdEncryption>|--experimental-encryption-provider-config=/etc/kubernetes/encryption-config.yaml|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
