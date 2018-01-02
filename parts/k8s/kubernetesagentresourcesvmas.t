@@ -10,11 +10,9 @@
 {{else}}
       "[variables('vnetID')]"
 {{end}}
-{{if IsAzureCNI}}
   {{range $masterOffset := loop 1 GetMasterCount}}
           ,"[concat(variables('masterNICNamePrefix'), sub({{$masterOffset}}, 1))]"
   {{end}}
-{{end}}
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), 'nic-', copyIndex(variables('{{.Name}}Offset')))]",
