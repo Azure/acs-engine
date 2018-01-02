@@ -13,9 +13,9 @@ func setKubeletConfig(cs *api.ContainerService) {
 	staticLinuxKubeletConfig := map[string]string{
 		"--address":                         "0.0.0.0",
 		"--allow-privileged":                "true",
-		"--anonymous-auth":		     "false",
-		"--authorization-mode":		     "Webhook",
-		"--client-ca-file":		     "/etc/kubernetes/certs/ca.crt",
+		"--anonymous-auth":                  "false",
+		"--authorization-mode":              "Webhook",
+		"--client-ca-file":                  "/etc/kubernetes/certs/ca.crt",
 		"--pod-manifest-path":               "/etc/kubernetes/manifests",
 		"--cloud-config":                    "/etc/kubernetes/azure.json",
 		"--cluster-domain":                  "cluster.local",
