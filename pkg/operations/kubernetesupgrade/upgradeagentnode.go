@@ -87,11 +87,30 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 		kan.ParametersMap,
 		nil)
 
+	//if err == nil {
+	//	return nil
+	//}
+	// Retrieve deployment error
+	//	errors := []string{err.Error()}
+
+	var top int32 = 1
+	res, err := kan.Client.ListDeploymentOperations(kan.ResourceGroup, deploymentName, &top)
 	if err != nil {
-		return err
+		kan.logger.Warnf("unable to list deployment operations: %v", err)
+	} else {
+		fmt.Printf("Response: %v\n", res.Response)
 	}
 
-	return nil
+	for res.NextLink != nil {
+		res, err = kan.Client.ListDeploymentOperationsNextResults(res)
+		if err != nil {
+			kan.logger.Warnf("unable to list next deployment operations: %v", err)
+			break
+		}
+		fmt.Printf("Response: %v\n", res.Response)
+		//	results = append(results, res)
+	}
+	return err
 }
 
 // Validate will verify that agent node has been upgraded as expected.
