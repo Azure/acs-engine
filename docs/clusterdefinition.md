@@ -180,6 +180,8 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 |"--kubeconfig"|"/var/lib/kubelet/kubeconfig"|
 |"--register-node" (master nodes only)|"true"|
 |"--register-with-taints" (master nodes only)|"node-role.kubernetes.io/master=true:NoSchedule"|
+|"--read-only-port"|"0"|
+|"--keep-terminated-pod-volumes"|"false"|
 |"--feature-gates" (agent nodes only)|"Accelerators=true"|
 
 #### controllerManagerConfig
