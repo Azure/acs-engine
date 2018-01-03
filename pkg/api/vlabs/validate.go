@@ -214,6 +214,22 @@ func (o *OrchestratorVersionProfile) Validate() error {
 	return o.OrchestratorProfile.Validate(false)
 }
 
+// ValidateForUpgrade validates upgrade input data
+func (o *OrchestratorProfile) ValidateForUpgrade() error {
+	switch o.OrchestratorType {
+	case DCOS, SwarmMode, Swarm:
+		return fmt.Errorf("Upgrade is not supported for orchestrator %s", o.OrchestratorType)
+	case Kubernetes:
+		switch o.OrchestratorVersion {
+		case common.KubernetesVersion1Dot6Dot13:
+		case common.KubernetesVersion1Dot7Dot12:
+		default:
+			return fmt.Errorf("Upgrade to Kubernetes version %s is not supported", o.OrchestratorVersion)
+		}
+	}
+	return nil
+}
+
 func validateKeyVaultSecrets(secrets []KeyVaultSecrets, requireCertificateStore bool) error {
 	for _, s := range secrets {
 		if len(s.VaultCertificates) == 0 {
@@ -459,6 +475,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot7Dot7:  true,
 		common.KubernetesVersion1Dot7Dot9:  true,
 		common.KubernetesVersion1Dot7Dot10: true,
+		common.KubernetesVersion1Dot7Dot12: true,
 		common.KubernetesVersion1Dot6Dot6:  true,
 		common.KubernetesVersion1Dot6Dot9:  true,
 		common.KubernetesVersion1Dot6Dot11: true,
