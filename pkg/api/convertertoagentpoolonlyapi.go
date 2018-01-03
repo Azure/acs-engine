@@ -189,14 +189,14 @@ func convertVLabsAgentPoolOnlyWindowsProfile(vlabs *vlabs.WindowsProfile, api *W
 func convertV20170831AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
 	return &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
-		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
+		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion, common.ACSContext),
 	}
 }
 
 func convertVLabsAgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
 	return &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
-		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
+		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion, common.ACSContext),
 	}
 }
 

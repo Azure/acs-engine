@@ -127,7 +127,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 						OrchestratorType:    Kubernetes,
 						OrchestratorVersion: ver,
 					},
-					Default:  ver == common.KubernetesDefaultVersion,
+					Default:  ver == common.KubernetesDefaultVersions[common.ACSContext],
 					Upgrades: upgrades,
 				})
 		}
@@ -154,7 +154,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 					OrchestratorType:    Kubernetes,
 					OrchestratorVersion: csOrch.OrchestratorVersion,
 				},
-				Default:  csOrch.OrchestratorVersion == common.KubernetesDefaultVersion,
+				Default:  csOrch.OrchestratorVersion == common.KubernetesDefaultVersions[common.ACSContext],
 				Upgrades: upgrades,
 			})
 	}
@@ -212,7 +212,7 @@ func dcosInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile, error
 	orchs := []*OrchestratorVersionProfile{}
 	if csOrch.OrchestratorVersion == "" {
 		// get info for all supported versions
-		for _, ver := range common.AllDCOSSupportedVersions {
+		for _, ver := range common.GetAllSupportedDCOSVersions() {
 			orchs = append(orchs,
 				&OrchestratorVersionProfile{
 					OrchestratorProfile: OrchestratorProfile{

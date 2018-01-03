@@ -55,12 +55,12 @@ func HandleValidationErrors(e validator.ValidationErrors) error {
 }
 
 // GetSupportedVersions get supported version list for a certain orchestrator
-func GetSupportedVersions(orchType string) (versions []string, defaultVersion string) {
+func GetSupportedVersions(orchType string, c ClusterContext) (versions []string, defaultVersion string) {
 	switch orchType {
 	case Kubernetes:
-		return GetAllSupportedKubernetesVersions(), string(KubernetesDefaultVersion)
+		return GetAllSupportedKubernetesVersions(), KubernetesDefaultVersions[c]
 	case DCOS:
-		return AllDCOSSupportedVersions, DCOSDefaultVersion
+		return GetAllSupportedDCOSVersions(), DCOSDefaultVersion
 	default:
 		return nil, ""
 	}
@@ -98,7 +98,7 @@ func GetValidPatchVersion(orchType, orchVer string) string {
 
 // RationalizeReleaseAndVersion return a version when it can be rationalized from the input, otherwise ""
 func RationalizeReleaseAndVersion(orchType, orchRel, orchVer string) (version string) {
-	supportedVersions, defaultVersion := GetSupportedVersions(orchType)
+	supportedVersions, defaultVersion := GetSupportedVersions(orchType, ACSContext)
 	if supportedVersions == nil {
 		return ""
 	}
