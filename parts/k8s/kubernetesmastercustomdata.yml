@@ -86,6 +86,26 @@ write_files:
       name: localclustercontext
     current-context: localclustercontext
 
+{{if EnableDataEncryptionAtRest}}
+- path: "/etc/kubernetes/encryption-config.yaml"
+  permissions: "0600"
+  owner: "root"
+  content: |
+    apiVersion: v1
+    kind: Config
+    kind: EncryptionConfig
+    apiVersion: v1
+    resources:
+      - resources:
+          - secrets
+        providers:
+          - aescbc:
+              keys:
+                - name: key1
+                  secret: <etcdEncryptionSecret>
+          - identity: {}
+{{end}}
+
 MASTER_MANIFESTS_CONFIG_PLACEHOLDER
 
 MASTER_ADDONS_CONFIG_PLACEHOLDER
@@ -230,6 +250,14 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesEnableRbac>|--authorization-mode=RBAC|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{else}}
     sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+{{end}}
+
+{{if EnableDataEncryptionAtRest }}
+    ETCD_ENCRYPTION_SECRET="$(head -c 32 /dev/urandom | base64)"
+    sed -i "s|<etcdEncryptionSecret>|$ETCD_ENCRYPTION_SECRET|g" "/etc/kubernetes/encryption-config.yaml"
+    sed -i "s|<kubernetesEnableEtcdEncryption>|--experimental-encryption-provider-config=/etc/kubernetes/encryption-config.yaml|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+{{else}}
+    sed -i "/<kubernetesEnableEtcdEncryption>/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{end}}
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}

@@ -242,6 +242,7 @@ type KubernetesConfig struct {
 	GCLowThreshold               int               `json:"gclowthreshold,omitempty"`
 	EtcdVersion                  string            `json:"etcdVersion,omitempty"`
 	EtcdDiskSizeGB               string            `json:"etcdDiskSizeGB,omitempty"`
+	EnableDataEncryptionAtRest   *bool             `json:"enableDataEncryptionAtRest,omitempty"`
 	Addons                       []KubernetesAddon `json:"addons,omitempty"`
 	KubeletConfig                map[string]string `json:"kubeletConfig,omitempty"`
 	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
