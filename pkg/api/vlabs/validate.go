@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/satori/uuid"
 	validator "gopkg.in/go-playground/validator.v9"
 )
@@ -96,6 +97,17 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					if o.KubernetesConfig.EnableRbac != nil {
 						if !*o.KubernetesConfig.EnableRbac {
 							return fmt.Errorf("enableAggregatedAPIs requires the enableRbac feature as a prerequisite")
+						}
+					}
+
+					if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
+						if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot7 ||
+							o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
+							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
+							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
+							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
+							return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+								"1.7.0", o.OrchestratorVersion)
 						}
 					}
 				}
