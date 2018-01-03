@@ -24,7 +24,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--enforce-node-allocatable":        "",
 		"--kubeconfig":                      "/var/lib/kubelet/kubeconfig",
 		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
-		"--protect-kernel-defaults":         "true",
+		"--read-only-port":                  "0",
 		"--keep-terminated-pod-volumes":     "false",
 	}
 
