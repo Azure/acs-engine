@@ -17,7 +17,6 @@ import (
 const (
 	interval = time.Second * 1
 	retry    = time.Second * 5
-	timeout  = time.Minute * 10
 )
 
 // Compiler to verify QueueMessageProcessor implements OperationsProcessor
@@ -33,6 +32,7 @@ type UpgradeAgentNode struct {
 	ResourceGroup           string
 	Client                  armhelpers.ACSEngineClient
 	kubeConfig              string
+	timeout                 time.Duration
 }
 
 // DeleteNode takes state/resources of the master/agent node from ListNodeResources
@@ -108,18 +108,18 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 		masterURL = kan.UpgradeContainerService.Properties.MasterProfile.FQDN
 	}
 
-	client, err := kan.Client.GetKubernetesClient(masterURL, kan.kubeConfig, interval, timeout)
+	client, err := kan.Client.GetKubernetesClient(masterURL, kan.kubeConfig, interval, kan.timeout)
 	if err != nil {
 		return err
 	}
 
 	retryTimer := time.NewTimer(time.Millisecond)
-	timeoutTimer := time.NewTimer(timeout)
+	timeoutTimer := time.NewTimer(kan.timeout)
 	for {
 		select {
 		case <-timeoutTimer.C:
 			retryTimer.Stop()
-			err := fmt.Errorf("Node was not ready within %v", timeout)
+			err := fmt.Errorf("Node was not ready within %v", kan.timeout)
 			kan.logger.Errorf(err.Error())
 			return err
 		case <-retryTimer.C:

@@ -2,6 +2,7 @@ package kubernetesupgrade
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
@@ -15,13 +16,15 @@ type Upgrader struct {
 	Translator *i18n.Translator
 	logger     *logrus.Entry
 	ClusterTopology
-	Client     armhelpers.ACSEngineClient
-	kubeConfig string
+	Client      armhelpers.ACSEngineClient
+	kubeConfig  string
+	stepTimeout *time.Duration
 }
 
 type vmStatus int
 
 const (
+	defaultTimeout            = time.Minute * 10
 	vmStatusUpgraded vmStatus = iota
 	vmStatusNotUpgraded
 	vmStatusIgnored
@@ -90,6 +93,11 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	upgradeMasterNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 	upgradeMasterNode.Client = ku.Client
 	upgradeMasterNode.kubeConfig = ku.kubeConfig
+	if ku.stepTimeout == nil {
+		upgradeMasterNode.timeout = defaultTimeout
+	} else {
+		upgradeMasterNode.timeout = *ku.stepTimeout
+	}
 
 	expectedMasterCount := ku.ClusterTopology.DataModel.Properties.MasterProfile.Count
 	mastersUpgradedCount := len(*ku.ClusterTopology.UpgradedMasterVMs)
@@ -232,6 +240,11 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		upgradeAgentNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 		upgradeAgentNode.Client = ku.Client
 		upgradeAgentNode.kubeConfig = ku.kubeConfig
+		if ku.stepTimeout == nil {
+			upgradeAgentNode.timeout = defaultTimeout
+		} else {
+			upgradeAgentNode.timeout = *ku.stepTimeout
+		}
 
 		agentVMs := make(map[int]*vmInfo)
 		// Go over upgraded VMs and verify provisioning state
