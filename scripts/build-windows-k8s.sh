@@ -72,6 +72,15 @@ k8s_16_cherry_pick() {
 }
 
 k8s_17_cherry_pick() {
+	# In 1.7.12, the following commits are cherry-picked in upstream and has conflict
+	# with 137f4cb16e. So removing them.
+	git revert --no-edit 593653c384 || true
+	git revert --no-edit 7305738dd1 || true
+	git revert --no-edit e01bafcf80 || true
+	git revert --no-edit afd79db7a6 || true
+	git revert --no-edit 3a4abca2f7 || true
+	git revert --no-edit 6a2e2f47d3 || true
+
 	# In 1.7.10, the following commit is not needed and has conflict with 137f4cb16e
 	# due to the out-of-order back porting into Azure 1.7. So removing it.
 	# cee32e92f7 fix#50150: azure disk mount failure on coreos
