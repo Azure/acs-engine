@@ -27,6 +27,7 @@ type UpgradeMasterNode struct {
 	ResourceGroup           string
 	Client                  armhelpers.ACSEngineClient
 	kubeConfig              string
+	timeout                 time.Duration
 }
 
 // DeleteNode takes state/resources of the master/agent node from ListNodeResources
@@ -88,7 +89,7 @@ func (kmn *UpgradeMasterNode) Validate(vmName *string) error {
 
 	masterURL := kmn.UpgradeContainerService.Properties.MasterProfile.FQDN
 
-	client, err := kmn.Client.GetKubernetesClient(masterURL, kmn.kubeConfig, interval, timeout)
+	client, err := kmn.Client.GetKubernetesClient(masterURL, kmn.kubeConfig, interval, kmn.timeout)
 	if err != nil {
 		return err
 	}
@@ -114,9 +115,9 @@ func (kmn *UpgradeMasterNode) Validate(vmName *string) error {
 		select {
 		case <-ch:
 			return nil
-		case <-time.After(timeout):
-			kmn.logger.Errorf("Node was not ready within %v", timeout)
-			return fmt.Errorf("Node was not ready within %v", timeout)
+		case <-time.After(kmn.timeout):
+			kmn.logger.Errorf("Node was not ready within %v", kmn.timeout)
+			return fmt.Errorf("Node was not ready within %v", kmn.timeout)
 		}
 	}
 }
