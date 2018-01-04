@@ -62,11 +62,20 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			version, err := node.Version()
 			Expect(err).NotTo(HaveOccurred())
 
-			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion != "" {
-				Expect(version).To(MatchRegexp("v" + eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion))
+			var expectedVersion string
+			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease != "" ||
+				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion != "" {
+				expectedVersion = common.RationalizeReleaseAndVersion(
+					common.Kubernetes,
+					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
+					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion)
 			} else {
-				Expect(version).To(Equal("v" + common.KubernetesDefaultVersion))
+				expectedVersion = common.RationalizeReleaseAndVersion(
+					common.Kubernetes,
+					eng.Config.OrchestratorRelease,
+					eng.Config.OrchestratorVersion)
 			}
+			Expect(version).To(Equal("v" + expectedVersion))
 		})
 
 		It("should have kube-dns running", func() {
