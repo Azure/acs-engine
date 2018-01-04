@@ -397,3 +397,13 @@ func (mc *MockACSEngineClient) ListProviders() (resources.ProviderListResult, er
 
 	return resources.ProviderListResult{}, nil
 }
+
+// ListDeploymentOperations gets all deployments operations for a deployment.
+func (mc *MockACSEngineClient) ListDeploymentOperations(resourceGroupName string, deploymentName string, top *int32) (result resources.DeploymentOperationsListResult, err error) {
+	return resources.DeploymentOperationsListResult{}, nil
+}
+
+// ListDeploymentOperationsNextResults retrieves the next set of results, if any.
+func (mc *MockACSEngineClient) ListDeploymentOperationsNextResults(lastResults resources.DeploymentOperationsListResult) (result resources.DeploymentOperationsListResult, err error) {
+	return resources.DeploymentOperationsListResult{}, nil
+}
