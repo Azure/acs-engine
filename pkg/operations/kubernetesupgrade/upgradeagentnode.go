@@ -87,30 +87,19 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 		kan.ParametersMap,
 		nil)
 
-	//if err == nil {
-	//	return nil
-	//}
-	// Retrieve deployment error
-	//	errors := []string{err.Error()}
-
-	var top int32 = 1
-	res, err := kan.Client.ListDeploymentOperations(kan.ResourceGroup, deploymentName, &top)
-	if err != nil {
-		kan.logger.Warnf("unable to list deployment operations: %v", err)
-	} else {
-		fmt.Printf("Response: %v\n", res.Response)
+	if err == nil {
+		return nil
 	}
 
-	for res.NextLink != nil {
-		res, err = kan.Client.ListDeploymentOperationsNextResults(res)
-		if err != nil {
-			kan.logger.Warnf("unable to list next deployment operations: %v", err)
-			break
-		}
-		fmt.Printf("Response: %v\n", res.Response)
-		//	results = append(results, res)
+	kan.logger.Errorf("Deployment %s failed with error %v", deploymentName, err)
+	// Get deployment error details
+	errResp, e := armhelpers.GetDeploymentError(kan.Client, kan.logger, kan.ResourceGroup, deploymentName)
+	if e != nil {
+		kan.logger.Errorf("Failed to get error details for deployment %s: %v", deploymentName, e)
+		// return original deployment error
+		return err
 	}
-	return err
+	return errResp
 }
 
 // Validate will verify that agent node has been upgraded as expected.
@@ -119,7 +108,7 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 		kan.logger.Warningf("VM name was empty. Skipping node condition check")
 		return nil
 	}
-
+	kan.logger.Infof("Validating %s", *vmName)
 	var masterURL string
 	if kan.UpgradeContainerService.Properties.HostedMasterProfile != nil {
 		masterURL = kan.UpgradeContainerService.Properties.HostedMasterProfile.FQDN
