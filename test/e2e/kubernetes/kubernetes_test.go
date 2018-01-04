@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -144,7 +145,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			s, err := service.Get("kubernetes-dashboard", "kube-system")
 			Expect(err).NotTo(HaveOccurred())
 			dashboardPort := 80
-			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease == "1.9" {
+			version, err := node.Version()
+			Expect(err).NotTo(HaveOccurred())
+
+			re := regexp.MustCompile("v1.9")
+			if re.FindString(version) != "" {
 				dashboardPort = 443
 			}
 			port := s.GetNodePort(dashboardPort)
