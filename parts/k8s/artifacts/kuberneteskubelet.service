@@ -30,7 +30,7 @@ ExecStart=/usr/bin/docker run \
   --volume=/etc/kubernetes/:/etc/kubernetes:ro \
   --volume=/srv/kubernetes/:/srv/kubernetes:ro $DOCKER_OPTS \
   --volume=/var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro \
-  --volume=/usr/libexec/kubernetes/kubelet-plugins:/usr/libexec/kubernetes/kubelet-plugins \
+  --volume=/usr/libexec/kubernetes/kubelet-plugins:/usr/libexec/kubernetes/kubelet-plugins:rw \
     ${KUBELET_IMAGE} \
       /hyperkube kubelet \
         --require-kubeconfig \

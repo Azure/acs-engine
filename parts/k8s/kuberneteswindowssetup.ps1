@@ -70,6 +70,8 @@ $global:NetworkMode = "L2Bridge"
 $global:CNIConfig = [Io.path]::Combine($global:CNIPath, "config", "`$global:NetworkMode.conf")
 $global:HNSModule = [Io.path]::Combine("$global:KubeDir", "hns.psm1")
 
+$global:VolumePluginDir = [Io.path]::Combine("$global:KubeDir", "volumeplugins")
+
 filter Timestamp {"$(Get-Date -Format o): $_"}
 
 function
@@ -158,6 +160,7 @@ New-InfraContainer()
 function
 Write-KubernetesStartFiles($podCIDR)
 {
+    mkdir $global:VolumePluginDir
     $KubeletArgList = @("--hostname-override=`$global:AzureHostname","--pod-infra-container-image=kubletwin/pause","--resolv-conf=""""""""","--kubeconfig=c:\k\config","--cloud-provider=azure","--cloud-config=c:\k\azure.json")
     $KubeletCommandLine = @"
 c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-container-image=kubletwin/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --cluster-dns=`$global:KubeDnsServiceIp --cluster-domain=cluster.local  --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --v=2 --azure-container-registry-config=c:\k\azure.json --runtime-request-timeout=10m  --cloud-provider=azure --cloud-config=c:\k\azure.json
@@ -175,6 +178,7 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
 
     # more time is needed to pull windows server images
     $KubeletCommandLine += " --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
+    $KubeletCommandLine += " --volume-plugin-dir=`$global:VolumePluginDir"
 
     $KubeletArgListStr = "`"" + ($KubeletArgList -join "`",`"") + "`""
 
@@ -192,6 +196,7 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
 `$global:NetworkMode = "$global:NetworkMode"
 `$global:CNIConfig = "$global:CNIConfig"
 `$global:HNSModule = "$global:HNSModule"
+`$global:VolumePluginDir = "$global:VolumePluginDir"
 
 function
 Get-DefaultGateway(`$CIDR)
