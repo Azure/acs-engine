@@ -62,10 +62,6 @@
       "category": "version"
     },
     {
-      "cluster_definition": "kubernetes-releases/kubernetes1.9.json",
-      "category": "version"
-    },
-    {
       "cluster_definition": "networkpolicy/kubernetes-calico.json",
       "category": "network"
     },

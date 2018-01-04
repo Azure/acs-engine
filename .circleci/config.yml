@@ -325,12 +325,6 @@ workflows:
           filters:
             branches:
               ignore: master
-      - k8s-1.9-release-e2e:
-          requires:
-            - pr-e2e-hold
-          filters:
-            branches:
-              ignore: master
       - swarm-e2e:
           requires:
             - pr-e2e-hold
@@ -386,12 +380,6 @@ workflows:
             branches:
               only: master
       - k8s-hybrid-1.8-release-e2e:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
-      - k8s-1.9-release-e2e:
           requires:
             - test
           filters:
