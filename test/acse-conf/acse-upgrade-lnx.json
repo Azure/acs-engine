@@ -15,6 +15,10 @@
     {
       "cluster_definition": "k8s-upgrade/v1.7.9.json",
       "location": "centralus"
+    },
+    {
+      "cluster_definition": "k8s-upgrade/v1.8.4.json",
+      "location": "eastus2"
     }
   ]
 }
