@@ -3,8 +3,8 @@ package kubernetesupgrade
 import (
 	"fmt"
 	"strconv"
-
 	"strings"
+	"time"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
@@ -43,7 +43,8 @@ type UpgradeCluster struct {
 	Translator *i18n.Translator
 	Logger     *logrus.Entry
 	ClusterTopology
-	Client armhelpers.ACSEngineClient
+	Client      armhelpers.ACSEngineClient
+	StepTimeout *time.Duration
 }
 
 // MasterVMNamePrefix is the prefix for all master VM names for Kubernetes clusters
@@ -80,16 +81,19 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 	case strings.HasPrefix(upgradeVersion, "1.6"):
 		upgrader16 := &Kubernetes16upgrader{}
 		upgrader16.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig)
+		upgrader16.stepTimeout = uc.StepTimeout
 		upgrader = upgrader16
 
 	case strings.HasPrefix(upgradeVersion, "1.7"):
 		upgrader17 := &Kubernetes17upgrader{}
 		upgrader17.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig)
+		upgrader17.stepTimeout = uc.StepTimeout
 		upgrader = upgrader17
 
 	case strings.HasPrefix(upgradeVersion, "1.8"):
 		upgrader18 := &Kubernetes18upgrader{}
 		upgrader18.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig)
+		upgrader18.stepTimeout = uc.StepTimeout
 		upgrader = upgrader18
 
 	default:
