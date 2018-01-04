@@ -86,6 +86,11 @@ func kubernetesManifestSettingsInit(profile *api.Properties) []kubernetesFeature
 			profile.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *profile.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager,
 		},
 		{
+			"kubernetesmaster-pod-security-policy.yaml",
+			"pod-security-policy.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy != nil && *profile.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy,
+		},
+		{
 			"kubernetesmaster-kube-apiserver.yaml",
 			"kube-apiserver.yaml",
 			true,

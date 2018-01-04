@@ -99,6 +99,11 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		}
 	}
 
+	// Pod Security Policy configuration
+	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) {
+		defaultAPIServerConfig["--admission-control"] = "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages,SecurityContextDeny,PodSecurityPolicy"
+	}
+
 	// If no user-configurable apiserver config values exists, use the defaults
 	if o.KubernetesConfig.APIServerConfig == nil {
 		o.KubernetesConfig.APIServerConfig = defaultAPIServerConfig

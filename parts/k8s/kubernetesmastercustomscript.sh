@@ -607,6 +607,16 @@ function ensureEtcdDataDir() {
    exit 4
 }
 
+function ensurePodSecurityPolicy(){
+    if $REBOOTREQUIRED; then
+        return
+    fi
+    POD_SECURITY_POLICY_FILE="/etc/kubernetes/manifests/pod-security-policy.yaml"
+    if [ -f $POD_SECURITY_POLICY_FILE ]; then
+        kubectl create -f $POD_SECURITY_POLICY_FILE
+    fi
+}
+
 function writeKubeConfig() {
     KUBECONFIGDIR=/home/$ADMINUSER/.kube
     KUBECONFIGFILE=$KUBECONFIGDIR/config
@@ -695,6 +705,7 @@ if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     ensureEtcdDataDir
     ensureEtcd
     ensureApiserver
+    ensurePodSecurityPolicy
 fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then

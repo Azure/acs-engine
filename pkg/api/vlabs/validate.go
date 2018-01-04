@@ -111,6 +111,13 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 						}
 					}
 				}
+				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) {
+					if o.KubernetesConfig.EnableRbac != nil {
+						if !*o.KubernetesConfig.EnableRbac {
+							return fmt.Errorf("enablePodSecurityPolicy requires the enableRbac feature as a prerequisite")
+						}
+					}
+				}
 			}
 
 		default:
