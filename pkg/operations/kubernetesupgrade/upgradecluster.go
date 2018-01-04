@@ -78,23 +78,25 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 	upgradeVersion := uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion
 	uc.Logger.Infof("Upgrading to Kubernetes version %s\n", upgradeVersion)
 	switch {
-	case strings.HasPrefix(upgradeVersion, "1.6"):
+	case strings.HasPrefix(upgradeVersion, "1.6."):
 		upgrader16 := &Kubernetes16upgrader{}
-		upgrader16.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig)
-		upgrader16.stepTimeout = uc.StepTimeout
+		upgrader16.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
 		upgrader = upgrader16
 
-	case strings.HasPrefix(upgradeVersion, "1.7"):
+	case strings.HasPrefix(upgradeVersion, "1.7."):
 		upgrader17 := &Kubernetes17upgrader{}
-		upgrader17.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig)
-		upgrader17.stepTimeout = uc.StepTimeout
+		upgrader17.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
 		upgrader = upgrader17
 
-	case strings.HasPrefix(upgradeVersion, "1.8"):
+	case strings.HasPrefix(upgradeVersion, "1.8."):
 		upgrader18 := &Kubernetes18upgrader{}
-		upgrader18.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig)
-		upgrader18.stepTimeout = uc.StepTimeout
+		upgrader18.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
 		upgrader = upgrader18
+
+	case strings.HasPrefix(upgradeVersion, "1.9."):
+		upgrader19 := &Upgrader{}
+		upgrader19.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
+		upgrader = upgrader19
 
 	default:
 		return uc.Translator.Errorf("Upgrade to Kubernetes version %s is not supported", upgradeVersion)
