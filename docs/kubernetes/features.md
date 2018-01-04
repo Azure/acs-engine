@@ -166,7 +166,7 @@ Per default Calico still allows all communication within the cluster. Using Kube
 
 ## Custom VNET
 
-ACS Engine supports deploying into an existing VNET. Operators must specify the ARM path/id of Subnets for the `masterProfile` and  any `agentPoolProfiles`, as well as the first IP address to use for static IP allocation in `firstConsecutiveStaticIP`. Please note that in any azure subnet, the first four and the last ip address is reserved and can not be used. Additionally, to prevent source address NAT'ing within the VNET, we assign to the `vnetCidr` property in `masterProfile` the CIDR block that represents the usable address space in the existing VNET.
+ACS Engine supports deploying into an existing VNET. Operators must specify the ARM path/id of Subnets for the `masterProfile` and  any `agentPoolProfiles`, as well as the first IP address to use for static IP allocation in `firstConsecutiveStaticIP`. Please note that in any azure subnet, the first four and the last ip address is reserved and can not be used. Additionally, each POD now gets the IP address from the Subnet. As a result, for the master nodes, enough IP addresses (equal to `ipAddressCount`) should be available beyond `firstConsecutiveStaticIP`. By default, the `ipAddressCount` has a value of 30, and can be changed if desired. Furthermore, to prevent source address NAT'ing within the VNET, we assign to the `vnetCidr` property in `masterProfile` the CIDR block that represents the usable address space in the existing VNET.
 
 See below profiles as an example:
 
