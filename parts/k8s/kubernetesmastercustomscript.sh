@@ -242,7 +242,7 @@ function configAzureNetworkPolicy() {
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
 
-    # Copy config file
+    # Copy config file. After azure cni is released, we should change the 10-azure.conf to 10-azure.conflist
     mv $CNI_BIN_DIR/10-azure.conf $CNI_CONFIG_DIR/
     chmod 600 $CNI_CONFIG_DIR/10-azure.conf
 
