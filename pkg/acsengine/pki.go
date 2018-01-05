@@ -94,7 +94,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 
 	go func() {
 		var err error
-		organization := make([]string, 1)
+		var organization []string
 		ip := net.ParseIP("127.0.0.1").To4()
 		peerIPs := append(extraIPs, ip)
 		etcdServerCertificate, etcdServerPrivateKey, err = createCertificate("etcdserver", caCertificate, caPrivateKey, true, true, nil, peerIPs, organization)
@@ -103,7 +103,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 
 	go func() {
 		var err error
-		organization := make([]string, 1)
+		var organization []string
 		ip := net.ParseIP("127.0.0.1").To4()
 		peerIPs := append(extraIPs, ip)
 		etcdClientCertificate, etcdClientPrivateKey, err = createCertificate("etcdclient", caCertificate, caPrivateKey, true, false, nil, peerIPs, organization)
@@ -114,7 +114,7 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 	for i := 0; i < masterCount; i++ {
 		go func(i int) {
 			var err error
-			organization := make([]string, 1)
+			var organization []string
 			ip := net.ParseIP("127.0.0.1").To4()
 			peerIPs := append(extraIPs, ip)
 			etcdPeerCertificate := new(x509.Certificate)
