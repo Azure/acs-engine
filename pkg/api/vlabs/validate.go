@@ -142,6 +142,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 	if o.OrchestratorType != DCOS && o.DcosConfig != nil && (*o.DcosConfig != DcosConfig{}) {
 		return fmt.Errorf("DcosConfig can be specified only when OrchestratorType is DCOS")
 	}
+
 	return nil
 }
 
@@ -450,6 +451,12 @@ func (a *Properties) Validate(isUpdate bool) error {
 			if !keyvaultIDRegex.MatchString(extension.ExtensionParametersKeyVaultRef.VaultID) {
 				return fmt.Errorf("Extension %s's keyvault secret reference is of incorrect format", extension.Name)
 			}
+		}
+	}
+
+	if a.OrchestratorProfile.OrchestratorType != DCOS && a.WindowsProfile != nil {
+		if a.WindowsProfile.WindowsImageSourceURL != "" {
+			return fmt.Errorf("Windows Custom Images are only supported if the Orchestrator Type is DCOS")
 		}
 	}
 

@@ -125,10 +125,11 @@ type PublicKey struct {
 
 // WindowsProfile represents the windows parameters passed to the cluster
 type WindowsProfile struct {
-	AdminUsername string            `json:"adminUsername,omitempty"`
-	AdminPassword string            `json:"adminPassword,omitempty"`
-	ImageVersion  string            `json:"imageVersion,omitempty"`
-	Secrets       []KeyVaultSecrets `json:"secrets,omitempty"`
+	AdminUsername         string            `json:"adminUsername,omitempty"`
+	AdminPassword         string            `json:"adminPassword,omitempty"`
+	ImageVersion          string            `json:"imageVersion,omitempty"`
+	WindowsImageSourceURL string            `json:"WindowsImageSourceUrl"`
+	Secrets               []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.

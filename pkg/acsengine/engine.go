@@ -699,6 +699,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		if properties.WindowsProfile.ImageVersion != "" {
 			addValue(parametersMap, "agentWindowsVersion", properties.WindowsProfile.ImageVersion)
 		}
+		if properties.WindowsProfile.WindowsImageSourceURL != "" {
+			addValue(parametersMap, "agentWindowsSourceUrl", properties.WindowsProfile.WindowsImageSourceURL)
+		}
 		if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 			k8sVersion := properties.OrchestratorProfile.OrchestratorVersion
 			addValue(parametersMap, "kubeBinariesSASURL", cloudSpecConfig.KubernetesSpecConfig.KubeBinariesSASURLBase+KubeConfigs[k8sVersion]["windowszip"])
@@ -1196,6 +1199,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"HasWindowsSecrets": func() bool {
 			return cs.Properties.WindowsProfile.HasSecrets()
+		},
+		"HasWindowsCustomImage": func() bool {
+			return cs.Properties.WindowsProfile.HasCustomImage()
 		},
 		"GetConfigurationScriptRootURL": func() string {
 			if cs.Properties.LinuxProfile.ScriptRootURL == "" {
