@@ -195,7 +195,7 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		Client:      uc.client,
 		StepTimeout: uc.timeout,
 	}
-	log.Fatalf("%v", upgradeCluster.StepTimeout)
+
 	kubeConfig, err := acsengine.GenerateKubeConfig(uc.containerService.Properties, uc.location)
 	if err != nil {
 		log.Fatalf("failed to generate kube config") // TODO: cleanup
