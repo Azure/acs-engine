@@ -175,10 +175,7 @@ func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, durati
 			case <-ctx.Done():
 				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pods (%s) to become ready in namespace (%s), got %d of %d required successful pods ready results", duration.String(), podPrefix, namespace, successCount, successesNeeded)
 			default:
-				ready, err := AreAllPodsRunning(podPrefix, namespace)
-				if err != nil {
-					log.Printf("%#v\n", err)
-				}
+				ready, _ := AreAllPodsRunning(podPrefix, namespace)
 				if ready == true {
 					successCount = successCount + 1
 					if successCount >= successesNeeded {
