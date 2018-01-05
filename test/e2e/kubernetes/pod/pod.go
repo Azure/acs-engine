@@ -173,7 +173,7 @@ func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, durati
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pods (%s) to become ready in namespace (%s)", duration.String(), podPrefix, namespace)
+				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pods (%s) to become ready in namespace (%s), got %d of %d required successful pods ready results", duration.String(), podPrefix, namespace, successCount, successesNeeded)
 			default:
 				ready, _ := AreAllPodsRunning(podPrefix, namespace)
 				if ready == true {
@@ -247,6 +247,7 @@ func (p *Pod) CheckLinuxOutboundConnection(sleep, duration time.Duration) (bool,
 			case <-ctx.Done():
 				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check outbound internet connection", duration.String(), p.Metadata.Name)
 			default:
+				time.Sleep(sleep)
 				_, err := p.Exec("--", "/usr/bin/apt", "update")
 				if err != nil {
 					break
@@ -309,6 +310,7 @@ func (p *Pod) CheckWindowsOutboundConnection(sleep, duration time.Duration) (boo
 					log.Printf("Error:%s\n", err)
 					log.Printf("Out:%s\n", out)
 				}
+				time.Sleep(sleep)
 			}
 		}
 	}()
@@ -342,6 +344,7 @@ func (p *Pod) ValidateHostPort(check string, attempts int, sleep time.Duration, 
 				return true
 			}
 		}
+		time.Sleep(sleep)
 	}
 	return false
 }
@@ -371,6 +374,7 @@ func (p *Pod) ValidateAzureFile(mountPath string, sleep, duration time.Duration)
 					log.Printf("Error:%s\n", err)
 					log.Printf("Out:%s\n", out)
 				}
+				time.Sleep(sleep)
 			}
 		}
 	}()
