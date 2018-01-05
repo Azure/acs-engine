@@ -211,6 +211,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	})
 
 	Describe("with a windows agent pool", func() {
+		// TODO stabilize this test
 		/*It("should be able to deploy an iis webserver", func() {
 			if eng.HasWindowsAgents() {
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -252,6 +253,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})*/
 
+		// TODO stabilize this test
 		/*It("should be able to reach hostport in an iis webserver", func() {
 			if eng.HasWindowsAgents() {
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -285,6 +287,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})*/
 
+		// TODO stabilize this test
 		/*It("should be able to attach azure file", func() {
 			if eng.HasWindowsAgents() {
 				if eng.OrchestratorVersion1Dot8AndUp() {
