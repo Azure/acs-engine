@@ -153,6 +153,11 @@ func (cli *CLIProvisioner) waitForNodes() error {
 		if ready == false {
 			return errors.New("Error: Not all nodes in a healthy state")
 		}
+		version, err := node.Version()
+		if err != nil {
+			log.Printf("Ready nodes did not return a version: %s", err)
+		}
+		log.Printf("Testing a Kubernetes %s cluster...\n", version)
 	}
 
 	if cli.Config.IsDCOS() {

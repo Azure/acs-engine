@@ -2,7 +2,6 @@ package kubernetes
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -78,7 +77,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					eng.Config.OrchestratorVersion)
 			}
 			Expect(version).To(Equal("v" + expectedVersion))
-			log.Printf("Testing a Kubernetes %s cluster...\n", version)
 		})
 
 		It("should have kube-dns running", func() {
