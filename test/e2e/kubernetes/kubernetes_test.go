@@ -207,6 +207,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(err).NotTo(HaveOccurred())
 					Expect(pass).To(BeTrue())
 				}
+
+				err = nginxDeploy.Delete()
+				Expect(err).NotTo(HaveOccurred())
+				err = s.Delete()
+				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No linux agent was provisioned for this Cluster Definition")
 			}
@@ -247,6 +252,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 
 				err = iisDeploy.Delete()
+				Expect(err).NotTo(HaveOccurred())
+				err = s.Delete()
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No windows agent was provisioned for this Cluster Definition")
