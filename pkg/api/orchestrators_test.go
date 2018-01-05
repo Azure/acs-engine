@@ -90,10 +90,20 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	// 1.8.0, 1.8.1, 1.8.2, 1.8.4, 1.8.6
 	Expect(len(orch.Upgrades)).To(Equal(5))
 
-	// 1.8.6 is not upgradable
+	// 1.8.4 is upgradable to 1.8.x and 1.9.x
 	csOrch = &OrchestratorProfile{
 		OrchestratorType:    Kubernetes,
-		OrchestratorVersion: common.KubernetesVersion1Dot8Dot6,
+		OrchestratorVersion: "1.8.4",
+	}
+	orch, e = GetOrchestratorVersionProfile(csOrch)
+	Expect(e).To(BeNil())
+	// 1.8.6, 1.9.0
+	Expect(len(orch.Upgrades)).To(Equal(2))
+
+	// 1.9.0 is not upgradable
+	csOrch = &OrchestratorProfile{
+		OrchestratorType:    Kubernetes,
+		OrchestratorVersion: "1.9.0",
 	}
 	orch, e = GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
