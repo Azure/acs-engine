@@ -131,6 +131,7 @@ func (s *Service) Validate(check string, attempts int, sleep time.Duration) bool
 				return true
 			}
 		}
+		time.Sleep(sleep)
 	}
 	return false
 }
