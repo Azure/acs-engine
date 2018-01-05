@@ -85,12 +85,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(running).To(Equal(true))
 		})
 
-		It("should have kube-dashboard running", func() {
-			running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 3, 30*time.Second, cfg.Timeout)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(running).To(Equal(true))
-		})
-
 		It("should have kube-proxy running", func() {
 			running, err := pod.WaitOnReady("kube-proxy", "kube-system", 3, 30*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
