@@ -3,6 +3,7 @@ package kubernetesupgrade
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	"k8s.io/client-go/pkg/api/v1/node"
@@ -93,13 +94,17 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 
 	kan.logger.Errorf("Deployment %s failed with error %v", deploymentName, err)
 	// Get deployment error details
-	errResp, e := armhelpers.GetDeploymentError(kan.Client, kan.logger, kan.ResourceGroup, deploymentName)
-	if e != nil {
+	errRespList, e := armhelpers.GetDeploymentError(kan.Client, kan.logger, kan.ResourceGroup, deploymentName)
+	if e != nil || len(errRespList) == 0 {
 		kan.logger.Errorf("Failed to get error details for deployment %s: %v", deploymentName, e)
 		// return original deployment error
 		return err
 	}
-	return errResp
+	errStrList := make([]string, len(errRespList))
+	for i, errResp := range errRespList {
+		errStrList[i] = errResp.Error()
+	}
+	return fmt.Errorf("%s", strings.Join(errStrList, " | "))
 }
 
 // Validate will verify that agent node has been upgraded as expected.

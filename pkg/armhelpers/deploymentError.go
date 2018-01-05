@@ -2,7 +2,6 @@ package armhelpers
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
@@ -45,39 +44,11 @@ func toArmError(logger *logrus.Entry, operation resources.DeploymentOperation) (
 			logger.Errorf("Error occurred marshalling JSON: '%v'", err)
 			return nil, err
 		}
-
 		if err := json.Unmarshal(b, errresp); err != nil {
 			logger.Errorf("Error occurred unmarshalling JSON: '%v' JSON: '%s'", err, string(b))
 			return nil, err
 		}
 	}
-
-	// In some cases ARM returns  "ResourceDeploymentFailure" as the top error code and error
-	// code returned by the resource provider is in the child array "details". The following code
-	// covers both of those scenarios. Also note, that details array is recursive i.e. the objects
-	// in details array can contain another details array with no max depth of this tree enforced
-	// by ARM. The following code only evaluates the first level property of "StatusMessage": "error"
-	// and its child array: "details" for error codes.
-
-	// If error code is ResourceDeploymentFailure then RP error is defined in the child object field: "details
-	if errresp.Body.Code == "ResourceDeploymentFailure" {
-		// StatusMessage.error.details array supports multiple errors but in this particular case
-		// DeploymentOperationProperties contains error from one specific resource type so the
-		// chances of multiple deployment errors being returned for a single resource type is slim
-		// (but possible) based on current error/QoS analysis. In those cases where multiple errors
-		// are returned ACS will pick the first error code for determining whether this is an internal
-		// or a client error. This can be reevaluated later based on practical experience.
-		// However, note that customer will be returned the entire contents of "StatusMessage" object
-		// (like before) so they have access to all the errors returned by ARM.
-		logger.Infof("Found ResourceDeploymentFailure error code - error response = '%v'", *errresp)
-		details := errresp.Body.Details
-		if len(details) > 0 {
-			errresp.Body.Code = details[0].Code
-			errresp.Body.Message = details[0].Message
-			errresp.Body.Target = details[0].Target
-		}
-	}
-
 	return errresp, nil
 }
 
@@ -89,14 +60,14 @@ func toArmErrors(logger *logrus.Entry, deploymentName string, operationsList res
 	}
 
 	for _, operation := range *operationsList.Value {
-		if operation.Properties == nil || *operation.Properties.ProvisioningState != string(api.Failed) {
+		if operation.Properties == nil || operation.Properties.ProvisioningState == nil || *operation.Properties.ProvisioningState != string(api.Failed) {
 			continue
 		}
 
 		errresp, err := toArmError(logger, operation)
 		if err != nil {
-			logger.Errorf("unable to convert deployment operation to error response in deployment %s from ARM. error: %v", deploymentName, err)
-			return ret, err
+			logger.Warnf("unable to convert deployment operation to error response in deployment %s from ARM. error: %v", deploymentName, err)
+			continue
 		}
 
 		if len(errresp.Body.Code) > 0 {
@@ -108,7 +79,7 @@ func toArmErrors(logger *logrus.Entry, deploymentName string, operationsList res
 }
 
 // GetDeploymentError returns deployment error
-func GetDeploymentError(az ACSEngineClient, logger *logrus.Entry, resourceGroupName, deploymentName string) (*ErrorResponse, error) {
+func GetDeploymentError(az ACSEngineClient, logger *logrus.Entry, resourceGroupName, deploymentName string) ([]*ErrorResponse, error) {
 	errList := []*ErrorResponse{}
 	logger.Infof("Getting detailed deployment errors for %s", deploymentName)
 
@@ -135,16 +106,5 @@ func GetDeploymentError(az ACSEngineClient, logger *logrus.Entry, resourceGroupN
 		}
 		errList = append(errList, eList...)
 	}
-	switch len(errList) {
-	case 0:
-		return nil, fmt.Errorf("unable to extract deployment error for %s", deploymentName)
-	case 1:
-		return errList[0], nil
-	default:
-		// combine all errors
-		for _, e := range errList[1:] {
-			errList[0].Body.Details = append(errList[0].Body.Details, e.Body.Details...)
-		}
-		return errList[0], nil
-	}
+	return errList, nil
 }
