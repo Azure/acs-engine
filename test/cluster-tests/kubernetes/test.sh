@@ -81,7 +81,7 @@ check_node_count
 ###### Validate Kubernetes version
 kubernetes_version=$(kubectl version --short)
 DASHBOARD_PORT=80
-if [[ ${kubernetes_version} != *"Server Version: v1.9."* ]]; then
+if [[ ${kubernetes_version} == *"Server Version: v1.9."* ]]; then
   DASHBOARD_PORT=443
 fi
 log "Setting dashboard port to ${DASHBOARD_PORT}"
