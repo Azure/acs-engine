@@ -241,7 +241,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(iisPods)).ToNot(BeZero())
 				for _, iisPod := range iisPods {
-					pass, err := iisPod.CheckWindowsOutboundConnection(10*time.Second, cfg.Timeout)
+					pass, err := iisPod.CheckWindowsOutboundConnection(100*time.Second, cfg.Timeout)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(pass).To(BeTrue())
 				}
