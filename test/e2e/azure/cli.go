@@ -99,7 +99,7 @@ func (a *Account) CreateGroup(name, location string) error {
 func (a *Account) DeleteGroup(name string) error {
 	out, err := exec.Command("az", "group", "delete", "--name", name, "--no-wait", "--yes").CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying to delete resource group (%s):%s", a.Deployment.Name, out)
+		log.Printf("Error while trying to delete resource group (%s):%s", name, out)
 		return err
 	}
 	return nil
