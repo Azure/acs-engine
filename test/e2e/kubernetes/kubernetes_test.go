@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -62,11 +63,20 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			version, err := node.Version()
 			Expect(err).NotTo(HaveOccurred())
 
-			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion != "" {
-				Expect(version).To(MatchRegexp("v" + eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion))
+			var expectedVersion string
+			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease != "" ||
+				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion != "" {
+				expectedVersion = common.RationalizeReleaseAndVersion(
+					common.Kubernetes,
+					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
+					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion)
 			} else {
-				Expect(version).To(Equal("v" + common.KubernetesDefaultVersion))
+				expectedVersion = common.RationalizeReleaseAndVersion(
+					common.Kubernetes,
+					eng.Config.OrchestratorRelease,
+					eng.Config.OrchestratorVersion)
 			}
+			Expect(version).To(Equal("v" + expectedVersion))
 		})
 
 		It("should have kube-dns running", func() {
@@ -135,7 +145,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			s, err := service.Get("kubernetes-dashboard", "kube-system")
 			Expect(err).NotTo(HaveOccurred())
 			dashboardPort := 80
-			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease == "1.9" {
+			version, err := node.Version()
+			Expect(err).NotTo(HaveOccurred())
+
+			re := regexp.MustCompile("v1.9")
+			if re.FindString(version) != "" {
 				dashboardPort = 443
 			}
 			port := s.GetNodePort(dashboardPort)

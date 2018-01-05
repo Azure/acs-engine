@@ -79,9 +79,15 @@ function check_node_count() {
 check_node_count
 
 ###### Validate Kubernetes version
+kubernetes_version=$(kubectl version --short)
+DASHBOARD_PORT=80
+if [[ ${kubernetes_version} == *"Server Version: v1.9."* ]]; then
+  DASHBOARD_PORT=443
+fi
+log "Setting dashboard port to ${DASHBOARD_PORT}"
+
 log "Checking Kubernetes version. Expected: ${EXPECTED_ORCHESTRATOR_VERSION}"
 if [ ! -z "${EXPECTED_ORCHESTRATOR_VERSION}" ]; then
-  kubernetes_version=$(kubectl version --short)
   if [[ ${kubernetes_version} != *"Server Version: v${EXPECTED_ORCHESTRATOR_VERSION}"* ]]; then
     log "K8S: unexpected kubernetes version:\n${kubernetes_version}"; exit 1
   fi
@@ -175,7 +181,7 @@ if (( ${EXPECTED_DASHBOARD} != 0 )); then
   # get master public hostname
   master=$(kubectl config view | grep server | cut -f 3- -d "/" | tr -d " ")
   # get dashboard port
-  port=$(kubectl get svc --namespace=kube-system | grep dashboard | awk '{print $4}' | sed -n 's/^80:\(.*\)\/TCP$/\1/p')
+  port=$(kubectl get svc --namespace=kube-system | grep dashboard | awk '{print $4}' | sed -n 's/^'${DASHBOARD_PORT}':\(.*\)\/TCP$/\1/p')
   # get internal IPs of the nodes
   ips=$(kubectl get nodes --all-namespaces -o yaml | grep -B 1 InternalIP | grep address | awk '{print $3}')
 

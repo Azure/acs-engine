@@ -22,6 +22,7 @@ type Config struct {
 	AgentDNSPrefix        string `envconfig:"DNS_PREFIX"`
 	PublicSSHKey          string `envconfig:"PUBLIC_SSH_KEY"`
 	WindowsAdminPasssword string `envconfig:"WINDOWS_ADMIN_PASSWORD"`
+	OrchestratorRelease   string `envconfig:"ORCHESTRATOR_RELEASE"`
 	OrchestratorVersion   string `envconfig:"ORCHESTRATOR_VERSION"`
 	OutputDirectory       string `envconfig:"OUTPUT_DIR" default:"_output"`
 	CreateVNET            bool   `envconfig:"CREATE_VNET" default:"false"`
@@ -98,8 +99,19 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 		cs.ContainerService.Properties.WindowsProfile.AdminPassword = config.WindowsAdminPasssword
 	}
 
-	if config.OrchestratorVersion != "" {
-		cs.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion = config.OrchestratorVersion
+	// If the parsed api model input has no expressed version opinion, we check if ENV does have an opinion
+	if cs.ContainerService.Properties.OrchestratorProfile.OrchestratorRelease == "" &&
+		cs.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion == "" {
+		// First, prefer the release string if ENV declares it
+		if config.OrchestratorRelease != "" {
+			cs.ContainerService.Properties.OrchestratorProfile.OrchestratorRelease = config.OrchestratorRelease
+			// Or, choose the version string if ENV declares it
+		} else if config.OrchestratorVersion != "" {
+			cs.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion = config.OrchestratorVersion
+			// If ENV similarly has no version opinion, we will rely upon the acs-engine default
+		} else {
+			log.Println("No orchestrator version specified, will use the default.")
+		}
 	}
 
 	if config.CreateVNET {

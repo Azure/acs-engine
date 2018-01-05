@@ -13,19 +13,19 @@ This is the prometheus-grafana extension.  Add this extension to the api model y
     "masterProfile": {
       "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_DS2_v2",
-      "extensions": [
-        { 
-          "name": "prometheus-grafana-k8s"
-        }
-      ]
+      "vmSize": "Standard_DS2_v2"
     },
     "agentPoolProfiles": [
       {
         "name": "agentpool1",
         "count": 3,
         "vmSize": "Standard_DS2_v2",
-        "availabilityProfile": "AvailabilitySet"
+        "availabilityProfile": "AvailabilitySet",
+        "extensions": [
+          { 
+            "name": "prometheus-grafana-k8s"
+          }
+        ]
       }
     ],
     "linuxProfile": {
