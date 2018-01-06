@@ -462,6 +462,8 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	const minKubeletRetries = 4
 	// k8s versions that have cloudprovider backoff enabled
 	var backoffEnabledVersions = map[string]bool{
+		common.KubernetesVersion1Dot9Dot0:  true,
+		common.KubernetesVersion1Dot9Dot1:  true,
 		common.KubernetesVersion1Dot8Dot0:  true,
 		common.KubernetesVersion1Dot8Dot1:  true,
 		common.KubernetesVersion1Dot8Dot2:  true,
