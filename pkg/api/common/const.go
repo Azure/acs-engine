@@ -162,7 +162,7 @@ var AllKubernetesWindowsSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot8Dot4:  true,
 	KubernetesVersion1Dot8Dot6:  true,
 	KubernetesVersion1Dot9Dot0:  true,
-	KubernetesVersion1Dot9Dot1:  false, // TODO turn on when image is uploaded
+	KubernetesVersion1Dot9Dot1:  true,
 }
 
 const (
