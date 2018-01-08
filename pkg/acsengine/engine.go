@@ -621,6 +621,8 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "etcdDownloadURLBase", cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase)
 		addValue(parametersMap, "etcdVersion", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion)
 		addValue(parametersMap, "etcdDiskSizeGB", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB)
+		addValue(parametersMap, "masterEtcdServerPort", DefaultMasterEtcdServerPort)
+		addValue(parametersMap, "masterEtcdClientPort", DefaultMasterEtcdClientPort)
 
 		if properties.OrchestratorProfile.KubernetesConfig == nil ||
 			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
@@ -870,6 +872,20 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			var buf bytes.Buffer
 			for _, key := range keys {
 				buf.WriteString(fmt.Sprintf("\"%s=%s\", ", key, controllerManagerConfig[key]))
+			}
+			return strings.TrimSuffix(buf.String(), ", ")
+		},
+		"GetAPIServerConfigKeyVals": func(kc *api.KubernetesConfig) string {
+			apiServerConfig := kc.APIServerConfig
+			// Order by key for consistency
+			keys := []string{}
+			for key := range apiServerConfig {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
+			var buf bytes.Buffer
+			for _, key := range keys {
+				buf.WriteString(fmt.Sprintf("\"%s=%s\", ", key, apiServerConfig[key]))
 			}
 			return strings.TrimSuffix(buf.String(), ", ")
 		},

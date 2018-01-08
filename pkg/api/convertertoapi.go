@@ -618,6 +618,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	convertAddonsToAPI(vlabs, api)
 	convertKubeletConfigToAPI(vlabs, api)
 	convertControllerManagerConfigToAPI(vlabs, api)
+	convertAPIServerConfigToAPI(vlabs, api)
 }
 
 func setVlabsKubernetesDefaults(vp *vlabs.Properties, api *OrchestratorProfile) {
@@ -671,6 +672,13 @@ func convertControllerManagerConfigToAPI(v *vlabs.KubernetesConfig, a *Kubernete
 	a.ControllerManagerConfig = map[string]string{}
 	for key, val := range v.ControllerManagerConfig {
 		a.ControllerManagerConfig[key] = val
+	}
+}
+
+func convertAPIServerConfigToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) {
+	a.APIServerConfig = map[string]string{}
+	for key, val := range v.APIServerConfig {
+		a.APIServerConfig[key] = val
 	}
 }
 

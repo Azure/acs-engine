@@ -267,8 +267,8 @@
       "[concat(variables('masterFirstAddrPrefix'), add(3, int(variables('masterFirstAddrOctet4'))))]",
       "[concat(variables('masterFirstAddrPrefix'), add(4, int(variables('masterFirstAddrOctet4'))))]"
     ],
-    "masterEtcdServerPort": 2380,
-    "masterEtcdClientPort": 2379,
+    "masterEtcdServerPort": "[parameters('masterEtcdServerPort')]",
+    "masterEtcdClientPort": "[parameters('masterEtcdClientPort')]",
     "masterEtcdPeerURLs":[
       "[concat('https://', variables('masterPrivateIpAddrs')[0], ':', variables('masterEtcdServerPort'))]",
       "[concat('https://', variables('masterPrivateIpAddrs')[1], ':', variables('masterEtcdServerPort'))]",

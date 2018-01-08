@@ -209,7 +209,7 @@ Below is a list of controller-manager options that acs-engine will configure by 
 |"--route-reconciliation-period"|"10s"|
 
 
-Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
+Below is a list of controller-manager options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces controller-manager configuration, or because a static configuration is required to build a functional cluster:
 
 |controller-manager option|default value|
 |---|---|
@@ -228,7 +228,60 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 |"--profiling"|"false"|
 |"--use-service-account-credentials"|"false" ("true" if kubernetesConfig.enableRbac is true)|
 
-We consider `kubeletConfig` and `controllerManagerConfig` to be generic conveniences that add power/flexibility to cluster deployments. Their usage comes with no operational guarantees! They are manual tuning features that enable low-level configuration of a kubernetes cluster.
+#### apiServerConfig
+
+`apiServerConfig` declares runtime configuration for the kube-apiserver daemon running on all master nodes. Like `kubeletConfig` and `controllerManagerConfig` it is a generic key/value object, and a child property of `kubernetesConfig`. An example custom apiserver config:
+
+```
+"kubernetesConfig": {
+    "apiServerConfig": {
+        "--request-timeout": "30s"
+    }
+}
+```
+
+See [here](https://kubernetes.io/docs/reference/generated/kube-apiserver/) for a reference of supported apiserver options.
+
+Below is a list of apiserver options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
+
+|apiserver option|default value|
+|---|---|
+|"--admission-control"|"NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec"|
+|"--address"|"0.0.0.0"|
+|"--advertise-address"|*calculated value that represents listening URI for API server*|
+|"--allow-privileged"|"true"|
+|"--insecure-port"|"8080"|
+|"--secure-port"|"443"|
+|"--etcd-cafile"|"/etc/kubernetes/certs/ca.crt"|
+|"--etcd-certfile"|"/etc/kubernetes/certs/etcdclient.crt"|
+|"--etcd-keyfile"|"/etc/kubernetes/certs/etcdclient.key"|
+|"--etcd-servers"|*calculated value that represents etcd servers*|
+|"--etcd-quorum-read"|"true"|
+|"--tls-cert-file"|"/etc/kubernetes/certs/apiserver.crt"|
+|"--tls-private-key-file"|"/etc/kubernetes/certs/apiserver.key"|
+|"--client-ca-file"|"/etc/kubernetes/certs/ca.crt"|
+|"--service-account-key-file"|"/etc/kubernetes/certs/apiserver.key"|
+|"--kubelet-client-certificate"|"/etc/kubernetes/certs/client.crt"|
+|"--kubelet-client-key"|"/etc/kubernetes/certs/client.key"|
+|"--service-cluster-ip-range"|*see serviceCIDR*|
+|"--storage-backend"|*calculated value that represents etcd version*|
+|"--v"|"4"|
+|"--authorization-mode"|"RBAC" (*if enabledRbac is true*)|
+|"--experimental-encryption-provider-config"|"/etc/kubernetes/encryption-config.yaml" (*if enableDataEncryptionAtRest is true*)|
+|"--requestheader-client-ca-file"|"/etc/kubernetes/certs/proxy-ca.crt" (*if enableAggregatedAPIs is true*)|
+|"--proxy-client-cert-file"|"/etc/kubernetes/certs/proxy.crt" (*if enableAggregatedAPIs is true*)|
+|"--proxy-client-key-file"|"/etc/kubernetes/certs/proxy.key" (*if enableAggregatedAPIs is true*)|
+|"--requestheader-allowed-names"|"" (*if enableAggregatedAPIs is true*)|
+|"--requestheader-extra-headers-prefix"|"X-Remote-Extra-" (*if enableAggregatedAPIs is true*)|
+|"--requestheader-group-headers"|"X-Remote-Group" (*if enableAggregatedAPIs is true*)|
+|"--requestheader-username-headers"|"X-Remote-User" (*if enableAggregatedAPIs is true*)|
+|"--cloud-provider"|"azure" (*unless useCloudControllerManager is true*)|
+|"--cloud-config"|"/etc/kubernetes/azure.json" (*unless useCloudControllerManager is true*)|
+|"--oidc-username-claim"|"oid" (*if has AADProfile*)|
+|"--oidc-client-id"|*calculated value that represents OID client ID* (*if has AADProfile*)|
+|"--oidc-issuer-url"|*calculated value that represents OID issuer URL* (*if has AADProfile*)|
+
+We consider `kubeletConfig`, `controllerManagerConfig`, and `apiServerConfig` to be generic conveniences that add power/flexibility to cluster deployments. Their usage comes with no operational guarantees! They are manual tuning features that enable low-level configuration of a kubernetes cluster.
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.

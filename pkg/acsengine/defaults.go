@@ -403,6 +403,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		setKubeletConfig(cs)
 		// Configure controller-manager
 		setControllerManagerConfig(cs)
+		// Configure apiserver
+		setAPIServerConfig(cs)
 
 	} else if o.OrchestratorType == api.DCOS {
 		if o.DcosConfig == nil {

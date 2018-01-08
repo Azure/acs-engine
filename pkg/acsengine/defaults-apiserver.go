@@ -1,0 +1,102 @@
+package acsengine
+
+import (
+	"strconv"
+
+	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/helpers"
+)
+
+func setAPIServerConfig(cs *api.ContainerService) {
+	o := cs.Properties.OrchestratorProfile
+	staticLinuxAPIServerConfig := map[string]string{
+		"--admission-control":          "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec",
+		"--address":                    "0.0.0.0",
+		"--advertise-address":          "<kubernetesAPIServerIP>",
+		"--allow-privileged":           "true",
+		"--insecure-port":              "8080",
+		"--secure-port":                "443",
+		"--etcd-cafile":                "/etc/kubernetes/certs/ca.crt",
+		"--etcd-certfile":              "/etc/kubernetes/certs/etcdclient.crt",
+		"--etcd-keyfile":               "/etc/kubernetes/certs/etcdclient.key",
+		"--etcd-servers":               "https://127.0.0.1:" + strconv.Itoa(DefaultMasterEtcdClientPort),
+		"--etcd-quorum-read":           "true",
+		"--tls-cert-file":              "/etc/kubernetes/certs/apiserver.crt",
+		"--tls-private-key-file":       "/etc/kubernetes/certs/apiserver.key",
+		"--client-ca-file":             "/etc/kubernetes/certs/ca.crt",
+		"--service-account-key-file":   "/etc/kubernetes/certs/apiserver.key",
+		"--kubelet-client-certificate": "/etc/kubernetes/certs/client.crt",
+		"--kubelet-client-key":         "/etc/kubernetes/certs/client.key",
+		"--service-cluster-ip-range":   o.KubernetesConfig.ServiceCIDR,
+		"--storage-backend":            o.GetAPIServerEtcdAPIVersion(),
+		"--v":                          "4",
+	}
+
+	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
+		staticLinuxAPIServerConfig["--authorization-mode"] = "RBAC"
+	}
+
+	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
+		staticLinuxAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
+	}
+
+	if o.KubernetesConfig.EnableAggregatedAPIs {
+		staticLinuxAPIServerConfig["--requestheader-client-ca-file"] = "/etc/kubernetes/certs/proxy-ca.crt"
+		staticLinuxAPIServerConfig["--proxy-client-cert-file"] = "/etc/kubernetes/certs/proxy.crt"
+		staticLinuxAPIServerConfig["--proxy-client-key-file"] = "/etc/kubernetes/certs/proxy.key"
+		staticLinuxAPIServerConfig["--requestheader-allowed-names"] = ""
+		staticLinuxAPIServerConfig["--requestheader-extra-headers-prefix"] = "X-Remote-Extra-"
+		staticLinuxAPIServerConfig["--requestheader-group-headers"] = "X-Remote-Group"
+		staticLinuxAPIServerConfig["--requestheader-username-headers"] = "X-Remote-User"
+	}
+
+	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.UseCloudControllerManager) {
+		staticLinuxAPIServerConfig["--cloud-provider"] = "azure"
+		staticLinuxAPIServerConfig["--cloud-config"] = "/etc/kubernetes/azure.json"
+	}
+
+	if cs.Properties.HasAadProfile() {
+		staticLinuxAPIServerConfig["--oidc-username-claim"] = "oid"
+		staticLinuxAPIServerConfig["--oidc-client-id"] = "spn:" + cs.Properties.AADProfile.ServerAppID
+		issuerHost := "sts.windows.net"
+		if GetCloudTargetEnv(cs.Location) == "AzureChinaCloud" {
+			issuerHost = "sts.chinacloudapi.cn"
+		}
+		staticLinuxAPIServerConfig["--oidc-issuer-url"] = "https://" + issuerHost + "/" + cs.Properties.AADProfile.TenantID
+	}
+
+	staticWindowsAPIServerConfig := make(map[string]string)
+	for key, val := range staticLinuxAPIServerConfig {
+		staticWindowsAPIServerConfig[key] = val
+	}
+	// Windows apiserver config overrides
+	// TODO placeholder for specific config overrides for Windows clusters
+
+	// Default apiserver config
+	defaultAPIServerConfig := map[string]string{}
+
+	// If no user-configurable apiserver config values exists, use the defaults
+	if o.KubernetesConfig.APIServerConfig == nil {
+		o.KubernetesConfig.APIServerConfig = defaultAPIServerConfig
+	} else {
+		for key, val := range defaultAPIServerConfig {
+			// If we don't have a user-configurable apiserver config for each option
+			if _, ok := o.KubernetesConfig.APIServerConfig[key]; !ok {
+				// then assign the default value
+				o.KubernetesConfig.APIServerConfig[key] = val
+			}
+		}
+	}
+
+	// We don't support user-configurable values for the following,
+	// so any of the value assignments below will override user-provided values
+	var overrideAPIServerConfig map[string]string
+	if cs.Properties.HasWindows() {
+		overrideAPIServerConfig = staticWindowsAPIServerConfig
+	} else {
+		overrideAPIServerConfig = staticLinuxAPIServerConfig
+	}
+	for key, val := range overrideAPIServerConfig {
+		o.KubernetesConfig.APIServerConfig[key] = val
+	}
+}
