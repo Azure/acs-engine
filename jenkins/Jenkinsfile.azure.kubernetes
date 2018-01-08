@@ -1,4 +1,4 @@
-node(env.NODE? env.NODE : 'slave8') {
+node(env.NODE? env.NODE : 'slave') {
   withCredentials([
     [$class: 'UsernamePasswordMultiBinding', credentialsId: "7a3620b2-9937-4a08-9551-ca3d0e84c503", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD'],
     [$class: 'UsernamePasswordMultiBinding', credentialsId: '3b482378-9b9a-4784-b890-940b9bf0b234', usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET'],
