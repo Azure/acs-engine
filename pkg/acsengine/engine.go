@@ -640,7 +640,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 
 		if properties.AADProfile != nil {
 			addValue(parametersMap, "aadTenantId", properties.AADProfile.TenantID)
-			addValue(parametersMap, "aadServerAppId", properties.AADProfile.ServerAppID)
 		}
 	}
 

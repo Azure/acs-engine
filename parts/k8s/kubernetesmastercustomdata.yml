@@ -182,6 +182,8 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
 
 {{ if .HasAadProfile }}
+    VAR_AAD_TENANT_ID={{WrapAsVariable "aadTenantId"}}
+    VAR_TENANT_ID={{WrapAsVariable "tenantId"}}
     AAD_TENANT_ID=${VAR_AAD_TENANT_ID:-$VAR_TENANT_ID}
     sed -i "/--oidc-issuer-url/s/$/$AAD_TENANT_ID/" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{end}}

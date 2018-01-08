@@ -109,7 +109,6 @@
 {{end}}
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
 {{if .HasAadProfile}}
-    "aadServerAppId": "[parameters('aadServerAppId')]",
     "aadTenantId": "[parameters('aadTenantId')]",
 {{end}}
 {{if not IsHostedMaster}}
