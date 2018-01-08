@@ -32,14 +32,17 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--v":                          "4",
 	}
 
+	// RBAC configuration
 	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
 		staticLinuxAPIServerConfig["--authorization-mode"] = "RBAC"
 	}
 
+	// Data Encryption at REST configuration
 	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
 		staticLinuxAPIServerConfig["--experimental-encryption-provider-config"] = "/etc/kubernetes/encryption-config.yaml"
 	}
 
+	// Aggregated API configuration
 	if o.KubernetesConfig.EnableAggregatedAPIs {
 		staticLinuxAPIServerConfig["--requestheader-client-ca-file"] = "/etc/kubernetes/certs/proxy-ca.crt"
 		staticLinuxAPIServerConfig["--proxy-client-cert-file"] = "/etc/kubernetes/certs/proxy.crt"
@@ -50,11 +53,13 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		staticLinuxAPIServerConfig["--requestheader-username-headers"] = "X-Remote-User"
 	}
 
+	// Enable cloudprovider if we're not using cloud controller manager
 	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.UseCloudControllerManager) {
 		staticLinuxAPIServerConfig["--cloud-provider"] = "azure"
 		staticLinuxAPIServerConfig["--cloud-config"] = "/etc/kubernetes/azure.json"
 	}
 
+	// AAD configuration
 	if cs.Properties.HasAadProfile() {
 		staticLinuxAPIServerConfig["--oidc-username-claim"] = "oid"
 		staticLinuxAPIServerConfig["--oidc-client-id"] = "spn:" + cs.Properties.AADProfile.ServerAppID

@@ -248,9 +248,6 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{if UseCloudControllerManager }}
     sed -i "s|<kubernetesCcmImageSpec>|{{WrapAsVariable "kubernetesCcmImageSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g; s|<kubernetesCtrlMgrRouteReconciliationPeriod>|{{GetCloudControllerManagerRouteReconciliationPeriod .OrchestratorProfile.KubernetesConfig}}|g" \
       /etc/kubernetes/manifests/cloud-controller-manager.yaml
-
-    sed -i "/--\(cloud-config\|cloud-provider\|route-reconciliation-period\)=/d" \
-      /etc/kubernetes/manifests/kube-controller-manager.yaml
 {{end}}
     sed -i "s|<kubernetesControllerManagerConfig>|{{GetControllerManagerConfigKeyVals .OrchestratorProfile.KubernetesConfig}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesAPIServerConfig>|{{GetAPIServerConfigKeyVals .OrchestratorProfile.KubernetesConfig}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
