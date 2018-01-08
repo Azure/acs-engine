@@ -10,7 +10,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	staticLinuxAPIServerConfig := map[string]string{
 		"--admission-control":          "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec",
 		"--address":                    "0.0.0.0",
-		"--advertise-address":          "<kubernetesAPIServerIP>",
+		"--advertise-address":          "kubernetesAPIServerIP",
 		"--allow-privileged":           "true",
 		"--insecure-port":              "8080",
 		"--secure-port":                "443",
