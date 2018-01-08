@@ -246,7 +246,7 @@ Below is a list of apiserver options that are *not* currently user-configurable,
 
 |apiserver option|default value|
 |---|---|
-|"--admission-control"|"NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec"|
+|"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec"|
 |"--address"|"0.0.0.0"|
 |"--advertise-address"|*calculated value that represents listening URI for API server*|
 |"--allow-privileged"|"true"|
