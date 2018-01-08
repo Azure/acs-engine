@@ -105,10 +105,6 @@ const (
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
 	DefaultKubernetesKubeletMaxPods = 110
-	// DefaultMasterEtcdClientPort is the etcd client port for master nodes
-	DefaultMasterEtcdClientPort = 2379
-	// DefaultMasterEtcdServerPort is the etcd server port for master nodes
-	DefaultMasterEtcdServerPort = 2380
 )
 
 const (
