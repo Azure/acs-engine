@@ -1,8 +1,6 @@
 package acsengine
 
 import (
-	"strconv"
-
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
@@ -19,7 +17,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--etcd-cafile":                "/etc/kubernetes/certs/ca.crt",
 		"--etcd-certfile":              "/etc/kubernetes/certs/etcdclient.crt",
 		"--etcd-keyfile":               "/etc/kubernetes/certs/etcdclient.key",
-		"--etcd-servers":               "https://127.0.0.1:" + strconv.Itoa(DefaultMasterEtcdClientPort),
+		"--etcd-servers":               "https://127.0.0.1:2397",
 		"--etcd-quorum-read":           "true",
 		"--tls-cert-file":              "/etc/kubernetes/certs/apiserver.crt",
 		"--tls-private-key-file":       "/etc/kubernetes/certs/apiserver.key",
