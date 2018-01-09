@@ -21,7 +21,6 @@ spec:
         - "--cloud-config=/etc/kubernetes/azure.json"
         - "--leader-elect=true"
 # TODO: RBAC support
-#        - "<kubernetesEnableRbac>"
         - "--route-reconciliation-period=<kubernetesCtrlMgrRouteReconciliationPeriod>"
         - "--v=2"
       volumeMounts: 

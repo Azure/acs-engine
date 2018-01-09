@@ -638,7 +638,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 
 		if properties.AADProfile != nil {
 			addValue(parametersMap, "aadTenantId", properties.AADProfile.TenantID)
-			addValue(parametersMap, "aadServerAppId", properties.AADProfile.ServerAppID)
 		}
 	}
 
@@ -870,6 +869,20 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			var buf bytes.Buffer
 			for _, key := range keys {
 				buf.WriteString(fmt.Sprintf("\"%s=%s\", ", key, controllerManagerConfig[key]))
+			}
+			return strings.TrimSuffix(buf.String(), ", ")
+		},
+		"GetAPIServerConfigKeyVals": func(kc *api.KubernetesConfig) string {
+			apiServerConfig := kc.APIServerConfig
+			// Order by key for consistency
+			keys := []string{}
+			for key := range apiServerConfig {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
+			var buf bytes.Buffer
+			for _, key := range keys {
+				buf.WriteString(fmt.Sprintf("\\\"%s=%s\\\", ", key, apiServerConfig[key]))
 			}
 			return strings.TrimSuffix(buf.String(), ", ")
 		},
@@ -1221,6 +1234,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetAgentOSImageVersion": func(profile *api.AgentPoolProfile) string {
 			cloudSpecConfig := GetCloudSpecConfig(cs.Location)
 			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[profile.Distro].ImageVersion)
+		},
+		"GetMasterEtcdServerPort": func() int {
+			return DefaultMasterEtcdServerPort
+		},
+		"GetMasterEtcdClientPort": func() int {
+			return DefaultMasterEtcdClientPort
 		},
 		"PopulateClassicModeDefaultValue": func(attr string) string {
 			var val string

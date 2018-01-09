@@ -246,6 +246,7 @@ type KubernetesConfig struct {
 	Addons                       []KubernetesAddon `json:"addons,omitempty"`
 	KubeletConfig                map[string]string `json:"kubeletConfig,omitempty"`
 	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
+	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS
