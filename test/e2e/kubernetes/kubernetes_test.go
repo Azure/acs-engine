@@ -163,6 +163,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						break
 					}
 					log.Printf("%#v\n", err)
+					log.Println(err.Error())
 					time.Sleep(10 * time.Second)
 				}
 				Expect(success).To(BeTrue())
