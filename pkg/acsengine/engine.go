@@ -882,7 +882,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			sort.Strings(keys)
 			var buf bytes.Buffer
 			for _, key := range keys {
-				buf.WriteString(fmt.Sprintf("\"%s=%s\", ", key, apiServerConfig[key]))
+				buf.WriteString(fmt.Sprintf("\\\"%s=%s\\\", ", key, apiServerConfig[key]))
 			}
 			return strings.TrimSuffix(buf.String(), ", ")
 		},

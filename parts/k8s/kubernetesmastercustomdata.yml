@@ -244,7 +244,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
 {{end}}
     sed -i "s|<kubernetesControllerManagerConfig>|{{GetControllerManagerConfigKeyVals .OrchestratorProfile.KubernetesConfig}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesAPIServerConfig>|{{GetAPIServerConfigKeyVals .OrchestratorProfile.KubernetesConfig}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    sed -i "s|kubernetesAPIServerIP|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{ if .HasAadProfile }}
     VAR_AAD_TENANT_ID={{WrapAsVariable "aadTenantId"}}
     VAR_TENANT_ID={{WrapAsVariable "tenantId"}}
