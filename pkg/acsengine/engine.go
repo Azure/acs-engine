@@ -872,6 +872,20 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return strings.TrimSuffix(buf.String(), ", ")
 		},
+		"GetCloudControllerManagerConfigKeyVals": func(kc *api.KubernetesConfig) string {
+			cloudControllerManagerConfig := kc.CloudControllerManagerConfig
+			// Order by key for consistency
+			keys := []string{}
+			for key := range cloudControllerManagerConfig {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
+			var buf bytes.Buffer
+			for _, key := range keys {
+				buf.WriteString(fmt.Sprintf("\\\"%s=%s\\\", ", key, cloudControllerManagerConfig[key]))
+			}
+			return strings.TrimSuffix(buf.String(), ", ")
+		},
 		"GetAPIServerConfigKeyVals": func(kc *api.KubernetesConfig) string {
 			apiServerConfig := kc.APIServerConfig
 			// Order by key for consistency

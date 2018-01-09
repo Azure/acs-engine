@@ -238,10 +238,8 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-daemonset.yaml"
 {{end}}
 
-{{if UseCloudControllerManager }}
-    sed -i "s|<kubernetesCcmImageSpec>|{{WrapAsVariable "kubernetesCcmImageSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g; s|<kubernetesCtrlMgrRouteReconciliationPeriod>|{{GetCloudControllerManagerRouteReconciliationPeriod .OrchestratorProfile.KubernetesConfig}}|g" \
-      /etc/kubernetes/manifests/cloud-controller-manager.yaml
-{{end}}
+    sed -i "s|<kubernetesCcmImageSpec>|{{WrapAsVariable "kubernetesCcmImageSpec"}}|g" "/etc/kubernetes/manifests/cloud-controller-manager.yaml"
+    sed -i "s|<kubernetesCloudControllerManagerConfig>|{{GetCloudControllerManagerConfigKeyVals .OrchestratorProfile.KubernetesConfig}}|g" "/etc/kubernetes/manifests/cloud-controller-manager.yaml"
     sed -i "s|<kubernetesControllerManagerConfig>|{{GetControllerManagerConfigKeyVals .OrchestratorProfile.KubernetesConfig}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesAPIServerConfig>|{{GetAPIServerConfigKeyVals .OrchestratorProfile.KubernetesConfig}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
