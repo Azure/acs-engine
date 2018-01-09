@@ -1235,6 +1235,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			cloudSpecConfig := GetCloudSpecConfig(cs.Location)
 			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[profile.Distro].ImageVersion)
 		},
+		"GetMasterEtcdServerPort": func() int {
+			return DefaultMasterEtcdServerPort
+		},
+		"GetMasterEtcdClientPort": func() int {
+			return DefaultMasterEtcdClientPort
+		},
 		"PopulateClassicModeDefaultValue": func(attr string) string {
 			var val string
 			if !t.ClassicMode {
