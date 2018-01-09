@@ -9,6 +9,23 @@
       },
       "type": "Microsoft.Network/networkSecurityGroups"
     },
+{{if HasWindowsCustomImage}}
+    {"type": "Microsoft.Compute/images",
+      "apiVersion": "2017-12-01",
+      "name": "{{.Name}}CustomWindowsImage",
+      "location": "[variables('location')]",
+      "properties": {
+        "storageProfile": {
+          "osDisk": {
+            "osType": "Windows",
+            "osState": "Generalized",
+            "blobUri": "[parameters('agentWindowsSourceUrl')]",
+            "storageAccountType": "Standard_LRS"
+          }
+        }
+      }
+    },
+{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
@@ -224,10 +241,14 @@
         "storageProfile": {
           {{GetDataDisks .}}
           "imageReference": {
+{{if HasWindowsCustomImage}}
+            "id": "[resourceId('Microsoft.Compute/images','{{.Name}}CustomWindowsImage')]"
+{{else}}
             "offer": "[variables('agentWindowsOffer')]",
             "publisher": "[variables('agentWindowsPublisher')]",
             "sku": "[variables('agentWindowsSKU')]",
             "version": "[variables('agentWindowsVersion')]"
+{{end}}
           }
           ,"osDisk": {
             "caching": "ReadOnly"

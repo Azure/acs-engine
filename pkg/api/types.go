@@ -123,10 +123,11 @@ type PublicKey struct {
 
 // WindowsProfile represents the windows parameters passed to the cluster
 type WindowsProfile struct {
-	AdminUsername string            `json:"adminUsername"`
-	AdminPassword string            `json:"adminPassword"`
-	ImageVersion  string            `json:"imageVersion"`
-	Secrets       []KeyVaultSecrets `json:"secrets,omitempty"`
+	AdminUsername         string            `json:"adminUsername"`
+	AdminPassword         string            `json:"adminPassword"`
+	ImageVersion          string            `json:"imageVersion"`
+	WindowsImageSourceURL string            `json:"windowsImageSourceURL"`
+	Secrets               []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.
@@ -554,6 +555,11 @@ func (a *AgentPoolProfile) HasDisks() bool {
 // HasSecrets returns true if the customer specified secrets to install
 func (w *WindowsProfile) HasSecrets() bool {
 	return len(w.Secrets) > 0
+}
+
+// HasCustomImage returns true if there is a custom windows os image url specified
+func (w *WindowsProfile) HasCustomImage() bool {
+	return len(w.WindowsImageSourceURL) > 0
 }
 
 // HasSecrets returns true if the customer specified secrets to install
