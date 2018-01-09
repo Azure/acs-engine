@@ -197,6 +197,9 @@ if ! [ $EXPECTED_WINDOWS_AGENTS -gt 0 ] ; then
           success="y"
           break
         fi
+        if (( $count < 2 )); then
+            log $ret
+        fi
         sleep 5; count=$((count-1))
       done
       if [[ "${success}" == "n" ]]; then

@@ -2,6 +2,7 @@ package kubernetes
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -160,6 +161,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						if err == nil {
 							success = true
 							break
+						}
+						if i > 58 {
+							log.Println(curlCMD)
+							log.Println(err.Error())
+							log.Printf("%#v\n", err)
 						}
 						time.Sleep(10 * time.Second)
 					}
