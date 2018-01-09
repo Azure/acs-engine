@@ -76,6 +76,9 @@ func (cli *CLIProvisioner) Run() error {
 
 func (cli *CLIProvisioner) provision() error {
 	cli.Config.Name = cli.generateName()
+	if cli.Config.IsSoakTest {
+		cli.Config.Name = "acse-test-infrastructure-soak"
+	}
 	os.Setenv("NAME", cli.Config.Name)
 	log.Printf("Cluster name:%s\n", cli.Config.Name)
 
