@@ -177,31 +177,33 @@ if (( ${running} != ${KUBE_PROXY_COUNT} )); then
   log "K8S: gave up waiting for kube-proxy"; exit 1
 fi
 
-if (( ${EXPECTED_DASHBOARD} != 0 )); then
-  # get master public hostname
-  master=$(kubectl config view | grep server | cut -f 3- -d "/" | tr -d " ")
-  # get dashboard port
-  port=$(kubectl get svc --namespace=kube-system | grep dashboard | awk '{print $4}' | sed -n 's/^'${DASHBOARD_PORT}':\(.*\)\/TCP$/\1/p')
-  # get internal IPs of the nodes
-  ips=$(kubectl get nodes --all-namespaces -o yaml | grep -B 1 InternalIP | grep address | awk '{print $3}')
+if ! [ $EXPECTED_WINDOWS_AGENTS -gt 0 ] ; then
+  if (( ${EXPECTED_DASHBOARD} != 0 )); then
+    # get master public hostname
+    master=$(kubectl config view | grep server | cut -f 3- -d "/" | tr -d " ")
+    # get dashboard port
+    port=$(kubectl get svc --namespace=kube-system | grep dashboard | awk '{print $4}' | sed -n 's/^'${DASHBOARD_PORT}':\(.*\)\/TCP$/\1/p')
+    # get internal IPs of the nodes
+    ips=$(kubectl get nodes --all-namespaces -o yaml | grep -B 1 InternalIP | grep address | awk '{print $3}')
 
-  for ip in $ips; do
-    log "Probing IP address ${ip}"
-    count=60
-    success="n"
-    while (( $count > 0 )); do
-      log "  ... counting down $count"
-      ret=$(ssh -i "${OUTPUT}/id_rsa" -o ConnectTimeout=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "azureuser@${master}" "curl --max-time 60 http://${ip}:${port}" || echo "curl_error")
-      if [[ ! $ret =~ .*curl_error.* ]]; then
-        success="y"
-        break
+    for ip in $ips; do
+      log "Probing IP address ${ip}"
+      count=60
+      success="n"
+      while (( $count > 0 )); do
+        log "  ... counting down $count"
+        ret=$(ssh -i "${OUTPUT}/id_rsa" -o ConnectTimeout=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "azureuser@${master}" "curl --max-time 60 http://${ip}:${port}" || echo "curl_error")
+        if [[ ! $ret =~ .*curl_error.* ]]; then
+          success="y"
+          break
+        fi
+        sleep 5; count=$((count-1))
+      done
+      if [[ "${success}" == "n" ]]; then
+        log "K8S: gave up verifying proxy"; exit 1
       fi
-      sleep 5; count=$((count-1))
     done
-    if [[ "${success}" == "n" ]]; then
-      log "K8S: gave up verifying proxy"; exit 1
-    fi
-  done
+  fi
 fi
 
 if [ $EXPECTED_LINUX_AGENTS -gt 0 ] ; then
