@@ -1,4 +1,4 @@
-package armhelpers
+package utils
 
 import (
 	"fmt"

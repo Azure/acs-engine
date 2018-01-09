@@ -8,6 +8,7 @@ import (
 	"path"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
+	"github.com/Azure/acs-engine/pkg/acsengine/transform"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/leonelquinteros/gotext"
@@ -150,10 +151,10 @@ func (gc *generateCmd) run() error {
 	}
 
 	if !gc.noPrettyPrint {
-		if template, err = acsengine.PrettyPrintArmTemplate(template); err != nil {
+		if template, err = transform.PrettyPrintArmTemplate(template); err != nil {
 			log.Fatalf("error pretty printing template: %s \n", err.Error())
 		}
-		if parameters, err = acsengine.BuildAzureParametersFile(parameters); err != nil {
+		if parameters, err = transform.BuildAzureParametersFile(parameters); err != nil {
 			log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
 		}
 	}

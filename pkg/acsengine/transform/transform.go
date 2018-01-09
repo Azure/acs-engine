@@ -1,4 +1,4 @@
-package acsengine
+package transform
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/sirupsen/logrus"
 )
@@ -42,9 +41,21 @@ const (
 	rtID  = "routeTableID"
 )
 
+// Translator defines all required interfaces for i18n.Translator.
+type Translator interface {
+	// T translates a text string, based on GNU's gettext library.
+	T(msgid string, vars ...interface{}) string
+	// NT translates a text string into the appropriate plural form, based on GNU's gettext library.
+	NT(msgid, msgidPlural string, n int, vars ...interface{}) string
+	// Errorf produces an error with a translated error string.
+	Errorf(msgid string, vars ...interface{}) error
+	// NErrorf produces an error with a translated error string in the appropriate plural form.
+	NErrorf(msgid, msgidPlural string, n int, vars ...interface{}) error
+}
+
 // Transformer represents the object that transforms template
 type Transformer struct {
-	Translator *i18n.Translator
+	Translator Translator
 }
 
 // NormalizeForVMSSScaling takes a template and removes elements that are unwanted in a VMSS scale up/down case
