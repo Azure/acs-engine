@@ -280,17 +280,25 @@ Below is a list of apiserver options that are *not* currently user-configurable,
 
 |apiserver option|default value|
 |---|---|
-|"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec"|
+|"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages, SecurityContextDeny"|
 |"--address"|"0.0.0.0"|
 |"--advertise-address"|*calculated value that represents listening URI for API server*|
 |"--allow-privileged"|"true"|
+|"--anonymous-auth"|"false|
+|"--audit-log-maxage"|"30"|
+|"--audit-log-maxbackup"|"10"|
+|"--audit-log-maxsize"|"100"|
+|"--audit-log-path"|"/var/log/apiserver/audit.log"|
 |"--insecure-port"|"8080"|
 |"--secure-port"|"443"|
+|"--service-account-lookup"|"true"|
 |"--etcd-cafile"|"/etc/kubernetes/certs/ca.crt"|
 |"--etcd-certfile"|"/etc/kubernetes/certs/etcdclient.crt"|
 |"--etcd-keyfile"|"/etc/kubernetes/certs/etcdclient.key"|
 |"--etcd-servers"|*calculated value that represents etcd servers*|
 |"--etcd-quorum-read"|"true"|
+|"--profiling"|"false"|
+|"--repair-malformed-updates"|"false"|
 |"--tls-cert-file"|"/etc/kubernetes/certs/apiserver.crt"|
 |"--tls-private-key-file"|"/etc/kubernetes/certs/apiserver.key"|
 |"--client-ca-file"|"/etc/kubernetes/certs/ca.crt"|
@@ -300,7 +308,7 @@ Below is a list of apiserver options that are *not* currently user-configurable,
 |"--service-cluster-ip-range"|*see serviceCIDR*|
 |"--storage-backend"|*calculated value that represents etcd version*|
 |"--v"|"4"|
-|"--authorization-mode"|"RBAC" (*if enabledRbac is true*)|
+|"--authorization-mode"|"Node", and "RBAC" (*if enabledRbac is true*)|
 |"--experimental-encryption-provider-config"|"/etc/kubernetes/encryption-config.yaml" (*if enableDataEncryptionAtRest is true*)|
 |"--requestheader-client-ca-file"|"/etc/kubernetes/certs/proxy-ca.crt" (*if enableAggregatedAPIs is true*)|
 |"--proxy-client-cert-file"|"/etc/kubernetes/certs/proxy.crt" (*if enableAggregatedAPIs is true*)|
