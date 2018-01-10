@@ -326,7 +326,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})*/
 	})
-	Describe("with soaking test", func() {
+	Describe("with soak test", func() {
 		It("should be able to reach hostport in an iis webserver", func() {
 			if cfg.IsSoakTest {
 				if eng.HasWindowsAgents() {
