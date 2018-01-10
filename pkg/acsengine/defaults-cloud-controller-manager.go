@@ -34,7 +34,7 @@ func setCloudControllerManagerConfig(cs *api.ContainerService) {
 
 	// Default cloud-controller-manager config
 	defaultCloudControllerManagerConfig := map[string]string{
-		"--node-monitor-grace-period": DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
+		"--route-reconciliation-period": DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
 	}
 
 	// If no user-configurable cloud-controller-manager config values exists, use the defaults
