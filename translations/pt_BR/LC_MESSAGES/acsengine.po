@@ -47,13 +47,14 @@ msgstr "Contagem total de VMs mestres: %d contagem esperada excedida: %d"
 #: pkg/operations/kubernetesupgrade/v162upgrader.go:30
 #, c-format
 msgid "Upgrade to Kubernetes 1.6.2 is not supported from version: %s"
-msgstr "A atualização para Kubernetes 1.6.2 não tem suporte da versão: %s"
+msgstr "A atualização para Kubernetes 1.6.2 não é compatível com a versão: %s"
 
 #: pkg/operations/kubernetesupgrade/upgradecluster.go:86
 #, c-format
 msgid "Upgrade to Kubernetes version: %s is not supported from version: %s"
 msgstr ""
-"A atualização para a versão de Kubernetes: %s não tem suporte da versão: %s"
+"A atualização para a versão de Kubernetes: %s não é compatível com a versão: "
+"%s"
 
 #: pkg/acsengine/filesaver.go:24
 #, c-format
