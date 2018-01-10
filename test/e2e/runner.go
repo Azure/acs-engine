@@ -51,6 +51,11 @@ func main() {
 
 	// Only provision a cluster if there isnt a name present
 	if cfg.Name == "" {
+		if cfg.IsSoakTest {
+			rg := "acse-test-infrastructure-soak" + cfg.Location
+			log.Printf("Deleting Group:%s\n", rg)
+			acct.DeleteGroup(rg)
+		}
 		cliProvisioner, err := runner.BuildCLIProvisioner(cfg, acct, pt)
 		if err != nil {
 			log.Fatalf("Error while trying to build CLI Provisioner:%s", err)
