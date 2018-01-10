@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"os/exec"
 	"os/signal"
 
 	"github.com/Azure/acs-engine/test/e2e/azure"
@@ -54,6 +55,8 @@ func main() {
 		if cfg.IsSoakTest {
 			rg := "acse-test-infrastructure-soak-" + cfg.Location
 			log.Printf("Deleting Group:%s\n", rg)
+			sshPath := "_output/" + rg + ".ssh"
+			out, err := exec.Command("rm", sshPath).CombinedOutput()
 			acct.DeleteGroup(rg, true)
 		}
 		cliProvisioner, err := runner.BuildCLIProvisioner(cfg, acct, pt)
