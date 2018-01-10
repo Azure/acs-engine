@@ -17,7 +17,6 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--authorization-mode":              "Webhook",
 		"--client-ca-file":                  "/etc/kubernetes/certs/ca.crt",
 		"--pod-manifest-path":               "/etc/kubernetes/manifests",
-		"--cloud-config":                    "/etc/kubernetes/azure.json",
 		"--cluster-domain":                  "cluster.local",
 		"--cluster-dns":                     DefaultKubernetesDNSServiceIP,
 		"--cgroups-per-qos":                 "false",
@@ -46,6 +45,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--image-gc-low-threshold":       strconv.Itoa(DefaultKubernetesGCLowThreshold),
 		"--non-masquerade-cidr":          DefaultNonMasqueradeCidr,
 		"--cloud-provider":               "azure",
+		"--cloud-config":                 "/etc/kubernetes/azure.json",
 	}
 
 	// If no user-configurable kubelet config values exists, use the defaults
