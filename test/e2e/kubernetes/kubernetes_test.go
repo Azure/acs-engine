@@ -160,6 +160,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						success = true
 						break
 					}
+					time.Sleep(10 * time.Second)
 				}
 				Expect(success).To(BeTrue())
 			}
