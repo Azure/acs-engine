@@ -55,6 +55,9 @@ func (cli *CLIProvisioner) Run() error {
 		if err != nil {
 			if i < cli.ProvisionRetries {
 				cli.Point.RecordProvisionError()
+				if cli.Config.IsSoakTest {
+					cli.deleteArtifacts()
+				}
 			} else if i == cli.ProvisionRetries {
 				cli.Point.RecordProvisionError()
 				return fmt.Errorf("Exceeded provision retry count: %s", err)
@@ -72,6 +75,11 @@ func (cli *CLIProvisioner) Run() error {
 		}
 	}
 	return fmt.Errorf("Unable to run provisioner")
+}
+
+func (cli *CLIProvisioner) deleteArtifacts() {
+	exec.Command("chmod", "0644", "_output/"+cli.Config.Name+"*")
+	exec.Command("rm", "-rf", "_output/"+cli.Config.Name+"*")
 }
 
 func (cli *CLIProvisioner) provision() error {
