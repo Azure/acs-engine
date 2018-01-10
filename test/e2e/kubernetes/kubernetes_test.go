@@ -2,6 +2,7 @@ package kubernetes
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -150,19 +151,26 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			nodeList, err := node.Get()
 			Expect(err).NotTo(HaveOccurred())
 
-			for _, node := range nodeList.Nodes {
-				success := false
-				for i := 0; i < 60; i++ {
-					dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
-					curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
-					_, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
-					if err == nil {
-						success = true
-						break
+			if !eng.HasWindowsAgents() {
+				for _, node := range nodeList.Nodes {
+					success := false
+					for i := 0; i < 60; i++ {
+						dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
+						curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
+						_, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
+						if err == nil {
+							success = true
+							break
+						}
+						if i > 58 {
+							log.Println(curlCMD)
+							log.Println(err.Error())
+							log.Printf("%#v\n", err)
+						}
+						time.Sleep(10 * time.Second)
 					}
-					time.Sleep(10 * time.Second)
+					Expect(success).To(BeTrue())
 				}
-				Expect(success).To(BeTrue())
 			}
 		})
 	})
