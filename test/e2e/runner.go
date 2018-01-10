@@ -54,7 +54,7 @@ func main() {
 		if cfg.IsSoakTest {
 			rg := "acse-test-infrastructure-soak-" + cfg.Location
 			log.Printf("Deleting Group:%s\n", rg)
-			acct.DeleteGroup(rg)
+			acct.DeleteGroup(rg, true)
 		}
 		cliProvisioner, err := runner.BuildCLIProvisioner(cfg, acct, pt)
 		if err != nil {
@@ -123,7 +123,7 @@ func teardown() {
 	if cfg.CleanUpOnExit {
 		for _, rg := range rgs {
 			log.Printf("Deleting Group:%s\n", rg)
-			acct.DeleteGroup(rg)
+			acct.DeleteGroup(rg, false)
 		}
 	}
 }

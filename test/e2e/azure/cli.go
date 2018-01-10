@@ -96,8 +96,12 @@ func (a *Account) CreateGroup(name, location string) error {
 }
 
 // DeleteGroup delets a given resource group by name
-func (a *Account) DeleteGroup(name string) error {
-	out, err := exec.Command("az", "group", "delete", "--name", name, "--no-wait", "--yes").CombinedOutput()
+func (a *Account) DeleteGroup(name string, wait bool) error {
+	arg := ""
+	if !wait {
+		arg = "--no-wait"
+	}
+	out, err := exec.Command("az", "group", "delete", "--name", name, arg, "--yes").CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to delete resource group (%s):%s", name, out)
 		return err
