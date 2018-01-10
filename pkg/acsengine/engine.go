@@ -861,55 +861,18 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return buf.String()
 		},
-		"GetControllerManagerConfigKeyVals": func(kc *api.KubernetesConfig) string {
-			controllerManagerConfig := kc.ControllerManagerConfig
+		"GetK8sRuntimeConfigKeyVals": func(config map[string]string) string {
 			// Order by key for consistency
 			keys := []string{}
-			for key := range controllerManagerConfig {
+			for key := range config {
 				keys = append(keys, key)
 			}
 			sort.Strings(keys)
 			var buf bytes.Buffer
 			for _, key := range keys {
-				buf.WriteString(fmt.Sprintf("\"%s=%s\", ", key, controllerManagerConfig[key]))
+				buf.WriteString(fmt.Sprintf("\\\"%s=%s\\\", ", key, config[key]))
 			}
 			return strings.TrimSuffix(buf.String(), ", ")
-		},
-		"GetCloudControllerManagerConfigKeyVals": func(kc *api.KubernetesConfig) string {
-			cloudControllerManagerConfig := kc.CloudControllerManagerConfig
-			// Order by key for consistency
-			keys := []string{}
-			for key := range cloudControllerManagerConfig {
-				keys = append(keys, key)
-			}
-			sort.Strings(keys)
-			var buf bytes.Buffer
-			for _, key := range keys {
-				buf.WriteString(fmt.Sprintf("\\\"%s=%s\\\", ", key, cloudControllerManagerConfig[key]))
-			}
-			return strings.TrimSuffix(buf.String(), ", ")
-		},
-		"GetAPIServerConfigKeyVals": func(kc *api.KubernetesConfig) string {
-			apiServerConfig := kc.APIServerConfig
-			// Order by key for consistency
-			keys := []string{}
-			for key := range apiServerConfig {
-				keys = append(keys, key)
-			}
-			sort.Strings(keys)
-			var buf bytes.Buffer
-			for _, key := range keys {
-				buf.WriteString(fmt.Sprintf("\\\"%s=%s\\\", ", key, apiServerConfig[key]))
-			}
-			return strings.TrimSuffix(buf.String(), ", ")
-		},
-		// temporary until we genericise cloud controller manager config
-		"GetCloudControllerManagerRouteReconciliationPeriod": func(kc *api.KubernetesConfig) string {
-			controllerManagerConfig := cs.Properties.OrchestratorProfile.KubernetesConfig.ControllerManagerConfig
-			if kc.ControllerManagerConfig != nil {
-				controllerManagerConfig = kc.ControllerManagerConfig
-			}
-			return controllerManagerConfig["--route-reconciliation-period"]
 		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
