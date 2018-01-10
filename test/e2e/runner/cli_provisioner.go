@@ -57,7 +57,7 @@ func (cli *CLIProvisioner) Run() error {
 				cli.Point.RecordProvisionError()
 			} else if i == cli.ProvisionRetries {
 				cli.Point.RecordProvisionError()
-				return fmt.Errorf("Exceeded provision retry count")
+				return fmt.Errorf("Exceeded provision retry count: %s", err)
 			}
 		} else {
 			cli.Point.RecordProvisionSuccess()
