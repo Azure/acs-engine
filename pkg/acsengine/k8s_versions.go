@@ -221,7 +221,7 @@ var KubeConfigs = map[string]map[string]string{
 		DefaultTillerAddonName:       DefaultTillerImage,
 		DefaultACIConnectorAddonName: DefaultACIConnectorImage,
 		DefaultReschedulerAddonName:  DefaultReschedulerImage,
-		"windowszip":                 "v1.7.12-1int.zip",
+		"windowszip":                 "v1.7.12-2int.zip",
 		"nodestatusfreq":             DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod":            DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":                DefaultKubernetesCtrlMgrPodEvictionTimeout,
