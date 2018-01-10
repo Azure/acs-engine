@@ -10,7 +10,6 @@ import (
 func setAPIServerConfig(cs *api.ContainerService) {
 	o := cs.Properties.OrchestratorProfile
 	staticLinuxAPIServerConfig := map[string]string{
-		"--admission-control":          "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages,SecurityContextDeny",
 		"--address":                    "0.0.0.0",
 		"--advertise-address":          "<kubernetesAPIServerIP>",
 		"--allow-privileged":           "true",
@@ -19,7 +18,6 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--audit-log-maxbackup":        "10",
 		"--audit-log-maxsize":          "100",
 		"--audit-log-path":             "/var/log/apiserver/audit.log",
-		"--authorization-mode":         "Node",
 		"--insecure-port":              "8080",
 		"--secure-port":                "443",
 		"--service-account-lookup":     "true",
@@ -39,11 +37,6 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--service-cluster-ip-range":   o.KubernetesConfig.ServiceCIDR,
 		"--storage-backend":            o.GetAPIServerEtcdAPIVersion(),
 		"--v":                          "4",
-	}
-
-	// RBAC configuration
-	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
-		staticLinuxAPIServerConfig["--authorization-mode"] = "Node,RBAC"
 	}
 
 	// Data Encryption at REST configuration
@@ -87,7 +80,15 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	// TODO placeholder for specific config overrides for Windows clusters
 
 	// Default apiserver config
-	defaultAPIServerConfig := map[string]string{}
+	defaultAPIServerConfig := map[string]string{
+		"--admission-control":  "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages,SecurityContextDeny",
+		"--authorization-mode": "Node",
+	}
+
+	// RBAC configuration
+	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
+		defaultAPIServerConfig["--authorization-mode"] = "Node,RBAC"
+	}
 
 	// If no user-configurable apiserver config values exists, use the defaults
 	if o.KubernetesConfig.APIServerConfig == nil {
