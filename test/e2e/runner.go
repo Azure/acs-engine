@@ -56,7 +56,7 @@ func main() {
 			rg := "acse-test-infrastructure-soak-" + cfg.Location
 			log.Printf("Deleting Group:%s\n", rg)
 			sshPath := "_output/" + rg + ".ssh"
-			out, err := exec.Command("rm", sshPath).CombinedOutput()
+			exec.Command("rm", sshPath).CombinedOutput()
 			acct.DeleteGroup(rg, true)
 		}
 		cliProvisioner, err := runner.BuildCLIProvisioner(cfg, acct, pt)
