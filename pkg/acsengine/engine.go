@@ -512,7 +512,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)
 		}
 
-		if properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager {
+		if helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager) {
 			kubernetesCcmSpec := properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["ccm"]
 			if properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage != "" {
 				kubernetesCcmSpec = properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage
@@ -872,6 +872,20 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			var buf bytes.Buffer
 			for _, key := range keys {
 				buf.WriteString(fmt.Sprintf("\"%s=%s\", ", key, controllerManagerConfig[key]))
+			}
+			return strings.TrimSuffix(buf.String(), ", ")
+		},
+		"GetCloudControllerManagerConfigKeyVals": func(kc *api.KubernetesConfig) string {
+			cloudControllerManagerConfig := kc.CloudControllerManagerConfig
+			// Order by key for consistency
+			keys := []string{}
+			for key := range cloudControllerManagerConfig {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
+			var buf bytes.Buffer
+			for _, key := range keys {
+				buf.WriteString(fmt.Sprintf("\\\"%s=%s\\\", ", key, cloudControllerManagerConfig[key]))
 			}
 			return strings.TrimSuffix(buf.String(), ", ")
 		},

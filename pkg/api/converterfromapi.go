@@ -675,6 +675,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	convertAddonsToVlabs(api, vlabs)
 	convertKubeletConfigToVlabs(api, vlabs)
 	convertControllerManagerConfigToVlabs(api, vlabs)
+	convertCloudControllerManagerConfigToVlabs(api, vlabs)
 	convertAPIServerConfigToVlabs(api, vlabs)
 }
 
@@ -689,6 +690,13 @@ func convertControllerManagerConfigToVlabs(a *KubernetesConfig, v *vlabs.Kuberne
 	v.ControllerManagerConfig = map[string]string{}
 	for key, val := range a.ControllerManagerConfig {
 		v.ControllerManagerConfig[key] = val
+	}
+}
+
+func convertCloudControllerManagerConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
+	v.CloudControllerManagerConfig = map[string]string{}
+	for key, val := range a.CloudControllerManagerConfig {
+		v.CloudControllerManagerConfig[key] = val
 	}
 }
 

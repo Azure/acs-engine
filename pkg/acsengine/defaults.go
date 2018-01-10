@@ -403,6 +403,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		setKubeletConfig(cs)
 		// Configure controller-manager
 		setControllerManagerConfig(cs)
+		// Configure cloud-controller-manager
+		setCloudControllerManagerConfig(cs)
 		// Configure apiserver
 		setAPIServerConfig(cs)
 

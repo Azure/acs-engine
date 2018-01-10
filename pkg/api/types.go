@@ -229,6 +229,7 @@ type KubernetesConfig struct {
 	Addons                       []KubernetesAddon `json:"addons,omitempty"`
 	KubeletConfig                map[string]string `json:"kubeletConfig,omitempty"`
 	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
+	CloudControllerManagerConfig map[string]string `json:"cloudControllerManagerConfig,omitempty"`
 	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
 }
 
