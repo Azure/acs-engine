@@ -10,12 +10,19 @@ import (
 func setAPIServerConfig(cs *api.ContainerService) {
 	o := cs.Properties.OrchestratorProfile
 	staticLinuxAPIServerConfig := map[string]string{
-		"--admission-control":          "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec",
+		"--admission-control":          "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages,SecurityContextDeny",
 		"--address":                    "0.0.0.0",
 		"--advertise-address":          "<kubernetesAPIServerIP>",
 		"--allow-privileged":           "true",
+		"--anonymous-auth":             "false",
+		"--audit-log-maxage":           "30",
+		"--audit-log-maxbackup":        "10",
+		"--audit-log-maxsize":          "100",
+		"--audit-log-path":             "/var/log/apiserver/audit.log",
+		"--authorization-mode":         "Node",
 		"--insecure-port":              "8080",
 		"--secure-port":                "443",
+		"--service-account-lookup":     "true",
 		"--etcd-cafile":                "/etc/kubernetes/certs/ca.crt",
 		"--etcd-certfile":              "/etc/kubernetes/certs/etcdclient.crt",
 		"--etcd-keyfile":               "/etc/kubernetes/certs/etcdclient.key",
@@ -24,6 +31,8 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--tls-cert-file":              "/etc/kubernetes/certs/apiserver.crt",
 		"--tls-private-key-file":       "/etc/kubernetes/certs/apiserver.key",
 		"--client-ca-file":             "/etc/kubernetes/certs/ca.crt",
+		"--profiling":                  "false",
+		"--repair-malformed-updates":   "false",
 		"--service-account-key-file":   "/etc/kubernetes/certs/apiserver.key",
 		"--kubelet-client-certificate": "/etc/kubernetes/certs/client.crt",
 		"--kubelet-client-key":         "/etc/kubernetes/certs/client.key",
@@ -34,7 +43,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// RBAC configuration
 	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
-		staticLinuxAPIServerConfig["--authorization-mode"] = "RBAC"
+		staticLinuxAPIServerConfig["--authorization-mode"] = "Node,RBAC"
 	}
 
 	// Data Encryption at REST configuration
