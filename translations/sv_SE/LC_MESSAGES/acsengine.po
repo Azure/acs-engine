@@ -107,7 +107,7 @@ msgstr "ogiltig %s-version för abonnemangsändring från versionslöst objekt"
 #: pkg/acsengine/engine.go:322
 #, c-format
 msgid "orchestrator '%s' is unsupported"
-msgstr "orchestrator %s stöds inte"
+msgstr "initieraren %s stöds inte"
 
 #: pkg/acsengine/engine.go:187
 #, c-format
