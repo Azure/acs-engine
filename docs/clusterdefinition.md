@@ -276,11 +276,17 @@ Below is a list of cloud-controller-manager options that are *not* currently use
 
 See [here](https://kubernetes.io/docs/reference/generated/kube-apiserver/) for a reference of supported apiserver options.
 
+Below is a list of apiserver options that acs-engine will configure by default:
+
+|apiserver option|default value|
+|"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages, SecurityContextDeny"|
+|"--authorization-mode"|"Node", "RBAC" (*the latter if enabledRbac is true*)|
+
+
 Below is a list of apiserver options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
 
 |apiserver option|default value|
 |---|---|
-|"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages, SecurityContextDeny"|
 |"--address"|"0.0.0.0"|
 |"--advertise-address"|*calculated value that represents listening URI for API server*|
 |"--allow-privileged"|"true"|
@@ -308,7 +314,6 @@ Below is a list of apiserver options that are *not* currently user-configurable,
 |"--service-cluster-ip-range"|*see serviceCIDR*|
 |"--storage-backend"|*calculated value that represents etcd version*|
 |"--v"|"4"|
-|"--authorization-mode"|"Node", and "RBAC" (*if enabledRbac is true*)|
 |"--experimental-encryption-provider-config"|"/etc/kubernetes/encryption-config.yaml" (*if enableDataEncryptionAtRest is true*)|
 |"--requestheader-client-ca-file"|"/etc/kubernetes/certs/proxy-ca.crt" (*if enableAggregatedAPIs is true*)|
 |"--proxy-client-cert-file"|"/etc/kubernetes/certs/proxy.crt" (*if enableAggregatedAPIs is true*)|
