@@ -2,23 +2,35 @@
 package backup
 
 import (
+	"compress/gzip"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
 
-	"compress/gzip"
 	"github.com/influxdata/influxdb/cmd/influxd/backup_util"
 	"github.com/influxdata/influxdb/services/snapshotter"
 	"github.com/influxdata/influxdb/tcp"
-	"io/ioutil"
+)
+
+const (
+	// Suffix is a suffix added to the backup while it's in-process.
+	Suffix = ".pending"
+
+	// Metafile is the base name given to the metastore backups.
+	Metafile = "meta"
+
+	// BackupFilePattern is the beginning of the pattern for a backup
+	// file. They follow the scheme <database>.<retention>.<shardID>.<increment>
+	BackupFilePattern = "%s.%s.%05d"
 )
 
 // Command represents the program execution for "influxd backup".
@@ -45,6 +57,8 @@ type Command struct {
 	enterprise         bool
 	manifest           backup_util.Manifest
 	enterpriseFileBase string
+
+	BackupFiles []string
 }
 
 // NewCommand returns a new instance of Command with default settings.
@@ -105,19 +119,22 @@ func (cmd *Command) Run(args ...string) error {
 	}
 
 	if cmd.enterprise {
-		cmd.manifest.Platform = "OSS"
 		filename := cmd.enterpriseFileBase + ".manifest"
 		if err := cmd.manifest.Save(filepath.Join(cmd.path, filename)); err != nil {
 			cmd.StderrLogger.Printf("manifest save failed: %v", err)
 			return err
 		}
+		cmd.BackupFiles = append(cmd.BackupFiles, filename)
 	}
 
 	if err != nil {
 		cmd.StderrLogger.Printf("backup failed: %v", err)
 		return err
 	}
-	cmd.StdoutLogger.Println("backup complete")
+	cmd.StdoutLogger.Println("backup complete:")
+	for _, v := range cmd.BackupFiles {
+		cmd.StdoutLogger.Println("\t" + filepath.Join(cmd.path, v))
+	}
 
 	return nil
 }
@@ -145,6 +162,8 @@ func (cmd *Command) parseFlags(args []string) (err error) {
 	if err != nil {
 		return err
 	}
+
+	cmd.BackupFiles = []string{}
 
 	// for enterprise saving, if needed
 	cmd.enterpriseFileBase = time.Now().UTC().Format(backup_util.EnterpriseFileNamePattern)
@@ -225,6 +244,9 @@ func (cmd *Command) backupShard(db, rp, sid string) error {
 
 	// TODO: verify shard backup data
 	err = cmd.downloadAndVerify(req, shardArchivePath, nil)
+	if !cmd.enterprise {
+		cmd.BackupFiles = append(cmd.BackupFiles, shardArchivePath)
+	}
 
 	if err != nil {
 		return err
@@ -283,6 +305,8 @@ func (cmd *Command) backupShard(db, rp, sid string) error {
 		if err := out.Close(); err != nil {
 			return err
 		}
+
+		cmd.BackupFiles = append(cmd.BackupFiles, filename)
 	}
 	return nil
 
@@ -389,6 +413,10 @@ func (cmd *Command) backupMetastore() error {
 		return err
 	}
 
+	if !cmd.enterprise {
+		cmd.BackupFiles = append(cmd.BackupFiles, metastoreArchivePath)
+	}
+
 	if cmd.enterprise {
 		metaBytes, err := backup_util.GetMetaBytes(metastoreArchivePath)
 		defer os.Remove(metastoreArchivePath)
@@ -396,13 +424,19 @@ func (cmd *Command) backupMetastore() error {
 			return err
 		}
 		filename := cmd.enterpriseFileBase + ".meta"
-		if err := ioutil.WriteFile(filepath.Join(cmd.path, filename), metaBytes, 0644); err != nil {
+		ep := backup_util.EnterprisePacker{Data: metaBytes, MaxNodeID: 0}
+		protoBytes, err := ep.MarshalBinary()
+		if err != nil {
+			return err
+		}
+		if err := ioutil.WriteFile(filepath.Join(cmd.path, filename), protoBytes, 0644); err != nil {
 			fmt.Fprintln(cmd.Stdout, "Error.")
 			return err
 		}
 
 		cmd.manifest.Meta.FileName = filename
 		cmd.manifest.Meta.Size = int64(len(metaBytes))
+		cmd.BackupFiles = append(cmd.BackupFiles, filename)
 	}
 
 	return nil

@@ -2,6 +2,7 @@ package rhh
 
 import (
 	"bytes"
+	"encoding/binary"
 	"sort"
 
 	"github.com/cespare/xxhash"
@@ -239,6 +240,13 @@ func HashKey(key []byte) int64 {
 		h = 0 - h
 	}
 	return h
+}
+
+// HashUint64 computes a hash of an int64. Hash is always non-zero.
+func HashUint64(key uint64) int64 {
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, key)
+	return HashKey(buf)
 }
 
 // Dist returns the probe distance for a hash in a slot index.
