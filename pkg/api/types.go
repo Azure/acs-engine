@@ -195,6 +195,18 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
+// CloudProviderConfig contains the KubernetesConfig parameters specific to the Cloud Provider
+type CloudProviderConfig struct {
+	CloudProviderBackoff         bool    `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries  int     `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent float64 `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit       bool    `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS    float64 `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket int     `json:"cloudProviderRateLimitBucket,omitempty"`
+}
+
 // KubernetesConfigDeprecated are properties that are no longer operable and will be ignored
 type KubernetesConfigDeprecated struct {
 	NonMasqueradeCidr                string `json:"nonMasqueradeCidr,omitempty"`
@@ -208,21 +220,14 @@ type KubernetesConfigDeprecated struct {
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
-	KubernetesImageBase          string            `json:"kubernetesImageBase,omitempty"`
-	ClusterSubnet                string            `json:"clusterSubnet,omitempty"`
-	NetworkPolicy                string            `json:"networkPolicy,omitempty"`
-	MaxPods                      int               `json:"maxPods,omitempty"`
-	DockerBridgeSubnet           string            `json:"dockerBridgeSubnet,omitempty"`
-	DNSServiceIP                 string            `json:"dnsServiceIP,omitempty"`
-	ServiceCIDR                  string            `json:"serviceCidr,omitempty"`
-	CloudProviderBackoff         bool              `json:"cloudProviderBackoff,omitempty"`
-	CloudProviderBackoffRetries  int               `json:"cloudProviderBackoffRetries,omitempty"`
-	CloudProviderBackoffJitter   float64           `json:"cloudProviderBackoffJitter,omitempty"`
-	CloudProviderBackoffDuration int               `json:"cloudProviderBackoffDuration,omitempty"`
-	CloudProviderBackoffExponent float64           `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit       bool              `json:"cloudProviderRateLimit,omitempty"`
-	CloudProviderRateLimitQPS    float64           `json:"cloudProviderRateLimitQPS,omitempty"`
-	CloudProviderRateLimitBucket int               `json:"cloudProviderRateLimitBucket,omitempty"`
+	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
+	NetworkPolicy       string `json:"networkPolicy,omitempty"`
+	MaxPods             int    `json:"maxPods,omitempty"`
+	DockerBridgeSubnet  string `json:"dockerBridgeSubnet,omitempty"`
+	DNSServiceIP        string `json:"dnsServiceIP,omitempty"`
+	ServiceCIDR         string `json:"serviceCidr,omitempty"`
+	CloudProviderConfig
 	UseManagedIdentity           bool              `json:"useManagedIdentity,omitempty"`
 	CustomHyperkubeImage         string            `json:"customHyperkubeImage,omitempty"`
 	DockerEngineVersion          string            `json:"dockerEngineVersion,omitempty"`
