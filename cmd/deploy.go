@@ -16,6 +16,7 @@ import (
 	"encoding/json"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
+	"github.com/Azure/acs-engine/pkg/acsengine/transform"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
@@ -261,11 +262,11 @@ func (dc *deployCmd) run() error {
 		os.Exit(1)
 	}
 
-	if template, err = acsengine.PrettyPrintArmTemplate(template); err != nil {
+	if template, err = transform.PrettyPrintArmTemplate(template); err != nil {
 		log.Fatalf("error pretty printing template: %s \n", err.Error())
 	}
 	var parametersFile string
-	if parametersFile, err = acsengine.BuildAzureParametersFile(parameters); err != nil {
+	if parametersFile, err = transform.BuildAzureParametersFile(parameters); err != nil {
 		log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
 	}
 

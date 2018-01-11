@@ -1,10 +1,4 @@
 {{if .HasAadProfile}}
-    "aadServerAppId": {
-      "metadata": {
-        "description": "The server AAD application ID"
-      },
-      "type": "string"
-    },
     "aadTenantId": {
       "defaultValue": "",
       "metadata": {

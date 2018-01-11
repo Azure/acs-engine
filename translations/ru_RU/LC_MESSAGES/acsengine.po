@@ -102,8 +102,7 @@ msgstr "не удалось инициализировать генератор 
 #, c-format
 msgid "invalid version %s for conversion back from unversioned object"
 msgstr ""
-"недопустимая версия %s для обратного преобразования из объекта без "
-"управления версиями"
+"недопустимая версия %s для обратного преобразования из объекта без версий"
 
 #: pkg/acsengine/engine.go:322
 #, c-format

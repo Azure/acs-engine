@@ -2,7 +2,11 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "Kubernetes"
+      "orchestratorType": "Kubernetes",
+      "orchestratorRelease": "1.8",
+      "kubernetesConfig": {
+        "useCloudControllerManager": true
+      }
     },
     "masterProfile": {
       "count": 1,
@@ -18,7 +22,7 @@
       }
     ],
     "linuxProfile": {
-      "adminUsername": "azureuser",
+      "adminUsername": "azureUser",
       "ssh": {
         "publicKeys": [
           {

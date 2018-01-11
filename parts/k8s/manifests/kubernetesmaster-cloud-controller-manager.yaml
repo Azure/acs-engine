@@ -11,19 +11,8 @@ spec:
   containers:
     - name: "cloud-controller-manager"
       image: "<kubernetesCcmImageSpec>"
-      command: 
-        - "cloud-controller-manager"
-        - "--kubeconfig=/var/lib/kubelet/kubeconfig"
-        - "--allocate-node-cidrs=<allocateNodeCidrs>"
-        - "--cluster-cidr=<kubeClusterCidr>"
-        - "--cluster-name=<masterFqdnPrefix>"
-        - "--cloud-provider=azure"
-        - "--cloud-config=/etc/kubernetes/azure.json"
-        - "--leader-elect=true"
-# TODO: RBAC support
-#        - "<kubernetesEnableRbac>"
-        - "--route-reconciliation-period=<kubernetesCtrlMgrRouteReconciliationPeriod>"
-        - "--v=2"
+      command: ["cloud-controller-manager"]
+      args: [<kubernetesCloudControllerManagerConfig>]
       volumeMounts: 
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"

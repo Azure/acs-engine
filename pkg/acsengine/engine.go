@@ -512,7 +512,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addValue(parametersMap, "kubernetesEndpoint", properties.HostedMasterProfile.FQDN)
 		}
 
-		if properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager {
+		if helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager) {
 			kubernetesCcmSpec := properties.OrchestratorProfile.KubernetesConfig.KubernetesImageBase + KubeConfigs[k8sVersion]["ccm"]
 			if properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage != "" {
 				kubernetesCcmSpec = properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage
@@ -638,7 +638,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 
 		if properties.AADProfile != nil {
 			addValue(parametersMap, "aadTenantId", properties.AADProfile.TenantID)
-			addValue(parametersMap, "aadServerAppId", properties.AADProfile.ServerAppID)
 		}
 	}
 
@@ -699,6 +698,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addSecret(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword, false)
 		if properties.WindowsProfile.ImageVersion != "" {
 			addValue(parametersMap, "agentWindowsVersion", properties.WindowsProfile.ImageVersion)
+		}
+		if properties.WindowsProfile.WindowsImageSourceURL != "" {
+			addValue(parametersMap, "agentWindowsSourceUrl", properties.WindowsProfile.WindowsImageSourceURL)
 		}
 		if properties.OrchestratorProfile.OrchestratorType == api.Kubernetes {
 			k8sVersion := properties.OrchestratorProfile.OrchestratorVersion
@@ -859,27 +861,18 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return buf.String()
 		},
-		"GetControllerManagerConfigKeyVals": func(kc *api.KubernetesConfig) string {
-			controllerManagerConfig := kc.ControllerManagerConfig
+		"GetK8sRuntimeConfigKeyVals": func(config map[string]string) string {
 			// Order by key for consistency
 			keys := []string{}
-			for key := range controllerManagerConfig {
+			for key := range config {
 				keys = append(keys, key)
 			}
 			sort.Strings(keys)
 			var buf bytes.Buffer
 			for _, key := range keys {
-				buf.WriteString(fmt.Sprintf("\"%s=%s\", ", key, controllerManagerConfig[key]))
+				buf.WriteString(fmt.Sprintf("\\\"%s=%s\\\", ", key, config[key]))
 			}
 			return strings.TrimSuffix(buf.String(), ", ")
-		},
-		// temporary until we genericise cloud controller manager config
-		"GetCloudControllerManagerRouteReconciliationPeriod": func(kc *api.KubernetesConfig) string {
-			controllerManagerConfig := cs.Properties.OrchestratorProfile.KubernetesConfig.ControllerManagerConfig
-			if kc.ControllerManagerConfig != nil {
-				controllerManagerConfig = kc.ControllerManagerConfig
-			}
-			return controllerManagerConfig["--route-reconciliation-period"]
 		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
@@ -1184,6 +1177,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"HasWindowsSecrets": func() bool {
 			return cs.Properties.WindowsProfile.HasSecrets()
 		},
+		"HasWindowsCustomImage": func() bool {
+			return cs.Properties.WindowsProfile.HasCustomImage()
+		},
 		"GetConfigurationScriptRootURL": func() string {
 			if cs.Properties.LinuxProfile.ScriptRootURL == "" {
 				return DefaultConfigurationScriptRootURL
@@ -1221,6 +1217,12 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"GetAgentOSImageVersion": func(profile *api.AgentPoolProfile) string {
 			cloudSpecConfig := GetCloudSpecConfig(cs.Location)
 			return fmt.Sprintf("\"%s\"", cloudSpecConfig.OSImageConfig[profile.Distro].ImageVersion)
+		},
+		"GetMasterEtcdServerPort": func() int {
+			return DefaultMasterEtcdServerPort
+		},
+		"GetMasterEtcdClientPort": func() int {
+			return DefaultMasterEtcdClientPort
 		},
 		"PopulateClassicModeDefaultValue": func(attr string) string {
 			var val string

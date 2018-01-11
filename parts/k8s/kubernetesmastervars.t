@@ -109,7 +109,6 @@
 {{end}}
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
 {{if .HasAadProfile}}
-    "aadServerAppId": "[parameters('aadServerAppId')]",
     "aadTenantId": "[parameters('aadTenantId')]",
 {{end}}
 {{if not IsHostedMaster}}
@@ -267,8 +266,8 @@
       "[concat(variables('masterFirstAddrPrefix'), add(3, int(variables('masterFirstAddrOctet4'))))]",
       "[concat(variables('masterFirstAddrPrefix'), add(4, int(variables('masterFirstAddrOctet4'))))]"
     ],
-    "masterEtcdServerPort": 2380,
-    "masterEtcdClientPort": 2379,
+    "masterEtcdServerPort": {{GetMasterEtcdServerPort}},
+    "masterEtcdClientPort": {{GetMasterEtcdClientPort}},
     "masterEtcdPeerURLs":[
       "[concat('https://', variables('masterPrivateIpAddrs')[0], ':', variables('masterEtcdServerPort'))]",
       "[concat('https://', variables('masterPrivateIpAddrs')[1], ':', variables('masterEtcdServerPort'))]",

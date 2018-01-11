@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 func setControllerManagerConfig(cs *api.ContainerService) {
@@ -12,8 +13,6 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 		"--kubeconfig":                       "/var/lib/kubelet/kubeconfig",
 		"--allocate-node-cidrs":              strconv.FormatBool(!o.IsAzureCNI()),
 		"--cluster-cidr":                     o.KubernetesConfig.ClusterSubnet,
-		"--cloud-provider":                   "azure",
-		"--cloud-config":                     "/etc/kubernetes/azure.json",
 		"--root-ca-file":                     "/etc/kubernetes/certs/ca.crt",
 		"--cluster-signing-cert-file":        "/etc/kubernetes/certs/ca.crt",
 		"--cluster-signing-key-file":         "/etc/kubernetes/certs/ca.key",
@@ -28,6 +27,12 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 		staticLinuxControllerManagerConfig["--cluster-name"] = cs.Properties.MasterProfile.DNSPrefix
 	} else if cs.Properties.HostedMasterProfile != nil {
 		staticLinuxControllerManagerConfig["--cluster-name"] = cs.Properties.HostedMasterProfile.DNSPrefix
+	}
+
+	// Enable cloudprovider if we're not using cloud controller manager
+	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.UseCloudControllerManager) {
+		staticLinuxControllerManagerConfig["--cloud-provider"] = "azure"
+		staticLinuxControllerManagerConfig["--cloud-config"] = "/etc/kubernetes/azure.json"
 	}
 
 	staticWindowsControllerManagerConfig := make(map[string]string)

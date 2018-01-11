@@ -49,7 +49,7 @@ var (
 		ImageOffer:     "UbuntuServer",
 		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201711211",
+		ImageVersion:   "16.04.201801050",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -403,6 +403,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		setKubeletConfig(cs)
 		// Configure controller-manager
 		setControllerManagerConfig(cs)
+		// Configure cloud-controller-manager
+		setCloudControllerManagerConfig(cs)
+		// Configure apiserver
+		setAPIServerConfig(cs)
 
 	} else if o.OrchestratorType == api.DCOS {
 		if o.DcosConfig == nil {

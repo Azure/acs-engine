@@ -180,25 +180,8 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     # SNAT outbound traffic from pods to destinations outside of VNET.
     iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
 {{end}}
-
-{{ if .HasAadProfile }}
-    OIDC_CLIENT_ID=spn:{{WrapAsVariable "aadServerAppId"}}
-    VAR_AAD_TENANT_ID={{WrapAsVariable "aadTenantId"}}
-    VAR_TENANT_ID={{WrapAsVariable "tenantId"}}
-    VAR_TARGET_ENV={{WrapAsVariable "targetEnvironment"}}
-    AAD_TENANT_ID=${VAR_AAD_TENANT_ID:-$VAR_TENANT_ID}
-    AAD_ISSUER_HOST="sts.windows.net"
-    if [ "$VAR_TARGET_ENV" = "AzureChinaCloud" ]; then
-        AAD_ISSUER_HOST="sts.chinacloudapi.cn"
-    fi
-
-    OIDC_ISSUER_URL="https://$AAD_ISSUER_HOST/$AAD_TENANT_ID/"
-    perl -pi -e "s|--oidc-client-id=\K(?=\")|$OIDC_CLIENT_ID| || s|--oidc-issuer-url=\K(?=\")|$OIDC_ISSUER_URL|" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-{{else}}
-    sed -i "/--oidc-client-id\|--oidc-issuer-url\|--oidc-username-claim/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-{{end}}
     sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsVariable "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
-    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeServiceCidr>|{{WrapAsVariable "kubeServiceCidr"}}|g; s|<masterEtcdClientPort>|{{WrapAsVariable "masterEtcdClientPort"}}|g; s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
     sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
@@ -245,47 +228,28 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesReschedulerMemoryLimit>|{{WrapAsVariable "kubernetesReschedulerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
 {{end}}
 
-{{if .OrchestratorProfile.KubernetesConfig.EnableRbac }}
-    # If RBAC enabled then add parameters to API server and Controller manager configuration
-    sed -i "s|<kubernetesEnableRbac>|--authorization-mode=RBAC|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-{{else}}
-    sed -i "/<kubernetesEnableRbac>/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-{{end}}
-
 {{if EnableDataEncryptionAtRest }}
     ETCD_ENCRYPTION_SECRET="$(head -c 32 /dev/urandom | base64)"
     sed -i "s|<etcdEncryptionSecret>|$ETCD_ENCRYPTION_SECRET|g" "/etc/kubernetes/encryption-config.yaml"
-    sed -i "s|<kubernetesEnableEtcdEncryption>|--experimental-encryption-provider-config=/etc/kubernetes/encryption-config.yaml|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-{{else}}
-    sed -i "/<kubernetesEnableEtcdEncryption>/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{end}}
 
 {{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
     # If Calico Policy enabled then update Cluster Cidr
     sed -i "s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-daemonset.yaml"
 {{end}}
-
-{{if not .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
-    sed -i "/requestheader-client-ca-file/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    sed -i "/proxy-client-cert-file/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    sed -i "/proxy-client-key-file/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    sed -i "/requestheader-allowed-names/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    sed -i "/requestheader-extra-headers-prefix/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    sed -i "/requestheader-group-headers/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-    sed -i "/requestheader-username-headers/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-{{end}}
-    sed -i "s|<etcdApiVersion>|{{ .OrchestratorProfile.GetAPIServerEtcdAPIVersion }}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-
 {{if UseCloudControllerManager }}
-    sed -i "s|<kubernetesCcmImageSpec>|{{WrapAsVariable "kubernetesCcmImageSpec"}}|g; s|<masterFqdnPrefix>|{{WrapAsVariable "masterFqdnPrefix"}}|g; s|<allocateNodeCidrs>|{{WrapAsVariable "allocateNodeCidrs"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g; s|<kubernetesCtrlMgrRouteReconciliationPeriod>|{{GetCloudControllerManagerRouteReconciliationPeriod .OrchestratorProfile.KubernetesConfig}}|g" \
-      /etc/kubernetes/manifests/cloud-controller-manager.yaml
-
-    sed -i "/--\(cloud-config\|cloud-provider\|route-reconciliation-period\)=/d" \
-      /etc/kubernetes/manifests/kube-controller-manager.yaml
-    sed -i "/--\(cloud-config\|cloud-provider\)=/d" \
-      /etc/kubernetes/manifests/kube-apiserver.yaml
+    sed -i "s|<kubernetesCcmImageSpec>|{{WrapAsVariable "kubernetesCcmImageSpec"}}|g" "/etc/kubernetes/manifests/cloud-controller-manager.yaml"
+    sed -i "s|<kubernetesCloudControllerManagerConfig>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.CloudControllerManagerConfig}}|g" "/etc/kubernetes/manifests/cloud-controller-manager.yaml"
 {{end}}
-    sed -i "s|<kubernetesControllerManagerConfig>|{{GetControllerManagerConfigKeyVals .OrchestratorProfile.KubernetesConfig}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+    sed -i "s|<kubernetesControllerManagerConfig>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.ControllerManagerConfig}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+    sed -i "s|<kubernetesAPIServerConfig>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.APIServerConfig}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+{{ if .HasAadProfile }}
+    VAR_AAD_TENANT_ID={{WrapAsVariable "aadTenantId"}}
+    VAR_TENANT_ID={{WrapAsVariable "tenantId"}}
+    AAD_TENANT_ID=${VAR_AAD_TENANT_ID:-$VAR_TENANT_ID}
+    sed -i "/--oidc-issuer-url/s/$/$AAD_TENANT_ID/" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+{{end}}
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"

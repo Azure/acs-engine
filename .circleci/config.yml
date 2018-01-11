@@ -31,9 +31,6 @@ jobs:
           command: make test
       - store_test_results:
           path: test/junit
-      - run:
-          name: Generate test coverage results
-          command:  make coverage
   swarm-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:

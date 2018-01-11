@@ -142,6 +142,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 	if o.OrchestratorType != DCOS && o.DcosConfig != nil && (*o.DcosConfig != DcosConfig{}) {
 		return fmt.Errorf("DcosConfig can be specified only when OrchestratorType is DCOS")
 	}
+
 	return nil
 }
 
@@ -453,6 +454,12 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 	}
 
+	if a.OrchestratorProfile.OrchestratorType != DCOS && a.WindowsProfile != nil {
+		if a.WindowsProfile.WindowsImageSourceURL != "" {
+			return fmt.Errorf("Windows Custom Images are only supported if the Orchestrator Type is DCOS")
+		}
+	}
+
 	return nil
 }
 
@@ -462,6 +469,8 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	const minKubeletRetries = 4
 	// k8s versions that have cloudprovider backoff enabled
 	var backoffEnabledVersions = map[string]bool{
+		common.KubernetesVersion1Dot9Dot0:  true,
+		common.KubernetesVersion1Dot9Dot1:  true,
 		common.KubernetesVersion1Dot8Dot0:  true,
 		common.KubernetesVersion1Dot8Dot1:  true,
 		common.KubernetesVersion1Dot8Dot2:  true,

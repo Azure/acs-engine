@@ -107,12 +107,12 @@ msgstr "échec d'initialisation du générateur de modèles : %s"
 #, c-format
 msgid "invalid version %s for conversion back from unversioned object"
 msgstr ""
-"version non valide %s pour la reconversion à partir de l'objet sans version"
+"version non valide %s pour la reconversion à partir de l'objet non versionné"
 
 #: pkg/acsengine/engine.go:322
 #, c-format
 msgid "orchestrator '%s' is unsupported"
-msgstr "orchestrator « %s » n'est pas pris en charge"
+msgstr "l'orchestrateur « %s » n'est pas pris en charge"
 
 #: pkg/acsengine/engine.go:187
 #, c-format

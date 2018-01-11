@@ -103,7 +103,7 @@ msgstr "从未进行版本管理的对象转换回的无效版本 %s"
 #: pkg/acsengine/engine.go:322
 #, c-format
 msgid "orchestrator '%s' is unsupported"
-msgstr "不支持业务流程“%s”"
+msgstr "不支持业务流程协调程序“%s”"
 
 #: pkg/acsengine/engine.go:187
 #, c-format
