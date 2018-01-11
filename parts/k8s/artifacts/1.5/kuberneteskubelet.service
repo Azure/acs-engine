@@ -39,7 +39,7 @@ ExecStart=/usr/bin/docker run \
         --node-labels="${KUBELET_NODE_LABELS}" \
         --hairpin-mode=promiscuous-bridge \
         ${KUBELET_CONFIG} \
-        --v=2 ${KUBELET_FEATURE_GATES}
+        --v=2
 
 [Install]
 WantedBy=multi-user.target

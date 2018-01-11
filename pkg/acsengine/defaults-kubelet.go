@@ -52,8 +52,13 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--cloud-config":                 "/etc/kubernetes/azure.json",
 	}
 
+	if isKubernetesVersionGe(o.OrchestratorVersion, "1.6.0") {
+		defaultKubeletConfig["--feature-gates"] = "Accelerators=true"
+	}
+
 	// If no user-configurable kubelet config values exists, use the defaults
 	setMissingKubeletValues(o.KubernetesConfig, defaultKubeletConfig)
+	addDefaultFeatureGates(o.KubernetesConfig.KubeletConfig, o.OrchestratorVersion)
 
 	// Override default cloud-provider?
 	if helpers.IsTrueBoolPointer(o.KubernetesConfig.UseCloudControllerManager) {
@@ -90,6 +95,8 @@ func setKubeletConfig(cs *api.ContainerService) {
 			cs.Properties.MasterProfile.KubernetesConfig = &api.KubernetesConfig{}
 		}
 		setMissingKubeletValues(cs.Properties.MasterProfile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
+		addDefaultFeatureGates(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion)
+
 	}
 	// Agent-specific kubelet config changes go here
 	for _, profile := range cs.Properties.AgentPoolProfiles {
@@ -97,17 +104,13 @@ func setKubeletConfig(cs *api.ContainerService) {
 			profile.KubernetesConfig = &api.KubernetesConfig{}
 		}
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
+		addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion)
+	}
+}
 
-		// For versions >= 1.6.0 we add the accelerators=true feature gate
-		// (previously this was handled in parts/k8s/kubernetesagentcustomdata.yml)
-		if isKubernetesVersionGe(o.OrchestratorVersion, "1.6.0") {
-			profileFeatureGates := profile.KubernetesConfig.KubeletConfig["--feature-gates"]
-			if profileFeatureGates != "" {
-				profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig) // make a copy before changing to avoid changing other references (e.g. master)
-				profile.KubernetesConfig.KubeletConfig["--feature-gates"] = combineValues(profileFeatureGates, "Accelerators=true")
-			}
-		}
-		// TODO - should we perform a merge on the --feature-gates values between o.KubernetesConfig.KubeletConfig and profile.KubernetesConfig?
+func addDefaultFeatureGates(m map[string]string, version string) {
+	if isKubernetesVersionGe(version, "1.6.0") {
+		m["--feature-gates"] = combineValues(m["--feature-gates"], "Accelerators=true")
 	}
 }
 
