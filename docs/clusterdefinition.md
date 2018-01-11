@@ -309,8 +309,8 @@ Below is a list of apiserver options that are *not* currently user-configurable,
 |"--tls-private-key-file"|"/etc/kubernetes/certs/apiserver.key"|
 |"--client-ca-file"|"/etc/kubernetes/certs/ca.crt"|
 |"--service-account-key-file"|"/etc/kubernetes/certs/apiserver.key"|
-|"--kubelet-client-certificate"|"/etc/kubernetes/certs/client.crt"|
-|"--kubelet-client-key"|"/etc/kubernetes/certs/client.key"|
+|"--kubelet-client-certificate"|"/etc/kubernetes/certs/apiserver.crt"|
+|"--kubelet-client-key"|"/etc/kubernetes/certs/apiserver.key"|
 |"--service-cluster-ip-range"|*see serviceCIDR*|
 |"--storage-backend"|*calculated value that represents etcd version*|
 |"--v"|"4"|
