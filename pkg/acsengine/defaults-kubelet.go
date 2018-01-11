@@ -123,13 +123,7 @@ func setMissingKubeletValues(p *api.KubernetesConfig, d map[string]string) {
 		}
 	}
 }
-func copyMap(input map[string]string) map[string]string {
-	copy := map[string]string{}
-	for key, value := range input {
-		copy[key] = value
-	}
-	return copy
-}
+
 func combineValues(inputs ...string) string {
 	var valueMap map[string]string
 	valueMap = make(map[string]string)
@@ -138,6 +132,7 @@ func combineValues(inputs ...string) string {
 	}
 	return mapToString(valueMap)
 }
+
 func applyValueStringToMap(valueMap map[string]string, input string) {
 	values := strings.Split(input, ",")
 	for index := 0; index < len(values); index++ {
@@ -149,6 +144,7 @@ func applyValueStringToMap(valueMap map[string]string, input string) {
 		}
 	}
 }
+
 func mapToString(valueMap map[string]string) string {
 	// Order by key for consistency
 	keys := []string{}
