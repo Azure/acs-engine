@@ -325,6 +325,7 @@ Below is a list of apiserver options that are *not* currently user-configurable,
 |"--cloud-provider"|"azure" (*unless useCloudControllerManager is true*)|
 |"--cloud-config"|"/etc/kubernetes/azure.json" (*unless useCloudControllerManager is true*)|
 |"--oidc-username-claim"|"oid" (*if has AADProfile*)|
+|"--oidc-groups-claim"|"groups" (*if has AADProfile*)|
 |"--oidc-client-id"|*calculated value that represents OID client ID* (*if has AADProfile*)|
 |"--oidc-issuer-url"|*calculated value that represents OID issuer URL* (*if has AADProfile*)|
 

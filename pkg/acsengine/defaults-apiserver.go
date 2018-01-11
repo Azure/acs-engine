@@ -64,6 +64,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	// AAD configuration
 	if cs.Properties.HasAadProfile() {
 		staticLinuxAPIServerConfig["--oidc-username-claim"] = "oid"
+		staticLinuxAPIServerConfig["--oidc-groups-claim"] = "groups"
 		staticLinuxAPIServerConfig["--oidc-client-id"] = "spn:" + cs.Properties.AADProfile.ServerAppID
 		issuerHost := "sts.windows.net"
 		if GetCloudTargetEnv(cs.Location) == "AzureChinaCloud" {
