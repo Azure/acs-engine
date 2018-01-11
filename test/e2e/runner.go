@@ -51,8 +51,8 @@ func main() {
 
 	// Only provision a cluster if there isnt a name present
 	if cfg.Name == "" {
-		if cfg.IsSoakTest {
-			rg := "acse-test-infrastructure-soak-" + cfg.Location
+		if cfg.SoakClusterName != "" {
+			rg := cfg.SoakClusterName
 			log.Printf("Deleting Group:%s\n", rg)
 			acct.DeleteGroup(rg, true)
 		}

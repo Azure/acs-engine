@@ -55,7 +55,7 @@ func (cli *CLIProvisioner) Run() error {
 		if err != nil {
 			if i < cli.ProvisionRetries {
 				cli.Point.RecordProvisionError()
-				if cli.Config.IsSoakTest {
+				if cli.Config.SoakClusterName != "" {
 					cli.deleteArtifacts()
 				}
 			} else if i == cli.ProvisionRetries {
@@ -78,14 +78,14 @@ func (cli *CLIProvisioner) Run() error {
 }
 
 func (cli *CLIProvisioner) deleteArtifacts() {
-	exec.Command("chmod", "0644", "_output/"+cli.Config.Name+"*")
-	exec.Command("rm", "-rf", "_output/"+cli.Config.Name+"*")
+	exec.Command("chmod", "0644", "_output/"+cli.Config.SoakClusterName+"*")
+	exec.Command("rm", "-rf", "_output/"+cli.Config.SoakClusterName+"*")
 }
 
 func (cli *CLIProvisioner) provision() error {
 	cli.Config.Name = cli.generateName()
-	if cli.Config.IsSoakTest {
-		cli.Config.Name = "acse-test-infrastructure-soak-" + cli.Config.Location
+	if cli.Config.SoakClusterName != "" {
+		cli.Config.Name = cli.Config.SoakClusterName
 	}
 	os.Setenv("NAME", cli.Config.Name)
 	log.Printf("Cluster name:%s\n", cli.Config.Name)

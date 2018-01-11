@@ -25,7 +25,7 @@ type Config struct {
 	CleanUpOnExit     bool          `envconfig:"CLEANUP_ON_EXIT" default:"true"`                                        // if set the tests will not clean up rgs when tests finish
 	Timeout           time.Duration `envconfig:"TIMEOUT" default:"10m"`
 	CurrentWorkingDir string
-	IsSoakTest        bool `envconfig:"IS_SOAK" default:"false"`
+	SoakClusterName   string `envconfig:"SOAK_CLUSTER_NAME"`
 }
 
 const (
