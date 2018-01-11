@@ -195,7 +195,7 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
-// CloudProviderConfig contains the KubernetesConfig parameters specific to the Cloud Provider
+// CloudProviderConfig contains the KubernetesConfig properties specific to the Cloud Provider
 type CloudProviderConfig struct {
 	CloudProviderBackoff         bool    `json:"cloudProviderBackoff,omitempty"`
 	CloudProviderBackoffRetries  int     `json:"cloudProviderBackoffRetries,omitempty"`
