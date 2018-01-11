@@ -54,7 +54,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 
 	// If no user-configurable kubelet config values exists, use the defaults
 	setMissingKubeletValues(o.KubernetesConfig, defaultKubeletConfig)
-	addDefaultFeatureGates(o.KubernetesConfig.KubeletConfig, o.OrchestratorVersion)
+	addDefaultFeatureGates(o.KubernetesConfig.KubeletConfig, "", "")
 
 	// Override default cloud-provider?
 	if helpers.IsTrueBoolPointer(o.KubernetesConfig.UseCloudControllerManager) {
@@ -91,7 +91,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 			cs.Properties.MasterProfile.KubernetesConfig = &api.KubernetesConfig{}
 		}
 		setMissingKubeletValues(cs.Properties.MasterProfile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
-		addDefaultFeatureGates(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion)
+		addDefaultFeatureGates(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, "", "")
 
 	}
 	// Agent-specific kubelet config changes go here
@@ -100,13 +100,21 @@ func setKubeletConfig(cs *api.ContainerService) {
 			profile.KubernetesConfig = &api.KubernetesConfig{}
 		}
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
-		addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion)
+		addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "Accelerators=true")
 	}
 }
 
-func addDefaultFeatureGates(m map[string]string, version string) {
-	if isKubernetesVersionGe(version, "1.6.0") {
-		m["--feature-gates"] = combineValues(m["--feature-gates"], "Accelerators=true")
+// combine user-provided --feature-gates vals with defaults
+// a minimum k8s version may be declared as required for defaults assignment
+func addDefaultFeatureGates(m map[string]string, minVersion string, defaults string) {
+	if minVersion != "" {
+		if isKubernetesVersionGe(minVersion, "1.6.0") {
+			m["--feature-gates"] = combineValues(m["--feature-gates"], defaults)
+		} else {
+			m["--feature-gates"] = combineValues(m["--feature-gates"], "")
+		}
+	} else {
+		m["--feature-gates"] = combineValues(m["--feature-gates"], defaults)
 	}
 }
 
