@@ -30,7 +30,7 @@ type CLIProvisioner struct {
 	Point             *metrics.Point
 	ResourceGroups    []string
 	Engine            *engine.Engine
-	KeyGenerated      bool
+	KeyGenerated      bool `envconfig:"KEY_GEN" default:"false"`
 }
 
 // BuildCLIProvisioner will return a ProvisionerConfig object which is used to run a provision
