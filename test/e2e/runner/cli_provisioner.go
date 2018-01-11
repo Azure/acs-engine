@@ -30,6 +30,7 @@ type CLIProvisioner struct {
 	Point             *metrics.Point
 	ResourceGroups    []string
 	Engine            *engine.Engine
+	KeyGenerated      bool
 }
 
 // BuildCLIProvisioner will return a ProvisionerConfig object which is used to run a provision
@@ -55,9 +56,6 @@ func (cli *CLIProvisioner) Run() error {
 		if err != nil {
 			if i < cli.ProvisionRetries {
 				cli.Point.RecordProvisionError()
-				if cli.Config.SoakClusterName != "" {
-					cli.deleteArtifacts()
-				}
 			} else if i == cli.ProvisionRetries {
 				cli.Point.RecordProvisionError()
 				return fmt.Errorf("Exceeded provision retry count: %s", err)
@@ -77,11 +75,6 @@ func (cli *CLIProvisioner) Run() error {
 	return fmt.Errorf("Unable to run provisioner")
 }
 
-func (cli *CLIProvisioner) deleteArtifacts() {
-	exec.Command("chmod", "0644", "_output/"+cli.Config.SoakClusterName+"*")
-	exec.Command("rm", "-rf", "_output/"+cli.Config.SoakClusterName+"*")
-}
-
 func (cli *CLIProvisioner) provision() error {
 	cli.Config.Name = cli.generateName()
 	if cli.Config.SoakClusterName != "" {
@@ -93,11 +86,14 @@ func (cli *CLIProvisioner) provision() error {
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
 	os.Mkdir(outputPath, 0755)
 
-	out, err := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa").CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
+	if cli.Config.SoakClusterName == "" || !KeyGenerated {
+		out, err := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa").CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
+		}
+		exec.Command("chmod", "0600", cli.Config.GetSSHKeyPath()+"*")
+		cli.KeyGenerated = true
 	}
-	exec.Command("chmod", "0600", cli.Config.GetSSHKeyPath()+"*")
 
 	publicSSHKey, err := cli.Config.ReadPublicSSHKey()
 	if err != nil {
