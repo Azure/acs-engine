@@ -195,6 +195,16 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
+// KubernetesConfigDeprecated are properties that are no longer operable and will be ignored
+type KubernetesConfigDeprecated struct {
+	NonMasqueradeCidr                string `json:"nonMasqueradeCidr,omitempty"`
+	NodeStatusUpdateFrequency        string `json:"nodeStatusUpdateFrequency,omitempty"`
+	HardEvictionThreshold            string `json:"hardEvictionThreshold,omitempty"`
+	CtrlMgrNodeMonitorGracePeriod    string `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
+	CtrlMgrPodEvictionTimeout        string `json:"ctrlMgrPodEvictionTimeout,omitempty"`
+	CtrlMgrRouteReconciliationPeriod string `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
+}
+
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
@@ -231,6 +241,7 @@ type KubernetesConfig struct {
 	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
 	CloudControllerManagerConfig map[string]string `json:"cloudControllerManagerConfig,omitempty"`
 	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
+	KubernetesConfigDeprecated
 }
 
 // DcosConfig Configuration for DC/OS
