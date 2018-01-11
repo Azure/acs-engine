@@ -52,10 +52,6 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--cloud-config":                 "/etc/kubernetes/azure.json",
 	}
 
-	if isKubernetesVersionGe(o.OrchestratorVersion, "1.6.0") {
-		defaultKubeletConfig["--feature-gates"] = "Accelerators=true"
-	}
-
 	// If no user-configurable kubelet config values exists, use the defaults
 	setMissingKubeletValues(o.KubernetesConfig, defaultKubeletConfig)
 	addDefaultFeatureGates(o.KubernetesConfig.KubeletConfig, o.OrchestratorVersion)
@@ -147,8 +143,10 @@ func applyValueStringToMap(valueMap map[string]string, input string) {
 	for index := 0; index < len(values); index++ {
 		// trim spaces (e.g. if the input was "foo=true, bar=true" - we want to drop the space after the comma)
 		value := strings.Trim(values[index], " ")
-		valueParts := strings.Split(value, "=") // TODO validate that there are two parts
-		valueMap[valueParts[0]] = valueParts[1]
+		valueParts := strings.Split(value, "=")
+		if len(valueParts) == 2 {
+			valueMap[valueParts[0]] = valueParts[1]
+		}
 	}
 }
 func mapToString(valueMap map[string]string) string {
