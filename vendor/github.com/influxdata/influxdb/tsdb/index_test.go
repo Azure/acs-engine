@@ -3,6 +3,7 @@ package tsdb_test
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -15,11 +16,46 @@ import (
 	"github.com/influxdata/influxql"
 )
 
-func TestIndex_MeasurementNamesByExpr(t *testing.T) {
+// Ensure iterator can merge multiple iterators together.
+func TestMergeSeriesIDIterators(t *testing.T) {
+	itr := tsdb.MergeSeriesIDIterators(
+		tsdb.NewSeriesIDSliceIterator([]uint64{1, 2, 3}),
+		tsdb.NewSeriesIDSliceIterator(nil),
+		tsdb.NewSeriesIDSliceIterator([]uint64{1, 2, 3, 4}),
+	)
+
+	if e, err := itr.Next(); err != nil {
+		t.Fatal(err)
+	} else if !reflect.DeepEqual(e, tsdb.SeriesIDElem{SeriesID: 1}) {
+		t.Fatalf("unexpected elem(0): %#v", e)
+	}
+	if e, err := itr.Next(); err != nil {
+		t.Fatal(err)
+	} else if !reflect.DeepEqual(e, tsdb.SeriesIDElem{SeriesID: 2}) {
+		t.Fatalf("unexpected elem(1): %#v", e)
+	}
+	if e, err := itr.Next(); err != nil {
+		t.Fatal(err)
+	} else if !reflect.DeepEqual(e, tsdb.SeriesIDElem{SeriesID: 3}) {
+		t.Fatalf("unexpected elem(2): %#v", e)
+	}
+	if e, err := itr.Next(); err != nil {
+		t.Fatal(err)
+	} else if !reflect.DeepEqual(e, tsdb.SeriesIDElem{SeriesID: 4}) {
+		t.Fatalf("unexpected elem(3): %#v", e)
+	}
+	if e, err := itr.Next(); err != nil {
+		t.Fatal(err)
+	} else if e.SeriesID != 0 {
+		t.Fatalf("expected nil elem: %#v", e)
+	}
+}
+
+func TestIndexSet_MeasurementNamesByExpr(t *testing.T) {
 	// Setup indexes
 	indexes := map[string]*Index{}
 	for _, name := range tsdb.RegisteredIndexes() {
-		idx := NewIndex(name)
+		idx := MustNewIndex(name)
 		idx.AddSeries("cpu", map[string]string{"region": "east"})
 		idx.AddSeries("cpu", map[string]string{"region": "west", "secret": "foo"})
 		idx.AddSeries("disk", map[string]string{"secret": "foo"})
@@ -27,6 +63,7 @@ func TestIndex_MeasurementNamesByExpr(t *testing.T) {
 		idx.AddSeries("gpu", map[string]string{"region": "east"})
 		idx.AddSeries("pci", map[string]string{"region": "east", "secret": "foo"})
 		indexes[name] = idx
+		defer idx.Close()
 	}
 
 	authorizer := &internal.AuthorizerMock{
@@ -68,7 +105,7 @@ func TestIndex_MeasurementNamesByExpr(t *testing.T) {
 			t.Run("no authorization", func(t *testing.T) {
 				for _, example := range examples {
 					t.Run(example.name, func(t *testing.T) {
-						names, err := indexes[idx].MeasurementNamesByExpr(nil, example.expr)
+						names, err := indexes[idx].IndexSet().MeasurementNamesByExpr(nil, example.expr)
 						if err != nil {
 							t.Fatal(err)
 						} else if !reflect.DeepEqual(names, example.expected) {
@@ -81,7 +118,7 @@ func TestIndex_MeasurementNamesByExpr(t *testing.T) {
 			t.Run("with authorization", func(t *testing.T) {
 				for _, example := range authExamples {
 					t.Run(example.name, func(t *testing.T) {
-						names, err := indexes[idx].MeasurementNamesByExpr(authorizer, example.expr)
+						names, err := indexes[idx].IndexSet().MeasurementNamesByExpr(authorizer, example.expr)
 						if err != nil {
 							t.Fatal(err)
 						} else if !reflect.DeepEqual(names, example.expected) {
@@ -96,26 +133,58 @@ func TestIndex_MeasurementNamesByExpr(t *testing.T) {
 
 type Index struct {
 	tsdb.Index
+	rootPath string
+	sfile    *tsdb.SeriesFile
 }
 
-func NewIndex(index string) *Index {
+func MustNewIndex(index string) *Index {
 	opts := tsdb.NewEngineOptions()
 	opts.IndexVersion = index
 
-	if index == inmem.IndexName {
-		opts.InmemIndex = inmem.NewIndex("db0")
-	}
-
-	path, err := ioutil.TempDir("", "influxdb-tsdb")
+	rootPath, err := ioutil.TempDir("", "influxdb-tsdb")
 	if err != nil {
 		panic(err)
 	}
-	idx := &Index{Index: tsdb.MustOpenIndex(0, "db0", filepath.Join(path, "index"), opts)}
+
+	seriesPath, err := ioutil.TempDir(rootPath, tsdb.SeriesFileDirectory)
+	if err != nil {
+		panic(err)
+	}
+
+	sfile := tsdb.NewSeriesFile(seriesPath)
+	if err := sfile.Open(); err != nil {
+		panic(err)
+	}
+
+	if index == inmem.IndexName {
+		opts.InmemIndex = inmem.NewIndex("db0", sfile)
+	}
+
+	idx := &Index{
+		Index:    tsdb.MustOpenIndex(0, "db0", filepath.Join(rootPath, "index"), tsdb.NewSeriesIDSet(), sfile, opts),
+		rootPath: rootPath,
+		sfile:    sfile,
+	}
 	return idx
+}
+
+func (idx *Index) IndexSet() *tsdb.IndexSet {
+	return &tsdb.IndexSet{Indexes: []tsdb.Index{idx.Index}, SeriesFile: idx.sfile}
 }
 
 func (idx *Index) AddSeries(name string, tags map[string]string) error {
 	t := models.NewTags(tags)
 	key := fmt.Sprintf("%s,%s", name, t.HashKey())
 	return idx.CreateSeriesIfNotExists([]byte(key), []byte(name), t)
+}
+
+func (i *Index) Close() error {
+	if err := i.Index.Close(); err != nil {
+		return err
+	}
+
+	if err := i.sfile.Close(); err != nil {
+		return err
+	}
+	return os.RemoveAll(i.rootPath)
 }

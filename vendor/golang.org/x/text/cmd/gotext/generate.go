@@ -12,10 +12,6 @@ func init() {
 	out = cmdGenerate.Flag.String("out", "", "output file to write to")
 }
 
-var (
-	out *string
-)
-
 var cmdGenerate = &Command{
 	Run:       runGenerate,
 	UsageLine: "generate <package>",

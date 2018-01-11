@@ -15,12 +15,14 @@ import (
 	"go/parser"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
 	"unicode"
 
+	"golang.org/x/text/internal"
 	"golang.org/x/text/language"
 	"golang.org/x/text/runes"
 	"golang.org/x/tools/go/loader"
@@ -241,14 +243,126 @@ func (i *importer) walkImport(path string, tag language.Tag) error {
 
 // Merge merges the extracted messages with the existing translations.
 func (s *State) Merge() error {
-	panic("unimplemented")
-	return nil
+	if s.Messages != nil {
+		panic("already merged")
+	}
+	// Create an index for each unique message.
+	// Duplicates are okay as long as the substitution arguments are okay as
+	// well.
+	// Top-level messages are okay to appear in multiple substitution points.
 
+	// Collect key equivalence.
+	msgs := []*Message{}
+	keyToIDs := map[string]*Message{}
+	for _, m := range s.Extracted.Messages {
+		m := m
+		if prev, ok := keyToIDs[m.Key]; ok {
+			if err := checkEquivalence(&m, prev); err != nil {
+				warnf("Key %q matches conflicting messages: %v and %v", m.Key, prev.ID, m.ID)
+				// TODO: track enough information so that the rewriter can
+				// suggest/disambiguate messages.
+			}
+			// TODO: add position to message.
+			continue
+		}
+		i := len(msgs)
+		msgs = append(msgs, &m)
+		keyToIDs[m.Key] = msgs[i]
+	}
+
+	// Messages with different keys may still refer to the same translated
+	// message (e.g. different whitespace). Filter these.
+	idMap := map[string]bool{}
+	filtered := []*Message{}
+	for _, m := range msgs {
+		found := false
+		for _, id := range m.ID {
+			found = found || idMap[id]
+		}
+		if !found {
+			filtered = append(filtered, m)
+		}
+		for _, id := range m.ID {
+			idMap[id] = true
+		}
+	}
+
+	// Build index of translations.
+	translations := map[language.Tag]map[string]Message{}
+	languages := append([]language.Tag{}, s.Config.Supported...)
+
+	for _, t := range s.Translations {
+		tag := t.Language
+		if _, ok := translations[tag]; !ok {
+			translations[tag] = map[string]Message{}
+			languages = append(languages, tag)
+		}
+		for _, m := range t.Messages {
+			if !m.Translation.IsEmpty() {
+				for _, id := range m.ID {
+					if _, ok := translations[tag][id]; ok {
+						warnf("Duplicate translation in locale %q for message %q", tag, id)
+					}
+					translations[tag][id] = m
+				}
+			}
+		}
+	}
+	languages = internal.UniqueTags(languages)
+
+	for _, tag := range languages {
+		ms := Messages{Language: tag}
+		for _, orig := range filtered {
+			m := *orig
+			m.Key = ""
+			m.Position = ""
+
+			for _, id := range m.ID {
+				if t, ok := translations[tag][id]; ok {
+					m.Translation = t.Translation
+					if t.TranslatorComment != "" {
+						m.TranslatorComment = t.TranslatorComment
+						m.Fuzzy = t.Fuzzy
+					}
+					break
+				}
+			}
+			if tag == s.Config.SourceLanguage && m.Translation.IsEmpty() {
+				m.Translation = m.Message
+				if m.TranslatorComment == "" {
+					m.TranslatorComment = "Copied from source."
+					m.Fuzzy = true
+				}
+			}
+			// TODO: if translation is empty: pre-expand based on available
+			// linguistic features. This may also be done as a plugin.
+			ms.Messages = append(ms.Messages, m)
+		}
+		s.Messages = append(s.Messages, ms)
+	}
+	return nil
 }
 
 // Export writes out the messages to translation out files.
 func (s *State) Export() error {
-	panic("unimplemented")
+	path, err := outPattern(s)
+	if err != nil {
+		return wrap(err, "export failed")
+	}
+	for _, out := range s.Messages {
+		// TODO: inject translations from existing files to avoid retranslation.
+		data, err := json.MarshalIndent(out, "", "    ")
+		if err != nil {
+			return wrap(err, "JSON marshal failed")
+		}
+		file := fmt.Sprintf(path, out.Language)
+		if err := os.MkdirAll(filepath.Dir(file), 0755); err != nil {
+			return wrap(err, "dir create failed")
+		}
+		if err := ioutil.WriteFile(file, data, 0644); err != nil {
+			return wrap(err, "write failed")
+		}
+	}
 	return nil
 }
 
