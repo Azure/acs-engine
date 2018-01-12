@@ -89,6 +89,9 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	// RBAC configuration
 	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
 		defaultAPIServerConfig["--authorization-mode"] = "RBAC"
+		if isKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") {
+			defaultAPIServerConfig["--authorization-mode"] = "Node,RBAC"
+		}
 	}
 
 	// If no user-configurable apiserver config values exists, use the defaults
