@@ -30,7 +30,6 @@ type CLIProvisioner struct {
 	Point             *metrics.Point
 	ResourceGroups    []string
 	Engine            *engine.Engine
-	KeyGenerated      bool `envconfig:"KEY_GEN" default:"false"`
 }
 
 // BuildCLIProvisioner will return a ProvisionerConfig object which is used to run a provision
@@ -86,13 +85,12 @@ func (cli *CLIProvisioner) provision() error {
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
 	os.Mkdir(outputPath, 0755)
 
-	if cli.Config.SoakClusterName == "" || !cli.KeyGenerated {
+	if cli.Config.SoakClusterName == "" {
 		out, err := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa").CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
 		}
 		exec.Command("chmod", "0600", cli.Config.GetSSHKeyPath()+"*")
-		cli.KeyGenerated = true
 	}
 
 	publicSSHKey, err := cli.Config.ReadPublicSSHKey()
