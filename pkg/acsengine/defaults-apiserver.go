@@ -82,7 +82,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// Default apiserver config
 	defaultAPIServerConfig := map[string]string{
-		"--admission-control":  "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages,SecurityContextDeny",
+		"--admission-control":  "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages",
 		"--authorization-mode": "Node",
 	}
 
