@@ -13,6 +13,9 @@ func setKubeletConfig(cs *api.ContainerService) {
 	staticLinuxKubeletConfig := map[string]string{
 		"--address":                         "0.0.0.0",
 		"--allow-privileged":                "true",
+		"--anonymous-auth":                  "false",
+		"--authorization-mode":              "Webhook",
+		"--client-ca-file":                  "/etc/kubernetes/certs/ca.crt",
 		"--pod-manifest-path":               "/etc/kubernetes/manifests",
 		"--cluster-domain":                  "cluster.local",
 		"--cluster-dns":                     DefaultKubernetesDNSServiceIP,
@@ -33,9 +36,6 @@ func setKubeletConfig(cs *api.ContainerService) {
 
 	// Default Kubelet config
 	defaultKubeletConfig := map[string]string{
-		"--anonymous-auth":               "false",
-		"--authorization-mode":           "Webhook",
-		"--client-ca-file":               "/etc/kubernetes/certs/ca.crt",
 		"--network-plugin":               "cni",
 		"--pod-infra-container-image":    cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
 		"--max-pods":                     strconv.Itoa(DefaultKubernetesKubeletMaxPods),
