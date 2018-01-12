@@ -89,6 +89,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 	if cs.Properties.MasterProfile != nil {
 		if cs.Properties.MasterProfile.KubernetesConfig == nil {
 			cs.Properties.MasterProfile.KubernetesConfig = &api.KubernetesConfig{}
+			cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig = copyMap(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig)
 		}
 		setMissingKubeletValues(cs.Properties.MasterProfile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 		addDefaultFeatureGates(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "", "")
@@ -98,6 +99,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 	for _, profile := range cs.Properties.AgentPoolProfiles {
 		if profile.KubernetesConfig == nil {
 			profile.KubernetesConfig = &api.KubernetesConfig{}
+			profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig)
 		}
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 		addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
@@ -131,7 +133,13 @@ func setMissingKubeletValues(p *api.KubernetesConfig, d map[string]string) {
 		}
 	}
 }
-
+func copyMap(input map[string]string) map[string]string {
+	copy := map[string]string{}
+	for key, value := range input {
+		copy[key] = value
+	}
+	return copy
+}
 func combineValues(inputs ...string) string {
 	var valueMap map[string]string
 	valueMap = make(map[string]string)
