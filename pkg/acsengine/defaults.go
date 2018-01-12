@@ -399,6 +399,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(api.DefaultRBACEnabled)
 		}
 
+		if a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet == nil {
+			a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = pointerToBool(api.DefaultSecureKubeletEnabled)
+		}
+
 		// Configure kubelet
 		setKubeletConfig(cs)
 		// Configure controller-manager
