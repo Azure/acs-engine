@@ -13,9 +13,6 @@ func setKubeletConfig(cs *api.ContainerService) {
 	staticLinuxKubeletConfig := map[string]string{
 		"--address":                         "0.0.0.0",
 		"--allow-privileged":                "true",
-		"--anonymous-auth":                  "false",
-		"--authorization-mode":              "Webhook",
-		"--client-ca-file":                  "/etc/kubernetes/certs/ca.crt",
 		"--pod-manifest-path":               "/etc/kubernetes/manifests",
 		"--cluster-domain":                  "cluster.local",
 		"--cluster-dns":                     DefaultKubernetesDNSServiceIP,
@@ -36,6 +33,9 @@ func setKubeletConfig(cs *api.ContainerService) {
 
 	// Default Kubelet config
 	defaultKubeletConfig := map[string]string{
+		"--anonymous-auth":               "false",
+		"--authorization-mode":           "Webhook",
+		"--client-ca-file":               "/etc/kubernetes/certs/ca.crt",
 		"--network-plugin":               "cni",
 		"--pod-infra-container-image":    cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
 		"--max-pods":                     strconv.Itoa(DefaultKubernetesKubeletMaxPods),
@@ -76,6 +76,13 @@ func setKubeletConfig(cs *api.ContainerService) {
 	// Get rid of values not supported in v1.5 clusters
 	if !isKubernetesVersionGe(o.OrchestratorVersion, "1.6.0") {
 		for _, key := range []string{"--non-masquerade-cidr", "--cgroups-per-qos", "--enforce-node-allocatable"} {
+			delete(o.KubernetesConfig.KubeletConfig, key)
+		}
+	}
+
+	// Remove secure kubelet flags, if configured
+	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableSecureKubelet) {
+		for _, key := range []string{"--anonymous-auth", "--authorization-mode", "--client-ca-file"} {
 			delete(o.KubernetesConfig.KubeletConfig, key)
 		}
 	}

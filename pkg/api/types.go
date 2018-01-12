@@ -235,6 +235,7 @@ type KubernetesConfig struct {
 	UseCloudControllerManager    *bool             `json:"useCloudControllerManager,omitempty"`
 	UseInstanceMetadata          *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                   *bool             `json:"enableRbac,omitempty"`
+	EnableSecureKubelet          *bool             `json:"enableSecureKubelet,omitempty"`
 	EnableAggregatedAPIs         bool              `json:"enableAggregatedAPIs,omitempty"`
 	GCHighThreshold              int               `json:"gchighthreshold,omitempty"`
 	GCLowThreshold               int               `json:"gclowthreshold,omitempty"`
@@ -616,12 +617,15 @@ func (p *Properties) HasAadProfile() bool {
 
 // GetAPIServerEtcdAPIVersion Used to set apiserver's etcdapi version
 func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
-	// if we are here, version has already been validated..
-	etcdversion, _ := semver.NewVersion(o.KubernetesConfig.EtcdVersion)
-	if 2 == etcdversion.Major() {
-		return "etcd2"
+	ret := "etcd3"
+	if o.KubernetesConfig != nil {
+		// if we are here, version has already been validated..
+		etcdversion, _ := semver.NewVersion(o.KubernetesConfig.EtcdVersion)
+		if etcdversion != nil && 2 == etcdversion.Major() {
+			return "etcd2"
+		}
 	}
-	return "etcd3"
+	return ret
 }
 
 // IsTillerEnabled checks if the tiller addon is enabled
