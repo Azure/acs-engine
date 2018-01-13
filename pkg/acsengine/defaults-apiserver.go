@@ -118,4 +118,11 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	for key, val := range overrideAPIServerConfig {
 		o.KubernetesConfig.APIServerConfig[key] = val
 	}
+
+	// Remove flags for secure communication to kubelet, if configured
+	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableSecureKubelet) {
+		for _, key := range []string{"--kubelet-client-certificate", "--kubelet-client-key"} {
+			delete(o.KubernetesConfig.APIServerConfig, key)
+		}
+	}
 }

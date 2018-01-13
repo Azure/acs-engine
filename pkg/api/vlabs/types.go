@@ -243,6 +243,7 @@ type KubernetesConfig struct {
 	UseCloudControllerManager    *bool             `json:"useCloudControllerManager,omitempty"`
 	UseInstanceMetadata          *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                   *bool             `json:"enableRbac,omitempty"`
+	EnableSecureKubelet          *bool             `json:"enableSecureKubelet,omitempty"`
 	EnableAggregatedAPIs         bool              `json:"enableAggregatedAPIs,omitempty"`
 	GCHighThreshold              int               `json:"gchighthreshold,omitempty"`
 	GCLowThreshold               int               `json:"gclowthreshold,omitempty"`
