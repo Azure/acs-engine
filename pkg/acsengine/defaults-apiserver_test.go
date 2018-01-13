@@ -171,13 +171,33 @@ func TestAPIServerConfigEnableRbac(t *testing.T) {
 			a["--authorization-mode"])
 	}
 
+	// Test EnableRbac = true with 1.6 cluster
+	cs = createContainerService("testcluster", common.KubernetesVersion1Dot6Dot11, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(true)
+	setAPIServerConfig(cs)
+	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+	if a["--authorization-mode"] != "RBAC" {
+		t.Fatalf("got unexpected '--authorization-mode' API server config value for 1.6 cluster with EnableRbac=true: %s",
+			a["--authorization-mode"])
+	}
+
 	// Test EnableRbac = false
 	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(false)
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if a["--authorization-mode"] != "Node" {
-		t.Fatalf("got unexpected '--authorization-mode' API server config value for EnableRbac=true: %s",
+		t.Fatalf("got unexpected '--authorization-mode' API server config value for EnableRbac=false: %s",
+			a["--authorization-mode"])
+	}
+
+	// Test EnableRbac = false with 1.6 cluster
+	cs = createContainerService("testcluster", common.KubernetesVersion1Dot6Dot11, 3, 2)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(false)
+	setAPIServerConfig(cs)
+	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
+	if _, ok := a["--authorization-mode"]; ok {
+		t.Fatalf("got unexpected '--authorization-mode' API server config value for 1.6 cluster with EnableRbac=false: %s",
 			a["--authorization-mode"])
 	}
 }

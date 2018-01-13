@@ -92,6 +92,11 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		if isKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") {
 			defaultAPIServerConfig["--authorization-mode"] = "Node,RBAC"
 		}
+	} else if !isKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") {
+		// remove authorization-mode for 1.6 clusters without RBAC since Node authorization isn't supported
+		for _, key := range []string{"--authorization-mode"} {
+			delete(defaultAPIServerConfig, key)
+		}
 	}
 
 	// If no user-configurable apiserver config values exists, use the defaults
