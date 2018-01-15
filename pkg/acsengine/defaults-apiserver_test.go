@@ -140,11 +140,12 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
 	cs.Properties.AADProfile = &api.AADProfile{
 		ServerAppID: "test-id",
+		TenantID:    "test-tenant",
 	}
 	cs.Location = "chinaeast"
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
-	if a["--oidc-issuer-url"] != "https://sts.chinacloudapi.cn/" {
+	if a["--oidc-issuer-url"] != "https://sts.chinacloudapi.cn/"+cs.Properties.AADProfile.TenantID+"/" {
 		t.Fatalf("got unexpected '--oidc-issuer-url' API server config value for HasAadProfile=true using China cloud: %s",
 			a["--oidc-issuer-url"])
 	}
