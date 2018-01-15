@@ -244,12 +244,6 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesControllerManagerConfig>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.ControllerManagerConfig}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
     sed -i "s|<kubernetesAPIServerConfig>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.APIServerConfig}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-{{ if .HasAadProfile }}
-    VAR_AAD_TENANT_ID={{WrapAsVariable "aadTenantId"}}
-    VAR_TENANT_ID={{WrapAsVariable "tenantId"}}
-    AAD_TENANT_ID=${VAR_AAD_TENANT_ID:-$VAR_TENANT_ID}
-    sed -i "/--oidc-issuer-url/s/$/$AAD_TENANT_ID/" "/etc/kubernetes/manifests/kube-apiserver.yaml"
-{{end}}
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"

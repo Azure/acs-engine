@@ -70,7 +70,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		if GetCloudTargetEnv(cs.Location) == "AzureChinaCloud" {
 			issuerHost = "sts.chinacloudapi.cn"
 		}
-		staticLinuxAPIServerConfig["--oidc-issuer-url"] = "https://" + issuerHost + "/"
+		staticLinuxAPIServerConfig["--oidc-issuer-url"] = "https://" + issuerHost + "/" + cs.Properties.AADProfile.TenantID + "/"
 	}
 
 	staticWindowsAPIServerConfig := make(map[string]string)
