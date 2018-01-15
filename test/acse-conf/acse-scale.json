@@ -1,6 +1,12 @@
 {
   "deployments": [
     {
+      "cluster_definition": "windows/kubernetes-hybrid.json"
+    },
+    {
+      "cluster_definition": "windows/kubernetes.json"
+    },
+    {
       "cluster_definition": "azure-cni/k8s-scaleup.json"
     },
     {
@@ -8,4 +14,3 @@
     }
   ]
 }
-
