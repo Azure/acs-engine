@@ -115,6 +115,7 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 	cs := createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
 	cs.Properties.AADProfile = &api.AADProfile{
 		ServerAppID: "test-id",
+		TenantID:    "test-tenant",
 	}
 	setAPIServerConfig(cs)
 	a := cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
@@ -130,7 +131,7 @@ func TestAPIServerConfigHasAadProfile(t *testing.T) {
 		t.Fatalf("got unexpected '--oidc-client-id' API server config value for HasAadProfile=true: %s",
 			a["--oidc-client-id"])
 	}
-	if a["--oidc-issuer-url"] != "https://sts.windows.net/" {
+	if a["--oidc-issuer-url"] != "https://sts.windows.net/"+cs.Properties.AADProfile.TenantID+"/" {
 		t.Fatalf("got unexpected '--oidc-issuer-url' API server config value for HasAadProfile=true: %s",
 			a["--oidc-issuer-url"])
 	}
