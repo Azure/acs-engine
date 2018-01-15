@@ -696,9 +696,6 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 	if properties.HasWindows() {
 		addValue(parametersMap, "windowsAdminUsername", properties.WindowsProfile.AdminUsername)
 		addSecret(parametersMap, "windowsAdminPassword", properties.WindowsProfile.AdminPassword, false)
-		if properties.WindowsProfile.ImageVersion != "" {
-			addValue(parametersMap, "agentWindowsVersion", properties.WindowsProfile.ImageVersion)
-		}
 		if properties.WindowsProfile.WindowsImageSourceURL != "" {
 			addValue(parametersMap, "agentWindowsSourceUrl", properties.WindowsProfile.WindowsImageSourceURL)
 		}
