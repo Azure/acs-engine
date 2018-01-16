@@ -377,10 +377,6 @@ func TestKubeletFeatureGatesEnsureMasterAndAgentConfigUsedFor1_6_0(t *testing.T)
 	}
 }
 
-// TODO - tests:
-//  - check merging
-//  - check that master/agent overrides are used correctly
-
 func getMockAddon(name string) api.KubernetesAddon {
 	return api.KubernetesAddon{
 		Name:    name,
