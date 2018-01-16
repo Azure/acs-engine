@@ -188,6 +188,9 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		vms, err := sc.client.ListVirtualMachines(sc.resourceGroupName)
 		if err != nil {
 			log.Fatalln("failed to get vms in the resource group. Error: %s", err.Error())
+		} else if len(*vms.Value) < 1 {
+			// TODO fix bug: clusters with windows vms always fail here
+			log.Fatalln("The provided resource group does not contain any vms.")
 		}
 		for _, vm := range *vms.Value {
 
