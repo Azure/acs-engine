@@ -156,8 +156,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					success := false
 					for i := 0; i < 60; i++ {
 						dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
-						curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
-						_, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
+						curlCMD := fmt.Sprintf("curl --max-time 60 %s, ssh-key path=%s", dashboardURL, sshKeyPath)
+						out, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
 						if err == nil {
 							success = true
 							break
@@ -165,6 +165,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						if i > 58 {
 							log.Println(curlCMD)
 							log.Println(err.Error())
+							log.Printf("out: %s", out)
 							log.Printf("%#v\n", err)
 						}
 						time.Sleep(10 * time.Second)
