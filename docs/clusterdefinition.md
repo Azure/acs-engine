@@ -45,7 +45,10 @@ Here are the valid values for the orchestrator types:
 |gcLowThreshold|no|Sets the --image-gc-low-threshold value on the kublet configuration. Default is 80. [See kubelet Garbage Collection](https://kubernetes.io/docs/concepts/cluster-administration/kubelet-garbage-collection/) |
 |useInstanceMetadata|no|Use the Azure cloudprovider instance metadata service for appropriate resource discovery operations. Default is `true`.|
 |addons|no|Configure various Kubernetes addons configuration (currently supported: tiller, kubernetes-dashboard). See `addons` configuration below.|
-|kubeletConfig|no|Configure various runtime configuration for kubelet. See `kubeletConfig` below.|
+|kubeletConfig|no|Configure various runtime configuration for kubelet. See `kubeletConfig` [below](#feat-kubelet-config).|
+|controllerManagerConfig|no|Configure various runtime configuration for controller-manager. See `controllerManagerConfig` [below](#feat-controller-manager-config).|
+|cloudControllerManagerConfig|no|Configure various runtime configuration for cloud-controller-manager. See `cloudControllerManagerConfig` [below](#feat-cloud-controller-manager-config).|
+|apiServerConfig|no|Configure various runtime configuration for apiserver. See `apiServerConfig` [below](#feat-apiserver-config).|
 
 #### addons
 
@@ -136,6 +139,7 @@ Additionally above, we specified a custom docker image for tiller, let's say we 
 
 Finally, the `addons.enabled` boolean property was omitted above; that's by design. If you specify a `containers` configuration, acs-engine assumes you're enabling the addon. The very first example above demonstrates a simple "enable this addon with default configuration" declaration.
 
+<a name="feat-kubelet-config"></a>
 #### kubeletConfig
 
 `kubeletConfig` declares runtime configuration for the kubelet running on all master and agent nodes. It is a generic key/value object, and a child property of `kubernetesConfig`. An example custom kubelet config:
@@ -184,6 +188,7 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 |"--keep-terminated-pod-volumes"|"false"|
 |"--feature-gates" (agent nodes only)|"Accelerators=true"|
 
+<a name="feat-controller-manager-config"></a>
 #### controllerManagerConfig
 
 `controllerManagerConfig` declares runtime configuration for the kube-controller-manager daemon running on all master nodes. Like `kubeletConfig` it is a generic key/value object, and a child property of `kubernetesConfig`. An example custom controller-manager config:
@@ -228,6 +233,7 @@ Below is a list of controller-manager options that are *not* currently user-conf
 |"--profiling"|"false"|
 |"--use-service-account-credentials"|"false" ("true" if kubernetesConfig.enableRbac is true)|
 
+<a name="feat-cloud-controller-manager-config"></a>
 #### cloudControllerManagerConfig
 
 `cloudControllerManagerConfig` declares runtime configuration for the cloud-controller-manager daemon running on all master nodes in a Cloud Controller Manager configuration. Like `kubeletConfig` it is a generic key/value object, and a child property of `kubernetesConfig`. An example custom cloud-controller-manager config:
@@ -262,6 +268,7 @@ Below is a list of cloud-controller-manager options that are *not* currently use
 |"--leader-elect"|"true"|
 |"--v"|"2"|
 
+<a name="feat-apiserver-config"></a>
 #### apiServerConfig
 
 `apiServerConfig` declares runtime configuration for the kube-apiserver daemon running on all master nodes. Like `kubeletConfig` and `controllerManagerConfig` it is a generic key/value object, and a child property of `kubernetesConfig`. An example custom apiserver config:
