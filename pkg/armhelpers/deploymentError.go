@@ -2,10 +2,24 @@ package armhelpers
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/sirupsen/logrus"
+)
+
+//TODO move pkg/core/apierror/ to acs-engine
+
+// ErrorCategory indicates the kind of error
+type ErrorCategory string
+
+const (
+	// ClientError is expected error
+	ClientError ErrorCategory = "ClientError"
+
+	// InternalError is system or internal error
+	InternalError ErrorCategory = "InternalError"
 )
 
 // Error is the OData v4 format, used by the RPC and
@@ -15,11 +29,32 @@ type Error struct {
 	Message string  `json:"message"`
 	Target  string  `json:"target,omitempty"`
 	Details []Error `json:"details,omitempty"`
+
+	Category ErrorCategory `json:"-"`
 }
 
-// ErrorResponse  defines Resource Provider API 2.0 Error Response Content structure
+// ErrorResponse defines Resource Provider API 2.0 Error Response Content structure
 type ErrorResponse struct {
 	Body Error `json:"error"`
+}
+
+// DeploymentError defines deployment error along with deployment operation errors
+type DeploymentError struct {
+	RootError       error
+	OperationErrors []*ErrorResponse
+}
+
+// Error implements error interface to return error in json
+func (e *DeploymentError) Error() string {
+	if len(e.OperationErrors) == 0 {
+		return e.RootError.Error()
+	}
+	errStrList := make([]string, len(e.OperationErrors)+1)
+	errStrList[0] = e.RootError.Error()
+	for i, errResp := range e.OperationErrors {
+		errStrList[i+1] = errResp.Error()
+	}
+	return strings.Join(errStrList, " | ")
 }
 
 // Error implements error interface to return error in json
@@ -78,10 +113,49 @@ func toArmErrors(logger *logrus.Entry, deploymentName string, operationsList res
 	return ret, nil
 }
 
+//TODO errorCode is ErrorCode
+func newErrorResponse(errorCategory ErrorCategory, errorCode string, message string) *ErrorResponse {
+	return &ErrorResponse{
+		Body: Error{
+			Code:     errorCode,
+			Message:  message,
+			Category: errorCategory,
+		},
+	}
+}
+
 // GetDeploymentError returns deployment error
-func GetDeploymentError(az ACSEngineClient, logger *logrus.Entry, resourceGroupName, deploymentName string) ([]*ErrorResponse, error) {
-	errList := []*ErrorResponse{}
+func GetDeploymentError(res *resources.DeploymentExtended, rootError error, az ACSEngineClient, logger *logrus.Entry, resourceGroupName, deploymentName string) (*DeploymentError, error) {
+	if rootError == nil {
+		return nil, nil
+	}
 	logger.Infof("Getting detailed deployment errors for %s", deploymentName)
+	deploymentError := &DeploymentError{RootError: rootError}
+
+	if res != nil && res.Response.Response != nil && res.Body != nil {
+		armErr := &ErrorResponse{}
+		if d := json.NewDecoder(res.Body); d != nil {
+			if err := d.Decode(armErr); err == nil {
+				logger.Errorf("StatusCode: %d, ErrorCode: %s, ErrorMessage: %s", res.Response.StatusCode, armErr.Body.Code, armErr.Body.Message)
+				deploymentError.OperationErrors = append(deploymentError.OperationErrors, armErr)
+				switch {
+				case res.Response.StatusCode < 500 && res.Response.StatusCode >= 400:
+					armErr.Body.Category = ClientError
+					return deploymentError, nil
+				case res.Response.StatusCode >= 500:
+					armErr.Body.Category = InternalError
+					return deploymentError, nil
+				}
+			} else {
+				logger.Errorf("unable to unmarshal response into apierror: %v", err)
+			}
+		}
+	} else {
+		logger.Errorf("Got error from Azure SDK without response from ARM, error: %v", rootError)
+		// This is the failed sdk validation before calling ARM path
+		deploymentError.OperationErrors = append(deploymentError.OperationErrors, newErrorResponse(InternalError, "InternalOperationError", rootError.Error()))
+		return deploymentError, nil
+	}
 
 	var top int32 = 1
 	operationList, err := az.ListDeploymentOperations(resourceGroupName, deploymentName, &top)
@@ -93,7 +167,7 @@ func GetDeploymentError(az ACSEngineClient, logger *logrus.Entry, resourceGroupN
 	if err != nil {
 		return nil, err
 	}
-	errList = append(errList, eList...)
+	deploymentError.OperationErrors = append(deploymentError.OperationErrors, eList...)
 	for operationList.NextLink != nil {
 		operationList, err = az.ListDeploymentOperationsNextResults(operationList)
 		if err != nil {
@@ -104,7 +178,7 @@ func GetDeploymentError(az ACSEngineClient, logger *logrus.Entry, resourceGroupN
 		if err != nil {
 			return nil, err
 		}
-		errList = append(errList, eList...)
+		deploymentError.OperationErrors = append(deploymentError.OperationErrors, eList...)
 	}
-	return errList, nil
+	return deploymentError, nil
 }

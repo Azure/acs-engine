@@ -3,7 +3,6 @@ package kubernetesupgrade
 import (
 	"fmt"
 	"math/rand"
-	"strings"
 	"time"
 
 	"k8s.io/client-go/pkg/api/v1/node"
@@ -81,7 +80,7 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 	deploymentSuffix := random.Int31()
 	deploymentName := fmt.Sprintf("agent-%s-%d", time.Now().Format("06-01-02T15.04.05"), deploymentSuffix)
 
-	_, err := kan.Client.DeployTemplate(
+	depExt, err := kan.Client.DeployTemplate(
 		kan.ResourceGroup,
 		deploymentName,
 		kan.TemplateMap,
@@ -94,17 +93,13 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 
 	kan.logger.Errorf("Deployment %s failed with error %v", deploymentName, err)
 	// Get deployment error details
-	errRespList, e := armhelpers.GetDeploymentError(kan.Client, kan.logger, kan.ResourceGroup, deploymentName)
-	if e != nil || len(errRespList) == 0 {
+	deploymentError, e := armhelpers.GetDeploymentError(depExt, err, kan.Client, kan.logger, kan.ResourceGroup, deploymentName)
+	if e != nil {
 		kan.logger.Errorf("Failed to get error details for deployment %s: %v", deploymentName, e)
 		// return original deployment error
 		return err
 	}
-	errStrList := make([]string, len(errRespList))
-	for i, errResp := range errRespList {
-		errStrList[i] = errResp.Error()
-	}
-	return fmt.Errorf("%s", strings.Join(errStrList, " | "))
+	return deploymentError
 }
 
 // Validate will verify that agent node has been upgraded as expected.
