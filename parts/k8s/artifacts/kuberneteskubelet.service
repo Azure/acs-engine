@@ -40,7 +40,7 @@ ExecStart=/usr/bin/docker run \
         --v=2 ${KUBELET_FEATURE_GATES} \
         --non-masquerade-cidr=${KUBELET_NON_MASQUERADE_CIDR} \
         --volume-plugin-dir=/etc/kubernetes/volumeplugins \
-        $KUBELET_CONFIG \
+        $KUBELET_CONFIG $KUBELET_OPTS \
         ${KUBELET_REGISTER_NODE} ${KUBELET_REGISTER_WITH_TAINTS}
 
 [Install]
