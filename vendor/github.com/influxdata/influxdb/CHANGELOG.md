@@ -7,7 +7,9 @@
 ### Features
 
 - [#8495](https://github.com/influxdata/influxdb/pull/8495): Improve CLI connection warnings
-- [#9146](https://github.com/influxdata/influxdb/issues/9146): Backup can produce data in the same format as the enterprise backup/restore tool.
+- [#3019](https://github.com/influxdata/influxdb/issues/3019): Backup utility prints a list of backup files. 
+- [#9146](https://github.com/influxdata/influxdb/issues/9146): Backup/Restore can produce/consume data in the same format as the enterprise backup/restore tool. 
+- [#8880](https://github.com/influxdata/influxdb/issues/8879): Restore runs in online mode, does not delete existing databases
 - [#8879](https://github.com/influxdata/influxdb/issues/8879): Export functionality using start/end to filter exported data by timestamp
 - [#9084](https://github.com/influxdata/influxdb/pull/9084): Handle high cardinality deletes in TSM engine
 - [#9162](https://github.com/influxdata/influxdb/pull/9162): Improve inmem index startup performance for high cardinality.
@@ -15,6 +17,7 @@
 - [#9181](https://github.com/influxdata/influxdb/pull/9181): Schedule a full compaction after a successful import
 - [#9218](https://github.com/influxdata/influxdb/pull/9218): Add Prometheus `/metrics` endpoint.
 - [#9213](https://github.com/influxdata/influxdb/pull/9213): Add ability to generate shard digests.
+- [#9184](https://github.com/influxdata/influxdb/pull/9184): Allow setting the node id in the influx cli program.
 
 ### Bugfixes
 
@@ -26,6 +29,10 @@
 - [#8789](https://github.com/influxdata/influxdb/issues/8789): Fix CLI to allow quoted database names in use statement
 - [#9208](https://github.com/influxdata/influxdb/pull/9208): Updated client 4xx error message when response body length is zero.
 - [#9230](https://github.com/influxdata/influxdb/pull/9230): Remove extraneous newlines from the log.
+- [#9226](https://github.com/influxdata/influxdb/issues/9226): Allow lone boolean literals in a condition expression.
+- [#9235](https://github.com/influxdata/influxdb/pull/9235): Improve performance when writes exceed `max-values-per-tag` or `max-series`.
+- [#9216](https://github.com/influxdata/influxdb/issues/9216): Prevent a panic when a query simultaneously finishes and is killed at the same time.
+- [#9255](https://github.com/influxdata/influxdb/issues/9255): Fix missing sorting of blocks by time when compacting.
 
 ## v1.4.3 [unreleased]
 

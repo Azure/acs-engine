@@ -195,24 +195,39 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
+// CloudProviderConfig contains the KubernetesConfig properties specific to the Cloud Provider
+type CloudProviderConfig struct {
+	CloudProviderBackoff         bool    `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries  int     `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent float64 `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit       bool    `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS    float64 `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket int     `json:"cloudProviderRateLimitBucket,omitempty"`
+}
+
+// KubernetesConfigDeprecated are properties that are no longer operable and will be ignored
+type KubernetesConfigDeprecated struct {
+	NonMasqueradeCidr                string `json:"nonMasqueradeCidr,omitempty"`
+	NodeStatusUpdateFrequency        string `json:"nodeStatusUpdateFrequency,omitempty"`
+	HardEvictionThreshold            string `json:"hardEvictionThreshold,omitempty"`
+	CtrlMgrNodeMonitorGracePeriod    string `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
+	CtrlMgrPodEvictionTimeout        string `json:"ctrlMgrPodEvictionTimeout,omitempty"`
+	CtrlMgrRouteReconciliationPeriod string `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
+}
+
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
-	KubernetesImageBase          string            `json:"kubernetesImageBase,omitempty"`
-	ClusterSubnet                string            `json:"clusterSubnet,omitempty"`
-	NetworkPolicy                string            `json:"networkPolicy,omitempty"`
-	MaxPods                      int               `json:"maxPods,omitempty"`
-	DockerBridgeSubnet           string            `json:"dockerBridgeSubnet,omitempty"`
-	DNSServiceIP                 string            `json:"dnsServiceIP,omitempty"`
-	ServiceCIDR                  string            `json:"serviceCidr,omitempty"`
-	CloudProviderBackoff         bool              `json:"cloudProviderBackoff,omitempty"`
-	CloudProviderBackoffRetries  int               `json:"cloudProviderBackoffRetries,omitempty"`
-	CloudProviderBackoffJitter   float64           `json:"cloudProviderBackoffJitter,omitempty"`
-	CloudProviderBackoffDuration int               `json:"cloudProviderBackoffDuration,omitempty"`
-	CloudProviderBackoffExponent float64           `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit       bool              `json:"cloudProviderRateLimit,omitempty"`
-	CloudProviderRateLimitQPS    float64           `json:"cloudProviderRateLimitQPS,omitempty"`
-	CloudProviderRateLimitBucket int               `json:"cloudProviderRateLimitBucket,omitempty"`
+	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
+	NetworkPolicy       string `json:"networkPolicy,omitempty"`
+	MaxPods             int    `json:"maxPods,omitempty"`
+	DockerBridgeSubnet  string `json:"dockerBridgeSubnet,omitempty"`
+	DNSServiceIP        string `json:"dnsServiceIP,omitempty"`
+	ServiceCIDR         string `json:"serviceCidr,omitempty"`
+	CloudProviderConfig
 	UseManagedIdentity           bool              `json:"useManagedIdentity,omitempty"`
 	CustomHyperkubeImage         string            `json:"customHyperkubeImage,omitempty"`
 	DockerEngineVersion          string            `json:"dockerEngineVersion,omitempty"`
@@ -220,6 +235,7 @@ type KubernetesConfig struct {
 	UseCloudControllerManager    *bool             `json:"useCloudControllerManager,omitempty"`
 	UseInstanceMetadata          *bool             `json:"useInstanceMetadata,omitempty"`
 	EnableRbac                   *bool             `json:"enableRbac,omitempty"`
+	EnableSecureKubelet          *bool             `json:"enableSecureKubelet,omitempty"`
 	EnableAggregatedAPIs         bool              `json:"enableAggregatedAPIs,omitempty"`
 	GCHighThreshold              int               `json:"gchighthreshold,omitempty"`
 	GCLowThreshold               int               `json:"gclowthreshold,omitempty"`
@@ -231,6 +247,7 @@ type KubernetesConfig struct {
 	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
 	CloudControllerManagerConfig map[string]string `json:"cloudControllerManagerConfig,omitempty"`
 	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
+	KubernetesConfigDeprecated
 }
 
 // DcosConfig Configuration for DC/OS
@@ -600,12 +617,15 @@ func (p *Properties) HasAadProfile() bool {
 
 // GetAPIServerEtcdAPIVersion Used to set apiserver's etcdapi version
 func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
-	// if we are here, version has already been validated..
-	etcdversion, _ := semver.NewVersion(o.KubernetesConfig.EtcdVersion)
-	if 2 == etcdversion.Major() {
-		return "etcd2"
+	ret := "etcd3"
+	if o.KubernetesConfig != nil {
+		// if we are here, version has already been validated..
+		etcdversion, _ := semver.NewVersion(o.KubernetesConfig.EtcdVersion)
+		if etcdversion != nil && 2 == etcdversion.Major() {
+			return "etcd2"
+		}
 	}
-	return "etcd3"
+	return ret
 }
 
 // IsTillerEnabled checks if the tiller addon is enabled

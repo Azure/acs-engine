@@ -19,7 +19,7 @@ const (
 var (
 	//DefaultKubernetesSpecConfig is the default Docker image source of Kubernetes
 	DefaultKubernetesSpecConfig = KubernetesSpecConfig{
-		KubernetesImageBase:              "gcrio.azureedge.net/google_containers/",
+		KubernetesImageBase:              "k8s-gcrio.azureedge.net/",
 		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
 		ACIConnectorImageBase:            "microsoft/",
 		EtcdDownloadURLBase:              "https://acs-mirror.azureedge.net/github-coreos",
@@ -100,7 +100,7 @@ var (
 				ImageOffer:     "UbuntuServer",
 				ImageSku:       "16.04-LTS",
 				ImagePublisher: "Canonical",
-				ImageVersion:   "16.04.201701130",
+				ImageVersion:   "16.04.201801050",
 			},
 			api.RHEL:   DefaultRHELOSImageConfig,
 			api.CoreOS: DefaultCoreOSImageConfig,
@@ -397,6 +397,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 		if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {
 			a.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(api.DefaultRBACEnabled)
+		}
+
+		if a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet == nil {
+			a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = pointerToBool(api.DefaultSecureKubeletEnabled)
 		}
 
 		// Configure kubelet

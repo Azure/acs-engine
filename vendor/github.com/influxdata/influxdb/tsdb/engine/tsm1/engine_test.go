@@ -14,12 +14,14 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/influxdb/logger"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/pkg/deep"
 	"github.com/influxdata/influxdb/query"
@@ -29,147 +31,46 @@ import (
 	"github.com/influxdata/influxql"
 )
 
-/*
-// Ensure engine can load the metadata index after reopening.
-func TestEngine_LoadMetadataIndex(t *testing.T) {
-	e := MustOpenEngine()
-	defer e.Close()
-
-	if err := e.WritePointsString(`cpu,host=A value=1.1 1000000000`); err != nil {
-		t.Fatalf("failed to write points: %s", err.Error())
-	}
-
-	// Ensure we can close and load index from the WAL
-	if err := e.Reopen(); err != nil {
-		t.Fatal(err)
-	}
-
-	// Load metadata index.
-	index := MustNewDatabaseIndex("db")
-	if err := e.LoadMetadataIndex(1, index); err != nil {
-		t.Fatal(err)
-	}
-
-	// Verify index is correct.
-	m, err := index.Measurement([]byte("cpu"))
-	if err != nil {
-		t.Fatal(err)
-	} else if m == nil {
-		t.Fatal("measurement not found")
-	} else if s := m.SeriesByID(1); s.Key != "cpu,host=A" || !reflect.DeepEqual(s.Tags(), models.NewTags(map[string]string{"host": "A"})) {
-		t.Fatalf("unexpected series: %q / %#v", s.Key, s.Tags())
-	}
-
-	// write the snapshot, ensure we can close and load index from TSM
-	if err := e.WriteSnapshot(); err != nil {
-		t.Fatalf("error writing snapshot: %s", err.Error())
-	}
-
-	// Ensure we can close and load index from the WAL
-	if err := e.Reopen(); err != nil {
-		t.Fatal(err)
-	}
-
-	// Load metadata index.
-	index = MustNewDatabaseIndex("db")
-	if err := e.LoadMetadataIndex(1, index); err != nil {
-		t.Fatal(err)
-	}
-
-	// Verify index is correct.
-	if m, err = index.Measurement([]byte("cpu")); err != nil {
-		t.Fatal(err)
-	} else if m == nil {
-		t.Fatal("measurement not found")
-	} else if s := m.SeriesByID(1); s.Key != "cpu,host=A" || !reflect.DeepEqual(s.Tags(), models.NewTags(map[string]string{"host": "A"})) {
-		t.Fatalf("unexpected series: %q / %#v", s.Key, s.Tags())
-	}
-
-	// Write a new point and ensure we can close and load index from TSM and WAL
-	if err := e.WritePoints([]models.Point{
-		MustParsePointString("cpu,host=B value=1.2 2000000000"),
-	}); err != nil {
-		t.Fatalf("failed to write points: %s", err.Error())
-	}
-
-	// Ensure we can close and load index from the TSM & WAL
-	if err := e.Reopen(); err != nil {
-		t.Fatal(err)
-	}
-
-	// Load metadata index.
-	index = MustNewDatabaseIndex("db")
-	if err := e.LoadMetadataIndex(1, index); err != nil {
-		t.Fatal(err)
-	}
-
-	// Verify index is correct.
-	if m, err = index.Measurement([]byte("cpu")); err != nil {
-		t.Fatal(err)
-	} else if m == nil {
-		t.Fatal("measurement not found")
-	} else if s := m.SeriesByID(1); s.Key != "cpu,host=A" || !reflect.DeepEqual(s.Tags(), models.NewTags(map[string]string{"host": "A"})) {
-		t.Fatalf("unexpected series: %q / %#v", s.Key, s.Tags())
-	} else if s := m.SeriesByID(2); s.Key != "cpu,host=B" || !reflect.DeepEqual(s.Tags(), models.NewTags(map[string]string{"host": "B"})) {
-		t.Fatalf("unexpected series: %q / %#v", s.Key, s.Tags())
-	}
-}
-*/
-
 // Ensure that deletes only sent to the WAL will clear out the data from the cache on restart
 func TestEngine_DeleteWALLoadMetadata(t *testing.T) {
-	e := MustOpenDefaultEngine()
-	defer e.Close()
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
+			e := MustOpenEngine(index)
+			defer e.Close()
 
-	if err := e.WritePointsString(
-		`cpu,host=A value=1.1 1000000000`,
-		`cpu,host=B value=1.2 2000000000`,
-	); err != nil {
-		t.Fatalf("failed to write points: %s", err.Error())
-	}
+			if err := e.WritePointsString(
+				`cpu,host=A value=1.1 1000000000`,
+				`cpu,host=B value=1.2 2000000000`,
+			); err != nil {
+				t.Fatalf("failed to write points: %s", err.Error())
+			}
 
-	// Remove series.
-	itr := &seriesIterator{keys: [][]byte{[]byte("cpu,host=A")}}
-	if err := e.DeleteSeriesRange(itr, math.MinInt64, math.MaxInt64); err != nil {
-		t.Fatalf("failed to delete series: %s", err.Error())
-	}
+			// Remove series.
+			itr := &seriesIterator{keys: [][]byte{[]byte("cpu,host=A")}}
+			if err := e.DeleteSeriesRange(itr, math.MinInt64, math.MaxInt64, false); err != nil {
+				t.Fatalf("failed to delete series: %s", err.Error())
+			}
 
-	// Ensure we can close and load index from the WAL
-	if err := e.Reopen(); err != nil {
-		t.Fatal(err)
-	}
+			// Ensure we can close and load index from the WAL
+			if err := e.Reopen(); err != nil {
+				t.Fatal(err)
+			}
 
-	if exp, got := 0, len(e.Cache.Values(tsm1.SeriesFieldKeyBytes("cpu,host=A", "value"))); exp != got {
-		t.Fatalf("unexpected number of values: got: %d. exp: %d", got, exp)
-	}
+			if exp, got := 0, len(e.Cache.Values(tsm1.SeriesFieldKeyBytes("cpu,host=A", "value"))); exp != got {
+				t.Fatalf("unexpected number of values: got: %d. exp: %d", got, exp)
+			}
 
-	if exp, got := 1, len(e.Cache.Values(tsm1.SeriesFieldKeyBytes("cpu,host=B", "value"))); exp != got {
-		t.Fatalf("unexpected number of values: got: %d. exp: %d", got, exp)
+			if exp, got := 1, len(e.Cache.Values(tsm1.SeriesFieldKeyBytes("cpu,host=B", "value"))); exp != got {
+				t.Fatalf("unexpected number of values: got: %d. exp: %d", got, exp)
+			}
+		})
 	}
 }
 
 // Ensure that the engine can write & read shard digest files.
 func TestEngine_Digest(t *testing.T) {
-	// Create a tmp directory for test files.
-	tmpDir, err := ioutil.TempDir("", "TestEngine_Digest")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(tmpDir)
-
-	walPath := filepath.Join(tmpDir, "wal")
-	os.MkdirAll(walPath, 0777)
-
-	idxPath := filepath.Join(tmpDir, "index")
-
-	// Create an engine to write a tsm file.
-	dbName := "db0"
-	opt := tsdb.NewEngineOptions()
-	opt.InmemIndex = inmem.NewIndex(dbName)
-	idx := tsdb.MustOpenIndex(1, dbName, idxPath, opt)
-	defer idx.Close()
-
-	e := tsm1.NewEngine(1, idx, dbName, tmpDir, walPath, opt).(*tsm1.Engine)
+	e := MustOpenEngine(inmem.IndexName)
+	defer e.Close()
 
 	if err := e.Open(); err != nil {
 		t.Fatalf("failed to open tsm1 engine: %s", err.Error())
@@ -190,9 +91,13 @@ func TestEngine_Digest(t *testing.T) {
 
 	digest := func() ([]span, error) {
 		// Get a reader for the shard's digest.
-		r, err := e.Digest()
+		r, sz, err := e.Digest()
 		if err != nil {
 			return nil, err
+		}
+
+		if sz <= 0 {
+			t.Fatalf("expected digest size > 0")
 		}
 
 		// Make sure the digest can be read.
@@ -307,6 +212,9 @@ type span struct {
 
 // Ensure that the engine will backup any TSM files created since the passed in time
 func TestEngine_Backup(t *testing.T) {
+	sfile := MustOpenSeriesFile()
+	defer sfile.Close()
+
 	// Generate temporary file.
 	f, _ := ioutil.TempFile("", "tsm")
 	f.Close()
@@ -323,11 +231,11 @@ func TestEngine_Backup(t *testing.T) {
 	// Write those points to the engine.
 	db := path.Base(f.Name())
 	opt := tsdb.NewEngineOptions()
-	opt.InmemIndex = inmem.NewIndex(db)
-	idx := tsdb.MustOpenIndex(1, db, filepath.Join(f.Name(), "index"), opt)
+	opt.InmemIndex = inmem.NewIndex(db, sfile.SeriesFile)
+	idx := tsdb.MustOpenIndex(1, db, filepath.Join(f.Name(), "index"), tsdb.NewSeriesIDSet(), sfile.SeriesFile, opt)
 	defer idx.Close()
 
-	e := tsm1.NewEngine(1, idx, db, f.Name(), walPath, opt).(*tsm1.Engine)
+	e := tsm1.NewEngine(1, idx, db, f.Name(), walPath, sfile.SeriesFile, opt).(*tsm1.Engine)
 
 	// mock the planner so compactions don't run during the test
 	e.CompactionPlan = &mockPlanner{}
@@ -424,14 +332,17 @@ func TestEngine_Export(t *testing.T) {
 	p2 := MustParsePointString("cpu,host=B value=1.2 2000000000")
 	p3 := MustParsePointString("cpu,host=C value=1.3 3000000000")
 
+	sfile := MustOpenSeriesFile()
+	defer sfile.Close()
+
 	// Write those points to the engine.
 	db := path.Base(f.Name())
 	opt := tsdb.NewEngineOptions()
-	opt.InmemIndex = inmem.NewIndex(db)
-	idx := tsdb.MustOpenIndex(1, db, filepath.Join(f.Name(), "index"), opt)
+	opt.InmemIndex = inmem.NewIndex(db, sfile.SeriesFile)
+	idx := tsdb.MustOpenIndex(1, db, filepath.Join(f.Name(), "index"), tsdb.NewSeriesIDSet(), sfile.SeriesFile, opt)
 	defer idx.Close()
 
-	e := tsm1.NewEngine(1, idx, db, f.Name(), walPath, opt).(*tsm1.Engine)
+	e := tsm1.NewEngine(1, idx, db, f.Name(), walPath, sfile.SeriesFile, opt).(*tsm1.Engine)
 
 	// mock the planner so compactions don't run during the test
 	e.CompactionPlan = &mockPlanner{}
@@ -676,52 +587,55 @@ func getExportData(exBuf *bytes.Buffer) (map[string]*bytes.Buffer, error) {
 func TestEngine_CreateIterator_Cache_Ascending(t *testing.T) {
 	t.Parallel()
 
-	e := MustOpenDefaultEngine()
-	defer e.Close()
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
+			e := MustOpenEngine(index)
+			defer e.Close()
 
-	// e.CreateMeasurement("cpu")
-	e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
-	e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
+			e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
+			e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
 
-	if err := e.WritePointsString(
-		`cpu,host=A value=1.1 1000000000`,
-		`cpu,host=A value=1.2 2000000000`,
-		`cpu,host=A value=1.3 3000000000`,
-	); err != nil {
-		t.Fatalf("failed to write points: %s", err.Error())
-	}
+			if err := e.WritePointsString(
+				`cpu,host=A value=1.1 1000000000`,
+				`cpu,host=A value=1.2 2000000000`,
+				`cpu,host=A value=1.3 3000000000`,
+			); err != nil {
+				t.Fatalf("failed to write points: %s", err.Error())
+			}
 
-	itr, err := e.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
-		Expr:       influxql.MustParseExpr(`value`),
-		Dimensions: []string{"host"},
-		StartTime:  influxql.MinTime,
-		EndTime:    influxql.MaxTime,
-		Ascending:  true,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	fitr := itr.(query.FloatIterator)
+			itr, err := e.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
+				Expr:       influxql.MustParseExpr(`value`),
+				Dimensions: []string{"host"},
+				StartTime:  influxql.MinTime,
+				EndTime:    influxql.MaxTime,
+				Ascending:  true,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			fitr := itr.(query.FloatIterator)
 
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(0): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 1000000000, Value: 1.1}) {
-		t.Fatalf("unexpected point(0): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(1): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 2000000000, Value: 1.2}) {
-		t.Fatalf("unexpected point(1): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(2): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 3000000000, Value: 1.3}) {
-		t.Fatalf("unexpected point(2): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("expected eof, got error: %v", err)
-	} else if p != nil {
-		t.Fatalf("expected eof: %v", p)
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(0): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 1000000000, Value: 1.1}) {
+				t.Fatalf("unexpected point(0): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(1): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 2000000000, Value: 1.2}) {
+				t.Fatalf("unexpected point(1): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(2): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 3000000000, Value: 1.3}) {
+				t.Fatalf("unexpected point(2): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("expected eof, got error: %v", err)
+			} else if p != nil {
+				t.Fatalf("expected eof: %v", p)
+			}
+		})
 	}
 }
 
@@ -729,51 +643,56 @@ func TestEngine_CreateIterator_Cache_Ascending(t *testing.T) {
 func TestEngine_CreateIterator_Cache_Descending(t *testing.T) {
 	t.Parallel()
 
-	e := MustOpenDefaultEngine()
-	defer e.Close()
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
 
-	e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
-	e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
+			e := MustOpenEngine(index)
+			defer e.Close()
 
-	if err := e.WritePointsString(
-		`cpu,host=A value=1.1 1000000000`,
-		`cpu,host=A value=1.2 2000000000`,
-		`cpu,host=A value=1.3 3000000000`,
-	); err != nil {
-		t.Fatalf("failed to write points: %s", err.Error())
-	}
+			e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
+			e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
 
-	itr, err := e.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
-		Expr:       influxql.MustParseExpr(`value`),
-		Dimensions: []string{"host"},
-		StartTime:  influxql.MinTime,
-		EndTime:    influxql.MaxTime,
-		Ascending:  false,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	fitr := itr.(query.FloatIterator)
+			if err := e.WritePointsString(
+				`cpu,host=A value=1.1 1000000000`,
+				`cpu,host=A value=1.2 2000000000`,
+				`cpu,host=A value=1.3 3000000000`,
+			); err != nil {
+				t.Fatalf("failed to write points: %s", err.Error())
+			}
 
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(0): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 3000000000, Value: 1.3}) {
-		t.Fatalf("unexpected point(0): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unepxected error(1): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 2000000000, Value: 1.2}) {
-		t.Fatalf("unexpected point(1): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(2): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 1000000000, Value: 1.1}) {
-		t.Fatalf("unexpected point(2): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("expected eof, got error: %v", err)
-	} else if p != nil {
-		t.Fatalf("expected eof: %v", p)
+			itr, err := e.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
+				Expr:       influxql.MustParseExpr(`value`),
+				Dimensions: []string{"host"},
+				StartTime:  influxql.MinTime,
+				EndTime:    influxql.MaxTime,
+				Ascending:  false,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			fitr := itr.(query.FloatIterator)
+
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(0): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 3000000000, Value: 1.3}) {
+				t.Fatalf("unexpected point(0): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unepxected error(1): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 2000000000, Value: 1.2}) {
+				t.Fatalf("unexpected point(1): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(2): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 1000000000, Value: 1.1}) {
+				t.Fatalf("unexpected point(2): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("expected eof, got error: %v", err)
+			} else if p != nil {
+				t.Fatalf("expected eof: %v", p)
+			}
+		})
 	}
 }
 
@@ -781,52 +700,56 @@ func TestEngine_CreateIterator_Cache_Descending(t *testing.T) {
 func TestEngine_CreateIterator_TSM_Ascending(t *testing.T) {
 	t.Parallel()
 
-	e := MustOpenDefaultEngine()
-	defer e.Close()
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
+			e := MustOpenEngine(index)
+			defer e.Close()
 
-	e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
-	e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
+			e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
+			e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
 
-	if err := e.WritePointsString(
-		`cpu,host=A value=1.1 1000000000`,
-		`cpu,host=A value=1.2 2000000000`,
-		`cpu,host=A value=1.3 3000000000`,
-	); err != nil {
-		t.Fatalf("failed to write points: %s", err.Error())
-	}
-	e.MustWriteSnapshot()
+			if err := e.WritePointsString(
+				`cpu,host=A value=1.1 1000000000`,
+				`cpu,host=A value=1.2 2000000000`,
+				`cpu,host=A value=1.3 3000000000`,
+			); err != nil {
+				t.Fatalf("failed to write points: %s", err.Error())
+			}
+			e.MustWriteSnapshot()
 
-	itr, err := e.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
-		Expr:       influxql.MustParseExpr(`value`),
-		Dimensions: []string{"host"},
-		StartTime:  1000000000,
-		EndTime:    3000000000,
-		Ascending:  true,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	fitr := itr.(query.FloatIterator)
+			itr, err := e.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
+				Expr:       influxql.MustParseExpr(`value`),
+				Dimensions: []string{"host"},
+				StartTime:  1000000000,
+				EndTime:    3000000000,
+				Ascending:  true,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			fitr := itr.(query.FloatIterator)
 
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(0): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 1000000000, Value: 1.1}) {
-		t.Fatalf("unexpected point(0): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(1): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 2000000000, Value: 1.2}) {
-		t.Fatalf("unexpected point(1): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(2): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 3000000000, Value: 1.3}) {
-		t.Fatalf("unexpected point(2): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("expected eof, got error: %v", err)
-	} else if p != nil {
-		t.Fatalf("expected eof: %v", p)
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(0): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 1000000000, Value: 1.1}) {
+				t.Fatalf("unexpected point(0): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(1): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 2000000000, Value: 1.2}) {
+				t.Fatalf("unexpected point(1): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(2): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 3000000000, Value: 1.3}) {
+				t.Fatalf("unexpected point(2): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("expected eof, got error: %v", err)
+			} else if p != nil {
+				t.Fatalf("expected eof: %v", p)
+			}
+		})
 	}
 }
 
@@ -834,52 +757,56 @@ func TestEngine_CreateIterator_TSM_Ascending(t *testing.T) {
 func TestEngine_CreateIterator_TSM_Descending(t *testing.T) {
 	t.Parallel()
 
-	e := MustOpenDefaultEngine()
-	defer e.Close()
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
+			e := MustOpenEngine(index)
+			defer e.Close()
 
-	e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
-	e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
+			e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
+			e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
 
-	if err := e.WritePointsString(
-		`cpu,host=A value=1.1 1000000000`,
-		`cpu,host=A value=1.2 2000000000`,
-		`cpu,host=A value=1.3 3000000000`,
-	); err != nil {
-		t.Fatalf("failed to write points: %s", err.Error())
-	}
-	e.MustWriteSnapshot()
+			if err := e.WritePointsString(
+				`cpu,host=A value=1.1 1000000000`,
+				`cpu,host=A value=1.2 2000000000`,
+				`cpu,host=A value=1.3 3000000000`,
+			); err != nil {
+				t.Fatalf("failed to write points: %s", err.Error())
+			}
+			e.MustWriteSnapshot()
 
-	itr, err := e.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
-		Expr:       influxql.MustParseExpr(`value`),
-		Dimensions: []string{"host"},
-		StartTime:  influxql.MinTime,
-		EndTime:    influxql.MaxTime,
-		Ascending:  false,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	fitr := itr.(query.FloatIterator)
+			itr, err := e.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
+				Expr:       influxql.MustParseExpr(`value`),
+				Dimensions: []string{"host"},
+				StartTime:  influxql.MinTime,
+				EndTime:    influxql.MaxTime,
+				Ascending:  false,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			fitr := itr.(query.FloatIterator)
 
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(0): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 3000000000, Value: 1.3}) {
-		t.Fatalf("unexpected point(0): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(1): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 2000000000, Value: 1.2}) {
-		t.Fatalf("unexpected point(1): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(2): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 1000000000, Value: 1.1}) {
-		t.Fatalf("unexpected point(2): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("expected eof, got error: %v", err)
-	} else if p != nil {
-		t.Fatalf("expected eof: %v", p)
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(0): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 3000000000, Value: 1.3}) {
+				t.Fatalf("unexpected point(0): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(1): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 2000000000, Value: 1.2}) {
+				t.Fatalf("unexpected point(1): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(2): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 1000000000, Value: 1.1}) {
+				t.Fatalf("unexpected point(2): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("expected eof, got error: %v", err)
+			} else if p != nil {
+				t.Fatalf("expected eof: %v", p)
+			}
+		})
 	}
 }
 
@@ -887,55 +814,59 @@ func TestEngine_CreateIterator_TSM_Descending(t *testing.T) {
 func TestEngine_CreateIterator_Aux(t *testing.T) {
 	t.Parallel()
 
-	e := MustOpenDefaultEngine()
-	defer e.Close()
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
+			e := MustOpenEngine(index)
+			defer e.Close()
 
-	e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
-	e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("F"), influxql.Float)
-	e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
+			e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
+			e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("F"), influxql.Float)
+			e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
 
-	if err := e.WritePointsString(
-		`cpu,host=A value=1.1 1000000000`,
-		`cpu,host=A F=100 1000000000`,
-		`cpu,host=A value=1.2 2000000000`,
-		`cpu,host=A value=1.3 3000000000`,
-		`cpu,host=A F=200 3000000000`,
-	); err != nil {
-		t.Fatalf("failed to write points: %s", err.Error())
-	}
+			if err := e.WritePointsString(
+				`cpu,host=A value=1.1 1000000000`,
+				`cpu,host=A F=100 1000000000`,
+				`cpu,host=A value=1.2 2000000000`,
+				`cpu,host=A value=1.3 3000000000`,
+				`cpu,host=A F=200 3000000000`,
+			); err != nil {
+				t.Fatalf("failed to write points: %s", err.Error())
+			}
 
-	itr, err := e.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
-		Expr:       influxql.MustParseExpr(`value`),
-		Aux:        []influxql.VarRef{{Val: "F"}},
-		Dimensions: []string{"host"},
-		StartTime:  influxql.MinTime,
-		EndTime:    influxql.MaxTime,
-		Ascending:  true,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	fitr := itr.(query.FloatIterator)
+			itr, err := e.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
+				Expr:       influxql.MustParseExpr(`value`),
+				Aux:        []influxql.VarRef{{Val: "F"}},
+				Dimensions: []string{"host"},
+				StartTime:  influxql.MinTime,
+				EndTime:    influxql.MaxTime,
+				Ascending:  true,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			fitr := itr.(query.FloatIterator)
 
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(0): %v", err)
-	} else if !deep.Equal(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 1000000000, Value: 1.1, Aux: []interface{}{float64(100)}}) {
-		t.Fatalf("unexpected point(0): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(1): %v", err)
-	} else if !deep.Equal(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 2000000000, Value: 1.2, Aux: []interface{}{(*float64)(nil)}}) {
-		t.Fatalf("unexpected point(1): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(2): %v", err)
-	} else if !deep.Equal(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 3000000000, Value: 1.3, Aux: []interface{}{float64(200)}}) {
-		t.Fatalf("unexpected point(2): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("expected eof, got error: %v", err)
-	} else if p != nil {
-		t.Fatalf("expected eof: %v", p)
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(0): %v", err)
+			} else if !deep.Equal(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 1000000000, Value: 1.1, Aux: []interface{}{float64(100)}}) {
+				t.Fatalf("unexpected point(0): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(1): %v", err)
+			} else if !deep.Equal(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 2000000000, Value: 1.2, Aux: []interface{}{(*float64)(nil)}}) {
+				t.Fatalf("unexpected point(1): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(2): %v", err)
+			} else if !deep.Equal(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 3000000000, Value: 1.3, Aux: []interface{}{float64(200)}}) {
+				t.Fatalf("unexpected point(2): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("expected eof, got error: %v", err)
+			} else if p != nil {
+				t.Fatalf("expected eof: %v", p)
+			}
+		})
 	}
 }
 
@@ -943,62 +874,149 @@ func TestEngine_CreateIterator_Aux(t *testing.T) {
 func TestEngine_CreateIterator_Condition(t *testing.T) {
 	t.Parallel()
 
-	e := MustOpenDefaultEngine()
-	defer e.Close()
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
+			e := MustOpenEngine(index)
+			defer e.Close()
 
-	e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
-	e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("X"), influxql.Float)
-	e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("Y"), influxql.Float)
-	e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
-	e.SetFieldName([]byte("cpu"), "X")
-	e.SetFieldName([]byte("cpu"), "Y")
+			e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
+			e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("X"), influxql.Float)
+			e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("Y"), influxql.Float)
+			e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
+			e.SetFieldName([]byte("cpu"), "X")
+			e.SetFieldName([]byte("cpu"), "Y")
 
-	if err := e.WritePointsString(
-		`cpu,host=A value=1.1 1000000000`,
-		`cpu,host=A X=10 1000000000`,
-		`cpu,host=A Y=100 1000000000`,
+			if err := e.WritePointsString(
+				`cpu,host=A value=1.1 1000000000`,
+				`cpu,host=A X=10 1000000000`,
+				`cpu,host=A Y=100 1000000000`,
 
-		`cpu,host=A value=1.2 2000000000`,
+				`cpu,host=A value=1.2 2000000000`,
 
-		`cpu,host=A value=1.3 3000000000`,
-		`cpu,host=A X=20 3000000000`,
-		`cpu,host=A Y=200 3000000000`,
-	); err != nil {
-		t.Fatalf("failed to write points: %s", err.Error())
+				`cpu,host=A value=1.3 3000000000`,
+				`cpu,host=A X=20 3000000000`,
+				`cpu,host=A Y=200 3000000000`,
+			); err != nil {
+				t.Fatalf("failed to write points: %s", err.Error())
+			}
+
+			itr, err := e.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
+				Expr:       influxql.MustParseExpr(`value`),
+				Dimensions: []string{"host"},
+				Condition:  influxql.MustParseExpr(`X = 10 OR Y > 150`),
+				StartTime:  influxql.MinTime,
+				EndTime:    influxql.MaxTime,
+				Ascending:  true,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			fitr := itr.(query.FloatIterator)
+
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected error(0): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 1000000000, Value: 1.1}) {
+				t.Fatalf("unexpected point(0): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("unexpected point(1): %v", err)
+			} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 3000000000, Value: 1.3}) {
+				t.Fatalf("unexpected point(1): %v", p)
+			}
+			if p, err := fitr.Next(); err != nil {
+				t.Fatalf("expected eof, got error: %v", err)
+			} else if p != nil {
+				t.Fatalf("expected eof: %v", p)
+			}
+		})
+	}
+}
+
+// Test that series id set gets updated and returned appropriately.
+func TestIndex_SeriesIDSet(t *testing.T) {
+	test := func(index string) error {
+		engine := MustOpenEngine(index)
+		defer engine.Close()
+
+		// Add some series.
+		engine.MustAddSeries("cpu", map[string]string{"host": "a", "region": "west"})
+		engine.MustAddSeries("cpu", map[string]string{"host": "b", "region": "west"})
+		engine.MustAddSeries("cpu", map[string]string{"host": "b"})
+		engine.MustAddSeries("gpu", nil)
+		engine.MustAddSeries("gpu", map[string]string{"host": "b"})
+		engine.MustAddSeries("mem", map[string]string{"host": "z"})
+
+		// Collect series IDs.
+		var ids []uint64
+		var e tsdb.SeriesIDElem
+		var err error
+
+		itr := engine.sfile.SeriesIDIterator()
+		for e, err = itr.Next(); ; e, err = itr.Next() {
+			if err != nil {
+				return err
+			} else if e.SeriesID == 0 {
+				break
+			}
+			ids = append(ids, e.SeriesID)
+		}
+
+		for _, id := range ids {
+			if !engine.SeriesIDSet().Contains(id) {
+				return fmt.Errorf("bitmap does not contain ID: %d", id)
+			}
+		}
+
+		// Drop all the series for the gpu measurement and they should no longer
+		// be in the series ID set.
+		if err := engine.DeleteMeasurement([]byte("gpu")); err != nil {
+			return err
+		}
+
+		// Drop the specific mem series
+		ditr := &seriesIterator{keys: [][]byte{[]byte("mem,host=z")}}
+		if err := engine.DeleteSeriesRange(ditr, math.MinInt64, math.MaxInt64, true); err != nil {
+			return err
+		}
+
+		// Since series IDs are added sequentially, the last two would be the
+		// series for the gpu measurement...
+		for _, id := range ids {
+			contains := engine.SeriesIDSet().Contains(id)
+			if id < 4 && !contains {
+				return fmt.Errorf("bitmap does not contain ID: %d, but should", id)
+			} else if id >= 4 && contains {
+				return fmt.Errorf("bitmap still contains ID: %d after delete", id)
+			}
+		}
+
+		// Reopen the engine, and the series should be re-added to the bitmap.
+		if err := engine.Reopen(); err != nil {
+			panic(err)
+		}
+
+		for _, id := range ids {
+			contains := engine.SeriesIDSet().Contains(id)
+			if id < 4 && !contains {
+				return fmt.Errorf("[after re-open] bitmap does not contain ID: %d, but should", id)
+			} else if id >= 4 && contains {
+				return fmt.Errorf("[after re-open] bitmap still contains ID: %d after delete", id)
+			}
+		}
+		return nil
 	}
 
-	itr, err := e.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
-		Expr:       influxql.MustParseExpr(`value`),
-		Dimensions: []string{"host"},
-		Condition:  influxql.MustParseExpr(`X = 10 OR Y > 150`),
-		StartTime:  influxql.MinTime,
-		EndTime:    influxql.MaxTime,
-		Ascending:  true,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	fitr := itr.(query.FloatIterator)
-
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected error(0): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 1000000000, Value: 1.1}) {
-		t.Fatalf("unexpected point(0): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("unexpected point(1): %v", err)
-	} else if !reflect.DeepEqual(p, &query.FloatPoint{Name: "cpu", Tags: ParseTags("host=A"), Time: 3000000000, Value: 1.3}) {
-		t.Fatalf("unexpected point(1): %v", p)
-	}
-	if p, err := fitr.Next(); err != nil {
-		t.Fatalf("expected eof, got error: %v", err)
-	} else if p != nil {
-		t.Fatalf("expected eof: %v", p)
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
+			if err := test(index); err != nil {
+				t.Error(err)
+			}
+		})
 	}
 }
 
 // Ensures that deleting series from TSM files with multiple fields removes all the
-/// series
+// series from the TSM files but leaves the series in the index intact.
 func TestEngine_DeleteSeries(t *testing.T) {
 	for _, index := range tsdb.RegisteredIndexes() {
 		t.Run(index, func(t *testing.T) {
@@ -1007,16 +1025,19 @@ func TestEngine_DeleteSeries(t *testing.T) {
 			p2 := MustParsePointString("cpu,host=B value=1.2 2000000000")
 			p3 := MustParsePointString("cpu,host=A sum=1.3 3000000000")
 
-			e := NewEngine(index)
+			e, err := NewEngine(index)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			// mock the planner so compactions don't run during the test
 			e.CompactionPlan = &mockPlanner{}
-
 			if err := e.Open(); err != nil {
-				panic(err)
+				t.Fatal(err)
 			}
 			defer e.Close()
 
-			if err := e.WritePoints([]models.Point{p1, p2, p3}); err != nil {
+			if err := e.writePoints(p1, p2, p3); err != nil {
 				t.Fatalf("failed to write points: %s", err.Error())
 			}
 			if err := e.WriteSnapshot(); err != nil {
@@ -1029,7 +1050,7 @@ func TestEngine_DeleteSeries(t *testing.T) {
 			}
 
 			itr := &seriesIterator{keys: [][]byte{[]byte("cpu,host=A")}}
-			if err := e.DeleteSeriesRange(itr, math.MinInt64, math.MaxInt64); err != nil {
+			if err := e.DeleteSeriesRange(itr, math.MinInt64, math.MaxInt64, false); err != nil {
 				t.Fatalf("failed to delete series: %v", err)
 			}
 
@@ -1042,29 +1063,66 @@ func TestEngine_DeleteSeries(t *testing.T) {
 			if _, ok := keys[exp]; !ok {
 				t.Fatalf("wrong series deleted: exp %v, got %v", exp, keys)
 			}
+
+			// Deleting all the TSM values for a single series should still leave
+			// the series in the index intact.
+			indexSet := tsdb.IndexSet{Indexes: []tsdb.Index{e.index}, SeriesFile: e.sfile}
+			iter, err := indexSet.MeasurementSeriesIDIterator([]byte("cpu"))
+			if err != nil {
+				t.Fatalf("iterator error: %v", err)
+			} else if iter == nil {
+				t.Fatal("nil iterator")
+			}
+			defer iter.Close()
+
+			var gotKeys []string
+			expKeys := []string{"cpu,host=A", "cpu,host=B"}
+
+			for {
+				elem, err := iter.Next()
+				if err != nil {
+					t.Fatal(err)
+				}
+				if elem.SeriesID == 0 {
+					break
+				}
+
+				// Lookup series.
+				name, tags := e.sfile.Series(elem.SeriesID)
+				gotKeys = append(gotKeys, string(models.MakeKey(name, tags)))
+			}
+
+			if !reflect.DeepEqual(gotKeys, expKeys) {
+				t.Fatalf("got keys %v, expected %v", gotKeys, expKeys)
+			}
 		})
 	}
 }
 
+// Ensures that deleting series from TSM files over a range of time deleted the
+// series from the TSM files but leaves the series in the index.
 func TestEngine_DeleteSeriesRange(t *testing.T) {
 	for _, index := range tsdb.RegisteredIndexes() {
 		t.Run(index, func(t *testing.T) {
 			// Create a few points.
-			p1 := MustParsePointString("cpu,host=0 value=1.1 6000000000") // Should not be deleted
+			p1 := MustParsePointString("cpu,host=0 value=1.1 6000000000")
 			p2 := MustParsePointString("cpu,host=A value=1.2 2000000000")
 			p3 := MustParsePointString("cpu,host=A value=1.3 3000000000")
-			p4 := MustParsePointString("cpu,host=B value=1.3 4000000000") // Should not be deleted
-			p5 := MustParsePointString("cpu,host=B value=1.3 5000000000") // Should not be deleted
+			p4 := MustParsePointString("cpu,host=B value=1.3 4000000000")
+			p5 := MustParsePointString("cpu,host=B value=1.3 5000000000")
 			p6 := MustParsePointString("cpu,host=C value=1.3 1000000000")
-			p7 := MustParsePointString("mem,host=C value=1.3 1000000000")  // Should not be deleted
-			p8 := MustParsePointString("disk,host=C value=1.3 1000000000") // Should not be deleted
+			p7 := MustParsePointString("mem,host=C value=1.3 1000000000")
+			p8 := MustParsePointString("disk,host=C value=1.3 1000000000")
 
-			e := NewEngine(index)
+			e, err := NewEngine(index)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			// mock the planner so compactions don't run during the test
 			e.CompactionPlan = &mockPlanner{}
-
 			if err := e.Open(); err != nil {
-				panic(err)
+				t.Fatal(err)
 			}
 			defer e.Close()
 
@@ -1087,7 +1145,7 @@ func TestEngine_DeleteSeriesRange(t *testing.T) {
 			}
 
 			itr := &seriesIterator{keys: [][]byte{[]byte("cpu,host=0"), []byte("cpu,host=A"), []byte("cpu,host=B"), []byte("cpu,host=C")}}
-			if err := e.DeleteSeriesRange(itr, 0, 3000000000); err != nil {
+			if err := e.DeleteSeriesRange(itr, 0, 3000000000, false); err != nil {
 				t.Fatalf("failed to delete series: %v", err)
 			}
 
@@ -1101,36 +1159,37 @@ func TestEngine_DeleteSeriesRange(t *testing.T) {
 				t.Fatalf("wrong series deleted: exp %v, got %v", exp, keys)
 			}
 
-			// Check that the series still exists in the index
-			iter, err := e.MeasurementSeriesKeysByExprIterator([]byte("cpu"), nil)
+			// Deleting all the TSM values for a single series should still leave
+			// the series in the index intact.
+			indexSet := tsdb.IndexSet{Indexes: []tsdb.Index{e.index}, SeriesFile: e.sfile}
+			iter, err := indexSet.MeasurementSeriesIDIterator([]byte("cpu"))
 			if err != nil {
 				t.Fatalf("iterator error: %v", err)
+			} else if iter == nil {
+				t.Fatal("nil iterator")
 			}
+			defer iter.Close()
 
-			elem := iter.Next()
-			if elem == nil {
-				t.Fatalf("series index mismatch: got nil, exp 2 series")
+			var gotKeys []string
+			expKeys := []string{"cpu,host=0", "cpu,host=A", "cpu,host=B", "cpu,host=C"}
+
+			for {
+				elem, err := iter.Next()
+				if err != nil {
+					t.Fatal(err)
+				}
+				if elem.SeriesID == 0 {
+					break
+				}
+
+				// Lookup series.
+				name, tags := e.sfile.Series(elem.SeriesID)
+				gotKeys = append(gotKeys, string(models.MakeKey(name, tags)))
 			}
+			sort.Strings(gotKeys)
 
-			if got, exp := elem.Name(), []byte("cpu"); !bytes.Equal(got, exp) {
-				t.Fatalf("series mismatch: got %s, exp %s", got, exp)
-			}
-
-			if got, exp := elem.Tags(), models.NewTags(map[string]string{"host": "0"}); !got.Equal(exp) {
-				t.Fatalf("series mismatch: got %s, exp %s", got, exp)
-			}
-
-			elem = iter.Next()
-			if elem == nil {
-				t.Fatalf("series index next mismatch: got nil")
-			}
-
-			if got, exp := elem.Name(), []byte("cpu"); !bytes.Equal(got, exp) {
-				t.Fatalf("series mismatch: got %s, exp %s", got, exp)
-			}
-
-			if got, exp := elem.Tags(), models.NewTags(map[string]string{"host": "B"}); !got.Equal(exp) {
-				t.Fatalf("series mismatch: got %s, exp %s", got, exp)
+			if !reflect.DeepEqual(gotKeys, expKeys) {
+				t.Fatalf("got keys %v, expected %v", gotKeys, expKeys)
 			}
 
 		})
@@ -1143,12 +1202,15 @@ func TestEngine_DeleteSeriesRange_OutsideTime(t *testing.T) {
 			// Create a few points.
 			p1 := MustParsePointString("cpu,host=A value=1.1 1000000000") // Should not be deleted
 
-			e := NewEngine(index)
+			e, err := NewEngine(index)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			// mock the planner so compactions don't run during the test
 			e.CompactionPlan = &mockPlanner{}
-
 			if err := e.Open(); err != nil {
-				panic(err)
+				t.Fatal(err)
 			}
 			defer e.Close()
 
@@ -1171,7 +1233,7 @@ func TestEngine_DeleteSeriesRange_OutsideTime(t *testing.T) {
 			}
 
 			itr := &seriesIterator{keys: [][]byte{[]byte("cpu,host=A")}}
-			if err := e.DeleteSeriesRange(itr, 0, 0); err != nil {
+			if err := e.DeleteSeriesRange(itr, 0, 0, false); err != nil {
 				t.Fatalf("failed to delete series: %v", err)
 			}
 
@@ -1186,25 +1248,27 @@ func TestEngine_DeleteSeriesRange_OutsideTime(t *testing.T) {
 			}
 
 			// Check that the series still exists in the index
-			iter, err := e.MeasurementSeriesKeysByExprIterator([]byte("cpu"), nil)
+			iter, err := e.index.MeasurementSeriesIDIterator([]byte("cpu"))
 			if err != nil {
 				t.Fatalf("iterator error: %v", err)
 			}
+			defer iter.Close()
 
-			if iter == nil {
-				t.Fatalf("series iterator nil")
+			elem, err := iter.Next()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if elem.SeriesID == 0 {
+				t.Fatalf("series index mismatch: EOF, exp 1 series")
 			}
 
-			elem := iter.Next()
-			if elem == nil {
-				t.Fatalf("series index mismatch: got nil, exp 1 series")
-			}
-
-			if got, exp := elem.Name(), []byte("cpu"); !bytes.Equal(got, exp) {
+			// Lookup series.
+			name, tags := e.sfile.Series(elem.SeriesID)
+			if got, exp := name, []byte("cpu"); !bytes.Equal(got, exp) {
 				t.Fatalf("series mismatch: got %s, exp %s", got, exp)
 			}
 
-			if got, exp := elem.Tags(), models.NewTags(map[string]string{"host": "A"}); !got.Equal(exp) {
+			if got, exp := tags, models.NewTags(map[string]string{"host": "A"}); !got.Equal(exp) {
 				t.Fatalf("series mismatch: got %s, exp %s", got, exp)
 			}
 		})
@@ -1219,22 +1283,20 @@ func TestEngine_LastModified(t *testing.T) {
 			p2 := MustParsePointString("cpu,host=B value=1.2 2000000000")
 			p3 := MustParsePointString("cpu,host=A sum=1.3 3000000000")
 
-			e := NewEngine(index)
+			e, err := NewEngine(index)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			// mock the planner so compactions don't run during the test
 			e.CompactionPlan = &mockPlanner{}
-
-			if lm := e.LastModified(); !lm.IsZero() {
-				t.Fatalf("expected zero time, got %v", lm.UTC())
-			}
-
 			e.SetEnabled(false)
 			if err := e.Open(); err != nil {
-				t.Fatalf("failed to open tsm1 engine: %s", err.Error())
+				t.Fatal(err)
 			}
 			defer e.Close()
 
-			if err := e.WritePoints([]models.Point{p1, p2, p3}); err != nil {
+			if err := e.writePoints(p1, p2, p3); err != nil {
 				t.Fatalf("failed to write points: %s", err.Error())
 			}
 
@@ -1255,7 +1317,7 @@ func TestEngine_LastModified(t *testing.T) {
 			}
 
 			itr := &seriesIterator{keys: [][]byte{[]byte("cpu,host=A")}}
-			if err := e.DeleteSeriesRange(itr, math.MinInt64, math.MaxInt64); err != nil {
+			if err := e.DeleteSeriesRange(itr, math.MinInt64, math.MaxInt64, false); err != nil {
 				t.Fatalf("failed to delete series: %v", err)
 			}
 
@@ -1268,6 +1330,9 @@ func TestEngine_LastModified(t *testing.T) {
 }
 
 func TestEngine_SnapshotsDisabled(t *testing.T) {
+	sfile := MustOpenSeriesFile()
+	defer sfile.Close()
+
 	// Generate temporary file.
 	dir, _ := ioutil.TempDir("", "tsm")
 	walPath := filepath.Join(dir, "wal")
@@ -1277,11 +1342,11 @@ func TestEngine_SnapshotsDisabled(t *testing.T) {
 	// Create a tsm1 engine.
 	db := path.Base(dir)
 	opt := tsdb.NewEngineOptions()
-	opt.InmemIndex = inmem.NewIndex(db)
-	idx := tsdb.MustOpenIndex(1, db, filepath.Join(dir, "index"), opt)
+	opt.InmemIndex = inmem.NewIndex(db, sfile.SeriesFile)
+	idx := tsdb.MustOpenIndex(1, db, filepath.Join(dir, "index"), tsdb.NewSeriesIDSet(), sfile.SeriesFile, opt)
 	defer idx.Close()
 
-	e := tsm1.NewEngine(1, idx, db, dir, walPath, opt).(*tsm1.Engine)
+	e := tsm1.NewEngine(1, idx, db, dir, walPath, sfile.SeriesFile, opt).(*tsm1.Engine)
 
 	// mock the planner so compactions don't run during the test
 	e.CompactionPlan = &mockPlanner{}
@@ -1306,48 +1371,53 @@ func TestEngine_SnapshotsDisabled(t *testing.T) {
 func TestEngine_CreateCursor_Ascending(t *testing.T) {
 	t.Parallel()
 
-	e := MustOpenDefaultEngine()
-	defer e.Close()
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
 
-	e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
-	e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
+			e := MustOpenEngine(index)
+			defer e.Close()
 
-	if err := e.WritePointsString(
-		`cpu,host=A value=1.1 1`,
-		`cpu,host=A value=1.2 2`,
-		`cpu,host=A value=1.3 3`,
-	); err != nil {
-		t.Fatalf("failed to write points: %s", err.Error())
-	}
-	e.MustWriteSnapshot()
+			e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
+			e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
 
-	if err := e.WritePointsString(
-		`cpu,host=A value=10.1 10`,
-		`cpu,host=A value=11.2 11`,
-		`cpu,host=A value=12.3 12`,
-	); err != nil {
-		t.Fatalf("failed to write points: %s", err.Error())
-	}
+			if err := e.WritePointsString(
+				`cpu,host=A value=1.1 1`,
+				`cpu,host=A value=1.2 2`,
+				`cpu,host=A value=1.3 3`,
+			); err != nil {
+				t.Fatalf("failed to write points: %s", err.Error())
+			}
+			e.MustWriteSnapshot()
 
-	cur, err := e.CreateCursor(context.Background(), &tsdb.CursorRequest{
-		Measurement: "cpu",
-		Series:      "cpu,host=A",
-		Field:       "value",
-		Ascending:   true,
-		StartTime:   2,
-		EndTime:     11,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+			if err := e.WritePointsString(
+				`cpu,host=A value=10.1 10`,
+				`cpu,host=A value=11.2 11`,
+				`cpu,host=A value=12.3 12`,
+			); err != nil {
+				t.Fatalf("failed to write points: %s", err.Error())
+			}
 
-	fcur := cur.(tsdb.FloatBatchCursor)
-	ts, vs := fcur.Next()
-	if !cmp.Equal([]int64{2, 3, 10, 11}, ts) {
-		t.Fatal("unexpect timestamps")
-	}
-	if !cmp.Equal([]float64{1.2, 1.3, 10.1, 11.2}, vs) {
-		t.Fatal("unexpect timestamps")
+			cur, err := e.CreateCursor(context.Background(), &tsdb.CursorRequest{
+				Measurement: "cpu",
+				Series:      "cpu,host=A",
+				Field:       "value",
+				Ascending:   true,
+				StartTime:   2,
+				EndTime:     11,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			fcur := cur.(tsdb.FloatBatchCursor)
+			ts, vs := fcur.Next()
+			if !cmp.Equal([]int64{2, 3, 10, 11}, ts) {
+				t.Fatal("unexpect timestamps")
+			}
+			if !cmp.Equal([]float64{1.2, 1.3, 10.1, 11.2}, vs) {
+				t.Fatal("unexpect timestamps")
+			}
+		})
 	}
 }
 
@@ -1355,48 +1425,74 @@ func TestEngine_CreateCursor_Ascending(t *testing.T) {
 func TestEngine_CreateCursor_Descending(t *testing.T) {
 	t.Parallel()
 
-	e := MustOpenDefaultEngine()
-	defer e.Close()
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
 
-	e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
-	e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
+			e := MustOpenEngine(index)
+			defer e.Close()
 
-	if err := e.WritePointsString(
-		`cpu,host=A value=1.1 1`,
-		`cpu,host=A value=1.2 2`,
-		`cpu,host=A value=1.3 3`,
-	); err != nil {
-		t.Fatalf("failed to write points: %s", err.Error())
+			e.MeasurementFields([]byte("cpu")).CreateFieldIfNotExists([]byte("value"), influxql.Float)
+			e.CreateSeriesIfNotExists([]byte("cpu,host=A"), []byte("cpu"), models.NewTags(map[string]string{"host": "A"}))
+
+			if err := e.WritePointsString(
+				`cpu,host=A value=1.1 1`,
+				`cpu,host=A value=1.2 2`,
+				`cpu,host=A value=1.3 3`,
+			); err != nil {
+				t.Fatalf("failed to write points: %s", err.Error())
+			}
+			e.MustWriteSnapshot()
+
+			if err := e.WritePointsString(
+				`cpu,host=A value=10.1 10`,
+				`cpu,host=A value=11.2 11`,
+				`cpu,host=A value=12.3 12`,
+			); err != nil {
+				t.Fatalf("failed to write points: %s", err.Error())
+			}
+
+			cur, err := e.CreateCursor(context.Background(), &tsdb.CursorRequest{
+				Measurement: "cpu",
+				Series:      "cpu,host=A",
+				Field:       "value",
+				Ascending:   false,
+				StartTime:   2,
+				EndTime:     11,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			fcur := cur.(tsdb.FloatBatchCursor)
+			ts, vs := fcur.Next()
+			if !cmp.Equal([]int64{11, 10, 3, 2}, ts) {
+				t.Fatal("unexpect timestamps")
+			}
+			if !cmp.Equal([]float64{11.2, 10.1, 1.3, 1.2}, vs) {
+				t.Fatal("unexpect timestamps")
+			}
+		})
 	}
-	e.MustWriteSnapshot()
+}
 
-	if err := e.WritePointsString(
-		`cpu,host=A value=10.1 10`,
-		`cpu,host=A value=11.2 11`,
-		`cpu,host=A value=12.3 12`,
-	); err != nil {
-		t.Fatalf("failed to write points: %s", err.Error())
+func makeBlockTypeSlice(n int) []byte {
+	r := make([]byte, n)
+	b := tsm1.BlockFloat64
+	m := tsm1.BlockUnsigned + 1
+	for i := 0; i < len(r); i++ {
+		r[i] = b % m
 	}
+	return r
+}
 
-	cur, err := e.CreateCursor(context.Background(), &tsdb.CursorRequest{
-		Measurement: "cpu",
-		Series:      "cpu,host=A",
-		Field:       "value",
-		Ascending:   false,
-		StartTime:   2,
-		EndTime:     11,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+var blockType = influxql.Unknown
 
-	fcur := cur.(tsdb.FloatBatchCursor)
-	ts, vs := fcur.Next()
-	if !cmp.Equal([]int64{11, 10, 3, 2}, ts) {
-		t.Fatal("unexpect timestamps")
-	}
-	if !cmp.Equal([]float64{11.2, 10.1, 1.3, 1.2}, vs) {
-		t.Fatal("unexpect timestamps")
+func BenchmarkBlockTypeToInfluxQLDataType(b *testing.B) {
+	t := makeBlockTypeSlice(100)
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < len(t); j++ {
+			blockType = tsm1.BlockTypeToInfluxQLDataType(t[j])
+		}
 	}
 }
 
@@ -1405,28 +1501,45 @@ func TestEngine_CreateCursor_Descending(t *testing.T) {
 func TestEngine_DisableEnableCompactions_Concurrent(t *testing.T) {
 	t.Parallel()
 
-	e := MustOpenDefaultEngine()
-	defer e.Close()
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
 
-	var wg sync.WaitGroup
-	wg.Add(2)
+			e := MustOpenEngine(index)
+			defer e.Close()
 
-	go func() {
-		defer wg.Done()
-		for i := 0; i < 1000; i++ {
-			e.SetCompactionsEnabled(true)
-			e.SetCompactionsEnabled(false)
-		}
-	}()
+			var wg sync.WaitGroup
+			wg.Add(2)
 
-	go func() {
-		defer wg.Done()
-		for i := 0; i < 1000; i++ {
-			e.SetCompactionsEnabled(false)
-			e.SetCompactionsEnabled(true)
-		}
-	}()
-	wg.Wait()
+			go func() {
+				defer wg.Done()
+				for i := 0; i < 1000; i++ {
+					e.SetCompactionsEnabled(true)
+					e.SetCompactionsEnabled(false)
+				}
+			}()
+
+			go func() {
+				defer wg.Done()
+				for i := 0; i < 1000; i++ {
+					e.SetCompactionsEnabled(false)
+					e.SetCompactionsEnabled(true)
+				}
+			}()
+
+			done := make(chan struct{})
+			go func() {
+				wg.Wait()
+				close(done)
+			}()
+
+			// Wait for waitgroup or fail if it takes too long.
+			select {
+			case <-time.NewTimer(30 * time.Second).C:
+				t.Fatalf("timed out after 30 seconds waiting for waitgroup")
+			case <-done:
+			}
+		})
+	}
 }
 
 func BenchmarkEngine_CreateIterator_Count_1K(b *testing.B) {
@@ -1668,51 +1781,65 @@ func MustInitDefaultBenchmarkEngine(pointN int) *Engine {
 // Engine is a test wrapper for tsm1.Engine.
 type Engine struct {
 	*tsm1.Engine
-	root  string
-	index tsdb.Index
+	root        string
+	indexPath   string
+	indexType   string
+	index       tsdb.Index
+	seriesIDSet *tsdb.SeriesIDSet
+	sfile       *tsdb.SeriesFile
 }
 
 // NewEngine returns a new instance of Engine at a temporary location.
-func NewEngine(index string) *Engine {
+func NewEngine(index string) (*Engine, error) {
 	root, err := ioutil.TempDir("", "tsm1-")
 	if err != nil {
 		panic(err)
 	}
 
-	db := path.Base(root)
+	db := "db0"
+	dbPath := filepath.Join(root, "data", db)
+
+	if err := os.MkdirAll(dbPath, os.ModePerm); err != nil {
+		return nil, err
+	}
+
+	// Setup series file.
+	sfile := tsdb.NewSeriesFile(filepath.Join(dbPath, tsdb.SeriesFileDirectory))
+	sfile.Logger = logger.New(os.Stdout)
+	if err = sfile.Open(); err != nil {
+		return nil, err
+	}
+
 	opt := tsdb.NewEngineOptions()
 	opt.IndexVersion = index
 	if index == "inmem" {
-		opt.InmemIndex = inmem.NewIndex(db)
+		opt.InmemIndex = inmem.NewIndex(db, sfile)
 	}
 
-	idx := tsdb.MustOpenIndex(1, db, filepath.Join(root, "data", "index"), opt)
+	idxPath := filepath.Join(dbPath, "index")
+	seriesIDs := tsdb.NewSeriesIDSet()
+	idx := tsdb.MustOpenIndex(1, db, idxPath, seriesIDs, sfile, opt)
+
+	tsm1Engine := tsm1.NewEngine(1, idx, db, filepath.Join(root, "data"), filepath.Join(root, "wal"), sfile, opt).(*tsm1.Engine)
 
 	return &Engine{
-		Engine: tsm1.NewEngine(1,
-			idx,
-			db,
-			filepath.Join(root, "data"),
-			filepath.Join(root, "wal"),
-			opt).(*tsm1.Engine),
-		root:  root,
-		index: idx,
-	}
-}
-
-// MustOpenDefaultEngine returns a new, open instance of Engine using the default
-// index. Useful when the index is not directly under test.
-func MustOpenDefaultEngine() *Engine {
-	e := NewEngine(tsdb.DefaultIndex)
-	if err := e.Open(); err != nil {
-		panic(err)
-	}
-	return e
+		Engine:      tsm1Engine,
+		root:        root,
+		indexPath:   idxPath,
+		indexType:   index,
+		index:       idx,
+		seriesIDSet: seriesIDs,
+		sfile:       sfile,
+	}, nil
 }
 
 // MustOpenEngine returns a new, open instance of Engine.
 func MustOpenEngine(index string) *Engine {
-	e := NewEngine(index)
+	e, err := NewEngine(index)
+	if err != nil {
+		panic(err)
+	}
+
 	if err := e.Open(); err != nil {
 		panic(err)
 	}
@@ -1721,38 +1848,106 @@ func MustOpenEngine(index string) *Engine {
 
 // Close closes the engine and removes all underlying data.
 func (e *Engine) Close() error {
+	return e.close(true)
+}
+
+func (e *Engine) close(cleanup bool) error {
 	if e.index != nil {
 		e.index.Close()
 	}
-	defer os.RemoveAll(e.root)
+
+	if e.sfile != nil {
+		e.sfile.Close()
+	}
+
+	defer func() {
+		if cleanup {
+			os.RemoveAll(e.root)
+		}
+	}()
 	return e.Engine.Close()
 }
 
 // Reopen closes and reopens the engine.
 func (e *Engine) Reopen() error {
-	if err := e.Engine.Close(); err != nil {
+	// Close engine without removing underlying engine data.
+	if err := e.close(false); err != nil {
 		return err
-	} else if e.index.Close(); err != nil {
+	}
+
+	// Re-open series file. Must create a new series file using the same data.
+	e.sfile = tsdb.NewSeriesFile(e.sfile.Path())
+	if err := e.sfile.Open(); err != nil {
 		return err
 	}
 
 	db := path.Base(e.root)
 	opt := tsdb.NewEngineOptions()
-	opt.InmemIndex = inmem.NewIndex(db)
+	opt.InmemIndex = inmem.NewIndex(db, e.sfile)
 
-	e.index = tsdb.MustOpenIndex(1, db, filepath.Join(e.root, "data", "index"), opt)
+	// Re-open index.
+	e.seriesIDSet = tsdb.NewSeriesIDSet()
+	e.index = tsdb.MustOpenIndex(1, db, e.indexPath, e.seriesIDSet, e.sfile, opt)
 
-	e.Engine = tsm1.NewEngine(1,
-		e.index,
-		db,
-		filepath.Join(e.root, "data"),
-		filepath.Join(e.root, "wal"),
-		opt).(*tsm1.Engine)
+	// Re-initialize engine.
+	e.Engine = tsm1.NewEngine(1, e.index, db, filepath.Join(e.root, "data"), filepath.Join(e.root, "wal"), e.sfile, opt).(*tsm1.Engine)
 
+	// Reopen engine
 	if err := e.Engine.Open(); err != nil {
 		return err
 	}
-	return nil
+
+	// Reload series data into index (no-op on TSI).
+	return e.LoadMetadataIndex(1, e.index)
+}
+
+// SeriesIDSet provides access to the underlying series id bitset in the engine's
+// index. It will panic if the underlying index does not have a SeriesIDSet
+// method.
+func (e *Engine) SeriesIDSet() *tsdb.SeriesIDSet {
+	return e.index.(interface {
+		SeriesIDSet() *tsdb.SeriesIDSet
+	}).SeriesIDSet()
+}
+
+// AddSeries adds the provided series data to the index and writes a point to
+// the engine with default values for a field and a time of now.
+func (e *Engine) AddSeries(name string, tags map[string]string) error {
+	point, err := models.NewPoint(name, models.NewTags(tags), models.Fields{"v": 1.0}, time.Now())
+	if err != nil {
+		return err
+	}
+	return e.writePoints(point)
+}
+
+// WritePointsString calls WritePointsString on the underlying engine, but also
+// adds the associated series to the index.
+func (e *Engine) WritePointsString(ptstr ...string) error {
+	points, err := models.ParsePointsString(strings.Join(ptstr, "\n"))
+	if err != nil {
+		return err
+	}
+	return e.writePoints(points...)
+}
+
+// writePoints adds the series for the provided points to the index, and writes
+// the point data to the engine.
+func (e *Engine) writePoints(points ...models.Point) error {
+	for _, point := range points {
+		// Write into the index.
+		if err := e.Engine.CreateSeriesIfNotExists(point.Key(), point.Name(), point.Tags()); err != nil {
+			return err
+		}
+	}
+	// Write the points into the cache/wal.
+	return e.WritePoints(points)
+}
+
+// MustAddSeries calls AddSeries, panicking if there is an error.
+func (e *Engine) MustAddSeries(name string, tags map[string]string) {
+	if err := e.AddSeries(name, tags); err != nil {
+		panic(err)
+	}
 }
 
 // MustWriteSnapshot forces a snapshot of the engine. Panic on error.
@@ -1762,9 +1957,35 @@ func (e *Engine) MustWriteSnapshot() {
 	}
 }
 
-// WritePointsString parses a string buffer and writes the points.
-func (e *Engine) WritePointsString(buf ...string) error {
-	return e.WritePoints(MustParsePointsString(strings.Join(buf, "\n")))
+// SeriesFile is a test wrapper for tsdb.SeriesFile.
+type SeriesFile struct {
+	*tsdb.SeriesFile
+}
+
+// NewSeriesFile returns a new instance of SeriesFile with a temporary file path.
+func NewSeriesFile() *SeriesFile {
+	dir, err := ioutil.TempDir("", "tsdb-series-file-")
+	if err != nil {
+		panic(err)
+	}
+	return &SeriesFile{SeriesFile: tsdb.NewSeriesFile(dir)}
+}
+
+// MustOpenSeriesFile returns a new, open instance of SeriesFile. Panic on error.
+func MustOpenSeriesFile() *SeriesFile {
+	f := NewSeriesFile()
+	if err := f.Open(); err != nil {
+		panic(err)
+	}
+	return f
+}
+
+// Close closes the log file and removes it from disk.
+func (f *SeriesFile) Close() {
+	defer os.RemoveAll(f.Path())
+	if err := f.SeriesFile.Close(); err != nil {
+		panic(err)
+	}
 }
 
 // MustParsePointsString parses points from a string. Panic on error.
@@ -1813,12 +2034,14 @@ func (s series) Tags() models.Tags   { return s.tags }
 func (s series) Deleted() bool       { return s.deleted }
 func (s series) Expr() influxql.Expr { return nil }
 
-func (itr *seriesIterator) Next() tsdb.SeriesElem {
+func (itr *seriesIterator) Close() error { return nil }
+
+func (itr *seriesIterator) Next() (tsdb.SeriesElem, error) {
 	if len(itr.keys) == 0 {
-		return nil
+		return nil, nil
 	}
 	name, tags := models.ParseKeyBytes(itr.keys[0])
 	s := series{name: name, tags: tags}
 	itr.keys = itr.keys[1:]
-	return s
+	return s, nil
 }

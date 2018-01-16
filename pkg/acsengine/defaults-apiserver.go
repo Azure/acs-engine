@@ -64,6 +64,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	// AAD configuration
 	if cs.Properties.HasAadProfile() {
 		staticLinuxAPIServerConfig["--oidc-username-claim"] = "oid"
+		staticLinuxAPIServerConfig["--oidc-groups-claim"] = "groups"
 		staticLinuxAPIServerConfig["--oidc-client-id"] = "spn:" + cs.Properties.AADProfile.ServerAppID
 		issuerHost := "sts.windows.net"
 		if GetCloudTargetEnv(cs.Location) == "AzureChinaCloud" {
@@ -87,7 +88,15 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// RBAC configuration
 	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
-		defaultAPIServerConfig["--authorization-mode"] = "Node,RBAC"
+		defaultAPIServerConfig["--authorization-mode"] = "RBAC"
+		if isKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") {
+			defaultAPIServerConfig["--authorization-mode"] = "Node,RBAC"
+		}
+	} else if !isKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") {
+		// remove authorization-mode for 1.6 clusters without RBAC since Node authorization isn't supported
+		for _, key := range []string{"--authorization-mode"} {
+			delete(defaultAPIServerConfig, key)
+		}
 	}
 
 	// If no user-configurable apiserver config values exists, use the defaults
@@ -113,5 +122,12 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	}
 	for key, val := range overrideAPIServerConfig {
 		o.KubernetesConfig.APIServerConfig[key] = val
+	}
+
+	// Remove flags for secure communication to kubelet, if configured
+	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableSecureKubelet) {
+		for _, key := range []string{"--kubelet-client-certificate", "--kubelet-client-key"} {
+			delete(o.KubernetesConfig.APIServerConfig, key)
+		}
 	}
 }

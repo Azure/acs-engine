@@ -47,6 +47,7 @@ func config() (*pipeline.Config, error) {
 	}
 	return &pipeline.Config{
 		SourceLanguage:      tag,
+		Supported:           getLangs(),
 		TranslationsPattern: `messages\.(.*)\.json`,
 		GenFile:             *out,
 	}, nil
@@ -100,6 +101,7 @@ func (c *Command) Runnable() bool {
 // Commands lists the available commands and help topics.
 // The order here is the order in which they are printed by 'go help'.
 var commands = []*Command{
+	cmdUpdate,
 	cmdExtract,
 	cmdRewrite,
 	cmdGenerate,
