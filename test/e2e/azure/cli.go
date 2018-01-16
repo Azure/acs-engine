@@ -95,7 +95,7 @@ func (a *Account) CreateGroup(name, location string) error {
 	return nil
 }
 
-// DeleteGroup delets a given resource group by name
+// DeleteGroup deletes a given resource group by name
 func (a *Account) DeleteGroup(name string, wait bool) error {
 	var out []byte
 	var err error
