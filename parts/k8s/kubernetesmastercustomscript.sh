@@ -247,8 +247,8 @@ function configAzureNetworkPolicy() {
     chmod -R 755 $CNI_BIN_DIR
 
     # Copy config file
-    mv $CNI_BIN_DIR/10-azure.conf $CNI_CONFIG_DIR/
-    chmod 600 $CNI_CONFIG_DIR/10-azure.conf
+    mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
+    chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
 
     # Dump ebtables rules.
     /sbin/ebtables -t nat --list
