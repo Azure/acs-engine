@@ -19,7 +19,7 @@ var KubeConfigs = map[string]map[string]string{
 		"dns":                       "k8s-dns-kube-dns-amd64:1.14.8",
 		"addonmanager":              "kube-addon-manager-amd64:v6.5",
 		"dnsmasq":                   "k8s-dns-dnsmasq-nanny-amd64:1.14.8",
-		"pause":                     "pause-amd64:3.0",
+		"pause":                     "pause-amd64:3.1",
 		DefaultTillerAddonName:      DefaultTillerImage,
 		DefaultReschedulerAddonName: DefaultReschedulerImage,
 		"windowszip":                "v1.9.1-1int.zip",
