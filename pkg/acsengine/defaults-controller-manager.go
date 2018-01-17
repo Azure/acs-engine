@@ -19,7 +19,7 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 		"--service-account-private-key-file": "/etc/kubernetes/certs/apiserver.key",
 		"--leader-elect":                     "true",
 		"--v":                                "2",
-		"--profiling":                        "False",
+		"--profiling":                        "false",
 	}
 
 	// Set --cluster-name based on appropriate DNS prefix
@@ -47,6 +47,7 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 		"--node-monitor-grace-period":   DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"--pod-eviction-timeout":        DefaultKubernetesCtrlMgrPodEvictionTimeout,
 		"--route-reconciliation-period": DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
+		"--terminated-pod-gc-threshold": DefaultKubernetesCtrlMgrTerminatedPodGcThreshold,
 	}
 
 	// If no user-configurable controller-manager config values exists, use the defaults
