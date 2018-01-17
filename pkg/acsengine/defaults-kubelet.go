@@ -22,7 +22,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--client-ca-file":                  "/etc/kubernetes/certs/ca.crt",
 		"--pod-manifest-path":               "/etc/kubernetes/manifests",
 		"--cluster-domain":                  "cluster.local",
-		"--cluster-dns":                     DefaultKubernetesDNSServiceIP,
+		"--cluster-dns":                     o.KubernetesConfig.DNSServiceIP,
 		"--cgroups-per-qos":                 "false",
 		"--enforce-node-allocatable":        "",
 		"--kubeconfig":                      "/var/lib/kubelet/kubeconfig",
