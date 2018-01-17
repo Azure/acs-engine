@@ -18,9 +18,9 @@ func Test_GetValidPatchVersion(t *testing.T) {
 		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot7Dot12)
 	}
 
-	version = GetValidPatchVersion(Kubernetes, "1.8.6")
-	if version != KubernetesVersion1Dot8Dot6 {
-		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot8Dot6)
+	version = GetValidPatchVersion(Kubernetes, "1.8.7")
+	if version != KubernetesVersion1Dot8Dot7 {
+		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot8Dot7)
 	}
 
 	version = GetValidPatchVersion(Kubernetes, "1.9.1")
