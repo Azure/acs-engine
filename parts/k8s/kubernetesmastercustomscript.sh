@@ -20,7 +20,7 @@
 
 # Master only secrets
 # APISERVER_PRIVATE_KEY CA_CERTIFICATE CA_PRIVATE_KEY MASTER_FQDN KUBECONFIG_CERTIFICATE
-# KUBECONFIG_KEY ETCD_SERVER_CERTIFICATE ETCD_SERVER_PRIVATE_KEY ETCD_CLIENT_CERTIFICATE ETCD_CLIENT_PRIVATE_KEY 
+# KUBECONFIG_KEY ETCD_SERVER_CERTIFICATE ETCD_SERVER_PRIVATE_KEY ETCD_CLIENT_CERTIFICATE ETCD_CLIENT_PRIVATE_KEY
 # ETCD_PEER_CERTIFICATES ETCD_PEER_PRIVATE_KEYS ADMINUSER MASTER_INDEX
 
 # Find distro name via ID value in releases files and upcase
@@ -59,7 +59,7 @@ ensureRunCommandCompleted()
 echo `date`,`hostname`, startscript>>/opt/m
 
 # A delay to start the kubernetes processes is necessary
-# if a reboot is required.  Otherwise, the agents will encounter issue: 
+# if a reboot is required.  Otherwise, the agents will encounter issue:
 # https://github.com/kubernetes/kubernetes/issues/41185
 if [ -f /var/run/reboot-required ]; then
     REBOOTREQUIRED=true
@@ -616,7 +616,7 @@ function writeKubeConfig() {
     chown $ADMINUSER:$ADMINUSER $KUBECONFIGFILE
     chmod 700 $KUBECONFIGDIR
     chmod 600 $KUBECONFIGFILE
-    
+
     # disable logging after secret output
     set +x
     echo "
@@ -644,8 +644,13 @@ users:
     set -x
 }
 
-ensureRunCommandCompleted
-echo `date`,`hostname`, RunCmdCompleted>>/opt/m
+if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
+	# If the container runtime is "clear-containers" we need to ensure the
+	# run command is completed _before_ we start installing all the dependencies
+	# for clear-containers to make sure there is not a dpkg lock.
+	ensureRunCommandCompleted
+	echo `date`,`hostname`, RunCmdCompleted>>/opt/m
+fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
 	# make sure walinuxagent doesn't get updated in the middle of running this script
@@ -653,9 +658,9 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
 fi
 
 # master and node
-echo `date`,`hostname`, EnsureDockerStart>>/opt/m 
+echo `date`,`hostname`, EnsureDockerStart>>/opt/m
 ensureDocker
-echo `date`,`hostname`, configNetworkPolicyStart>>/opt/m 
+echo `date`,`hostname`, configNetworkPolicyStart>>/opt/m
 configNetworkPolicy
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
 	# Ensure we can nest virtualization
@@ -672,11 +677,16 @@ echo `date`,`hostname`, ensureCRIOStart>>/opt/m
 ensureCRIO
 echo `date`,`hostname`, ensureKubeletStart>>/opt/m
 ensureKubelet
-echo `date`,`hostname`, extractKubctlStart>>/opt/m 
+echo `date`,`hostname`, extractKubctlStart>>/opt/m
 extractKubectl
-echo `date`,`hostname`, ensureJournalStart>>/opt/m 
+echo `date`,`hostname`, ensureJournalStart>>/opt/m
 ensureJournal
 echo `date`,`hostname`, ensureJournalDone>>/opt/m
+
+# On all other runtimes, but "clear-containers" we can ensure the run command
+# completed here to allow for parallelizing the custom script
+ensureRunCommandCompleted
+echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 
 # master only
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
