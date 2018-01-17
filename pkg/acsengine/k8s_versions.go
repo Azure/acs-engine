@@ -106,7 +106,7 @@ var KubeConfigs = map[string]map[string]string{
 		"pause":                     "pause-amd64:3.0",
 		DefaultTillerAddonName:      DefaultTillerImage,
 		DefaultReschedulerAddonName: DefaultReschedulerImage,
-		"windowszip":                "v1.8.6-1int.zip",
+		"windowszip":                "v1.8.6-2int.zip",
 		"nodestatusfreq":            DefaultKubernetesNodeStatusUpdateFrequency,
 		"nodegraceperiod":           DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
 		"podeviction":               DefaultKubernetesCtrlMgrPodEvictionTimeout,
