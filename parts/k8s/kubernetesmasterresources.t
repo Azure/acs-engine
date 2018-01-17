@@ -338,13 +338,14 @@
             }
           }
 {{if IsAzureCNI}}
-          {{range $seq := loop 2 .MasterProfile.IPAddressCount}}
+          {{range $seq := loop 1 .MasterProfile.IPAddressCount}}
           ,
           {
-            "name": "ipconfig{{$seq}}",
+            "name": "[concat('ipconfig', add({{$seq}}, 1))]",
             "properties": {
+              "privateIPAddress": "[variables('masterSecondaryAddrs')[add(mul(copyIndex(variables('masterOffset')), variables('ipAddressCount')), sub({{$seq}}, 1))]]",
               "primary": false,
-              "privateIPAllocationMethod": "Dynamic",
+              "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('vnetSubnetID')]"
               }
