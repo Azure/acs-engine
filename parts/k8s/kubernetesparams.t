@@ -506,6 +506,17 @@
       ],
       "type": "string"
     },
+    "containerRuntime": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.ContainerRuntime}}",
+      "metadata": {
+        "description": "The container runtime to use (docker|clear-containers)"
+      },
+      "allowedValues": [
+        "docker",
+        "clear-containers"
+      ],
+      "type": "string"
+    },
     "cniPluginsURL": {
       "defaultValue": "https://acs-mirror.azureedge.net/cni/cni-plugins-amd64-latest.tgz",
       "type": "string"

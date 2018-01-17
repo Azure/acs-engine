@@ -68,9 +68,12 @@ const (
 	ManagedDisks = "ManagedDisks"
 )
 
-// Network policy
 var (
+	// NetworkPolicyValues holds the valid values for a network policy
 	NetworkPolicyValues = [...]string{"", "none", "azure", "calico"}
+
+	// ContainerRuntimeValues holds the valid values for container runtimes
+	ContainerRuntimeValues = [...]string{"", "docker", "clear-containers"}
 )
 
 // Kubernetes configuration

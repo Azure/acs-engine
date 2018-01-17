@@ -223,6 +223,7 @@ type KubernetesConfig struct {
 	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
 	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
 	NetworkPolicy       string `json:"networkPolicy,omitempty"`
+	ContainerRuntime    string `json:"containerRuntime,omitempty"`
 	MaxPods             int    `json:"maxPods,omitempty"`
 	DockerBridgeSubnet  string `json:"dockerBridgeSubnet,omitempty"`
 	DNSServiceIP        string `json:"dnsServiceIP,omitempty"`

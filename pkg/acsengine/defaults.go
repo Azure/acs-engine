@@ -315,6 +315,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 			}
 		}
+		if o.KubernetesConfig.ContainerRuntime == "" {
+			o.KubernetesConfig.ContainerRuntime = DefaultContainerRuntime
+		}
 		if o.KubernetesConfig.ClusterSubnet == "" {
 			if o.IsAzureCNI() {
 				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
