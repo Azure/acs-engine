@@ -287,6 +287,96 @@ func TestPointerToBool(t *testing.T) {
 	}
 }
 
+func TestKubeletFeatureGatesEnsureAcceleratorsNotSetFor1_5_0(t *testing.T) {
+	mockCS := getMockBaseContainerService("1.5.0")
+	properties := mockCS.Properties
+
+	// No KubernetesConfig.KubeletConfig set for MasterProfile or AgentProfile
+	// so they will inherit the top-level config
+	properties.OrchestratorProfile.KubernetesConfig = getKubernetesConfigWithFeatureGates("TopLevel=true")
+
+	setKubeletConfig(&mockCS)
+
+	// Verify that the Accelerators feature gate has not been applied to master or agents
+	agentFeatureGates := properties.AgentPoolProfiles[0].KubernetesConfig.KubeletConfig["--feature-gates"]
+	if agentFeatureGates != "TopLevel=true" {
+		t.Fatalf("setKubeletConfig modified the agent profile (version 1.5.0): expected 'TopLevel=true' got '%s'", agentFeatureGates)
+	}
+	masterFeatureFates := properties.MasterProfile.KubernetesConfig.KubeletConfig["--feature-gates"]
+	if masterFeatureFates != "TopLevel=true" {
+		t.Fatalf("setKubeletConfig modified feature gates for master profile: 'TopLevel=true' got '%s'", agentFeatureGates)
+	}
+}
+func TestKubeletFeatureGatesEnsureAcceleratorsOnAgentsFor1_6_0(t *testing.T) {
+	mockCS := getMockBaseContainerService("1.6.0")
+	properties := mockCS.Properties
+
+	// No KubernetesConfig.KubeletConfig set for MasterProfile or AgentProfile
+	// so they will inherit the top-level config
+	properties.OrchestratorProfile.KubernetesConfig = getKubernetesConfigWithFeatureGates("TopLevel=true")
+
+	setKubeletConfig(&mockCS)
+
+	agentFeatureGates := properties.AgentPoolProfiles[0].KubernetesConfig.KubeletConfig["--feature-gates"]
+	if agentFeatureGates != "Accelerators=true,TopLevel=true" {
+		t.Fatalf("setKubeletConfig did not add 'Accelerators=true' for agent profile: expected 'Accelerators=true;TopLevel=true' got '%s'", agentFeatureGates)
+	}
+
+	// Verify that the Accelerators feature gate override has only been applied to the agents
+	masterFeatureFates := properties.MasterProfile.KubernetesConfig.KubeletConfig["--feature-gates"]
+	if masterFeatureFates != "TopLevel=true" {
+		t.Fatalf("setKubeletConfig modified feature gates for master profile: expected 'TopLevel=true' got '%s'", agentFeatureGates)
+	}
+}
+
+func TestKubeletFeatureGatesEnsureMasterAndAgentConfigUsedFor1_5_0(t *testing.T) {
+	mockCS := getMockBaseContainerService("1.5.0")
+	properties := mockCS.Properties
+
+	// Set MasterProfile and AgentProfiles KubernetesConfig.KubeletConfit ig values
+	// Verify that they are used instead of the top-level config
+	properties.OrchestratorProfile.KubernetesConfig = getKubernetesConfigWithFeatureGates("TopLevel=true")
+	properties.MasterProfile = &api.MasterProfile{KubernetesConfig: getKubernetesConfigWithFeatureGates("MasterLevel=true")}
+	properties.AgentPoolProfiles[0].KubernetesConfig = getKubernetesConfigWithFeatureGates("AgentLevel=true")
+
+	setKubeletConfig(&mockCS)
+
+	agentFeatureGates := properties.AgentPoolProfiles[0].KubernetesConfig.KubeletConfig["--feature-gates"]
+	if agentFeatureGates != "AgentLevel=true" {
+		t.Fatalf("setKubeletConfig agent profile: expected 'AgentLevel=true' got '%s'", agentFeatureGates)
+	}
+
+	// Verify that the Accelerators feature gate override has only been applied to the agents
+	masterFeatureFates := properties.MasterProfile.KubernetesConfig.KubeletConfig["--feature-gates"]
+	if masterFeatureFates != "MasterLevel=true" {
+		t.Fatalf("setKubeletConfig master profile: expected 'MasterLevel=true' got '%s'", agentFeatureGates)
+	}
+}
+
+func TestKubeletFeatureGatesEnsureMasterAndAgentConfigUsedFor1_6_0(t *testing.T) {
+	mockCS := getMockBaseContainerService("1.6.0")
+	properties := mockCS.Properties
+
+	// Set MasterProfile and AgentProfiles KubernetesConfig.KubeletConfig values
+	// Verify that they are used instead of the top-level config
+	properties.OrchestratorProfile.KubernetesConfig = getKubernetesConfigWithFeatureGates("TopLevel=true")
+	properties.MasterProfile = &api.MasterProfile{KubernetesConfig: getKubernetesConfigWithFeatureGates("MasterLevel=true")}
+	properties.AgentPoolProfiles[0].KubernetesConfig = getKubernetesConfigWithFeatureGates("AgentLevel=true")
+
+	setKubeletConfig(&mockCS)
+
+	agentFeatureGates := properties.AgentPoolProfiles[0].KubernetesConfig.KubeletConfig["--feature-gates"]
+	if agentFeatureGates != "Accelerators=true,AgentLevel=true" {
+		t.Fatalf("setKubeletConfig agent profile: expected 'Accelerators=true,AgentLevel=true' got '%s'", agentFeatureGates)
+	}
+
+	// Verify that the Accelerators feature gate override has only been applied to the agents
+	masterFeatureFates := properties.MasterProfile.KubernetesConfig.KubeletConfig["--feature-gates"]
+	if masterFeatureFates != "MasterLevel=true" {
+		t.Fatalf("setKubeletConfig master profile: expected 'MasterLevel=true' got '%s'", agentFeatureGates)
+	}
+}
+
 func getMockAddon(name string) api.KubernetesAddon {
 	return api.KubernetesAddon{
 		Name:    name,
@@ -300,5 +390,25 @@ func getMockAddon(name string) api.KubernetesAddon {
 				MemoryLimits:   "150Mi",
 			},
 		},
+	}
+}
+
+func getMockBaseContainerService(orchestratorVersion string) api.ContainerService {
+	return api.ContainerService{
+		Properties: &api.Properties{
+			OrchestratorProfile: &api.OrchestratorProfile{
+				OrchestratorVersion: orchestratorVersion,
+				KubernetesConfig:    &api.KubernetesConfig{},
+			},
+			MasterProfile: &api.MasterProfile{},
+			AgentPoolProfiles: []*api.AgentPoolProfile{
+				{},
+			},
+		},
+	}
+}
+func getKubernetesConfigWithFeatureGates(featureGates string) *api.KubernetesConfig {
+	return &api.KubernetesConfig{
+		KubeletConfig: map[string]string{"--feature-gates": featureGates},
 	}
 }
