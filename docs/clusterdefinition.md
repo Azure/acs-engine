@@ -200,6 +200,7 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
         "--node-monitor-grace-period": "40s",
         "--pod-eviction-timeout": "5m0s",
         "--route-reconciliation-period": "10s"
+        "--terminated-pod-gc-threshold": "5000"
     }
 }
 ```
@@ -213,6 +214,7 @@ Below is a list of controller-manager options that acs-engine will configure by 
 |"--node-monitor-grace-period"|"40s"|
 |"--pod-eviction-timeout"|"5m0s"|
 |"--route-reconciliation-period"|"10s"|
+|"--terminated-pod-gc-threshold"|"5000"|
 
 
 Below is a list of controller-manager options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces controller-manager configuration, or because a static configuration is required to build a functional cluster:
