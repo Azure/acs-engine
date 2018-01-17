@@ -97,8 +97,8 @@ func TestOrchestratorUpgradeInfo(t *testing.T) {
 	}
 	orch, e = GetOrchestratorVersionProfile(csOrch)
 	Expect(e).To(BeNil())
-	// 1.8.6, 1.9.0, 1.9.1
-	Expect(len(orch.Upgrades)).To(Equal(3))
+	// 1.8.6, 1.8.7, 1.9.0, 1.9.1
+	Expect(len(orch.Upgrades)).To(Equal(4))
 
 	// 1.9.1 is not upgradable
 	csOrch = &OrchestratorProfile{
