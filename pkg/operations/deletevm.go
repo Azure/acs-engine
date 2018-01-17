@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -31,7 +32,7 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 	if nicID == nil {
 		logger.Warnf("NIC ID is not set for VM (%s/%s)", resourceGroup, name)
 	} else {
-		nicName, err = armhelpers.ResourceName(*nicID)
+		nicName, err = utils.ResourceName(*nicID)
 		if err != nil {
 			return err
 		}
@@ -56,7 +57,7 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 	}
 
 	if vhd != nil {
-		accountName, vhdContainer, vhdBlob, err := armhelpers.SplitBlobURI(*vhd.URI)
+		accountName, vhdContainer, vhdBlob, err := utils.SplitBlobURI(*vhd.URI)
 		if err != nil {
 			return err
 		}

@@ -16,7 +16,7 @@ func TestCreateCertificateWithOrganisation(t *testing.T) {
 		testCertificate *x509.Certificate
 	)
 
-	caCertificate, caPrivateKey, err = createCertificate("ca", nil, nil, false, nil, nil, nil)
+	caCertificate, caPrivateKey, err = createCertificate("ca", nil, nil, false, false, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("failed to generate certificate: %s", err)
 	}
@@ -33,7 +33,7 @@ func TestCreateCertificateWithOrganisation(t *testing.T) {
 
 	organization := make([]string, 1)
 	organization[0] = "system:masters"
-	testCertificate, _, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil, organization)
+	testCertificate, _, err = createCertificate("client", caCertificate, caPrivateKey, false, false, nil, nil, organization)
 	if err != nil {
 		t.Fatalf("failed to generate certificate: %s", err)
 	}
@@ -55,7 +55,7 @@ func TestCreateCertificateWithoutOrganisation(t *testing.T) {
 		testCertificate *x509.Certificate
 	)
 
-	caCertificate, caPrivateKey, err = createCertificate("ca", nil, nil, false, nil, nil, nil)
+	caCertificate, caPrivateKey, err = createCertificate("ca", nil, nil, false, false, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("failed to generate certificate: %s", err)
 	}
@@ -70,7 +70,7 @@ func TestCreateCertificateWithoutOrganisation(t *testing.T) {
 		t.Fatalf("failed to generate certificate: %s", err)
 	}
 
-	testCertificate, _, err = createCertificate("client", caCertificate, caPrivateKey, false, nil, nil, nil)
+	testCertificate, _, err = createCertificate("client", caCertificate, caPrivateKey, false, false, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("failed to generate certificate: %s", err)
 	}

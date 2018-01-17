@@ -7,6 +7,8 @@
 //
 package cldrtree
 
+//go:generate go test -gen
+
 // cldrtree stores CLDR data in a tree-like structure called Tree. In the CLDR
 // data each branch in the tree is indicated by either an element name or an
 // attribute value. A Tree does not distinguish between these two cases, but
@@ -186,8 +188,12 @@ func (b *Builder) Gen(w *gen.CodeWriter) error {
 	if err != nil {
 		return err
 	}
-	generate(b, t, w)
-	return nil
+	return generate(b, t, w)
+}
+
+// GenTestData generates tables useful for testing data generated with Gen.
+func (b *Builder) GenTestData(w *gen.CodeWriter) error {
+	return generateTestData(b, w)
 }
 
 type locale struct {

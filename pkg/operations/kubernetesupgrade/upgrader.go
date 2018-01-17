@@ -2,10 +2,13 @@ package kubernetesupgrade
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
+	"github.com/Azure/acs-engine/pkg/acsengine/transform"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/sirupsen/logrus"
 )
@@ -15,13 +18,15 @@ type Upgrader struct {
 	Translator *i18n.Translator
 	logger     *logrus.Entry
 	ClusterTopology
-	Client     armhelpers.ACSEngineClient
-	kubeConfig string
+	Client      armhelpers.ACSEngineClient
+	kubeConfig  string
+	stepTimeout *time.Duration
 }
 
 type vmStatus int
 
 const (
+	defaultTimeout            = time.Minute * 10
 	vmStatusUpgraded vmStatus = iota
 	vmStatusNotUpgraded
 	vmStatusIgnored
@@ -33,12 +38,13 @@ type vmInfo struct {
 }
 
 // Init initializes an upgrader struct
-func (ku *Upgrader) Init(translator *i18n.Translator, logger *logrus.Entry, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient, kubeConfig string) {
+func (ku *Upgrader) Init(translator *i18n.Translator, logger *logrus.Entry, clusterTopology ClusterTopology, client armhelpers.ACSEngineClient, kubeConfig string, stepTimeout *time.Duration) {
 	ku.Translator = translator
 	ku.logger = logger
 	ku.ClusterTopology = clusterTopology
 	ku.Client = client
 	ku.kubeConfig = kubeConfig
+	ku.stepTimeout = stepTimeout
 }
 
 // RunUpgrade runs the upgrade pipeline
@@ -72,7 +78,7 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 
 	ku.logger.Infof("Prepping master nodes for upgrade...")
 
-	transformer := &acsengine.Transformer{
+	transformer := &transform.Transformer{
 		Translator: ku.Translator,
 	}
 	if err := transformer.NormalizeResourcesForK8sMasterUpgrade(ku.logger, templateMap, ku.DataModel.Properties.MasterProfile.IsManagedDisks(), nil); err != nil {
@@ -90,6 +96,11 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	upgradeMasterNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 	upgradeMasterNode.Client = ku.Client
 	upgradeMasterNode.kubeConfig = ku.kubeConfig
+	if ku.stepTimeout == nil {
+		upgradeMasterNode.timeout = defaultTimeout
+	} else {
+		upgradeMasterNode.timeout = *ku.stepTimeout
+	}
 
 	expectedMasterCount := ku.ClusterTopology.DataModel.Properties.MasterProfile.Count
 	mastersUpgradedCount := len(*ku.ClusterTopology.UpgradedMasterVMs)
@@ -111,14 +122,14 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 
 	for _, vm := range *ku.ClusterTopology.UpgradedMasterVMs {
 		ku.logger.Infof("Master VM: %s is upgraded to expected orchestrator version", *vm.Name)
-		masterIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
+		masterIndex, _ := utils.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 		upgradedMastersIndex[masterIndex] = true
 	}
 
 	for _, vm := range *ku.ClusterTopology.MasterVMs {
 		ku.logger.Infof("Upgrading Master VM: %s", *vm.Name)
 
-		masterIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
+		masterIndex, _ := utils.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
 		err := upgradeMasterNode.DeleteNode(vm.Name, false)
 		if err != nil {
@@ -192,7 +203,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		ku.logger.Infof("Prepping agent pool '%s' for upgrade...", *agentPool.Name)
 
 		preservePools := map[string]bool{*agentPool.Name: true}
-		transformer := &acsengine.Transformer{
+		transformer := &transform.Transformer{
 			Translator: ku.Translator,
 		}
 		var isMasterManagedDisk bool
@@ -232,6 +243,11 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		upgradeAgentNode.ResourceGroup = ku.ClusterTopology.ResourceGroup
 		upgradeAgentNode.Client = ku.Client
 		upgradeAgentNode.kubeConfig = ku.kubeConfig
+		if ku.stepTimeout == nil {
+			upgradeAgentNode.timeout = defaultTimeout
+		} else {
+			upgradeAgentNode.timeout = *ku.stepTimeout
+		}
 
 		agentVMs := make(map[int]*vmInfo)
 		// Go over upgraded VMs and verify provisioning state
@@ -249,7 +265,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 			if vm.VirtualMachineProperties != nil && vm.VirtualMachineProperties.ProvisioningState != nil {
 				vmProvisioningState = *vm.VirtualMachineProperties.ProvisioningState
 			}
-			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
+			agentIndex, _ := utils.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 
 			switch vmProvisioningState {
 			case "Creating", "Updating", "Succeeded":
@@ -273,7 +289,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		}
 
 		for _, vm := range *agentPool.AgentVMs {
-			agentIndex, _ := armhelpers.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
+			agentIndex, _ := utils.GetVMNameIndex(vm.StorageProfile.OsDisk.OsType, *vm.Name)
 			agentVMs[agentIndex] = &vmInfo{*vm.Name, vmStatusNotUpgraded}
 		}
 		toBeUpgradedCount := len(*agentPool.AgentVMs)
@@ -289,7 +305,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		for upgradedCount+toBeUpgradedCount < agentCount {
 			agentIndex := getAvailableIndex(agentVMs)
 
-			vmName, err := armhelpers.GetK8sVMName(agentOsType, ku.DataModel.Properties.HostedMasterProfile != nil,
+			vmName, err := utils.GetK8sVMName(agentOsType, ku.DataModel.Properties.HostedMasterProfile != nil,
 				ku.NameSuffix, agentPoolName, agentPoolIndex, agentIndex)
 			if err != nil {
 				ku.logger.Errorf("Error reconstructing agent VM name with index %d: %v", agentIndex, err)

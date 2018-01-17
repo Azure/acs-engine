@@ -68,13 +68,24 @@ const (
 	ManagedDisks = "ManagedDisks"
 )
 
-// Network policy
 var (
+	// NetworkPolicyValues holds the valid values for a network policy
 	NetworkPolicyValues = [...]string{"", "none", "azure", "calico"}
+
+	// ContainerRuntimeValues holds the valid values for container runtimes
+	ContainerRuntimeValues = [...]string{"", "docker", "clear-containers"}
 )
 
 // Kubernetes configuration
 const (
 	// KubernetesMinMaxPods is the minimum valid value for MaxPods, necessary for running kube-system pods
 	KubernetesMinMaxPods = 5
+)
+
+// vlabs default configuration
+const (
+	// DefaultNetworkPolicy defines the network policy to use by default
+	DefaultNetworkPolicy = "azure"
+	// DefaultNetworkPolicyWindows defines the network policy to use by default for clusters with Windows agent pools
+	DefaultNetworkPolicyWindows = "none"
 )

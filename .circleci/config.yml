@@ -31,9 +31,6 @@ jobs:
           command: make test
       - store_test_results:
           path: test/junit
-      - run:
-          name: Generate test coverage results
-          command:  make coverage
   swarm-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
@@ -110,30 +107,6 @@ jobs:
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs        
-  k8s-1.6-release-e2e:
-    working_directory: /go/src/github.com/Azure/acs-engine
-    docker:
-      - image: quay.io/deis/go-dev:v1.2.0
-        environment:
-          GOPATH: /go
-    steps:
-      - checkout
-      - run: |
-          echo 'export TIMEOUT=20m' >> $BASH_ENV
-          echo 'export ORCHESTRATOR_RELEASE=1.6' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
-          echo 'export CREATE_VNET=true' >> $BASH_ENV
-          echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
-          echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
-          echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
-      - run:
-          name: ginkgo k8s e2e tests
-          command: make build-binary test-kubernetes
-          no_output_timeout: "30m"
-      - store_artifacts:
-          path: /go/src/github.com/Azure/acs-engine/_logs
-      - store_artifacts:
-          path: /go/src/github.com/Azure/acs-engine/_output
   k8s-1.7-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
@@ -181,7 +154,7 @@ jobs:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
-  k8s-hybrid-1.7-release-e2e:
+  k8s-1.9-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: quay.io/deis/go-dev:v1.2.0
@@ -190,14 +163,15 @@ jobs:
     steps:
       - checkout
       - run: |
-          echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
-          echo 'export TIMEOUT=30m' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes-hybrid.json' >> $BASH_ENV
+          echo 'export TIMEOUT=20m' >> $BASH_ENV
+          echo 'export ORCHESTRATOR_RELEASE=1.9' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
+          echo 'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
-          name: ginkgo k8s hybrid e2e tests
+          name: ginkgo k8s e2e tests
           command: make build-binary test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
@@ -251,7 +225,7 @@ jobs:
           path: /go/src/github.com/Azure/acs-engine/_logs
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_output
-  k8s-hybrid-1.8-release-e2e:
+  k8s-windows-1.9-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
       - image: quay.io/deis/go-dev:v1.2.0
@@ -260,14 +234,14 @@ jobs:
     steps:
       - checkout
       - run: |
-          echo 'export ORCHESTRATOR_RELEASE=1.8' >> $BASH_ENV
           echo 'export TIMEOUT=30m' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes-hybrid.json' >> $BASH_ENV
+          echo 'export ORCHESTRATOR_RELEASE=1.9' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
-          name: ginkgo k8s hybrid e2e tests
+          name: ginkgo k8s windows e2e tests
           command: make build-binary test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
@@ -289,12 +263,6 @@ workflows:
           filters:
             branches:
               ignore: master      
-      - k8s-1.6-release-e2e:
-          requires:
-            - pr-e2e-hold
-          filters:
-            branches:
-              ignore: master
       - k8s-1.7-release-e2e:
           requires:
             - pr-e2e-hold
@@ -302,12 +270,6 @@ workflows:
             branches:
               ignore: master
       - k8s-windows-1.7-release-e2e:
-          requires:
-            - pr-e2e-hold
-          filters:
-            branches:
-              ignore: master
-      - k8s-hybrid-1.7-release-e2e:
           requires:
             - pr-e2e-hold
           filters:
@@ -325,7 +287,13 @@ workflows:
           filters:
             branches:
               ignore: master
-      - k8s-hybrid-1.8-release-e2e:
+      - k8s-windows-1.9-release-e2e:
+          requires:
+            - pr-e2e-hold
+          filters:
+            branches:
+              ignore: master
+      - k8s-1.9-release-e2e:
           requires:
             - pr-e2e-hold
           filters:
@@ -355,12 +323,6 @@ workflows:
           filters:
             branches:
               only: master
-      - k8s-1.6-release-e2e:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
       - k8s-1.7-release-e2e:
           requires:
             - test
@@ -368,12 +330,6 @@ workflows:
             branches:
               only: master
       - k8s-windows-1.7-release-e2e:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
-      - k8s-hybrid-1.7-release-e2e:
           requires:
             - test
           filters:
@@ -391,7 +347,13 @@ workflows:
           filters:
             branches:
               only: master
-      - k8s-hybrid-1.8-release-e2e:
+      - k8s-windows-1.9-release-e2e:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - k8s-1.9-release-e2e:
           requires:
             - test
           filters:

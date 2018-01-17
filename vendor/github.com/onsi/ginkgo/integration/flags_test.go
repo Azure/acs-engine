@@ -63,6 +63,11 @@ var _ = Describe("Flags Specs", func() {
 		Eventually(session).Should(gexec.Exit(1))
 	})
 
+	It("should fail if the test suite takes longer than the timeout", func() {
+		session := startGinkgo(pathToTest, "--noColor", "--timeout=1ms")
+		Eventually(session).Should(gexec.Exit(1))
+	})
+
 	It("should not print out pendings when --noisyPendings=false", func() {
 		session := startGinkgo(pathToTest, "--noColor", "--noisyPendings=false")
 		Eventually(session).Should(gexec.Exit(types.GINKGO_FOCUS_EXIT_CODE))
@@ -159,7 +164,7 @@ var _ = Describe("Flags Specs", func() {
 		output := string(session.Out.Contents())
 
 		Ω(output).Should(ContainSubstring("1 Failed"))
-		Ω(output).Should(ContainSubstring("15 Skipped"))
+		Ω(output).Should(ContainSubstring("16 Skipped"))
 	})
 
 	Context("with a flaky test", func() {
@@ -182,7 +187,7 @@ var _ = Describe("Flags Specs", func() {
 		output := string(session.Out.Contents())
 
 		Ω(output).Should(ContainSubstring("synchronous failures"))
-		Ω(output).Should(ContainSubstring("16 Specs"))
+		Ω(output).Should(ContainSubstring("17 Specs"))
 		Ω(output).Should(ContainSubstring("0 Passed"))
 		Ω(output).Should(ContainSubstring("0 Failed"))
 	})

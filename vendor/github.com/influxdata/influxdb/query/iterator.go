@@ -825,11 +825,11 @@ func newIteratorOptionsSubstatement(stmt *influxql.SelectStatement, opt Iterator
 	subOpt.Condition = cond
 	// If the time range is more constrained, use it instead. A less constrained time
 	// range should be ignored.
-	if !t.Min.IsZero() && t.MinTime() > opt.StartTime {
-		subOpt.StartTime = t.MinTime()
+	if !t.Min.IsZero() && t.MinTimeNano() > opt.StartTime {
+		subOpt.StartTime = t.MinTimeNano()
 	}
-	if !t.Max.IsZero() && t.MaxTime() < opt.EndTime {
-		subOpt.EndTime = t.MaxTime()
+	if !t.Max.IsZero() && t.MaxTimeNano() < opt.EndTime {
+		subOpt.EndTime = t.MaxTimeNano()
 	}
 
 	// Propagate the SLIMIT and SOFFSET from the outer query.
@@ -1199,6 +1199,7 @@ func encodeMeasurement(mm *influxql.Measurement) *internal.Measurement {
 		Database:        proto.String(mm.Database),
 		RetentionPolicy: proto.String(mm.RetentionPolicy),
 		Name:            proto.String(mm.Name),
+		SystemIterator:  proto.String(mm.SystemIterator),
 		IsTarget:        proto.Bool(mm.IsTarget),
 	}
 	if mm.Regex != nil {
@@ -1212,6 +1213,7 @@ func decodeMeasurement(pb *internal.Measurement) (*influxql.Measurement, error) 
 		Database:        pb.GetDatabase(),
 		RetentionPolicy: pb.GetRetentionPolicy(),
 		Name:            pb.GetName(),
+		SystemIterator:  pb.GetSystemIterator(),
 		IsTarget:        pb.GetIsTarget(),
 	}
 

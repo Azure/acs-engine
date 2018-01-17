@@ -161,8 +161,10 @@ func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
 	return true, nil
 }
 
-// WaitOnReady will block until all nodes are in ready state
-func WaitOnReady(podPrefix, namespace string, sleep, duration time.Duration) (bool, error) {
+// WaitOnReady is used when you dont have a handle on a pod but want to wait until its in a Ready state.
+// successesNeeded is used to make sure we return the correct value even if the pod is in a CrashLoop
+func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, duration time.Duration) (bool, error) {
+	successCount := 0
 	readyCh := make(chan bool, 1)
 	errCh := make(chan error)
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
@@ -171,12 +173,18 @@ func WaitOnReady(podPrefix, namespace string, sleep, duration time.Duration) (bo
 		for {
 			select {
 			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pods (%s) to become ready in namespace (%s)", duration.String(), podPrefix, namespace)
+				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pods (%s) to become ready in namespace (%s), got %d of %d required successful pods ready results", duration.String(), podPrefix, namespace, successCount, successesNeeded)
 			default:
 				ready, _ := AreAllPodsRunning(podPrefix, namespace)
 				if ready == true {
-					readyCh <- true
+					successCount = successCount + 1
+					if successCount >= successesNeeded {
+						readyCh <- true
+					}
 				} else {
+					if successCount > 1 {
+						errCh <- fmt.Errorf("Pod (%s) in namespace (%s) has left Ready state. This behavior may mean it is in a crashloop", podPrefix, namespace)
+					}
 					time.Sleep(sleep)
 				}
 			}
@@ -192,35 +200,9 @@ func WaitOnReady(podPrefix, namespace string, sleep, duration time.Duration) (bo
 	}
 }
 
-// WaitOnReady will block until current pod is in ready state
-func (p *Pod) WaitOnReady(namespace string, sleep, duration time.Duration) (bool, error) {
-	readyCh := make(chan bool, 1)
-	errCh := make(chan error)
-	ctx, cancel := context.WithTimeout(context.Background(), duration)
-	defer cancel()
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to become ready in namespace (%s)", duration.String(), p.Metadata.Name, namespace)
-			default:
-				pod, _ := Get(p.Metadata.Name, namespace)
-				if pod != nil && pod.Status.Phase == "Running" {
-					readyCh <- true
-				} else {
-					time.Sleep(sleep)
-				}
-			}
-		}
-	}()
-	for {
-		select {
-		case err := <-errCh:
-			return false, err
-		case ready := <-readyCh:
-			return ready, nil
-		}
-	}
+// WaitOnReady will call the static method WaitOnReady passing in p.Metadata.Name and p.Metadata.Namespace
+func (p *Pod) WaitOnReady(sleep, duration time.Duration) (bool, error) {
+	return WaitOnReady(p.Metadata.Name, p.Metadata.Namespace, 2, sleep, duration)
 }
 
 // Exec will execute the given command in the pod
@@ -265,6 +247,7 @@ func (p *Pod) CheckLinuxOutboundConnection(sleep, duration time.Duration) (bool,
 			case <-ctx.Done():
 				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check outbound internet connection", duration.String(), p.Metadata.Name)
 			default:
+				time.Sleep(sleep)
 				_, err := p.Exec("--", "/usr/bin/apt", "update")
 				if err != nil {
 					break
@@ -327,6 +310,7 @@ func (p *Pod) CheckWindowsOutboundConnection(sleep, duration time.Duration) (boo
 					log.Printf("Error:%s\n", err)
 					log.Printf("Out:%s\n", out)
 				}
+				time.Sleep(sleep)
 			}
 		}
 	}()
@@ -360,6 +344,7 @@ func (p *Pod) ValidateHostPort(check string, attempts int, sleep time.Duration, 
 				return true
 			}
 		}
+		time.Sleep(sleep)
 	}
 	return false
 }
@@ -389,6 +374,7 @@ func (p *Pod) ValidateAzureFile(mountPath string, sleep, duration time.Duration)
 					log.Printf("Error:%s\n", err)
 					log.Printf("Out:%s\n", out)
 				}
+				time.Sleep(sleep)
 			}
 		}
 	}()

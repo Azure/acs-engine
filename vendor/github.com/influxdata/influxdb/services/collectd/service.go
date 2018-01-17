@@ -18,7 +18,7 @@ import (
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/services/meta"
 	"github.com/influxdata/influxdb/tsdb"
-	"github.com/uber-go/zap"
+	"go.uber.org/zap"
 )
 
 // statistics gathered by the collectd service.
@@ -59,7 +59,7 @@ type Service struct {
 	Config       *Config
 	MetaClient   metaClient
 	PointsWriter pointsWriter
-	Logger       zap.Logger
+	Logger       *zap.Logger
 
 	wg      sync.WaitGroup
 	conn    *net.UDPConn
@@ -82,7 +82,7 @@ func NewService(c Config) *Service {
 		// Use defaults where necessary.
 		Config: c.WithDefaults(),
 
-		Logger:      zap.New(zap.NullEncoder()),
+		Logger:      zap.NewNop(),
 		stats:       &Statistics{},
 		defaultTags: models.StatisticTags{"bind": c.BindAddress},
 	}
@@ -123,7 +123,7 @@ func (s *Service) Open() error {
 			readdir = func(path string) {
 				files, err := ioutil.ReadDir(path)
 				if err != nil {
-					s.Logger.Info(fmt.Sprintf("Unable to read directory %s: %s\n", path, err))
+					s.Logger.Info(fmt.Sprintf("Unable to read directory %s: %s", path, err))
 					return
 				}
 
@@ -134,10 +134,10 @@ func (s *Service) Open() error {
 						continue
 					}
 
-					s.Logger.Info(fmt.Sprintf("Loading %s\n", fullpath))
+					s.Logger.Info(fmt.Sprintf("Loading %s", fullpath))
 					types, err := TypesDBFile(fullpath)
 					if err != nil {
-						s.Logger.Info(fmt.Sprintf("Unable to parse collectd types file: %s\n", f.Name()))
+						s.Logger.Info(fmt.Sprintf("Unable to parse collectd types file: %s", f.Name()))
 						continue
 					}
 
@@ -147,7 +147,7 @@ func (s *Service) Open() error {
 			readdir(s.Config.TypesDB)
 			s.popts.TypesDB = alltypesdb
 		} else {
-			s.Logger.Info(fmt.Sprintf("Loading %s\n", s.Config.TypesDB))
+			s.Logger.Info(fmt.Sprintf("Loading %s", s.Config.TypesDB))
 			types, err := TypesDBFile(s.Config.TypesDB)
 			if err != nil {
 				return fmt.Errorf("Open(): %s", err)
@@ -277,7 +277,7 @@ func (s *Service) createInternalStorage() error {
 }
 
 // WithLogger sets the service's logger.
-func (s *Service) WithLogger(log zap.Logger) {
+func (s *Service) WithLogger(log *zap.Logger) {
 	s.Logger = log.With(zap.String("service", "collectd"))
 }
 

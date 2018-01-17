@@ -26,7 +26,7 @@ OUTPUT_DIR=${OUTPUT_DIR-./test-logs}
 # Set default parallelism
 PARALLELISM=${PARALLELISM-1}
 # Set default timeout
-TIMEOUT=${TIMEOUT-1200s}
+TIMEOUT=${TIMEOUT-1500s}
 
 # Default to deleteing the container
 DOCKER_RM=${DOCKER_RM-true}
@@ -90,7 +90,7 @@ function build_docker_image {
     local imagename=$2
 
     echo "Building docker image $imagename"
-    exit_if_fail docker build -f "$dockerfile" -t "$imagename" .
+    exit_if_fail docker build --rm=$DOCKER_RM -f "$dockerfile" -t "$imagename" .
 }
 
 

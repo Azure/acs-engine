@@ -58,10 +58,6 @@
       "location": "westus"
     },
     {
-      "cluster_definition": "kubernetes-releases/kubernetes1.6.json",
-      "category": "version"
-    },
-    {
       "cluster_definition": "kubernetes-releases/kubernetes1.8.json",
       "category": "version"
     },
@@ -94,20 +90,16 @@
       "category": "network"
     },
     {
+      "cluster_definition": "vnet/kubernetesvnet-azure-cni.json",
+      "category": "network"
+    },
+    {
       "cluster_definition": "vnet/kubernetesvnet.json",
       "category": "network"
     },
     {
       "cluster_definition": "vnet/swarmmodevnet.json",
       "category": "network"
-    },
-    {
-      "cluster_definition": "coreos/kubernetes-coreos.json",
-      "category": "distro"
-    },
-    {
-      "cluster_definition": "coreos/kubernetes-coreos-hybrid.json",
-      "category": "distro"
     }
   ]
 }

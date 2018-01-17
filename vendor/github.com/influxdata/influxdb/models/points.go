@@ -263,6 +263,11 @@ func ParsePointsString(buf string) ([]Point, error) {
 // NOTE: to minimize heap allocations, the returned Tags will refer to subslices of buf.
 // This can have the unintended effect preventing buf from being garbage collected.
 func ParseKey(buf []byte) (string, Tags) {
+	meas, tags := ParseKeyBytes(buf)
+	return string(meas), tags
+}
+
+func ParseKeyBytes(buf []byte) ([]byte, Tags) {
 	// Ignore the error because scanMeasurement returns "missing fields" which we ignore
 	// when just parsing a key
 	state, i, _ := scanMeasurement(buf, 0)
@@ -271,13 +276,13 @@ func ParseKey(buf []byte) (string, Tags) {
 	if state == tagKeyState {
 		tags = parseTags(buf)
 		// scanMeasurement returns the location of the comma if there are tags, strip that off
-		return string(buf[:i-1]), tags
+		return buf[:i-1], tags
 	}
-	return string(buf[:i]), tags
+	return buf[:i], tags
 }
 
-func ParseTags(buf []byte) (Tags, error) {
-	return parseTags(buf), nil
+func ParseTags(buf []byte) Tags {
+	return parseTags(buf)
 }
 
 func ParseName(buf []byte) ([]byte, error) {
@@ -1064,7 +1069,7 @@ func scanLine(buf []byte, i int) (int, []byte) {
 		}
 
 		// skip past escaped characters
-		if buf[i] == '\\' {
+		if buf[i] == '\\' && i+2 < len(buf) {
 			i += 2
 			continue
 		}
@@ -1523,9 +1528,12 @@ func parseTags(buf []byte) Tags {
 		return nil
 	}
 
-	tags := make(Tags, 0, bytes.Count(buf, []byte(",")))
+	tags := make(Tags, bytes.Count(buf, []byte(",")))
+	p := 0
 	walkTags(buf, func(key, value []byte) bool {
-		tags = append(tags, NewTag(key, value))
+		tags[p].Key = key
+		tags[p].Value = value
+		p++
 		return true
 	})
 	return tags

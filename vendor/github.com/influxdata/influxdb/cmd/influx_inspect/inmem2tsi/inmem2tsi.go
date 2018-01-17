@@ -10,20 +10,20 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/influxdata/influxdb/logger"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/tsdb"
 	"github.com/influxdata/influxdb/tsdb/engine/tsm1"
 	"github.com/influxdata/influxdb/tsdb/index/tsi1"
-	"github.com/uber-go/zap"
+	"go.uber.org/zap"
 )
 
 // Command represents the program execution for "influx_inspect inmem2tsi".
 type Command struct {
-	Stderr io.Writer
-	Stdout io.Writer
-
+	Stderr  io.Writer
+	Stdout  io.Writer
 	Verbose bool
-	Logger  zap.Logger
+	Logger  *zap.Logger
 }
 
 // NewCommand returns a new instance of Command.
@@ -31,32 +31,36 @@ func NewCommand() *Command {
 	return &Command{
 		Stderr: os.Stderr,
 		Stdout: os.Stdout,
-		Logger: zap.New(zap.NullEncoder()),
+		Logger: zap.NewNop(),
 	}
 }
 
 // Run executes the command.
 func (cmd *Command) Run(args ...string) error {
 	fs := flag.NewFlagSet("inmem2tsi", flag.ExitOnError)
+	seriesFilePath := fs.String("series-file", "", "series file path")
 	dataDir := fs.String("datadir", "", "shard data directory")
 	walDir := fs.String("waldir", "", "shard WAL directory")
 	fs.BoolVar(&cmd.Verbose, "v", false, "verbose")
 	fs.SetOutput(cmd.Stdout)
 	if err := fs.Parse(args); err != nil {
 		return err
-	} else if fs.NArg() > 0 || *dataDir == "" || *walDir == "" {
+	} else if fs.NArg() > 0 || *seriesFilePath == "" || *dataDir == "" || *walDir == "" {
 		return flag.ErrHelp
 	}
+	cmd.Logger = logger.New(cmd.Stderr)
 
-	cmd.Logger = zap.New(
-		zap.NewTextEncoder(),
-		zap.Output(os.Stderr),
-	)
-
-	return cmd.run(*dataDir, *walDir)
+	return cmd.run(*seriesFilePath, *dataDir, *walDir)
 }
 
-func (cmd *Command) run(dataDir, walDir string) error {
+func (cmd *Command) run(seriesFilePath, dataDir, walDir string) error {
+	sfile := tsdb.NewSeriesFile(seriesFilePath)
+	sfile.Logger = cmd.Logger
+	if err := sfile.Open(); err != nil {
+		return err
+	}
+	defer sfile.Close()
+
 	// Check if shard already has a TSI index.
 	indexPath := filepath.Join(dataDir, "index")
 	cmd.Logger.Info("checking index path", zap.String("path", indexPath))
@@ -87,8 +91,9 @@ func (cmd *Command) run(dataDir, walDir string) error {
 	}
 
 	// Open TSI index in temporary path.
-	tsiIndex := tsi1.NewIndex()
-	tsiIndex.Path = tmpPath
+	tsiIndex := tsi1.NewIndex(sfile,
+		tsi1.WithPath(tmpPath),
+	)
 	tsiIndex.WithLogger(cmd.Logger)
 	cmd.Logger.Info("opening tsi index in temporary location", zap.String("path", tmpPath))
 	if err := tsiIndex.Open(); err != nil {

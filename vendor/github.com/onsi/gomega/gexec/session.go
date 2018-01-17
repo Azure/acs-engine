@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"reflect"
 	"sync"
 	"syscall"
 
@@ -78,11 +77,11 @@ func Start(command *exec.Cmd, outWriter io.Writer, errWriter io.Writer) (*Sessio
 
 	commandOut, commandErr = session.Out, session.Err
 
-	if outWriter != nil && !reflect.ValueOf(outWriter).IsNil() {
+	if outWriter != nil {
 		commandOut = io.MultiWriter(commandOut, outWriter)
 	}
 
-	if errWriter != nil && !reflect.ValueOf(errWriter).IsNil() {
+	if errWriter != nil {
 		commandErr = io.MultiWriter(commandErr, errWriter)
 	}
 
@@ -92,6 +91,9 @@ func Start(command *exec.Cmd, outWriter io.Writer, errWriter io.Writer) (*Sessio
 	err := command.Start()
 	if err == nil {
 		go session.monitorForExit(exited)
+		trackedSessionsMutex.Lock()
+		defer trackedSessionsMutex.Unlock()
+		trackedSessions = append(trackedSessions, session)
 	}
 
 	return session, err
@@ -179,7 +181,7 @@ func (s *Session) Terminate() *Session {
 }
 
 /*
-Terminate sends the running command the passed in signal.  It does not wait for the process to exit.
+Signal sends the running command the passed in signal.  It does not wait for the process to exit.
 
 If the command has already exited, Signal returns silently.
 
@@ -211,4 +213,92 @@ func (s *Session) monitorForExit(exited chan<- struct{}) {
 	s.lock.Unlock()
 
 	close(exited)
+}
+
+var trackedSessions = []*Session{}
+var trackedSessionsMutex = &sync.Mutex{}
+
+/*
+Kill sends a SIGKILL signal to all the processes started by Run, and waits for them to exit.
+The timeout specified is applied to each process killed.
+
+If any of the processes already exited, KillAndWait returns silently.
+*/
+func KillAndWait(timeout ...interface{}) {
+	trackedSessionsMutex.Lock()
+	defer trackedSessionsMutex.Unlock()
+	for _, session := range trackedSessions {
+		session.Kill().Wait(timeout...)
+	}
+	trackedSessions = []*Session{}
+}
+
+/*
+Kill sends a SIGTERM signal to all the processes started by Run, and waits for them to exit.
+The timeout specified is applied to each process killed.
+
+If any of the processes already exited, TerminateAndWait returns silently.
+*/
+func TerminateAndWait(timeout ...interface{}) {
+	trackedSessionsMutex.Lock()
+	defer trackedSessionsMutex.Unlock()
+	for _, session := range trackedSessions {
+		session.Terminate().Wait(timeout...)
+	}
+}
+
+/*
+Kill sends a SIGKILL signal to all the processes started by Run.
+It does not wait for the processes to exit.
+
+If any of the processes already exited, Kill returns silently.
+*/
+func Kill() {
+	trackedSessionsMutex.Lock()
+	defer trackedSessionsMutex.Unlock()
+	for _, session := range trackedSessions {
+		session.Kill()
+	}
+}
+
+/*
+Terminate sends a SIGTERM signal to all the processes started by Run.
+It does not wait for the processes to exit.
+
+If any of the processes already exited, Terminate returns silently.
+*/
+func Terminate() {
+	trackedSessionsMutex.Lock()
+	defer trackedSessionsMutex.Unlock()
+	for _, session := range trackedSessions {
+		session.Terminate()
+	}
+}
+
+/*
+Signal sends the passed in signal to all the processes started by Run.
+It does not wait for the processes to exit.
+
+If any of the processes already exited, Signal returns silently.
+*/
+func Signal(signal os.Signal) {
+	trackedSessionsMutex.Lock()
+	defer trackedSessionsMutex.Unlock()
+	for _, session := range trackedSessions {
+		session.Signal(signal)
+	}
+}
+
+/*
+Interrupt sends the SIGINT signal to all the processes started by Run.
+It does not wait for the processes to exit.
+
+If any of the processes already exited, Interrupt returns silently.
+*/
+func Interrupt() {
+	trackedSessionsMutex.Lock()
+	defer trackedSessionsMutex.Unlock()
+	for _, session := range trackedSessions {
+		session.Interrupt()
+	}
 }

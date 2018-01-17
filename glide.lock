@@ -1,5 +1,5 @@
-hash: 2f6c0bcbc189ff33a1bc4bb1d3b71ca4cfb5d712e07dc3af96de2db5463e24f2
-updated: 2017-10-31T16:37:00.059742197-06:00
+hash: 7ddcdfd12d54f159ec71d030acfaab7215b7657057d8052446832664a02ffcdb
+updated: 2018-01-11T13:29:13.722818-07:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -29,7 +29,7 @@ imports:
   subpackages:
   - spew
 - name: github.com/dgrijalva/jwt-go
-  version: 24c63f56522a87ec5339cc3567883f1039378fdb
+  version: dbeaa9332f19a944acb5736b4456cfcc02140e29
 - name: github.com/docker/distribution
   version: cd27f179f2c10c5d300e6d09025b538c475b0d51
   subpackages:
@@ -77,7 +77,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/influxdata/influxdb
-  version: fade2ba9a8a131c532c20f8b6412ef2962768825
+  version: d610a79487e2cee1d0fa8cdd3ec59d511c24f0dc
   subpackages:
   - client/v2
   - models
@@ -107,7 +107,7 @@ imports:
 - name: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - name: github.com/onsi/ginkgo
-  version: 67b9df7f55fe1165fd9ad49aca7754cce01a42b8
+  version: 6c46eb8334b30dc55b42f1a1c725d5ce97375390
   subpackages:
   - config
   - internal/codelocation
@@ -127,7 +127,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: d59fa0ac68bb5dd932ee8d24eed631cdd519efc3
+  version: 003f63b7f4cff3fc95357005358af2de0f5fe152
   subpackages:
   - format
   - internal/assertion
@@ -145,9 +145,9 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/satori/go.uuid
-  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+  version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/satori/uuid
-  version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
+  version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
   version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
 - name: github.com/spf13/cobra
@@ -168,28 +168,42 @@ imports:
   - ssh/agent
   - ssh/terminal
 - name: golang.org/x/net
-  version: c73622c77280266305273cb545f54516ced95b93
+  version: ab555f366c4508dbe0802550b1b20c46c5c18aa0
   repo: https://github.com/golang/net.git
   vcs: git
   subpackages:
   - .
+  - html
+  - html/atom
+  - html/charset
   - http2
   - http2/hpack
   - idna
   - lex/httplex
 - name: golang.org/x/sys
-  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
+  version: 810d7000345868fc619eb81f46307107118f4ae1
   subpackages:
   - unix
 - name: golang.org/x/text
-  version: 3cfc6c0d6bf80d724d98c26c4822f4a35d37598e
+  version: e19ae1496984b1c655b8044a65c0300a3c878dd3
   repo: https://github.com/golang/text.git
   vcs: git
   subpackages:
   - .
   - cases
+  - encoding
+  - encoding/charmap
+  - encoding/htmlindex
+  - encoding/internal
+  - encoding/internal/identifier
+  - encoding/japanese
+  - encoding/korean
+  - encoding/simplifiedchinese
+  - encoding/traditionalchinese
+  - encoding/unicode
   - internal
   - internal/tag
+  - internal/utf8internal
   - language
   - runes
   - secure/bidirule
@@ -205,7 +219,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
+  version: d670f9405373e636a5a2765eea47fac0c9bc91a4
 - name: k8s.io/apimachinery
   version: 1fd2e63a9a370677308a42f24fd40c86438afddf
   subpackages:

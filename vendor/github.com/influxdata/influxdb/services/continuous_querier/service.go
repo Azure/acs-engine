@@ -13,7 +13,7 @@ import (
 	"github.com/influxdata/influxdb/query"
 	"github.com/influxdata/influxdb/services/meta"
 	"github.com/influxdata/influxql"
-	"github.com/uber-go/zap"
+	"go.uber.org/zap"
 )
 
 const (
@@ -87,7 +87,7 @@ type Service struct {
 	RunInterval   time.Duration
 	// RunCh can be used by clients to signal service to run CQs.
 	RunCh             chan *RunRequest
-	Logger            zap.Logger
+	Logger            *zap.Logger
 	loggingEnabled    bool
 	queryStatsEnabled bool
 	stats             *Statistics
@@ -107,7 +107,7 @@ func NewService(c Config) *Service {
 		RunCh:             make(chan *RunRequest),
 		loggingEnabled:    c.LogEnabled,
 		queryStatsEnabled: c.QueryStatsEnabled,
-		Logger:            zap.New(zap.NullEncoder()),
+		Logger:            zap.NewNop(),
 		stats:             &Statistics{},
 		lastRuns:          map[string]time.Time{},
 	}
@@ -146,7 +146,7 @@ func (s *Service) Close() error {
 }
 
 // WithLogger sets the logger on the service.
-func (s *Service) WithLogger(log zap.Logger) {
+func (s *Service) WithLogger(log *zap.Logger) {
 	s.Logger = log.With(zap.String("service", "continuous_querier"))
 }
 
@@ -361,7 +361,7 @@ func (s *Service) ExecuteContinuousQuery(dbi *meta.DatabaseInfo, cqi *meta.Conti
 	}
 
 	if err := cq.q.SetTimeRange(startTime, endTime); err != nil {
-		s.Logger.Info(fmt.Sprintf("error setting time range: %s\n", err))
+		s.Logger.Info(fmt.Sprintf("error setting time range: %s", err))
 		return false, err
 	}
 
@@ -377,7 +377,7 @@ func (s *Service) ExecuteContinuousQuery(dbi *meta.DatabaseInfo, cqi *meta.Conti
 	// Do the actual processing of the query & writing of results.
 	res := s.runContinuousQueryAndWriteResult(cq)
 	if res.Err != nil {
-		s.Logger.Info(fmt.Sprintf("error: %s. running: %s\n", res.Err, cq.q.String()))
+		s.Logger.Info(fmt.Sprintf("error: %s. running: %s", res.Err, cq.q.String()))
 		return false, res.Err
 	}
 

@@ -17,12 +17,13 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/influxdata/influxdb/internal"
+	"github.com/influxdata/influxdb/logger"
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/pkg/deep"
 	"github.com/influxdata/influxdb/query"
 	"github.com/influxdata/influxdb/tsdb"
 	"github.com/influxdata/influxql"
-	"github.com/uber-go/zap"
 )
 
 // Ensure the store can delete a retention policy and all shards under
@@ -354,7 +355,8 @@ func TestShards_CreateIterator(t *testing.T) {
 		shards := s.ShardGroup([]uint64{0, 1})
 
 		// Create iterator.
-		itr, err := shards.CreateIterator(context.Background(), "cpu", query.IteratorOptions{
+		m := &influxql.Measurement{Name: "cpu"}
+		itr, err := shards.CreateIterator(context.Background(), m, query.IteratorOptions{
 			Expr:       influxql.MustParseExpr(`value`),
 			Dimensions: []string{"host"},
 			Ascending:  true,
@@ -444,7 +446,8 @@ func TestStore_BackupRestoreShard(t *testing.T) {
 		}
 
 		// Read data from
-		itr, err := s0.Shard(100).CreateIterator(context.Background(), "cpu", query.IteratorOptions{
+		m := &influxql.Measurement{Name: "cpu"}
+		itr, err := s0.Shard(100).CreateIterator(context.Background(), m, query.IteratorOptions{
 			Expr:      influxql.MustParseExpr(`value`),
 			Ascending: true,
 			StartTime: influxql.MinTime,
@@ -511,7 +514,7 @@ func TestStore_MeasurementNames_Deduplicate(t *testing.T) {
 			`cpu value=3 20`,
 		)
 
-		meas, err := s.MeasurementNames("db0", nil)
+		meas, err := s.MeasurementNames(query.OpenAuthorizer, "db0", nil)
 		if err != nil {
 			t.Fatalf("unexpected error with MeasurementNames: %v", err)
 		}
@@ -536,7 +539,7 @@ func testStoreCardinalityTombstoning(t *testing.T, store *Store) {
 
 	points := make([]models.Point, 0, len(series))
 	for _, s := range series {
-		points = append(points, models.MustNewPoint(s.Measurement, s.Series.Tags(), map[string]interface{}{"value": 1.0}, time.Now()))
+		points = append(points, models.MustNewPoint(s.Measurement, s.Tags, map[string]interface{}{"value": 1.0}, time.Now()))
 	}
 
 	// Create requested number of shards in the store & write points across
@@ -552,13 +555,13 @@ func testStoreCardinalityTombstoning(t *testing.T, store *Store) {
 	}
 
 	// Delete all the series for each measurement.
-	mnames, err := store.MeasurementNames("db", nil)
+	mnames, err := store.MeasurementNames(query.OpenAuthorizer, "db", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, name := range mnames {
-		if err := store.DeleteSeries("db", []influxql.Source{&influxql.Measurement{Name: string(name)}}, nil); err != nil {
+		if err := store.DeleteSeries("db", []influxql.Source{&influxql.Measurement{Name: string(name)}}, nil, true); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -589,6 +592,8 @@ func testStoreCardinalityTombstoning(t *testing.T, store *Store) {
 }
 
 func TestStore_Cardinality_Tombstoning(t *testing.T) {
+	t.Skip("TODO(benbjohnson): Fix once series file moved to DB")
+
 	t.Parallel()
 
 	if testing.Short() || os.Getenv("GORACE") != "" || os.Getenv("APPVEYOR") != "" {
@@ -617,7 +622,7 @@ func testStoreCardinalityUnique(t *testing.T, store *Store) {
 
 	points := make([]models.Point, 0, len(series))
 	for _, s := range series {
-		points = append(points, models.MustNewPoint(s.Measurement, s.Series.Tags(), map[string]interface{}{"value": 1.0}, time.Now()))
+		points = append(points, models.MustNewPoint(s.Measurement, s.Tags, map[string]interface{}{"value": 1.0}, time.Now()))
 	}
 
 	// Create requested number of shards in the store & write points across
@@ -655,6 +660,8 @@ func testStoreCardinalityUnique(t *testing.T, store *Store) {
 }
 
 func TestStore_Cardinality_Unique(t *testing.T) {
+	t.Skip("TODO(benbjohnson): Merge series file to DB level")
+
 	t.Parallel()
 
 	if testing.Short() || os.Getenv("GORACE") != "" || os.Getenv("APPVEYOR") != "" {
@@ -686,7 +693,7 @@ func testStoreCardinalityDuplicates(t *testing.T, store *Store) {
 
 	points := make([]models.Point, 0, len(series))
 	for _, s := range series {
-		points = append(points, models.MustNewPoint(s.Measurement, s.Series.Tags(), map[string]interface{}{"value": 1.0}, time.Now()))
+		points = append(points, models.MustNewPoint(s.Measurement, s.Tags, map[string]interface{}{"value": 1.0}, time.Now()))
 	}
 
 	// Create requested number of shards in the store & write points.
@@ -762,7 +769,7 @@ func TestStore_Cardinality_Duplicates(t *testing.T) {
 
 // Creates a large number of series in multiple shards, which will force
 // compactions to occur.
-func testStoreCardinalityCompactions(t *testing.T, store *Store) {
+func testStoreCardinalityCompactions(store *Store) error {
 
 	// Generate point data to write to the shards.
 	series := genTestSeries(300, 5, 5) // 937,500 series
@@ -770,51 +777,50 @@ func testStoreCardinalityCompactions(t *testing.T, store *Store) {
 
 	points := make([]models.Point, 0, len(series))
 	for _, s := range series {
-		points = append(points, models.MustNewPoint(s.Measurement, s.Series.Tags(), map[string]interface{}{"value": 1.0}, time.Now()))
+		points = append(points, models.MustNewPoint(s.Measurement, s.Tags, map[string]interface{}{"value": 1.0}, time.Now()))
 	}
 
 	// Create requested number of shards in the store & write points across
 	// shards such that we never write the same series to multiple shards.
 	for shardID := 0; shardID < 2; shardID++ {
 		if err := store.CreateShard("db", "rp", uint64(shardID), true); err != nil {
-			t.Fatalf("create shard: %s", err)
+			return fmt.Errorf("create shard: %s", err)
 		}
 		if err := store.BatchWrite(shardID, points[shardID*468750:(shardID+1)*468750]); err != nil {
-			t.Fatalf("batch write: %s", err)
+			return fmt.Errorf("batch write: %s", err)
 		}
 	}
 
 	// Estimate the series cardinality...
 	cardinality, err := store.Store.SeriesCardinality("db")
 	if err != nil {
-		t.Fatal(err)
+		return err
 	}
 
 	// Estimated cardinality should be well within 1.5% of the actual cardinality.
 	if got, exp := math.Abs(float64(cardinality)-float64(expCardinality))/float64(expCardinality), 0.015; got > exp {
-		t.Errorf("got epsilon of %v for series cardinality %v (expected %v), which is larger than expected %v", got, cardinality, expCardinality, exp)
+		return fmt.Errorf("got epsilon of %v for series cardinality %v (expected %v), which is larger than expected %v", got, cardinality, expCardinality, exp)
 	}
 
 	// Estimate the measurement cardinality...
 	if cardinality, err = store.Store.MeasurementsCardinality("db"); err != nil {
-		t.Fatal(err)
+		return err
 	}
 
 	// Estimated cardinality should be well within 2 of the actual cardinality. (Arbitrary...)
 	expCardinality = 300
 	if got, exp := math.Abs(float64(cardinality)-float64(expCardinality)), 2.0; got > exp {
-		t.Errorf("got measurement cardinality %v, expected upto %v; difference is larger than expected %v", cardinality, expCardinality, exp)
+		return fmt.Errorf("got measurement cardinality %v, expected upto %v; difference is larger than expected %v", cardinality, expCardinality, exp)
 	}
+	return nil
 }
 
 func TestStore_Cardinality_Compactions(t *testing.T) {
-	t.Parallel()
-
 	if testing.Short() || os.Getenv("GORACE") != "" || os.Getenv("APPVEYOR") != "" {
 		t.Skip("Skipping test in short, race and appveyor mode.")
 	}
 
-	test := func(index string) {
+	test := func(index string) error {
 		store := NewStore()
 		store.EngineOptions.Config.Index = "inmem"
 		store.EngineOptions.Config.MaxSeriesPerDatabase = 0
@@ -822,11 +828,15 @@ func TestStore_Cardinality_Compactions(t *testing.T) {
 			panic(err)
 		}
 		defer store.Close()
-		testStoreCardinalityCompactions(t, store)
+		return testStoreCardinalityCompactions(store)
 	}
 
 	for _, index := range tsdb.RegisteredIndexes() {
-		t.Run(index, func(t *testing.T) { test(index) })
+		t.Run(index, func(t *testing.T) {
+			if err := test(index); err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }
 
@@ -910,7 +920,7 @@ func TestStore_TagValues(t *testing.T) {
 	}
 
 	var s *Store
-	setup := func(index string) {
+	setup := func(index string) []uint64 { // returns shard ids
 		s = MustOpenStore(index)
 
 		fmtStr := `cpu%[1]d,foo=a,ignoreme=nope,host=tv%[2]d,shard=s%[3]d value=1 %[4]d
@@ -930,16 +940,19 @@ func TestStore_TagValues(t *testing.T) {
 		}
 
 		// Create data across 3 shards.
+		var ids []uint64
 		for i := 0; i < 3; i++ {
+			ids = append(ids, uint64(i))
 			s.MustCreateShardWithData("db0", "rp0", i, genPoints(i)...)
 		}
+		return ids
 	}
 
 	for _, example := range examples {
 		for _, index := range tsdb.RegisteredIndexes() {
-			setup(index)
+			shardIDs := setup(index)
 			t.Run(example.Name+"_"+index, func(t *testing.T) {
-				got, err := s.TagValues(nil, "db0", example.Expr)
+				got, err := s.TagValues(nil, shardIDs, example.Expr)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -951,6 +964,302 @@ func TestStore_TagValues(t *testing.T) {
 			})
 			s.Close()
 		}
+	}
+}
+
+func TestStore_Measurements_Auth(t *testing.T) {
+	t.Parallel()
+
+	test := func(index string) error {
+		s := MustOpenStore(index)
+		defer s.Close()
+
+		// Create shard #0 with data.
+		s.MustCreateShardWithData("db0", "rp0", 0,
+			`cpu,host=serverA value=1  0`,
+			`cpu,host=serverA value=2 10`,
+			`cpu,region=west value=3 20`,
+			`cpu,secret=foo value=5 30`, // cpu still readable because it has other series that can be read.
+			`mem,secret=foo value=1 30`,
+			`disk value=4 30`,
+		)
+
+		authorizer := &internal.AuthorizerMock{
+			AuthorizeSeriesReadFn: func(database string, measurement []byte, tags models.Tags) bool {
+				if database == "" || tags.GetString("secret") != "" {
+					t.Logf("Rejecting series db=%s, m=%s, tags=%v", database, measurement, tags)
+					return false
+				}
+				return true
+			},
+		}
+
+		names, err := s.MeasurementNames(authorizer, "db0", nil)
+		if err != nil {
+			return err
+		}
+
+		// names should not contain any measurements where none of the associated
+		// series are authorised for reads.
+		expNames := 2
+		var gotNames int
+		for _, name := range names {
+			if string(name) == "mem" {
+				return fmt.Errorf("got measurement %q but it should be filtered.", name)
+			}
+			gotNames++
+		}
+
+		if gotNames != expNames {
+			return fmt.Errorf("got %d measurements, but expected %d", gotNames, expNames)
+		}
+
+		// Now delete all of the cpu series.
+		cond, err := influxql.ParseExpr("host = 'serverA' OR region = 'west'")
+		if err != nil {
+			return err
+		}
+
+		if err := s.DeleteSeries("db0", nil, cond, true); err != nil {
+			return err
+		}
+
+		if names, err = s.MeasurementNames(authorizer, "db0", nil); err != nil {
+			return err
+		}
+
+		// names should not contain any measurements where none of the associated
+		// series are authorised for reads.
+		expNames = 1
+		gotNames = 0
+		for _, name := range names {
+			if string(name) == "mem" || string(name) == "cpu" {
+				return fmt.Errorf("after delete got measurement %q but it should be filtered.", name)
+			}
+			gotNames++
+		}
+
+		if gotNames != expNames {
+			return fmt.Errorf("after delete got %d measurements, but expected %d", gotNames, expNames)
+		}
+
+		return nil
+	}
+
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
+			if err := test(index); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+
+}
+
+func TestStore_TagKeys_Auth(t *testing.T) {
+	t.Parallel()
+
+	test := func(index string) error {
+		s := MustOpenStore(index)
+		defer s.Close()
+
+		// Create shard #0 with data.
+		s.MustCreateShardWithData("db0", "rp0", 0,
+			`cpu,host=serverA value=1  0`,
+			`cpu,host=serverA,debug=true value=2 10`,
+			`cpu,region=west value=3 20`,
+			`cpu,secret=foo,machine=a value=1 20`,
+		)
+
+		authorizer := &internal.AuthorizerMock{
+			AuthorizeSeriesReadFn: func(database string, measurement []byte, tags models.Tags) bool {
+				if database == "" || !bytes.Equal(measurement, []byte("cpu")) || tags.GetString("secret") != "" {
+					t.Logf("Rejecting series db=%s, m=%s, tags=%v", database, measurement, tags)
+					return false
+				}
+				return true
+			},
+		}
+
+		keys, err := s.TagKeys(authorizer, []uint64{0}, nil)
+		if err != nil {
+			return err
+		}
+
+		// keys should not contain any tag keys associated with a series containing
+		// a secret tag.
+		expKeys := 3
+		var gotKeys int
+		for _, tk := range keys {
+			if got, exp := tk.Measurement, "cpu"; got != exp {
+				return fmt.Errorf("got measurement %q, expected %q", got, exp)
+			}
+
+			for _, key := range tk.Keys {
+				if key == "secret" || key == "machine" {
+					return fmt.Errorf("got tag key %q but it should be filtered.", key)
+				}
+				gotKeys++
+			}
+		}
+
+		if gotKeys != expKeys {
+			return fmt.Errorf("got %d keys, but expected %d", gotKeys, expKeys)
+		}
+
+		// Delete the series with region = west
+		cond, err := influxql.ParseExpr("region = 'west'")
+		if err != nil {
+			return err
+		}
+		if err := s.DeleteSeries("db0", nil, cond, true); err != nil {
+			return err
+		}
+
+		if keys, err = s.TagKeys(authorizer, []uint64{0}, nil); err != nil {
+			return err
+		}
+
+		// keys should not contain any tag keys associated with a series containing
+		// a secret tag or the deleted series
+		expKeys = 2
+		gotKeys = 0
+		for _, tk := range keys {
+			if got, exp := tk.Measurement, "cpu"; got != exp {
+				return fmt.Errorf("got measurement %q, expected %q", got, exp)
+			}
+
+			for _, key := range tk.Keys {
+				if key == "secret" || key == "machine" || key == "region" {
+					return fmt.Errorf("got tag key %q but it should be filtered.", key)
+				}
+				gotKeys++
+			}
+		}
+
+		if gotKeys != expKeys {
+			return fmt.Errorf("got %d keys, but expected %d", gotKeys, expKeys)
+		}
+
+		return nil
+	}
+
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
+			if err := test(index); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+
+}
+
+func TestStore_TagValues_Auth(t *testing.T) {
+	t.Parallel()
+
+	test := func(index string) error {
+		s := MustOpenStore(index)
+		defer s.Close()
+
+		// Create shard #0 with data.
+		s.MustCreateShardWithData("db0", "rp0", 0,
+			`cpu,host=serverA value=1  0`,
+			`cpu,host=serverA value=2 10`,
+			`cpu,host=serverB value=3 20`,
+			`cpu,secret=foo,host=serverD value=1 20`,
+		)
+
+		authorizer := &internal.AuthorizerMock{
+			AuthorizeSeriesReadFn: func(database string, measurement []byte, tags models.Tags) bool {
+				if database == "" || !bytes.Equal(measurement, []byte("cpu")) || tags.GetString("secret") != "" {
+					t.Logf("Rejecting series db=%s, m=%s, tags=%v", database, measurement, tags)
+					return false
+				}
+				return true
+			},
+		}
+
+		values, err := s.TagValues(authorizer, []uint64{0}, &influxql.BinaryExpr{
+			Op:  influxql.EQ,
+			LHS: &influxql.VarRef{Val: "_tagKey"},
+			RHS: &influxql.StringLiteral{Val: "host"},
+		})
+
+		if err != nil {
+			return err
+		}
+
+		// values should not contain any tag values associated with a series containing
+		// a secret tag.
+		expValues := 2
+		var gotValues int
+		for _, tv := range values {
+			if got, exp := tv.Measurement, "cpu"; got != exp {
+				return fmt.Errorf("got measurement %q, expected %q", got, exp)
+			}
+
+			for _, v := range tv.Values {
+				if got, exp := v.Value, "serverD"; got == exp {
+					return fmt.Errorf("got tag value %q but it should be filtered.", got)
+				}
+				gotValues++
+			}
+		}
+
+		if gotValues != expValues {
+			return fmt.Errorf("got %d tags, but expected %d", gotValues, expValues)
+		}
+
+		// Delete the series with values serverA
+		cond, err := influxql.ParseExpr("host = 'serverA'")
+		if err != nil {
+			return err
+		}
+		if err := s.DeleteSeries("db0", nil, cond, true); err != nil {
+			return err
+		}
+
+		values, err = s.TagValues(authorizer, []uint64{0}, &influxql.BinaryExpr{
+			Op:  influxql.EQ,
+			LHS: &influxql.VarRef{Val: "_tagKey"},
+			RHS: &influxql.StringLiteral{Val: "host"},
+		})
+
+		if err != nil {
+			return err
+		}
+
+		// values should not contain any tag values associated with a series containing
+		// a secret tag.
+		expValues = 1
+		gotValues = 0
+		for _, tv := range values {
+			if got, exp := tv.Measurement, "cpu"; got != exp {
+				return fmt.Errorf("got measurement %q, expected %q", got, exp)
+			}
+
+			for _, v := range tv.Values {
+				if got, exp := v.Value, "serverD"; got == exp {
+					return fmt.Errorf("got tag value %q but it should be filtered.", got)
+				} else if got, exp := v.Value, "serverA"; got == exp {
+					return fmt.Errorf("got tag value %q but it should be filtered.", got)
+				}
+				gotValues++
+			}
+		}
+
+		if gotValues != expValues {
+			return fmt.Errorf("got %d tags, but expected %d", gotValues, expValues)
+		}
+		return nil
+	}
+
+	for _, index := range tsdb.RegisteredIndexes() {
+		t.Run(index, func(t *testing.T) {
+			if err := test(index); err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }
 
@@ -1021,7 +1330,7 @@ func benchmarkStoreOpen(b *testing.B, mCnt, tkCnt, tvCnt, pntCnt, shardCnt int) 
 		points := []models.Point{}
 		for _, s := range series {
 			for val := 0.0; val < float64(pntCnt); val++ {
-				p := models.MustNewPoint(s.Measurement, s.Series.Tags(), map[string]interface{}{"value": val}, time.Now())
+				p := models.MustNewPoint(s.Measurement, s.Tags, map[string]interface{}{"value": val}, time.Now())
 				points = append(points, p)
 			}
 		}
@@ -1083,7 +1392,7 @@ func BenchmarkStore_TagValues(b *testing.B) {
 	}
 
 	var s *Store
-	setup := func(shards, measurements, tagValues int, index string, useRandom bool) {
+	setup := func(shards, measurements, tagValues int, index string, useRandom bool) []uint64 { // returns shard ids
 		s = NewStore()
 		s.EngineOptions.IndexVersion = index
 		if err := s.Open(); err != nil {
@@ -1115,9 +1424,12 @@ func BenchmarkStore_TagValues(b *testing.B) {
 		}
 
 		// Create data across chosen number of shards.
+		var shardIDs []uint64
 		for i := 0; i < shards; i++ {
+			shardIDs = append(shardIDs, uint64(i))
 			s.MustCreateShardWithData("db0", "rp0", i, genPoints(i, useRandom)...)
 		}
+		return shardIDs
 	}
 
 	teardown := func() {
@@ -1162,14 +1474,14 @@ func BenchmarkStore_TagValues(b *testing.B) {
 		for useRand := 0; useRand < 2; useRand++ {
 			for c, condition := range []influxql.Expr{cond1, cond2} {
 				for _, bm := range benchmarks {
-					setup(bm.shards, bm.measurements, bm.tagValues, index, useRand == 1)
+					shardIDs := setup(bm.shards, bm.measurements, bm.tagValues, index, useRand == 1)
 					cnd := "Unfiltered"
 					if c == 0 {
 						cnd = "Filtered"
 					}
 					b.Run("random_values="+fmt.Sprint(useRand == 1)+"_index="+index+"_"+cnd+"_"+bm.name, func(b *testing.B) {
 						for i := 0; i < b.N; i++ {
-							if tvResult, err = s.TagValues(nil, "db0", condition); err != nil {
+							if tvResult, err = s.TagValues(nil, shardIDs, condition); err != nil {
 								b.Fatal(err)
 							}
 						}
@@ -1198,11 +1510,9 @@ func NewStore() *Store {
 	s.EngineOptions.Config.TraceLoggingEnabled = true
 
 	if testing.Verbose() {
-		s.WithLogger(zap.New(
-			zap.NewTextEncoder(),
-			zap.Output(os.Stdout),
-		))
+		s.WithLogger(logger.New(os.Stdout))
 	}
+
 	return s
 }
 
@@ -1211,6 +1521,7 @@ func NewStore() *Store {
 func MustOpenStore(index string) *Store {
 	s := NewStore()
 	s.EngineOptions.IndexVersion = index
+
 	if err := s.Open(); err != nil {
 		panic(err)
 	}
@@ -1222,9 +1533,10 @@ func (s *Store) Reopen() error {
 	if err := s.Store.Close(); err != nil {
 		return err
 	}
+
 	s.Store = tsdb.NewStore(s.Path())
 	s.EngineOptions.Config.WALDir = filepath.Join(s.Path(), "wal")
-	return s.Open()
+	return s.Store.Open()
 }
 
 // Close closes the store and removes the underlying data.

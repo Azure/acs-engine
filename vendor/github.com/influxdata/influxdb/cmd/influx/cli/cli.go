@@ -50,6 +50,7 @@ type CommandLine struct {
 	Import          bool
 	Chunked         bool
 	ChunkSize       int
+	NodeID          int
 	Quit            chan struct{}
 	IgnoreSignals   bool // Ignore signals normally caught by this process (used primarily for testing)
 	ForceTTY        bool // Force the CLI to act as if it were connected to a TTY
@@ -187,7 +188,12 @@ func (c *CommandLine) Run() error {
 
 	c.Line.SetMultiLineMode(true)
 
-	fmt.Printf("Connected to %s version %s\n", c.Client.Addr(), c.ServerVersion)
+	if len(c.ServerVersion) == 0 {
+		fmt.Printf("WARN: Connected to %s, but found no server version.\n", c.Client.Addr())
+		fmt.Printf("Are you sure an InfluxDB server is listening at the given address?\n")
+	} else {
+		fmt.Printf("Connected to %s version %s\n", c.Client.Addr(), c.ServerVersion)
+	}
 
 	c.Version()
 
@@ -279,6 +285,8 @@ func (c *CommandLine) ParseCommand(cmd string) error {
 			}
 		case "use":
 			c.use(cmd)
+		case "node":
+			c.node(cmd)
 		case "insert":
 			return c.Insert(cmd)
 		case "clear":
@@ -399,7 +407,7 @@ func (c *CommandLine) clear(cmd string) {
 }
 
 func (c *CommandLine) use(cmd string) {
-	args := strings.Split(strings.TrimSuffix(strings.TrimSpace(cmd), ";"), " ")
+	args := strings.SplitAfterN(strings.TrimSuffix(strings.TrimSpace(cmd), ";"), " ", 2)
 	if len(args) != 2 {
 		fmt.Printf("Could not parse database name from %q.\n", cmd)
 		return
@@ -413,6 +421,7 @@ func (c *CommandLine) use(cmd string) {
 	}
 
 	if !c.databaseExists(db) {
+		fmt.Println("DB does not exist!")
 		return
 	}
 
@@ -505,6 +514,26 @@ func (c *CommandLine) retentionPolicyExists(db, rp string) bool {
 		}
 	}
 	return true
+}
+
+func (c *CommandLine) node(cmd string) {
+	args := strings.Split(strings.TrimSuffix(strings.TrimSpace(cmd), ";"), " ")
+	if len(args) != 2 {
+		fmt.Println("Improper number of arguments for 'node' command, requires exactly one.")
+		return
+	}
+
+	if args[1] == "clear" {
+		c.NodeID = 0
+		return
+	}
+
+	id, err := strconv.Atoi(args[1])
+	if err != nil {
+		fmt.Printf("Unable to parse node id from %s. Must be an integer or 'clear'.\n", args[1])
+		return
+	}
+	c.NodeID = id
 }
 
 // SetChunkSize sets the chunk size
@@ -705,6 +734,7 @@ func (c *CommandLine) query(query string) client.Query {
 		Database:  c.Database,
 		Chunked:   c.Chunked,
 		ChunkSize: c.ChunkSize,
+		NodeID:    c.NodeID,
 	}
 }
 
@@ -1014,8 +1044,7 @@ func (c *CommandLine) help() {
         show field keys       show field key information
 
         A full list of influxql commands can be found at:
-        https://docs.influxdata.com/influxdb/latest/query_language/spec/
-`)
+        https://docs.influxdata.com/influxdb/latest/query_language/spec/`)
 }
 
 func (c *CommandLine) history() {
@@ -1085,9 +1114,7 @@ func (c *CommandLine) gopher() {
                                          o:   -h///++////-.
                                         /:   .o/
                                        //+  'y
-                                       ./sooy.
-
-`)
+                                       ./sooy.`)
 }
 
 // Version prints the CLI version.

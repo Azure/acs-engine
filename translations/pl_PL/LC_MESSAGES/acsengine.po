@@ -110,12 +110,12 @@ msgstr "nie można zainicjować generatora szablonów: %s"
 #, c-format
 msgid "invalid version %s for conversion back from unversioned object"
 msgstr ""
-"nieprawidłowa wersja %s na potrzeby konwersji z niewersjonowanego obiektu"
+"nieprawidłowa wersja %s na potrzeby konwersji z obiektu niewersjonowanego"
 
 #: pkg/acsengine/engine.go:322
 #, c-format
 msgid "orchestrator '%s' is unsupported"
-msgstr "koordynator „%s” nie jest obsługiwany"
+msgstr "orkiestrator „%s” nie jest obsługiwany"
 
 #: pkg/acsengine/engine.go:187
 #, c-format

@@ -8,18 +8,29 @@ import (
 	"strings"
 
 	"github.com/gogo/protobuf/types"
+	"github.com/influxdata/influxdb/pkg/metrics"
 	"github.com/influxdata/influxdb/tsdb"
-	"github.com/uber-go/zap"
+	"github.com/influxdata/influxdb/tsdb/engine/tsm1"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
+	"go.uber.org/zap"
 )
 
 //go:generate protoc -I$GOPATH/src -I. --plugin=protoc-gen-yarpc=$GOPATH/bin/protoc-gen-yarpc --yarpc_out=Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types:. --gogofaster_out=Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types:. storage.proto predicate.proto
 //go:generate tmpl -data=@batch_cursor.gen.go.tmpldata batch_cursor.gen.go.tmpl
+//go:generate tmpl -data=@batch_cursor.gen.go.tmpldata response_writer.gen.go.tmpl
+
+const (
+	batchSize  = 1000
+	frameCount = 50
+	writeSize  = 64 << 10 // 64k
+)
 
 type rpcService struct {
 	loggingEnabled bool
 
 	Store  *Store
-	Logger zap.Logger
+	Logger *zap.Logger
 }
 
 func (r *rpcService) Capabilities(context.Context, *types.Empty) (*CapabilitiesResponse, error) {
@@ -31,20 +42,57 @@ func (r *rpcService) Hints(context.Context, *types.Empty) (*HintsResponse, error
 }
 
 func (r *rpcService) Read(req *ReadRequest, stream Storage_ReadServer) error {
-	const batchSize = 1000
-	const frameCount = 50
+	// TODO(sgc): implement frameWriter that handles the details of streaming frames
+	var err error
+	var wire opentracing.SpanContext
+
+	if len(req.Trace) > 0 {
+		wire, err = opentracing.GlobalTracer().Extract(opentracing.TextMap, opentracing.TextMapCarrier(req.Trace))
+		if err != nil {
+			// TODO(sgc): log it?
+		}
+	}
+
+	span := opentracing.StartSpan("storage.read", ext.RPCServerOption(wire))
+	defer span.Finish()
+
+	ext.DBInstance.Set(span, req.Database)
+
+	// TODO(sgc): use yarpc stream.Context() once implemented
+	ctx := context.Background()
+	ctx = opentracing.ContextWithSpan(ctx, span)
+	// TODO(sgc): this should be available via a generic API, such as tsdb.Store
+	ctx = tsm1.NewContextWithMetricsGroup(ctx)
+
+	var agg Aggregate_AggregateType
+	if req.Aggregate != nil {
+		agg = req.Aggregate.Type
+	}
+	pred := truncateString(PredicateToExprString(req.Predicate))
+	groupKeys := truncateString(strings.Join(req.Grouping, ","))
+	span.
+		SetTag("predicate", pred).
+		SetTag("series_limit", req.SeriesLimit).
+		SetTag("series_offset", req.SeriesOffset).
+		SetTag("points_limit", req.PointsLimit).
+		SetTag("start", req.TimestampRange.Start).
+		SetTag("end", req.TimestampRange.End).
+		SetTag("desc", req.Descending).
+		SetTag("group_keys", groupKeys).
+		SetTag("aggregate", agg.String())
 
 	if r.loggingEnabled {
 		r.Logger.Info("request",
 			zap.String("database", req.Database),
-			zap.String("predicate", PredicateToExprString(req.Predicate)),
+			zap.String("predicate", pred),
 			zap.Uint64("series_limit", req.SeriesLimit),
 			zap.Uint64("series_offset", req.SeriesOffset),
 			zap.Uint64("points_limit", req.PointsLimit),
 			zap.Int64("start", req.TimestampRange.Start),
 			zap.Int64("end", req.TimestampRange.End),
 			zap.Bool("desc", req.Descending),
-			zap.String("grouping", strings.Join(req.Grouping, ",")),
+			zap.String("group_keys", groupKeys),
+			zap.String("aggregate", agg.String()),
 		)
 	}
 
@@ -52,172 +100,62 @@ func (r *rpcService) Read(req *ReadRequest, stream Storage_ReadServer) error {
 		req.PointsLimit = math.MaxUint64
 	}
 
-	// TODO(sgc): use yarpc stream.Context() once implemented
-	rs, err := r.Store.Read(context.Background(), req)
+	rs, err := r.Store.Read(ctx, req)
 	if err != nil {
 		r.Logger.Error("Store.Read failed", zap.Error(err))
 		return err
 	}
 
 	if rs == nil {
-		stream.Send(&ReadResponse{})
 		return nil
 	}
+	defer rs.Close()
 
-	b := 0
-	res := &ReadResponse{Frames: make([]ReadResponse_Frame, 0, frameCount)}
+	w := &responseWriter{
+		stream: stream,
+		res:    &ReadResponse{Frames: make([]ReadResponse_Frame, 0, frameCount)},
+		logger: r.Logger,
+	}
 
 	for rs.Next() {
-		if len(res.Frames) >= frameCount {
-			// TODO(sgc): if last frame is a series, strip it
-			if err = stream.Send(res); err != nil {
-				r.Logger.Error("stream.Send failed", zap.Error(err))
-				rs.Close()
-				return nil
-			}
-
-			for i := range res.Frames {
-				res.Frames[i].Data = nil
-			}
-			res.Frames = res.Frames[:0]
-		}
-
 		cur := rs.Cursor()
 		if cur == nil {
 			// no data for series key + field combination
 			continue
 		}
 
-		ss := len(res.Frames)
-
-		next := rs.Tags()
-		sf := ReadResponse_SeriesFrame{Tags: make([]Tag, len(next))}
-		for i, t := range next {
-			sf.Tags[i] = Tag(t)
-		}
-		res.Frames = append(res.Frames, ReadResponse_Frame{&ReadResponse_Frame_Series{&sf}})
+		w.startSeries(rs.Tags())
 
 		switch cur := cur.(type) {
 		case tsdb.IntegerBatchCursor:
-			frame := &ReadResponse_IntegerPointsFrame{Timestamps: make([]int64, 0, batchSize), Values: make([]int64, 0, batchSize)}
-			res.Frames = append(res.Frames, ReadResponse_Frame{&ReadResponse_Frame_IntegerPoints{frame}})
-
-			for {
-				ts, vs := cur.Next()
-				if len(ts) == 0 {
-					break
-				}
-
-				frame.Timestamps = append(frame.Timestamps, ts...)
-				frame.Values = append(frame.Values, vs...)
-
-				b += len(ts)
-				if b >= batchSize {
-					frame = &ReadResponse_IntegerPointsFrame{Timestamps: make([]int64, 0, batchSize), Values: make([]int64, 0, batchSize)}
-					res.Frames = append(res.Frames, ReadResponse_Frame{&ReadResponse_Frame_IntegerPoints{frame}})
-					b = 0
-				}
-			}
-
+			w.streamIntegerPoints(cur)
 		case tsdb.FloatBatchCursor:
-			frame := &ReadResponse_FloatPointsFrame{Timestamps: make([]int64, 0, batchSize), Values: make([]float64, 0, batchSize)}
-			res.Frames = append(res.Frames, ReadResponse_Frame{&ReadResponse_Frame_FloatPoints{frame}})
-
-			for {
-				ts, vs := cur.Next()
-				if len(ts) == 0 {
-					break
-				}
-
-				frame.Timestamps = append(frame.Timestamps, ts...)
-				frame.Values = append(frame.Values, vs...)
-
-				b += len(ts)
-				if b >= batchSize {
-					frame = &ReadResponse_FloatPointsFrame{Timestamps: make([]int64, 0, batchSize), Values: make([]float64, 0, batchSize)}
-					res.Frames = append(res.Frames, ReadResponse_Frame{&ReadResponse_Frame_FloatPoints{frame}})
-					b = 0
-				}
-			}
-
+			w.streamFloatPoints(cur)
 		case tsdb.UnsignedBatchCursor:
-			frame := &ReadResponse_UnsignedPointsFrame{Timestamps: make([]int64, 0, batchSize), Values: make([]uint64, 0, batchSize)}
-			res.Frames = append(res.Frames, ReadResponse_Frame{&ReadResponse_Frame_UnsignedPoints{frame}})
-
-			for {
-				ts, vs := cur.Next()
-				if len(ts) == 0 {
-					break
-				}
-
-				frame.Timestamps = append(frame.Timestamps, ts...)
-				frame.Values = append(frame.Values, vs...)
-
-				b += len(ts)
-				if b >= batchSize {
-					frame = &ReadResponse_UnsignedPointsFrame{Timestamps: make([]int64, 0, batchSize), Values: make([]uint64, 0, batchSize)}
-					res.Frames = append(res.Frames, ReadResponse_Frame{&ReadResponse_Frame_UnsignedPoints{frame}})
-					b = 0
-				}
-			}
-
+			w.streamUnsignedPoints(cur)
 		case tsdb.BooleanBatchCursor:
-			frame := &ReadResponse_BooleanPointsFrame{Timestamps: make([]int64, 0, batchSize), Values: make([]bool, 0, batchSize)}
-			res.Frames = append(res.Frames, ReadResponse_Frame{&ReadResponse_Frame_BooleanPoints{frame}})
-
-			for {
-				ts, vs := cur.Next()
-				if len(ts) == 0 {
-					break
-				}
-
-				frame.Timestamps = append(frame.Timestamps, ts...)
-				frame.Values = append(frame.Values, vs...)
-
-				b += len(ts)
-				if b >= batchSize {
-					frame = &ReadResponse_BooleanPointsFrame{Timestamps: make([]int64, 0, batchSize), Values: make([]bool, 0, batchSize)}
-					res.Frames = append(res.Frames, ReadResponse_Frame{&ReadResponse_Frame_BooleanPoints{frame}})
-					b = 0
-				}
-			}
-
+			w.streamBooleanPoints(cur)
 		case tsdb.StringBatchCursor:
-			frame := &ReadResponse_StringPointsFrame{Timestamps: make([]int64, 0, batchSize), Values: make([]string, 0, batchSize)}
-			res.Frames = append(res.Frames, ReadResponse_Frame{&ReadResponse_Frame_StringPoints{frame}})
-
-			for {
-				ts, vs := cur.Next()
-				if len(ts) == 0 {
-					break
-				}
-
-				frame.Timestamps = append(frame.Timestamps, ts...)
-				frame.Values = append(frame.Values, vs...)
-
-				b += len(ts)
-				if b >= batchSize {
-					frame = &ReadResponse_StringPointsFrame{Timestamps: make([]int64, 0, batchSize), Values: make([]string, 0, batchSize)}
-					res.Frames = append(res.Frames, ReadResponse_Frame{&ReadResponse_Frame_StringPoints{frame}})
-					b = 0
-				}
-			}
-
+			w.streamStringPoints(cur)
 		default:
 			panic(fmt.Sprintf("unreachable: %T", cur))
 		}
 
-		cur.Close()
-
-		if len(res.Frames) == ss+1 {
-			// no points collected, so strip series
-			res.Frames = res.Frames[:ss]
+		if w.err != nil {
+			return w.err
 		}
 	}
 
-	if len(res.Frames) > 0 {
-		stream.Send(res)
-	}
+	w.flushFrames()
+
+	span.SetTag("num_values", w.vc)
+	grp := tsm1.MetricsGroupFromContext(ctx)
+	grp.ForEach(func(v metrics.Metric) {
+		switch m := v.(type) {
+		case *metrics.Counter:
+			span.SetTag(m.Name(), m.Value())
+		}
+	})
 
 	return nil
 }

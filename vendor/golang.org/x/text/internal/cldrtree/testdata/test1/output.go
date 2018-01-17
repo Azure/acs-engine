@@ -14,6 +14,9 @@ var tree = &cldrtree.Tree{locales, indices, buckets}
 //   - wAbbreviated
 //   - wNarrow
 //   - wWide
+// <month>
+//   - leap7
+//   - 1..12
 //
 // - calendars
 //   - chinese
@@ -22,7 +25,7 @@ var tree = &cldrtree.Tree{locales, indices, buckets}
 //     - months
 //       - <context>
 //         - <width>
-//           - 1..12
+//           - <month>
 //     - filler
 //       - 0
 //
@@ -32,23 +35,30 @@ var tree = &cldrtree.Tree{locales, indices, buckets}
 // bucket waste:       0
 
 // context specifies a property of a CLDR field.
-type context int
-
-const (
-	format context = iota
-	standAlone
-)
+type context uint16
 
 // width specifies a property of a CLDR field.
-type width int
+type width uint16
+
+// month specifies a property of a CLDR field.
+type month uint16
 
 const (
-	wAbbreviated width = iota
-	wNarrow
-	wWide
+	calendars            = 0 // calendars
+	chinese              = 0 // chinese
+	dangi                = 1 // dangi
+	gregorian            = 2 // gregorian
+	months               = 0 // months
+	filler               = 1 // filler
+	format       context = 0 // format
+	standAlone   context = 1 // stand-alone
+	wAbbreviated width   = 0 // wAbbreviated
+	wNarrow      width   = 1 // wNarrow
+	wWide        width   = 2 // wWide
+	leap7        month   = 0 // leap7
 )
 
-var locales = []uint32{ // 754 elements
+var locales = []uint32{ // 768 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -261,23 +271,26 @@ var locales = []uint32{ // 754 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 } // Size: xxxx bytes
 
-var indices = []uint16{ // 83 elements
+var indices = []uint16{ // 86 elements
 	// Entry 0 - 3F
-	0x0001, 0x0002, 0x0003, 0x0006, 0x0020, 0x0026, 0x0002, 0x0009,
-	0x001d, 0x0001, 0x000b, 0x0003, 0x8002, 0x8002, 0x000f, 0x000c,
-	0x0000, 0x0000, 0x0005, 0x000a, 0x000f, 0x0014, 0x0019, 0x001e,
-	0x0023, 0x0028, 0x002d, 0x0032, 0x0037, 0x0001, 0x0000, 0x003c,
-	0x0002, 0x9000, 0x0023, 0x0001, 0x0000, 0x013b, 0x0002, 0x0029,
-	0x0050, 0x0002, 0x002c, 0x003e, 0x0003, 0x8002, 0x9001, 0x0030,
-	0x000c, 0x0000, 0x023a, 0x023f, 0x0244, 0x0249, 0x024e, 0x0253,
-	0x0258, 0x025d, 0x0262, 0x0267, 0x026c, 0x0271, 0x0003, 0x9000,
+	0x0001, 0x0002, 0x0003, 0x0006, 0x0021, 0x0027, 0x0002, 0x0009,
+	0x001e, 0x0001, 0x000b, 0x0003, 0x8002, 0x8002, 0x000f, 0x000d,
+	0x0000, 0xffff, 0x0000, 0x0005, 0x000a, 0x000f, 0x0014, 0x0019,
+	0x001e, 0x0023, 0x0028, 0x002d, 0x0032, 0x0037, 0x0001, 0x0000,
+	0x003c, 0x0002, 0x9000, 0x0024, 0x0001, 0x0000, 0x013b, 0x0002,
+	0x002a, 0x0053, 0x0002, 0x002d, 0x0040, 0x0003, 0x8002, 0x9001,
+	0x0031, 0x000d, 0x0000, 0xffff, 0x023a, 0x023f, 0x0244, 0x0249,
+	0x024e, 0x0253, 0x0258, 0x025d, 0x0262, 0x0267, 0x026c, 0x0271,
 	// Entry 40 - 7F
-	0x0042, 0x9000, 0x000c, 0x0000, 0x0276, 0x0278, 0x027a, 0x027c,
-	0x027e, 0x0280, 0x0282, 0x0284, 0x0286, 0x0288, 0x028b, 0x028e,
-	0x0001, 0x0000, 0x0291,
+	0x0003, 0x9000, 0x0044, 0x9000, 0x000d, 0x0000, 0xffff, 0x0276,
+	0x0278, 0x027a, 0x027c, 0x027e, 0x0280, 0x0282, 0x0284, 0x0286,
+	0x0288, 0x028b, 0x028e, 0x0001, 0x0000, 0x0291,
 } // Size: xxxx bytes
 
 var buckets = []string{
@@ -318,4 +331,20 @@ var bucket0 string = "" + // Size: xxxx bytes
 	"\xc97\x88\xa5@\x9f\x8bnB\xc2݃\xaaFa\x18R\xad\x0bP(w\\w\x16\x90\xb6\x85N" +
 	"\x05\xb3w$\x1es\xa8\x83\xddw\xaf\xf00,m\xa8f\\B4\x1d\xdaJ\xda\xea"
 
-	// Total table size: xxxx bytes (4KiB); checksum: DB2842B6
+var enumMap = map[string]uint16{
+	"":             0,
+	"calendars":    0,
+	"chinese":      0,
+	"dangi":        1,
+	"gregorian":    2,
+	"months":       0,
+	"filler":       1,
+	"format":       0,
+	"stand-alone":  1,
+	"wAbbreviated": 0,
+	"wNarrow":      1,
+	"wWide":        2,
+	"leap7":        0,
+}
+
+// Total table size: xxxx bytes (4KiB); checksum: EB82B0F5

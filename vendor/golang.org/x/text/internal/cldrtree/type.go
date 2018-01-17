@@ -4,6 +4,11 @@
 
 package cldrtree
 
+import (
+	"log"
+	"strconv"
+)
+
 // enumIndex is the numerical value of an enum value.
 type enumIndex int
 
@@ -25,6 +30,20 @@ func (e *enum) lookup(s string) enumIndex {
 	if !ok {
 		if e.keyMap == nil {
 			e.keyMap = map[string]enumIndex{}
+		}
+		u, err := strconv.ParseUint(s, 10, 32)
+		if err == nil {
+			for len(e.keys) <= int(u) {
+				x := enumIndex(len(e.keys))
+				s := strconv.Itoa(int(x))
+				e.keyMap[s] = x
+				e.keys = append(e.keys, s)
+			}
+			if e.keyMap[s] != enumIndex(u) {
+				// TODO: handle more gracefully.
+				log.Fatalf("cldrtree: mix of integer and non-integer for %q %v", s, e.keys)
+			}
+			return enumIndex(u)
 		}
 		x = enumIndex(len(e.keys))
 		e.keyMap[s] = x

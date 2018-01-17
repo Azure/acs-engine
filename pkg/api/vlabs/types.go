@@ -94,6 +94,18 @@ type CertificateProfile struct {
 	KubeConfigCertificate string `json:"kubeConfigCertificate,omitempty"`
 	// KubeConfigPrivateKey is the client private key used for kubectl cli and signed by the CA
 	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey,omitempty"`
+	// EtcdServerCertificate is the server certificate for etcd, and signed by the CA
+	EtcdServerCertificate string `json:"etcdServerCertificate,omitempty"`
+	// EtcdServerPrivateKey is the server private key for etcd, and signed by the CA
+	EtcdServerPrivateKey string `json:"etcdServerPrivateKey,omitempty"`
+	// EtcdClientCertificate is etcd client certificate, and signed by the CA
+	EtcdClientCertificate string `json:"etcdClientCertificate,omitempty"`
+	// EtcdClientPrivateKey is the etcd client private key, and signed by the CA
+	EtcdClientPrivateKey string `json:"etcdClientPrivateKey,omitempty"`
+	// EtcdPeerCertificates is list of etcd peer certificates, and signed by the CA
+	EtcdPeerCertificates []string `json:"etcdPeerCertificates,omitempty"`
+	// EtcdPeerPrivateKeys is list of etcd peer private keys, and signed by the CA
+	EtcdPeerPrivateKeys []string `json:"etcdPeerPrivateKeys,omitempty"`
 }
 
 // LinuxProfile represents the linux parameters passed to the cluster
@@ -113,10 +125,11 @@ type PublicKey struct {
 
 // WindowsProfile represents the windows parameters passed to the cluster
 type WindowsProfile struct {
-	AdminUsername string            `json:"adminUsername,omitempty"`
-	AdminPassword string            `json:"adminPassword,omitempty"`
-	ImageVersion  string            `json:"imageVersion,omitempty"`
-	Secrets       []KeyVaultSecrets `json:"secrets,omitempty"`
+	AdminUsername         string            `json:"adminUsername,omitempty"`
+	AdminPassword         string            `json:"adminPassword,omitempty"`
+	ImageVersion          string            `json:"imageVersion,omitempty"`
+	WindowsImageSourceURL string            `json:"WindowsImageSourceUrl"`
+	Secrets               []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.
@@ -200,65 +213,74 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
+// CloudProviderConfig contains the KubernetesConfig parameters specific to the Cloud Provider
+type CloudProviderConfig struct {
+	CloudProviderBackoff         bool    `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries  int     `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent float64 `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit       bool    `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS    float64 `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket int     `json:"cloudProviderRateLimitBucket,omitempty"`
+}
+
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
-	KubernetesImageBase              string            `json:"kubernetesImageBase,omitempty"`
-	ClusterSubnet                    string            `json:"clusterSubnet,omitempty"`
-	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
-	ServiceCidr                      string            `json:"serviceCidr,omitempty"`
-	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
-	NonMasqueradeCidr                string            `json:"nonMasqueradeCidr,omitempty"`
-	MaxPods                          int               `json:"maxPods,omitempty"`
-	DockerBridgeSubnet               string            `json:"dockerBridgeSubnet,omitempty"`
-	NodeStatusUpdateFrequency        string            `json:"nodeStatusUpdateFrequency,omitempty"`
-	HardEvictionThreshold            string            `json:"hardEvictionThreshold,omitempty"`
-	CtrlMgrNodeMonitorGracePeriod    string            `json:"ctrlMgrNodeMonitorGracePeriod,omitempty"`
-	CtrlMgrPodEvictionTimeout        string            `json:"ctrlMgrPodEvictionTimeout,omitempty"`
-	CtrlMgrRouteReconciliationPeriod string            `json:"ctrlMgrRouteReconciliationPeriod,omitempty"`
-	CloudProviderBackoff             bool              `json:"cloudProviderBackoff,omitempty"`
-	CloudProviderBackoffRetries      int               `json:"cloudProviderBackoffRetries,omitempty"`
-	CloudProviderBackoffJitter       float64           `json:"cloudProviderBackoffJitter,omitempty"`
-	CloudProviderBackoffDuration     int               `json:"cloudProviderBackoffDuration,omitempty"`
-	CloudProviderBackoffExponent     float64           `json:"cloudProviderBackoffExponent,omitempty"`
-	CloudProviderRateLimit           bool              `json:"cloudProviderRateLimit,omitempty"`
-	CloudProviderRateLimitQPS        float64           `json:"cloudProviderRateLimitQPS,omitempty"`
-	CloudProviderRateLimitBucket     int               `json:"cloudProviderRateLimitBucket,omitempty"`
-	UseManagedIdentity               bool              `json:"useManagedIdentity,omitempty"`
-	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
-	CustomCcmImage                   string            `json:"customCcmImage,omitempty"`
-	UseCloudControllerManager        *bool             `json:"useCloudControllerManager,omitempty"`
-	UseInstanceMetadata              *bool             `json:"useInstanceMetadata,omitempty"`
-	EnableRbac                       bool              `json:"enableRbac,omitempty"`
-	EnableAggregatedAPIs             bool              `json:"enableAggregatedAPIs,omitempty"`
-	GCHighThreshold                  int               `json:"gchighthreshold,omitempty"`
-	GCLowThreshold                   int               `json:"gclowthreshold,omitempty"`
-	EtcdVersion                      string            `json:"etcdVersion,omitempty"`
-	EtcdDiskSizeGB                   string            `json:"etcdDiskSizeGB,omitempty"`
-	Addons                           []KubernetesAddon `json:"addons,omitempty"`
+	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
+	DNSServiceIP        string `json:"dnsServiceIP,omitempty"`
+	ServiceCidr         string `json:"serviceCidr,omitempty"`
+	NetworkPolicy       string `json:"networkPolicy,omitempty"`
+	ContainerRuntime    string `json:"containerRuntime,omitempty"`
+	MaxPods             int    `json:"maxPods,omitempty"`
+	DockerBridgeSubnet  string `json:"dockerBridgeSubnet,omitempty"`
+	CloudProviderConfig
+	UseManagedIdentity           bool              `json:"useManagedIdentity,omitempty"`
+	CustomHyperkubeImage         string            `json:"customHyperkubeImage,omitempty"`
+	DockerEngineVersion          string            `json:"dockerEngineVersion,omitempty"`
+	CustomCcmImage               string            `json:"customCcmImage,omitempty"`
+	UseCloudControllerManager    *bool             `json:"useCloudControllerManager,omitempty"`
+	UseInstanceMetadata          *bool             `json:"useInstanceMetadata,omitempty"`
+	EnableRbac                   *bool             `json:"enableRbac,omitempty"`
+	EnableSecureKubelet          *bool             `json:"enableSecureKubelet,omitempty"`
+	EnableAggregatedAPIs         bool              `json:"enableAggregatedAPIs,omitempty"`
+	GCHighThreshold              int               `json:"gchighthreshold,omitempty"`
+	GCLowThreshold               int               `json:"gclowthreshold,omitempty"`
+	EtcdVersion                  string            `json:"etcdVersion,omitempty"`
+	EtcdDiskSizeGB               string            `json:"etcdDiskSizeGB,omitempty"`
+	EnableDataEncryptionAtRest   *bool             `json:"enableDataEncryptionAtRest,omitempty"`
+	Addons                       []KubernetesAddon `json:"addons,omitempty"`
+	KubeletConfig                map[string]string `json:"kubeletConfig,omitempty"`
+	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
+	CloudControllerManagerConfig map[string]string `json:"cloudControllerManagerConfig,omitempty"`
+	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS
 type DcosConfig struct {
+	DcosBootstrapURL        string `json:"dcosBootstrapURL,omitempty"`
 	DcosWindowsBootstrapURL string `json:"dcosWindowsBootstrapURL,omitempty"`
 }
 
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
-	Count                    int         `json:"count" validate:"required,eq=1|eq=3|eq=5"`
-	DNSPrefix                string      `json:"dnsPrefix" validate:"required"`
-	VMSize                   string      `json:"vmSize" validate:"required"`
-	OSDiskSizeGB             int         `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	VnetSubnetID             string      `json:"vnetSubnetID,omitempty"`
-	VnetCidr                 string      `json:"vnetCidr,omitempty"`
-	FirstConsecutiveStaticIP string      `json:"firstConsecutiveStaticIP,omitempty"`
-	IPAddressCount           int         `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
-	StorageProfile           string      `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
-	HTTPSourceAddressPrefix  string      `json:"HTTPSourceAddressPrefix,omitempty"`
-	OAuthEnabled             bool        `json:"oauthEnabled"`
-	PreProvisionExtension    *Extension  `json:"preProvisionExtension"`
-	Extensions               []Extension `json:"extensions"`
-	Distro                   Distro      `json:"distro,omitempty"`
+	Count                    int               `json:"count" validate:"required,eq=1|eq=3|eq=5"`
+	DNSPrefix                string            `json:"dnsPrefix" validate:"required"`
+	VMSize                   string            `json:"vmSize" validate:"required"`
+	OSDiskSizeGB             int               `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	VnetSubnetID             string            `json:"vnetSubnetID,omitempty"`
+	VnetCidr                 string            `json:"vnetCidr,omitempty"`
+	FirstConsecutiveStaticIP string            `json:"firstConsecutiveStaticIP,omitempty"`
+	IPAddressCount           int               `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
+	StorageProfile           string            `json:"storageProfile,omitempty" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	HTTPSourceAddressPrefix  string            `json:"HTTPSourceAddressPrefix,omitempty"`
+	OAuthEnabled             bool              `json:"oauthEnabled"`
+	PreProvisionExtension    *Extension        `json:"preProvisionExtension"`
+	Extensions               []Extension       `json:"extensions"`
+	Distro                   Distro            `json:"distro,omitempty"`
+	KubernetesConfig         *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 
 	// subnet is internal
 	subnet string
@@ -293,19 +315,20 @@ type Extension struct {
 
 // AgentPoolProfile represents an agent pool definition
 type AgentPoolProfile struct {
-	Name                string `json:"name" validate:"required"`
-	Count               int    `json:"count" validate:"required,min=1,max=100"`
-	VMSize              string `json:"vmSize" validate:"required"`
-	OSDiskSizeGB        int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	DNSPrefix           string `json:"dnsPrefix,omitempty"`
-	OSType              OSType `json:"osType,omitempty"`
-	Ports               []int  `json:"ports,omitempty" validate:"dive,min=1,max=65535"`
-	AvailabilityProfile string `json:"availabilityProfile"`
-	StorageProfile      string `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
-	DiskSizesGB         []int  `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
-	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
-	IPAddressCount      int    `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
-	Distro              Distro `json:"distro,omitempty"`
+	Name                string            `json:"name" validate:"required"`
+	Count               int               `json:"count" validate:"required,min=1,max=100"`
+	VMSize              string            `json:"vmSize" validate:"required"`
+	OSDiskSizeGB        int               `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	DNSPrefix           string            `json:"dnsPrefix,omitempty"`
+	OSType              OSType            `json:"osType,omitempty"`
+	Ports               []int             `json:"ports,omitempty" validate:"dive,min=1,max=65535"`
+	AvailabilityProfile string            `json:"availabilityProfile"`
+	StorageProfile      string            `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
+	DiskSizesGB         []int             `json:"diskSizesGB,omitempty" validate:"max=4,dive,min=1,max=1023"`
+	VnetSubnetID        string            `json:"vnetSubnetID,omitempty"`
+	IPAddressCount      int               `json:"ipAddressCount,omitempty" validate:"min=0,max=256"`
+	Distro              Distro            `json:"distro,omitempty"`
+	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 
 	// subnet is internal
 	subnet string

@@ -25,7 +25,7 @@ import:
 - package: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - package: github.com/satori/go.uuid
-  version: v1.1.0
+  version: ~1.2.0
 - package: github.com/spf13/cobra
   version: 4cdb38c072b86bf795d2c81de50784d9fdd6eb77
 - package: github.com/spf13/pflag
@@ -39,6 +39,7 @@ import:
 - package: github.com/go-playground/universal-translator
   version: v0.16.0
 - package: golang.org/x/crypto
+  version: 122d919ec1efcfb58483215da23f815853e24b81
   subpackages:
   - ssh
 - package: github.com/alexcesaro/statsd

@@ -80,7 +80,6 @@ func (cli *CLIProvisioner) provision() error {
 	log.Printf("Cluster name:%s\n", cli.Config.Name)
 
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
-	os.RemoveAll(outputPath)
 	os.Mkdir(outputPath, 0755)
 
 	out, err := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa").CombinedOutput()
@@ -135,13 +134,6 @@ func (cli *CLIProvisioner) provision() error {
 		return fmt.Errorf("Error while trying to create deployment:%s", err)
 	}
 
-	if cli.CreateVNET {
-		err = cli.Account.UpdateRouteTables(subnetName, vnetName)
-		if err != nil {
-			return fmt.Errorf("Error while trying to update route table:%s", err)
-		}
-	}
-
 	return nil
 }
 
@@ -161,6 +153,11 @@ func (cli *CLIProvisioner) waitForNodes() error {
 		if ready == false {
 			return errors.New("Error: Not all nodes in a healthy state")
 		}
+		version, err := node.Version()
+		if err != nil {
+			log.Printf("Ready nodes did not return a version: %s", err)
+		}
+		log.Printf("Testing a Kubernetes %s cluster...\n", version)
 	}
 
 	if cli.Config.IsDCOS() {

@@ -11,7 +11,7 @@ import (
 	"github.com/influxdata/influxdb/models"
 	"github.com/influxdata/influxdb/tsdb"
 	"github.com/influxdata/influxql"
-	"github.com/uber-go/zap"
+	"go.uber.org/zap"
 )
 
 // ringShards specifies the number of partitions that the hash ring used to
@@ -39,26 +39,14 @@ type entry struct {
 
 	// The type of values stored. Read only so doesn't need to be protected by
 	// mu.
-	vtype int
+	vtype byte
 }
 
 // newEntryValues returns a new instance of entry with the given values.  If the
 // values are not valid, an error is returned.
-//
-// newEntryValues takes an optional hint to indicate the initial buffer size.
-// The hint is only respected if it's positive.
-func newEntryValues(values []Value, hint int) (*entry, error) {
-	// Ensure we start off with a reasonably sized values slice.
-	if hint < 32 {
-		hint = 32
-	}
-
+func newEntryValues(values []Value) (*entry, error) {
 	e := &entry{}
-	if len(values) > hint {
-		e.values = make(Values, 0, len(values))
-	} else {
-		e.values = make(Values, 0, hint)
-	}
+	e.values = make(Values, 0, len(values))
 	e.values = append(e.values, values...)
 
 	// No values, don't check types and ordering
@@ -87,22 +75,19 @@ func (e *entry) add(values []Value) error {
 	}
 
 	// Are any of the new values the wrong type?
-	for _, v := range values {
-		if e.vtype != valueType(v) {
-			return tsdb.ErrFieldTypeConflict
+	if e.vtype != 0 {
+		for _, v := range values {
+			if e.vtype != valueType(v) {
+				return tsdb.ErrFieldTypeConflict
+			}
 		}
 	}
 
 	// entry currently has no values, so add the new ones and we're done.
 	e.mu.Lock()
 	if len(e.values) == 0 {
-		// Ensure we start off with a reasonably sized values slice.
-		if len(values) < 32 {
-			e.values = make(Values, 0, 32)
-			e.values = append(e.values, values...)
-		} else {
-			e.values = values
-		}
+		e.values = values
+		e.vtype = valueType(values[0])
 		e.mu.Unlock()
 		return nil
 	}
@@ -136,6 +121,9 @@ func (e *entry) count() int {
 // filter removes all values with timestamps between min and max inclusive.
 func (e *entry) filter(min, max int64) {
 	e.mu.Lock()
+	if len(e.values) > 1 {
+		e.values = e.values.Deduplicate()
+	}
 	e.values = e.values.Exclude(min, max)
 	e.mu.Unlock()
 }
@@ -670,14 +658,14 @@ func (c *Cache) ApplyEntryFn(f func(key []byte, entry *entry) error) error {
 type CacheLoader struct {
 	files []string
 
-	Logger zap.Logger
+	Logger *zap.Logger
 }
 
 // NewCacheLoader returns a new instance of a CacheLoader.
 func NewCacheLoader(files []string) *CacheLoader {
 	return &CacheLoader{
 		files:  files,
-		Logger: zap.New(zap.NullEncoder()),
+		Logger: zap.NewNop(),
 	}
 }
 
@@ -747,7 +735,7 @@ func (cl *CacheLoader) Load(cache *Cache) error {
 }
 
 // WithLogger sets the logger on the CacheLoader.
-func (cl *CacheLoader) WithLogger(log zap.Logger) {
+func (cl *CacheLoader) WithLogger(log *zap.Logger) {
 	cl.Logger = log.With(zap.String("service", "cacheloader"))
 }
 
@@ -774,7 +762,7 @@ func (c *Cache) updateMemSize(b int64) {
 	atomic.AddInt64(&c.stats.MemSizeBytes, b)
 }
 
-func valueType(v Value) int {
+func valueType(v Value) byte {
 	switch v.(type) {
 	case FloatValue:
 		return 1

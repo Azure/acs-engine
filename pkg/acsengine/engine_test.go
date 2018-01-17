@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Azure/acs-engine/pkg/acsengine/transform"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
@@ -80,14 +81,14 @@ func TestExpected(t *testing.T) {
 			continue
 		}
 
-		expectedPpArmTemplate, e1 := PrettyPrintArmTemplate(armTemplate)
+		expectedPpArmTemplate, e1 := transform.PrettyPrintArmTemplate(armTemplate)
 		if e1 != nil {
 			t.Error(armTemplate)
 			t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e1.Error()))
 			break
 		}
 
-		expectedPpParams, e2 := PrettyPrintJSON(params)
+		expectedPpParams, e2 := transform.PrettyPrintJSON(params)
 		if e2 != nil {
 			t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e2.Error()))
 			continue
@@ -103,13 +104,13 @@ func TestExpected(t *testing.T) {
 				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, err.Error()))
 				continue
 			}
-			generatedPpArmTemplate, e1 := PrettyPrintArmTemplate(armTemplate)
+			generatedPpArmTemplate, e1 := transform.PrettyPrintArmTemplate(armTemplate)
 			if e1 != nil {
 				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e1.Error()))
 				continue
 			}
 
-			generatedPpParams, e2 := PrettyPrintJSON(params)
+			generatedPpParams, e2 := transform.PrettyPrintJSON(params)
 			if e2 != nil {
 				t.Error(fmt.Errorf("error in file %s: %s", tuple.APIModelFilename, e2.Error()))
 				continue
@@ -211,6 +212,12 @@ func addTestCertificateProfile(api *api.CertificateProfile) {
 	api.ClientPrivateKey = "clientPrivateKey"
 	api.KubeConfigCertificate = "kubeConfigCertificate"
 	api.KubeConfigPrivateKey = "kubeConfigPrivateKey"
+	api.EtcdClientCertificate = "etcdClientCertificate"
+	api.EtcdClientPrivateKey = "etcdClientPrivateKey"
+	api.EtcdServerCertificate = "etcdServerCertificate"
+	api.EtcdServerPrivateKey = "etcdServerPrivateKey"
+	api.EtcdPeerCertificates = []string{"etcdPeerCertificate0"}
+	api.EtcdPeerPrivateKeys = []string{"etcdPeerPrivateKey0"}
 }
 
 func TestGetStorageAccountType(t *testing.T) {

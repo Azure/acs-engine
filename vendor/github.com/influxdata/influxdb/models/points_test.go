@@ -1341,6 +1341,15 @@ func TestParsePointQuotedTags(t *testing.T) {
 	)
 }
 
+func TestParsePoint_TrailingSlash(t *testing.T) {
+	_, err := models.ParsePointsString(`a v=1 0\`)
+	if err == nil {
+		t.Fatalf("ParsePoints failed: %v", err)
+	} else if !strings.Contains(err.Error(), "bad timestamp") {
+		t.Fatalf("ParsePoints unexpected error: %v", err)
+	}
+}
+
 func TestParsePointsUnbalancedQuotedTags(t *testing.T) {
 	pts, err := models.ParsePointsString("baz,mytag=\"a x=1 1441103862125\nbaz,mytag=a z=1 1441103862126")
 	if err != nil {
@@ -2369,6 +2378,13 @@ func BenchmarkEscapeString_QuotesAndBackslashes(b *testing.B) {
 	s2 := `a backslash \ then quote " .`
 	for i := 0; i < b.N; i++ {
 		sink = [...]string{models.EscapeStringField(s1), models.EscapeStringField(s2)}
+	}
+}
+
+func BenchmarkParseTags(b *testing.B) {
+	tags := []byte("cpu,tag0=value0,tag1=value1,tag2=value2,tag3=value3,tag4=value4,tag5=value5")
+	for i := 0; i < b.N; i++ {
+		models.ParseTags(tags)
 	}
 }
 

@@ -36,8 +36,16 @@ const (
 	// DefaultInternalLbStaticIPOffset specifies the offset of the internal LoadBalancer's IP
 	// address relative to the first consecutive Kubernetes static IP
 	DefaultInternalLbStaticIPOffset = 10
-	// DefaultNetworkPolicy is disabling network policy enforcement
-	DefaultNetworkPolicy = "none"
+	// NetworkPolicyNone is the string expression for no network policy
+	NetworkPolicyNone = "none"
+	// NetworkPluginKubenet is the string expression for kubenet network plugin
+	NetworkPluginKubenet = "kubenet"
+	// DefaultNetworkPolicy defines the network policy to use by default
+	DefaultNetworkPolicy = NetworkPolicyNone
+	// DefaultNetworkPolicyWindows defines the network policy to use by default for clusters with Windows agent pools
+	DefaultNetworkPolicyWindows = NetworkPolicyNone
+	// DefaultContainerRuntime is docker
+	DefaultContainerRuntime = "docker"
 	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/
 	DefaultKubernetesNodeStatusUpdateFrequency = "10s"
 	// DefaultKubernetesHardEvictionThreshold is memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%, see --eviction-hard at https://kubernetes.io/docs/admin/kubelet/
@@ -74,7 +82,7 @@ const (
 	// TODO deprecate this usage, we should be favoring a more frequent upgrade cycle that pins fresh tiller versions to specific k8s versions
 	DefaultTillerImage = "tiller:v2.6.2"
 	// DefaultACIConnectorImage defines the ACI Connector deployment version on Kubernetes Clusters
-	DefaultACIConnectorImage = "aci-connector-k8s:latest"
+	DefaultACIConnectorImage = "virtual-kubelet:latest"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
 	// listens on by default. must by in the default Service CIDR range.
 	DefaultKubernetesDNSServiceIP = "10.0.0.10"
@@ -90,13 +98,19 @@ const (
 	// DefaultOrchestratorName specifies the 3 character orchestrator code of the cluster template and affects resource naming.
 	DefaultOrchestratorName = "k8s"
 	// DefaultEtcdVersion specifies the default etcd version to install
-	DefaultEtcdVersion = "2.3.8"
+	DefaultEtcdVersion = "3.2.11"
 	// DefaultEtcdDiskSize specifies the default size for Kubernetes master etcd disk volumes in GB
 	DefaultEtcdDiskSize = "128"
 	// DefaultReschedulerImage defines the rescheduler deployment version on Kubernetes Clusters
 	DefaultReschedulerImage = "rescheduler:v0.3.1"
 	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
 	DefaultReschedulerAddonName = "rescheduler"
+	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
+	DefaultKubernetesKubeletMaxPods = 110
+	// DefaultMasterEtcdServerPort is the default etcd server port for Kubernetes master nodes
+	DefaultMasterEtcdServerPort = 2380
+	// DefaultMasterEtcdClientPort is the default etcd client port for Kubernetes master nodes
+	DefaultMasterEtcdClientPort = 2379
 )
 
 const (

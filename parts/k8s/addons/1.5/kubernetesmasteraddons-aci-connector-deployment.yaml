@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aci-connector
+  namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+---
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+kind: ClusterRole
+metadata:
+  name: aci-connector
+  labels:
+    app: aci-connector
+    kubernetes.io/cluster-service: "true"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - pods
+  - services
+  - endpoints
+  - events
+  - secrets
+  - nodes
+  - nodes/status
+  - pods/status
+  verbs:
+  - "*"
+---
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+kind: ClusterRoleBinding
+metadata:
+  name: aci-connector
+  labels:
+    kubernetes.io/cluster-service: "true"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: aci-connector
+subjects:
+- kind: ServiceAccount
+  name: aci-connector
+  namespace: kube-system
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aci-connector-secret
+  namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+type: Opaque
+data:
+  credentials.json: <kubernetesACIConnectorCredentials>
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: aci-connector
+  namespace: kube-system
+  labels:
+    app: aci-connector
+    name: aci-connector
+    kubernetes.io/cluster-service: "true"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: aci-connector
+    spec:
+      serviceAccountName: aci-connector
+      containers:
+      - name: aci-connector
+        image: <kubernetesACIConnectorSpec>
+        imagePullPolicy: Always
+        env:
+        - name: AZURE_AUTH_LOCATION
+          value: /etc/virtual-kubelet/credentials.json
+        - name: ACI_RESOURCE_GROUP
+          value: <kubernetesACIConnectorResourceGroup>
+        - name: ACI_REGION
+          value: <kubernetesACIConnectorRegion>
+        resources:
+          requests:
+            cpu: <kubernetesACIConnectorCPURequests>
+            memory: <kubernetesACIConnectorMemoryRequests>
+          limits:
+            cpu: <kubernetesACIConnectorCPULimit>
+            memory: <kubernetesACIConnectorMemoryLimit>
+        volumeMounts:
+        - name: credentials
+          mountPath: "/etc/virtual-kubelet"
+          readOnly: true
+        command: ["virtual-kubelet"]
+        args: ["--provider", "azure", "--nodename", "<kubernetesACIConnectorNodeName>" , "--os", "<kubernetesACIConnectorOS>", "--taint", "<kubernetesACIConnectorTaint>"]
+      volumes:
+      - name: credentials
+        secret:
+          secretName: aci-connector-secret

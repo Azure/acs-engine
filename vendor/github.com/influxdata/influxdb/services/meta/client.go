@@ -20,7 +20,7 @@ import (
 
 	"github.com/influxdata/influxdb"
 	"github.com/influxdata/influxql"
-	"github.com/uber-go/zap"
+	"go.uber.org/zap"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -47,7 +47,7 @@ var (
 // Client is used to execute commands on and read data from
 // a meta service cluster.
 type Client struct {
-	logger zap.Logger
+	logger *zap.Logger
 
 	mu        sync.RWMutex
 	closing   chan struct{}
@@ -77,7 +77,7 @@ func NewClient(config *Config) *Client {
 		},
 		closing:             make(chan struct{}),
 		changed:             make(chan struct{}),
-		logger:              zap.New(zap.NullEncoder()),
+		logger:              zap.NewNop(),
 		authCache:           make(map[string]authUser, 0),
 		path:                config.Dir,
 		retentionAutoCreate: config.RetentionAutoCreate,
@@ -672,6 +672,16 @@ func (c *Client) DropShard(id uint64) error {
 	return c.commit(data)
 }
 
+// TruncateShardGroups truncates any shard group that could contain timestamps beyond t.
+func (c *Client) TruncateShardGroups(t time.Time) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	data := c.cacheData.Clone()
+	data.TruncateShardGroups(t)
+	return c.commit(data)
+}
+
 // PruneShardGroups remove deleted shard groups from the data store.
 func (c *Client) PruneShardGroups() error {
 	var changed bool
@@ -979,7 +989,7 @@ func (c *Client) MarshalBinary() ([]byte, error) {
 }
 
 // WithLogger sets the logger for the client.
-func (c *Client) WithLogger(log zap.Logger) {
+func (c *Client) WithLogger(log *zap.Logger) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.logger = log.With(zap.String("service", "metaclient"))

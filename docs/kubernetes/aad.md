@@ -8,7 +8,7 @@ Please also refer to [Azure Active Directory plugin for client authentication](h
 
 ## Prerequision
 1. An Azure Active Directory tenant, will refer as `AAD Tenant`. You can use the tenant for your Azure subscription;
-2. A `Web app / API` type AAD application, will refer as `Server Application`. This application represents the `apiserver`;
+2. A `Web app / API` type AAD application, will refer as `Server Application`. This application represents the `apiserver`;  For groups to work properly, you'll need to edit the `Server Application` Manifest and set `groupMembershipClaims` to either `All` or `SecurityGroup`.
 3. A `Native` type AAD application, will refer as `Client Application`. This application is for user login via `kubectl`. You'll need to add delegated permission to `Server Application`, please see [troubleshooting](#loginpageerror) section for detail.
 
 ## Deployment
@@ -46,9 +46,14 @@ Following instructions are for turnning on RBAC manually together with AAD integ
 ```
 kubectl create clusterrolebinding aad-default-cluster-admin-binding --clusterrole=cluster-admin --user={UserName}
 ```
-For example, if your `IssuerUrl` is `https://sts.windows.net/e2917176-1632-47a0-ad18-671d485757a3/`, and your `ObjectID` is `22fa281b-bf62-4b14-972c-0dbca24a25a2`, the command would be:
+For example, if your `IssuerUrl` is `https://sts.windows.net/e2917176-1632-47a0-ad18-671d485757a3/`, and your User `ObjectID` is `22fa281b-bf62-4b14-972c-0dbca24a25a2`, the command would be:
 ```
 kubectl create clusterrolebinding aad-default-cluster-admin-binding --clusterrole=cluster-admin --user=https://sts.windows.net/e2917176-1632-47a0-ad18-671d485757a3/#22fa281b-bf62-4b14-972c-0dbca24a25a2
+```
+4. (Optional) Add groups into your admin role
+For example, if your `IssuerUrl` is `https://sts.windows.net/e2917176-1632-47a0-ad18-671d485757a3/`, and your Group `ObjectID` is `7d04bcd3-3c48-49ab-a064-c0b7d69896da`, the command would be: 
+```
+kubectl create clusterrolebinding aad-default-group-cluster-admin-binding --clusterrole=cluster-admin --group=7d04bcd3-3c48-49ab-a064-c0b7d69896da
 ```
 
 4. Turn on RBAC on master nodes.

@@ -72,6 +72,15 @@ k8s_16_cherry_pick() {
 }
 
 k8s_17_cherry_pick() {
+	# In 1.7.12, the following commits are cherry-picked in upstream and has conflict
+	# with 137f4cb16e. So removing them.
+	git revert --no-edit 593653c384 || true
+	git revert --no-edit 7305738dd1 || true
+	git revert --no-edit e01bafcf80 || true
+	git revert --no-edit afd79db7a6 || true
+	git revert --no-edit 3a4abca2f7 || true
+	git revert --no-edit 6a2e2f47d3 || true
+
 	# In 1.7.10, the following commit is not needed and has conflict with 137f4cb16e
 	# due to the out-of-order back porting into Azure 1.7. So removing it.
 	# cee32e92f7 fix#50150: azure disk mount failure on coreos
@@ -85,11 +94,31 @@ k8s_17_cherry_pick() {
 }
 
 k8s_18_cherry_pick() {
-    # 4647f2f616 merge #52401: add windows implementation of GetMountRefs
-    # ...
-    # 69644018c8 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
+	# 4dcfaf655d fix get stats/summary issue in azure/release-1.8
+	# ...
+	# 4647f2f616 merge #52401: add windows implementation of GetMountRefs
 
-    git cherry-pick --allow-empty --keep-redundant-commits 69644018c8^..d75ef50170
+	# d75ef50170 merge#54334: fix azure disk mount failure on coreos and some other distros
+
+	# Only cherry pick before 1.8.6 due to merge conflict with 1.8.6 and up: b8594873f4 merge #50673: azure disk fix of SovereignCloud support
+
+	# cb29df51c0 Fixing 'targetport' to service 'port' mapping
+	# ...
+	# b42981f90b merge#53629: fix azure file mount limit issue on windows due to using drive letter
+
+	# We have to skip 8b3345114e due to merge conflict with 1.8.4 and up, 4647f2f616 has the change.
+
+	# 8d477271f7 update bazel
+	# ...
+	# 69644018c8 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
+
+	git cherry-pick --allow-empty --keep-redundant-commits 69644018c8^..8d477271f7
+	git cherry-pick --allow-empty --keep-redundant-commits b42981f90b^..cb29df51c0
+	if [ "${version}" \< "1.8.6" ]; then
+		git cherry-pick --allow-empty --keep-redundant-commits b8594873f4
+	fi
+	git cherry-pick --allow-empty --keep-redundant-commits d75ef50170
+	git cherry-pick --allow-empty --keep-redundant-commits 4647f2f616^..4dcfaf655d
 }
 
 apply_acs_cherry_picks() {
@@ -97,8 +126,10 @@ apply_acs_cherry_picks() {
 		k8s_16_cherry_pick
 	elif [ "${KUBERNETES_RELEASE}" == "1.7" ]; then
 		k8s_17_cherry_pick
-        elif [ "${KUBERNETES_RELEASE}" == "1.8" ]; then
+	elif [ "${KUBERNETES_RELEASE}" == "1.8" ]; then
 		k8s_18_cherry_pick
+	elif [ "${KUBERNETES_RELEASE}" == "1.9" ]; then
+		echo "No need to cherry-pick for 1.9!"
 	else
 		echo "Unable to apply cherry picks for ${KUBERNETES_RELEASE}."
 		exit 1

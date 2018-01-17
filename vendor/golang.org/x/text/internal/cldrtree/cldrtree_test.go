@@ -8,10 +8,12 @@ import (
 	"bytes"
 	"flag"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -99,13 +101,13 @@ func TestBuild(t *testing.T) {
 		desc:   "und/chinese month format wide m1",
 		tree:   tree1,
 		locale: "und",
-		path:   path(calendar, 0, month, 0, wide, 0),
+		path:   path(calendar, 0, month, 0, wide, 1),
 		result: "cM01",
 	}, {
 		desc:   "und/chinese month format wide m12",
 		tree:   tree1,
 		locale: "und",
-		path:   path(calendar, 0, month, 0, wide, 11),
+		path:   path(calendar, 0, month, 0, wide, 12),
 		result: "cM12",
 	}, {
 		desc:   "und/non-existing value",
@@ -117,49 +119,49 @@ func TestBuild(t *testing.T) {
 		desc:   "und/dangi:chinese month format wide",
 		tree:   tree1,
 		locale: "und",
-		path:   path(calendar, 1, month, 0, wide, 0),
+		path:   path(calendar, 1, month, 0, wide, 1),
 		result: "cM01",
 	}, {
 		desc:   "und/chinese month format abbreviated:wide",
 		tree:   tree1,
 		locale: "und",
-		path:   path(calendar, 0, month, 0, abbreviated, 0),
+		path:   path(calendar, 0, month, 0, abbreviated, 1),
 		result: "cM01",
 	}, {
 		desc:   "und/chinese month format narrow:wide",
 		tree:   tree1,
 		locale: "und",
-		path:   path(calendar, 0, month, 0, narrow, 0),
+		path:   path(calendar, 0, month, 0, narrow, 1),
 		result: "cM01",
 	}, {
 		desc:   "und/gregorian month format wide",
 		tree:   tree1,
 		locale: "und",
-		path:   path(calendar, 2, month, 0, wide, 1),
+		path:   path(calendar, 2, month, 0, wide, 2),
 		result: "gM02",
 	}, {
 		desc:   "und/gregorian month format:stand-alone narrow",
 		tree:   tree1,
 		locale: "und",
-		path:   path(calendar, 2, month, 0, narrow, 0),
+		path:   path(calendar, 2, month, 0, narrow, 1),
 		result: "1",
 	}, {
 		desc:   "und/gregorian month stand-alone:format abbreviated",
 		tree:   tree1,
 		locale: "und",
-		path:   path(calendar, 2, month, 1, abbreviated, 0),
+		path:   path(calendar, 2, month, 1, abbreviated, 1),
 		result: "gM01",
 	}, {
 		desc:   "und/gregorian month stand-alone:format wide ",
 		tree:   tree1,
 		locale: "und",
-		path:   path(calendar, 2, month, 1, abbreviated, 0),
+		path:   path(calendar, 2, month, 1, abbreviated, 1),
 		result: "gM01",
 	}, {
-		desc:   "und/dangi:chinese format narrow:wide ",
+		desc:   "und/dangi:chinese month format narrow:wide ",
 		tree:   tree1,
 		locale: "und",
-		path:   path(calendar, 1, month, 0, narrow, 3),
+		path:   path(calendar, 1, month, 0, narrow, 4),
 		result: "cM04",
 	}, {
 		desc:   "und/field era displayname 0",
@@ -177,43 +179,43 @@ func TestBuild(t *testing.T) {
 		desc:   "und/calendar hebrew format wide 7-leap",
 		tree:   tree2,
 		locale: "und",
-		path:   path(calendar, 7, month, 0, wide, 13),
+		path:   path(calendar, 7, month, 0, wide, 0),
 		result: "Adar II",
 	}, {
 		desc:   "en-GB:en-001:en:und/calendar hebrew format wide 7-leap",
 		tree:   tree2,
 		locale: "en-GB",
-		path:   path(calendar, 7, month, 0, wide, 13),
+		path:   path(calendar, 7, month, 0, wide, 0),
 		result: "Adar II",
 	}, {
 		desc:   "und/buddhist month format wide 11",
 		tree:   tree2,
 		locale: "und",
-		path:   path(calendar, 0, month, 0, wide, 11),
+		path:   path(calendar, 0, month, 0, wide, 12),
 		result: "genWideM12",
 	}, {
 		desc:   "en-GB/gregorian month stand-alone narrow 2",
 		tree:   tree2,
 		locale: "en-GB",
-		path:   path(calendar, 6, month, 1, narrow, 2),
+		path:   path(calendar, 6, month, 1, narrow, 3),
 		result: "gbNarrowM3",
 	}, {
 		desc:   "en-GB/gregorian month format narrow 3/missing in en-GB",
 		tree:   tree2,
 		locale: "en-GB",
-		path:   path(calendar, 6, month, 0, narrow, 3),
+		path:   path(calendar, 6, month, 0, narrow, 4),
 		result: "enNarrowM4",
 	}, {
 		desc:   "en-GB/gregorian month format narrow 3/missing in en and en-GB",
 		tree:   tree2,
 		locale: "en-GB",
-		path:   path(calendar, 6, month, 0, narrow, 6),
+		path:   path(calendar, 6, month, 0, narrow, 7),
 		result: "gregNarrowM7",
 	}, {
 		desc:   "en-GB/gregorian month format narrow 3/missing in en and en-GB",
 		tree:   tree2,
 		locale: "en-GB",
-		path:   path(calendar, 6, month, 0, narrow, 6),
+		path:   path(calendar, 6, month, 0, narrow, 7),
 		result: "gregNarrowM7",
 	}, {
 		desc:      "en-GB/gregorian era narrow",
@@ -240,7 +242,7 @@ func TestBuild(t *testing.T) {
 		desc:      "en-GB/dangi:chinese cyclicName, months, format, narrow:abbreviated 2",
 		tree:      tree2,
 		locale:    "en-GB",
-		path:      path(calendar, 1, cyclicNameSet, 3, 0, 1, 1),
+		path:      path(calendar, 1, cyclicNameSet, 3, 0, 1, 2),
 		isFeature: true,
 		result:    "year2",
 	}, {
@@ -339,6 +341,21 @@ func loadTestdata(t *testing.T, test string) (tree *Tree, file []byte) {
 		return "w" + strings.Title(s)
 	}
 	width := EnumFunc("width", widthMap, "abbreviated", "narrow", "wide")
+	month := Enum("month", "leap7")
+	relative := EnumFunc("relative", func(s string) string {
+		x, err := strconv.ParseInt(s, 10, 8)
+		if err != nil {
+			log.Fatal("Invalid number:", err)
+		}
+		return []string{
+			"before1",
+			"current",
+			"after1",
+		}[x+1]
+	})
+	cycleType := EnumFunc("cycleType", func(s string) string {
+		return "cyc" + strings.Title(s)
+	})
 	r := rand.New(rand.NewSource(0))
 
 	for _, loc := range data.Locales() {
@@ -354,14 +371,14 @@ func loadTestdata(t *testing.T, test string) (tree *Tree, file []byte) {
 						for _, mw := range mc.MonthWidth {
 							x := x.IndexFromType(mw, width)
 							for _, m := range mw.Month {
-								x.SetValue(m.Type+m.Yeartype, m)
+								x.SetValue(m.Yeartype+m.Type, m, month)
 							}
 						}
 					}
 				}
 				if x := x.Index(cal.CyclicNameSets); x != nil {
 					for _, cns := range cal.CyclicNameSets.CyclicNameSet {
-						x := x.IndexFromType(cns)
+						x := x.IndexFromType(cns, cycleType)
 						for _, cc := range cns.CyclicNameContext {
 							x := x.IndexFromType(cc, context)
 							for _, cw := range cc.CyclicNameWidth {
@@ -408,7 +425,7 @@ func loadTestdata(t *testing.T, test string) (tree *Tree, file []byte) {
 					x.Index(d).SetValue("", d)
 				}
 				for _, r := range f.Relative {
-					x.Index(r).SetValue(r.Type, r)
+					x.Index(r).SetValue(r.Type, r, relative)
 				}
 				for _, rt := range f.RelativeTime {
 					x := x.Index(rt).IndexFromType(rt)
@@ -429,8 +446,10 @@ func loadTestdata(t *testing.T, test string) (tree *Tree, file []byte) {
 	}
 	w := gen.NewCodeWriter()
 	generate(b, tree, w)
+	generateTestData(b, w)
 	buf := &bytes.Buffer{}
-	if _, err = w.WriteGo(buf, "test"); err != nil {
+	if _, err = w.WriteGo(buf, "test", ""); err != nil {
+		t.Log(buf.String())
 		t.Fatal("error generating code:", err)
 	}
 	return tree, buf.Bytes()

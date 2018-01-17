@@ -4,7 +4,8 @@
 |---|---|---|---|---|
 |Managed Disks|Beta|`vlabs`|[kubernetes-vmas.json](../../examples/disks-managed/kubernetes-vmss.json)|[Description](#feat-managed-disks)|
 |Calico Network Policy|Alpha|`vlabs`|[kubernetes-calico.json](../../examples/networkpolicy/kubernetes-calico.json)|[Description](#feat-calico)|
-|Custom VNET|Beta|`vlabs`|[kubernetesvnet.json](../../examples/vnet/kubernetesvnet.json)|[Description](#feat-custom-vnet)|
+|Custom VNET|Beta|`vlabs`|[kubernetesvnet-azure-cni.json](../../examples/vnet/kubernetesvnet-azure-cni.json)|[Description](#feat-custom-vnet)|
+|Clear Containers Runtime|Alpha|`vlabs`|[kubernetes-clear-containers.json](../../examples/kubernetes-clear-containers.json)|[Description](#feat-clear-containers)|
 
 <a name="feat-kubernetes-msi"></a>
 
@@ -12,7 +13,7 @@
 
 Enabling Managed Identity configures acs-engine to include and use MSI identities for all interactions with the Azure Resource Manager (ARM) API.
 
-Instead of using a static servic principal written to `/etc/kubernetes/azure.json`, Kubernetes will use a dynamic, time-limited token fetched from the MSI extension running on master and agent nodes. This support is currently alpha and requires Kubernetes v1.7.2 or newer.
+Instead of using a static servic principal written to `/etc/kubernetes/azure.json`, Kubernetes will use a dynamic, time-limited token fetched from the MSI extension running on master and agent nodes. This support is currently alpha and requires Kubernetes v1.9.1 or newer.
 
 Enable Managed Identity by adding `useManagedIdentity` in `kubernetesConfig`.
 
@@ -25,13 +26,13 @@ Enable Managed Identity by adding `useManagedIdentity` in `kubernetesConfig`.
 
 <a name="feat-managed-disks"></a>
 
-## Optional: Enable Kubernetes Role-Based Access Control (RBAC)
+## Optional: Disable Kubernetes Role-Based Access Control (RBAC)
 
-By default, the cluster will be provisioned without [Role-Based Access Control](https://kubernetes.io/docs/admin/authorization/rbac/) enabled. Enable RBAC by adding `enableRbac` in `kubernetesConfig` in the api model:
+By default, the cluster will be provisioned with [Role-Based Access Control](https://kubernetes.io/docs/admin/authorization/rbac/) enabled. Disable RBAC by adding `enableRbac` in `kubernetesConfig` in the api model:
 
 ```console
       "kubernetesConfig": {
-        "enableRbac": true
+        "enableRbac": false
       }
 ```
 
@@ -99,93 +100,9 @@ spec:
             - managed
 ```
 
-<a name="feat-calico"></a>
-
-## Network Policy Enforcement with Calico
-
-Using the default configuration, Kubernetes allows communication between all
-Pods within a cluster. To ensure that Pods can only be accessed by authorized
-Pods, a policy enforcement is needed. To enable policy enforcement using Calico refer to the [cluster definition](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig) document under networkPolicy. There is also a reference cluster definition available [here](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy/kubernetes-calico.json).
-
-This will deploy a Calico node controller to every instance of the cluster
-using a Kubernetes DaemonSet. After a successful deployment you should be able
-to see these Pods running in your cluster:
-
-```
-kubectl get pods --namespace kube-system -l k8s-app=calico-node -o wide
-NAME                READY     STATUS    RESTARTS   AGE       IP             NODE
-calico-node-034zh   2/2       Running   0          2h        10.240.255.5   k8s-master-30179930-0
-calico-node-qmr7n   2/2       Running   0          2h        10.240.0.4     k8s-agentpool1-30179930-1
-calico-node-z3p02   2/2       Running   0          2h        10.240.0.5     k8s-agentpool1-30179930-0
-```
-
-Per default Calico still allows all communication within the cluster. Using Kubernetes' NetworkPolicy API, you can define stricter policies. Good resources to get information about that are:
-
-* [NetworkPolicy User Guide](https://kubernetes.io/docs/user-guide/networkpolicies/)
-* [NetworkPolicy Example Walkthrough](https://kubernetes.io/docs/getting-started-guides/network-policy/walkthrough/)
-* [Calico Kubernetes](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy)
-
-<a name="feat-custom-vnet"></a>
-
-## Custom VNET
-
-ACS Engine supports deploying into an existing VNET. Operators must specify the ARM path/id of Subnets for the `masterProfile` and  any `agentPoolProfiles`. After the cluster is provisioned there are some required modifications to VNET Route Tables.
-
-Before provisioning, modify the `masterProfile` and `agentPoolProfiles` sections in the cluster definition to place masters and agents into your desired subnets:
-
-```json
-"masterProfile": {
-  ...
-  "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/MASTER_SUBNET_NAME",
-  "firstConsecutiveStaticIP": "10.239.255.239"
-  ...
-},
-...
-"agentPoolProfiles": [
-  {
-    ...
-    "name": "agentpri",
-    "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/AGENT_SUBNET_NAME",
-    ...
-  },
-```
-
-After a cluster finishes provisioning, fetch the id of the Route Table resource from `Microsoft.Network` provider in your new cluster's Resource Group.
-
-The route table resource id is of the format: `/subscriptions/SUBSCRIPTIONID/resourceGroups/RESOURCEGROUPNAME/providers/Microsoft.Network/routeTables/ROUTETABLENAME`
-
-Existing subnets will need to use the Kubernetes-based Route Table so that machines can route to Kubernetes-based workloads.
-
-Update properties of all subnets in the existing VNET he route table resource by appending the following to subnet properties:
-
-```json
-"routeTable": {
-        "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/k8s-master-<SOMEID>-routetable>"
-      }
-```
-
-E.g.:
-```json
-"subnets": [
-    {
-      "name": "subnetname",
-      "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/virtualNetworks/<VirtualNetworkName>/subnets/<SubnetName>",
-      "properties": {
-        "provisioningState": "Succeeded",
-        "addressPrefix": "10.240.0.0/16",
-        "routeTable": {
-          "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/k8s-master-<SOMEID>-routetable"
-        }
-      ...
-      }
-      ...
-    }
-]
-```
-
 ## Using Azure integrated networking (CNI)
 
-Kubernetes clusters can be configured to use the [Azure CNI plugin](https://github.com/Azure/azure-container-networking) which provides a Azure native networking experience. Pods will receive IP addresses directly from the vnet subnet on which they're hosted. To enable Azure integrated networking the following must be added to your cluster definition:
+Kubernetes clusters are configured by default to use the [Azure CNI plugin](https://github.com/Azure/azure-container-networking) which provides an Azure native networking experience. Pods will receive IP addresses directly from the vnet subnet on which they're hosted. If the api model doesn't specify explicitly, acs-engine will automatically provide the following `networkPolicy` configuration in `kubernetesConfig`:
 
 ```
       "kubernetesConfig": {
@@ -218,4 +135,139 @@ When using Azure integrated networking the maxPods setting will be set to 30 by 
       "kubernetesConfig": {
         "maxPods": 50
       }
+```
+
+<a name="feat-calico"></a>
+
+## Network Policy Enforcement with Calico
+
+Using the default configuration, Kubernetes allows communication between all
+Pods within a cluster. To ensure that Pods can only be accessed by authorized
+Pods, a policy enforcement is needed. To enable policy enforcement using Calico refer to the [cluster definition](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig) document under networkPolicy. There is also a reference cluster definition available [here](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy/kubernetes-calico.json).
+
+This will deploy a Calico node controller to every instance of the cluster
+using a Kubernetes DaemonSet. After a successful deployment you should be able
+to see these Pods running in your cluster:
+
+```
+kubectl get pods --namespace kube-system -l k8s-app=calico-node -o wide
+NAME                READY     STATUS    RESTARTS   AGE       IP             NODE
+calico-node-034zh   2/2       Running   0          2h        10.240.255.5   k8s-master-30179930-0
+calico-node-qmr7n   2/2       Running   0          2h        10.240.0.4     k8s-agentpool1-30179930-1
+calico-node-z3p02   2/2       Running   0          2h        10.240.0.5     k8s-agentpool1-30179930-0
+```
+
+Per default Calico still allows all communication within the cluster. Using Kubernetes' NetworkPolicy API, you can define stricter policies. Good resources to get information about that are:
+
+* [NetworkPolicy User Guide](https://kubernetes.io/docs/user-guide/networkpolicies/)
+* [NetworkPolicy Example Walkthrough](https://kubernetes.io/docs/getting-started-guides/network-policy/walkthrough/)
+* [Calico Kubernetes](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy)
+
+<a name="feat-custom-vnet"></a>
+
+## Custom VNET
+
+ACS Engine supports deploying into an existing VNET. Operators must specify the ARM path/id of Subnets for the `masterProfile` and  any `agentPoolProfiles`, as well as the first IP address to use for IP static IP allocation in `firstConsecutiveStaticIP`. Additionally, to prevent source address NAT'ing within the VNET, we assign to the `vnetCidr` property in `masterProfile` the CIDR block that represents the usable address space in the existing VNET.
+
+Depending upon the size of the VNET address space, during deployment, it is possible to experience IP address assignment collision between the required Kubernetes static IPs (one each per master and one for the API server load balancer, if more than one masters) and Azure CNI-assigned dynamic IPs (one for each NIC on the agent nodes). In practice, the larger the VNET the less likely this is to happen; some detail, and then a guideline.
+
+First, the detail:
+
+* Azure CNI assigns dynamic IP addresses from the "beginning" of the subnet IP address space (specifically, it looks for available addresses starting at ".4" ["10.0.0.4" in a "10.0.0.0/24" network])
+* acs-engine will require a range of up to 16 unused IP addresses in multi-master scenarios (1 per master for up to 5 masters, and then the next 10 IP addresses immediately following the "last" master for headroom reservation, and finally 1 more for the load balancer immediately adjacent to the afore-described _n_ masters+10 sequence) to successfully scaffold the network stack for your cluster
+
+A guideline that will remove the danger of IP address allocation collision during deployment:
+
+* If possible, assign to the `firstConsecutiveStaticIP` configuration property an IP address that is near the "end" of the available IP address space in the desired  subnet.
+  * For example, if the desired subnet is a `/24`, choose the "239" address in that network space
+
+In larger subnets (e.g., `/16`) it's not as practically useful to push static IP assignment to the very "end" of large subnet, but as long as it's not in the "first" `/24` (for example) your deployment will be resilient to this edge case behavior.
+
+Before provisioning, modify the `masterProfile` and `agentPoolProfiles` to match the above requirements, with the below being a representative example:
+
+```json
+"masterProfile": {
+  ...
+  "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/MASTER_SUBNET_NAME",
+  "firstConsecutiveStaticIP": "10.239.255.239",
+  "vnetCidr": "10.239.0.0/16",
+  ...
+},
+...
+"agentPoolProfiles": [
+  {
+    ...
+    "name": "agentpri",
+    "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/AGENT_SUBNET_NAME",
+    ...
+  },
+```
+
+### Kubenet Networking Custom VNET
+
+If you're not using Azure CNI (e.g., `"networkPolicy": "none"` in the `kubernetesConfig` api model configuration object): After a custom VNET-configured cluster finishes provisioning, fetch the id of the Route Table resource from `Microsoft.Network` provider in your new cluster's Resource Group.
+
+The route table resource id is of the format: `/subscriptions/SUBSCRIPTIONID/resourceGroups/RESOURCEGROUPNAME/providers/Microsoft.Network/routeTables/ROUTETABLENAME`
+
+Existing subnets will need to use the Kubernetes-based Route Table so that machines can route to Kubernetes-based workloads.
+
+Update properties of all subnets in the existing VNET he route table resource by appending the following to subnet properties:
+
+```json
+"routeTable": {
+        "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/k8s-master-<SOMEID>-routetable>"
+      }
+```
+
+E.g.:
+```json
+"subnets": [
+    {
+      "name": "subnetname",
+      "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/virtualNetworks/<VirtualNetworkName>/subnets/<SubnetName>",
+      "properties": {
+        "provisioningState": "Succeeded",
+        "addressPrefix": "10.240.0.0/16",
+        "routeTable": {
+          "id": "/subscriptions/<SubscriptionId>/resourceGroups/<ResourceGroupName>/providers/Microsoft.Network/routeTables/k8s-master-<SOMEID>-routetable"
+        }
+      ...
+      }
+      ...
+    }
+]
+```
+
+<a name="feat-clear-containers"></a>
+
+## Clear Containers
+
+You can designate kubernetes agents to use Intel's Clear Containers as the
+container runtime by setting:
+
+```
+      "kubernetesConfig": {
+        "containerRuntime": "clear-containers"
+      }
+```
+
+You will need to make sure your agents are using a `vmSize` that [supports
+nested
+virtualization](https://azure.microsoft.com/en-us/blog/nested-virtualization-in-azure/).
+These are the `Dv3` or `Ev3` series nodes.
+
+You will also need to attach a disk to those nodes for the device-mapper disk that clear containers will use.
+This should look like:
+
+```
+"agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D4s_v3",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "ManagedDisks",
+        "diskSizesGB": [1023]
+      }
+    ],
 ```

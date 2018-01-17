@@ -101,7 +101,7 @@ func (s *Service) WaitForExternalIP(wait, sleep time.Duration) (*Service, error)
 				errCh <- fmt.Errorf("Timeout exceeded while waiting for External IP to be provisioned")
 			default:
 				svc, _ := Get(s.Metadata.Name, s.Metadata.Namespace)
-				if svc.Status.LoadBalancer.Ingress != nil {
+				if svc != nil && svc.Status.LoadBalancer.Ingress != nil {
 					svcCh <- svc
 				}
 				time.Sleep(sleep)
@@ -131,6 +131,7 @@ func (s *Service) Validate(check string, attempts int, sleep time.Duration) bool
 				return true
 			}
 		}
+		time.Sleep(sleep)
 	}
 	return false
 }

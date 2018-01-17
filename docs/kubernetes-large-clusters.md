@@ -37,17 +37,13 @@ The following configuration parameters are available in the `properties.orchestr
     "cloudProviderRatelimitQPS": {
       "value": "3" // rate limit QPS
     },
-    "kubernetesCtrlMgrNodeMonitorGracePeriod": {
-      "value": "5m" // duration after which controller manager marks an AWOL node as NotReady
+    "kubeletConfig": {
+      "--node-status-update-frequency": "1m" // how often kubelet posts node status to master
     },
-    "kubernetesCtrlMgrPodEvictionTimeout": {
-      "value": "1m" // grace period for deleting pods on failed nodes
-    },
-    "kubernetesCtrlMgrRouteReconciliationPeriod": {
-      "value": "1m" // how often to reconcile cloudprovider-originating node routes
-    },
-    "kubernetesNodeStatusUpdateFrequency": {
-      "value": "1m" // how often kubelet posts node status to master
+    "controllerManagerConfig": {
+      "--node-monitor-grace-period": "5m", // duration after which controller manager marks an AWOL node as NotReady
+      "--pod-eviction-timeout": "1m", // grace period for deleting pods on failed nodes
+      "--route-reconciliation-period": "1m" // how often to reconcile cloudprovider-originating node routes
     }
 ```
 The [examples/largeclusters/kubernetes.json](https://github.com/Azure/acs-engine/blob/master/examples/largeclusters/kubernetes.json) api model example suggests how you might opt into these large cluster features following the guidelines above.
