@@ -86,6 +86,17 @@ function Set-TelemetrySetting()
     Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "CommercialId" -Value $global:WindowsTelemetryGUID -Force
 }
 
+function Resize-OSDrive()
+{
+    $osDrive = ((Get-WmiObject Win32_OperatingSystem).SystemDrive).TrimEnd(":")
+    $size = (Get-Partition -DriveLetter $osDrive).Size
+    $maxSize = (Get-PartitionSupportedSize -DriveLetter $osDrive).SizeMax
+    if ($size -lt $maxSize)
+    { 
+        Resize-Partition -DriveLetter $osDrive -Size $maxSize
+    }
+}
+
 function
 Get-KubeBinaries()
 {
@@ -403,6 +414,9 @@ try
 
         Write-Log "apply telemetry data setting"
         Set-TelemetrySetting
+
+        Write-Log "resize os drive if possible"
+        Resize-OSDrive
 
         Write-Log "download kubelet binaries and unzip"
         Get-KubeBinaries
