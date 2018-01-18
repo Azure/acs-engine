@@ -14,7 +14,7 @@ var KubeConfigs = map[string]map[string]string{
 		"dockerEngineVersion":       "1.12.*",
 		DefaultDashboardAddonName:   "kubernetes-dashboard-amd64:v1.8.2",
 		"exechealthz":               "exechealthz-amd64:1.2",
-		"addonresizer":              "addon-resizer:1.8.1",
+		"addonresizer":              "addon-resizer:1.7",
 		"heapster":                  "heapster-amd64:v1.5.0",
 		"dns":                       "k8s-dns-kube-dns-amd64:1.14.8",
 		"addonmanager":              "kube-addon-manager-amd64:v6.5",
