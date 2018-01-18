@@ -186,7 +186,7 @@ func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error 
 			return nil
 		}
 	}
-	return fmt.Errorf("%s in non-upgradable to %s", vmOrchestratorTypeAndVersion, uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+	return fmt.Errorf("%s cannot be upgraded to %s", vmOrchestratorTypeAndVersion, uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 }
 
 func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradableVM bool) error {
