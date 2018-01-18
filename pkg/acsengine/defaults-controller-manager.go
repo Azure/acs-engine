@@ -44,10 +44,11 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 
 	// Default controller-manager config
 	defaultControllerManagerConfig := map[string]string{
-		"--node-monitor-grace-period":   DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
-		"--pod-eviction-timeout":        DefaultKubernetesCtrlMgrPodEvictionTimeout,
-		"--route-reconciliation-period": DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
-		"--terminated-pod-gc-threshold": DefaultKubernetesCtrlMgrTerminatedPodGcThreshold,
+		"--node-monitor-grace-period":       DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
+		"--pod-eviction-timeout":            DefaultKubernetesCtrlMgrPodEvictionTimeout,
+		"--route-reconciliation-period":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
+		"--terminated-pod-gc-threshold":     DefaultKubernetesCtrlMgrTerminatedPodGcThreshold,
+		"--use-service-account-credentials": DefaultKubernetesCtrlMgrUseSvcAccountCreds,
 	}
 
 	// If no user-configurable controller-manager config values exists, use the defaults

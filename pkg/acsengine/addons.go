@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 type kubernetesFeatureSetting struct {
@@ -84,6 +85,11 @@ func kubernetesManifestSettingsInit(profile *api.Properties) []kubernetesFeature
 			"kubernetesmaster-cloud-controller-manager.yaml",
 			"cloud-controller-manager.yaml",
 			profile.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *profile.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager,
+		},
+		{
+			"kubernetesmaster-pod-security-policy.yaml",
+			"pod-security-policy.yaml",
+			helpers.IsTrueBoolPointer(profile.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy),
 		},
 		{
 			"kubernetesmaster-kube-apiserver.yaml",
