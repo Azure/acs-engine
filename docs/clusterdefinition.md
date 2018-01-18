@@ -168,6 +168,7 @@ Below is a list of kubelet options that acs-engine will configure by default:
 |"--image-gc-high-threshold"|"85"|
 |"--image-gc-low-threshold"|"850"|
 |"--non-masquerade-cidr"|"10.0.0.0/8"|
+|"--feature-gates"|No default (can be a comma-separated list). On agent nodes `Accelerators=true` will be applied in the `--feature-gates` option.|
 
 Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
 
@@ -187,7 +188,6 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 |"--register-with-taints" (master nodes only)|"node-role.kubernetes.io/master=true:NoSchedule"|
 |"--read-only-port"|"0"|
 |"--keep-terminated-pod-volumes"|"false"|
-|"--feature-gates" (agent nodes only)|"Accelerators=true"|
 
 <a name="feat-controller-manager-config"></a>
 #### controllerManagerConfig
@@ -215,6 +215,7 @@ Below is a list of controller-manager options that acs-engine will configure by 
 |"--pod-eviction-timeout"|"5m0s"|
 |"--route-reconciliation-period"|"10s"|
 |"--terminated-pod-gc-threshold"|"5000"|
+|"--feature-gates"|No default (can be a comma-separated list)|
 
 
 Below is a list of controller-manager options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces controller-manager configuration, or because a static configuration is required to build a functional cluster:
@@ -291,6 +292,7 @@ Below is a list of apiserver options that acs-engine will configure by default:
 |apiserver option|default value|
 |"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages, SecurityContextDeny"|
 |"--authorization-mode"|"Node", "RBAC" (*the latter if enabledRbac is true*)|
+|"--feature-gates"|No default (can be a comma-separated list)|
 
 
 Below is a list of apiserver options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
