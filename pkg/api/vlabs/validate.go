@@ -478,6 +478,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	var backoffEnabledVersions = map[string]bool{
 		common.KubernetesVersion1Dot9Dot0:  true,
 		common.KubernetesVersion1Dot9Dot1:  true,
+		common.KubernetesVersion1Dot9Dot2:  true,
 		common.KubernetesVersion1Dot8Dot0:  true,
 		common.KubernetesVersion1Dot8Dot1:  true,
 		common.KubernetesVersion1Dot8Dot2:  true,

@@ -53,6 +53,8 @@ const (
 )
 
 const (
+	// KubernetesVersion1Dot9Dot2 is the major.minor.patch string for the 1.9.2 version of kubernetes
+	KubernetesVersion1Dot9Dot2 string = "1.9.2"
 	// KubernetesVersion1Dot9Dot1 is the major.minor.patch string for the 1.9.1 version of kubernetes
 	KubernetesVersion1Dot9Dot1 string = "1.9.1"
 	// KubernetesVersion1Dot9Dot0 is the major.minor.patch string for the 1.9.0 version of kubernetes
@@ -131,6 +133,7 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot8Dot7:  true,
 	KubernetesVersion1Dot9Dot0:  true,
 	KubernetesVersion1Dot9Dot1:  true,
+	KubernetesVersion1Dot9Dot2:  true,
 }
 
 // GetSupportedKubernetesVersion verifies that a passed-in version string is supported, or returns a default version string if not
@@ -167,6 +170,7 @@ var AllKubernetesWindowsSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot8Dot7:  true,
 	KubernetesVersion1Dot9Dot0:  true,
 	KubernetesVersion1Dot9Dot1:  true,
+	KubernetesVersion1Dot9Dot2:  true,
 }
 
 const (
