@@ -55,9 +55,9 @@ type Container struct {
 
 // CreateLinuxDeploy will create a deployment for a given image with a name in a namespace
 // --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
-func CreateLinuxDeploy(image, name, namespace string) (*Deployment, error) {
+func CreateLinuxDeploy(image, name, namespace, miscOpts string) (*Deployment, error) {
 	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
-	out, err := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides).CombinedOutput()
+	out, err := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides, miscOpts).CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
 		return nil, err
