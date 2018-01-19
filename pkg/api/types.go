@@ -225,6 +225,7 @@ type KubernetesConfig struct {
 	KubernetesImageBase              string            `json:"kubernetesImageBase,omitempty"`
 	ClusterSubnet                    string            `json:"clusterSubnet,omitempty"`
 	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
+	ContainerRuntime                 string            `json:"containerRuntime,omitempty"`
 	MaxPods                          int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet               string            `json:"dockerBridgeSubnet,omitempty"`
 	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
@@ -243,6 +244,7 @@ type KubernetesConfig struct {
 	EtcdVersion                      string            `json:"etcdVersion,omitempty"`
 	EtcdDiskSizeGB                   string            `json:"etcdDiskSizeGB,omitempty"`
 	EnableDataEncryptionAtRest       *bool             `json:"enableDataEncryptionAtRest,omitempty"`
+	EnablePodSecurityPolicy          *bool             `json:"enablePodSecurityPolicy,omitempty"`
 	Addons                           []KubernetesAddon `json:"addons,omitempty"`
 	KubeletConfig                    map[string]string `json:"kubeletConfig,omitempty"`
 	ControllerManagerConfig          map[string]string `json:"controllerManagerConfig,omitempty"`
