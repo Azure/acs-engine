@@ -49,6 +49,8 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--non-masquerade-cidr":          DefaultNonMasqueradeCidr,
 		"--cloud-provider":               "azure",
 		"--cloud-config":                 "/etc/kubernetes/azure.json",
+		"--event-qps":                    DefaultKubeletEventQPS,
+		"--cadvisor-port":                DefaultKubeletCadvisorPort,
 	}
 
 	// If no user-configurable kubelet config values exists, use the defaults
