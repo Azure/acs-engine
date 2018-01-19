@@ -213,6 +213,7 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
+// TODO use this when strict JSON checking accommodates struct embedding
 // CloudProviderConfig contains the KubernetesConfig parameters specific to the Cloud Provider
 type CloudProviderConfig struct {
 	CloudProviderBackoff         bool    `json:"cloudProviderBackoff,omitempty"`
@@ -228,15 +229,13 @@ type CloudProviderConfig struct {
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
-	KubernetesImageBase string `json:"kubernetesImageBase,omitempty"`
-	ClusterSubnet       string `json:"clusterSubnet,omitempty"`
-	DNSServiceIP        string `json:"dnsServiceIP,omitempty"`
-	ServiceCidr         string `json:"serviceCidr,omitempty"`
-	NetworkPolicy       string `json:"networkPolicy,omitempty"`
-	ContainerRuntime    string `json:"containerRuntime,omitempty"`
-	MaxPods             int    `json:"maxPods,omitempty"`
-	DockerBridgeSubnet  string `json:"dockerBridgeSubnet,omitempty"`
-	CloudProviderConfig
+	KubernetesImageBase          string            `json:"kubernetesImageBase,omitempty"`
+	ClusterSubnet                string            `json:"clusterSubnet,omitempty"`
+	DNSServiceIP                 string            `json:"dnsServiceIP,omitempty"`
+	ServiceCidr                  string            `json:"serviceCidr,omitempty"`
+	NetworkPolicy                string            `json:"networkPolicy,omitempty"`
+	MaxPods                      int               `json:"maxPods,omitempty"`
+	DockerBridgeSubnet           string            `json:"dockerBridgeSubnet,omitempty"`
 	UseManagedIdentity           bool              `json:"useManagedIdentity,omitempty"`
 	CustomHyperkubeImage         string            `json:"customHyperkubeImage,omitempty"`
 	DockerEngineVersion          string            `json:"dockerEngineVersion,omitempty"`
@@ -257,6 +256,14 @@ type KubernetesConfig struct {
 	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
 	CloudControllerManagerConfig map[string]string `json:"cloudControllerManagerConfig,omitempty"`
 	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
+	CloudProviderBackoff         bool              `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries  int               `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter   float64           `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration int               `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent float64           `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit       bool              `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS    float64           `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket int               `json:"cloudProviderRateLimitBucket,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS
