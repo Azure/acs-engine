@@ -115,6 +115,10 @@ const (
 	DefaultMasterEtcdServerPort = 2380
 	// DefaultMasterEtcdClientPort is the default etcd client port for Kubernetes master nodes
 	DefaultMasterEtcdClientPort = 2379
+	// DefaultKubeletEventQPS is 0, see --event-qps at https://kubernetes.io/docs/reference/generated/kubelet/
+	DefaultKubeletEventQPS = "0"
+	// DefaultKubeletCadvisorPort is 0, see --cadvisor-port at https://kubernetes.io/docs/reference/generated/kubelet/
+	DefaultKubeletCadvisorPort = "0"
 )
 
 const (
