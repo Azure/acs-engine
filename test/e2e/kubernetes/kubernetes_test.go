@@ -126,46 +126,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(running).To(Equal(true))
 		})
 
-		It("should be able to autoscale", func() {
-			r := rand.New(rand.NewSource(time.Now().UnixNano()))
-			phpApacheName := fmt.Sprintf("php-apache-%s-%v", cfg.Name, r.Intn(99999))
-			phpApacheDeploy, err := deployment.CreateLinuxDeploy("gcr.io/google_containers/hpa-example", phpApacheName, "default", "--requests=cpu=50m,memory=50M --expose --port=80")
-			Expect(err).NotTo(HaveOccurred())
-
-			running, err := pod.WaitOnReady(phpApacheName, "default", 3, 30*time.Second, cfg.Timeout)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(running).To(Equal(true))
-
-			phpPods, err := phpApacheDeploy.Pods()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(phpPods)).To(Equal(1))
-
-			out, err := exec.Command("kubectl", "autoscale", "deployment", phpApacheName, "--cpu-percent=5", "--min=1", "--max=10").CombinedOutput()
-			if err != nil {
-				fmt.Println(out)
-			}
-			Expect(err).NotTo(HaveOccurred())
-
-			commandString := fmt.Sprintf("--command -- /bin/sh -c 'while true; do wget -q -O- http://%s.default.svc.cluster.local; done'", phpApacheName)
-			loadTestName := fmt.Sprintf("load-test-%s-%v", cfg.Name, r.Intn(99999))
-			loadTestDeploy, err := deployment.CreateLinuxDeploy("busybox", loadTestName, "default", commandString)
-			Expect(err).NotTo(HaveOccurred())
-
-			running, err = pod.WaitOnReady(loadTestName, "default", 3, 30*time.Second, cfg.Timeout)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(running).To(Equal(true))
-
-			loadTestPods, err := loadTestDeploy.Pods()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(loadTestPods)).ToNot(BeZero())
-
-			time.Sleep(1 * time.Minute)
-
-			phpPods, err = phpApacheDeploy.Pods()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(phpPods) > 1).To(BeTrue())
-		})
-
 		It("should be able to access the dashboard from each node", func() {
 			running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 3, 30*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
@@ -216,6 +176,70 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 	})
 
 	Describe("with a linux agent pool", func() {
+		It("should be able to autoscale", func() {
+			// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
+			r := rand.New(rand.NewSource(time.Now().UnixNano()))
+			phpApacheName := fmt.Sprintf("php-apache-%s-%v", cfg.Name, r.Intn(99999))
+			phpApacheDeploy, err := deployment.CreateLinuxDeploy("gcr.io/google_containers/hpa-example", phpApacheName, "default", "--requests=cpu=50m,memory=50M")
+			if err != nil {
+				fmt.Println(err)
+			}
+			Expect(err).NotTo(HaveOccurred())
+
+			running, err := pod.WaitOnReady(phpApacheName, "default", 3, 30*time.Second, cfg.Timeout)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(running).To(Equal(true))
+
+			phpPods, err := phpApacheDeploy.Pods()
+			Expect(err).NotTo(HaveOccurred())
+			// We should have exactly 1 pod to begin
+			Expect(len(phpPods)).To(Equal(1))
+
+			err = phpApacheDeploy.Expose("ClusterIP", 80, 80)
+			Expect(err).NotTo(HaveOccurred())
+			s, err := service.Get(phpApacheName, "default")
+			Expect(err).NotTo(HaveOccurred())
+
+			// Apply autoscale characteristics to deployment
+			_, err = exec.Command("kubectl", "autoscale", "deployment", phpApacheName, "--cpu-percent=5", "--min=1", "--max=10").CombinedOutput()
+			Expect(err).NotTo(HaveOccurred())
+
+			phpPods, err = phpApacheDeploy.Pods()
+			Expect(err).NotTo(HaveOccurred())
+			// We should still have exactly 1 pod after autoscale config but before load
+			Expect(len(phpPods)).To(Equal(1))
+
+			// Launch a simple busybox pod that wget's continuously to the apache serviceto simulate load
+			commandString := fmt.Sprintf("while true; do wget -q -O- http://%s.default.svc.cluster.local; done", phpApacheName)
+			loadTestName := fmt.Sprintf("load-test-%s-%v", cfg.Name, r.Intn(99999))
+			loadTestDeploy, err := deployment.RunLinuxDeploy("busybox", loadTestName, "default", commandString)
+			Expect(err).NotTo(HaveOccurred())
+
+			running, err = pod.WaitOnReady(loadTestName, "default", 3, 30*time.Second, cfg.Timeout)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(running).To(Equal(true))
+
+			// We should have exactly one load tester pod running
+			loadTestPods, err := loadTestDeploy.Pods()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(loadTestPods)).To(Equal(1))
+
+			// Wait 90 seconds for autoscaler to respond to load
+			time.Sleep(90 * time.Second)
+
+			phpPods, err = phpApacheDeploy.Pods()
+			Expect(err).NotTo(HaveOccurred())
+			// We should have > 1 pods after autoscale effects
+			Expect(len(phpPods) > 1).To(BeTrue())
+
+			err = loadTestDeploy.Delete()
+			Expect(err).NotTo(HaveOccurred())
+			err = phpApacheDeploy.Delete()
+			Expect(err).NotTo(HaveOccurred())
+			err = s.Delete()
+			Expect(err).NotTo(HaveOccurred())
+		})
+
 		It("should be able to deploy an nginx service", func() {
 			if eng.HasLinuxAgents() {
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -227,7 +251,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
-				err = nginxDeploy.Expose(80, 80)
+				err = nginxDeploy.Expose("LoadBalancer", 80, 80)
 				Expect(err).NotTo(HaveOccurred())
 
 				s, err := service.Get(deploymentName, "default")
@@ -271,7 +295,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
-				err = iisDeploy.Expose(80, 80)
+				err = iisDeploy.Expose("LoadBalancer", 80, 80)
 				Expect(err).NotTo(HaveOccurred())
 
 				s, err := service.Get(deploymentName, "default")
