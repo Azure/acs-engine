@@ -91,7 +91,6 @@ write_files:
   permissions: "0600"
   owner: "root"
   content: |
-    apiVersion: v1
     kind: EncryptionConfig
     apiVersion: v1
     resources:
