@@ -93,7 +93,6 @@ write_files:
   content: |
     apiVersion: v1
     kind: Config
-    kind: EncryptionConfig
     apiVersion: v1
     resources:
       - resources:
