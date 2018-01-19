@@ -195,8 +195,8 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
-// TODO use this when strict JSON accommodates struct embedding
 // CloudProviderConfig contains the KubernetesConfig properties specific to the Cloud Provider
+// TODO use this when strict JSON accommodates struct embedding
 type CloudProviderConfig struct {
 	CloudProviderBackoff         bool    `json:"cloudProviderBackoff,omitempty"`
 	CloudProviderBackoffRetries  int     `json:"cloudProviderBackoffRetries,omitempty"`
@@ -208,8 +208,8 @@ type CloudProviderConfig struct {
 	CloudProviderRateLimitBucket int     `json:"cloudProviderRateLimitBucket,omitempty"`
 }
 
-// TODO use this when strict JSON accommodates struct embedding
 // KubernetesConfigDeprecated are properties that are no longer operable and will be ignored
+// TODO use this when strict JSON accommodates struct embedding
 type KubernetesConfigDeprecated struct {
 	NonMasqueradeCidr                string `json:"nonMasqueradeCidr,omitempty"`
 	NodeStatusUpdateFrequency        string `json:"nodeStatusUpdateFrequency,omitempty"`

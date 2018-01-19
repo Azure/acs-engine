@@ -213,8 +213,8 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
-// TODO use this when strict JSON checking accommodates struct embedding
 // CloudProviderConfig contains the KubernetesConfig parameters specific to the Cloud Provider
+// TODO use this when strict JSON checking accommodates struct embedding
 type CloudProviderConfig struct {
 	CloudProviderBackoff         bool    `json:"cloudProviderBackoff,omitempty"`
 	CloudProviderBackoffRetries  int     `json:"cloudProviderBackoffRetries,omitempty"`
