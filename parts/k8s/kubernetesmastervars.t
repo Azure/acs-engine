@@ -301,6 +301,7 @@
     "readerRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
     "scope": "[resourceGroup().id]",
     "tenantId": "[subscription().tenantId]",
+    "singleQuote": "'",
     "targetEnvironment": "[parameters('targetEnvironment')]",
     "dockerEngineDownloadRepo": "[parameters('dockerEngineDownloadRepo')]",
     "dockerEngineVersion": "[parameters('dockerEngineVersion')]"
@@ -335,6 +336,5 @@
     "agentWindowsOffer": "WindowsServerSemiAnnual",
     "agentWindowsSku": "Datacenter-Core-1709-with-Containers-smalldisk",
     "agentWindowsVersion": "[parameters('agentWindowsVersion')]",
-    "singleQuote": "'",
     "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Copy-Item $inputFile $outputFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
 {{end}}
