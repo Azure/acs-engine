@@ -212,17 +212,17 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			// Launch a simple busybox pod that wget's continuously to the apache serviceto simulate load
 			commandString := fmt.Sprintf("while true; do wget -q -O- http://%s.default.svc.cluster.local; done", phpApacheName)
 			loadTestName := fmt.Sprintf("load-test-%s-%v", cfg.Name, r.Intn(99999))
-			loadTestDeploy, err := deployment.RunLinuxDeploy("busybox", loadTestName, "default", commandString)
+			loadTestDeploy, err := deployment.RunLinuxDeploy("busybox", loadTestName, "default", commandString, 3)
 			Expect(err).NotTo(HaveOccurred())
 
 			running, err = pod.WaitOnReady(loadTestName, "default", 3, 30*time.Second, cfg.Timeout)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(running).To(Equal(true))
 
-			// We should have exactly one load tester pod running
+			// We should have three load tester pods running
 			loadTestPods, err := loadTestDeploy.Pods()
 			Expect(err).NotTo(HaveOccurred())
-			Expect(len(loadTestPods)).To(Equal(1))
+			Expect(len(loadTestPods)).To(Equal(3))
 
 			// Wait 90 seconds for autoscaler to respond to load
 			time.Sleep(90 * time.Second)

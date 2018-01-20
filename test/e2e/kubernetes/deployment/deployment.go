@@ -78,9 +78,9 @@ func CreateLinuxDeploy(image, name, namespace, miscOpts string) (*Deployment, er
 
 // RunLinuxDeploy will create a deployment that runs a bash command in a pod
 // --overrides='{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}'
-func RunLinuxDeploy(image, name, namespace, command string) (*Deployment, error) {
+func RunLinuxDeploy(image, name, namespace, command string, replicas int) (*Deployment, error) {
 	overrides := `{ "apiVersion": "extensions/v1beta1", "spec":{"template":{"spec": {"nodeSelector":{"beta.kubernetes.io/os":"linux"}}}}}`
-	out, err := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command).CombinedOutput()
+	out, err := exec.Command("kubectl", "run", name, "-n", namespace, "--image", image, "--replicas", strconv.Itoa(replicas), "--overrides", overrides, "--command", "--", "/bin/sh", "-c", command).CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to deploy %s [%s] in namespace %s:%s\n", name, image, namespace, string(out))
 		return nil, err
