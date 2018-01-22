@@ -111,6 +111,7 @@
     "sshPublicKeyData": "[parameters('sshRSAPublicKey')]",
 {{if .HasAadProfile}}
     "aadTenantId": "[parameters('aadTenantId')]",
+    "aadAdminGroupId": "[parameters('aadAdminGroupId')]",
 {{end}}
 {{if not IsHostedMaster}}
   {{if GetClassicMode}}

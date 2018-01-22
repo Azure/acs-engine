@@ -641,6 +641,9 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 
 		if properties.AADProfile != nil {
 			addValue(parametersMap, "aadTenantId", properties.AADProfile.TenantID)
+			if properties.AADProfile.AdminGroupID != "" {
+				addValue(parametersMap, "aadAdminGroupId", properties.AADProfile.AdminGroupID)
+			}
 		}
 	}
 
@@ -1560,6 +1563,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"UseCloudControllerManager": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager != nil && *cs.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager
+		},
+		"AdminGroupID": func() bool {
+			return cs.Properties.AADProfile != nil && cs.Properties.AADProfile.AdminGroupID != ""
 		},
 		"EnableDataEncryptionAtRest": func() bool {
 			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.EnableDataEncryptionAtRest)

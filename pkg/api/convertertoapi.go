@@ -1010,6 +1010,7 @@ func convertVLabsAADProfile(vlabs *vlabs.AADProfile, api *AADProfile) {
 	api.ClientAppID = vlabs.ClientAppID
 	api.ServerAppID = vlabs.ServerAppID
 	api.TenantID = vlabs.TenantID
+	api.AdminGroupID = vlabs.AdminGroupID
 }
 
 func addDCOSPublicAgentPool(api *Properties) {

@@ -56,6 +56,16 @@ For example, if your `IssuerUrl` is `https://sts.windows.net/e2917176-1632-47a0-
 kubectl create clusterrolebinding aad-default-group-cluster-admin-binding --clusterrole=cluster-admin --group=7d04bcd3-3c48-49ab-a064-c0b7d69896da
 ```
 
+   Or alternatively you can set the Group `ObjectID` with the `adminGroupID` flag as follows:
+```
+"aadProfile": {
+    "serverAppID": "",
+    "clientAppID": "",
+    "adminGroupID": "7d04bcd3-3c48-49ab-a064-c0b7d69896da"
+}
+```
+The above config would automatically generate a clusterrolebinding with the cluster-admin clusterrole for the specified Group `ObjectID` on cluster deployment.
+
 4. Turn on RBAC on master nodes.
     On master nodes, edit `/etc/kubernetes/manifests/kube-apiserver.yaml`, add `--authorization-mode=RBAC` under `command` property. Reboot nodes.
 5. Now that AAD account will be cluster admin, other accounts can still login but do not have permission for operating the cluster.

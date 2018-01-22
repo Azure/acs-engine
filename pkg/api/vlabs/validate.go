@@ -305,6 +305,11 @@ func (profile *AADProfile) Validate() error {
 			return fmt.Errorf("tenantID '%v' is invalid", profile.TenantID)
 		}
 	}
+	if len(profile.AdminGroupID) > 0 {
+		if _, err := uuid.FromString(profile.AdminGroupID); err != nil {
+			return fmt.Errorf("adminGroupID '%v' is invalid", profile.AdminGroupID)
+		}
+	}
 	return nil
 }
 
