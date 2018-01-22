@@ -8,6 +8,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	uuid "github.com/satori/go.uuid"
@@ -185,7 +186,7 @@ func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error 
 			return nil
 		}
 	}
-	return fmt.Errorf("%s in non-upgradable to %s", vmOrchestratorTypeAndVersion, uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+	return fmt.Errorf("%s cannot be upgraded to %s", vmOrchestratorTypeAndVersion, uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
 }
 
 func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradableVM bool) error {
@@ -209,7 +210,7 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 	}
 
 	if vm.StorageProfile.OsDisk.OsType == compute.Linux {
-		poolIdentifier, poolPrefix, _, err = armhelpers.K8sLinuxVMNameParts(*vm.Name)
+		poolIdentifier, poolPrefix, _, err = utils.K8sLinuxVMNameParts(*vm.Name)
 		if err != nil {
 			uc.Logger.Errorf(err.Error())
 			return err
@@ -221,7 +222,7 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 			return nil
 		}
 	} else if vm.StorageProfile.OsDisk.OsType == compute.Windows {
-		poolPrefix, acsStr, poolIndex, _, err := armhelpers.WindowsVMNameParts(*vm.Name)
+		poolPrefix, acsStr, poolIndex, _, err := utils.WindowsVMNameParts(*vm.Name)
 		if err != nil {
 			uc.Logger.Errorf(err.Error())
 			return err

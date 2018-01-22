@@ -105,7 +105,7 @@ msgstr "Sürüm bilgisi olmayan nesneden geri dönüştürme için geçersiz sü
 #: pkg/acsengine/engine.go:322
 #, c-format
 msgid "orchestrator '%s' is unsupported"
-msgstr "orchestrator '%s' desteklenmiyor"
+msgstr "düzenleyici '%s' desteklenmiyor"
 
 #: pkg/acsengine/engine.go:187
 #, c-format

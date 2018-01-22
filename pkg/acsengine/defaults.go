@@ -1,6 +1,7 @@
 package acsengine
 
 import (
+	"encoding/binary"
 	"fmt"
 	"net"
 
@@ -13,13 +14,13 @@ const (
 	// AzureCniPluginVer specifies version of Azure CNI plugin, which has been mirrored from
 	// https://github.com/Azure/azure-container-networking/releases/download/${AZURE_PLUGIN_VER}/azure-vnet-cni-linux-amd64-${AZURE_PLUGIN_VER}.tgz
 	// to https://acs-mirror.azureedge.net/cni/
-	AzureCniPluginVer = "v1.0.0"
+	AzureCniPluginVer = "v1.0.1"
 )
 
 var (
 	//DefaultKubernetesSpecConfig is the default Docker image source of Kubernetes
 	DefaultKubernetesSpecConfig = KubernetesSpecConfig{
-		KubernetesImageBase:              "gcrio.azureedge.net/google_containers/",
+		KubernetesImageBase:              "k8s-gcrio.azureedge.net/",
 		TillerImageBase:                  "gcrio.azureedge.net/kubernetes-helm/",
 		ACIConnectorImageBase:            "microsoft/",
 		EtcdDownloadURLBase:              "https://acs-mirror.azureedge.net/github-coreos",
@@ -49,7 +50,7 @@ var (
 		ImageOffer:     "UbuntuServer",
 		ImageSku:       "16.04-LTS",
 		ImagePublisher: "Canonical",
-		ImageVersion:   "16.04.201711211",
+		ImageVersion:   "16.04.201801120",
 	}
 
 	//DefaultRHELOSImageConfig is the RHEL Linux distribution.
@@ -100,7 +101,7 @@ var (
 				ImageOffer:     "UbuntuServer",
 				ImageSku:       "16.04-LTS",
 				ImagePublisher: "Canonical",
-				ImageVersion:   "16.04.201701130",
+				ImageVersion:   "16.04.201801050",
 			},
 			api.RHEL:   DefaultRHELOSImageConfig,
 			api.CoreOS: DefaultCoreOSImageConfig,
@@ -315,6 +316,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
 			}
 		}
+		if o.KubernetesConfig.ContainerRuntime == "" {
+			o.KubernetesConfig.ContainerRuntime = DefaultContainerRuntime
+		}
 		if o.KubernetesConfig.ClusterSubnet == "" {
 			if o.IsAzureCNI() {
 				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
@@ -399,10 +403,18 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(api.DefaultRBACEnabled)
 		}
 
+		if a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet == nil {
+			a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = pointerToBool(api.DefaultSecureKubeletEnabled)
+		}
+
 		// Configure kubelet
 		setKubeletConfig(cs)
 		// Configure controller-manager
 		setControllerManagerConfig(cs)
+		// Configure cloud-controller-manager
+		setCloudControllerManagerConfig(cs)
+		// Configure apiserver
+		setAPIServerConfig(cs)
 
 	} else if o.OrchestratorType == api.DCOS {
 		if o.DcosConfig == nil {
@@ -465,9 +477,6 @@ func setMasterNetworkDefaults(a *api.Properties) {
 
 	// Set the default number of IP addresses allocated for masters.
 	if a.MasterProfile.IPAddressCount == 0 {
-		// Allocate one IP address for the node.
-		a.MasterProfile.IPAddressCount = 1
-
 		// Allocate IP addresses for pods if VNET integration is enabled.
 		if a.OrchestratorProfile.IsAzureCNI() {
 			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
@@ -665,27 +674,23 @@ func certsAlreadyPresent(c *api.CertificateProfile, m int) map[string]bool {
 
 // getFirstConsecutiveStaticIPAddress returns the first static IP address of the given subnet.
 func getFirstConsecutiveStaticIPAddress(subnetStr string) string {
-	_, subnet, err := net.ParseCIDR(subnetStr)
+	ip, _, err := net.ParseCIDR(subnetStr)
 	if err != nil {
 		return DefaultFirstConsecutiveKubernetesStaticIP
 	}
 
-	// Find the first and last octet of the host bits.
-	ones, bits := subnet.Mask.Size()
-	firstOctet := ones / 8
-	lastOctet := bits/8 - 1
-
-	// Set the remaining host bits in the first octet.
-	subnet.IP[firstOctet] |= (1 << byte((8 - (ones % 8)))) - 1
-
-	// Fill the intermediate octets with 1s and last octet with offset. This is done so to match
-	// the existing behavior of allocating static IP addresses from the last /24 of the subnet.
-	for i := firstOctet + 1; i < lastOctet; i++ {
-		subnet.IP[i] = 255
+	ipv4 := ip.To4()
+	if ipv4 == nil {
+		return DefaultFirstConsecutiveKubernetesStaticIP
 	}
-	subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffset
 
-	return subnet.IP.String()
+	ipint := binary.BigEndian.Uint32(ipv4)
+
+	// First 4 IPs will be reserved in Azure and cannot use.
+	ipint += 4
+	startIP := make(net.IP, 4)
+	binary.BigEndian.PutUint32(startIP, ipint)
+	return startIP.String()
 }
 
 func getAddonsIndexByName(addons []api.KubernetesAddon, name string) int {

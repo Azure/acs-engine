@@ -106,11 +106,11 @@ write_files:
     KUBELET_CONFIG={{GetKubeletConfigKeyVals .KubernetesConfig }}
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
     DOCKER_OPTS=
+    KUBELET_OPTS=
     KUBELET_REGISTER_SCHEDULABLE=true
     KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}
 {{if IsKubernetesVersionGe "1.6.0"}}
     KUBELET_NON_MASQUERADE_CIDR={{WrapAsVariable "kubernetesNonMasqueradeCidr"}}
-    KUBELET_FEATURE_GATES=--feature-gates=Accelerators=true
 {{end}}
 
 AGENT_ARTIFACTS_CONFIG_PLACEHOLDER

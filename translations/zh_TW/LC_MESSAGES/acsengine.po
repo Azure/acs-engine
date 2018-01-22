@@ -98,12 +98,12 @@ msgstr "無法將範本產生器初始化: %s"
 #: pkg/api/apiloader.go:161 pkg/api/upgradeapiloader.go:70
 #, c-format
 msgid "invalid version %s for conversion back from unversioned object"
-msgstr "無法從未建立版本的物件轉換回版本 %s"
+msgstr "無法從未進行版本控制的物件轉換回版本 %s"
 
 #: pkg/acsengine/engine.go:322
 #, c-format
 msgid "orchestrator '%s' is unsupported"
-msgstr "不支援 Orchestrator '%s'"
+msgstr "不支援協調器 '%s'"
 
 #: pkg/acsengine/engine.go:187
 #, c-format

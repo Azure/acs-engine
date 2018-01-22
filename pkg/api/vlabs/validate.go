@@ -11,7 +11,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
-	"github.com/satori/uuid"
+	"github.com/satori/go.uuid"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -111,6 +111,10 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 						}
 					}
 				}
+				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) &&
+					!helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
+					return fmt.Errorf("enablePodSecurityPolicy requires the enableRbac feature as a prerequisite")
+				}
 			}
 
 		default:
@@ -142,6 +146,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 	if o.OrchestratorType != DCOS && o.DcosConfig != nil && (*o.DcosConfig != DcosConfig{}) {
 		return fmt.Errorf("DcosConfig can be specified only when OrchestratorType is DCOS")
 	}
+
 	return nil
 }
 
@@ -314,6 +319,9 @@ func (a *Properties) Validate(isUpdate bool) error {
 	if e := a.validateNetworkPolicy(); e != nil {
 		return e
 	}
+	if e := a.validateContainerRuntime(); e != nil {
+		return e
+	}
 	if e := a.MasterProfile.Validate(); e != nil {
 		return e
 	}
@@ -453,6 +461,12 @@ func (a *Properties) Validate(isUpdate bool) error {
 		}
 	}
 
+	if a.OrchestratorProfile.OrchestratorType != DCOS && a.WindowsProfile != nil {
+		if a.WindowsProfile.WindowsImageSourceURL != "" {
+			return fmt.Errorf("Windows Custom Images are only supported if the Orchestrator Type is DCOS")
+		}
+	}
+
 	return nil
 }
 
@@ -462,11 +476,15 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	const minKubeletRetries = 4
 	// k8s versions that have cloudprovider backoff enabled
 	var backoffEnabledVersions = map[string]bool{
+		common.KubernetesVersion1Dot9Dot0:  true,
+		common.KubernetesVersion1Dot9Dot1:  true,
+		common.KubernetesVersion1Dot9Dot2:  true,
 		common.KubernetesVersion1Dot8Dot0:  true,
 		common.KubernetesVersion1Dot8Dot1:  true,
 		common.KubernetesVersion1Dot8Dot2:  true,
 		common.KubernetesVersion1Dot8Dot4:  true,
 		common.KubernetesVersion1Dot8Dot6:  true,
+		common.KubernetesVersion1Dot8Dot7:  true,
 		common.KubernetesVersion1Dot7Dot0:  true,
 		common.KubernetesVersion1Dot7Dot1:  true,
 		common.KubernetesVersion1Dot7Dot2:  true,
@@ -620,6 +638,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot8Dot2: true,
 		common.KubernetesVersion1Dot8Dot4: true,
 		common.KubernetesVersion1Dot8Dot6: true,
+		common.KubernetesVersion1Dot8Dot7: true,
 	}
 
 	if a.UseCloudControllerManager != nil && *a.UseCloudControllerManager || a.CustomCcmImage != "" {
@@ -658,6 +677,38 @@ func (a *Properties) validateNetworkPolicy() error {
 	// Temporary safety check, to be removed when Windows support is added.
 	if (networkPolicy == "calico" || networkPolicy == "azure") && a.HasWindows() {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
+	}
+
+	return nil
+}
+
+func (a *Properties) validateContainerRuntime() error {
+	var containerRuntime string
+
+	switch a.OrchestratorProfile.OrchestratorType {
+	case Kubernetes:
+		if a.OrchestratorProfile.KubernetesConfig != nil {
+			containerRuntime = a.OrchestratorProfile.KubernetesConfig.ContainerRuntime
+		}
+	default:
+		return nil
+	}
+
+	// Check ContainerRuntime has a valid value.
+	valid := false
+	for _, runtime := range ContainerRuntimeValues {
+		if containerRuntime == runtime {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return fmt.Errorf("unknown containerRuntime %q specified", containerRuntime)
+	}
+
+	// Make sure we don't use clear containers on windows.
+	if containerRuntime == "clear-containers" && a.HasWindows() {
+		return fmt.Errorf("containerRuntime %q is not supporting windows agents", containerRuntime)
 	}
 
 	return nil

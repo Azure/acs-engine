@@ -4,11 +4,12 @@
 {{if .IsWindows}}
 
     "winResourceNamePrefix" : "[substring(variables('nameSuffix'), 0, 5)]",
-    "{{.Name}}VMNamePrefix": "[concat(variables('winResourceNamePrefix'), 'acs', add(900,variables('{{.Name}}Index')))]",
     {{if IsPublic .Ports}}
+        "{{.Name}}VMNamePrefix": "[concat('wp', variables('winResourceNamePrefix'), add(900,variables('{{.Name}}Index')))]",
         "{{.Name}}windowsAgentCustomAttributes": "[concat(' -customAttrs ', variables('doubleSingleQuote'), '{{GetDCOSWindowsAgentCustomNodeAttributes . }}', variables('doubleSingleQuote') )]",
         "{{.Name}}windowsAgentCustomScriptArguments": "[concat('$arguments = ', variables('singleQuote'), '-subnet ', variables('{{.Name}}Subnet'), ' -MasterCount ', variables('masterCount'), ' -firstMasterIP ', parameters('firstConsecutiveStaticIP'), ' -bootstrapUri ', '\"', variables('dcosWindowsBootstrapURL'), '\"', ' -isAgent $true -isPublic $true ',  variables('{{.Name}}windowsAgentCustomAttributes'), variables('singleQuote'), ' ; ')]",
     {{else}}
+        "{{.Name}}VMNamePrefix": "[concat('w', variables('winResourceNamePrefix'), add(900,variables('{{.Name}}Index')))]",
         "{{.Name}}windowsAgentCustomAttributes": "[concat(' -customAttrs ', variables('doubleSingleQuote'), '{{GetDCOSWindowsAgentCustomNodeAttributes . }}', variables('doubleSingleQuote') )]",
         "{{.Name}}windowsAgentCustomScriptArguments": "[concat('$arguments = ', variables('singleQuote'), '-subnet ', variables('{{.Name}}Subnet'), ' -MasterCount ', variables('masterCount'), ' -firstMasterIP ', parameters('firstConsecutiveStaticIP'), ' -bootstrapUri ', '\"', variables('dcosWindowsBootstrapURL'), '\"', ' -isAgent $true -isPublic $false ',  variables('{{.Name}}windowsAgentCustomAttributes'), variables('singleQuote'), ' ; ')]",
     {{end}}

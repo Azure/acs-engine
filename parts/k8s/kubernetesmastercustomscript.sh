@@ -20,7 +20,7 @@
 
 # Master only secrets
 # APISERVER_PRIVATE_KEY CA_CERTIFICATE CA_PRIVATE_KEY MASTER_FQDN KUBECONFIG_CERTIFICATE
-# KUBECONFIG_KEY ETCD_SERVER_CERTIFICATE ETCD_SERVER_PRIVATE_KEY ETCD_CLIENT_CERTIFICATE ETCD_CLIENT_PRIVATE_KEY 
+# KUBECONFIG_KEY ETCD_SERVER_CERTIFICATE ETCD_SERVER_PRIVATE_KEY ETCD_CLIENT_CERTIFICATE ETCD_CLIENT_PRIVATE_KEY
 # ETCD_PEER_CERTIFICATES ETCD_PEER_PRIVATE_KEYS ADMINUSER MASTER_INDEX
 
 # Find distro name via ID value in releases files and upcase
@@ -59,7 +59,7 @@ ensureRunCommandCompleted()
 echo `date`,`hostname`, startscript>>/opt/m
 
 # A delay to start the kubernetes processes is necessary
-# if a reboot is required.  Otherwise, the agents will encounter issue: 
+# if a reboot is required.  Otherwise, the agents will encounter issue:
 # https://github.com/kubernetes/kubernetes/issues/41185
 if [ -f /var/run/reboot-required ]; then
     REBOOTREQUIRED=true
@@ -220,6 +220,10 @@ function setNetworkPlugin () {
     sed -i "s/^KUBELET_NETWORK_PLUGIN=.*/KUBELET_NETWORK_PLUGIN=${1}/" /etc/default/kubelet
 }
 
+function setKubeletOpts () {
+	sed -i "s#^KUBELET_OPTS=.*#KUBELET_OPTS=${1}#" /etc/default/kubelet
+}
+
 function setDockerOpts () {
     sed -i "s#^DOCKER_OPTS=.*#DOCKER_OPTS=${1}#" /etc/default/kubelet
 }
@@ -243,8 +247,8 @@ function configAzureNetworkPolicy() {
     chmod -R 755 $CNI_BIN_DIR
 
     # Copy config file
-    mv $CNI_BIN_DIR/10-azure.conf $CNI_CONFIG_DIR/
-    chmod 600 $CNI_CONFIG_DIR/10-azure.conf
+    mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
+    chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
 
     # Dump ebtables rules.
     /sbin/ebtables -t nat --list
@@ -270,6 +274,193 @@ function configNetworkPolicy() {
         setNetworkPlugin kubenet
         setDockerOpts ""
     fi
+}
+
+# Install the Clear Containers runtime
+function installClearContainersRuntime() {
+	# Add Clear Containers repository key
+	echo "Adding Clear Containers repository key..."
+	curl -sSL "https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key" | apt-key add -
+
+	# Add Clear Container repository
+	echo "Adding Clear Containers repository..."
+	echo 'deb http://download.opensuse.org/repositories/home:/clearcontainers:/clear-containers-3/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/cc-runtime.list
+
+	# Install Clear Containers runtime
+	echo "Installing Clear Containers runtime..."
+	apt-get update
+	apt-get install --no-install-recommends -y \
+		cc-runtime
+
+	# Install thin tools for devicemapper configuration
+	echo "Installing thin tools to provision devicemapper..."
+	apt-get install --no-install-recommends -y \
+		lvm2 \
+		thin-provisioning-tools
+
+	# Load systemd changes
+	echo "Loading changes to systemd service files..."
+	systemctl daemon-reload
+
+	# Enable and start Clear Containers proxy service
+	echo "Enabling and starting Clear Containers proxy service..."
+	systemctl enable cc-proxy
+	systemctl start cc-proxy
+
+	# CRIO has only been tested with the azure plugin
+	configAzureNetworkPolicy
+	setKubeletOpts " --container-runtime=remote --container-runtime-endpoint=/var/run/crio.sock"
+	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+}
+
+# Install Go from source
+function installGo() {
+	export GO_SRC=/usr/local/go
+	export GOPATH="${HOME}/.go"
+
+	# Remove any old version of Go
+	if [[ -d "$GO_SRC" ]]; then
+		rm -rf "$GO_SRC"
+	fi
+
+	# Remove any old GOPATH
+	if [[ -d "$GOPATH" ]]; then
+		rm -rf "$GOPATH"
+	fi
+
+	# Get the latest Go version
+	GO_VERSION=$(curl -sSL "https://golang.org/VERSION?m=text")
+
+	echo "Installing Go version $GO_VERSION..."
+
+	# subshell
+	(
+	curl -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
+	)
+
+	# Set GOPATH and update PATH
+	echo "Setting GOPATH and updating PATH"
+	export PATH="${GO_SRC}/bin:${PATH}:${GOPATH}/bin"
+}
+
+# Build and install runc
+function buildRunc() {
+	# Clone the runc source
+	echo "Cloning the runc source..."
+	mkdir -p "${GOPATH}/src/github.com/opencontainers"
+	(
+	cd "${GOPATH}/src/github.com/opencontainers"
+	git clone "https://github.com/opencontainers/runc.git"
+	cd runc
+	git reset --hard v1.0.0-rc4
+	make BUILDTAGS="seccomp apparmor"
+	make install
+	)
+
+	echo "Successfully built and installed runc..."
+}
+
+# Build and install CRI-O
+function buildCRIO() {
+	# Add CRI-O repositories
+	echo "Adding repositories required for cri-o..."
+	add-apt-repository -y ppa:projectatomic/ppa
+	add-apt-repository -y ppa:alexlarsson/flatpak
+	apt-get update
+
+	# Install CRI-O dependencies
+	echo "Installing dependencies for CRI-O..."
+	apt-get install --no-install-recommends -y \
+		btrfs-tools \
+		gcc \
+		git \
+		libapparmor-dev \
+		libassuan-dev \
+		libc6-dev \
+		libdevmapper-dev \
+		libglib2.0-dev \
+		libgpg-error-dev \
+		libgpgme11-dev \
+		libostree-dev \
+		libseccomp-dev \
+		libselinux1-dev \
+		make \
+		pkg-config \
+		skopeo-containers
+
+	installGo;
+
+	# Install md2man
+	go get github.com/cpuguy83/go-md2man
+
+	# Fix for templates dependency
+	(
+	go get -u github.com/docker/docker/daemon/logger/templates
+	cd "${GOPATH}/src/github.com/docker/docker"
+	mkdir -p utils
+	cp -r daemon/logger/templates utils/
+	)
+
+	buildRunc;
+
+	# Clone the CRI-O source
+	echo "Cloning the CRI-O source..."
+	mkdir -p "${GOPATH}/src/github.com/kubernetes-incubator"
+	(
+	cd "${GOPATH}/src/github.com/kubernetes-incubator"
+	git clone "https://github.com/kubernetes-incubator/cri-o.git"
+	cd cri-o
+	git reset --hard v1.0.0
+	make BUILDTAGS="seccomp apparmor"
+	make install
+	make install.config
+	make install.systemd
+	)
+
+	echo "Successfully built and installed CRI-O..."
+
+	# Cleanup the temporary directory
+	rm -vrf "$tmpd"
+
+	# Cleanup the Go install
+	rm -vrf "$GO_SRC" "$GOPATH"
+
+	setupCRIO;
+}
+
+# Setup CRI-O
+function setupCRIO() {
+	# Configure CRI-O
+	echo "Configuring CRI-O..."
+
+	# Configure crio systemd service file
+	SYSTEMD_CRI_O_SERVICE_FILE="/usr/local/lib/systemd/system/crio.service"
+	sed -i 's#ExecStart=/usr/local/bin/crio#ExecStart=/usr/local/bin/crio -log-level debug#' "$SYSTEMD_CRI_O_SERVICE_FILE"
+
+	# Configure /etc/crio/crio.conf
+	CRI_O_CONFIG="/etc/crio/crio.conf"
+	sed -i 's#storage_driver = ""#storage_driver = "devicemapper"#' "$CRI_O_CONFIG"
+	sed -i 's#storage_option = \[#storage_option = \["dm.directlvm_device=/dev/sdc", "dm.thinp_percent=95", "dm.thinp_metapercent=1", "dm.thinp_autoextend_threshold=80", "dm.thinp_autoextend_percent=20", "dm.directlvm_device_force=true"#' "$CRI_O_CONFIG"
+	sed -i 's#runtime = "/usr/bin/runc"#runtime = "/usr/local/sbin/runc"#' "$CRI_O_CONFIG"
+	sed -i 's#runtime_untrusted_workload = ""#runtime_untrusted_workload = "/usr/bin/cc-runtime"#' "$CRI_O_CONFIG"
+	sed -i 's#default_workload_trust = "trusted"#default_workload_trust = "untrusted"#' "$CRI_O_CONFIG"
+
+	# Load systemd changes
+	echo "Loading changes to systemd service files..."
+	systemctl daemon-reload
+}
+
+function ensureCRIO() {
+	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
+		# Make sure we can nest virtualization
+		if grep -q vmx /proc/cpuinfo; then
+			# Enable and start cri-o service
+			# Make sure this is done after networking plugins are installed
+			echo "Enabling and starting cri-o service..."
+			systemctl enable crio crio-shutdown
+			systemctl start crio
+		fi
+	fi
 }
 
 function systemctlEnableAndCheck() {
@@ -416,6 +607,16 @@ function ensureEtcdDataDir() {
    exit 4
 }
 
+function ensurePodSecurityPolicy(){
+    if $REBOOTREQUIRED; then
+        return
+    fi
+    POD_SECURITY_POLICY_FILE="/etc/kubernetes/manifests/pod-security-policy.yaml"
+    if [ -f $POD_SECURITY_POLICY_FILE ]; then
+        kubectl create -f $POD_SECURITY_POLICY_FILE
+    fi
+}
+
 function writeKubeConfig() {
     KUBECONFIGDIR=/home/$ADMINUSER/.kube
     KUBECONFIGFILE=$KUBECONFIGDIR/config
@@ -425,7 +626,7 @@ function writeKubeConfig() {
     chown $ADMINUSER:$ADMINUSER $KUBECONFIGFILE
     chmod 700 $KUBECONFIGDIR
     chmod 600 $KUBECONFIGFILE
-    
+
     # disable logging after secret output
     set +x
     echo "
@@ -453,28 +654,49 @@ users:
     set -x
 }
 
-# master and node
-echo `date`,`hostname`, EnsureDockerStart>>/opt/m 
-ensureDocker
-echo `date`,`hostname`, configNetworkPolicyStart>>/opt/m 
-configNetworkPolicy
-echo `date`,`hostname`, setMaxPodsStart>>/opt/m 
-setMaxPods ${MAX_PODS}
-echo `date`,`hostname`, ensureKubeletStart>>/opt/m
-ensureKubelet
-echo `date`,`hostname`, extractKubctlStart>>/opt/m 
-extractKubectl
-echo `date`,`hostname`, ensureJournalStart>>/opt/m 
-ensureJournal
-echo `date`,`hostname`, ensureJournalDone>>/opt/m 
-
-ensureRunCommandCompleted
-echo `date`,`hostname`, RunCmdCompleted>>/opt/m 
+if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
+	# If the container runtime is "clear-containers" we need to ensure the
+	# run command is completed _before_ we start installing all the dependencies
+	# for clear-containers to make sure there is not a dpkg lock.
+	ensureRunCommandCompleted
+	echo `date`,`hostname`, RunCmdCompleted>>/opt/m
+fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
-    # make sure walinuxagent doesn't get updated in the middle of running this script
-    apt-mark hold walinuxagent
+	# make sure walinuxagent doesn't get updated in the middle of running this script
+	apt-mark hold walinuxagent
 fi
+
+# master and node
+echo `date`,`hostname`, EnsureDockerStart>>/opt/m
+ensureDocker
+echo `date`,`hostname`, configNetworkPolicyStart>>/opt/m
+configNetworkPolicy
+if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
+	# Ensure we can nest virtualization
+	if grep -q vmx /proc/cpuinfo; then
+		echo `date`,`hostname`, installClearContainersRuntimeStart>>/opt/m
+		installClearContainersRuntime
+		echo `date`,`hostname`, buildCRIOStart>>/opt/m
+		buildCRIO
+	fi
+fi
+echo `date`,`hostname`, setMaxPodsStart>>/opt/m
+setMaxPods ${MAX_PODS}
+echo `date`,`hostname`, ensureCRIOStart>>/opt/m
+ensureCRIO
+echo `date`,`hostname`, ensureKubeletStart>>/opt/m
+ensureKubelet
+echo `date`,`hostname`, extractKubctlStart>>/opt/m
+extractKubectl
+echo `date`,`hostname`, ensureJournalStart>>/opt/m
+ensureJournal
+echo `date`,`hostname`, ensureJournalDone>>/opt/m
+
+# On all other runtimes, but "clear-containers" we can ensure the run command
+# completed here to allow for parallelizing the custom script
+ensureRunCommandCompleted
+echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 
 # master only
 if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
@@ -483,6 +705,7 @@ if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
     ensureEtcdDataDir
     ensureEtcd
     ensureApiserver
+    ensurePodSecurityPolicy
 fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then

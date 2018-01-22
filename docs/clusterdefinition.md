@@ -30,9 +30,10 @@ Here are the valid values for the orchestrator types:
 
 |Name|Required|Description|
 |---|---|---|
-|kubernetesImageBase|no|This specifies the base URL (everything preceding the actual image filename) of the kubernetes hyperkube image to use for cluster deploymenbt, e.g., `gcrio.azureedge.net/google_containers/`.|
+|kubernetesImageBase|no|This specifies the base URL (everything preceding the actual image filename) of the kubernetes hyperkube image to use for cluster deployment, e.g., `k8s-gcrio.azureedge.net/`.|
 |dockerEngineVersion|no|Which version of docker-engine to use in your cluster, e.g.. "17.03.*"|
 |networkPolicy|no|Specifies the network policy tool for the cluster. Valid values are:<br>`"azure"` (default), which provides an Azure native networking experience,<br>`none` for not enforcing any network policy,<br>`calico` for Calico network policy (clusters with Linux agents only).<br>See [network policy examples](../examples/networkpolicy) for more information.|
+|containerRuntime|no|The container runtime to use as a backend. The default is `docker`. The only other option is `clear-containers`.|
 |clusterSubnet|no|The IP subnet used for allocating IP addresses for pod network interfaces. The subnet must be in the VNET address space. Default value is 10.244.0.0/16.|
 |dnsServiceIP|no|IP address for kube-dns to listen on. If specified must be in the range of `serviceCidr`.|
 |dockerBridgeSubnet|no|The specific IP and subnet used for allocating IP addresses for the docker bridge network created on the kubernetes master and agents. Default value is 172.17.0.1/16. This value is used to configure the docker daemon using the [--bip flag](https://docs.docker.com/engine/userguide/networking/default_network/custom-docker0).|
@@ -45,7 +46,10 @@ Here are the valid values for the orchestrator types:
 |gcLowThreshold|no|Sets the --image-gc-low-threshold value on the kublet configuration. Default is 80. [See kubelet Garbage Collection](https://kubernetes.io/docs/concepts/cluster-administration/kubelet-garbage-collection/) |
 |useInstanceMetadata|no|Use the Azure cloudprovider instance metadata service for appropriate resource discovery operations. Default is `true`.|
 |addons|no|Configure various Kubernetes addons configuration (currently supported: tiller, kubernetes-dashboard). See `addons` configuration below.|
-|kubeletConfig|no|Configure various runtime configuration for kubelet. See `kubeletConfig` below.|
+|kubeletConfig|no|Configure various runtime configuration for kubelet. See `kubeletConfig` [below](#feat-kubelet-config).|
+|controllerManagerConfig|no|Configure various runtime configuration for controller-manager. See `controllerManagerConfig` [below](#feat-controller-manager-config).|
+|cloudControllerManagerConfig|no|Configure various runtime configuration for cloud-controller-manager. See `cloudControllerManagerConfig` [below](#feat-cloud-controller-manager-config).|
+|apiServerConfig|no|Configure various runtime configuration for apiserver. See `apiServerConfig` [below](#feat-apiserver-config).|
 
 #### addons
 
@@ -136,6 +140,7 @@ Additionally above, we specified a custom docker image for tiller, let's say we 
 
 Finally, the `addons.enabled` boolean property was omitted above; that's by design. If you specify a `containers` configuration, acs-engine assumes you're enabling the addon. The very first example above demonstrates a simple "enable this addon with default configuration" declaration.
 
+<a name="feat-kubelet-config"></a>
 #### kubeletConfig
 
 `kubeletConfig` declares runtime configuration for the kubelet running on all master and agent nodes. It is a generic key/value object, and a child property of `kubernetesConfig`. An example custom kubelet config:
@@ -154,6 +159,8 @@ Below is a list of kubelet options that acs-engine will configure by default:
 
 |kubelet option|default value|
 |---|---|
+|"--cloud-config"|"/etc/kubernetes/azure.json"|
+|"--cloud-provider"|"azure"|
 |"--pod-infra-container-image"|"pause-amd64:<version>"|
 |"--max-pods"|"110"|
 |"--eviction-hard"|"memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%"|
@@ -161,6 +168,7 @@ Below is a list of kubelet options that acs-engine will configure by default:
 |"--image-gc-high-threshold"|"85"|
 |"--image-gc-low-threshold"|"850"|
 |"--non-masquerade-cidr"|"10.0.0.0/8"|
+|"--feature-gates"|No default (can be a comma-separated list). On agent nodes `Accelerators=true` will be applied in the `--feature-gates` option.|
 
 Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
 
@@ -171,8 +179,6 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 |"--allow-privileged"|"true"|
 |"--pod-manifest-path"|"/etc/kubernetes/manifests"|
 |"--cluster-domain"|"cluster.local"|
-|"--cloud-config"|"/etc/kubernetes/azure.json"|
-|"--cloud-provider"|"azure"|
 |"--network-plugin"|"cni"|
 |"--node-labels"|(based on Azure node metadata)|
 |"--cgroups-per-qos"|"false"|
@@ -182,8 +188,8 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 |"--register-with-taints" (master nodes only)|"node-role.kubernetes.io/master=true:NoSchedule"|
 |"--read-only-port"|"0"|
 |"--keep-terminated-pod-volumes"|"false"|
-|"--feature-gates" (agent nodes only)|"Accelerators=true"|
 
+<a name="feat-controller-manager-config"></a>
 #### controllerManagerConfig
 
 `controllerManagerConfig` declares runtime configuration for the kube-controller-manager daemon running on all master nodes. Like `kubeletConfig` it is a generic key/value object, and a child property of `kubernetesConfig`. An example custom controller-manager config:
@@ -194,6 +200,7 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
         "--node-monitor-grace-period": "40s",
         "--pod-eviction-timeout": "5m0s",
         "--route-reconciliation-period": "10s"
+        "--terminated-pod-gc-threshold": "5000"
     }
 }
 ```
@@ -207,9 +214,11 @@ Below is a list of controller-manager options that acs-engine will configure by 
 |"--node-monitor-grace-period"|"40s"|
 |"--pod-eviction-timeout"|"5m0s"|
 |"--route-reconciliation-period"|"10s"|
+|"--terminated-pod-gc-threshold"|"5000"|
+|"--feature-gates"|No default (can be a comma-separated list)|
 
 
-Below is a list of kubelet options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
+Below is a list of controller-manager options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces controller-manager configuration, or because a static configuration is required to build a functional cluster:
 
 |controller-manager option|default value|
 |---|---|
@@ -228,7 +237,111 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 |"--profiling"|"false"|
 |"--use-service-account-credentials"|"false" ("true" if kubernetesConfig.enableRbac is true)|
 
-We consider `kubeletConfig` and `controllerManagerConfig` to be generic conveniences that add power/flexibility to cluster deployments. Their usage comes with no operational guarantees! They are manual tuning features that enable low-level configuration of a kubernetes cluster.
+<a name="feat-cloud-controller-manager-config"></a>
+#### cloudControllerManagerConfig
+
+`cloudControllerManagerConfig` declares runtime configuration for the cloud-controller-manager daemon running on all master nodes in a Cloud Controller Manager configuration. Like `kubeletConfig` it is a generic key/value object, and a child property of `kubernetesConfig`. An example custom cloud-controller-manager config:
+
+```
+"kubernetesConfig": {
+    "cloudControllerManagerConfig": {
+        "--route-reconciliation-period": "1m"
+    }
+}
+```
+
+See [here](https://kubernetes.io/docs/reference/generated/cloud-controller-manager/) for a reference of supported controller-manager options.
+
+Below is a list of cloud-controller-manager options that acs-engine will configure by default:
+
+|controller-manager option|default value|
+|---|---|
+|"--route-reconciliation-period"|"10s"|
+
+
+Below is a list of cloud-controller-manager options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces controller-manager configuration, or because a static configuration is required to build a functional cluster:
+
+|controller-manager option|default value|
+|---|---|
+|"--kubeconfig"|"/var/lib/kubelet/kubeconfig"|
+|"--allocate-node-cidrs"|"false"|
+|"--cluster-cidr"|"10.240.0.0/12"|
+|"--cluster-name"|<auto-generated using api model properties>|
+|"--cloud-provider"|"azure"|
+|"--cloud-config"|"/etc/kubernetes/azure.json"|
+|"--leader-elect"|"true"|
+|"--v"|"2"|
+
+<a name="feat-apiserver-config"></a>
+#### apiServerConfig
+
+`apiServerConfig` declares runtime configuration for the kube-apiserver daemon running on all master nodes. Like `kubeletConfig` and `controllerManagerConfig` it is a generic key/value object, and a child property of `kubernetesConfig`. An example custom apiserver config:
+
+```
+"kubernetesConfig": {
+    "apiServerConfig": {
+        "--request-timeout": "30s"
+    }
+}
+```
+
+See [here](https://kubernetes.io/docs/reference/generated/kube-apiserver/) for a reference of supported apiserver options.
+
+Below is a list of apiserver options that acs-engine will configure by default:
+
+|apiserver option|default value|
+|"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages, SecurityContextDeny"|
+|"--authorization-mode"|"Node", "RBAC" (*the latter if enabledRbac is true*)|
+|"--feature-gates"|No default (can be a comma-separated list)|
+
+
+Below is a list of apiserver options that are *not* currently user-configurable, either because a higher order configuration vector is available that enforces kubelet configuration, or because a static configuration is required to build a functional cluster:
+
+|apiserver option|default value|
+|---|---|
+|"--address"|"0.0.0.0"|
+|"--advertise-address"|*calculated value that represents listening URI for API server*|
+|"--allow-privileged"|"true"|
+|"--anonymous-auth"|"false|
+|"--audit-log-maxage"|"30"|
+|"--audit-log-maxbackup"|"10"|
+|"--audit-log-maxsize"|"100"|
+|"--audit-log-path"|"/var/log/apiserver/audit.log"|
+|"--insecure-port"|"8080"|
+|"--secure-port"|"443"|
+|"--service-account-lookup"|"true"|
+|"--etcd-cafile"|"/etc/kubernetes/certs/ca.crt"|
+|"--etcd-certfile"|"/etc/kubernetes/certs/etcdclient.crt"|
+|"--etcd-keyfile"|"/etc/kubernetes/certs/etcdclient.key"|
+|"--etcd-servers"|*calculated value that represents etcd servers*|
+|"--etcd-quorum-read"|"true"|
+|"--profiling"|"false"|
+|"--repair-malformed-updates"|"false"|
+|"--tls-cert-file"|"/etc/kubernetes/certs/apiserver.crt"|
+|"--tls-private-key-file"|"/etc/kubernetes/certs/apiserver.key"|
+|"--client-ca-file"|"/etc/kubernetes/certs/ca.crt"|
+|"--service-account-key-file"|"/etc/kubernetes/certs/apiserver.key"|
+|"--kubelet-client-certificate"|"/etc/kubernetes/certs/client.crt"|
+|"--kubelet-client-key"|"/etc/kubernetes/certs/client.key"|
+|"--service-cluster-ip-range"|*see serviceCIDR*|
+|"--storage-backend"|*calculated value that represents etcd version*|
+|"--v"|"4"|
+|"--experimental-encryption-provider-config"|"/etc/kubernetes/encryption-config.yaml" (*if enableDataEncryptionAtRest is true*)|
+|"--requestheader-client-ca-file"|"/etc/kubernetes/certs/proxy-ca.crt" (*if enableAggregatedAPIs is true*)|
+|"--proxy-client-cert-file"|"/etc/kubernetes/certs/proxy.crt" (*if enableAggregatedAPIs is true*)|
+|"--proxy-client-key-file"|"/etc/kubernetes/certs/proxy.key" (*if enableAggregatedAPIs is true*)|
+|"--requestheader-allowed-names"|"" (*if enableAggregatedAPIs is true*)|
+|"--requestheader-extra-headers-prefix"|"X-Remote-Extra-" (*if enableAggregatedAPIs is true*)|
+|"--requestheader-group-headers"|"X-Remote-Group" (*if enableAggregatedAPIs is true*)|
+|"--requestheader-username-headers"|"X-Remote-User" (*if enableAggregatedAPIs is true*)|
+|"--cloud-provider"|"azure" (*unless useCloudControllerManager is true*)|
+|"--cloud-config"|"/etc/kubernetes/azure.json" (*unless useCloudControllerManager is true*)|
+|"--oidc-username-claim"|"oid" (*if has AADProfile*)|
+|"--oidc-groups-claim"|"groups" (*if has AADProfile*)|
+|"--oidc-client-id"|*calculated value that represents OID client ID* (*if has AADProfile*)|
+|"--oidc-issuer-url"|*calculated value that represents OID issuer URL* (*if has AADProfile*)|
+
+We consider `kubeletConfig`, `controllerManagerConfig`, and `apiServerConfig` to be generic conveniences that add power/flexibility to cluster deployments. Their usage comes with no operational guarantees! They are manual tuning features that enable low-level configuration of a kubernetes cluster.
 
 ### masterProfile
 `masterProfile` describes the settings for master configuration.
@@ -243,7 +356,7 @@ We consider `kubeletConfig` and `controllerManagerConfig` to be generic convenie
 |vnetSubnetId|no|specifies the Id of an alternate VNET subnet.  The subnet id must specify a valid VNET ID owned by the same subscription. ([bring your own VNET examples](../examples/vnet))|
 |extensions|no|This is an array of extensions.  This indicates that the extension be run on a single master.  The name in the extensions array must exactly match the extension name in the extensionProfiles.|
 |vnetCidr|no| specifies the vnet cidr when using custom Vnets ([bring your own VNET examples](../examples/vnet))|
-|distro|no| Select Master(s) Operating System (Linux). Currently supported values are: `ubuntu` and `coreos`. Defaults to `ubuntu` if undefined. Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes. [Example of CoreOS Master with CoreOS Agents](../examples/coreos/kubernetes-coreos.json)|
+|distro|no| Select Master(s) Operating System (Linux). Currently supported values are: `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined. Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes. [Example of CoreOS Master with CoreOS Agents](../examples/coreos/kubernetes-coreos.json)|
 
 ### agentPoolProfiles
 A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for creating agents with different capabilities such as VMSizes, VMSS or Availability Set, Public/Private access, [attached storage disks](../examples/disks-storageaccount), [attached managed disks](../examples/disks-managed), or [Windows](../examples/windows).
@@ -260,7 +373,7 @@ A cluster can have 0 to 12 agent pool profiles. Agent Pool Profiles are used for
 |vmsize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/).  These are restricted to machines with at least 2 cores|
 |osDiskSizeGB|no|Describes the OS Disk Size in GB|
 |vnetSubnetId|no|specifies the Id of an alternate VNET subnet.  The subnet id must specify a valid VNET ID owned by the same subscription. ([bring your own VNET examples](../examples/vnet))|
-|distro|no| Select Agent Pool(s) Operating System (Linux). Currently supported values are: `ubuntu` and `coreos`. Defaults to `ubuntu` if undefined, unless `osType` is defined as `Windows` (in which case `distro` is unused). Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes.  [Example of CoreOS Master with Windows and Linux (CoreOS and Ubuntu) Agents](../examples/coreos/kubernetes-coreos-hybrid.json) |
+|distro|no| Select Agent Pool(s) Operating System (Linux). Currently supported values are: `ubuntu` and `coreos` (CoreOS support is currently experimental). Defaults to `ubuntu` if undefined, unless `osType` is defined as `Windows` (in which case `distro` is unused). Currently supported OS and orchestrator configurations -- `ubuntu`: DCOS, Docker Swarm, Kubernetes; `coreos`: Kubernetes.  [Example of CoreOS Master with Windows and Linux (CoreOS and Ubuntu) Agents](../examples/coreos/kubernetes-coreos-hybrid.json) |
 
 ### linuxProfile
 

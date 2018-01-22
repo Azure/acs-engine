@@ -125,10 +125,11 @@ type PublicKey struct {
 
 // WindowsProfile represents the windows parameters passed to the cluster
 type WindowsProfile struct {
-	AdminUsername string            `json:"adminUsername,omitempty"`
-	AdminPassword string            `json:"adminPassword,omitempty"`
-	ImageVersion  string            `json:"imageVersion,omitempty"`
-	Secrets       []KeyVaultSecrets `json:"secrets,omitempty"`
+	AdminUsername         string            `json:"adminUsername,omitempty"`
+	AdminPassword         string            `json:"adminPassword,omitempty"`
+	ImageVersion          string            `json:"imageVersion,omitempty"`
+	WindowsImageSourceURL string            `json:"WindowsImageSourceUrl"`
+	Secrets               []KeyVaultSecrets `json:"secrets,omitempty"`
 }
 
 // ProvisioningState represents the current state of container service resource.
@@ -212,6 +213,19 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
+// CloudProviderConfig contains the KubernetesConfig parameters specific to the Cloud Provider
+// TODO use this when strict JSON checking accommodates struct embedding
+type CloudProviderConfig struct {
+	CloudProviderBackoff         bool    `json:"cloudProviderBackoff,omitempty"`
+	CloudProviderBackoffRetries  int     `json:"cloudProviderBackoffRetries,omitempty"`
+	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty"`
+	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty"`
+	CloudProviderBackoffExponent float64 `json:"cloudProviderBackoffExponent,omitempty"`
+	CloudProviderRateLimit       bool    `json:"cloudProviderRateLimit,omitempty"`
+	CloudProviderRateLimitQPS    float64 `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket int     `json:"cloudProviderRateLimitBucket,omitempty"`
+}
+
 // KubernetesConfig contains the Kubernetes config structure, containing
 // Kubernetes specific configuration
 type KubernetesConfig struct {
@@ -220,8 +234,29 @@ type KubernetesConfig struct {
 	DNSServiceIP                 string            `json:"dnsServiceIP,omitempty"`
 	ServiceCidr                  string            `json:"serviceCidr,omitempty"`
 	NetworkPolicy                string            `json:"networkPolicy,omitempty"`
+	ContainerRuntime             string            `json:"containerRuntime,omitempty"`
 	MaxPods                      int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet           string            `json:"dockerBridgeSubnet,omitempty"`
+	UseManagedIdentity           bool              `json:"useManagedIdentity,omitempty"`
+	CustomHyperkubeImage         string            `json:"customHyperkubeImage,omitempty"`
+	DockerEngineVersion          string            `json:"dockerEngineVersion,omitempty"`
+	CustomCcmImage               string            `json:"customCcmImage,omitempty"`
+	UseCloudControllerManager    *bool             `json:"useCloudControllerManager,omitempty"`
+	UseInstanceMetadata          *bool             `json:"useInstanceMetadata,omitempty"`
+	EnableRbac                   *bool             `json:"enableRbac,omitempty"`
+	EnableSecureKubelet          *bool             `json:"enableSecureKubelet,omitempty"`
+	EnableAggregatedAPIs         bool              `json:"enableAggregatedAPIs,omitempty"`
+	GCHighThreshold              int               `json:"gchighthreshold,omitempty"`
+	GCLowThreshold               int               `json:"gclowthreshold,omitempty"`
+	EtcdVersion                  string            `json:"etcdVersion,omitempty"`
+	EtcdDiskSizeGB               string            `json:"etcdDiskSizeGB,omitempty"`
+	EnableDataEncryptionAtRest   *bool             `json:"enableDataEncryptionAtRest,omitempty"`
+	EnablePodSecurityPolicy      *bool             `json:"enablePodSecurityPolicy,omitempty"`
+	Addons                       []KubernetesAddon `json:"addons,omitempty"`
+	KubeletConfig                map[string]string `json:"kubeletConfig,omitempty"`
+	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
+	CloudControllerManagerConfig map[string]string `json:"cloudControllerManagerConfig,omitempty"`
+	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
 	CloudProviderBackoff         bool              `json:"cloudProviderBackoff,omitempty"`
 	CloudProviderBackoffRetries  int               `json:"cloudProviderBackoffRetries,omitempty"`
 	CloudProviderBackoffJitter   float64           `json:"cloudProviderBackoffJitter,omitempty"`
@@ -230,22 +265,6 @@ type KubernetesConfig struct {
 	CloudProviderRateLimit       bool              `json:"cloudProviderRateLimit,omitempty"`
 	CloudProviderRateLimitQPS    float64           `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket int               `json:"cloudProviderRateLimitBucket,omitempty"`
-	UseManagedIdentity           bool              `json:"useManagedIdentity,omitempty"`
-	CustomHyperkubeImage         string            `json:"customHyperkubeImage,omitempty"`
-	DockerEngineVersion          string            `json:"dockerEngineVersion,omitempty"`
-	CustomCcmImage               string            `json:"customCcmImage,omitempty"`
-	UseCloudControllerManager    *bool             `json:"useCloudControllerManager,omitempty"`
-	UseInstanceMetadata          *bool             `json:"useInstanceMetadata,omitempty"`
-	EnableRbac                   *bool             `json:"enableRbac,omitempty"`
-	EnableAggregatedAPIs         bool              `json:"enableAggregatedAPIs,omitempty"`
-	GCHighThreshold              int               `json:"gchighthreshold,omitempty"`
-	GCLowThreshold               int               `json:"gclowthreshold,omitempty"`
-	EtcdVersion                  string            `json:"etcdVersion,omitempty"`
-	EtcdDiskSizeGB               string            `json:"etcdDiskSizeGB,omitempty"`
-	EnableDataEncryptionAtRest   *bool             `json:"enableDataEncryptionAtRest,omitempty"`
-	Addons                       []KubernetesAddon `json:"addons,omitempty"`
-	KubeletConfig                map[string]string `json:"kubeletConfig,omitempty"`
-	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS

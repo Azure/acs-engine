@@ -1,7 +1,11 @@
 package acsengine
 
 import (
+	"bytes"
+	"fmt"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/helpers"
@@ -17,14 +21,12 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--authorization-mode":              "Webhook",
 		"--client-ca-file":                  "/etc/kubernetes/certs/ca.crt",
 		"--pod-manifest-path":               "/etc/kubernetes/manifests",
-		"--cloud-config":                    "/etc/kubernetes/azure.json",
 		"--cluster-domain":                  "cluster.local",
 		"--cluster-dns":                     DefaultKubernetesDNSServiceIP,
 		"--cgroups-per-qos":                 "false",
 		"--enforce-node-allocatable":        "",
 		"--kubeconfig":                      "/var/lib/kubelet/kubeconfig",
 		"--azure-container-registry-config": "/etc/kubernetes/azure.json",
-		"--read-only-port":                  "0",
 		"--keep-terminated-pod-volumes":     "false",
 	}
 
@@ -46,10 +48,14 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--image-gc-low-threshold":       strconv.Itoa(DefaultKubernetesGCLowThreshold),
 		"--non-masquerade-cidr":          DefaultNonMasqueradeCidr,
 		"--cloud-provider":               "azure",
+		"--cloud-config":                 "/etc/kubernetes/azure.json",
+		"--event-qps":                    DefaultKubeletEventQPS,
+		"--cadvisor-port":                DefaultKubeletCadvisorPort,
 	}
 
 	// If no user-configurable kubelet config values exists, use the defaults
 	setMissingKubeletValues(o.KubernetesConfig, defaultKubeletConfig)
+	addDefaultFeatureGates(o.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "", "")
 
 	// Override default cloud-provider?
 	if helpers.IsTrueBoolPointer(o.KubernetesConfig.UseCloudControllerManager) {
@@ -80,19 +86,45 @@ func setKubeletConfig(cs *api.ContainerService) {
 		}
 	}
 
+	// Remove secure kubelet flags, if configured
+	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableSecureKubelet) {
+		for _, key := range []string{"--anonymous-auth", "--authorization-mode", "--client-ca-file"} {
+			delete(o.KubernetesConfig.KubeletConfig, key)
+		}
+	}
+
 	// Master-specific kubelet config changes go here
 	if cs.Properties.MasterProfile != nil {
 		if cs.Properties.MasterProfile.KubernetesConfig == nil {
 			cs.Properties.MasterProfile.KubernetesConfig = &api.KubernetesConfig{}
+			cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig = copyMap(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig)
 		}
 		setMissingKubeletValues(cs.Properties.MasterProfile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
+		addDefaultFeatureGates(cs.Properties.MasterProfile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "", "")
+
 	}
 	// Agent-specific kubelet config changes go here
 	for _, profile := range cs.Properties.AgentPoolProfiles {
 		if profile.KubernetesConfig == nil {
 			profile.KubernetesConfig = &api.KubernetesConfig{}
+			profile.KubernetesConfig.KubeletConfig = copyMap(profile.KubernetesConfig.KubeletConfig)
 		}
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
+		addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
+	}
+}
+
+// combine user-provided --feature-gates vals with defaults
+// a minimum k8s version may be declared as required for defaults assignment
+func addDefaultFeatureGates(m map[string]string, version string, minVersion string, defaults string) {
+	if minVersion != "" {
+		if isKubernetesVersionGe(version, minVersion) {
+			m["--feature-gates"] = combineValues(m["--feature-gates"], defaults)
+		} else {
+			m["--feature-gates"] = combineValues(m["--feature-gates"], "")
+		}
+	} else {
+		m["--feature-gates"] = combineValues(m["--feature-gates"], defaults)
 	}
 }
 
@@ -108,4 +140,45 @@ func setMissingKubeletValues(p *api.KubernetesConfig, d map[string]string) {
 			}
 		}
 	}
+}
+func copyMap(input map[string]string) map[string]string {
+	copy := map[string]string{}
+	for key, value := range input {
+		copy[key] = value
+	}
+	return copy
+}
+func combineValues(inputs ...string) string {
+	var valueMap map[string]string
+	valueMap = make(map[string]string)
+	for _, input := range inputs {
+		applyValueStringToMap(valueMap, input)
+	}
+	return mapToString(valueMap)
+}
+
+func applyValueStringToMap(valueMap map[string]string, input string) {
+	values := strings.Split(input, ",")
+	for index := 0; index < len(values); index++ {
+		// trim spaces (e.g. if the input was "foo=true, bar=true" - we want to drop the space after the comma)
+		value := strings.Trim(values[index], " ")
+		valueParts := strings.Split(value, "=")
+		if len(valueParts) == 2 {
+			valueMap[valueParts[0]] = valueParts[1]
+		}
+	}
+}
+
+func mapToString(valueMap map[string]string) string {
+	// Order by key for consistency
+	keys := []string{}
+	for key := range valueMap {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	var buf bytes.Buffer
+	for _, key := range keys {
+		buf.WriteString(fmt.Sprintf("%s=%s,", key, valueMap[key]))
+	}
+	return strings.TrimSuffix(buf.String(), ",")
 }

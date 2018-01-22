@@ -262,7 +262,8 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	// Tests that apply to 1.6 and later releases
 	for _, k8sVersion := range []string{common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot6Dot12, common.KubernetesVersion1Dot6Dot13,
 		common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9, common.KubernetesVersion1Dot7Dot10, common.KubernetesVersion1Dot7Dot12,
-		common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2, common.KubernetesVersion1Dot8Dot4, common.KubernetesVersion1Dot8Dot6} {
+		common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2, common.KubernetesVersion1Dot8Dot4, common.KubernetesVersion1Dot8Dot6, common.KubernetesVersion1Dot8Dot7,
+		common.KubernetesVersion1Dot9Dot0, common.KubernetesVersion1Dot9Dot1, common.KubernetesVersion1Dot9Dot2} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
@@ -503,5 +504,41 @@ func getK8sDefaultProperties() *Properties {
 			ClientID: "clientID",
 			Secret:   "clientSecret",
 		},
+	}
+}
+
+func Test_Properties_ValidateContainerRuntime(t *testing.T) {
+	p := &Properties{}
+	p.OrchestratorProfile = &OrchestratorProfile{}
+	p.OrchestratorProfile.OrchestratorType = Kubernetes
+
+	for _, policy := range ContainerRuntimeValues {
+		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
+		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = policy
+		if err := p.validateContainerRuntime(); err != nil {
+			t.Errorf(
+				"should not error on containerRuntime=\"%s\"",
+				policy,
+			)
+		}
+	}
+
+	p.OrchestratorProfile.KubernetesConfig.ContainerRuntime = "not-existing"
+	if err := p.validateContainerRuntime(); err == nil {
+		t.Errorf(
+			"should error on invalid containerRuntime",
+		)
+	}
+
+	p.OrchestratorProfile.KubernetesConfig.ContainerRuntime = "clear-containers"
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			OSType: Windows,
+		},
+	}
+	if err := p.validateContainerRuntime(); err == nil {
+		t.Errorf(
+			"should error on clear-containers for windows clusters",
+		)
 	}
 }

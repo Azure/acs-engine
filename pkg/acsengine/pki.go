@@ -94,21 +94,17 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 
 	go func() {
 		var err error
-		organization := make([]string, 1)
-		organization[0] = "system:masters"
 		ip := net.ParseIP("127.0.0.1").To4()
 		peerIPs := append(extraIPs, ip)
-		etcdServerCertificate, etcdServerPrivateKey, err = createCertificate("etcdserver", caCertificate, caPrivateKey, true, true, nil, peerIPs, organization)
+		etcdServerCertificate, etcdServerPrivateKey, err = createCertificate("etcdserver", caCertificate, caPrivateKey, true, true, nil, peerIPs, nil)
 		errors <- err
 	}()
 
 	go func() {
 		var err error
-		organization := make([]string, 1)
-		organization[0] = "system:masters"
 		ip := net.ParseIP("127.0.0.1").To4()
 		peerIPs := append(extraIPs, ip)
-		etcdClientCertificate, etcdClientPrivateKey, err = createCertificate("etcdclient", caCertificate, caPrivateKey, true, false, nil, peerIPs, organization)
+		etcdClientCertificate, etcdClientPrivateKey, err = createCertificate("etcdclient", caCertificate, caPrivateKey, true, false, nil, peerIPs, nil)
 		errors <- err
 	}()
 
@@ -116,13 +112,11 @@ func CreatePki(extraFQDNs []string, extraIPs []net.IP, clusterDomain string, caP
 	for i := 0; i < masterCount; i++ {
 		go func(i int) {
 			var err error
-			organization := make([]string, 1)
-			organization[0] = "system:masters"
 			ip := net.ParseIP("127.0.0.1").To4()
 			peerIPs := append(extraIPs, ip)
 			etcdPeerCertificate := new(x509.Certificate)
 			etcdPeerPrivateKey := new(rsa.PrivateKey)
-			etcdPeerCertificate, etcdPeerPrivateKey, err = createCertificate("etcdpeer", caCertificate, caPrivateKey, true, false, nil, peerIPs, organization)
+			etcdPeerCertificate, etcdPeerPrivateKey, err = createCertificate("etcdpeer", caCertificate, caPrivateKey, true, false, nil, peerIPs, nil)
 			etcdPeerCertPairs[i] = &PkiKeyCertPair{CertificatePem: string(certificateToPem(etcdPeerCertificate.Raw)), PrivateKeyPem: string(privateKeyToPem(etcdPeerPrivateKey))}
 			errors <- err
 		}(i)

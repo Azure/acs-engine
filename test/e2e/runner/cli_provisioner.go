@@ -57,7 +57,7 @@ func (cli *CLIProvisioner) Run() error {
 				cli.Point.RecordProvisionError()
 			} else if i == cli.ProvisionRetries {
 				cli.Point.RecordProvisionError()
-				return fmt.Errorf("Exceeded provision retry count")
+				return fmt.Errorf("Exceeded provision retry count: %s", err)
 			}
 		} else {
 			cli.Point.RecordProvisionSuccess()
@@ -76,17 +76,22 @@ func (cli *CLIProvisioner) Run() error {
 
 func (cli *CLIProvisioner) provision() error {
 	cli.Config.Name = cli.generateName()
+	if cli.Config.SoakClusterName != "" {
+		cli.Config.Name = cli.Config.SoakClusterName
+	}
 	os.Setenv("NAME", cli.Config.Name)
 	log.Printf("Cluster name:%s\n", cli.Config.Name)
 
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
 	os.Mkdir(outputPath, 0755)
 
-	out, err := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa").CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
+	if cli.Config.SoakClusterName == "" {
+		out, err := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa").CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
+		}
+		exec.Command("chmod", "0600", cli.Config.GetSSHKeyPath()+"*")
 	}
-	exec.Command("chmod", "0600", cli.Config.GetSSHKeyPath()+"*")
 
 	publicSSHKey, err := cli.Config.ReadPublicSSHKey()
 	if err != nil {
@@ -153,6 +158,11 @@ func (cli *CLIProvisioner) waitForNodes() error {
 		if ready == false {
 			return errors.New("Error: Not all nodes in a healthy state")
 		}
+		version, err := node.Version()
+		if err != nil {
+			log.Printf("Ready nodes did not return a version: %s", err)
+		}
+		log.Printf("Testing a Kubernetes %s cluster...\n", version)
 	}
 
 	if cli.Config.IsDCOS() {

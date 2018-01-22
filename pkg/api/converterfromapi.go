@@ -574,6 +574,7 @@ func convertWindowsProfileToVLabs(api *WindowsProfile, vlabsProfile *vlabs.Windo
 	vlabsProfile.AdminUsername = api.AdminUsername
 	vlabsProfile.AdminPassword = api.AdminPassword
 	vlabsProfile.ImageVersion = api.ImageVersion
+	vlabsProfile.WindowsImageSourceURL = api.WindowsImageSourceURL
 	vlabsProfile.Secrets = []vlabs.KeyVaultSecrets{}
 	for _, s := range api.Secrets {
 		secret := &vlabs.KeyVaultSecrets{}
@@ -665,8 +666,10 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.UseCloudControllerManager = api.UseCloudControllerManager
 	vlabs.UseInstanceMetadata = api.UseInstanceMetadata
 	vlabs.EnableRbac = api.EnableRbac
+	vlabs.EnableSecureKubelet = api.EnableSecureKubelet
 	vlabs.EnableAggregatedAPIs = api.EnableAggregatedAPIs
 	vlabs.EnableDataEncryptionAtRest = api.EnableDataEncryptionAtRest
+	vlabs.EnablePodSecurityPolicy = api.EnablePodSecurityPolicy
 	vlabs.GCHighThreshold = api.GCHighThreshold
 	vlabs.GCLowThreshold = api.GCLowThreshold
 	vlabs.EtcdVersion = api.EtcdVersion
@@ -674,6 +677,8 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	convertAddonsToVlabs(api, vlabs)
 	convertKubeletConfigToVlabs(api, vlabs)
 	convertControllerManagerConfigToVlabs(api, vlabs)
+	convertCloudControllerManagerConfigToVlabs(api, vlabs)
+	convertAPIServerConfigToVlabs(api, vlabs)
 }
 
 func convertKubeletConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
@@ -687,6 +692,20 @@ func convertControllerManagerConfigToVlabs(a *KubernetesConfig, v *vlabs.Kuberne
 	v.ControllerManagerConfig = map[string]string{}
 	for key, val := range a.ControllerManagerConfig {
 		v.ControllerManagerConfig[key] = val
+	}
+}
+
+func convertCloudControllerManagerConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
+	v.CloudControllerManagerConfig = map[string]string{}
+	for key, val := range a.CloudControllerManagerConfig {
+		v.CloudControllerManagerConfig[key] = val
+	}
+}
+
+func convertAPIServerConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
+	v.APIServerConfig = map[string]string{}
+	for key, val := range a.APIServerConfig {
+		v.APIServerConfig[key] = val
 	}
 }
 

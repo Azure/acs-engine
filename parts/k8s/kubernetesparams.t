@@ -1,10 +1,4 @@
 {{if .HasAadProfile}}
-    "aadServerAppId": {
-      "metadata": {
-        "description": "The server AAD application ID"
-      },
-      "type": "string"
-    },
     "aadTenantId": {
       "defaultValue": "",
       "metadata": {
@@ -509,6 +503,17 @@
         "none",
         "azure",
         "calico"
+      ],
+      "type": "string"
+    },
+    "containerRuntime": {
+      "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.ContainerRuntime}}",
+      "metadata": {
+        "description": "The container runtime to use (docker|clear-containers)"
+      },
+      "allowedValues": [
+        "docker",
+        "clear-containers"
       ],
       "type": "string"
     },

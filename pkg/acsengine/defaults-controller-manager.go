@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
 func setControllerManagerConfig(cs *api.ContainerService) {
@@ -12,15 +13,13 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 		"--kubeconfig":                       "/var/lib/kubelet/kubeconfig",
 		"--allocate-node-cidrs":              strconv.FormatBool(!o.IsAzureCNI()),
 		"--cluster-cidr":                     o.KubernetesConfig.ClusterSubnet,
-		"--cloud-provider":                   "azure",
-		"--cloud-config":                     "/etc/kubernetes/azure.json",
 		"--root-ca-file":                     "/etc/kubernetes/certs/ca.crt",
 		"--cluster-signing-cert-file":        "/etc/kubernetes/certs/ca.crt",
 		"--cluster-signing-key-file":         "/etc/kubernetes/certs/ca.key",
 		"--service-account-private-key-file": "/etc/kubernetes/certs/apiserver.key",
 		"--leader-elect":                     "true",
 		"--v":                                "2",
-		"--profiling":                        "False",
+		"--profiling":                        "false",
 	}
 
 	// Set --cluster-name based on appropriate DNS prefix
@@ -28,6 +27,12 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 		staticLinuxControllerManagerConfig["--cluster-name"] = cs.Properties.MasterProfile.DNSPrefix
 	} else if cs.Properties.HostedMasterProfile != nil {
 		staticLinuxControllerManagerConfig["--cluster-name"] = cs.Properties.HostedMasterProfile.DNSPrefix
+	}
+
+	// Enable cloudprovider if we're not using cloud controller manager
+	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.UseCloudControllerManager) {
+		staticLinuxControllerManagerConfig["--cloud-provider"] = "azure"
+		staticLinuxControllerManagerConfig["--cloud-config"] = "/etc/kubernetes/azure.json"
 	}
 
 	staticWindowsControllerManagerConfig := make(map[string]string)
@@ -39,9 +44,11 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 
 	// Default controller-manager config
 	defaultControllerManagerConfig := map[string]string{
-		"--node-monitor-grace-period":   DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
-		"--pod-eviction-timeout":        DefaultKubernetesCtrlMgrPodEvictionTimeout,
-		"--route-reconciliation-period": DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
+		"--node-monitor-grace-period":       DefaultKubernetesCtrlMgrNodeMonitorGracePeriod,
+		"--pod-eviction-timeout":            DefaultKubernetesCtrlMgrPodEvictionTimeout,
+		"--route-reconciliation-period":     DefaultKubernetesCtrlMgrRouteReconciliationPeriod,
+		"--terminated-pod-gc-threshold":     DefaultKubernetesCtrlMgrTerminatedPodGcThreshold,
+		"--use-service-account-credentials": DefaultKubernetesCtrlMgrUseSvcAccountCreds,
 	}
 
 	// If no user-configurable controller-manager config values exists, use the defaults

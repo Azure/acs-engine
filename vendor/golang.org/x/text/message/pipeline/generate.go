@@ -26,6 +26,8 @@ import (
 var transRe = regexp.MustCompile(`messages\.(.*)\.json`)
 
 // Generate writes a Go file that defines a Catalog with translated messages.
+// Translations are retrieved from s.Messages, not s.Translations, so it
+// is assumed Merge has been called.
 func (s *State) Generate() error {
 	path := s.Config.GenPackage
 	if path == "" {
@@ -56,7 +58,8 @@ func (s *State) Generate() error {
 }
 
 // WriteGen writes a Go file with the given package name to w that defines a
-// Catalog with translated messages.
+// Catalog with translated messages. Translations are retrieved from s.Messages,
+// not s.Translations, so it is assumed Merge has been called.
 func (s *State) WriteGen(w io.Writer, pkg string) error {
 	cw, err := s.generate()
 	if err != nil {
@@ -80,16 +83,12 @@ func Generate(w io.Writer, pkg string, extracted *Messages, trans ...Messages) (
 }
 
 func (s *State) generate() (*gen.CodeWriter, error) {
-	// TODO: add in external input. Right now we assume that all files are
-	// manually created and stored in the textdata directory.
-
 	// Build up index of translations and original messages.
 	translations := map[language.Tag]map[string]Message{}
 	languages := []language.Tag{}
-	langVars := []string{}
 	usedKeys := map[string]int{}
 
-	for _, loc := range s.Translations {
+	for _, loc := range s.Messages {
 		tag := loc.Language
 		if _, ok := translations[tag]; !ok {
 			translations[tag] = map[string]Message{}
@@ -110,6 +109,7 @@ func (s *State) generate() (*gen.CodeWriter, error) {
 	// Verify completeness and register keys.
 	internal.SortTags(languages)
 
+	langVars := []string{}
 	for _, tag := range languages {
 		langVars = append(langVars, strings.Replace(tag.String(), "-", "_", -1))
 		dict := translations[tag]

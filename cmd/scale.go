@@ -12,8 +12,10 @@ import (
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
+	"github.com/Azure/acs-engine/pkg/acsengine/transform"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/leonelquinteros/gotext"
@@ -186,10 +188,12 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		vms, err := sc.client.ListVirtualMachines(sc.resourceGroupName)
 		if err != nil {
 			log.Fatalln("failed to get vms in the resource group. Error: %s", err.Error())
+		} else if len(*vms.Value) < 1 {
+			log.Fatalln("The provided resource group does not contain any vms.")
 		}
 		for _, vm := range *vms.Value {
 
-			poolName, nameSuffix, index, err := armhelpers.K8sLinuxVMNameParts(*vm.Name)
+			poolName, nameSuffix, index, err := utils.K8sLinuxVMNameParts(*vm.Name)
 			if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.EqualFold(nameSuffix, sc.nameSuffix) {
 				continue
 			}
@@ -249,7 +253,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 			log.Fatalln("failed to get vmss list in the resource group. Error: %s", err.Error())
 		}
 		for _, vmss := range *vmssList.Value {
-			poolName, nameSuffix, err := armhelpers.VmssNameParts(*vmss.Name)
+			poolName, nameSuffix, err := utils.VmssNameParts(*vmss.Name)
 			if err != nil || !strings.EqualFold(poolName, sc.agentPoolToScale) || !strings.EqualFold(nameSuffix, sc.nameSuffix) {
 				continue
 			}
@@ -276,7 +280,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if template, err = acsengine.PrettyPrintArmTemplate(template); err != nil {
+	if template, err = transform.PrettyPrintArmTemplate(template); err != nil {
 		log.Fatalf("error pretty printing template: %s \n", err.Error())
 	}
 
@@ -293,7 +297,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 		log.Fatalln(err)
 	}
 
-	transformer := acsengine.Transformer{Translator: ctx.Translator}
+	transformer := transform.Transformer{Translator: ctx.Translator}
 	// Our templates generate a range of nodes based on a count and offset, it is possible for there to be holes in the template
 	// So we need to set the count in the template to get enough nodes for the range, if there are holes that number will be larger than the desired count
 	countForTemplate := sc.newDesiredAgentCount

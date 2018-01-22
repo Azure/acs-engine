@@ -98,12 +98,12 @@ msgstr "Template Generator の初期化に失敗しました: %s"
 #: pkg/api/apiloader.go:161 pkg/api/upgradeapiloader.go:70
 #, c-format
 msgid "invalid version %s for conversion back from unversioned object"
-msgstr "バージョンが指定されていないオブジェクトから変換し直すことのできないバージョンです: %s"
+msgstr "バージョン管理外オブジェクトから変換し直すことのできないバージョンです: %s"
 
 #: pkg/acsengine/engine.go:322
 #, c-format
 msgid "orchestrator '%s' is unsupported"
-msgstr "Orchestrator '%s' はサポートされていません"
+msgstr "オーケストレーター '%s' はサポートされていません"
 
 #: pkg/acsengine/engine.go:187
 #, c-format

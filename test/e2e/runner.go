@@ -51,6 +51,11 @@ func main() {
 
 	// Only provision a cluster if there isnt a name present
 	if cfg.Name == "" {
+		if cfg.SoakClusterName != "" {
+			rg := cfg.SoakClusterName
+			log.Printf("Deleting Group:%s\n", rg)
+			acct.DeleteGroup(rg, true)
+		}
 		cliProvisioner, err := runner.BuildCLIProvisioner(cfg, acct, pt)
 		if err != nil {
 			log.Fatalf("Error while trying to build CLI Provisioner:%s", err)
@@ -118,7 +123,7 @@ func teardown() {
 	if cfg.CleanUpOnExit {
 		for _, rg := range rgs {
 			log.Printf("Deleting Group:%s\n", rg)
-			acct.DeleteGroup(rg)
+			acct.DeleteGroup(rg, false)
 		}
 	}
 }
