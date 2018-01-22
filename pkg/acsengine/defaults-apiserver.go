@@ -32,8 +32,8 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--profiling":                  "false",
 		"--repair-malformed-updates":   "false",
 		"--service-account-key-file":   "/etc/kubernetes/certs/apiserver.key",
-		"--kubelet-client-certificate": "/etc/kubernetes/certs/client.crt",
-		"--kubelet-client-key":         "/etc/kubernetes/certs/client.key",
+		"--kubelet-client-certificate": "/etc/kubernetes/certs/apiserver.crt",
+		"--kubelet-client-key":         "/etc/kubernetes/certs/apiserver.key",
 		"--service-cluster-ip-range":   o.KubernetesConfig.ServiceCIDR,
 		"--storage-backend":            o.GetAPIServerEtcdAPIVersion(),
 		"--v":                          "4",
@@ -82,7 +82,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// Default apiserver config
 	defaultAPIServerConfig := map[string]string{
-		"--admission-control":  "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages,SecurityContextDeny",
+		"--admission-control":  "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages,SecurityContextDeny,PodSecurityPolicy",
 		"--authorization-mode": "Node",
 	}
 
