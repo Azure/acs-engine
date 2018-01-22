@@ -297,6 +297,7 @@
     "scope": "[resourceGroup().id]",
     "tenantId": "[subscription().tenantId]",
     "targetEnvironment": "[parameters('targetEnvironment')]",
+    "singleQuote": "'",
     "dockerEngineDownloadRepo": "[parameters('dockerEngineDownloadRepo')]",
     "dockerEngineVersion": "[parameters('dockerEngineVersion')]"
 {{if .LinuxProfile.HasSecrets}}
@@ -330,6 +331,5 @@
     "agentWindowsOffer": "WindowsServerSemiAnnual",
     "agentWindowsSku": "Datacenter-Core-1709-with-Containers-smalldisk",
     "agentWindowsVersion": "[parameters('agentWindowsVersion')]",
-    "singleQuote": "'",
     "windowsCustomScriptSuffix": " $inputFile = '%SYSTEMDRIVE%\\AzureData\\CustomData.bin' ; $outputFile = '%SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.ps1' ; Copy-Item $inputFile $outputFile ; Invoke-Expression('{0} {1}' -f $outputFile, $arguments) ; "
 {{end}}

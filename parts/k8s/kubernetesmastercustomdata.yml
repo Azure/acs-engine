@@ -366,6 +366,8 @@ runcmd:
 - sudo /bin/chown etcd:etcd {{WrapAsVariable "etcdServerKeyFilepath"}}
 - sudo /bin/chown etcd:etcd {{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}}
 - systemctl restart etcd
+- MEMBER="$(sudo etcdctl member list | grep -E {{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}} | cut -d{{WrapAsVariable "singleQuote"}}:{{WrapAsVariable "singleQuote"}} -f 1)"
+- sudo etcdctl member update ${MEMBER} {{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}
 - for i in $(seq 1 20); do curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"/v2/machines; [ $? -eq 0 ] && break || sleep 5; done
 - retrycmd_if_failure apt-get update
 - retrycmd_if_failure apt-get install -y apt-transport-https ca-certificates
