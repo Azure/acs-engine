@@ -177,7 +177,10 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 	Describe("with a linux agent pool", func() {
 		It("should be able to autoscale", func() {
-			if eng.HasLinuxAgents() {
+			version, err := node.Version()
+			Expect(err).NotTo(HaveOccurred())
+			re := regexp.MustCompile("v1.9")
+			if eng.HasLinuxAgents() && re.FindString(version) == "" {
 				// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				phpApacheName := fmt.Sprintf("php-apache-%s-%v", cfg.Name, r.Intn(99999))
