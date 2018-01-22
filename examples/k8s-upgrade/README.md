@@ -45,6 +45,9 @@ To get the list of all available Kubernetes versions and upgrades, run the *orch
         },
         {
           "orchestratorVersion": "1.8.6"
+        },
+        {
+          "orchestratorVersion": "1.8.7"
         }
       ]
     },
@@ -103,7 +106,10 @@ To get the information specific to the cluster, provide its current orchestrator
         },
         {
           "orchestratorVersion": "1.8.6"
-        }
+        },
+        {
+          "orchestratorVersion": "1.8.7"
+        },
         {
           "orchestratorVersion": "1.7.9"
         },
@@ -135,7 +141,7 @@ For example,
   --deployment-dir ./_output/test \
   --location westus \
   --resource-group test-upgrade \
-  --upgrade-version 1.8.6 \
+  --upgrade-version 1.8.7 \
   --auth-method client_secret \
   --client-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
   --client-secret xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
