@@ -67,22 +67,14 @@ else
     REBOOTREQUIRED=false
 fi
 
-# If APISERVER_PRIVATE_KEY is empty, then we are not on the master
-if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
-    echo "APISERVER_PRIVATE_KEY is non-empty, assuming master node"
+if [[ ! -z "${MASTER_NODE}" ]]; then
+    echo "executing master node provision operations"
 
     APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
     touch "${APISERVER_PRIVATE_KEY_PATH}"
     chmod 0600 "${APISERVER_PRIVATE_KEY_PATH}"
     chown root:root "${APISERVER_PRIVATE_KEY_PATH}"
     echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
-else
-    echo "APISERVER_PRIVATE_KEY is empty, assuming worker node"
-fi
-
-# If CA_PRIVATE_KEY is empty, then we are not on the master
-if [[ ! -z "${CA_PRIVATE_KEY}" ]]; then
-    echo "CA_KEY is non-empty, assuming master node"
 
     CA_PRIVATE_KEY_PATH="/etc/kubernetes/certs/ca.key"
     touch "${CA_PRIVATE_KEY_PATH}"
@@ -129,7 +121,7 @@ if [[ ! -z "${CA_PRIVATE_KEY}" ]]; then
     echo `date`,`hostname`, finishedGettingEtcdCerts>>/opt/m
     mkdir -p /opt/azure/containers && touch /opt/azure/containers/etcdcerts.complete
 else
-    echo "CA_PRIVATE_KEY is empty, assuming worker node"
+    echo "skipping master node provision operations, this is an agent node"
 fi
 
 KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
@@ -699,7 +691,7 @@ ensureRunCommandCompleted
 echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 
 # master only
-if [[ ! -z "${APISERVER_PRIVATE_KEY}" ]]; then
+if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
     ensureKubectl
     ensureEtcdDataDir
@@ -713,7 +705,6 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
     echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
     sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
-    # If APISERVER_PRIVATE_KEY is empty, then we are not on the master
     apt-mark unhold walinuxagent
 fi
 
