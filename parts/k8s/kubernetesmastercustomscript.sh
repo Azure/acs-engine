@@ -89,48 +89,48 @@ if [[ ! -z "${CA_PRIVATE_KEY}" ]]; then
     chmod 0600 "${CA_PRIVATE_KEY_PATH}"
     chown root:root "${CA_PRIVATE_KEY_PATH}"
     echo "${CA_PRIVATE_KEY}" | base64 --decode > "${CA_PRIVATE_KEY_PATH}"
+
+    ETCD_SERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdserver.key"
+    touch "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+    chmod 0600 "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+    chown root:root "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+    echo "${ETCD_SERVER_PRIVATE_KEY}" | base64 --decode > "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+
+    ETCD_CLIENT_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdclient.key"
+    touch "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+    chmod 0600 "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+    chown root:root "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+    echo "${ETCD_CLIENT_PRIVATE_KEY}" | base64 --decode > "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+
+    ETCD_PEER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.key"
+    touch "${ETCD_PEER_PRIVATE_KEY_PATH}"
+    chmod 0600 "${ETCD_PEER_PRIVATE_KEY_PATH}"
+    chown root:root "${ETCD_PEER_PRIVATE_KEY_PATH}"
+    echo "${ETCD_PEER_KEY}" | base64 --decode > "${ETCD_PEER_PRIVATE_KEY_PATH}"
+
+    ETCD_SERVER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdserver.crt"
+    touch "${ETCD_SERVER_CERTIFICATE_PATH}"
+    chmod 0644 "${ETCD_SERVER_CERTIFICATE_PATH}"
+    chown root:root "${ETCD_SERVER_CERTIFICATE_PATH}"
+    echo "${ETCD_SERVER_CERTIFICATE}" | base64 --decode > "${ETCD_SERVER_CERTIFICATE_PATH}"
+
+    ETCD_CLIENT_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdclient.crt"
+    touch "${ETCD_CLIENT_CERTIFICATE_PATH}"
+    chmod 0644 "${ETCD_CLIENT_CERTIFICATE_PATH}"
+    chown root:root "${ETCD_CLIENT_CERTIFICATE_PATH}"
+    echo "${ETCD_CLIENT_CERTIFICATE}" | base64 --decode > "${ETCD_CLIENT_CERTIFICATE_PATH}"
+
+    ETCD_PEER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.crt"
+    touch "${ETCD_PEER_CERTIFICATE_PATH}"
+    chmod 0644 "${ETCD_PEER_CERTIFICATE_PATH}"
+    chown root:root "${ETCD_PEER_CERTIFICATE_PATH}"
+    echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
+
+    echo `date`,`hostname`, finishedGettingEtcdCerts>>/opt/m
+    mkdir -p /opt/azure/containers && touch /opt/azure/containers/etcdcerts.complete
 else
     echo "CA_PRIVATE_KEY is empty, assuming worker node"
 fi
-
-ETCD_SERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdserver.key"
-touch "${ETCD_SERVER_PRIVATE_KEY_PATH}"
-chmod 0600 "${ETCD_SERVER_PRIVATE_KEY_PATH}"
-chown root:root "${ETCD_SERVER_PRIVATE_KEY_PATH}"
-echo "${ETCD_SERVER_PRIVATE_KEY}" | base64 --decode > "${ETCD_SERVER_PRIVATE_KEY_PATH}"
-
-ETCD_CLIENT_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdclient.key"
-touch "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
-chmod 0600 "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
-chown root:root "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
-echo "${ETCD_CLIENT_PRIVATE_KEY}" | base64 --decode > "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
-
-ETCD_PEER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.key"
-touch "${ETCD_PEER_PRIVATE_KEY_PATH}"
-chmod 0600 "${ETCD_PEER_PRIVATE_KEY_PATH}"
-chown root:root "${ETCD_PEER_PRIVATE_KEY_PATH}"
-echo "${ETCD_PEER_KEY}" | base64 --decode > "${ETCD_PEER_PRIVATE_KEY_PATH}"
-
-ETCD_SERVER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdserver.crt"
-touch "${ETCD_SERVER_CERTIFICATE_PATH}"
-chmod 0644 "${ETCD_SERVER_CERTIFICATE_PATH}"
-chown root:root "${ETCD_SERVER_CERTIFICATE_PATH}"
-echo "${ETCD_SERVER_CERTIFICATE}" | base64 --decode > "${ETCD_SERVER_CERTIFICATE_PATH}"
-
-ETCD_CLIENT_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdclient.crt"
-touch "${ETCD_CLIENT_CERTIFICATE_PATH}"
-chmod 0644 "${ETCD_CLIENT_CERTIFICATE_PATH}"
-chown root:root "${ETCD_CLIENT_CERTIFICATE_PATH}"
-echo "${ETCD_CLIENT_CERTIFICATE}" | base64 --decode > "${ETCD_CLIENT_CERTIFICATE_PATH}"
-
-ETCD_PEER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.crt"
-touch "${ETCD_PEER_CERTIFICATE_PATH}"
-chmod 0644 "${ETCD_PEER_CERTIFICATE_PATH}"
-chown root:root "${ETCD_PEER_CERTIFICATE_PATH}"
-echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
-
-echo `date`,`hostname`, finishedGettingEtcdCerts>>/opt/m
-mkdir -p /opt/azure/containers && touch /opt/azure/containers/etcdcerts.complete
 
 KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
 touch "${KUBELET_PRIVATE_KEY_PATH}"
