@@ -204,6 +204,10 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesTillerMemoryLimit>|{{WrapAsVariable "kubernetesTillerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
 {{end}}
 
+{{if AdminGroupID }}
+    sed -i "s|<aadAdminGroupId>|{{WrapAsVariable "aadAdminGroupId"}}|g" "/etc/kubernetes/addons/aad-default-admin-group-rbac.yaml"
+{{end}}
+
 {{if .OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled}}
     ACI_CONNECTOR_CREDENTIALS=$(printf "{\"clientId\": \"{{WrapAsVariable "kubernetesACIConnectorClientId"}}\", \"clientSecret\": \"{{WrapAsVariable "kubernetesACIConnectorClientKey"}}\", \"tenantId\": \"{{WrapAsVariable "kubernetesACIConnectorTenantId"}}\", \"subscriptionId\": \"{{WrapAsVariable "kubernetesACIConnectorSubscriptionId"}}\", \"activeDirectoryEndpointUrl\": \"https://login.microsoftonline.com\",\"resourceManagerEndpointUrl\": \"https://management.azure.com/\", \"activeDirectoryGraphResourceId\": \"https://graph.windows.net/\", \"sqlManagementEndpointUrl\": \"https://management.core.windows.net:8443/\", \"galleryEndpointUrl\": \"https://gallery.azure.com/\", \"managementEndpointUrl\": \"https://management.core.windows.net/\"}" | base64 -w 0)
     sed -i "s|<kubernetesACIConnectorSpec>|{{WrapAsVariable "kubernetesACIConnectorSpec"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
