@@ -374,6 +374,8 @@ runcmd:
 - retrycmd_if_failure apt-get update
 - retrycmd_if_failure apt-get install -y ebtables
 - retrycmd_if_failure apt-get install -y docker-engine
+- echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
+- systemctl daemon-reload
 - systemctl restart docker
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
