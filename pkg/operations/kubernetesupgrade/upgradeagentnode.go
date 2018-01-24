@@ -93,7 +93,7 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 
 	kan.logger.Errorf("Deployment %s failed with error %v", deploymentName, err)
 	// Get deployment error details
-	deploymentError, e := armhelpers.GetDeploymentError(depExt, err, kan.Client, kan.logger, kan.ResourceGroup, deploymentName)
+	deploymentError, e := armhelpers.GetDeploymentError(depExt, kan.Client, kan.logger, kan.ResourceGroup, deploymentName)
 	if e != nil {
 		kan.logger.Errorf("Failed to get error details for deployment %s: %v", deploymentName, e)
 		// return original deployment error

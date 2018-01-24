@@ -31,7 +31,7 @@ func (az *AzureClient) DeployTemplate(resourceGroupName, deploymentName string, 
 		return nil, err
 	}
 
-	log.Infof("Finished ARM Deployment (%s).", deploymentName)
+	log.Infof("Finished ARM Deployment (%s). Error: %v", deploymentName, err)
 
 	return &res, err
 }

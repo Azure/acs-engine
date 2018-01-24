@@ -5,74 +5,13 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/apierror"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/sirupsen/logrus"
 )
 
-//TODO move pkg/core/apierror/ to acs-engine
-
-// ErrorCategory indicates the kind of error
-type ErrorCategory string
-
-const (
-	// ClientError is expected error
-	ClientError ErrorCategory = "ClientError"
-
-	// InternalError is system or internal error
-	InternalError ErrorCategory = "InternalError"
-)
-
-// Error is the OData v4 format, used by the RPC and
-// will go into the v2.2 Azure REST API guidelines
-type Error struct {
-	Code    string  `json:"code"`
-	Message string  `json:"message"`
-	Target  string  `json:"target,omitempty"`
-	Details []Error `json:"details,omitempty"`
-
-	Category ErrorCategory `json:"-"`
-}
-
-// ErrorResponse defines Resource Provider API 2.0 Error Response Content structure
-type ErrorResponse struct {
-	Body Error `json:"error"`
-}
-
-// DeploymentError defines deployment error along with deployment operation errors
-type DeploymentError struct {
-	RootError       error
-	OperationErrors []*ErrorResponse
-}
-
-// Error implements error interface to return error in json
-func (e *DeploymentError) Error() string {
-	if len(e.OperationErrors) == 0 {
-		return e.RootError.Error()
-	}
-	errStrList := make([]string, len(e.OperationErrors)+1)
-	errStrList[0] = e.RootError.Error()
-	for i, errResp := range e.OperationErrors {
-		errStrList[i+1] = errResp.Error()
-	}
-	return strings.Join(errStrList, " | ")
-}
-
-// Error implements error interface to return error in json
-func (e *ErrorResponse) Error() string {
-	return e.Body.Error()
-}
-
-// Error implements error interface to return error in json
-func (e *Error) Error() string {
-	output, err := json.MarshalIndent(e, " ", " ")
-	if err != nil {
-		return err.Error()
-	}
-	return string(output)
-}
-
-func toArmError(logger *logrus.Entry, operation resources.DeploymentOperation) (*ErrorResponse, error) {
-	errresp := &ErrorResponse{}
+func toErrorResponse(logger *logrus.Entry, operation resources.DeploymentOperation) (*apierror.ErrorResponse, error) {
+	errresp := &apierror.ErrorResponse{}
 	if operation.Properties != nil && operation.Properties.StatusMessage != nil {
 		b, err := json.MarshalIndent(operation.Properties.StatusMessage, "", "  ")
 		if err != nil {
@@ -84,101 +23,124 @@ func toArmError(logger *logrus.Entry, operation resources.DeploymentOperation) (
 			return nil, err
 		}
 	}
+	errresp.Body.Category = getErrorCategory(errresp.Body.Code)
 	return errresp, nil
 }
 
-func toArmErrors(logger *logrus.Entry, deploymentName string, operationsList resources.DeploymentOperationsListResult) ([]*ErrorResponse, error) {
-	ret := []*ErrorResponse{}
-
-	if operationsList.Value == nil {
-		return ret, nil
-	}
-
-	for _, operation := range *operationsList.Value {
-		if operation.Properties == nil || operation.Properties.ProvisioningState == nil || *operation.Properties.ProvisioningState != string(api.Failed) {
-			continue
-		}
-
-		errresp, err := toArmError(logger, operation)
-		if err != nil {
-			logger.Warnf("unable to convert deployment operation to error response in deployment %s from ARM. error: %v", deploymentName, err)
-			continue
-		}
-
-		if len(errresp.Body.Code) > 0 {
-			logger.Warnf("got failed deployment operation in deployment %s. error: %v", deploymentName, errresp.Error())
-		}
-		ret = append(ret, errresp)
-	}
-	return ret, nil
-}
-
-//TODO errorCode is ErrorCode
-func newErrorResponse(errorCategory ErrorCategory, errorCode string, message string) *ErrorResponse {
-	return &ErrorResponse{
-		Body: Error{
-			Code:     errorCode,
-			Message:  message,
-			Category: errorCategory,
-		},
+func getErrorCategory(code apierror.ErrorCode) apierror.ErrorCategory {
+	switch code {
+	case apierror.InvalidParameter,
+		apierror.BadRequest,
+		apierror.OperationNotAllowed,
+		apierror.PropertyChangeNotAllowed,
+		apierror.UnregisterWithResourcesNotAllowed,
+		apierror.InvalidParameterConflictingProperties,
+		apierror.SubscriptionNotRegistered,
+		apierror.ConflictingUserInput,
+		apierror.QuotaExceeded,
+		apierror.Unauthorized,
+		apierror.ResourcesOverConstrained:
+		return apierror.ClientError
+	default:
+		return apierror.InternalError
 	}
 }
 
 // GetDeploymentError returns deployment error
-func GetDeploymentError(res *resources.DeploymentExtended, rootError error, az ACSEngineClient, logger *logrus.Entry, resourceGroupName, deploymentName string) (*DeploymentError, error) {
-	if rootError == nil {
+func GetDeploymentError(res *resources.DeploymentExtended, az ACSEngineClient, logger *logrus.Entry, resourceGroupName, deploymentName string) (*apierror.Error, error) {
+	logger.Infof("Getting detailed deployment errors for %s", deploymentName)
+
+	if res == nil || res.Properties == nil || res.Properties.ProvisioningState == nil {
 		return nil, nil
 	}
-	logger.Infof("Getting detailed deployment errors for %s", deploymentName)
-	deploymentError := &DeploymentError{RootError: rootError}
+	properties := res.Properties
 
-	if res != nil && res.Response.Response != nil && res.Body != nil {
-		armErr := &ErrorResponse{}
-		if d := json.NewDecoder(res.Body); d != nil {
-			if err := d.Decode(armErr); err == nil {
-				logger.Errorf("StatusCode: %d, ErrorCode: %s, ErrorMessage: %s", res.Response.StatusCode, armErr.Body.Code, armErr.Body.Message)
-				deploymentError.OperationErrors = append(deploymentError.OperationErrors, armErr)
-				switch {
-				case res.Response.StatusCode < 500 && res.Response.StatusCode >= 400:
-					armErr.Body.Category = ClientError
-					return deploymentError, nil
-				case res.Response.StatusCode >= 500:
-					armErr.Body.Category = InternalError
-					return deploymentError, nil
-				}
-			} else {
-				logger.Errorf("unable to unmarshal response into apierror: %v", err)
-			}
-		}
-	} else {
-		logger.Errorf("Got error from Azure SDK without response from ARM, error: %v", rootError)
-		// This is the failed sdk validation before calling ARM path
-		deploymentError.OperationErrors = append(deploymentError.OperationErrors, newErrorResponse(InternalError, "InternalOperationError", rootError.Error()))
-		return deploymentError, nil
-	}
+	switch *properties.ProvisioningState {
+	case string(api.Canceled):
+		logger.Warning("template deployment has been canceled")
+		return &apierror.Error{
+			Code:     apierror.ProvisioningFailed,
+			Message:  "template deployment has been canceled",
+			Category: apierror.ClientError}, nil
 
-	var top int32 = 1
-	operationList, err := az.ListDeploymentOperations(resourceGroupName, deploymentName, &top)
-	if err != nil {
-		logger.Warnf("unable to list deployment operations: %v", err)
-		return nil, err
-	}
-	eList, err := toArmErrors(logger, deploymentName, operationList)
-	if err != nil {
-		return nil, err
-	}
-	deploymentError.OperationErrors = append(deploymentError.OperationErrors, eList...)
-	for operationList.NextLink != nil {
-		operationList, err = az.ListDeploymentOperationsNextResults(operationList)
+	case string(api.Failed):
+		var top int32 = 1
+		results := make([]resources.DeploymentOperationsListResult, top)
+		res, err := az.ListDeploymentOperations(resourceGroupName, deploymentName, &top)
 		if err != nil {
-			logger.Warnf("unable to list next deployment operations: %v", err)
-			break
-		}
-		eList, err := toArmErrors(logger, deploymentName, operationList)
-		if err != nil {
+			logger.Errorf("unable to list deployment operations %s. error: %v", deploymentName, err)
 			return nil, err
 		}
-		deploymentError.OperationErrors = append(deploymentError.OperationErrors, eList...)
+		results[0] = res
+
+		for res.NextLink != nil {
+			res, err = az.ListDeploymentOperationsNextResults(res)
+			if err != nil {
+				logger.Warningf("unable to list next deployment operations %s. error: %v", deploymentName, err)
+				break
+			}
+
+			results = append(results, res)
+		}
+		return analyzeDeploymentResultAndSaveError(resourceGroupName, deploymentName, results, logger)
+
+	default:
+		return nil, nil
 	}
-	return deploymentError, nil
+}
+
+func analyzeDeploymentResultAndSaveError(resourceGroupName, deploymentName string,
+	operationLists []resources.DeploymentOperationsListResult, logger *logrus.Entry) (*apierror.Error, error) {
+	var errresp *apierror.ErrorResponse
+	var err error
+	errs := []string{}
+	isInternalErr := false
+	failedCnt := 0
+	for _, operationsList := range operationLists {
+		if operationsList.Value == nil {
+			continue
+		}
+
+		for _, operation := range *operationsList.Value {
+			if operation.Properties == nil || *operation.Properties.ProvisioningState != string(api.Failed) {
+				continue
+			}
+
+			// log the full deployment operation error response
+			if operation.ID != nil && operation.OperationID != nil {
+				b, _ := json.Marshal(operation.Properties)
+				logger.Infof("deployment operation ID %s, operationID %s, prooperties: %s", *operation.ID, *operation.OperationID, b)
+			} else {
+				logger.Error("either deployment ID or operationID is nil")
+			}
+
+			failedCnt++
+			errresp, err = toErrorResponse(logger, operation)
+			if err != nil {
+				logger.Errorf("unable to convert deployment operation to error response in deployment %s from ARM. error: %v", deploymentName, err)
+				return nil, err
+			}
+			if errresp.Body.Category == apierror.InternalError {
+				isInternalErr = true
+			}
+			errs = append(errs, errresp.Error())
+		}
+	}
+	provisionErr := &apierror.Error{}
+	if failedCnt > 0 {
+		if isInternalErr {
+			provisionErr.Category = apierror.InternalError
+		} else {
+			provisionErr.Category = apierror.ClientError
+		}
+		if failedCnt == 1 {
+			provisionErr = &errresp.Body
+		} else {
+			provisionErr.Code = apierror.ProvisioningFailed
+			provisionErr.Message = strings.Join(errs, "\n")
+		}
+		return provisionErr, nil
+	}
+
+	return nil, nil
 }
