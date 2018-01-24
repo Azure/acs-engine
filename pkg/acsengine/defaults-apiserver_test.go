@@ -221,7 +221,7 @@ func TestAPIServerConfigEnableSecureKubelet(t *testing.T) {
 
 	// Test EnableSecureKubelet = false
 	cs = createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)
-	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableDataEncryptionAtRest = pointerToBool(false)
+	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = pointerToBool(false)
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	for _, key := range []string{"--kubelet-client-certificate", "--kubelet-client-key"} {
@@ -274,7 +274,21 @@ func createContainerService(containerServiceName string, orchestratorVersion str
 	cs.Properties.OrchestratorProfile = &api.OrchestratorProfile{}
 	cs.Properties.OrchestratorProfile.OrchestratorType = api.Kubernetes
 	cs.Properties.OrchestratorProfile.OrchestratorVersion = orchestratorVersion
-	cs.Properties.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{}
+	cs.Properties.OrchestratorProfile.KubernetesConfig = &api.KubernetesConfig{
+		EnableSecureKubelet: pointerToBool(api.DefaultSecureKubeletEnabled),
+		EnableRbac:          pointerToBool(api.DefaultRBACEnabled),
+		EtcdDiskSizeGB:      DefaultEtcdDiskSize,
+		ServiceCIDR:         DefaultKubernetesServiceCIDR,
+		DockerBridgeSubnet:  DefaultDockerBridgeSubnet,
+		DNSServiceIP:        DefaultKubernetesDNSServiceIP,
+		GCLowThreshold:      DefaultKubernetesGCLowThreshold,
+		GCHighThreshold:     DefaultKubernetesGCHighThreshold,
+		MaxPods:             DefaultKubernetesMaxPodsVNETIntegrated,
+		ClusterSubnet:       DefaultKubernetesSubnet,
+		ContainerRuntime:    DefaultContainerRuntime,
+		NetworkPolicy:       DefaultNetworkPolicy,
+		EtcdVersion:         DefaultEtcdVersion,
+	}
 
 	cs.Properties.CertificateProfile = &api.CertificateProfile{}
 	cs.Properties.CertificateProfile.CaCertificate = "cacert"
