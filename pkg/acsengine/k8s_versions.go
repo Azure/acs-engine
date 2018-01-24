@@ -11,7 +11,7 @@ var KubeConfigs = map[string]map[string]string{
 	common.KubernetesVersion1Dot9Dot2: {
 		"hyperkube": "hyperkube-amd64:v1.9.2",
 		"ccm":       "cloud-controller-manager-amd64:v1.9.2",
-		"dockerEngineVersion":       "1.12.*",
+		"dockerEngineVersion":       "1.13.*",
 		DefaultDashboardAddonName:   "kubernetes-dashboard-amd64:v1.8.2",
 		"exechealthz":               "exechealthz-amd64:1.2",
 		"addonresizer":              "addon-resizer:1.7",
@@ -95,7 +95,7 @@ var KubeConfigs = map[string]map[string]string{
 	common.KubernetesVersion1Dot8Dot7: {
 		"hyperkube": "hyperkube-amd64:v1.8.7",
 		"ccm":       "cloud-controller-manager-amd64:v1.8.7",
-		"dockerEngineVersion":       "1.12.*",
+		"dockerEngineVersion":       "1.13.*",
 		DefaultDashboardAddonName:   "kubernetes-dashboard-amd64:v1.8.2",
 		"exechealthz":               "exechealthz-amd64:1.2",
 		"addonresizer":              "addon-resizer:1.7",
@@ -265,7 +265,7 @@ var KubeConfigs = map[string]map[string]string{
 	},
 	common.KubernetesVersion1Dot7Dot12: {
 		"hyperkube":                  "hyperkube-amd64:v1.7.12",
-		"dockerEngineVersion":        "1.12.*",
+		"dockerEngineVersion":        "1.13.*",
 		DefaultDashboardAddonName:    "kubernetes-dashboard-amd64:v1.6.3",
 		"exechealthz":                "exechealthz-amd64:1.2",
 		"addonresizer":               "addon-resizer:1.7",
