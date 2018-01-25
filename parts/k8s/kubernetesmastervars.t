@@ -10,6 +10,27 @@
     "etcdServerPrivateKey": "[parameters('etcdServerPrivateKey')]",
     "etcdClientPrivateKey": "[parameters('etcdClientPrivateKey')]",
     "etcdClientCertificate": "[parameters('etcdClientCertificate')]",
+{{if eq .MasterProfile.Count 1}}
+    "etcdPeerPrivateKeys": [
+        "[parameters('etcdPeerPrivateKey0')]"
+    ],
+    "etcdPeerCertificates": [
+        "[parameters('etcdPeerCertificate0')]"
+    ],
+{{end}}
+{{if eq .MasterProfile.Count 3}}
+    "etcdPeerPrivateKeys": [
+        "[parameters('etcdPeerPrivateKey0')]",
+        "[parameters('etcdPeerPrivateKey1')]",
+        "[parameters('etcdPeerPrivateKey2')]"
+    ],
+    "etcdPeerCertificates": [
+        "[parameters('etcdPeerCertificate0')]",
+        "[parameters('etcdPeerCertificate1')]",
+        "[parameters('etcdPeerCertificate2')]"
+    ],
+{{end}}
+{{if eq .MasterProfile.Count 5}}
     "etcdPeerPrivateKeys": [
         "[parameters('etcdPeerPrivateKey0')]",
         "[parameters('etcdPeerPrivateKey1')]",
@@ -24,6 +45,7 @@
         "[parameters('etcdPeerCertificate3')]",
         "[parameters('etcdPeerCertificate4')]"
     ],
+{{end}}
     "etcdPeerCertFilepath":[
         "/etc/kubernetes/certs/etcdpeer0.crt",
         "/etc/kubernetes/certs/etcdpeer1.crt",

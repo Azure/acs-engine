@@ -62,7 +62,7 @@
       }, 
       "type": "securestring"
     },
-    {{if eq .MasterProfile.Count 3}}
+    {{if ge .MasterProfile.Count 3}}
       "etcdPeerCertificate1": {
         "metadata": {
           "description": "The base 64 server certificates used on the master"
@@ -87,7 +87,7 @@
         }, 
         "type": "securestring"
       },
-      {{if eq .MasterProfile.Count 5}}
+      {{if ge .MasterProfile.Count 5}}
         "etcdPeerCertificate3": {
           "metadata": {
             "description": "The base 64 server certificates used on the master"

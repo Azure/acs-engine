@@ -507,10 +507,10 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addSecret(parametersMap, "etcdClientCertificate", properties.CertificateProfile.EtcdClientCertificate, true)
 			addSecret(parametersMap, "etcdClientPrivateKey", properties.CertificateProfile.EtcdClientPrivateKey, true)
 			for i, pc := range properties.CertificateProfile.EtcdPeerCertificates {
-				addSecret(parametersMap, "etcdPeerCertificates"+strconv.Itoa(i), pc, true)
+				addSecret(parametersMap, "etcdPeerCertificate"+strconv.Itoa(i), pc, true)
 			}
 			for i, pk := range properties.CertificateProfile.EtcdPeerPrivateKeys {
-				addSecret(parametersMap, "etcdPeerPrivateKeys"+strconv.Itoa(i), pk, true)
+				addSecret(parametersMap, "etcdPeerPrivateKey"+strconv.Itoa(i), pk, true)
 			}
 			//addArraySecret(parametersMap, "etcdPeerCertificates", properties.CertificateProfile.EtcdPeerCertificates, true)
 			//addArraySecret(parametersMap, "etcdPeerPrivateKeys", properties.CertificateProfile.EtcdPeerPrivateKeys, true)
