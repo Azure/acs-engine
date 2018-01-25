@@ -113,7 +113,7 @@ func (a *Account) DeleteGroup(name string, wait bool) error {
 
 // CreateDeployment will deploy a cluster to a given resource group using the template and parameters on disk
 func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
-	log.Print("Creating deployment this make take a few minutes.")
+	log.Print("Creating deployment, this will take a few minutes.")
 	d := Deployment{
 		Name:              name,
 		TemplateDirectory: e.Config.GeneratedDefinitionPath,
@@ -140,7 +140,7 @@ func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
 		"--template-file", e.Config.GeneratedTemplatePath,
 		"--parameters", e.Config.GeneratedParametersPath).CombinedOutput()
 	if err != nil {
-		log.Printf("\nError while trying to start deployment for %s in resource group %s:%s\n", d.Name, a.ResourceGroup.Name, err)
+		log.Printf("\nError from deployment for %s in resource group %s:%s\n", d.Name, a.ResourceGroup.Name, err)
 		log.Printf("Command Output: %s\n", output)
 		return err
 	}
