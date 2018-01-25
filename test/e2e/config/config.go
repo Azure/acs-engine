@@ -57,7 +57,7 @@ func (c *Config) GetKubeConfig() string {
 // SetKubeConfig will set the KUBECONIFG env var
 func (c *Config) SetKubeConfig() {
 	os.Setenv("KUBECONFIG", c.GetKubeConfig())
-	log.Printf("Kubeconfig:%s\n", c.GetKubeConfig())
+	log.Printf("\nKubeconfig:%s\n", c.GetKubeConfig())
 }
 
 // GetSSHKeyPath will return the absolute path to the ssh private key
