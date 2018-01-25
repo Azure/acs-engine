@@ -80,7 +80,7 @@ func (a *Account) SetSubscription() error {
 // CreateGroup will create a resource group in a given location
 //--tags "type=${RESOURCE_GROUP_TAG_TYPE:-}" "now=$(date +%s)" "job=${JOB_BASE_NAME:-}" "buildno=${BUILD_NUM:-}"
 func (a *Account) CreateGroup(name, location string) error {
-	now := fmt.Sprintf("now=%v", time.Now().Add(-3*time.Hour).Unix())
+	now := fmt.Sprintf("now=%v", time.Now().Unix())
 	out, err := exec.Command("az", "group", "create", "--name", name, "--location", location, "--tags", now).CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying create resource group (%s) in %s:%s", name, location, err)
@@ -140,7 +140,7 @@ func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
 		"--template-file", e.Config.GeneratedTemplatePath,
 		"--parameters", e.Config.GeneratedParametersPath).CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying to start deployment for %s in resource group %s:%s", d.Name, a.ResourceGroup.Name, err)
+		log.Printf("\nError while trying to start deployment for %s in resource group %s:%s", d.Name, a.ResourceGroup.Name, err)
 		log.Printf("Command Output: %s\n", output)
 		return err
 	}
