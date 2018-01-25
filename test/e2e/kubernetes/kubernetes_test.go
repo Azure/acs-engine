@@ -121,56 +121,84 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have tiller running", func() {
-			running, err := pod.WaitOnReady("tiller", "kube-system", 3, 30*time.Second, cfg.Timeout)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(running).To(Equal(true))
+			if eng.HasTiller() {
+				running, err := pod.WaitOnReady("tiller", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+			} else {
+				Skip("tiller disabled for this cluster, will not test")
+			}
 		})
 
 		It("should be able to access the dashboard from each node", func() {
-			running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 3, 30*time.Second, cfg.Timeout)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(running).To(Equal(true))
+			if eng.HasDashboard() {
+				running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
 
-			kubeConfig, err := GetConfig()
-			Expect(err).NotTo(HaveOccurred())
-			sshKeyPath := cfg.GetSSHKeyPath()
+				kubeConfig, err := GetConfig()
+				Expect(err).NotTo(HaveOccurred())
+				sshKeyPath := cfg.GetSSHKeyPath()
 
-			s, err := service.Get("kubernetes-dashboard", "kube-system")
-			Expect(err).NotTo(HaveOccurred())
-			dashboardPort := 80
-			version, err := node.Version()
-			Expect(err).NotTo(HaveOccurred())
+				s, err := service.Get("kubernetes-dashboard", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				dashboardPort := 80
+				version, err := node.Version()
+				Expect(err).NotTo(HaveOccurred())
 
-			re := regexp.MustCompile("v1.9")
-			if re.FindString(version) != "" {
-				dashboardPort = 443
-			}
-			port := s.GetNodePort(dashboardPort)
-
-			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
-			nodeList, err := node.Get()
-			Expect(err).NotTo(HaveOccurred())
-
-			if !eng.HasWindowsAgents() {
-				for _, node := range nodeList.Nodes {
-					success := false
-					for i := 0; i < 60; i++ {
-						dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
-						curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
-						_, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
-						if err == nil {
-							success = true
-							break
-						}
-						if i > 58 {
-							log.Println(curlCMD)
-							log.Println(err.Error())
-							log.Printf("%#v\n", err)
-						}
-						time.Sleep(10 * time.Second)
-					}
-					Expect(success).To(BeTrue())
+				re := regexp.MustCompile("v1.9")
+				if re.FindString(version) != "" {
+					dashboardPort = 443
 				}
+				port := s.GetNodePort(dashboardPort)
+
+				master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
+				nodeList, err := node.Get()
+				Expect(err).NotTo(HaveOccurred())
+
+				if !eng.HasWindowsAgents() {
+					for _, node := range nodeList.Nodes {
+						success := false
+						for i := 0; i < 60; i++ {
+							dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
+							curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
+							_, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
+							if err == nil {
+								success = true
+								break
+							}
+							if i > 58 {
+								log.Println(curlCMD)
+								log.Println(err.Error())
+								log.Printf("%#v\n", err)
+							}
+							time.Sleep(10 * time.Second)
+						}
+						Expect(success).To(BeTrue())
+					}
+				}
+			} else {
+				Skip("kubernetes-dashboard disabled for this cluster, will not test")
+			}
+		})
+
+		It("should have aci-connector running", func() {
+			if eng.HasACIConnector() {
+				running, err := pod.WaitOnReady("aci-connector", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+			} else {
+				Skip("aci-connector disabled for this cluster, will not test")
+			}
+		})
+
+		It("should have rescheduler running", func() {
+			if eng.HasACIConnector() {
+				running, err := pod.WaitOnReady("rescheduler", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+			} else {
+				Skip("rescheduler disabled for this cluster, will not test")
 			}
 		})
 	})

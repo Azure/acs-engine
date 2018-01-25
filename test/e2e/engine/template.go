@@ -156,6 +156,46 @@ func (e *Engine) HasWindowsAgents() bool {
 	return false
 }
 
+// HasDashboard will return true if kubernetes-dashboard addon is enabled
+func (e *Engine) HasDashboard() bool {
+	for _, addon := range e.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
+		if addon.Name == "kubernetes-dashboard" {
+			return *addon.Enabled
+		}
+	}
+	return false
+}
+
+// HasTiller will return true if tiller addon is enabled
+func (e *Engine) HasTiller() bool {
+	for _, addon := range e.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
+		if addon.Name == "tiller" {
+			return *addon.Enabled
+		}
+	}
+	return false
+}
+
+// HasACIConnector will return true if aci-connector addon is enabled
+func (e *Engine) HasACIConnector() bool {
+	for _, addon := range e.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
+		if addon.Name == "aci-connector" {
+			return *addon.Enabled
+		}
+	}
+	return false
+}
+
+// HasRescheduler will return true if rescheduler addon is enabled
+func (e *Engine) HasRescheduler() bool {
+	for _, addon := range e.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
+		if addon.Name == "rescheduler" {
+			return *addon.Enabled
+		}
+	}
+	return false
+}
+
 // OrchestratorVersion1Dot8AndUp will return true if the orchestrator version is 1.8 and up
 func (e *Engine) OrchestratorVersion1Dot8AndUp() bool {
 	return e.ClusterDefinition.ContainerService.Properties.OrchestratorProfile.OrchestratorVersion >= "1.8"
