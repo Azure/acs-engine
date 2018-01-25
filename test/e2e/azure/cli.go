@@ -140,7 +140,7 @@ func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
 		"--template-file", e.Config.GeneratedTemplatePath,
 		"--parameters", e.Config.GeneratedParametersPath).CombinedOutput()
 	if err != nil {
-		log.Printf("\nError while trying to start deployment for %s in resource group %s:%s", d.Name, a.ResourceGroup.Name, err)
+		log.Printf("\nError while trying to start deployment for %s in resource group %s:%s\n", d.Name, a.ResourceGroup.Name, err)
 		log.Printf("Command Output: %s\n", output)
 		return err
 	}
