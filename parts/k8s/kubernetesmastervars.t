@@ -10,8 +10,20 @@
     "etcdServerPrivateKey": "[parameters('etcdServerPrivateKey')]",
     "etcdClientPrivateKey": "[parameters('etcdClientPrivateKey')]",
     "etcdClientCertificate": "[parameters('etcdClientCertificate')]",
-    "etcdPeerPrivateKeys": "[parameters('etcdPeerPrivateKeys')]",
-    "etcdPeerCertificates": "[parameters('etcdPeerCertificates')]",
+    "etcdPeerPrivateKeys": [
+        "[parameters('etcdPeerPrivateKey0')]",
+        "[parameters('etcdPeerPrivateKey1')]",
+        "[parameters('etcdPeerPrivateKey2')]",
+        "[parameters('etcdPeerPrivateKey3')]",
+        "[parameters('etcdPeerPrivateKey4')]"
+    ],
+    "etcdPeerCertificates": [
+        "[parameters('etcdPeerCertificate0')]",
+        "[parameters('etcdPeerCertificate1')]",
+        "[parameters('etcdPeerCertificate2')]",
+        "[parameters('etcdPeerCertificate3')]",
+        "[parameters('etcdPeerCertificate4')]"
+    ],
     "etcdPeerCertFilepath":[
         "/etc/kubernetes/certs/etcdpeer0.crt",
         "/etc/kubernetes/certs/etcdpeer1.crt",

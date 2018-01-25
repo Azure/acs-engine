@@ -506,8 +506,14 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addSecret(parametersMap, "etcdServerPrivateKey", properties.CertificateProfile.EtcdServerPrivateKey, true)
 			addSecret(parametersMap, "etcdClientCertificate", properties.CertificateProfile.EtcdClientCertificate, true)
 			addSecret(parametersMap, "etcdClientPrivateKey", properties.CertificateProfile.EtcdClientPrivateKey, true)
-			addArraySecret(parametersMap, "etcdPeerCertificates", properties.CertificateProfile.EtcdPeerCertificates, true)
-			addArraySecret(parametersMap, "etcdPeerPrivateKeys", properties.CertificateProfile.EtcdPeerPrivateKeys, true)
+			for i, pc := range properties.CertificateProfile.EtcdPeerCertificates {
+				addSecret(parametersMap, "etcdPeerCertificates"+strconv.Itoa(i), pc, true)
+			}
+			for i, pk := range properties.CertificateProfile.EtcdPeerPrivateKeys {
+				addSecret(parametersMap, "etcdPeerPrivateKeys"+strconv.Itoa(i), pk, true)
+			}
+			//addArraySecret(parametersMap, "etcdPeerCertificates", properties.CertificateProfile.EtcdPeerCertificates, true)
+			//addArraySecret(parametersMap, "etcdPeerPrivateKeys", properties.CertificateProfile.EtcdPeerPrivateKeys, true)
 		}
 
 		if properties.HostedMasterProfile != nil && properties.HostedMasterProfile.FQDN != "" {
@@ -781,12 +787,17 @@ func addArraySecret(m paramsMap, k string, v interface{}, encode bool) {
 	}
 	values := make([]string, len(arr))
 	for i := 0; i < len(arr); i++ {
-		if encode {
-			values[i] = base64.StdEncoding.EncodeToString([]byte(arr[i]))
-		} else {
-			values[i] = arr[i]
+		str := arr[i]
+		parts := keyvaultSecretPathRe.FindStringSubmatch(str)
+		if parts == nil || len(parts) != 5 {
+			if encode {
+				values[i] = base64.StdEncoding.EncodeToString([]byte(str))
+			} else {
+				values[i] = str
+			}
+			continue
 		}
-
+		addKeyvaultReference(m, k, parts[1], parts[2], parts[4])
 	}
 	addValue(m, k, values)
 }

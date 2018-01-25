@@ -50,18 +50,70 @@
       }, 
       "type": "securestring"
     },
-    "etcdPeerCertificates": {
+    "etcdPeerCertificate0": {
       "metadata": {
         "description": "The base 64 server certificates used on the master"
       }, 
-      "type": "array"
-    }, 
-    "etcdPeerPrivateKeys": {
+      "type": "string"
+    },
+    "etcdPeerPrivateKey0": {
       "metadata": {
         "description": "The base 64 server private keys used on the master."
       }, 
-      "type": "array"
+      "type": "securestring"
     },
+    {{if eq .MasterProfile.Count 3}}
+      "etcdPeerCertificate1": {
+        "metadata": {
+          "description": "The base 64 server certificates used on the master"
+        }, 
+        "type": "string"
+      }, 
+      "etcdPeerCertificate2": {
+        "metadata": {
+          "description": "The base 64 server certificates used on the master"
+        }, 
+        "type": "string"
+      },
+      "etcdPeerPrivateKey1": {
+        "metadata": {
+          "description": "The base 64 server private keys used on the master."
+        }, 
+        "type": "securestring"
+      },
+      "etcdPeerPrivateKey2": {
+        "metadata": {
+          "description": "The base 64 server private keys used on the master."
+        }, 
+        "type": "securestring"
+      },
+      {{if eq .MasterProfile.Count 5}}
+        "etcdPeerCertificate3": {
+          "metadata": {
+            "description": "The base 64 server certificates used on the master"
+          }, 
+          "type": "string"
+        }, 
+        "etcdPeerCertificate4": {
+          "metadata": {
+            "description": "The base 64 server certificates used on the master"
+          }, 
+          "type": "string"
+        },
+        "etcdPeerPrivateKey3": {
+          "metadata": {
+            "description": "The base 64 server private keys used on the master."
+          }, 
+          "type": "securestring"
+        },
+        "etcdPeerPrivateKey4": {
+          "metadata": {
+            "description": "The base 64 server private keys used on the master."
+          }, 
+          "type": "securestring"
+        },
+      {{end}}
+    {{end}}
     "caCertificate": {
       "metadata": {
         "description": "The base 64 certificate authority certificate"
