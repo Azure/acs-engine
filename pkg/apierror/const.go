@@ -20,44 +20,52 @@ type ErrorCode string
 
 const (
 	// From Microsoft.Azure.ResourceProvider.API.ErrorCode
-	InvalidParameter                      ErrorCode = "InvalidParameter"
-	BadRequest                            ErrorCode = "BadRequest"
-	NotFound                              ErrorCode = "NotFound"
-	Conflict                              ErrorCode = "Conflict"
-	PreconditionFailed                    ErrorCode = "PreconditionFailed"
-	OperationNotAllowed                   ErrorCode = "OperationNotAllowed"
-	OperationPreempted                    ErrorCode = "OperationPreempted"
-	PropertyChangeNotAllowed              ErrorCode = "PropertyChangeNotAllowed"
-	InternalOperationError                ErrorCode = "InternalOperationError"
-	InvalidSubscriptionStateTransition    ErrorCode = "InvalidSubscriptionStateTransition"
-	UnregisterWithResourcesNotAllowed     ErrorCode = "UnregisterWithResourcesNotAllowed"
+
+	// InvalidParameter error
+	InvalidParameter ErrorCode = "InvalidParameter"
+	// BadRequest error
+	BadRequest ErrorCode = "BadRequest"
+	// NotFound error
+	NotFound ErrorCode = "NotFound"
+	// Conflict error
+	Conflict ErrorCode = "Conflict"
+	// PreconditionFailed error
+	PreconditionFailed ErrorCode = "PreconditionFailed"
+	// OperationNotAllowed error
+	OperationNotAllowed ErrorCode = "OperationNotAllowed"
+	// OperationPreempted error
+	OperationPreempted ErrorCode = "OperationPreempted"
+	// PropertyChangeNotAllowed error
+	PropertyChangeNotAllowed ErrorCode = "PropertyChangeNotAllowed"
+	// InternalOperationError error
+	InternalOperationError ErrorCode = "InternalOperationError"
+	// InvalidSubscriptionStateTransition error
+	InvalidSubscriptionStateTransition ErrorCode = "InvalidSubscriptionStateTransition"
+	// UnregisterWithResourcesNotAllowed error
+	UnregisterWithResourcesNotAllowed ErrorCode = "UnregisterWithResourcesNotAllowed"
+	// InvalidParameterConflictingProperties error
 	InvalidParameterConflictingProperties ErrorCode = "InvalidParameterConflictingProperties"
-	SubscriptionNotRegistered             ErrorCode = "SubscriptionNotRegistered"
-	ConflictingUserInput                  ErrorCode = "ConflictingUserInput"
-	ProvisioningInternalError             ErrorCode = "ProvisioningInternalError"
-	ProvisioningFailed                    ErrorCode = "ProvisioningFailed"
-	NetworkingInternalOperationError      ErrorCode = "NetworkingInternalOperationError"
-	QuotaExceeded                         ErrorCode = "QuotaExceeded"
-	Unauthorized                          ErrorCode = "Unauthorized"
-	ResourcesOverConstrained              ErrorCode = "ResourcesOverConstrained"
-	ControlPlaneProvisioningInternalError ErrorCode = "ControlPlaneProvisioningInternalError"
-	ControlPlaneProvisioningSyncError     ErrorCode = "ControlPlaneProvisioningSyncError"
-	ControlPlaneInternalError             ErrorCode = "ControlPlaneInternalError"
-	ControlPlaneCloudProviderNotSet       ErrorCode = "ControlPlaneCloudProviderNotSet"
+	// SubscriptionNotRegistered error
+	SubscriptionNotRegistered ErrorCode = "SubscriptionNotRegistered"
+	// ConflictingUserInput error
+	ConflictingUserInput ErrorCode = "ConflictingUserInput"
+	// ProvisioningInternalError error
+	ProvisioningInternalError ErrorCode = "ProvisioningInternalError"
+	// ProvisioningFailed error
+	ProvisioningFailed ErrorCode = "ProvisioningFailed"
+	// NetworkingInternalOperationError error
+	NetworkingInternalOperationError ErrorCode = "NetworkingInternalOperationError"
+	// QuotaExceeded error
+	QuotaExceeded ErrorCode = "QuotaExceeded"
+	// Unauthorized error
+	Unauthorized ErrorCode = "Unauthorized"
+	// ResourcesOverConstrained error
+	ResourcesOverConstrained ErrorCode = "ResourcesOverConstrained"
 
-	// From Microsoft.WindowsAzure.ContainerService.API.AcsErrorCode
-	ScaleDownInternalError ErrorCode = "ScaleDownInternalError"
-
-	// New
-	PreconditionCheckTimeOut     ErrorCode = "PreconditionCheckTimeOut"
-	UpgradeFailed                ErrorCode = "UpgradeFailed"
-	ScaleError                   ErrorCode = "ScaleError"
-	CreateRoleAssignmentError    ErrorCode = "CreateRoleAssignmentError"
-	ServicePrincipalNotFound     ErrorCode = "ServicePrincipalNotFound"
-	ClusterResourceGroupNotFound ErrorCode = "ClusterResourceGroupNotFound"
-
-	// Error codes returned by HCP
-	UnderlayNotFound         ErrorCode = "UnderlayNotFound"
-	UnderlaysOverConstrained ErrorCode = "UnderlaysOverConstrained"
-	UnexpectedUnderlayCount  ErrorCode = "UnexpectedUnderlayCount"
+	// ResourceDeploymentFailure error
+	ResourceDeploymentFailure ErrorCode = "ResourceDeploymentFailure"
+	// InvalidTemplateDeployment error
+	InvalidTemplateDeployment ErrorCode = "InvalidTemplateDeployment"
+	// DeploymentFailed error
+	DeploymentFailed ErrorCode = "DeploymentFailed"
 )

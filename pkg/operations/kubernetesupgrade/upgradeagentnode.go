@@ -80,26 +80,7 @@ func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 	deploymentSuffix := random.Int31()
 	deploymentName := fmt.Sprintf("agent-%s-%d", time.Now().Format("06-01-02T15.04.05"), deploymentSuffix)
 
-	depExt, err := kan.Client.DeployTemplate(
-		kan.ResourceGroup,
-		deploymentName,
-		kan.TemplateMap,
-		kan.ParametersMap,
-		nil)
-
-	if err == nil {
-		return nil
-	}
-
-	kan.logger.Errorf("Deployment %s failed with error %v", deploymentName, err)
-	// Get deployment error details
-	deploymentError, e := armhelpers.GetDeploymentError(depExt, kan.Client, kan.logger, kan.ResourceGroup, deploymentName)
-	if e != nil {
-		kan.logger.Errorf("Failed to get error details for deployment %s: %v", deploymentName, e)
-		// return original deployment error
-		return err
-	}
-	return deploymentError
+	return armhelpers.DeployTemplateSync(kan.Client, kan.logger, kan.ResourceGroup, deploymentName, kan.TemplateMap, kan.ParametersMap)
 }
 
 // Validate will verify that agent node has been upgraded as expected.
