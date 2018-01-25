@@ -41,11 +41,14 @@ var _ = BeforeSuite(func() {
 
 	engCfg, err := engine.ParseConfig(c.CurrentWorkingDir, c.ClusterDefinition, c.Name)
 	Expect(err).NotTo(HaveOccurred())
-	cs, err := engine.Parse(engCfg.ClusterDefinitionTemplate)
+	csInput, err := engine.ParseInput(engCfg.ClusterDefinitionTemplate)
+	Expect(err).NotTo(HaveOccurred())
+	csGenerated, err := engine.ParseOutput(engCfg.GeneratedDefinitionPath + "/apimodel.json")
 	Expect(err).NotTo(HaveOccurred())
 	eng = engine.Engine{
-		Config:            engCfg,
-		ClusterDefinition: cs,
+		Config:             engCfg,
+		ClusterDefinition:  csInput,
+		ExpandedDefinition: csGenerated,
 	}
 })
 

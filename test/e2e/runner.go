@@ -74,7 +74,7 @@ func main() {
 			teardown()
 			log.Fatalf("Error trying to parse Engine config:%s\n", err)
 		}
-		cs, err := engine.Parse(engCfg.ClusterDefinitionTemplate)
+		cs, err := engine.ParseInput(engCfg.ClusterDefinitionTemplate)
 		if err != nil {
 			teardown()
 			log.Fatalf("Error trying to parse engine template into memory:%s\n", err)

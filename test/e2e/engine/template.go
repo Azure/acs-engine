@@ -10,6 +10,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 	"github.com/Azure/acs-engine/pkg/helpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -38,8 +39,9 @@ type Config struct {
 
 // Engine holds necessary information to interact with acs-engine cli
 type Engine struct {
-	Config            *Config
-	ClusterDefinition *api.VlabsARMContainerService // Holds the parsed ClusterDefinition
+	Config             *Config
+	ClusterDefinition  *api.VlabsARMContainerService // Holds the parsed ClusterDefinition
+	ExpandedDefinition *api.ContainerService         // Holds the expanded ClusterDefinition
 }
 
 // ParseConfig will return a new engine config struct taking values from env vars
@@ -69,7 +71,7 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 		log.Printf("Error while trying to build Engine Configuration:%s\n", err)
 	}
 
-	cs, err := Parse(config.ClusterDefinitionPath)
+	cs, err := ParseInput(config.ClusterDefinitionPath)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +160,7 @@ func (e *Engine) HasWindowsAgents() bool {
 
 // HasDashboard will return true if kubernetes-dashboard addon is enabled
 func (e *Engine) HasDashboard() bool {
-	for _, addon := range e.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
+	for _, addon := range e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
 		if addon.Name == "kubernetes-dashboard" {
 			return *addon.Enabled
 		}
@@ -168,7 +170,7 @@ func (e *Engine) HasDashboard() bool {
 
 // HasTiller will return true if tiller addon is enabled
 func (e *Engine) HasTiller() bool {
-	for _, addon := range e.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
+	for _, addon := range e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
 		if addon.Name == "tiller" {
 			return *addon.Enabled
 		}
@@ -178,7 +180,7 @@ func (e *Engine) HasTiller() bool {
 
 // HasACIConnector will return true if aci-connector addon is enabled
 func (e *Engine) HasACIConnector() bool {
-	for _, addon := range e.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
+	for _, addon := range e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
 		if addon.Name == "aci-connector" {
 			return *addon.Enabled
 		}
@@ -188,7 +190,7 @@ func (e *Engine) HasACIConnector() bool {
 
 // HasRescheduler will return true if rescheduler addon is enabled
 func (e *Engine) HasRescheduler() bool {
-	for _, addon := range e.ClusterDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
+	for _, addon := range e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
 		if addon.Name == "rescheduler" {
 			return *addon.Enabled
 		}
@@ -212,11 +214,12 @@ func (e *Engine) Write() error {
 	if err != nil {
 		log.Printf("Error while trying to write container service definition to file (%s):%s\n%s\n", e.Config.ClusterDefinitionTemplate, err, string(json))
 	}
+
 	return nil
 }
 
-// Parse takes a template path and will parse that into a api.VlabsARMContainerService
-func Parse(path string) (*api.VlabsARMContainerService, error) {
+// ParseInput takes a template path and will parse that into a api.VlabsARMContainerService
+func ParseInput(path string) (*api.VlabsARMContainerService, error) {
 	contents, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Printf("Error while trying to read cluster definition at (%s):%s\n", path, err)
@@ -228,4 +231,22 @@ func Parse(path string) (*api.VlabsARMContainerService, error) {
 		return nil, err
 	}
 	return &cs, nil
+}
+
+// ParseOutput takes the generated api model and will parse that into a api.ContainerService
+func ParseOutput(path string) (*api.ContainerService, error) {
+	locale, err := i18n.LoadTranslations()
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("error loading translation files: %s", err.Error()))
+	}
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: locale,
+		},
+	}
+	containerService, _, err := apiloader.LoadContainerServiceFromFile(path, true, false, nil)
+	if err != nil {
+		return nil, err
+	}
+	return containerService, nil
 }
