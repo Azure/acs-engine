@@ -15,6 +15,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/dcos"
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"github.com/Azure/acs-engine/test/e2e/metrics"
 	"github.com/Azure/acs-engine/test/e2e/remote"
 	"github.com/kelseyhightower/envconfig"
@@ -80,17 +81,17 @@ func (cli *CLIProvisioner) provision() error {
 		cli.Config.Name = cli.Config.SoakClusterName
 	}
 	os.Setenv("NAME", cli.Config.Name)
-	log.Printf("Cluster name:%s\n", cli.Config.Name)
 
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
 	os.Mkdir(outputPath, 0755)
 
 	if cli.Config.SoakClusterName == "" {
-		out, err := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa").CombinedOutput()
+		cmd := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa")
+		util.PrintCommand(cmd)
+		out, err := cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
 		}
-		exec.Command("chmod", "0600", cli.Config.GetSSHKeyPath()+"*")
 	}
 
 	publicSSHKey, err := cli.Config.ReadPublicSSHKey()
@@ -132,6 +133,17 @@ func (cli *CLIProvisioner) provision() error {
 	if err != nil {
 		return fmt.Errorf("Error while trying to generate acs-engine template:%s", err)
 	}
+
+	c, err := config.ParseConfig()
+	engCfg, err := engine.ParseConfig(cli.Config.CurrentWorkingDir, c.ClusterDefinition, c.Name)
+	if err != nil {
+		return fmt.Errorf("unable to parse config")
+	}
+	csGenerated, err := engine.ParseOutput(engCfg.GeneratedDefinitionPath + "/apimodel.json")
+	if err != nil {
+		return fmt.Errorf("unable to parse output")
+	}
+	cli.Engine.ExpandedDefinition = csGenerated
 
 	// Lets start by just using the normal az group deployment cli for creating a cluster
 	err = cli.Account.CreateDeployment(cli.Config.Name, eng)
