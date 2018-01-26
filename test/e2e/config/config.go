@@ -35,6 +35,8 @@ const (
 	swarmOrchestrator      = "swarm"
 )
 
+var defaultRegions = []string{"eastus", "southcentralus", "westcentralus", "southeastasia", "westus2", "westeurope"}
+
 // ParseConfig will parse needed environment variables for running the tests
 func ParseConfig() (*Config, error) {
 	c := new(Config)
@@ -42,22 +44,31 @@ func ParseConfig() (*Config, error) {
 		return nil, err
 	}
 	if c.Location == "" {
-		c.SetRandomRegion()
+		c.ShuffleRegions()
+		if c.Orchestrator == dcosOrchestrator {
+			c.Location = c.Regions[0]
+		}
+	} else {
+		regions := make([]string, len(defaultRegions))
+		for i := 0; i < len(regions); i++ {
+			regions[i] = c.Location
+		}
+		c.Regions = regions
 	}
 	return c, nil
 }
 
-// GetKubeConfig returns the absolute path to the kubeconfig for c.Location
-func (c *Config) GetKubeConfig() string {
-	file := fmt.Sprintf("kubeconfig.%s.json", c.Location)
+// GetKubeConfig returns the absolute path to the kubeconfig for location
+func (c *Config) GetKubeConfig(location string) string {
+	file := fmt.Sprintf("kubeconfig.%s.json", location)
 	kubeconfig := filepath.Join(c.CurrentWorkingDir, "_output", c.Name, "kubeconfig", file)
 	return kubeconfig
 }
 
 // SetKubeConfig will set the KUBECONIFG env var
-func (c *Config) SetKubeConfig() {
-	os.Setenv("KUBECONFIG", c.GetKubeConfig())
-	log.Printf("\nKubeconfig:%s\n", c.GetKubeConfig())
+func (c *Config) SetKubeConfig(location string) {
+	os.Setenv("KUBECONFIG", c.GetKubeConfig(location))
+	log.Printf("\nKubeconfig:%s\n", c.GetKubeConfig(location))
 }
 
 // GetSSHKeyPath will return the absolute path to the ssh private key
@@ -135,17 +146,22 @@ func (c *Config) IsSwarm() bool {
 	return false
 }
 
-// SetRandomRegion sets Location to a random region
-func (c *Config) SetRandomRegion() {
+// ShuffleRegions shuffles the order of the Regions slice
+func (c *Config) ShuffleRegions() {
 	var regions []string
 	if c.Regions == nil {
-		regions = []string{"eastus", "southcentralus", "westcentralus", "southeastasia", "westus2", "westeurope"}
+		regions = defaultRegions
 	} else {
+		if len(c.Regions) < 1 {
+			log.Fatalf("no regions specified")
+		}
 		regions = c.Regions
 	}
-	log.Printf("Picking Random Region from list %s\n", regions)
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	c.Location = regions[r.Intn(len(regions))]
-	os.Setenv("LOCATION", c.Location)
-	log.Printf("Picked Random Region:%s\n", c.Location)
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	perm := r.Perm(len(regions))
+	shuffled := make([]string, len(perm))
+	for i, v := range perm {
+		shuffled[v] = regions[i]
+	}
+	c.Regions = shuffled
 }
