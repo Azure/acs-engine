@@ -26,8 +26,8 @@ func TestAcsNewAPIError(t *testing.T) {
 
 	apiError := New(
 		ClientError,
-		ScaleDownInternalError,
+		InvalidSubscriptionStateTransition,
 		"error test")
 
-	Expect(apiError.Body.Code).Should(Equal(ErrorCode("ScaleDownInternalError")))
+	Expect(apiError.Body.Code).Should(Equal(ErrorCode("InvalidSubscriptionStateTransition")))
 }
