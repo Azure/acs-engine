@@ -148,7 +148,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 
 				if !eng.HasWindowsAgents() {
-					By("Gathering connection information")
+					By("Gathering connection information to determine whether or not to connect via HTTP or HTTPS")
 					dashboardPort := 80
 					version, err := node.Version()
 					Expect(err).NotTo(HaveOccurred())
@@ -164,7 +164,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 					sshKeyPath := cfg.GetSSHKeyPath()
 
-					By("Ensuring that we can connect via HTTP to the dashboard on any one node")
+					if dashboardPort == 80 {
+						By("Ensuring that we can connect via HTTP to the dashboard on any one node")
+					} else {
+						By("Ensuring that we can connect via HTTPS to the dashboard on any one node")
+					}
 					nodeList, err := node.Get()
 					Expect(err).NotTo(HaveOccurred())
 					for _, node := range nodeList.Nodes {
@@ -216,6 +220,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 	Describe("with a linux agent pool", func() {
 		It("should be able to autoscale", func() {
+			By("Determining whether this version of Kubernetes can hpa autoscale")
 			version, err := node.Version()
 			Expect(err).NotTo(HaveOccurred())
 			re := regexp.MustCompile("v1.9")
@@ -230,7 +235,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 				Expect(err).NotTo(HaveOccurred())
 
-				By("Ensuring that one php-apache pod is running at the beginning")
+				By("Ensuring that one php-apache pod is running before autoscale configuration or load applied")
 				running, err := pod.WaitOnReady(phpApacheName, "default", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
@@ -255,12 +260,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					log.Printf("Error while configuring autoscale against deployment %s:%s\n", phpApacheName, string(out))
 				}
 				Expect(err).NotTo(HaveOccurred())
-
-				By("Before sending load we should have one Running php-apache pod")
-				phpPods, err = phpApacheDeploy.Pods()
-				Expect(err).NotTo(HaveOccurred())
-				// We should still have exactly 1 pod after autoscale config but before load
-				Expect(len(phpPods)).To(Equal(1))
 
 				By("Sending load to the php-apache service by creating a 3 replica deployment")
 				// Launch a simple busybox pod that wget's continuously to the apache serviceto simulate load
@@ -290,12 +289,15 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				// We should have > 1 pods after autoscale effects
 				Expect(len(phpPods) > 1).To(BeTrue())
 
+				By("Cleaning up after ourselves")
 				err = loadTestDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 				err = phpApacheDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 				err = s.Delete()
 				Expect(err).NotTo(HaveOccurred())
+			} else {
+				Skip("This flavor/version of Kubernetes doesn't support hpa autoscale")
 			}
 		})
 
@@ -315,13 +317,15 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Exposing TCP 80 LB on the nginx deployment")
 				err = nginxDeploy.Expose("LoadBalancer", 80, 80)
 				Expect(err).NotTo(HaveOccurred())
+
+				By("Ensuring we can connect to the service")
 				s, err := service.Get(deploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
 				s, err = s.WaitForExternalIP(cfg.Timeout, 5*time.Second)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(s.Status.LoadBalancer.Ingress).NotTo(BeEmpty())
 
-				By("Ensuring we can connect to the service")
+				By("Ensuring the service root URL returns the expected payload")
 				valid := s.Validate("(Welcome to nginx)", 5, 5*time.Second)
 				Expect(valid).To(BeTrue())
 
@@ -335,6 +339,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(pass).To(BeTrue())
 				}
 
+				By("Cleaning up after ourselves")
 				err = nginxDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 				err = s.Delete()

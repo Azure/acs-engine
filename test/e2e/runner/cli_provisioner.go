@@ -81,7 +81,6 @@ func (cli *CLIProvisioner) provision() error {
 		cli.Config.Name = cli.Config.SoakClusterName
 	}
 	os.Setenv("NAME", cli.Config.Name)
-	log.Printf("Cluster name:%s\n", cli.Config.Name)
 
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
 	os.Mkdir(outputPath, 0755)
@@ -93,12 +92,6 @@ func (cli *CLIProvisioner) provision() error {
 		if err != nil {
 			return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
 		}
-		/*cmd = exec.Command("chmod", "0600", cli.Config.GetSSHKeyPath()+"*")
-		util.PrintCommand(cmd)
-		out, err = cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("Error while setting mode perms on ssh key:%s\nOutput:%s", err, out)
-		}*/
 	}
 
 	publicSSHKey, err := cli.Config.ReadPublicSSHKey()

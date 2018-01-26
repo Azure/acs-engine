@@ -133,7 +133,7 @@ func GetAllByPrefix(prefix, namespace string) ([]Pod, error) {
 	return pods, nil
 }
 
-// AreAllPodsRunning will return true if all pods are in a Running State
+// AreAllPodsRunning will return true if all pods in a given namespace are in a Running State
 func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
 	pl, err := GetAll(namespace)
 	if err != nil {
