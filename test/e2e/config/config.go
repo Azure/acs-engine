@@ -137,13 +137,14 @@ func (c *Config) IsSwarm() bool {
 
 // ShuffleRegions shuffles the order of the Regions slice
 func (c *Config) ShuffleRegions() {
-	var regions, shuffled []string
+	var regions []string
 	if c.Regions == nil {
 		regions = []string{"eastus", "southcentralus", "westcentralus", "southeastasia", "westus2", "westeurope"}
 	} else {
 		regions = c.Regions
 	}
 	perm := rand.Perm(len(regions))
+	shuffled := make([]string, len(perm))
 	for i, v := range perm {
 		shuffled[v] = regions[i]
 	}
