@@ -297,7 +297,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     mkdir -p /tmp/etcd-download
     curl -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
-    useradd -U "etcd"
+    useradd -U "etcd" > 2&>1
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
     passwd -u "$etcd" > /dev/null
     systemctl daemon-reload
@@ -360,8 +360,6 @@ runcmd:
 - systemctl stop etcd
 - sudo -u etcd rm -rf /var/lib/etcd/default
 - systemctl daemon-reload
-- sudo /bin/chown etcd:etcd {{WrapAsVariable "etcdServerKeyFilepath"}}
-- sudo /bin/chown etcd:etcd {{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}}
 - systemctl restart etcd
 - MEMBER="$(sudo etcdctl member list | grep -E {{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}} | cut -d{{WrapAsVariable "singleQuote"}}:{{WrapAsVariable "singleQuote"}} -f 1)"
 - sudo etcdctl member update ${MEMBER} {{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}

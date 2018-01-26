@@ -69,7 +69,9 @@ fi
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
-
+    
+    useradd -U "etcd" > 2&>1
+    
     APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
     touch "${APISERVER_PRIVATE_KEY_PATH}"
     chmod 0600 "${APISERVER_PRIVATE_KEY_PATH}"
@@ -85,7 +87,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     ETCD_SERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdserver.key"
     touch "${ETCD_SERVER_PRIVATE_KEY_PATH}"
     chmod 0600 "${ETCD_SERVER_PRIVATE_KEY_PATH}"
-    chown root:root "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+    chown etcd:etcd "${ETCD_SERVER_PRIVATE_KEY_PATH}"
     echo "${ETCD_SERVER_PRIVATE_KEY}" | base64 --decode > "${ETCD_SERVER_PRIVATE_KEY_PATH}"
 
     ETCD_CLIENT_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdclient.key"
@@ -97,7 +99,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     ETCD_PEER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.key"
     touch "${ETCD_PEER_PRIVATE_KEY_PATH}"
     chmod 0600 "${ETCD_PEER_PRIVATE_KEY_PATH}"
-    chown root:root "${ETCD_PEER_PRIVATE_KEY_PATH}"
+    chown etcd:etcd "${ETCD_PEER_PRIVATE_KEY_PATH}"
     echo "${ETCD_PEER_KEY}" | base64 --decode > "${ETCD_PEER_PRIVATE_KEY_PATH}"
 
     ETCD_SERVER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdserver.crt"
