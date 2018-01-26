@@ -133,6 +133,17 @@ func (cli *CLIProvisioner) provision() error {
 		return fmt.Errorf("Error while trying to generate acs-engine template:%s", err)
 	}
 
+	c, err := config.ParseConfig()
+	engCfg, err := engine.ParseConfig(cli.Config.CurrentWorkingDir, c.ClusterDefinition, c.Name)
+	if err != nil {
+		return fmt.Errorf("unable to parse config")
+	}
+	csGenerated, err := engine.ParseOutput(engCfg.GeneratedDefinitionPath + "/apimodel.json")
+	if err != nil {
+		return fmt.Errorf("unable to parse output")
+	}
+	cli.Engine.ExpandedDefinition = csGenerated
+
 	// Lets start by just using the normal az group deployment cli for creating a cluster
 	err = cli.Account.CreateDeployment(cli.Config.Name, eng)
 	if err != nil {
