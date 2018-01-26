@@ -113,14 +113,14 @@ type UnreachableStrategy struct {
 }
 
 // NewCluster returns a new cluster struct
-func NewCluster(cfg *config.Config, eng *engine.Engine, location string) (*Cluster, error) {
-	conn, err := remote.NewConnection(fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, location), "2200", eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cfg.GetSSHKeyPath())
+func NewCluster(cfg *config.Config, eng *engine.Engine) (*Cluster, error) {
+	conn, err := remote.NewConnection(fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location), "2200", eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cfg.GetSSHKeyPath())
 	if err != nil {
 		return nil, err
 	}
 	return &Cluster{
 		AdminUsername: eng.ClusterDefinition.Properties.LinuxProfile.AdminUsername,
-		AgentFQDN:     fmt.Sprintf("%s-0.%s.cloudapp.azure.com", cfg.Name, location),
+		AgentFQDN:     fmt.Sprintf("%s-0.%s.cloudapp.azure.com", cfg.Name, cfg.Location),
 		Connection:    conn,
 	}, nil
 }

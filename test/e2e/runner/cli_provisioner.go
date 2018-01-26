@@ -190,7 +190,8 @@ func (cli *CLIProvisioner) waitForNodes(location string) error {
 		log.Printf("SSH Key: %s\n", cli.Config.GetSSHKeyPath())
 		log.Printf("Master Node: %s@%s\n", user, host)
 		log.Printf("SSH Command: ssh -i %s -p 2200 %s@%s", cli.Config.GetSSHKeyPath(), user, host)
-		cluster, err := dcos.NewCluster(cli.Config, cli.Engine, location)
+		cli.Config.Location = location
+		cluster, err := dcos.NewCluster(cli.Config, cli.Engine)
 		if err != nil {
 			return err
 		}
