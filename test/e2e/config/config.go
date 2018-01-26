@@ -35,6 +35,8 @@ const (
 	swarmOrchestrator      = "swarm"
 )
 
+var defaultRegions = []string{"eastus", "southcentralus", "westcentralus", "southeastasia", "westus2", "westeurope"}
+
 // ParseConfig will parse needed environment variables for running the tests
 func ParseConfig() (*Config, error) {
 	c := new(Config)
@@ -43,6 +45,12 @@ func ParseConfig() (*Config, error) {
 	}
 	if c.Location == "" {
 		c.ShuffleRegions()
+	} else {
+		regions := make([]string, len(defaultRegions))
+		for i := 0; i < len(regions); i++ {
+			regions[i] = c.Location
+		}
+		c.Regions = regions
 	}
 	return c, nil
 }
@@ -139,7 +147,7 @@ func (c *Config) IsSwarm() bool {
 func (c *Config) ShuffleRegions() {
 	var regions []string
 	if c.Regions == nil {
-		regions = []string{"eastus", "southcentralus", "westcentralus", "southeastasia", "westus2", "westeurope"}
+		regions = defaultRegions
 	} else {
 		regions = c.Regions
 	}
