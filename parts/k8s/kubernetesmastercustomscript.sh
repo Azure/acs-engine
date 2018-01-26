@@ -121,7 +121,6 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
 
     echo `date`,`hostname`, finishedGettingEtcdCerts>>/opt/m
-    mkdir -p /opt/azure/containers && touch /opt/azure/containers/etcdcerts.complete
 else
     echo "skipping master node provision operations, this is an agent node"
 fi
