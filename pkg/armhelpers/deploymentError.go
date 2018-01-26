@@ -75,7 +75,7 @@ func getErrorCategory(code apierror.ErrorCode) apierror.ErrorCategory {
 }
 
 // DeployTemplateSync deploys the template and returns apierror
-func DeployTemplateSync(az ACSEngineClient, logger *logrus.Entry, resourceGroupName, deploymentName string, template map[string]interface{}, parameters map[string]interface{}) *apierror.Error {
+func DeployTemplateSync(az ACSEngineClient, logger *logrus.Entry, resourceGroupName, deploymentName string, template map[string]interface{}, parameters map[string]interface{}) error {
 	depExt, depErr := az.DeployTemplate(resourceGroupName, deploymentName, template, parameters, nil)
 	if depErr == nil {
 		return nil
