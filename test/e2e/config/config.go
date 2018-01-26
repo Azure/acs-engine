@@ -45,6 +45,9 @@ func ParseConfig() (*Config, error) {
 	}
 	if c.Location == "" {
 		c.ShuffleRegions()
+		if c.Orchestrator == dcosOrchestrator {
+			c.Location = c.Regions[0]
+		}
 	} else {
 		regions := make([]string, len(defaultRegions))
 		for i := 0; i < len(regions); i++ {
@@ -149,6 +152,9 @@ func (c *Config) ShuffleRegions() {
 	if c.Regions == nil {
 		regions = defaultRegions
 	} else {
+		if len(c.Regions) < 1 {
+			log.Fatalf("no regions specified")
+		}
 		regions = c.Regions
 	}
 	r := rand.New(rand.NewSource(time.Now().Unix()))
