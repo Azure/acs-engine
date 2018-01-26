@@ -69,7 +69,7 @@ func main() {
 		}
 	} else {
 		engCfg, err := engine.ParseConfig(cfg.CurrentWorkingDir, cfg.ClusterDefinition, cfg.Name)
-		cfg.SetKubeConfig()
+		cfg.SetKubeConfig(cfg.Location)
 		if err != nil {
 			teardown()
 			log.Fatalf("Error trying to parse Engine config:%s\n", err)

@@ -153,6 +153,11 @@ func (p *Point) SetProvisionMetrics(data []byte) {
 
 }
 
+// SetLocation will set ProvisionStart value to time.Now()
+func (p *Point) SetLocation(location string) {
+	p.Tags["location"] = location
+}
+
 func (p *Point) Write() {
 	cfg, err := ParseConfig()
 	if err == nil {

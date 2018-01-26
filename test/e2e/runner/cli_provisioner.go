@@ -24,7 +24,7 @@ import (
 // CLIProvisioner holds the configuration needed to provision a clusters
 type CLIProvisioner struct {
 	ClusterDefinition string `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
-	ProvisionRetries  int    `envcofnig:"PROVISION_RETRIES" default:"3"`
+	ProvisionRetries  int    `envconfig:"PROVISION_RETRIES" default:"3"`
 	CreateVNET        bool   `envconfig:"CREATE_VNET" default:"false"`
 	Config            *config.Config
 	Account           *azure.Account
@@ -39,6 +39,11 @@ func BuildCLIProvisioner(cfg *config.Config, acct *azure.Account, pt *metrics.Po
 	if err := envconfig.Process("provisioner", p); err != nil {
 		return nil, err
 	}
+	if cfg.Location == "" {
+		if p.ProvisionRetries > len(cfg.Regions) {
+			return nil, fmt.Errorf("Can't retry %d times with only %d regions, decrease PROVISION_RETRIES or increase REGIONS env convif", p.ProvisionRetries, len(cfg.Regions))
+		}
+	}
 	p.Config = cfg
 	p.Account = acct
 	p.Point = pt
@@ -49,8 +54,10 @@ func BuildCLIProvisioner(cfg *config.Config, acct *azure.Account, pt *metrics.Po
 func (cli *CLIProvisioner) Run() error {
 	rgs := make([]string, 0)
 	for i := 1; i <= cli.ProvisionRetries; i++ {
+		location := cli.Config.Regions[i]
+		cli.Point.SetLocation(location)
 		cli.Point.SetProvisionStart()
-		err := cli.provision()
+		err := cli.provision(location)
 		rgs = append(rgs, cli.Config.Name)
 		cli.ResourceGroups = rgs
 		if err != nil {
@@ -63,7 +70,7 @@ func (cli *CLIProvisioner) Run() error {
 		} else {
 			cli.Point.RecordProvisionSuccess()
 			cli.Point.SetNodeWaitStart()
-			err := cli.waitForNodes()
+			err := cli.waitForNodes(location)
 			cli.Point.RecordNodeWait(err)
 			if err != nil {
 
@@ -75,8 +82,8 @@ func (cli *CLIProvisioner) Run() error {
 	return fmt.Errorf("Unable to run provisioner")
 }
 
-func (cli *CLIProvisioner) provision() error {
-	cli.Config.Name = cli.generateName()
+func (cli *CLIProvisioner) provision(location string) error {
+	cli.Config.Name = cli.generateName(location)
 	if cli.Config.SoakClusterName != "" {
 		cli.Config.Name = cli.Config.SoakClusterName
 	}
@@ -101,7 +108,7 @@ func (cli *CLIProvisioner) provision() error {
 	os.Setenv("PUBLIC_SSH_KEY", publicSSHKey)
 	os.Setenv("DNS_PREFIX", cli.Config.Name)
 
-	err = cli.Account.CreateGroup(cli.Config.Name, cli.Config.Location)
+	err = cli.Account.CreateGroup(cli.Config.Name, location)
 	if err != nil {
 		return fmt.Errorf("Error while trying to create resource group: %s", err)
 	}
@@ -155,16 +162,16 @@ func (cli *CLIProvisioner) provision() error {
 }
 
 // GenerateName will generate a new name if one has not been set
-func (cli *CLIProvisioner) generateName() string {
+func (cli *CLIProvisioner) generateName(location string) string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	suffix := r.Intn(99999)
-	prefix := fmt.Sprintf("%s-%s", cli.Config.Orchestrator, cli.Config.Location)
+	prefix := fmt.Sprintf("%s-%s", cli.Config.Orchestrator, location)
 	return fmt.Sprintf("%s-%v", prefix, suffix)
 }
 
-func (cli *CLIProvisioner) waitForNodes() error {
+func (cli *CLIProvisioner) waitForNodes(location string) error {
 	if cli.Config.IsKubernetes() {
-		cli.Config.SetKubeConfig()
+		cli.Config.SetKubeConfig(location)
 		log.Println("Waiting on nodes to go into ready state...")
 		ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
 		if ready == false {
@@ -178,7 +185,7 @@ func (cli *CLIProvisioner) waitForNodes() error {
 	}
 
 	if cli.Config.IsDCOS() {
-		host := fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location)
+		host := fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, location)
 		user := cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername
 		log.Printf("SSH Key: %s\n", cli.Config.GetSSHKeyPath())
 		log.Printf("Master Node: %s@%s\n", user, host)
@@ -199,8 +206,8 @@ func (cli *CLIProvisioner) waitForNodes() error {
 	return nil
 }
 
-func (cli *CLIProvisioner) fetchProvisioningMetrics(path string) error {
-	conn, err := remote.NewConnection(fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location), "2200", cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cli.Config.GetSSHKeyPath())
+func (cli *CLIProvisioner) fetchProvisioningMetrics(path, location string) error {
+	conn, err := remote.NewConnection(fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, location), "2200", cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cli.Config.GetSSHKeyPath())
 	if err != nil {
 		return err
 	}
