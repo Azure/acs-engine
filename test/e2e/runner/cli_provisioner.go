@@ -54,7 +54,7 @@ func BuildCLIProvisioner(cfg *config.Config, acct *azure.Account, pt *metrics.Po
 func (cli *CLIProvisioner) Run() error {
 	rgs := make([]string, 0)
 	for i := 1; i <= cli.ProvisionRetries; i++ {
-		location := cli.Config.Regions[i]
+		location := cli.Config.Regions[i-1]
 		cli.Point.SetLocation(location)
 		cli.Point.SetProvisionStart()
 		err := cli.provision(location)

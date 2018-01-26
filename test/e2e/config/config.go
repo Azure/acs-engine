@@ -143,7 +143,8 @@ func (c *Config) ShuffleRegions() {
 	} else {
 		regions = c.Regions
 	}
-	perm := rand.Perm(len(regions))
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	perm := r.Perm(len(regions))
 	shuffled := make([]string, len(perm))
 	for i, v := range perm {
 		shuffled[v] = regions[i]
