@@ -6,6 +6,13 @@
       },
       "type": "string"
     },
+    "aadAdminGroupId": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The AAD default Admin group Object ID used to create a cluster-admin RBAC role."
+      },
+      "type": "string"
+    },
 {{end}}
     "apiServerCertificate": {
       "metadata": {

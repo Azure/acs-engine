@@ -426,6 +426,10 @@ type AADProfile struct {
 	// If not specified, will use the tenant of the deployment subscription.
 	// Optional
 	TenantID string `json:"tenantID,omitempty"`
+	// The Azure Active Directory Group Object ID that will be assigned the
+	// cluster-admin RBAC role.
+	// Optional
+	AdminGroupID string `json:"adminGroupID,omitempty"`
 }
 
 // CustomProfile specifies custom properties that are used for

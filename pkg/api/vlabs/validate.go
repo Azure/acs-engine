@@ -111,9 +111,28 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 						}
 					}
 				}
-				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) &&
-					!helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
-					return fmt.Errorf("enablePodSecurityPolicy requires the enableRbac feature as a prerequisite")
+				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) {
+					if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
+						return fmt.Errorf("enablePodSecurityPolicy requires the enableRbac feature as a prerequisite")
+					}
+					if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot7 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot0 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot1 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot2 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot4 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot5 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot7 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot9 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot10 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot12 {
+						return fmt.Errorf("enablePodSecurityPolicy is only supported in acs-engine for Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+							"1.8.0", o.OrchestratorVersion)
+					}
+
 				}
 			}
 
@@ -303,6 +322,11 @@ func (profile *AADProfile) Validate() error {
 	if len(profile.TenantID) > 0 {
 		if _, err := uuid.FromString(profile.TenantID); err != nil {
 			return fmt.Errorf("tenantID '%v' is invalid", profile.TenantID)
+		}
+	}
+	if len(profile.AdminGroupID) > 0 {
+		if _, err := uuid.FromString(profile.AdminGroupID); err != nil {
+			return fmt.Errorf("adminGroupID '%v' is invalid", profile.AdminGroupID)
 		}
 	}
 	return nil

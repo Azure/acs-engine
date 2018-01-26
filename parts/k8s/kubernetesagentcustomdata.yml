@@ -91,7 +91,7 @@ write_files:
 {{if .IsCoreOS}}
     ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /opt/kubectl
     ExecStart=/bin/chmod a+x /opt/kubectl
-{{else}}    
+{{else}}
     ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
     ExecStart=/bin/chmod a+x /usr/local/bin/kubectl
 {{end}}
@@ -158,20 +158,20 @@ coreos:
       command: "start"
       content: |
         # Note: Initiated as a service since there is no runcmd within CoreOS on cloud-config/Ignition
-        [Unit] 
+        [Unit]
         Description=Start provision setup service
 
         [Service]
         ExecStart=/opt/azure/containers/provision-setup.sh
 {{else}}
 runcmd:
-- echo `date`,`hostname`, startruncmd>>/opt/m 
+- echo `date`,`hostname`, startruncmd>>/opt/m
 - apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
-- echo `date`,`hostname`, preaptupdate>>/opt/m 
+- echo `date`,`hostname`, preaptupdate>>/opt/m
 - apt-get update
-- echo `date`,`hostname`, postaptupdate>>/opt/m 
+- echo `date`,`hostname`, postaptupdate>>/opt/m
 - apt-get install -y apt-transport-https ca-certificates nfs-common
-- echo `date`,`hostname`, aptinstall>>/opt/m 
+- echo `date`,`hostname`, aptinstall>>/opt/m
 - systemctl enable rpcbind
 - systemctl enable rpc-statd
 - systemctl start rpcbind
@@ -183,6 +183,8 @@ runcmd:
 - apt-get update
 - apt-get install -y ebtables
 - apt-get install -y docker-engine
+- echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
+- systemctl daemon-reload
 - echo `date`,`hostname`, postdockerinstall>>/opt/m
 - systemctl restart docker
 - mkdir -p /etc/kubernetes/manifests
@@ -193,5 +195,5 @@ runcmd:
 - echo `date`,`hostname`, POST-APT-SYSTEMD-DAILY>>/opt/m
 - apt-mark unhold walinuxagent
 - mkdir -p /opt/azure/containers && touch /opt/azure/containers/runcmd.complete
-- echo `date`,`hostname`, endruncmd>>/opt/m 
+- echo `date`,`hostname`, endruncmd>>/opt/m
 {{end}}
