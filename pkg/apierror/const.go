@@ -15,7 +15,7 @@ const (
 	InternalError ErrorCategory = "InternalError"
 )
 
-// Common Azure Resource Provider API error code
+// ErrorCode is Common Azure Resource Provider API error code
 type ErrorCode string
 
 const (
