@@ -131,8 +131,8 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 
 // NodeCount returns the number of nodes that should be provisioned for a given cluster definition
 func (e *Engine) NodeCount() int {
-	expectedCount := e.ClusterDefinition.Properties.MasterProfile.Count
-	for _, pool := range e.ClusterDefinition.Properties.AgentPoolProfiles {
+	expectedCount := e.ExpandedDefinition.Properties.MasterProfile.Count
+	for _, pool := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
 		expectedCount = expectedCount + pool.Count
 	}
 	return expectedCount
@@ -140,7 +140,7 @@ func (e *Engine) NodeCount() int {
 
 // HasLinuxAgents will return true if there is at least 1 linux agent pool
 func (e *Engine) HasLinuxAgents() bool {
-	for _, ap := range e.ClusterDefinition.Properties.AgentPoolProfiles {
+	for _, ap := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
 		if ap.OSType == "" || ap.OSType == "Linux" {
 			return true
 		}
@@ -150,7 +150,7 @@ func (e *Engine) HasLinuxAgents() bool {
 
 // HasWindowsAgents will return true is there is at least 1 windows agent pool
 func (e *Engine) HasWindowsAgents() bool {
-	for _, ap := range e.ClusterDefinition.Properties.AgentPoolProfiles {
+	for _, ap := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
 		if ap.OSType == "Windows" {
 			return true
 		}
