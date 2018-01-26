@@ -131,8 +131,8 @@ func Build(cfg *config.Config, subnetID string) (*Engine, error) {
 
 // NodeCount returns the number of nodes that should be provisioned for a given cluster definition
 func (e *Engine) NodeCount() int {
-	expectedCount := e.ExpandedDefinition.Properties.MasterProfile.Count
-	for _, pool := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
+	expectedCount := e.ClusterDefinition.Properties.MasterProfile.Count
+	for _, pool := range e.ClusterDefinition.Properties.AgentPoolProfiles {
 		expectedCount = expectedCount + pool.Count
 	}
 	return expectedCount
