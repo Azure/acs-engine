@@ -93,12 +93,12 @@ func (cli *CLIProvisioner) provision() error {
 		if err != nil {
 			return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
 		}
-		cmd = exec.Command("chmod", "0600", cli.Config.GetSSHKeyPath()+"*")
+		/*cmd = exec.Command("chmod", "0600", cli.Config.GetSSHKeyPath()+"*")
 		util.PrintCommand(cmd)
 		out, err = cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("Error while setting mode perms on ssh key:%s\nOutput:%s", err, out)
-		}
+		}*/
 	}
 
 	publicSSHKey, err := cli.Config.ReadPublicSSHKey()
