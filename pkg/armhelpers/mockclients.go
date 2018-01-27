@@ -1,7 +1,11 @@
 package armhelpers
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/arm/authorization"
@@ -17,6 +21,8 @@ import (
 //MockACSEngineClient is an implementation of ACSEngineClient where all requests error out
 type MockACSEngineClient struct {
 	FailDeployTemplate              bool
+	FailDeployTemplateQuota         bool
+	FailDeployTemplateConflict      bool
 	FailEnsureResourceGroup         bool
 	FailListVirtualMachines         bool
 	FailListVirtualMachineScaleSets bool
@@ -125,11 +131,53 @@ func (mc *MockACSEngineClient) AddAcceptLanguages(languages []string) {
 
 //DeployTemplate mock
 func (mc *MockACSEngineClient) DeployTemplate(resourceGroup, name string, template, parameters map[string]interface{}, cancel <-chan struct{}) (*resources.DeploymentExtended, error) {
-	if mc.FailDeployTemplate {
-		return nil, fmt.Errorf("DeployTemplate failed")
-	}
+	switch {
+	case mc.FailDeployTemplate:
+		return nil, errors.New("DeployTemplate failed")
 
-	return nil, nil
+	case mc.FailDeployTemplateQuota:
+		errmsg := `resources.DeploymentsClient#CreateOrUpdate: Failure responding to request: StatusCode=400 -- Original Error: autorest/azure: Service returned an error.`
+		resp := `{
+"error":{
+	"code":"InvalidTemplateDeployment",
+	"message":"The template deployment is not valid according to the validation procedure. The tracking id is 'b5bd7d6b-fddf-4ec3-a3b0-ce285a48bd31'. See inner errors for details. Please see https://aka.ms/arm-deploy for usage details.",
+	"details":[{
+		"code":"QuotaExceeded",
+		"message":"Operation results in exceeding quota limits of Core. Maximum allowed: 10, Current in use: 10, Additional requested: 2. Please read more about quota increase at http://aka.ms/corequotaincrease."
+}]}}`
+
+		return &resources.DeploymentExtended{
+				Response: autorest.Response{
+					Response: &http.Response{
+						Status:     "400 Bad Request",
+						StatusCode: 400,
+						Body:       ioutil.NopCloser(bytes.NewReader([]byte(resp))),
+					}}},
+			errors.New(errmsg)
+
+	case mc.FailDeployTemplateConflict:
+		errmsg := `resources.DeploymentsClient#CreateOrUpdate: Failure sending request: StatusCode=200 -- Original Error: Long running operation terminated with status 'Failed': Code="DeploymentFailed" Message="At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-debug for usage details.`
+		resp := `{
+"status":"Failed",
+"error":{
+	"code":"DeploymentFailed",
+	"message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-debug for usage details.",
+	"details":[{
+		"code":"Conflict",
+		"message":"{\r\n  \"error\": {\r\n    \"code\": \"PropertyChangeNotAllowed\",\r\n    \"target\": \"dataDisk.createOption\",\r\n    \"message\": \"Changing property 'dataDisk.createOption' is not allowed.\"\r\n  }\r\n}"
+}]}}`
+		return &resources.DeploymentExtended{
+				Response: autorest.Response{
+					Response: &http.Response{
+						Status:     "200 OK",
+						StatusCode: 200,
+						Body:       ioutil.NopCloser(bytes.NewReader([]byte(resp))),
+					}}},
+			errors.New(errmsg)
+
+	default:
+		return nil, nil
+	}
 }
 
 //EnsureResourceGroup mock
@@ -396,4 +444,14 @@ func (mc *MockACSEngineClient) ListProviders() (resources.ProviderListResult, er
 	}
 
 	return resources.ProviderListResult{}, nil
+}
+
+// ListDeploymentOperations gets all deployments operations for a deployment.
+func (mc *MockACSEngineClient) ListDeploymentOperations(resourceGroupName string, deploymentName string, top *int32) (result resources.DeploymentOperationsListResult, err error) {
+	return resources.DeploymentOperationsListResult{}, nil
+}
+
+// ListDeploymentOperationsNextResults retrieves the next set of results, if any.
+func (mc *MockACSEngineClient) ListDeploymentOperationsNextResults(lastResults resources.DeploymentOperationsListResult) (result resources.DeploymentOperationsListResult, err error) {
+	return resources.DeploymentOperationsListResult{}, nil
 }
