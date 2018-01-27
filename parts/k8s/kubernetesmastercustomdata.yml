@@ -306,7 +306,8 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
         if [ -e /opt/azure/containers/etcdcerts.complete ]; then
             break
         fi
-        sleep 1
+        echo "Waiting for etcdcerts to be completed...($i)"
+        sleep 5
     done
     sudo sed -i "1iETCDCTL_ENDPOINTS=https://127.0.0.1:2379" /etc/environment
     sudo sed -i "1iETCDCTL_CA_FILE={{WrapAsVariable "etcdCaFilepath"}}" /etc/environment
