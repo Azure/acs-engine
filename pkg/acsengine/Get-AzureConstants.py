@@ -7,11 +7,11 @@ import json
 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
 def getAllSizes():
-    locations = json.loads(subprocess.check_output(['az', 'account', 'list-locations']))
+    locations = json.loads(subprocess.check_output(['az', 'account', 'list-locations']).decode('utf-8'))
     sizeMap = {}
 
     for location in locations:
-        sizes = json.loads(subprocess.check_output(['az', 'vm', 'list-sizes', '-l', location['name']]))
+        sizes = json.loads(subprocess.check_output(['az', 'vm', 'list-sizes', '-l', location['name']]).decode('utf-8'))
         for size in sizes:
             if not size['name'] in sizeMap and not size['name'].split('_')[0] == 'Basic':
                 sizeMap[size['name']] = size
@@ -43,7 +43,7 @@ def getMasterAgentMap(sizeMap):
     return agentMap
 
 def getLocations():
-    locations = json.loads(subprocess.check_output(['az', 'account', 'list-locations']))
+    locations = json.loads(subprocess.check_output(['az', 'account', 'list-locations']).decode('utf-8'))
 
     locationList = [l['name'] for l in locations]
 
@@ -87,6 +87,7 @@ var AzureLocations = []string{
 	"usgoviowa",
 	"usgovarizona",
 	"usgovtexas",
+    "francecentral",
 }
 
 // GetDCOSMasterAllowedSizes returns the master allowed sizes
