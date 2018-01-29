@@ -313,7 +313,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.EtcdVersion = DefaultEtcdVersion
 		}
 		if a.HasWindows() {
-			o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicyWindows
+			if o.KubernetesConfig.NetworkPolicy == "" {
+				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicyWindows
+			}
 		} else {
 			if o.KubernetesConfig.NetworkPolicy == "" {
 				o.KubernetesConfig.NetworkPolicy = DefaultNetworkPolicy
