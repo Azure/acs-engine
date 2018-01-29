@@ -1,11 +1,7 @@
 package acsengine
 
 import (
-	"bytes"
-	"fmt"
-	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/helpers"
@@ -114,20 +110,6 @@ func setKubeletConfig(cs *api.ContainerService) {
 	}
 }
 
-// combine user-provided --feature-gates vals with defaults
-// a minimum k8s version may be declared as required for defaults assignment
-func addDefaultFeatureGates(m map[string]string, version string, minVersion string, defaults string) {
-	if minVersion != "" {
-		if isKubernetesVersionGe(version, minVersion) {
-			m["--feature-gates"] = combineValues(m["--feature-gates"], defaults)
-		} else {
-			m["--feature-gates"] = combineValues(m["--feature-gates"], "")
-		}
-	} else {
-		m["--feature-gates"] = combineValues(m["--feature-gates"], defaults)
-	}
-}
-
 func setMissingKubeletValues(p *api.KubernetesConfig, d map[string]string) {
 	if p.KubeletConfig == nil {
 		p.KubeletConfig = d
@@ -147,38 +129,4 @@ func copyMap(input map[string]string) map[string]string {
 		copy[key] = value
 	}
 	return copy
-}
-func combineValues(inputs ...string) string {
-	var valueMap map[string]string
-	valueMap = make(map[string]string)
-	for _, input := range inputs {
-		applyValueStringToMap(valueMap, input)
-	}
-	return mapToString(valueMap)
-}
-
-func applyValueStringToMap(valueMap map[string]string, input string) {
-	values := strings.Split(input, ",")
-	for index := 0; index < len(values); index++ {
-		// trim spaces (e.g. if the input was "foo=true, bar=true" - we want to drop the space after the comma)
-		value := strings.Trim(values[index], " ")
-		valueParts := strings.Split(value, "=")
-		if len(valueParts) == 2 {
-			valueMap[valueParts[0]] = valueParts[1]
-		}
-	}
-}
-
-func mapToString(valueMap map[string]string) string {
-	// Order by key for consistency
-	keys := []string{}
-	for key := range valueMap {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	var buf bytes.Buffer
-	for _, key := range keys {
-		buf.WriteString(fmt.Sprintf("%s=%s,", key, valueMap[key]))
-	}
-	return strings.TrimSuffix(buf.String(), ",")
 }
