@@ -18,7 +18,8 @@ def getAllSizes():
 
     return sizeMap
 
-min_cores = 2
+min_cores_dcos = 2
+min_cores_k8s = 1
 dcos_masters_ephemeral_disk_min = 102400
 
 def getDcosMasterMap(sizeMap):
@@ -26,7 +27,7 @@ def getDcosMasterMap(sizeMap):
 
     for key in sizeMap.keys():
         size = sizeMap[key]
-        if size['numberOfCores'] >= min_cores and \
+        if size['numberOfCores'] >= min_cores_dcos and \
            size['resourceDiskSizeInMb'] >= dcos_masters_ephemeral_disk_min:
             masterMap[size['name']] = size
 
@@ -37,7 +38,7 @@ def getMasterAgentMap(sizeMap):
 
     for key in sizeMap.keys():
         size = sizeMap[key]
-        if size['numberOfCores'] >= min_cores:
+        if size['numberOfCores'] >= min_cores_k8s:
             agentMap[size['name']] = size
 
     return agentMap
