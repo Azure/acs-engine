@@ -1629,7 +1629,7 @@ func makeExtensionScriptCommands(extension *api.Extension, extensionProfiles []*
 	extensionsParameterReference := fmt.Sprintf("parameters('%sParameters')", extensionProfile.Name)
 	scriptURL := getExtensionURL(extensionProfile.RootURL, extensionProfile.Name, extensionProfile.Version, extensionProfile.Script, extensionProfile.URLQuery)
 	scriptFilePath := fmt.Sprintf("/opt/azure/containers/extensions/%s/%s", extensionProfile.Name, extensionProfile.Script)
-	return fmt.Sprintf("- sudo /usr/bin/curl -o %s --create-dirs \"%s\" \n- sudo /bin/chmod 744 %s \n- sudo %s ',%s,' > /var/log/%s-output.log",
+	return fmt.Sprintf("- sudo /usr/bin/curl --retry --retry-connrefused --retry-delay 10 -o %s --create-dirs \"%s\" \n- sudo /bin/chmod 744 %s \n- sudo %s ',%s,' > /var/log/%s-output.log",
 		scriptFilePath, scriptURL, scriptFilePath, scriptFilePath, extensionsParameterReference, extensionProfile.Name)
 }
 

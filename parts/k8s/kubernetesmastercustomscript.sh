@@ -272,7 +272,7 @@ function configNetworkPolicy() {
 function installClearContainersRuntime() {
 	# Add Clear Containers repository key
 	echo "Adding Clear Containers repository key..."
-	curl -sSL "https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key" | apt-key add -
+	curl -sSL --retry 5 --retry-delay 10 --retry-max-time 30 --retry-connrefused "https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key" | apt-key add -
 
 	# Add Clear Container repository
 	echo "Adding Clear Containers repository..."
@@ -321,13 +321,13 @@ function installGo() {
 	fi
 
 	# Get the latest Go version
-	GO_VERSION=$(curl -sSL "https://golang.org/VERSION?m=text")
+	GO_VERSION=$(curl -sSL --retry 5 --retry-delay 10 --retry-max-time 30 --retry-connrefused "https://golang.org/VERSION?m=text")
 
 	echo "Installing Go version $GO_VERSION..."
 
 	# subshell
 	(
-	curl -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
+	curl -sSL --retry 5 --retry-delay 10 --retry-max-time 30 --retry-connrefused "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
 	)
 
 	# Set GOPATH and update PATH
