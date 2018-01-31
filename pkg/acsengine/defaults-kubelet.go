@@ -30,8 +30,6 @@ func setKubeletConfig(cs *api.ContainerService) {
 	for key, val := range staticLinuxKubeletConfig {
 		staticWindowsKubeletConfig[key] = val
 	}
-	// Windows kubelet config overrides
-	staticWindowsKubeletConfig["--network-plugin"] = NetworkPluginKubenet
 
 	// Default Kubelet config
 	defaultKubeletConfig := map[string]string{
