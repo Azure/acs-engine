@@ -300,17 +300,11 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     mkdir -p /tmp/etcd-download
     curl -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
-    useradd -U "etcd"
+    useradd -U "etcd" > 2&>1
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
     passwd -u "$etcd" > /dev/null
     systemctl daemon-reload
     systemctl enable etcd.service
-    for i in {1..60}; do
-        if [ -e /opt/azure/containers/etcdcerts.complete ]; then
-            break
-        fi
-        sleep 1
-    done
     sudo sed -i "1iETCDCTL_ENDPOINTS=https://127.0.0.1:2379" /etc/environment
     sudo sed -i "1iETCDCTL_CA_FILE={{WrapAsVariable "etcdCaFilepath"}}" /etc/environment
     sudo sed -i "1iETCDCTL_KEY_FILE={{WrapAsVariable "etcdClientKeyFilepath"}}" /etc/environment
@@ -354,7 +348,7 @@ coreos:
         ExecStart=/opt/azure/containers/provision-setup.sh
 {{else}}
 runcmd:
-- retrycmd_if_failure() { for i in $(seq 1 5); do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
+- retrycmd_if_failure() { for i in $(seq 1 36); do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
 - /opt/azure/containers/setup-etcd.sh
 - apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
 - /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --peer-client-cert-auth --peer-trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --peer-cert-file={{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}} --peer-key-file={{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}} --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --cert-file={{WrapAsVariable "etcdServerCertFilepath"}} --key-file={{WrapAsVariable "etcdServerKeyFilepath"}} --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',https://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
@@ -363,8 +357,7 @@ runcmd:
 - systemctl stop etcd
 - sudo -u etcd rm -rf /var/lib/etcd/default
 - systemctl daemon-reload
-- sudo /bin/chown etcd:etcd {{WrapAsVariable "etcdServerKeyFilepath"}}
-- sudo /bin/chown etcd:etcd {{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}}
+- retrycmd_if_failure cat {{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}}
 - systemctl restart etcd
 - MEMBER="$(sudo etcdctl member list | grep -E {{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}} | cut -d{{WrapAsVariable "singleQuote"}}:{{WrapAsVariable "singleQuote"}} -f 1)"
 - sudo etcdctl member update ${MEMBER} {{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}
