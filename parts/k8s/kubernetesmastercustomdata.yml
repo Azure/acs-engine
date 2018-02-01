@@ -300,7 +300,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
     useradd -U "etcd" > /dev/null 2&>1
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
-    passwd -u "$etcd" > /dev/null
+    passwd -u "etcd" > /dev/null
     systemctl daemon-reload
     systemctl enable etcd.service
     sudo sed -i "1iETCDCTL_ENDPOINTS=https://127.0.0.1:2379" /etc/environment
