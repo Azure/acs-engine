@@ -1,0 +1,39 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "kubernetesConfig": {
+        "networkPolicy": "azure"
+      }
+    },
+	"masterProfile": {
+		"count": 1,
+		"dnsPrefix": "yongliAcsAzureCni",
+		"vmSize": "Standard_D2_v2"
+	},
+		"agentPoolProfiles": [{
+			"name": "windowspool2",
+			"count": 2,
+			"vmSize": "Standard_D2_v2",
+			"availabilityProfile": "AvailabilitySet",
+			"osType": "Windows"
+		}],
+		"windowsProfile": {
+			"adminUsername": "yongli",
+			"adminPassword": "yongliAdmin123$"
+		},
+		"linuxProfile": {
+			"adminUsername": "yongli",
+			"ssh": {
+				"publicKeys": [{
+					"keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAtlMoZ+cpYqf4qhwlq+LzPyrvd4kxTVERSMaHBqsCXYgQeH/gJsFtBqe6XSrBnXRN/wwEjXhvisi3qSq6zQlfXOZPSXk+Vt5zHkaab19pwzz7gmh5U8P2F1yGxDJYWcglE/bbwtO0MpAiy3B4uqVkMWsiYVcOKfVnZt/cOe8788cMKlkAvzWw1mAG7k36p1UxLMrUKfrSKhlIJ0ndBA7VsyIQ0z3AO0aLzCPaWsB/r1zDsRM+1aAbMoDK0itA4V0Sin6Xfs0RbKO8TWcjqjPMtjcQcHN/Ja17gKa/fY/ULOQygblUTJr8l8ak4kZg2NrDNNDQqisqN770rX4U+Plrfw== yongli@k8s-master-61663972-0:~/.ssh$ ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAtlMoZ+cpYqf4qhwlq+LzPyrvd4kxTVERSMaHBqsCXYgQeH/gJsFtBqe6XSrBnXRN/wwEjXhvisi3qSq6zQlfXOZPSXk+Vt5zHkaab19pwzz7gmh5U8P2F1yGxDJYWcglE/bbwtO0MpAiy3B4uqVkMWsiYVcOKfVnZt/cOe8788cMKlkAvzWw1mAG7k36p1UxLMrUKfrSKhlIJ0ndBA7VsyIQ0z3AO0aLzCPaWsB/r1zDsRM+1aAbMoDK0itA4V0Sin6Xfs0RbKO8TWcjqjPMtjcQcHN/Ja17gKa/fY/ULOQygblUTJr8l8ak4kZg2NrDNNDQqisqN770rX4U+Plrfw=="
+				}]
+			}
+		},
+		"servicePrincipalProfile": {
+			"clientId": "http://azure-cli-2017-12-06-18-42-08",
+			"secret": "3c936345-cb30-4131-92f3-2df7a72061f8"
+		}
+	}
+}

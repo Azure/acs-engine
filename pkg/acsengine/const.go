@@ -38,12 +38,14 @@ const (
 	DefaultInternalLbStaticIPOffset = 10
 	// NetworkPolicyNone is the string expression for no network policy
 	NetworkPolicyNone = "none"
+	// NetworkPolicyAzure is the string expression for Azure CNI network policy
+	NetworkPolicyAzure = "azure"
 	// NetworkPluginKubenet is the string expression for kubenet network plugin
 	NetworkPluginKubenet = "kubenet"
 	// DefaultNetworkPolicy defines the network policy to use by default
 	DefaultNetworkPolicy = NetworkPolicyNone
 	// DefaultNetworkPolicyWindows defines the network policy to use by default for clusters with Windows agent pools
-	DefaultNetworkPolicyWindows = NetworkPolicyNone
+	DefaultNetworkPolicyWindows = NetworkPolicyAzure
 	// DefaultContainerRuntime is docker
 	DefaultContainerRuntime = "docker"
 	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/

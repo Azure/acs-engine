@@ -195,7 +195,7 @@ Install-VnetPlugins()
 
     # Download Azure VNET CNI plugins.
     # Mirror from https://github.com/Azure/azure-container-networking/releases
-    $zipfile =  [Io.path]::Combine("$global:AzureCNIDir","azure-vnet.zip")
+    $zipfile =  [Io.path]::Combine("$global:AzureCNIDir", "azure-vnet.zip")
     Invoke-WebRequest -Uri $global:VNetCNIPluginsURL -OutFile $zipfile
     Expand-Archive -path $zipfile -DestinationPath $global:AzureCNIBinDir
     del $zipfile
@@ -204,14 +204,13 @@ Install-VnetPlugins()
     # kernel automatically creates a loopback interface for each network namespace.
     # Copy CNI network config file and set bridge mode.
     move $global:AzureCNIBinDir/*.conflist $global:AzureCNIConfDir
-    Set-VnetPluginMode "bridge"
 
     # Enable CNI in kubelet.
     $global:AzureCNIEnabled = $true
 }
 
- function
- Set-AzureNetworkPolicy()
+function
+Set-AzureNetworkPolicy()
 {
     # Azure VNET network policy requires tunnel (hairpin) mode because policy is enforced in the host.
     Set-VnetPluginMode "tunnel"
@@ -244,9 +243,6 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
         $KubeletArgList += "--api-servers=https://`${global:MasterIP}:443"
         $KubeletCommandLine += " --api-servers=https://`${global:MasterIP}:443"
     }
-
-    # network plugin config
-    $KubeletCommandLine += " --network-plugin=cni --cni-bin-dir=`$global:CNIPath --cni-conf-dir `$global:CNIPath\config"
 
     # more time is needed to pull windows server images
     $KubeletCommandLine += " --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable=`"`""
@@ -347,15 +343,18 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
     Add-Content -Path `$global:CNIConfig -Value (ConvertTo-Json `$configJson -Depth 20)
 }
 
+"@
+
+    if ($global:NetworkPolicy -eq "azure") {
+        $kubeStartStr += @"
+Write-Host "NetworkPolicy azure, starting kubelet."
+$KubeletCommandLine
+return 0
+"@
+    } else {        
+        $kubeStartStr += @"
 try
 {
-    
-    if (`$global:NetworkPolicy -eq "azure") {
-        Write-Host "NetworkPolicy azure, starting kubelet."
-        $KubeletCommandLine
-        return 0
-    }
-
     `$masterSubnetGW = Get-DefaultGateway `$global:MasterSubnet
     `$podCIDR=Get-PodCIDR
     `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
@@ -407,6 +406,7 @@ catch
     Write-Error `$_
 }
 "@
+    }
     $kubeStartStr | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
     $kubeProxyStartStr = @"
