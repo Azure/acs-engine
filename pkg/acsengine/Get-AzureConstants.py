@@ -20,7 +20,7 @@ def getAllSizes():
 
 min_cores_dcos = 2
 min_cores_k8s = 1
-dcos_masters_ephemeral_disk_min = 102400
+dcos_masters_ephemeral_disk_min = 16384
 
 def getDcosMasterMap(sizeMap):
     masterMap = {}
