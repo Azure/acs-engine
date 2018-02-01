@@ -11,6 +11,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
+	"github.com/satori/go.uuid"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
