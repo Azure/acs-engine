@@ -70,7 +70,7 @@ fi
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
     
-    useradd -U "etcd" > 2&>1
+    useradd -U "etcd" > /dev/null 2&>1
     
     APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
     touch "${APISERVER_PRIVATE_KEY_PATH}"
@@ -273,7 +273,7 @@ function configNetworkPolicy() {
 function installClearContainersRuntime() {
 	# Add Clear Containers repository key
 	echo "Adding Clear Containers repository key..."
-	curl -sSL "https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key" | apt-key add -
+	curl -sSL --retry 5 --retry-delay 10 --retry-max-time 30 "https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key" | apt-key add -
 
 	# Add Clear Container repository
 	echo "Adding Clear Containers repository..."
@@ -322,13 +322,13 @@ function installGo() {
 	fi
 
 	# Get the latest Go version
-	GO_VERSION=$(curl -sSL "https://golang.org/VERSION?m=text")
+	GO_VERSION=$(curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://golang.org/VERSION?m=text")
 
 	echo "Installing Go version $GO_VERSION..."
 
 	# subshell
 	(
-	curl -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
+	curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
 	)
 
 	# Set GOPATH and update PATH
