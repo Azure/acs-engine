@@ -106,7 +106,7 @@ func (t *Transformer) NormalizeForK8sVMASScalingUp(logger *logrus.Entry, templat
 	}
 	rtIndex := -1
 	nsgIndex := -1
-	vnetIndex := -1;
+	vnetIndex := -1
 	resources := templateMap[resourcesFieldName].([]interface{})
 	for index, resource := range resources {
 		resourceMap, ok := resource.(map[string]interface{})
