@@ -298,7 +298,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     ETCD_VER=v{{WrapAsVariable "etcdVersion"}}
     DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
     mkdir -p /tmp/etcd-download
-    curl -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+    curl --retry 5 --retry-delay 10 --retry-max-time 30 --retry-connrefused -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
     useradd -U "etcd" > 2&>1
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
