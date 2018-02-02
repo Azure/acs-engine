@@ -9,7 +9,7 @@
       },
       "masterProfile":{
          "count":1,
-         "dnsPrefix":"yongliAcsAzureCni2",
+         "dnsPrefix":"yongliAcsAzureCni",
          "vmSize":"Standard_D2_v2"
       },
       "agentPoolProfiles":[
