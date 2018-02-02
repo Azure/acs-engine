@@ -64,6 +64,9 @@ func setControllerManagerConfig(cs *api.ContainerService) {
 		}
 	}
 
+	// Enables Node Exclusion from Services (toggled on agent nodes by the alpha.service-controller.kubernetes.io/exclude-balancer label).
+	addDefaultFeatureGates(o.KubernetesConfig.ControllerManagerConfig, o.OrchestratorVersion, "1.9.0", "ServiceNodeExclusion=true")
+
 	// We don't support user-configurable values for the following,
 	// so any of the value assignments below will override user-provided values
 	var overrideControllerManagerConfig map[string]string
