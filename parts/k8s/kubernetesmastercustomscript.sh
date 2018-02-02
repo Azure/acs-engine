@@ -69,7 +69,9 @@ fi
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
-
+    
+    useradd -U "etcd" > /dev/null 2>&1
+    
     APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
     touch "${APISERVER_PRIVATE_KEY_PATH}"
     chmod 0600 "${APISERVER_PRIVATE_KEY_PATH}"
@@ -85,7 +87,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     ETCD_SERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdserver.key"
     touch "${ETCD_SERVER_PRIVATE_KEY_PATH}"
     chmod 0600 "${ETCD_SERVER_PRIVATE_KEY_PATH}"
-    chown root:root "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+    chown etcd:etcd "${ETCD_SERVER_PRIVATE_KEY_PATH}"
     echo "${ETCD_SERVER_PRIVATE_KEY}" | base64 --decode > "${ETCD_SERVER_PRIVATE_KEY_PATH}"
 
     ETCD_CLIENT_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdclient.key"
@@ -97,7 +99,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     ETCD_PEER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.key"
     touch "${ETCD_PEER_PRIVATE_KEY_PATH}"
     chmod 0600 "${ETCD_PEER_PRIVATE_KEY_PATH}"
-    chown root:root "${ETCD_PEER_PRIVATE_KEY_PATH}"
+    chown etcd:etcd "${ETCD_PEER_PRIVATE_KEY_PATH}"
     echo "${ETCD_PEER_KEY}" | base64 --decode > "${ETCD_PEER_PRIVATE_KEY_PATH}"
 
     ETCD_SERVER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdserver.crt"
@@ -119,7 +121,6 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
 
     echo `date`,`hostname`, finishedGettingEtcdCerts>>/opt/m
-    mkdir -p /opt/azure/containers && touch /opt/azure/containers/etcdcerts.complete
 else
     echo "skipping master node provision operations, this is an agent node"
 fi
@@ -272,7 +273,7 @@ function configNetworkPolicy() {
 function installClearContainersRuntime() {
 	# Add Clear Containers repository key
 	echo "Adding Clear Containers repository key..."
-	curl -sSL "https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key" | apt-key add -
+	curl -sSL --retry 5 --retry-delay 10 --retry-max-time 30 "https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key" | apt-key add -
 
 	# Add Clear Container repository
 	echo "Adding Clear Containers repository..."
@@ -321,13 +322,13 @@ function installGo() {
 	fi
 
 	# Get the latest Go version
-	GO_VERSION=$(curl -sSL "https://golang.org/VERSION?m=text")
+	GO_VERSION=$(curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://golang.org/VERSION?m=text")
 
 	echo "Installing Go version $GO_VERSION..."
 
 	# subshell
 	(
-	curl -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
+	curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
 	)
 
 	# Set GOPATH and update PATH
