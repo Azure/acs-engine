@@ -292,15 +292,15 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   content: |
     #!/bin/bash
     set -x
-    retrycmd_if_failure() { for i in $(seq 1 36); do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
+    retrycmd_if_failure() { for i in $(seq 1 5); do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
     ETCD_VER=v{{WrapAsVariable "etcdVersion"}}
     DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
     retrycmd_if_failure curl --retry 5 --retry-delay 10 --retry-max-time 30 -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
     useradd -U "etcd" > /dev/null 2>&1
-    usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
-    passwd -u "etcd" > /dev/null
-    systemctl daemon-reload
+    usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd" > /dev/null 2>&1
+    passwd -u "etcd" > /dev/null 2>&1
+    systemctl daemon-reload 
     sudo sed -i "1iETCDCTL_ENDPOINTS=https://127.0.0.1:2379" /etc/environment
     sudo sed -i "1iETCDCTL_CA_FILE={{WrapAsVariable "etcdCaFilepath"}}" /etc/environment
     sudo sed -i "1iETCDCTL_KEY_FILE={{WrapAsVariable "etcdClientKeyFilepath"}}" /etc/environment
