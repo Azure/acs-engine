@@ -720,3 +720,4 @@ fi
 echo `date`,`hostname`, endscript>>/opt/m
 
 mkdir -p /opt/azure/containers && touch /opt/azure/containers/provision.complete
+ps auxfww > /opt/azure/provision-ps.log

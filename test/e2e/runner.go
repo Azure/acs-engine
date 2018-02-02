@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 
 	"github.com/Azure/acs-engine/test/e2e/azure"
 	"github.com/Azure/acs-engine/test/e2e/config"
@@ -13,12 +16,13 @@ import (
 )
 
 var (
-	cfg  *config.Config
-	acct *azure.Account
-	eng  *engine.Engine
-	rgs  []string
-	err  error
-	pt   *metrics.Point
+	cfg            *config.Config
+	acct           *azure.Account
+	eng            *engine.Engine
+	rgs            []string
+	err            error
+	pt             *metrics.Point
+	cliProvisioner *runner.CLIProvisioner
 )
 
 func main() {
@@ -49,16 +53,16 @@ func main() {
 	// If an interrupt/kill signal is sent we will run the clean up procedure
 	trap()
 
+	cliProvisioner, err = runner.BuildCLIProvisioner(cfg, acct, pt)
+	if err != nil {
+		log.Fatalf("Error while trying to build CLI Provisioner:%s", err)
+	}
 	// Only provision a cluster if there isnt a name present
 	if cfg.Name == "" {
 		if cfg.SoakClusterName != "" {
 			rg := cfg.SoakClusterName
 			log.Printf("Deleting Group:%s\n", rg)
 			acct.DeleteGroup(rg, true)
-		}
-		cliProvisioner, err := runner.BuildCLIProvisioner(cfg, acct, pt)
-		if err != nil {
-			log.Fatalf("Error while trying to build CLI Provisioner:%s", err)
 		}
 		err = cliProvisioner.Run()
 		rgs = cliProvisioner.ResourceGroups
@@ -84,6 +88,7 @@ func main() {
 			Config:            engCfg,
 			ClusterDefinition: cs,
 		}
+		cliProvisioner.Engine = eng
 	}
 
 	if !cfg.SkipTest {
@@ -120,6 +125,29 @@ func trap() {
 func teardown() {
 	pt.RecordTotalTime()
 	pt.Write()
+	if cliProvisioner.Config.IsKubernetes() {
+		hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location)
+		logsPath := filepath.Join(cfg.CurrentWorkingDir, "_logs", hostname)
+		err := os.MkdirAll(logsPath, 0755)
+		if err != nil {
+			log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
+		}
+		for _, fp := range []string{"/var/log/azure/cluster-provision.log", "/var/log/cloud-init.log",
+			"/var/log/cloud-init-output.log", "/var/log/syslog", "/var/log/azure/custom-script/handler.log",
+			"/opt/m", "/opt/azure/containers/kubelet.sh", "/opt/azure/containers/mountetcd.sh",
+			"/opt/azure/containers/provision.sh", "/opt/azure/containers/setup-etcd.log",
+			"/opt/azure/containers/setup-etcd.sh", "/opt/azure/provision-ps.log"} {
+			data, err := cliProvisioner.FetchProvisioningMetrics(fp)
+			if err != nil {
+				log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
+			}
+			target := filepath.Join(logsPath, filepath.Base(fp))
+			err = ioutil.WriteFile(target, data, 0777)
+			if err != nil {
+				log.Printf("ioutil.WriteFile error: %s\n", err)
+			}
+		}
+	}
 	if cfg.CleanUpOnExit {
 		for _, rg := range rgs {
 			log.Printf("Deleting Group:%s\n", rg)

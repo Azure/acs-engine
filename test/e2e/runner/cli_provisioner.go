@@ -199,15 +199,16 @@ func (cli *CLIProvisioner) waitForNodes() error {
 	return nil
 }
 
-func (cli *CLIProvisioner) fetchProvisioningMetrics(path string) error {
-	conn, err := remote.NewConnection(fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location), "2200", cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cli.Config.GetSSHKeyPath())
+// FetchProvisioningMetrics gets a file from the master
+func (cli *CLIProvisioner) FetchProvisioningMetrics(path string) ([]byte, error) {
+	hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location)
+	conn, err := remote.NewConnection(hostname, "22", cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cli.Config.GetSSHKeyPath())
 	if err != nil {
-		return err
+		return nil, err
 	}
 	data, err := conn.Read(path)
 	if err != nil {
-		return fmt.Errorf("Error reading file from path (%s):%s", path, err)
+		return nil, fmt.Errorf("Error reading file from path (%s):%s", path, err)
 	}
-	log.Printf("Data:%s\n", data)
-	return nil
+	return data, nil
 }
