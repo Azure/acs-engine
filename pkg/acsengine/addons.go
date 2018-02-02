@@ -97,6 +97,11 @@ func kubernetesManifestSettingsInit(profile *api.Properties) []kubernetesFeature
 			helpers.IsTrueBoolPointer(profile.OrchestratorProfile.KubernetesConfig.EnablePodSecurityPolicy),
 		},
 		{
+			"kubernetesmaster-audit-policy.yaml",
+			"audit-policy.yaml",
+			isKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.8.0"),
+		},
+		{
 			"kubernetesmaster-kube-apiserver.yaml",
 			"kube-apiserver.yaml",
 			true,

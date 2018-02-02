@@ -17,7 +17,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--audit-log-maxage":           "30",
 		"--audit-log-maxbackup":        "10",
 		"--audit-log-maxsize":          "100",
-		"--audit-log-path":             "/var/log/apiserver/audit.log",
+		"--audit-log-path":             "/var/log/audit.log",
 		"--insecure-port":              "8080",
 		"--secure-port":                "443",
 		"--service-account-lookup":     "true",
@@ -71,6 +71,11 @@ func setAPIServerConfig(cs *api.ContainerService) {
 			issuerHost = "sts.chinacloudapi.cn"
 		}
 		staticLinuxAPIServerConfig["--oidc-issuer-url"] = "https://" + issuerHost + "/" + cs.Properties.AADProfile.TenantID + "/"
+	}
+
+	// Audit Policy configuration
+	if isKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") {
+		staticLinuxAPIServerConfig["--audit-policy-file"] = "/etc/kubernetes/manifests/audit-policy.yaml"
 	}
 
 	staticWindowsAPIServerConfig := make(map[string]string)
