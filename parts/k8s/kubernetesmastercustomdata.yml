@@ -298,7 +298,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     mkdir -p /tmp/etcd-download
     retrycmd_if_failure curl --retry 5 --retry-delay 10 --retry-max-time 30 -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
-    useradd -U "etcd" > /dev/null 2&>1
+    useradd -U "etcd" > /dev/null 2>&1
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
     passwd -u "etcd" > /dev/null
     systemctl daemon-reload
@@ -348,7 +348,7 @@ coreos:
 {{else}}
 runcmd:
 - retrycmd_if_failure() { for i in $(seq 1 36); do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
-- /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2&>1
+- /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
 - apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
 - /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --peer-client-cert-auth --peer-trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --peer-cert-file={{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}} --peer-key-file={{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}} --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --cert-file={{WrapAsVariable "etcdServerCertFilepath"}} --key-file={{WrapAsVariable "etcdServerKeyFilepath"}} --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',https://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
 - /opt/azure/containers/mountetcd.sh
