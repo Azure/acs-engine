@@ -135,8 +135,8 @@ func teardown() {
 		for _, fp := range []string{"/var/log/azure/cluster-provision.log", "/var/log/cloud-init.log",
 			"/var/log/cloud-init-output.log", "/var/log/syslog", "/var/log/azure/custom-script/handler.log",
 			"/opt/m", "/opt/azure/containers/kubelet.sh", "/opt/azure/containers/mountetcd.sh",
-			"/opt/azure/containers/provision.sh", "/opt/azure/containers/setup-etcd.log",
-			"/opt/azure/containers/setup-etcd.sh", "/opt/azure/provision-ps.log"} {
+			"/opt/azure/containers/provision.sh", "/opt/azure/containers/setup-etcd.sh",
+			"/opt/azure/provision-ps.log"} {
 			data, err := cliProvisioner.FetchProvisioningMetrics(fp)
 			if err != nil {
 				log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
