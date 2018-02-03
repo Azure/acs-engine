@@ -292,7 +292,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   content: |
     #!/bin/bash
     set -x
-    retrycmd_if_failure() { for i in $(seq 1 36); do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
+    retrycmd_if_failure() { for i in $(seq 1 36); do $@; [ $? -eq 0  ] && break || sleep 5; done; echo Executed \"$@\" $i times; }
     ETCD_VER=v{{WrapAsVariable "etcdVersion"}}
     DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
     mkdir -p /tmp/etcd-download
@@ -314,7 +314,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   owner: "root"
   content: |
     #!/bin/bash
-    retrycmd_if_failure() { for i in $(seq 1 36); do $@; [ $? -eq 0  ] && break || sleep 5; done ; }
+    retrycmd_if_failure() { for i in $(seq 1 36); do $@; [ $? -eq 0  ] && break || sleep 5; done; echo Executed \"$@\" $i times; }
     /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',http://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
     sudo /bin/chown -R etcd:etcd /var/lib/etcd/default
     /opt/azure/containers/mountetcd.sh
