@@ -24,7 +24,7 @@ import (
 // CLIProvisioner holds the configuration needed to provision a clusters
 type CLIProvisioner struct {
 	ClusterDefinition string `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
-	ProvisionRetries  int    `envcofnig:"PROVISION_RETRIES" default:"3"`
+	ProvisionRetries  int    `envconfig:"PROVISION_RETRIES" default:"0"`
 	CreateVNET        bool   `envconfig:"CREATE_VNET" default:"false"`
 	Config            *config.Config
 	Account           *azure.Account
@@ -48,7 +48,7 @@ func BuildCLIProvisioner(cfg *config.Config, acct *azure.Account, pt *metrics.Po
 // Run will provision a cluster using the azure cli
 func (cli *CLIProvisioner) Run() error {
 	rgs := make([]string, 0)
-	for i := 1; i <= cli.ProvisionRetries; i++ {
+	for i := 0; i <= cli.ProvisionRetries; i++ {
 		cli.Point.SetProvisionStart()
 		err := cli.provision()
 		rgs = append(rgs, cli.Config.Name)
@@ -199,15 +199,16 @@ func (cli *CLIProvisioner) waitForNodes() error {
 	return nil
 }
 
-func (cli *CLIProvisioner) fetchProvisioningMetrics(path string) error {
-	conn, err := remote.NewConnection(fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location), "2200", cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cli.Config.GetSSHKeyPath())
+// FetchProvisioningMetrics gets a file from the master
+func (cli *CLIProvisioner) FetchProvisioningMetrics(path string) ([]byte, error) {
+	hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location)
+	conn, err := remote.NewConnection(hostname, "22", cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cli.Config.GetSSHKeyPath())
 	if err != nil {
-		return err
+		return nil, err
 	}
 	data, err := conn.Read(path)
 	if err != nil {
-		return fmt.Errorf("Error reading file from path (%s):%s", path, err)
+		return nil, fmt.Errorf("Error reading file from path (%s):%s", path, err)
 	}
-	log.Printf("Data:%s\n", data)
-	return nil
+	return data, nil
 }
