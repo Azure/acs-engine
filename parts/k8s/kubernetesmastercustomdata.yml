@@ -348,7 +348,7 @@ coreos:
 {{else}}
 runcmd:
 - retrycmd_if_failure() { for i in $(seq 1 36); do $@; [ $? -eq 0  ] && break || sleep 5; done; echo Executed \"$@\" $i times; }
-- retrycmd_if_failure nc -zw1 `grep nameserver /etc/resolv.conf | awk '{print $2}'` 53
+- retrycmd_if_failure nc -zw1 $(grep nameserver /etc/resolv.conf | cut -d \  -f 2) 53
 - retrycmd_if_failure nc -zw1 azure.com 443
 - /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
 - apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
