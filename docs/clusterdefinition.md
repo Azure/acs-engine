@@ -174,7 +174,7 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 
 |kubelet option|default value|
 |---|---|
-|"--bind-address"|"0.0.0.0"|
+|"--address"|"0.0.0.0"|
 |"--azure-container-registry-config"|"/etc/kubernetes/azure.json"|
 |"--allow-privileged"|"true"|
 |"--pod-manifest-path"|"/etc/kubernetes/manifests"|
@@ -300,7 +300,7 @@ Below is a list of apiserver options that are *not* currently user-configurable,
 
 |apiserver option|default value|
 |---|---|
-|"--address"|"0.0.0.0"|
+|"--bind-address"|"0.0.0.0"|
 |"--advertise-address"|*calculated value that represents listening URI for API server*|
 |"--allow-privileged"|"true"|
 |"--anonymous-auth"|"false|
