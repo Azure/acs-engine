@@ -23,6 +23,13 @@
 # KUBECONFIG_KEY ETCD_SERVER_CERTIFICATE ETCD_SERVER_PRIVATE_KEY ETCD_CLIENT_CERTIFICATE ETCD_CLIENT_PRIVATE_KEY
 # ETCD_PEER_CERTIFICATES ETCD_PEER_PRIVATE_KEYS ADMINUSER MASTER_INDEX
 
+# Capture Interesting Network Stuffs during provision
+packetCaptureProvision() {
+    tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/dnsdump.pcap -Z root -i eth0 udp port 53 > /dev/null 2>&1 &
+}
+
+packetCaptureProvision
+
 # Find distro name via ID value in releases files and upcase
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
