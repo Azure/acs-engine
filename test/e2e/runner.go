@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -132,20 +131,9 @@ func teardown() {
 		if err != nil {
 			log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
 		}
-		for _, fp := range []string{"/var/log/azure/cluster-provision.log", "/var/log/cloud-init.log",
-			"/var/log/cloud-init-output.log", "/var/log/syslog", "/var/log/azure/custom-script/handler.log",
-			"/opt/m", "/opt/azure/containers/kubelet.sh", "/opt/azure/containers/mountetcd.sh",
-			"/opt/azure/containers/provision.sh", "/opt/azure/containers/setup-etcd.sh",
-			"/opt/azure/provision-ps.log"} {
-			data, err := cliProvisioner.FetchProvisioningMetrics(fp)
-			if err != nil {
-				log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
-			}
-			target := filepath.Join(logsPath, filepath.Base(fp))
-			err = ioutil.WriteFile(target, data, 0777)
-			if err != nil {
-				log.Printf("ioutil.WriteFile error: %s\n", err)
-			}
+		err = cliProvisioner.FetchProvisioningMetrics(logsPath, cfg)
+		if err != nil {
+			log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
 		}
 	}
 	if cfg.CleanUpOnExit {

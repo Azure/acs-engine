@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
@@ -65,6 +66,9 @@ func NewConnection(host, port, user, keyPath string) (*Connection, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := agent.ForwardToAgent(sshClient, ag); err != nil {
+		log.Fatal(err)
+	}
 
 	return &Connection{
 		Host:           host,
@@ -83,6 +87,10 @@ func (c *Connection) Execute(cmd string) ([]byte, error) {
 		return nil, err
 	}
 	defer session.Close()
+
+	if err := agent.RequestAgentForwarding(session); err != nil {
+		return nil, err
+	}
 
 	out, err := session.CombinedOutput(cmd)
 	if err != nil {
@@ -115,6 +123,19 @@ func (c *Connection) Read(path string) ([]byte, error) {
 		return nil, err
 	}
 	return out, nil
+}
+
+func (c *Connection) ReadRemote(hostname, path string) error {
+	remoteCommand := fmt.Sprintf("scp -o StrictHostKeyChecking=no %s:%s /tmp/%s-%s", hostname, path, hostname, filepath.Base(path))
+	connectString := fmt.Sprintf("%s@%s", c.User, c.Host)
+	cmd := exec.Command("ssh", "-A", "-i", c.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", c.Port, remoteCommand)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error output:%s\n", out)
+		return err
+	}
+	return nil
 }
 
 // ExecuteWithRetries will keep retrying a command until it does not return an error or the duration is exceeded
