@@ -201,7 +201,19 @@ func (cli *CLIProvisioner) waitForNodes() error {
 }
 
 // FetchProvisioningMetrics gets provisioning files from all hosts in a cluster
-func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Config) error {
+func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Config, acct *azure.Account) error {
+	var masters, agents []string
+	hosts, err := acct.GetHosts("")
+	if err != nil {
+		return err
+	}
+	for _, host := range hosts {
+		if strings.Contains(host.Name, "master") {
+			masters = append(masters, host.Name)
+		} else if strings.Contains(host.Name, "agent") {
+			agents = append(agents, host.Name)
+		}
+	}
 	agentFiles := []string{"/var/log/azure/cluster-provision.log", "/var/log/cloud-init.log",
 		"/var/log/cloud-init-output.log", "/var/log/syslog", "/var/log/azure/custom-script/handler.log",
 		"/opt/m", "/opt/azure/containers/kubelet.sh", "/opt/azure/containers/provision.sh",
@@ -213,55 +225,28 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 	if err != nil {
 		return err
 	}
-	cmd := exec.Command("ssh-add", conn.PrivateKeyPath)
-	util.PrintCommand(cmd)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error output:%s\n", out)
-		return err
-	}
-	connectString := fmt.Sprintf("%s@%s", conn.User, conn.Host)
-	getMasters := fmt.Sprintf("kubectl get nodes | grep master | cut -d \\  -f 1")
-	cmd = exec.Command("ssh", "-A", "-i", conn.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", conn.Port, getMasters)
-	util.PrintCommand(cmd)
-	out, err = cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error output:%s\n", out)
-		return err
-	}
-	masters := strings.Split(string(out[:]), "\n")
-	masters = masters[:len(masters)-1]
 	for _, master := range masters {
 		for _, fp := range masterFiles {
-			err := conn.ReadRemote(master, fp)
+			err := conn.CopyRemote(master, fp)
 			if err != nil {
 				return fmt.Errorf("Error reading file from path (%s):%s", path, err)
 			}
 		}
 	}
-	getAgents := fmt.Sprintf("kubectl get nodes | grep agent | cut -d \\  -f 1")
-	cmd = exec.Command("ssh", "-A", "-i", conn.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", conn.Port, getAgents)
-	util.PrintCommand(cmd)
-	out, err = cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error output:%s\n", out)
-		return err
-	}
-	agents := strings.Split(string(out[:]), "\n")
-	agents = agents[:len(agents)-1]
+
 	for _, agent := range agents {
 		for _, fp := range agentFiles {
-			err := conn.ReadRemote(agent, fp)
+			err := conn.CopyRemote(agent, fp)
 			if err != nil {
 				return fmt.Errorf("Error reading file from path (%s):%s", path, err)
 			}
 		}
 	}
-	connectString = fmt.Sprintf("%s@%s:/tmp/k8s-*", conn.User, hostname)
+	connectString := fmt.Sprintf("%s@%s:/tmp/k8s-*", conn.User, hostname)
 	logsPath := filepath.Join(cfg.CurrentWorkingDir, "_logs", hostname)
-	cmd = exec.Command("scp", "-i", conn.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, logsPath)
+	cmd := exec.Command("scp", "-i", conn.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, logsPath)
 	util.PrintCommand(cmd)
-	out, err = cmd.CombinedOutput()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error output:%s\n", out)
 		return err
