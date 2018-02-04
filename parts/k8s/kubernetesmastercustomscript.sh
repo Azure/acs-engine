@@ -56,7 +56,7 @@ ensureRunCommandCompleted()
     echo "waiting for runcmd to finish"
     for i in {1..900}; do
         if [ -e /opt/azure/containers/runcmd.complete ]; then
-            echo "runcmd finished"
+            echo "runcmd finished, took $i seconds"
             break
         fi
         sleep 1
@@ -192,6 +192,7 @@ function ensureKubectl() {
         if [ -e $KUBECTL ]
         then
             kubectlfound=0
+            echo "kubectl installed successfully, took $i seconds"
             break
         fi
         sleep 1
@@ -210,6 +211,7 @@ function downloadUrl () {
 	# Wrapper around curl to download blobs more reliably.
 	# Workaround the --retry issues with a for loop and set a max timeout.
 	for i in 1 2 3 4 5; do curl --max-time 60 -fsSL ${1}; [ $? -eq 0 ] && break || sleep 10; done
+    echo Executed curl for \"${1}\" $i times
 }
 
 function setMaxPods () {
@@ -473,6 +475,7 @@ function systemctlEnableAndCheck() {
             systemctl is-enabled $1
             enabled=$?
         else
+            echo "$1 took $i seconds to be enabled by systemctl"
             break
         fi
         sleep 1
@@ -496,7 +499,7 @@ function ensureDocker() {
                 echo "status $?"
                 /bin/systemctl restart docker
             else
-                echo "docker started"
+                echo "docker started, took $i seconds"
                 dockerStarted=0
                 break
             fi
@@ -550,7 +553,7 @@ function ensureApiserver() {
             $KUBECTL cluster-info
             if [ "$?" = "0" ]
             then
-                echo "kubernetes started"
+                echo "kubernetes started, took $i seconds"
                 kubernetesStarted=0
                 break
             fi
@@ -558,7 +561,7 @@ function ensureApiserver() {
             /usr/bin/docker ps | grep apiserver
             if [ "$?" = "0" ]
             then
-                echo "kubernetes started"
+                echo "kubernetes started, took $i seconds"
                 kubernetesStarted=0
                 break
             fi
@@ -577,10 +580,10 @@ function ensureEtcd() {
         curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 https://127.0.0.1:2379/v2/machines;
         if [ $? -eq 0 ]
         then
-            echo "Etcd setup successfully"
+            echo "Etcd setup successfully, took $i seconds"
             break
         fi
-        sleep 5
+        sleep 1
     done
 }
 
@@ -592,14 +595,14 @@ function ensureEtcdDataDir() {
         return
     else
         echo "/var/lib/etcddisk was not found at /dev/sdc1. Trying to mount all devices."
-        for i in {1..60}; do
+        for i in {1..300}; do
             sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
             if [ "$?" = "0" ]
             then
-                echo "/var/lib/etcddisk mounted at: /dev/sdc1"
+                echo "/var/lib/etcddisk mounted at: /dev/sdc1, took $i seconds"
                 return
             fi
-            sleep 5
+            sleep 1
         done
     fi
 
