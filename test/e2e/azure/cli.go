@@ -28,8 +28,8 @@ type ResourceGroup struct {
 	Location string
 }
 
-// Vm represents an azure vm
-type Vm struct {
+// VM represents an azure vm
+type VM struct {
 	Name string `json:"name"`
 }
 
@@ -224,7 +224,7 @@ func (a *Account) UpdateRouteTables(subnet, vnet string) error {
 }
 
 // GetHosts will get a list of vms in the resource group
-func (a *Account) GetHosts(name string) ([]Vm, error) {
+func (a *Account) GetHosts(name string) ([]VM, error) {
 	var resourceGroup string
 	if name != "" {
 		resourceGroup = name
@@ -238,7 +238,7 @@ func (a *Account) GetHosts(name string) ([]Vm, error) {
 		log.Printf("Error while trying to get vm list:%s\n", out)
 		return nil, err
 	}
-	v := []Vm{Vm{}}
+	v := []VM{VM{}}
 	err = json.Unmarshal(out, &v)
 	if err != nil {
 		log.Printf("Error unmarshalling account json:%s\n", err)
