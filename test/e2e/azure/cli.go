@@ -238,7 +238,7 @@ func (a *Account) GetHosts(name string) ([]VM, error) {
 		log.Printf("Error while trying to get vm list:%s\n", out)
 		return nil, err
 	}
-	v := []VM{VM{}}
+	v := []VM{{}}
 	err = json.Unmarshal(out, &v)
 	if err != nil {
 		log.Printf("Error unmarshalling account json:%s\n", err)
