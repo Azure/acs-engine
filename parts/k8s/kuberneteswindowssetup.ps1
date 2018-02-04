@@ -68,6 +68,8 @@ $global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
 $global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
 $global:NetworkMode = "L2Bridge"
 $global:CNIConfig = [Io.path]::Combine($global:CNIPath, "config", "`$global:NetworkMode.conf")
+$global:CNIConfigPath = [Io.path]::Combine("$global:CNIPath", "config")
+$global:WindowsCNIKubeletOptions = " --network-plugin=cni --cni-bin-dir=$global:CNIPath --cni-conf-dir=$global:CNIConfigPath"
 $global:HNSModule = [Io.path]::Combine("$global:KubeDir", "hns.psm1")
 
 $global:VolumePluginDir = [Io.path]::Combine("$global:KubeDir", "volumeplugins")
@@ -251,7 +253,7 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
     if ($global:AzureCNIEnabled) {
         $KubeletCommandLine += $global:AzureCNIKubeletOptions
     } else {
-        $KubeletCommandLine += " --network-plugin=cni --cni-bin-dir=`$global:CNIPath --cni-conf-dir `$global:CNIPath\config"
+        $KubeletCommandLine += $global:WindowsCNIKubeletOptions
     }
 
     $KubeletArgListStr = "`"" + ($KubeletArgList -join "`",`"") + "`""
@@ -271,78 +273,7 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
 `$global:CNIConfig = "$global:CNIConfig"
 `$global:HNSModule = "$global:HNSModule"
 `$global:VolumePluginDir = "$global:VolumePluginDir"
-`$global:MaxPods="$global:MaxPods"
-`$global:NetworkPolicy="$global:NetworkPolicy"
-
-function
-Get-DefaultGateway(`$CIDR)
-{
-    return `$CIDR.substring(0,`$CIDR.lastIndexOf(".")) + ".1"
-}
-
-function
-Get-PodCIDR()
-{
-    `$podCIDR = c:\k\kubectl.exe --kubeconfig=c:\k\config get nodes/`$(`$global:AzureHostname.ToLower()) -o custom-columns=podCidr:.spec.podCIDR --no-headers
-    return `$podCIDR
-}
-
-function
-Test-PodCIDR(`$podCIDR)
-{
-    return `$podCIDR.length -gt 0
-}
-
-function
-Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
-{
-    `$jsonSampleConfig =
-"{
-  ""cniVersion"": ""0.2.0"",
-  ""name"": ""<NetworkMode>"",
-  ""type"": ""wincni.exe"",
-  ""master"": ""Ethernet"",
-  ""capabilities"": { ""portMappings"": true },
-  ""ipam"": {
-     ""environment"": ""azure"",
-     ""subnet"":""<PODCIDR>"",
-     ""routes"": [{
-        ""GW"":""<PODGW>""
-     }]
-  },
-  ""dns"" : {
-    ""Nameservers"" : [ ""<NameServers>"" ]
-  },
-  ""AdditionalArgs"" : [
-    {
-      ""Name"" : ""EndpointPolicy"", ""Value"" : { ""Type"" : ""OutBoundNAT"", ""ExceptionList"": [ ""<ClusterCIDR>"", ""<MgmtSubnet>"" ] }
-    },
-    {
-      ""Name"" : ""EndpointPolicy"", ""Value"" : { ""Type"" : ""ROUTE"", ""DestinationPrefix"": ""<ServiceCIDR>"", ""NeedEncap"" : true }
-    }
-  ]
-}"
-
-    `$configJson = ConvertFrom-Json `$jsonSampleConfig
-    `$configJson.name = `$global:NetworkMode.ToLower()
-    `$configJson.ipam.subnet=`$podCIDR
-    `$configJson.ipam.routes[0].GW = `$masterSubnetGW
-    `$configJson.dns.Nameservers[0] = `$global:KubeDnsServiceIp
-
-    `$configJson.AdditionalArgs[0].Value.ExceptionList[0] = `$global:KubeClusterCIDR
-    `$configJson.AdditionalArgs[0].Value.ExceptionList[1] = `$global:MasterSubnet
-    `$configJson.AdditionalArgs[1].Value.DestinationPrefix  = `$global:KubeServiceCIDR
-
-    if (Test-Path `$global:CNIConfig)
-    {
-        Clear-Content -Path `$global:CNIConfig
-    }
-
-    Write-Host "Generated CNI Config [`$configJson]"
-
-    Add-Content -Path `$global:CNIConfig -Value (ConvertTo-Json `$configJson -Depth 20)
-}
-
+`$global:NetworkPolicy="$global:NetworkPolicy" 
 "@
 
     if ($global:NetworkPolicy -eq "azure") {
@@ -350,8 +281,9 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
 Write-Host "NetworkPolicy azure, starting kubelet."
 $KubeletCommandLine
 return 0
+
 "@
-    } else {        
+    } else {
         $kubeStartStr += @"
 try
 {
@@ -404,7 +336,79 @@ try
 catch
 {
     Write-Error `$_
+}        
+"@
+    }
+        $kubeStartStr += @"
+function
+Get-DefaultGateway(`$CIDR)
+{
+    return `$CIDR.substring(0,`$CIDR.lastIndexOf(".")) + ".1"
 }
+
+function
+Get-PodCIDR()
+{
+    `$podCIDR = c:\k\kubectl.exe --kubeconfig=c:\k\config get nodes/`$(`$global:AzureHostname.ToLower()) -o custom-columns=podCidr:.spec.podCIDR --no-headers
+    return `$podCIDR
+}
+
+function
+Test-PodCIDR(`$podCIDR)
+{
+    return `$podCIDR.length -gt 0
+}
+
+function
+Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
+{
+    `$jsonSampleConfig =
+"{
+    ""cniVersion"": ""0.2.0"",
+    ""name"": ""<NetworkMode>"",
+    ""type"": ""wincni.exe"",
+    ""master"": ""Ethernet"",
+    ""capabilities"": { ""portMappings"": true },
+    ""ipam"": {
+        ""environment"": ""azure"",
+        ""subnet"":""<PODCIDR>"",
+        ""routes"": [{
+        ""GW"":""<PODGW>""
+        }]
+    },
+    ""dns"" : {
+    ""Nameservers"" : [ ""<NameServers>"" ]
+    },
+    ""AdditionalArgs"" : [
+    {
+        ""Name"" : ""EndpointPolicy"", ""Value"" : { ""Type"" : ""OutBoundNAT"", ""ExceptionList"": [ ""<ClusterCIDR>"", ""<MgmtSubnet>"" ] }
+    },
+    {
+        ""Name"" : ""EndpointPolicy"", ""Value"" : { ""Type"" : ""ROUTE"", ""DestinationPrefix"": ""<ServiceCIDR>"", ""NeedEncap"" : true }
+    }
+    ]
+}"
+
+    `$configJson = ConvertFrom-Json `$jsonSampleConfig
+    `$configJson.name = `$global:NetworkMode.ToLower()
+    `$configJson.ipam.subnet=`$podCIDR
+    `$configJson.ipam.routes[0].GW = `$masterSubnetGW
+    `$configJson.dns.Nameservers[0] = `$global:KubeDnsServiceIp
+
+    `$configJson.AdditionalArgs[0].Value.ExceptionList[0] = `$global:KubeClusterCIDR
+    `$configJson.AdditionalArgs[0].Value.ExceptionList[1] = `$global:MasterSubnet
+    `$configJson.AdditionalArgs[1].Value.DestinationPrefix  = `$global:KubeServiceCIDR
+
+    if (Test-Path `$global:CNIConfig)
+    {
+        Clear-Content -Path `$global:CNIConfig
+    }
+
+    Write-Host "Generated CNI Config [`$configJson]"
+
+    Add-Content -Path `$global:CNIConfig -Value (ConvertTo-Json `$configJson -Depth 20)
+}
+
 "@
     }
     $kubeStartStr | Out-File -encoding ASCII -filepath $global:KubeletStartFile
