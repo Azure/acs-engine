@@ -114,7 +114,7 @@ func DeployTemplateSync(az ACSEngineClient, logger *logrus.Entry, resourceGroupN
 	case string(api.Canceled):
 		logger.Warning("template deployment has been canceled")
 		return &ArmError{
-			Code:    "ProvisioningFailed",
+			Code:    "DeploymentFailed",
 			Message: "template deployment has been canceled"}
 
 	case string(api.Failed):
