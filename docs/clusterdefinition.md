@@ -284,6 +284,19 @@ Below is a list of cloud-controller-manager options that are *not* currently use
     }
 }
 ```
+Or perhaps you want to customize/override the set of admission-control flags passed to the API Server by default, you can omit the options you don't want and specify only the ones you need as follows:
+
+```
+"orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "orchestratorRelease": "1.8",
+      "kubernetesConfig": {
+        "apiServerConfig": {
+          "--admission-control":  "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,AlwaysPullImages"
+        }
+      }
+    } 
+```
 
 See [here](https://kubernetes.io/docs/reference/generated/kube-apiserver/) for a reference of supported apiserver options.
 
