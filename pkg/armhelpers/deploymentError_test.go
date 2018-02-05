@@ -3,7 +3,6 @@ package armhelpers
 import (
 	"testing"
 
-	"github.com/Azure/acs-engine/pkg/apierror"
 	. "github.com/Azure/acs-engine/pkg/test"
 	. "github.com/onsi/gomega"
 
@@ -24,9 +23,9 @@ var _ = Describe("Template deployment tests", func() {
 
 		err := DeployTemplateSync(mockClient, logger, "rg1", "agentvm", map[string]interface{}{}, map[string]interface{}{})
 		Expect(err).NotTo(BeNil())
-		apierr, ok := err.(*apierror.Error)
+		armerr, ok := err.(*ArmError)
 		Expect(ok).To(BeTrue())
-		Expect(apierr.Code).To(Equal(apierror.InternalOperationError))
+		Expect(armerr.Code).To(Equal("DeploymentFailed"))
 	})
 
 	It("Should return QuotaExceeded error code, specified in details", func() {
@@ -36,9 +35,11 @@ var _ = Describe("Template deployment tests", func() {
 
 		err := DeployTemplateSync(mockClient, logger, "rg1", "agentvm", map[string]interface{}{}, map[string]interface{}{})
 		Expect(err).NotTo(BeNil())
-		apierr, ok := err.(*apierror.Error)
+		armerr, ok := err.(*ArmError)
 		Expect(ok).To(BeTrue())
-		Expect(apierr.Code).To(Equal(apierror.QuotaExceeded))
+		Expect(armerr.Code).To(Equal("InvalidTemplateDeployment"))
+		Expect(len(armerr.Details)).To(Equal(1))
+		Expect(armerr.Details[0].Code).To(Equal("QuotaExceeded"))
 	})
 
 	It("Should return Conflict error code, specified in details", func() {
@@ -48,8 +49,10 @@ var _ = Describe("Template deployment tests", func() {
 
 		err := DeployTemplateSync(mockClient, logger, "rg1", "agentvm", map[string]interface{}{}, map[string]interface{}{})
 		Expect(err).NotTo(BeNil())
-		apierr, ok := err.(*apierror.Error)
+		armerr, ok := err.(*ArmError)
 		Expect(ok).To(BeTrue())
-		Expect(apierr.Code).To(Equal(apierror.Conflict))
+		Expect(armerr.Code).To(Equal("DeploymentFailed"))
+		Expect(len(armerr.Details)).To(Equal(1))
+		Expect(armerr.Details[0].Code).To(Equal("Conflict"))
 	})
 })
