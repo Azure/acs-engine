@@ -76,7 +76,6 @@ $global:VolumePluginDir = [Io.path]::Combine("$global:KubeDir", "volumeplugins")
 #azure cni
 $global:NetworkPolicy = "{{WrapAsVariable "networkPolicy"}}"
 $global:VNetCNIPluginsURL = "{{WrapAsVariable "vnetCniWindowsPluginsURL"}}"
-$global:MaxPods = "{{WrapAsVariable "maxPods"}}"
 
 $global:AzureCNIDir = [Io.path]::Combine("$global:KubeDir", "azurecni")
 $global:AzureCNIBinDir = [Io.path]::Combine("$global:AzureCNIDir", "bin")
@@ -274,6 +273,7 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
 `$global:HNSModule = "$global:HNSModule"
 `$global:VolumePluginDir = "$global:VolumePluginDir"
 `$global:NetworkPolicy="$global:NetworkPolicy" 
+
 "@
 
     if ($global:NetworkPolicy -eq "azure") {
@@ -285,61 +285,7 @@ return 0
 "@
     } else {
         $kubeStartStr += @"
-try
-{
-    `$masterSubnetGW = Get-DefaultGateway `$global:MasterSubnet
-    `$podCIDR=Get-PodCIDR
-    `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
-
-    # if the podCIDR has not yet been assigned to this node, start the kubelet process to get the podCIDR, and then promptly kill it.
-    if (-not `$podCidrDiscovered)
-    {
-        `$argList = $KubeletArgListStr
-
-        `$process = Start-Process -FilePath c:\k\kubelet.exe -PassThru -ArgumentList `$argList
-
-        # run kubelet until podCidr is discovered
-        Write-Host "waiting to discover pod CIDR"
-        while (-not `$podCidrDiscovered)
-        {
-            Write-Host "Sleeping for 10s, and then waiting to discover pod CIDR"
-            Start-Sleep 10
-
-            `$podCIDR=Get-PodCIDR
-            `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
-        }
-
-        # stop the kubelet process now that we have our CIDR, discard the process output
-        `$process | Stop-Process | Out-Null
-    }
-
-    # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
-    netsh advfirewall set allprofiles state off
-
-    # startup the service
-    `$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:NetworkMode.ToLower()
-
-    if (!`$hnsNetwork)
-    {
-        Write-Host "No HNS network found, creating a new one..."
-        ipmo `$global:HNSModule
-
-        `$hnsNetwork = New-HNSNetwork -Type `$global:NetworkMode -AddressPrefix `$podCIDR -Gateway `$masterSubnetGW -Name `$global:NetworkMode.ToLower() -Verbose
-    }
-
-    Start-Sleep 10
-    # Add route to all other POD networks
-    Update-CNIConfig `$podCIDR `$masterSubnetGW
-
-    $KubeletCommandLine
-}
-catch
-{
-    Write-Error `$_
-}        
-"@
-    }
-        $kubeStartStr += @"
+        
 function
 Get-DefaultGateway(`$CIDR)
 {
@@ -409,8 +355,62 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
     Add-Content -Path `$global:CNIConfig -Value (ConvertTo-Json `$configJson -Depth 20)
 }
 
+try
+{
+    `$masterSubnetGW = Get-DefaultGateway `$global:MasterSubnet
+    `$podCIDR=Get-PodCIDR
+    `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
+
+    # if the podCIDR has not yet been assigned to this node, start the kubelet process to get the podCIDR, and then promptly kill it.
+    if (-not `$podCidrDiscovered)
+    {
+        `$argList = $KubeletArgListStr
+
+        `$process = Start-Process -FilePath c:\k\kubelet.exe -PassThru -ArgumentList `$argList
+
+        # run kubelet until podCidr is discovered
+        Write-Host "waiting to discover pod CIDR"
+        while (-not `$podCidrDiscovered)
+        {
+            Write-Host "Sleeping for 10s, and then waiting to discover pod CIDR"
+            Start-Sleep 10
+
+            `$podCIDR=Get-PodCIDR
+            `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
+        }
+
+        # stop the kubelet process now that we have our CIDR, discard the process output
+        `$process | Stop-Process | Out-Null
+    }
+
+    # Turn off Firewall to enable pods to talk to service endpoints. (Kubelet should eventually do this)
+    netsh advfirewall set allprofiles state off
+
+    # startup the service
+    `$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:NetworkMode.ToLower()
+
+    if (!`$hnsNetwork)
+    {
+        Write-Host "No HNS network found, creating a new one..."
+        ipmo `$global:HNSModule
+
+        `$hnsNetwork = New-HNSNetwork -Type `$global:NetworkMode -AddressPrefix `$podCIDR -Gateway `$masterSubnetGW -Name `$global:NetworkMode.ToLower() -Verbose
+    }
+
+    Start-Sleep 10
+    # Add route to all other POD networks
+    Update-CNIConfig `$podCIDR `$masterSubnetGW
+
+    $KubeletCommandLine
+}
+catch
+{
+    Write-Error `$_
+} 
+
 "@
     }
+    
     $kubeStartStr | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
     $kubeProxyStartStr = @"
