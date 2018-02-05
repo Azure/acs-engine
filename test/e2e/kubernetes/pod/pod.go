@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 )
 
 const (
@@ -62,7 +64,9 @@ type Status struct {
 
 // CreatePodFromFile will create a Pod from file with a name
 func CreatePodFromFile(filename, name, namespace string) (*Pod, error) {
-	out, err := exec.Command("kubectl", "apply", "-f", filename).CombinedOutput()
+	cmd := exec.Command("kubectl", "apply", "-f", filename)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to create Pod %s:%s\n", name, string(out))
 		return nil, err
@@ -77,7 +81,9 @@ func CreatePodFromFile(filename, name, namespace string) (*Pod, error) {
 
 // GetAll will return all pods in a given namespace
 func GetAll(namespace string) (*List, error) {
-	out, err := exec.Command("kubectl", "get", "pods", "-n", namespace, "-o", "json").CombinedOutput()
+	cmd := exec.Command("kubectl", "get", "pods", "-n", namespace, "-o", "json")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +98,9 @@ func GetAll(namespace string) (*List, error) {
 
 // Get will return a pod with a given name and namespace
 func Get(podName, namespace string) (*Pod, error) {
-	out, err := exec.Command("kubectl", "get", "pods", podName, "-n", namespace, "-o", "json").CombinedOutput()
+	cmd := exec.Command("kubectl", "get", "pods", podName, "-n", namespace, "-o", "json")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +133,7 @@ func GetAllByPrefix(prefix, namespace string) ([]Pod, error) {
 	return pods, nil
 }
 
-// AreAllPodsRunning will return true if all pods are in a Running State
+// AreAllPodsRunning will return true if all pods in a given namespace are in a Running State
 func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
 	pl, err := GetAll(namespace)
 	if err != nil {
@@ -206,15 +214,17 @@ func (p *Pod) WaitOnReady(sleep, duration time.Duration) (bool, error) {
 }
 
 // Exec will execute the given command in the pod
-func (p *Pod) Exec(cmd ...string) ([]byte, error) {
+func (p *Pod) Exec(c ...string) ([]byte, error) {
 	execCmd := []string{"exec", p.Metadata.Name, "-n", p.Metadata.Namespace}
-	for _, s := range cmd {
+	for _, s := range c {
 		execCmd = append(execCmd, s)
 	}
-	out, err := exec.Command("kubectl", execCmd...).CombinedOutput()
+	cmd := exec.Command("kubectl", execCmd...)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to run 'kubectl exec':%s\n", string(out))
-		log.Printf("Command:kubectl exec %s -n %s %s \n", p.Metadata.Name, p.Metadata.Namespace, cmd)
+		log.Printf("Command:kubectl exec %s -n %s %s \n", p.Metadata.Name, p.Metadata.Namespace, c)
 		return nil, err
 	}
 	return out, nil
@@ -222,7 +232,9 @@ func (p *Pod) Exec(cmd ...string) ([]byte, error) {
 
 // Delete will delete a Pod in a given namespace
 func (p *Pod) Delete() error {
-	out, err := exec.Command("kubectl", "delete", "po", "-n", p.Metadata.Namespace, p.Metadata.Name).CombinedOutput()
+	cmd := exec.Command("kubectl", "delete", "po", "-n", p.Metadata.Namespace, p.Metadata.Name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to delete Pod %s in namespace %s:%s\n", p.Metadata.Namespace, p.Metadata.Name, string(out))
 		return err
@@ -337,9 +349,11 @@ func (p *Pod) ValidateHostPort(check string, attempts int, sleep time.Duration, 
 	curlCMD := fmt.Sprintf("curl --max-time 60 %s", url)
 
 	for i := 0; i < attempts; i++ {
-		resp, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
+		cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
+		util.PrintCommand(cmd)
+		out, err := cmd.CombinedOutput()
 		if err == nil {
-			matched, _ := regexp.MatchString(check, string(resp))
+			matched, _ := regexp.MatchString(check, string(out))
 			if matched == true {
 				return true
 			}

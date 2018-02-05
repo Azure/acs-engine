@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 )
@@ -91,9 +92,11 @@ func (c *Connection) Execute(cmd string) ([]byte, error) {
 }
 
 func (c *Connection) Write(data, path string) error {
-	cmd := fmt.Sprintf("echo %s > %s", data, path)
+	remoteCommand := fmt.Sprintf("echo %s > %s", data, path)
 	connectString := fmt.Sprintf("%s@%s", c.User, c.Host)
-	out, err := exec.Command("ssh", "-i", c.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", c.Port, cmd).CombinedOutput()
+	cmd := exec.Command("ssh", "-i", c.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", c.Port, remoteCommand)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error output:%s\n", out)
 		return err
@@ -102,9 +105,11 @@ func (c *Connection) Write(data, path string) error {
 }
 
 func (c *Connection) Read(path string) ([]byte, error) {
-	cmd := fmt.Sprintf("cat %s", path)
+	remoteCommand := fmt.Sprintf("cat %s", path)
 	connectString := fmt.Sprintf("%s@%s", c.User, c.Host)
-	out, err := exec.Command("ssh", "-i", c.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", c.Port, cmd).CombinedOutput()
+	cmd := exec.Command("ssh", "-i", c.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", c.Port, remoteCommand)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error output:%s\n", out)
 		return nil, err

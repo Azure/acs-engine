@@ -10,6 +10,8 @@ import (
 	"os/exec"
 	"regexp"
 	"time"
+
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 )
 
 // Service represents a kubernetes service
@@ -54,7 +56,9 @@ type LoadBalancer struct {
 
 // Get returns the service definition specified in a given namespace
 func Get(name, namespace string) (*Service, error) {
-	out, err := exec.Command("kubectl", "get", "svc", "-o", "json", "-n", namespace, name).CombinedOutput()
+	cmd := exec.Command("kubectl", "get", "svc", "-o", "json", "-n", namespace, name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to run 'kubectl get svc':%s\n", string(out))
 		return nil, err
@@ -70,7 +74,9 @@ func Get(name, namespace string) (*Service, error) {
 
 // Delete will delete a service in a given namespace
 func (s *Service) Delete() error {
-	out, err := exec.Command("kubectl", "delete", "svc", "-n", s.Metadata.Namespace, s.Metadata.Name).CombinedOutput()
+	cmd := exec.Command("kubectl", "delete", "svc", "-n", s.Metadata.Namespace, s.Metadata.Name)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to delete service %s in namespace %s:%s\n", s.Metadata.Namespace, s.Metadata.Name, string(out))
 		return err

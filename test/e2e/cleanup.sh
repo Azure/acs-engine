@@ -43,6 +43,10 @@ az account set -s $SUBSCRIPTION_ID_TO_CLEANUP
 # find resource groups created before our deadline
 echo "Looking for resource groups created over ${EXPIRATION_IN_HOURS} hours ago..."
 for resourceGroup in `az group list | jq --arg dl $deadline '.[] | select(.id | contains("acse-test-infrastructure") | not) | select(.tags.now < $dl).name' | tr -d '\"'`; do
+    for deployment in `az group deployment list -g $resourceGroup | jq '.[] | .name' | tr -d '\"'`; do
+        echo "Will delete deployment ${deployment} from resource group ${resourceGroup}..."
+        az group deployment delete -n $deployment -g $resourceGroup
+    done
     echo "Will delete resource group ${resourceGroup}..."
     # delete old resource groups
     az group delete -y -n $resourceGroup --no-wait >> delete.log

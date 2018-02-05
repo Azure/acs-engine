@@ -17,7 +17,7 @@ alertmanager:
   ##
   image:
     repository: prom/alertmanager
-    tag: v0.9.1
+    tag: v0.13.0
     pullPolicy: IfNotPresent
 
   ## Additional alertmanager container arguments
@@ -163,7 +163,7 @@ configmapReload:
   ##
   image:
     repository: jimmidyson/configmap-reload
-    tag: v0.1
+    tag: v0.2.2
     pullPolicy: IfNotPresent
 
   ## configmap-reload resource requests and limits
@@ -187,7 +187,7 @@ kubeStateMetrics:
   ##
   image:
     repository: k8s-gcrio.azureedge.net/kube-state-metrics
-    tag: v1.1.0-rc.0
+    tag: v1.2.0
     pullPolicy: IfNotPresent
 
   ## Node labels for kube-state-metrics pod assignment
@@ -245,7 +245,7 @@ nodeExporter:
   ##
   image:
     repository: prom/node-exporter
-    tag: v0.15.0
+    tag: v0.15.2
     pullPolicy: IfNotPresent
 
   ## Custom Update Strategy
@@ -324,7 +324,7 @@ server:
   ##
   image:
     repository: prom/prometheus
-    tag: v1.8.1
+    tag: v2.1.0
     pullPolicy: IfNotPresent
 
   ## (optional) alertmanager URL

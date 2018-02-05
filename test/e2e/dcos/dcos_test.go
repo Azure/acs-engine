@@ -31,7 +31,7 @@ var _ = BeforeSuite(func() {
 
 	engCfg, err := engine.ParseConfig(c.CurrentWorkingDir, c.ClusterDefinition, c.Name)
 	Expect(err).NotTo(HaveOccurred())
-	cs, err := engine.Parse(engCfg.ClusterDefinitionTemplate)
+	cs, err := engine.ParseInput(engCfg.ClusterDefinitionTemplate)
 	Expect(err).NotTo(HaveOccurred())
 	eng = engine.Engine{
 		Config:            engCfg,

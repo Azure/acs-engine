@@ -17,6 +17,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/service"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -41,11 +42,14 @@ var _ = BeforeSuite(func() {
 
 	engCfg, err := engine.ParseConfig(c.CurrentWorkingDir, c.ClusterDefinition, c.Name)
 	Expect(err).NotTo(HaveOccurred())
-	cs, err := engine.Parse(engCfg.ClusterDefinitionTemplate)
+	csInput, err := engine.ParseInput(engCfg.ClusterDefinitionTemplate)
+	Expect(err).NotTo(HaveOccurred())
+	csGenerated, err := engine.ParseOutput(engCfg.GeneratedDefinitionPath + "/apimodel.json")
 	Expect(err).NotTo(HaveOccurred())
 	eng = engine.Engine{
-		Config:            engCfg,
-		ClusterDefinition: cs,
+		Config:             engCfg,
+		ClusterDefinition:  csInput,
+		ExpandedDefinition: csGenerated,
 	}
 })
 
@@ -121,66 +125,107 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have tiller running", func() {
-			running, err := pod.WaitOnReady("tiller", "kube-system", 3, 30*time.Second, cfg.Timeout)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(running).To(Equal(true))
+			if eng.HasTiller() {
+				running, err := pod.WaitOnReady("tiller", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+			} else {
+				Skip("tiller disabled for this cluster, will not test")
+			}
 		})
 
 		It("should be able to access the dashboard from each node", func() {
-			running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 3, 30*time.Second, cfg.Timeout)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(running).To(Equal(true))
+			if eng.HasDashboard() {
+				By("Ensuring that the kubernetes-dashboard pod is Running")
 
-			kubeConfig, err := GetConfig()
-			Expect(err).NotTo(HaveOccurred())
-			sshKeyPath := cfg.GetSSHKeyPath()
+				running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
 
-			s, err := service.Get("kubernetes-dashboard", "kube-system")
-			Expect(err).NotTo(HaveOccurred())
-			dashboardPort := 80
-			version, err := node.Version()
-			Expect(err).NotTo(HaveOccurred())
+				By("Ensuring that the kubernetes-dashboard service is Running")
 
-			re := regexp.MustCompile("v1.9")
-			if re.FindString(version) != "" {
-				dashboardPort = 443
-			}
-			port := s.GetNodePort(dashboardPort)
+				s, err := service.Get("kubernetes-dashboard", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
 
-			master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
-			nodeList, err := node.Get()
-			Expect(err).NotTo(HaveOccurred())
-
-			if !eng.HasWindowsAgents() {
-				for _, node := range nodeList.Nodes {
-					success := false
-					for i := 0; i < 60; i++ {
-						dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
-						curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
-						_, err := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD).CombinedOutput()
-						if err == nil {
-							success = true
-							break
-						}
-						if i > 58 {
-							log.Println(curlCMD)
-							log.Println(err.Error())
-							log.Printf("%#v\n", err)
-						}
-						time.Sleep(10 * time.Second)
+				if !eng.HasWindowsAgents() {
+					By("Gathering connection information to determine whether or not to connect via HTTP or HTTPS")
+					dashboardPort := 80
+					version, err := node.Version()
+					Expect(err).NotTo(HaveOccurred())
+					re := regexp.MustCompile("v1.9")
+					if re.FindString(version) != "" {
+						dashboardPort = 443
 					}
-					Expect(success).To(BeTrue())
+					port := s.GetNodePort(dashboardPort)
+
+					kubeConfig, err := GetConfig()
+					Expect(err).NotTo(HaveOccurred())
+					master := fmt.Sprintf("azureuser@%s", kubeConfig.GetServerName())
+
+					sshKeyPath := cfg.GetSSHKeyPath()
+
+					if dashboardPort == 80 {
+						By("Ensuring that we can connect via HTTP to the dashboard on any one node")
+					} else {
+						By("Ensuring that we can connect via HTTPS to the dashboard on any one node")
+					}
+					nodeList, err := node.Get()
+					Expect(err).NotTo(HaveOccurred())
+					for _, node := range nodeList.Nodes {
+						success := false
+						for i := 0; i < 60; i++ {
+							dashboardURL := fmt.Sprintf("http://%s:%v", node.Status.GetAddressByType("InternalIP").Address, port)
+							curlCMD := fmt.Sprintf("curl --max-time 60 %s", dashboardURL)
+							cmd := exec.Command("ssh", "-i", sshKeyPath, "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", master, curlCMD)
+							util.PrintCommand(cmd)
+							out, err := cmd.CombinedOutput()
+							if err == nil {
+								success = true
+								break
+							}
+							if i > 58 {
+								log.Printf("Error while connecting to Windows dashboard:%s\n", err)
+								log.Println(string(out))
+							}
+							time.Sleep(10 * time.Second)
+						}
+						Expect(success).To(BeTrue())
+					}
 				}
+			} else {
+				Skip("kubernetes-dashboard disabled for this cluster, will not test")
+			}
+		})
+
+		It("should have aci-connector running", func() {
+			if eng.HasACIConnector() {
+				running, err := pod.WaitOnReady("aci-connector", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+			} else {
+				Skip("aci-connector disabled for this cluster, will not test")
+			}
+		})
+
+		It("should have rescheduler running", func() {
+			if eng.HasRescheduler() {
+				running, err := pod.WaitOnReady("rescheduler", "kube-system", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+			} else {
+				Skip("rescheduler disabled for this cluster, will not test")
 			}
 		})
 	})
 
 	Describe("with a linux agent pool", func() {
 		It("should be able to autoscale", func() {
+			By("Determining whether this version of Kubernetes can hpa autoscale")
 			version, err := node.Version()
 			Expect(err).NotTo(HaveOccurred())
 			re := regexp.MustCompile("v1.9")
 			if eng.HasLinuxAgents() && re.FindString(version) == "" {
+				By("Creating a test php-apache deployment with request limit thresholds")
 				// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				phpApacheName := fmt.Sprintf("php-apache-%s-%v", cfg.Name, r.Intn(99999))
@@ -190,6 +235,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				}
 				Expect(err).NotTo(HaveOccurred())
 
+				By("Ensuring that one php-apache pod is running before autoscale configuration or load applied")
 				running, err := pod.WaitOnReady(phpApacheName, "default", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
@@ -199,20 +245,23 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				// We should have exactly 1 pod to begin
 				Expect(len(phpPods)).To(Equal(1))
 
+				By("Exposing TCP 80 internally on the php-apache deployment")
 				err = phpApacheDeploy.Expose("ClusterIP", 80, 80)
 				Expect(err).NotTo(HaveOccurred())
 				s, err := service.Get(phpApacheName, "default")
 				Expect(err).NotTo(HaveOccurred())
 
+				By("Assigning hpa configuration to the php-apache deployment")
 				// Apply autoscale characteristics to deployment
-				_, err = exec.Command("kubectl", "autoscale", "deployment", phpApacheName, "--cpu-percent=5", "--min=1", "--max=10").CombinedOutput()
+				cmd := exec.Command("kubectl", "autoscale", "deployment", phpApacheName, "--cpu-percent=5", "--min=1", "--max=10")
+				util.PrintCommand(cmd)
+				out, err := cmd.CombinedOutput()
+				if err != nil {
+					log.Printf("Error while configuring autoscale against deployment %s:%s\n", phpApacheName, string(out))
+				}
 				Expect(err).NotTo(HaveOccurred())
 
-				phpPods, err = phpApacheDeploy.Pods()
-				Expect(err).NotTo(HaveOccurred())
-				// We should still have exactly 1 pod after autoscale config but before load
-				Expect(len(phpPods)).To(Equal(1))
-
+				By("Sending load to the php-apache service by creating a 3 replica deployment")
 				// Launch a simple busybox pod that wget's continuously to the apache serviceto simulate load
 				commandString := fmt.Sprintf("while true; do wget -q -O- http://%s.default.svc.cluster.local; done", phpApacheName)
 				loadTestName := fmt.Sprintf("load-test-%s-%v", cfg.Name, r.Intn(99999))
@@ -220,6 +269,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				loadTestDeploy, err := deployment.RunLinuxDeploy("busybox", loadTestName, "default", commandString, numLoadTestPods)
 				Expect(err).NotTo(HaveOccurred())
 
+				By("Ensuring there are 3 load test pods")
 				running, err = pod.WaitOnReady(loadTestName, "default", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
@@ -229,46 +279,57 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(loadTestPods)).To(Equal(numLoadTestPods))
 
+				By("Waiting 3 minutes for load to take effect")
 				// Wait 3 minutes for autoscaler to respond to load
 				time.Sleep(3 * time.Minute)
 
+				By("Ensuring we have more than 1 apache-php pods due to hpa enforcement")
 				phpPods, err = phpApacheDeploy.Pods()
 				Expect(err).NotTo(HaveOccurred())
 				// We should have > 1 pods after autoscale effects
 				Expect(len(phpPods) > 1).To(BeTrue())
 
+				By("Cleaning up after ourselves")
 				err = loadTestDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 				err = phpApacheDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 				err = s.Delete()
 				Expect(err).NotTo(HaveOccurred())
+			} else {
+				Skip("This flavor/version of Kubernetes doesn't support hpa autoscale")
 			}
 		})
 
 		It("should be able to deploy an nginx service", func() {
 			if eng.HasLinuxAgents() {
+				By("Creating a nginx deployment")
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				deploymentName := fmt.Sprintf("nginx-%s-%v", cfg.Name, r.Intn(99999))
 				nginxDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", deploymentName, "default", "")
 				Expect(err).NotTo(HaveOccurred())
 
+				By("Ensure there is a Running nginx pod")
 				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
+				By("Exposing TCP 80 LB on the nginx deployment")
 				err = nginxDeploy.Expose("LoadBalancer", 80, 80)
 				Expect(err).NotTo(HaveOccurred())
 
+				By("Ensuring we can connect to the service")
 				s, err := service.Get(deploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
 				s, err = s.WaitForExternalIP(cfg.Timeout, 5*time.Second)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(s.Status.LoadBalancer.Ingress).NotTo(BeEmpty())
 
+				By("Ensuring the service root URL returns the expected payload")
 				valid := s.Validate("(Welcome to nginx)", 5, 5*time.Second)
 				Expect(valid).To(BeTrue())
 
+				By("Ensuring we have outbound internet access from the nginx pods")
 				nginxPods, err := nginxDeploy.Pods()
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(nginxPods)).ToNot(BeZero())
@@ -278,6 +339,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					Expect(pass).To(BeTrue())
 				}
 
+				By("Cleaning up after ourselves")
 				err = nginxDeploy.Delete()
 				Expect(err).NotTo(HaveOccurred())
 				err = s.Delete()

@@ -290,6 +290,7 @@ See [here](https://kubernetes.io/docs/reference/generated/kube-apiserver/) for a
 Below is a list of apiserver options that acs-engine will configure by default:
 
 |apiserver option|default value|
+|---|---|
 |"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages, SecurityContextDeny"|
 |"--authorization-mode"|"Node", "RBAC" (*the latter if enabledRbac is true*)|
 |"--feature-gates"|No default (can be a comma-separated list)|
@@ -299,7 +300,7 @@ Below is a list of apiserver options that are *not* currently user-configurable,
 
 |apiserver option|default value|
 |---|---|
-|"--address"|"0.0.0.0"|
+|"--bind-address"|"0.0.0.0"|
 |"--advertise-address"|*calculated value that represents listening URI for API server*|
 |"--allow-privileged"|"true"|
 |"--anonymous-auth"|"false|

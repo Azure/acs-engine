@@ -78,6 +78,14 @@ type ACSEngineClient interface {
 	GetKubernetesClient(masterURL, kubeConfig string, interval, timeout time.Duration) (KubernetesClient, error)
 
 	ListProviders() (resources.ProviderListResult, error)
+
+	// DEPLOYMENTS
+
+	// ListDeploymentOperations gets all deployments operations for a deployment.
+	ListDeploymentOperations(resourceGroupName string, deploymentName string, top *int32) (result resources.DeploymentOperationsListResult, err error)
+
+	// ListDeploymentOperationsNextResults retrieves the next set of results, if any.
+	ListDeploymentOperationsNextResults(lastResults resources.DeploymentOperationsListResult) (result resources.DeploymentOperationsListResult, err error)
 }
 
 // ACSStorageClient interface models the azure storage client

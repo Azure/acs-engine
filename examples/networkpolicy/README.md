@@ -1,29 +1,51 @@
 # Microsoft Azure Container Service Engine - Network Policy
 
-## Overview
+There are 3 different Network Policy options :
 
-By default (currently Linux clusters only), CNI implementation is the native Azure package:
+- Azure Container Networking (default)
+- Calico
+- Kubenet (none)
 
-https://github.com/Azure/azure-container-networking
+## Azure Container Networking (default)
 
-Also available is the Kubernetes-native kubenet implementation, which is declared as configuration thusly:
+By default (currently Linux clusters only), the `azure` network policy is applied. It is an open source implementation of [the CNI Network Plugin interface](https://github.com/containernetworking/cni/blob/master/SPEC.md) and [the CNI Ipam plugin interface](https://github.com/containernetworking/cni/blob/master/SPEC.md#ip-address-management-ipam-interface)
 
-```
+CNI brings the containers to a single flat L3 Azure subnet. This enables full integration with other SDN features such as network security groups and VNET peering. The plugin creates a bridge for each underlying Azure VNET. The bridge functions in L2 mode and is connected to the host network interface.
+
+If the container host VM has multiple network interfaces, the primary network interface is reserved for management traffic. A secondary interface is used for container traffic whenever possible.
+
+More detailed documentation can be found in [the Azure Container Networking Repository](https://github.com/Azure/azure-container-networking/tree/master/docs)
+
+Example of templates enabling CNI:
+
+```json
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
-        "networkPolicy": "none"
+        "networkPolicy": "azure"
       }
+    }
+    ...
+  }
 ```
 
-Read below for the Calico NetworkPolicy option.
+Or by not specifying any network policy, leaving the default :
+
+```json
+    "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes"
+    }
+    ...
+  }
+```
 
 ## Calico
 
 The kubernetes-calico deployment template enables Calico networking and policies for the ACS-engine cluster via `"networkPolicy": "calico"` being present inside the `kubernetesConfig`.
 
-```
+```json
   "properties": {
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
@@ -40,8 +62,24 @@ If `orchestratorRelease` is set to 1.5 or 1.6, then this template will deploy th
 
 To understand how to deploy this template, please read the baseline  [Kubernetes](../../docs/kubernetes.md) document and simply make sure to use the **kubernetes-calico.json** file in this folder which has the above referenced line to enable.
 
-## Post installation
+### Post installation
 
 Once the template has been successfully deployed, following the [simple policy tutorial](https://docs.projectcalico.org/v2.6/getting-started/kubernetes/tutorials/simple-policy) or the [advanced policy tutorial](https://docs.projectcalico.org/v2.6/getting-started/kubernetes/tutorials/advanced-policy) will help to understand calico networking.
 
 > Note: `ping` (ICMP) traffic is blocked on the cluster by default.  Wherever `ping` is used in any tutorial substitute testing access with something like `wget -q --timeout=5 google.com -O -` instead.
+
+## Kubenet (none)
+
+Also available is the Kubernetes-native kubenet implementation, which is declared as configuration thusly:
+
+```json
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "kubernetesConfig": {
+        "networkPolicy": "none"
+      }
+    }
+    ...
+  }
+```

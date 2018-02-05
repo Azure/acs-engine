@@ -5,6 +5,8 @@ import (
 	"log"
 	"os/exec"
 	"strings"
+
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 )
 
 // Config represents a kubernetes config object
@@ -25,7 +27,9 @@ type ClusterInfo struct {
 
 // GetConfig returns a Config value representing the current kubeconfig
 func GetConfig() (*Config, error) {
-	out, err := exec.Command("kubectl", "config", "view", "-o", "json").CombinedOutput()
+	cmd := exec.Command("kubectl", "config", "view", "-o", "json")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to run 'kubectl config view':%s\n", err)
 		return nil, err

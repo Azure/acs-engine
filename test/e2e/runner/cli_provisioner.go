@@ -15,6 +15,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/dcos"
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"github.com/Azure/acs-engine/test/e2e/metrics"
 	"github.com/Azure/acs-engine/test/e2e/remote"
 	"github.com/kelseyhightower/envconfig"
@@ -23,7 +24,7 @@ import (
 // CLIProvisioner holds the configuration needed to provision a clusters
 type CLIProvisioner struct {
 	ClusterDefinition string `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
-	ProvisionRetries  int    `envcofnig:"PROVISION_RETRIES" default:"3"`
+	ProvisionRetries  int    `envconfig:"PROVISION_RETRIES" default:"0"`
 	CreateVNET        bool   `envconfig:"CREATE_VNET" default:"false"`
 	Config            *config.Config
 	Account           *azure.Account
@@ -47,7 +48,7 @@ func BuildCLIProvisioner(cfg *config.Config, acct *azure.Account, pt *metrics.Po
 // Run will provision a cluster using the azure cli
 func (cli *CLIProvisioner) Run() error {
 	rgs := make([]string, 0)
-	for i := 1; i <= cli.ProvisionRetries; i++ {
+	for i := 0; i <= cli.ProvisionRetries; i++ {
 		cli.Point.SetProvisionStart()
 		err := cli.provision()
 		rgs = append(rgs, cli.Config.Name)
@@ -80,17 +81,17 @@ func (cli *CLIProvisioner) provision() error {
 		cli.Config.Name = cli.Config.SoakClusterName
 	}
 	os.Setenv("NAME", cli.Config.Name)
-	log.Printf("Cluster name:%s\n", cli.Config.Name)
 
 	outputPath := filepath.Join(cli.Config.CurrentWorkingDir, "_output")
 	os.Mkdir(outputPath, 0755)
 
 	if cli.Config.SoakClusterName == "" {
-		out, err := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa").CombinedOutput()
+		cmd := exec.Command("ssh-keygen", "-f", cli.Config.GetSSHKeyPath(), "-q", "-N", "", "-b", "2048", "-t", "rsa")
+		util.PrintCommand(cmd)
+		out, err := cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("Error while trying to generate ssh key:%s\nOutput:%s", err, out)
 		}
-		exec.Command("chmod", "0600", cli.Config.GetSSHKeyPath()+"*")
 	}
 
 	publicSSHKey, err := cli.Config.ReadPublicSSHKey()
@@ -132,6 +133,17 @@ func (cli *CLIProvisioner) provision() error {
 	if err != nil {
 		return fmt.Errorf("Error while trying to generate acs-engine template:%s", err)
 	}
+
+	c, err := config.ParseConfig()
+	engCfg, err := engine.ParseConfig(cli.Config.CurrentWorkingDir, c.ClusterDefinition, c.Name)
+	if err != nil {
+		return fmt.Errorf("unable to parse config")
+	}
+	csGenerated, err := engine.ParseOutput(engCfg.GeneratedDefinitionPath + "/apimodel.json")
+	if err != nil {
+		return fmt.Errorf("unable to parse output")
+	}
+	cli.Engine.ExpandedDefinition = csGenerated
 
 	// Lets start by just using the normal az group deployment cli for creating a cluster
 	err = cli.Account.CreateDeployment(cli.Config.Name, eng)
@@ -187,15 +199,16 @@ func (cli *CLIProvisioner) waitForNodes() error {
 	return nil
 }
 
-func (cli *CLIProvisioner) fetchProvisioningMetrics(path string) error {
-	conn, err := remote.NewConnection(fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location), "2200", cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cli.Config.GetSSHKeyPath())
+// FetchProvisioningMetrics gets a file from the master
+func (cli *CLIProvisioner) FetchProvisioningMetrics(path string) ([]byte, error) {
+	hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location)
+	conn, err := remote.NewConnection(hostname, "22", cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cli.Config.GetSSHKeyPath())
 	if err != nil {
-		return err
+		return nil, err
 	}
 	data, err := conn.Read(path)
 	if err != nil {
-		return fmt.Errorf("Error reading file from path (%s):%s", path, err)
+		return nil, fmt.Errorf("Error reading file from path (%s):%s", path, err)
 	}
-	log.Printf("Data:%s\n", data)
-	return nil
+	return data, nil
 }

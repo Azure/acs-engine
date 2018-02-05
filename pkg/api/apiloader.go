@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	apvlabs "github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -189,6 +190,10 @@ func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte,
 		managedCluster := &v20170831.ManagedCluster{}
 		if e := json.Unmarshal(contents, &managedCluster); e != nil {
 			return nil, e
+		}
+		// verify orchestrator version
+		if !common.AllKubernetesSupportedVersions[managedCluster.Properties.KubernetesVersion] {
+			return nil, a.Translator.Errorf("The selected orchestrator version '%s' is not supported", managedCluster.Properties.KubernetesVersion)
 		}
 		if e := managedCluster.Properties.Validate(); validate && e != nil {
 			return nil, e

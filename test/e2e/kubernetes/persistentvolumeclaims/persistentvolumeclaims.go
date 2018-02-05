@@ -7,6 +7,8 @@ import (
 	"log"
 	"os/exec"
 	"time"
+
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 )
 
 // PersistentVolumeClaims is used to parse data from kubectl get pvc
@@ -36,7 +38,9 @@ type Status struct {
 
 // CreatePersistentVolumeClaimsFromFile will create a StorageClass from file with a name
 func CreatePersistentVolumeClaimsFromFile(filename, name, namespace string) (*PersistentVolumeClaims, error) {
-	out, err := exec.Command("kubectl", "apply", "-f", filename).CombinedOutput()
+	cmd := exec.Command("kubectl", "apply", "-f", filename)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to create PersistentVolumeClaims %s in namespace %s:%s\n", name, namespace, string(out))
 		return nil, err
@@ -51,7 +55,9 @@ func CreatePersistentVolumeClaimsFromFile(filename, name, namespace string) (*Pe
 
 // Get will return a PersistentVolumeClaims with a given name and namespace
 func Get(pvcName, namespace string) (*PersistentVolumeClaims, error) {
-	out, err := exec.Command("kubectl", "get", "pvc", pvcName, "-n", namespace, "-o", "json").CombinedOutput()
+	cmd := exec.Command("kubectl", "get", "pvc", pvcName, "-n", namespace, "-o", "json")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, err
 	}
