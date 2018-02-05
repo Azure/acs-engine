@@ -66,9 +66,6 @@ func NewConnection(host, port, user, keyPath string) (*Connection, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := agent.ForwardToAgent(sshClient, ag); err != nil {
-		log.Fatal(err)
-	}
 
 	return &Connection{
 		Host:           host,
@@ -87,10 +84,6 @@ func (c *Connection) Execute(cmd string) ([]byte, error) {
 		return nil, err
 	}
 	defer session.Close()
-
-	if err := agent.RequestAgentForwarding(session); err != nil {
-		return nil, err
-	}
 
 	out, err := session.CombinedOutput(cmd)
 	if err != nil {
