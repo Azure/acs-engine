@@ -244,11 +244,6 @@ func (p *Pod) Delete() error {
 
 // CheckLinuxOutboundConnection will keep retrying the check if an error is received until the timeout occurs or it passes. This helps us when DNS may not be available for some time after a pod starts.
 func (p *Pod) CheckLinuxOutboundConnection(sleep, duration time.Duration) (bool, error) {
-	exp, err := regexp.Compile("this should not match")
-	if err != nil {
-		log.Printf("Error while trying to create regex for linux outbound check:%s\n", err)
-		return false, err
-	}
 	readyCh := make(chan bool, 1)
 	errCh := make(chan error)
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
@@ -268,15 +263,9 @@ func (p *Pod) CheckLinuxOutboundConnection(sleep, duration time.Duration) (bool,
 				if err != nil {
 					break
 				}
-				out, err := p.Exec("--", "curl", "-I", "http://www.bing.com")
+				out, err := p.Exec("--", "curl", "bing.com")
 				if err == nil {
-					matched := exp.MatchString(string(out))
-					if matched {
-						readyCh <- true
-					} else {
-						log.Printf("Got unexpected response from curl -I http://www.bing.com:\n%s\n", out)
-						readyCh <- false
-					}
+					readyCh <- true
 				} else {
 					log.Printf("Error:%s\n", err)
 					log.Printf("Out:%s\n", out)
