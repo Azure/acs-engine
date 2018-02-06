@@ -36,8 +36,9 @@ UBUNTU_OS_NAME="UBUNTU"
 RHEL_OS_NAME="RHEL"
 COREOS_OS_NAME="COREOS"
 
-# Set default kubectl
+# Set default filepaths
 KUBECTL=/usr/local/bin/kubectl
+DOCKER=/usr/bin/docker
 
 ETCD_PEER_CERT=$(echo ${ETCD_PEER_CERTIFICATES} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
 ETCD_PEER_KEY=$(echo ${ETCD_PEER_PRIVATE_KEYS} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
@@ -182,28 +183,25 @@ EOF
 
 set -x
 
-# wait for kubectl to report successful cluster health
-function ensureKubectl() {
+# wait for presence of a file
+function ensureFilepath() {
     if $REBOOTREQUIRED; then
         return
     fi
-    kubectlfound=1
+    found=1
     for i in {1..600}; do
-        if [ -e $KUBECTL ]
+        if [ -e $1 ]
         then
-            kubectlfound=0
-            echo "kubectl installed successfully, took $i seconds"
+            found=0
+            echo "$1 is present, took $i seconds to verify"
             break
         fi
         sleep 1
     done
-    if [ $kubectlfound -ne 0 ]
+    if [ $found -ne 0 ]
     then
-        if [ ! -e /usr/bin/docker ]
-        then
-            echo "kubectl nor docker did not install successfully"
-            exit 1
-        fi
+        echo "$1 is not present after $i seconds of trying to verify"
+        exit 1
     fi
 }
 
@@ -705,7 +703,8 @@ echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 # master only
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
-    ensureKubectl
+    ensureFilepath $KUBECTL
+    ensureFilepath $DOCKER
     ensureEtcdDataDir
     ensureEtcd
     ensureApiserver
