@@ -485,7 +485,6 @@ function systemctlEnableAndCheck() {
         echo "$1 could not be enabled by systemctl"
         exit 5
     fi
-    systemctl enable $1
 }
 
 function ensureDocker() {
