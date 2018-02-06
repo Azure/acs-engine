@@ -298,7 +298,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     mkdir -p /tmp/etcd-download
     retrycmd_if_failure curl --retry 5 --retry-delay 10 --retry-max-time 30 -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
-    useradd -U "etcd" > /dev/null 2>&1
+    useradd -U "etcd"
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
     passwd -u "etcd" > /dev/null
     systemctl daemon-reload
