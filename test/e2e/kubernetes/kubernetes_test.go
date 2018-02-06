@@ -134,6 +134,19 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
+		It("should have a tiller max-history of 5", func() {
+			if eng.HasTiller() {
+				pods, err := pod.GetAllByPrefix("tiller-deploy", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				// There is only one tiller pod and one container in that pod.
+				actualTillerMaxHistory, err := pods[0].Spec.Containers[0].GetEnvironmentVariable("TILLER_HISTORY_MAX")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(actualTillerMaxHistory).To(Equal("5"))
+			} else {
+				Skip("tiller disabled for this cluster, will not test")
+			}
+		})
+
 		It("should be able to access the dashboard from each node", func() {
 			if eng.HasDashboard() {
 				By("Ensuring that the kubernetes-dashboard pod is Running")
