@@ -28,6 +28,11 @@ type ResourceGroup struct {
 	Location string
 }
 
+// VM represents an azure vm
+type VM struct {
+	Name string `json:"name"`
+}
+
 // Deployment represents a deployment of an acs cluster
 type Deployment struct {
 	Name              string // Name of the deployment
@@ -216,4 +221,28 @@ func (a *Account) UpdateRouteTables(subnet, vnet string) error {
 		return err
 	}
 	return nil
+}
+
+// GetHosts will get a list of vms in the resource group
+func (a *Account) GetHosts(name string) ([]VM, error) {
+	var resourceGroup string
+	if name != "" {
+		resourceGroup = name
+	} else {
+		resourceGroup = a.ResourceGroup.Name
+	}
+	cmd := exec.Command("az", "vm", "list", "-g", resourceGroup)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to get vm list:%s\n", out)
+		return nil, err
+	}
+	v := []VM{{}}
+	err = json.Unmarshal(out, &v)
+	if err != nil {
+		log.Printf("Error unmarshalling account json:%s\n", err)
+		log.Printf("JSON:%s\n", out)
+	}
+	return v, nil
 }

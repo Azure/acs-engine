@@ -165,8 +165,10 @@ coreos:
         ExecStart=/opt/azure/containers/provision-setup.sh
 {{else}}
 runcmd:
-- retrycmd_if_failure() { retries=$1; shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep 5; done ; }
 - echo `date`,`hostname`, startruncmd>>/opt/m
+- retrycmd_if_failure() { retries=$1; shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep 5; done ; echo Executed \"$@\" $i times; }
+- retrycmd_if_failure 5 nc -zw1 $(grep nameserver /etc/resolv.conf | cut -d \  -f 2) 53
+- retrycmd_if_failure 5 nc -zw1 azure.com 443
 - apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
 - echo `date`,`hostname`, preaptupdate>>/opt/m
 - retrycmd_if_failure 5 apt-get update
