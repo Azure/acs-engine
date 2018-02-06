@@ -280,7 +280,6 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
         $kubeStartStr += @"
 Write-Host "NetworkPolicy azure, starting kubelet."
 $KubeletCommandLine
-return 0
 
 "@
     } else {
