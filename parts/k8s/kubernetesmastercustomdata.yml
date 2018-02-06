@@ -292,10 +292,10 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   content: |
     #!/bin/bash
     set -x
-    retrycmd_if_failure() { retries=$1; shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep 5; done ; echo Executed \"$@\" $i times; }
+    retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
     ETCD_VER=v{{WrapAsVariable "etcdVersion"}}
     DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
-    retrycmd_if_failure 5 curl --retry 5 --retry-delay 10 --retry-max-time 30 -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+    retrycmd_if_failure 5 5 curl --retry 5 --retry-delay 10 --retry-max-time 30 -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
     tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
     useradd -U "etcd" > /dev/null 2>&1
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd" > /dev/null 2>&1
@@ -312,7 +312,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   owner: "root"
   content: |
     #!/bin/bash
-    retrycmd_if_failure() { retries=$1; shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep 5; done ; echo Executed \"$@\" $i times; }
+    retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
     /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',http://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
     /opt/azure/containers/mountetcd.sh
     sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
@@ -320,7 +320,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sudo /bin/sed -i s/Restart=on-failure/Restart=always/g /lib/systemd/system/etcd-member.service
     systemctl daemon-reload
     systemctl restart etcd-member
-    retrycmd_if_failure 5 curl --retry 5 --retry-delay 10 --retry-max-time 30 --max-time 60 http://127.0.0.1:2379/v2/machines
+    retrycmd_if_failure 5 5 curl --retry 5 --retry-delay 10 --retry-max-time 30 --max-time 60 http://127.0.0.1:2379/v2/machines
     mkdir -p /etc/kubernetes/manifests
     usermod -aG docker {{WrapAsVariable "username"}}
 
@@ -343,9 +343,9 @@ coreos:
         ExecStart=/opt/azure/containers/provision-setup.sh
 {{else}}
 runcmd:
-- retrycmd_if_failure() { retries=$1; shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep 5; done; echo Executed \"$@\" $i times; }
-- retrycmd_if_failure nc -zw1 $(grep nameserver /etc/resolv.conf | cut -d \  -f 2) 53
-- retrycmd_if_failure nc -zw1 azure.com 443
+- retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
+- retrycmd_if_failure 60 1 nc -zw1 $(grep nameserver /etc/resolv.conf | cut -d \  -f 2) 53
+- retrycmd_if_failure 60 1 nc -zw1 azure.com 443
 - /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
 - apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
 - /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --peer-client-cert-auth --peer-trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --peer-cert-file={{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}} --peer-key-file={{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}} --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --cert-file={{WrapAsVariable "etcdServerCertFilepath"}} --key-file={{WrapAsVariable "etcdServerKeyFilepath"}} --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',https://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
@@ -353,19 +353,19 @@ runcmd:
 - /bin/chown -R etcd:etcd /var/lib/etcddisk
 - systemctl stop etcd
 - systemctl daemon-reload
-- retrycmd_if_failure 36 cat {{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}}
+- retrycmd_if_failure 60 3 cat {{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}}
 - systemctl restart etcd
 - MEMBER="$(sudo etcdctl member list | grep -E {{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}} | cut -d{{WrapAsVariable "singleQuote"}}:{{WrapAsVariable "singleQuote"}} -f 1)"
 - sudo etcdctl member update ${MEMBER} {{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}
-- retrycmd_if_failure 5 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 30 --max-time 60 "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"/v2/machines
-- retrycmd_if_failure 5 apt-get update
-- retrycmd_if_failure 5 apt-get install -y apt-transport-https ca-certificates
-- retrycmd_if_failure 5 nc -zw1 aptdocker.azureedge.net 443
+- retrycmd_if_failure 5 5 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 30 --max-time 60 "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"/v2/machines
+- retrycmd_if_failure 5 10 apt-get update
+- retrycmd_if_failure 5 10 apt-get install -y apt-transport-https ca-certificates
+- retrycmd_if_failure 60 1 nc -zw1 aptdocker.azureedge.net 443
 - curl --retry 5 --retry-delay 10 --retry-max-time 30 --max-time 60 -fsSL https://aptdocker.azureedge.net/gpg | apt-key add -
 - echo "deb {{WrapAsVariable "dockerEngineDownloadRepo"}} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
 - "echo \"Package: docker-engine\nPin: version {{WrapAsVariable "dockerEngineVersion"}}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
-- retrycmd_if_failure 5 apt-get update
-- retrycmd_if_failure 5 apt-get install -y ebtables docker-engine
+- retrycmd_if_failure 5 10 apt-get update
+- retrycmd_if_failure 5 10 apt-get install -y ebtables docker-engine
 - echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
 - systemctl daemon-reload
 - systemctl restart docker
