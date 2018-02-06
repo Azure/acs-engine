@@ -263,12 +263,17 @@ func (p *Pod) CheckLinuxOutboundConnection(sleep, duration time.Duration) (bool,
 				if err != nil {
 					break
 				}
-				out, err := p.Exec("--", "curl", "bing.com")
+				out, err := p.Exec("--", "curl", "doesnotresolve")
 				if err == nil {
 					readyCh <- true
 				} else {
-					log.Printf("Error:%s\n", err)
-					log.Printf("Out:%s\n", out)
+					_, err := p.Exec("--", "curl", "doesnotresolve")
+					if err == nil {
+						readyCh <- true
+					} else {
+						log.Printf("Error:%s\n", err)
+						log.Printf("Out:%s\n", out)
+					}
 				}
 			}
 		}
