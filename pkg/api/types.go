@@ -149,8 +149,6 @@ const (
 	Migrating ProvisioningState = "Migrating"
 	// Upgrading means an existing ContainerService resource is being upgraded
 	Upgrading ProvisioningState = "Upgrading"
-	// Canceled means a deployment has been canceled
-	Canceled ProvisioningState = "Canceled"
 )
 
 // OrchestratorProfile contains Orchestrator properties

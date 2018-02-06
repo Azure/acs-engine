@@ -3,7 +3,6 @@ package armhelpers
 import (
 	"testing"
 
-	"github.com/Azure/acs-engine/pkg/apierror"
 	. "github.com/Azure/acs-engine/pkg/test"
 	. "github.com/onsi/gomega"
 
@@ -24,9 +23,13 @@ var _ = Describe("Template deployment tests", func() {
 
 		err := DeployTemplateSync(mockClient, logger, "rg1", "agentvm", map[string]interface{}{}, map[string]interface{}{})
 		Expect(err).NotTo(BeNil())
-		apierr, ok := err.(*apierror.Error)
+		deplErr, ok := err.(*DeploymentError)
 		Expect(ok).To(BeTrue())
-		Expect(apierr.Code).To(Equal(apierror.InternalOperationError))
+		Expect(deplErr.TopError).NotTo(BeNil())
+		Expect(deplErr.TopError.Error()).To(Equal("DeployTemplate failed"))
+		Expect(deplErr.ProvisioningState).To(Equal(""))
+		Expect(deplErr.StatusCode).To(Equal(0))
+		Expect(len(deplErr.Operations)).To(Equal(0))
 	})
 
 	It("Should return QuotaExceeded error code, specified in details", func() {
@@ -36,9 +39,13 @@ var _ = Describe("Template deployment tests", func() {
 
 		err := DeployTemplateSync(mockClient, logger, "rg1", "agentvm", map[string]interface{}{}, map[string]interface{}{})
 		Expect(err).NotTo(BeNil())
-		apierr, ok := err.(*apierror.Error)
+		deplErr, ok := err.(*DeploymentError)
 		Expect(ok).To(BeTrue())
-		Expect(apierr.Code).To(Equal(apierror.QuotaExceeded))
+		Expect(deplErr.TopError).NotTo(BeNil())
+		Expect(deplErr.ProvisioningState).To(Equal(""))
+		Expect(deplErr.StatusCode).To(Equal(400))
+		Expect(string(deplErr.Response)).To(ContainSubstring("\"code\":\"QuotaExceeded\""))
+		Expect(len(deplErr.Operations)).To(Equal(0))
 	})
 
 	It("Should return Conflict error code, specified in details", func() {
@@ -48,8 +55,12 @@ var _ = Describe("Template deployment tests", func() {
 
 		err := DeployTemplateSync(mockClient, logger, "rg1", "agentvm", map[string]interface{}{}, map[string]interface{}{})
 		Expect(err).NotTo(BeNil())
-		apierr, ok := err.(*apierror.Error)
+		deplErr, ok := err.(*DeploymentError)
 		Expect(ok).To(BeTrue())
-		Expect(apierr.Code).To(Equal(apierror.Conflict))
+		Expect(deplErr.TopError).NotTo(BeNil())
+		Expect(deplErr.ProvisioningState).To(Equal(""))
+		Expect(deplErr.StatusCode).To(Equal(200))
+		Expect(string(deplErr.Response)).To(ContainSubstring("\"code\":\"Conflict\""))
+		Expect(len(deplErr.Operations)).To(Equal(0))
 	})
 })
