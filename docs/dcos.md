@@ -7,8 +7,8 @@ Here are the steps to deploy a simple DC/OS cluster:
 1. [install acs-engine](acsengine.md#downloading-and-building-acs-engine)
 2. [generate your ssh key](ssh.md#ssh-key-generation)
 3. edit the [DC/OS example](../examples/dcos.json) and fill in the blank strings
-4. [generate the template](acsengine.md#generating-a-template)
-5. [deploy the output azuredeploy.json and azuredeploy.parameters.json](../acsengine.md#deployment-usage)
+4. [generate the template](acsengine.md#generate-templates)
+5. [deploy the output azuredeploy.json and azuredeploy.parameters.json](acsengine.md#deploy-templates)
 
 ## Walkthrough
 
