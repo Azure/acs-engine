@@ -246,6 +246,7 @@ func (p *Pod) Delete() error {
 func (p *Pod) CheckLinuxOutboundConnection(sleep, duration time.Duration) (bool, error) {
 	readyCh := make(chan bool, 1)
 	errCh := make(chan error)
+	var installedCurl bool
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
 	go func() {
@@ -254,27 +255,33 @@ func (p *Pod) CheckLinuxOutboundConnection(sleep, duration time.Duration) (bool,
 			case <-ctx.Done():
 				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check outbound internet connection", duration.String(), p.Metadata.Name)
 			default:
-				time.Sleep(sleep)
-				_, err := p.Exec("--", "/usr/bin/apt", "update")
-				if err != nil {
-					break
+				if !installedCurl {
+					_, err := p.Exec("--", "/usr/bin/apt", "update")
+					if err != nil {
+						break
+					}
+					_, err = p.Exec("--", "/usr/bin/apt", "install", "-y", "curl")
+					if err != nil {
+						break
+					}
+					installedCurl = true
 				}
-				_, err = p.Exec("--", "/usr/bin/apt", "install", "-y", "curl")
-				if err != nil {
-					break
-				}
-				out, err := p.Exec("--", "curl", "doesnotresolve")
+				// if we can curl bing.com we have outbound internet access
+				out, err := p.Exec("--", "curl", "bing.com")
 				if err == nil {
 					readyCh <- true
 				} else {
-					_, err := p.Exec("--", "curl", "doesnotresolve")
+					// in case bing.com is down let's hope google.com is also not down
+					_, err := p.Exec("--", "curl", "google.com")
 					if err == nil {
 						readyCh <- true
 					} else {
+						// if both bing.com and google.com are down let's say we don't have outbound internet access
 						log.Printf("Error:%s\n", err)
 						log.Printf("Out:%s\n", out)
 					}
 				}
+				time.Sleep(sleep)
 			}
 		}
 	}()
