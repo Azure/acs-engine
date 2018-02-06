@@ -45,7 +45,7 @@ const (
 	// DefaultNetworkPolicy defines the network policy to use by default
 	DefaultNetworkPolicy = NetworkPolicyNone
 	// DefaultNetworkPolicyWindows defines the network policy to use by default for clusters with Windows agent pools
-	DefaultNetworkPolicyWindows = NetworkPolicyAzure
+	DefaultNetworkPolicyWindows = NetworkPolicyNone
 	// DefaultContainerRuntime is docker
 	DefaultContainerRuntime = "docker"
 	// DefaultKubernetesNodeStatusUpdateFrequency is 10s, see --node-status-update-frequency at https://kubernetes.io/docs/admin/kubelet/
