@@ -244,13 +244,9 @@ func (p *Pod) Delete() error {
 
 // CheckLinuxOutboundConnection will keep retrying the check if an error is received until the timeout occurs or it passes. This helps us when DNS may not be available for some time after a pod starts.
 func (p *Pod) CheckLinuxOutboundConnection(sleep, duration time.Duration) (bool, error) {
-	exp, err := regexp.Compile("200 OK")
-	if err != nil {
-		log.Printf("Error while trying to create regex for linux outbound check:%s\n", err)
-		return false, err
-	}
 	readyCh := make(chan bool, 1)
 	errCh := make(chan error)
+	var installedCurl bool
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
 	go func() {
@@ -259,27 +255,33 @@ func (p *Pod) CheckLinuxOutboundConnection(sleep, duration time.Duration) (bool,
 			case <-ctx.Done():
 				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to check outbound internet connection", duration.String(), p.Metadata.Name)
 			default:
-				time.Sleep(sleep)
-				_, err := p.Exec("--", "/usr/bin/apt", "update")
-				if err != nil {
-					break
+				if !installedCurl {
+					_, err := p.Exec("--", "/usr/bin/apt", "update")
+					if err != nil {
+						break
+					}
+					_, err = p.Exec("--", "/usr/bin/apt", "install", "-y", "curl")
+					if err != nil {
+						break
+					}
+					installedCurl = true
 				}
-				_, err = p.Exec("--", "/usr/bin/apt", "install", "-y", "curl")
-				if err != nil {
-					break
-				}
-				out, err := p.Exec("--", "curl", "-I", "http://www.bing.com")
+				// if we can curl bing.com we have outbound internet access
+				out, err := p.Exec("--", "curl", "bing.com")
 				if err == nil {
-					matched := exp.MatchString(string(out))
-					if matched {
+					readyCh <- true
+				} else {
+					// in case bing.com is down let's hope google.com is also not down
+					_, err := p.Exec("--", "curl", "google.com")
+					if err == nil {
 						readyCh <- true
 					} else {
-						readyCh <- false
+						// if both bing.com and google.com are down let's say we don't have outbound internet access
+						log.Printf("Error:%s\n", err)
+						log.Printf("Out:%s\n", out)
 					}
-				} else {
-					log.Printf("Error:%s\n", err)
-					log.Printf("Out:%s\n", out)
 				}
+				time.Sleep(sleep)
 			}
 		}
 	}()
