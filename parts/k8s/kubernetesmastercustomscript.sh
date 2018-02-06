@@ -77,7 +77,7 @@ fi
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
     
-    useradd -U "etcd" > /dev/null 2>&1
+    useradd -U "etcd"
     
     APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
     touch "${APISERVER_PRIVATE_KEY_PATH}"
