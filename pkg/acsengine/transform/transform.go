@@ -35,6 +35,7 @@ const (
 	vmResourceType   = "Microsoft.Compute/virtualMachines"
 	vmssResourceType = "Microsoft.Compute/virtualMachineScaleSets"
 	vmExtensionType  = "Microsoft.Compute/virtualMachines/extensions"
+	nicResourceType  = "Microsoft.Network/networkInterfaces"
 
 	// resource ids
 	nsgID = "nsgID"
@@ -282,7 +283,7 @@ func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry
 			continue
 		}
 
-		if !(resourceType == vmResourceType || resourceType == vmExtensionType) {
+		if !(resourceType == vmResourceType || resourceType == vmExtensionType || resourceType == nicResourceType) {
 			continue
 		}
 
@@ -290,6 +291,29 @@ func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry
 		if !ok {
 			logger.Warnf("Template improperly formatted for field name: %s", nameFieldName)
 			continue
+		}
+
+		if resourceType == nicResourceType {
+			if strings.Contains(resourceName, "variables('masterVMNamePrefix')") {
+				continue
+			} else {
+				// agent NICs remove depends on master NICs.
+				dependsOn := resourceMap[dependsOnFieldName].([]interface{})
+				var newDependsOn []interface{}
+				for _, depResource := range dependsOn {
+					dep, ok := depResource.(string)
+					if !ok {
+						logger.Warnf("Template improperly formatted for field name: %s", dependsOnFieldName)
+						continue
+					}
+
+					if !strings.Contains(dep, "variables('masterNICNamePrefix')") {
+						newDependsOn = append(newDependsOn, depResource)
+					}
+				}
+				resourceMap[dependsOnFieldName] = newDependsOn
+				continue
+			}
 		}
 
 		if strings.EqualFold(resourceType, vmResourceType) &&
