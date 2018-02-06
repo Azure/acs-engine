@@ -14,9 +14,6 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		"--advertise-address":          "<kubernetesAPIServerIP>",
 		"--allow-privileged":           "true",
 		"--anonymous-auth":             "false",
-		"--audit-log-maxage":           "30",
-		"--audit-log-maxbackup":        "10",
-		"--audit-log-maxsize":          "100",
 		"--audit-log-path":             "/var/log/audit.log",
 		"--insecure-port":              "8080",
 		"--secure-port":                "443",
@@ -87,8 +84,11 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// Default apiserver config
 	defaultAPIServerConfig := map[string]string{
-		"--admission-control":  "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages",
-		"--authorization-mode": "Node",
+		"--admission-control":   "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages",
+		"--authorization-mode":  "Node",
+		"--audit-log-maxage":    "30",
+		"--audit-log-maxbackup": "10",
+		"--audit-log-maxsize":   "100",
 	}
 
 	// RBAC configuration

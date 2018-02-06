@@ -293,6 +293,9 @@ Below is a list of apiserver options that acs-engine will configure by default:
 |---|---|
 |"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages, SecurityContextDeny"|
 |"--authorization-mode"|"Node", "RBAC" (*the latter if enabledRbac is true*)|
+|"--audit-log-maxage"|"30"|
+|"--audit-log-maxbackup"|"10"|
+|"--audit-log-maxsize"|"100"|
 |"--feature-gates"|No default (can be a comma-separated list)|
 
 
@@ -304,9 +307,6 @@ Below is a list of apiserver options that are *not* currently user-configurable,
 |"--advertise-address"|*calculated value that represents listening URI for API server*|
 |"--allow-privileged"|"true"|
 |"--anonymous-auth"|"false|
-|"--audit-log-maxage"|"30"|
-|"--audit-log-maxbackup"|"10"|
-|"--audit-log-maxsize"|"100"|
 |"--audit-log-path"|"/var/log/apiserver/audit.log"|
 |"--insecure-port"|"8080"|
 |"--secure-port"|"443"|
