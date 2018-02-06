@@ -136,6 +136,19 @@ func teardown() {
 			log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
 		}
 	}
+	if !cfg.RetainSSH {
+		creds := filepath.Join(cfg.CurrentWorkingDir, "_output/", "*ssh*")
+		files, err := filepath.Glob(creds)
+		if err != nil {
+			log.Printf("failed to get ssh files using %s: %s\n", creds, err)
+		}
+		for _, file := range files {
+			err := os.Remove(file)
+			if err != nil {
+				log.Printf("failed to delete file %s: %s\n", file, err)
+			}
+		}
+	}
 	if cfg.CleanUpOnExit {
 		for _, rg := range rgs {
 			log.Printf("Deleting Group:%s\n", rg)
