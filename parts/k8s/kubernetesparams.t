@@ -322,6 +322,13 @@
       },
       "type": "string"
     },
+    "kubernetesTillerMaxHistory": {
+      {{PopulateClassicModeDefaultValue "kubernetesTillerMaxHistory"}}
+      "metadata": {
+        "description": "Helm Tiller Max History to Store. '0' for no limit."
+      },
+      "type": "string"
+    },
     "kubernetesACIConnectorSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesACIConnectorSpec"}}
       "metadata": {

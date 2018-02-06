@@ -87,6 +87,7 @@
     "kubernetesTillerMemoryRequests": "[parameters('kubernetesTillerMemoryRequests')]",
     "kubernetesTillerCPULimit": "[parameters('kubernetesTillerCPULimit')]",
     "kubernetesTillerMemoryLimit": "[parameters('kubernetesTillerMemoryLimit')]",
+    "kubernetesTillerMaxHistory": "[parameters('kubernetesTillerMaxHistory')]",
     "kubernetesACIConnectorSpec": "[parameters('kubernetesACIConnectorSpec')]",
     "kubernetesACIConnectorClientId": "[parameters('kubernetesACIConnectorClientId')]",
     "kubernetesACIConnectorClientKey": "[parameters('kubernetesACIConnectorClientKey')]",

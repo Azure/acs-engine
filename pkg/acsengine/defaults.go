@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
@@ -180,6 +181,9 @@ var (
 				CPULimits:      "50m",
 				MemoryLimits:   "150Mi",
 			},
+		},
+		Config: map[string]string{
+			"max-history": strconv.Itoa(DefaultTillerMaxHistory),
 		},
 	}
 

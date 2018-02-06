@@ -202,6 +202,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesTillerMemoryRequests>|{{WrapAsVariable "kubernetesTillerMemoryRequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubernetesTillerCPULimit>|{{WrapAsVariable "kubernetesTillerCPULimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
     sed -i "s|<kubernetesTillerMemoryLimit>|{{WrapAsVariable "kubernetesTillerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<kubernetesTillerMaxHistory>|{{WrapAsVariable "kubernetesTillerMaxHistory"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
 {{end}}
 
 {{if AdminGroupID }}
