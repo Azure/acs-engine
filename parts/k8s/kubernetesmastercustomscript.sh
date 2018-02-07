@@ -565,7 +565,7 @@ function ensureK8s() {
         echo "k8s cluster is not healthy after $i seconds"
         exit 3
     fi
-    for i in {1..600}; do
+    for i in {1..1800}; do
         nodes=$(${KUBECTL} get nodes 2>/dev/null | grep 'Ready' | wc -l)
             if [ $nodes -eq $TOTAL_NODES ]
             then
