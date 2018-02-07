@@ -111,9 +111,28 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 						}
 					}
 				}
-				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) &&
-					!helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
-					return fmt.Errorf("enablePodSecurityPolicy requires the enableRbac feature as a prerequisite")
+				if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnablePodSecurityPolicy) {
+					if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
+						return fmt.Errorf("enablePodSecurityPolicy requires the enableRbac feature as a prerequisite")
+					}
+					if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot7 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot0 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot1 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot2 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot4 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot5 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot7 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot9 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot10 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot12 {
+						return fmt.Errorf("enablePodSecurityPolicy is only supported in acs-engine for Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
+							"1.8.0", o.OrchestratorVersion)
+					}
+
 				}
 			}
 
@@ -680,7 +699,7 @@ func (a *Properties) validateNetworkPolicy() error {
 	}
 
 	// Temporary safety check, to be removed when Windows support is added.
-	if (networkPolicy == "calico" || networkPolicy == "azure") && a.HasWindows() {
+	if (networkPolicy == "calico") && a.HasWindows() {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 
@@ -800,6 +819,9 @@ func validateVNET(a *Properties) error {
 		}
 	}
 	if isCustomVNET {
+		if a.HasWindows() {
+			return fmt.Errorf("custom VNET not yet supported with Windows-enabled clusters")
+		}
 		subscription, resourcegroup, vnetname, _, e := GetVNETSubnetIDComponents(a.MasterProfile.VnetSubnetID)
 		if e != nil {
 			return e

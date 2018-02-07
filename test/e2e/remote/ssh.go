@@ -8,8 +8,10 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 )
@@ -91,9 +93,11 @@ func (c *Connection) Execute(cmd string) ([]byte, error) {
 }
 
 func (c *Connection) Write(data, path string) error {
-	cmd := fmt.Sprintf("echo %s > %s", data, path)
+	remoteCommand := fmt.Sprintf("echo %s > %s", data, path)
 	connectString := fmt.Sprintf("%s@%s", c.User, c.Host)
-	out, err := exec.Command("ssh", "-i", c.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", c.Port, cmd).CombinedOutput()
+	cmd := exec.Command("ssh", "-i", c.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", c.Port, remoteCommand)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error output:%s\n", out)
 		return err
@@ -102,14 +106,36 @@ func (c *Connection) Write(data, path string) error {
 }
 
 func (c *Connection) Read(path string) ([]byte, error) {
-	cmd := fmt.Sprintf("cat %s", path)
+	remoteCommand := fmt.Sprintf("cat %s", path)
 	connectString := fmt.Sprintf("%s@%s", c.User, c.Host)
-	out, err := exec.Command("ssh", "-i", c.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", c.Port, cmd).CombinedOutput()
+	cmd := exec.Command("ssh", "-i", c.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", c.Port, remoteCommand)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error output:%s\n", out)
 		return nil, err
 	}
 	return out, nil
+}
+
+// CopyRemote uses this ssh connection to scp remote files
+func (c *Connection) CopyRemote(hostname, path string) error {
+	cmd := exec.Command("ssh-add", c.PrivateKeyPath)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error output:%s\n", out)
+		return err
+	}
+	remoteCommand := fmt.Sprintf("scp -o StrictHostKeyChecking=no %s:%s /tmp/%s-%s", hostname, path, hostname, filepath.Base(path))
+	connectString := fmt.Sprintf("%s@%s", c.User, c.Host)
+	cmd = exec.Command("ssh", "-A", "-i", c.PrivateKeyPath, "-o", "ConnectTimeout=30", "-o", "StrictHostKeyChecking=no", connectString, "-p", c.Port, remoteCommand)
+	util.PrintCommand(cmd)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error output:%s\n", out)
+		return err
+	}
+	return nil
 }
 
 // ExecuteWithRetries will keep retrying a command until it does not return an error or the duration is exceeded

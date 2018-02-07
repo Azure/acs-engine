@@ -38,6 +38,8 @@ const (
 	DefaultInternalLbStaticIPOffset = 10
 	// NetworkPolicyNone is the string expression for no network policy
 	NetworkPolicyNone = "none"
+	// NetworkPolicyAzure is the string expression for Azure CNI network policy
+	NetworkPolicyAzure = "azure"
 	// NetworkPluginKubenet is the string expression for kubenet network plugin
 	NetworkPluginKubenet = "kubenet"
 	// DefaultNetworkPolicy defines the network policy to use by default

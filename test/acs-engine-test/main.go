@@ -604,6 +604,7 @@ func mainInternal() error {
 		case "koreacentral": // TODO make sure our versions of azure-cli support this cloud
 		case "centraluseuap": // TODO determine why this region is flaky
 		case "brazilsouth": // canary region
+		case "francecentral": // not supported by sub
 		default:
 			regions = append(regions, region)
 		}

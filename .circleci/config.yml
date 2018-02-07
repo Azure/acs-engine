@@ -70,6 +70,7 @@ jobs:
           echo 'export TIMEOUT=20m' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/dcos.json' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_DCOS}' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_DCOS}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_DCOS}' >> $BASH_ENV
       - run:
@@ -120,6 +121,8 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
@@ -142,7 +145,9 @@ jobs:
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.7' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
@@ -167,6 +172,8 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.9' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
@@ -191,6 +198,8 @@ jobs:
           echo 'export ORCHESTRATOR_RELEASE=1.8' >> $BASH_ENV
           echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
@@ -213,7 +222,9 @@ jobs:
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.8' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
@@ -236,7 +247,9 @@ jobs:
       - run: |
           echo 'export TIMEOUT=30m' >> $BASH_ENV
           echo 'export ORCHESTRATOR_RELEASE=1.9' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/windows/kubernetes.json' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/windows/definition.json' >> $BASH_ENV
+          echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
+          echo 'export RETAIN_SSH=false' >> $BASH_ENV
           echo 'export SUBSCRIPTION_ID=${SUBSCRIPTION_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV

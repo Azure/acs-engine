@@ -23,14 +23,22 @@
 # KUBECONFIG_KEY ETCD_SERVER_CERTIFICATE ETCD_SERVER_PRIVATE_KEY ETCD_CLIENT_CERTIFICATE ETCD_CLIENT_PRIVATE_KEY
 # ETCD_PEER_CERTIFICATES ETCD_PEER_PRIVATE_KEYS ADMINUSER MASTER_INDEX
 
+# Capture Interesting Network Stuffs during provision
+packetCaptureProvision() {
+    tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/dnsdump.pcap -Z root -i eth0 udp port 53 > /dev/null 2>&1 &
+}
+
+packetCaptureProvision
+
 # Find distro name via ID value in releases files and upcase
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
 RHEL_OS_NAME="RHEL"
 COREOS_OS_NAME="COREOS"
 
-# Set default kubectl
+# Set default filepaths
 KUBECTL=/usr/local/bin/kubectl
+DOCKER=/usr/bin/docker
 
 ETCD_PEER_CERT=$(echo ${ETCD_PEER_CERTIFICATES} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
 ETCD_PEER_KEY=$(echo ${ETCD_PEER_PRIVATE_KEYS} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
@@ -49,7 +57,7 @@ ensureRunCommandCompleted()
     echo "waiting for runcmd to finish"
     for i in {1..900}; do
         if [ -e /opt/azure/containers/runcmd.complete ]; then
-            echo "runcmd finished"
+            echo "runcmd finished, took $i seconds"
             break
         fi
         sleep 1
@@ -69,7 +77,15 @@ fi
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
-
+    
+    useradd -U "etcd"
+    id "etcd"
+    if [[ $? -eq 1 ]]; then 
+        echo "failed to add user etcd"
+    else
+        echo "etcd user exists"
+    fi
+    
     APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
     touch "${APISERVER_PRIVATE_KEY_PATH}"
     chmod 0600 "${APISERVER_PRIVATE_KEY_PATH}"
@@ -85,7 +101,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     ETCD_SERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdserver.key"
     touch "${ETCD_SERVER_PRIVATE_KEY_PATH}"
     chmod 0600 "${ETCD_SERVER_PRIVATE_KEY_PATH}"
-    chown root:root "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+    chown etcd:etcd "${ETCD_SERVER_PRIVATE_KEY_PATH}"
     echo "${ETCD_SERVER_PRIVATE_KEY}" | base64 --decode > "${ETCD_SERVER_PRIVATE_KEY_PATH}"
 
     ETCD_CLIENT_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdclient.key"
@@ -97,7 +113,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     ETCD_PEER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.key"
     touch "${ETCD_PEER_PRIVATE_KEY_PATH}"
     chmod 0600 "${ETCD_PEER_PRIVATE_KEY_PATH}"
-    chown root:root "${ETCD_PEER_PRIVATE_KEY_PATH}"
+    chown etcd:etcd "${ETCD_PEER_PRIVATE_KEY_PATH}"
     echo "${ETCD_PEER_KEY}" | base64 --decode > "${ETCD_PEER_PRIVATE_KEY_PATH}"
 
     ETCD_SERVER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdserver.crt"
@@ -119,7 +135,6 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
 
     echo `date`,`hostname`, finishedGettingEtcdCerts>>/opt/m
-    mkdir -p /opt/azure/containers && touch /opt/azure/containers/etcdcerts.complete
 else
     echo "skipping master node provision operations, this is an agent node"
 fi
@@ -174,27 +189,25 @@ EOF
 
 set -x
 
-# wait for kubectl to report successful cluster health
-function ensureKubectl() {
+# wait for presence of a file
+function ensureFilepath() {
     if $REBOOTREQUIRED; then
         return
     fi
-    kubectlfound=1
+    found=1
     for i in {1..600}; do
-        if [ -e $KUBECTL ]
+        if [ -e $1 ]
         then
-            kubectlfound=0
+            found=0
+            echo "$1 is present, took $i seconds to verify"
             break
         fi
         sleep 1
     done
-    if [ $kubectlfound -ne 0 ]
+    if [ $found -ne 0 ]
     then
-        if [ ! -e /usr/bin/docker ]
-        then
-            echo "kubectl nor docker did not install successfully"
-            exit 1
-        fi
+        echo "$1 is not present after $i seconds of trying to verify"
+        exit 1
     fi
 }
 
@@ -202,6 +215,7 @@ function downloadUrl () {
 	# Wrapper around curl to download blobs more reliably.
 	# Workaround the --retry issues with a for loop and set a max timeout.
 	for i in 1 2 3 4 5; do curl --max-time 60 -fsSL ${1}; [ $? -eq 0 ] && break || sleep 10; done
+    echo Executed curl for \"${1}\" $i times
 }
 
 function setMaxPods () {
@@ -272,7 +286,7 @@ function configNetworkPolicy() {
 function installClearContainersRuntime() {
 	# Add Clear Containers repository key
 	echo "Adding Clear Containers repository key..."
-	curl -sSL "https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key" | apt-key add -
+	curl -sSL --retry 5 --retry-delay 10 --retry-max-time 30 "https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key" | apt-key add -
 
 	# Add Clear Container repository
 	echo "Adding Clear Containers repository..."
@@ -321,13 +335,13 @@ function installGo() {
 	fi
 
 	# Get the latest Go version
-	GO_VERSION=$(curl -sSL "https://golang.org/VERSION?m=text")
+	GO_VERSION=$(curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://golang.org/VERSION?m=text")
 
 	echo "Installing Go version $GO_VERSION..."
 
 	# subshell
 	(
-	curl -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
+	curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
 	)
 
 	# Set GOPATH and update PATH
@@ -465,6 +479,7 @@ function systemctlEnableAndCheck() {
             systemctl is-enabled $1
             enabled=$?
         else
+            echo "$1 took $i seconds to be enabled by systemctl"
             break
         fi
         sleep 1
@@ -474,7 +489,6 @@ function systemctlEnableAndCheck() {
         echo "$1 could not be enabled by systemctl"
         exit 5
     fi
-    systemctl enable $1
 }
 
 function ensureDocker() {
@@ -488,7 +502,7 @@ function ensureDocker() {
                 echo "status $?"
                 /bin/systemctl restart docker
             else
-                echo "docker started"
+                echo "docker started, took $i seconds"
                 dockerStarted=0
                 break
             fi
@@ -542,7 +556,7 @@ function ensureApiserver() {
             $KUBECTL cluster-info
             if [ "$?" = "0" ]
             then
-                echo "kubernetes started"
+                echo "kubernetes started, took $i seconds"
                 kubernetesStarted=0
                 break
             fi
@@ -550,7 +564,7 @@ function ensureApiserver() {
             /usr/bin/docker ps | grep apiserver
             if [ "$?" = "0" ]
             then
-                echo "kubernetes started"
+                echo "kubernetes started, took $i seconds"
                 kubernetesStarted=0
                 break
             fi
@@ -565,15 +579,22 @@ function ensureApiserver() {
 }
 
 function ensureEtcd() {
+    etcdIsRunning=1
     for i in {1..600}; do
         curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 https://127.0.0.1:2379/v2/machines;
         if [ $? -eq 0 ]
         then
-            echo "Etcd setup successfully"
+            etcdIsRunning=0
+            echo "Etcd setup successfully, took $i seconds"
             break
         fi
-        sleep 5
+        sleep 1
     done
+    if [ $etcdIsRunning -ne 0 ]
+    then
+        echo "Etcd not accessible after $i seconds"
+        exit 3
+    fi
 }
 
 function ensureEtcdDataDir() {
@@ -584,14 +605,16 @@ function ensureEtcdDataDir() {
         return
     else
         echo "/var/lib/etcddisk was not found at /dev/sdc1. Trying to mount all devices."
+        s = 5
         for i in {1..60}; do
             sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
             if [ "$?" = "0" ]
             then
-                echo "/var/lib/etcddisk mounted at: /dev/sdc1"
+                (( t = ${i} * ${s} ))
+                echo "/var/lib/etcddisk mounted at: /dev/sdc1, took $t seconds"
                 return
             fi
-            sleep 5
+            sleep $s
         done
     fi
 
@@ -693,7 +716,8 @@ echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 # master only
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
-    ensureKubectl
+    ensureFilepath $KUBECTL
+    ensureFilepath $DOCKER
     ensureEtcdDataDir
     ensureEtcd
     ensureApiserver
@@ -719,3 +743,4 @@ fi
 echo `date`,`hostname`, endscript>>/opt/m
 
 mkdir -p /opt/azure/containers && touch /opt/azure/containers/provision.complete
+ps auxfww > /opt/azure/provision-ps.log

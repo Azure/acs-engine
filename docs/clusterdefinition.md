@@ -284,14 +284,31 @@ Below is a list of cloud-controller-manager options that are *not* currently use
     }
 }
 ```
+Or perhaps you want to customize/override the set of admission-control flags passed to the API Server by default, you can omit the options you don't want and specify only the ones you need as follows:
+
+```
+"orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "orchestratorRelease": "1.8",
+      "kubernetesConfig": {
+        "apiServerConfig": {
+          "--admission-control":  "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,AlwaysPullImages"
+        }
+      }
+    } 
+```
 
 See [here](https://kubernetes.io/docs/reference/generated/kube-apiserver/) for a reference of supported apiserver options.
 
 Below is a list of apiserver options that acs-engine will configure by default:
 
 |apiserver option|default value|
+|---|---|
 |"--admission-control"|"NamespaceLifecycle, LimitRanger, ServiceAccount, DefaultStorageClass, ResourceQuota, DenyEscalatingExec, AlwaysPullImages, SecurityContextDeny"|
 |"--authorization-mode"|"Node", "RBAC" (*the latter if enabledRbac is true*)|
+|"--audit-log-maxage"|"30"|
+|"--audit-log-maxbackup"|"10"|
+|"--audit-log-maxsize"|"100"|
 |"--feature-gates"|No default (can be a comma-separated list)|
 
 
@@ -299,13 +316,10 @@ Below is a list of apiserver options that are *not* currently user-configurable,
 
 |apiserver option|default value|
 |---|---|
-|"--address"|"0.0.0.0"|
+|"--bind-address"|"0.0.0.0"|
 |"--advertise-address"|*calculated value that represents listening URI for API server*|
 |"--allow-privileged"|"true"|
 |"--anonymous-auth"|"false|
-|"--audit-log-maxage"|"30"|
-|"--audit-log-maxbackup"|"10"|
-|"--audit-log-maxsize"|"100"|
 |"--audit-log-path"|"/var/log/apiserver/audit.log"|
 |"--insecure-port"|"8080"|
 |"--secure-port"|"443"|

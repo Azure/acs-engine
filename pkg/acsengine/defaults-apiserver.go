@@ -10,14 +10,11 @@ import (
 func setAPIServerConfig(cs *api.ContainerService) {
 	o := cs.Properties.OrchestratorProfile
 	staticLinuxAPIServerConfig := map[string]string{
-		"--address":                    "0.0.0.0",
+		"--bind-address":               "0.0.0.0",
 		"--advertise-address":          "<kubernetesAPIServerIP>",
 		"--allow-privileged":           "true",
 		"--anonymous-auth":             "false",
-		"--audit-log-maxage":           "30",
-		"--audit-log-maxbackup":        "10",
-		"--audit-log-maxsize":          "100",
-		"--audit-log-path":             "/var/log/apiserver/audit.log",
+		"--audit-log-path":             "/var/log/audit.log",
 		"--insecure-port":              "8080",
 		"--secure-port":                "443",
 		"--service-account-lookup":     "true",
@@ -73,6 +70,11 @@ func setAPIServerConfig(cs *api.ContainerService) {
 		staticLinuxAPIServerConfig["--oidc-issuer-url"] = "https://" + issuerHost + "/" + cs.Properties.AADProfile.TenantID + "/"
 	}
 
+	// Audit Policy configuration
+	if isKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") {
+		staticLinuxAPIServerConfig["--audit-policy-file"] = "/etc/kubernetes/manifests/audit-policy.yaml"
+	}
+
 	staticWindowsAPIServerConfig := make(map[string]string)
 	for key, val := range staticLinuxAPIServerConfig {
 		staticWindowsAPIServerConfig[key] = val
@@ -82,8 +84,11 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// Default apiserver config
 	defaultAPIServerConfig := map[string]string{
-		"--admission-control":  "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages",
-		"--authorization-mode": "Node",
+		"--admission-control":   "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages",
+		"--authorization-mode":  "Node",
+		"--audit-log-maxage":    "30",
+		"--audit-log-maxbackup": "10",
+		"--audit-log-maxsize":   "100",
 	}
 
 	// RBAC configuration

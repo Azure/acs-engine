@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Azure/acs-engine/test/e2e/engine"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -25,6 +26,11 @@ type Account struct {
 type ResourceGroup struct {
 	Name     string
 	Location string
+}
+
+// VM represents an azure vm
+type VM struct {
+	Name string `json:"name"`
 }
 
 // Deployment represents a deployment of an acs cluster
@@ -70,8 +76,12 @@ func (a *Account) Login() error {
 
 // SetSubscription will call az account set --subscription for the given Account
 func (a *Account) SetSubscription() error {
-	_, err := exec.Command("az", "account", "set", "--subscription", a.SubscriptionID).CombinedOutput()
+	cmd := exec.Command("az", "account", "set", "--subscription", a.SubscriptionID)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
+		log.Printf("Error while trying to set subscription (%s):%s", a.SubscriptionID, err)
+		log.Printf("Output:%s\n", out)
 		return err
 	}
 	return nil
@@ -80,10 +90,12 @@ func (a *Account) SetSubscription() error {
 // CreateGroup will create a resource group in a given location
 //--tags "type=${RESOURCE_GROUP_TAG_TYPE:-}" "now=$(date +%s)" "job=${JOB_BASE_NAME:-}" "buildno=${BUILD_NUM:-}"
 func (a *Account) CreateGroup(name, location string) error {
-	now := fmt.Sprintf("now=%v", time.Now().Add(-3*time.Hour).Unix())
-	out, err := exec.Command("az", "group", "create", "--name", name, "--location", location, "--tags", now).CombinedOutput()
+	now := fmt.Sprintf("now=%v", time.Now().Unix())
+	cmd := exec.Command("az", "group", "create", "--name", name, "--location", location, "--tags", now)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying create resource group (%s) in %s:%s", name, location, err)
+		log.Printf("Error while trying to create resource group (%s) in %s:%s", name, location, err)
 		log.Printf("Output:%s\n", out)
 		return err
 	}
@@ -97,13 +109,14 @@ func (a *Account) CreateGroup(name, location string) error {
 
 // DeleteGroup deletes a given resource group by name
 func (a *Account) DeleteGroup(name string, wait bool) error {
-	var out []byte
-	var err error
+	var cmd *exec.Cmd
 	if !wait {
-		out, err = exec.Command("az", "group", "delete", "--name", name, "--no-wait", "--yes").CombinedOutput()
+		cmd = exec.Command("az", "group", "delete", "--name", name, "--no-wait", "--yes")
 	} else {
-		out, err = exec.Command("az", "group", "delete", "--name", name, "--yes").CombinedOutput()
+		cmd = exec.Command("az", "group", "delete", "--name", name, "--yes")
 	}
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to delete resource group (%s):%s", name, out)
 		return err
@@ -113,7 +126,6 @@ func (a *Account) DeleteGroup(name string, wait bool) error {
 
 // CreateDeployment will deploy a cluster to a given resource group using the template and parameters on disk
 func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
-	log.Print("Creating deployment this make take a few minutes.")
 	d := Deployment{
 		Name:              name,
 		TemplateDirectory: e.Config.GeneratedDefinitionPath,
@@ -134,14 +146,16 @@ func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
 		}
 	}()
 
-	output, err := exec.Command("az", "group", "deployment", "create",
+	cmd := exec.Command("az", "group", "deployment", "create",
 		"--name", d.Name,
 		"--resource-group", a.ResourceGroup.Name,
 		"--template-file", e.Config.GeneratedTemplatePath,
-		"--parameters", e.Config.GeneratedParametersPath).CombinedOutput()
+		"--parameters", e.Config.GeneratedParametersPath)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error while trying to start deployment for %s in resource group %s:%s", d.Name, a.ResourceGroup.Name, err)
-		log.Printf("Command Output: %s\n", output)
+		log.Printf("\nError from deployment for %s in resource group %s:%s\n", d.Name, a.ResourceGroup.Name, err)
+		log.Printf("Command Output: %s\n", out)
 		return err
 	}
 	quit <- true
@@ -151,7 +165,9 @@ func (a *Account) CreateDeployment(name string, e *engine.Engine) error {
 
 // GetCurrentAccount will run an az account show and parse that into an account strcut
 func GetCurrentAccount() (*Account, error) {
-	out, err := exec.Command("az", "account", "show").CombinedOutput()
+	cmd := exec.Command("az", "account", "show")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to run 'account show':%s\n", err)
 		return nil, err
@@ -167,7 +183,9 @@ func GetCurrentAccount() (*Account, error) {
 
 // CreateVnet will create a vnet in a resource group
 func (a *Account) CreateVnet(vnet, addressPrefixes, subnetName, subnetPrefix string) error {
-	out, err := exec.Command("az", "network", "vnet", "create", "-g", a.ResourceGroup.Name, "-n", vnet, "--address-prefixes", addressPrefixes, "--subnet-name", subnetName, "--subnet-prefix", subnetPrefix).CombinedOutput()
+	cmd := exec.Command("az", "network", "vnet", "create", "-g", a.ResourceGroup.Name, "-n", vnet, "--address-prefixes", addressPrefixes, "--subnet-name", subnetName, "--subnet-prefix", subnetPrefix)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to create vnet with the following command:\n az network vnet create -g %s -n %s --address-prefixes %s --subnet-name %s --subnet-prefix %s \n Output:%s\n", a.ResourceGroup.Name, vnet, addressPrefixes, subnetName, subnetPrefix, out)
 		return err
@@ -186,7 +204,8 @@ type RouteTable struct {
 
 // UpdateRouteTables is used to updated a vnet with the appropriate route tables
 func (a *Account) UpdateRouteTables(subnet, vnet string) error {
-	out, err := exec.Command("az", "network", "route-table", "list", "-g", a.ResourceGroup.Name).CombinedOutput()
+	cmd := exec.Command("az", "network", "route-table", "list", "-g", a.ResourceGroup.Name)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to get route table list!\n Output:%s\n", out)
 		return err
@@ -194,10 +213,36 @@ func (a *Account) UpdateRouteTables(subnet, vnet string) error {
 	rts := []RouteTable{}
 	json.Unmarshal(out, &rts)
 
-	out, err = exec.Command("az", "network", "vnet", "subnet", "update", "-n", subnet, "-g", a.ResourceGroup.Name, "--vnet-name", vnet, "--route-table", rts[0].Name).CombinedOutput()
+	cmd = exec.Command("az", "network", "vnet", "subnet", "update", "-n", subnet, "-g", a.ResourceGroup.Name, "--vnet-name", vnet, "--route-table", rts[0].Name)
+	util.PrintCommand(cmd)
+	out, err = cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error while trying to update vnet route tables:%s\n", out)
 		return err
 	}
 	return nil
+}
+
+// GetHosts will get a list of vms in the resource group
+func (a *Account) GetHosts(name string) ([]VM, error) {
+	var resourceGroup string
+	if name != "" {
+		resourceGroup = name
+	} else {
+		resourceGroup = a.ResourceGroup.Name
+	}
+	cmd := exec.Command("az", "vm", "list", "-g", resourceGroup)
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while trying to get vm list:%s\n", out)
+		return nil, err
+	}
+	v := []VM{{}}
+	err = json.Unmarshal(out, &v)
+	if err != nil {
+		log.Printf("Error unmarshalling account json:%s\n", err)
+		log.Printf("JSON:%s\n", out)
+	}
+	return v, nil
 }

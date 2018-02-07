@@ -166,23 +166,26 @@ coreos:
 {{else}}
 runcmd:
 - echo `date`,`hostname`, startruncmd>>/opt/m
+# the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run
+- retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
+- retrycmd_if_failure 120 1 nc -zuw1 $(grep nameserver /etc/resolv.conf | cut -d \  -f 2) 53
+- retrycmd_if_failure 120 1 nc -zw1 aptdocker.azureedge.net 443
 - apt-mark hold walinuxagent{{GetKubernetesAgentPreprovisionYaml .}}
 - echo `date`,`hostname`, preaptupdate>>/opt/m
-- apt-get update
+- retrycmd_if_failure 5 10 apt-get update
 - echo `date`,`hostname`, postaptupdate>>/opt/m
-- apt-get install -y apt-transport-https ca-certificates nfs-common
+- retrycmd_if_failure 5 10 apt-get install -y apt-transport-https ca-certificates nfs-common
 - echo `date`,`hostname`, aptinstall>>/opt/m
 - systemctl enable rpcbind
 - systemctl enable rpc-statd
 - systemctl start rpcbind
 - systemctl start rpc-statd
 - echo `date`,`hostname`, predockerinstall>>/opt/m
-- for i in 1 2 3 4 5; do curl --max-time 60 -fsSL https://aptdocker.azureedge.net/gpg | apt-key add -; [ $? -eq 0 ] && break || sleep 5; done
+- curl --retry 5 --retry-delay 10 --retry-max-time 30 --max-time 60 -fsSL https://aptdocker.azureedge.net/gpg | apt-key add -
 - echo "deb {{WrapAsVariable "dockerEngineDownloadRepo"}} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
 - "echo \"Package: docker-engine\nPin: version {{WrapAsVariable "dockerEngineVersion"}}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
-- apt-get update
-- apt-get install -y ebtables
-- apt-get install -y docker-engine
+- retrycmd_if_failure 5 10 apt-get update
+- retrycmd_if_failure 5 10 apt-get install -y ebtables docker-engine
 - echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
 - systemctl daemon-reload
 - echo `date`,`hostname`, postdockerinstall>>/opt/m

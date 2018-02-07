@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 )
 
 const (
@@ -113,7 +115,9 @@ func WaitOnReady(nodeCount int, sleep, duration time.Duration) bool {
 
 // Get returns the current nodes for a given kubeconfig
 func Get() (*List, error) {
-	out, err := exec.Command("kubectl", "get", "nodes", "-o", "json").CombinedOutput()
+	cmd := exec.Command("kubectl", "get", "nodes", "-o", "json")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to run 'kubectl get nodes':%s", string(out))
 		return nil, err
@@ -128,7 +132,9 @@ func Get() (*List, error) {
 
 // Version get the version of the server
 func Version() (string, error) {
-	out, err := exec.Command("kubectl", "version", "--short").CombinedOutput()
+	cmd := exec.Command("kubectl", "version", "--short")
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error trying to run 'kubectl version':%s", string(out))
 		return "", err

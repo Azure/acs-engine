@@ -23,6 +23,7 @@ type Config struct {
 	Regions           []string      `envconfig:"REGIONS"`                                                               // A whitelist of availableregions
 	ClusterDefinition string        `envconfig:"CLUSTER_DEFINITION" required:"true" default:"examples/kubernetes.json"` // ClusterDefinition is the path on disk to the json template these are normally located in examples/
 	CleanUpOnExit     bool          `envconfig:"CLEANUP_ON_EXIT" default:"true"`                                        // if set the tests will not clean up rgs when tests finish
+	RetainSSH         bool          `envconfig:"RETAIN_SSH" default:"true"`
 	Timeout           time.Duration `envconfig:"TIMEOUT" default:"10m"`
 	CurrentWorkingDir string
 	SoakClusterName   string `envconfig:"SOAK_CLUSTER_NAME"`
@@ -57,7 +58,7 @@ func (c *Config) GetKubeConfig() string {
 // SetKubeConfig will set the KUBECONIFG env var
 func (c *Config) SetKubeConfig() {
 	os.Setenv("KUBECONFIG", c.GetKubeConfig())
-	log.Printf("Kubeconfig:%s\n", c.GetKubeConfig())
+	log.Printf("\nKubeconfig:%s\n", c.GetKubeConfig())
 }
 
 // GetSSHKeyPath will return the absolute path to the ssh private key
