@@ -71,7 +71,7 @@ mounts:
   - /dcos/volume2
 - - /dev/sdf1
   - /dcos/volume3
-runcmd:
+runcmd: PREPROVISION_EXTENSION
 - - ln
   - -s
   - /bin/rm
