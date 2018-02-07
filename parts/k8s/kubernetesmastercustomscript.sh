@@ -551,7 +551,7 @@ function ensureK8s() {
         sleep 1
     done
     for i in {1..600}; do
-        $KUBECTL cluster-info
+        $KUBECTL 2>/dev/null cluster-info
             if [ "$?" = "0" ]
             then
                 echo "k8s cluster is healthy, took $i seconds"
@@ -566,7 +566,7 @@ function ensureK8s() {
         exit 3
     fi
     for i in {1..600}; do
-        nodes=$(kubectl get nodes | grep 'Ready' | wc -l)
+        nodes=$(${KUBECTL} get nodes 2>/dev/null | grep 'Ready' | wc -l)
             if [ $nodes -eq $TOTAL_NODES ]
             then
                 echo "all nodes are participating, took $i seconds"
@@ -581,7 +581,7 @@ function ensureK8s() {
         exit 3
     fi
     for i in {1..600}; do
-        notReady=$(kubectl get nodes | grep 'NotReady' | wc -l)
+        notReady=$(${KUBECTL} get nodes 2>/dev/null | grep 'NotReady' | wc -l)
             if [ $notReady -eq 0 ]
             then
                 echo "all nodes are Ready, took $i seconds"
@@ -647,7 +647,7 @@ function ensurePodSecurityPolicy(){
     fi
     POD_SECURITY_POLICY_FILE="/etc/kubernetes/manifests/pod-security-policy.yaml"
     if [ -f $POD_SECURITY_POLICY_FILE ]; then
-        kubectl create -f $POD_SECURITY_POLICY_FILE
+        $KUBECTL create -f $POD_SECURITY_POLICY_FILE
     fi
 }
 
