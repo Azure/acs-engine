@@ -357,7 +357,7 @@ runcmd:
 - /bin/chown -R etcd:etcd /var/lib/etcddisk
 - systemctl stop etcd
 - systemctl daemon-reload
-- retrycmd_if_failure 60 3 cat {{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}}
+- ensure_etcd_ready
 - systemctl restart etcd
 - MEMBER="$(sudo etcdctl member list | grep -E {{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}} | cut -d{{WrapAsVariable "singleQuote"}}:{{WrapAsVariable "singleQuote"}} -f 1)"
 - sudo etcdctl member update ${MEMBER} {{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}
