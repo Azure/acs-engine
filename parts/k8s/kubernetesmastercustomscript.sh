@@ -142,6 +142,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     set -x
 
     echo `date`,`hostname`, endGettingEtcdCerts>>/opt/m
+    mkdir -p /opt/azure/containers && touch /opt/azure/containers/certs.ready
 else
     echo "skipping master node provision operations, this is an agent node"
 fi
