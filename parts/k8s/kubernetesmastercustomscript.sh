@@ -23,6 +23,7 @@
 # KUBECONFIG_KEY ETCD_SERVER_CERTIFICATE ETCD_SERVER_PRIVATE_KEY ETCD_CLIENT_CERTIFICATE ETCD_CLIENT_PRIVATE_KEY
 # ETCD_PEER_CERTIFICATES ETCD_PEER_PRIVATE_KEYS ADMINUSER MASTER_INDEX
 
+set -x
 # Capture Interesting Network Stuffs during provision
 packetCaptureProvision() {
     tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/dnsdump.pcap -Z root -i eth0 udp port 53 > /dev/null 2>&1 &
@@ -40,8 +41,10 @@ COREOS_OS_NAME="COREOS"
 KUBECTL=/usr/local/bin/kubectl
 DOCKER=/usr/bin/docker
 
+set +x
 ETCD_PEER_CERT=$(echo ${ETCD_PEER_CERTIFICATES} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
 ETCD_PEER_KEY=$(echo ${ETCD_PEER_PRIVATE_KEYS} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
+set -x
 
 # CoreOS: /usr is read-only; therefore kubectl is installed at /opt/kubectl
 #   Details on install at kubernetetsmastercustomdataforcoreos.yml
@@ -90,49 +93,52 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     touch "${APISERVER_PRIVATE_KEY_PATH}"
     chmod 0600 "${APISERVER_PRIVATE_KEY_PATH}"
     chown root:root "${APISERVER_PRIVATE_KEY_PATH}"
-    echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
 
     CA_PRIVATE_KEY_PATH="/etc/kubernetes/certs/ca.key"
     touch "${CA_PRIVATE_KEY_PATH}"
     chmod 0600 "${CA_PRIVATE_KEY_PATH}"
     chown root:root "${CA_PRIVATE_KEY_PATH}"
-    echo "${CA_PRIVATE_KEY}" | base64 --decode > "${CA_PRIVATE_KEY_PATH}"
 
     ETCD_SERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdserver.key"
     touch "${ETCD_SERVER_PRIVATE_KEY_PATH}"
     chmod 0600 "${ETCD_SERVER_PRIVATE_KEY_PATH}"
     chown etcd:etcd "${ETCD_SERVER_PRIVATE_KEY_PATH}"
-    echo "${ETCD_SERVER_PRIVATE_KEY}" | base64 --decode > "${ETCD_SERVER_PRIVATE_KEY_PATH}"
 
     ETCD_CLIENT_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdclient.key"
     touch "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
     chmod 0600 "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
     chown root:root "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
-    echo "${ETCD_CLIENT_PRIVATE_KEY}" | base64 --decode > "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
 
     ETCD_PEER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.key"
     touch "${ETCD_PEER_PRIVATE_KEY_PATH}"
     chmod 0600 "${ETCD_PEER_PRIVATE_KEY_PATH}"
     chown etcd:etcd "${ETCD_PEER_PRIVATE_KEY_PATH}"
-    echo "${ETCD_PEER_KEY}" | base64 --decode > "${ETCD_PEER_PRIVATE_KEY_PATH}"
 
     ETCD_SERVER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdserver.crt"
     touch "${ETCD_SERVER_CERTIFICATE_PATH}"
     chmod 0644 "${ETCD_SERVER_CERTIFICATE_PATH}"
     chown root:root "${ETCD_SERVER_CERTIFICATE_PATH}"
-    echo "${ETCD_SERVER_CERTIFICATE}" | base64 --decode > "${ETCD_SERVER_CERTIFICATE_PATH}"
 
     ETCD_CLIENT_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdclient.crt"
     touch "${ETCD_CLIENT_CERTIFICATE_PATH}"
     chmod 0644 "${ETCD_CLIENT_CERTIFICATE_PATH}"
     chown root:root "${ETCD_CLIENT_CERTIFICATE_PATH}"
-    echo "${ETCD_CLIENT_CERTIFICATE}" | base64 --decode > "${ETCD_CLIENT_CERTIFICATE_PATH}"
 
     ETCD_PEER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.crt"
     touch "${ETCD_PEER_CERTIFICATE_PATH}"
     chmod 0644 "${ETCD_PEER_CERTIFICATE_PATH}"
     chown root:root "${ETCD_PEER_CERTIFICATE_PATH}"
+
+    set +x
+    echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
+    echo "${CA_PRIVATE_KEY}" | base64 --decode > "${CA_PRIVATE_KEY_PATH}"
+    echo "${ETCD_SERVER_PRIVATE_KEY}" | base64 --decode > "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+    echo "${ETCD_CLIENT_PRIVATE_KEY}" | base64 --decode > "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+    echo "${ETCD_PEER_KEY}" | base64 --decode > "${ETCD_PEER_PRIVATE_KEY_PATH}"
+    echo "${ETCD_SERVER_CERTIFICATE}" | base64 --decode > "${ETCD_SERVER_CERTIFICATE_PATH}"
+    echo "${ETCD_CLIENT_CERTIFICATE}" | base64 --decode > "${ETCD_CLIENT_CERTIFICATE_PATH}"
     echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
+    set -x
 
     echo `date`,`hostname`, finishedGettingEtcdCerts>>/opt/m
 else
@@ -143,18 +149,20 @@ KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
 touch "${KUBELET_PRIVATE_KEY_PATH}"
 chmod 0600 "${KUBELET_PRIVATE_KEY_PATH}"
 chown root:root "${KUBELET_PRIVATE_KEY_PATH}"
-echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
 
 APISERVER_PUBLIC_KEY_PATH="/etc/kubernetes/certs/apiserver.crt"
 touch "${APISERVER_PUBLIC_KEY_PATH}"
 chmod 0644 "${APISERVER_PUBLIC_KEY_PATH}"
 chown root:root "${APISERVER_PUBLIC_KEY_PATH}"
-echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
 
 AZURE_JSON_PATH="/etc/kubernetes/azure.json"
 touch "${AZURE_JSON_PATH}"
 chmod 0600 "${AZURE_JSON_PATH}"
 chown root:root "${AZURE_JSON_PATH}"
+
+set +x
+echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
+echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
 cat << EOF > "${AZURE_JSON_PATH}"
 {
     "cloud":"${TARGET_ENVIRONMENT}",
