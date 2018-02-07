@@ -89,6 +89,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
         echo "etcd user exists"
     fi
     
+    echo `date`,`hostname`, beginGettingEtcdCerts>>/opt/m
     APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
     touch "${APISERVER_PRIVATE_KEY_PATH}"
     chmod 0600 "${APISERVER_PRIVATE_KEY_PATH}"
@@ -140,7 +141,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
     set -x
 
-    echo `date`,`hostname`, finishedGettingEtcdCerts>>/opt/m
+    echo `date`,`hostname`, endGettingEtcdCerts>>/opt/m
 else
     echo "skipping master node provision operations, this is an agent node"
 fi
