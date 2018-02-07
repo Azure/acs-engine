@@ -192,7 +192,7 @@ func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte,
 			return nil, e
 		}
 		// verify orchestrator version
-		if !common.AllKubernetesSupportedVersions[managedCluster.Properties.KubernetesVersion] {
+		if len(managedCluster.Properties.KubernetesVersion) > 0 && !common.AllKubernetesSupportedVersions[managedCluster.Properties.KubernetesVersion] {
 			return nil, a.Translator.Errorf("The selected orchestrator version '%s' is not supported", managedCluster.Properties.KubernetesVersion)
 		}
 		if e := managedCluster.Properties.Validate(); validate && e != nil {
