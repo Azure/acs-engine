@@ -652,6 +652,11 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "etcdDownloadURLBase", cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase)
 		addValue(parametersMap, "etcdVersion", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion)
 		addValue(parametersMap, "etcdDiskSizeGB", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB)
+		totalNodes := cs.Properties.MasterProfile.Count
+		for _, pool := range cs.Properties.AgentPoolProfiles {
+			totalNodes = totalNodes + pool.Count
+		}
+		addValue(parametersMap, "totalNodes", totalNodes)
 
 		if properties.OrchestratorProfile.KubernetesConfig == nil ||
 			!properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity {
