@@ -37,7 +37,7 @@ func (e *DeploymentError) Error() string {
 // DeployTemplateSync deploys the template and returns ArmError
 func DeployTemplateSync(az ACSEngineClient, logger *logrus.Entry, resourceGroupName, deploymentName string, template map[string]interface{}, parameters map[string]interface{}) error {
 	deploymentExtended, err := az.DeployTemplate(resourceGroupName, deploymentName, template, parameters, nil)
-	if err == nil && deploymentExtended == nil {
+	if err == nil {
 		return nil
 	}
 
