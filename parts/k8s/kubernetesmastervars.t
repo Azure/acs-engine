@@ -5,13 +5,46 @@
     "apiServerCertificate": "[parameters('apiServerCertificate')]",
 {{ if not IsHostedMaster }}
     "apiServerPrivateKey": "[parameters('apiServerPrivateKey')]",
-{{end}}
     "etcdServerCertificate": "[parameters('etcdServerCertificate')]",
     "etcdServerPrivateKey": "[parameters('etcdServerPrivateKey')]",
     "etcdClientPrivateKey": "[parameters('etcdClientPrivateKey')]",
     "etcdClientCertificate": "[parameters('etcdClientCertificate')]",
-    "etcdPeerPrivateKeys": "[parameters('etcdPeerPrivateKeys')]",
-    "etcdPeerCertificates": "[parameters('etcdPeerCertificates')]",
+    {{if eq .MasterProfile.Count 1}}
+    "etcdPeerPrivateKeys": [
+        "[parameters('etcdPeerPrivateKey0')]"
+    ],
+    "etcdPeerCertificates": [
+        "[parameters('etcdPeerCertificate0')]"
+    ],
+    {{end}}
+    {{if eq .MasterProfile.Count 3}}
+    "etcdPeerPrivateKeys": [
+        "[parameters('etcdPeerPrivateKey0')]",
+        "[parameters('etcdPeerPrivateKey1')]",
+        "[parameters('etcdPeerPrivateKey2')]"
+    ],
+    "etcdPeerCertificates": [
+        "[parameters('etcdPeerCertificate0')]",
+        "[parameters('etcdPeerCertificate1')]",
+        "[parameters('etcdPeerCertificate2')]"
+    ],
+    {{end}}
+    {{if eq .MasterProfile.Count 5}}
+    "etcdPeerPrivateKeys": [
+        "[parameters('etcdPeerPrivateKey0')]",
+        "[parameters('etcdPeerPrivateKey1')]",
+        "[parameters('etcdPeerPrivateKey2')]",
+        "[parameters('etcdPeerPrivateKey3')]",
+        "[parameters('etcdPeerPrivateKey4')]"
+    ],
+    "etcdPeerCertificates": [
+        "[parameters('etcdPeerCertificate0')]",
+        "[parameters('etcdPeerCertificate1')]",
+        "[parameters('etcdPeerCertificate2')]",
+        "[parameters('etcdPeerCertificate3')]",
+        "[parameters('etcdPeerCertificate4')]"
+    ],
+    {{end}}
     "etcdPeerCertFilepath":[
         "/etc/kubernetes/certs/etcdpeer0.crt",
         "/etc/kubernetes/certs/etcdpeer1.crt",
@@ -31,6 +64,7 @@
     "etcdClientKeyFilepath": "/etc/kubernetes/certs/etcdclient.key",
     "etcdServerCertFilepath": "/etc/kubernetes/certs/etcdserver.crt",
     "etcdServerKeyFilepath": "/etc/kubernetes/certs/etcdserver.key",
+{{end}}
     "caCertificate": "[parameters('caCertificate')]",
     "caPrivateKey": "[parameters('caPrivateKey')]",
     "clientCertificate": "[parameters('clientCertificate')]",

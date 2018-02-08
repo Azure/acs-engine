@@ -14,18 +14,14 @@
       "type": "string"
     },
 {{end}}
-    "apiServerCertificate": {
+{{if IsHostedMaster}}
+    "kubernetesEndpoint": {
       "metadata": {
-        "description": "The base 64 server certificate used on the master"
+        "description": "The Kubernetes API endpoint https://<kubernetesEndpoint>:443"
       },
       "type": "string"
     },
-    "apiServerPrivateKey": {
-      "metadata": {
-        "description": "The base 64 server private key used on the master."
-      },
-      "type": "securestring"
-    },
+{{else}}
     "etcdServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"
@@ -50,17 +46,82 @@
       }, 
       "type": "securestring"
     },
-    "etcdPeerCertificates": {
+    "etcdPeerCertificate0": {
       "metadata": {
         "description": "The base 64 server certificates used on the master"
       }, 
-      "type": "array"
-    }, 
-    "etcdPeerPrivateKeys": {
+      "type": "string"
+    },
+    "etcdPeerPrivateKey0": {
       "metadata": {
         "description": "The base 64 server private keys used on the master."
       }, 
-      "type": "array"
+      "type": "securestring"
+    },
+    {{if ge .MasterProfile.Count 3}}
+      "etcdPeerCertificate1": {
+        "metadata": {
+          "description": "The base 64 server certificates used on the master"
+        }, 
+        "type": "string"
+      }, 
+      "etcdPeerCertificate2": {
+        "metadata": {
+          "description": "The base 64 server certificates used on the master"
+        }, 
+        "type": "string"
+      },
+      "etcdPeerPrivateKey1": {
+        "metadata": {
+          "description": "The base 64 server private keys used on the master."
+        }, 
+        "type": "securestring"
+      },
+      "etcdPeerPrivateKey2": {
+        "metadata": {
+          "description": "The base 64 server private keys used on the master."
+        }, 
+        "type": "securestring"
+      },
+      {{if ge .MasterProfile.Count 5}}
+        "etcdPeerCertificate3": {
+          "metadata": {
+            "description": "The base 64 server certificates used on the master"
+          }, 
+          "type": "string"
+        }, 
+        "etcdPeerCertificate4": {
+          "metadata": {
+            "description": "The base 64 server certificates used on the master"
+          }, 
+          "type": "string"
+        },
+        "etcdPeerPrivateKey3": {
+          "metadata": {
+            "description": "The base 64 server private keys used on the master."
+          }, 
+          "type": "securestring"
+        },
+        "etcdPeerPrivateKey4": {
+          "metadata": {
+            "description": "The base 64 server private keys used on the master."
+          }, 
+          "type": "securestring"
+        },
+      {{end}}
+    {{end}}
+{{end}}
+    "apiServerCertificate": {
+      "metadata": {
+        "description": "The base 64 server certificate used on the master"
+      },
+      "type": "string"
+    },
+    "apiServerPrivateKey": {
+      "metadata": {
+        "description": "The base 64 server private key used on the master."
+      },
+      "type": "securestring"
     },
     "caCertificate": {
       "metadata": {
@@ -75,14 +136,6 @@
       },
       "type": "securestring"
     },
-{{if IsHostedMaster}}
-    "kubernetesEndpoint": {
-      "metadata": {
-        "description": "The Kubernetes API endpoint https://<kubernetesEndpoint>:443"
-      },
-      "type": "string"
-    },
-{{end}}
     "clientCertificate": {
       "metadata": {
         "description": "The base 64 client certificate used to communicate with the master"
