@@ -22,12 +22,6 @@
       "type": "string"
     },
 {{else}}
-    "apiServerPrivateKey": {
-      "metadata": {
-        "description": "The base 64 server private key used on the master."
-      },
-      "type": "securestring"
-    },
     "etcdServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"
@@ -122,6 +116,12 @@
         "description": "The base 64 server certificate used on the master"
       },
       "type": "string"
+    },
+    "apiServerPrivateKey": {
+      "metadata": {
+        "description": "The base 64 server private key used on the master."
+      },
+      "type": "securestring"
     },
     "caCertificate": {
       "metadata": {
