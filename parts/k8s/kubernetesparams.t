@@ -22,12 +22,6 @@
       "type": "string"
     },
 {{else}}
-    "apiServerCertificate": {
-      "metadata": {
-        "description": "The base 64 server certificate used on the master"
-      },
-      "type": "string"
-    },
     "apiServerPrivateKey": {
       "metadata": {
         "description": "The base 64 server private key used on the master."
@@ -123,6 +117,12 @@
       {{end}}
     {{end}}
 {{end}}
+    "apiServerCertificate": {
+      "metadata": {
+        "description": "The base 64 server certificate used on the master"
+      },
+      "type": "string"
+    },
     "caCertificate": {
       "metadata": {
         "description": "The base 64 certificate authority certificate"

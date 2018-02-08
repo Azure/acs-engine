@@ -114,6 +114,12 @@ var swarmModeTemplateFiles = []string{swarmBaseFile, swarmParams, swarmAgentReso
  - kubeConfigCertificate
  - kubeConfigPrivateKey
  - servicePrincipalClientSecret
+ - etcdClientCertificate
+ - etcdClientPrivateKey
+ - etcdServerCertificate
+ - etcdServerPrivateKey
+ - etcdPeerCertificates
+ - etcdPeerPrivateKeys
 
  To refer to a keyvault secret, the value of the parameter in the api model file should be formatted as:
 
