@@ -1671,7 +1671,7 @@ func getPackageGUID(orchestratorType string, orchestratorVersion string, masterC
 func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 
 	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
-	dv 								:= "384.111"
+	dv := "384.111"
 	dest := "/usr/local/nvidia"
 
 	/*
@@ -1686,18 +1686,18 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - cd %s`, dest, dest)
 
 	/*
-	Download the .run file from NVIDIA.
-	Nvidia libraries are always install in /usr/lib/x86_64-linux-gnu, and there is no option in the run file to change this. 
-	Instead we use Overlayfs to move the newly installed libraries under /usr/local/nvidia/lib64
+		Download the .run file from NVIDIA.
+		Nvidia libraries are always install in /usr/lib/x86_64-linux-gnu, and there is no option in the run file to change this.
+		Instead we use Overlayfs to move the newly installed libraries under /usr/local/nvidia/lib64
 	*/
-  installScript += fmt.Sprintf(`
+	installScript += fmt.Sprintf(`
 - curl -fLS https://us.download.nvidia.com/tesla/%s/NVIDIA-Linux-x86_64-%s.run -o nvidia-drivers-%s
 - mkdir -p lib64 overlay-workdir
 - sudo mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=lib64,workdir=overlay-workdir none /usr/lib/x86_64-linux-gnu`, dv, dv, dv)
 
 	/*
-	Install the drivers and update /etc/ld.so.conf.d/nvidia.conf which will make the libraries discoverable through $LD_LIBRARY_PATH.
-	Run nvidia-smi to test the installation, unmount overlayfs and restard kubelet (GPUs are only discovered when kubelet starts)
+		Install the drivers and update /etc/ld.so.conf.d/nvidia.conf which will make the libraries discoverable through $LD_LIBRARY_PATH.
+		Run nvidia-smi to test the installation, unmount overlayfs and restard kubelet (GPUs are only discovered when kubelet starts)
 	*/
 	installScript += fmt.Sprintf(`
 - sudo sh nvidia-drivers-%s --silent --accept-license --no-drm --utility-prefix="%s" --opengl-prefix="%s"
