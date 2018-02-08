@@ -508,15 +508,17 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addSecret(parametersMap, "clientPrivateKey", properties.CertificateProfile.ClientPrivateKey, true)
 			addSecret(parametersMap, "kubeConfigCertificate", properties.CertificateProfile.KubeConfigCertificate, true)
 			addSecret(parametersMap, "kubeConfigPrivateKey", properties.CertificateProfile.KubeConfigPrivateKey, true)
-			addSecret(parametersMap, "etcdServerCertificate", properties.CertificateProfile.EtcdServerCertificate, true)
-			addSecret(parametersMap, "etcdServerPrivateKey", properties.CertificateProfile.EtcdServerPrivateKey, true)
-			addSecret(parametersMap, "etcdClientCertificate", properties.CertificateProfile.EtcdClientCertificate, true)
-			addSecret(parametersMap, "etcdClientPrivateKey", properties.CertificateProfile.EtcdClientPrivateKey, true)
-			for i, pc := range properties.CertificateProfile.EtcdPeerCertificates {
-				addSecret(parametersMap, "etcdPeerCertificate"+strconv.Itoa(i), pc, true)
-			}
-			for i, pk := range properties.CertificateProfile.EtcdPeerPrivateKeys {
-				addSecret(parametersMap, "etcdPeerPrivateKey"+strconv.Itoa(i), pk, true)
+			if properties.MasterProfile != nil {
+				addSecret(parametersMap, "etcdServerCertificate", properties.CertificateProfile.EtcdServerCertificate, true)
+				addSecret(parametersMap, "etcdServerPrivateKey", properties.CertificateProfile.EtcdServerPrivateKey, true)
+				addSecret(parametersMap, "etcdClientCertificate", properties.CertificateProfile.EtcdClientCertificate, true)
+				addSecret(parametersMap, "etcdClientPrivateKey", properties.CertificateProfile.EtcdClientPrivateKey, true)
+				for i, pc := range properties.CertificateProfile.EtcdPeerCertificates {
+					addSecret(parametersMap, "etcdPeerCertificate"+strconv.Itoa(i), pc, true)
+				}
+				for i, pk := range properties.CertificateProfile.EtcdPeerPrivateKeys {
+					addSecret(parametersMap, "etcdPeerPrivateKey"+strconv.Itoa(i), pk, true)
+				}
 			}
 		}
 
