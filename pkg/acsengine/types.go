@@ -47,6 +47,7 @@ type KubernetesSpecConfig struct {
 	ACIConnectorImageBase            string
 	EtcdDownloadURLBase              string
 	KubeBinariesSASURLBase           string
+	WindowsPackageSASURLBase         string
 	WindowsTelemetryGUID             string
 	CNIPluginsDownloadURL            string
 	VnetCNILinuxPluginsDownloadURL   string

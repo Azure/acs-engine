@@ -11,6 +11,13 @@
         },
         "type": "string"
       },
+      "windowsPackageSASURLBase": {
+        {{PopulateClassicModeDefaultValue "windowsPackageSASURLBase"}}
+        "metadata": {
+          "description": "The download url base for windows packages for kubernetes."
+        },
+        "type": "string"
+      },
       "kubeBinariesVersion": {
         {{PopulateClassicModeDefaultValue "kubeBinariesVersion"}}
         "metadata": {
