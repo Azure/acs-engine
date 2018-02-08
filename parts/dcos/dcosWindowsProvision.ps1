@@ -37,7 +37,11 @@ param(
 
     [string]
     [AllowNull()]
-    $customAttrs = ""
+    $customAttrs = "",
+
+    [string]
+    [AllowNull()]
+    $preprovisionExtensionParams = ""
 )
 
 
@@ -139,7 +143,7 @@ try
     # the output.
     Write-Log "Get the install script"
 
-    Write-Log ("Parameters = isAgent = ["+ $isAgent + "] mastercount = ["+$MasterCount + "] First master ip= [" + $firstMasterIp+ "] boostrap URI = ["+ $bootstrapUri+"] Subnet = ["+ $subnet +"]" + " -customAttrs " + $customAttrs )
+    Write-Log ("Parameters = isAgent = ["+ $isAgent + "] mastercount = ["+$MasterCount + "] First master ip= [" + $firstMasterIp+ "] boostrap URI = ["+ $bootstrapUri+"] Subnet = ["+ $subnet +"]" + " -customAttrs " + $customAttrs + " -preprovisionExtensionParms = "+ $preprovisionExtensionParams )
 
     # Get the boostrap script
 
@@ -201,6 +205,8 @@ try
         Write-Log "run setup script $run_cmd"
         Invoke-Expression $run_cmd
     }
+
+    PREPROVISION_EXTENSION
 }
 catch
 {

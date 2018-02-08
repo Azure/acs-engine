@@ -1015,11 +1015,32 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return fmt.Sprintf("\"customData\": \"[base64(concat('#cloud-config\\n\\n', '%s'))]\",", str)
 		},
 		"GetDCOSWindowsAgentCustomData": func(profile *api.AgentPoolProfile) string {
-			str := getBase64CustomScript(dcosWindowsProvision)
+			agentPreprovisionExtension := ""
+			if profile.PreprovisionExtension != nil {
+				agentPreprovisionExtension += "\n"
+				agentPreprovisionExtension += makeAgentExtensionScriptCommands(cs, profile)
+			}
+			b, err := Asset(dcosWindowsProvision)
+			if err != nil {
+				// this should never happen and this is a bug
+				panic(fmt.Sprintf("BUG: %s", err.Error()))
+			}
+			// translate the parameters
+			csStr := string(b)
+			csStr = strings.Replace(csStr, "PREPROVISION_EXTENSION", agentPreprovisionExtension, -1)
+			csStr = strings.Replace(csStr, "\r\n", "\n", -1)
+			str := getBase64CustomScriptFromStr(csStr)
 			return fmt.Sprintf("\"customData\": \"%s\"", str)
 		},
 		"GetDCOSWindowsAgentCustomNodeAttributes": func(profile *api.AgentPoolProfile) string {
 			return getDCOSWindowsAgentCustomAttributes(profile)
+		},
+		"GetDCOSWindowsAgentPreprovisionParameters": func(profile *api.AgentPoolProfile) string {
+			agentPreprovisionExtensionParameters := ""
+			if profile.PreprovisionExtension != nil {
+				agentPreprovisionExtensionParameters = getDCOSWindowsAgentPreprovisionParameters(cs, profile)
+			}
+			return agentPreprovisionExtensionParameters
 		},
 		"GetMasterAllowedSizes": func() string {
 			if t.ClassicMode {
@@ -1603,6 +1624,10 @@ func makeAgentExtensionScriptCommands(cs *api.ContainerService, profile *api.Age
 	if profile.IsAvailabilitySets() {
 		copyIndex = fmt.Sprintf("',copyIndex(variables('%sOffset')),'", profile.Name)
 	}
+	if profile.OSType == api.Windows {
+		return makeWindowsExtensionScriptCommands(profile.PreprovisionExtension,
+			cs.Properties.ExtensionProfiles, copyIndex)
+	}
 	return makeExtensionScriptCommands(profile.PreprovisionExtension,
 		cs.Properties.ExtensionProfiles, copyIndex)
 }
@@ -1625,6 +1650,42 @@ func makeExtensionScriptCommands(extension *api.Extension, extensionProfiles []*
 	scriptFilePath := fmt.Sprintf("/opt/azure/containers/extensions/%s/%s", extensionProfile.Name, extensionProfile.Script)
 	return fmt.Sprintf("- sudo /usr/bin/curl --retry 5 --retry-delay 10 --retry-max-time 30 -o %s --create-dirs \"%s\" \n- sudo /bin/chmod 744 %s \n- sudo %s ',%s,' > /var/log/%s-output.log",
 		scriptFilePath, scriptURL, scriptFilePath, scriptFilePath, extensionsParameterReference, extensionProfile.Name)
+}
+
+func makeWindowsExtensionScriptCommands(extension *api.Extension, extensionProfiles []*api.ExtensionProfile, copyIndex string) string {
+	var extensionProfile *api.ExtensionProfile
+	for _, eP := range extensionProfiles {
+		if strings.EqualFold(eP.Name, extension.Name) {
+			extensionProfile = eP
+			break
+		}
+	}
+
+	if extensionProfile == nil {
+		panic(fmt.Sprintf("%s extension referenced was not found in the extension profile", extension.Name))
+	}
+
+	scriptURL := getExtensionURL(extensionProfile.RootURL, extensionProfile.Name, extensionProfile.Version, extensionProfile.Script, extensionProfile.URLQuery)
+	scriptFileDir := fmt.Sprintf("$env:SystemDrive:/AzureData/extensions/%s", extensionProfile.Name)
+	scriptFilePath := fmt.Sprintf("%s/%s", scriptFileDir, extensionProfile.Script)
+	return fmt.Sprintf("New-Item -ItemType Directory -Force -Path \"%s\" ; Invoke-WebRequest -Uri \"%s\" -OutFile \"%s\" ; powershell \"%s %s\"\n", scriptFileDir, scriptURL, scriptFilePath, scriptFilePath, "$preprovisionExtensionParams")
+}
+
+func getDCOSWindowsAgentPreprovisionParameters(cs *api.ContainerService, profile *api.AgentPoolProfile) string {
+	extension := profile.PreprovisionExtension
+	parms := ""
+
+	var extensionProfile *api.ExtensionProfile
+
+	for _, eP := range cs.Properties.ExtensionProfiles {
+		if strings.EqualFold(eP.Name, extension.Name) {
+			extensionProfile = eP
+			break
+		}
+	}
+
+	parms = extensionProfile.ExtensionParameters
+	return parms
 }
 
 func getPackageGUID(orchestratorType string, orchestratorVersion string, masterCount int) string {
