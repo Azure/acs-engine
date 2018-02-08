@@ -8,7 +8,7 @@ The Azure Container Service Engine (`acs-engine`) generates ARM (Azure Resource 
 
 Binary downloads for the latest version of acs-engine for are available [here](https://github.com/Azure/acs-engine/releases/latest). Download `acs-engine` for your operating system. Extract the binary and copy it to your `$PATH`.
 
-If would prefer to build `acs-engine` from source or are you are interested in contributing to `acs-engine` see [building from source](#build-acs-engine-from-source) below.
+If you would prefer to build `acs-engine` from source or you are interested in contributing to `acs-engine` see [building from source](#build-acs-engine-from-source) below.
 
 ## Usage
 
