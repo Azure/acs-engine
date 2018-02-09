@@ -61,6 +61,7 @@ $global:RouteTableName = "{{WrapAsVariable "routeTableName"}}"
 $global:PrimaryAvailabilitySetName = "{{WrapAsVariable "primaryAvailabilitySetName"}}"
 $global:KubeClusterCIDR = "{{WrapAsVariable "kubeClusterCidr"}}"
 $global:KubeServiceCIDR = "{{WrapAsVariable "kubeServiceCidr"}}"
+$global:KubeNetwork = "l2bridge"
 
 $global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
 $global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
@@ -277,6 +278,8 @@ c:\k\kubelet.exe --hostname-override=`$global:AzureHostname --pod-infra-containe
 "@
 
     if ($global:NetworkPolicy -eq "azure") {
+        $global:KubeNetwork = "azure"
+        $global:NetworkMode = "L2Tunnel"
         $kubeStartStr += @"
 Write-Host "NetworkPolicy azure, starting kubelet."
 $KubeletCommandLine
@@ -420,13 +423,13 @@ catch
     $kubeStartStr | Out-File -encoding ASCII -filepath $global:KubeletStartFile
 
     $kubeProxyStartStr = @"
-`$env:KUBE_NETWORK = "l2bridge"
-`$global:NetworkMode = "L2Bridge"
-`$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:NetworkMode.ToLower()
+`$env:KUBE_NETWORK = "$global:KubeNetwork"
+`$global:NetworkMode = "$global:NetworkMode"
+`$hnsNetwork = Get-HnsNetwork | ? Type -EQ `$global:NetworkMode.ToLower()
 while (!`$hnsNetwork)
 {
     Start-Sleep 10
-    `$hnsNetwork = Get-HnsNetwork | ? Name -EQ `$global:NetworkMode.ToLower()
+    `$hnsNetwork = Get-HnsNetwork | ? Type -EQ `$global:NetworkMode.ToLower()
 }
 
 c:\k\kube-proxy.exe --v=3 --proxy-mode=kernelspace --hostname-override=$AzureHostname --kubeconfig=c:\k\config
