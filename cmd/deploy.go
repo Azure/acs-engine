@@ -154,15 +154,13 @@ func autofillApimodel(dc *deployCmd) {
 		if dc.dnsPrefix == "" {
 			log.Fatalf("apimodel: missing masterProfile.dnsPrefix and --dns-prefix was not specified")
 		}
+		log.Warnf("apimodel: missing masterProfile.dnsPrefix will use %q", dc.dnsPrefix)
+		dc.containerService.Properties.MasterProfile.DNSPrefix = dc.dnsPrefix
+	}
 
-		dnsPrefix := dc.dnsPrefix
-		if dc.autoSuffix {
-			suffix := strconv.FormatInt(time.Now().Unix(), 16)
-			dnsPrefix = dnsPrefix + "-" + suffix
-		}
-
-		log.Warnf("apimodel: missing masterProfile.dnsPrefix will use %q", dnsPrefix)
-		dc.containerService.Properties.MasterProfile.DNSPrefix = dnsPrefix
+	if dc.autoSuffix {
+		suffix := strconv.FormatInt(time.Now().Unix(), 16)
+		dc.containerService.Properties.MasterProfile.DNSPrefix += "-" + suffix
 	}
 
 	if dc.outputDirectory == "" {
