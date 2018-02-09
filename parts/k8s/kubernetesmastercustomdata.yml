@@ -360,7 +360,7 @@ runcmd:
 - MEMBER="$(sudo etcdctl member list | grep -E {{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}} | cut -d{{WrapAsVariable "singleQuote"}}:{{WrapAsVariable "singleQuote"}} -f 1)"
 - sudo etcdctl member update ${MEMBER} {{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}
 - retrycmd_if_failure 5 5 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 30 --max-time 60 "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"/v2/machines
-- retrycmd_if_success 10 1 apt-get update 2>&1 | grep '^[WE]:'
+- retrycmd_if_success 10 1 apt-get update 2>&1 | grep -x '[WE]:.*'
 - retrycmd_if_failure 5 10 apt-get install -y apt-transport-https ca-certificates
 - retrycmd_if_failure 60 1 nc -zw1 aptdocker.azureedge.net 443
 - retrycmd_if_failure_no_stats 180 1 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg
