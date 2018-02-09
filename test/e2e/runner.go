@@ -124,7 +124,7 @@ func trap() {
 func teardown() {
 	pt.RecordTotalTime()
 	pt.Write()
-	if cliProvisioner.Config.IsKubernetes() {
+	if cliProvisioner.Config.IsKubernetes() && cfg.SoakClusterName == "" {
 		hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location)
 		logsPath := filepath.Join(cfg.CurrentWorkingDir, "_logs", hostname)
 		err := os.MkdirAll(logsPath, 0755)
