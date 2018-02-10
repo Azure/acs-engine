@@ -53,14 +53,14 @@ const (
 )
 
 const (
-	// KubernetesVersion1Dot9Dot3 is the major.minor.patch string for the 1.9.3 version of kubernetes
-	KubernetesVersion1Dot9Dot3 string = "1.9.3"
-	// KubernetesVersion1Dot9Dot2 is the major.minor.patch string for the 1.9.2 version of kubernetes
-	KubernetesVersion1Dot9Dot2 string = "1.9.2"
-	// KubernetesVersion1Dot9Dot1 is the major.minor.patch string for the 1.9.1 version of kubernetes
-	KubernetesVersion1Dot9Dot1 string = "1.9.1"
 	// KubernetesVersion1Dot9Dot0 is the major.minor.patch string for the 1.9.0 version of kubernetes
 	KubernetesVersion1Dot9Dot0 string = "1.9.0"
+	// KubernetesVersion1Dot9Dot1 is the major.minor.patch string for the 1.9.1 version of kubernetes
+	KubernetesVersion1Dot9Dot1 string = "1.9.1"
+	// KubernetesVersion1Dot9Dot2 is the major.minor.patch string for the 1.9.2 version of kubernetes
+	KubernetesVersion1Dot9Dot2 string = "1.9.2"
+	// KubernetesVersion1Dot9Dot3 is the major.minor.patch string for the 1.9.3 version of kubernetes
+	KubernetesVersion1Dot9Dot3 string = "1.9.3"
 	// KubernetesVersion1Dot8Dot0 is the major.minor.patch string for the 1.8.0 version of kubernetes
 	KubernetesVersion1Dot8Dot0 string = "1.8.0"
 	// KubernetesVersion1Dot8Dot1 is the major.minor.patch string for the 1.8.1 version of kubernetes
