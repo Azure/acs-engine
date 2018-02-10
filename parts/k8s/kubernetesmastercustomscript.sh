@@ -82,12 +82,9 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
     
     useradd -U "etcd"
+    usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
+    passwd -u "etcd"
     id "etcd"
-    if [[ $? -eq 1 ]]; then 
-        echo "failed to add user etcd"
-    else
-        echo "etcd user exists"
-    fi
     
     echo `date`,`hostname`, beginGettingEtcdCerts>>/opt/m
     APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
