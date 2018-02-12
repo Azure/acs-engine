@@ -16,7 +16,8 @@
         "name": "agentpool1",
         "count": 50,
         "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
+        "osType": "Linux",
+        "storageProfile": "ManagedDisks"
       }
     ],
     "linuxProfile": {
