@@ -61,7 +61,7 @@ const (
 	// DefaultKubernetesCtrlMgrTerminatedPodGcThreshold is set to 5000, see --terminated-pod-gc-threshold at https://kubernetes.io/docs/admin/kube-controller-manager/ and https://github.com/kubernetes/kubernetes/issues/22680
 	DefaultKubernetesCtrlMgrTerminatedPodGcThreshold = "5000"
 	// DefaultKubernetesCtrlMgrUseSvcAccountCreds is "true", see --use-service-account-credentials at https://kubernetes.io/docs/admin/kube-controller-manager/
-	DefaultKubernetesCtrlMgrUseSvcAccountCreds = "true"
+	DefaultKubernetesCtrlMgrUseSvcAccountCreds = "false"
 	// DefaultKubernetesCloudProviderBackoff is false to disable cloudprovider backoff implementation for API calls
 	DefaultKubernetesCloudProviderBackoff = false
 	// DefaultKubernetesCloudProviderBackoffRetries is 6, takes effect if DefaultKubernetesCloudProviderBackoff is true
