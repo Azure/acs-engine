@@ -143,7 +143,7 @@ install_helm() {
     mv linux-amd64/helm /usr/local/bin/helm
     echo $(date) " - Downloading prometheus values"
 
-    curl https://raw.githubusercontent.com/Azure/acs-engine/master/extensions/prometheus-grafana-k8s/v1/prometheus_values.yaml > prometheus_values.yaml 
+    curl "$1" > prometheus_values.yaml 
 
     sleep 10
 
@@ -172,6 +172,7 @@ install_prometheus() {
     while [[ $ITERATION -lt $ATTEMPTS ]]; do
         helm install -f prometheus_values.yaml \
             --name $PROM_RELEASE_NAME \
+            --version 5.1.3 \
             --namespace $NAMESPACE stable/prometheus $(storageclass_param)
 
         if [[ $? -eq 0 ]]; then
@@ -212,7 +213,10 @@ install_grafana() {
     NAMESPACE=$1
 
     echo $(date) " - Installing the Grafana Helm chart"
-    helm install --name $GF_RELEASE_NAME --namespace $NAMESPACE stable/grafana $(storageclass_param)
+    helm install \
+        --name $GF_RELEASE_NAME \
+        --version 0.6.2 \
+        --namespace $NAMESPACE stable/grafana $(storageclass_param)
 
     GF_POD_PREFIX="$GF_RELEASE_NAME-grafana"
     DESIRED_POD_STATE=Running
@@ -251,6 +255,22 @@ ensure_k8s_namespace_exists() {
     fi
 }
 
+NAMESPACE=default
+RAW_PROMETHEUS_CHART_VALS="https://raw.githubusercontent.com/Azure/acs-engine/master/extensions/prometheus-grafana-k8s/v1/prometheus_values.yaml"
+
+# retrieve and parse extension parameters
+if [[ -n "$1" ]]; then
+    IFS=';' read -ra INPUT <<< "$1"
+    if [[ -n "${INPUT[0]}" ]]; then
+        NAMESPACE="${INPUT[0]}"
+        echo "$(date) - Custom namespace specified: $NAMESPACE"
+    fi
+    if [[ -n "${INPUT[1]}" ]]; then
+        RAW_PROMETHEUS_CHART_VALS="${INPUT[1]}"
+        echo "$(date) - Custom prometheus chart values url specified: $RAW_PROMETHEUS_CHART_VALS"
+    fi
+fi
+
 # this extension should only run on a single node
 # the logic to decide whether or not this current node
 # should run the extension is to alphabetically determine
@@ -268,22 +288,15 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
+echo "$(date) - Dumping out sorted agent nodes"
+kubectl get no -L kubernetes.io/role -l kubernetes.io/role=agent --no-headers -o jsonpath="{.items[*].metadata.name}" | tr " " "\n" | sort
+
 should_this_node_run_extension
 if [[ $? -ne 0 ]]; then
     echo $(date) " - Not the first master node or the first agent node, no longer continuing extension. Exiting"
     exit 1
 fi
 
-# Deploy container
-
-# the user can pass a non-default namespace through
-# extensionParameters as a string. we need to create
-# this namespace if it doesn't already exist
-if [[ -n "$1" ]]; then
-    NAMESPACE=$1
-else
-    NAMESPACE=default
-fi
 ensure_k8s_namespace_exists $NAMESPACE
 
 K8S_SECRET_NAME=dashboard-grafana
@@ -292,7 +305,7 @@ DS_NAME=prometheus1
 
 PROM_URL=http://monitoring-prometheus-server
 
-install_helm
+install_helm "$RAW_PROMETHEUS_CHART_VALS"
 wait_for_tiller
 if [[ $? -ne 0 ]]; then
     echo $(date) " - Tiller did not respond in a timely manner. Exiting"
