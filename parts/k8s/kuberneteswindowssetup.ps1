@@ -45,6 +45,7 @@ $global:AgentCertificate = "{{WrapAsVariable "clientCertificate"}}"
 $global:DockerServiceName = "Docker"
 $global:KubeDir = "c:\k"
 $global:KubeBinariesSASURL = "{{WrapAsVariable "kubeBinariesSASURL"}}"
+$global:WindowsPackageSASURLBase = "{{WrapAsVariable "windowsPackageSASURLBase"}}"
 $global:KubeBinariesVersion = "{{WrapAsVariable "kubeBinariesVersion"}}"
 $global:WindowsTelemetryGUID = "{{WrapAsVariable "windowsTelemetryGUID"}}"
 $global:KubeletStartFile = $global:KubeDir + "\kubeletstart.ps1"
@@ -115,6 +116,43 @@ Get-KubeBinaries()
     $zipfile = "c:\k.zip"
     Invoke-WebRequest -Uri $global:KubeBinariesSASURL -OutFile $zipfile
     Expand-Archive -path $zipfile -DestinationPath C:\
+}
+
+function
+Install-Package($package)
+{
+    $pkgFile = [Io.path]::Combine($global:KubeDir, $package)
+    $url = $global:WindowsPackageSASURLBase + $package
+    Invoke-WebRequest -Uri $url -OutFile $pkgFile
+    & "$pkgFile" /q /norestart
+
+    $procName = [IO.Path]::GetFileNameWithoutExtension($package)
+    Wait-Process -Name $procName
+    Write-Log "$package installed"
+}
+
+function Update-WinCNI()
+{
+    $wincni = "wincni.exe"
+    $wincniFile = [Io.path]::Combine($global:CNIPath, $wincni)
+    $url = $global:WindowsPackageSASURLBase + $wincni
+    Invoke-WebRequest -Uri $url -OutFile $wincniFile
+
+    Write-Log "$wincni updated"
+}
+
+function
+Update-WindowsPackages()
+{
+    bcdedit /set TESTSIGNING on
+
+    $packages = @("Windows10.0-KB123456-x64-InstallForTestingPurposesOnly.exe", "Windows10.0-KB999999-x64-InstallForTestingPurposesOnly.exe")
+    foreach ($pkg in $packages)
+    {
+        Install-Package($pkg)
+    }
+
+    Update-WinCNI
 }
 
 function
@@ -452,7 +490,6 @@ New-NSSMService
     c:\k\nssm set Kubelet AppRotateOnline 1
     c:\k\nssm set Kubelet AppRotateSeconds 86400
     c:\k\nssm set Kubelet AppRotateBytes 1048576
-    net start Kubelet
 
     # setup kubeproxy
     c:\k\nssm install Kubeproxy C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
@@ -471,7 +508,6 @@ New-NSSMService
     c:\k\nssm set Kubeproxy AppRotateOnline 1
     c:\k\nssm set Kubeproxy AppRotateSeconds 86400
     c:\k\nssm set Kubeproxy AppRotateBytes 1048576
-    net start Kubeproxy
 }
 
 function
@@ -503,6 +539,10 @@ try
         Write-Log "download kubelet binaries and unzip"
         Get-KubeBinaries
 
+        # This is a workaround until Windows update
+        Write-Log "apply Windows patch packages"
+        Update-WindowsPackages
+
         Write-Log "Write azure config"
         Write-AzureConfig
 
@@ -524,7 +564,8 @@ try
         Write-Log "Set Internet Explorer"
         Set-Explorer
 
-        Write-Log "Setup Complete"
+        Write-Log "Setup Complete, reboot computer"
+        Restart-Computer
     }
     else
     {
