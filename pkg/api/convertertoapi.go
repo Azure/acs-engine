@@ -366,8 +366,7 @@ func convertVLabsProperties(vlabs *vlabs.Properties, api *Properties) {
 		apiProfile := &AgentPoolProfile{}
 		convertVLabsAgentPoolProfile(p, apiProfile)
 		// by default vlabs will use managed disks for all orchestrators but kubernetes as it has encryption at rest.
-		if !api.OrchestratorProfile.IsKubernetes() {
-			// by default vlabs will use managed disks for all orchestrators but kubernetes as it has encryption at rest.
+		if !api.OrchestratorProfile.IsKubernetes() && !api.OrchestratorProfile.IsOpenShift() {
 			if len(p.StorageProfile) == 0 {
 				apiProfile.StorageProfile = ManagedDisks
 			}
@@ -560,6 +559,22 @@ func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProf
 	vlabscs := vp.OrchestratorProfile
 	api.OrchestratorType = vlabscs.OrchestratorType
 	switch api.OrchestratorType {
+	case OpenShift:
+		if vlabscs.OpenShiftConfig != nil {
+			api.OpenShiftConfig = &OpenShiftConfig{}
+			convertVLabsOpenShiftConfig(vlabscs.OpenShiftConfig, api.OpenShiftConfig)
+		}
+		// Set api.KubernetesConfig to api.OpenShiftConfig.KubernetesConfig so
+		// acs-engine can reuse the same code used for generating parameters from
+		// KubernetesConfig for OpenShiftConfig.
+		if api.OpenShiftConfig != nil && api.OpenShiftConfig.KubernetesConfig != nil {
+			api.KubernetesConfig = api.OpenShiftConfig.KubernetesConfig
+		}
+		api.OrchestratorVersion = common.RationalizeReleaseAndVersion(
+			vlabscs.OrchestratorType,
+			vlabscs.OrchestratorRelease,
+			vlabscs.OrchestratorVersion,
+			false)
 	case Kubernetes:
 		if vlabscs.KubernetesConfig != nil {
 			api.KubernetesConfig = &KubernetesConfig{}
@@ -602,6 +617,16 @@ func convertVLabsDcosConfig(vlabs *vlabs.DcosConfig, api *DcosConfig) {
 	api.DcosRepositoryURL = vlabs.DcosRepositoryURL
 	api.DcosClusterPackageListID = vlabs.DcosClusterPackageListID
 	api.DcosProviderPackageID = vlabs.DcosProviderPackageID
+}
+
+func convertVLabsOpenShiftConfig(vlabs *vlabs.OpenShiftConfig, api *OpenShiftConfig) {
+	// NOTE: This is a hack to avoid breaking the rest of the acs-engine
+	// code when KubernetesConfig is accessed for various things. We don't
+	// use anything from it today. Maybe do something cleaner here.
+	api.KubernetesConfig = &KubernetesConfig{}
+	if vlabs.KubernetesConfig != nil {
+		convertVLabsKubernetesConfig(vlabs.KubernetesConfig, api.KubernetesConfig)
+	}
 }
 
 func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *KubernetesConfig) {
@@ -933,6 +958,7 @@ func convertVLabsAgentPoolProfile(vlabs *vlabs.AgentPoolProfile, api *AgentPoolP
 		api.ImageRef.Name = vlabs.ImageRef.Name
 		api.ImageRef.ResourceGroup = vlabs.ImageRef.ResourceGroup
 	}
+	api.IsOpenShiftInfra = vlabs.IsOpenShiftInfra
 }
 
 func convertVLabsKeyVaultSecrets(vlabs *vlabs.KeyVaultSecrets, api *KeyVaultSecrets) {

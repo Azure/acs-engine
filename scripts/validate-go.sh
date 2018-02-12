@@ -42,6 +42,7 @@ gometalinter \
   --exclude pkg/i18n/i18n.go \
   --exclude pkg/i18n/translations.go \
   --exclude pkg/acsengine/templates.go \
+  --exclude pkg/certgen/templates/bindata.go \
   ./... || exit_code=1
 
 echo
@@ -56,6 +57,7 @@ gometalinter \
   --deadline 60s \
   --exclude pkg/i18n/translations.go \
   --exclude pkg/acsengine/templates.go \
+  --exclude pkg/certgen/templates/bindata.go \
   ./... || exit_code=1
 
 exit $exit_code

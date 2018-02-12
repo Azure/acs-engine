@@ -10,6 +10,8 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Azure/acs-engine/pkg/certgen"
+	"github.com/Azure/acs-engine/pkg/filesystem"
 	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/Masterminds/semver"
 )
@@ -276,7 +278,7 @@ func SetPropertiesDefaults(cs *api.ContainerService, isUpgrade bool) (bool, erro
 	setStorageDefaults(properties)
 	setExtensionDefaults(properties)
 
-	certsGenerated, e := setDefaultCerts(properties)
+	certsGenerated, e := setDefaultCerts(properties, cs.Location)
 	if e != nil {
 		return false, e
 	}
@@ -296,7 +298,9 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 	o.OrchestratorVersion = common.GetValidPatchVersion(
 		o.OrchestratorType,
 		o.OrchestratorVersion)
-	if o.OrchestratorType == api.Kubernetes {
+
+	switch o.OrchestratorType {
+	case api.Kubernetes:
 		k8sVersion := o.OrchestratorVersion
 
 		if o.KubernetesConfig == nil {
@@ -489,12 +493,24 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		// Configure scheduler
 		setSchedulerConfig(cs)
 
-	} else if o.OrchestratorType == api.DCOS {
+	case api.DCOS:
 		if o.DcosConfig == nil {
 			o.DcosConfig = &api.DcosConfig{}
 		}
 		if o.DcosConfig.DcosWindowsBootstrapURL == "" {
 			o.DcosConfig.DcosWindowsBootstrapURL = DefaultDCOSSpecConfig.DCOSWindowsBootstrapDownloadURL
+		}
+	case api.OpenShift:
+		a.MasterProfile.Distro = api.RHEL
+		kc := a.OrchestratorProfile.OpenShiftConfig.KubernetesConfig
+		if kc == nil {
+			kc = &api.KubernetesConfig{}
+		}
+		if kc.ContainerRuntime == "" {
+			kc.ContainerRuntime = DefaultContainerRuntime
+		}
+		if kc.NetworkPolicy == "" {
+			kc.NetworkPolicy = DefaultNetworkPolicy
 		}
 	}
 }
@@ -545,6 +561,11 @@ func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 					a.MasterProfile.FirstConsecutiveStaticIP = DefaultFirstConsecutiveKubernetesStaticIP
 				}
 			}
+		} else if a.OrchestratorProfile.OrchestratorType == api.OpenShift {
+			a.MasterProfile.Subnet = DefaultOpenShiftMasterSubnet
+			if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
+				a.MasterProfile.FirstConsecutiveStaticIP = DefaultOpenShiftFirstConsecutiveStaticIP
+			}
 		} else if a.HasWindows() {
 			a.MasterProfile.Subnet = DefaultSwarmWindowsMasterSubnet
 			// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
@@ -585,7 +606,8 @@ func setAgentNetworkDefaults(a *api.Properties) {
 	if a.MasterProfile != nil && !a.MasterProfile.IsCustomVNET() {
 		subnetCounter := 0
 		for _, profile := range a.AgentPoolProfiles {
-			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
+			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes ||
+				a.OrchestratorProfile.OrchestratorType == api.OpenShift {
 				profile.Subnet = a.MasterProfile.Subnet
 			} else {
 				profile.Subnet = fmt.Sprintf(DefaultAgentSubnetTemplate, subnetCounter)
@@ -636,7 +658,86 @@ func setStorageDefaults(a *api.Properties) {
 	}
 }
 
-func setDefaultCerts(a *api.Properties) (bool, error) {
+func openShiftSetDefaultCerts(a *api.Properties, location string) (bool, error) {
+	externalMasterHostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, location)
+	routerLBHostname := fmt.Sprintf("%s-router.%s.cloudapp.azure.com", a.MasterProfile.DNSPrefix, location)
+	c := certgen.Config{
+		Master: &certgen.Master{
+			Hostname: fmt.Sprintf("%s-master-%s-0", DefaultOpenshiftOrchestratorName, GenerateClusterID(a)),
+			IPs: []net.IP{
+				net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP),
+			},
+			Port: 8443,
+		},
+		ExternalMasterHostname: externalMasterHostname,
+	}
+	a.OrchestratorProfile.OpenShiftConfig.ExternalMasterHostname = externalMasterHostname
+	a.OrchestratorProfile.OpenShiftConfig.RouterLBHostname = routerLBHostname
+
+	err := c.PrepareMasterCerts()
+	if err != nil {
+		return false, err
+	}
+	err = c.PrepareMasterKubeConfigs()
+	if err != nil {
+		return false, err
+	}
+	err = c.PrepareMasterFiles()
+	if err != nil {
+		return false, err
+	}
+
+	err = c.PrepareBootstrapKubeConfig()
+	if err != nil {
+		return false, err
+	}
+
+	if a.OrchestratorProfile.OpenShiftConfig.ConfigBundles == nil {
+		a.OrchestratorProfile.OpenShiftConfig.ConfigBundles = make(map[string][]byte)
+	}
+
+	masterBundle, err := getConfigBundle(c.WriteMaster)
+	if err != nil {
+		return false, err
+	}
+	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["master"] = masterBundle
+
+	nodeBundle, err := getConfigBundle(c.WriteNode)
+	if err != nil {
+		return false, err
+	}
+	a.OrchestratorProfile.OpenShiftConfig.ConfigBundles["bootstrap"] = nodeBundle
+
+	return false, nil
+}
+
+type writeFn func(filesystem.Filesystem) error
+
+func getConfigBundle(write writeFn) ([]byte, error) {
+	b := &bytes.Buffer{}
+
+	fs, err := filesystem.NewTGZFile(b)
+	if err != nil {
+		return nil, err
+	}
+
+	err = write(fs)
+	if err != nil {
+		return nil, err
+	}
+
+	err = fs.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return b.Bytes(), nil
+}
+
+func setDefaultCerts(a *api.Properties, location string) (bool, error) {
+	if a.MasterProfile != nil && a.OrchestratorProfile.OrchestratorType == api.OpenShift {
+		return openShiftSetDefaultCerts(a, location)
+	}
 
 	if a.MasterProfile == nil || a.OrchestratorProfile.OrchestratorType != api.Kubernetes {
 		return false, nil

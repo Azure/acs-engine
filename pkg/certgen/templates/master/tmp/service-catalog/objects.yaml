@@ -1,0 +1,186 @@
+apiVersion: v1
+kind: Template
+objects:
+- apiVersion: extensions/v1beta1
+  kind: DaemonSet
+  metadata:
+    labels:
+      app: apiserver
+    name: apiserver
+    namespace: ${NAMESPACE}
+  spec:
+    selector:
+      matchLabels:
+        app: apiserver
+    updateStrategy:
+      rollingUpdate:
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        annotations:
+          ca_hash: ${CA_HASH}
+        labels:
+          app: apiserver
+      spec:
+        serviceAccountName: service-catalog-apiserver
+        nodeSelector:
+          openshift-infra: apiserver
+        containers:
+        - args:
+          - apiserver
+          - --storage-type
+          - etcd
+          - --secure-port
+          - "6443"
+          - --etcd-servers
+          - https://${ETCD_SERVER}:2379
+          - --etcd-cafile
+          - /etc/origin/master/master.etcd-ca.crt
+          - --etcd-certfile
+          - /etc/origin/master/master.etcd-client.crt
+          - --etcd-keyfile
+          - /etc/origin/master/master.etcd-client.key
+          - -v
+          - "10"
+          - --cors-allowed-origins
+          - localhost
+          - --admission-control
+          - KubernetesNamespaceLifecycle,DefaultServicePlan,ServiceBindingsLifecycle,ServicePlanChangeValidator,BrokerAuthSarCheck
+          - --feature-gates
+          - OriginatingIdentity=true
+          image: registry.reg-aws.openshift.com:443/openshift3/ose-service-catalog:v3.9.11
+          command: ["/usr/bin/service-catalog"]
+          imagePullPolicy: IfNotPresent
+          name: apiserver
+          ports:
+          - containerPort: 6443
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /var/run/kubernetes-service-catalog
+            name: apiserver-ssl
+            readOnly: true
+          - mountPath: /etc/origin/master
+            name: etcd-host-cert
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: apiserver-ssl
+          secret:
+            defaultMode: 420
+            secretName: apiserver-ssl
+            items:
+            - key: tls.crt
+              path: apiserver.crt
+            - key: tls.key
+              path: apiserver.key
+        - hostPath:
+            path: /etc/origin/master
+          name: etcd-host-cert
+        - emptyDir: {}
+          name: data-dir
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: apiserver
+    namespace: ${NAMESPACE}
+  spec:
+    ports:
+    - name: secure
+      port: 443
+      protocol: TCP
+      targetPort: 6443
+    selector:
+      app: apiserver
+    sessionAffinity: None
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: apiserver
+    namespace: ${NAMESPACE}
+  spec:
+    port:
+      targetPort: secure
+    tls:
+      termination: passthrough
+    to:
+      kind: Service
+      name: apiserver
+      weight: 100
+    wildcardPolicy: None
+- apiVersion: extensions/v1beta1
+  kind: DaemonSet
+  metadata:
+    labels:
+      app: controller-manager
+    name: controller-manager
+    namespace: ${NAMESPACE}
+  spec:
+    selector:
+      matchLabels:
+        app: controller-manager
+    updateStrategy:
+      rollingUpdate:
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          app: controller-manager
+      spec:
+        serviceAccountName: service-catalog-controller
+        nodeSelector:
+          openshift-infra: apiserver
+        containers:
+        - env:
+          - name: K8S_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          args:
+          - controller-manager
+          - --port
+          - "8080"
+          - -v
+          - "5"
+          - --leader-election-namespace
+          - kube-service-catalog
+          - --broker-relist-interval
+          - "5m"
+          - --feature-gates
+          - OriginatingIdentity=true
+          image: registry.reg-aws.openshift.com:443/openshift3/ose-service-catalog:v3.9.11
+          command: ["/usr/bin/service-catalog"]
+          imagePullPolicy: IfNotPresent
+          name: controller-manager
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /var/run/kubernetes-service-catalog
+            name: service-catalog-ssl
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: service-catalog-ssl
+          secret:
+            defaultMode: 420
+            items:
+            - key: tls.crt
+              path: apiserver.crt
+            secretName: apiserver-ssl
+parameters:
+- name: CA_HASH
+- name: ETCD_SERVER
+- name: NAMESPACE
+  value: kube-service-catalog

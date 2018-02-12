@@ -19,6 +19,7 @@ pkg/operations/junit.xml
 pkg/operations/kubernetesupgrade/junit.xml
 pkg/acsengine/templates.go
 pkg/i18n/translations.go
+pkg/certgen/templates/bindata.go
 
 _logs/
 test/acs-engine-test/report/TestReport.json

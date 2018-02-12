@@ -22,6 +22,7 @@
       "type": "string"
     },
 {{else}}
+{{if not IsOpenShift}}
     "etcdServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"
@@ -111,6 +112,8 @@
       {{end}}
     {{end}}
 {{end}}
+{{end}}
+{{if not IsOpenShift}}
     "apiServerCertificate": {
       "metadata": {
         "description": "The base 64 server certificate used on the master"
@@ -160,6 +163,7 @@
       },
       "type": "securestring"
     },
+{{end}}
     "generatorCode": {
       {{PopulateClassicModeDefaultValue "generatorCode"}}
       "metadata": {
@@ -552,6 +556,7 @@
       },
       "type": "string"
     },
+    {{if not IsOpenShift}}
     "dockerEngineDownloadRepo": {
       "defaultValue": "https://aptdocker.azureedge.net/repo",
       "metadata": {
@@ -574,6 +579,7 @@
        ],
       "type": "string"
     },
+    {{end}}
     "networkPolicy": {
       "defaultValue": "{{.OrchestratorProfile.KubernetesConfig.NetworkPolicy}}",
       "metadata": {

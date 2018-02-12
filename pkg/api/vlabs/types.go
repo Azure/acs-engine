@@ -157,6 +157,7 @@ type OrchestratorProfile struct {
 	OrchestratorRelease string            `json:"orchestratorRelease,omitempty"`
 	OrchestratorVersion string            `json:"orchestratorVersion,omitempty"`
 	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+	OpenShiftConfig     *OpenShiftConfig  `json:"openshiftConfig,omitempty"`
 	DcosConfig          *DcosConfig       `json:"dcosConfig,omitempty"`
 }
 
@@ -181,6 +182,8 @@ func (o *OrchestratorProfile) UnmarshalJSON(b []byte) error {
 		o.OrchestratorType = Kubernetes
 	case strings.EqualFold(orchestratorType, SwarmMode):
 		o.OrchestratorType = SwarmMode
+	case strings.EqualFold(orchestratorType, OpenShift):
+		o.OrchestratorType = OpenShift
 	default:
 		return fmt.Errorf("OrchestratorType has unknown orchestrator: %s", orchestratorType)
 	}
@@ -297,6 +300,11 @@ type DcosConfig struct {
 	DcosProviderPackageID    string `json:"dcosProviderPackageID,omitempty"`    // repo url is the location of the build,
 }
 
+// OpenShiftConfig holds configuration for OpenShift
+type OpenShiftConfig struct {
+	KubernetesConfig *KubernetesConfig `json:"kubernetesConfig,omitempty"`
+}
+
 // MasterProfile represents the definition of the master cluster
 type MasterProfile struct {
 	Count                    int               `json:"count" validate:"required,eq=1|eq=3|eq=5"`
@@ -370,6 +378,7 @@ type AgentPoolProfile struct {
 	Distro              Distro            `json:"distro,omitempty"`
 	KubernetesConfig    *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	ImageRef            *ImageReference   `json:"imageReference,omitempty"`
+	IsOpenShiftInfra    bool              `json:"isOpenShiftInfra,omitempty"`
 
 	// subnet is internal
 	subnet string

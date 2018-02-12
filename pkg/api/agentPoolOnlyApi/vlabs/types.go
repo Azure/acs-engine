@@ -129,6 +129,7 @@ type AgentPoolProfile struct {
 	AvailabilityProfile string `json:"availabilityProfile"`
 	StorageProfile      string `json:"storageProfile" validate:"eq=StorageAccount|eq=ManagedDisks|len=0"`
 	VnetSubnetID        string `json:"vnetSubnetID,omitempty"`
+	IsOpenShiftInfra    bool   `json:"isOpenShiftInfra,omitempty"`
 
 	// OSType is the operating system type for agents
 	// Set as nullable to support backward compat because
