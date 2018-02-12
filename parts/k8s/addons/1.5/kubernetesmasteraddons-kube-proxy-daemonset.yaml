@@ -3,7 +3,7 @@ kind: DaemonSet
 metadata:
   labels:
     kubernetes.io/cluster-service: "true"
-    component: kube-proxy
+    k8s-app: kube-proxy
     tier: node
   name: kube-proxy
   namespace: kube-system
@@ -11,7 +11,7 @@ spec:
   template:
     metadata:
       labels:
-        component: kube-proxy
+        k8s-app: kube-proxy
         tier: node
     spec:
       containers:

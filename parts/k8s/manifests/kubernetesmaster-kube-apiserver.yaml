@@ -5,7 +5,7 @@ metadata:
   namespace: "kube-system"
   labels:
     tier: control-plane
-    component: kube-apiserver
+    k8s-app: kube-apiserver
 spec:
   hostNetwork: true
   containers:
