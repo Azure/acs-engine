@@ -359,13 +359,6 @@ Update-CNIConfig(`$podCIDR, `$masterSubnetGW)
 
 try
 {
-    
-    if (`$global:NetworkPolicy -eq "azure") {
-        Write-Host "NetworkPolicy azure, starting kubelet."
-        $KubeletCommandLine
-        return 0
-    }
-
     `$masterSubnetGW = Get-DefaultGateway `$global:MasterSubnet
     `$podCIDR=Get-PodCIDR
     `$podCidrDiscovered=Test-PodCIDR(`$podCIDR)
