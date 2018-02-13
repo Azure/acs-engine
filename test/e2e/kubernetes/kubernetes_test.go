@@ -134,7 +134,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			}
 		})
 
-		It("should have a tiller max-history of 5", func() {
+		It("should have the expected tiller max-history", func() {
 			if eng.HasTiller() {
 				pods, err := pod.GetAllByPrefix("tiller-deploy", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
