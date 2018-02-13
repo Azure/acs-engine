@@ -300,13 +300,36 @@ func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry
 			continue
 		}
 
-		if !(resourceType == vmResourceType || resourceType == vmExtensionType || resourceType == nicResourceType) {
+		dependencies, ok := resourceMap[dependsOnFieldName].([]interface{})
+		if !ok {
+			continue
+		}
+
+		for dIndex := len(dependencies) - 1; dIndex >= 0; dIndex-- {
+			dependency := dependencies[dIndex].(string)
+			if strings.Contains(dependency, vnetResourceType) || strings.Contains(dependency, vnetID) {
+				dependencies = append(dependencies[:dIndex], dependencies[dIndex+1:]...)
+			}
+		}
+
+		if len(dependencies) > 0 {
+			resourceMap[dependsOnFieldName] = dependencies
+		} else {
+			delete(resourceMap, dependsOnFieldName)
+		}
+
+		if !(resourceType == vmResourceType || resourceType == vmExtensionType || resourceType == nicResourceType || resourceType == vnetResourceType) {
 			continue
 		}
 
 		resourceName, ok := resourceMap[nameFieldName].(string)
 		if !ok {
 			logger.Warnf("Template improperly formatted for field name: %s", nameFieldName)
+			continue
+		}
+
+		if resourceType == vnetResourceType {
+			filteredResources = filteredResources[:len(filteredResources)-1]
 			continue
 		}
 
