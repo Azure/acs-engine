@@ -197,7 +197,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		templateMap, parametersMap, err := ku.generateUpgradeTemplate(ku.ClusterTopology.DataModel)
 		if err != nil {
 			ku.logger.Errorf("Error generating upgrade template: %v", err)
-			return ku.Translator.Errorf("error generating upgrade template: %s", err.Error())
+			return ku.Translator.Errorf("Error generating upgrade template: %s", err.Error())
 		}
 
 		ku.logger.Infof("Prepping agent pool '%s' for upgrade...", *agentPool.Name)
@@ -212,7 +212,7 @@ func (ku *Upgrader) upgradeAgentPools() error {
 		}
 		if err := transformer.NormalizeResourcesForK8sAgentUpgrade(ku.logger, templateMap, isMasterManagedDisk, preservePools); err != nil {
 			ku.logger.Errorf(err.Error())
-			return err
+			return ku.Translator.Errorf("Error generating upgrade template: %s", err.Error())
 		}
 
 		var agentCount, agentPoolIndex int
