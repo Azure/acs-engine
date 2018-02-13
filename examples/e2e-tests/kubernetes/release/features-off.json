@@ -1,0 +1,103 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "kubernetesConfig": {
+        "networkPolicy": "none",
+        "enableRbac": false,
+        "addons": [
+          {
+            "name": "tiller",
+            "enabled": false
+          },
+          {
+            "name": "aci-connector",
+            "enabled": false
+          },
+          {
+            "name": "kubernetes-dashboard",
+            "enabled": false
+          },
+          {
+            "name": "rescheduler",
+            "enabled": false
+          }
+        ],
+        "kubeletConfig": {
+          "--allow-privileged": "false",
+          "--anonymous-auth": "false",
+          "--authorization-mode": "",
+          "--cgroups-per-qos": "false",
+          "--cloud-provider": "",
+          "--keep-terminated-pod-volumes": "false"
+        },
+        "controllerManagerConfig": {
+          "--allocate-node-cidrs": "false",
+          "--cloud-provider": "",
+          "--leader-elect": "false",
+          "--profiling": "false",
+          "--use-service-account-credentials": "false",
+        },
+        "cloudControllerManagerConfig": {
+          "--allocate-node-cidrs": "false",
+          "--cloud-provider": "",
+          "--leader-elect": "false"
+        },
+        "apiServerConfig": {
+          "--allow-privileged": "false",
+          "--anonymous-auth": "false",
+          "--cloud-provider": "",
+          "--etcd-quorum-read": "false",
+          "--profiling": "false",
+          "--repair-malformed-updates": "false",
+          "--service-account-lookup": "false"
+        }
+      }
+    },
+    "masterProfile": {
+      "count": 5,
+      "dnsPrefix": "cerobert0212-v12",
+      "vmSize": "Standard_D2_v2",
+      "availabilityProfile": "AvailabilitySet",
+      "storageProfile": "StorageAccount"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "linuxpool1",
+        "count": 3,
+        "vmSize": "Standard_D2_v2",
+        "osType": "Linux",
+        "availabilityProfile": "AvailabilitySet",
+        "storageProfile": "StorageAccount",
+        "distro": "ubuntu",
+        "kubernetesConfig": {
+          "kubeletConfig": {
+            "--allow-privileged": "false",
+            "--anonymous-auth": "false",
+            "--authorization-mode": "",
+            "--cloud-provider": "",
+            "--enforce-node-allocatable": "",
+            "--keep-terminated-pod-volumes": "false"
+          }
+        },
+        "extensions": []
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": ""
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "clientId": "",
+      "secret": ""
+    },
+    "certificateProfile": {}
+  }
+}
