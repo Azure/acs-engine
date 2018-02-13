@@ -32,10 +32,7 @@ func (e *DeploymentError) Error() string {
 			continue
 		}
 		for _, operation := range *operationsList.Value {
-			if operation.Properties == nil || *operation.Properties.ProvisioningState != string(api.Failed) {
-				continue
-			}
-			if operation.Properties != nil && operation.Properties.StatusMessage != nil {
+			if operation.Properties != nil && *operation.Properties.ProvisioningState == string(api.Failed) && operation.Properties.StatusMessage != nil {
 				if b, err := json.MarshalIndent(operation.Properties.StatusMessage, "", "  "); err == nil {
 					ops = append(ops, string(b))
 				}

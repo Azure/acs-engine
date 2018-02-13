@@ -108,7 +108,7 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 		select {
 		case <-timeoutTimer.C:
 			retryTimer.Stop()
-			return &armhelpers.DeploymentValidationError{Err: fmt.Errorf("Node was not ready within %v", kan.timeout)}
+			return &armhelpers.DeploymentValidationError{Err: kan.Translator.Errorf("Node was not ready within %v", kan.timeout)}
 		case <-retryTimer.C:
 			agentNode, err := client.GetNode(*vmName)
 			if err != nil {
