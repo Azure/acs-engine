@@ -122,21 +122,17 @@ func trap() {
 }
 
 func teardown() {
-	//pt.RecordTotalTime()
-	//pt.Write()
+	pt.RecordTotalTime()
+	pt.Write()
 	fmt.Println("got below pt.Write()")
 	if cliProvisioner.Config.IsKubernetes() && cfg.SoakClusterName == "" {
 		hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cfg.Name, cfg.Location)
-		fmt.Println("constructed hostname")
 		logsPath := filepath.Join(cfg.CurrentWorkingDir, "_logs", hostname)
-		fmt.Println("constructed logsPath")
 		err := os.MkdirAll(logsPath, 0755)
-		fmt.Println("got below os.MkdirAll")
 		if err != nil {
 			log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
 		}
 		err = cliProvisioner.FetchProvisioningMetrics(logsPath, cfg, acct)
-		fmt.Println("got below cliProvisioner.FetchProvisioningMetrics")
 		if err != nil {
 			log.Printf("cliProvisioner.FetchProvisioningMetrics error: %s\n", err)
 		}

@@ -230,15 +230,11 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 	masterFiles := agentFiles
 	masterFiles = append(masterFiles, "/opt/azure/containers/mountetcd.sh", "/opt/azure/containers/setup-etcd.sh", "/opt/azure/containers/setup-etcd.log")
 	hostname := fmt.Sprintf("%s.%s.cloudapp.azure.com", cli.Config.Name, cli.Config.Location)
-	fmt.Println(hostname)
 	conn, err := remote.NewConnection(hostname, "22", cli.Engine.ClusterDefinition.Properties.LinuxProfile.AdminUsername, cli.Config.GetSSHKeyPath())
-	fmt.Println("got past remote.NewConnection")
 	if err != nil {
-		fmt.Printf("inside remote.NewConnection error block: %s\n", err)
 		return err
 	}
 	for _, master := range cli.Masters {
-		fmt.Println("enumerating through masters")
 		for _, fp := range masterFiles {
 			err := conn.CopyRemote(master.Name, fp)
 			if err != nil {
@@ -248,7 +244,6 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 	}
 
 	for _, agent := range cli.Agents {
-		fmt.Println("enumerating through agents")
 		for _, fp := range agentFiles {
 			err := conn.CopyRemote(agent.Name, fp)
 			if err != nil {
