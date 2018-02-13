@@ -189,7 +189,7 @@ func TestAPIServerConfigEnableRbac(t *testing.T) {
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
 	if _, ok := a["--authorization-mode"]; ok {
-		t.Fatalf("got unexpected '--authorization-mode' kubelet config value for EnableRbac=false: %s",
+		t.Fatalf("got unexpected '--authorization-mode' API server config value for EnableRbac=false: %s",
 			a["--authorization-mode"])
 	}
 
