@@ -141,7 +141,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				// There is only one tiller pod and one container in that pod.
 				actualTillerMaxHistory, err := pods[0].Spec.Containers[0].GetEnvironmentVariable("TILLER_HISTORY_MAX")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(actualTillerMaxHistory).To(Equal("5"))
+				Expect(actualTillerMaxHistory).To(Equal(eng.TillerMaxHistory()))
 			} else {
 				Skip("tiller disabled for this cluster, will not test")
 			}

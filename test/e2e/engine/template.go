@@ -178,6 +178,18 @@ func (e *Engine) HasTiller() bool {
 	return false
 }
 
+// TillerMaxHistory will return true if tiller addon is enabled
+func (e *Engine) TillerMaxHistory() string {
+	for _, addon := range e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
+		if addon.Name == "tiller" {
+			if addon.Config != nil {
+				return addon.Config["max-history"]
+			}
+		}
+	}
+	return "5"
+}
+
 // HasACIConnector will return true if aci-connector addon is enabled
 func (e *Engine) HasACIConnector() bool {
 	for _, addon := range e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
