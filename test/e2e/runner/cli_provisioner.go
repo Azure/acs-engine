@@ -136,6 +136,9 @@ func (cli *CLIProvisioner) provision() error {
 	}
 
 	c, err := config.ParseConfig()
+	if err != nil {
+		return fmt.Errorf("unable to parse base config")
+	}
 	engCfg, err := engine.ParseConfig(cli.Config.CurrentWorkingDir, c.ClusterDefinition, c.Name)
 	if err != nil {
 		return fmt.Errorf("unable to parse config")

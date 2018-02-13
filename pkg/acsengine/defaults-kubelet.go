@@ -82,7 +82,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 
 	// Remove secure kubelet flags, if configured
 	if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableSecureKubelet) {
-		for _, key := range []string{"--anonymous-auth", "--authorization-mode", "--client-ca-file"} {
+		for _, key := range []string{"--anonymous-auth", "--client-ca-file"} {
 			delete(o.KubernetesConfig.KubeletConfig, key)
 		}
 	}

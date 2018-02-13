@@ -89,7 +89,7 @@ func TestKubeletConfigEnableSecureKubelet(t *testing.T) {
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = pointerToBool(false)
 	setKubeletConfig(cs)
 	k = cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
-	for _, key := range []string{"--anonymous-auth", "--authorization-mode", "--client-ca-file"} {
+	for _, key := range []string{"--anonymous-auth", "--client-ca-file"} {
 		if _, ok := k[key]; ok {
 			t.Fatalf("got unexpected '%s' kubelet config value for EnableSecureKubelet=false: %s",
 				key, k[key])
