@@ -85,7 +85,6 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	// Default apiserver config
 	defaultAPIServerConfig := map[string]string{
 		"--admission-control":   "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,DenyEscalatingExec,AlwaysPullImages",
-		"--authorization-mode":  "Node",
 		"--audit-log-maxage":    "30",
 		"--audit-log-maxbackup": "10",
 		"--audit-log-maxsize":   "100",
@@ -93,14 +92,10 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// RBAC configuration
 	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
-		defaultAPIServerConfig["--authorization-mode"] = "Node,RBAC"
-		if !isKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") || !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableSecureKubelet) {
+		if isKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") {
+			defaultAPIServerConfig["--authorization-mode"] = "Node,RBAC"
+		} else {
 			defaultAPIServerConfig["--authorization-mode"] = "RBAC"
-		}
-	} else if !isKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") || !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableSecureKubelet) {
-		// remove authorization-mode for 1.6 clusters without RBAC since Node authorization isn't supported
-		for _, key := range []string{"--authorization-mode"} {
-			delete(defaultAPIServerConfig, key)
 		}
 	}
 

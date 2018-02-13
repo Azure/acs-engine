@@ -188,7 +188,7 @@ func TestAPIServerConfigEnableRbac(t *testing.T) {
 	cs.Properties.OrchestratorProfile.KubernetesConfig.EnableRbac = pointerToBool(false)
 	setAPIServerConfig(cs)
 	a = cs.Properties.OrchestratorProfile.KubernetesConfig.APIServerConfig
-	if a["--authorization-mode"] != "Node" {
+	if _, ok := a["--authorization-mode"]; ok {
 		t.Fatalf("got unexpected '--authorization-mode' API server config value for EnableRbac=false: %s",
 			a["--authorization-mode"])
 	}
