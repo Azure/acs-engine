@@ -30,7 +30,7 @@ type Connection struct {
 func NewConnection(host, port, user, keyPath string) (*Connection, error) {
 	conn, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK"))
 	if err != nil {
-		fmt.Println("unable to establish net connection, probably due to $SSH_AUTH_SOCK not being set")
+		log.Println("unable to establish net connection, probably due to $SSH_AUTH_SOCK not being set")
 		return nil, err
 	}
 	defer conn.Close()
@@ -52,7 +52,7 @@ func NewConnection(host, port, user, keyPath string) (*Connection, error) {
 	ag.Add(addKey)
 	signers, err := ag.Signers()
 	if err != nil {
-		fmt.Println("unable to add key to agent")
+		log.Println("unable to add key to agent")
 		return nil, err
 	}
 	auths := []ssh.AuthMethod{ssh.PublicKeys(signers...)}
