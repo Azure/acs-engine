@@ -1676,7 +1676,6 @@ func makeWindowsExtensionScriptCommands(extension *api.Extension, extensionProfi
 
 func getDCOSWindowsAgentPreprovisionParameters(cs *api.ContainerService, profile *api.AgentPoolProfile) string {
 	extension := profile.PreprovisionExtension
-	parms := ""
 
 	var extensionProfile *api.ExtensionProfile
 
@@ -1687,7 +1686,7 @@ func getDCOSWindowsAgentPreprovisionParameters(cs *api.ContainerService, profile
 		}
 	}
 
-	parms = extensionProfile.ExtensionParameters
+	parms := extensionProfile.ExtensionParameters
 	return parms
 }
 
