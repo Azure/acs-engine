@@ -552,6 +552,7 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 			addValue(parametersMap, "kubernetesTillerCPULimit", tillerAddon.Containers[c].CPULimits)
 			addValue(parametersMap, "kubernetesTillerMemoryRequests", tillerAddon.Containers[c].MemoryRequests)
 			addValue(parametersMap, "kubernetesTillerMemoryLimit", tillerAddon.Containers[c].MemoryLimits)
+			addValue(parametersMap, "kubernetesTillerMaxHistory", tillerAddon.Config["max-history"])
 			if tillerAddon.Containers[c].Image != "" {
 				addValue(parametersMap, "kubernetesTillerSpec", tillerAddon.Containers[c].Image)
 			} else {
@@ -1487,6 +1488,16 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 						val = tillerAddon.Containers[tC].MemoryLimits
 					} else {
 						val = ""
+					}
+				case "kubernetesTillerMaxHistory":
+					if tC > -1 {
+						if _, ok := tillerAddon.Config["max-history"]; ok {
+							val = tillerAddon.Config["max-history"]
+						} else {
+							val = "0"
+						}
+					} else {
+						val = "0"
 					}
 				case "kubernetesReschedulerSpec":
 					if rC > -1 {

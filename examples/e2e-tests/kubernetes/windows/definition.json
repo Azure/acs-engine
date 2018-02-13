@@ -2,7 +2,18 @@
   "apiVersion": "vlabs",
   "properties": {
     "orchestratorProfile": {
-      "orchestratorType": "Kubernetes"
+      "orchestratorType": "Kubernetes",
+      "kubernetesConfig": {
+        "addons": [
+          {
+            "name": "tiller",
+            "enabled" : true,
+            "config": {
+              "max-history": "5"
+            }
+          }
+        ]
+      }
     },
     "masterProfile": {
       "count": 3,

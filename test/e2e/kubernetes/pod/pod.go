@@ -3,6 +3,7 @@ package pod
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os/exec"
@@ -44,8 +45,15 @@ type Spec struct {
 
 // Container holds information like image and ports
 type Container struct {
-	Image string `json:"image"`
-	Ports []Port `json:"ports"`
+	Image string   `json:"image"`
+	Ports []Port   `json:"ports"`
+	Env   []EnvVar `json:"env"`
+}
+
+// EnvVar holds environment variables
+type EnvVar struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 // Port represents a container port definition
@@ -90,7 +98,7 @@ func GetAll(namespace string) (*List, error) {
 	pl := List{}
 	err = json.Unmarshal(out, &pl)
 	if err != nil {
-		log.Printf("Error unmarshalling nodes json:%s\n", err)
+		log.Printf("Error unmarshalling pods json:%s\n", err)
 		return nil, err
 	}
 	return &pl, nil
@@ -107,7 +115,7 @@ func Get(podName, namespace string) (*Pod, error) {
 	p := Pod{}
 	err = json.Unmarshal(out, &p)
 	if err != nil {
-		log.Printf("Error unmarshalling nodes json:%s\n", err)
+		log.Printf("Error unmarshalling pods json:%s\n", err)
 		return nil, err
 	}
 	return &p, nil
@@ -402,4 +410,14 @@ func (p *Pod) ValidateAzureFile(mountPath string, sleep, duration time.Duration)
 			return ready, nil
 		}
 	}
+}
+
+// GetEnvironmentVariable returns an environment variable value from a container within a pod
+func (c *Container) GetEnvironmentVariable(varName string) (string, error) {
+	for _, envvar := range c.Env {
+		if envvar.Name == varName {
+			return envvar.Value, nil
+		}
+	}
+	return "", errors.New("environment variable not found")
 }

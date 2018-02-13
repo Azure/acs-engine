@@ -80,6 +80,8 @@ const (
 	DefaultKubernetesCloudProviderRateLimitBucket = 10
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
+	// DefaultTillerMaxHistory limits the maximum number of revisions saved per release. Use 0 for no limit.
+	DefaultTillerMaxHistory = 0
 	// DefaultACIConnectorAddonName is the name of the tiller addon deployment
 	DefaultACIConnectorAddonName = "aci-connector"
 	// DefaultDashboardAddonName is the name of the kubernetes-dashboard addon deployment
