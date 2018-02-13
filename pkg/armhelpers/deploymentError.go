@@ -17,7 +17,7 @@ type DeploymentError struct {
 	StatusCode        int
 	Response          []byte
 	ProvisioningState string
-	Operations        [][]byte
+	OperationsLists   []resources.DeploymentOperationsListResult
 }
 
 // Error implements error interface
@@ -27,11 +27,30 @@ func (e *DeploymentError) Error() string {
 		str = e.TopError.Error()
 	}
 	var ops []string
-	for _, b := range e.Operations {
-		ops = append(ops, string(b))
+	for _, operationsList := range e.OperationsLists {
+		if operationsList.Value == nil {
+			continue
+		}
+		for _, operation := range *operationsList.Value {
+			if operation.Properties != nil && *operation.Properties.ProvisioningState == string(api.Failed) && operation.Properties.StatusMessage != nil {
+				if b, err := json.MarshalIndent(operation.Properties.StatusMessage, "", "  "); err == nil {
+					ops = append(ops, string(b))
+				}
+			}
+		}
 	}
 	return fmt.Sprintf("TopError[%s] StatusCode[%d] Response[%s] ProvisioningState[%s] Operations[%s]",
 		str, e.StatusCode, e.Response, e.ProvisioningState, strings.Join(ops, " | "))
+}
+
+// DeploymentValidationError contains validation error
+type DeploymentValidationError struct {
+	Err error
+}
+
+// Error implements error interface
+func (e *DeploymentValidationError) Error() string {
+	return e.Err.Error()
 }
 
 // DeployTemplateSync deploys the template and returns ArmError
@@ -76,7 +95,7 @@ func DeployTemplateSync(az ACSEngineClient, logger *logrus.Entry, resourceGroupN
 		logger.Errorf("unable to list deployment operations %s. error: %v", deploymentName, err)
 		return deploymentErr
 	}
-	getOperationError(res, deploymentErr, logger)
+	deploymentErr.OperationsLists = append(deploymentErr.OperationsLists, res)
 
 	for res.NextLink != nil {
 		res, err = az.ListDeploymentOperationsNextResults(res)
@@ -84,38 +103,7 @@ func DeployTemplateSync(az ACSEngineClient, logger *logrus.Entry, resourceGroupN
 			logger.Warningf("unable to list next deployment operations %s. error: %v", deploymentName, err)
 			break
 		}
-		getOperationError(res, deploymentErr, logger)
+		deploymentErr.OperationsLists = append(deploymentErr.OperationsLists, res)
 	}
 	return deploymentErr
-}
-
-func getOperationError(operationsList resources.DeploymentOperationsListResult, deploymentErr *DeploymentError, logger *logrus.Entry) {
-	if operationsList.Value == nil {
-		return
-	}
-
-	for _, operation := range *operationsList.Value {
-		if operation.Properties == nil || *operation.Properties.ProvisioningState != string(api.Failed) {
-			continue
-		}
-
-		// log the full deployment operation error response
-		if operation.ID != nil && operation.OperationID != nil {
-			b, _ := json.Marshal(operation.Properties)
-			logger.Infof("deployment operation ID %s, operationID %s, prooperties: %s", *operation.ID, *operation.OperationID, b)
-		} else {
-			logger.Error("either deployment ID or operationID is nil")
-		}
-
-		if operation.Properties == nil || operation.Properties.StatusMessage == nil {
-			logger.Error("DeploymentOperation.Properties is not set")
-			continue
-		}
-		b, err := json.MarshalIndent(operation.Properties.StatusMessage, "", "  ")
-		if err != nil {
-			logger.Errorf("Error occurred marshalling JSON: '%v'", err)
-			continue
-		}
-		deploymentErr.Operations = append(deploymentErr.Operations, b)
-	}
 }

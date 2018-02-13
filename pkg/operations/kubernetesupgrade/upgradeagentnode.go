@@ -99,7 +99,7 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 
 	client, err := kan.Client.GetKubernetesClient(masterURL, kan.kubeConfig, interval, kan.timeout)
 	if err != nil {
-		return err
+		return &armhelpers.DeploymentValidationError{Err: err}
 	}
 
 	retryTimer := time.NewTimer(time.Millisecond)
@@ -108,9 +108,7 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 		select {
 		case <-timeoutTimer.C:
 			retryTimer.Stop()
-			err := fmt.Errorf("Node was not ready within %v", kan.timeout)
-			kan.logger.Errorf(err.Error())
-			return err
+			return &armhelpers.DeploymentValidationError{Err: kan.Translator.Errorf("Node was not ready within %v", kan.timeout)}
 		case <-retryTimer.C:
 			agentNode, err := client.GetNode(*vmName)
 			if err != nil {

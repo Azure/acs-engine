@@ -29,7 +29,7 @@ var _ = Describe("Template deployment tests", func() {
 		Expect(deplErr.TopError.Error()).To(Equal("DeployTemplate failed"))
 		Expect(deplErr.ProvisioningState).To(Equal(""))
 		Expect(deplErr.StatusCode).To(Equal(0))
-		Expect(len(deplErr.Operations)).To(Equal(0))
+		Expect(len(deplErr.OperationsLists)).To(Equal(0))
 	})
 
 	It("Should return QuotaExceeded error code, specified in details", func() {
@@ -45,7 +45,7 @@ var _ = Describe("Template deployment tests", func() {
 		Expect(deplErr.ProvisioningState).To(Equal(""))
 		Expect(deplErr.StatusCode).To(Equal(400))
 		Expect(string(deplErr.Response)).To(ContainSubstring("\"code\":\"QuotaExceeded\""))
-		Expect(len(deplErr.Operations)).To(Equal(0))
+		Expect(len(deplErr.OperationsLists)).To(Equal(0))
 	})
 
 	It("Should return Conflict error code, specified in details", func() {
@@ -61,6 +61,6 @@ var _ = Describe("Template deployment tests", func() {
 		Expect(deplErr.ProvisioningState).To(Equal(""))
 		Expect(deplErr.StatusCode).To(Equal(200))
 		Expect(string(deplErr.Response)).To(ContainSubstring("\"code\":\"Conflict\""))
-		Expect(len(deplErr.Operations)).To(Equal(0))
+		Expect(len(deplErr.OperationsLists)).To(Equal(0))
 	})
 })
