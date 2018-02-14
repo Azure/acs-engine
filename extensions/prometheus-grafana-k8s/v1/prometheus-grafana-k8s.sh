@@ -389,7 +389,7 @@ chmod u+x sanitize_dashboard.py
 
 DB_RAW=$(cat << EOF
 {
-    "dashboard": $(curl -sL "https://grafana.com/api/dashboards/315/revisions/3/download" | ./sanitize_dashboard.py),
+    "dashboard": $(curl -sL "https://grafana.com/api/dashboards/3119/revisions/2/download" | ./sanitize_dashboard.py),
     "overwrite": false
 }
 EOF
