@@ -54,7 +54,7 @@ write_files:
   content: |
     {{WrapAsVariable "clientCertificate"}}
 
-{{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
+{{if EnableAggregatedAPIs}}
 - path: "/etc/kubernetes/generate-proxy-certs.sh"
   permissions: "0744"
   encoding: "gzip"
@@ -323,7 +323,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     mkdir -p /etc/kubernetes/manifests
     usermod -aG docker {{WrapAsVariable "username"}}
 
-    {{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
+    {{if EnableAggregatedAPIs}}
     sudo bash /etc/kubernetes/generate-proxy-certs.sh
     {{end}}
 
@@ -376,7 +376,7 @@ runcmd:
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
 - /usr/lib/apt/apt.systemd.daily
-{{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
+{{if EnableAggregatedAPIs}}
 - bash /etc/kubernetes/generate-proxy-certs.sh
 {{end}}
 - apt-mark unhold walinuxagent
