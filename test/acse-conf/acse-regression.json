@@ -1,14 +1,6 @@
 {
   "deployments": [
     {
-      "cluster_definition": "windows/kubernetes-hybrid.json",
-      "category": "windows"
-    },
-    {
-      "cluster_definition": "windows/kubernetes.json",
-      "category": "windows"
-    },
-    {
       "cluster_definition": "dcos-releases/dcos1.9.json",
       "category": "version"
     },
