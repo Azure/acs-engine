@@ -126,8 +126,10 @@ func (s *Service) WaitForExternalIP(wait, sleep time.Duration) (*Service, error)
 
 // Validate will attempt to run an http.Get against the root service url
 func (s *Service) Validate(check string, attempts int, sleep time.Duration) bool {
+	var err error
+	var url string
 	for i := 0; i < attempts; i++ {
-		url := fmt.Sprintf("http://%s", s.Status.LoadBalancer.Ingress[0]["ip"])
+		url = fmt.Sprintf("http://%s", s.Status.LoadBalancer.Ingress[0]["ip"])
 		resp, err := http.Get(url)
 		if err == nil {
 			defer resp.Body.Close()
@@ -140,5 +142,6 @@ func (s *Service) Validate(check string, attempts int, sleep time.Duration) bool
 		}
 		time.Sleep(sleep)
 	}
+	log.Printf("Unable to validate URL %s, err: %s\n", url, err)
 	return false
 }
