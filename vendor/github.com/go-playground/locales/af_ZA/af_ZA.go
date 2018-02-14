@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"v.C.", "n.C."},
 		erasNarrow:             []string{"v.C.", "n.C."},
 		erasWide:               []string{"voor Christus", "na Christus"},
-		timezones:              map[string]string{"HAT": "Newfoundland-dagligtyd", "∅∅∅": "∅∅∅", "AWST": "Australiese Westelike standaardtyd", "JDT": "Japan-dagligtyd", "MDT": "Berg-dagligtyd", "ECT": "Ecuador-tyd", "CLST": "Chili-somertyd", "EST": "Oostelike standaardtyd", "ACST": "Australiese sentraal-standaardtyd", "HENOMX": "Noordwes-Meksiko-dagligtyd", "SRT": "Suriname-tyd", "WIT": "Oos-Indonesië-tyd", "ACWDT": "Australiese sentraal-Westelike dagligtyd", "MEZ": "Sentraal-Europese standaardtyd", "WEZ": "Wes-Europese standaardtyd", "HKT": "Hongkong-standaardtyd", "COT": "Colombië-standaardtyd", "HNEG": "Oos-Groenland-standaardtyd", "UYT": "Uruguay-standaardtyd", "GYT": "Guyana-tyd", "HAST": "Hawaii-Aleusiër-standaardtyd", "NZST": "Nieu-Seeland-standaardtyd", "NZDT": "Nieu-Seeland-dagligtyd", "WART": "Wes-Argentinië-standaardtyd", "WITA": "Sentraal Indonesië-tyd", "AKST": "Alaska-standaardtyd", "WIB": "Wes-Indonesië-tyd", "SGT": "Singapoer-standaardtyd", "HNOG": "Wes-Groenland-standaardtyd", "EDT": "Oostelike dagligtyd", "HKST": "Hongkong-somertyd", "ADT": "Atlantiese dagligtyd", "BT": "Bhoetan-tyd", "UYST": "Uruguay-somertyd", "CHADT": "Chatham-dagligtyd", "VET": "Venezuela-tyd", "ChST": "Chamorro-standaardtyd", "LHST": "Lord Howe-standaardtyd", "CHAST": "Chatham-standaardtyd", "PDT": "Pasifiese dagligtyd", "WESZ": "Wes-Europese somertyd", "CLT": "Chili-standaardtyd", "WAST": "Wes-Afrika-somertyd", "AKDT": "Alaska-dagligtyd", "GFT": "Frans-Guiana-tyd", "HEPM": "Sint-Pierre en Miquelon-dagligtyd", "HECU": "Kuba-dagligtyd", "AWDT": "Australiese Westelike dagligtyd", "AST": "Atlantiese standaardtyd", "HNPMX": "Meksikaanse Pasifiese standaardtyd", "BOT": "Bolivia-tyd", "HEOG": "Wes-Groenland-somertyd", "GMT": "Greenwich-mediaantyd", "TMST": "Turkmenistan-somertyd", "ART": "Argentinië-standaardtyd", "HNCU": "Kuba-standaardtyd", "CAT": "Sentraal-Afrika-tyd", "ACWST": "Australiese sentraal-Westelike standaard-tyd", "JST": "Japan-standaardtyd", "OESZ": "Oos-Europese somertyd", "AEDT": "Australiese Oostelike dagligtyd", "HNPM": "Sint-Pierre en Miquelon-standaardtyd", "CDT": "Sentrale dagligtyd", "MESZ": "Sentraal-Europese somertyd", "HNNOMX": "Noordwes-Meksiko-standaardtyd", "HNT": "Newfoundland-standaardtyd", "MST": "Berg-standaardtyd", "HADT": "Hawaii-Aleusiër-dagligtyd", "MYT": "Maleisië-tyd", "ARST": "Argentinië-somertyd", "SAST": "Suid-Afrika-standaardtyd", "LHDT": "Lord Howe-dagligtyd", "WAT": "Wes-Afrika-standaardtyd", "ACDT": "Australiese sentrale dagligtyd", "AEST": "Australiese Oostelike standaardtyd", "EAT": "Oos-Afrika-tyd", "CST": "Sentrale standaardtyd", "WARST": "Wes-Argentinië-somertyd", "TMT": "Turkmenistan-standaardtyd", "COST": "Colombië-somertyd", "HEEG": "Oos-Groenland-somertyd", "HEPMX": "Meksikaanse Pasifiese dagligtyd", "PST": "Pasifiese standaardtyd", "IST": "Indië-standaardtyd", "OEZ": "Oos-Europese standaardtyd"},
+		timezones:              map[string]string{"GMT": "Greenwich-mediaantyd", "AWST": "Australiese Westelike standaardtyd", "WITA": "Sentraal Indonesië-tyd", "HNT": "Newfoundland-standaardtyd", "HAT": "Newfoundland-dagligtyd", "EDT": "Oostelike dagligtyd", "GYT": "Guyana-tyd", "∅∅∅": "Peru-somertyd", "HEPMX": "Meksikaanse Pasifiese dagligtyd", "HNPM": "Sint-Pierre en Miquelon-standaardtyd", "BT": "Bhoetan-tyd", "AWDT": "Australiese Westelike dagligtyd", "ACWST": "Australiese sentraal-Westelike standaard-tyd", "WARST": "Wes-Argentinië-somertyd", "HAST": "Hawaii-Aleusiër-standaardtyd", "AEDT": "Australiese Oostelike dagligtyd", "CLST": "Chili-somertyd", "COT": "Colombië-standaardtyd", "GFT": "Frans-Guiana-tyd", "SGT": "Singapoer-standaardtyd", "WIT": "Oos-Indonesië-tyd", "MESZ": "Sentraal-Europese somertyd", "HADT": "Hawaii-Aleusiër-dagligtyd", "LHST": "Lord Howe-standaardtyd", "ADT": "Atlantiese dagligtyd", "ART": "Argentinië-standaardtyd", "ACST": "Australiese sentraal-standaardtyd", "HEEG": "Oos-Groenland-somertyd", "TMST": "Turkmenistan-somertyd", "HNOG": "Wes-Groenland-standaardtyd", "WAT": "Wes-Afrika-standaardtyd", "AKDT": "Alaska-dagligtyd", "ECT": "Ecuador-tyd", "ChST": "Chamorro-standaardtyd", "PST": "Pasifiese standaardtyd", "SRT": "Suriname-tyd", "HNNOMX": "Noordwes-Meksiko-standaardtyd", "BOT": "Bolivia-tyd", "TMT": "Turkmenistan-standaardtyd", "WART": "Wes-Argentinië-standaardtyd", "EAT": "Oos-Afrika-tyd", "MST": "MST", "UYST": "Uruguay-somertyd", "OEZ": "Oos-Europese standaardtyd", "HKST": "Hongkong-somertyd", "AKST": "Alaska-standaardtyd", "HNEG": "Oos-Groenland-standaardtyd", "CHADT": "Chatham-dagligtyd", "CDT": "Sentrale dagligtyd", "UYT": "Uruguay-standaardtyd", "JDT": "Japan-dagligtyd", "HENOMX": "Noordwes-Meksiko-dagligtyd", "IST": "Indië-standaardtyd", "HEOG": "Wes-Groenland-somertyd", "HKT": "Hongkong-standaardtyd", "WESZ": "Wes-Europese somertyd", "HNPMX": "Meksikaanse Pasifiese standaardtyd", "CHAST": "Chatham-standaardtyd", "WAST": "Wes-Afrika-somertyd", "EST": "Oostelike standaardtyd", "CST": "Sentrale standaardtyd", "ACWDT": "Australiese sentraal-Westelike dagligtyd", "ARST": "Argentinië-somertyd", "COST": "Colombië-somertyd", "ACDT": "Australiese sentrale dagligtyd", "CAT": "Sentraal-Afrika-tyd", "PDT": "Pasifiese dagligtyd", "HNCU": "Kuba-standaardtyd", "HECU": "Kuba-dagligtyd", "MDT": "MDT", "NZDT": "Nieu-Seeland-dagligtyd", "LHDT": "Lord Howe-dagligtyd", "MYT": "Maleisië-tyd", "VET": "Venezuela-tyd", "SAST": "Suid-Afrika-standaardtyd", "WEZ": "Wes-Europese standaardtyd", "WIB": "Wes-Indonesië-tyd", "OESZ": "Oos-Europese somertyd", "AST": "Atlantiese standaardtyd", "AEST": "Australiese Oostelike standaardtyd", "CLT": "Chili-standaardtyd", "HEPM": "Sint-Pierre en Miquelon-dagligtyd", "MEZ": "Sentraal-Europese standaardtyd", "NZST": "Nieu-Seeland-standaardtyd", "JST": "Japan-standaardtyd"},
 	}
 }
 
@@ -185,6 +185,21 @@ func (af *af_ZA) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (af *af_ZA) WeekdaysWide() []string {
 	return af.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (af *af_ZA) Decimal() string {
+	return af.decimal
+}
+
+// Group returns the group of number
+func (af *af_ZA) Group() string {
+	return af.group
+}
+
+// Group returns the minus sign of number
+func (af *af_ZA) Minus() string {
+	return af.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'af_ZA' and handles both Whole and Real numbers based on 'v'
@@ -400,7 +415,7 @@ func (af *af_ZA) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2d}...)
@@ -439,7 +454,7 @@ func (af *af_ZA) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -462,7 +477,7 @@ func (af *af_ZA) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -488,7 +503,7 @@ func (af *af_ZA) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

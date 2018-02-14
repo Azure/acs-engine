@@ -8,8 +8,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/go-autorest/autorest/to"
-	log "github.com/Sirupsen/logrus"
 	"github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -39,8 +39,7 @@ func (az *AzureClient) CreateRoleAssignment(scope string, roleAssignmentName str
 // CreateApp is a simpler method for creating an application
 func (az *AzureClient) CreateApp(appName, appURL string) (applicationID, servicePrincipalObjectID, servicePrincipalClientSecret string, err error) {
 	notBefore := time.Now()
-	notAfter := time.Now().Add(5 * 365 * 24 * time.Hour)
-	notAfter = time.Now().Add(10000 * 24 * time.Hour)
+	notAfter := time.Now().Add(10000 * 24 * time.Hour)
 
 	startDate := date.Time{Time: notBefore}
 	endDate := date.Time{Time: notAfter}
@@ -54,7 +53,7 @@ func (az *AzureClient) CreateApp(appName, appURL string) (applicationID, service
 		Homepage:                to.StringPtr(appURL),
 		IdentifierUris:          to.StringSlicePtr([]string{appURL}),
 		PasswordCredentials: &[]graphrbac.PasswordCredential{
-			graphrbac.PasswordCredential{
+			{
 				KeyID:     to.StringPtr(uuid.NewV4().String()),
 				StartDate: &startDate,
 				EndDate:   &endDate,
@@ -105,7 +104,7 @@ func (az *AzureClient) CreateRoleAssignmentSimple(resourceGroup, servicePrincipa
 			roleAssignmentParameters,
 		)
 		if err != nil {
-			log.Warnf("Failed to create role assignment (will retry): %q", err)
+			log.Debugf("Failed to create role assignment (will retry): %q", err)
 			time.Sleep(3 * time.Second)
 			continue
 		}

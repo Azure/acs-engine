@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"RC", "AD"},
 		erasNarrow:             []string{"R", "A"},
 		erasWide:               []string{"Ro Chrìosta", "An dèidh Chrìosta"},
-		timezones:              map[string]string{"HNCU": "Bun-àm Cùba", "CHAST": "Bun-àm Chatham", "HEOG": "Tìde samhraidh na Graonlainn an Iar", "MST": "Bun-àm Macàthu", "WAST": "Tìde Samhraidh Afraga an Iar", "COT": "Bun-àm Coloimbia", "LHST": "Bun-àm Lord Howe", "GYT": "Àm Guidheàna", "ACWDT": "Tìde samhraidh Meadhan Astràilia an Iar", "OESZ": "Tìde samhraidh na Roinn-Eòrpa an Ear", "HNNOMX": "Bun-àm Mheagsago an Iar-thuath", "AEDT": "Tìde samhraidh Astràilia an Ear", "AWDT": "Tìde samhraidh Astràilia an Iar", "NZDT": "Tìde samhraidh Shealainn Nuaidh", "WART": "Bun-àm na h-Argantaine Siaraich", "AEST": "Bun-àm Astràilia an Ear", "SAST": "Àm Afraga a Deas", "OEZ": "Bun-àm na Roinn-Eòrpa an Ear", "TMST": "Tìde samhraidh Turcmanastàin", "HEPM": "Tìde Samhraidh Saint Pierre agus Miquelon", "WIB": "Àm nan Innd-Innse an Iar", "WIT": "Àm nan Innd-Innse an Ear", "PDT": "Tìde samhraidh a’ Chuain Sèimh", "MEZ": "Bun-àm Meadhan na Roinn-Eòrpa", "ADT": "Tìde samhraidh a’ Chuain Siar", "WARST": "Tìde samhraidh na h-Argantaine Siaraich", "UYT": "Bun-àm Uruguaidh", "HNPM": "Bun-àm Saint Pierre agus Miquelon", "HADT": "Tìde Samhraidh nan Eileanan Hawai’i ’s Aleutach", "IST": "Àm nan Innseachan", "ACWST": "Bun-àm Meadhan Astràilia an Iar", "MDT": "Tìde samhraidh Macàthu", "EDT": "Tìde samhraidh Aimeireaga a Tuath an Ear", "ACST": "Bun-àm Meadhan Astràilia", "CLT": "Bun-àm na Sile", "ARST": "Tìde samhraidh na h-Argantaine", "EST": "Bun-àm Aimeireaga a Tuath an Ear", "HKST": "Tìde samhraidh Hong Kong", "WEZ": "Bun-àm na Roinn-Eòrpa an Iar", "HENOMX": "Tìde samhraidh Mheagsago an Iar-thuath", "HNPMX": "Bun-àm a’ Chuain Sèimh Mheagsago", "CST": "Bun-àm Meadhan Aimeireaga a Tuath", "ECT": "Àm Eacuadoir", "JST": "Bun-àm na Seapaine", "JDT": "Tìde samhraidh na Seapaine", "TMT": "Bun-àm Turcmanastàin", "AWST": "Bun-àm Astràilia an Iar", "BOT": "Àm Boilibhia", "AST": "Bun-àm a’ Chuain Siar", "GMT": "Greenwich Mean Time", "ART": "Bun-àm na h-Argantaine", "COST": "Tìde samhraidh Coloimbia", "AKST": "Bun-àm Alaska", "LHDT": "Tìde samhraidh Lord Howe", "SGT": "Àm Singeapòr", "CAT": "Àm Meadhan Afraga", "MESZ": "Tìde samhraidh Meadhan na Roinn-Eòrpa", "WAT": "Bun-àm Afraga an Iar", "WITA": "Àm Meadhan nan Innd-Innse", "SRT": "Àm Suranaim", "HECU": "Tìde samhraidh Cùba", "PST": "Bun-àm a’ Chuain Sèimh", "NZST": "Bun-àm Shealainn Nuaidh", "MYT": "Àm Mhalaidhsea", "BT": "Àm Butàin", "HNOG": "Bun-àm na Graonlainn an Iar", "GFT": "Àm Guidheàna na Frainge", "UYST": "Tìde samhraidh Uruguaidh", "CHADT": "Tìde samhraidh Chatham", "∅∅∅": "Tìde samhraidh Amasoin", "CLST": "Tìde samhraidh na Sile", "HNT": "Bun-àm Talamh an Èisg", "EAT": "Àm Afraga an Ear", "ChST": "Àm Chamorro", "HAST": "Bun-àm nan Eileanan Hawai’i ’s Aleutach", "VET": "Àm na Bheiniseala", "HKT": "Bun-àm Hong Kong", "ACDT": "Tìde samhraidh Meadhan Astràilia", "HNEG": "Bun-àm na Graonlainn an Ear", "HEEG": "Tìde samhraidh na Graonlainn an Ear", "WESZ": "Tìde samhraidh na Roinn-Eòrpa an Iar", "HAT": "Tìde samhraidh Talamh an Èisg", "AKDT": "Tìde samhraidh Alaska", "HEPMX": "Tìde samhraidh a’ Chuain Sèimh Mheagsago", "CDT": "Tìde samhraidh Meadhan Aimeireaga a Tuath"},
+		timezones:              map[string]string{"HNEG": "Bun-àm na Graonlainn an Ear", "HEEG": "Tìde samhraidh na Graonlainn an Ear", "HAT": "Tìde samhraidh Talamh an Èisg", "ACWST": "Bun-àm Meadhan Astràilia an Iar", "MEZ": "Bun-àm Meadhan na Roinn-Eòrpa", "LHDT": "Tìde samhraidh Lord Howe", "AST": "Bun-àm a’ Chuain Siar", "EAT": "Àm Afraga an Ear", "EDT": "Tìde samhraidh Aimeireaga a Tuath an Ear", "COST": "Tìde samhraidh Coloimbia", "WITA": "Àm Meadhan nan Innd-Innse", "JDT": "Tìde samhraidh na Seapaine", "HENOMX": "Tìde samhraidh Mheagsago an Iar-thuath", "WAT": "Bun-àm Afraga an Iar", "WAST": "Tìde Samhraidh Afraga an Iar", "JST": "Bun-àm na Seapaine", "LHST": "Bun-àm Lord Howe", "HNNOMX": "Bun-àm Mheagsago an Iar-thuath", "HNT": "Bun-àm Talamh an Èisg", "HEPMX": "Tìde samhraidh a’ Chuain Sèimh Mheagsago", "BOT": "Àm Boilibhia", "CST": "Bun-àm Meadhan Aimeireaga a Tuath", "WIT": "Àm nan Innd-Innse an Ear", "NZDT": "Tìde samhraidh Shealainn Nuaidh", "WIB": "Àm nan Innd-Innse an Iar", "BT": "Àm Butàin", "WEZ": "Bun-àm na Roinn-Eòrpa an Iar", "GMT": "Greenwich Mean Time", "WART": "Bun-àm na h-Argantaine Siaraich", "ART": "Bun-àm na h-Argantaine", "HKT": "Bun-àm Hong Kong", "AKST": "Bun-àm Alaska", "CAT": "Àm Meadhan Afraga", "CHAST": "Bun-àm Chatham", "HECU": "Tìde samhraidh Cùba", "ACWDT": "Tìde samhraidh Meadhan Astràilia an Iar", "HADT": "Tìde Samhraidh nan Eileanan Hawai’i ’s Aleutach", "IST": "Àm nan Innseachan", "ARST": "Tìde samhraidh na h-Argantaine", "COT": "Bun-àm Coloimbia", "SGT": "Àm Singeapòr", "PST": "Bun-àm a’ Chuain Sèimh", "AWDT": "Tìde samhraidh Astràilia an Iar", "TMT": "Bun-àm Turcmanastàin", "OEZ": "Bun-àm na Roinn-Eòrpa an Ear", "WARST": "Tìde samhraidh na h-Argantaine Siaraich", "GFT": "Àm Guidheàna na Frainge", "UYST": "Tìde samhraidh Uruguaidh", "NZST": "Bun-àm Shealainn Nuaidh", "VET": "Àm na Bheiniseala", "AKDT": "Tìde samhraidh Alaska", "CDT": "Tìde samhraidh Meadhan Aimeireaga a Tuath", "UYT": "Bun-àm Uruguaidh", "AWST": "Bun-àm Astràilia an Iar", "SRT": "Àm Suranaim", "EST": "Bun-àm Aimeireaga a Tuath an Ear", "HNPM": "Bun-àm Saint Pierre agus Miquelon", "CLT": "Bun-àm na Sile", "ACST": "Bun-àm Meadhan Astràilia", "ACDT": "Tìde samhraidh Meadhan Astràilia", "MST": "Bun-àm Macàthu", "∅∅∅": "Tìde samhraidh Acre", "HAST": "Bun-àm nan Eileanan Hawai’i ’s Aleutach", "TMST": "Tìde samhraidh Turcmanastàin", "AEDT": "Tìde samhraidh Astràilia an Ear", "ECT": "Àm Eacuadoir", "HNOG": "Bun-àm na Graonlainn an Iar", "SAST": "Àm Afraga a Deas", "HNPMX": "Bun-àm a’ Chuain Sèimh Mheagsago", "MDT": "Tìde samhraidh Macàthu", "PDT": "Tìde samhraidh a’ Chuain Sèimh", "HNCU": "Bun-àm Cùba", "HEOG": "Tìde samhraidh na Graonlainn an Iar", "GYT": "Àm Guidheàna", "ChST": "Àm Chamorro", "WESZ": "Tìde samhraidh na Roinn-Eòrpa an Iar", "CHADT": "Tìde samhraidh Chatham", "MESZ": "Tìde samhraidh Meadhan na Roinn-Eòrpa", "OESZ": "Tìde samhraidh na Roinn-Eòrpa an Ear", "ADT": "Tìde samhraidh a’ Chuain Siar", "AEST": "Bun-àm Astràilia an Ear", "CLST": "Tìde samhraidh na Sile", "MYT": "Àm Mhalaidhsea", "HKST": "Tìde samhraidh Hong Kong", "HEPM": "Tìde Samhraidh Saint Pierre agus Miquelon"},
 	}
 }
 
@@ -189,6 +189,21 @@ func (gd *gd) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (gd *gd) WeekdaysWide() []string {
 	return gd.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (gd *gd) Decimal() string {
+	return gd.decimal
+}
+
+// Group returns the group of number
+func (gd *gd) Group() string {
+	return gd.group
+}
+
+// Group returns the minus sign of number
+func (gd *gd) Minus() string {
+	return gd.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'gd' and handles both Whole and Real numbers based on 'v'
@@ -413,7 +428,7 @@ func (gd *gd) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -432,7 +447,7 @@ func (gd *gd) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -452,7 +467,7 @@ func (gd *gd) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -474,7 +489,7 @@ func (gd *gd) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

@@ -11,42 +11,50 @@ import (
 )
 
 var (
-	validate                *validator.Validate
-	keyvaultSecretPathRegex *regexp.Regexp
+	validate        *validator.Validate
+	keyvaultIDRegex *regexp.Regexp
 )
 
 func init() {
 	validate = validator.New()
-	keyvaultSecretPathRegex = regexp.MustCompile(`^(/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/\S+)/secrets/([^/\s]+)(/(\S+))?$`)
+	keyvaultIDRegex = regexp.MustCompile(`^/subscriptions/\S+/resourceGroups/\S+/providers/Microsoft.KeyVault/vaults/[^/\s]+$`)
 }
 
 // Validate implements APIObject
-func (o *OrchestratorProfile) Validate() error {
+func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 	// Don't need to call validate.Struct(o)
 	// It is handled by Properties.Validate()
-	switch o.OrchestratorType {
-	case Swarm:
-	case DCOS:
-		switch o.OrchestratorVersion {
-		case DCOS187:
-		case DCOS188:
-		case DCOS190:
-		case "":
-		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
-		}
-	case DockerCE:
-	case Kubernetes:
-		switch o.OrchestratorVersion {
-		case Kubernetes166:
-		case Kubernetes157:
-		case "":
-		default:
-			return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s \n", o.OrchestratorVersion)
-		}
+	// On updates we only need to make sure there is a supported patch version for the minor version
+	if !isUpdate {
+		switch o.OrchestratorType {
+		case Swarm:
+		case DCOS:
+			switch o.OrchestratorVersion {
+			case common.DCOSVersion1Dot10Dot0:
+			case common.DCOSVersion1Dot9Dot0:
+			case common.DCOSVersion1Dot8Dot8:
+			case "":
+			default:
+				return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
+			}
+		case DockerCE:
+		case Kubernetes:
+			if k8sVersion := o.OrchestratorVersion; !common.AllKubernetesSupportedVersions[k8sVersion] && o.OrchestratorVersion != "" {
+				return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
+			}
 
-	default:
-		return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
+		default:
+			return fmt.Errorf("OrchestratorProfile has unknown orchestrator: %s", o.OrchestratorType)
+		}
+	} else {
+		switch o.OrchestratorType {
+		case DCOS, Kubernetes:
+			patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion)
+			// if there isn't a supported patch version for this version fail
+			if patchVersion == "" {
+				return fmt.Errorf("OrchestratorProfile has unknown orchestrator version: %s", o.OrchestratorVersion)
+			}
+		}
 	}
 
 	return nil
@@ -118,11 +126,11 @@ func handleValidationErrors(e validator.ValidationErrors) error {
 }
 
 // Validate implements APIObject
-func (a *Properties) Validate() error {
+func (a *Properties) Validate(isUpdate bool) error {
 	if e := validate.Struct(a); e != nil {
 		return handleValidationErrors(e.(validator.ValidationErrors))
 	}
-	if e := a.OrchestratorProfile.Validate(); e != nil {
+	if e := a.OrchestratorProfile.Validate(isUpdate); e != nil {
 		return e
 	}
 	if e := a.MasterProfile.Validate(); e != nil {
@@ -133,14 +141,25 @@ func (a *Properties) Validate() error {
 	}
 
 	if a.OrchestratorProfile.OrchestratorType == Kubernetes {
-		if (len(a.ServicePrincipalProfile.Secret) == 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) == 0) ||
-			(len(a.ServicePrincipalProfile.Secret) != 0 && len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0) {
+		if a.ServicePrincipalProfile == nil {
+			return fmt.Errorf("ServicePrincipalProfile must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+		}
+		if e := validate.Var(a.ServicePrincipalProfile.ClientID, "required"); e != nil {
+			return fmt.Errorf("the service principal client ID must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+		}
+		if (len(a.ServicePrincipalProfile.Secret) == 0 && a.ServicePrincipalProfile.KeyvaultSecretRef == nil) ||
+			(len(a.ServicePrincipalProfile.Secret) != 0 && a.ServicePrincipalProfile.KeyvaultSecretRef != nil) {
 			return fmt.Errorf("either the service principal client secret or keyvault secret reference must be specified with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
 		}
 
-		if len(a.ServicePrincipalProfile.KeyvaultSecretRef) != 0 {
-			parts := keyvaultSecretPathRegex.FindStringSubmatch(a.ServicePrincipalProfile.KeyvaultSecretRef)
-			if len(parts) != 5 {
+		if a.ServicePrincipalProfile.KeyvaultSecretRef != nil {
+			if e := validate.Var(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID, "required"); e != nil {
+				return fmt.Errorf("the Keyvault ID must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+			if e := validate.Var(a.ServicePrincipalProfile.KeyvaultSecretRef.SecretName, "required"); e != nil {
+				return fmt.Errorf("the Keyvault Secret must be specified for the Service Principle with Orchestrator %s", a.OrchestratorProfile.OrchestratorType)
+			}
+			if !keyvaultIDRegex.MatchString(a.ServicePrincipalProfile.KeyvaultSecretRef.VaultID) {
 				return fmt.Errorf("service principal client keyvault secret reference is of incorrect format")
 			}
 		}
@@ -232,7 +251,7 @@ func validateVNET(a *Properties) error {
 	isCustomVNET := a.MasterProfile.IsCustomVNET()
 	for _, agentPool := range a.AgentPoolProfiles {
 		if agentPool.IsCustomVNET() != isCustomVNET {
-			return fmt.Errorf("Multiple VNET Subnet configurations specified.  The master profile and each agent pool profile must all specify a custom VNET Subnet, or none at all.")
+			return fmt.Errorf("Multiple VNET Subnet configurations specified.  The master profile and each agent pool profile must all specify a custom VNET Subnet, or none at all")
 		}
 	}
 	if isCustomVNET {
@@ -249,7 +268,7 @@ func validateVNET(a *Properties) error {
 			if agentSubID != subscription ||
 				agentRG != resourcegroup ||
 				agentVNET != vnetname {
-				return errors.New("Multipe VNETS specified.  The master profile and each agent pool must reference the same VNET (but it is ok to reference different subnets on that VNET)")
+				return errors.New("Multiple VNETS specified.  The master profile and each agent pool must reference the same VNET (but it is ok to reference different subnets on that VNET)")
 			}
 		}
 

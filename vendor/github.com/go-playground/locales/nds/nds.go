@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"v.Chr.", "n.Chr."},
 		erasNarrow:             []string{"vC", "nC"},
 		erasWide:               []string{"vör Christus", "na Christus"},
-		timezones:              map[string]string{"∅∅∅": "∅∅∅", "LHDT": "LHDT", "SGT": "SGT", "BOT": "BOT", "WESZ": "Westeuropääsch Summertiet", "ART": "ART", "WIB": "Westindoneesch Tiet", "TMT": "TMT", "ACDT": "Zentraalaustraalsch Summertiet", "WIT": "Oostindoneesch Tiet", "PDT": "Noordamerikaansch Pazifik-Summertiet", "IST": "Indien-Tiet", "COT": "COT", "SAST": "Söödafrikaansch Tiet", "CHAST": "CHAST", "JDT": "Japaansch Summertiet", "HEOG": "HEOG", "GMT": "Gröönwisch-Welttiet", "EDT": "Noordamerikaansch oosten Summertiet", "ACST": "Zentraalaustraalsch Standardtiet", "HEEG": "HEEG", "AWST": "Westaustraalsch Standardtiet", "ACWDT": "Westzentraalaustraalsch Summertiet", "NZST": "NZST", "WAT": "Westafrikaansch Standardtiet", "HEPMX": "HEPMX", "AWDT": "Westaustraalsch Summertiet", "HNOG": "HNOG", "WEZ": "Westeuropääsch Standardtiet", "HAT": "HAT", "AKST": "AKST", "HNPMX": "HNPMX", "HECU": "HECU", "MESZ": "Zentraaleuropääsch Summertiet", "WAST": "Westafrikaansch Summertiet", "BT": "BT", "EAT": "Oostafrikaansch Tiet", "HNPM": "HNPM", "CDT": "Noordamerikaansch zentraal Summertiet", "WART": "WART", "CHADT": "CHADT", "AST": "Noordamerikaansch Atlantik-Standardtiet", "OEZ": "Oosteuropääsch Standardtiet", "ARST": "ARST", "HENOMX": "HENOMX", "GFT": "GFT", "CST": "Noordamerikaansch zentraal Standardtiet", "PST": "Noordamerikaansch Pazifik-Standardtiet", "CLST": "CLST", "EST": "Noordamerikaansch oosten Standardtiet", "COST": "COST", "TMST": "TMST", "UYST": "UYST", "LHST": "LHST", "GYT": "GYT", "HAST": "HAST", "CAT": "Zentraalafrikaansch Tiet", "NZDT": "NZDT", "ADT": "Noordamerikaansch Atlantik-Summertiet", "MDT": "MDT", "WITA": "Indoneesch Zentraaltiet", "HADT": "HADT", "WARST": "WARST", "HNT": "HNT", "HNEG": "HNEG", "AEST": "Oostaustraalsch Standardtiet", "ECT": "ECT", "MYT": "MYT", "HKST": "HKST", "AKDT": "AKDT", "UYT": "UYT", "HEPM": "HEPM", "SRT": "SRT", "HNCU": "HNCU", "CLT": "CLT", "MST": "MST", "HNNOMX": "HNNOMX", "ChST": "ChST", "ACWST": "Westzentraalaustraalsch Standardtiet", "MEZ": "Zentraaleuropääsch Standardtiet", "VET": "VET", "JST": "Japaansch Standardtiet", "OESZ": "Oosteuropääsch Summertiet", "HKT": "HKT", "AEDT": "Oostaustraalsch Summertiet"},
+		timezones:              map[string]string{"CLT": "CLT", "AKST": "AKST", "ChST": "ChST", "HEPMX": "HEPMX", "CST": "Noordamerikaansch zentraal Standardtiet", "ACWDT": "Westzentraalaustraalsch Summertiet", "JDT": "Japaansch Summertiet", "HENOMX": "HENOMX", "MYT": "MYT", "WIT": "Oostindoneesch Tiet", "TMT": "TMT", "HKT": "HKT", "CLST": "CLST", "ART": "ART", "HAT": "HAT", "∅∅∅": "∅∅∅", "AWST": "Westaustraalsch Standardtiet", "OEZ": "Oosteuropääsch Standardtiet", "WITA": "Indoneesch Zentraaltiet", "AST": "Noordamerikaansch Atlantik-Standardtiet", "GFT": "GFT", "NZST": "NZST", "LHST": "LHST", "AEDT": "Oostaustraalsch Summertiet", "HEEG": "HEEG", "SGT": "SGT", "GMT": "Gröönwisch-Welttiet", "UYT": "UYT", "UYST": "UYST", "HNEG": "HNEG", "COST": "COST", "WESZ": "Westeuropääsch Summertiet", "WIB": "Westindoneesch Tiet", "SAST": "Söödafrikaansch Tiet", "CAT": "Zentraalafrikaansch Tiet", "PDT": "Noordamerikaansch Pazifik-Summertiet", "HECU": "HECU", "SRT": "SRT", "MESZ": "Zentraaleuropääsch Summertiet", "JST": "Japaansch Standardtiet", "IST": "Indien-Tiet", "WEZ": "Westeuropääsch Standardtiet", "PST": "Noordamerikaansch Pazifik-Standardtiet", "CDT": "Noordamerikaansch zentraal Summertiet", "MEZ": "Zentraaleuropääsch Standardtiet", "TMST": "TMST", "HNT": "HNT", "BOT": "BOT", "ACWST": "Westzentraalaustraalsch Standardtiet", "LHDT": "LHDT", "EST": "Noordamerikaansch oosten Standardtiet", "ACDT": "Zentraalaustraalsch Summertiet", "CHAST": "CHAST", "OESZ": "Oosteuropääsch Summertiet", "WARST": "WARST", "ACST": "Zentraalaustraalsch Standardtiet", "HNPMX": "HNPMX", "BT": "BT", "MDT": "MDT", "ADT": "Noordamerikaansch Atlantik-Summertiet", "HNOG": "HNOG", "COT": "COT", "HEPM": "HEPM", "NZDT": "NZDT", "HNNOMX": "HNNOMX", "AEST": "Oostaustraalsch Standardtiet", "GYT": "GYT", "WAST": "Westafrikaansch Summertiet", "HNCU": "HNCU", "HAST": "HAST", "HADT": "HADT", "WART": "WART", "VET": "VET", "EAT": "Oostafrikaansch Tiet", "HNPM": "HNPM", "AWDT": "Westaustraalsch Summertiet", "ARST": "ARST", "WAT": "Westafrikaansch Standardtiet", "AKDT": "AKDT", "CHADT": "CHADT", "MST": "MST", "HEOG": "HEOG", "HKST": "HKST", "EDT": "Noordamerikaansch oosten Summertiet", "ECT": "ECT"},
 	}
 }
 
@@ -178,6 +178,21 @@ func (nds *nds) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (nds *nds) WeekdaysWide() []string {
 	return nds.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (nds *nds) Decimal() string {
+	return nds.decimal
+}
+
+// Group returns the group of number
+func (nds *nds) Group() string {
+	return nds.group
+}
+
+// Group returns the minus sign of number
+func (nds *nds) Minus() string {
+	return nds.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'nds' and handles both Whole and Real numbers based on 'v'
@@ -414,7 +429,7 @@ func (nds *nds) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -433,7 +448,7 @@ func (nds *nds) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -455,7 +470,7 @@ func (nds *nds) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

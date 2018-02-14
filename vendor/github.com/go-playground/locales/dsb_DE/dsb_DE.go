@@ -73,7 +73,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"pś.Chr.n.", "pó Chr.n."},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"pśed Kristusowym naroźenim", "pó Kristusowem naroźenju"},
-		timezones:              map[string]string{"ARST": "Argentinski lěśojski cas", "HKST": "Hongkongski lěśojski cas", "ACST": "Srjejźoawstralski standardny cas", "AKST": "Alaskojski standardny cas", "HNPM": "St.-Pierre-a-Miqueloński standardny cas", "HNOG": "Pódwjacornogrönlandski standardny cas", "ADT": "Atlantiski lěśojski cas", "WEZ": "Pódwjacornoeuropski standardny cas", "HNNOMX": "Mexiski dłujkowjacorny standardny cas", "AEST": "Pódzajtšnoawstralski standardny cas", "HNPMX": "Mexiski pacifiski standardny cas", "ACWDT": "Srjejźopódwjacorny awstralski lěśojski cas", "∅∅∅": "Amaconaski lěśojski cas", "CDT": "Pódpołnocnoameriski centralny lěśojski cas", "ChST": "Chamorrski cas", "HNCU": "Kubański standardny cas", "HEOG": "Pódwjacornogrönlandski lěśojski cas", "WAT": "Pódwjacornoafriski standardny cas", "WESZ": "Pódwjacornoeuropski lěśojski cas", "CLST": "Chilski lěśojski cas", "NZDT": "Nowoseelandski lěśojski cas", "GMT": "Greenwichski cas", "AST": "Atlantiski standardny cas", "ART": "Argentinski standardny cas", "HEEG": "Pódzajtšnogrönlandski lěśojski cas", "AKDT": "Alaskojski lěśojski cas", "PST": "Pódpołnocnoameriski pacifiski standardny cas", "NZST": "Nowoseelandski standardny cas", "HEPM": "St.-Pierre-a-Miqueloński lěśojski cas", "VET": "Venezuelski cas", "WART": "Pódwjacornoargentinski standardny cas", "MST": "MST", "HNEG": "Pódzajtšnogrönlandski standardny cas", "WITA": "Srjejźoindoneski cas", "LHST": "Standardny cas kupy Lord-Howe", "CHADT": "Chathamski lěśojski cas", "PDT": "Pódpołnocnoameriski pacifiski lěśojski cas", "HKT": "Hongkongski standardny cas", "UYST": "Uruguayski lěśojski cas", "LHDT": "lěśojski cas kupy Lord-Howe", "GYT": "Guyański cas", "HECU": "Kubański lěśojski cas", "CST": "Pódpołnocnoameriski centralny standardny cas", "HADT": "Hawaiisko-aleutski lěśojski cas", "MYT": "Malajziski cas", "AWST": "Pódwjacornoawstralski standardny cas", "HENOMX": "Mexiski dłujkowjacorny lěśojski cas", "HAT": "Nowofundlandski lěśojski cas", "GFT": "Francojskoguyański cas", "SRT": "Surinamski cas", "MESZ": "Srjejźoeuropski lěśojski cas", "TMT": "Turkmeniski standardny cas", "CLT": "Chilski standardny cas", "ACDT": "Srjejźoawstralski lěśojski cas", "COST": "Kolumbiski lěśojski cas", "AEDT": "Pódzajtšnoawstralski lěśojski cas", "SGT": "Singapurski cas", "IST": "Indiski cas", "OEZ": "Pódzajtšnoeuropski standardny cas", "MDT": "MDT", "EDT": "Pódpołnocnoameriski pódzajtšny lěśojski cas", "COT": "Kolumbiski standardny cas", "SAST": "Pódpołdnjowoafriski cas", "AWDT": "Pódwjacornoawstralski lěśojski cas", "HAST": "Hawaiisko-aleutski standardny cas", "WARST": "Pódwjacornoargentinski lěśojski cas", "WAST": "Pódwjacornoafriski lěśojski cas", "HNT": "Nowofundlandski standardny cas", "JDT": "Japański lěśojski cas", "OESZ": "Pódzajtšnoeuropski lěśojski cas", "MEZ": "Srjejźoeuropski standardny cas", "EAT": "Pódzajtšnoafriski cas", "CHAST": "Chathamski standardny cas", "UYT": "Uruguayski standardny cas", "EST": "Pódpołnocnoameriski pódzajtšny standardny cas", "WIB": "Pódwjacornoindoneski cas", "ECT": "Ekuadorski cas", "ACWST": "Srjejźopódwjacorny awstralski standardny cas", "HEPMX": "Mexiski pacifiski lěśojski cas", "WIT": "Pódzajtšnoindoneski", "BOT": "Boliwiski cas", "JST": "Japański standardny cas", "BT": "Bhutański cas", "CAT": "Srjejźoafriski cas", "TMST": "Turkmeniski lěśojski cas"},
+		timezones:              map[string]string{"SRT": "Surinamski cas", "WIT": "Pódzajtšnoindoneski", "HENOMX": "Mexiski dłujkowjacorny lěśojski cas", "PDT": "Pódpołnocnoameriski pacifiski lěśojski cas", "CST": "Pódpołnocnoameriski centralny standardny cas", "HKT": "Hongkongski standardny cas", "WEZ": "Pódwjacornoeuropski standardny cas", "WESZ": "Pódwjacornoeuropski lěśojski cas", "UYT": "Uruguayski standardny cas", "WITA": "Srjejźoindoneski cas", "ART": "Argentinski standardny cas", "AEDT": "Pódzajtšnoawstralski lěśojski cas", "ACDT": "Srjejźoawstralski lěśojski cas", "CAT": "Srjejźoafriski cas", "CHADT": "Chathamski lěśojski cas", "MDT": "MDT", "TMST": "Turkmeniski lěśojski cas", "WART": "Pódwjacornoargentinski standardny cas", "JST": "Japański standardny cas", "SAST": "Pódpołdnjowoafriski cas", "GFT": "Francojskoguyański cas", "HNT": "Nowofundlandski standardny cas", "CHAST": "Chathamski standardny cas", "BT": "Bhutański cas", "ACWST": "Srjejźopódwjacorny awstralski standardny cas", "HNNOMX": "Mexiski dłujkowjacorny standardny cas", "WAST": "Pódwjacornoafriski lěśojski cas", "ECT": "Ekuadorski cas", "NZDT": "Nowoseelandski lěśojski cas", "HECU": "Kubański lěśojski cas", "MEZ": "Srjejźoeuropski standardny cas", "WARST": "Pódwjacornoargentinski lěśojski cas", "HAT": "Nowofundlandski lěśojski cas", "EST": "Pódpołnocnoameriski pódzajtšny standardny cas", "GYT": "Guyański cas", "SGT": "Singapurski cas", "HNCU": "Kubański standardny cas", "AWDT": "Pódwjacornoawstralski lěśojski cas", "OESZ": "Pódzajtšnoeuropski lěśojski cas", "AST": "Atlantiski standardny cas", "HEEG": "Pódzajtšnogrönlandski lěśojski cas", "VET": "Venezuelski cas", "JDT": "Japański lěśojski cas", "ADT": "Atlantiski lěśojski cas", "HKST": "Hongkongski lěśojski cas", "EAT": "Pódzajtšnoafriski cas", "HEPMX": "Mexiski pacifiski lěśojski cas", "HNPM": "St.-Pierre-a-Miqueloński standardny cas", "TMT": "Turkmeniski standardny cas", "LHDT": "lěśojski cas kupy Lord-Howe", "ARST": "Argentinski lěśojski cas", "ChST": "Chamorrski cas", "BOT": "Boliwiski cas", "MESZ": "Srjejźoeuropski lěśojski cas", "OEZ": "Pódzajtšnoeuropski standardny cas", "HEOG": "Pódwjacornogrönlandski lěśojski cas", "UYST": "Uruguayski lěśojski cas", "HAST": "Hawaiisko-aleutski standardny cas", "HADT": "Hawaiisko-aleutski lěśojski cas", "HNPMX": "Mexiski pacifiski standardny cas", "GMT": "Greenwichski cas", "HEPM": "St.-Pierre-a-Miqueloński lěśojski cas", "AWST": "Pódwjacornoawstralski standardny cas", "CDT": "Pódpołnocnoameriski centralny lěśojski cas", "WAT": "Pódwjacornoafriski standardny cas", "AKST": "Alaskojski standardny cas", "∅∅∅": "Brasília lěśojski cas", "PST": "Pódpołnocnoameriski pacifiski standardny cas", "HNEG": "Pódzajtšnogrönlandski standardny cas", "CLST": "Chilski lěśojski cas", "ACST": "Srjejźoawstralski standardny cas", "MST": "MST", "LHST": "Standardny cas kupy Lord-Howe", "COT": "Kolumbiski standardny cas", "EDT": "Pódpołnocnoameriski pódzajtšny lěśojski cas", "COST": "Kolumbiski lěśojski cas", "AKDT": "Alaskojski lěśojski cas", "MYT": "Malajziski cas", "IST": "Indiski cas", "HNOG": "Pódwjacornogrönlandski standardny cas", "AEST": "Pódzajtšnoawstralski standardny cas", "CLT": "Chilski standardny cas", "WIB": "Pódwjacornoindoneski cas", "ACWDT": "Srjejźopódwjacorny awstralski lěśojski cas", "NZST": "Nowoseelandski standardny cas"},
 	}
 }
 
@@ -195,6 +195,21 @@ func (dsb *dsb_DE) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (dsb *dsb_DE) WeekdaysWide() []string {
 	return dsb.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (dsb *dsb_DE) Decimal() string {
+	return dsb.decimal
+}
+
+// Group returns the group of number
+func (dsb *dsb_DE) Group() string {
+	return dsb.group
+}
+
+// Group returns the minus sign of number
+func (dsb *dsb_DE) Minus() string {
+	return dsb.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'dsb_DE' and handles both Whole and Real numbers based on 'v'
@@ -425,7 +440,7 @@ func (dsb *dsb_DE) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -444,7 +459,7 @@ func (dsb *dsb_DE) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -465,7 +480,7 @@ func (dsb *dsb_DE) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

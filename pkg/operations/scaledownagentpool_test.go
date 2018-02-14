@@ -4,16 +4,14 @@ import (
 	"testing"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
-	log "github.com/Sirupsen/logrus"
+	. "github.com/Azure/acs-engine/pkg/test"
 	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 )
 
-func TestScaleDownVMs(t *testing.T) {
-	RegisterFailHandler(Fail)
-	junitReporter := reporters.NewJUnitReporter("junit.xml")
-	RunSpecsWithDefaultAndCustomReporters(t, "Server Suite", []Reporter{junitReporter})
+func TestOperations(t *testing.T) {
+	RunSpecsWithReporters(t, "operations", "Server Suite")
 }
 
 var _ = Describe("Scale down vms operation tests", func() {

@@ -47,8 +47,8 @@ func New() locales.Translator {
 	return &gsw{
 		locale:                 "gsw",
 		pluralsCardinal:        []locales.PluralRule{2, 6},
-		pluralsOrdinal:         nil,
-		pluralsRange:           nil,
+		pluralsOrdinal:         []locales.PluralRule{6},
+		pluralsRange:           []locales.PluralRule{2, 6},
 		decimal:                ".",
 		group:                  "’",
 		minus:                  "−",
@@ -66,12 +66,12 @@ func New() locales.Translator {
 		daysAbbreviated:        []string{"Su.", "Mä.", "Zi.", "Mi.", "Du.", "Fr.", "Sa."},
 		daysNarrow:             []string{"S", "M", "D", "M", "D", "F", "S"},
 		daysWide:               []string{"Sunntig", "Määntig", "Ziischtig", "Mittwuch", "Dunschtig", "Friitig", "Samschtig"},
-		periodsAbbreviated:     []string{"v.m.", "n.m."},
-		periodsWide:            []string{"vorm.", "nam."},
+		periodsAbbreviated:     []string{"vorm.", "nam."},
+		periodsWide:            []string{"am Vormittag", "am Namittag"},
 		erasAbbreviated:        []string{"v. Chr.", "n. Chr."},
 		erasNarrow:             []string{"v. Chr.", "n. Chr."},
 		erasWide:               []string{"v. Chr.", "n. Chr."},
-		timezones:              map[string]string{"MYT": "MYT", "MDT": "MDT", "ARST": "ARST", "ChST": "ChST", "WIT": "WIT", "WESZ": "Weschteuropäischi Summerziit", "AKDT": "Alaska-Summerziit", "OESZ": "Oschteuropäischi Summerziit", "HKT": "HKT", "HKST": "HKST", "CLST": "CLST", "HNOG": "HNOG", "AST": "AST", "WEZ": "Weschteuropäischi Schtandardziit", "WAT": "Weschtafrikanischi Schtandardziit", "HNPMX": "HNPMX", "BOT": "BOT", "CLT": "CLT", "COST": "COST", "HNEG": "HNEG", "ACWDT": "ACWDT", "WART": "WART", "ADT": "ADT", "WAST": "Weschtafrikanischi Summerziit", "HENOMX": "HENOMX", "CHAST": "CHAST", "PST": "PST", "HAST": "HAST", "HAT": "HAT", "WITA": "WITA", "AKST": "Alaska-Schtandardziit", "OEZ": "Oschteuropäischi Schtandardziit", "COT": "COT", "BT": "BT", "JDT": "JDT", "GMT": "GMT", "ACST": "ACST", "PDT": "PDT", "IST": "IST", "NZDT": "NZDT", "MST": "MST", "HNNOMX": "HNNOMX", "HNPM": "HNPM", "WIB": "WIB", "CDT": "Amerika-Zentraal Summerziit", "AWST": "AWST", "CHADT": "CHADT", "GFT": "GFT", "LHDT": "LHDT", "HEPMX": "HEPMX", "∅∅∅": "∅∅∅", "HADT": "HADT", "HEOG": "HEOG", "ART": "ART", "AEST": "AEST", "HEPM": "HEPM", "SGT": "SGT", "ECT": "ECT", "MESZ": "Mitteleuropäischi Summerziit", "ACDT": "ACDT", "LHST": "LHST", "HECU": "HECU", "AWDT": "AWDT", "AEDT": "AEDT", "SAST": "Süüdafrikanischi ziit", "VET": "VET", "TMT": "TMT", "TMST": "TMST", "EST": "EST", "UYT": "UYT", "GYT": "GYT", "CST": "Amerika-Zentraal Schtandardziit", "EDT": "EDT", "NZST": "NZST", "WARST": "WARST", "HEEG": "HEEG", "UYST": "UYST", "EAT": "Oschtafrikanischi Ziit", "CAT": "Zentralafrikanischi Ziit", "MEZ": "Mitteleuropäischi Schtandardziit", "JST": "JST", "HNT": "HNT", "SRT": "SRT", "HNCU": "HNCU", "ACWST": "ACWST"},
+		timezones:              map[string]string{"ChST": "ChST", "CDT": "Amerika-Zentraal Summerziit", "MST": "MST", "AWDT": "AWDT", "NZST": "NZST", "HNEG": "HNEG", "HKST": "HKST", "EST": "EST", "PDT": "PDT", "EAT": "Oschtafrikanischi Ziit", "WAST": "Weschtafrikanischi Summerziit", "EDT": "EDT", "GYT": "GYT", "TMST": "TMST", "ACWST": "ACWST", "TMT": "TMT", "HENOMX": "HENOMX", "OEZ": "Oschteuropäischi Schtandardziit", "LHDT": "LHDT", "HEOG": "HEOG", "SAST": "Süüdafrikanischi ziit", "UYST": "UYST", "MESZ": "Mitteleuropäischi Summerziit", "WITA": "WITA", "ADT": "ADT", "AEDT": "AEDT", "WAT": "Weschtafrikanischi Schtandardziit", "ACWDT": "ACWDT", "HAT": "HAT", "COST": "COST", "AKDT": "Alaska-Summerziit", "BOT": "BOT", "JDT": "JDT", "ACDT": "ACDT", "HEPM": "HEPM", "VET": "VET", "AKST": "Alaska-Schtandardziit", "ECT": "ECT", "HEPMX": "HEPMX", "WIB": "WIB", "CHADT": "CHADT", "HNCU": "HNCU", "MDT": "MDT", "ART": "ART", "BT": "BT", "SRT": "SRT", "JST": "JST", "CLST": "CLST", "ACST": "ACST", "SGT": "SGT", "GMT": "GMT", "HECU": "HECU", "HADT": "HADT", "OESZ": "Oschteuropäischi Summerziit", "WARST": "WARST", "ARST": "ARST", "CAT": "Zentralafrikanischi Ziit", "MEZ": "Mitteleuropäischi Schtandardziit", "IST": "IST", "AEST": "AEST", "HEEG": "HEEG", "HKT": "HKT", "WESZ": "Weschteuropäischi Summerziit", "AWST": "AWST", "COT": "COT", "WEZ": "Weschteuropäischi Schtandardziit", "HNPM": "HNPM", "∅∅∅": "Acre-Summerziit", "CST": "Amerika-Zentraal Schtandardziit", "WIT": "WIT", "LHST": "LHST", "CLT": "CLT", "HNPMX": "HNPMX", "NZDT": "NZDT", "HNT": "HNT", "PST": "PST", "GFT": "GFT", "MYT": "MYT", "UYT": "UYT", "HAST": "HAST", "HNNOMX": "HNNOMX", "WART": "WART", "AST": "AST", "HNOG": "HNOG", "CHAST": "CHAST"},
 	}
 }
 
@@ -109,12 +109,23 @@ func (gsw *gsw) CardinalPluralRule(num float64, v uint64) locales.PluralRule {
 
 // OrdinalPluralRule returns the ordinal PluralRule given 'num' and digits/precision of 'v' for 'gsw'
 func (gsw *gsw) OrdinalPluralRule(num float64, v uint64) locales.PluralRule {
-	return locales.PluralRuleUnknown
+	return locales.PluralRuleOther
 }
 
 // RangePluralRule returns the ordinal PluralRule given 'num1', 'num2' and digits/precision of 'v1' and 'v2' for 'gsw'
 func (gsw *gsw) RangePluralRule(num1 float64, v1 uint64, num2 float64, v2 uint64) locales.PluralRule {
-	return locales.PluralRuleUnknown
+
+	start := gsw.CardinalPluralRule(num1, v1)
+	end := gsw.CardinalPluralRule(num2, v2)
+
+	if start == locales.PluralRuleOne && end == locales.PluralRuleOther {
+		return locales.PluralRuleOther
+	} else if start == locales.PluralRuleOther && end == locales.PluralRuleOne {
+		return locales.PluralRuleOne
+	}
+
+	return locales.PluralRuleOther
+
 }
 
 // MonthAbbreviated returns the locales abbreviated month given the 'month' provided
@@ -185,6 +196,21 @@ func (gsw *gsw) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (gsw *gsw) WeekdaysWide() []string {
 	return gsw.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (gsw *gsw) Decimal() string {
+	return gsw.decimal
+}
+
+// Group returns the group of number
+func (gsw *gsw) Group() string {
+	return gsw.group
+}
+
+// Group returns the minus sign of number
+func (gsw *gsw) Minus() string {
+	return gsw.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'gsw' and handles both Whole and Real numbers based on 'v'
@@ -449,7 +475,7 @@ func (gsw *gsw) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -468,7 +494,7 @@ func (gsw *gsw) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -489,7 +515,7 @@ func (gsw *gsw) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

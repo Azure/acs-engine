@@ -9,26 +9,44 @@ import (
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 const ExampleAPIModel = `{
   "apiVersion": "vlabs",
   "properties": {
-    "orchestratorProfile": { "orchestratorType": "Kubernetes", "kubernetesConfig": { "useManagedIdentity": %s } },
+		"orchestratorProfile": { "orchestratorType": "Kubernetes", "kubernetesConfig": { "useManagedIdentity": %s, "etcdVersion" : "2.3.8" } },
     "masterProfile": { "count": 1, "dnsPrefix": "", "vmSize": "Standard_D2_v2" },
     "agentPoolProfiles": [ { "name": "linuxpool1", "count": 2, "vmSize": "Standard_D2_v2", "availabilityProfile": "AvailabilitySet" } ],
     "windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
     "linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
     },
-    "servicePrincipalProfile": { "servicePrincipalClientID": "%s", "servicePrincipalClientSecret": "%s" }
+    "servicePrincipalProfile": { "clientId": "%s", "secret": "%s" }
   }
 }
 `
 
+const ExampleAPIModelWithDNSPrefix = `{
+	"apiVersion": "vlabs",
+	"properties": {
+		  "orchestratorProfile": { "orchestratorType": "Kubernetes", "kubernetesConfig": { "useManagedIdentity": %s, "etcdVersion" : "2.3.8" } },
+	  "masterProfile": { "count": 1, "dnsPrefix": "mytestcluster", "vmSize": "Standard_D2_v2" },
+	  "agentPoolProfiles": [ { "name": "linuxpool1", "count": 2, "vmSize": "Standard_D2_v2", "availabilityProfile": "AvailabilitySet" } ],
+	  "windowsProfile": { "adminUsername": "azureuser", "adminPassword": "replacepassword1234$" },
+	  "linuxProfile": { "adminUsername": "azureuser", "ssh": { "publicKeys": [ { "keyData": "" } ] }
+	  },
+	  "servicePrincipalProfile": { "clientId": "%s", "secret": "%s" }
+	}
+  }
+  `
+
 func getExampleAPIModel(useManagedIdentity bool, clientID, clientSecret string) string {
+	return getAPIModel(ExampleAPIModel, useManagedIdentity, clientID, clientSecret)
+}
+
+func getAPIModel(baseAPIModel string, useManagedIdentity bool, clientID, clientSecret string) string {
 	return fmt.Sprintf(
-		ExampleAPIModel,
+		baseAPIModel,
 		strconv.FormatBool(useManagedIdentity),
 		clientID,
 		clientSecret)
@@ -46,9 +64,43 @@ func TestAutofillApimodelAllowsPrespecifiedCreds(t *testing.T) {
 	testAutodeployCredentialHandling(t, false, "clientID", "clientSecret")
 }
 
+func TestAutoSufixWithDnsPrefixInApiModel(t *testing.T) {
+	apiloader := &api.Apiloader{
+		Translator: nil,
+	}
+
+	apimodel := getAPIModel(ExampleAPIModelWithDNSPrefix, false, "clientID", "clientSecret")
+	cs, ver, err := apiloader.DeserializeContainerService([]byte(apimodel), false, false, nil)
+	if err != nil {
+		t.Fatalf("unexpected error deserializing the example apimodel: %s", err)
+	}
+	deployCmd := &deployCmd{
+		apimodelPath:     "./this/is/unused.json",
+		outputDirectory:  "_test_output",
+		location:         "westus",
+		autoSuffix:       true,
+		containerService: cs,
+		apiVersion:       ver,
+
+		client: &armhelpers.MockACSEngineClient{},
+	}
+	autofillApimodel(deployCmd)
+
+	defer os.RemoveAll(deployCmd.outputDirectory)
+
+	if deployCmd.containerService.Properties.MasterProfile.DNSPrefix == "mytestcluster" {
+		t.Fatalf("expected %s-{timestampsuffix} but got %s", "mytestcluster", deployCmd.containerService.Properties.MasterProfile.DNSPrefix)
+	}
+
+}
+
 func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, clientID, clientSecret string) {
+	apiloader := &api.Apiloader{
+		Translator: nil,
+	}
+
 	apimodel := getExampleAPIModel(useManagedIdentity, clientID, clientSecret)
-	cs, ver, err := api.DeserializeContainerService([]byte(apimodel), false)
+	cs, ver, err := apiloader.DeserializeContainerService([]byte(apimodel), false, false, nil)
 	if err != nil {
 		t.Fatalf("unexpected error deserializing the example apimodel: %s", err)
 	}
@@ -73,7 +125,7 @@ func testAutodeployCredentialHandling(t *testing.T, useManagedIdentity bool, cli
 	// cleanup, since auto-populations creates dirs and saves the SSH private key that it might create
 	defer os.RemoveAll(deployCmd.outputDirectory)
 
-	cs, ver, err = revalidateApimodel(cs, ver)
+	cs, _, err = revalidateApimodel(apiloader, cs, ver)
 	if err != nil {
 		log.Fatalf("unexpected error validating apimodel after populating defaults: %s", err)
 	}

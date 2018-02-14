@@ -75,7 +75,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"pred Kr.", "po Kr."},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"pred Kristom", "po Kristovi"},
-		timezones:              map[string]string{"SAST": "juhoafrický čas", "HECU": "kubánsky letný čas", "ACWST": "stredozápadný austrálsky štandardný čas", "WARST": "západoargentínsky letný čas", "OESZ": "východoeurópsky letný čas", "HNEG": "východogrónsky štandardný čas", "GFT": "francúzskoguyanský čas", "CHADT": "chathamský letný čas", "HAST": "havajsko-aleutský štandardný čas", "JST": "japonský štandardný čas", "HENOMX": "severozápadný mexický letný čas", "CHAST": "chathamský štandardný čas", "AEST": "východoaustrálsky štandardný čas", "UYST": "uruguajský letný čas", "IST": "indický čas", "JDT": "japonský letný čas", "WAT": "západoafrický štandardný čas", "HKT": "hongkonský štandardný čas", "MEZ": "stredoeurópsky štandardný čas", "BT": "bhutánsky čas", "∅∅∅": "∅∅∅", "HEPM": "pierre-miquelonský letný čas", "LHST": "štandardný čas ostrova lorda Howa", "CDT": "severoamerický centrálny letný čas", "WIT": "východoindonézsky čas", "SGT": "singapurský štandardný čas", "EDT": "severoamerický východný letný čas", "HNNOMX": "severozápadný mexický štandardný čas", "UYT": "uruguajský štandardný čas", "HNPM": "pierre-miquelonský štandardný čas", "PDT": "severoamerický tichomorský letný čas", "HKST": "hongkonský letný čas", "ACST": "stredoaustrálsky štandardný čas", "COT": "kolumbijský štandardný čas", "TMST": "turkménsky letný čas", "WITA": "stredoindonézsky čas", "AKDT": "aljašský letný čas", "HNPMX": "mexický tichomorský štandardný čas", "AWDT": "západoaustrálsky letný čas", "ADT": "atlantický letný čas", "OEZ": "východoeurópsky štandardný čas", "WEZ": "západoeurópsky štandardný čas", "BOT": "bolívijský čas", "ACDT": "stredoaustrálsky letný čas", "HNT": "newfoundlandský štandardný čas", "HEEG": "východogrónsky letný čas", "HEPMX": "mexický tichomorský letný čas", "TMT": "turkménsky štandardný čas", "ART": "argentínsky štandardný čas", "EST": "severoamerický východný štandardný čas", "MST": "severoamerický horský štandardný čas", "SRT": "surinamský čas", "GYT": "guyanský čas", "ACWDT": "stredozápadný austrálsky letný čas", "LHDT": "letný čas ostrova lorda Howa", "ECT": "ekvádorský čas", "GMT": "greenwichský čas", "COST": "kolumbijský letný čas", "AEDT": "východoaustrálsky letný čas", "NZST": "novozélandský štandardný čas", "NZDT": "novozélandský letný čas", "AST": "atlantický štandardný čas", "EAT": "východoafrický čas", "WIB": "západoindonézsky čas", "CST": "severoamerický centrálny štandardný čas", "HADT": "havajsko-aleutský letný čas", "CLT": "čilský štandardný čas", "ARST": "argentínsky letný čas", "ChST": "chamorrský štandardný čas", "MESZ": "stredoeurópsky letný čas", "WART": "západoargentínsky štandardný čas", "HNOG": "západogrónsky štandardný čas", "WAST": "západoafrický letný čas", "AKST": "aljašský štandardný čas", "HNCU": "kubánsky štandardný čas", "CAT": "stredoafrický čas", "VET": "venezuelský čas", "CLST": "čilský letný čas", "HEOG": "západogrónsky letný čas", "WESZ": "západoeurópsky letný čas", "HAT": "newfoundlandský letný čas", "MDT": "severoamerický horský letný čas", "AWST": "západoaustrálsky štandardný čas", "PST": "severoamerický tichomorský štandardný čas", "MYT": "malajzijský čas"},
+		timezones:              map[string]string{"HNPMX": "mexický tichomorský štandardný čas", "HNPM": "pierre-miquelonský štandardný čas", "AWST": "západoaustrálsky štandardný čas", "TMST": "turkménsky letný čas", "ARST": "argentínsky letný čas", "AEDT": "východoaustrálsky letný čas", "ECT": "ekvádorský čas", "∅∅∅": "amazonský letný čas", "MYT": "malajzijský čas", "AEST": "východoaustrálsky štandardný čas", "SAST": "juhoafrický čas", "HECU": "kubánsky letný čas", "CHAST": "chathamský štandardný čas", "NZST": "novozélandský štandardný čas", "WART": "západoargentínsky štandardný čas", "HNT": "newfoundlandský štandardný čas", "HKST": "hongkonský letný čas", "WESZ": "západoeurópsky letný čas", "HEPM": "pierre-miquelonský letný čas", "TMT": "turkménsky štandardný čas", "HENOMX": "severozápadný mexický letný čas", "HEEG": "východogrónsky letný čas", "SGT": "singapurský štandardný čas", "SRT": "surinamský čas", "MST": "MST", "ART": "argentínsky štandardný čas", "HNOG": "západogrónsky štandardný čas", "HNEG": "východogrónsky štandardný čas", "ACDT": "stredoaustrálsky letný čas", "CDT": "severoamerický centrálny letný čas", "WITA": "stredoindonézsky čas", "LHDT": "letný čas ostrova lorda Howa", "WAST": "západoafrický letný čas", "CLST": "čilský letný čas", "GYT": "guyanský čas", "ACST": "stredoaustrálsky štandardný čas", "ACWST": "stredozápadný austrálsky štandardný čas", "VET": "venezuelský čas", "HNNOMX": "severozápadný mexický štandardný čas", "OESZ": "východoeurópsky letný čas", "IST": "indický čas", "COST": "kolumbijský letný čas", "EDT": "severoamerický východný letný čas", "WEZ": "západoeurópsky štandardný čas", "HEOG": "západogrónsky letný čas", "ADT": "atlantický letný čas", "GMT": "greenwichský čas", "HNCU": "kubánsky štandardný čas", "CHADT": "chathamský letný čas", "ACWDT": "stredozápadný austrálsky letný čas", "NZDT": "novozélandský letný čas", "HAST": "havajsko-aleutský štandardný čas", "AKST": "aljašský štandardný čas", "WIB": "západoindonézsky čas", "BOT": "bolívijský čas", "MDT": "MDT", "COT": "kolumbijský štandardný čas", "HEPMX": "mexický tichomorský letný čas", "PDT": "severoamerický tichomorský letný čas", "MESZ": "stredoeurópsky letný čas", "AST": "atlantický štandardný čas", "EAT": "východoafrický čas", "EST": "severoamerický východný štandardný čas", "CST": "severoamerický centrálny štandardný čas", "UYT": "uruguajský štandardný čas", "AKDT": "aljašský letný čas", "BT": "bhutánsky čas", "PST": "severoamerický tichomorský štandardný čas", "CLT": "čilský štandardný čas", "HADT": "havajsko-aleutský letný čas", "LHST": "štandardný čas ostrova lorda Howa", "WAT": "západoafrický štandardný čas", "HAT": "newfoundlandský letný čas", "ChST": "chamorrský štandardný čas", "WIT": "východoindonézsky čas", "MEZ": "stredoeurópsky štandardný čas", "WARST": "západoargentínsky letný čas", "JST": "japonský štandardný čas", "JDT": "japonský letný čas", "OEZ": "východoeurópsky štandardný čas", "HKT": "hongkonský štandardný čas", "CAT": "stredoafrický čas", "UYST": "uruguajský letný čas", "AWDT": "západoaustrálsky letný čas", "GFT": "francúzskoguyanský čas"},
 	}
 }
 
@@ -227,6 +227,21 @@ func (sk *sk) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (sk *sk) WeekdaysWide() []string {
 	return sk.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (sk *sk) Decimal() string {
+	return sk.decimal
+}
+
+// Group returns the group of number
+func (sk *sk) Group() string {
+	return sk.group
+}
+
+// Group returns the minus sign of number
+func (sk *sk) Minus() string {
+	return sk.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'sk' and handles both Whole and Real numbers based on 'v'
@@ -444,7 +459,7 @@ func (sk *sk) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -463,7 +478,7 @@ func (sk *sk) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -482,7 +497,7 @@ func (sk *sk) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -503,7 +518,7 @@ func (sk *sk) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

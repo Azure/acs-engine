@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"m.a.", "milodiy"},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"", ""},
-		timezones:              map[string]string{"WART": "Gʻarbiy Argentina standart vaqti", "TMST": "Turkmaniston yozgi vaqti", "HNNOMX": "Shimoli-g‘arbiy Meksika standart vaqti", "OESZ": "Sharqiy Yevropa yozgi vaqti", "ARST": "Argentina yozgi vaqti", "GFT": "Fransuz Gvianasi vaqti", "ChST": "Chamorro standart vaqti", "MDT": "MDT", "HNCU": "Kuba standart vaqti", "CHADT": "Chatem yozgi vaqti", "VET": "Venesuela vaqti", "ADT": "Atlantika yozgi vaqti", "COT": "Kolumbiya standart vaqti", "HEEG": "Sharqiy Grenlandiya yozgi vaqti", "AKST": "Alyaska standart vaqti", "HNPMX": "Meksika Tinch okeani standart vaqti", "CST": "Markaziy Amerika standart vaqti", "PDT": "Tinch okeani yozgi vaqti", "CAT": "Markaziy Afrika vaqti", "NZDT": "Yangi Zelandiya yozgi vaqti", "HKT": "Gonkong standart vaqti", "AKDT": "Alyaska yozgi vaqti", "LHST": "Lord-Xau standart vaqti", "CLST": "Chili yozgi vaqti", "UYST": "Urugvay yozgi vaqti", "HEPM": "Sen-Pyer va Mikelon yozgi vaqti", "CHAST": "Chatem standart vaqti", "EST": "Sharqiy Amerika standart vaqti", "EDT": "Sharqiy Amerika yozgi vaqti", "HENOMX": "Shimoli-g‘arbiy Meksika yozgi vaqti", "BT": "Butan vaqti", "ACWST": "Markaziy Avstraliya g‘arbiy standart vaqti", "MESZ": "Markaziy Yevropa yozgi vaqti", "HEOG": "G‘arbiy Grenlandiya yozgi vaqti", "WAT": "Gʻarbiy Afrika standart vaqti", "HNT": "Nyufaundlend standart vaqti", "AEDT": "Sharqiy Avstraliya yozgi vaqti", "GYT": "Gayana vaqti", "HECU": "Kuba yozgi vaqti", "CDT": "Markaziy Amerika yozgi vaqti", "BOT": "Boliviya vaqti", "IST": "Hindiston vaqti", "TMT": "Turkmaniston standart vaqti", "ACST": "Markaziy Avstraliya standart vaqti", "WITA": "Markaziy Indoneziya vaqti", "EAT": "Sharqiy Afrika vaqti", "UYT": "Urugvay standart vaqti", "AEST": "Sharqiy Avstraliya standart vaqti", "HNPM": "Sen-Pyer va Mikelon standart vaqti", "GMT": "Grinvich o‘rtacha vaqti", "WARST": "Gʻarbiy Argentina yozgi vaqti", "PST": "Tinch okeani standart vaqti", "HNOG": "G‘arbiy Grenlandiya standart vaqti", "WESZ": "G‘arbiy Yevropa yozgi vaqti", "HNEG": "Sharqiy Grenlandiya standart vaqti", "AWDT": "G‘arbiy Avstraliya yozgi vaqti", "HAT": "Nyufaundlend yozgi vaqti", "CLT": "Chili standart vaqti", "LHDT": "Lord-Xau yozgi vaqti", "∅∅∅": "Azor orollari yozgi vaqti", "WIB": "Gʻarbiy Indoneziya vaqti", "SGT": "Singapur vaqti", "HAST": "Gavayi-aleut standart vaqti", "ACWDT": "Markaziy Avstraliya g‘arbiy yozgi vaqti", "OEZ": "Sharqiy Yevropa standart vaqti", "SAST": "Janubiy Afrika standart vaqti", "ACDT": "Markaziy Avstraliya yozgi vaqti", "AWST": "G‘arbiy Avstraliya standart vaqti", "AST": "Atlantika standart vaqti", "WEZ": "G‘arbiy Yevropa standart vaqti", "MYT": "Malayziya vaqti", "WAST": "Gʻarbiy Afrika yozgi vaqti", "COST": "Kolumbiya yozgi vaqti", "HEPMX": "Meksika Tinch okeani yozgi vaqti", "WIT": "Sharqiy Indoneziya vaqti", "HADT": "Gavayi-aleut yozgi vaqti", "MEZ": "Markaziy Yevropa standart vaqti", "MST": "MST", "SRT": "Surinam vaqti", "NZST": "Yangi Zelandiya standart vaqti", "JST": "Yaponiya standart vaqti", "JDT": "Yaponiya yozgi vaqti", "ART": "Argentina standart vaqti", "HKST": "Gonkong yozgi vaqti", "ECT": "Ekvador vaqti"},
+		timezones:              map[string]string{"PST": "Tinch okeani standart vaqti", "WIT": "Sharqiy Indoneziya vaqti", "WARST": "Gʻarbiy Argentina yozgi vaqti", "SGT": "Singapur vaqti", "PDT": "Tinch okeani yozgi vaqti", "AST": "Atlantika standart vaqti", "HEEG": "Sharqiy Grenlandiya yozgi vaqti", "HEPMX": "Meksika Tinch okeani yozgi vaqti", "SRT": "Surinam vaqti", "CST": "Markaziy Amerika standart vaqti", "WAST": "Gʻarbiy Afrika yozgi vaqti", "LHST": "Lord-Xau standart vaqti", "WAT": "Gʻarbiy Afrika standart vaqti", "EAT": "Sharqiy Afrika vaqti", "WEZ": "G‘arbiy Yevropa standart vaqti", "HNPMX": "Meksika Tinch okeani standart vaqti", "HAST": "Gavayi-aleut standart vaqti", "NZDT": "Yangi Zelandiya yozgi vaqti", "MEZ": "Markaziy Yevropa standart vaqti", "VET": "Venesuela vaqti", "CHAST": "Chatem standart vaqti", "ADT": "Atlantika yozgi vaqti", "CLT": "Chili standart vaqti", "ACDT": "Markaziy Avstraliya yozgi vaqti", "AKDT": "Alyaska yozgi vaqti", "HNCU": "Kuba standart vaqti", "TMST": "Turkmaniston yozgi vaqti", "HENOMX": "Shimoli-g‘arbiy Meksika yozgi vaqti", "IST": "Hindiston vaqti", "HKST": "Gonkong yozgi vaqti", "CLST": "Chili yozgi vaqti", "HNPM": "Sen-Pyer va Mikelon standart vaqti", "TMT": "Turkmaniston standart vaqti", "JST": "Yaponiya standart vaqti", "HNOG": "G‘arbiy Grenlandiya standart vaqti", "HKT": "Gonkong standart vaqti", "COST": "Kolumbiya yozgi vaqti", "CAT": "Markaziy Afrika vaqti", "MDT": "MDT", "∅∅∅": "∅∅∅", "HNNOMX": "Shimoli-g‘arbiy Meksika standart vaqti", "HEOG": "G‘arbiy Grenlandiya yozgi vaqti", "GFT": "Fransuz Gvianasi vaqti", "GMT": "Grinvich o‘rtacha vaqti", "CDT": "Markaziy Amerika yozgi vaqti", "MESZ": "Markaziy Yevropa yozgi vaqti", "WART": "Gʻarbiy Argentina standart vaqti", "HNEG": "Sharqiy Grenlandiya standart vaqti", "ChST": "Chamorro standart vaqti", "AWST": "G‘arbiy Avstraliya standart vaqti", "LHDT": "Lord-Xau yozgi vaqti", "SAST": "Janubiy Afrika standart vaqti", "ART": "Argentina standart vaqti", "HNT": "Nyufaundlend standart vaqti", "GYT": "Gayana vaqti", "ECT": "Ekvador vaqti", "CHADT": "Chatem yozgi vaqti", "MYT": "Malayziya vaqti", "ACWDT": "Markaziy Avstraliya g‘arbiy yozgi vaqti", "NZST": "Yangi Zelandiya standart vaqti", "AKST": "Alyaska standart vaqti", "OESZ": "Sharqiy Yevropa yozgi vaqti", "AEDT": "Sharqiy Avstraliya yozgi vaqti", "EDT": "Sharqiy Amerika yozgi vaqti", "AEST": "Sharqiy Avstraliya standart vaqti", "COT": "Kolumbiya standart vaqti", "HECU": "Kuba yozgi vaqti", "AWDT": "G‘arbiy Avstraliya yozgi vaqti", "ACWST": "Markaziy Avstraliya g‘arbiy standart vaqti", "OEZ": "Sharqiy Yevropa standart vaqti", "WESZ": "G‘arbiy Yevropa yozgi vaqti", "BOT": "Boliviya vaqti", "JDT": "Yaponiya yozgi vaqti", "HAT": "Nyufaundlend yozgi vaqti", "ARST": "Argentina yozgi vaqti", "EST": "Sharqiy Amerika standart vaqti", "ACST": "Markaziy Avstraliya standart vaqti", "WIB": "Gʻarbiy Indoneziya vaqti", "HEPM": "Sen-Pyer va Mikelon yozgi vaqti", "UYT": "Urugvay standart vaqti", "UYST": "Urugvay yozgi vaqti", "WITA": "Markaziy Indoneziya vaqti", "BT": "Butan vaqti", "MST": "MST", "HADT": "Gavayi-aleut yozgi vaqti"},
 	}
 }
 
@@ -196,6 +196,21 @@ func (uz *uz_Arab_AF) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (uz *uz_Arab_AF) WeekdaysWide() []string {
 	return uz.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (uz *uz_Arab_AF) Decimal() string {
+	return uz.decimal
+}
+
+// Group returns the group of number
+func (uz *uz_Arab_AF) Group() string {
+	return uz.group
+}
+
+// Group returns the minus sign of number
+func (uz *uz_Arab_AF) Minus() string {
+	return uz.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'uz_Arab_AF' and handles both Whole and Real numbers based on 'v'
@@ -440,7 +455,7 @@ func (uz *uz_Arab_AF) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -459,7 +474,7 @@ func (uz *uz_Arab_AF) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -480,7 +495,7 @@ func (uz *uz_Arab_AF) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

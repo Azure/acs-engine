@@ -14,6 +14,7 @@ type Deployment struct {
 	SkipValidation    bool   `json:"skip_validation,omitempty"`
 }
 
+// TestConfig represents a cluster config
 type TestConfig struct {
 	Deployments []Deployment `json:"deployments"`
 }
@@ -27,13 +28,11 @@ func (c *TestConfig) validate() error {
 		if d.ClusterDefinition == "" {
 			return errors.New("Cluster definition is not set")
 		}
-		if d.Location == "" {
-			return errors.New("Location is not set")
-		}
 	}
 	return nil
 }
 
+// GetTestConfig parses a cluster config
 func GetTestConfig(fname string) (*TestConfig, error) {
 	data, err := ioutil.ReadFile(fname)
 	if err != nil {

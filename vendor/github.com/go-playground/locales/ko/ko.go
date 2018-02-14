@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"BC", "AD"},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"기원전", "서기"},
-		timezones:              map[string]string{"OEZ": "동유럽 표준시", "OESZ": "동유럽 하계 표준시", "HNEG": "그린란드 동부 표준시", "ACWST": "오스트레일리아 중서부 표준시", "ACWDT": "오스트레일리아 중서부 하계 표준시", "MESZ": "중부 유럽 하계 표준시", "GMT": "그리니치 표준시", "CLT": "칠레 표준시", "HNPM": "세인트피에르 미클롱 표준시", "LHST": "로드 하우 표준시", "WAT": "서아프리카 표준시", "HENOMX": "멕시코 북서부 하계 표준시", "AEDT": "오스트레일리아 동부 하계 표준시", "HECU": "쿠바 하계 표준시", "ARST": "아르헨티나 하계 표준시", "COT": "콜롬비아 표준시", "WITA": "중부 인도네시아 시간", "ECT": "에콰도르 시간", "HEOG": "그린란드 서부 하계 표준시", "ADT": "미 대서양 하계 표준시", "MDT": "마카오 하계 표준시", "SGT": "싱가포르 표준시", "HNT": "뉴펀들랜드 표준시", "HEPMX": "멕시코 태평양 하계 표준시", "GYT": "가이아나 시간", "JDT": "일본 하계 표준시", "TMT": "투르크메니스탄 표준시", "WAST": "서아프리카 하계 표준시", "ChST": "차모로 시간", "HEPM": "세인트피에르 미클롱 하계 표준시", "HNCU": "쿠바 표준시", "PST": "미 태평양 표준시", "PDT": "미 태평양 하계 표준시", "CAT": "중앙아프리카 시간", "MST": "마카오 표준 시간", "BOT": "볼리비아 시간", "HADT": "하와이 알류샨 하계 표준시", "HKT": "홍콩 표준시", "AKST": "알래스카 표준시", "HEEG": "그린란드 동부 하계 표준시", "AKDT": "알래스카 하계 표준시", "UYT": "우루과이 표준시", "HAST": "하와이 알류샨 표준시", "NZST": "뉴질랜드 표준시", "MEZ": "중부 유럽 표준시", "ACST": "오스트레일리아 중부 표준시", "AWST": "오스트레일리아 서부 표준시", "CHADT": "채텀 하계 표준시", "VET": "베네수엘라 시간", "WEZ": "서유럽 표준시", "AEST": "오스트레일리아 동부 표준시", "NZDT": "뉴질랜드 하계 표준시", "AST": "대서양 표준시", "EST": "미 동부 표준시", "EDT": "미 동부 하계 표준시", "HNNOMX": "멕시코 북서부 표준시", "SAST": "남아프리카 시간", "LHDT": "로드 하우 하계 표준시", "∅∅∅": "아마존 하계 표준시", "JST": "일본 표준시", "MYT": "말레이시아 시간", "HKST": "홍콩 하계 표준시", "HAT": "뉴펀들랜드 하계 표준시", "SRT": "수리남 시간", "CST": "미 중부 표준시", "CDT": "미 중부 하계 표준시", "CHAST": "채텀 표준시", "WESZ": "서유럽 하계 표준시", "HNOG": "그린란드 서부 표준시", "BT": "부탄 시간", "WART": "아르헨티나 서부 표준시", "ART": "아르헨티나 표준시", "UYST": "우루과이 하계 표준시", "EAT": "동아프리카 시간", "WARST": "아르헨티나 서부 하계 표준시", "CLST": "칠레 하계 표준시", "TMST": "투르크메니스탄 하계 표준시", "WIB": "서부 인도네시아 시간", "GFT": "프랑스령 가이아나 시간", "HNPMX": "멕시코 태평양 표준시", "WIT": "동부 인도네시아 시간", "AWDT": "오스트레일리아 서부 하계 표준시", "IST": "인도 표준시", "ACDT": "오스트레일리아 중부 하계 표준시", "COST": "콜롬비아 하계 표준시"},
+		timezones:              map[string]string{"COT": "콜롬비아 표준시", "WIB": "서부 인도네시아 시간", "JDT": "일본 하계 표준시", "ART": "아르헨티나 표준시", "COST": "콜롬비아 하계 표준시", "SGT": "싱가포르 표준시", "AKDT": "알래스카 하계 표준시", "ACDT": "오스트레일리아 중부 하계 표준시", "ACWST": "오스트레일리아 중서부 표준시", "LHST": "로드 하우 표준시", "VET": "베네수엘라 시간", "WESZ": "서유럽 하계 표준시", "HEPMX": "멕시코 태평양 하계 표준시", "HENOMX": "멕시코 북서부 하계 표준시", "ADT": "미 대서양 하계 표준시", "CHAST": "채텀 표준시", "SRT": "수리남 시간", "UYT": "우루과이 표준시", "AST": "대서양 표준시", "AWST": "오스트레일리아 서부 표준시", "SAST": "남아프리카 시간", "EDT": "미 동부 하계 표준시", "AKST": "알래스카 표준시", "ECT": "에콰도르 시간", "CAT": "중앙아프리카 시간", "ChST": "차모로 시간", "WIT": "동부 인도네시아 시간", "HEEG": "그린란드 동부 하계 표준시", "HNT": "뉴펀들랜드 표준시", "CLST": "칠레 하계 표준시", "HEPM": "세인트피에르 미클롱 하계 표준시", "MDT": "마카오 하계 표준시", "ACWDT": "오스트레일리아 중서부 하계 표준시", "WAT": "서아프리카 표준시", "HKT": "홍콩 표준시", "CST": "미 중부 표준시", "AWDT": "오스트레일리아 서부 하계 표준시", "HNOG": "그린란드 서부 표준시", "ACST": "오스트레일리아 중부 표준시", "HNPMX": "멕시코 태평양 표준시", "MEZ": "중부 유럽 표준시", "HAST": "하와이 알류샨 표준시", "NZDT": "뉴질랜드 하계 표준시", "WITA": "중부 인도네시아 시간", "TMT": "투르크메니스탄 표준시", "HEOG": "그린란드 서부 하계 표준시", "HNEG": "그린란드 동부 표준시", "EST": "미 동부 표준시", "GMT": "그리니치 표준시", "HNCU": "쿠바 표준시", "HECU": "쿠바 하계 표준시", "MESZ": "중부 유럽 하계 표준시", "GFT": "프랑스령 가이아나 시간", "JST": "일본 표준시", "LHDT": "로드 하우 하계 표준시", "WART": "아르헨티나 서부 표준시", "WARST": "아르헨티나 서부 하계 표준시", "BOT": "볼리비아 시간", "MYT": "말레이시아 시간", "EAT": "동아프리카 시간", "UYST": "우루과이 하계 표준시", "NZST": "뉴질랜드 표준시", "OEZ": "동유럽 표준시", "HNNOMX": "멕시코 북서부 표준시", "ARST": "아르헨티나 하계 표준시", "WAST": "서아프리카 하계 표준시", "PDT": "미 태평양 하계 표준시", "CDT": "미 중부 하계 표준시", "HADT": "하와이 알류샨 하계 표준시", "IST": "인도 표준시", "AEDT": "오스트레일리아 동부 하계 표준시", "OESZ": "동유럽 하계 표준시", "HAT": "뉴펀들랜드 하계 표준시", "HKST": "홍콩 하계 표준시", "GYT": "가이아나 시간", "PST": "미 태평양 표준시", "HNPM": "세인트피에르 미클롱 표준시", "MST": "마카오 표준 시간", "AEST": "오스트레일리아 동부 표준시", "CLT": "칠레 표준시", "∅∅∅": "아마존 하계 표준시", "WEZ": "서유럽 표준시", "CHADT": "채텀 하계 표준시", "BT": "부탄 시간", "TMST": "투르크메니스탄 하계 표준시"},
 	}
 }
 
@@ -178,6 +178,21 @@ func (ko *ko) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (ko *ko) WeekdaysWide() []string {
 	return ko.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (ko *ko) Decimal() string {
+	return ko.decimal
+}
+
+// Group returns the group of number
+func (ko *ko) Group() string {
+	return ko.group
+}
+
+// Group returns the minus sign of number
+func (ko *ko) Minus() string {
+	return ko.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'ko' and handles both Whole and Real numbers based on 'v'
@@ -407,7 +422,7 @@ func (ko *ko) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e, 0x20}...)
@@ -427,7 +442,7 @@ func (ko *ko) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0xeb, 0x85, 0x84, 0x20}...)
@@ -447,7 +462,7 @@ func (ko *ko) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0xeb, 0x85, 0x84, 0x20}...)

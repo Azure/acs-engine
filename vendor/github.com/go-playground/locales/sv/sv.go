@@ -73,7 +73,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"f.Kr.", "e.Kr."},
 		erasNarrow:             []string{"f.Kr.", "e.Kr."},
 		erasWide:               []string{"före Kristus", "efter Kristus"},
-		timezones:              map[string]string{"IST": "indisk tid", "CAT": "centralafrikansk tid", "JST": "japansk normaltid", "HAT": "Newfoundland, sommartid", "HNPMX": "mexikansk stillahavstid, normaltid", "HEPMX": "mexikansk stillahavstid, sommartid", "∅∅∅": "azorisk sommartid", "WAT": "västafrikansk normaltid", "GYT": "Guyanatid", "MEZ": "centraleuropeisk normaltid", "WESZ": "västeuropeisk sommartid", "AST": "nordamerikansk atlantnormaltid", "WIB": "västindonesisk tid", "EAT": "östafrikansk tid", "HADT": "Honolulu, sommartid", "PDT": "västnordamerikansk sommartid", "JDT": "japansk sommartid", "WART": "västargentinsk normaltid", "HEEG": "östgrönländsk sommartid", "AKDT": "Alaska, sommartid", "LHDT": "Lord Howe, sommartid", "CDT": "centralnordamerikansk sommartid", "BOT": "boliviansk tid", "HKST": "Hongkong, sommartid", "SAST": "sydafrikansk tid", "MYT": "malaysisk tid", "CLT": "chilensk normaltid", "ChST": "Chamorrotid", "HEOG": "västgrönländsk sommartid", "BT": "bhutansk tid", "TMST": "turkmensk sommartid", "EDT": "östnordamerikansk sommartid", "AEDT": "östaustralisk sommartid", "CHAST": "Chatham, normaltid", "PST": "västnordamerikansk normaltid", "HNPM": "S:t Pierre och Miquelon, normaltid", "HEPM": "S:t Pierre och Miquelon, sommartid", "CST": "centralnordamerikansk normaltid", "OEZ": "östeuropeisk normaltid", "WAST": "västafrikansk sommartid", "SRT": "Surinamtid", "SGT": "Singaporetid", "HAST": "Honolulu, normaltid", "ART": "östargentinsk normaltid", "ACDT": "centralaustralisk sommartid", "AEST": "östaustralisk normaltid", "ECT": "ecuadoriansk tid", "MESZ": "centraleuropeisk sommartid", "WEZ": "västeuropeisk normaltid", "HNOG": "västgrönländsk normaltid", "TMT": "turkmensk normaltid", "MST": "Macaunormaltid", "HKT": "Hongkong, normaltid", "HENOMX": "nordvästmexikansk sommartid", "ACWDT": "västcentralaustralisk sommartid", "VET": "venezuelansk tid", "CLST": "chilensk sommartid", "GFT": "Franska Guyanatid", "WITA": "centralindonesisk tid", "CHADT": "Chatham, sommartid", "COT": "colombiansk normaltid", "COST": "colombiansk sommartid", "HNNOMX": "nordvästmexikansk normaltid", "UYST": "uruguayansk sommartid", "AWDT": "västaustralisk sommartid", "ACWST": "västcentralaustralisk normaltid", "HNT": "Newfoundland, normaltid", "AKST": "Alaska, normaltid", "LHST": "Lord Howe, normaltid", "HNCU": "kubansk normaltid", "EST": "östnordamerikansk normaltid", "GMT": "Greenwichtid", "WARST": "västargentinsk sommartid", "HNEG": "östgrönländsk normaltid", "UYT": "uruguayansk normaltid", "WIT": "östindonesisk tid", "NZDT": "nyzeeländsk sommartid", "OESZ": "östeuropeisk sommartid", "ADT": "nordamerikansk atlantsommartid", "ARST": "östargentinsk sommartid", "MDT": "Macausommartid", "ACST": "centralaustralisk normaltid", "HECU": "kubansk sommartid", "AWST": "västaustralisk normaltid", "NZST": "nyzeeländsk normaltid"},
+		timezones:              map[string]string{"HNEG": "östgrönländsk normaltid", "HECU": "kubansk sommartid", "BT": "bhutansk tid", "CDT": "centralnordamerikansk sommartid", "AEST": "östaustralisk normaltid", "WAT": "västafrikansk normaltid", "HNCU": "kubansk normaltid", "ACWDT": "västcentralaustralisk sommartid", "HNT": "Newfoundland, normaltid", "AKDT": "Alaska, sommartid", "SAST": "sydafrikansk tid", "ECT": "ecuadoriansk tid", "AKST": "Alaska, normaltid", "MEZ": "centraleuropeisk normaltid", "HEOG": "västgrönländsk sommartid", "AST": "nordamerikansk atlantnormaltid", "CLT": "chilensk normaltid", "CHADT": "Chatham, sommartid", "OESZ": "östeuropeisk sommartid", "HNPM": "S:t Pierre och Miquelon, normaltid", "HAST": "Honolulu, normaltid", "HNNOMX": "nordvästmexikansk normaltid", "JST": "japansk normaltid", "NZDT": "nyzeeländsk sommartid", "TMT": "turkmensk normaltid", "OEZ": "östeuropeisk normaltid", "PST": "västnordamerikansk normaltid", "PDT": "västnordamerikansk sommartid", "MDT": "Macausommartid", "UYST": "uruguayansk sommartid", "NZST": "nyzeeländsk normaltid", "ART": "östargentinsk normaltid", "HKST": "Hongkong, sommartid", "HNPMX": "mexikansk stillahavstid, normaltid", "BOT": "boliviansk tid", "SRT": "Surinamtid", "WIT": "östindonesisk tid", "HADT": "Honolulu, sommartid", "HNOG": "västgrönländsk normaltid", "COST": "colombiansk sommartid", "GMT": "Greenwichtid", "MST": "Macaunormaltid", "LHDT": "Lord Howe, sommartid", "IST": "indisk tid", "HENOMX": "nordvästmexikansk sommartid", "AEDT": "östaustralisk sommartid", "ARST": "östargentinsk sommartid", "EST": "östnordamerikansk normaltid", "EDT": "östnordamerikansk sommartid", "UYT": "uruguayansk normaltid", "WART": "västargentinsk normaltid", "WARST": "västargentinsk sommartid", "WEZ": "västeuropeisk normaltid", "AWDT": "västaustralisk sommartid", "TMST": "turkmensk sommartid", "SGT": "Singaporetid", "ACST": "centralaustralisk normaltid", "ACDT": "centralaustralisk sommartid", "LHST": "Lord Howe, normaltid", "WAST": "västafrikansk sommartid", "HEEG": "östgrönländsk sommartid", "EAT": "östafrikansk tid", "COT": "colombiansk normaltid", "AWST": "västaustralisk normaltid", "∅∅∅": "västbrasiliansk sommartid", "MESZ": "centraleuropeisk sommartid", "HEPM": "S:t Pierre och Miquelon, sommartid", "HAT": "Newfoundland, sommartid", "HEPMX": "mexikansk stillahavstid, sommartid", "WIB": "västindonesisk tid", "WESZ": "västeuropeisk sommartid", "CAT": "centralafrikansk tid", "ChST": "Chamorrotid", "ACWST": "västcentralaustralisk normaltid", "WITA": "centralindonesisk tid", "GFT": "Franska Guyanatid", "CST": "centralnordamerikansk normaltid", "CHAST": "Chatham, normaltid", "CLST": "chilensk sommartid", "MYT": "malaysisk tid", "ADT": "nordamerikansk atlantsommartid", "HKT": "Hongkong, normaltid", "VET": "venezuelansk tid", "JDT": "japansk sommartid", "GYT": "Guyanatid"},
 	}
 }
 
@@ -197,6 +197,21 @@ func (sv *sv) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (sv *sv) WeekdaysWide() []string {
 	return sv.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (sv *sv) Decimal() string {
+	return sv.decimal
+}
+
+// Group returns the group of number
+func (sv *sv) Group() string {
+	return sv.group
+}
+
+// Group returns the minus sign of number
+func (sv *sv) Minus() string {
+	return sv.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'sv' and handles both Whole and Real numbers based on 'v'
@@ -417,7 +432,7 @@ func (sv *sv) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2d}...)
@@ -452,7 +467,7 @@ func (sv *sv) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -471,7 +486,7 @@ func (sv *sv) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -492,7 +507,7 @@ func (sv *sv) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

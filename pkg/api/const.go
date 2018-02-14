@@ -20,6 +20,24 @@ const (
 	Linux   OSType = "Linux"
 )
 
+// the LinuxDistros supported by vlabs
+const (
+	Ubuntu Distro = "ubuntu"
+	RHEL   Distro = "rhel"
+	CoreOS Distro = "coreos"
+)
+
+const (
+	// SwarmVersion is the Swarm orchestrator version
+	SwarmVersion = "swarm:1.1.0"
+	// SwarmDockerComposeVersion is the Docker Compose version
+	SwarmDockerComposeVersion = "1.6.2"
+	// DockerCEVersion is the DockerCE orchestrator version
+	DockerCEVersion = "17.03.*"
+	// DockerCEDockerComposeVersion is the Docker Compose version
+	DockerCEDockerComposeVersion = "1.14.0"
+)
+
 // validation values
 const (
 	// MinAgentCount are the minimum number of agents per agent pool
@@ -51,38 +69,38 @@ const (
 )
 
 const (
-	// Kubernetes153 is the string constant for Kubernetes 1.5.3
-	Kubernetes153 string = "1.5.3"
-	// Kubernetes157 is the string constant for Kubernetes 1.5.7
-	Kubernetes157 string = "1.5.7"
-	// Kubernetes160 is the string constant for Kubernetes 1.6.0
-	Kubernetes160 string = "1.6.0"
-	// Kubernetes162 is the string constant for Kubernetes 1.6.2
-	Kubernetes162 string = "1.6.2"
-	// Kubernetes166 is the string constant for Kubernetes 1.6.6
-	Kubernetes166 string = "1.6.6"
-	// Kubernetes166 is the string constant for Kubernetes 1.7.0
-	Kubernetes170 string = "1.7.0"
-	// Kubernetes166 is the string constant for Kubernetes 1.7.1
-	Kubernetes171 string = "1.7.1"
-	// KubernetesDefaultVersion is the string constant for current Kubernetes version
-	KubernetesDefaultVersion string = Kubernetes166
-)
-
-const (
-	// DCOS190 is the string constant for DCOS 1.9.0
-	DCOS190 string = "1.9.0"
-	// DCOS188 is the string constant for DCOS 1.8.8
-	DCOS188 string = "1.8.8"
-	// DCOS187 is the string constant for DCOS 1.8.7
-	DCOS187 string = "1.8.7"
-	// DCOS184 is the string constant for DCOS 1.8.4
-	DCOS184 string = "1.8.4"
-	// DCOS173 is the string constant for DCOS 1.7.3
-	DCOS173 string = "1.7.3"
-	// DCOSLatest is the string constant for latest DCOS version
-	DCOSLatest string = DCOS190
+	// DCOSVersion1Dot10Dot0 is the major.minor.patch string for 1.10.0 versions of DCOS
+	DCOSVersion1Dot10Dot0 string = "1.10.0"
+	// DCOSVersion1Dot9Dot0 is the major.minor.patch string for 1.9.0 versions of DCOS
+	DCOSVersion1Dot9Dot0 string = "1.9.0"
+	// DCOSVersion1Dot8Dot8 is the major.minor.patch string for 1.8.8 versions of DCOS
+	DCOSVersion1Dot8Dot8 string = "1.8.8"
+	// DCOSDefaultVersion is the default major.minor.patch version for DCOS
+	DCOSDefaultVersion string = DCOSVersion1Dot9Dot0
 )
 
 // To identify programmatically generated public agent pools
 const publicAgentPoolSuffix = "-public"
+
+const (
+	// DefaultTillerAddonEnabled determines the acs-engine provided default for enabling tiller addon
+	DefaultTillerAddonEnabled = true
+	// DefaultACIConnectorAddonEnabled determines the acs-engine provided default for enabling aci connector addon
+	DefaultACIConnectorAddonEnabled = false
+	// DefaultDashboardAddonEnabled determines the acs-engine provided default for enabling kubernetes-dashboard addon
+	DefaultDashboardAddonEnabled = true
+	// DefaultReschedulerAddonEnabled determines the acs-engine provided default for enabling kubernetes-rescheduler addon
+	DefaultReschedulerAddonEnabled = false
+	// DefaultRBACEnabled determines the acs-engine provided default for enabling kubernetes RBAC
+	DefaultRBACEnabled = true
+	// DefaultSecureKubeletEnabled determines the acs-engine provided default for securing kubelet communications
+	DefaultSecureKubeletEnabled = true
+	// DefaultTillerAddonName is the name of the tiller addon deployment
+	DefaultTillerAddonName = "tiller"
+	// DefaultACIConnectorAddonName is the name of the tiller addon deployment
+	DefaultACIConnectorAddonName = "aci-connector"
+	// DefaultDashboardAddonName is the name of the kubernetes-dashboard addon deployment
+	DefaultDashboardAddonName = "kubernetes-dashboard"
+	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
+	DefaultReschedulerAddonName = "rescheduler"
+)

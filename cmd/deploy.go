@@ -2,20 +2,24 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
 	"strconv"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/leonelquinteros/gotext"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"encoding/json"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
+	"github.com/Azure/acs-engine/pkg/acsengine/transform"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
 const (
@@ -40,6 +44,7 @@ type deployCmd struct {
 	// derived
 	containerService *api.ContainerService
 	apiVersion       string
+	locale           *gotext.Locale
 
 	client        armhelpers.ACSEngineClient
 	resourceGroup string
@@ -55,7 +60,9 @@ func newDeployCmd() *cobra.Command {
 		Short: deployShortDescription,
 		Long:  deployLongDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			dc.validate(cmd, args)
+			if err := dc.validate(cmd, args); err != nil {
+				log.Fatalf(fmt.Sprintf("error validating deployCmd: %s", err.Error()))
+			}
 			return dc.run()
 		},
 	}
@@ -75,49 +82,61 @@ func newDeployCmd() *cobra.Command {
 	return deployCmd
 }
 
-func (dc *deployCmd) validate(cmd *cobra.Command, args []string) {
+func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 	var err error
 
+	dc.locale, err = i18n.LoadTranslations()
+	if err != nil {
+		return fmt.Errorf(fmt.Sprintf("error loading translation files: %s", err.Error()))
+	}
+
 	if dc.apimodelPath == "" {
-		if len(args) > 0 {
+		if len(args) == 1 {
 			dc.apimodelPath = args[0]
 		} else if len(args) > 1 {
 			cmd.Usage()
-			log.Fatalln("too many arguments were provided to 'deploy'")
+			return fmt.Errorf(fmt.Sprintf("too many arguments were provided to 'deploy'"))
 		} else {
 			cmd.Usage()
-			log.Fatalln("--api-model was not supplied, nor was one specified as a positional argument")
+			return fmt.Errorf(fmt.Sprintf("--api-model was not supplied, nor was one specified as a positional argument"))
 		}
 	}
 
 	if _, err := os.Stat(dc.apimodelPath); os.IsNotExist(err) {
-		log.Fatalf("specified api model does not exist (%s)", dc.apimodelPath)
+		return fmt.Errorf(fmt.Sprintf("specified api model does not exist (%s)", dc.apimodelPath))
 	}
 
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: dc.locale,
+		},
+	}
 	// skip validating the model fields for now
-	dc.containerService, dc.apiVersion, err = api.LoadContainerServiceFromFile(dc.apimodelPath, false)
+	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, false, nil)
 	if err != nil {
-		log.Fatalf("error parsing the api model: %s", err.Error())
+		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}
 
 	if dc.location == "" {
-		log.Fatalf("--location must be specified")
+		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
 	}
 
 	dc.client, err = dc.authArgs.getClient()
 	if err != nil {
-		log.Fatalf("failed to get client") // TODO: cleanup
+		return fmt.Errorf(fmt.Sprintf("failed to get client")) // TODO: cleanup
 	}
 
 	// autofillApimodel calls log.Fatal() directly and does not return errors
 	autofillApimodel(dc)
 
-	_, _, err = revalidateApimodel(dc.containerService, dc.apiVersion)
+	_, _, err = revalidateApimodel(apiloader, dc.containerService, dc.apiVersion)
 	if err != nil {
-		log.Fatalf("Failed to validate the apimodel after populating values: %s", err)
+		return fmt.Errorf(fmt.Sprintf("Failed to validate the apimodel after populating values: %s", err))
 	}
 
 	dc.random = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	return nil
 }
 
 func autofillApimodel(dc *deployCmd) {
@@ -135,15 +154,13 @@ func autofillApimodel(dc *deployCmd) {
 		if dc.dnsPrefix == "" {
 			log.Fatalf("apimodel: missing masterProfile.dnsPrefix and --dns-prefix was not specified")
 		}
+		log.Warnf("apimodel: missing masterProfile.dnsPrefix will use %q", dc.dnsPrefix)
+		dc.containerService.Properties.MasterProfile.DNSPrefix = dc.dnsPrefix
+	}
 
-		dnsPrefix := dc.dnsPrefix
-		if dc.autoSuffix {
-			suffix := strconv.FormatInt(time.Now().Unix(), 16)
-			dnsPrefix = dnsPrefix + "-" + suffix
-		}
-
-		log.Warnf("apimodel: missing masterProfile.dnsPrefix will use %q", dnsPrefix)
-		dc.containerService.Properties.MasterProfile.DNSPrefix = dnsPrefix
+	if dc.autoSuffix {
+		suffix := strconv.FormatInt(time.Now().Unix(), 16)
+		dc.containerService.Properties.MasterProfile.DNSPrefix += "-" + suffix
 	}
 
 	if dc.outputDirectory == "" {
@@ -162,15 +179,20 @@ func autofillApimodel(dc *deployCmd) {
 	if dc.containerService.Properties.LinuxProfile.SSH.PublicKeys == nil ||
 		len(dc.containerService.Properties.LinuxProfile.SSH.PublicKeys) == 0 ||
 		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys[0].KeyData == "" {
-		_, publicKey, err := acsengine.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory)
+		creator := &acsengine.SSHCreator{
+			Translator: &i18n.Translator{
+				Locale: dc.locale,
+			},
+		}
+		_, publicKey, err := creator.CreateSaveSSH(dc.containerService.Properties.LinuxProfile.AdminUsername, dc.outputDirectory)
 		if err != nil {
 			log.Fatal("Failed to generate SSH Key")
 		}
 
-		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{api.PublicKey{KeyData: publicKey}}
+		dc.containerService.Properties.LinuxProfile.SSH.PublicKeys = []api.PublicKey{{KeyData: publicKey}}
 	}
 
-	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location)
+	_, err = dc.client.EnsureResourceGroup(dc.resourceGroup, dc.location, nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -180,7 +202,7 @@ func autofillApimodel(dc *deployCmd) {
 
 	if !useManagedIdentity {
 		spp := dc.containerService.Properties.ServicePrincipalProfile
-		if spp != nil && spp.ClientID == "" && spp.Secret == "" && spp.KeyvaultSecretRef == "" {
+		if spp != nil && spp.ClientID == "" && spp.Secret == "" && spp.KeyvaultSecretRef == nil {
 			log.Warnln("apimodel: ServicePrincipalProfile was missing or empty, creating application...")
 
 			// TODO: consider caching the creds here so they persist between subsequent runs of 'deploy'
@@ -196,7 +218,7 @@ func autofillApimodel(dc *deployCmd) {
 			for {
 				err = dc.client.CreateRoleAssignmentSimple(dc.resourceGroup, servicePrincipalObjectID)
 				if err != nil {
-					log.Warnf("Failed to create role assignment (will retry): %q", err)
+					log.Debugf("Failed to create role assignment (will retry): %q", err)
 					time.Sleep(3 * time.Second)
 					continue
 				}
@@ -211,37 +233,47 @@ func autofillApimodel(dc *deployCmd) {
 	}
 }
 
-func revalidateApimodel(containerService *api.ContainerService, apiVersion string) (*api.ContainerService, string, error) {
+func revalidateApimodel(apiloader *api.Apiloader, containerService *api.ContainerService, apiVersion string) (*api.ContainerService, string, error) {
 	// This isn't terribly elegant, but it's the easiest way to go for now w/o duplicating a bunch of code
-	rawVersionedAPIModel, err := api.SerializeContainerService(containerService, apiVersion)
+	rawVersionedAPIModel, err := apiloader.SerializeContainerService(containerService, apiVersion)
 	if err != nil {
 		return nil, "", err
 	}
-	return api.DeserializeContainerService(rawVersionedAPIModel, true)
+	return apiloader.DeserializeContainerService(rawVersionedAPIModel, true, false, nil)
 }
 
 func (dc *deployCmd) run() error {
-	templateGenerator, err := acsengine.InitializeTemplateGenerator(dc.classicMode)
+	ctx := acsengine.Context{
+		Translator: &i18n.Translator{
+			Locale: dc.locale,
+		},
+	}
+
+	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, dc.classicMode)
 	if err != nil {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}
 
-	certsgenerated := false
-	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService)
+	template, parameters, certsgenerated, err := templateGenerator.GenerateTemplate(dc.containerService, acsengine.DefaultGeneratorCode)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", dc.apimodelPath, err.Error())
 		os.Exit(1)
 	}
 
-	if template, err = acsengine.PrettyPrintArmTemplate(template); err != nil {
+	if template, err = transform.PrettyPrintArmTemplate(template); err != nil {
 		log.Fatalf("error pretty printing template: %s \n", err.Error())
 	}
 	var parametersFile string
-	if parametersFile, err = acsengine.BuildAzureParametersFile(parameters); err != nil {
+	if parametersFile, err = transform.BuildAzureParametersFile(parameters); err != nil {
 		log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
 	}
 
-	if err = acsengine.WriteArtifacts(dc.containerService, dc.apiVersion, template, parametersFile, dc.outputDirectory, certsgenerated, dc.parametersOnly); err != nil {
+	writer := &acsengine.ArtifactWriter{
+		Translator: &i18n.Translator{
+			Locale: dc.locale,
+		},
+	}
+	if err = writer.WriteTLSArtifacts(dc.containerService, dc.apiVersion, template, parametersFile, dc.outputDirectory, certsgenerated, dc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 
@@ -260,13 +292,17 @@ func (dc *deployCmd) run() error {
 
 	deploymentSuffix := dc.random.Int31()
 
-	_, err = dc.client.DeployTemplate(
+	if res, err := dc.client.DeployTemplate(
 		dc.resourceGroup,
 		fmt.Sprintf("%s-%d", dc.resourceGroup, deploymentSuffix),
 		templateJSON,
 		parametersJSON,
-		nil)
-	if err != nil {
+		nil); err != nil {
+		if res != nil && res.Response.Response != nil && res.Body != nil {
+			defer res.Body.Close()
+			body, _ := ioutil.ReadAll(res.Body)
+			log.Errorf(string(body))
+		}
 		log.Fatalln(err)
 	}
 

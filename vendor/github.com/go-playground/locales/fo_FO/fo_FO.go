@@ -75,7 +75,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"f.Kr.", "e.Kr."},
 		erasNarrow:             []string{"fKr", "eKr"},
 		erasWide:               []string{"fyri Krist", "eftir Krist"},
-		timezones:              map[string]string{"NZDT": "Nýsæland summartíð", "CAT": "Miðafrika tíð", "MST": "MST", "HNNOMX": "Northwest Mexico vanlig tíð", "HAT": "Newfoundland summartíð", "AWST": "vestur Avstralia vanlig tíð", "ART": "Argentina vanlig tíð", "SGT": "Singapor tíð", "HAST": "Hawaii-Aleutian vanlig tíð", "NZST": "Nýsæland vanlig tíð", "JST": "Japan vanlig tíð", "OEZ": "Eysturevropa vanlig tíð", "EDT": "Eastern summartíð", "ACDT": "mið Avstralia summartíð", "UYT": "Uruguai vanlig tíð", "HEPMX": "Mexican Pacific summartíð", "HECU": "Cuba summartíð", "VET": "Venesuela tíð", "GMT": "Greenwich Mean tíð", "UYST": "Uruguai summartíð", "HNPMX": "Mexican Pacific vanlig tíð", "SAST": "Suðurafrika vanlig tíð", "CDT": "Central summartíð", "ACWST": "miðvestur Avstralia vanlig tíð", "HKT": "Hong Kong vanlig tíð", "BT": "Butan tíð", "TMT": "Turkmenistan vanlig tíð", "WAT": "Vesturafrika vanlig tíð", "HNCU": "Cuba vanlig tíð", "BOT": "Bolivia tíð", "WART": "Vestur Argentina vanlig tíð", "HEOG": "Vestur grønlendsk summartíð", "HKST": "Hong Kong summartíð", "HEEG": "Eystur grønlendsk summartíð", "ECT": "Ekvador tíð", "WESZ": "Vesturevropa summartíð", "HEPM": "St. Pierre & Miquelon summartíð", "ChST": "Chamorro vanlig tíð", "LHDT": "Lord Howe summartíð", "AWDT": "vestur Avstralia summartíð", "TMST": "Turkmenistan summartíð", "LHST": "Lord Howe vanlig tíð", "WIB": "Vestur Indonesia tíð", "ADT": "Atlantic summartíð", "ACST": "mið Avstralia vanlig tíð", "HNEG": "Eystur grønlendsk vanlig tíð", "HNT": "Newfoundland vanlig tíð", "AKST": "Alaska vanlig tíð", "SRT": "Surinam tíð", "OESZ": "Eysturevropa summartíð", "WAST": "Vesturafrika summartíð", "GFT": "Franska Gujana tíð", "PDT": "Pacific summartíð", "WARST": "Vestur Argentina summartíð", "EAT": "Eysturafrika tíð", "CST": "Central vanlig tíð", "ACWDT": "miðvestur Avstralia summartíð", "EST": "Eastern vanlig tíð", "HENOMX": "Northwest Mexico summartíð", "WITA": "Mið Indonesia tíð", "AKDT": "Alaska summartíð", "GYT": "Gujana tíð", "IST": "India tíð", "WEZ": "Vesturevropa vanlig tíð", "MYT": "Malaisia tíð", "MESZ": "Miðevropa summartíð", "CLT": "Kili vanlig tíð", "AST": "Atlantic vanlig tíð", "∅∅∅": "∅∅∅", "AEST": "eystur Avstralia vanlig tíð", "HNPM": "St. Pierre & Miquelon vanlig tíð", "CHAST": "Chatham vanlig tíð", "HADT": "Hawaii-Aleutian summartíð", "WIT": "Eystur Indonesia tíð", "CHADT": "Chatham summartíð", "JDT": "Japan summartíð", "ARST": "Argentina summartíð", "COST": "Kolombia summartíð", "MEZ": "Miðevropa vanlig tíð", "HNOG": "Vestur grønlendsk vanlig tíð", "MDT": "MDT", "COT": "Kolombia vanlig tíð", "AEDT": "eystur Avstralia summartíð", "PST": "Pacific vanlig tíð", "CLST": "Kili summartíð"},
+		timezones:              map[string]string{"NZDT": "Nýsæland summartíð", "WART": "Vestur Argentina vanlig tíð", "CHADT": "Chatham summartíð", "BOT": "Bolivia tíð", "HADT": "Hawaii-Aleutian summartíð", "HNNOMX": "Northwest Mexico vanlig tíð", "HEEG": "Eystur grønlendsk summartíð", "SGT": "Singapor tíð", "CHAST": "Chatham vanlig tíð", "BT": "Butan tíð", "WITA": "Mið Indonesia tíð", "AST": "Atlantic vanlig tíð", "COST": "Kolombia summartíð", "GYT": "Gujana tíð", "ACST": "mið Avstralia vanlig tíð", "WIB": "Vestur Indonesia tíð", "HEPM": "St. Pierre & Miquelon summartíð", "HECU": "Cuba summartíð", "MST": "Mountain vanlig tíð", "VET": "Venesuela tíð", "∅∅∅": "Azorurnar summartíð", "AEDT": "eystur Avstralia summartíð", "WAST": "Vesturafrika summartíð", "COT": "Kolombia vanlig tíð", "GMT": "Greenwich Mean tíð", "AWST": "vestur Avstralia vanlig tíð", "UYST": "Uruguai summartíð", "MESZ": "Miðevropa summartíð", "HAST": "Hawaii-Aleutian vanlig tíð", "HNOG": "Vestur grønlendsk vanlig tíð", "CLT": "Kili vanlig tíð", "HNPMX": "Mexican Pacific vanlig tíð", "PDT": "Pacific summartíð", "TMST": "Turkmenistan summartíð", "JDT": "Japan summartíð", "EST": "Eastern vanlig tíð", "EDT": "Eastern summartíð", "CST": "Central vanlig tíð", "ADT": "Atlantic summartíð", "ACDT": "mið Avstralia summartíð", "ACWDT": "miðvestur Avstralia summartíð", "ARST": "Argentina summartíð", "EAT": "Eysturafrika tíð", "HAT": "Newfoundland summartíð", "HKST": "Hong Kong summartíð", "HNPM": "St. Pierre & Miquelon vanlig tíð", "OEZ": "Eysturevropa vanlig tíð", "LHDT": "Lord Howe summartíð", "WESZ": "Vesturevropa summartíð", "CDT": "Central summartíð", "UYT": "Uruguai vanlig tíð", "MEZ": "Miðevropa vanlig tíð", "MDT": "Mountain summartíð", "WARST": "Vestur Argentina summartíð", "ART": "Argentina vanlig tíð", "HNEG": "Eystur grønlendsk vanlig tíð", "GFT": "Franska Gujana tíð", "CAT": "Miðafrika tíð", "TMT": "Turkmenistan vanlig tíð", "LHST": "Lord Howe vanlig tíð", "HENOMX": "Northwest Mexico summartíð", "JST": "Japan vanlig tíð", "HEOG": "Vestur grønlendsk summartíð", "SRT": "Surinam tíð", "MYT": "Malaisia tíð", "NZST": "Nýsæland vanlig tíð", "WAT": "Vesturafrika vanlig tíð", "HKT": "Hong Kong vanlig tíð", "AKST": "Alaska vanlig tíð", "AKDT": "Alaska summartíð", "ECT": "Ekvador tíð", "WEZ": "Vesturevropa vanlig tíð", "WIT": "Eystur Indonesia tíð", "HNCU": "Cuba vanlig tíð", "ACWST": "miðvestur Avstralia vanlig tíð", "SAST": "Suðurafrika vanlig tíð", "HNT": "Newfoundland vanlig tíð", "AWDT": "vestur Avstralia summartíð", "OESZ": "Eysturevropa summartíð", "IST": "India tíð", "CLST": "Kili summartíð", "ChST": "Chamorro vanlig tíð", "AEST": "eystur Avstralia vanlig tíð", "HEPMX": "Mexican Pacific summartíð", "PST": "Pacific vanlig tíð"},
 	}
 }
 
@@ -189,6 +189,21 @@ func (fo *fo_FO) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (fo *fo_FO) WeekdaysWide() []string {
 	return fo.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (fo *fo_FO) Decimal() string {
+	return fo.decimal
+}
+
+// Group returns the group of number
+func (fo *fo_FO) Group() string {
+	return fo.group
+}
+
+// Group returns the minus sign of number
+func (fo *fo_FO) Minus() string {
+	return fo.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'fo_FO' and handles both Whole and Real numbers based on 'v'
@@ -445,7 +460,7 @@ func (fo *fo_FO) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -464,7 +479,7 @@ func (fo *fo_FO) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -485,7 +500,7 @@ func (fo *fo_FO) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

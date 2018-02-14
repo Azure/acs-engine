@@ -1,0 +1,384 @@
+#cloud-config
+
+{{if not .MasterProfile.IsCoreOS}}
+packages:
+ - jq
+ - traceroute
+{{end}}
+
+write_files:
+{{if not .MasterProfile.IsCoreOS}}
+- path: "/etc/systemd/system/docker.service.d/clear_mount_propagation_flags.conf"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Service]
+    MountFlags=shared
+{{end}}
+
+- path: "/etc/systemd/system/docker.service.d/exec_start.conf"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Service]
+    ExecStart=
+{{if .MasterProfile.IsCoreOS}}
+    ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/dockerd --host=fd:// --containerd=/var/run/docker/libcontainerd/docker-containerd.sock --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}} $DOCKER_SELINUX $DOCKER_OPTS $DOCKER_CGROUPS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
+{{else}}
+    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
+{{end}}
+- path: "/etc/docker/daemon.json"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    {
+      "live-restore": true,
+      "log-driver": "json-file",
+      "log-opts":  {
+         "max-size": "50m",
+         "max-file": "5"
+      }
+    }
+
+- path: "/etc/kubernetes/certs/ca.crt"
+  permissions: "0644"
+  encoding: "base64"
+  owner: "root"
+  content: |
+    {{WrapAsVariable "caCertificate"}}
+
+- path: "/etc/kubernetes/certs/client.crt"
+  permissions: "0644"
+  encoding: "base64"
+  owner: "root"
+  content: |
+    {{WrapAsVariable "clientCertificate"}}
+
+{{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
+- path: "/etc/kubernetes/generate-proxy-certs.sh"
+  permissions: "0744"
+  encoding: "gzip"
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "generateProxyCertsScript"}}
+{{end}}
+
+- path: "/var/lib/kubelet/kubeconfig"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    apiVersion: v1
+    kind: Config
+    clusters:
+    - name: localcluster
+      cluster:
+        certificate-authority: /etc/kubernetes/certs/ca.crt
+        server: {{WrapAsVerbatim "concat('https://', variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))], ':443')"}}
+    users:
+    - name: client
+      user:
+        client-certificate: /etc/kubernetes/certs/client.crt
+        client-key: /etc/kubernetes/certs/client.key
+    contexts:
+    - context:
+        cluster: localcluster
+        user: client
+      name: localclustercontext
+    current-context: localclustercontext
+
+{{if EnableDataEncryptionAtRest}}
+- path: "/etc/kubernetes/encryption-config.yaml"
+  permissions: "0600"
+  owner: "root"
+  content: |
+    kind: EncryptionConfig
+    apiVersion: v1
+    resources:
+      - resources:
+          - secrets
+        providers:
+          - aescbc:
+              keys:
+                - name: key1
+                  secret: <etcdEncryptionSecret>
+          - identity: {}
+{{end}}
+
+MASTER_MANIFESTS_CONFIG_PLACEHOLDER
+
+MASTER_ADDONS_CONFIG_PLACEHOLDER
+
+- path: "/etc/systemd/system/kubectl-extract.service"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=Kubectl extraction
+    Requires=docker.service
+    After=docker.service
+{{if .MasterProfile.IsCoreOS}}
+    ConditionPathExists=!/opt/kubectl
+{{else}}
+    ConditionPathExists=!/usr/local/bin/kubectl
+{{end}}
+
+    [Service]
+    TimeoutStartSec=0
+    Restart=on-failure
+    RestartSec=5s
+    ExecStartPre=/bin/mkdir -p /tmp/kubectldir
+    ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
+    ExecStartPre=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
+{{if .MasterProfile.IsCoreOS}}
+    ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /opt/kubectl
+    ExecStart=/bin/chmod a+x /opt/kubectl
+{{else}}
+    ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
+    ExecStart=/bin/chmod a+x /usr/local/bin/kubectl
+{{end}}
+
+    [Install]
+    WantedBy=multi-user.target
+
+- path: "/etc/default/kubelet"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    KUBELET_CONFIG={{GetKubeletConfigKeyVals .MasterProfile.KubernetesConfig}}
+    KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
+    DOCKER_OPTS=
+    KUBELET_OPTS=
+    KUBELET_NODE_LABELS={{GetMasterKubernetesLabels "',variables('labelResourceGroup'),'"}}
+{{if IsKubernetesVersionGe "1.6.0"}}
+  {{if HasLinuxAgents}}
+    KUBELET_NON_MASQUERADE_CIDR={{WrapAsVariable "kubernetesNonMasqueradeCidr"}}
+    KUBELET_REGISTER_NODE=--register-node=true
+    KUBELET_REGISTER_WITH_TAINTS=--register-with-taints={{WrapAsVariable "registerWithTaints"}}
+  {{end}}
+{{else}}
+    KUBELET_REGISTER_SCHEDULABLE={{WrapAsVariable "registerSchedulable"}}
+{{end}}
+
+MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
+
+- path: "/opt/azure/containers/kubelet.sh"
+  permissions: "0755"
+  owner: "root"
+  content: |
+    #!/bin/bash
+    set -e
+
+{{if gt .MasterProfile.Count 1}}
+    # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
+    # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
+    # This IPTable rule then redirects ILB traffic to port 443 in the prerouting chain
+    iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443
+{{end}}
+
+{{if IsAzureCNI}}
+    # SNAT outbound traffic from pods to destinations outside of VNET.
+    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
+{{end}}
+    sed -i "s|<kubernetesAddonManagerSpec>|{{WrapAsVariable "kubernetesAddonManagerSpec"}}|g" "/etc/kubernetes/manifests/kube-addon-manager.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g" "/etc/kubernetes/manifests/kube-scheduler.yaml"
+    sed -i "s|<kubernetesHyperkubeSpec>|{{WrapAsVariable "kubernetesHyperkubeSpec"}}|g; s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/kube-proxy-daemonset.yaml"
+    sed -i "s|<kubernetesKubeDNSSpec>|{{WrapAsVariable "kubernetesKubeDNSSpec"}}|g; s|<kubernetesDNSMasqSpec>|{{WrapAsVariable "kubernetesDNSMasqSpec"}}|g; s|<kubernetesExecHealthzSpec>|{{WrapAsVariable "kubernetesExecHealthzSpec"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
+    sed -i "s|<kubernetesHeapsterSpec>|{{WrapAsVariable "kubernetesHeapsterSpec"}}|g; s|<kubernetesAddonResizerSpec>|{{WrapAsVariable "kubernetesAddonResizerSpec"}}|g" "/etc/kubernetes/addons/kube-heapster-deployment.yaml"
+    sed -i "s|<kubeDNSServiceIP>|{{WrapAsVariable "kubeDNSServiceIP"}}|g" "/etc/kubernetes/addons/kube-dns-deployment.yaml"
+
+{{if .OrchestratorProfile.KubernetesConfig.IsDashboardEnabled}}
+    sed -i "s|<kubernetesDashboardSpec>|{{WrapAsVariable "kubernetesDashboardSpec"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+    sed -i "s|<kubernetesDashboardCPURequests>|{{WrapAsVariable "kubernetesDashboardCPURequests"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+    sed -i "s|<kubernetesDashboardMemoryRequests>|{{WrapAsVariable "kubernetesDashboardMemoryRequests"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+    sed -i "s|<kubernetesDashboardCPULimit>|{{WrapAsVariable "kubernetesDashboardCPULimit"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+    sed -i "s|<kubernetesDashboardMemoryLimit>|{{WrapAsVariable "kubernetesDashboardMemoryLimit"}}|g" "/etc/kubernetes/addons/kubernetes-dashboard-deployment.yaml"
+{{end}}
+
+{{if .OrchestratorProfile.KubernetesConfig.IsTillerEnabled}}
+    sed -i "s|<kubernetesTillerSpec>|{{WrapAsVariable "kubernetesTillerSpec"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<kubernetesTillerCPURequests>|{{WrapAsVariable "kubernetesTillerCPURequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<kubernetesTillerMemoryRequests>|{{WrapAsVariable "kubernetesTillerMemoryRequests"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<kubernetesTillerCPULimit>|{{WrapAsVariable "kubernetesTillerCPULimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<kubernetesTillerMemoryLimit>|{{WrapAsVariable "kubernetesTillerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+    sed -i "s|<kubernetesTillerMaxHistory>|{{WrapAsVariable "kubernetesTillerMaxHistory"}}|g" "/etc/kubernetes/addons/kube-tiller-deployment.yaml"
+{{end}}
+
+{{if AdminGroupID }}
+    sed -i "s|<aadAdminGroupId>|{{WrapAsVariable "aadAdminGroupId"}}|g" "/etc/kubernetes/addons/aad-default-admin-group-rbac.yaml"
+{{end}}
+
+{{if .OrchestratorProfile.KubernetesConfig.IsACIConnectorEnabled}}
+    ACI_CONNECTOR_CREDENTIALS=$(printf "{\"clientId\": \"{{WrapAsVariable "kubernetesACIConnectorClientId"}}\", \"clientSecret\": \"{{WrapAsVariable "kubernetesACIConnectorClientKey"}}\", \"tenantId\": \"{{WrapAsVariable "kubernetesACIConnectorTenantId"}}\", \"subscriptionId\": \"{{WrapAsVariable "kubernetesACIConnectorSubscriptionId"}}\", \"activeDirectoryEndpointUrl\": \"https://login.microsoftonline.com\",\"resourceManagerEndpointUrl\": \"https://management.azure.com/\", \"activeDirectoryGraphResourceId\": \"https://graph.windows.net/\", \"sqlManagementEndpointUrl\": \"https://management.core.windows.net:8443/\", \"galleryEndpointUrl\": \"https://gallery.azure.com/\", \"managementEndpointUrl\": \"https://management.core.windows.net/\"}" | base64 -w 0)
+    sed -i "s|<kubernetesACIConnectorSpec>|{{WrapAsVariable "kubernetesACIConnectorSpec"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorCredentials>|$ACI_CONNECTOR_CREDENTIALS|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorResourceGroup>|{{WrapAsVariable "kubernetesACIConnectorResourceGroup"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorNodeName>|{{WrapAsVariable "kubernetesACIConnectorNodeName"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorOS>|{{WrapAsVariable "kubernetesACIConnectorOS"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorTaint>|{{WrapAsVariable "kubernetesACIConnectorTaint"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorRegion>|{{WrapAsVariable "kubernetesACIConnectorRegion"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorCPURequests>|{{WrapAsVariable "kubernetesACIConnectorCPURequests"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorMemoryRequests>|{{WrapAsVariable "kubernetesACIConnectorMemoryRequests"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorCPULimit>|{{WrapAsVariable "kubernetesACIConnectorCPULimit"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+    sed -i "s|<kubernetesACIConnectorMemoryLimit>|{{WrapAsVariable "kubernetesACIConnectorMemoryLimit"}}|g" "/etc/kubernetes/addons/aci-connector-deployment.yaml"
+{{end}}
+
+{{if .OrchestratorProfile.KubernetesConfig.IsReschedulerEnabled}}
+    sed -i "s|<kubernetesReschedulerSpec>|{{WrapAsVariable "kubernetesReschedulerSpec"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
+    sed -i "s|<kubernetesReschedulerCPURequests>|{{WrapAsVariable "kubernetesReschedulerCPURequests"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
+    sed -i "s|<kubernetesReschedulerMemoryRequests>|{{WrapAsVariable "kubernetesReschedulerMemoryRequests"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
+    sed -i "s|<kubernetesReschedulerCPULimit>|{{WrapAsVariable "kubernetesReschedulerCPULimit"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
+    sed -i "s|<kubernetesReschedulerMemoryLimit>|{{WrapAsVariable "kubernetesReschedulerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
+{{end}}
+
+{{if EnableDataEncryptionAtRest }}
+    ETCD_ENCRYPTION_SECRET="$(head -c 32 /dev/urandom | base64)"
+    sed -i "s|<etcdEncryptionSecret>|$ETCD_ENCRYPTION_SECRET|g" "/etc/kubernetes/encryption-config.yaml"
+{{end}}
+
+{{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "calico"}}
+    # If Calico Policy enabled then update Cluster Cidr
+    sed -i "s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-daemonset.yaml"
+{{end}}
+{{if UseCloudControllerManager }}
+    sed -i "s|<kubernetesCcmImageSpec>|{{WrapAsVariable "kubernetesCcmImageSpec"}}|g" "/etc/kubernetes/manifests/cloud-controller-manager.yaml"
+    sed -i "s|<kubernetesCloudControllerManagerConfig>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.CloudControllerManagerConfig}}|g" "/etc/kubernetes/manifests/cloud-controller-manager.yaml"
+{{end}}
+    sed -i "s|<kubernetesControllerManagerConfig>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.ControllerManagerConfig}}|g" "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+    sed -i "s|<kubernetesAPIServerConfig>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.APIServerConfig}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+    sed -i "s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+
+- path: "/opt/azure/containers/provision.sh"
+  permissions: "0744"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "provisionScript"}}
+
+- path: "/opt/azure/containers/mountetcd.sh"
+  permissions: "0744"
+  encoding: gzip
+  owner: "root"
+  content: !!binary |
+    {{WrapAsVariable "mountetcdScript"}}
+
+- path: "/etc/systemd/system/etcd.service"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    [Unit]
+    Description=etcd - highly-available key value store
+    Documentation=https://github.com/coreos/etcd
+    Documentation=man:etcd
+    After=network.target
+    Wants=network-online.target
+    [Service]
+    Environment=DAEMON_ARGS=
+    Environment=ETCD_NAME=%H
+    Environment=ETCD_DATA_DIR=
+    EnvironmentFile=-/etc/default/%p
+    Type=notify
+    User=etcd
+    PermissionsStartOnly=true
+    ExecStart=/usr/bin/etcd $DAEMON_ARGS
+    Restart=always
+    [Install]
+    WantedBy=multi-user.target
+    Alias=etcd.service
+
+- path: "/opt/azure/containers/setup-etcd.sh"
+  permissions: "0744"
+  owner: "root"
+  content: |
+    #!/bin/bash
+    set -x
+    retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
+    ETCD_VER=v{{WrapAsVariable "etcdVersion"}}
+    DOWNLOAD_URL={{WrapAsVariable "etcdDownloadURLBase"}}
+    retrycmd_if_failure 5 5 curl --retry 5 --retry-delay 10 --retry-max-time 30 -L ${DOWNLOAD_URL}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+    tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /usr/bin/ --strip-components=1
+    systemctl daemon-reload
+    sudo sed -i "1iETCDCTL_ENDPOINTS=https://127.0.0.1:2379" /etc/environment
+    sudo sed -i "1iETCDCTL_CA_FILE={{WrapAsVariable "etcdCaFilepath"}}" /etc/environment
+    sudo sed -i "1iETCDCTL_KEY_FILE={{WrapAsVariable "etcdClientKeyFilepath"}}" /etc/environment
+    sudo sed -i "1iETCDCTL_CERT_FILE={{WrapAsVariable "etcdClientCertFilepath"}}" /etc/environment
+
+{{if .MasterProfile.IsCoreOS}}
+- path: "/opt/azure/containers/provision-setup.sh"
+  permissions: "0755"
+  owner: "root"
+  content: |
+    #!/bin/bash
+    # the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run
+    retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
+    /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',http://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
+    /opt/azure/containers/mountetcd.sh
+    sudo /bin/chown -R etcd:etcd /var/lib/etcddisk
+    systemctl stop etcd-member
+    sudo /bin/sed -i s/Restart=on-failure/Restart=always/g /lib/systemd/system/etcd-member.service
+    systemctl daemon-reload
+    systemctl restart etcd-member
+    retrycmd_if_failure 5 5 curl --retry 5 --retry-delay 10 --retry-max-time 30 --max-time 60 http://127.0.0.1:2379/v2/machines
+    mkdir -p /etc/kubernetes/manifests
+    usermod -aG docker {{WrapAsVariable "username"}}
+
+    {{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
+    sudo bash /etc/kubernetes/generate-proxy-certs.sh
+    {{end}}
+
+    touch /opt/azure/containers/runcmd.complete
+
+coreos:
+  units:
+    - name: start-provision-setup.service
+      command: "start"
+      content: |
+        # Note: Initiated as a service since there is no runcmd within CoreOS on cloud-config/Ignition
+        [Unit]
+        Description=Start provision setup service
+
+        [Service]
+        ExecStart=/opt/azure/containers/provision-setup.sh
+{{else}}
+runcmd:
+# the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run
+- set -x
+- retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
+- retrycmd_if_failure_no_stats() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; }
+- ensure_etcd_ready() { for i in $(seq 1 1800); do if [ -e /opt/azure/containers/certs.ready ]; then break; fi; sleep 1; done }
+- apt_get_update() { for i in $(seq 1 20); do apt-get update 2>&1 | grep -x "[WE]:.*"; [ $? -ne 0  ] && break || sleep 1; done; echo Executed apt-get update $i times; }
+- retrycmd_if_failure 120 1 nc -zuw1 $(grep nameserver /etc/resolv.conf | cut -d \  -f 2) 53
+- retrycmd_if_failure 120 1 nc -zw1 aptdocker.azureedge.net 443
+- ensure_etcd_ready
+- /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
+- apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
+- /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --peer-client-cert-auth --peer-trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --peer-cert-file={{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}} --peer-key-file={{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}} --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --cert-file={{WrapAsVariable "etcdServerCertFilepath"}} --key-file={{WrapAsVariable "etcdServerKeyFilepath"}} --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',https://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
+- /opt/azure/containers/mountetcd.sh
+- /bin/chown -R etcd:etcd /var/lib/etcddisk
+- systemctl stop etcd
+- systemctl daemon-reload
+- systemctl restart etcd
+- MEMBER="$(sudo etcdctl member list | grep -E {{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}} | cut -d{{WrapAsVariable "singleQuote"}}:{{WrapAsVariable "singleQuote"}} -f 1)"
+- sudo etcdctl member update ${MEMBER} {{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}
+- retrycmd_if_failure 5 5 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 30 --max-time 60 "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"/v2/machines
+- apt_get_update
+- retrycmd_if_failure 5 10 apt-get install -y apt-transport-https ca-certificates
+- retrycmd_if_failure_no_stats 180 1 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg
+- cat /tmp/aptdocker.gpg | apt-key add -
+- echo "deb {{WrapAsVariable "dockerEngineDownloadRepo"}} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+- "echo \"Package: docker-engine\nPin: version {{WrapAsVariable "dockerEngineVersion"}}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
+- apt_get_update
+- retrycmd_if_failure 5 10 apt-get install -y ebtables docker-engine
+- echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
+- systemctl daemon-reload
+- systemctl restart docker
+- mkdir -p /etc/kubernetes/manifests
+- usermod -aG docker {{WrapAsVariable "username"}}
+- /usr/lib/apt/apt.systemd.daily
+{{if .OrchestratorProfile.KubernetesConfig.EnableAggregatedAPIs}}
+- bash /etc/kubernetes/generate-proxy-certs.sh
+{{end}}
+- apt-mark unhold walinuxagent
+- touch /opt/azure/containers/runcmd.complete
+{{end}}

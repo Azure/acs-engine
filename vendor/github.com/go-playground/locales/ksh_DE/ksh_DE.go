@@ -72,7 +72,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"v. Chr.", "n. Chr."},
 		erasNarrow:             []string{"vC", "nC"},
 		erasWide:               []string{"vür Krestos", "noh Krestos"},
-		timezones:              map[string]string{"AWST": "AWST", "AWDT": "AWDT", "IST": "IST", "HENOMX": "HENOMX", "CDT": "CDT", "JST": "JST", "OESZ": "Oß-Europpa sing Summerzick", "WAT": "Jewöhnlijje Wäß-Affrekaanesche Zigg", "HKST": "HKST", "HNEG": "HNEG", "WITA": "WITA", "SGT": "SGT", "HEPM": "HEPM", "ACWDT": "ACWDT", "AST": "AST", "MYT": "MYT", "AKDT": "AKDT", "UYST": "UYST", "EAT": "Oß-Affrekaanesche Zigg", "OEZ": "Oß-Europpa sing jewöhnlijje Zick", "GFT": "GFT", "LHDT": "LHDT", "WAST": "Wäß-Affrekaanesche Sommerzigg", "EST": "EST", "AEST": "AEST", "TMST": "TMST", "SRT": "SRT", "CST": "CST", "WIT": "WIT", "ECT": "ECT", "WESZ": "Weß-Europpa sing Summerzick", "HNPM": "HNPM", "HNCU": "HNCU", "WARST": "WARST", "CLST": "CLST", "ACDT": "ACDT", "AKST": "AKST", "ChST": "ChST", "WIB": "WIB", "CHAST": "CHAST", "CAT": "Zentraal-Affrekaanesche Zigg", "HNOG": "HNOG", "COT": "COT", "HEEG": "HEEG", "UYT": "UYT", "PDT": "PDT", "HEOG": "HEOG", "HNNOMX": "HNNOMX", "BT": "BT", "HAT": "HAT", "PST": "PST", "HAST": "HAST", "ART": "ART", "HNT": "HNT", "AEDT": "AEDT", "GYT": "GYT", "CHADT": "CHADT", "VET": "VET", "ADT": "ADT", "CLT": "CLT", "HECU": "HECU", "NZST": "NZST", "NZDT": "NZDT", "WEZ": "Weß-Europpa sing jewöhnlijje Zick", "GMT": "Greenwich sing Standat-Zick", "TMT": "TMT", "COST": "COST", "∅∅∅": "de Azore ier Summerzick", "JDT": "JDT", "HADT": "HADT", "BOT": "BOT", "ACWST": "ACWST", "MEZ": "Meddel-Europpa sing jewöhnlijje Zick", "WART": "WART", "ARST": "ARST", "ACST": "ACST", "HNPMX": "HNPMX", "HEPMX": "HEPMX", "MESZ": "Meddel-Europpa sing Summerzick", "MST": "MST", "EDT": "EDT", "HKT": "HKT", "LHST": "LHST", "MDT": "MDT", "SAST": "Söd-Affrekaanesche Zigg"},
+		timezones:              map[string]string{"GFT": "GFT", "AKST": "AKST", "HAST": "HAST", "ARST": "ARST", "WIT": "WIT", "HNT": "HNT", "ChST": "ChST", "HNCU": "HNCU", "EST": "EST", "GYT": "GYT", "HEPM": "HEPM", "TMT": "TMT", "HKT": "HKT", "AWST": "AWST", "HNEG": "HNEG", "AEST": "AEST", "WITA": "WITA", "OESZ": "Oß-Europpa sing Summerzick", "WARST": "WARST", "∅∅∅": "∅∅∅", "TMST": "TMST", "MYT": "MYT", "SGT": "SGT", "GMT": "Greenwich sing Standat-Zick", "UYST": "UYST", "MESZ": "Meddel-Europpa sing Summerzick", "JST": "JST", "COST": "COST", "EDT": "EDT", "HNPMX": "HNPMX", "ACWDT": "ACWDT", "CST": "CST", "AWDT": "AWDT", "SRT": "SRT", "LHST": "LHST", "LHDT": "LHDT", "HNNOMX": "HNNOMX", "WIB": "WIB", "HNPM": "HNPM", "WAST": "Wäß-Affrekaanesche Sommerzigg", "IST": "IST", "HNOG": "HNOG", "JDT": "JDT", "ART": "ART", "HEOG": "HEOG", "SAST": "Söd-Affrekaanesche Zigg", "CLST": "CLST", "AKDT": "AKDT", "CHAST": "CHAST", "NZST": "NZST", "OEZ": "Oß-Europpa sing jewöhnlijje Zick", "HAT": "HAT", "ECT": "ECT", "CAT": "Zentraal-Affrekaanesche Zigg", "PDT": "PDT", "HECU": "HECU", "ACWST": "ACWST", "MEZ": "Meddel-Europpa sing jewöhnlijje Zick", "NZDT": "NZDT", "AEDT": "AEDT", "COT": "COT", "WEZ": "Weß-Europpa sing jewöhnlijje Zick", "CHADT": "CHADT", "BT": "BT", "BOT": "BOT", "MDT": "MDT", "WART": "WART", "WAT": "Jewöhnlijje Wäß-Affrekaanesche Zigg", "ACST": "ACST", "HEPMX": "HEPMX", "PST": "PST", "ADT": "ADT", "CLT": "CLT", "VET": "VET", "AST": "AST", "UYT": "UYT", "HADT": "HADT", "HENOMX": "HENOMX", "HEEG": "HEEG", "CDT": "CDT", "MST": "MST", "HKST": "HKST", "ACDT": "ACDT", "WESZ": "Weß-Europpa sing Summerzick", "EAT": "Oß-Affrekaanesche Zigg"},
 	}
 }
 
@@ -188,6 +188,21 @@ func (ksh *ksh_DE) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (ksh *ksh_DE) WeekdaysWide() []string {
 	return ksh.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (ksh *ksh_DE) Decimal() string {
+	return ksh.decimal
+}
+
+// Group returns the group of number
+func (ksh *ksh_DE) Group() string {
+	return ksh.group
+}
+
+// Group returns the minus sign of number
+func (ksh *ksh_DE) Minus() string {
+	return ksh.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'ksh_DE' and handles both Whole and Real numbers based on 'v'
@@ -413,7 +428,7 @@ func (ksh *ksh_DE) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -432,7 +447,7 @@ func (ksh *ksh_DE) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -451,7 +466,7 @@ func (ksh *ksh_DE) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -473,7 +488,7 @@ func (ksh *ksh_DE) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

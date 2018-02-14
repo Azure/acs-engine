@@ -73,7 +73,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"aC", "dC"},
 		erasNarrow:             []string{"aC", "dC"},
 		erasWide:               []string{"abans de Crist", "després de Crist"},
-		timezones:              map[string]string{"AKST": "Hora estàndard d’Alaska", "EAT": "Hora de l’Àfrica Oriental", "TMT": "Hora estàndard del Turkmenistan", "HKT": "Hora estàndard de Hong Kong", "ACDT": "Hora d’estiu d’Austràlia Central", "HEEG": "Hora d’estiu de l’Est de Grenlàndia", "UYST": "Hora d’estiu de l’Uruguai", "HEPMX": "Hora d’estiu del Pacífic de Mèxic", "MYT": "Hora de Malàisia", "HAT": "Hora d’estiu de Terranova", "UYT": "Hora estàndard de l’Uruguai", "GYT": "Hora de Guyana", "HNCU": "Hora estàndard de Cuba", "CHADT": "Hora d’estiu de Chatham", "NZDT": "Hora d’estiu de Nova Zelanda", "HNPMX": "Hora estàndard del Pacífic de Mèxic", "WIB": "Hora de l’oest d’Indonèsia", "SGT": "Hora de Singapur", "JDT": "Hora d’estiu del Japó", "WAST": "Hora d’estiu de l’Àfrica Occidental", "CDT": "Hora d’estiu central d’Amèrica del Nord", "HAST": "Hora estàndard de Hawaii-Aleutianes", "JST": "Hora estàndard del Japó", "OESZ": "Hora d’estiu de l’Est d’Europa", "HKST": "Hora d’estiu de Hong Kong", "HNPM": "Hora estàndard de Saint-Pierre i Miquelon", "LHST": "Hora estàndard de Lord Howe", "BOT": "Hora de Bolívia", "WEZ": "Hora estàndard de l’Oest d’Europa", "EDT": "Hora d’estiu oriental d’Amèrica del Nord", "AKDT": "Hora d’estiu d’Alaska", "AEST": "Hora estàndard d’Austràlia Oriental", "HEPM": "Hora d’estiu de Saint-Pierre i Miquelon", "IST": "Hora estàndard de l’Índia", "ACWST": "Hora estàndard d’Austràlia centre-occidental", "NZST": "Hora estàndard de Nova Zelanda", "HENOMX": "Hora d’estiu del nord-oest de Mèxic", "TMST": "Hora d’estiu del Turkmenistan", "COT": "Hora estàndard de Colòmbia", "HNNOMX": "Hora estàndard del nord-oest de Mèxic", "SRT": "Hora de Surinam", "AWDT": "Hora d’estiu d’Austràlia Occidental", "PDT": "Hora d’estiu del Pacífic", "HNOG": "Hora estàndard de l’Oest de Grenlàndia", "GMT": "Hora del Meridià de Greenwich", "WITA": "Hora central d’Indonèsia", "WARST": "Hora d’estiu de l’oest de l’Argentina", "ARST": "Hora d’estiu de l’Argentina", "HNEG": "Hora estàndard de l’Est de Grenlàndia", "GFT": "Hora de la Guaiana Francesa", "AEDT": "Hora d’estiu d’Austràlia Oriental", "LHDT": "Horari d’estiu de Lord Howe", "CLT": "Hora estàndard de Xile", "ADT": "Hora d’estiu de l’Atlàntic", "WAT": "Hora estàndard de l’Àfrica Occidental", "VET": "Hora de Veneçuela", "ART": "Hora estàndard de l’Argentina", "ACST": "Hora estàndard d’Austràlia Central", "AWST": "Hora estàndard d’Austràlia Occidental", "CHAST": "Hora estàndard de Chatham", "MESZ": "Hora d’estiu del Centre d’Europa", "HNT": "Hora estàndard de Terranova", "WART": "Hora estàndard de l’oest de l’Argentina", "MST": "Hora estàndard de Macau", "EST": "Hora estàndard oriental d’Amèrica del Nord", "ChST": "Hora de Chamorro", "SAST": "Hora estàndard del sud de l’Àfrica", "HADT": "Hora d’estiu de Hawaii-Aleutianes", "CAT": "Hora de l’Àfrica Central", "MEZ": "Hora estàndard del Centre d’Europa", "CST": "Hora estàndard central d’Amèrica del Nord", "WIT": "Hora de l’est d’Indonèsia", "ECT": "Hora de l’Equador", "MDT": "Hora d’estiu de Macau", "COST": "Hora d’estiu de Colòmbia", "PST": "Hora estàndard del Pacífic", "CLST": "Hora d’estiu de Xile", "AST": "Hora estàndard de l’Atlàntic", "BT": "Hora de Bhutan", "WESZ": "Hora d’estiu de l’Oest d’Europa", "∅∅∅": "Hora d’estiu de les Açores", "HECU": "Hora d’estiu de Cuba", "ACWDT": "Hora d’estiu d’Austràlia centre-occidental", "HEOG": "Hora d’estiu de l’Oest de Grenlàndia", "OEZ": "Hora estàndard de l’Est d’Europa"},
+		timezones:              map[string]string{"COST": "Hora d’estiu de Colòmbia", "GFT": "Hora de la Guaiana Francesa", "VET": "Hora de Veneçuela", "BT": "Hora de Bhutan", "HNNOMX": "Hora estàndard del nord-oest de Mèxic", "OEZ": "Hora estàndard de l’Est d’Europa", "IST": "Hora estàndard de l’Índia", "HNPMX": "Hora estàndard del Pacífic de Mèxic", "HNPM": "Hora estàndard de Saint-Pierre i Miquelon", "CHADT": "Hora d’estiu de Chatham", "NZDT": "Hora d’estiu de Nova Zelanda", "PDT": "Hora d’estiu del Pacífic", "AWST": "Hora estàndard d’Austràlia Occidental", "AWDT": "Hora d’estiu d’Austràlia Occidental", "SRT": "Hora de Surinam", "ECT": "Hora de l’Equador", "AKST": "Hora estàndard d’Alaska", "HECU": "Hora d’estiu de Cuba", "PST": "Hora estàndard del Pacífic", "WITA": "Hora central d’Indonèsia", "HEEG": "Hora d’estiu de l’Est de Grenlàndia", "CAT": "Hora de l’Àfrica Central", "MST": "Hora estàndard de Macau", "LHDT": "Horari d’estiu de Lord Howe", "UYST": "Hora d’estiu de l’Uruguai", "HAST": "Hora estàndard de Hawaii-Aleutianes", "HNOG": "Hora estàndard de l’Oest de Grenlàndia", "HEOG": "Hora d’estiu de l’Oest de Grenlàndia", "COT": "Hora estàndard de Colòmbia", "ACST": "Hora estàndard d’Austràlia Central", "WESZ": "Hora d’estiu de l’Oest d’Europa", "WIB": "Hora de l’oest d’Indonèsia", "OESZ": "Hora d’estiu de l’Est d’Europa", "ARST": "Hora d’estiu de l’Argentina", "EAT": "Hora de l’Àfrica Oriental", "HAT": "Hora d’estiu de Terranova", "∅∅∅": "Hora d’estiu de l’Amazones", "WEZ": "Hora estàndard de l’Oest d’Europa", "UYT": "Hora estàndard de l’Uruguai", "AEDT": "Hora d’estiu d’Austràlia Oriental", "HEPMX": "Hora d’estiu del Pacífic de Mèxic", "HNCU": "Hora estàndard de Cuba", "MESZ": "Hora d’estiu del Centre d’Europa", "LHST": "Hora estàndard de Lord Howe", "SGT": "Hora de Singapur", "CHAST": "Hora estàndard de Chatham", "HADT": "Hora d’estiu de Hawaii-Aleutianes", "SAST": "Hora estàndard del sud de l’Àfrica", "HEPM": "Hora d’estiu de Saint-Pierre i Miquelon", "CDT": "Hora d’estiu central d’Amèrica del Nord", "WIT": "Hora de l’est d’Indonèsia", "ACWST": "Hora estàndard d’Austràlia centre-occidental", "EDT": "Hora d’estiu oriental d’Amèrica del Nord", "AKDT": "Hora d’estiu d’Alaska", "ACDT": "Hora d’estiu d’Austràlia Central", "GMT": "Hora del Meridià de Greenwich", "MEZ": "Hora estàndard del Centre d’Europa", "ART": "Hora estàndard de l’Argentina", "AEST": "Hora estàndard d’Austràlia Oriental", "HNEG": "Hora estàndard de l’Est de Grenlàndia", "AST": "Hora estàndard de l’Atlàntic", "EST": "Hora estàndard oriental d’Amèrica del Nord", "MDT": "Hora d’estiu de Macau", "ACWDT": "Hora d’estiu d’Austràlia centre-occidental", "TMT": "Hora estàndard del Turkmenistan", "CLST": "Hora d’estiu de Xile", "HKST": "Hora d’estiu de Hong Kong", "CST": "Hora estàndard central d’Amèrica del Nord", "JST": "Hora estàndard del Japó", "WARST": "Hora d’estiu de l’oest de l’Argentina", "HENOMX": "Hora d’estiu del nord-oest de Mèxic", "JDT": "Hora d’estiu del Japó", "WAT": "Hora estàndard de l’Àfrica Occidental", "CLT": "Hora estàndard de Xile", "HNT": "Hora estàndard de Terranova", "ChST": "Hora de Chamorro", "TMST": "Hora d’estiu del Turkmenistan", "WAST": "Hora d’estiu de l’Àfrica Occidental", "GYT": "Hora de Guyana", "BOT": "Hora de Bolívia", "ADT": "Hora d’estiu de l’Atlàntic", "HKT": "Hora estàndard de Hong Kong", "MYT": "Hora de Malàisia", "NZST": "Hora estàndard de Nova Zelanda", "WART": "Hora estàndard de l’oest de l’Argentina"},
 	}
 }
 
@@ -199,6 +199,21 @@ func (ca *ca_ES_VALENCIA) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (ca *ca_ES_VALENCIA) WeekdaysWide() []string {
 	return ca.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (ca *ca_ES_VALENCIA) Decimal() string {
+	return ca.decimal
+}
+
+// Group returns the group of number
+func (ca *ca_ES_VALENCIA) Group() string {
+	return ca.group
+}
+
+// Group returns the minus sign of number
+func (ca *ca_ES_VALENCIA) Minus() string {
+	return ca.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'ca_ES_VALENCIA' and handles both Whole and Real numbers based on 'v'
@@ -427,7 +442,7 @@ func (ca *ca_ES_VALENCIA) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -447,7 +462,7 @@ func (ca *ca_ES_VALENCIA) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -469,7 +484,7 @@ func (ca *ca_ES_VALENCIA) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

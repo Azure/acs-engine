@@ -9,21 +9,27 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
+// ErrorInfo represents the CI error
 type ErrorInfo struct {
 	TestName string
+	Step     string
 	ErrName  string
 	ErrClass string
 	Location string
 }
 
+// ErrorStat represents the aggregate error count and region
 type ErrorStat struct {
 	Count     int            `json:"count"`
 	Locations map[string]int `json:"locations"`
 }
 
-type ReportMgr struct {
+// Manager represents the details about a build and errors in that build
+type Manager struct {
 	lock        sync.Mutex
 	JobName     string    `json:"job"`
 	BuildNum    int       `json:"build"`
@@ -32,87 +38,66 @@ type ReportMgr struct {
 	StartTime   time.Time `json:"startTime"`
 	Duration    string    `json:"duration"`
 	// Failure map: key=error, value=locations
-	Failures map[string]*ErrorStat `json:"failures"`
+	Failures  map[string]*ErrorStat `json:"failures"`
+	LogErrors logErrors             `json:"-"`
+}
+
+type logErrors struct {
+	LogErrors []logError `json:"Errors"`
 }
 
 type logError struct {
-	name  string
-	class string
-	regex string
+	Name  string `json:"name"`
+	Class string `json:"class"`
+	Regex string `json:"regex"`
 }
 
 const (
-	errClassDeployment = "Deployment"
-	errClassValidation = "Validation"
-	errClassAzcli      = "AzCLI"
-	errClassNone       = "None"
+	// ErrClassDeployment represents an error during deployment
+	ErrClassDeployment = "Deployment"
+	// ErrClassValidation represents an error during validation (tests)
+	ErrClassValidation = "Validation"
+	// ErrClassAzcli represents an error with Azure CLI
+	ErrClassAzcli = "AzCLI"
+	// ErrClassNone represents absence of error
+	ErrClassNone = "None"
 
-	errSuccess = "Success"
-	errUnknown = "UnspecifiedError"
+	// ErrSuccess represents a success, for some reason
+	ErrSuccess = "Success"
+	// ErrUnknown represents an unknown error
+	ErrUnknown = "UnspecifiedError"
 )
 
-var logErrors []logError
-
-func init() {
-	logErrors = []logError{
-		{name: "AzCliRunError", class: errClassAzcli, regex: "_init__.py"},
-		{name: "AzCliLoadError", class: errClassAzcli, regex: "Error loading command module"},
-
-		{name: "VMStartTimedOut", class: errClassDeployment, regex: "VMStartTimedOut"},
-		{name: "OSProvisioningTimedOut", class: errClassDeployment, regex: "OSProvisioningTimedOut"},
-		{name: "VMExtensionProvisioningError", class: errClassDeployment, regex: "VMExtensionProvisioningError"},
-		{name: "VMExtensionProvisioningTimeout", class: errClassDeployment, regex: "VMExtensionProvisioningTimeout"},
-		{name: "InternalExecutionError", class: errClassDeployment, regex: "InternalExecutionError"},
-		{name: "SkuNotAvailable", class: errClassDeployment, regex: "SkuNotAvailable"},
-		{name: "MaxStorageAccountsCountPerSubscriptionExceeded", class: errClassDeployment, regex: "MaxStorageAccountsCountPerSubscriptionExceeded"},
-		{name: "ImageManagementOperationError", class: errClassDeployment, regex: "ImageManagementOperationError"},
-		{name: "DiskProcessingError", class: errClassDeployment, regex: "DiskProcessingError"},
-		{name: "DiskServiceInternalError", class: errClassDeployment, regex: "DiskServiceInternalError"},
-		{name: "AllocationFailed", class: errClassDeployment, regex: "AllocationFailed"},
-		{name: "NetworkingInternalOperationError", class: errClassDeployment, regex: "NetworkingInternalOperationError"},
-		{name: "PlatformFaultDomainCount", class: errClassDeployment, regex: "platformFaultDomainCount"},
-
-		{name: "K8sNodeNotReady", class: errClassValidation, regex: "K8S: gave up waiting for apiserver"},
-		{name: "K8sUnexpectedVersion", class: errClassValidation, regex: "K8S: unexpected kubernetes version"},
-		{name: "K8sContainerNotCreated", class: errClassValidation, regex: "K8S: gave up waiting for containers"},
-		{name: "K8sPodNotRunning", class: errClassValidation, regex: "K8S: gave up waiting for running pods"},
-		{name: "K8sKubeDnsNotRunning", class: errClassValidation, regex: "K8S: gave up waiting for kube-dns"},
-		{name: "K8sDashboardNotRunning", class: errClassValidation, regex: "K8S: gave up waiting for kubernetes-dashboard"},
-		{name: "K8sKubeProxyNotRunning", class: errClassValidation, regex: "K8S: gave up waiting for kube-proxy"},
-		{name: "K8sProxyNotWorking", class: errClassValidation, regex: "K8S: gave up verifying proxy"},
-		{name: "K8sLinuxDeploymentNotReady", class: errClassValidation, regex: "K8S-Linux: gave up waiting for deployment"},
-		{name: "K8sWindowsDeploymentNotReady", class: errClassValidation, regex: "K8S-Windows: gave up waiting for deployment"},
-		{name: "K8sLinuxNoExternalIP", class: errClassValidation, regex: "K8S-Linux: gave up waiting for loadbalancer to get an ingress ip"},
-		{name: "K8sWindowsNoExternalIP", class: errClassValidation, regex: "K8S-Windows: gave up waiting for loadbalancer to get an ingress ip"},
-		{name: "K8sLinuxNginxUnreachable", class: errClassValidation, regex: "K8S-Linux: failed to get expected response from nginx through the loadbalancer"},
-		{name: "K8sWindowsSimpleWebUnreachable", class: errClassValidation, regex: "K8S-Windows: failed to get expected response from simpleweb through the loadbalancer"},
-		{name: "K8sWindowsNoSimpleWebPodName", class: errClassValidation, regex: "K8S-Windows: failed to get expected pod name for simpleweb"},
-		{name: "K8sWindowsNoSimpleWebOutboundInternet", class: errClassValidation, regex: "K8S-Windows: failed to get outbound internet connection inside simpleweb container"},
-
-		{name: "DcosNodeNotReady", class: errClassValidation, regex: "gave up waiting for DCOS nodes"},
-		{name: "DcosMarathonValidationFailed", class: errClassValidation, regex: "dcos/test.sh] marathon validation failed"},
-		{name: "DcosMarathonNotAdded", class: errClassValidation, regex: "dcos/test.sh] gave up waiting for marathon to be added"},
-		{name: "DcosMarathonLbNotInstalled", class: errClassValidation, regex: "Failed to install marathon-lb"},
-
-		{name: "DockerCeNetworkNotReady", class: errClassValidation, regex: "DockerCE: gave up waiting for network to be created"},
-		{name: "DockerCeServiceNotReady", class: errClassValidation, regex: "DockerCE: gave up waiting for service to be created"},
-		{name: "DockerCeServiceUnreachable", class: errClassValidation, regex: "DockerCE: gave up waiting for service to be externally reachable"},
-	}
-}
-
-func New(jobName string, buildNum int, nDeploys int) *ReportMgr {
-	h := &ReportMgr{}
+// New creates a new error report
+func New(jobName string, buildNum int, nDeploys int, logErrorsFileName string) *Manager {
+	h := &Manager{}
 	h.JobName = jobName
 	h.BuildNum = buildNum
 	h.Deployments = nDeploys
 	h.Errors = 0
 	h.StartTime = time.Now().UTC()
 	h.Failures = make(map[string]*ErrorStat)
+	h.LogErrors = makeErrorList(logErrorsFileName)
 	return h
 }
 
-func (h *ReportMgr) Copy() *ReportMgr {
-	n := New(h.JobName, h.BuildNum, h.Deployments)
+func makeErrorList(fileName string) logErrors {
+	dummy := logErrors{}
+
+	if fileName != "" {
+		file, e := ioutil.ReadFile(fileName)
+		if e != nil {
+			// do not exit the tests
+			fmt.Printf("ERROR: %v\n", e)
+		}
+		json.Unmarshal(file, &dummy)
+	}
+	return dummy
+}
+
+// Copy TBD needs definition [ToDo]
+func (h *Manager) Copy() *Manager {
+	n := New(h.JobName, h.BuildNum, h.Deployments, "")
 	n.Errors = h.Errors
 	n.StartTime = h.StartTime
 	for e, f := range h.Failures {
@@ -125,18 +110,19 @@ func (h *ReportMgr) Copy() *ReportMgr {
 	return n
 }
 
-func (h *ReportMgr) Process(txt, testName, location string) *ErrorInfo {
-	for _, logErr := range logErrors {
-		if match, _ := regexp.MatchString(logErr.regex, txt); match {
-			h.addFailure(logErr.name, map[string]int{location: 1})
-			return NewErrorInfo(testName, logErr.name, logErr.class, location)
+// Process TBD needs definition
+func (h *Manager) Process(txt, step, testName, location string) *ErrorInfo {
+	for _, logErr := range h.LogErrors.LogErrors {
+		if match, _ := regexp.MatchString(logErr.Regex, txt); match {
+			h.addFailure(logErr.Name, map[string]int{location: 1})
+			return NewErrorInfo(testName, step, logErr.Name, logErr.Class, location)
 		}
 	}
-	h.addFailure(errUnknown, map[string]int{location: 1})
-	return NewErrorInfo(testName, errUnknown, errClassNone, location)
+	h.addFailure(ErrUnknown, map[string]int{location: 1})
+	return NewErrorInfo(testName, step, ErrUnknown, ErrClassNone, location)
 }
 
-func (h *ReportMgr) addFailure(key string, locations map[string]int) {
+func (h *Manager) addFailure(key string, locations map[string]int) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
@@ -162,9 +148,10 @@ func (h *ReportMgr) addFailure(key string, locations map[string]int) {
 	h.Errors += cnt
 }
 
-func (h *ReportMgr) CreateTestReport(filepath string) error {
+// CreateTestReport TBD needs definition
+func (h *Manager) CreateTestReport(filepath string) error {
 	h.Duration = time.Now().UTC().Sub(h.StartTime).String()
-	data, err := json.MarshalIndent(h, "", "  ")
+	data, err := helpers.JSONMarshalIndent(h, "", "  ", false)
 	if err != nil {
 		return err
 	}
@@ -180,11 +167,11 @@ func (h *ReportMgr) CreateTestReport(filepath string) error {
 	return nil
 }
 
-func (h *ReportMgr) CreateCombinedReport(filepath, testReportFname string) error {
+// CreateCombinedReport TBD needs definition
+func (h *Manager) CreateCombinedReport(filepath, testReportFname string) error {
 	// "COMBINED_PAST_REPORTS" is the number of recent reports in the combined report
 	reports, err := strconv.Atoi(os.Getenv("COMBINED_PAST_REPORTS"))
 	if err != nil || reports <= 0 {
-		fmt.Println("Warning: COMBINED_PAST_REPORTS is not set or invalid. Ignoring")
 		return nil
 	}
 	combinedReport := h.Copy()
@@ -194,7 +181,7 @@ func (h *ReportMgr) CreateCombinedReport(filepath, testReportFname string) error
 		if err != nil {
 			break
 		}
-		testReport := &ReportMgr{}
+		testReport := &Manager{}
 		if err := json.Unmarshal(data, &testReport); err != nil {
 			break
 		}
@@ -208,6 +195,7 @@ func (h *ReportMgr) CreateCombinedReport(filepath, testReportFname string) error
 	return combinedReport.CreateTestReport(filepath)
 }
 
-func NewErrorInfo(testName, errName, errClass, location string) *ErrorInfo {
-	return &ErrorInfo{TestName: testName, ErrName: errName, ErrClass: errClass, Location: location}
+// NewErrorInfo TBD needs definition
+func NewErrorInfo(testName, step, errName, errClass, location string) *ErrorInfo {
+	return &ErrorInfo{TestName: testName, Step: step, ErrName: errName, ErrClass: errClass, Location: location}
 }

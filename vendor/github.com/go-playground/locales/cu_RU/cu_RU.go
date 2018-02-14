@@ -72,7 +72,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"", ""},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"пре́дъ р.\u00a0х.", "по р.\u00a0х."},
-		timezones:              map[string]string{"EDT": "восточноамерїка́нское лѣ́тнее вре́мѧ", "HEEG": "HEEG", "ChST": "ChST", "UYT": "UYT", "WIB": "WIB", "HNT": "HNT", "AKDT": "AKDT", "SRT": "SRT", "LHDT": "LHDT", "ACST": "ACST", "COT": "COT", "AEDT": "AEDT", "HNPM": "HNPM", "HAST": "HAST", "MYT": "MYT", "WARST": "WARST", "OESZ": "восточноєѵрѡпе́йское лѣ́тнее вре́мѧ", "HEPMX": "HEPMX", "HNCU": "HNCU", "CST": "среднеамерїка́нское зи́мнее вре́мѧ", "AST": "а҆тланті́ческое зи́мнее вре́мѧ", "ACDT": "ACDT", "JDT": "JDT", "CLST": "CLST", "EST": "восточноамерїка́нское зи́мнее вре́мѧ", "HNEG": "HNEG", "AKST": "AKST", "CHAST": "CHAST", "HEOG": "HEOG", "HENOMX": "HENOMX", "WITA": "WITA", "OEZ": "восточноєѵрѡпе́йское зи́мнее вре́мѧ", "HAT": "HAT", "PDT": "тихоѻкеа́нское лѣ́тнее вре́мѧ", "ACWDT": "ACWDT", "WART": "WART", "ADT": "а҆тланті́ческое лѣ́тнее вре́мѧ", "CLT": "CLT", "COST": "COST", "GYT": "GYT", "EAT": "EAT", "AWST": "AWST", "BOT": "BOT", "VET": "VET", "TMT": "TMT", "BT": "BT", "MDT": "MDT", "HKT": "HKT", "WAST": "WAST", "HEPM": "HEPM", "NZDT": "NZDT", "WEZ": "западноєѵрѡпе́йское зи́мнее вре́мѧ", "WESZ": "западноєѵрѡпе́йское лѣ́тнее вре́мѧ", "TMST": "TMST", "UYST": "UYST", "HECU": "HECU", "CDT": "среднеамерїка́нское лѣ́тнее вре́мѧ", "CHADT": "CHADT", "HADT": "HADT", "NZST": "NZST", "CAT": "CAT", "ACWST": "ACWST", "WAT": "WAT", "AWDT": "AWDT", "WIT": "WIT", "SGT": "SGT", "ECT": "ECT", "MESZ": "среднеєѵрѡпе́йское лѣ́тнее вре́мѧ", "ARST": "ARST", "ART": "ART", "HKST": "HKST", "HNNOMX": "HNNOMX", "LHST": "LHST", "PST": "тихоѻкеа́нское зи́мнее вре́мѧ", "JST": "JST", "MEZ": "среднеєѵрѡпе́йское зи́мнее вре́мѧ", "GMT": "сре́днее вре́мѧ по грі́нꙋичꙋ", "AEST": "AEST", "GFT": "GFT", "HNPMX": "HNPMX", "SAST": "SAST", "∅∅∅": "∅∅∅", "IST": "IST", "HNOG": "HNOG", "MST": "MST"},
+		timezones:              map[string]string{"JST": "JST", "HNOG": "HNOG", "GYT": "GYT", "ACDT": "ACDT", "AKST": "AKST", "HENOMX": "HENOMX", "HKST": "HKST", "AWDT": "AWDT", "SRT": "SRT", "UYT": "UYT", "ACWST": "ACWST", "ACWDT": "ACWDT", "PST": "тихоѻкеа́нское зи́мнее вре́мѧ", "BOT": "BOT", "NZDT": "NZDT", "WARST": "WARST", "HKT": "HKT", "AKDT": "AKDT", "WIT": "WIT", "TMST": "TMST", "EDT": "восточноамерїка́нское лѣ́тнее вре́мѧ", "HNPMX": "HNPMX", "HNCU": "HNCU", "WESZ": "западноєѵрѡпе́йское лѣ́тнее вре́мѧ", "MEZ": "среднеєѵрѡпе́йское зи́мнее вре́мѧ", "OEZ": "восточноєѵрѡпе́йское зи́мнее вре́мѧ", "AEST": "AEST", "HEOG": "HEOG", "AST": "а҆тланті́ческое зи́мнее вре́мѧ", "WITA": "WITA", "WAST": "WAST", "GFT": "GFT", "SGT": "SGT", "CST": "среднеамерїка́нское зи́мнее вре́мѧ", "HADT": "HADT", "OESZ": "восточноєѵрѡпе́йское лѣ́тнее вре́мѧ", "SAST": "SAST", "HEPM": "HEPM", "GMT": "сре́днее вре́мѧ по грі́нꙋичꙋ", "CHADT": "CHADT", "CDT": "среднеамерїка́нское лѣ́тнее вре́мѧ", "ADT": "а҆тланті́ческое лѣ́тнее вре́мѧ", "HNEG": "HNEG", "COT": "COT", "EST": "восточноамерїка́нское зи́мнее вре́мѧ", "HNPM": "HNPM", "ACST": "ACST", "ECT": "ECT", "WIB": "WIB", "AWST": "AWST", "UYST": "UYST", "MESZ": "среднеєѵрѡпе́йское лѣ́тнее вре́мѧ", "LHST": "LHST", "IST": "IST", "CLT": "CLT", "CLST": "CLST", "ChST": "ChST", "∅∅∅": "∅∅∅", "HAST": "HAST", "HNNOMX": "HNNOMX", "JDT": "JDT", "AEDT": "AEDT", "HECU": "HECU", "MST": "MST", "MDT": "MDT", "HEEG": "HEEG", "CAT": "CAT", "HEPMX": "HEPMX", "PDT": "тихоѻкеа́нское лѣ́тнее вре́мѧ", "BT": "BT", "ARST": "ARST", "COST": "COST", "HNT": "HNT", "CHAST": "CHAST", "WEZ": "западноєѵрѡпе́йское зи́мнее вре́мѧ", "NZST": "NZST", "LHDT": "LHDT", "VET": "VET", "ART": "ART", "WAT": "WAT", "TMT": "TMT", "WART": "WART", "MYT": "MYT", "EAT": "EAT", "HAT": "HAT"},
 	}
 }
 
@@ -179,6 +179,21 @@ func (cu *cu_RU) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (cu *cu_RU) WeekdaysWide() []string {
 	return cu.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (cu *cu_RU) Decimal() string {
+	return cu.decimal
+}
+
+// Group returns the group of number
+func (cu *cu_RU) Group() string {
+	return cu.group
+}
+
+// Group returns the minus sign of number
+func (cu *cu_RU) Minus() string {
+	return cu.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'cu_RU' and handles both Whole and Real numbers based on 'v'
@@ -391,7 +406,7 @@ func (cu *cu_RU) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e}...)
@@ -421,7 +436,7 @@ func (cu *cu_RU) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x20}...)
@@ -440,7 +455,7 @@ func (cu *cu_RU) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x20}...)
@@ -467,7 +482,7 @@ func (cu *cu_RU) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e}...)

@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"v.Chr.", "n.Chr."},
 		erasNarrow:             []string{"vC", "nC"},
 		erasWide:               []string{"vör Christus", "na Christus"},
-		timezones:              map[string]string{"HECU": "HECU", "CHADT": "CHADT", "HAST": "HAST", "ACWDT": "Westzentraalaustraalsch Summertiet", "AEDT": "Oostaustraalsch Summertiet", "GMT": "Gröönwisch-Welttiet", "TMT": "TMT", "ARST": "ARST", "HNNOMX": "HNNOMX", "LHST": "LHST", "GYT": "GYT", "HNEG": "HNEG", "AKDT": "AKDT", "ChST": "ChST", "UYST": "UYST", "NZDT": "NZDT", "WESZ": "Westeuropääsch Summertiet", "WAST": "Westafrikaansch Summertiet", "HEPM": "HEPM", "LHDT": "LHDT", "CST": "Noordamerikaansch zentraal Standardtiet", "ACWST": "Westzentraalaustraalsch Standardtiet", "WART": "WART", "WARST": "WARST", "HENOMX": "HENOMX", "UYT": "UYT", "JST": "Japaansch Standardtiet", "WEZ": "Westeuropääsch Standardtiet", "HNT": "HNT", "ACST": "Zentraalaustraalsch Standardtiet", "MDT": "Noordamerikaansch Barg-Summertiet", "PDT": "Noordamerikaansch Pazifik-Summertiet", "IST": "Indien-Tiet", "VET": "VET", "AST": "Noordamerikaansch Atlantik-Standardtiet", "OEZ": "Oosteuropääsch Standardtiet", "WAT": "Westafrikaansch Standardtiet", "WIT": "Oostindoneesch Tiet", "NZST": "NZST", "ADT": "Noordamerikaansch Atlantik-Summertiet", "HKT": "HKT", "WITA": "Indoneesch Zentraaltiet", "SRT": "SRT", "CDT": "Noordamerikaansch zentraal Summertiet", "AWST": "Westaustraalsch Standardtiet", "HEPMX": "HEPMX", "HADT": "HADT", "EST": "Noordamerikaansch oosten Standardtiet", "HKST": "HKST", "∅∅∅": "∅∅∅", "HEOG": "HEOG", "ART": "ART", "JDT": "Japaansch Summertiet", "GFT": "GFT", "HNPM": "HNPM", "HNPMX": "HNPMX", "WIB": "Westindoneesch Tiet", "SGT": "SGT", "PST": "Noordamerikaansch Pazifik-Standardtiet", "ECT": "ECT", "ACDT": "Zentraalaustraalsch Summertiet", "COST": "COST", "AKST": "AKST", "HNOG": "HNOG", "COT": "COT", "HNCU": "HNCU", "AWDT": "Westaustraalsch Summertiet", "CAT": "Zentraalafrikaansch Tiet", "MESZ": "Zentraaleuropääsch Summertiet", "CLT": "CLT", "EDT": "Noordamerikaansch oosten Summertiet", "CHAST": "CHAST", "BOT": "BOT", "OESZ": "Oosteuropääsch Summertiet", "CLST": "CLST", "HAT": "HAT", "BT": "BT", "AEST": "Oostaustraalsch Standardtiet", "MST": "Noordamerikaansch Barg-Standardtiet", "SAST": "Söödafrikaansch Tiet", "EAT": "Oostafrikaansch Tiet", "MEZ": "Zentraaleuropääsch Standardtiet", "MYT": "MYT", "TMST": "TMST", "HEEG": "HEEG"},
+		timezones:              map[string]string{"EDT": "Noordamerikaansch oosten Summertiet", "SGT": "SGT", "ChST": "ChST", "ADT": "Noordamerikaansch Atlantik-Summertiet", "AEDT": "Oostaustraalsch Summertiet", "ART": "ART", "OEZ": "Oosteuropääsch Standardtiet", "LHDT": "LHDT", "HENOMX": "HENOMX", "WAT": "Westafrikaansch Standardtiet", "HAT": "HAT", "ACWST": "Westzentraalaustraalsch Standardtiet", "MYT": "MYT", "TMT": "TMT", "AKST": "AKST", "CAT": "Zentraalafrikaansch Tiet", "WIB": "Westindoneesch Tiet", "MEZ": "Zentraaleuropääsch Standardtiet", "HADT": "HADT", "JDT": "Japaansch Summertiet", "SAST": "Söödafrikaansch Tiet", "HNT": "HNT", "∅∅∅": "∅∅∅", "BOT": "BOT", "MDT": "MDT", "ECT": "ECT", "UYST": "UYST", "LHST": "LHST", "EAT": "Oostafrikaansch Tiet", "AST": "Noordamerikaansch Atlantik-Standardtiet", "AKDT": "AKDT", "WESZ": "Westeuropääsch Summertiet", "GMT": "Gröönwisch-Welttiet", "HNPMX": "HNPMX", "CHAST": "CHAST", "HNCU": "HNCU", "HEPM": "HEPM", "VET": "VET", "EST": "Noordamerikaansch oosten Standardtiet", "ACST": "Zentraalaustraalsch Standardtiet", "PDT": "Noordamerikaansch Pazifik-Summertiet", "AWDT": "Westaustraalsch Summertiet", "SRT": "SRT", "HEEG": "HEEG", "WIT": "Oostindoneesch Tiet", "TMST": "TMST", "HNEG": "HNEG", "HNOG": "HNOG", "WAST": "Westafrikaansch Summertiet", "CLST": "CLST", "NZST": "NZST", "NZDT": "NZDT", "AEST": "Oostaustraalsch Standardtiet", "COT": "COT", "MST": "MST", "OESZ": "Oosteuropääsch Summertiet", "HEOG": "HEOG", "UYT": "UYT", "WITA": "Indoneesch Zentraaltiet", "HKT": "HKT", "HECU": "HECU", "COST": "COST", "WART": "WART", "HNNOMX": "HNNOMX", "CLT": "CLT", "ACDT": "Zentraalaustraalsch Summertiet", "CHADT": "CHADT", "BT": "BT", "AWST": "Westaustraalsch Standardtiet", "HEPMX": "HEPMX", "HAST": "HAST", "IST": "Indien-Tiet", "ARST": "ARST", "JST": "Japaansch Standardtiet", "GYT": "GYT", "HNPM": "HNPM", "CST": "Noordamerikaansch zentraal Standardtiet", "CDT": "Noordamerikaansch zentraal Summertiet", "GFT": "GFT", "WEZ": "Westeuropääsch Standardtiet", "ACWDT": "Westzentraalaustraalsch Summertiet", "MESZ": "Zentraaleuropääsch Summertiet", "HKST": "HKST", "PST": "Noordamerikaansch Pazifik-Standardtiet", "WARST": "WARST"},
 	}
 }
 
@@ -178,6 +178,21 @@ func (nds *nds_NL) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (nds *nds_NL) WeekdaysWide() []string {
 	return nds.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (nds *nds_NL) Decimal() string {
+	return nds.decimal
+}
+
+// Group returns the group of number
+func (nds *nds_NL) Group() string {
+	return nds.group
+}
+
+// Group returns the minus sign of number
+func (nds *nds_NL) Minus() string {
+	return nds.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'nds_NL' and handles both Whole and Real numbers based on 'v'
@@ -414,7 +429,7 @@ func (nds *nds_NL) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -433,7 +448,7 @@ func (nds *nds_NL) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -455,7 +470,7 @@ func (nds *nds_NL) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

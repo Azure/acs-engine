@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/Azure/acs-engine/pkg/armhelpers"
-	log "github.com/Sirupsen/logrus"
+	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 // CleanDeleteVirtualMachine deletes a VM and any associated OS disk
@@ -26,14 +27,17 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 
 	osDiskName := vm.VirtualMachineProperties.StorageProfile.OsDisk.Name
 
+	var nicName string
 	nicID := (*vm.VirtualMachineProperties.NetworkProfile.NetworkInterfaces)[0].ID
-	nicName, err := armhelpers.ResourceName(*nicID)
-	if err != nil {
-		return err
+	if nicID == nil {
+		logger.Warnf("NIC ID is not set for VM (%s/%s)", resourceGroup, name)
+	} else {
+		nicName, err = utils.ResourceName(*nicID)
+		if err != nil {
+			return err
+		}
+		logger.Infof("found nic name for VM (%s/%s): %s", resourceGroup, name, nicName)
 	}
-
-	logger.Infof("found nic name for VM (%s/%s): %s", resourceGroup, name, nicName)
-
 	logger.Infof("deleting VM: %s/%s", resourceGroup, name)
 	_, deleteErrChan := az.DeleteVirtualMachine(resourceGroup, name, nil)
 
@@ -42,16 +46,18 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 		return err
 	}
 
-	logger.Infof("deleting nic: %s/%s", resourceGroup, nicName)
-	_, nicErrChan := az.DeleteNetworkInterface(resourceGroup, nicName, nil)
+	if len(nicName) > 0 {
+		logger.Infof("deleting nic: %s/%s", resourceGroup, nicName)
+		_, nicErrChan := az.DeleteNetworkInterface(resourceGroup, nicName, nil)
 
-	logger.Infof("waiting for nic deletion: %s/%s", resourceGroup, nicName)
-	if nicErr := <-nicErrChan; nicErr != nil {
-		return nicErr
+		logger.Infof("waiting for nic deletion: %s/%s", resourceGroup, nicName)
+		if nicErr := <-nicErrChan; nicErr != nil {
+			return nicErr
+		}
 	}
 
 	if vhd != nil {
-		accountName, vhdContainer, vhdBlob, err := armhelpers.SplitBlobURI(*vhd.URI)
+		accountName, vhdContainer, vhdBlob, err := utils.SplitBlobURI(*vhd.URI)
 		if err != nil {
 			return err
 		}
@@ -68,11 +74,15 @@ func CleanDeleteVirtualMachine(az armhelpers.ACSEngineClient, logger *log.Entry,
 			return err
 		}
 	} else if managedDisk != nil {
-		logger.Infof("deleting managed disk: %s/%s", resourceGroup, *osDiskName)
-		_, diskErrChan := az.DeleteManagedDisk(resourceGroup, *osDiskName, nil)
+		if osDiskName == nil {
+			logger.Warnf("osDisk is not set for VM %s/%s", resourceGroup, name)
+		} else {
+			logger.Infof("deleting managed disk: %s/%s", resourceGroup, *osDiskName)
+			_, diskErrChan := az.DeleteManagedDisk(resourceGroup, *osDiskName, nil)
 
-		if err := <-diskErrChan; err != nil {
-			return err
+			if err := <-diskErrChan; err != nil {
+				return err
+			}
 		}
 	}
 

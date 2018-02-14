@@ -1,0 +1,58 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  labels:
+    kubernetes.io/cluster-service: "true"
+    component: kube-proxy
+    tier: node
+  name: kube-proxy
+  namespace: kube-system
+spec:
+  template:
+    metadata:
+      labels:
+        component: kube-proxy
+        tier: node
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
+      containers:
+      - command:
+        - "/hyperkube"
+        - proxy
+        - "--kubeconfig=/var/lib/kubelet/kubeconfig"
+        - "--cluster-cidr=<kubeClusterCidr>"
+        - "--feature-gates=ExperimentalCriticalPodAnnotation=true"
+        image: "<kubernetesHyperkubeSpec>"
+        name: kube-proxy
+        resources:
+          requests:
+            cpu: 100m
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: "/etc/ssl/certs"
+          name: ssl-certs-host
+          readOnly: true
+        - mountPath: "/etc/kubernetes"
+          name: etc-kubernetes
+          readOnly: true
+        - mountPath: "/var/lib/kubelet/kubeconfig"
+          name: kubeconfig
+          readOnly: true
+      hostNetwork: true
+      volumes:
+      - hostPath:
+          path: "/usr/share/ca-certificates"
+        name: ssl-certs-host
+      - hostPath:
+          path: "/var/lib/kubelet/kubeconfig"
+        name: kubeconfig
+      - hostPath:
+          path: "/etc/kubernetes"
+        name: etc-kubernetes
+      nodeSelector:
+        beta.kubernetes.io/os: linux

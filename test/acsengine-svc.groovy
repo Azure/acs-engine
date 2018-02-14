@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 
-node {
+node("slave") {
   withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'AZURE_CLI_SPN_ACS_TEST',
                   passwordVariable: 'SPN_PASSWORD', usernameVariable: 'SPN_USER']]) {
     timestamps {
@@ -16,7 +16,7 @@ node {
 
         if(locations_str.equals("all")) {
           locations_str = "\
-australiaeast australiasoutheast \
+australiaeast \
 brazilsouth \
 canadacentral canadaeast \
 centralindia southindia \
@@ -63,7 +63,7 @@ uksouth ukwest"
 
               for (i = 0; i <locations.size(); i++) {
                 env.LOCATION = locations[i]
-                env.RESOURCE_GROUP = "test-acs-svc-${canonicalName}-${env.LOCATION}-${env.BUILD_NUMBER}"
+                env.RESOURCE_GROUP = "test-acs-svc-${canonicalName}-${env.LOCATION}-${env.BUILD_NUM}"
                 env.DEPLOYMENT_NAME = "${env.RESOURCE_GROUP}"
                 env.LOGFILE = pwd()+"/${junit_dir}/${canonicalName}.${env.LOCATION}.log"
                 env.CLEANUP = "y"
@@ -123,7 +123,7 @@ uksouth ukwest"
                   if(sendTo != "") {
                     emailext(
                       to: "${sendTo}",
-                      subject: "[ACS Engine Jenkins Failure] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                      subject: "[ACS Engine Jenkins Failure] ${env.JOB_NAME} #${env.BUILD_NUM}",
                       body: "${env.BUILD_URL}testReport")
                   }
                 }

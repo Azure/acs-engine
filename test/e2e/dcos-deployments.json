@@ -1,0 +1,28 @@
+{
+	"deployments": [
+		{
+			"cluster_definition": "dcos-releases/dcos1.8.json",
+			"location": "eastus"
+		},
+		{
+			"cluster_definition": "dcos-releases/dcos1.9.json",
+			"location": "eastus"
+		},
+		{
+			"cluster_definition": "disks-managed/dcos-preAttachedDisks-vmas.json",
+			"location": "eastus"
+		},
+		{
+			"cluster_definition": "disks-managed/dcos-vmss.json",
+			"location": "eastus"
+		},
+		{
+			"cluster_definition": "disks-storageaccount/dcos.json",
+			"location": "eastus"
+		},
+		{
+			"cluster_definition": "vnet/dcosvnet.json",
+			"location": "westus2"
+		}
+	]
+}

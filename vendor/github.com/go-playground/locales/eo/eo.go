@@ -74,7 +74,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"aK", "pK"},
 		erasNarrow:             []string{"aK", "pK"},
 		erasWide:               []string{"aK", "pK"},
-		timezones:              map[string]string{"ART": "ART", "ACDT": "centra aŭstralia somera tempo", "HECU": "HECU", "CHAST": "CHAST", "HADT": "HADT", "NZST": "NZST", "WART": "WART", "AST": "atlantika nord-amerika norma tempo", "BT": "BT", "MST": "MST", "EDT": "orienta nord-amerika somera tempo", "UYT": "UYT", "VET": "VET", "WAT": "okcidenta afrika norma tempo", "WAST": "okcidenta afrika somera tempo", "AWDT": "okcidenta aŭstralia somera tempo", "HAST": "HAST", "CAT": "centra afrika tempo", "HKST": "HKST", "ChST": "ChST", "CDT": "centra nord-amerika somera tempo", "∅∅∅": "∅∅∅", "AWST": "okcidenta aŭstralia norma tempo", "AEST": "orienta aŭstralia norma tempo", "HNPMX": "HNPMX", "CST": "centra nord-amerika norma tempo", "PDT": "pacifika nord-amerika somera tempo", "COST": "COST", "WESZ": "okcidenta eŭropa somera tempo", "HENOMX": "HENOMX", "NZDT": "NZDT", "WEZ": "okcidenta eŭropa norma tempo", "MDT": "MDT", "ACST": "centra aŭstralia norma tempo", "HAT": "HAT", "GYT": "GYT", "WIT": "orienta indonezia tempo", "ECT": "ECT", "CLT": "CLT", "HNT": "HNT", "AEDT": "orienta aŭstralia somera tempo", "HNNOMX": "HNNOMX", "GFT": "GFT", "ACWDT": "centrokcidenta aŭstralia somera tempo", "MESZ": "centra eŭropa somera tempo", "HNOG": "HNOG", "ADT": "atlantika nord-amerika somera tempo", "OESZ": "orienta eŭropa somera tempo", "HKT": "HKT", "WITA": "centra indonezia tempo", "UYST": "UYST", "SRT": "SRT", "EST": "orienta nord-amerika norma tempo", "SAST": "suda afrika tempo", "HNCU": "HNCU", "BOT": "BOT", "ACWST": "centrokcidenta aŭstralia norma tempo", "JST": "japana norma tempo", "JDT": "japana somera tempo", "WARST": "WARST", "SGT": "SGT", "PST": "pacifika nord-amerika norma tempo", "MYT": "MYT", "CLST": "CLST", "OEZ": "orienta eŭropa norma tempo", "HNPM": "HNPM", "LHDT": "LHDT", "MEZ": "centra eŭropa norma tempo", "HEOG": "HEOG", "TMST": "TMST", "COT": "COT", "HNEG": "HNEG", "HEEG": "HEEG", "HEPMX": "HEPMX", "CHADT": "CHADT", "IST": "barata tempo", "GMT": "universala tempo kunordigita", "AKST": "AKST", "HEPM": "HEPM", "LHST": "LHST", "EAT": "orienta afrika tempo", "WIB": "okcidenta indonezia tempo", "TMT": "TMT", "ARST": "ARST", "AKDT": "AKDT"},
+		timezones:              map[string]string{"HENOMX": "HENOMX", "WEZ": "okcidenta eŭropa norma tempo", "OEZ": "orienta eŭropa norma tempo", "CLT": "CLT", "EDT": "orienta nord-amerika somera tempo", "PDT": "pacifika nord-amerika somera tempo", "AWST": "okcidenta aŭstralia norma tempo", "HADT": "HADT", "AST": "atlantika nord-amerika norma tempo", "EAT": "orienta afrika tempo", "HNT": "HNT", "EST": "orienta nord-amerika norma tempo", "HEPMX": "HEPMX", "HNCU": "HNCU", "CST": "centra nord-amerika norma tempo", "CAT": "centra afrika tempo", "JST": "japana norma tempo", "AEDT": "orienta aŭstralia somera tempo", "HEEG": "HEEG", "ACST": "centra aŭstralia norma tempo", "AKST": "AKST", "PST": "pacifika nord-amerika norma tempo", "BT": "BT", "NZST": "NZST", "∅∅∅": "∅∅∅", "CHAST": "CHAST", "VET": "VET", "GFT": "GFT", "WESZ": "okcidenta eŭropa somera tempo", "CHADT": "CHADT", "LHDT": "LHDT", "TMST": "TMST", "HKST": "HKST", "SRT": "SRT", "HAST": "HAST", "HEPM": "HEPM", "AWDT": "okcidenta aŭstralia somera tempo", "ACWDT": "centrokcidenta aŭstralia somera tempo", "HNNOMX": "HNNOMX", "OESZ": "orienta eŭropa somera tempo", "IST": "barata tempo", "WIB": "okcidenta indonezia tempo", "HNPM": "HNPM", "HAT": "HAT", "ECT": "ECT", "HECU": "HECU", "WIT": "orienta indonezia tempo", "JDT": "japana somera tempo", "ARST": "ARST", "HNOG": "HNOG", "WAT": "okcidenta afrika norma tempo", "HNPMX": "HNPMX", "GMT": "universala tempo kunordigita", "AKDT": "AKDT", "ADT": "atlantika nord-amerika somera tempo", "COT": "COT", "NZDT": "NZDT", "WART": "WART", "ACWST": "centrokcidenta aŭstralia norma tempo", "SGT": "SGT", "MDT": "MDT", "MYT": "MYT", "SAST": "suda afrika tempo", "ACDT": "centra aŭstralia somera tempo", "LHST": "LHST", "WITA": "centra indonezia tempo", "UYST": "UYST", "MESZ": "centra eŭropa somera tempo", "AEST": "orienta aŭstralia norma tempo", "HEOG": "HEOG", "WAST": "okcidenta afrika somera tempo", "CLST": "CLST", "MST": "MST", "CDT": "centra nord-amerika somera tempo", "COST": "COST", "ChST": "ChST", "UYT": "UYT", "MEZ": "centra eŭropa norma tempo", "WARST": "WARST", "ART": "ART", "HNEG": "HNEG", "HKT": "HKT", "GYT": "GYT", "BOT": "BOT", "TMT": "TMT"},
 	}
 }
 
@@ -188,6 +188,21 @@ func (eo *eo) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (eo *eo) WeekdaysWide() []string {
 	return eo.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (eo *eo) Decimal() string {
+	return eo.decimal
+}
+
+// Group returns the group of number
+func (eo *eo) Group() string {
+	return eo.group
+}
+
+// Group returns the minus sign of number
+func (eo *eo) Minus() string {
+	return eo.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'eo' and handles both Whole and Real numbers based on 'v'
@@ -410,7 +425,7 @@ func (eo *eo) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2d}...)
@@ -434,7 +449,7 @@ func (eo *eo) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2d}...)
@@ -467,7 +482,7 @@ func (eo *eo) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

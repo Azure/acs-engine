@@ -3,8 +3,6 @@ package kubernetesupgrade
 // UpgradeWorkFlow outlines various individual high level steps
 // that need to be run (one or more times) in the upgrade workflow.
 type UpgradeWorkFlow interface {
-	ClusterPreflightCheck() error
-
 	// upgrade masters
 	// upgrade agent nodes
 	RunUpgrade() error
@@ -17,12 +15,13 @@ type UpgradeWorkFlow interface {
 type UpgradeNode interface {
 	// DeleteNode takes state/resources of the master/agent node from ListNodeResources
 	// backs up/preserves state as needed by a specific version of Kubernetes and then deletes
-	// the node
-	DeleteNode(*string) error
+	// the node.
+	// the second argument is a flag to invoke 'cordon and drain' flow.
+	DeleteNode(*string, bool) error
 
 	// CreateNode creates a new master/agent node with the targeted version of Kubernetes
 	CreateNode(string, int) error
 
 	// Validate will verify the that master/agent node has been upgraded as expected.
-	Validate() error
+	Validate(*string) error
 }

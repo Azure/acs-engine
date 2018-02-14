@@ -1,21 +1,6 @@
 {
   "deployments": [
     {
-      "cluster_definition": "kubernetes-D2.json",
-      "category": "service-availability",
-      "location": "australiaeast"
-    },
-    {
-      "cluster_definition": "kubernetes.json",
-      "category": "service-availability",
-      "location": "australiasoutheast"
-    },
-    {
-      "cluster_definition": "kubernetes.json",
-      "category": "service-availability",
-      "location": "brazilsouth"
-    },
-    {
       "cluster_definition": "kubernetes.json",
       "category": "service-availability",
       "location": "canadacentral"
@@ -58,16 +43,6 @@
     {
       "cluster_definition": "kubernetes.json",
       "category": "service-availability",
-      "location": "northcentralus"
-    },
-    {
-      "cluster_definition": "kubernetes.json",
-      "category": "service-availability",
-      "location": "southcentralus"
-    },
-    {
-      "cluster_definition": "kubernetes.json",
-      "category": "service-availability",
       "location": "westcentralus"
     },
     {
@@ -83,22 +58,12 @@
     {
       "cluster_definition": "kubernetes.json",
       "category": "service-availability",
-      "location": "eastasia"
-    },
-    {
-      "cluster_definition": "kubernetes.json",
-      "category": "service-availability",
       "location": "southeastasia"
     },
     {
       "cluster_definition": "kubernetes.json",
       "category": "service-availability",
       "location": "koreacentral"
-    },
-    {
-      "cluster_definition": "kubernetes.json",
-      "category": "service-availability",
-      "location": "koreasouth"
     },
     {
       "cluster_definition": "kubernetes.json",
@@ -124,6 +89,31 @@
       "cluster_definition": "kubernetes.json",
       "category": "service-availability",
       "location": "uksouth"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "category": "service-availability",
+      "location": "australiaeast"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "category": "service-availability",
+      "location": "australiasoutheast"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "category": "service-availability",
+      "location": "koreasouth"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "category": "service-availability",
+      "location": "northcentralus"
+    },
+    {
+      "cluster_definition": "kubernetes.json",
+      "category": "service-availability",
+      "location": "southcentralus"
     },
     {
       "cluster_definition": "kubernetes.json",

@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"BC", "AD"},
 		erasNarrow:             []string{"B", "A"},
 		erasWide:               []string{"Before Christ", "Anno Domini"},
-		timezones:              map[string]string{"ART": "Argentina Standard Time", "BT": "Bhutan Time", "SRT": "Suriname Time", "EAT": "East Africa Time", "OESZ": "Eastern European Summer Time", "WART": "Western Argentina Standard Time", "WARST": "Western Argentina Summer Time", "AKST": "Alaska Standard Time", "HNPMX": "Mexican Pacific Standard Time", "AWDT": "Australian Western Daylight Time", "ACWDT": "Australian Central Western Daylight Time", "AST": "Atlantic Standard Time", "COT": "Colombia Standard Time", "WIB": "Western Indonesia Time", "MEZ": "Central European Standard Time", "VET": "Venezuela Time", "HECU": "Cuba Daylight Time", "MESZ": "Central European Summer Time", "EST": "Eastern Standard Time", "EDT": "Eastern Daylight Time", "GFT": "French Guiana Time", "WITA": "Central Indonesia Time", "BOT": "Bolivia Time", "HAST": "Hawaii-Aleutian Standard Time", "IST": "India Standard Time", "NZST": "New Zealand Standard Time", "CAT": "Central Africa Time", "MDT": "Macau Summer Time", "ARST": "Argentina Summer Time", "NZDT": "New Zealand Daylight Time", "HAT": "Newfoundland Daylight Time", "AKDT": "Alaska Daylight Time", "CST": "Central Standard Time", "CDT": "Central Daylight Time", "SGT": "Singapore Standard Time", "ACWST": "Australian Central Western Standard Time", "CHAST": "Chatham Standard Time", "HADT": "Hawaii-Aleutian Daylight Time", "WAST": "West Africa Summer Time", "HEPMX": "Mexican Pacific Daylight Time", "HNEG": "East Greenland Standard Time", "CHADT": "Chatham Daylight Time", "PST": "Pacific Standard Time", "ADT": "Atlantic Daylight Time", "GMT": "Greenwich Mean Time", "AWST": "Australian Western Standard Time", "TMST": "Turkmenistan Summer Time", "WAT": "West Africa Standard Time", "GYT": "Guyana Time", "ECT": "Ecuador Time", "JST": "Japan Standard Time", "WESZ": "Western European Summer Time", "PDT": "Pacific Daylight Time", "HNOG": "West Greenland Standard Time", "HEOG": "West Greenland Summer Time", "HNT": "Newfoundland Standard Time", "UYT": "Uruguay Standard Time", "LHST": "Lord Howe Standard Time", "CLST": "Chile Summer Time", "HKST": "Hong Kong Summer Time", "ACDT": "Australian Central Daylight Time", "HENOMX": "Northwest Mexico Daylight Time", "ChST": "Chamorro Standard Time", "OEZ": "Eastern European Standard Time", "TMT": "Turkmenistan Standard Time", "HKT": "Hong Kong Standard Time", "HNNOMX": "Northwest Mexico Standard Time", "UYST": "Uruguay Summer Time", "HNPM": "St. Pierre & Miquelon Standard Time", "HEPM": "St. Pierre & Miquelon Daylight Time", "LHDT": "Lord Howe Daylight Time", "HNCU": "Cuba Standard Time", "COST": "Colombia Summer Time", "HEEG": "East Greenland Summer Time", "AEST": "Australian Eastern Standard Time", "WEZ": "Western European Standard Time", "MYT": "Malaysia Time", "MST": "Macau Standard Time", "ACST": "Australian Central Standard Time", "WIT": "Eastern Indonesia Time", "∅∅∅": "Brasilia Summer Time", "JDT": "Japan Daylight Time", "CLT": "Chile Standard Time", "AEDT": "Australian Eastern Daylight Time", "SAST": "South Africa Standard Time"},
+		timezones:              map[string]string{"LHDT": "Lord Howe Daylight Time", "AEDT": "Australian Eastern Daylight Time", "WAST": "West Africa Summer Time", "AKST": "Alaska Standard Time", "AKDT": "Alaska Daylight Time", "CST": "Central Standard Time", "SRT": "Suriname Time", "NZDT": "New Zealand Daylight Time", "WART": "Western Argentina Standard Time", "GFT": "French Guiana Time", "CHAST": "Chatham Standard Time", "AWST": "Australian Western Standard Time", "OEZ": "Eastern European Standard Time", "WARST": "Western Argentina Summer Time", "AEST": "Australian Eastern Standard Time", "HAT": "Newfoundland Daylight Time", "EST": "Eastern Standard Time", "WESZ": "Western European Summer Time", "HAST": "Hawaii-Aleutian Standard Time", "HENOMX": "Northwest Mexico Daylight Time", "ADT": "Atlantic Daylight Time", "∅∅∅": "Amazon Summer Time", "CDT": "Central Daylight Time", "EAT": "East Africa Time", "HNT": "Newfoundland Standard Time", "HKT": "Hong Kong Standard Time", "PST": "Pacific Standard Time", "BT": "Bhutan Time", "LHST": "Lord Howe Standard Time", "ARST": "Argentina Summer Time", "GMT": "Greenwich Mean Time", "HNPMX": "Mexican Pacific Standard Time", "VET": "Venezuela Time", "HNOG": "West Greenland Standard Time", "MST": "Macau Standard Time", "ACWDT": "Australian Central Western Daylight Time", "UYST": "Uruguay Summer Time", "OESZ": "Eastern European Summer Time", "IST": "India Standard Time", "SAST": "South Africa Standard Time", "HEEG": "East Greenland Summer Time", "COST": "Colombia Summer Time", "CAT": "Central Africa Time", "ChST": "Chamorro Standard Time", "WITA": "Central Indonesia Time", "JST": "Japan Standard Time", "AST": "Atlantic Standard Time", "CLT": "Chile Standard Time", "PDT": "Pacific Daylight Time", "NZST": "New Zealand Standard Time", "ART": "Argentina Standard Time", "EDT": "Eastern Daylight Time", "HEPM": "St. Pierre & Miquelon Daylight Time", "MDT": "Macau Summer Time", "HADT": "Hawaii-Aleutian Daylight Time", "TMT": "Turkmenistan Standard Time", "JDT": "Japan Daylight Time", "HNEG": "East Greenland Standard Time", "WEZ": "Western European Standard Time", "SGT": "Singapore Standard Time", "WIB": "Western Indonesia Time", "HECU": "Cuba Daylight Time", "UYT": "Uruguay Standard Time", "MESZ": "Central European Summer Time", "ECT": "Ecuador Time", "HNCU": "Cuba Standard Time", "BOT": "Bolivia Time", "WIT": "Eastern Indonesia Time", "ACDT": "Australian Central Daylight Time", "ACWST": "Australian Central Western Standard Time", "HNNOMX": "Northwest Mexico Standard Time", "WAT": "West Africa Standard Time", "CHADT": "Chatham Daylight Time", "AWDT": "Australian Western Daylight Time", "HKST": "Hong Kong Summer Time", "CLST": "Chile Summer Time", "COT": "Colombia Standard Time", "GYT": "Guyana Time", "ACST": "Australian Central Standard Time", "HEPMX": "Mexican Pacific Daylight Time", "MYT": "Malaysia Time", "MEZ": "Central European Standard Time", "TMST": "Turkmenistan Summer Time", "HEOG": "West Greenland Summer Time", "HNPM": "St. Pierre & Miquelon Standard Time"},
 	}
 }
 
@@ -199,6 +199,21 @@ func (en *en_BE) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (en *en_BE) WeekdaysWide() []string {
 	return en.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (en *en_BE) Decimal() string {
+	return en.decimal
+}
+
+// Group returns the group of number
+func (en *en_BE) Group() string {
+	return en.group
+}
+
+// Group returns the minus sign of number
+func (en *en_BE) Minus() string {
+	return en.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'en_BE' and handles both Whole and Real numbers based on 'v'
@@ -441,7 +456,7 @@ func (en *en_BE) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -452,15 +467,15 @@ func (en *en_BE) FmtDateLong(t time.Time) string {
 
 	b := make([]byte, 0, 32)
 
+	b = strconv.AppendInt(b, int64(t.Day()), 10)
+	b = append(b, []byte{0x20}...)
 	b = append(b, en.monthsWide[t.Month()]...)
 	b = append(b, []byte{0x20}...)
-	b = strconv.AppendInt(b, int64(t.Day()), 10)
-	b = append(b, []byte{0x2c, 0x20}...)
 
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -473,15 +488,15 @@ func (en *en_BE) FmtDateFull(t time.Time) string {
 
 	b = append(b, en.daysWide[t.Weekday()]...)
 	b = append(b, []byte{0x2c, 0x20}...)
+	b = strconv.AppendInt(b, int64(t.Day()), 10)
+	b = append(b, []byte{0x20}...)
 	b = append(b, en.monthsWide[t.Month()]...)
 	b = append(b, []byte{0x20}...)
-	b = strconv.AppendInt(b, int64(t.Day()), 10)
-	b = append(b, []byte{0x2c, 0x20}...)
 
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

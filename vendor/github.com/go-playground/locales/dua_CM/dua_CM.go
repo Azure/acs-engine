@@ -67,7 +67,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"ɓ.Ys", "mb.Ys"},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"ɓoso ɓwá yáɓe lá", "mbúsa kwédi a Yés"},
-		timezones:              map[string]string{"CDT": "CDT", "HKT": "HKT", "GFT": "GFT", "MEZ": "MEZ", "JST": "JST", "WART": "WART", "HAST": "HAST", "CAT": "CAT", "MESZ": "MESZ", "ARST": "ARST", "HENOMX": "HENOMX", "HNT": "HNT", "VET": "VET", "MYT": "MYT", "MDT": "MDT", "HAT": "HAT", "HEEG": "HEEG", "LHDT": "LHDT", "HEPMX": "HEPMX", "CLST": "CLST", "OEZ": "OEZ", "AST": "AST", "WEZ": "WEZ", "EDT": "EDT", "SAST": "SAST", "SRT": "SRT", "IST": "IST", "HNOG": "HNOG", "TMT": "TMT", "ACWST": "ACWST", "GMT": "GMT", "HNNOMX": "HNNOMX", "WESZ": "WESZ", "MST": "MST", "ACST": "ACST", "ACDT": "ACDT", "GYT": "GYT", "BOT": "BOT", "JDT": "JDT", "WAT": "WAT", "HNPM": "HNPM", "LHST": "LHST", "EAT": "EAT", "AWST": "AWST", "AWDT": "AWDT", "∅∅∅": "∅∅∅", "WAST": "WAST", "TMST": "TMST", "ART": "ART", "HKST": "HKST", "UYT": "UYT", "UYST": "UYST", "HNCU": "HNCU", "ADT": "ADT", "WARST": "WARST", "WIB": "WIB", "CHADT": "CHADT", "AKDT": "AKDT", "AEST": "AEST", "CST": "CST", "PST": "PST", "NZDT": "NZDT", "HNEG": "HNEG", "AKST": "AKST", "AEDT": "AEDT", "ACWDT": "ACWDT", "BT": "BT", "NZST": "NZST", "CLT": "CLT", "EST": "EST", "COST": "COST", "HNPMX": "HNPMX", "CHAST": "CHAST", "PDT": "PDT", "HADT": "HADT", "WITA": "WITA", "ChST": "ChST", "WIT": "WIT", "SGT": "SGT", "HEOG": "HEOG", "OESZ": "OESZ", "HEPM": "HEPM", "HECU": "HECU", "ECT": "ECT", "COT": "COT"},
+		timezones:              map[string]string{"WARST": "WARST", "VET": "VET", "AKST": "AKST", "HNCU": "HNCU", "HECU": "HECU", "HEPM": "HEPM", "AWST": "AWST", "LHDT": "LHDT", "HKT": "HKT", "HKST": "HKST", "COT": "COT", "EDT": "EDT", "AEST": "AEST", "EAT": "EAT", "ECT": "ECT", "BT": "BT", "AWDT": "AWDT", "WITA": "WITA", "JST": "JST", "MEZ": "MEZ", "AST": "AST", "EST": "EST", "ACST": "ACST", "CAT": "CAT", "CDT": "CDT", "SRT": "SRT", "ACWDT": "ACWDT", "WAST": "WAST", "HEPMX": "HEPMX", "CST": "CST", "MST": "MST", "HADT": "HADT", "∅∅∅": "∅∅∅", "TMST": "TMST", "HENOMX": "HENOMX", "ARST": "ARST", "HNPMX": "HNPMX", "CHAST": "CHAST", "HNPM": "HNPM", "ART": "ART", "HNT": "HNT", "WESZ": "WESZ", "GMT": "GMT", "ChST": "ChST", "PDT": "PDT", "ACWST": "ACWST", "CLST": "CLST", "WEZ": "WEZ", "ADT": "ADT", "AEDT": "AEDT", "ACDT": "ACDT", "PST": "PST", "OEZ": "OEZ", "LHST": "LHST", "HNOG": "HNOG", "CLT": "CLT", "BOT": "BOT", "HEOG": "HEOG", "WAT": "WAT", "HNEG": "HNEG", "GFT": "GFT", "MYT": "MYT", "WIT": "WIT", "NZST": "NZST", "GYT": "GYT", "AKDT": "AKDT", "WIB": "WIB", "MDT": "MDT", "MESZ": "MESZ", "JDT": "JDT", "COST": "COST", "SGT": "SGT", "UYT": "UYT", "TMT": "TMT", "UYST": "UYST", "HNNOMX": "HNNOMX", "IST": "IST", "OESZ": "OESZ", "WART": "WART", "SAST": "SAST", "HEEG": "HEEG", "HAT": "HAT", "CHADT": "CHADT", "HAST": "HAST", "NZDT": "NZDT"},
 	}
 }
 
@@ -174,6 +174,21 @@ func (dua *dua_CM) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (dua *dua_CM) WeekdaysWide() []string {
 	return dua.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (dua *dua_CM) Decimal() string {
+	return dua.decimal
+}
+
+// Group returns the group of number
+func (dua *dua_CM) Group() string {
+	return dua.group
+}
+
+// Group returns the minus sign of number
+func (dua *dua_CM) Minus() string {
+	return dua.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'dua_CM' and handles both Whole and Real numbers based on 'v'
@@ -391,7 +406,7 @@ func (dua *dua_CM) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -410,7 +425,7 @@ func (dua *dua_CM) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -429,7 +444,7 @@ func (dua *dua_CM) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -450,7 +465,7 @@ func (dua *dua_CM) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

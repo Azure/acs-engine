@@ -73,7 +73,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"v.Chr.", "n.Chr."},
 		erasNarrow:             []string{"v.C.", "n.C."},
 		erasWide:               []string{"voor Christus", "na Christus"},
-		timezones:              map[string]string{"HAT": "Newfoundland-zomertijd", "AEST": "Oost-Australische standaardtijd", "HNCU": "Cubaanse standaardtijd", "WIT": "Oost-Indonesische tijd", "CHADT": "Chatham-zomertijd", "PST": "Pacific-standaardtijd", "JDT": "Japanse zomertijd", "OEZ": "Oost-Europese standaardtijd", "WAT": "West-Afrikaanse standaardtijd", "WITA": "Centraal-Indonesische tijd", "UYT": "Uruguayaanse standaardtijd", "GYT": "Guyaanse tijd", "CST": "Central-standaardtijd", "HADT": "Hawaii-Aleoetische zomertijd", "WESZ": "West-Europese zomertijd", "MDT": "Macause zomertijd", "ACWDT": "Midden-Australische westelijke zomertijd", "SRT": "Surinaamse tijd", "CHAST": "Chatham-standaardtijd", "MYT": "Maleisische tijd", "ACDT": "Midden-Australische zomertijd", "TMST": "Turkmeense zomertijd", "EDT": "Eastern-zomertijd", "HNPMX": "Mexicaanse Pacific-standaardtijd", "AWST": "West-Australische standaardtijd", "WARST": "West-Argentijnse zomertijd", "CLST": "Chileense zomertijd", "HENOMX": "Noordwest-Mexicaanse zomertijd", "AEDT": "Oost-Australische zomertijd", "HEPMX": "Mexicaanse Pacific-zomertijd", "GMT": "Greenwich Mean Time", "ADT": "Atlantic-zomertijd", "ACST": "Midden-Australische standaardtijd", "AKDT": "Alaska-zomertijd", "WIB": "West-Indonesische tijd", "SGT": "Singaporese standaardtijd", "JST": "Japanse standaardtijd", "EST": "Eastern-standaardtijd", "TMT": "Turkmeense standaardtijd", "MST": "Macause standaardtijd", "ARST": "Argentijnse zomertijd", "∅∅∅": "Acre-zomertijd", "BT": "Bhutaanse tijd", "HNPM": "Saint Pierre en Miquelon-standaardtijd", "HEOG": "West-Groenlandse zomertijd", "AST": "Atlantic-standaardtijd", "OESZ": "Oost-Europese zomertijd", "ECT": "Ecuadoraanse tijd", "NZDT": "Nieuw-Zeelandse zomertijd", "WEZ": "West-Europese standaardtijd", "HNOG": "West-Groenlandse standaardtijd", "MEZ": "Midden-Europese standaardtijd", "AKST": "Alaska-standaardtijd", "EAT": "Oost-Afrikaanse tijd", "CDT": "Central-zomertijd", "PDT": "Pacific-zomertijd", "NZST": "Nieuw-Zeelandse standaardtijd", "CAT": "Centraal-Afrikaanse tijd", "VET": "Venezolaanse tijd", "HEPM": "Saint Pierre en Miquelon-zomertijd", "LHDT": "Lord Howe-eilandse zomertijd", "HECU": "Cubaanse zomertijd", "BOT": "Boliviaanse tijd", "HAST": "Hawaii-Aleoetische standaardtijd", "COT": "Colombiaanse standaardtijd", "HNEG": "Oost-Groenlandse standaardtijd", "WAST": "West-Afrikaanse zomertijd", "ChST": "Chamorro-tijd", "UYST": "Uruguayaanse zomertijd", "AWDT": "West-Australische zomertijd", "ACWST": "Midden-Australische westelijke standaardtijd", "WART": "West-Argentijnse standaardtijd", "CLT": "Chileense standaardtijd", "HEEG": "Oost-Groenlandse zomertijd", "IST": "Indiase tijd", "COST": "Colombiaanse zomertijd", "MESZ": "Midden-Europese zomertijd", "HNNOMX": "Noordwest-Mexicaanse standaardtijd", "HKST": "Hongkongse zomertijd", "HNT": "Newfoundland-standaardtijd", "GFT": "Frans-Guyaanse tijd", "SAST": "Zuid-Afrikaanse tijd", "LHST": "Lord Howe-eilandse standaardtijd", "ART": "Argentijnse standaardtijd", "HKT": "Hongkongse standaardtijd"},
+		timezones:              map[string]string{"MESZ": "Midden-Europese zomertijd", "LHDT": "Lord Howe-eilandse zomertijd", "AST": "Atlantic-standaardtijd", "ACDT": "Midden-Australische zomertijd", "∅∅∅": "Amazone-zomertijd", "PDT": "Pacific-zomertijd", "UYT": "Uruguayaanse standaardtijd", "WIT": "Oost-Indonesische tijd", "ACWDT": "Midden-Australische westelijke zomertijd", "COT": "Colombiaanse standaardtijd", "SGT": "Singaporese standaardtijd", "WARST": "West-Argentijnse zomertijd", "JST": "Japanse standaardtijd", "HEPM": "Saint Pierre en Miquelon-zomertijd", "AWDT": "West-Australische zomertijd", "GFT": "Frans-Guyaanse tijd", "ChST": "Chamorro-tijd", "HECU": "Cubaanse zomertijd", "PST": "Pacific-standaardtijd", "BOT": "Boliviaanse tijd", "BT": "Bhutaanse tijd", "WAT": "West-Afrikaanse standaardtijd", "HNEG": "Oost-Groenlandse standaardtijd", "VET": "Venezolaanse tijd", "AEDT": "Oost-Australische zomertijd", "AKDT": "Alaska-zomertijd", "HNPMX": "Mexicaanse Pacific-standaardtijd", "TMT": "Turkmeense standaardtijd", "WART": "West-Argentijnse standaardtijd", "HEEG": "Oost-Groenlandse zomertijd", "HKT": "Hongkongse standaardtijd", "NZST": "Nieuw-Zeelandse standaardtijd", "LHST": "Lord Howe-eilandse standaardtijd", "ADT": "Atlantic-zomertijd", "CST": "Central-standaardtijd", "MYT": "Maleisische tijd", "HNT": "Newfoundland-standaardtijd", "HEPMX": "Mexicaanse Pacific-zomertijd", "TMST": "Turkmeense zomertijd", "OEZ": "Oost-Europese standaardtijd", "WAST": "West-Afrikaanse zomertijd", "COST": "Colombiaanse zomertijd", "ACST": "Midden-Australische standaardtijd", "WIB": "West-Indonesische tijd", "HNCU": "Cubaanse standaardtijd", "CDT": "Central-zomertijd", "UYST": "Uruguayaanse zomertijd", "HNNOMX": "Noordwest-Mexicaanse standaardtijd", "SAST": "Zuid-Afrikaanse tijd", "EST": "Eastern-standaardtijd", "HADT": "Hawaii-Aleoetische zomertijd", "ART": "Argentijnse standaardtijd", "ECT": "Ecuadoraanse tijd", "WEZ": "West-Europese standaardtijd", "HEOG": "West-Groenlandse zomertijd", "CHAST": "Chatham-standaardtijd", "OESZ": "Oost-Europese zomertijd", "MST": "Macause standaardtijd", "AWST": "West-Australische standaardtijd", "HENOMX": "Noordwest-Mexicaanse zomertijd", "WITA": "Centraal-Indonesische tijd", "CLT": "Chileense standaardtijd", "CLST": "Chileense zomertijd", "JDT": "Japanse zomertijd", "IST": "Indiase tijd", "ARST": "Argentijnse zomertijd", "GYT": "Guyaanse tijd", "AKST": "Alaska-standaardtijd", "EDT": "Eastern-zomertijd", "WESZ": "West-Europese zomertijd", "HKST": "Hongkongse zomertijd", "HAT": "Newfoundland-zomertijd", "ACWST": "Midden-Australische westelijke standaardtijd", "NZDT": "Nieuw-Zeelandse zomertijd", "MEZ": "Midden-Europese standaardtijd", "CAT": "Centraal-Afrikaanse tijd", "SRT": "Surinaamse tijd", "CHADT": "Chatham-zomertijd", "HNPM": "Saint Pierre en Miquelon-standaardtijd", "MDT": "Macause zomertijd", "HAST": "Hawaii-Aleoetische standaardtijd", "AEST": "Oost-Australische standaardtijd", "HNOG": "West-Groenlandse standaardtijd", "EAT": "Oost-Afrikaanse tijd", "GMT": "Greenwich Mean Time"},
 	}
 }
 
@@ -199,6 +199,21 @@ func (nl *nl_BE) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (nl *nl_BE) WeekdaysWide() []string {
 	return nl.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (nl *nl_BE) Decimal() string {
+	return nl.decimal
+}
+
+// Group returns the group of number
+func (nl *nl_BE) Group() string {
+	return nl.group
+}
+
+// Group returns the minus sign of number
+func (nl *nl_BE) Minus() string {
+	return nl.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'nl_BE' and handles both Whole and Real numbers based on 'v'
@@ -435,7 +450,7 @@ func (nl *nl_BE) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -454,7 +469,7 @@ func (nl *nl_BE) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -475,7 +490,7 @@ func (nl *nl_BE) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

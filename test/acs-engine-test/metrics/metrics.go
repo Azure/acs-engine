@@ -1,9 +1,9 @@
 package metrics
 
 import (
-	"encoding/json"
 	"fmt"
 
+	"github.com/Azure/acs-engine/pkg/helpers"
 	"github.com/alexcesaro/statsd"
 )
 
@@ -13,12 +13,13 @@ type mdmBucket struct {
 	Dims      map[string]string `json:"Dims"`
 }
 
+// AddMetric adds the defined metric to a list of metrics to send to MDM
 func AddMetric(endpoint, namespace, metric string, count int64, dims map[string]string) error {
 	bucket := mdmBucket{
 		Namespace: namespace,
 		Metric:    metric,
 		Dims:      dims}
-	data, err := json.Marshal(bucket)
+	data, err := helpers.JSONMarshal(bucket, false)
 	if err != nil {
 		return err
 	}

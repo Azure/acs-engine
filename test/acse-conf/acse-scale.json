@@ -1,0 +1,11 @@
+{
+  "deployments": [
+    {
+      "cluster_definition": "azure-cni/k8s-scaleup.json"
+    },
+    {
+      "cluster_definition": "azure-cni/k8s-scaledown.json"
+    }
+  ]
+}
+

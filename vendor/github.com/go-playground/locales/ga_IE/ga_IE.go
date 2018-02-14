@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"RC", "AD"},
 		erasNarrow:             []string{"RC", "AD"},
 		erasWide:               []string{"Roimh Chríost", "Anno Domini"},
-		timezones:              map[string]string{"VET": "Am Veiniséala", "ADT": "Am Samhraidh an Atlantaigh", "GMT": "Meán-Am Greenwich", "ART": "Am Caighdeánach na hAirgintíne", "ACWDT": "Am Samhraidh Mheániarthar na hAstráile", "MEZ": "Am Caighdeánach Lár na hEorpa", "WARST": "Am Samhraidh Iarthar na hAirgintíne", "WAT": "Am Caighdeánach Iarthar na hAfraice", "EDT": "Am Samhraidh an Oirthir", "HNEG": "Am Caighdeánach Oirthear na Graonlainne", "HNPMX": "Am Caighdeánach Meicsiceach an Aigéin Chiúin", "EAT": "Am Oirthear na hAfraice", "CST": "Am Caighdeánach Lárnach", "NZST": "Am Caighdeánach na Nua-Shéalainne", "TMST": "Am Samhraidh na Tuircméanastáine", "LHST": "Am Caighdeánach Lord Howe", "CLT": "Am Caighdeánach na Sile", "ChST": "Am Caighdeánach Seamórach", "ACDT": "Am Samhraidh Lár na hAstráile", "HENOMX": "Am Samhraidh Iarthuaisceart Mheicsiceo", "AKDT": "Am Samhraidh Alasca", "HEPM": "Am Samhraidh Saint-Pierre-et-Miquelon", "LHDT": "Am Samhraidh Lord Howe", "GYT": "Am na Guáine", "CHAST": "Am Caighdeánach Chatham", "CHADT": "Am Samhraidh Chatham", "SRT": "Am Shuranam", "HNCU": "Am Caighdeánach Chúba", "JST": "Am Caighdeánach na Seapáine", "HNOG": "Am Caighdeánach Iarthar na Graonlainne", "CAT": "Am Lár na hAfraice", "HEOG": "Am Samhraidh Iarthar na Graonlainne", "OEZ": "Am Caighdeánach Oirthear na hEorpa", "ARST": "Am Samhraidh na hAirgintíne", "HAST": "Am Caighdeánach Haváí-Ailiúit", "HADT": "Am Samhraidh Haváí-Ailiúit", "AST": "Am Caighdeánach an Atlantaigh", "COST": "Am Samhraidh na Colóime", "AKST": "Am Caighdeánach Alasca", "AEDT": "Am Samhraidh Oirthear na hAstráile", "ECT": "Am Eacuadór", "IST": "Am Caighdeánach na hIndia", "BT": "Am na Bútáine", "AEST": "Am Caighdeánach Oirthear na hAstráile", "CDT": "Am Samhraidh Lárnach", "PDT": "Am Samhraidh an Aigéin Chiúin", "HNNOMX": "Am Caighdeánach Iarthuaisceart Mheicsiceo", "NZDT": "Am Samhraidh na Nua-Shéalainne", "JDT": "Am Samhraidh na Seapáine", "WEZ": "Am Caighdeánach Iarthar na hEorpa", "WART": "Am Caighdeánach Iarthar na hAirgintíne", "TMT": "Am Caighdeánach na Tuircméanastáine", "HKST": "Am Samhraidh Hong Cong", "AWST": "Am Caighdeánach Iarthar na hAstráile", "PST": "Am Caighdeánach an Aigéin Chiúin", "WIB": "Am Iarthar na hIndinéise", "COT": "Am Caighdeánach na Colóime", "UYST": "Am Samhraidh Uragua", "MYT": "Am na Malaeisia", "BOT": "Am na Bolaive", "∅∅∅": "Am Samhraidh na hAmasóine", "HNPM": "Am Caighdeánach Saint-Pierre-et-Miquelon", "SAST": "Am Caighdeánach na hAfraice Theas", "HEPMX": "Am Samhraidh Meicsiceach an Aigéin Chiúin", "GFT": "Am Ghuáin na Fraince", "WITA": "Am Lár na hIndinéise", "EST": "Am Caighdeánach an Oirthir", "HKT": "Am Caighdeánach Hong Cong", "ACST": "Am Caighdeánach Lár na hAstráile", "UYT": "Am Caighdeánach Uragua", "CLST": "Am Samhraidh na Sile", "MST": "Am Caighdeánach Mhacao", "MESZ": "Am Samhraidh Lár na hEorpa", "HAT": "Am Samhraidh Thalamh an Éisc", "AWDT": "Am Samhraidh Iarthar na hAstráile", "SGT": "Am Caighdeánach Shingeapór", "WESZ": "Am Samhraidh Iarthar na hEorpa", "WAST": "Am Samhraidh Iarthar na hAfraice", "HEEG": "Am Samhraidh Oirthear na Graonlainne", "HECU": "Am Samhraidh Chúba", "ACWST": "Am Caighdeánach Mheániarthar na hAstráile", "OESZ": "Am Samhraidh Oirthear na hEorpa", "WIT": "Am Oirthear na hIndinéise", "MDT": "Am Samhraidh Mhacao", "HNT": "Am Caighdeánach Thalamh an Éisc"},
+		timezones:              map[string]string{"HNEG": "Am Caighdeánach Oirthear na Graonlainne", "COT": "Am Caighdeánach na Colóime", "COST": "Am Samhraidh na Colóime", "MYT": "Am na Malaeisia", "ARST": "Am Samhraidh na hAirgintíne", "ADT": "Am Samhraidh an Atlantaigh", "BOT": "Am na Bolaive", "JST": "Am Caighdeánach na Seapáine", "BT": "Am na Bútáine", "WITA": "Am Lár na hIndinéise", "WAST": "Am Samhraidh Iarthar na hAfraice", "GYT": "Am na Guáine", "WESZ": "Am Samhraidh Iarthar na hEorpa", "GMT": "Meán-Am Greenwich", "HNPMX": "Am Caighdeánach Meicsiceach an Aigéin Chiúin", "HEPMX": "Am Samhraidh Meicsiceach an Aigéin Chiúin", "MDT": "Am Samhraidh na Sléibhte", "HECU": "Am Samhraidh Chúba", "AWDT": "Am Samhraidh Iarthar na hAstráile", "TMT": "Am Caighdeánach na Tuircméanastáine", "CHAST": "Am Caighdeánach Chatham", "CHADT": "Am Samhraidh Chatham", "HNCU": "Am Caighdeánach Chúba", "MEZ": "Am Caighdeánach Lár na hEorpa", "HAST": "Am Caighdeánach Haváí-Ailiúit", "HKST": "Am Samhraidh Hong Cong", "HEEG": "Am Samhraidh Oirthear na Graonlainne", "HNPM": "Am Caighdeánach Saint-Pierre-et-Miquelon", "HEPM": "Am Samhraidh Saint-Pierre-et-Miquelon", "CDT": "Am Samhraidh Lárnach", "HNOG": "Am Caighdeánach Iarthar na Graonlainne", "AEST": "Am Caighdeánach Oirthear na hAstráile", "ART": "Am Caighdeánach na hAirgintíne", "ECT": "Am Eacuadór", "ChST": "Am Caighdeánach Seamórach", "NZST": "Am Caighdeánach na Nua-Shéalainne", "WART": "Am Caighdeánach Iarthar na hAirgintíne", "HADT": "Am Samhraidh Haváí-Ailiúit", "PDT": "Am Samhraidh an Aigéin Chiúin", "HAT": "Am Samhraidh Thalamh an Éisc", "AKST": "Am Caighdeánach Alasca", "AKDT": "Am Samhraidh Alasca", "SGT": "Am Caighdeánach Shingeapór", "ACWDT": "Am Samhraidh Mheániarthar na hAstráile", "IST": "Am Caighdeánach na hIndia", "LHST": "Am Caighdeánach Lord Howe", "HNNOMX": "Am Caighdeánach Iarthuaisceart Mheicsiceo", "JDT": "Am Samhraidh na Seapáine", "EAT": "Am Oirthear na hAfraice", "HKT": "Am Caighdeánach Hong Cong", "CLST": "Am Samhraidh na Sile", "ACST": "Am Caighdeánach Lár na hAstráile", "OEZ": "Am Caighdeánach Oirthear na hEorpa", "WIB": "Am Iarthar na hIndinéise", "WEZ": "Am Caighdeánach Iarthar na hEorpa", "WAT": "Am Caighdeánach Iarthar na hAfraice", "ACWST": "Am Caighdeánach Mheániarthar na hAstráile", "UYT": "Am Caighdeánach Uragua", "AEDT": "Am Samhraidh Oirthear na hAstráile", "HENOMX": "Am Samhraidh Iarthuaisceart Mheicsiceo", "HEOG": "Am Samhraidh Iarthar na Graonlainne", "GFT": "Am Ghuáin na Fraince", "ACDT": "Am Samhraidh Lár na hAstráile", "SRT": "Am Shuranam", "NZDT": "Am Samhraidh na Nua-Shéalainne", "TMST": "Am Samhraidh na Tuircméanastáine", "MST": "Am Caighdeánach na Sléibhte", "CST": "Am Caighdeánach Lárnach", "SAST": "Am Caighdeánach na hAfraice Theas", "EST": "Am Caighdeánach an Oirthir", "EDT": "Am Samhraidh an Oirthir", "CAT": "Am Lár na hAfraice", "AWST": "Am Caighdeánach Iarthar na hAstráile", "MESZ": "Am Samhraidh Lár na hEorpa", "VET": "Am Veiniséala", "HNT": "Am Caighdeánach Thalamh an Éisc", "CLT": "Am Caighdeánach na Sile", "UYST": "Am Samhraidh Uragua", "WIT": "Am Oirthear na hIndinéise", "WARST": "Am Samhraidh Iarthar na hAirgintíne", "LHDT": "Am Samhraidh Lord Howe", "∅∅∅": "Am Samhraidh na nAsór", "AST": "Am Caighdeánach an Atlantaigh", "PST": "Am Caighdeánach an Aigéin Chiúin", "OESZ": "Am Samhraidh Oirthear na hEorpa"},
 	}
 }
 
@@ -237,6 +237,21 @@ func (ga *ga_IE) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (ga *ga_IE) WeekdaysWide() []string {
 	return ga.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (ga *ga_IE) Decimal() string {
+	return ga.decimal
+}
+
+// Group returns the group of number
+func (ga *ga_IE) Group() string {
+	return ga.group
+}
+
+// Group returns the minus sign of number
+func (ga *ga_IE) Minus() string {
+	return ga.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'ga_IE' and handles both Whole and Real numbers based on 'v'
@@ -461,7 +476,7 @@ func (ga *ga_IE) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -480,7 +495,7 @@ func (ga *ga_IE) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -499,7 +514,7 @@ func (ga *ga_IE) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -520,7 +535,7 @@ func (ga *ga_IE) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

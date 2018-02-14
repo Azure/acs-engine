@@ -3,7 +3,7 @@ package armhelpers
 import (
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // DeployTemplate implements the TemplateDeployer interface for the AzureClient client
@@ -23,14 +23,17 @@ func (az *AzureClient) DeployTemplate(resourceGroupName, deploymentName string, 
 		deploymentName,
 		deployment,
 		cancel)
-	if err := <-errChan; err != nil {
+
+	err := <-errChan
+	res, ok := <-resChan
+	if !ok {
+		// This path is taken when validation is failed before calling ARM
 		return nil, err
 	}
-	res := <-resChan
 
-	log.Infof("Finished ARM Deployment (%s).", deploymentName)
+	log.Infof("Finished ARM Deployment (%s). Error: %v", deploymentName, err)
 
-	return &res, nil
+	return &res, err
 }
 
 // ValidateTemplate validate the template and parameters

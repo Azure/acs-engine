@@ -2,40 +2,52 @@ package acsengine
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
 	"path"
+	"strconv"
 
 	"github.com/Azure/acs-engine/pkg/api"
-	log "github.com/Sirupsen/logrus"
+	"github.com/Azure/acs-engine/pkg/i18n"
 )
 
-func WriteArtifacts(containerService *api.ContainerService, apiVersion, template, parameters, artifactsDir string, certsGenerated bool, parametersOnly bool) error {
+// ArtifactWriter represents the object that writes artifacts
+type ArtifactWriter struct {
+	Translator *i18n.Translator
+}
+
+// WriteTLSArtifacts saves TLS certificates and keys to the server filesystem
+func (w *ArtifactWriter) WriteTLSArtifacts(containerService *api.ContainerService, apiVersion, template, parameters, artifactsDir string, certsGenerated bool, parametersOnly bool) error {
 	if len(artifactsDir) == 0 {
 		artifactsDir = fmt.Sprintf("%s-%s", containerService.Properties.OrchestratorProfile.OrchestratorType, GenerateClusterID(containerService.Properties))
 		artifactsDir = path.Join("_output", artifactsDir)
+	}
+
+	f := &FileSaver{
+		Translator: w.Translator,
 	}
 
 	// convert back the API object, and write it
 	var b []byte
 	var err error
 	if !parametersOnly {
-		b, err = api.SerializeContainerService(containerService, apiVersion)
+		apiloader := &api.Apiloader{
+			Translator: w.Translator,
+		}
+		b, err = apiloader.SerializeContainerService(containerService, apiVersion)
 
 		if err != nil {
 			return err
 		}
 
-		if e := saveFile(artifactsDir, "apimodel.json", b); e != nil {
+		if e := f.SaveFile(artifactsDir, "apimodel.json", b); e != nil {
 			return e
 		}
 
-		if e := saveFileString(artifactsDir, "azuredeploy.json", template); e != nil {
+		if e := f.SaveFileString(artifactsDir, "azuredeploy.json", template); e != nil {
 			return e
 		}
 	}
 
-	if e := saveFileString(artifactsDir, "azuredeploy.parameters.json", parameters); e != nil {
+	if e := f.SaveFileString(artifactsDir, "azuredeploy.parameters.json", parameters); e != nil {
 		return e
 	}
 
@@ -55,59 +67,61 @@ func WriteArtifacts(containerService *api.ContainerService, apiVersion, template
 				if gkcerr != nil {
 					return gkcerr
 				}
-				if e := saveFileString(directory, fmt.Sprintf("kubeconfig.%s.json", location), b); e != nil {
+				if e := f.SaveFileString(directory, fmt.Sprintf("kubeconfig.%s.json", location), b); e != nil {
 					return e
 				}
 			}
 
 		}
 
-		if e := saveFileString(artifactsDir, "ca.key", properties.CertificateProfile.CaPrivateKey); e != nil {
+		if e := f.SaveFileString(artifactsDir, "ca.key", properties.CertificateProfile.CaPrivateKey); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "ca.crt", properties.CertificateProfile.CaCertificate); e != nil {
+		if e := f.SaveFileString(artifactsDir, "ca.crt", properties.CertificateProfile.CaCertificate); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "apiserver.key", properties.CertificateProfile.APIServerPrivateKey); e != nil {
+		if e := f.SaveFileString(artifactsDir, "apiserver.key", properties.CertificateProfile.APIServerPrivateKey); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "apiserver.crt", properties.CertificateProfile.APIServerCertificate); e != nil {
+		if e := f.SaveFileString(artifactsDir, "apiserver.crt", properties.CertificateProfile.APIServerCertificate); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "client.key", properties.CertificateProfile.ClientPrivateKey); e != nil {
+		if e := f.SaveFileString(artifactsDir, "client.key", properties.CertificateProfile.ClientPrivateKey); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "client.crt", properties.CertificateProfile.ClientCertificate); e != nil {
+		if e := f.SaveFileString(artifactsDir, "client.crt", properties.CertificateProfile.ClientCertificate); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "kubectlClient.key", properties.CertificateProfile.KubeConfigPrivateKey); e != nil {
+		if e := f.SaveFileString(artifactsDir, "kubectlClient.key", properties.CertificateProfile.KubeConfigPrivateKey); e != nil {
 			return e
 		}
-		if e := saveFileString(artifactsDir, "kubectlClient.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
+		if e := f.SaveFileString(artifactsDir, "kubectlClient.crt", properties.CertificateProfile.KubeConfigCertificate); e != nil {
 			return e
 		}
+		if e := f.SaveFileString(artifactsDir, "etcdserver.key", properties.CertificateProfile.EtcdServerPrivateKey); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdserver.crt", properties.CertificateProfile.EtcdServerCertificate); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdclient.key", properties.CertificateProfile.EtcdClientPrivateKey); e != nil {
+			return e
+		}
+		if e := f.SaveFileString(artifactsDir, "etcdclient.crt", properties.CertificateProfile.EtcdClientCertificate); e != nil {
+			return e
+		}
+		for i := 0; i < properties.MasterProfile.Count; i++ {
+			k := "etcdpeer" + strconv.Itoa(i) + ".key"
+			if e := f.SaveFileString(artifactsDir, k, properties.CertificateProfile.EtcdPeerPrivateKeys[i]); e != nil {
+				return e
+			}
+			c := "etcdpeer" + strconv.Itoa(i) + ".crt"
+			if e := f.SaveFileString(artifactsDir, c, properties.CertificateProfile.EtcdPeerCertificates[i]); e != nil {
+				return e
+			}
+		}
+
 	}
-
-	return nil
-}
-
-func saveFileString(dir string, file string, data string) error {
-	return saveFile(dir, file, []byte(data))
-}
-
-func saveFile(dir string, file string, data []byte) error {
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		if e := os.MkdirAll(dir, 0700); e != nil {
-			return fmt.Errorf("error creating directory '%s': %s", dir, e.Error())
-		}
-	}
-
-	path := path.Join(dir, file)
-	if err := ioutil.WriteFile(path, []byte(data), 0600); err != nil {
-		return err
-	}
-
-	log.Debugf("output: wrote %s", path)
 
 	return nil
 }

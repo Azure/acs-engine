@@ -53,7 +53,7 @@ func New() locales.Translator {
 		erasAbbreviated:   []string{"پ.م", "م."},
 		erasNarrow:        []string{"", ""},
 		erasWide:          []string{"قبل میلاد", "بعد میلاد"},
-		timezones:         map[string]string{"MEZ": "MEZ", "HNOG": "HNOG", "ADT": "ADT", "EDT": "EDT", "WIB": "WIB", "AWST": "AWST", "ACWST": "ACWST", "NZST": "NZST", "BT": "BT", "ChST": "ChST", "OEZ": "OEZ", "COT": "COT", "UYT": "UYT", "HNCU": "HNCU", "CST": "CST", "SGT": "SGT", "MESZ": "MESZ", "HEOG": "HEOG", "MST": "MST", "VET": "VET", "ARST": "ARST", "HKT": "HKT", "ACST": "ACST", "HNPMX": "HNPMX", "MYT": "MYT", "ACDT": "ACDT", "COST": "COST", "HAT": "HAT", "AKDT": "AKDT", "UYST": "UYST", "PST": "PST", "GMT": "GMT", "HENOMX": "HENOMX", "HEEG": "HEEG", "HNNOMX": "HNNOMX", "AEST": "AEST", "AEDT": "AEDT", "HAST": "HAST", "JDT": "JDT", "MDT": "MDT", "WAT": "WAT", "ACWDT": "ACWDT", "ART": "ART", "HECU": "HECU", "CDT": "CDT", "WIT": "WIT", "ECT": "ECT", "TMST": "TMST", "WITA": "WITA", "SAST": "SAST", "GYT": "GYT", "BOT": "BOT", "HADT": "HADT", "WARST": "WARST", "AWDT": "AWDT", "OESZ": "OESZ", "SRT": "SRT", "CLT": "CLT", "WAST": "WAST", "GFT": "GFT", "HEPMX": "HEPMX", "WESZ": "WESZ", "EST": "EST", "EAT": "EAT", "TMT": "TMT", "HKST": "HKST", "HNT": "HNT", "NZDT": "NZDT", "IST": "IST", "JST": "JST", "WEZ": "WEZ", "HNPM": "HNPM", "HEPM": "HEPM", "LHST": "LHST", "CHAST": "CHAST", "CAT": "CAT", "WART": "WART", "AST": "AST", "HNEG": "HNEG", "AKST": "AKST", "LHDT": "LHDT", "∅∅∅": "∅∅∅", "CHADT": "CHADT", "PDT": "PDT", "CLST": "CLST"},
+		timezones:         map[string]string{"UYST": "UYST", "TMT": "TMT", "VET": "VET", "WAST": "WAST", "MYT": "MYT", "JST": "JST", "WARST": "WARST", "AEDT": "AEDT", "CLT": "CLT", "SGT": "SGT", "HADT": "HADT", "WITA": "WITA", "BOT": "BOT", "MESZ": "MESZ", "NZST": "NZST", "HNOG": "HNOG", "HEPMX": "HEPMX", "PST": "PST", "CHAST": "CHAST", "CDT": "CDT", "COST": "COST", "WEZ": "WEZ", "WESZ": "WESZ", "GMT": "GMT", "ACWDT": "ACWDT", "MEZ": "MEZ", "WART": "WART", "ART": "ART", "HAST": "HAST", "JDT": "JDT", "HNEG": "HNEG", "GFT": "GFT", "ACDT": "ACDT", "AWDT": "AWDT", "WIT": "WIT", "OESZ": "OESZ", "HNNOMX": "HNNOMX", "SAST": "SAST", "EDT": "EDT", "ChST": "ChST", "PDT": "PDT", "HECU": "HECU", "CST": "CST", "TMST": "TMST", "HKT": "HKT", "HKST": "HKST", "HNCU": "HNCU", "HEPM": "HEPM", "BT": "BT", "LHDT": "LHDT", "IST": "IST", "HNT": "HNT", "CLST": "CLST", "AKST": "AKST", "CHADT": "CHADT", "HEEG": "HEEG", "AKDT": "AKDT", "ACST": "ACST", "MST": "MST", "MDT": "MDT", "NZDT": "NZDT", "ARST": "ARST", "HEOG": "HEOG", "ECT": "ECT", "∅∅∅": "∅∅∅", "HNPMX": "HNPMX", "WIB": "WIB", "AEST": "AEST", "HAT": "HAT", "COT": "COT", "GYT": "GYT", "UYT": "UYT", "ADT": "ADT", "EAT": "EAT", "HNPM": "HNPM", "AWST": "AWST", "SRT": "SRT", "AST": "AST", "CAT": "CAT", "LHST": "LHST", "WAT": "WAT", "EST": "EST", "ACWST": "ACWST", "OEZ": "OEZ", "HENOMX": "HENOMX"},
 	}
 }
 
@@ -160,6 +160,21 @@ func (mzn *mzn) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (mzn *mzn) WeekdaysWide() []string {
 	return mzn.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (mzn *mzn) Decimal() string {
+	return mzn.decimal
+}
+
+// Group returns the group of number
+func (mzn *mzn) Group() string {
+	return mzn.group
+}
+
+// Group returns the minus sign of number
+func (mzn *mzn) Minus() string {
+	return mzn.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'mzn' and handles both Whole and Real numbers based on 'v'

@@ -65,7 +65,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"hY", "Yŋ"},
 		erasNarrow:             []string{"hY", "Yŋ"},
 		erasWide:               []string{"Hafi Yesu Va Do ŋgɔ", "Yesu Ŋɔli"},
-		timezones:              map[string]string{"HENOMX": "HENOMX", "HAT": "Niufaunɖlanɖ ŋkekeme gaƒoƒome", "SRT": "Suriname gaƒoƒome", "WIB": "WIB", "CST": "Titina America gaƒoƒoɖoanyime", "CAT": "Titina Afrika gaƒoƒome", "MST": "Makau gaƒoƒoɖoanyime", "HEOG": "Ɣetoɖoƒe Grinlanɖ dzomeŋɔli gaƒoƒome", "WITA": "WITA", "HNPM": "Saint Pierre kple Mikuelon gaƒoƒoɖoanyime", "HNPMX": "HNPMX", "PST": "Pacific gaƒoƒoɖoanyime", "GMT": "Greenwich gaƒoƒome", "BT": "BT", "GFT": "Frentsi Guiana gaƒoƒome", "SGT": "SGT", "MESZ": "Titina Europe ŋkekeme gaƒoƒome", "HADT": "Hawaii-Aleutia ŋkekeme gaƒoƒome", "MYT": "MYT", "CLT": "Tsile gaƒoƒoɖoanyime", "CLST": "Tsile dzomeŋɔli gaƒoƒome", "BOT": "Bolivia gaƒoƒome", "CHADT": "CHADT", "WAST": "Ɣetoɖoƒe Africa ŋkekeme gaƒoƒome", "ART": "Argentina gaƒoƒoɖoanyime", "HKST": "Hɔng Kɔng dzomeŋɔli gaƒoƒome", "HNT": "Niufaunɖlanɖ gaƒoƒoɖoanyime", "HECU": "Kuba ŋkekeme gaƒoƒome", "CHAST": "CHAST", "MEZ": "Titina Europe gaƒoƒoɖoanyime", "MDT": "Makau ŋkekeme gaƒoƒome", "ARST": "Argentina dzomeŋɔli gaƒoƒome", "AKDT": "Alaska ŋkekeme gaƒoƒome", "EAT": "Ɣedzeƒe Africa gaƒoƒome", "CDT": "Titina America ŋkekeme gaƒoƒome", "HAST": "Hawaii-Aleutia gaƒoƒoɖoanyime", "JST": "Japan gaƒoƒoɖanyime", "TMST": "Tɛkmenistan dzomeŋɔli gaƒoƒome", "WAT": "Ɣetoɖoƒe Afrika gaƒoƒoɖoanyime", "NZST": "NZST", "HNOG": "Ɣetoɖoƒe Grinlanɖ gaƒoƒoɖoanyime", "NZDT": "NZDT", "IST": "IST", "HKT": "Hɔng Kɔng gaƒoƒoɖoanyi me", "PDT": "Pacific ŋkekme gaƒoƒome", "ACWDT": "Australia ɣetoɖofe ŋkekeme gaƒoƒome", "COT": "Kolombia gaƒoƒoɖoanyime", "HEEG": "Ɣedzeƒe Grinlanɖ dzomeŋɔli gaƒoƒome", "SAST": "Anyiehe Africa gaƒoƒome", "WIT": "WIT", "VET": "Venezuela gaƒoƒome", "WARST": "Ɣetoɖoƒe Argentina dzomeŋɔli gaƒoƒome", "OESZ": "Ɣedzeƒe Europe ŋkekeme gaƒoƒome", "EST": "Ɣedzeƒe America gaƒoƒoɖoanyime", "ACST": "Titina Australia gaƒoƒoɖoanyime", "ACDT": "Titina Australia ŋkekeme gaƒoƒome", "HNEG": "Ɣedzeƒe Grinlanɖ gaƒoƒoɖoanyime", "UYST": "Uruguai dzomeŋɔli gaƒoƒome", "AWDT": "Ɣetoɖoƒe Australia ŋkekeme gaƒoƒome", "WEZ": "Ɣetoɖoƒe Europe gaƒoƒoɖoanyime", "LHDT": "LHDT", "GYT": "Gayana gaƒoƒome", "AEDT": "Ɣedzeƒe Australia ŋkekeme gaƒoƒome", "UYT": "Uruguai gaƒoƒoɖoanyime", "JDT": "Japan ŋkekeme gaƒoƒome", "COST": "Kolombia dzomeŋɔli gaƒoƒome", "HNNOMX": "HNNOMX", "ChST": "ChST", "HEPMX": "HEPMX", "AWST": "Ɣetoɖoƒe Australia gaƒoƒoɖoanyime", "∅∅∅": "Amazon dzomeŋɔli gaƒoƒome", "AST": "Atlantic gaƒoƒoɖoanyime", "OEZ": "Ɣedzeƒe Europe gaƒoƒoɖoanyime", "EDT": "Ɣedzeƒe America ŋkekeme gaƒoƒome", "LHST": "LHST", "HNCU": "Kuba gaƒoƒoɖoanyime", "WESZ": "Ɣetoɖoƒe Europe ŋkekeme gaƒoƒome", "WART": "Ɣetoɖoƒe Argentina gaƒoƒoɖoanyime", "TMT": "Tɛkmenistan gaƒoƒoɖoanyime", "AEST": "Ɣedzeƒe Australia gaƒoƒoɖoanyime", "ADT": "Atlantic ŋkekeme gaƒoƒome", "AKST": "Alaska gaƒoƒoɖoanyime", "HEPM": "Saint Pierre kple Mikuelon ŋkekeme gaƒoƒome", "ECT": "Ikuedɔ dzomeŋɔli gaƒoƒome", "ACWST": "Australia ɣetoɖofe gaƒoƒoɖoanyime"},
+		timezones:              map[string]string{"MST": "Makau gaƒoƒoɖoanyime", "UYT": "Uruguai gaƒoƒoɖoanyime", "NZDT": "NZDT", "MESZ": "Titina Europe ŋkekeme gaƒoƒome", "HNOG": "Ɣetoɖoƒe Grinlanɖ gaƒoƒoɖoanyime", "SGT": "SGT", "PDT": "Pacific ŋkekme gaƒoƒome", "HECU": "Kuba ŋkekeme gaƒoƒome", "COT": "Kolombia gaƒoƒoɖoanyime", "BT": "BT", "CST": "Titina America gaƒoƒoɖoanyime", "CDT": "Titina America ŋkekeme gaƒoƒome", "MEZ": "Titina Europe gaƒoƒoɖoanyime", "WARST": "Ɣetoɖoƒe Argentina dzomeŋɔli gaƒoƒome", "HNT": "Niufaunɖlanɖ gaƒoƒoɖoanyime", "ACDT": "Titina Australia ŋkekeme gaƒoƒome", "HNCU": "Kuba gaƒoƒoɖoanyime", "WART": "Ɣetoɖoƒe Argentina gaƒoƒoɖoanyime", "OESZ": "Ɣedzeƒe Europe ŋkekeme gaƒoƒome", "AEDT": "Ɣedzeƒe Australia ŋkekeme gaƒoƒome", "ART": "Argentina gaƒoƒoɖoanyime", "SAST": "Anyiehe Africa gaƒoƒome", "EAT": "Ɣedzeƒe Africa gaƒoƒome", "AKDT": "Alaska ŋkekeme gaƒoƒome", "NZST": "NZST", "HAT": "Niufaunɖlanɖ ŋkekeme gaƒoƒome", "AEST": "Ɣedzeƒe Australia gaƒoƒoɖoanyime", "AST": "Atlantic gaƒoƒoɖoanyime", "ADT": "Atlantic ŋkekeme gaƒoƒome", "HKST": "Hɔng Kɔng dzomeŋɔli gaƒoƒome", "CLT": "Tsile gaƒoƒoɖoanyime", "COST": "Kolombia dzomeŋɔli gaƒoƒome", "UYST": "Uruguai dzomeŋɔli gaƒoƒome", "OEZ": "Ɣedzeƒe Europe gaƒoƒoɖoanyime", "CAT": "Titina Afrika gaƒoƒome", "CHADT": "CHADT", "AWST": "Ɣetoɖoƒe Australia gaƒoƒoɖoanyime", "ACWDT": "Australia ɣetoɖofe ŋkekeme gaƒoƒome", "HEOG": "Ɣetoɖoƒe Grinlanɖ dzomeŋɔli gaƒoƒome", "HKT": "Hɔng Kɔng gaƒoƒoɖoanyi me", "ECT": "Ikuedɔ dzomeŋɔli gaƒoƒome", "WESZ": "Ɣetoɖoƒe Europe ŋkekeme gaƒoƒome", "GFT": "Frentsi Guiana gaƒoƒome", "HENOMX": "HENOMX", "HNPMX": "HNPMX", "HEPM": "Saint Pierre kple Mikuelon ŋkekeme gaƒoƒome", "IST": "IST", "ACST": "Titina Australia gaƒoƒoɖoanyime", "SRT": "Suriname gaƒoƒome", "GMT": "Greenwich gaƒoƒome", "LHST": "LHST", "TMT": "Tɛkmenistan gaƒoƒoɖoanyime", "JDT": "Japan ŋkekeme gaƒoƒome", "HNPM": "Saint Pierre kple Mikuelon gaƒoƒoɖoanyime", "MYT": "MYT", "BOT": "Bolivia gaƒoƒome", "HNEG": "Ɣedzeƒe Grinlanɖ gaƒoƒoɖoanyime", "MDT": "Makau ŋkekeme gaƒoƒome", "HAST": "Hawaii-Aleutia gaƒoƒoɖoanyime", "TMST": "Tɛkmenistan dzomeŋɔli gaƒoƒome", "LHDT": "LHDT", "WAST": "Ɣetoɖoƒe Africa ŋkekeme gaƒoƒome", "EST": "Ɣedzeƒe America gaƒoƒoɖoanyime", "WEZ": "Ɣetoɖoƒe Europe gaƒoƒoɖoanyime", "HEPMX": "HEPMX", "EDT": "Ɣedzeƒe America ŋkekeme gaƒoƒome", "WIB": "WIB", "GYT": "Gayana gaƒoƒome", "ACWST": "Australia ɣetoɖofe gaƒoƒoɖoanyime", "HADT": "Hawaii-Aleutia ŋkekeme gaƒoƒome", "JST": "Japan gaƒoƒoɖanyime", "CLST": "Tsile dzomeŋɔli gaƒoƒome", "ChST": "ChST", "AWDT": "Ɣetoɖoƒe Australia ŋkekeme gaƒoƒome", "PST": "Pacific gaƒoƒoɖoanyime", "WIT": "WIT", "HNNOMX": "HNNOMX", "ARST": "Argentina dzomeŋɔli gaƒoƒome", "WAT": "Ɣetoɖoƒe Afrika gaƒoƒoɖoanyime", "HEEG": "Ɣedzeƒe Grinlanɖ dzomeŋɔli gaƒoƒome", "∅∅∅": "Amazon dzomeŋɔli gaƒoƒome", "AKST": "Alaska gaƒoƒoɖoanyime", "WITA": "WITA", "CHAST": "CHAST", "VET": "Venezuela gaƒoƒome"},
 	}
 }
 
@@ -181,6 +181,21 @@ func (ee *ee_GH) WeekdaysWide() []string {
 	return ee.daysWide
 }
 
+// Decimal returns the decimal point of number
+func (ee *ee_GH) Decimal() string {
+	return ee.decimal
+}
+
+// Group returns the group of number
+func (ee *ee_GH) Group() string {
+	return ee.group
+}
+
+// Group returns the minus sign of number
+func (ee *ee_GH) Minus() string {
+	return ee.minus
+}
+
 // FmtNumber returns 'num' with digits/precision of 'v' for 'ee_GH' and handles both Whole and Real numbers based on 'v'
 func (ee *ee_GH) FmtNumber(num float64, v uint64) string {
 
@@ -198,7 +213,7 @@ func (ee *ee_GH) FmtCurrency(num float64, v uint64, currency currency.Type) stri
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := ee.currencies[currency]
-	l := len(s) + len(symbol) + 0 + 0*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 0
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -256,7 +271,7 @@ func (ee *ee_GH) FmtAccounting(num float64, v uint64, currency currency.Type) st
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := ee.currencies[currency]
-	l := len(s) + len(symbol) + 2 + 0*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 2
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -353,7 +368,7 @@ func (ee *ee_GH) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -373,7 +388,7 @@ func (ee *ee_GH) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -395,7 +410,7 @@ func (ee *ee_GH) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

@@ -1,29 +1,30 @@
 package kubernetesupgrade
 
 import (
-	"encoding/json"
 	"fmt"
-	"path"
 	"strconv"
-
 	"strings"
+	"time"
 
-	"github.com/Azure/acs-engine/pkg/acsengine"
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
+	"github.com/Azure/acs-engine/pkg/armhelpers/utils"
+	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
-	log "github.com/Sirupsen/logrus"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 )
 
 // ClusterTopology contains resources of the cluster the upgrade operation
 // is targeting
 type ClusterTopology struct {
 	DataModel     *api.ContainerService
+	Location      string
 	ResourceGroup string
 	NameSuffix    string
 
-	AgentPools map[string]*AgentPoolTopology
+	AgentPoolsToUpgrade map[string]bool
+	AgentPools          map[string]*AgentPoolTopology
 
 	MasterVMs         *[]compute.VirtualMachine
 	UpgradedMasterVMs *[]compute.VirtualMachine
@@ -37,24 +38,25 @@ type AgentPoolTopology struct {
 	UpgradedAgentVMs *[]compute.VirtualMachine
 }
 
-// UpgradeCluster upgrades a cluster with Orchestrator version X
-// (or X.X or X.X.X) to version y (or Y.Y or X.X.X). RIght now
-// upgrades are supported for Kubernetes cluster only.
+// UpgradeCluster upgrades a cluster with Orchestrator version X.X to version Y.Y.
+// Right now upgrades are supported for Kubernetes cluster only.
 type UpgradeCluster struct {
+	Translator *i18n.Translator
+	Logger     *logrus.Entry
 	ClusterTopology
-	Client armhelpers.ACSEngineClient
-
-	UpgradeModel *api.UpgradeContainerService
+	Client      armhelpers.ACSEngineClient
+	StepTimeout *time.Duration
 }
 
 // MasterVMNamePrefix is the prefix for all master VM names for Kubernetes clusters
 const MasterVMNamePrefix = "k8s-master-"
 
+// MasterPoolName pool name
+const MasterPoolName = "master"
+
 // UpgradeCluster runs the workflow to upgrade a Kubernetes cluster.
-// UpgradeContainerService contains target state of the cluster that
-// the operation will drive towards.
-func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup string,
-	cs *api.ContainerService, ucs *api.UpgradeContainerService, nameSuffix string) error {
+func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, resourceGroup string,
+	cs *api.ContainerService, nameSuffix string, agentPoolsToUpgrade []string) error {
 	uc.ClusterTopology = ClusterTopology{}
 	uc.ResourceGroup = resourceGroup
 	uc.DataModel = cs
@@ -62,30 +64,50 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, resourceGroup
 	uc.MasterVMs = &[]compute.VirtualMachine{}
 	uc.UpgradedMasterVMs = &[]compute.VirtualMachine{}
 	uc.AgentPools = make(map[string]*AgentPoolTopology)
+	uc.AgentPoolsToUpgrade = make(map[string]bool)
 
-	uc.UpgradeModel = ucs
+	for _, poolName := range agentPoolsToUpgrade {
+		uc.AgentPoolsToUpgrade[poolName] = true
+	}
+	uc.AgentPoolsToUpgrade[MasterPoolName] = true
 
 	if err := uc.getClusterNodeStatus(subscriptionID, resourceGroup); err != nil {
-		return fmt.Errorf("Error while querying ARM for resources: %+v", err)
+		return uc.Translator.Errorf("Error while querying ARM for resources: %+v", err)
 	}
 
-	switch ucs.OrchestratorProfile.OrchestratorVersion {
-	case api.Kubernetes162:
-		log.Infoln(fmt.Sprintf("Upgrading to Kubernetes 1.6.2"))
-		upgrader := Kubernetes162upgrader{}
-		upgrader.ClusterTopology = uc.ClusterTopology
-		upgrader.Client = uc.Client
-		if err := upgrader.RunUpgrade(); err != nil {
-			return err
-		}
+	var upgrader UpgradeWorkFlow
+	upgradeVersion := uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion
+	uc.Logger.Infof("Upgrading to Kubernetes version %s\n", upgradeVersion)
+	switch {
+	case strings.HasPrefix(upgradeVersion, "1.6."):
+		upgrader16 := &Kubernetes16upgrader{}
+		upgrader16.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
+		upgrader = upgrader16
+
+	case strings.HasPrefix(upgradeVersion, "1.7."):
+		upgrader17 := &Kubernetes17upgrader{}
+		upgrader17.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
+		upgrader = upgrader17
+
+	case strings.HasPrefix(upgradeVersion, "1.8."):
+		upgrader18 := &Kubernetes18upgrader{}
+		upgrader18.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
+		upgrader = upgrader18
+
+	case strings.HasPrefix(upgradeVersion, "1.9."):
+		upgrader19 := &Upgrader{}
+		upgrader19.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
+		upgrader = upgrader19
+
 	default:
-		return fmt.Errorf("Upgrade to Kubernetes version: %s is not supported from version: %s",
-			ucs.OrchestratorProfile.OrchestratorVersion,
-			uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+		return uc.Translator.Errorf("Upgrade to Kubernetes version %s is not supported", upgradeVersion)
 	}
 
-	log.Infoln(fmt.Sprintf("Cluster upraded sucessfully to Kubernetes version: %s",
-		ucs.OrchestratorProfile.OrchestratorVersion))
+	if err := upgrader.RunUpgrade(); err != nil {
+		return err
+	}
+
+	uc.Logger.Infof("Cluster upgraded successfully to Kubernetes version %s\n", upgradeVersion)
 	return nil
 }
 
@@ -95,38 +117,42 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 		return err
 	}
 
-	orchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorType,
+	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.DataModel.Properties.OrchestratorProfile.OrchestratorType,
 		uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
-	targetOrchestratorTypeVersion := fmt.Sprintf("%s:%s", uc.UpgradeModel.OrchestratorProfile.OrchestratorType,
-		uc.UpgradeModel.OrchestratorProfile.OrchestratorVersion)
 
 	for _, vm := range *vmListResult.Value {
-		if vm.Tags == nil {
-			log.Infoln(fmt.Sprintf("No tags found for VM: %s skipping.", *vm.Name))
+		if vm.Tags == nil || (*vm.Tags)["orchestrator"] == nil {
+			uc.Logger.Infof("No tags found for VM: %s skipping.\n", *vm.Name)
 			continue
 		}
 
 		vmOrchestratorTypeAndVersion := *(*vm.Tags)["orchestrator"]
-		if vmOrchestratorTypeAndVersion == orchestratorTypeVersion {
+		if vmOrchestratorTypeAndVersion != targetOrchestratorTypeVersion {
 			if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
 				if !strings.Contains(*(vm.Name), uc.NameSuffix) {
-					log.Infoln(fmt.Sprintf("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s",
-						*vm.Name, uc.NameSuffix))
+					uc.Logger.Infof("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s\n",
+						*vm.Name, uc.NameSuffix)
 					continue
 				}
-				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (MasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
+				if err := uc.upgradable(vmOrchestratorTypeAndVersion); err != nil {
+					return err
+				}
+				uc.Logger.Infof("Master VM name: %s, orchestrator: %s (MasterVMs)\n", *vm.Name, vmOrchestratorTypeAndVersion)
 				*uc.MasterVMs = append(*uc.MasterVMs, vm)
 			} else {
+				if err := uc.upgradable(vmOrchestratorTypeAndVersion); err != nil {
+					return err
+				}
 				uc.addVMToAgentPool(vm, true)
 			}
 		} else if vmOrchestratorTypeAndVersion == targetOrchestratorTypeVersion {
-			if !strings.Contains(*(vm.Name), uc.NameSuffix) {
-				log.Infoln(fmt.Sprintf("Not adding VM: %s to upgraded list as it does not belong to cluster with expected name suffix: %s",
-					*vm.Name, uc.NameSuffix))
-				continue
-			}
 			if strings.Contains(*(vm.Name), MasterVMNamePrefix) {
-				log.Infoln(fmt.Sprintf("Master VM name: %s, orchestrator: %s (UpgradedMasterVMs)", *vm.Name, vmOrchestratorTypeAndVersion))
+				if !strings.Contains(*(vm.Name), uc.NameSuffix) {
+					uc.Logger.Infof("Not adding VM: %s to upgraded list as it does not belong to cluster with expected name suffix: %s\n",
+						*vm.Name, uc.NameSuffix)
+					continue
+				}
+				uc.Logger.Infof("Master VM name: %s, orchestrator: %s (UpgradedMasterVMs)\n", *vm.Name, vmOrchestratorTypeAndVersion)
 				*uc.UpgradedMasterVMs = append(*uc.UpgradedMasterVMs, vm)
 			} else {
 				uc.addVMToAgentPool(vm, false)
@@ -137,30 +163,78 @@ func (uc *UpgradeCluster) getClusterNodeStatus(subscriptionID uuid.UUID, resourc
 	return nil
 }
 
+func (uc *UpgradeCluster) upgradable(vmOrchestratorTypeAndVersion string) error {
+	arr := strings.Split(vmOrchestratorTypeAndVersion, ":")
+	if len(arr) != 2 {
+		return fmt.Errorf("Unsupported orchestrator tag format %s", vmOrchestratorTypeAndVersion)
+	}
+	currentVer := arr[1]
+	arr = strings.Split(currentVer, ".")
+	if len(arr) != 3 {
+		return fmt.Errorf("Unsupported orchestrator version format %s", currentVer)
+	}
+	csOrch := &api.OrchestratorProfile{
+		OrchestratorType:    api.Kubernetes,
+		OrchestratorVersion: currentVer,
+	}
+	orch, err := api.GetOrchestratorVersionProfile(csOrch)
+	if err != nil {
+		return err
+	}
+	for _, up := range orch.Upgrades {
+		if up.OrchestratorVersion == uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion {
+			return nil
+		}
+	}
+	return fmt.Errorf("%s cannot be upgraded to %s", vmOrchestratorTypeAndVersion, uc.DataModel.Properties.OrchestratorProfile.OrchestratorVersion)
+}
+
 func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradableVM bool) error {
 	var poolIdentifier string
 	var poolPrefix string
 	var err error
+
+	if vm.Tags == nil || (*vm.Tags)["poolName"] == nil {
+		uc.Logger.Infof("poolName tag not found for VM: %s skipping.\n", *vm.Name)
+		return nil
+	}
+
+	vmPoolName := *(*vm.Tags)["poolName"]
+	uc.Logger.Infof("Evaluating VM: %s in pool: %s...\n", *vm.Name, vmPoolName)
+	if vmPoolName == "" {
+		uc.Logger.Infof("VM: %s does not contain `poolName` tag, skipping.\n", *vm.Name)
+		return nil
+	} else if uc.AgentPoolsToUpgrade[vmPoolName] == false {
+		uc.Logger.Infof("Skipping upgrade of VM: %s in pool: %s.\n", *vm.Name, vmPoolName)
+		return nil
+	}
+
 	if vm.StorageProfile.OsDisk.OsType == compute.Linux {
-		_, poolIdentifier, poolPrefix, _, err = armhelpers.LinuxVMNameParts(*vm.Name)
+		poolIdentifier, poolPrefix, _, err = utils.K8sLinuxVMNameParts(*vm.Name)
 		if err != nil {
-			log.Errorln(err)
+			uc.Logger.Errorf(err.Error())
 			return err
 		}
+
+		if !strings.EqualFold(uc.NameSuffix, poolPrefix) {
+			uc.Logger.Infof("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s\n",
+				*vm.Name, uc.NameSuffix)
+			return nil
+		}
 	} else if vm.StorageProfile.OsDisk.OsType == compute.Windows {
-		poolPrefix, acsStr, poolIndex, _, err := armhelpers.WindowsVMNameParts(*vm.Name)
+		poolPrefix, acsStr, poolIndex, _, err := utils.WindowsVMNameParts(*vm.Name)
 		if err != nil {
-			log.Errorln(err)
+			uc.Logger.Errorf(err.Error())
 			return err
 		}
 
 		poolIdentifier = poolPrefix + acsStr + strconv.Itoa(poolIndex)
-	}
 
-	if !strings.Contains(uc.NameSuffix, poolPrefix) {
-		log.Infoln(fmt.Sprintf("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s",
-			*vm.Name, uc.NameSuffix))
-		return nil
+		if !strings.Contains(uc.NameSuffix, poolPrefix) {
+			uc.Logger.Infof("Skipping VM: %s for upgrade as it does not belong to cluster with expected name suffix: %s\n",
+				*vm.Name, uc.NameSuffix)
+			return nil
+		}
 	}
 
 	if uc.AgentPools[poolIdentifier] == nil {
@@ -169,34 +243,39 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 	}
 
 	if isUpgradableVM {
-		log.Infoln(fmt.Sprintf("Adding Agent VM: %s, orchestrator: %s to pool: %s (AgentVMs)",
-			*vm.Name, *(*vm.Tags)["orchestrator"], poolIdentifier))
+		uc.Logger.Infof("Adding Agent VM: %s, orchestrator: %s to pool: %s (AgentVMs)\n",
+			*vm.Name, *(*vm.Tags)["orchestrator"], poolIdentifier)
 		*uc.AgentPools[poolIdentifier].AgentVMs = append(*uc.AgentPools[poolIdentifier].AgentVMs, vm)
 	} else {
-		log.Infoln(fmt.Sprintf("Adding Agent VM: %s, orchestrator: %s to pool: %s (UpgradedAgentVMs)",
-			*vm.Name, *(*vm.Tags)["orchestrator"], poolIdentifier))
+		uc.Logger.Infof("Adding Agent VM: %s, orchestrator: %s to pool: %s (UpgradedAgentVMs)\n",
+			*vm.Name, *(*vm.Tags)["orchestrator"], poolIdentifier)
 		*uc.AgentPools[poolIdentifier].UpgradedAgentVMs = append(*uc.AgentPools[poolIdentifier].UpgradedAgentVMs, vm)
 	}
 
 	return nil
 }
 
-// WriteTemplate writes upgrade template to a folder
-func WriteTemplate(upgradeContainerService *api.ContainerService,
+/* WriteTemplate writes upgrade template to a folder
+func WriteTemplate(
+	translator *i18n.Translator,
+	upgradeContainerService *api.ContainerService,
 	templateMap map[string]interface{}, parametersMap map[string]interface{}) {
 	updatedTemplateJSON, _ := json.Marshal(templateMap)
 	parametersJSON, _ := json.Marshal(parametersMap)
 
 	templateapp, err := acsengine.PrettyPrintArmTemplate(string(updatedTemplateJSON))
 	if err != nil {
-		log.Fatalf("error pretty printing template: %s \n", err.Error())
+		logrus.Fatalf("error pretty printing template: %s \n", err.Error())
 	}
 	parametersapp, e := acsengine.PrettyPrintJSON(string(parametersJSON))
 	if e != nil {
-		log.Fatalf("error pretty printing template parameters: %s \n", e.Error())
+		logrus.Fatalf("error pretty printing template parameters: %s \n", e.Error())
 	}
 	outputDirectory := path.Join("_output", upgradeContainerService.Properties.MasterProfile.DNSPrefix, "Upgrade")
-	if err := acsengine.WriteArtifacts(upgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
-		log.Fatalf("error writing artifacts: %s \n", err.Error())
+	writer := &acsengine.ArtifactWriter{
+		Translator: translator,
 	}
-}
+	if err := writer.WriteTLSArtifacts(upgradeContainerService, "vlabs", templateapp, parametersapp, outputDirectory, false, false); err != nil {
+		logrus.Fatalf("error writing artifacts: %s\n", err.Error())
+	}
+}*/

@@ -73,7 +73,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"př. n. l.", "n. l."},
 		erasNarrow:             []string{"př.n.l.", "n.l."},
 		erasWide:               []string{"př. n. l.", "n. l."},
-		timezones:              map[string]string{"MEZ": "Středoevropský standardní čas", "JDT": "Japonský letní čas", "CLT": "Chilský standardní čas", "UYST": "Uruguayský letní čas", "CHAST": "Chathamský standardní čas", "HADT": "Havajsko-aleutský letní čas", "BT": "Bhútánský čas", "HEEG": "Východogrónský letní čas", "HNPMX": "Mexický pacifický standardní čas", "ARST": "Argentinský letní čas", "EDT": "Severoamerický východní letní čas", "MYT": "Malajský čas", "SAST": "Jihoafrický čas", "GYT": "Guyanský čas", "CHADT": "Chathamský letní čas", "WART": "Západoargentinský standardní čas", "GMT": "Greenwichský střední čas", "TMT": "Turkmenský standardní čas", "HNNOMX": "Severozápadní mexický standardní čas", "WITA": "Středoindonéský čas", "AEDT": "Východoaustralský letní čas", "PDT": "Severoamerický pacifický letní čas", "OESZ": "Východoevropský letní čas", "WAT": "Západoafrický standardní čas", "AEST": "Východoaustralský standardní čas", "LHST": "Standardní čas ostrova lorda Howa", "HEPMX": "Mexický pacifický letní čas", "IST": "Indický čas", "HEOG": "Západogrónský letní čas", "TMST": "Turkmenský letní čas", "EST": "Severoamerický východní standardní čas", "HKST": "Hongkongský letní čas", "∅∅∅": "Brasilijský letní čas", "HAST": "Havajsko-aleutský standardní čas", "NZST": "Novozélandský standardní čas", "CLST": "Chilský letní čas", "AST": "Atlantický standardní čas", "WESZ": "Západoevropský letní čas", "ACST": "Středoaustralský standardní čas", "WIB": "Západoindonéský čas", "AWST": "Západoaustralský standardní čas", "MDT": "Macajský letní čas", "PST": "Severoamerický pacifický standardní čas", "ACWST": "Středozápadní australský standardní čas", "WARST": "Západoargentinský letní čas", "HNOG": "Západogrónský standardní čas", "WEZ": "Západoevropský standardní čas", "HNT": "Newfoundlandský standardní čas", "AKDT": "Aljašský letní čas", "HNPM": "Pierre-miquelonský standardní čas", "HNCU": "Kubánský standardní čas", "VET": "Venezuelský čas", "JST": "Japonský standardní čas", "ADT": "Atlantický letní čas", "OEZ": "Východoevropský standardní čas", "WAST": "Západoafrický letní čas", "COT": "Kolumbijský standardní čas", "HNEG": "Východogrónský standardní čas", "SGT": "Singapurský čas", "ACWDT": "Středozápadní australský letní čas", "HEPM": "Pierre-miquelonský letní čas", "SRT": "Surinamský čas", "MST": "Macajský standardní čas", "COST": "Kolumbijský letní čas", "GFT": "Francouzskoguyanský čas", "HECU": "Kubánský letní čas", "WIT": "Východoindonéský čas", "HAT": "Newfoundlandský letní čas", "LHDT": "Letní čas ostrova lorda Howa", "CDT": "Severoamerický centrální letní čas", "MESZ": "Středoevropský letní čas", "ACDT": "Středoaustralský letní čas", "HENOMX": "Severozápadní mexický letní čas", "AKST": "Aljašský standardní čas", "ChST": "Chamorrský čas", "UYT": "Uruguayský standardní čas", "CST": "Severoamerický centrální standardní čas", "CAT": "Středoafrický čas", "NZDT": "Novozélandský letní čas", "ART": "Argentinský standardní čas", "HKT": "Hongkongský standardní čas", "EAT": "Východoafrický čas", "BOT": "Bolivijský čas", "AWDT": "Západoaustralský letní čas", "ECT": "Ekvádorský čas"},
+		timezones:              map[string]string{"LHST": "Standardní čas ostrova lorda Howa", "HNT": "Newfoundlandský standardní čas", "WIB": "Západoindonéský čas", "MEZ": "Středoevropský standardní čas", "JDT": "Japonský letní čas", "ECT": "Ekvádorský čas", "HAT": "Newfoundlandský letní čas", "GYT": "Guyanský čas", "WITA": "Středoindonéský čas", "HEOG": "Západogrónský letní čas", "SGT": "Singapurský čas", "AWDT": "Západoaustralský letní čas", "MESZ": "Středoevropský letní čas", "NZDT": "Novozélandský letní čas", "IST": "Indický čas", "ADT": "Atlantický letní čas", "HKST": "Hongkongský letní čas", "WESZ": "Západoevropský letní čas", "HNPMX": "Mexický pacifický standardní čas", "CDT": "Severoamerický centrální letní čas", "AWST": "Západoaustralský standardní čas", "TMST": "Turkmenský letní čas", "HNEG": "Východogrónský standardní čas", "EDT": "Severoamerický východní letní čas", "HNPM": "Pierre-miquelonský standardní čas", "MYT": "Malajský čas", "UYST": "Uruguayský letní čas", "HEPMX": "Mexický pacifický letní čas", "BOT": "Bolivijský čas", "AEDT": "Východoaustralský letní čas", "HNOG": "Západogrónský standardní čas", "HECU": "Kubánský letní čas", "WIT": "Východoindonéský čas", "HAST": "Havajsko-aleutský standardní čas", "AST": "Atlantický standardní čas", "ART": "Argentinský standardní čas", "CAT": "Středoafrický čas", "∅∅∅": "Acrejský letní čas", "OESZ": "Východoevropský letní čas", "HEEG": "Východogrónský letní čas", "AKDT": "Aljašský letní čas", "ACDT": "Středoaustralský letní čas", "HENOMX": "Severozápadní mexický letní čas", "AEST": "Východoaustralský standardní čas", "JST": "Japonský standardní čas", "LHDT": "Letní čas ostrova lorda Howa", "CLST": "Chilský letní čas", "COST": "Kolumbijský letní čas", "EST": "Severoamerický východní standardní čas", "PST": "Severoamerický pacifický standardní čas", "ACWST": "Středozápadní australský standardní čas", "UYT": "Uruguayský standardní čas", "HEPM": "Pierre-miquelonský letní čas", "WAT": "Západoafrický standardní čas", "WAST": "Západoafrický letní čas", "HKT": "Hongkongský standardní čas", "COT": "Kolumbijský standardní čas", "PDT": "Severoamerický pacifický letní čas", "HNCU": "Kubánský standardní čas", "MST": "Macajský standardní čas", "SAST": "Jihoafrický čas", "HNNOMX": "Severozápadní mexický standardní čas", "BT": "Bhútánský čas", "CLT": "Chilský standardní čas", "GFT": "Francouzskoguyanský čas", "ACST": "Středoaustralský standardní čas", "WEZ": "Západoevropský standardní čas", "ChST": "Chamorrský čas", "TMT": "Turkmenský standardní čas", "OEZ": "Východoevropský standardní čas", "WARST": "Západoargentinský letní čas", "ARST": "Argentinský letní čas", "EAT": "Východoafrický čas", "ACWDT": "Středozápadní australský letní čas", "HADT": "Havajsko-aleutský letní čas", "WART": "Západoargentinský standardní čas", "AKST": "Aljašský standardní čas", "CHADT": "Chathamský letní čas", "CST": "Severoamerický centrální standardní čas", "MDT": "Macajský letní čas", "VET": "Venezuelský čas", "GMT": "Greenwichský střední čas", "CHAST": "Chathamský standardní čas", "SRT": "Surinamský čas", "NZST": "Novozélandský standardní čas"},
 	}
 }
 
@@ -225,6 +225,21 @@ func (cs *cs) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (cs *cs) WeekdaysWide() []string {
 	return cs.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (cs *cs) Decimal() string {
+	return cs.decimal
+}
+
+// Group returns the group of number
+func (cs *cs) Group() string {
+	return cs.group
+}
+
+// Group returns the minus sign of number
+func (cs *cs) Minus() string {
+	return cs.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'cs' and handles both Whole and Real numbers based on 'v'
@@ -471,7 +486,7 @@ func (cs *cs) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -490,7 +505,7 @@ func (cs *cs) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -511,7 +526,7 @@ func (cs *cs) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

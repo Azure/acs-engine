@@ -1,13 +1,18 @@
 package cmd
 
 import (
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 
 	"github.com/Azure/acs-engine/pkg/acsengine"
+	"github.com/Azure/acs-engine/pkg/acsengine/transform"
 	"github.com/Azure/acs-engine/pkg/api"
-	log "github.com/Sirupsen/logrus"
+	"github.com/Azure/acs-engine/pkg/i18n"
+	"github.com/leonelquinteros/gotext"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -29,6 +34,7 @@ type generateCmd struct {
 	// derived
 	containerService *api.ContainerService
 	apiVersion       string
+	locale           *gotext.Locale
 }
 
 func newGenerateCmd() *cobra.Command {
@@ -39,7 +45,9 @@ func newGenerateCmd() *cobra.Command {
 		Short: generateShortDescription,
 		Long:  generateLongDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			gc.validate(cmd, args)
+			if err := gc.validate(cmd, args); err != nil {
+				log.Fatalf(fmt.Sprintf("error validating generateCmd: %s", err.Error()))
+			}
 			return gc.run()
 		},
 	}
@@ -56,47 +64,61 @@ func newGenerateCmd() *cobra.Command {
 	return generateCmd
 }
 
-func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
+func (gc *generateCmd) validate(cmd *cobra.Command, args []string) error {
 	var caCertificateBytes []byte
 	var caKeyBytes []byte
 	var err error
 
+	gc.locale, err = i18n.LoadTranslations()
+	if err != nil {
+		return fmt.Errorf(fmt.Sprintf("error loading translation files: %s", err.Error()))
+	}
+
 	if gc.apimodelPath == "" {
-		if len(args) > 0 {
+		if len(args) == 1 {
 			gc.apimodelPath = args[0]
 		} else if len(args) > 1 {
 			cmd.Usage()
-			log.Fatalln("too many arguments were provided to 'generate'")
+			return errors.New("too many arguments were provided to 'generate'")
 		} else {
 			cmd.Usage()
-			log.Fatalln("--api-model was not supplied, nor was one specified as a positional argument")
+			return errors.New("--api-model was not supplied, nor was one specified as a positional argument")
 		}
 	}
 
 	if _, err := os.Stat(gc.apimodelPath); os.IsNotExist(err) {
-		log.Fatalf("specified api model does not exist (%s)", gc.apimodelPath)
+		return fmt.Errorf(fmt.Sprintf("specified api model does not exist (%s)", gc.apimodelPath))
 	}
 
-	gc.containerService, gc.apiVersion, err = api.LoadContainerServiceFromFile(gc.apimodelPath, true)
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: gc.locale,
+		},
+	}
+	gc.containerService, gc.apiVersion, err = apiloader.LoadContainerServiceFromFile(gc.apimodelPath, true, false, nil)
 	if err != nil {
-		log.Fatalf("error parsing the api model: %s", err.Error())
+		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}
 
 	if gc.outputDirectory == "" {
-		gc.outputDirectory = path.Join("_output", gc.containerService.Properties.MasterProfile.DNSPrefix)
+		if gc.containerService.Properties.MasterProfile != nil {
+			gc.outputDirectory = path.Join("_output", gc.containerService.Properties.MasterProfile.DNSPrefix)
+		} else {
+			gc.outputDirectory = path.Join("_output", gc.containerService.Properties.HostedMasterProfile.DNSPrefix)
+		}
 	}
 
 	// consume gc.caCertificatePath and gc.caPrivateKeyPath
 
 	if (gc.caCertificatePath != "" && gc.caPrivateKeyPath == "") || (gc.caCertificatePath == "" && gc.caPrivateKeyPath != "") {
-		log.Fatal("--ca-certificate-path and --ca-private-key-path must be specified together")
+		return errors.New("--ca-certificate-path and --ca-private-key-path must be specified together")
 	}
 	if gc.caCertificatePath != "" {
 		if caCertificateBytes, err = ioutil.ReadFile(gc.caCertificatePath); err != nil {
-			log.Fatal("failed to read CA certificate file:", err)
+			return fmt.Errorf(fmt.Sprintf("failed to read CA certificate file: %s", err.Error()))
 		}
 		if caKeyBytes, err = ioutil.ReadFile(gc.caPrivateKeyPath); err != nil {
-			log.Fatal("failed to read CA private key file:", err)
+			return fmt.Errorf(fmt.Sprintf("failed to read CA private key file: %s", err.Error()))
 		}
 
 		prop := gc.containerService.Properties
@@ -106,33 +128,43 @@ func (gc *generateCmd) validate(cmd *cobra.Command, args []string) {
 		prop.CertificateProfile.CaCertificate = string(caCertificateBytes)
 		prop.CertificateProfile.CaPrivateKey = string(caKeyBytes)
 	}
+	return nil
 }
 
 func (gc *generateCmd) run() error {
-	log.Infoln("Generating assets...")
+	log.Infoln(fmt.Sprintf("Generating assets into %s...", gc.outputDirectory))
 
-	templateGenerator, err := acsengine.InitializeTemplateGenerator(gc.classicMode)
+	ctx := acsengine.Context{
+		Translator: &i18n.Translator{
+			Locale: gc.locale,
+		},
+	}
+	templateGenerator, err := acsengine.InitializeTemplateGenerator(ctx, gc.classicMode)
 	if err != nil {
 		log.Fatalln("failed to initialize template generator: %s", err.Error())
 	}
 
-	certsGenerated := false
-	template, parameters, certsGenerated, err := templateGenerator.GenerateTemplate(gc.containerService)
+	template, parameters, certsGenerated, err := templateGenerator.GenerateTemplate(gc.containerService, acsengine.DefaultGeneratorCode)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", gc.apimodelPath, err.Error())
 		os.Exit(1)
 	}
 
 	if !gc.noPrettyPrint {
-		if template, err = acsengine.PrettyPrintArmTemplate(template); err != nil {
+		if template, err = transform.PrettyPrintArmTemplate(template); err != nil {
 			log.Fatalf("error pretty printing template: %s \n", err.Error())
 		}
-		if parameters, err = acsengine.BuildAzureParametersFile(parameters); err != nil {
+		if parameters, err = transform.BuildAzureParametersFile(parameters); err != nil {
 			log.Fatalf("error pretty printing template parameters: %s \n", err.Error())
 		}
 	}
 
-	if err = acsengine.WriteArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
+	writer := &acsengine.ArtifactWriter{
+		Translator: &i18n.Translator{
+			Locale: gc.locale,
+		},
+	}
+	if err = writer.WriteTLSArtifacts(gc.containerService, gc.apiVersion, template, parameters, gc.outputDirectory, certsGenerated, gc.parametersOnly); err != nil {
 		log.Fatalf("error writing artifacts: %s \n", err.Error())
 	}
 

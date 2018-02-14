@@ -1,0 +1,29 @@
+package test
+
+import (
+	"fmt"
+	"testing"
+
+	"path/filepath"
+
+	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/reporters"
+	. "github.com/onsi/gomega"
+)
+
+var (
+	// JUnitOutDir grabs the root of the git path from Makefile
+	JUnitOutDir = ""
+)
+
+// RunSpecsWithReporters bootstraps Ginkgo/Gomega tests to function and results go to the /test/junit directory and log output
+func RunSpecsWithReporters(t *testing.T, junitprefix string, suitename string) {
+
+	RegisterFailHandler(Fail)
+	if JUnitOutDir == "" {
+		RunSpecs(t, suitename)
+		return
+	}
+	junitReporter := reporters.NewJUnitReporter(filepath.Join(JUnitOutDir, fmt.Sprintf("%s-junit.xml", junitprefix)))
+	RunSpecsWithDefaultAndCustomReporters(t, suitename, []Reporter{junitReporter})
+}

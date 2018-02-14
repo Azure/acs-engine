@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"pr. Kr.", "po. Kr."},
 		erasNarrow:             []string{"pr.n.e.", "AD"},
 		erasWide:               []string{"prije Krista", "poslije Krista"},
-		timezones:              map[string]string{"AWST": "zapadnoaustralsko standardno vrijeme", "HEOG": "zapadnogrenlandsko ljetno vrijeme", "OESZ": "istočnoeuropsko ljetno vrijeme", "HKT": "hongkonško standardno vrijeme", "SAST": "južnoafričko vrijeme", "IST": "indijsko vrijeme", "HNOG": "zapadnogrenlandsko standardno vrijeme", "ARST": "argentinsko ljetno vrijeme", "JST": "japansko standardno vrijeme", "JDT": "japansko ljetno vrijeme", "ADT": "atlantsko ljetno vrijeme", "AST": "atlantsko standardno vrijeme", "WEZ": "zapadnoeuropsko standardno vrijeme", "ART": "argentinsko standardno vrijeme", "HNPMX": "meksičko pacifičko standardno vrijeme", "HAST": "havajsko-aleutsko standardno vrijeme", "MEZ": "srednjoeuropsko standardno vrijeme", "CHAST": "standardno vrijeme Chathama", "PST": "pacifičko standardno vrijeme", "HADT": "havajsko-aleutsko ljetno vrijeme", "CAT": "srednjoafričko vrijeme", "ACWDT": "australsko središnje zapadno ljetno vrijeme", "HNNOMX": "sjeverozapadno meksičko standardno vrijeme", "AKDT": "aljaško ljetno vrijeme", "AWDT": "zapadnoaustralsko ljetno vrijeme", "OEZ": "istočnoeuropsko standardno vrijeme", "TMT": "turkmenistansko standardno vrijeme", "WAT": "zapadnoafričko standardno vrijeme", "ACWST": "australsko središnje zapadno standardno vrijeme", "WAST": "zapadnoafričko ljetno vrijeme", "COST": "kolumbijsko ljetno vrijeme", "∅∅∅": "Acre ljetno vrijeme", "EAT": "istočnoafričko vrijeme", "MESZ": "srednjoeuropsko ljetno vrijeme", "EST": "istočno standardno vrijeme", "HKST": "hongkonško ljetno vrijeme", "HNEG": "istočnogrenlandsko standardno vrijeme", "HEPM": "ljetno vrijeme za Sveti Petar i Mikelon", "WIB": "zapadnoindonezijsko vrijeme", "SRT": "surinamsko vrijeme", "HECU": "kubansko ljetno vrijeme", "WIT": "istočnoindonezijsko vrijeme", "HENOMX": "sjeverozapadno meksičko ljetno vrijeme", "AEDT": "istočnoaustralsko ljetno vrijeme", "LHDT": "ljetno vrijeme otoka Lord Howe", "BOT": "bolivijsko vrijeme", "ACDT": "srednjoaustralsko ljetno vrijeme", "BT": "butansko vrijeme", "HEEG": "istočnogrenlandsko ljetno vrijeme", "WARST": "zapadno-argentinsko ljetno vrijeme", "GYT": "gvajansko vrijeme", "NZST": "novozelandsko standardno vrijeme", "GMT": "univerzalno vrijeme", "MYT": "malezijsko vrijeme", "MDT": "planinsko ljetno vrijeme", "ChST": "standardno vrijeme Chamorra", "UYT": "urugvajsko standardno vrijeme", "UYST": "urugvajsko ljetno vrijeme", "HEPMX": "meksičko pacifičko ljetno vrijeme", "COT": "kolumbijsko standardno vrijeme", "AKST": "aljaško standardno vrijeme", "MST": "planinsko standardno vrijeme", "WESZ": "zapadnoeuropsko ljetno vrijeme", "CST": "središnje standardno vrijeme", "SGT": "singapursko vrijeme", "VET": "venezuelsko vrijeme", "WART": "zapadno-argentinsko standardno vrijeme", "EDT": "istočno ljetno vrijeme", "AEST": "istočnoaustralsko standardno vrijeme", "CDT": "središnje ljetno vrijeme", "CLT": "čileansko standardno vrijeme", "CHADT": "ljetno vrijeme Chathama", "PDT": "pacifičko ljetno vrijeme", "LHST": "standardno vrijeme otoka Lord Howe", "ECT": "ekvadorsko vrijeme", "CLST": "čileansko ljetno vrijeme", "HNT": "newfoundlandsko standardno vrijeme", "HAT": "newfoundlandsko ljetno vrijeme", "WITA": "srednjoindonezijsko vrijeme", "HNCU": "kubansko standardno vrijeme", "NZDT": "novozelandsko ljetno vrijeme", "TMST": "turkmenistansko ljetno vrijeme", "ACST": "srednjoaustralsko standardno vrijeme", "GFT": "vrijeme Francuske Gvajane", "HNPM": "standardno vrijeme za Sveti Petar i Mikelon"},
+		timezones:              map[string]string{"HNT": "newfoundlandsko standardno vrijeme", "AWDT": "zapadnoaustralsko ljetno vrijeme", "TMT": "turkmenistansko standardno vrijeme", "ART": "argentinsko standardno vrijeme", "HNOG": "zapadnogrenlandsko standardno vrijeme", "HNEG": "istočnogrenlandsko standardno vrijeme", "PDT": "pacifičko ljetno vrijeme", "CDT": "središnje ljetno vrijeme", "AWST": "zapadnoaustralsko standardno vrijeme", "MYT": "malezijsko vrijeme", "HENOMX": "sjeverozapadno meksičko ljetno vrijeme", "WART": "zapadno-argentinsko standardno vrijeme", "OESZ": "istočnoeuropsko ljetno vrijeme", "GYT": "gvajansko vrijeme", "ECT": "ekvadorsko vrijeme", "BT": "butansko vrijeme", "MST": "standardno makaosko vrijeme", "SRT": "surinamsko vrijeme", "ACWDT": "australsko središnje zapadno ljetno vrijeme", "WAST": "zapadnoafričko ljetno vrijeme", "COST": "kolumbijsko ljetno vrijeme", "AKST": "aljaško standardno vrijeme", "GMT": "univerzalno vrijeme", "PST": "pacifičko standardno vrijeme", "MDT": "ljetno makaosko vrijeme", "UYST": "urugvajsko ljetno vrijeme", "CLST": "čileansko ljetno vrijeme", "AKDT": "aljaško ljetno vrijeme", "MEZ": "srednjoeuropsko standardno vrijeme", "OEZ": "istočnoeuropsko standardno vrijeme", "LHST": "standardno vrijeme otoka Lord Howe", "HEEG": "istočnogrenlandsko ljetno vrijeme", "WEZ": "zapadnoeuropsko standardno vrijeme", "WIB": "zapadnoindonezijsko vrijeme", "HECU": "kubansko ljetno vrijeme", "JST": "japansko standardno vrijeme", "IST": "indijsko vrijeme", "HKST": "hongkonško ljetno vrijeme", "COT": "kolumbijsko standardno vrijeme", "BOT": "bolivijsko vrijeme", "CST": "središnje standardno vrijeme", "VET": "venezuelsko vrijeme", "LHDT": "ljetno vrijeme otoka Lord Howe", "CAT": "srednjoafričko vrijeme", "WIT": "istočnoindonezijsko vrijeme", "HKT": "hongkonško standardno vrijeme", "HNPMX": "meksičko pacifičko standardno vrijeme", "HNPM": "standardno vrijeme za Sveti Petar i Mikelon", "HAST": "havajsko-aleutsko standardno vrijeme", "ACST": "srednjoaustralsko standardno vrijeme", "∅∅∅": "amazonsko ljetno vrijeme", "ARST": "argentinsko ljetno vrijeme", "HADT": "havajsko-aleutsko ljetno vrijeme", "HNNOMX": "sjeverozapadno meksičko standardno vrijeme", "ACDT": "srednjoaustralsko ljetno vrijeme", "CHAST": "standardno vrijeme Chathama", "NZDT": "novozelandsko ljetno vrijeme", "AEDT": "istočnoaustralsko ljetno vrijeme", "CLT": "čileansko standardno vrijeme", "EDT": "istočno ljetno vrijeme", "SGT": "singapursko vrijeme", "HEPMX": "meksičko pacifičko ljetno vrijeme", "NZST": "novozelandsko standardno vrijeme", "EAT": "istočnoafričko vrijeme", "AST": "atlantsko standardno vrijeme", "AEST": "istočnoaustralsko standardno vrijeme", "EST": "istočno standardno vrijeme", "WESZ": "zapadnoeuropsko ljetno vrijeme", "CHADT": "ljetno vrijeme Chathama", "HEPM": "ljetno vrijeme za Sveti Petar i Mikelon", "MESZ": "srednjoeuropsko ljetno vrijeme", "JDT": "japansko ljetno vrijeme", "HEOG": "zapadnogrenlandsko ljetno vrijeme", "WAT": "zapadnoafričko standardno vrijeme", "WITA": "srednjoindonezijsko vrijeme", "ADT": "atlantsko ljetno vrijeme", "GFT": "vrijeme Francuske Gvajane", "ChST": "standardno vrijeme Chamorra", "HNCU": "kubansko standardno vrijeme", "ACWST": "australsko središnje zapadno standardno vrijeme", "UYT": "urugvajsko standardno vrijeme", "TMST": "turkmenistansko ljetno vrijeme", "HAT": "newfoundlandsko ljetno vrijeme", "WARST": "zapadno-argentinsko ljetno vrijeme", "SAST": "južnoafričko vrijeme"},
 	}
 }
 
@@ -216,6 +216,21 @@ func (hr *hr) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (hr *hr) WeekdaysWide() []string {
 	return hr.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (hr *hr) Decimal() string {
+	return hr.decimal
+}
+
+// Group returns the group of number
+func (hr *hr) Group() string {
+	return hr.group
+}
+
+// Group returns the minus sign of number
+func (hr *hr) Minus() string {
+	return hr.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'hr' and handles both Whole and Real numbers based on 'v'
@@ -435,7 +450,7 @@ func (hr *hr) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e}...)
@@ -456,7 +471,7 @@ func (hr *hr) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e}...)
@@ -477,7 +492,7 @@ func (hr *hr) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e}...)
@@ -500,7 +515,7 @@ func (hr *hr) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2e}...)

@@ -67,7 +67,7 @@ func New() locales.Translator {
 		erasAbbreviated:    []string{"SM", "M"},
 		erasNarrow:         []string{"SM", "M"},
 		erasWide:           []string{"Sebelum Masehi", "Masehi"},
-		timezones:          map[string]string{"TMST": "Waktu Musim Panas Turkmenistan", "EDT": "Waktu Musim Panas Timur", "CHADT": "Waktu Musim Panas Chatham", "BOT": "Waktu Bolivia", "MESZ": "Waktu Musim Panas Eropa Tengah", "HNOG": "Waktu Standar Greenland Barat", "OEZ": "Waktu Standar Eropa Timur", "WEZ": "Waktu Standar Eropa Barat", "WAST": "Waktu Musim Panas Afrika Barat", "HKT": "Waktu Standar Hong Kong", "COT": "Waktu Standar Kolombia", "HEEG": "Waktu Musim Panas Greenland Timur", "ECT": "Waktu Ekuador", "ACWST": "Waktu Standar Barat Tengah Australia", "WART": "Waktu Standar Argentina Bagian Barat", "CLT": "Waktu Standar Cile", "CLST": "Waktu Musim Panas Cile", "HEOG": "Waktu Musim Panas Greenland Barat", "OESZ": "Waktu Musim Panas Eropa Timur", "COST": "Waktu Musim Panas Kolombia", "∅∅∅": "Waktu Musim Panas Acre", "AEDT": "Waktu Musim Panas Timur Australia", "AWST": "Waktu Standar Barat Australia", "NZST": "Waktu Standar Selandia Baru", "WESZ": "Waktu Musim Panas Eropa Barat", "GFT": "Waktu Guyana Prancis", "AKST": "Waktu Standar Alaska", "HNPM": "Waktu Standar Saint Pierre dan Miquelon", "LHDT": "Waktu Musim Panas Lord Howe", "CDT": "Waktu Musim Panas Tengah", "AEST": "Waktu Standar Timur Australia", "ChST": "Waktu Standar Chamorro", "SRT": "Waktu Suriname", "CHAST": "Waktu Standar Chatham", "VET": "Waktu Venezuela", "ACDT": "Waktu Musim Panas Tengah Australia", "HAT": "Waktu Musim Panas Newfoundland", "UYT": "Waktu Standar Uruguay", "HEPMX": "Waktu Musim Panas Pasifik Meksiko", "AWDT": "Waktu Musim Panas Barat Australia", "PDT": "Waktu Musim Panas Pasifik", "JST": "Waktu Standar Jepang", "GMT": "Greenwich Mean Time", "WAT": "Waktu Standar Afrika Barat", "HECU": "Waktu Musim Panas Kuba", "ADT": "Waktu Musim Panas Atlantik", "ARST": "Waktu Musim Panas Argentina", "EST": "Waktu Standar Timur", "HNNOMX": "Waktu Standar Meksiko Barat Laut", "WIB": "Waktu Indonesia Barat", "CST": "Waktu Standar Tengah", "WARST": "Waktu Musim Panas Argentina Bagian Barat", "AKDT": "Waktu Musim Panas Alaska", "UYST": "Waktu Musim Panas Uruguay", "HNPMX": "Waktu Standar Pasifik Meksiko", "EAT": "Waktu Afrika Timur", "ACST": "Waktu Standar Tengah Australia", "WITA": "Waktu Indonesia Tengah", "TMT": "Waktu Standar Turkmenistan", "GYT": "Waktu Guyana", "CAT": "Waktu Afrika Tengah", "MDT": "Waktu Musim Panas Makau", "ART": "Waktu Standar Argentina", "HENOMX": "Waktu Musim Panas Meksiko Barat Laut", "SAST": "Waktu Standar Afrika Selatan", "LHST": "Waktu Standar Lord Howe", "HKST": "Waktu Musim Panas Hong Kong", "BT": "Waktu Bhutan", "HNEG": "Waktu Standar Greenland Timur", "JDT": "Waktu Musim Panas Jepang", "AST": "Waktu Standar Atlantik", "HEPM": "Waktu Musim Panas Saint Pierre dan Miquelon", "HAST": "Waktu Standar Hawaii-Aleutian", "MEZ": "Waktu Standar Eropa Tengah", "MYT": "Waktu Malaysia", "MST": "Waktu Standar Makau", "HNCU": "Waktu Standar Kuba", "SGT": "Waktu Standar Singapura", "PST": "Waktu Standar Pasifik", "NZDT": "Waktu Musim Panas Selandia Baru", "HNT": "Waktu Standar Newfoundland", "WIT": "Waktu Indonesia Timur", "HADT": "Waktu Musim Panas Hawaii-Aleutian", "IST": "Waktu India", "ACWDT": "Waktu Musim Panas Barat Tengah Australia"},
+		timezones:          map[string]string{"UYST": "Waktu Musim Panas Uruguay", "HENOMX": "Waktu Musim Panas Meksiko Barat Laut", "HNEG": "Waktu Standar Greenland Timur", "CDT": "Waktu Musim Panas Tengah", "HEPM": "Waktu Musim Panas Saint Pierre dan Miquelon", "BT": "Waktu Bhutan", "ECT": "Waktu Ekuador", "GMT": "Greenwich Mean Time", "HNPMX": "Waktu Standar Pasifik Meksiko", "HAT": "Waktu Musim Panas Newfoundland", "HKT": "Waktu Standar Hong Kong", "ACWST": "Waktu Standar Barat Tengah Australia", "MESZ": "Waktu Musim Panas Eropa Tengah", "NZDT": "Waktu Musim Panas Selandia Baru", "WART": "Waktu Standar Argentina Bagian Barat", "AEST": "Waktu Standar Timur Australia", "EAT": "Waktu Afrika Timur", "MYT": "Waktu Malaysia", "COT": "Waktu Standar Kolombia", "AKDT": "Waktu Musim Panas Alaska", "ACWDT": "Waktu Musim Panas Barat Tengah Australia", "WARST": "Waktu Musim Panas Argentina Bagian Barat", "GYT": "Waktu Guyana", "SGT": "Waktu Standar Singapura", "JDT": "Waktu Musim Panas Jepang", "LHDT": "Waktu Musim Panas Lord Howe", "MDT": "Waktu Musim Panas Pegunungan", "HAST": "Waktu Standar Hawaii-Aleutian", "OESZ": "Waktu Musim Panas Eropa Timur", "COST": "Waktu Musim Panas Kolombia", "PDT": "Waktu Musim Panas Pasifik", "HECU": "Waktu Musim Panas Kuba", "HNPM": "Waktu Standar Saint Pierre dan Miquelon", "WIT": "Waktu Indonesia Timur", "TMST": "Waktu Musim Panas Turkmenistan", "MST": "Waktu Standar Pegunungan", "SAST": "Waktu Standar Afrika Selatan", "CLT": "Waktu Standar Cile", "HEEG": "Waktu Musim Panas Greenland Timur", "ACST": "Waktu Standar Tengah Australia", "WEZ": "Waktu Standar Eropa Barat", "HNCU": "Waktu Standar Kuba", "AWDT": "Waktu Musim Panas Barat Australia", "WITA": "Waktu Indonesia Tengah", "IST": "Waktu India", "AEDT": "Waktu Musim Panas Timur Australia", "SRT": "Waktu Suriname", "HADT": "Waktu Musim Panas Hawaii-Aleutian", "TMT": "Waktu Standar Turkmenistan", "NZST": "Waktu Standar Selandia Baru", "ADT": "Waktu Musim Panas Atlantik", "HEOG": "Waktu Musim Panas Greenland Barat", "WAT": "Waktu Standar Afrika Barat", "PST": "Waktu Standar Pasifik", "CHAST": "Waktu Standar Chatham", "HKST": "Waktu Musim Panas Hong Kong", "CLST": "Waktu Musim Panas Cile", "EDT": "Waktu Musim Panas Timur", "BOT": "Waktu Bolivia", "CST": "Waktu Standar Tengah", "AWST": "Waktu Standar Barat Australia", "UYT": "Waktu Standar Uruguay", "HNOG": "Waktu Standar Greenland Barat", "WAST": "Waktu Musim Panas Afrika Barat", "CHADT": "Waktu Musim Panas Chatham", "ChST": "Waktu Standar Chamorro", "WIB": "Waktu Indonesia Barat", "∅∅∅": "Waktu Musim Panas Azores", "EST": "Waktu Standar Timur", "AKST": "Waktu Standar Alaska", "LHST": "Waktu Standar Lord Howe", "ACDT": "Waktu Musim Panas Tengah Australia", "GFT": "Waktu Guyana Prancis", "CAT": "Waktu Afrika Tengah", "HEPMX": "Waktu Musim Panas Pasifik Meksiko", "MEZ": "Waktu Standar Eropa Tengah", "VET": "Waktu Venezuela", "AST": "Waktu Standar Atlantik", "ARST": "Waktu Musim Panas Argentina", "WESZ": "Waktu Musim Panas Eropa Barat", "JST": "Waktu Standar Jepang", "HNNOMX": "Waktu Standar Meksiko Barat Laut", "HNT": "Waktu Standar Newfoundland", "OEZ": "Waktu Standar Eropa Timur", "ART": "Waktu Standar Argentina"},
 	}
 }
 
@@ -174,6 +174,21 @@ func (id *id_ID) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (id *id_ID) WeekdaysWide() []string {
 	return id.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (id *id_ID) Decimal() string {
+	return id.decimal
+}
+
+// Group returns the group of number
+func (id *id_ID) Group() string {
+	return id.group
+}
+
+// Group returns the minus sign of number
+func (id *id_ID) Minus() string {
+	return id.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'id_ID' and handles both Whole and Real numbers based on 'v'
@@ -413,7 +428,7 @@ func (id *id_ID) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -432,7 +447,7 @@ func (id *id_ID) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -458,7 +473,7 @@ func (id *id_ID) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

@@ -59,7 +59,7 @@ func New() locales.Translator {
 		erasAbbreviated:    []string{"KM", "BM"},
 		erasNarrow:         []string{"", ""},
 		erasWide:           []string{"Kabla ya Mtwaa", "Baada ya Mtwaa"},
-		timezones:          map[string]string{"UYST": "UYST", "∅∅∅": "∅∅∅", "HECU": "HECU", "ACWDT": "ACWDT", "JDT": "JDT", "WARST": "WARST", "BOT": "BOT", "CLST": "CLST", "EDT": "EDT", "NZST": "NZST", "AST": "AST", "OEZ": "OEZ", "HKT": "HKT", "ACST": "ACST", "WART": "WART", "OESZ": "OESZ", "HEPMX": "HEPMX", "CDT": "CDT", "SGT": "SGT", "PST": "PST", "HAST": "HAST", "HAT": "HAT", "SRT": "SRT", "WIB": "WIB", "TMT": "TMT", "TMST": "TMST", "HENOMX": "HENOMX", "CST": "CST", "NZDT": "NZDT", "MDT": "MDT", "ACWST": "ACWST", "CLT": "CLT", "COT": "COT", "ART": "ART", "ACDT": "ACDT", "HNPM": "HNPM", "VET": "VET", "JST": "JST", "ADT": "ADT", "WESZ": "WESZ", "MST": "MST", "MYT": "MYT", "HNT": "HNT", "AEST": "AEST", "AEDT": "AEDT", "HNEG": "HNEG", "ChST": "ChST", "PDT": "PDT", "HNOG": "HNOG", "WAT": "WAT", "COST": "COST", "HNNOMX": "HNNOMX", "GMT": "GMT", "EST": "EST", "AKST": "AKST", "SAST": "SAST", "HNPMX": "HNPMX", "WIT": "WIT", "AWDT": "AWDT", "HADT": "HADT", "HKST": "HKST", "BT": "BT", "AKDT": "AKDT", "IST": "IST", "WEZ": "WEZ", "LHST": "LHST", "LHDT": "LHDT", "EAT": "EAT", "HNCU": "HNCU", "AWST": "AWST", "GYT": "GYT", "CHAST": "CHAST", "ECT": "ECT", "GFT": "GFT", "WITA": "WITA", "HEPM": "HEPM", "CHADT": "CHADT", "MESZ": "MESZ", "HEOG": "HEOG", "ARST": "ARST", "HEEG": "HEEG", "CAT": "CAT", "MEZ": "MEZ", "WAST": "WAST", "UYT": "UYT"},
+		timezones:          map[string]string{"PDT": "PDT", "HEPM": "HEPM", "NZDT": "NZDT", "HNEG": "HNEG", "EDT": "EDT", "ACDT": "ACDT", "HNPMX": "HNPMX", "WART": "WART", "WITA": "WITA", "ADT": "ADT", "OESZ": "OESZ", "UYT": "UYT", "HENOMX": "HENOMX", "GFT": "GFT", "ECT": "ECT", "WEZ": "WEZ", "PST": "PST", "ACWDT": "ACWDT", "LHDT": "LHDT", "JST": "JST", "CST": "CST", "WIT": "WIT", "HADT": "HADT", "AST": "AST", "HEEG": "HEEG", "AKST": "AKST", "CAT": "CAT", "ACWST": "ACWST", "IST": "IST", "AEDT": "AEDT", "EAT": "EAT", "SRT": "SRT", "MDT": "MDT", "MYT": "MYT", "MEZ": "MEZ", "SAST": "SAST", "HAT": "HAT", "HKST": "HKST", "GYT": "GYT", "GMT": "GMT", "BT": "BT", "MST": "MST", "AWDT": "AWDT", "MESZ": "MESZ", "NZST": "NZST", "LHST": "LHST", "∅∅∅": "∅∅∅", "ART": "ART", "ARST": "ARST", "WAT": "WAT", "AKDT": "AKDT", "TMST": "TMST", "HNNOMX": "HNNOMX", "JDT": "JDT", "AEST": "AEST", "HNOG": "HNOG", "CLT": "CLT", "CLST": "CLST", "ChST": "ChST", "BOT": "BOT", "HAST": "HAST", "WARST": "WARST", "HNT": "HNT", "COT": "COT", "EST": "EST", "SGT": "SGT", "HEPMX": "HEPMX", "CHAST": "CHAST", "UYST": "UYST", "TMT": "TMT", "ACST": "ACST", "WIB": "WIB", "WAST": "WAST", "HKT": "HKT", "HEOG": "HEOG", "HNPM": "HNPM", "HNCU": "HNCU", "HECU": "HECU", "OEZ": "OEZ", "WESZ": "WESZ", "CHADT": "CHADT", "AWST": "AWST", "VET": "VET", "COST": "COST", "CDT": "CDT"},
 	}
 }
 
@@ -175,6 +175,21 @@ func (bez *bez_TZ) WeekdaysWide() []string {
 	return bez.daysWide
 }
 
+// Decimal returns the decimal point of number
+func (bez *bez_TZ) Decimal() string {
+	return bez.decimal
+}
+
+// Group returns the group of number
+func (bez *bez_TZ) Group() string {
+	return bez.group
+}
+
+// Group returns the minus sign of number
+func (bez *bez_TZ) Minus() string {
+	return bez.minus
+}
+
 // FmtNumber returns 'num' with digits/precision of 'v' for 'bez_TZ' and handles both Whole and Real numbers based on 'v'
 func (bez *bez_TZ) FmtNumber(num float64, v uint64) string {
 
@@ -192,7 +207,7 @@ func (bez *bez_TZ) FmtCurrency(num float64, v uint64, currency currency.Type) st
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := bez.currencies[currency]
-	l := len(s) + len(symbol) + 0 + 0*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 0
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -248,7 +263,7 @@ func (bez *bez_TZ) FmtAccounting(num float64, v uint64, currency currency.Type) 
 
 	s := strconv.FormatFloat(math.Abs(num), 'f', int(v), 64)
 	symbol := bez.currencies[currency]
-	l := len(s) + len(symbol) + 0 + 0*len(s[:len(s)-int(v)-1])/3
+	l := len(s) + len(symbol) + 0
 	count := 0
 	inWhole := v == 0
 	b := make([]byte, 0, l)
@@ -328,7 +343,7 @@ func (bez *bez_TZ) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -347,7 +362,7 @@ func (bez *bez_TZ) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -366,7 +381,7 @@ func (bez *bez_TZ) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -387,7 +402,7 @@ func (bez *bez_TZ) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

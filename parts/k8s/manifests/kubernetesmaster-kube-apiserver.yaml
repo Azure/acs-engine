@@ -1,0 +1,33 @@
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  name: "kube-apiserver"
+  namespace: "kube-system"
+  labels:
+    tier: control-plane
+    component: kube-apiserver
+spec:
+  hostNetwork: true
+  containers:
+    - name: "kube-apiserver"
+      image: "<kubernetesHyperkubeSpec>"
+      command: ["/hyperkube", "apiserver"]
+      args: [<kubernetesAPIServerConfig>]
+      volumeMounts:
+        - name: "etc-kubernetes"
+          mountPath: "/etc/kubernetes"
+        - name: "var-lib-kubelet"
+          mountPath: "/var/lib/kubelet"
+        - name: "msi"
+          mountPath: "/var/lib/waagent/ManagedIdentity-Settings"
+          readOnly: true
+  volumes:
+    - name: "etc-kubernetes"
+      hostPath:
+        path: "/etc/kubernetes"
+    - name: "var-lib-kubelet"
+      hostPath:
+        path: "/var/lib/kubelet"
+    - name: msi
+      hostPath:
+        path: "/var/lib/waagent/ManagedIdentity-Settings"

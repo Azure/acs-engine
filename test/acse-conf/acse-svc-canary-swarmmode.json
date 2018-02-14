@@ -1,11 +1,6 @@
 {
   "deployments": [
     {
-      "cluster_definition": "disks-storageaccount/swarmmode-master-sa.json",
-      "category": "canary",
-      "location": "centraluseuap"
-    },
-    {
       "cluster_definition": "swarmmode.json",
       "category": "canary",
       "location": "eastus2euap"

@@ -73,7 +73,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"v. Chr.", "n. Chr."},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"v. Chr.", "n. Chr."},
-		timezones:              map[string]string{"ACST": "Zentralaustralesch Normalzäit", "COST": "Kolumbianesch Summerzäit", "AKDT": "Alaska-Summerzäit", "HNPM": "Saint-Pierre-a-Miquelon-Normalzäit", "SRT": "Suriname-Zäit", "SAST": "Südafrikanesch Zäit", "AWST": "Westaustralesch Normalzäit", "WARST": "Westargentinesch Summerzäit", "WESZ": "Westeuropäesch Summerzäit", "TMST": "Turkmenistan-Summerzäit", "ARST": "Argentinesch Summerzäit", "EST": "Nordamerikanesch Ostküsten-Normalzäit", "∅∅∅": "Acre-Summerzäit", "HECU": "Kubanesch Summerzäit", "NZST": "Neiséiland-Normalzäit", "CAT": "Zentralafrikanesch Zäit", "ART": "Argentinesch Normalzäit", "MDT": "Rocky-Mountain-Summerzäit", "AKST": "Alaska-Normalzäit", "UYT": "Uruguyanesch Normalzäit", "CST": "Nordamerikanesch Inland-Normalzäit", "PDT": "Nordamerikanesch Westküsten-Summerzäit", "HENOMX": "Nordwest-Mexiko-Summerzäit", "WIT": "Ostindonesesch Zäit", "ECT": "Ecuadorianesch Zäit", "ACWDT": "Zentral-/Westaustralesch Summerzäit", "WART": "Westargentinesch Normalzäit", "HNT": "Neifundland-Normalzäit", "LHST": "Lord-Howe-Normalzäit", "HEPMX": "Mexikanesch Pazifik-Summerzäit", "MEZ": "Mëtteleuropäesch Normalzäit", "VET": "Venezuela-Zäit", "HADT": "Hawaii-Aleuten-Summerzäit", "MYT": "Malaysesch Zäit", "HNOG": "Westgrönland-Normalzäit", "OESZ": "Osteuropäesch Summerzäit", "ACDT": "Zentralaustralesch Summerzäit", "HNPMX": "Mexikanesch Pazifik-Normalzäit", "SGT": "Singapur-Standardzäit", "JST": "Japanesch Normalzäit", "MESZ": "Mëtteleuropäesch Summerzäit", "HEEG": "Ostgrönland-Summerzäit", "AEST": "Ostaustralesch Normalzäit", "ChST": "Chamorro-Zäit", "UYST": "Uruguayanesch Summerzäit", "LHDT": "Lord-Howe-Summerzäit", "GYT": "Guyana-Zäit", "CHADT": "Chatham-Summerzäit", "GMT": "Mëttler Greenwich-Zäit", "OEZ": "Osteuropäesch Normalzäit", "WAT": "Westafrikanesch Normalzäit", "GFT": "Franséisch-Guayane-Zäit", "IST": "Indesch Zäit", "ACWST": "Zentral-/Westaustralesch Normalzäit", "TMT": "Turkmenistan-Normalzäit", "HKST": "Hong-Kong-Summerzäit", "AEDT": "Ostaustralesch Summerzäit", "HNCU": "Kubanesch Normalzäit", "AST": "Atlantik-Normalzäit", "BT": "Bhutan-Zäit", "PST": "Nordamerikanesch Westküsten-Normalzäit", "NZDT": "Neiséiland-Summerzäit", "CLST": "Chilenesch Summerzäit", "HAT": "Neifundland-Summerzäit", "MST": "Rocky-Mountain-Normalzäit", "AWDT": "Westaustralesch Summerzäit", "BOT": "Bolivianesch Zäit", "CLT": "Chilenesch Normalzäit", "EDT": "Nordamerikanesch Ostküsten-Summerzäit", "HEPM": "Saint-Pierre-a-Miquelon-Summerzäit", "EAT": "Ostafrikanesch Zäit", "CDT": "Nordamerikanesch Inland-Summerzäit", "WEZ": "Westeuropäesch Normalzäit", "HKT": "Hong-Kong-Normalzäit", "HNNOMX": "Nordwest-Mexiko-Normalzäit", "WITA": "Zentralindonesesch Zäit", "WIB": "Westindonesesch Zäit", "HAST": "Hawaii-Aleuten-Normalzäit", "ADT": "Atlantik-Summerzäit", "WAST": "Westafrikanesch Summerzäit", "COT": "Kolumbianesch Normalzäit", "HNEG": "Ostgrönland-Normalzäit", "CHAST": "Chatham-Normalzäit", "JDT": "Japanesch Summerzäit", "HEOG": "Westgrönland-Summerzäit"},
+		timezones:              map[string]string{"JDT": "Japanesch Summerzäit", "∅∅∅": "Brasília-Summerzäit", "CDT": "Nordamerikanesch Inland-Summerzäit", "SRT": "Suriname-Zäit", "ACWDT": "Zentral-/Westaustralesch Summerzäit", "NZST": "Neiséiland-Normalzäit", "PST": "Nordamerikanesch Westküsten-Normalzäit", "BOT": "Bolivianesch Zäit", "COST": "Kolumbianesch Summerzäit", "AKST": "Alaska-Normalzäit", "ChST": "Chamorro-Zäit", "ECT": "Ecuadorianesch Zäit", "HNPMX": "Mexikanesch Pazifik-Normalzäit", "VET": "Venezuela-Zäit", "HENOMX": "Nordwest-Mexiko-Summerzäit", "ARST": "Argentinesch Summerzäit", "PDT": "Nordamerikanesch Westküsten-Summerzäit", "UYST": "Uruguayanesch Summerzäit", "MESZ": "Mëtteleuropäesch Summerzäit", "OEZ": "Osteuropäesch Normalzäit", "LHST": "Lord-Howe-Normalzäit", "SAST": "Südafrikanesch Zäit", "CLT": "Chilenesch Normalzäit", "ACDT": "Zentralaustralesch Summerzäit", "SGT": "Singapur-Standardzäit", "WIT": "Ostindonesesch Zäit", "OESZ": "Osteuropäesch Summerzäit", "GYT": "Guyana-Zäit", "WIB": "Westindonesesch Zäit", "HECU": "Kubanesch Summerzäit", "WITA": "Zentralindonesesch Zäit", "HNOG": "Westgrönland-Normalzäit", "HEEG": "Ostgrönland-Summerzäit", "HAT": "Neifundland-Summerzäit", "ACWST": "Zentral-/Westaustralesch Normalzäit", "TMT": "Turkmenistan-Normalzäit", "TMST": "Turkmenistan-Summerzäit", "JST": "Japanesch Normalzäit", "HKT": "Hong-Kong-Normalzäit", "EAT": "Ostafrikanesch Zäit", "HNPM": "Saint-Pierre-a-Miquelon-Normalzäit", "CST": "Nordamerikanesch Inland-Normalzäit", "MST": "MST", "LHDT": "Lord-Howe-Summerzäit", "AEDT": "Ostaustralesch Summerzäit", "HNCU": "Kubanesch Normalzäit", "AWST": "Westaustralesch Normalzäit", "MEZ": "Mëtteleuropäesch Normalzäit", "HEOG": "Westgrönland-Summerzäit", "UYT": "Uruguyanesch Normalzäit", "HADT": "Hawaii-Aleuten-Summerzäit", "WARST": "Westargentinesch Summerzäit", "WAT": "Westafrikanesch Normalzäit", "CAT": "Zentralafrikanesch Zäit", "EST": "Nordamerikanesch Ostküsten-Normalzäit", "ACST": "Zentralaustralesch Normalzäit", "WEZ": "Westeuropäesch Normalzäit", "GMT": "Mëttler Greenwich-Zäit", "CHAST": "Chatham-Normalzäit", "HEPM": "Saint-Pierre-a-Miquelon-Summerzäit", "MYT": "Malaysesch Zäit", "HNT": "Neifundland-Normalzäit", "HKST": "Hong-Kong-Summerzäit", "AEST": "Ostaustralesch Normalzäit", "CLST": "Chilenesch Summerzäit", "GFT": "Franséisch-Guayane-Zäit", "ADT": "Atlantik-Summerzäit", "EDT": "Nordamerikanesch Ostküsten-Summerzäit", "HEPMX": "Mexikanesch Pazifik-Summerzäit", "BT": "Bhutan-Zäit", "MDT": "MDT", "HAST": "Hawaii-Aleuten-Normalzäit", "IST": "Indesch Zäit", "AST": "Atlantik-Normalzäit", "AWDT": "Westaustralesch Summerzäit", "WART": "Westargentinesch Normalzäit", "HNEG": "Ostgrönland-Normalzäit", "COT": "Kolumbianesch Normalzäit", "AKDT": "Alaska-Summerzäit", "WESZ": "Westeuropäesch Summerzäit", "CHADT": "Chatham-Summerzäit", "NZDT": "Neiséiland-Summerzäit", "HNNOMX": "Nordwest-Mexiko-Normalzäit", "ART": "Argentinesch Normalzäit", "WAST": "Westafrikanesch Summerzäit"},
 	}
 }
 
@@ -187,6 +187,21 @@ func (lb *lb_LU) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (lb *lb_LU) WeekdaysWide() []string {
 	return lb.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (lb *lb_LU) Decimal() string {
+	return lb.decimal
+}
+
+// Group returns the group of number
+func (lb *lb_LU) Group() string {
+	return lb.group
+}
+
+// Group returns the minus sign of number
+func (lb *lb_LU) Minus() string {
+	return lb.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'lb_LU' and handles both Whole and Real numbers based on 'v'
@@ -427,7 +442,7 @@ func (lb *lb_LU) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -446,7 +461,7 @@ func (lb *lb_LU) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -467,7 +482,7 @@ func (lb *lb_LU) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)

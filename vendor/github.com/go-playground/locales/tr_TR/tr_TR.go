@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"MÖ", "MS"},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"Milattan Önce", "Milattan Sonra"},
-		timezones:              map[string]string{"AKDT": "Alaska Yaz Saati", "AEDT": "Doğu Avustralya Yaz Saati", "WIB": "Batı Endonezya Saati", "MESZ": "Orta Avrupa Yaz Saati", "CLST": "Şili Yaz Saati", "EST": "Kuzey Amerika Doğu Standart Saati", "HKST": "Hong Kong Yaz Saati", "HAT": "Newfoundland Yaz Saati", "VET": "Venezuela Saati", "TMT": "Türkmenistan Standart Saati", "WAT": "Batı Afrika Standart Saati", "HNT": "Newfoundland Standart Saati", "HNPMX": "Meksika Pasifik Kıyısı Standart Saati", "HECU": "Küba Yaz Saati", "CHAST": "Chatham Standart Saati", "SGT": "Singapur Standart Saati", "OESZ": "Doğu Avrupa Yaz Saati", "GMT": "Greenwich Ortalama Saati", "HNPM": "Saint Pierre ve Miquelon Standart Saati", "CLT": "Şili Standart Saati", "HKT": "Hong Kong Standart Saati", "AWDT": "Batı Avustralya Yaz Saati", "ACWDT": "İçbatı Avustralya Yaz Saati", "MEZ": "Orta Avrupa Standart Saati", "WEZ": "Batı Avrupa Standart Saati", "WESZ": "Batı Avrupa Yaz Saati", "MYT": "Malezya Saati", "WAST": "Batı Afrika Yaz Saati", "WITA": "Orta Endonezya Saati", "CAT": "Orta Afrika Saati", "IST": "Hindistan Standart Saati", "OEZ": "Doğu Avrupa Standart Saati", "WART": "Batı Arjantin Standart Saati", "HNOG": "Batı Grönland Standart Saati", "TMST": "Türkmenistan Yaz Saati", "HEPM": "Saint Pierre ve Miquelon Yaz Saati", "HEEG": "Doğu Grönland Yaz Saati", "LHST": "Lord Howe Standart Saati", "EAT": "Doğu Afrika Saati", "WIT": "Doğu Endonezya Saati", "∅∅∅": "Brasilia Yaz Saati", "NZST": "Yeni Zelanda Standart Saati", "WARST": "Batı Arjantin Yaz Saati", "HEOG": "Batı Grönland Yaz Saati", "HEPMX": "Meksika Pasifik Kıyısı Yaz Saati", "CST": "Kuzey Amerika Merkezi Standart Saati", "AWST": "Batı Avustralya Standart Saati", "ADT": "Atlantik Yaz Saati", "EDT": "Kuzey Amerika Doğu Yaz Saati", "COST": "Kolombiya Yaz Saati", "UYT": "Uruguay Standart Saati", "HNCU": "Küba Standart Saati", "CDT": "Kuzey Amerika Merkezi Yaz Saati", "COT": "Kolombiya Standart Saati", "AEST": "Doğu Avustralya Standart Saati", "ACWST": "İçbatı Avustralya Standart Saati", "AST": "Atlantik Standart Saati", "ART": "Arjantin Standart Saati", "GFT": "Fransız Guyanası Saati", "GYT": "Guyana Saati", "ECT": "Ekvador Saati", "NZDT": "Yeni Zelanda Yaz Saati", "BT": "Bhutan Saati", "MST": "Makao Standart Saati", "ARST": "Arjantin Yaz Saati", "ACDT": "Orta Avustralya Yaz Saati", "JDT": "Japonya Yaz Saati", "HENOMX": "Kuzeybatı Meksika Yaz Saati", "HNEG": "Doğu Grönland Standart Saati", "CHADT": "Chatham Yaz Saati", "BOT": "Bolivya Saati", "PST": "Kuzey Amerika Pasifik Standart Saati", "PDT": "Kuzey Amerika Pasifik Yaz Saati", "HAST": "Hawaii-Aleut Standart Saati", "ACST": "Orta Avustralya Standart Saati", "UYST": "Uruguay Yaz Saati", "HADT": "Hawaii-Aleut Yaz Saati", "MDT": "Makao Yaz Saati", "ChST": "Chamorro Saati", "SAST": "Güney Afrika Standart Saati", "SRT": "Surinam Saati", "JST": "Japonya Standart Saati", "HNNOMX": "Kuzeybatı Meksika Standart Saati", "AKST": "Alaska Standart Saati", "LHDT": "Lord Howe Yaz Saati"},
+		timezones:              map[string]string{"AKST": "Alaska Standart Saati", "GMT": "Greenwich Ortalama Saati", "AWST": "Batı Avustralya Standart Saati", "ACST": "Orta Avustralya Standart Saati", "MST": "Makao Standart Saati", "ACWDT": "İçbatı Avustralya Yaz Saati", "AEDT": "Doğu Avustralya Yaz Saati", "ARST": "Arjantin Yaz Saati", "HEOG": "Batı Grönland Yaz Saati", "HNT": "Newfoundland Standart Saati", "SAST": "Güney Afrika Standart Saati", "HNEG": "Doğu Grönland Standart Saati", "CLST": "Şili Yaz Saati", "WESZ": "Batı Avrupa Yaz Saati", "CDT": "Kuzey Amerika Merkezi Yaz Saati", "VET": "Venezuela Saati", "EAT": "Doğu Afrika Saati", "CHAST": "Chatham Standart Saati", "CHADT": "Chatham Yaz Saati", "MDT": "Makao Yaz Saati", "WEZ": "Batı Avrupa Standart Saati", "CST": "Kuzey Amerika Merkezi Standart Saati", "OESZ": "Doğu Avrupa Yaz Saati", "ADT": "Atlantik Yaz Saati", "COT": "Kolombiya Standart Saati", "TMST": "Türkmenistan Yaz Saati", "WART": "Batı Arjantin Standart Saati", "BOT": "Bolivya Saati", "HAST": "Hawaii-Aleut Standart Saati", "OEZ": "Doğu Avrupa Standart Saati", "EST": "Kuzey Amerika Doğu Standart Saati", "ECT": "Ekvador Saati", "CAT": "Orta Afrika Saati", "HEPMX": "Meksika Pasifik Kıyısı Yaz Saati", "ACDT": "Orta Avustralya Yaz Saati", "BT": "Bhutan Saati", "AWDT": "Batı Avustralya Yaz Saati", "LHST": "Lord Howe Standart Saati", "HKST": "Hong Kong Yaz Saati", "CLT": "Şili Standart Saati", "GYT": "Guyana Saati", "EDT": "Kuzey Amerika Doğu Yaz Saati", "WARST": "Batı Arjantin Yaz Saati", "JDT": "Japonya Yaz Saati", "AEST": "Doğu Avustralya Standart Saati", "ART": "Arjantin Standart Saati", "NZDT": "Yeni Zelanda Yaz Saati", "TMT": "Türkmenistan Standart Saati", "UYT": "Uruguay Standart Saati", "ACWST": "İçbatı Avustralya Standart Saati", "JST": "Japonya Standart Saati", "∅∅∅": "Amazon Yaz Saati", "AKDT": "Alaska Yaz Saati", "WIB": "Batı Endonezya Saati", "HNPM": "Saint Pierre ve Miquelon Standart Saati", "WAT": "Batı Afrika Standart Saati", "ChST": "Chamorro Saati", "HENOMX": "Kuzeybatı Meksika Yaz Saati", "WITA": "Orta Endonezya Saati", "MYT": "Malezya Saati", "HADT": "Hawaii-Aleut Yaz Saati", "HNOG": "Batı Grönland Standart Saati", "HECU": "Küba Yaz Saati", "PST": "Kuzey Amerika Pasifik Standart Saati", "SRT": "Surinam Saati", "WIT": "Doğu Endonezya Saati", "NZST": "Yeni Zelanda Standart Saati", "IST": "Hindistan Standart Saati", "AST": "Atlantik Standart Saati", "HEEG": "Doğu Grönland Yaz Saati", "HKT": "Hong Kong Standart Saati", "COST": "Kolombiya Yaz Saati", "UYST": "Uruguay Yaz Saati", "MEZ": "Orta Avrupa Standart Saati", "HNNOMX": "Kuzeybatı Meksika Standart Saati", "PDT": "Kuzey Amerika Pasifik Yaz Saati", "HAT": "Newfoundland Yaz Saati", "HNPMX": "Meksika Pasifik Kıyısı Standart Saati", "HNCU": "Küba Standart Saati", "HEPM": "Saint Pierre ve Miquelon Yaz Saati", "LHDT": "Lord Howe Yaz Saati", "WAST": "Batı Afrika Yaz Saati", "GFT": "Fransız Guyanası Saati", "SGT": "Singapur Standart Saati", "MESZ": "Orta Avrupa Yaz Saati"},
 	}
 }
 
@@ -196,6 +196,21 @@ func (tr *tr_TR) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (tr *tr_TR) WeekdaysWide() []string {
 	return tr.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (tr *tr_TR) Decimal() string {
+	return tr.decimal
+}
+
+// Group returns the group of number
+func (tr *tr_TR) Group() string {
+	return tr.group
+}
+
+// Group returns the minus sign of number
+func (tr *tr_TR) Minus() string {
+	return tr.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'tr_TR' and handles both Whole and Real numbers based on 'v'
@@ -429,7 +444,7 @@ func (tr *tr_TR) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -448,7 +463,7 @@ func (tr *tr_TR) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -467,7 +482,7 @@ func (tr *tr_TR) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -486,7 +501,7 @@ func (tr *tr_TR) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x20}...)

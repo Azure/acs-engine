@@ -67,7 +67,7 @@ func New() locales.Translator {
 		erasAbbreviated:    []string{"公元前", "公元"},
 		erasNarrow:         []string{"公元前", "公元"},
 		erasWide:           []string{"公元前", "公元"},
-		timezones:          map[string]string{"ACDT": "澳大利亚中部夏令时间", "AEDT": "澳大利亚东部夏令时间", "SRT": "苏里南时间", "PST": "北美太平洋标准时间", "ACWST": "澳大利亚中西部标准时间", "AST": "大西洋标准时间", "ART": "阿根廷标准时间", "HNT": "纽芬兰标准时间", "AEST": "澳大利亚东部标准时间", "GYT": "圭亚那时间", "CHADT": "查坦夏令时间", "JST": "日本标准时间", "GMT": "格林尼治标准时间", "WAT": "西部非洲标准时间", "EST": "北美东部标准时间", "HEPM": "圣皮埃尔和密克隆群岛夏令时间", "CDT": "北美中部夏令时间", "BOT": "玻利维亚标准时间", "OESZ": "东欧夏令时间", "HNNOMX": "墨西哥西北部标准时间", "MDT": "北美山区夏令时间", "CST": "北美中部标准时间", "HAST": "夏威夷-阿留申标准时间", "HNCU": "古巴标准时间", "MESZ": "中欧夏令时间", "WEZ": "西欧标准时间", "MEZ": "中欧标准时间", "WART": "阿根廷西部标准时间", "ARST": "阿根廷夏令时间", "HEEG": "格陵兰岛东部夏令时间", "AKDT": "阿拉斯加夏令时间", "MST": "北美山区标准时间", "CHAST": "查坦标准时间", "PDT": "北美太平洋夏令时间", "ACWDT": "澳大利亚中西部夏令时间", "HNOG": "格陵兰岛西部标准时间", "OEZ": "东欧标准时间", "WESZ": "西欧夏令时间", "AKST": "阿拉斯加标准时间", "LHST": "豪勋爵岛标准时间", "HNPMX": "墨西哥太平洋标准时间", "EDT": "北美东部夏令时间", "COT": "哥伦比亚标准时间", "HENOMX": "墨西哥西北部夏令时间", "ACST": "澳大利亚中部标准时间", "CAT": "中部非洲时间", "CLST": "智利夏令时间", "HKST": "香港夏令时间", "HEOG": "格陵兰岛西部夏令时间", "TMT": "土库曼斯坦标准时间", "HNEG": "格陵兰岛东部标准时间", "∅∅∅": "亚速尔群岛夏令时间", "HADT": "夏威夷-阿留申夏令时间", "NZDT": "新西兰夏令时间", "ECT": "厄瓜多尔标准时间", "NZST": "新西兰标准时间", "ADT": "大西洋夏令时间", "HAT": "纽芬兰夏令时间", "WITA": "印度尼西亚中部时间", "WIB": "印度尼西亚西部时间", "AWST": "澳大利亚西部标准时间", "MYT": "马来西亚时间", "COST": "哥伦比亚夏令时间", "HECU": "古巴夏令时间", "WIT": "印度尼西亚东部时间", "JDT": "日本夏令时间", "IST": "印度时间", "VET": "委内瑞拉时间", "WARST": "阿根廷西部夏令时间", "CLT": "智利标准时间", "UYT": "乌拉圭标准时间", "HEPMX": "墨西哥太平洋夏令时间", "AWDT": "澳大利亚西部夏令时间", "TMST": "土库曼斯坦夏令时间", "WAST": "西部非洲夏令时间", "BT": "不丹时间", "GFT": "法属圭亚那标准时间", "SAST": "南部非洲时间", "EAT": "东部非洲时间", "UYST": "乌拉圭夏令时间", "LHDT": "豪勋爵岛夏令时间", "SGT": "新加坡标准时间", "ChST": "查莫罗时间", "HNPM": "圣皮埃尔和密克隆群岛标准时间", "HKT": "香港标准时间"},
+		timezones:          map[string]string{"UYT": "乌拉圭标准时间", "TMT": "土库曼斯坦标准时间", "HNNOMX": "墨西哥西北部标准时间", "WIB": "印度尼西亚西部时间", "CDT": "北美中部夏令时间", "AWST": "澳大利亚西部标准时间", "WIT": "印度尼西亚东部时间", "AEST": "澳大利亚东部标准时间", "ECT": "厄瓜多尔标准时间", "MST": "澳门标准时间", "MESZ": "中欧夏令时间", "HAST": "夏威夷-阿留申标准时间", "JST": "日本标准时间", "IST": "印度时间", "ARST": "阿根廷夏令时间", "WAST": "西部非洲夏令时间", "HEEG": "格陵兰岛东部夏令时间", "CHAST": "查坦标准时间", "WESZ": "西欧夏令时间", "NZST": "新西兰标准时间", "OEZ": "东欧标准时间", "PDT": "北美太平洋夏令时间", "LHDT": "豪勋爵岛夏令时间", "HENOMX": "墨西哥西北部夏令时间", "HEOG": "格陵兰岛西部夏令时间", "HNEG": "格陵兰岛东部标准时间", "COT": "哥伦比亚标准时间", "HNPMX": "墨西哥太平洋标准时间", "AWDT": "澳大利亚西部夏令时间", "HNPM": "圣皮埃尔和密克隆群岛标准时间", "BT": "不丹时间", "CST": "北美中部标准时间", "ACWST": "澳大利亚中西部标准时间", "WARST": "阿根廷西部夏令时间", "ADT": "大西洋夏令时间", "HNOG": "格陵兰岛西部标准时间", "HECU": "古巴夏令时间", "HKST": "香港夏令时间", "COST": "哥伦比亚夏令时间", "CAT": "中部非洲时间", "HNT": "纽芬兰标准时间", "AEDT": "澳大利亚东部夏令时间", "AKST": "阿拉斯加标准时间", "CHADT": "查坦夏令时间", "WAT": "西部非洲标准时间", "CLT": "智利标准时间", "ACST": "澳大利亚中部标准时间", "HADT": "夏威夷-阿留申夏令时间", "EST": "北美东部标准时间", "VET": "委内瑞拉时间", "NZDT": "新西兰夏令时间", "UYST": "乌拉圭夏令时间", "∅∅∅": "巴西利亚夏令时间", "BOT": "玻利维亚标准时间", "SRT": "苏里南时间", "MYT": "马来西亚时间", "TMST": "土库曼斯坦夏令时间", "OESZ": "东欧夏令时间", "LHST": "豪勋爵岛标准时间", "HEPM": "圣皮埃尔和密克隆群岛夏令时间", "GFT": "法属圭亚那标准时间", "EDT": "北美东部夏令时间", "ChST": "查莫罗时间", "SAST": "南部非洲时间", "CLST": "智利夏令时间", "WEZ": "西欧标准时间", "SGT": "新加坡标准时间", "HEPMX": "墨西哥太平洋夏令时间", "ACWDT": "澳大利亚中西部夏令时间", "MDT": "澳门夏令时间", "WART": "阿根廷西部标准时间", "ART": "阿根廷标准时间", "EAT": "东部非洲时间", "HNCU": "古巴标准时间", "HAT": "纽芬兰夏令时间", "AST": "大西洋标准时间", "JDT": "日本夏令时间", "PST": "北美太平洋标准时间", "WITA": "印度尼西亚中部时间", "HKT": "香港标准时间", "GYT": "圭亚那时间", "AKDT": "阿拉斯加夏令时间", "ACDT": "澳大利亚中部夏令时间", "GMT": "格林尼治标准时间", "MEZ": "中欧标准时间"},
 	}
 }
 
@@ -174,6 +174,21 @@ func (zh *zh_Hans_CN) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (zh *zh_Hans_CN) WeekdaysWide() []string {
 	return zh.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (zh *zh_Hans_CN) Decimal() string {
+	return zh.decimal
+}
+
+// Group returns the group of number
+func (zh *zh_Hans_CN) Group() string {
+	return zh.group
+}
+
+// Group returns the minus sign of number
+func (zh *zh_Hans_CN) Minus() string {
+	return zh.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'zh_Hans_CN' and handles both Whole and Real numbers based on 'v'
@@ -379,7 +394,7 @@ func (zh *zh_Hans_CN) FmtDateShort(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0x2f}...)
@@ -398,7 +413,7 @@ func (zh *zh_Hans_CN) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0xe5, 0xb9, 0xb4}...)
@@ -418,7 +433,7 @@ func (zh *zh_Hans_CN) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0xe5, 0xb9, 0xb4}...)
@@ -438,7 +453,7 @@ func (zh *zh_Hans_CN) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	b = append(b, []byte{0xe5, 0xb9, 0xb4}...)

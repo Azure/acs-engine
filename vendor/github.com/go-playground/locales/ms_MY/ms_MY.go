@@ -71,7 +71,7 @@ func New() locales.Translator {
 		erasAbbreviated:        []string{"S.M.", "TM"},
 		erasNarrow:             []string{"", ""},
 		erasWide:               []string{"S.M.", "TM"},
-		timezones:              map[string]string{"ARST": "Waktu Musim Panas Argentina", "HNNOMX": "Waktu Piawai Barat Laut Mexico", "HEEG": "Waktu Musim Panas Greenland Timur", "CDT": "Waktu Siang Tengah", "AWST": "Waktu Piawai Australia Barat", "AWDT": "Waktu Siang Australia Barat", "ECT": "Waktu Ecuador", "ACWST": "Waktu Piawai Barat Tengah Australia", "ACWDT": "Waktu Siang Barat Tengah Australia", "OEZ": "Waktu Piawai Eropah Timur", "HNT": "Waktu Piawai Newfoundland", "LHDT": "Waktu Siang Lord Howe", "EAT": "Waktu Afrika Timur", "HADT": "Waktu Siang Hawaii-Aleutian", "MDT": "Waktu Hari Siang Pergunungan", "HNPMX": "Waktu Piawai Pasifik Mexico", "HECU": "Waktu Siang Cuba", "PDT": "Waktu Siang Pasifik", "IST": "Waktu Piawai India", "VET": "Waktu Venezuela", "GMT": "Waktu Min Greenwich", "COT": "Waktu Piawai Colombia", "∅∅∅": "Waktu Musim Panas Azores", "BT": "Waktu Bhutan", "MESZ": "Waktu Musim Panas Eropah Tengah", "MYT": "Waktu Malaysia", "HKST": "Waktu Musim Panas Hong Kong", "NZST": "Waktu Piawai New Zealand", "WIT": "Waktu Indonesia Timur", "BOT": "Waktu Bolivia", "JST": "Waktu Piawai Jepun", "HENOMX": "Waktu Siang Barat Laut Mexico", "SRT": "Waktu Suriname", "SAST": "Waktu Piawai Afrika Selatan", "CHAST": "Waktu Piawai Chatham", "PST": "Waktu Piawai Pasifik", "WEZ": "Waktu Piawai Eropah Barat", "TMT": "Waktu Piawai Turkmenistan", "ACST": "Waktu Piawai Australia Tengah", "AKST": "Waktu Piawai Alaska", "CLT": "Waktu Piawai Chile", "HNOG": "Waktu Piawai Greenland Barat", "WARST": "Waktu Musim Panas Argentina Barat", "WAST": "Waktu Musim Panas Afrika Barat", "EDT": "Waktu Siang Timur", "NZDT": "Waktu Siang New Zealand", "HNCU": "Waktu Piawai Cuba", "HAST": "Waktu Piawai Hawaii-Aleutian", "WESZ": "Waktu Musim Panas Eropah Barat", "WAT": "Waktu Piawai Afrika Barat", "UYT": "Waktu Piawai Uruguay", "AEST": "Waktu Piawai Timur Australia", "UYST": "Waktu Musim Panas Uruguay", "LHST": "Waktu Piawai Lord Howe", "CHADT": "Waktu Siang Chatham", "HKT": "Waktu Piawai Hong Kong", "HNEG": "Waktu Piawai Greenland Timur", "WITA": "Waktu Indonesia Tengah", "AEDT": "Waktu Siang Australia Timur", "HEPM": "Waktu Siang Saint Pierre dan Miquelon", "CST": "Waktu Piawai Pusat", "HEOG": "Waktu Musim Panas Greenland Barat", "ART": "Waktu Piawai Argentina", "ACDT": "Waktu Siang Australia Tengah", "HAT": "Waktu Siang Newfoundland", "AKDT": "Waktu Siang Alaska", "CLST": "Waktu Musim Panas Chile", "EST": "Waktu Piawai Timur", "CAT": "Waktu Afrika Tengah", "ChST": "Waktu Piawai Chamorro", "HNPM": "Waktu Piawai Saint Pierre dan Miquelon", "GYT": "Waktu Guyana", "WIB": "Waktu Indonesia Barat", "MEZ": "Waktu Piawai Eropah Tengah", "JDT": "Waktu Siang Jepun", "COST": "Waktu Musim Panas Colombia", "MST": "Waktu Piawai Pergunungan", "HEPMX": "Waktu Siang Pasifik Mexico", "SGT": "Waktu Piawai Singapura", "WART": "Waktu Piawai Argentina Barat", "AST": "Waktu Piawai Atlantik", "ADT": "Waktu Siang Atlantik", "OESZ": "Waktu Musim Panas Eropah Timur", "TMST": "Waktu Musim Panas Turkmenistan", "GFT": "Waktu Guyana Perancis"},
+		timezones:              map[string]string{"HNCU": "Waktu Piawai Cuba", "BOT": "Waktu Bolivia", "HNOG": "Waktu Piawai Greenland Barat", "HNT": "Waktu Piawai Newfoundland", "PST": "Waktu Piawai Pasifik", "HNPM": "Waktu Piawai Saint Pierre dan Miquelon", "ART": "Waktu Piawai Argentina", "ACST": "Waktu Piawai Australia Tengah", "WEZ": "Waktu Piawai Eropah Barat", "LHST": "Waktu Piawai Lord Howe", "LHDT": "Waktu Siang Lord Howe", "WAT": "Waktu Piawai Afrika Barat", "CAT": "Waktu Afrika Tengah", "MYT": "Waktu Malaysia", "OEZ": "Waktu Piawai Eropah Timur", "IST": "Waktu Piawai India", "AKST": "Waktu Piawai Alaska", "CST": "Waktu Piawai Pusat", "HEEG": "Waktu Musim Panas Greenland Timur", "GMT": "Waktu Min Greenwich", "BT": "Waktu Bhutan", "SGT": "Waktu Piawai Singapura", "HEPM": "Waktu Siang Saint Pierre dan Miquelon", "TMT": "Waktu Piawai Turkmenistan", "JST": "Waktu Piawai Jepun", "CLT": "Waktu Piawai Chile", "EDT": "Waktu Siang Timur", "ARST": "Waktu Musim Panas Argentina", "CHADT": "Waktu Siang Chatham", "CDT": "Waktu Siang Tengah", "ACDT": "Waktu Siang Australia Tengah", "MEZ": "Waktu Piawai Eropah Tengah", "OESZ": "Waktu Musim Panas Eropah Timur", "WART": "Waktu Piawai Argentina Barat", "HKT": "Waktu Piawai Hong Kong", "AKDT": "Waktu Siang Alaska", "MST": "MST", "AWST": "Waktu Piawai Australia Barat", "ACWDT": "Waktu Siang Barat Tengah Australia", "WARST": "Waktu Musim Panas Argentina Barat", "AST": "Waktu Piawai Atlantik", "WESZ": "Waktu Musim Panas Eropah Barat", "HNPMX": "Waktu Piawai Pasifik Mexico", "HENOMX": "Waktu Siang Barat Laut Mexico", "VET": "Waktu Venezuela", "EAT": "Waktu Afrika Timur", "COST": "Waktu Musim Panas Colombia", "ACWST": "Waktu Piawai Barat Tengah Australia", "NZDT": "Waktu Siang New Zealand", "HNNOMX": "Waktu Piawai Barat Laut Mexico", "ADT": "Waktu Siang Atlantik", "SAST": "Waktu Piawai Afrika Selatan", "GYT": "Waktu Guyana", "UYT": "Waktu Piawai Uruguay", "HEPMX": "Waktu Siang Pasifik Mexico", "PDT": "Waktu Siang Pasifik", "HADT": "Waktu Siang Hawaii-Aleutian", "HAT": "Waktu Siang Newfoundland", "EST": "Waktu Piawai Timur", "TMST": "Waktu Musim Panas Turkmenistan", "WITA": "Waktu Indonesia Tengah", "COT": "Waktu Piawai Colombia", "MDT": "MDT", "∅∅∅": "Waktu Musim Panas Amazon", "WIB": "Waktu Indonesia Barat", "MESZ": "Waktu Musim Panas Eropah Tengah", "NZST": "Waktu Piawai New Zealand", "AEDT": "Waktu Siang Australia Timur", "WAST": "Waktu Musim Panas Afrika Barat", "CLST": "Waktu Musim Panas Chile", "ECT": "Waktu Ecuador", "ChST": "Waktu Piawai Chamorro", "SRT": "Waktu Suriname", "WIT": "Waktu Indonesia Timur", "HAST": "Waktu Piawai Hawaii-Aleutian", "HKST": "Waktu Musim Panas Hong Kong", "GFT": "Waktu Guyana Perancis", "AWDT": "Waktu Siang Australia Barat", "UYST": "Waktu Musim Panas Uruguay", "JDT": "Waktu Siang Jepun", "AEST": "Waktu Piawai Timur Australia", "HEOG": "Waktu Musim Panas Greenland Barat", "HNEG": "Waktu Piawai Greenland Timur", "CHAST": "Waktu Piawai Chatham", "HECU": "Waktu Siang Cuba"},
 	}
 }
 
@@ -185,6 +185,21 @@ func (ms *ms_MY) WeekdayWide(weekday time.Weekday) string {
 // WeekdaysWide returns the locales wide weekdays
 func (ms *ms_MY) WeekdaysWide() []string {
 	return ms.daysWide
+}
+
+// Decimal returns the decimal point of number
+func (ms *ms_MY) Decimal() string {
+	return ms.decimal
+}
+
+// Group returns the group of number
+func (ms *ms_MY) Group() string {
+	return ms.group
+}
+
+// Group returns the minus sign of number
+func (ms *ms_MY) Minus() string {
+	return ms.minus
 }
 
 // FmtNumber returns 'num' with digits/precision of 'v' for 'ms_MY' and handles both Whole and Real numbers based on 'v'
@@ -424,7 +439,7 @@ func (ms *ms_MY) FmtDateMedium(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -443,7 +458,7 @@ func (ms *ms_MY) FmtDateLong(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
@@ -464,7 +479,7 @@ func (ms *ms_MY) FmtDateFull(t time.Time) string {
 	if t.Year() > 0 {
 		b = strconv.AppendInt(b, int64(t.Year()), 10)
 	} else {
-		b = strconv.AppendInt(b, int64(t.Year()*-1), 10)
+		b = strconv.AppendInt(b, int64(-t.Year()), 10)
 	}
 
 	return string(b)
