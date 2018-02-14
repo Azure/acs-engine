@@ -1,14 +1,6 @@
 {
   "deployments": [
     {
-      "cluster_definition": "windows/kubernetes-hybrid.json",
-      "category": "windows"
-    },
-    {
-      "cluster_definition": "windows/kubernetes.json",
-      "category": "windows"
-    },
-    {
       "cluster_definition": "dcos-releases/dcos1.9.json",
       "category": "version"
     },
@@ -18,14 +10,6 @@
     },
     {
       "cluster_definition": "disks-managed/dcos-vmss.json",
-      "category": "managed-disk"
-    },
-    {
-      "cluster_definition": "disks-managed/kubernetes-preAttachedDisks-vmas.json",
-      "category": "managed-disk"
-    },
-    {
-      "cluster_definition": "disks-managed/kubernetes-vmas.json",
       "category": "managed-disk"
     },
     {
@@ -45,10 +29,6 @@
       "category": "managed-disk"
     },
     {
-      "cluster_definition": "disks-storageaccount/kubernetes.json",
-      "category": "sa-disk"
-    },
-    {
       "cluster_definition": "disks-storageaccount/swarmmode.json",
       "category": "sa-disk"
     },
@@ -58,36 +38,8 @@
       "location": "westus"
     },
     {
-      "cluster_definition": "kubernetes-releases/kubernetes1.8.json",
-      "category": "version"
-    },
-    {
       "cluster_definition": "networkpolicy/kubernetes-calico.json",
       "category": "network"
-    },
-    {
-      "cluster_definition": "networkpolicy/kubernetes-azure.json",
-      "category": "network"
-    },
-    {
-      "cluster_definition": "kubernetes-config/kubernetes-clustersubnet.json",
-      "category": "network"
-    },
-    {
-      "cluster_definition": "kubernetes-config/kubernetes-no-dashboard.json",
-      "category": "config"
-    },
-    {
-      "cluster_definition": "kubernetes-config/kubernetes-rescheduler.json",
-      "category": "config"
-    },
-    {
-      "cluster_definition": "multiple-masters/kubernetes-3-masters.json",
-      "category": "multimaster"
-    },
-    {
-      "cluster_definition": "multiple-masters/kubernetes-5-masters.json",
-      "category": "multimaster"
     },
     {
       "cluster_definition": "v20170131/swarmmode.json",
@@ -95,10 +47,6 @@
     },
     {
       "cluster_definition": "vnet/dcosvnet.json",
-      "category": "network"
-    },
-    {
-      "cluster_definition": "vnet/kubernetesvnet-azure-cni.json",
       "category": "network"
     },
     {
