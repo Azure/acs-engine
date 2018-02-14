@@ -19,7 +19,7 @@ If `alpha.kubernetes.io/nvidia-gpu` is `0` and you just created the cluster, you
 When running a GPU container, you will need to specify how many GPU you want to use. If you don't specify a GPU count, kubernetes will asumme you don't require any, and will not map the device into the container.
 You will also need to mount the drivers from the host (the kubernetes agent) into the container.
 
-On the host, the drivers are installed under `/usr/lib/nvidia-384`.
+On the host, the drivers are installed under `/usr/local/nvidia`.
 
 Here is an example template running TensorFlow: 
 
@@ -45,27 +45,13 @@ spec:
           limits:
             alpha.kubernetes.io/nvidia-gpu: 1
         volumeMounts:
-        - mountPath: /usr/local/nvidia/bin
-          name: bin
-        - mountPath: /usr/local/nvidia/lib64
-          name: lib
-        - mountPath: /usr/lib/x86_64-linux-gnu/libcuda.so.1
-          name: libcuda
+        - name: nvidia
+          mountPath: /usr/local/nvidia
       volumes:
-        - name: bin
+        - name: nvidia
           hostPath: 
-            path: /usr/lib/nvidia-384/bin
-        - name: lib
-          hostPath: 
-            path: /usr/lib/nvidia-384
-        - name: libcuda
-          hostPath:
-            path: /usr/lib/x86_64-linux-gnu/libcuda.so.1
+            path: /usr/local/nvidia
 ```
 
 We specify `alpha.kubernetes.io/nvidia-gpu: 1` in the resources limits, and we mount the drivers from the host into the container.
-
-Some libraries, such as `libcuda.so` are installed under `/usr/lib/x86_64-linux-gnu` on the host, you might need to mount them separatly as shown above based on your needs.
-
-
 
