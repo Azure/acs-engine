@@ -30,7 +30,7 @@ type Connection struct {
 func NewConnection(host, port, user, keyPath string) (*Connection, error) {
 	conn, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK"))
 	if err != nil {
-		log.Println("unable to establish net connection, probably due to $SSH_AUTH_SOCK not being set")
+		log.Printf("unable to establish net connection $SSH_AUTH_SOCK has value %s\n", os.Getenv("SSH_AUTH_SOCK"))
 		return nil, err
 	}
 	defer conn.Close()
