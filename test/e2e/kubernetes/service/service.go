@@ -136,6 +136,7 @@ func (s *Service) Validate(check string, attempts int, sleep time.Duration) bool
 			if matched == true {
 				return true
 			}
+			log.Printf("Got unexpected URL body, expected to find %s, got:\n%s\n", check, string(body))
 		}
 		time.Sleep(sleep)
 	}

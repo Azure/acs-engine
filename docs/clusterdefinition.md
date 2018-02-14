@@ -161,6 +161,7 @@ Below is a list of kubelet options that acs-engine will configure by default:
 |---|---|
 |"--cloud-config"|"/etc/kubernetes/azure.json"|
 |"--cloud-provider"|"azure"|
+|"--cluster-domain"|"cluster.local"|
 |"--pod-infra-container-image"|"pause-amd64:<version>"|
 |"--max-pods"|"110"|
 |"--eviction-hard"|"memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%"|
@@ -178,7 +179,6 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 |"--azure-container-registry-config"|"/etc/kubernetes/azure.json"|
 |"--allow-privileged"|"true"|
 |"--pod-manifest-path"|"/etc/kubernetes/manifests"|
-|"--cluster-domain"|"cluster.local"|
 |"--network-plugin"|"cni"|
 |"--node-labels"|(based on Azure node metadata)|
 |"--cgroups-per-qos"|"false"|

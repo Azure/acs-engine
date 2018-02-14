@@ -125,23 +125,20 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have tiller running", func() {
-			if eng.HasTiller() {
+			if hasTiller, tillerAddon := eng.HasTiller(); hasTiller {
 				running, err := pod.WaitOnReady("tiller", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
-			} else {
-				Skip("tiller disabled for this cluster, will not test")
-			}
-		})
-
-		It("should have a tiller max-history of 5", func() {
-			if eng.HasTiller() {
-				pods, err := pod.GetAllByPrefix("tiller-deploy", "kube-system")
-				Expect(err).NotTo(HaveOccurred())
-				// There is only one tiller pod and one container in that pod.
-				actualTillerMaxHistory, err := pods[0].Spec.Containers[0].GetEnvironmentVariable("TILLER_HISTORY_MAX")
-				Expect(err).NotTo(HaveOccurred())
-				Expect(actualTillerMaxHistory).To(Equal("5"))
+				if tillerAddon.Config != nil {
+					By("Ensuring that the correct max-history has been applied")
+					maxHistory := tillerAddon.Config["max-history"]
+					pods, err := pod.GetAllByPrefix("tiller-deploy", "kube-system")
+					Expect(err).NotTo(HaveOccurred())
+					// There is only one tiller pod and one container in that pod.
+					actualTillerMaxHistory, err := pods[0].Spec.Containers[0].GetEnvironmentVariable("TILLER_HISTORY_MAX")
+					Expect(err).NotTo(HaveOccurred())
+					Expect(actualTillerMaxHistory).To(Equal(maxHistory))
+				}
 			} else {
 				Skip("tiller disabled for this cluster, will not test")
 			}
