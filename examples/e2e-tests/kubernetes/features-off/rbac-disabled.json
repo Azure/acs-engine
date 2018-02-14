@@ -4,7 +4,7 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
-        "enableRbac":"false"
+        "enableRbac": false
       }
     },
     "masterProfile": {
