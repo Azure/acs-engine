@@ -4,11 +4,11 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
-        "networkPolicy":"none"
+        "enableRbac":"false"
       }
     },
     "masterProfile": {
-      "count": 5,
+      "count": 1,
       "dnsPrefix": "",
       "vmSize": "Standard_D2_v2"
     },
