@@ -12,6 +12,10 @@
             "config": {
               "max-history": "5"
             }
+          },
+          {
+            "name": "rescheduler",
+            "enabled" : true
           }
         ]
       }
