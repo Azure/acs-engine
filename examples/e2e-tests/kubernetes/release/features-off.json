@@ -37,7 +37,7 @@
           "--cloud-provider": "",
           "--leader-elect": "false",
           "--profiling": "false",
-          "--use-service-account-credentials": "false",
+          "--use-service-account-credentials": "false"
         },
         "cloudControllerManagerConfig": {
           "--allocate-node-cidrs": "false",
@@ -58,9 +58,7 @@
     "masterProfile": {
       "count": 5,
       "dnsPrefix": "cerobert0212-v12",
-      "vmSize": "Standard_D2_v2",
-      "availabilityProfile": "AvailabilitySet",
-      "storageProfile": "StorageAccount"
+      "vmSize": "Standard_D2_v2"
     },
     "agentPoolProfiles": [
       {
