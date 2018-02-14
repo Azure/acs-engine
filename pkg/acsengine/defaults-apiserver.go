@@ -42,7 +42,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	}
 
 	// Aggregated API configuration
-	if o.KubernetesConfig.EnableAggregatedAPIs {
+	if o.KubernetesConfig.EnableAggregatedAPIs || isKubernetesVersionGe(o.OrchestratorVersion, "1.9.0") {
 		staticLinuxAPIServerConfig["--requestheader-client-ca-file"] = "/etc/kubernetes/certs/proxy-ca.crt"
 		staticLinuxAPIServerConfig["--proxy-client-cert-file"] = "/etc/kubernetes/certs/proxy.crt"
 		staticLinuxAPIServerConfig["--proxy-client-key-file"] = "/etc/kubernetes/certs/proxy.key"

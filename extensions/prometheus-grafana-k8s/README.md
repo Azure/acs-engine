@@ -54,7 +54,7 @@ This is the prometheus-grafana extension.  Add this extension to the api model y
 ```
 
 
-The following script will be executed on the master:
+The following script will be executed on the agent nodes:
 
 ```
 $ prometheus-grafana-k8s.sh
@@ -86,14 +86,14 @@ $ kubectl port-forward $GF_POD_NAME 3000:3000 &
 |---|---|---|
 |name|yes|prometheus-grafana-k8s|
 |version|yes|v1|
-|extensionParameters|no||
+|extensionParameters|no|see below|
 |rootURL|optional||
 
-_Note_: specify a string for `extensionParameters` for a non-default namespace in the Kubernetes cluster
+_Note_: the format for `extensionParameters` is the following: `"<namespace>;<prometheus_values_config_url>"`. Each of these placeholders are optional (as is the entire `extensionParameters` itself)
 
 # Example
 ``` javascript
-{ "name": "prometheus-grafana-k8s", "version": "v1", "extensionParameters": "monitoring" }
+{ "name": "prometheus-grafana-k8s", "version": "v1", "extensionParameters": "monitoring;" }
 ```
 
 # Supported Orchestrators
