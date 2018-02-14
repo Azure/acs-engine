@@ -17,7 +17,6 @@ func setKubeletConfig(cs *api.ContainerService) {
 		"--authorization-mode":              "Webhook",
 		"--client-ca-file":                  "/etc/kubernetes/certs/ca.crt",
 		"--pod-manifest-path":               "/etc/kubernetes/manifests",
-		"--cluster-domain":                  "cluster.local",
 		"--cluster-dns":                     o.KubernetesConfig.DNSServiceIP,
 		"--cgroups-per-qos":                 "false",
 		"--enforce-node-allocatable":        "",
@@ -33,6 +32,7 @@ func setKubeletConfig(cs *api.ContainerService) {
 
 	// Default Kubelet config
 	defaultKubeletConfig := map[string]string{
+		"--cluster-domain":               "cluster.local",
 		"--network-plugin":               "cni",
 		"--pod-infra-container-image":    cloudSpecConfig.KubernetesSpecConfig.KubernetesImageBase + KubeConfigs[o.OrchestratorVersion]["pause"],
 		"--max-pods":                     strconv.Itoa(DefaultKubernetesKubeletMaxPods),
