@@ -32,6 +32,8 @@ type CLIProvisioner struct {
 	Point             *metrics.Point
 	ResourceGroups    []string
 	Engine            *engine.Engine
+	Masters           []azure.VM
+	Agents            []azure.VM
 }
 
 // BuildCLIProvisioner will return a ProvisionerConfig object which is used to run a provision
@@ -155,6 +157,22 @@ func (cli *CLIProvisioner) provision() error {
 		return fmt.Errorf("Error while trying to create deployment:%s", err)
 	}
 
+	// Store the hosts for future introspection
+	hosts, err := cli.Account.GetHosts(cli.Config.Name)
+	if err != nil {
+		return err
+	}
+	var masters, agents []azure.VM
+	for _, host := range hosts {
+		if strings.Contains(host.Name, "master") {
+			masters = append(masters, host)
+		} else if strings.Contains(host.Name, "agent") {
+			agents = append(agents, host)
+		}
+	}
+	cli.Masters = masters
+	cli.Agents = agents
+
 	return nil
 }
 
@@ -205,18 +223,6 @@ func (cli *CLIProvisioner) waitForNodes() error {
 
 // FetchProvisioningMetrics gets provisioning files from all hosts in a cluster
 func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Config, acct *azure.Account) error {
-	var masters, agents []string
-	hosts, err := acct.GetHosts("")
-	if err != nil {
-		return err
-	}
-	for _, host := range hosts {
-		if strings.Contains(host.Name, "master") {
-			masters = append(masters, host.Name)
-		} else if strings.Contains(host.Name, "agent") {
-			agents = append(agents, host.Name)
-		}
-	}
 	agentFiles := []string{"/var/log/azure/cluster-provision.log", "/var/log/cloud-init.log",
 		"/var/log/cloud-init-output.log", "/var/log/syslog", "/var/log/azure/custom-script/handler.log",
 		"/opt/m", "/opt/azure/containers/kubelet.sh", "/opt/azure/containers/provision.sh",
@@ -228,18 +234,18 @@ func (cli *CLIProvisioner) FetchProvisioningMetrics(path string, cfg *config.Con
 	if err != nil {
 		return err
 	}
-	for _, master := range masters {
+	for _, master := range cli.Masters {
 		for _, fp := range masterFiles {
-			err := conn.CopyRemote(master, fp)
+			err := conn.CopyRemote(master.Name, fp)
 			if err != nil {
 				log.Printf("Error reading file from path (%s):%s", path, err)
 			}
 		}
 	}
 
-	for _, agent := range agents {
+	for _, agent := range cli.Agents {
 		for _, fp := range agentFiles {
-			err := conn.CopyRemote(agent, fp)
+			err := conn.CopyRemote(agent.Name, fp)
 			if err != nil {
 				log.Printf("Error reading file from path (%s):%s", path, err)
 			}

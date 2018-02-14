@@ -169,13 +169,13 @@ func (e *Engine) HasDashboard() bool {
 }
 
 // HasTiller will return true if tiller addon is enabled
-func (e *Engine) HasTiller() bool {
+func (e *Engine) HasTiller() (bool, api.KubernetesAddon) {
 	for _, addon := range e.ExpandedDefinition.Properties.OrchestratorProfile.KubernetesConfig.Addons {
 		if addon.Name == "tiller" {
-			return *addon.Enabled
+			return *addon.Enabled, addon
 		}
 	}
-	return false
+	return false, api.KubernetesAddon{}
 }
 
 // HasACIConnector will return true if aci-connector addon is enabled
