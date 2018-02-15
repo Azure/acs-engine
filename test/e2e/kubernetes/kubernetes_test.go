@@ -125,27 +125,45 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have tiller running", func() {
-			if hasTiller, tillerAddon := eng.HasTiller(); hasTiller {
+			if hasTiller, tillerAddon := eng.HasAddon("tiller"); hasTiller {
 				running, err := pod.WaitOnReady("tiller", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
-				if tillerAddon.Config != nil {
-					By("Ensuring that the correct max-history has been applied")
-					maxHistory := tillerAddon.Config["max-history"]
-					pods, err := pod.GetAllByPrefix("tiller-deploy", "kube-system")
-					Expect(err).NotTo(HaveOccurred())
-					// There is only one tiller pod and one container in that pod.
-					actualTillerMaxHistory, err := pods[0].Spec.Containers[0].GetEnvironmentVariable("TILLER_HISTORY_MAX")
-					Expect(err).NotTo(HaveOccurred())
-					Expect(actualTillerMaxHistory).To(Equal(maxHistory))
-				}
+				pods, err := pod.GetAllByPrefix("tiller-deploy", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				By("Ensuring that the correct max-history has been applied")
+				maxHistory := tillerAddon.Config["max-history"]
+				// There is only one tiller pod and one container in that pod.
+				actualTillerMaxHistory, err := pods[0].Spec.Containers[0].GetEnvironmentVariable("TILLER_HISTORY_MAX")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(actualTillerMaxHistory).To(Equal(maxHistory))
+				By("Ensuring that the correct resources have been applied")
+				c := tillerAddon.Containers[0]
+				cpuRequests := c.CPURequests
+				cpuLimits := c.CPULimits
+				memoryRequests := c.MemoryRequests
+				memoryLimits := c.MemoryLimits
+				Expect(err).NotTo(HaveOccurred())
+				// There is only one tiller pod and one container in that pod.
+				actualTillerCPURequests, err := pods[0].Spec.Containers[0].GetCPURequests()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(actualTillerCPURequests).To(Equal(cpuRequests))
+				actualTillerCPULimits, err := pods[0].Spec.Containers[0].GetCPULimits()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(actualTillerCPULimits).To(Equal(cpuLimits))
+				actualTillerMemoryRequests, err := pods[0].Spec.Containers[0].GetMemoryRequests()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(actualTillerMemoryRequests).To(Equal(memoryRequests))
+				actualTillerMemoryLimits, err := pods[0].Spec.Containers[0].GetMemoryLimits()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(actualTillerMemoryLimits).To(Equal(memoryLimits))
 			} else {
 				Skip("tiller disabled for this cluster, will not test")
 			}
 		})
 
 		It("should be able to access the dashboard from each node", func() {
-			if eng.HasDashboard() {
+			if hasDashboard, dashboardAddon := eng.HasAddon("kubernetes-dashboard"); hasDashboard {
 				By("Ensuring that the kubernetes-dashboard pod is Running")
 
 				running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 3, 30*time.Second, cfg.Timeout)
@@ -208,7 +226,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have aci-connector running", func() {
-			if eng.HasACIConnector() {
+			if hasACIConnector, ACICOnnectorAddon := eng.HasAddon("aci-connector"); hasACIConnector {
 				running, err := pod.WaitOnReady("aci-connector", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
@@ -218,11 +236,11 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have rescheduler running", func() {
-			if hasRescheduler, reschedulerAddon := eng.HasRescheduler(); hasRescheduler {
+			if hasRescheduler, reschedulerAddon := eng.HasAddon("rescheduler"); hasRescheduler {
 				running, err := pod.WaitOnReady("rescheduler", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
-				By("Ensuring that the correct cpu requests has been applied")
+				By("Ensuring that the correct resources have been applied")
 				for i, c := range reschedulerAddon.Containers {
 					cpuRequests := c.CPURequests
 					cpuLimits := c.CPULimits
@@ -230,7 +248,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					memoryLimits := c.MemoryLimits
 					pods, err := pod.GetAllByPrefix("rescheduler", "kube-system")
 					Expect(err).NotTo(HaveOccurred())
-					// There is only one rescheduler pod
 					actualReschedulerCPURequests, err := pods[0].Spec.Containers[i].GetCPURequests()
 					Expect(err).NotTo(HaveOccurred())
 					Expect(actualReschedulerCPURequests).To(Equal(cpuRequests))
