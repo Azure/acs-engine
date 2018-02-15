@@ -130,17 +130,17 @@ func (s *Service) Validate(check string, attempts int, sleep, wait time.Duration
 	var url string
 	var i int
 	var resp *http.Response
-	_, waitErr := s.WaitForExternalIP(wait, 5*time.Second)
+	svc, waitErr := s.WaitForExternalIP(wait, 5*time.Second)
 	if waitErr != nil {
 		log.Printf("Unable to verify external IP, cannot validate service:%s\n", waitErr)
 		return false
 	}
-	if s.Status.LoadBalancer.Ingress == nil || len(s.Status.LoadBalancer.Ingress) == 0 {
-		log.Printf("Service LB ingress is empty or nil: %#v\n", s.Status.LoadBalancer.Ingress)
+	if svc.Status.LoadBalancer.Ingress == nil || len(svc.Status.LoadBalancer.Ingress) == 0 {
+		log.Printf("Service LB ingress is empty or nil: %#v\n", svc.Status.LoadBalancer.Ingress)
 		return false
 	}
 	for i = 1; i <= attempts; i++ {
-		url = fmt.Sprintf("http://%s", s.Status.LoadBalancer.Ingress[0]["ip"])
+		url = fmt.Sprintf("http://%s", svc.Status.LoadBalancer.Ingress[0]["ip"])
 		resp, err = http.Get(url)
 		if err == nil {
 			body, _ := ioutil.ReadAll(resp.Body)
