@@ -32,7 +32,7 @@
             },
             "containers": [
               {
-                "name": "rescheduler",
+                "name": "aci-connector",
                 "cpuRequests": "100m",
                 "memoryRequests": "300Mi",
                 "cpuLimits": "100m",
