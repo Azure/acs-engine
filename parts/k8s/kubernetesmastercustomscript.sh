@@ -26,7 +26,8 @@
 set -x
 # Capture Interesting Network Stuffs during provision
 packetCaptureProvision() {
-    tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/dnsdump.pcap -Z root -i eth0 udp port 53 > /dev/null 2>&1 &
+    tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/tcpdump-udp.pcap -Z root -i eth0 udp > /dev/null 2>&1 &
+    tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/tcpdump-tcp.pcap -Z root -i eth0 tcp > /dev/null 2>&1 &
 }
 
 packetCaptureProvision
