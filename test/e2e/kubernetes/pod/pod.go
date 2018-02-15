@@ -45,10 +45,10 @@ type Spec struct {
 
 // Container holds information like image and ports
 type Container struct {
-	Image     string      `json:"image"`
-	Ports     []Port      `json:"ports"`
-	Env       []EnvVar    `json:"env"`
-	Resources []Resources `json:"resources"`
+	Image     string    `json:"image"`
+	Ports     []Port    `json:"ports"`
+	Env       []EnvVar  `json:"env"`
+	Resources Resources `json:"resources"`
 }
 
 // EnvVar holds environment variables
@@ -65,8 +65,8 @@ type Port struct {
 
 // Resources represents a container resources definition
 type Resources struct {
-	Requests []Requests `json:"requests"`
-	Limits   []Limits   `json:"limits"`
+	Requests Requests `json:"requests"`
+	Limits   Limits   `json:"limits"`
 }
 
 // Requests represents container resource requests
