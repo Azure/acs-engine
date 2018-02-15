@@ -181,6 +181,7 @@ func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
 // successesNeeded is used to make sure we return the correct value even if the pod is in a CrashLoop
 func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, duration time.Duration) (bool, error) {
 	successCount := 0
+	failureCount := 0
 	readyCh := make(chan bool, 1)
 	errCh := make(chan error)
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
@@ -199,7 +200,10 @@ func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, durati
 					}
 				} else {
 					if successCount > 1 {
-						errCh <- fmt.Errorf("Pod (%s) in namespace (%s) has left Ready state. This behavior may mean it is in a crashloop", podPrefix, namespace)
+						failureCount = failureCount + 1
+						if failureCount >= successesNeeded {
+							errCh <- fmt.Errorf("Pods from deployment (%s) in namespace (%s) have been checked out as all Ready %d times, but NotReady %d times. This behavior may mean it is in a crashloop", podPrefix, namespace, failureCount, successesNeeded)
+						}
 					}
 					time.Sleep(sleep)
 				}

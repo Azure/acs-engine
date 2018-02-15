@@ -342,12 +342,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring we can connect to the service")
 				s, err := service.Get(deploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
-				s, err = s.WaitForExternalIP(cfg.Timeout, 5*time.Second)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(s.Status.LoadBalancer.Ingress).NotTo(BeEmpty())
 
 				By("Ensuring the service root URL returns the expected payload")
-				valid := s.Validate("(Welcome to nginx)", 5, 5*time.Second)
+				valid := s.Validate("(Welcome to nginx)", 5, 5*time.Second, cfg.Timeout)
 				Expect(valid).To(BeTrue())
 
 				By("Ensuring we have outbound internet access from the nginx pods")
@@ -389,11 +386,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				s, err := service.Get(deploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
-				s, err = s.WaitForExternalIP(cfg.Timeout, 5*time.Second)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(s.Status.LoadBalancer.Ingress).NotTo(BeEmpty())
 
-				valid := s.Validate("(IIS Windows Server)", 10, 10*time.Second)
+				valid := s.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
 				Expect(valid).To(BeTrue())
 
 				iisPods, err := iisDeploy.Pods()
