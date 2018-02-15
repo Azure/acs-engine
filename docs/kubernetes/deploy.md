@@ -19,6 +19,7 @@ After the cluster is deployed the upgrade and [scale](scale.md) commands can be 
 ## Gather Information
 
 * The subscription in which you would like to provision the cluster. This is a uuid which can be found with `az account list -o table`.
+* Proper access rights within the subscription. Especially the right to create and assign service principals to applications ( see  ACS Engine the Long Way, Step #2)
 * A `dnsPrefix` which forms part of the the hostname for your cluster (e.g. staging, prodwest, blueberry). The DNS prefix must be unique so pick a random name.
 * A location to provision the cluster e.g. `westus2`.
 
