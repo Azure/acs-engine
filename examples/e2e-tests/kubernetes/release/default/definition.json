@@ -4,20 +4,7 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
-        "clusterSubnet": "10.239.0.0/16",
-        "addons": [
-          {
-            "name": "tiller",
-            "enabled" : true,
-            "config": {
-              "max-history": "5"
-            }
-          },
-          {
-            "name": "rescheduler",
-            "enabled" : true
-          }
-        ]
+        "clusterSubnet": "10.239.0.0/16"
       }
     },
     "masterProfile": {
