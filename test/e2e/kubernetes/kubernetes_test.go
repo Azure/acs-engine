@@ -263,12 +263,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Assigning hpa configuration to the php-apache deployment")
 				// Apply autoscale characteristics to deployment
-				cmd := exec.Command("kubectl", "autoscale", "deployment", phpApacheName, "--cpu-percent=5", "--min=1", "--max=10")
-				util.PrintCommand(cmd)
-				out, err := cmd.CombinedOutput()
-				if err != nil {
-					log.Printf("Error while configuring autoscale against deployment %s:%s\n", phpApacheName, string(out))
-				}
+				err = phpApacheDeploy.CreateDeploymentHPA(5, 1, 10)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Sending load to the php-apache service by creating a 3 replica deployment")
