@@ -512,13 +512,13 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 	p.OrchestratorProfile = &OrchestratorProfile{}
 	p.OrchestratorProfile.OrchestratorType = Kubernetes
 
-	for _, policy := range ContainerRuntimeValues {
+	for _, runtime := range ContainerRuntimeValues {
 		p.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
-		p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = policy
+		p.OrchestratorProfile.KubernetesConfig.ContainerRuntime = runtime
 		if err := p.validateContainerRuntime(); err != nil {
 			t.Errorf(
 				"should not error on containerRuntime=\"%s\"",
-				policy,
+				runtime,
 			)
 		}
 	}
