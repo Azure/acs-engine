@@ -22,25 +22,6 @@
             ]
           },
           {
-            "name": "aci-connector",
-            "enabled": true,
-            "config": {
-              "region": "westus2",
-              "nodeName": "aci-connector-e2e",
-              "os": "Linux",
-              "taint": "azure.com/aci"
-            },
-            "containers": [
-              {
-                "name": "aci-connector",
-                "cpuRequests": "100m",
-                "memoryRequests": "300Mi",
-                "cpuLimits": "100m",
-                "memoryLimits": "300Mi"
-              }
-            ]
-          },
-          {
             "name": "kubernetes-dashboard",
             "enabled": true,
             "containers": [
