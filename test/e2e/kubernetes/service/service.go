@@ -129,14 +129,15 @@ func (s *Service) Validate(check string, attempts int, sleep time.Duration) bool
 	var err error
 	var url string
 	var i int
+	var resp *http.Response
 	for i = 1; i <= attempts; i++ {
 		url = fmt.Sprintf("http://%s", s.Status.LoadBalancer.Ingress[0]["ip"])
-		resp, err := http.Get(url)
+		resp, err = http.Get(url)
 		if err == nil {
-			defer resp.Body.Close()
 			body, _ := ioutil.ReadAll(resp.Body)
 			matched, _ := regexp.MatchString(check, string(body))
 			if matched == true {
+				defer resp.Body.Close()
 				return true
 			}
 			log.Printf("Got unexpected URL body, expected to find %s, got:\n%s\n", check, string(body))
@@ -144,5 +145,6 @@ func (s *Service) Validate(check string, attempts int, sleep time.Duration) bool
 		time.Sleep(sleep)
 	}
 	log.Printf("Unable to validate URL %s after %d attempts, err: %#v\n", url, i, err)
+	defer resp.Body.Close()
 	return false
 }
