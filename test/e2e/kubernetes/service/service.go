@@ -125,11 +125,20 @@ func (s *Service) WaitForExternalIP(wait, sleep time.Duration) (*Service, error)
 }
 
 // Validate will attempt to run an http.Get against the root service url
-func (s *Service) Validate(check string, attempts int, sleep time.Duration) bool {
+func (s *Service) Validate(check string, attempts int, sleep, wait time.Duration) bool {
 	var err error
 	var url string
 	var i int
 	var resp *http.Response
+	_, waitErr := s.WaitForExternalIP(wait, 5*time.Second)
+	if waitErr != nil {
+		log.Printf("Unable to verify external IP, cannot validate service:%s\n", waitErr)
+		return false
+	}
+	if s.Status.LoadBalancer.Ingress == nil || len(s.Status.LoadBalancer.Ingress) == 0 {
+		log.Printf("Service LB ingress is empty or nil: %#v\n", s.Status.LoadBalancer.Ingress)
+		return false
+	}
 	for i = 1; i <= attempts; i++ {
 		url = fmt.Sprintf("http://%s", s.Status.LoadBalancer.Ingress[0]["ip"])
 		resp, err = http.Get(url)
