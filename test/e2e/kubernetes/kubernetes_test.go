@@ -218,10 +218,21 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have rescheduler running", func() {
-			if eng.HasRescheduler() {
+			if hasRescheduler, reschedulerAddon := eng.HasRescheduler(); hasRescheduler {
 				running, err := pod.WaitOnReady("rescheduler", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
+				By("Ensuring that the correct cpu requests has been applied")
+				for i, c := range reschedulerAddon.Containers {
+					cpuRequests := c.CPURequests
+					pods, err := pod.GetAllByPrefix("rescheduler", "kube-system")
+					Expect(err).NotTo(HaveOccurred())
+					// There is only one rescheduler pod
+					actualReschedulerCPURequests, err := pods[0].Spec.Containers[i].GetCPURequests()
+					Expect(err).NotTo(HaveOccurred())
+					Expect(actualReschedulerCPURequests).To(Equal(cpuRequests))
+				}
+
 			} else {
 				Skip("rescheduler disabled for this cluster, will not test")
 			}

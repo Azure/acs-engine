@@ -421,3 +421,27 @@ func (c *Container) GetEnvironmentVariable(varName string) (string, error) {
 	}
 	return "", errors.New("environment variable not found")
 }
+
+// GetCPURequests returns an the CPU Requests value from a container within a pod
+func (c *Container) GetCPURequests() (string, error) {
+	// implement get cpu requests
+	return nil, nil
+}
+
+// GetCPULimits returns an the CPU Requests value from a container within a pod
+func (c *Container) GetCPULimits() (string, error) {
+	// implement get cpu limits
+	return nil, nil
+}
+
+// GetMemoryRequests returns an the CPU Requests value from a container within a pod
+func (c *Container) GetMemoryRequests() (string, error) {
+	// implement get memory requests
+	return nil, nil
+}
+
+// GetMemoryLimits returns an the CPU Requests value from a container within a pod
+func (c *Container) GetMemoryLimits() (string, error) {
+	// implement get memory limits
+	return nil, nil
+}
