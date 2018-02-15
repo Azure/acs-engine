@@ -45,9 +45,10 @@ type Spec struct {
 
 // Container holds information like image and ports
 type Container struct {
-	Image string   `json:"image"`
-	Ports []Port   `json:"ports"`
-	Env   []EnvVar `json:"env"`
+	Image     string      `json:"image"`
+	Ports     []Port      `json:"ports"`
+	Env       []EnvVar    `json:"env"`
+	Resources []Resources `json:"resources"`
 }
 
 // EnvVar holds environment variables
@@ -60,6 +61,24 @@ type EnvVar struct {
 type Port struct {
 	ContainerPort int `json:"containerPort"`
 	HostPort      int `json:"hostPort"`
+}
+
+// Resources represents a container resources definition
+type Resources struct {
+	Requests []Requests `json:"requests"`
+	Limits   []Limits   `json:"limits"`
+}
+
+// Requests represents container resource requests
+type Requests struct {
+	CPU    string `json:"cpu"`
+	Memory string `json:"memory"`
+}
+
+// Limits represents container resource limits
+type Limits struct {
+	CPU    string `json:"cpu"`
+	Memory string `json:"memory"`
 }
 
 // Status holds information like hostIP and phase
@@ -427,25 +446,21 @@ func (c *Container) GetEnvironmentVariable(varName string) (string, error) {
 }
 
 // GetCPURequests returns an the CPU Requests value from a container within a pod
-func (c *Container) GetCPURequests() (string, error) {
-	// implement get cpu requests
-	return nil, nil
+func (c *Container) GetCPURequests() string {
+	return c.Resources.Requests.CPU
 }
 
 // GetCPULimits returns an the CPU Requests value from a container within a pod
-func (c *Container) GetCPULimits() (string, error) {
-	// implement get cpu limits
-	return nil, nil
+func (c *Container) GetCPULimits() string {
+	return c.Resources.Limits.CPU
 }
 
 // GetMemoryRequests returns an the CPU Requests value from a container within a pod
-func (c *Container) GetMemoryRequests() (string, error) {
-	// implement get memory requests
-	return nil, nil
+func (c *Container) GetMemoryRequests() string {
+	return c.Resources.Requests.Memory
 }
 
 // GetMemoryLimits returns an the CPU Requests value from a container within a pod
-func (c *Container) GetMemoryLimits() (string, error) {
-	// implement get memory limits
-	return nil, nil
+func (c *Container) GetMemoryLimits() string {
+	return c.Resources.Limits.Memory
 }

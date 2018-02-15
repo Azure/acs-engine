@@ -225,12 +225,24 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring that the correct cpu requests has been applied")
 				for i, c := range reschedulerAddon.Containers {
 					cpuRequests := c.CPURequests
+					cpuLimits := c.CPULimits
+					memoryRequests := c.MemoryRequests
+					memoryLimits := c.MemoryLimits
 					pods, err := pod.GetAllByPrefix("rescheduler", "kube-system")
 					Expect(err).NotTo(HaveOccurred())
 					// There is only one rescheduler pod
 					actualReschedulerCPURequests, err := pods[0].Spec.Containers[i].GetCPURequests()
 					Expect(err).NotTo(HaveOccurred())
 					Expect(actualReschedulerCPURequests).To(Equal(cpuRequests))
+					actualReschedulerCPULimits, err := pods[0].Spec.Containers[i].GetCPULimits()
+					Expect(err).NotTo(HaveOccurred())
+					Expect(actualReschedulerCPULimits).To(Equal(cpuLimits))
+					actualReschedulerMemoryRequests, err := pods[0].Spec.Containers[i].GetMemoryRequests()
+					Expect(err).NotTo(HaveOccurred())
+					Expect(actualReschedulerMemoryRequests).To(Equal(memoryRequests))
+					actualReschedulerMemoryLimits, err := pods[0].Spec.Containers[i].GetMemoryLimits()
+					Expect(err).NotTo(HaveOccurred())
+					Expect(actualReschedulerMemoryLimits).To(Equal(memoryLimits))
 				}
 
 			} else {
