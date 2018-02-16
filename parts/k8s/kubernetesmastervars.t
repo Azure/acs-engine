@@ -126,6 +126,7 @@
     "vnetCniLinuxPluginsURL":"[parameters('vnetCniLinuxPluginsURL')]",
     "vnetCniWindowsPluginsURL":"[parameters('vnetCniWindowsPluginsURL')]",
     "kubernetesNonMasqueradeCidr": "[parameters('kubernetesNonMasqueradeCidr')]",
+    "kubernetesKubeletClusterDomain": "[parameters('kubernetesKubeletClusterDomain')]",
     "maxPods": "[parameters('maxPods')]",
     "vnetCidr": "[parameters('vnetCidr')]",
     "gcHighThreshold":"[parameters('gcHighThreshold')]",
