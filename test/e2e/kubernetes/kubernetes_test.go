@@ -215,6 +215,23 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						}
 						Expect(success).To(BeTrue())
 					}
+					By("Ensuring that the correct resources have been applied")
+					for i, c := range dashboardAddon.Containers {
+						cpuRequests := c.CPURequests
+						cpuLimits := c.CPULimits
+						memoryRequests := c.MemoryRequests
+						memoryLimits := c.MemoryLimits
+						pods, err := pod.GetAllByPrefix("rescheduler", "kube-system")
+						Expect(err).NotTo(HaveOccurred())
+						actualDashboardCPURequests := pods[0].Spec.Containers[i].GetCPURequests()
+						Expect(actualDashboardCPURequests).To(Equal(cpuRequests))
+						actualDashboardCPULimits := pods[0].Spec.Containers[i].GetCPULimits()
+						Expect(actualDashboardCPULimits).To(Equal(cpuLimits))
+						actualDashboardMemoryRequests := pods[0].Spec.Containers[i].GetMemoryRequests()
+						Expect(actualDashboardMemoryRequests).To(Equal(memoryRequests))
+						actualDashboardMemoryLimits := pods[0].Spec.Containers[i].GetMemoryLimits()
+						Expect(actualDashboardMemoryLimits).To(Equal(memoryLimits))
+					}
 				}
 			} else {
 				Skip("kubernetes-dashboard disabled for this cluster, will not test")
@@ -222,10 +239,28 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have aci-connector running", func() {
-			if hasACIConnector, ACICOnnectorAddon := eng.HasAddon("aci-connector"); hasACIConnector {
+			if hasACIConnector, ACIConnectorAddon := eng.HasAddon("aci-connector"); hasACIConnector {
 				running, err := pod.WaitOnReady("aci-connector", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				for i, c := range ACIConnectorAddon.Containers {
+					cpuRequests := c.CPURequests
+					cpuLimits := c.CPULimits
+					memoryRequests := c.MemoryRequests
+					memoryLimits := c.MemoryLimits
+					pods, err := pod.GetAllByPrefix("aci-connector", "kube-system")
+					Expect(err).NotTo(HaveOccurred())
+					actualACIConnectorCPURequests := pods[0].Spec.Containers[i].GetCPURequests()
+					Expect(actualACIConnectorCPURequests).To(Equal(cpuRequests))
+					actualACIConnectorCPULimits := pods[0].Spec.Containers[i].GetCPULimits()
+					Expect(actualACIConnectorCPULimits).To(Equal(cpuLimits))
+					actualACIConnectorMemoryRequests := pods[0].Spec.Containers[i].GetMemoryRequests()
+					Expect(actualACIConnectorMemoryRequests).To(Equal(memoryRequests))
+					actualACIConnectorMemoryLimits := pods[0].Spec.Containers[i].GetMemoryLimits()
+					Expect(actualACIConnectorMemoryLimits).To(Equal(memoryLimits))
+				}
+
 			} else {
 				Skip("aci-connector disabled for this cluster, will not test")
 			}
@@ -253,7 +288,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					actualReschedulerMemoryLimits := pods[0].Spec.Containers[i].GetMemoryLimits()
 					Expect(actualReschedulerMemoryLimits).To(Equal(memoryLimits))
 				}
-
 			} else {
 				Skip("rescheduler disabled for this cluster, will not test")
 			}
