@@ -138,7 +138,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(actualTillerMaxHistory).To(Equal(maxHistory))
 				By("Ensuring that the correct resources have been applied")
-				err := pods[0].Spec.Containers[0].ValidateResources(tillerAddon.Containers[0])
+				err = pods[0].Spec.Containers[0].ValidateResources(tillerAddon.Containers[0])
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("tiller disabled for this cluster, will not test")

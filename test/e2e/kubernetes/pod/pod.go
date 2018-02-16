@@ -459,8 +459,8 @@ func (c *Container) ValidateResources(a api.KubernetesContainerSpec) error {
 	}
 }
 
-// getEnvironmentVariable returns an environment variable value from a container within a pod
-func (c *Container) getEnvironmentVariable(varName string) (string, error) {
+// GetEnvironmentVariable returns an environment variable value from a container within a pod
+func (c *Container) GetEnvironmentVariable(varName string) (string, error) {
 	for _, envvar := range c.Env {
 		if envvar.Name == varName {
 			return envvar.Value, nil
