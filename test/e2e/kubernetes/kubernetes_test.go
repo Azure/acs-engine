@@ -125,27 +125,28 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have tiller running", func() {
-			if hasTiller, tillerAddon := eng.HasTiller(); hasTiller {
+			if hasTiller, tillerAddon := eng.HasAddon("tiller"); hasTiller {
 				running, err := pod.WaitOnReady("tiller", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
-				if tillerAddon.Config != nil {
-					By("Ensuring that the correct max-history has been applied")
-					maxHistory := tillerAddon.Config["max-history"]
-					pods, err := pod.GetAllByPrefix("tiller-deploy", "kube-system")
-					Expect(err).NotTo(HaveOccurred())
-					// There is only one tiller pod and one container in that pod.
-					actualTillerMaxHistory, err := pods[0].Spec.Containers[0].GetEnvironmentVariable("TILLER_HISTORY_MAX")
-					Expect(err).NotTo(HaveOccurred())
-					Expect(actualTillerMaxHistory).To(Equal(maxHistory))
-				}
+				pods, err := pod.GetAllByPrefix("tiller-deploy", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				By("Ensuring that the correct max-history has been applied")
+				maxHistory := tillerAddon.Config["max-history"]
+				// There is only one tiller pod and one container in that pod
+				actualTillerMaxHistory, err := pods[0].Spec.Containers[0].GetEnvironmentVariable("TILLER_HISTORY_MAX")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(actualTillerMaxHistory).To(Equal(maxHistory))
+				By("Ensuring that the correct resources have been applied")
+				err = pods[0].Spec.Containers[0].ValidateResources(tillerAddon.Containers[0])
+				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("tiller disabled for this cluster, will not test")
 			}
 		})
 
 		It("should be able to access the dashboard from each node", func() {
-			if eng.HasDashboard() {
+			if hasDashboard, dashboardAddon := eng.HasAddon("kubernetes-dashboard"); hasDashboard {
 				By("Ensuring that the kubernetes-dashboard pod is Running")
 
 				running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 3, 30*time.Second, cfg.Timeout)
@@ -201,6 +202,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						}
 						Expect(success).To(BeTrue())
 					}
+					By("Ensuring that the correct resources have been applied")
+					// Assuming one dashboard pod
+					pods, err := pod.GetAllByPrefix("kubernetes-dashboard", "kube-system")
+					Expect(err).NotTo(HaveOccurred())
+					for i, c := range dashboardAddon.Containers {
+						err := pods[0].Spec.Containers[i].ValidateResources(c)
+						Expect(err).NotTo(HaveOccurred())
+					}
 				}
 			} else {
 				Skip("kubernetes-dashboard disabled for this cluster, will not test")
@@ -208,20 +217,37 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have aci-connector running", func() {
-			if eng.HasACIConnector() {
+			if hasACIConnector, ACIConnectorAddon := eng.HasAddon("aci-connector"); hasACIConnector {
 				running, err := pod.WaitOnReady("aci-connector", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				// Assuming one aci-connector pod
+				pods, err := pod.GetAllByPrefix("aci-connector", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range ACIConnectorAddon.Containers {
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
+					Expect(err).NotTo(HaveOccurred())
+				}
+
 			} else {
 				Skip("aci-connector disabled for this cluster, will not test")
 			}
 		})
 
 		It("should have rescheduler running", func() {
-			if eng.HasRescheduler() {
+			if hasRescheduler, reschedulerAddon := eng.HasAddon("rescheduler"); hasRescheduler {
 				running, err := pod.WaitOnReady("rescheduler", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				// Assuming one rescheduler pod
+				pods, err := pod.GetAllByPrefix("rescheduler", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range reschedulerAddon.Containers {
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
+					Expect(err).NotTo(HaveOccurred())
+				}
 			} else {
 				Skip("rescheduler disabled for this cluster, will not test")
 			}
