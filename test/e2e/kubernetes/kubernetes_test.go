@@ -216,12 +216,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						Expect(success).To(BeTrue())
 					}
 					By("Ensuring that the correct resources have been applied")
+					pods, err := pod.GetAllByPrefix("kubernetes-dashboard", "kube-system")
 					for i, c := range dashboardAddon.Containers {
 						cpuRequests := c.CPURequests
 						cpuLimits := c.CPULimits
 						memoryRequests := c.MemoryRequests
 						memoryLimits := c.MemoryLimits
-						pods, err := pod.GetAllByPrefix("rescheduler", "kube-system")
 						Expect(err).NotTo(HaveOccurred())
 						actualDashboardCPURequests := pods[0].Spec.Containers[i].GetCPURequests()
 						Expect(actualDashboardCPURequests).To(Equal(cpuRequests))
@@ -244,12 +244,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
+				pods, err := pod.GetAllByPrefix("aci-connector", "kube-system")
 				for i, c := range ACIConnectorAddon.Containers {
 					cpuRequests := c.CPURequests
 					cpuLimits := c.CPULimits
 					memoryRequests := c.MemoryRequests
 					memoryLimits := c.MemoryLimits
-					pods, err := pod.GetAllByPrefix("aci-connector", "kube-system")
 					Expect(err).NotTo(HaveOccurred())
 					actualACIConnectorCPURequests := pods[0].Spec.Containers[i].GetCPURequests()
 					Expect(actualACIConnectorCPURequests).To(Equal(cpuRequests))
@@ -272,12 +272,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 				By("Ensuring that the correct resources have been applied")
+				pods, err := pod.GetAllByPrefix("rescheduler", "kube-system")
 				for i, c := range reschedulerAddon.Containers {
 					cpuRequests := c.CPURequests
 					cpuLimits := c.CPULimits
 					memoryRequests := c.MemoryRequests
 					memoryLimits := c.MemoryLimits
-					pods, err := pod.GetAllByPrefix("rescheduler", "kube-system")
 					Expect(err).NotTo(HaveOccurred())
 					actualReschedulerCPURequests := pods[0].Spec.Containers[i].GetCPURequests()
 					Expect(actualReschedulerCPURequests).To(Equal(cpuRequests))
