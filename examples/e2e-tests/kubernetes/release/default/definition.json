@@ -66,8 +66,13 @@
         "count": 3,
         "vmSize": "Standard_D2_v2",
         "OSDiskSizeGB": 200,
-        "storageProfile" : "ManagedDisks",
-        "diskSizesGB": [128, 128, 128, 128],
+        "storageProfile": "ManagedDisks",
+        "diskSizesGB": [
+          128,
+          128,
+          128,
+          128
+        ],
         "availabilityProfile": "AvailabilitySet",
         "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME"
       },
@@ -77,7 +82,9 @@
         "vmSize": "Standard_D2_v2",
         "OSDiskSizeGB": 200,
         "storageProfile": "StorageAccount",
-        "diskSizesGB": [128],
+        "diskSizesGB": [
+          128
+        ],
         "availabilityProfile": "AvailabilitySet",
         "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/SUBNET_NAME"
       }
