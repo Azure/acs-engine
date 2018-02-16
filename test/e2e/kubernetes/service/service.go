@@ -125,19 +125,37 @@ func (s *Service) WaitForExternalIP(wait, sleep time.Duration) (*Service, error)
 }
 
 // Validate will attempt to run an http.Get against the root service url
-func (s *Service) Validate(check string, attempts int, sleep time.Duration) bool {
-	for i := 0; i < attempts; i++ {
-		url := fmt.Sprintf("http://%s", s.Status.LoadBalancer.Ingress[0]["ip"])
-		resp, err := http.Get(url)
+func (s *Service) Validate(check string, attempts int, sleep, wait time.Duration) bool {
+	var err error
+	var url string
+	var i int
+	var resp *http.Response
+	svc, waitErr := s.WaitForExternalIP(wait, 5*time.Second)
+	if waitErr != nil {
+		log.Printf("Unable to verify external IP, cannot validate service:%s\n", waitErr)
+		return false
+	}
+	if svc.Status.LoadBalancer.Ingress == nil || len(svc.Status.LoadBalancer.Ingress) == 0 {
+		log.Printf("Service LB ingress is empty or nil: %#v\n", svc.Status.LoadBalancer.Ingress)
+		return false
+	}
+	for i = 1; i <= attempts; i++ {
+		url = fmt.Sprintf("http://%s", svc.Status.LoadBalancer.Ingress[0]["ip"])
+		resp, err = http.Get(url)
 		if err == nil {
-			defer resp.Body.Close()
 			body, _ := ioutil.ReadAll(resp.Body)
 			matched, _ := regexp.MatchString(check, string(body))
 			if matched == true {
+				defer resp.Body.Close()
 				return true
 			}
+			log.Printf("Got unexpected URL body, expected to find %s, got:\n%s\n", check, string(body))
 		}
 		time.Sleep(sleep)
+	}
+	log.Printf("Unable to validate URL %s after %s, err: %#v\n", url, time.Duration(i)*wait, err)
+	if resp != nil {
+		defer resp.Body.Close()
 	}
 	return false
 }

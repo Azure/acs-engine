@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 )
 
@@ -45,9 +46,10 @@ type Spec struct {
 
 // Container holds information like image and ports
 type Container struct {
-	Image string   `json:"image"`
-	Ports []Port   `json:"ports"`
-	Env   []EnvVar `json:"env"`
+	Image     string    `json:"image"`
+	Ports     []Port    `json:"ports"`
+	Env       []EnvVar  `json:"env"`
+	Resources Resources `json:"resources"`
 }
 
 // EnvVar holds environment variables
@@ -60,6 +62,24 @@ type EnvVar struct {
 type Port struct {
 	ContainerPort int `json:"containerPort"`
 	HostPort      int `json:"hostPort"`
+}
+
+// Resources represents a container resources definition
+type Resources struct {
+	Requests Requests `json:"requests"`
+	Limits   Limits   `json:"limits"`
+}
+
+// Requests represents container resource requests
+type Requests struct {
+	CPU    string `json:"cpu"`
+	Memory string `json:"memory"`
+}
+
+// Limits represents container resource limits
+type Limits struct {
+	CPU    string `json:"cpu"`
+	Memory string `json:"memory"`
 }
 
 // Status holds information like hostIP and phase
@@ -181,6 +201,7 @@ func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
 // successesNeeded is used to make sure we return the correct value even if the pod is in a CrashLoop
 func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, duration time.Duration) (bool, error) {
 	successCount := 0
+	failureCount := 0
 	readyCh := make(chan bool, 1)
 	errCh := make(chan error)
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
@@ -199,7 +220,10 @@ func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, durati
 					}
 				} else {
 					if successCount > 1 {
-						errCh <- fmt.Errorf("Pod (%s) in namespace (%s) has left Ready state. This behavior may mean it is in a crashloop", podPrefix, namespace)
+						failureCount = failureCount + 1
+						if failureCount >= successesNeeded {
+							errCh <- fmt.Errorf("Pods from deployment (%s) in namespace (%s) have been checked out as all Ready %d times, but NotReady %d times. This behavior may mean it is in a crashloop", podPrefix, namespace, failureCount, successesNeeded)
+						}
 					}
 					time.Sleep(sleep)
 				}
@@ -412,6 +436,29 @@ func (p *Pod) ValidateAzureFile(mountPath string, sleep, duration time.Duration)
 	}
 }
 
+// ValidateResources checks that an addon has the expected memory/cpu limits and requests
+func (c *Container) ValidateResources(a api.KubernetesContainerSpec) error {
+	expectedCPURequests := a.CPURequests
+	expectedCPULimits := a.CPULimits
+	expectedMemoryRequests := a.MemoryRequests
+	expectedMemoryLimits := a.MemoryLimits
+	actualCPURequests := c.getCPURequests()
+	actualCPULimits := c.getCPULimits()
+	actualMemoryRequests := c.getMemoryRequests()
+	actualLimits := c.getMemoryLimits()
+	if expectedCPURequests != actualCPURequests {
+		return fmt.Errorf("expected CPU requests %s does not match %s", expectedCPURequests, actualCPURequests)
+	} else if expectedCPULimits != actualCPULimits {
+		return fmt.Errorf("expected CPU limits %s does not match %s", expectedCPULimits, actualCPULimits)
+	} else if expectedMemoryRequests != actualMemoryRequests {
+		return fmt.Errorf("expected Memory requests %s does not match %s", expectedMemoryRequests, actualMemoryRequests)
+	} else if expectedMemoryLimits != actualLimits {
+		return fmt.Errorf("expected Memory limits %s does not match %s", expectedMemoryLimits, actualLimits)
+	} else {
+		return nil
+	}
+}
+
 // GetEnvironmentVariable returns an environment variable value from a container within a pod
 func (c *Container) GetEnvironmentVariable(varName string) (string, error) {
 	for _, envvar := range c.Env {
@@ -420,4 +467,24 @@ func (c *Container) GetEnvironmentVariable(varName string) (string, error) {
 		}
 	}
 	return "", errors.New("environment variable not found")
+}
+
+// getCPURequests returns an the CPU Requests value from a container within a pod
+func (c *Container) getCPURequests() string {
+	return c.Resources.Requests.CPU
+}
+
+// getCPULimits returns an the CPU Requests value from a container within a pod
+func (c *Container) getCPULimits() string {
+	return c.Resources.Limits.CPU
+}
+
+// DashboardtMemoryRequests returns an the CPU Requests value from a container within a pod
+func (c *Container) getMemoryRequests() string {
+	return c.Resources.Requests.Memory
+}
+
+// getMemoryLimits returns an the CPU Requests value from a container within a pod
+func (c *Container) getMemoryLimits() string {
+	return c.Resources.Limits.Memory
 }

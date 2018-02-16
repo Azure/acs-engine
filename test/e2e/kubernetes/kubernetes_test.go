@@ -125,30 +125,28 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have tiller running", func() {
-			if eng.HasTiller() {
+			if hasTiller, tillerAddon := eng.HasAddon("tiller"); hasTiller {
 				running, err := pod.WaitOnReady("tiller", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
-			} else {
-				Skip("tiller disabled for this cluster, will not test")
-			}
-		})
-
-		It("should have a tiller max-history of 5", func() {
-			if eng.HasTiller() {
 				pods, err := pod.GetAllByPrefix("tiller-deploy", "kube-system")
 				Expect(err).NotTo(HaveOccurred())
-				// There is only one tiller pod and one container in that pod.
+				By("Ensuring that the correct max-history has been applied")
+				maxHistory := tillerAddon.Config["max-history"]
+				// There is only one tiller pod and one container in that pod
 				actualTillerMaxHistory, err := pods[0].Spec.Containers[0].GetEnvironmentVariable("TILLER_HISTORY_MAX")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(actualTillerMaxHistory).To(Equal("5"))
+				Expect(actualTillerMaxHistory).To(Equal(maxHistory))
+				By("Ensuring that the correct resources have been applied")
+				err = pods[0].Spec.Containers[0].ValidateResources(tillerAddon.Containers[0])
+				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("tiller disabled for this cluster, will not test")
 			}
 		})
 
 		It("should be able to access the dashboard from each node", func() {
-			if eng.HasDashboard() {
+			if hasDashboard, dashboardAddon := eng.HasAddon("kubernetes-dashboard"); hasDashboard {
 				By("Ensuring that the kubernetes-dashboard pod is Running")
 
 				running, err := pod.WaitOnReady("kubernetes-dashboard", "kube-system", 3, 30*time.Second, cfg.Timeout)
@@ -204,6 +202,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 						}
 						Expect(success).To(BeTrue())
 					}
+					By("Ensuring that the correct resources have been applied")
+					// Assuming one dashboard pod
+					pods, err := pod.GetAllByPrefix("kubernetes-dashboard", "kube-system")
+					Expect(err).NotTo(HaveOccurred())
+					for i, c := range dashboardAddon.Containers {
+						err := pods[0].Spec.Containers[i].ValidateResources(c)
+						Expect(err).NotTo(HaveOccurred())
+					}
 				}
 			} else {
 				Skip("kubernetes-dashboard disabled for this cluster, will not test")
@@ -211,20 +217,37 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should have aci-connector running", func() {
-			if eng.HasACIConnector() {
+			if hasACIConnector, ACIConnectorAddon := eng.HasAddon("aci-connector"); hasACIConnector {
 				running, err := pod.WaitOnReady("aci-connector", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				// Assuming one aci-connector pod
+				pods, err := pod.GetAllByPrefix("aci-connector", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range ACIConnectorAddon.Containers {
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
+					Expect(err).NotTo(HaveOccurred())
+				}
+
 			} else {
 				Skip("aci-connector disabled for this cluster, will not test")
 			}
 		})
 
 		It("should have rescheduler running", func() {
-			if eng.HasRescheduler() {
+			if hasRescheduler, reschedulerAddon := eng.HasAddon("rescheduler"); hasRescheduler {
 				running, err := pod.WaitOnReady("rescheduler", "kube-system", 3, 30*time.Second, cfg.Timeout)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
+				By("Ensuring that the correct resources have been applied")
+				// Assuming one rescheduler pod
+				pods, err := pod.GetAllByPrefix("rescheduler", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
+				for i, c := range reschedulerAddon.Containers {
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
+					Expect(err).NotTo(HaveOccurred())
+				}
 			} else {
 				Skip("rescheduler disabled for this cluster, will not test")
 			}
@@ -266,12 +289,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Assigning hpa configuration to the php-apache deployment")
 				// Apply autoscale characteristics to deployment
-				cmd := exec.Command("kubectl", "autoscale", "deployment", phpApacheName, "--cpu-percent=5", "--min=1", "--max=10")
-				util.PrintCommand(cmd)
-				out, err := cmd.CombinedOutput()
-				if err != nil {
-					log.Printf("Error while configuring autoscale against deployment %s:%s\n", phpApacheName, string(out))
-				}
+				err = phpApacheDeploy.CreateDeploymentHPA(5, 1, 10)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Sending load to the php-apache service by creating a 3 replica deployment")
@@ -334,12 +352,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring we can connect to the service")
 				s, err := service.Get(deploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
-				s, err = s.WaitForExternalIP(cfg.Timeout, 5*time.Second)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(s.Status.LoadBalancer.Ingress).NotTo(BeEmpty())
 
 				By("Ensuring the service root URL returns the expected payload")
-				valid := s.Validate("(Welcome to nginx)", 5, 5*time.Second)
+				valid := s.Validate("(Welcome to nginx)", 5, 30*time.Second, cfg.Timeout)
 				Expect(valid).To(BeTrue())
 
 				By("Ensuring we have outbound internet access from the nginx pods")
@@ -381,11 +396,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				s, err := service.Get(deploymentName, "default")
 				Expect(err).NotTo(HaveOccurred())
-				s, err = s.WaitForExternalIP(cfg.Timeout, 5*time.Second)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(s.Status.LoadBalancer.Ingress).NotTo(BeEmpty())
 
-				valid := s.Validate("(IIS Windows Server)", 10, 10*time.Second)
+				valid := s.Validate("(IIS Windows Server)", 10, 10*time.Second, cfg.Timeout)
 				Expect(valid).To(BeTrue())
 
 				iisPods, err := iisDeploy.Pods()
