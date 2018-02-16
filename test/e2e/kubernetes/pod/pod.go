@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 )
 
@@ -435,8 +436,31 @@ func (p *Pod) ValidateAzureFile(mountPath string, sleep, duration time.Duration)
 	}
 }
 
-// GetEnvironmentVariable returns an environment variable value from a container within a pod
-func (c *Container) GetEnvironmentVariable(varName string) (string, error) {
+// ValidateResources checks that an addon has the expected memory/cpu limits and requests
+func (c *Container) ValidateResources(a *api.KubernetesContainerSpec) error {
+	expectedCPURequests := a.CPURequests
+	expectedCPULimits := a.CPULimits
+	expectedMemoryRequests := a.MemoryRequests
+	expectedMemoryLimits := a.MemoryLimits
+	actualCPURequests := c.getCPURequests()
+	actualCPULimits := c.getCPULimits()
+	actualMemoryRequests := c.getMemoryRequests()
+	actualLimits := c.getMemoryLimits()
+	if expectedCPURequests != actualCPURequests {
+		return fmt.Errorf("CPU requests %s does not match expected %s", expectedCPURequests, actualCPURequests)
+	} else if expectedCPULimits != actualCPULimits {
+		return fmt.Errorf("CPU limits %s does not match expected %s", expectedCPULimits, actualCPULimits)
+	} else if expectedMemoryRequests != actualMemoryRequests {
+		return fmt.Errorf("Memory requests %s does not match expected %s", expectedMemoryRequests, actualMemoryRequests)
+	} else if expectedMemoryLimits != actualLimits {
+		return fmt.Errorf("Memory limits %s does not match expected %s", expectedMemoryLimits, actualLimits)
+	} else {
+		return nil
+	}
+}
+
+// getEnvironmentVariable returns an environment variable value from a container within a pod
+func (c *Container) getEnvironmentVariable(varName string) (string, error) {
 	for _, envvar := range c.Env {
 		if envvar.Name == varName {
 			return envvar.Value, nil
@@ -445,22 +469,22 @@ func (c *Container) GetEnvironmentVariable(varName string) (string, error) {
 	return "", errors.New("environment variable not found")
 }
 
-// GetCPURequests returns an the CPU Requests value from a container within a pod
-func (c *Container) GetCPURequests() string {
+// getCPURequests returns an the CPU Requests value from a container within a pod
+func (c *Container) getCPURequests() string {
 	return c.Resources.Requests.CPU
 }
 
-// GetCPULimits returns an the CPU Requests value from a container within a pod
-func (c *Container) GetCPULimits() string {
+// getCPULimits returns an the CPU Requests value from a container within a pod
+func (c *Container) getCPULimits() string {
 	return c.Resources.Limits.CPU
 }
 
-// GetMemoryRequests returns an the CPU Requests value from a container within a pod
-func (c *Container) GetMemoryRequests() string {
+// DashboardtMemoryRequests returns an the CPU Requests value from a container within a pod
+func (c *Container) getMemoryRequests() string {
 	return c.Resources.Requests.Memory
 }
 
-// GetMemoryLimits returns an the CPU Requests value from a container within a pod
-func (c *Container) GetMemoryLimits() string {
+// getMemoryLimits returns an the CPU Requests value from a container within a pod
+func (c *Container) getMemoryLimits() string {
 	return c.Resources.Limits.Memory
 }
