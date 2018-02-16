@@ -8,14 +8,45 @@
         "addons": [
           {
             "name": "tiller",
-            "enabled" : true,
+            "enabled": true,
             "config": {
-              "max-history": "5"
-            }
+              "max-history": "10"
+            },
+            "containers": [
+              {
+                "name": "tiller",
+                "cpuRequests": "1",
+                "memoryRequests": "1024Mi",
+                "cpuLimits": "1",
+                "memoryLimits": "1024Mi"
+              }
+            ]
+          },
+          {
+            "name": "kubernetes-dashboard",
+            "enabled": true,
+            "containers": [
+              {
+                "name": "kubernetes-dashboard",
+                "cpuRequests": "50m",
+                "memoryRequests": "512Mi",
+                "cpuLimits": "50m",
+                "memoryLimits": "512Mi"
+              }
+            ]
           },
           {
             "name": "rescheduler",
-            "enabled" : true
+            "enabled": true,
+            "containers": [
+              {
+                "name": "rescheduler",
+                "cpuRequests": "20m",
+                "memoryRequests": "200Mi",
+                "cpuLimits": "20m",
+                "memoryLimits": "200Mi"
+              }
+            ]
           }
         ]
       }
