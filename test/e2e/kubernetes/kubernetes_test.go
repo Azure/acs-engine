@@ -205,6 +205,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					By("Ensuring that the correct resources have been applied")
 					// Assuming one dashboard pod
 					pods, err := pod.GetAllByPrefix("kubernetes-dashboard", "kube-system")
+					Expect(err).NotTo(HaveOccurred())
 					for i, c := range dashboardAddon.Containers {
 						err := pods[0].Spec.Containers[i].ValidateResources(c)
 						Expect(err).NotTo(HaveOccurred())
@@ -223,6 +224,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring that the correct resources have been applied")
 				// Assuming one aci-connector pod
 				pods, err := pod.GetAllByPrefix("aci-connector", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
 				for i, c := range ACIConnectorAddon.Containers {
 					err := pods[0].Spec.Containers[i].ValidateResources(c)
 					Expect(err).NotTo(HaveOccurred())
@@ -241,6 +243,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				By("Ensuring that the correct resources have been applied")
 				// Assuming one rescheduler pod
 				pods, err := pod.GetAllByPrefix("rescheduler", "kube-system")
+				Expect(err).NotTo(HaveOccurred())
 				for i, c := range reschedulerAddon.Containers {
 					err := pods[0].Spec.Containers[i].ValidateResources(c)
 					Expect(err).NotTo(HaveOccurred())
