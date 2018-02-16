@@ -447,13 +447,13 @@ func (c *Container) ValidateResources(a *api.KubernetesContainerSpec) error {
 	actualMemoryRequests := c.getMemoryRequests()
 	actualLimits := c.getMemoryLimits()
 	if expectedCPURequests != actualCPURequests {
-		return fmt.Errorf("CPU requests %s does not match expected %s", expectedCPURequests, actualCPURequests)
+		return fmt.Errorf("expected CPU requests %s does not match %s", expectedCPURequests, actualCPURequests)
 	} else if expectedCPULimits != actualCPULimits {
-		return fmt.Errorf("CPU limits %s does not match expected %s", expectedCPULimits, actualCPULimits)
+		return fmt.Errorf("expected CPU limits %s does not match %s", expectedCPULimits, actualCPULimits)
 	} else if expectedMemoryRequests != actualMemoryRequests {
-		return fmt.Errorf("Memory requests %s does not match expected %s", expectedMemoryRequests, actualMemoryRequests)
+		return fmt.Errorf("expected Memory requests %s does not match %s", expectedMemoryRequests, actualMemoryRequests)
 	} else if expectedMemoryLimits != actualLimits {
-		return fmt.Errorf("Memory limits %s does not match expected %s", expectedMemoryLimits, actualLimits)
+		return fmt.Errorf("expected Memory limits %s does not match %s", expectedMemoryLimits, actualLimits)
 	} else {
 		return nil
 	}
