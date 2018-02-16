@@ -437,7 +437,7 @@ func (p *Pod) ValidateAzureFile(mountPath string, sleep, duration time.Duration)
 }
 
 // ValidateResources checks that an addon has the expected memory/cpu limits and requests
-func (c *Container) ValidateResources(a *api.KubernetesContainerSpec) error {
+func (c *Container) ValidateResources(a api.KubernetesContainerSpec) error {
 	expectedCPURequests := a.CPURequests
 	expectedCPULimits := a.CPULimits
 	expectedMemoryRequests := a.MemoryRequests
