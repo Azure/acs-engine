@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os/exec"
 	"strconv"
@@ -27,6 +28,7 @@ type Metadata struct {
 	Labels    map[string]string `json:"labels"`
 	Name      string            `json:"name"`
 	Namespace string            `json:"namespace"`
+	HasHPA    bool              `json:"hasHPA"`
 }
 
 // Spec holds information the deployment strategy and number of replicas
@@ -142,6 +144,16 @@ func (d *Deployment) Delete() error {
 		log.Printf("Error while trying to delete deployment %s in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(out))
 		return err
 	}
+	// Delete any associated HPAs
+	if d.Metadata.HasHPA {
+		cmd := exec.Command("kubectl", "delete", "hpa", "-n", d.Metadata.Namespace, d.Metadata.Name)
+		util.PrintCommand(cmd)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			log.Printf("Deployment %s has associated HPA but unable to delete in namespace %s:%s\n", d.Metadata.Namespace, d.Metadata.Name, string(out))
+			return err
+		}
+	}
 	return nil
 }
 
@@ -154,6 +166,20 @@ func (d *Deployment) Expose(svcType string, targetPort, exposedPort int) error {
 		log.Printf("Error while trying to expose (%s) target port (%v) for deployment %s in namespace %s on port %v:%s\n", svcType, targetPort, d.Metadata.Name, d.Metadata.Namespace, exposedPort, string(out))
 		return err
 	}
+	return nil
+}
+
+// CreateDeploymentHPA applies autoscale characteristics to deployment
+func (d *Deployment) CreateDeploymentHPA(cpuPercent, min, max int) error {
+	cmd := exec.Command("kubectl", "autoscale", "deployment", d.Metadata.Name, fmt.Sprintf("--cpu-percent=%d", cpuPercent),
+		fmt.Sprintf("--min=%d", min), fmt.Sprintf("--max=%d", max))
+	util.PrintCommand(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Error while configuring autoscale against deployment %s:%s\n", d.Metadata.Name, string(out))
+		return err
+	}
+	d.Metadata.HasHPA = true
 	return nil
 }
 
