@@ -153,7 +153,9 @@ func (s *Service) Validate(check string, attempts int, sleep, wait time.Duration
 		}
 		time.Sleep(sleep)
 	}
-	log.Printf("Unable to validate URL %s after %d attempts, err: %#v\n", url, i, err)
-	defer resp.Body.Close()
+	log.Printf("Unable to validate URL %s after %s, err: %#v\n", url, time.Duration(i)*wait, err)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	return false
 }

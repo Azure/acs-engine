@@ -329,12 +329,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Assigning hpa configuration to the php-apache deployment")
 				// Apply autoscale characteristics to deployment
-				cmd := exec.Command("kubectl", "autoscale", "deployment", phpApacheName, "--cpu-percent=5", "--min=1", "--max=10")
-				util.PrintCommand(cmd)
-				out, err := cmd.CombinedOutput()
-				if err != nil {
-					log.Printf("Error while configuring autoscale against deployment %s:%s\n", phpApacheName, string(out))
-				}
+				err = phpApacheDeploy.CreateDeploymentHPA(5, 1, 10)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Sending load to the php-apache service by creating a 3 replica deployment")
@@ -399,7 +394,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring the service root URL returns the expected payload")
-				valid := s.Validate("(Welcome to nginx)", 5, 5*time.Second, cfg.Timeout)
+				valid := s.Validate("(Welcome to nginx)", 5, 30*time.Second, cfg.Timeout)
 				Expect(valid).To(BeTrue())
 
 				By("Ensuring we have outbound internet access from the nginx pods")
