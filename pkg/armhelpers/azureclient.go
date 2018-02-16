@@ -72,7 +72,7 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 	}
 
 	// AcsEngineClientID is the AAD ClientID for the CLI native application
-	acsEngineClientID = getAcsEngineClientId(env.Name)
+	acsEngineClientID := getAcsEngineClientId(env.Name)
 
 	home, err := homedir.Dir()
 	if err != nil {
