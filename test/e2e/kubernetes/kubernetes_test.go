@@ -145,17 +145,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				memoryLimits := c.MemoryLimits
 				Expect(err).NotTo(HaveOccurred())
 				// There is only one tiller pod and one container in that pod.
-				actualTillerCPURequests, err := pods[0].Spec.Containers[0].GetCPURequests()
-				Expect(err).NotTo(HaveOccurred())
+				actualTillerCPURequests := pods[0].Spec.Containers[0].GetCPURequests()
 				Expect(actualTillerCPURequests).To(Equal(cpuRequests))
-				actualTillerCPULimits, err := pods[0].Spec.Containers[0].GetCPULimits()
-				Expect(err).NotTo(HaveOccurred())
+				actualTillerCPULimits := pods[0].Spec.Containers[0].GetCPULimits()
 				Expect(actualTillerCPULimits).To(Equal(cpuLimits))
-				actualTillerMemoryRequests, err := pods[0].Spec.Containers[0].GetMemoryRequests()
-				Expect(err).NotTo(HaveOccurred())
+				actualTillerMemoryRequests := pods[0].Spec.Containers[0].GetMemoryRequests()
 				Expect(actualTillerMemoryRequests).To(Equal(memoryRequests))
-				actualTillerMemoryLimits, err := pods[0].Spec.Containers[0].GetMemoryLimits()
-				Expect(err).NotTo(HaveOccurred())
+				actualTillerMemoryLimits := pods[0].Spec.Containers[0].GetMemoryLimits()
 				Expect(actualTillerMemoryLimits).To(Equal(memoryLimits))
 			} else {
 				Skip("tiller disabled for this cluster, will not test")
@@ -248,17 +244,13 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					memoryLimits := c.MemoryLimits
 					pods, err := pod.GetAllByPrefix("rescheduler", "kube-system")
 					Expect(err).NotTo(HaveOccurred())
-					actualReschedulerCPURequests, err := pods[0].Spec.Containers[i].GetCPURequests()
-					Expect(err).NotTo(HaveOccurred())
+					actualReschedulerCPURequests := pods[0].Spec.Containers[i].GetCPURequests()
 					Expect(actualReschedulerCPURequests).To(Equal(cpuRequests))
-					actualReschedulerCPULimits, err := pods[0].Spec.Containers[i].GetCPULimits()
-					Expect(err).NotTo(HaveOccurred())
+					actualReschedulerCPULimits := pods[0].Spec.Containers[i].GetCPULimits()
 					Expect(actualReschedulerCPULimits).To(Equal(cpuLimits))
-					actualReschedulerMemoryRequests, err := pods[0].Spec.Containers[i].GetMemoryRequests()
-					Expect(err).NotTo(HaveOccurred())
+					actualReschedulerMemoryRequests := pods[0].Spec.Containers[i].GetMemoryRequests()
 					Expect(actualReschedulerMemoryRequests).To(Equal(memoryRequests))
-					actualReschedulerMemoryLimits, err := pods[0].Spec.Containers[i].GetMemoryLimits()
-					Expect(err).NotTo(HaveOccurred())
+					actualReschedulerMemoryLimits := pods[0].Spec.Containers[i].GetMemoryLimits()
 					Expect(actualReschedulerMemoryLimits).To(Equal(memoryLimits))
 				}
 
