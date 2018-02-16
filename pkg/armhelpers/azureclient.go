@@ -72,7 +72,7 @@ func NewAzureClientWithDeviceAuth(env azure.Environment, subscriptionID string) 
 	}
 
 	// AcsEngineClientID is the AAD ClientID for the CLI native application
-	acsEngineClientID := getAcsEngineClientId(env.Name)
+	acsEngineClientID := getAcsEngineClientID(env.Name)
 
 	home, err := homedir.Dir()
 	if err != nil {
@@ -252,7 +252,7 @@ func getOAuthConfig(env azure.Environment, subscriptionID string) (*adal.OAuthCo
 	return oauthConfig, tenantID, nil
 }
 
-func getAcsEngineClientId(envName string) string {
+func getAcsEngineClientID(envName string) string {
 	switch envName {
 	case "AzureUSGovernmentCloud":
 		// TODO: Replace with AppId for Azure US Government Cloud
