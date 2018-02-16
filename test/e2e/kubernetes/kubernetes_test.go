@@ -138,7 +138,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				Expect(actualTillerMaxHistory).To(Equal(maxHistory))
 				By("Ensuring that the correct resources have been applied")
-				err = pods[0].Spec.Containers[0].ValidateResources(tillerAddon.Containers[0])
+				err := pods[0].Spec.Containers[0].ValidateResources(tillerAddon.Containers[0])
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("tiller disabled for this cluster, will not test")
@@ -206,7 +206,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					// Assuming one dashboard pod
 					pods, err := pod.GetAllByPrefix("kubernetes-dashboard", "kube-system")
 					for i, c := range dashboardAddon.Containers {
-						err = pods[0].Spec.Containers[i].ValidateResources(c)
+						err := pods[0].Spec.Containers[i].ValidateResources(c)
 						Expect(err).NotTo(HaveOccurred())
 					}
 				}
@@ -224,7 +224,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				// Assuming one aci-connector pod
 				pods, err := pod.GetAllByPrefix("aci-connector", "kube-system")
 				for i, c := range ACIConnectorAddon.Containers {
-					err = pods[0].Spec.Containers[i].ValidateResources(c)
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
 					Expect(err).NotTo(HaveOccurred())
 				}
 
@@ -242,7 +242,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				// Assuming one rescheduler pod
 				pods, err := pod.GetAllByPrefix("rescheduler", "kube-system")
 				for i, c := range reschedulerAddon.Containers {
-					err = pods[0].Spec.Containers[i].ValidateResources(c)
+					err := pods[0].Spec.Containers[i].ValidateResources(c)
 					Expect(err).NotTo(HaveOccurred())
 				}
 			} else {
