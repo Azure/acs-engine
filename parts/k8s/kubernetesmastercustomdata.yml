@@ -342,14 +342,14 @@ coreos:
         ExecStart=/opt/azure/containers/provision-setup.sh
 {{else}}
 runcmd:
-# the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run
+# the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run retry
 - set -x
+- tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/tcpdump-udp.pcap -Z root -i eth0 udp > /dev/null 2>&1 &
+- tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/tcpdump-tcp.pcap -Z root -i eth0 tcp > /dev/null 2>&1 &
 - retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
 - retrycmd_if_failure_no_stats() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; }
 - ensure_etcd_ready() { for i in $(seq 1 1800); do if [ -e /opt/azure/containers/certs.ready ]; then break; fi; sleep 1; done }
 - apt_get_update() { for i in $(seq 1 20); do apt-get update 2>&1 | grep -x "[WE]:.*"; [ $? -ne 0  ] && break || sleep 1; done; echo Executed apt-get update $i times; }
-- retrycmd_if_failure 120 1 nc -zuw1 $(grep nameserver /etc/resolv.conf | cut -d \  -f 2) 53
-- retrycmd_if_failure 120 1 nc -zw1 aptdocker.azureedge.net 443
 - ensure_etcd_ready
 - /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
 - apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
@@ -361,15 +361,14 @@ runcmd:
 - systemctl restart etcd
 - MEMBER="$(sudo etcdctl member list | grep -E {{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}} | cut -d{{WrapAsVariable "singleQuote"}}:{{WrapAsVariable "singleQuote"}} -f 1)"
 - sudo etcdctl member update ${MEMBER} {{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}
-- retrycmd_if_failure 5 5 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 30 --max-time 60 "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"/v2/machines
-- apt_get_update
-- retrycmd_if_failure 5 10 apt-get install -y apt-transport-https ca-certificates
-- retrycmd_if_failure_no_stats 180 1 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg
-- cat /tmp/aptdocker.gpg | apt-key add -
+- curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 30 --max-time 60 "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"/v2/machines
+- apt-get update
+- apt-get install -y apt-transport-https ca-certificates
+- curl -fsSL https://aptdocker.azureedge.net/gpg | apt-key add -
 - echo "deb {{WrapAsVariable "dockerEngineDownloadRepo"}} ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
 - "echo \"Package: docker-engine\nPin: version {{WrapAsVariable "dockerEngineVersion"}}\nPin-Priority: 550\n\" > /etc/apt/preferences.d/docker.pref"
-- apt_get_update
-- retrycmd_if_failure 5 10 apt-get install -y ebtables docker-engine
+- apt-get update
+- apt-get install -y ebtables docker-engine
 - echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
 - systemctl daemon-reload
 - systemctl restart docker
