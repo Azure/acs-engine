@@ -67,6 +67,20 @@ ensureRunCommandCompleted()
     done
 }
 
+# cloudinit runcmd and the extension will run in parallel, this is to ensure
+# runcmd finishes
+ensureDockerInstallCompleted()
+{
+    echo "waiting for docker install to finish"
+    for i in {1..900}; do
+        if [ -e /opt/azure/containers/dockerinstall.complete ]; then
+            echo "docker install finished, took $i seconds"
+            break
+        fi
+        sleep 1
+    done
+}
+
 echo `date`,`hostname`, startscript>>/opt/m
 
 # A delay to start the kubernetes processes is necessary
@@ -691,6 +705,7 @@ fi
 
 # master and node
 echo `date`,`hostname`, EnsureDockerStart>>/opt/m
+ensureDockerInstallCompleted
 ensureDocker
 echo `date`,`hostname`, configNetworkPolicyStart>>/opt/m
 configNetworkPolicy
