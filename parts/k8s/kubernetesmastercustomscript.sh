@@ -30,7 +30,7 @@ packetCaptureProvision() {
     tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/tcpdump-tcp.pcap -Z root -i eth0 tcp > /dev/null 2>&1 &
 }
 
-packetCaptureProvision
+#packetCaptureProvision
 
 # Find distro name via ID value in releases files and upcase
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
