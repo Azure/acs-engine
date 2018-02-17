@@ -218,8 +218,8 @@ func autofillApimodel(dc *deployCmd) {
 
 			err = dc.client.CreateRoleAssignmentSimple(dc.resourceGroup, servicePrincipalObjectID)
 			if err != nil {
-				log.Fatalf("apimodel: could not create or assign ServicePrincipal: %q",err)
-				
+				log.Fatalf("apimodel: could not create or assign ServicePrincipal: %q", err)
+
 			}
 
 			dc.containerService.Properties.ServicePrincipalProfile = &api.ServicePrincipalProfile{
