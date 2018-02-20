@@ -210,6 +210,12 @@
       },
       "type": "string"
     },
+    "kubernetesKubeletClusterDomain": {
+      "metadata": {
+        "description": "--cluster-domain Kubelet config"
+      },
+      "type": "string"
+    },
     "kubernetesHyperkubeSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesHyperkubeSpec"}}
       "metadata": {

@@ -74,7 +74,7 @@ spec:
           optional: true
       containers:
       - args:
-        - "--domain=cluster.local."
+        - "--domain=<kubernetesKubeletClusterDomain>."
         - "--dns-port=10053"
         - "--v=2"
         - "--config-dir=/kube-dns-config"
@@ -138,9 +138,9 @@ spec:
         - mountPath: /kube-dns-config
           name: kube-dns-config
       - args:
-        - "--cmd=nslookup kubernetes.default.svc.cluster.local 127.0.0.1 >/dev/null"
+        - "--cmd=nslookup kubernetes.default.svc.<kubernetesKubeletClusterDomain> 127.0.0.1 >/dev/null"
         - "--url=/healthz-dnsmasq"
-        - "--cmd=nslookup kubernetes.default.svc.cluster.local 127.0.0.1:10053 >/dev/null"
+        - "--cmd=nslookup kubernetes.default.svc.<kubernetesKubeletClusterDomain> 127.0.0.1:10053 >/dev/null"
         - "--url=/healthz-kubedns"
         - "--port=8080"
         - "--quiet"
