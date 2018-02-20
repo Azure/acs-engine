@@ -6,6 +6,9 @@ There are 3 different Network Policy options :
 - Calico
 - Kubenet (none)
 
+Please note that only the `calico` network policy supports the Kubernetes notion
+of network policies.
+
 ## Azure Container Networking (default)
 
 By default (currently Linux clusters only), the `azure` network policy is applied. It is an open source implementation of [the CNI Network Plugin interface](https://github.com/containernetworking/cni/blob/master/SPEC.md) and [the CNI Ipam plugin interface](https://github.com/containernetworking/cni/blob/master/SPEC.md#ip-address-management-ipam-interface)
