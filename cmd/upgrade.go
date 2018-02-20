@@ -206,5 +206,26 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		log.Fatalf("Error upgrading cluster: %s \n", err.Error())
 	}
 
+	apiloader := &api.Apiloader{
+		Translator: &i18n.Translator{
+			Locale: uc.locale,
+		},
+	}
+	b, e := apiloader.SerializeContainerService(uc.containerService, uc.apiVersion)
+
+	if e != nil {
+		return e
+	}
+
+	f := acsengine.FileSaver{
+		Translator: &i18n.Translator{
+			Locale: uc.locale,
+		},
+	}
+
+	if e = f.SaveFile(uc.deploymentDirectory, "apimodel.json", b); e != nil {
+		return e
+	}
+
 	return nil
 }
