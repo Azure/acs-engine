@@ -215,14 +215,11 @@ func autofillApimodel(dc *deployCmd) {
 			log.Warnf("created application with applicationID (%s) and servicePrincipalObjectID (%s).", applicationID, servicePrincipalObjectID)
 
 			log.Warnln("apimodel: ServicePrincipalProfile was empty, assigning role to application...")
-			for {
-				err = dc.client.CreateRoleAssignmentSimple(dc.resourceGroup, servicePrincipalObjectID)
-				if err != nil {
-					log.Debugf("Failed to create role assignment (will retry): %q", err)
-					time.Sleep(3 * time.Second)
-					continue
-				}
-				break
+
+			err = dc.client.CreateRoleAssignmentSimple(dc.resourceGroup, servicePrincipalObjectID)
+			if err != nil {
+				log.Fatalf("apimodel: could not create or assign ServicePrincipal: %q", err)
+
 			}
 
 			dc.containerService.Properties.ServicePrincipalProfile = &api.ServicePrincipalProfile{
