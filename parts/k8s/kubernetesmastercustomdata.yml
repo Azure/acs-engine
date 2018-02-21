@@ -342,7 +342,7 @@ coreos:
         ExecStart=/opt/azure/containers/provision-setup.sh
 {{else}}
 runcmd:
-# the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run
+# the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run retry
 - set -x
 - tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/tcpdump-udp.pcap -Z root -i eth0 udp > /dev/null 2>&1 &
 - tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/tcpdump-tcp.pcap -Z root -i eth0 tcp > /dev/null 2>&1 &
