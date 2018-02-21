@@ -24,5 +24,4 @@
     "{{.Name}}osImageSKU": "[parameters('{{.Name}}osImageSKU')]",
     "{{.Name}}osImagePublisher": "[parameters('{{.Name}}osImagePublisher')]",
     "{{.Name}}osImageVersion": "[parameters('{{.Name}}osImageVersion')]",
-    "masterNICNamePrefix": "[concat(variables('orchestratorName'), '-master-', variables('nameSuffix'), '-', 'nic-')]",
 
