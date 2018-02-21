@@ -372,7 +372,7 @@ func TestGetGPUDriversInstallScript(t *testing.T) {
 	}
 }
 func TestIsNSeriesSKU(t *testing.T) {
-	// VMSize with GPU and NVIDIA agreement for drivers distribution
+	// VMSize with GPU
 	validSkus := []string{
 		"Standard_NC12",
 		"Standard_NC12s_v2",
