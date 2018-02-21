@@ -13,10 +13,6 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/util"
 )
 
-const (
-	testDir string = "testdirectory"
-)
-
 // List is a container that holds all jobs returned from doing a kubectl get jobs
 type List struct {
 	Jobs []Job `json:"items"`
