@@ -82,26 +82,6 @@ func Get(jobName, namespace string) (*Job, error) {
 	return &j, nil
 }
 
-// GetAllByPrefix will return all jobs in a given namespace that match a prefix
-func GetAllByPrefix(prefix, namespace string) ([]Job, error) {
-	jl, err := GetAll(namespace)
-	if err != nil {
-		return nil, err
-	}
-	jobs := []Job{}
-	for _, j := range jl.Jobs {
-		matched, err := regexp.MatchString(prefix+"-.*", j.Metadata.Name)
-		if err != nil {
-			log.Printf("Error trying to match job name:%s\n", err)
-			return nil, err
-		}
-		if matched {
-			jobs = append(jobs, j)
-		}
-	}
-	return jobs, nil
-}
-
 // AreAllJobsCompleted will return true if all jobs with a common prefix in a given namespace are in a Completed State
 func AreAllJobsCompleted(jobPrefix, namespace string) (bool, error) {
 	jl, err := GetAll(namespace)
@@ -111,7 +91,7 @@ func AreAllJobsCompleted(jobPrefix, namespace string) (bool, error) {
 
 	var status []bool
 	for _, job := range jl.Jobs {
-		matched, err := regexp.MatchString(jobPrefix+"-.*", job.Metadata.Name)
+		matched, err := regexp.MatchString(jobPrefix, job.Metadata.Name)
 		if err != nil {
 			log.Printf("Error trying to match job name:%s\n", err)
 			return false, err

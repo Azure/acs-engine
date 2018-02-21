@@ -384,7 +384,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			if eng.HasGPUNodes() {
 				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "nvidia-smi.yaml"), "nvidia-smi", "default")
 				Expect(err).NotTo(HaveOccurred())
-				ready, err := j.WaitOnReady(5*time.Second, cfg.Timeout)
+				ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
 				delErr := j.Delete()
 				if delErr != nil {
 					fmt.Printf("could not delete job %s\n", j.Metadata.Name)
