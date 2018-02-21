@@ -14,7 +14,7 @@
         {
           "name": "linuxpool1",
           "count": 3,
-          "vmSize": "Standard_NC6s_v2",
+          "vmSize": "Standard_NC6",
           "availabilityProfile": "AvailabilitySet"
         }
       ],
