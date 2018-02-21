@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
@@ -152,6 +153,16 @@ func (e *Engine) HasLinuxAgents() bool {
 func (e *Engine) HasWindowsAgents() bool {
 	for _, ap := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
 		if ap.OSType == "Windows" {
+			return true
+		}
+	}
+	return false
+}
+
+// HasGPUNodes will return true if the VM SKU is GPU-enabled
+func (e *Engine) HasGPUNodes() bool {
+	for _, ap := range e.ExpandedDefinition.Properties.AgentPoolProfiles {
+		if strings.Contains(ap.VMSize, "Standard_N") {
 			return true
 		}
 	}
