@@ -181,8 +181,8 @@ Below is a list of kubelet options that are *not* currently user-configurable, e
 |"--pod-manifest-path"|"/etc/kubernetes/manifests"|
 |"--network-plugin"|"cni"|
 |"--node-labels"|(based on Azure node metadata)|
-|"--cgroups-per-qos"|"false"|
-|"--enforce-node-allocatable"|""|
+|"--cgroups-per-qos"|"true"|
+|"--enforce-node-allocatable"|"pods"|
 |"--kubeconfig"|"/var/lib/kubelet/kubeconfig"|
 |"--register-node" (master nodes only)|"true"|
 |"--register-with-taints" (master nodes only)|"node-role.kubernetes.io/master=true:NoSchedule"|
