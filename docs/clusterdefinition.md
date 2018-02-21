@@ -363,7 +363,7 @@ We consider `kubeletConfig`, `controllerManagerConfig`, and `apiServerConfig` to
 |Name|Required|Description|
 |---|---|---|
 |count|yes|Masters have count value of 1, 3, or 5 masters|
-|dnsPrefix|yes|this is the dns prefix for the masters FQDN.  The master FQDN is used for SSH or commandline access. This must be a unique name. ([bring your own VNET examples](../examples/vnet))|
+|dnsPrefix|required if masters are to be exposed publically with a load balancer|this is the dns prefix for the masters FQDN.  The master FQDN is used for SSH or commandline access. This must be a unique name. ([bring your own VNET examples](../examples/vnet))|
 |firstConsecutiveStaticIP|only required when vnetSubnetId specified|this is the IP address of the first master.  IP Addresses will be assigned consecutively to additional master nodes.|
 |vmsize|yes|Describes a valid [Azure VM Sizes](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/).  These are restricted machines with at least 2 cores and 100GB of ephemeral disk space.|
 |osDiskSizeGB|no|Describes the OS Disk Size in GB|

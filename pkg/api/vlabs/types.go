@@ -438,6 +438,11 @@ func (m *MasterProfile) IsCoreOS() bool {
 	return m.Distro == CoreOS
 }
 
+// IsPrivateCluster returns true if the cluster has no public IPs
+func (m *MasterProfile) IsPrivateCluster() bool {
+	return len(m.DNSPrefix) == 0
+}
+
 // IsCustomVNET returns true if the customer brought their own VNET
 func (a *AgentPoolProfile) IsCustomVNET() bool {
 	return len(a.VnetSubnetID) > 0

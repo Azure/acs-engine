@@ -171,7 +171,10 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 }
 
 // Validate implements APIObject
-func (m *MasterProfile) Validate() error {
+func (m *MasterProfile) Validate(orchestratorType string) error {
+	if m.DNSPrefix == "" && orchestratorType == Kubernetes {
+		return nil
+	}
 	if e := validateDNSName(m.DNSPrefix); e != nil {
 		return e
 	}
