@@ -246,6 +246,7 @@ type KubernetesConfig struct {
 	EnableRbac                   *bool             `json:"enableRbac,omitempty"`
 	EnableSecureKubelet          *bool             `json:"enableSecureKubelet,omitempty"`
 	EnableAggregatedAPIs         bool              `json:"enableAggregatedAPIs,omitempty"`
+	EnablePrivateCluster         bool              `json:"enablePrivateCluster,omitempty"`
 	GCHighThreshold              int               `json:"gchighthreshold,omitempty"`
 	GCLowThreshold               int               `json:"gclowthreshold,omitempty"`
 	EtcdVersion                  string            `json:"etcdVersion,omitempty"`
@@ -440,7 +441,7 @@ func (m *MasterProfile) IsCoreOS() bool {
 
 // IsPrivateCluster returns true if the cluster has no public IPs
 func (m *MasterProfile) IsPrivateCluster() bool {
-	return len(m.DNSPrefix) == 0
+	return m.KubernetesConfig.EnablePrivateCluster
 }
 
 // IsCustomVNET returns true if the customer brought their own VNET
