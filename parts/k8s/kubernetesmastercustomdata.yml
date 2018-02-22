@@ -167,12 +167,12 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   content: |
     #!/bin/bash
     set -e
-    {{if gt .MasterProfile.Count 1}}
+{{if gt .MasterProfile.Count 1}}
         # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
         # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
         # This IPTable rule then redirects ILB traffic to port 443 in the prerouting chain
         iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443
-    {{end}}
+{{end}}
 
 {{if IsAzureCNI}}
     # SNAT outbound traffic from pods to destinations outside of VNET.
