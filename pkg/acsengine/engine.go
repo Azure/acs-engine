@@ -295,7 +295,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	kubeconfig := string(b)
 	// variable replacement
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('caCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
-	if properties.IsPrivateCluster() {
+	if properties.OrchestratorProfile.KubernetesConfig.EnablePrivateCluster {
 		if properties.MasterProfile.Count > 1 {
 			// more than 1 master, use the internal lb IP
 			firstMasterIP := net.ParseIP(properties.MasterProfile.FirstConsecutiveStaticIP).To4()
@@ -307,7 +307,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 		} else {
 			// Master count is 1, use the master IP
 			// TODO replace with master IP
-			kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", "", -1)
+			kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", properties.MasterProfile.FirstConsecutiveStaticIP, -1)
 		}
 	} else {
 		kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"reference(concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))).dnsSettings.fqdn\"}}", FormatAzureProdFQDN(properties.MasterProfile.DNSPrefix, location), -1)
@@ -965,7 +965,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return cs.Properties.OrchestratorProfile.IsAzureCNI()
 		},
 		"IsPrivateCluster": func() bool {
-			return cs.Properties.MasterProfile.IsPrivateCluster()
+			return cs.Properties.MasterProfile.KubernetesConfig.EnablePrivateCluster
 		},
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity

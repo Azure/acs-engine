@@ -133,6 +133,7 @@
       "type": "Microsoft.Network/routeTables"
     },
 {{end}}
+{{if not IsPrivateCluster}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
@@ -192,6 +193,7 @@
       },
       "type": "Microsoft.Network/loadBalancers"
     },
+{{end}}
 {{if gt .MasterProfile.Count 1}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
@@ -267,6 +269,7 @@
       },
       "type": "Microsoft.Network/publicIPAddresses"
     },
+{{if not IsPrivateCluster}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
@@ -289,6 +292,7 @@
       },
       "type": "Microsoft.Network/loadBalancers/inboundNatRules"
     },
+{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
@@ -301,7 +305,9 @@
 {{else}}
         "[variables('vnetID')]",
 {{end}}
+{{if not IsPrivateCluster}}
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
+{{end}}
 {{if gt .MasterProfile.Count 1}}
         ,"[variables('masterInternalLbName')]"
 {{end}}
@@ -314,20 +320,26 @@
             "name": "ipconfig1",
             "properties": {
               "loadBalancerBackendAddressPools": [
+{{if not IsPrivateCluster}}
                 {
                   "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
-{{if gt .MasterProfile.Count 1}}                
+                {{if gt .MasterProfile.Count 1}} 
                 ,
+                {{end}}
+{{end}}
+{{if gt .MasterProfile.Count 1}}                
                 {
                    "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
 {{end}}
               ],
               "loadBalancerInboundNatRules": [
+                {{if not IsPrivateCluster}}
                 {
                   "id": "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
                 }
+                {{end}}
               ],
               "privateIPAddress": "[variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))]]",
               "primary": true,
