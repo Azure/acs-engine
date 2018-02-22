@@ -827,9 +827,6 @@ func validateVNET(a *Properties) error {
 		}
 	}
 	if isCustomVNET {
-		if a.HasWindows() {
-			return fmt.Errorf("custom VNET not yet supported with Windows-enabled clusters")
-		}
 		subscription, resourcegroup, vnetname, _, e := GetVNETSubnetIDComponents(a.MasterProfile.VnetSubnetID)
 		if e != nil {
 			return e
