@@ -169,15 +169,29 @@ Per default Calico still allows all communication within the cluster. Using Kube
 
 *Note: Custom VNET for Kubernetes Windows cluster has a [known issue](https://github.com/Azure/acs-engine/issues/1767).*
 
-ACS Engine supports deploying into an existing VNET. Operators must specify the ARM path/id of Subnets for the `masterProfile` and  any `agentPoolProfiles`, as well as the first IP address to use for static IP allocation in `firstConsecutiveStaticIP`. Please note that in any azure subnet, the first four and the last ip address is reserved and can not be used. Additionally, each POD now gets the IP address from the Subnet. As a result, for the master nodes, enough IP addresses (equal to `ipAddressCount`) should be available beyond `firstConsecutiveStaticIP`. By default, the `ipAddressCount` has a value of 30, and can be changed if desired. Furthermore, to prevent source address NAT'ing within the VNET, we assign to the `vnetCidr` property in `masterProfile` the CIDR block that represents the usable address space in the existing VNET.
+ACS Engine supports deploying into an existing VNET. Operators must specify the ARM path/id of Subnets for the `masterProfile` and  any `agentPoolProfiles`, as well as the first IP address to use for IP static IP allocation in `firstConsecutiveStaticIP`. Additionally, to prevent source address NAT'ing within the VNET, we assign to the `vnetCidr` property in `masterProfile` the CIDR block that represents the usable address space in the existing VNET.
 
-See below profiles as an example:
+Depending upon the size of the VNET address space, during deployment, it is possible to experience IP address assignment collision between the required Kubernetes static IPs (one each per master and one for the API server load balancer, if more than one masters) and Azure CNI-assigned dynamic IPs (one for each NIC on the agent nodes). In practice, the larger the VNET the less likely this is to happen; some detail, and then a guideline.
+
+First, the detail:
+
+* Azure CNI assigns dynamic IP addresses from the "beginning" of the subnet IP address space (specifically, it looks for available addresses starting at ".4" ["10.0.0.4" in a "10.0.0.0/24" network])
+* acs-engine will require a range of up to 16 unused IP addresses in multi-master scenarios (1 per master for up to 5 masters, and then the next 10 IP addresses immediately following the "last" master for headroom reservation, and finally 1 more for the load balancer immediately adjacent to the afore-described _n_ masters+10 sequence) to successfully scaffold the network stack for your cluster
+
+A guideline that will remove the danger of IP address allocation collision during deployment:
+
+* If possible, assign to the `firstConsecutiveStaticIP` configuration property an IP address that is near the "end" of the available IP address space in the desired  subnet.
+  * For example, if the desired subnet is a `/24`, choose the "239" address in that network space
+
+In larger subnets (e.g., `/16`) it's not as practically useful to push static IP assignment to the very "end" of large subnet, but as long as it's not in the "first" `/24` (for example) your deployment will be resilient to this edge case behavior.
+
+Before provisioning, modify the `masterProfile` and `agentPoolProfiles` to match the above requirements, with the below being a representative example:
 
 ```json
 "masterProfile": {
   ...
   "vnetSubnetId": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.Network/virtualNetworks/VNET_NAME/subnets/MASTER_SUBNET_NAME",
-  "firstConsecutiveStaticIP": "10.239.0.5",
+  "firstConsecutiveStaticIP": "10.239.255.239",
   "vnetCidr": "10.239.0.0/16",
   ...
 },
