@@ -381,5 +381,6 @@ runcmd:
 - bash /etc/kubernetes/generate-proxy-certs.sh
 {{end}}
 - apt-mark unhold walinuxagent
+- sudo iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443
 - touch /opt/azure/containers/runcmd.complete
 {{end}}
