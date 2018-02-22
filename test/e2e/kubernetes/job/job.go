@@ -37,7 +37,7 @@ type Status struct {
 	Succeeded int `json:"succeeded"`
 }
 
-// CreateJobFromFile will create a Pod from file with a name
+// CreateJobFromFile will create a Job from file with a name
 func CreateJobFromFile(filename, name, namespace string) (*Job, error) {
 	cmd := exec.Command("kubectl", "create", "-f", filename)
 	util.PrintCommand(cmd)
