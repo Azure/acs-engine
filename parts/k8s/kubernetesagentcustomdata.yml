@@ -165,7 +165,7 @@ coreos:
         ExecStart=/opt/azure/containers/provision-setup.sh
 {{else}}
 {{if not EnablePodSecurityPolicy}}
-    sed -i "s|apparmor_parser|d" "/etc/systemd/system/kubelet.service"
+    sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
 {{end}}
 runcmd:
 - echo `date`,`hostname`, startruncmd>>/opt/m
