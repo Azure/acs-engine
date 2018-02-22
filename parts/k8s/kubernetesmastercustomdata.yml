@@ -168,10 +168,10 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     #!/bin/bash
     set -e
 {{if gt .MasterProfile.Count 1}}
-        # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
-        # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
-        # This IPTable rule then redirects ILB traffic to port 443 in the prerouting chain
-        iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443
+    # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
+    # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
+    # This IPTable rule then redirects ILB traffic to port 443 in the prerouting chain
+    iptables -t nat -A PREROUTING -p tcp --dport 4443 -j REDIRECT --to-port 443
 {{end}}
 
 {{if IsAzureCNI}}
@@ -351,7 +351,7 @@ runcmd:
 - ensure_etcd_ready
 - /opt/azure/containers/setup-etcd.sh > /opt/azure/containers/setup-etcd.log 2>&1
 - apt-mark hold walinuxagent {{GetKubernetesMasterPreprovisionYaml}}
-- /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --peer-client-cert-auth --peer-trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --peer-cert-file={{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}} --peer-key-file={{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}} --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --cert-file={{WrapAsVariable "etcdServerCertFilepath"}} --key-file={{WrapAsVariable "etcdServerKeyFilepath"}} --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',https://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster {{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk" --initial-cluster-state "new" | tee -a /etc/default/etcd
+- /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --peer-client-cert-auth --peer-trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --peer-cert-file={{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}} --peer-key-file={{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}} --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --cert-file={{WrapAsVariable "etcdServerCertFilepath"}} --key-file={{WrapAsVariable "etcdServerKeyFilepath"}} --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',https://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster "{{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk"" --initial-cluster-state "new" | tee -a /etc/default/etcd
 - /opt/azure/containers/mountetcd.sh
 - /bin/chown -R etcd:etcd /var/lib/etcddisk
 - systemctl stop etcd
