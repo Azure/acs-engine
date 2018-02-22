@@ -248,7 +248,7 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesAPIServerConfig>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.APIServerConfig}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
     sed -i "s|<kubernetesAPIServerIP>|{{WrapAsVariable "kubernetesAPIServerIP"}}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{if not EnablePodSecurityPolicy}}
-    sed -i "s|apparmor_parser|d" "/etc/default/kubelet"
+    sed -i "s|apparmor_parser|d" "/etc/systemd/system/kubelet.service"
 {{end}}
 
 - path: "/opt/azure/containers/provision.sh"
