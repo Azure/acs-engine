@@ -14,6 +14,7 @@ import (
 	"github.com/Azure/acs-engine/test/e2e/config"
 	"github.com/Azure/acs-engine/test/e2e/engine"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/deployment"
+	"github.com/Azure/acs-engine/test/e2e/kubernetes/job"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/node"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/pod"
 	"github.com/Azure/acs-engine/test/e2e/kubernetes/service"
@@ -374,6 +375,23 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 			} else {
 				Skip("No linux agent was provisioned for this Cluster Definition")
+			}
+		})
+	})
+
+	Describe("with a GPU-enabled agent pool", func() {
+		It("should be able to run a nvidia-gpu job", func() {
+			if eng.HasGPUNodes() {
+				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "nvidia-smi.yaml"), "nvidia-smi", "default")
+				Expect(err).NotTo(HaveOccurred())
+				ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
+				delErr := j.Delete()
+				if delErr != nil {
+					fmt.Printf("could not delete job %s\n", j.Metadata.Name)
+					fmt.Println(delErr)
+				}
+				Expect(err).NotTo(HaveOccurred())
+				Expect(ready).To(Equal(true))
 			}
 		})
 	})

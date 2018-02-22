@@ -1190,6 +1190,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return false
 		},
+		"IsNSeriesSKU": func(profile *api.AgentPoolProfile) bool {
+			return isNSeriesSKU(profile)
+		},
 		"GetGPUDriversInstallScript": func(profile *api.AgentPoolProfile) string {
 			return getGPUDriversInstallScript(profile)
 		},
@@ -1687,6 +1690,10 @@ func getPackageGUID(orchestratorType string, orchestratorVersion string, masterC
 	return ""
 }
 
+func isNSeriesSKU(profile *api.AgentPoolProfile) bool {
+	return strings.Contains(profile.VMSize, "Standard_N")
+}
+
 func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 
 	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
@@ -1700,7 +1707,8 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 	installScript := fmt.Sprintf(`- rmmod nouveau
 - sh -c "echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf"
 - update-initramfs -u
-- sudo apt-get update && sudo apt-get install -y linux-headers-$(uname -r) gcc make
+- apt_get_update
+- retrycmd_if_failure 5 10 apt-get install -y linux-headers-$(uname -r) gcc make
 - mkdir -p %s
 - cd %s`, dest, dest)
 
@@ -1710,22 +1718,22 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 		Instead we use Overlayfs to move the newly installed libraries under /usr/local/nvidia/lib64
 	*/
 	installScript += fmt.Sprintf(`
-- curl -fLS https://us.download.nvidia.com/tesla/%s/NVIDIA-Linux-x86_64-%s.run -o nvidia-drivers-%s
+- retrycmd_if_failure 5 10 curl -fLS https://us.download.nvidia.com/tesla/%s/NVIDIA-Linux-x86_64-%s.run -o nvidia-drivers-%s
 - mkdir -p lib64 overlay-workdir
-- sudo mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=lib64,workdir=overlay-workdir none /usr/lib/x86_64-linux-gnu`, dv, dv, dv)
+- mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=lib64,workdir=overlay-workdir none /usr/lib/x86_64-linux-gnu`, dv, dv, dv)
 
 	/*
 		Install the drivers and update /etc/ld.so.conf.d/nvidia.conf which will make the libraries discoverable through $LD_LIBRARY_PATH.
 		Run nvidia-smi to test the installation, unmount overlayfs and restard kubelet (GPUs are only discovered when kubelet starts)
 	*/
 	installScript += fmt.Sprintf(`
-- sudo sh nvidia-drivers-%s --silent --accept-license --no-drm --utility-prefix="%s" --opengl-prefix="%s"
+- sh nvidia-drivers-%s --silent --accept-license --no-drm --utility-prefix="%s" --opengl-prefix="%s"
 - echo "%s" > /etc/ld.so.conf.d/nvidia.conf
-- sudo ldconfig
-- sudo umount /usr/lib/x86_64-linux-gnu
-- sudo nvidia-modprobe -u -c0
-- sudo %s/bin/nvidia-smi
-- sudo systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
+- ldconfig
+- umount /usr/lib/x86_64-linux-gnu
+- nvidia-modprobe -u -c0
+- %s/bin/nvidia-smi
+- retrycmd_if_failure 5 10 systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
 
 	// We don't have an agreement in place with NVIDIA to provide the drivers on every sku. For this VMs we simply log a warning message.
 	na := getGPUDriversNotInstalledWarningMessage(profile.VMSize)
