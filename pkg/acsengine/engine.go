@@ -893,6 +893,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 		},
+		"IsUserAssigned": func() bool {
+			return cs.Properties.OrchestratorProfile.KubernetesConfig.EnableUserAssignedID
+		},
 		"UseInstanceMetadata": func() bool {
 			if cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata == nil {
 				return true
