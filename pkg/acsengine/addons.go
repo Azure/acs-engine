@@ -67,6 +67,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "calico",
 		},
 		{
+			"kubernetesmasteraddons-azurenpm-daemonset.yaml",
+			"azurenpm-daemonset.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.NetworkPolicy == "azure",
+		},
+		{
 			"kubernetesmasteraddons-aad-default-admin-group-rbac.yaml",
 			"aad-default-admin-group-rbac.yaml",
 			profile.AADProfile != nil && profile.AADProfile.AdminGroupID != "",
