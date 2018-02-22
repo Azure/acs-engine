@@ -21,8 +21,14 @@ type List struct {
 // Job is used to parse data from kubectl get jobs
 type Job struct {
 	Metadata pod.Metadata `json:"metadata"`
-	Spec     pod.Spec     `json:"spec"`
+	Spec     Spec         `json:"spec"`
 	Status   Status       `json:"status"`
+}
+
+// Spec holds job spec metadata
+type Spec struct {
+	Completions int `json:"completions"`
+	Parallelism int `json:"parallelism"`
 }
 
 // Status holds job status information
@@ -97,9 +103,9 @@ func AreAllJobsCompleted(jobPrefix, namespace string) (bool, error) {
 			return false, err
 		}
 		if matched {
-			if job.Status.Active == 1 {
+			if job.Status.Active > 0 {
 				status = append(status, false)
-			} else if job.Status.Succeeded == 1 {
+			} else if job.Status.Succeeded == job.Spec.Completions {
 				status = append(status, true)
 			}
 		}
@@ -154,7 +160,7 @@ func (j *Job) WaitOnReady(sleep, duration time.Duration) (bool, error) {
 	return WaitOnReady(j.Metadata.Name, j.Metadata.Namespace, sleep, duration)
 }
 
-// Delete will delete a Pod in a given namespace
+// Delete will delete a Job in a given namespace
 func (j *Job) Delete() error {
 	cmd := exec.Command("kubectl", "delete", "job", "-n", j.Metadata.Namespace, j.Metadata.Name)
 	util.PrintCommand(cmd)
