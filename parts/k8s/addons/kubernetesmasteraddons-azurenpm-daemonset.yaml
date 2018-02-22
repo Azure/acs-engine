@@ -1,0 +1,21 @@
+#This is a dummy pod yet. It is used to test Azure Container Network Policy Manager integration with acs-engine.
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: azure-npm
+  namespace: kube-system
+  labels:
+    app: azure-npm
+spec:
+  template:
+    metadata:
+      labels:
+        k8s-app: azure-npm
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      containers:
+        - name: azure-npm
+          image: yonglichenms/get-started:part2
+          ports:
+            - containerPort: 80
