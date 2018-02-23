@@ -64,6 +64,15 @@
         "apiVersion": "2015-08-31-PREVIEW",
         "location": "[variables('location')]"
       },
+      {
+        "apiVersion": "2014-10-01-preview",
+        "name": "[concat(variables('identityName'), 'roleAssignment'))]",
+        "type": "Microsoft.Authorization/roleAssignments",
+        "properties": {
+          "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+          "principalId": "[reference(concat('Microsoft.ManagedIdentity/userAssignedIdentities', [variables('identityName')]).principalId]"
+        }
+      },
     {{end}}
     {{ range $index, $element := .AgentPoolProfiles}}
       {{if $index}}, {{end}}
