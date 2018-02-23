@@ -22,7 +22,9 @@
     {
       "apiVersion": "[variables('apiVersionStorage')]",
       "dependsOn": [
+      {{if not IsPrivateCluster}}
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
+      {{end}}
       ],
       "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
@@ -134,6 +136,18 @@
     },
 {{end}}
 {{if not IsPrivateCluster}}
+    {
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "location": "[variables('location')]",
+      "name": "[variables('masterPublicIPAddressName')]",
+      "properties": {
+        "dnsSettings": {
+          "domainNameLabel": "[variables('masterFqdnPrefix')]"
+        },
+        "publicIPAllocationMethod": "Dynamic"
+      },
+      "type": "Microsoft.Network/publicIPAddresses"
+    },
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
@@ -426,18 +440,6 @@
       "type": "Microsoft.Network/loadBalancers"
     },
 {{end}}
-    {
-      "apiVersion": "[variables('apiVersionDefault')]",
-      "location": "[variables('location')]",
-      "name": "[variables('masterPublicIPAddressName')]",
-      "properties": {
-        "dnsSettings": {
-          "domainNameLabel": "[variables('masterFqdnPrefix')]"
-        },
-        "publicIPAllocationMethod": "Dynamic"
-      },
-      "type": "Microsoft.Network/publicIPAddresses"
-    },
     {
     {{if .MasterProfile.IsManagedDisks}}
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
