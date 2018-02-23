@@ -89,11 +89,11 @@ $ kubectl port-forward $GF_POD_NAME 3000:3000 &
 |extensionParameters|no|see below|
 |rootURL|optional||
 
-_Note_: the format for `extensionParameters` is the following: `"<namespace>;<prometheus_values_config_url>"`. Each of these placeholders are optional (as is the entire `extensionParameters` itself)
+_Note_: the format for `extensionParameters` is the following: `"<namespace>;<prometheus_values_config_url>;<cadvisor_daemonset_config_url>"`. Each of these placeholders are optional (as is the entire `extensionParameters` itself)
 
 # Example
 ``` javascript
-{ "name": "prometheus-grafana-k8s", "version": "v1", "extensionParameters": "monitoring;" }
+{ "name": "prometheus-grafana-k8s", "version": "v1", "extensionParameters": "monitoring;;" }
 ```
 
 # Supported Orchestrators
