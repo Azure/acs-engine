@@ -1,12 +1,3 @@
-{{if EnableUserAssignedID }}
-    "identityName": {
-      "defaultValue": "",
-      "metadata": {
-        "description": "The identity for this kubernetes cluster"
-      },
-      "type": "string"
-    },
-{{end}}
 {{if .HasAadProfile}}
     "aadTenantId": {
       "defaultValue": "",

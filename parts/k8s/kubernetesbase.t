@@ -39,7 +39,7 @@
   },
   "variables": {
     {{if EnableUserAssignedID }}
-      "identityName": "[parameters('identityName')]",
+      "identityName": "clusterIdentity",
       "userAssignedID": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('identityName'))]",
     {{else}}
       "userAssignedID": "",
