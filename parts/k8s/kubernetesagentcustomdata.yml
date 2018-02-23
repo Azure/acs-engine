@@ -168,6 +168,7 @@ runcmd:
 - echo `date`,`hostname`, startruncmd>>/opt/m
 # the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run retry
 - set -x
+- timeout 600 strace -t -e trace=network -p 1 -o /var/log/azure/strace-network > /dev/null 2>&1 &
 - tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/tcpdump-udp.pcap -Z root -i eth0 udp > /dev/null 2>&1 &
 - tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/tcpdump-tcp.pcap -Z root -i eth0 tcp > /dev/null 2>&1 &
 - retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
