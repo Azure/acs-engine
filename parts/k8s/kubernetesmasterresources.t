@@ -21,11 +21,11 @@
     },
     {
       "apiVersion": "[variables('apiVersionStorage')]",
+{{if not IsPrivateCluster}}
       "dependsOn": [
-      {{if not IsPrivateCluster}}
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
-      {{end}}
       ],
+{{end}}
       "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
       "properties": {

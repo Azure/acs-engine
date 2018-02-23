@@ -67,7 +67,7 @@
         "count": "[variables('{{.Name}}StorageAccountsCount')]",
         "name": "loop"
       },
-      {{if not IsHostedMaster}}]
+      {{if not IsHostedMaster}}
       {{if not IsPrivateCluster}}
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
