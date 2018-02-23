@@ -239,12 +239,12 @@ var (
 )
 
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
-func SetPropertiesDefaults(cs *api.ContainerService) (bool, error) {
+func SetPropertiesDefaults(cs *api.ContainerService, isUpgrade bool) (bool, error) {
 	properties := cs.Properties
 
 	setOrchestratorDefaults(cs)
 
-	setMasterNetworkDefaults(properties)
+	setMasterNetworkDefaults(properties, isUpgrade)
 
 	setHostedMasterNetworkDefaults(properties)
 
@@ -456,7 +456,7 @@ func setHostedMasterNetworkDefaults(a *api.Properties) {
 }
 
 // SetMasterNetworkDefaults for masters
-func setMasterNetworkDefaults(a *api.Properties) {
+func setMasterNetworkDefaults(a *api.Properties, isUpgrade bool) {
 	if a.MasterProfile == nil {
 		return
 	}
@@ -471,7 +471,8 @@ func setMasterNetworkDefaults(a *api.Properties) {
 			if a.OrchestratorProfile.IsAzureCNI() {
 				// When VNET integration is enabled, all masters, agents and pods share the same large subnet.
 				a.MasterProfile.Subnet = a.OrchestratorProfile.KubernetesConfig.ClusterSubnet
-				if len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
+				// FirstConsecutiveStaticIP is not reset if it is upgrade and some value already exists
+				if !isUpgrade || len(a.MasterProfile.FirstConsecutiveStaticIP) == 0 {
 					a.MasterProfile.FirstConsecutiveStaticIP = getFirstConsecutiveStaticIPAddress(a.MasterProfile.Subnet)
 				}
 			} else {
