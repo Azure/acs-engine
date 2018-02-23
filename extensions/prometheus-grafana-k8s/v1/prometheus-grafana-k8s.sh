@@ -154,6 +154,17 @@ install_helm() {
     echo $(date) " - helm installed"
 }
 
+install_cadvisor() {
+    echo "$(date) - Installing cAdvisor"
+    local NAMESPACE="$1"
+    echo "$(date) - Using namespace $NAMESPACE"
+    local CADVISOR_DS_CONFIG_URL="$2"
+    echo "$(date) - Using cAdvisor config at $CADVISOR_DS_CONFIG_URL"
+
+    curl -o cadvisor_ds.yml "$CADVISOR_DS_CONFIG_URL"
+    kubectl apply -f ./cadvisor_ds.yml
+}
+
 update_helm() {
     echo $(date) " - Updating Helm repositories"
     helm repo update
@@ -257,6 +268,7 @@ ensure_k8s_namespace_exists() {
 
 NAMESPACE=default
 RAW_PROMETHEUS_CHART_VALS="https://raw.githubusercontent.com/Azure/acs-engine/master/extensions/prometheus-grafana-k8s/v1/prometheus_values.yaml"
+CADVISOR_CONFIG_URL="https://raw.githubusercontent.com/Azure/acs-engine/master/extensions/prometheus-grafana-k8s/v1/cadvisor_daemonset.yml"
 
 # retrieve and parse extension parameters
 if [[ -n "$1" ]]; then
@@ -268,6 +280,10 @@ if [[ -n "$1" ]]; then
     if [[ -n "${INPUT[1]}" ]]; then
         RAW_PROMETHEUS_CHART_VALS="${INPUT[1]}"
         echo "$(date) - Custom prometheus chart values url specified: $RAW_PROMETHEUS_CHART_VALS"
+    fi
+    if [[ -n "${INPUT[2]}" ]]; then
+        CADVISOR_CONFIG_URL="${INPUT[2]}"
+        echo "$(date) - Custom cAdvisor config url specified: $CADVISOR_CONFIG_URL"
     fi
 fi
 
@@ -312,6 +328,7 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 update_helm
+install_cadvisor $NAMESPACE $CADVISOR_CONFIG_URL
 install_prometheus $NAMESPACE
 install_grafana $NAMESPACE
 
