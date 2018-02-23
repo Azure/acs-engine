@@ -65,6 +65,7 @@ $global:KubeServiceCIDR = "{{WrapAsVariable "kubeServiceCidr"}}"
 $global:KubeNetwork = "l2bridge"
 
 $global:UseManagedIdentityExtension = "{{WrapAsVariable "useManagedIdentityExtension"}}"
+$global:UserAssignedID = "{{WrapAsVariable "userAssignedID"}}"
 $global:UseInstanceMetadata = "{{WrapAsVariable "useInstanceMetadata"}}"
 
 $global:CNIPath = [Io.path]::Combine("$global:KubeDir", "cni")
@@ -174,6 +175,7 @@ Write-AzureConfig()
     "routeTableName": "$global:RouteTableName",
     "primaryAvailabilitySetName": "$global:PrimaryAvailabilitySetName",
     "useManagedIdentityExtension": $global:UseManagedIdentityExtension,
+    "userAssignedID": $global:UserAssignedID,
     "useInstanceMetadata": $global:UseInstanceMetadata
 }
 "@

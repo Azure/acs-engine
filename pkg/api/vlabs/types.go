@@ -238,6 +238,7 @@ type KubernetesConfig struct {
 	MaxPods                      int               `json:"maxPods,omitempty"`
 	DockerBridgeSubnet           string            `json:"dockerBridgeSubnet,omitempty"`
 	UseManagedIdentity           bool              `json:"useManagedIdentity,omitempty"`
+	EnableUserAssignedID         bool              `json:"enableUserAssignedID,omitempty"`
 	CustomHyperkubeImage         string            `json:"customHyperkubeImage,omitempty"`
 	DockerEngineVersion          string            `json:"dockerEngineVersion,omitempty"`
 	CustomCcmImage               string            `json:"customCcmImage,omitempty"`

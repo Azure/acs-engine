@@ -38,6 +38,12 @@
     {{template "k8s/kubernetesparams.t" .}}
   },
   "variables": {
+    {{if EnableUserAssignedID }}
+      "identityName": "[parameters('identityName')]",
+      "userAssignedID": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('identityName'))]",
+    {{else}}
+      "userAssignedID": "",
+    {{end}}
     {{range $index, $agent := .AgentPoolProfiles}}
         "{{.Name}}Index": {{$index}},
         {{template "k8s/kubernetesagentvars.t" .}}
@@ -51,6 +57,14 @@
     {{template "k8s/kubernetesmastervars.t" .}}
   },
   "resources": [
+    {{if EnableUserAssignedID }}
+      {
+        "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+        "name": "[variables('identityName')]",
+        "apiVersion": "2015-08-31-PREVIEW",
+        "location": "[variables('location')]"
+      },
+    {{end}}
     {{ range $index, $element := .AgentPoolProfiles}}
       {{if $index}}, {{end}}
       {{if .IsWindows}}

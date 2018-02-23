@@ -134,11 +134,20 @@
       },
       "location": "[variables('location')]",
       "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(variables('{{.Name}}Offset')))]",
-      {{if UseManagedIdentity}}
+{{if UseManagedIdentity}}
+  {{if EnableUserAssignedID}}
+      "identity": {
+        "type": "userAssigned",
+        "identityIds": [
+            "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('identityName'))]"
+        ]
+      },
+  {{else}}
       "identity": {
         "type": "systemAssigned"
       },
-      {{end}}
+  {{end}}
+{{end}}
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('{{.Name}}AvailabilitySet'))]"
@@ -198,7 +207,31 @@
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
-    {{if UseManagedIdentity}}
+{{if UseManagedIdentity}}
+  {{if EnableUserAssignedID}}
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('{{.Name}}VMNamePrefix'), copyIndex(), '/ManagedIdentityExtension')]",
+      "copy": {
+        "count": "[variables('{{.Name}}Count')]",
+        "name": "vmLoopNode"
+      },
+      "apiVersion": "2015-05-01-preview",
+      "location": "[variables('location')]",
+      "dependsOn": [
+          "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex())]",
+      ],
+      "properties": {
+          "publisher": "Microsoft.ManagedIdentity",
+          "type": "ManagedIdentityExtensionForLinux",
+          "typeHandlerVersion": "1.0",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+              "port": 50342
+          }
+      }
+    },
+  {{else}}
     {
       "apiVersion": "2014-10-01-preview",
       "copy": {
@@ -220,7 +253,7 @@
          "name": "vmLoopNode"
        },
        "apiVersion": "2015-05-01-preview",
-       "location": "[resourceGroup().location]",
+       "location": "[variables('location')]",
        "dependsOn": [
          "[concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex())]",
          "[concat('Microsoft.Authorization/roleAssignments/', guid(concat('Microsoft.Compute/virtualMachines/', variables('{{.Name}}VMNamePrefix'), copyIndex(), 'vmidentity')))]"
@@ -236,7 +269,8 @@
          "protectedSettings": {}
        }
      },
-     {{end}}
+  {{end}}
+{{end}}
      {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
