@@ -8,7 +8,7 @@ import (
 
 func main() {
 	log.SetFormatter(&log.TextFormatter{ForceColors: true})
-        log.SetOutput(colorable.NewColorableStdout())
+	log.SetOutput(colorable.NewColorableStdout())
 	if err := cmd.NewRootCmd().Execute(); err != nil {
 		log.Fatalln(err)
 	}
