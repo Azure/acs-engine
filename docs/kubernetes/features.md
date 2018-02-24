@@ -259,3 +259,21 @@ This should look like:
       }
     ],
 ```
+
+<a name="feat-private-cluster"></a>
+
+## Private Cluster
+
+You can build a private Kubernetes cluster with no public IP addresses assigned by setting:
+
+```
+      "kubernetesConfig": {
+        "enablePrivateCluster": true
+      }
+```
+
+In order to access this cluster using kubectl commands, you will need a host in the same VNET (or onto a peer VNET that routes to the VNET). You will then be able to ssh into your nodes (given that your ssh key is on the host). Alternatively, you may:
+- install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) on the host
+- copy the kubeconfig artifact for the right region from the deployment directory to the host
+- run `export KUBECONFIG=<path to your kubeconfig>`
+- run `kubectl` commands directly on the host
