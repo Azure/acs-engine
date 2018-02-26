@@ -272,7 +272,7 @@ You can build a private Kubernetes cluster with no public IP addresses assigned 
       }
 ```
 
-In order to access this cluster using kubectl commands, you will need a jumpbox in the same VNET (or onto a peer VNET that routes to the VNET). You will then be able to ssh into your nodes (given that your ssh key is on the jumpbox). Alternatively, you may:
+In order to access this cluster using kubectl commands, you will need a jumpbox in the same VNET (or onto a peer VNET that routes to the VNET). You can create a new jumpbox (if you don't already have one) in the Azure Portal under "Create a resource > Compute > Ubuntu Server 16.04 LTS VM" or using the [az cli](https://docs.microsoft.com/en-us/cli/azure/vm?view=azure-cli-latest#az_vm_create). You will then be able to ssh into your nodes (given that your ssh key is on the jumpbox). Alternatively, you may:
 - install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) on the jumpbox
 - copy the kubeconfig artifact for the right region from the deployment directory to the jumpbox
 - run `export KUBECONFIG=<path to your kubeconfig>`
