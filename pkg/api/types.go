@@ -692,3 +692,17 @@ func (k *KubernetesConfig) IsReschedulerEnabled() bool {
 	}
 	return reschedulerAddon.IsEnabled(DefaultReschedulerAddonEnabled)
 }
+
+// IsMetricsServerEnabled checks if the metrics server addon is enabled
+func (o *OrchestratorProfile) IsMetricsServerEnabled() bool {
+	var metricsServerAddon KubernetesAddon
+	k := o.KubernetesConfig
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultMetricsServerAddonName {
+			metricsServerAddon = k.Addons[i]
+		}
+	}
+	k8sSemVer, _ := semver.NewVersion(o.OrchestratorVersion)
+	constraint, _ := semver.NewConstraint(">= 1.9.0")
+	return metricsServerAddon.IsEnabled(DefaultMetricsServerAddonEnabled) || constraint.Check(k8sSemVer)
+}
