@@ -255,8 +255,7 @@ func getOAuthConfig(env azure.Environment, subscriptionID string) (*adal.OAuthCo
 func getAcsEngineClientID(envName string) string {
 	switch envName {
 	case "AzureUSGovernmentCloud":
-		// TODO: Replace with AppId for Azure US Government Cloud
-		return "76e0feec-6b7f-41f0-81a7-b1b944520261"
+		return "e8b7f94b-85c9-47f4-964a-98dafd7fc2d8"
 	default:
 		return "76e0feec-6b7f-41f0-81a7-b1b944520261"
 	}
