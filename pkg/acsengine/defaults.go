@@ -2,7 +2,6 @@ package acsengine
 
 import (
 	"bytes"
-	"encoding/binary"
 	"fmt"
 	"net"
 	"sort"
@@ -488,6 +487,9 @@ func setMasterNetworkDefaults(a *api.Properties) {
 
 	// Set the default number of IP addresses allocated for masters.
 	if a.MasterProfile.IPAddressCount == 0 {
+		// Allocate one IP address for the node.
+		a.MasterProfile.IPAddressCount = 1
+
 		// Allocate IP addresses for pods if VNET integration is enabled.
 		if a.OrchestratorProfile.IsAzureCNI() {
 			if a.OrchestratorProfile.OrchestratorType == api.Kubernetes {
@@ -685,23 +687,27 @@ func certsAlreadyPresent(c *api.CertificateProfile, m int) map[string]bool {
 
 // getFirstConsecutiveStaticIPAddress returns the first static IP address of the given subnet.
 func getFirstConsecutiveStaticIPAddress(subnetStr string) string {
-	ip, _, err := net.ParseCIDR(subnetStr)
+	_, subnet, err := net.ParseCIDR(subnetStr)
 	if err != nil {
 		return DefaultFirstConsecutiveKubernetesStaticIP
 	}
 
-	ipv4 := ip.To4()
-	if ipv4 == nil {
-		return DefaultFirstConsecutiveKubernetesStaticIP
+	// Find the first and last octet of the host bits.
+	ones, bits := subnet.Mask.Size()
+	firstOctet := ones / 8
+	lastOctet := bits/8 - 1
+
+	// Set the remaining host bits in the first octet.
+	subnet.IP[firstOctet] |= (1 << byte((8 - (ones % 8)))) - 1
+
+	// Fill the intermediate octets with 1s and last octet with offset. This is done so to match
+	// the existing behavior of allocating static IP addresses from the last /24 of the subnet.
+	for i := firstOctet + 1; i < lastOctet; i++ {
+		subnet.IP[i] = 255
 	}
+	subnet.IP[lastOctet] = DefaultKubernetesFirstConsecutiveStaticIPOffset
 
-	ipint := binary.BigEndian.Uint32(ipv4)
-
-	// First 4 IPs will be reserved in Azure and cannot use.
-	ipint += 4
-	startIP := make(net.IP, 4)
-	binary.BigEndian.PutUint32(startIP, ipint)
-	return startIP.String()
+	return subnet.IP.String()
 }
 
 func getAddonsIndexByName(addons []api.KubernetesAddon, name string) int {

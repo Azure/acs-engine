@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/base64"
-	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,7 +11,6 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
-	"net"
 	"net/http"
 	"regexp"
 	"runtime/debug"
@@ -877,62 +875,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return strings.TrimSuffix(buf.String(), ", ")
 		},
-		"GetMasterCount": func() int {
-			masterProfile := cs.Properties.MasterProfile
-			if masterProfile == nil {
-				return 0
-			}
-			return masterProfile.Count
-		},
-		"GetMasterSecondaryIP": func() string {
-			var ips string
-			var ipint uint32
-
-			profile := cs.Properties.MasterProfile
-			if profile == nil {
-				return ""
-			}
-
-			ip := net.ParseIP(profile.FirstConsecutiveStaticIP)
-			ipv4 := ip.To4()
-			if ipv4 != nil {
-				ipint = binary.BigEndian.Uint32(ipv4)
-			} else {
-				log.Fatalf("Net IP To4() function returns nil")
-			}
-
-			// Make space for first few IPs.
-			ipint += uint32(profile.Count) + uint32(DefaultInternalLbStaticIPOffset) - 1
-			startIP := make(net.IP, 4)
-			binary.BigEndian.PutUint32(startIP, ipint)
-
-			totalIPCount := profile.Count * profile.IPAddressCount
-			ipint = 0
-
-			// Generate All secondary IPs that master will use.
-			for count := totalIPCount; count > 0; count-- {
-				ipv4 = startIP.To4()
-				if ipv4 != nil {
-					ipint = binary.BigEndian.Uint32(ipv4)
-				} else {
-					log.Fatalf("Net IP To4() function returns nil for startIP")
-				}
-
-				ipint++
-				newIP := make(net.IP, 4)
-				binary.BigEndian.PutUint32(newIP, ipint)
-
-				if ips != "" {
-					ips = ips + "," + "\"" + newIP.String() + "\""
-				} else {
-					ips = "\"" + newIP.String() + "\""
-				}
-
-				startIP = newIP
-			}
-
-			return ips
-		},
 		"RequiresFakeAgentOutput": func() bool {
 			return cs.Properties.OrchestratorProfile.OrchestratorType == api.Kubernetes
 		},
@@ -1247,6 +1189,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				}
 			}
 			return false
+		},
+		"IsNSeriesSKU": func(profile *api.AgentPoolProfile) bool {
+			return isNSeriesSKU(profile)
 		},
 		"GetGPUDriversInstallScript": func(profile *api.AgentPoolProfile) string {
 			return getGPUDriversInstallScript(profile)
@@ -1745,23 +1690,50 @@ func getPackageGUID(orchestratorType string, orchestratorVersion string, masterC
 	return ""
 }
 
+func isNSeriesSKU(profile *api.AgentPoolProfile) bool {
+	return strings.Contains(profile.VMSize, "Standard_N")
+}
+
 func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 
 	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
-	dv := "384"
+	dv := "384.111"
+	dest := "/usr/local/nvidia"
 
 	/*
 		First we remove the nouveau drivers, which are the open source drivers for NVIDIA cards. Nouveau is installed on NV Series VMs by default.
-		Then we add the graphics-drivers ppa repository and get the proprietary drivers from there.
+		We also installed needed dependencies.
 	*/
-	ppaScript := fmt.Sprintf(`- rmmod nouveau
+	installScript := fmt.Sprintf(`- rmmod nouveau
 - sh -c "echo \"blacklist nouveau\" >> /etc/modprobe.d/blacklist.conf"
 - update-initramfs -u
-- sudo add-apt-repository -y ppa:graphics-drivers
-- sudo apt-get update
-- sudo apt-get install -y nvidia-%s
-- sudo nvidia-smi
-- sudo systemctl restart kubelet`, dv)
+- apt_get_update
+- retrycmd_if_failure 5 10 apt-get install -y linux-headers-$(uname -r) gcc make
+- mkdir -p %s
+- cd %s`, dest, dest)
+
+	/*
+		Download the .run file from NVIDIA.
+		Nvidia libraries are always install in /usr/lib/x86_64-linux-gnu, and there is no option in the run file to change this.
+		Instead we use Overlayfs to move the newly installed libraries under /usr/local/nvidia/lib64
+	*/
+	installScript += fmt.Sprintf(`
+- retrycmd_if_failure 5 10 curl -fLS https://us.download.nvidia.com/tesla/%s/NVIDIA-Linux-x86_64-%s.run -o nvidia-drivers-%s
+- mkdir -p lib64 overlay-workdir
+- mount -t overlay -o lowerdir=/usr/lib/x86_64-linux-gnu,upperdir=lib64,workdir=overlay-workdir none /usr/lib/x86_64-linux-gnu`, dv, dv, dv)
+
+	/*
+		Install the drivers and update /etc/ld.so.conf.d/nvidia.conf which will make the libraries discoverable through $LD_LIBRARY_PATH.
+		Run nvidia-smi to test the installation, unmount overlayfs and restard kubelet (GPUs are only discovered when kubelet starts)
+	*/
+	installScript += fmt.Sprintf(`
+- sh nvidia-drivers-%s --silent --accept-license --no-drm --utility-prefix="%s" --opengl-prefix="%s"
+- echo "%s" > /etc/ld.so.conf.d/nvidia.conf
+- ldconfig
+- umount /usr/lib/x86_64-linux-gnu
+- nvidia-modprobe -u -c0
+- %s/bin/nvidia-smi
+- retrycmd_if_failure 5 10 systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
 
 	// We don't have an agreement in place with NVIDIA to provide the drivers on every sku. For this VMs we simply log a warning message.
 	na := getGPUDriversNotInstalledWarningMessage(profile.VMSize)
@@ -1770,14 +1742,14 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 	   that we have an agreement with NVIDIA for this specific gpu. Otherwise use the warning message.
 	*/
 	dm := map[string]string{
-		"Standard_NC6":      ppaScript,
-		"Standard_NC12":     ppaScript,
-		"Standard_NC24":     ppaScript,
-		"Standard_NC24r":    ppaScript,
-		"Standard_NV6":      ppaScript,
-		"Standard_NV12":     ppaScript,
-		"Standard_NV24":     ppaScript,
-		"Standard_NV24r":    ppaScript,
+		"Standard_NC6":      installScript,
+		"Standard_NC12":     installScript,
+		"Standard_NC24":     installScript,
+		"Standard_NC24r":    installScript,
+		"Standard_NV6":      installScript,
+		"Standard_NV12":     installScript,
+		"Standard_NV24":     installScript,
+		"Standard_NV24r":    installScript,
 		"Standard_NC6_v2":   na,
 		"Standard_NC12_v2":  na,
 		"Standard_NC24_v2":  na,
