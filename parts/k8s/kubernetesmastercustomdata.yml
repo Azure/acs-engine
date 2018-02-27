@@ -167,7 +167,6 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
   content: |
     #!/bin/bash
     set -e
-
 {{if gt .MasterProfile.Count 1}}
     # Azure does not support two LoadBalancers(LB) sharing the same nic and backend port.
     # As a workaround, the Internal LB(ILB) listens for apiserver traffic on port 4443 and the External LB(ELB) on port 443
