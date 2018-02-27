@@ -98,6 +98,9 @@ func GetValidPatchVersion(orchType, orchVer string) string {
 
 // RationalizeReleaseAndVersion return a version when it can be rationalized from the input, otherwise ""
 func RationalizeReleaseAndVersion(orchType, orchRel, orchVer string) (version string) {
+	// ignore "v" prefix in orchestrator version and release: "v1.8.0" is equivalent to "1.8.0", "v1.9" is equivalent to "1.9"
+	orchVer = strings.TrimPrefix(orchVer, "v")
+	orchRel = strings.TrimPrefix(orchRel, "v")
 	supportedVersions, defaultVersion := GetSupportedVersions(orchType)
 	if supportedVersions == nil {
 		return ""
