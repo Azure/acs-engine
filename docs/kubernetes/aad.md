@@ -6,13 +6,21 @@ This is walkthrough is to help you get start with Azure Active Directory(AAD) in
 
 Please also refer to [Azure Active Directory plugin for client authentication](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/plugin/pkg/client/auth/azure/README.md) in Kubernetes repo for more details abount OpenID Connect and AAD support in upstream.
 
-## Prerequision
+## Prerequisites
 1. An Azure Active Directory tenant, will refer as `AAD Tenant`. You can use the tenant for your Azure subscription;
 2. A `Web app / API` type AAD application, will refer as `Server Application`. This application represents the `apiserver`;  For groups to work properly, you'll need to edit the `Server Application` Manifest and set `groupMembershipClaims` to either `All` or `SecurityGroup`.
 3. A `Native` type AAD application, will refer as `Client Application`. This application is for user login via `kubectl`. You'll need to add delegated permission to `Server Application`, please see [troubleshooting](#loginpageerror) section for detail.
 
+You also need to delegate permission to the application as follows:
+
+1. Go to Azure Portal, navigate to `Azure Active Directory` -> `App registrations`.
+2. Select the `Client Application`, Navigate to `Settings` -> `Required permissions`
+3. Choose `Add`, select the `Server Application`. You may need to enter the Server Application's name into the search field and search for it.
+   In permissions tab, select `Delegated permissions` -> `Access {Server Application}`
+
+
 ## Deployment
-Follow the [deployment steps](kubernetes.md#deployment). In step #4, add the following under 'properties' section:
+Follow the [deployment steps](../kubernetes.md#deployment). In step #4, add the following under 'properties' section:
 ```
 "aadProfile": {
     "serverAppID": "",
@@ -23,40 +31,69 @@ Follow the [deployment steps](kubernetes.md#deployment). In step #4, add the fol
 
 - `serverAppID`   : the `Server Application`'s ID
 - `clientAppID`   : the `Client Application`'s ID
-- `tenantID`      : (optional) the `AAD tenant`'s ID. If not specified, will use the tenant of the deployment subscription.
+- `tenantID`      : the `AAD tenant`'s ID.
 
 After template generation, the local generated kubeconfig file (`_output/<instance>/kubeconfig/kubeconfig.<location>.json`) will have the default user using AAD.
 Initially it isn't assoicated with any AAD user yet. To get started, try any kubectl command (like `kubectl get pods`), and you'll be prompted to the device login process. After login, you will be able to operate the cluster using your AAD identity.
 
-### Note
-Please note that as of Kubernetes 1.7, the default is authorization mode is `AlwaysAllow`, which means any authenticated user have full access of the cluster.
-OpenID Connect is an authentication protocol responsible for identify users only, so initally all active accounts under the tenant will be able to login and have full admin privilege of the cluster.
+It should look something like:
+```sh
+To sign in, use a web browser to open the page https://aka.ms/devicelogin and enter the code FCVDE87XY to authenticate.
+```
 
-In this case you may want to also turn on RBAC for your cluster.
-Please refer to [Enable Kubernetes Role-Based Access Control](features.md#optional-enable-kubernetes-role-based-access-control-rbac) for turing on RBAC using acs-engine.
+### Setting up authorization
+You can now authenticate to the Kubernetes cluster, but you need to set up authorization as well.
 
-Following instructions are for turnning on RBAC manually together with AAD integration:
+#### Authentication
+With ACS-Engine, the cluster is locked down by default.
 
-1. Since we use AAD object ID as OpenID Connect identity.
-    You'll first need to figure out your account's object ID. Here is how to do it using Azure Portal:
-    Navigate to `Azure Active Directory` -> `Users and groups` -> `All users`. And choose your account in right pannel. Switch to `Manage` -> `Profile`, and you can see the `Object ID` property.
-2. Figure out your user name. The user name would be in form of `IssuerUrl#ObjectID` format.
-    You can navigate to `https://login.microsoftonline.com/{tenantid}/.well-known/openid-configuration`, and find the `IssuerUrl` under `issuer` property.
-3. Add your account as admin role
+This means that when you try to use your AAD account you will see something
+like:
+```sh
+Error from server (Forbidden): User "https://sts.windows.net/<tenant-id>#<user-id>" cannot list nodes at the cluster scope. (get nodes)
 ```
-kubectl create clusterrolebinding aad-default-cluster-admin-binding --clusterrole=cluster-admin --user={UserName}
+
+See [enabling cluster-admin](#enabling-cluster-admin) below.
+
+#### Enabling cluster admin
+
+To enable authorization, you need to add a cluster admin role account, and add your user to that account. 
+
+The user name would be in form of `IssuerUrl#ObjectID` format.
+
+It should be printed in the error message from the previous kubectl request.
+
+Alternately, you can navigate to [this url](https://login.microsoftonline.com/{tenantid}/.well-known/openid-configuration), and find the `IssuerUrl` under `issuer` property.
+
+Once you have the user name you can add it to the `cluster-admin` role (cluster super-user) as follows:
+
+```sh
+CLUSTER=<cluster-name-here>
+REGION=<your-azure-region-name, e.g. 'centralus'>
+
+ssh -i _output/${CLUSTER}/azureuser_rsa azureuser@${CLUSTER}.${REGION}.cloudapp.azure.com \
+    kubectl create clusterrolebinding aad-default-cluster-admin-binding \
+        --clusterrole=cluster-admin \
+        --user 'https://sts.windows.net/<tenant-id>/#<user-id>'
 ```
-For example, if your `IssuerUrl` is `https://sts.windows.net/e2917176-1632-47a0-ad18-671d485757a3/`, and your User `ObjectID` is `22fa281b-bf62-4b14-972c-0dbca24a25a2`, the command would be:
+
+That should output:
+```sh
+clusterrolebinding "aad-default-cluster-admin-binding" created
 ```
-kubectl create clusterrolebinding aad-default-cluster-admin-binding --clusterrole=cluster-admin --user=https://sts.windows.net/e2917176-1632-47a0-ad18-671d485757a3/#22fa281b-bf62-4b14-972c-0dbca24a25a2
-```
-4. (Optional) Add groups into your admin role
+
+At which point you should be able to use any Kubernetes commands to administer the cluster, including adding other AAD identities to particular RBAC roles.
+
+#### Enabling AAD groups
+
+You can also optionally add groups into your admin role
+
 For example, if your `IssuerUrl` is `https://sts.windows.net/e2917176-1632-47a0-ad18-671d485757a3/`, and your Group `ObjectID` is `7d04bcd3-3c48-49ab-a064-c0b7d69896da`, the command would be: 
+
 ```
 kubectl create clusterrolebinding aad-default-group-cluster-admin-binding --clusterrole=cluster-admin --group=7d04bcd3-3c48-49ab-a064-c0b7d69896da
 ```
 
-   Or alternatively you can set the Group `ObjectID` with the `adminGroupID` flag as follows:
 ```
 "aadProfile": {
     "serverAppID": "",
@@ -66,29 +103,30 @@ kubectl create clusterrolebinding aad-default-group-cluster-admin-binding --clus
 ```
 The above config would automatically generate a clusterrolebinding with the cluster-admin clusterrole for the specified Group `ObjectID` on cluster deployment.
 
-4. Turn on RBAC on master nodes.
-    On master nodes, edit `/etc/kubernetes/manifests/kube-apiserver.yaml`, add `--authorization-mode=RBAC` under `command` property. Reboot nodes.
-5. Now that AAD account will be cluster admin, other accounts can still login but do not have permission for operating the cluster.
-    To verify this, add another client user:
-    ```
-    kubectl config set-credentials "user1" --auth-provider=azure \
+#### Adding another client user:
+To add test adding another client user run the following:
+
+```
+kubectl config set-credentials "user1" --auth-provider=azure \
     --auth-provider-arg=environment=AzurePublicCloud \
     --auth-provider-arg=client-id={ClientAppID} \
     --auth-provider-arg=apiserver-id={ServerAppID} \
     --auth-provider-arg=tenant-id={TenantID}
-    ```
+```
 
-    And use that user to login
-    ```
-    kubectl get pods --user=user1
-    ```
-    Now you'll be prompted to login again, you can try logining with another AAD user account. 
-    The login would succeed, but later you can see following message since server denies access:
-    ```
-    Error from server (Forbidden): User "https://sts.windows.net/{tenantID}/#{objectID}" cannot list pods in the namespace "default". (get pods)
-    ```
+And to test that user's login
+```
+kubectl get pods --user=user1
+```
 
-    You can manually update server configuration or add administrator users based on your requirement.
+Now you'll be prompted to login again, you can try logining with another AAD user account. 
+The login would succeed, but later you can see following message since server denies access:
+```
+Error from server (Forbidden): User "https://sts.windows.net/{tenantID}/#{objectID}" cannot list pods in the namespace "default". (get pods)
+```
+
+You can then update the cluster's role bindings and RBAC to suit your needs for that user. See the [default role bindings](https://kubernetes.io/docs/admin/authorization/rbac/#default-roles-and-role-bindings) for more details, and
+the [general guide to Kubernetes RBAC](https://kubernetes.io/docs/admin/authorization/rbac/).
 
 ## Troubleshooting
 
