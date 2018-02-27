@@ -11,7 +11,7 @@ Please also refer to [Azure Active Directory plugin for client authentication](h
 2. A `Web app / API` type AAD application, will refer as `Server Application`. This application represents the `apiserver`;  For groups to work properly, you'll need to edit the `Server Application` Manifest and set `groupMembershipClaims` to either `All` or `SecurityGroup`.
 3. A `Native` type AAD application, will refer as `Client Application`. This application is for user login via `kubectl`. You'll need to add delegated permission to `Server Application`, please see [troubleshooting](#loginpageerror) section for detail.
 
-You also need to delegate permission from the to the application as follows:
+You also need to delegate permission to the application as follows:
 
 1. Go to Azure Portal, navigate to `Azure Active Directory` -> `App registrations`.
 2. Select the `Client Application`, Navigate to `Settings` -> `Required permissions`
@@ -20,7 +20,7 @@ You also need to delegate permission from the to the application as follows:
 
 
 ## Deployment
-Follow the [deployment steps](kubernetes.md#deployment). In step #4, add the following under 'properties' section:
+Follow the [deployment steps](../kubernetes.md#deployment). In step #4, add the following under 'properties' section:
 ```
 "aadProfile": {
     "serverAppID": "",
