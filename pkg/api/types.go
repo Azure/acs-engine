@@ -239,6 +239,7 @@ type KubernetesConfig struct {
 	EnableRbac                       *bool             `json:"enableRbac,omitempty"`
 	EnableSecureKubelet              *bool             `json:"enableSecureKubelet,omitempty"`
 	EnableAggregatedAPIs             bool              `json:"enableAggregatedAPIs,omitempty"`
+	EnablePrivateCluster             bool              `json:"enablePrivateCluster,omitempty"`
 	GCHighThreshold                  int               `json:"gchighthreshold,omitempty"`
 	GCLowThreshold                   int               `json:"gclowthreshold,omitempty"`
 	EtcdVersion                      string            `json:"etcdVersion,omitempty"`
