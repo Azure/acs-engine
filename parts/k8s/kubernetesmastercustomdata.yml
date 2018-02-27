@@ -73,7 +73,7 @@ write_files:
     - name: localcluster
       cluster:
         certificate-authority: /etc/kubernetes/certs/ca.crt
-        {{if isPrivateCluster}}
+        {{if IsPrivateCluster}}
             server: {{WrapAsVerbatim "concat('https://', variables('kubernetesAPIServerIP'), ':443')"}}
         {{else}}
             server: {{WrapAsVerbatim "concat('https://', variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))], ':443')"}}
