@@ -16,8 +16,11 @@ During the upgrade, *acs-engine* successively visits virtual machines that const
 For upgrade that spans over more than a single minor version, this operation should be called several times, each time advancing the minor version by one. For example, to upgrade from ``1.6.x`` to ``1.8.z`` one should first upgrade the cluster to ``1.7.y``, followed by upgrading it to ``1.8.z``
 
 To get the list of all available Kubernetes versions and upgrades, run the *orchestrators* command and specify Kubernetes orchestrator type. The output is a JSON object:
-```
+```bash
 ./bin/acs-engine orchestrators --orchestrator Kubernetes
+```
+
+```json
 {
   "orchestrators": [
     {
@@ -84,8 +87,11 @@ To get the list of all available Kubernetes versions and upgrades, run the *orch
 ```
 
 To get the information specific to the cluster, provide its current orchestrator version:
-```
+```bash
 ./bin/acs-engine orchestrators --orchestrator Kubernetes --version 1.7.8
+```
+
+```json
 {
   "orchestrators": [
     {
@@ -129,7 +135,7 @@ To get the information specific to the cluster, provide its current orchestrator
 ```
 
 Once the desired Kubernetes version is finalized, call the *upgrade* command:
-```
+```bash
 ./bin/acs-engine upgrade \
   --subscription-id <subscription id> \
   --deployment-dir <acs-engine output directory > \
@@ -141,7 +147,7 @@ Once the desired Kubernetes version is finalized, call the *upgrade* command:
   --client-secret <service principal secret>
 ```
 For example,
-```
+```bash
 ./bin/acs-engine upgrade \
   --subscription-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
   --deployment-dir ./_output/test \

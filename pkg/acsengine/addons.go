@@ -71,6 +71,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			"aad-default-admin-group-rbac.yaml",
 			profile.AADProfile != nil && profile.AADProfile.AdminGroupID != "",
 		},
+		{
+			"kubernetesmasteraddons-azure-cloud-provider-deployment.yaml",
+			"azure-cloud-provider-deployment.yaml",
+			true,
+		},
 	}
 }
 

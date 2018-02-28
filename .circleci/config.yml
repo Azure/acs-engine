@@ -127,8 +127,11 @@ jobs:
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
+          name: compile
+          command: make build-binary
+      - run:
           name: ginkgo k8s e2e tests
-          command: make build-binary test-kubernetes
+          command: make test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
@@ -152,8 +155,11 @@ jobs:
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
+          name: compile
+          command: make build-binary
+      - run:
           name: ginkgo k8s windows e2e tests
-          command: make build-binary test-kubernetes
+          command: make test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
@@ -178,8 +184,11 @@ jobs:
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
+          name: compile
+          command: make build-binary
+      - run:
           name: ginkgo k8s e2e tests
-          command: make build-binary test-kubernetes
+          command: make test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
@@ -204,8 +213,11 @@ jobs:
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
+          name: compile
+          command: make build-binary
+      - run:
           name: ginkgo k8s e2e tests
-          command: make build-binary test-kubernetes
+          command: make test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
@@ -229,8 +241,11 @@ jobs:
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
+          name: compile
+          command: make build-binary
+      - run:
           name: ginkgo k8s windows e2e tests
-          command: make build-binary test-kubernetes
+          command: make test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs
@@ -254,8 +269,11 @@ jobs:
           echo 'export CLIENT_ID=${SERVICE_PRINCIPAL_CLIENT_ID_E2E_KUBERNETES}' >> $BASH_ENV
           echo 'export CLIENT_SECRET=${SERVICE_PRINCIPAL_CLIENT_SECRET_E2E_KUBERNETES}' >> $BASH_ENV
       - run:
+          name: compile
+          command: make build-binary
+      - run:
           name: ginkgo k8s windows e2e tests
-          command: make build-binary test-kubernetes
+          command: make test-kubernetes
           no_output_timeout: "30m"
       - store_artifacts:
           path: /go/src/github.com/Azure/acs-engine/_logs

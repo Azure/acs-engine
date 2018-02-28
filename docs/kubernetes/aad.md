@@ -21,7 +21,7 @@ You also need to delegate permission to the application as follows:
 
 ## Deployment
 Follow the [deployment steps](../kubernetes.md#deployment). In step #4, add the following under 'properties' section:
-```
+```json
 "aadProfile": {
     "serverAppID": "",
     "clientAppID": "",
@@ -63,7 +63,11 @@ The user name would be in form of `IssuerUrl#ObjectID` format.
 
 It should be printed in the error message from the previous kubectl request.
 
-Alternately, you can navigate to [this url](https://login.microsoftonline.com/{tenantid}/.well-known/openid-configuration), and find the `IssuerUrl` under `issuer` property.
+Alternately, you can find the `IssuerUrl` under `issuer` property in this url:
+
+```
+https://login.microsoftonline.com/<REPLACE_WITH_TENANTID>/.well-known/openid-configuration
+```
 
 Once you have the user name you can add it to the `cluster-admin` role (cluster super-user) as follows:
 
@@ -90,11 +94,11 @@ You can also optionally add groups into your admin role
 
 For example, if your `IssuerUrl` is `https://sts.windows.net/e2917176-1632-47a0-ad18-671d485757a3/`, and your Group `ObjectID` is `7d04bcd3-3c48-49ab-a064-c0b7d69896da`, the command would be: 
 
-```
+```sh
 kubectl create clusterrolebinding aad-default-group-cluster-admin-binding --clusterrole=cluster-admin --group=7d04bcd3-3c48-49ab-a064-c0b7d69896da
 ```
 
-```
+```json
 "aadProfile": {
     "serverAppID": "",
     "clientAppID": "",
@@ -106,7 +110,7 @@ The above config would automatically generate a clusterrolebinding with the clus
 #### Adding another client user:
 To add test adding another client user run the following:
 
-```
+```sh
 kubectl config set-credentials "user1" --auth-provider=azure \
     --auth-provider-arg=environment=AzurePublicCloud \
     --auth-provider-arg=client-id={ClientAppID} \
@@ -115,7 +119,7 @@ kubectl config set-credentials "user1" --auth-provider=azure \
 ```
 
 And to test that user's login
-```
+```sh
 kubectl get pods --user=user1
 ```
 
@@ -148,7 +152,7 @@ Error from server (Forbidden)
 ```
 
 It is usually caused by an incorrect configuration. You could find more debug information in apiserver log. On a master node, run following command:
-```
+```sh
 docker logs -f $(docker ps|grep 'hyperkube apiserver'|cut -d' ' -f1) 2>&1 |grep -a auth
 ```
 
