@@ -116,7 +116,7 @@ const (
 	// KubernetesVersion1Dot6Dot13 is the major.minor.patch string for the 1.6.13 version of kubernetes
 	KubernetesVersion1Dot6Dot13 string = "1.6.13"
 	// KubernetesDefaultVersion is the default major.minor.patch version for kubernetes
-	KubernetesDefaultVersion string = KubernetesVersion1Dot7Dot9
+	KubernetesDefaultVersion string = KubernetesVersion1Dot8Dot8
 )
 
 // AllKubernetesSupportedVersions is a whitelist map of supported Kubernetes version strings
