@@ -297,21 +297,13 @@ func (t *Transformer) NormalizeResourcesForK8sMasterUpgrade(logger *logrus.Entry
 			if strings.Contains(resourceName, "variables('masterVMNamePrefix')") {
 				continue
 			} else {
-				// agent NICs remove depends on master NICs.
-				dependsOn := resourceMap[dependsOnFieldName].([]interface{})
-				var newDependsOn []interface{}
-				for _, depResource := range dependsOn {
-					dep, ok := depResource.(string)
-					if !ok {
-						logger.Warnf("Template improperly formatted for field name: %s", dependsOnFieldName)
-						continue
-					}
-
-					if !strings.Contains(dep, "variables('masterNICNamePrefix')") {
-						newDependsOn = append(newDependsOn, depResource)
+				// Remove agent NICs if upgrade master nodes
+				if agentPoolsToPreserve == nil {
+					logger.Infoln(fmt.Sprintf("Removing nic: %s from template", resourceName))
+					if len(filteredResources) > 0 {
+						filteredResources = filteredResources[:len(filteredResources)-1]
 					}
 				}
-				resourceMap[dependsOnFieldName] = newDependsOn
 				continue
 			}
 		}

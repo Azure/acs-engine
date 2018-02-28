@@ -274,7 +274,7 @@ func (sc *scaleCmd) run(cmd *cobra.Command, args []string) error {
 
 	sc.containerService.Properties.AgentPoolProfiles = []*api.AgentPoolProfile{sc.agentPool}
 
-	template, parameters, _, err := templateGenerator.GenerateTemplate(sc.containerService, acsengine.DefaultGeneratorCode)
+	template, parameters, _, err := templateGenerator.GenerateTemplate(sc.containerService, acsengine.DefaultGeneratorCode, false)
 	if err != nil {
 		log.Fatalf("error generating template %s: %s", sc.apiModelPath, err.Error())
 		os.Exit(1)
