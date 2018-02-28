@@ -164,6 +164,9 @@ coreos:
         [Service]
         ExecStart=/opt/azure/containers/provision-setup.sh
 {{else}}
+{{if not EnablePodSecurityPolicy}}
+    sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
+{{end}}
 runcmd:
 - echo `date`,`hostname`, startruncmd>>/opt/m
 # the first arg is the number of retries, the second arg is the wait duration between two retries and the rest of the args are the cmd to run
