@@ -909,6 +909,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsPrivateCluster": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig != nil && cs.Properties.OrchestratorProfile.KubernetesConfig.EnablePrivateCluster
 		},
+		"ProvisionJumpbox": func() bool {
+			return cs.Properties.OrchestratorProfile.KubernetesConfig != nil && cs.Properties.OrchestratorProfile.KubernetesConfig.EnablePrivateCluster && cs.Properties.OrchestratorProfile.KubernetesConfig.ProvisionJumpbox
+		},
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 		},

@@ -614,6 +614,7 @@ func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *Kubernetes
 	api.EnableSecureKubelet = vlabs.EnableSecureKubelet
 	api.EnableAggregatedAPIs = vlabs.EnableAggregatedAPIs
 	api.EnablePrivateCluster = vlabs.EnablePrivateCluster
+	api.ProvisionJumpbox = vlabs.ProvisionJumpbox
 	api.EnableDataEncryptionAtRest = vlabs.EnableDataEncryptionAtRest
 	api.EnablePodSecurityPolicy = vlabs.EnablePodSecurityPolicy
 	api.GCHighThreshold = vlabs.GCHighThreshold
