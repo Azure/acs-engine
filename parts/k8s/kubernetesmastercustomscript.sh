@@ -200,6 +200,7 @@ cat << EOF > "${AZURE_JSON_PATH}"
     "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
     "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
     "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
+    "userAssignedID": ${USER_ASSIGNED_ID},
     "useInstanceMetadata": ${USE_INSTANCE_METADATA}
 }
 EOF
