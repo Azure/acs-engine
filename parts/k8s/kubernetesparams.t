@@ -663,7 +663,7 @@
       "metadata": {
         "description": "Size in GB to allocate for etcd volume"
       },
-      "type": "string"
+      "type": "int"
     },
     "etcdDownloadURLBase": {
       {{PopulateClassicModeDefaultValue "etcdDownloadURLBase"}}
