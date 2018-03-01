@@ -1548,7 +1548,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				case "etcdVersion":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion
 				case "etcdDiskSizeGB":
-					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB
+					val = string(cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB)
 				default:
 					val = ""
 				}
