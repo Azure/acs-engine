@@ -276,6 +276,7 @@
         "jumpboxVMName": "[concat(variables('resourceGroup'), '-jb')]",
         "jumboxVMSize": "Standard_DS1_v2",
         "jumpboxDiskSizeGB": "30",
+        "jumpboxOSDiskName": "[concat(variables('jumpboxVMName'), '-os-disk')]",
         "jumpboxUsername": "azureuser",
         "jumpboxPublicKey": "sshPublicKeyData",
         "jumpboxPublicIpAddressName": "[concat(variables('jumpboxVMName'), '-ip')]",
