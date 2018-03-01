@@ -26,6 +26,7 @@ ExecStart=/usr/bin/docker run \
   --volume=/sys:/sys:ro \
   --volume=/var/run:/var/run:rw \
   --volume=/var/lib/cni/:/var/lib/cni:rw \
+  --volume=/sbin/apparmor_parser/:/sbin/apparmor_parser:rw \
   --volume=/var/lib/docker/:/var/lib/docker:rw \
   --volume=/var/lib/containers/:/var/lib/containers:rw \
   --volume=/var/lib/kubelet/:/var/lib/kubelet:shared \
