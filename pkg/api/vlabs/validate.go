@@ -129,7 +129,8 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot7 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot9 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot10 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot12 {
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot12 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot13 {
 						return fmt.Errorf("enablePodSecurityPolicy is only supported in acs-engine for Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 							"1.8.0", o.OrchestratorVersion)
 					}
@@ -247,7 +248,7 @@ func (o *OrchestratorProfile) ValidateForUpgrade() error {
 	case Kubernetes:
 		switch o.OrchestratorVersion {
 		case common.KubernetesVersion1Dot6Dot13:
-		case common.KubernetesVersion1Dot7Dot12:
+		case common.KubernetesVersion1Dot7Dot13:
 		default:
 			return fmt.Errorf("Upgrade to Kubernetes version %s is not supported", o.OrchestratorVersion)
 		}
@@ -521,6 +522,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot7Dot9:  true,
 		common.KubernetesVersion1Dot7Dot10: true,
 		common.KubernetesVersion1Dot7Dot12: true,
+		common.KubernetesVersion1Dot7Dot13: true,
 		common.KubernetesVersion1Dot6Dot6:  true,
 		common.KubernetesVersion1Dot6Dot9:  true,
 		common.KubernetesVersion1Dot6Dot11: true,
