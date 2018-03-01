@@ -407,11 +407,9 @@
                   "version": "latest"
               },
               "osDisk": {
+                  "name": "[variables('jumpboxOSDiskName')]",
                   "createOption": "fromImage",
-                  "diskSizeGB": "[variables('jumpboxDiskSizeGB')]",
-                  "managedDisk": {
-                      "storageAccountType": "Premium_LRS"
-                  }
+                  "diskSizeGB": "[variables('jumpboxDiskSizeGB')]"
               },
               "dataDisks": []
           },
@@ -421,7 +419,7 @@
                       "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('jumpboxNetworkInterfaceName'))]"
                   }
               ]
-          },
+          }
         },
         "dependsOn": [
             "[concat('Microsoft.Network/networkInterfaces/', variables('jumpboxNetworkInterfaceName'))]"
@@ -464,7 +462,7 @@
     },
     {
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[variables('networkInterfaceName')]",
+      "name": "[variables('jumpboxNetworkInterfaceName')]",
       "apiVersion": "[variables('apiVersionDefault')]",
       "location": "[variables('location')]",
       "properties": {
