@@ -93,6 +93,8 @@ const (
 	KubernetesVersion1Dot7Dot10 string = "1.7.10"
 	// KubernetesVersion1Dot7Dot12 is the major.minor.patch string for the 1.7.12 version of kubernetes
 	KubernetesVersion1Dot7Dot12 string = "1.7.12"
+	// KubernetesVersion1Dot7Dot13 is the major.minor.patch string for the 1.7.13 version of kubernetes
+	KubernetesVersion1Dot7Dot13 string = "1.7.13"
 	// KubernetesVersion1Dot6Dot6 is the major.minor.patch string for the 1.6.6 version of kubernetes
 	KubernetesVersion1Dot6Dot6 string = "1.6.6"
 	// KubernetesVersion1Dot6Dot9 is the major.minor.patch string for the 1.6.9 version of kubernetes
@@ -129,6 +131,7 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot7Dot9:  true,
 	KubernetesVersion1Dot7Dot10: true,
 	KubernetesVersion1Dot7Dot12: true,
+	KubernetesVersion1Dot7Dot13: true,
 	KubernetesVersion1Dot8Dot0:  true,
 	KubernetesVersion1Dot8Dot1:  true,
 	KubernetesVersion1Dot8Dot2:  true,
@@ -168,6 +171,7 @@ var AllKubernetesWindowsSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot7Dot9:  true,
 	KubernetesVersion1Dot7Dot10: true,
 	KubernetesVersion1Dot7Dot12: true,
+	KubernetesVersion1Dot7Dot13: true,
 	KubernetesVersion1Dot8Dot0:  true,
 	KubernetesVersion1Dot8Dot1:  true,
 	KubernetesVersion1Dot8Dot2:  true,

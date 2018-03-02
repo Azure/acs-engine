@@ -148,7 +148,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 	It("Should return error message when failing on ClusterPreflightCheck operation", func() {
 		cs := createContainerService("testcluster", common.KubernetesVersion1Dot5Dot8, 3, 3)
-		cs.Properties.OrchestratorProfile.OrchestratorVersion = common.KubernetesVersion1Dot7Dot12
+		cs.Properties.OrchestratorProfile.OrchestratorVersion = common.KubernetesVersion1Dot7Dot13
 		uc := UpgradeCluster{
 			Translator: &i18n.Translator{},
 			Logger:     log.NewEntry(log.New()),
@@ -161,7 +161,7 @@ var _ = Describe("Upgrade Kubernetes cluster tests", func() {
 
 		err := uc.UpgradeCluster(subID, "kubeConfig", "TestRg", cs, "12345678", []string{"agentpool1"})
 		Expect(err).NotTo(BeNil())
-		Expect(err.Error()).To(Equal("Error while querying ARM for resources: Kubernetes:1.5.8 cannot be upgraded to 1.7.12"))
+		Expect(err.Error()).To(Equal("Error while querying ARM for resources: Kubernetes:1.5.8 cannot be upgraded to 1.7.13"))
 	})
 })
 
