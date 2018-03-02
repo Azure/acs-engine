@@ -111,14 +111,20 @@ func (dc *deployCmd) validate(cmd *cobra.Command, args []string) error {
 			Locale: dc.locale,
 		},
 	}
+
+	if dc.location == "" {
+		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
+	}
 	// skip validating the model fields for now
 	dc.containerService, dc.apiVersion, err = apiloader.LoadContainerServiceFromFile(dc.apimodelPath, false, false, nil)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("error parsing the api model: %s", err.Error()))
 	}
 
-	if dc.location == "" {
-		return fmt.Errorf(fmt.Sprintf("--location must be specified"))
+	if dc.containerService.Location == "" {
+		dc.containerService.Location = dc.location
+	} else if dc.containerService.Location != dc.location {
+		return fmt.Errorf(fmt.Sprintf("--location does not match api model location"))
 	}
 
 	dc.client, err = dc.authArgs.getClient()
