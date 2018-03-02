@@ -76,17 +76,17 @@ func (authArgs *authArgs) getClient() (*armhelpers.AzureClient, error) {
 	authArgs.SubscriptionID, _ = uuid.FromString(authArgs.rawSubscriptionID)
 
 	if authArgs.AuthMethod == "client_secret" {
-		if authArgs.ClientID.String() == "" || authArgs.ClientSecret == "" {
+		if authArgs.ClientID.String() == "00000000-0000-0000-0000-000000000000" || authArgs.ClientSecret == "" {
 			log.Fatal(`--client-id and --client-secret must be specified when --auth-method="client_secret"`)
 		}
 		// try parse the UUID
 	} else if authArgs.AuthMethod == "client_certificate" {
-		if authArgs.ClientID.String() == "" || authArgs.CertificatePath == "" || authArgs.PrivateKeyPath == "" {
+		if authArgs.ClientID.String() == "00000000-0000-0000-0000-000000000000" || authArgs.CertificatePath == "" || authArgs.PrivateKeyPath == "" {
 			log.Fatal(`--client-id and --certificate-path, and --private-key-path must be specified when --auth-method="client_certificate"`)
 		}
 	}
 
-	if authArgs.SubscriptionID.String() == "" {
+	if authArgs.SubscriptionID.String() == "00000000-0000-0000-0000-000000000000" {
 		log.Fatal("--subscription-id is required (and must be a valid UUID)")
 	}
 
