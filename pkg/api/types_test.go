@@ -204,6 +204,59 @@ func TestIsReschedulerEnabled(t *testing.T) {
 	}
 }
 
+func TestIsMetricsServerEnabled(t *testing.T) {
+	v := "1.9.0"
+	o := OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: v,
+		KubernetesConfig: &KubernetesConfig{Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+		},
+	}
+	e := o.IsMetricsServerEnabled()
+	if e != true {
+		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return true for kubernetes version %s when no metrics-server addon has been specified, instead returned %t", v, e)
+	}
+
+	v = "1.8.0"
+	o = OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: v,
+		KubernetesConfig: &KubernetesConfig{Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+		},
+	}
+	e = o.IsMetricsServerEnabled()
+	if e != DefaultMetricsServerAddonEnabled {
+		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return %t for kubernetes version %s when no metrics-server addon has been specified, instead returned %t", DefaultMetricsServerAddonEnabled, v, e)
+	}
+
+	o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, getMockAddon(DefaultMetricsServerAddonName))
+	e = o.IsMetricsServerEnabled()
+	if e != DefaultMetricsServerAddonEnabled {
+		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return %t for kubernetes version %s when the metrics-server addon has been specified, instead returned %t", DefaultMetricsServerAddonEnabled, v, e)
+	}
+
+	b := true
+	o = OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: v,
+		KubernetesConfig: &KubernetesConfig{Addons: []KubernetesAddon{
+			{
+				Name:    DefaultMetricsServerAddonName,
+				Enabled: &b,
+			},
+		},
+		},
+	}
+	e = o.IsMetricsServerEnabled()
+	if e != true {
+		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return true for kubernetes version %s when the metrics-server addon has been specified as enabled, instead returned %t", v, e)
+	}
+}
+
 func getMockAddon(name string) KubernetesAddon {
 	return KubernetesAddon{
 		Name: name,

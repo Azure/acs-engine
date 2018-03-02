@@ -113,6 +113,8 @@ const (
 	DefaultReschedulerImage = "rescheduler:v0.3.1"
 	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
 	DefaultReschedulerAddonName = "rescheduler"
+	// DefaultMetricsServerAddonName is the name of the kubernetes Metrics server addon deployment
+	DefaultMetricsServerAddonName = "metrics-server"
 	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
 	DefaultKubernetesKubeletMaxPods = 110
 	// DefaultMasterEtcdServerPort is the default etcd server port for Kubernetes master nodes

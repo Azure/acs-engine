@@ -230,6 +230,10 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesReschedulerMemoryLimit>|{{WrapAsVariable "kubernetesReschedulerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
 {{end}}
 
+{{if .OrchestratorProfile.IsMetricsServerEnabled}}
+    sed -i "s|<kubernetesMetricsServerSpec>|{{WrapAsVariable "kubernetesMetricsServerSpec"}}|g" "/etc/kubernetes/addons/kube-metrics-server-deployment.yaml"
+{{end}}
+
 {{if EnableDataEncryptionAtRest }}
     ETCD_ENCRYPTION_SECRET="$(head -c 32 /dev/urandom | base64)"
     sed -i "s|<etcdEncryptionSecret>|$ETCD_ENCRYPTION_SECRET|g" "/etc/kubernetes/encryption-config.yaml"
