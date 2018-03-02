@@ -121,7 +121,12 @@ var (
 			ResourceManagerVMDNSSuffix: "cloudapp.usgovcloudapi.net",
 		},
 		OSImageConfig: map[api.Distro]AzureOSImageConfig{
-			api.Ubuntu: DefaultUbuntuImageConfig,
+			api.Ubuntu: {
+				ImageOffer:     "UbuntuServer",
+				ImageSku:       "16.04-LTS",
+				ImagePublisher: "Canonical",
+				ImageVersion:   "latest",
+			},
 			api.RHEL:   DefaultRHELOSImageConfig,
 			api.CoreOS: DefaultCoreOSImageConfig,
 		},
