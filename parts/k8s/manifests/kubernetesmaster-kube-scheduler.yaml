@@ -5,7 +5,7 @@ metadata:
   namespace: "kube-system"
   labels:
     tier: control-plane
-    component: kube-scheduler
+    k8s-app: kube-scheduler
 spec:
   hostNetwork: true
   containers:

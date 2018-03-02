@@ -5,7 +5,7 @@ metadata:
   namespace: "kube-system"
   labels:
     tier: control-plane
-    component: kube-controller-manager
+    k8s-app: kube-controller-manager
 spec:
   hostNetwork: true
   containers:
