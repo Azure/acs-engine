@@ -368,7 +368,7 @@ func FormatAzureProdFQDNs(fqdnPrefix string) []string {
 
 // FormatAzureProdFQDN constructs an Azure prod fqdn
 func FormatAzureProdFQDN(fqdnPrefix string, location string) string {
-	FQDNFormat := ""
+	var FQDNFormat string
 	switch GetCloudTargetEnv(location) {
 	case azureChinaCloud:
 		FQDNFormat = AzureChinaCloudSpec.EndpointConfig.ResourceManagerVMDNSSuffix
