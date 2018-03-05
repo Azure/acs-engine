@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: DAEMONSET_API
 kind: DaemonSet
 metadata:
   name: cadvisor
