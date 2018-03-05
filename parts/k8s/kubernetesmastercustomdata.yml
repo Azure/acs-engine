@@ -144,10 +144,14 @@ MASTER_ADDONS_CONFIG_PLACEHOLDER
   permissions: "0644"
   owner: "root"
   content: |
+{{if IsKubernetesVersionLt "1.8.0"}}
+    KUBELET_OPTS=--require-kubeconfig
+{{else}}
+    KUBELET_OPTS=
+{{end}}
     KUBELET_CONFIG={{GetKubeletConfigKeyVals .MasterProfile.KubernetesConfig}}
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
     DOCKER_OPTS=
-    KUBELET_OPTS=
     KUBELET_NODE_LABELS={{GetMasterKubernetesLabels "',variables('labelResourceGroup'),'"}}
 {{if IsKubernetesVersionGe "1.6.0"}}
   {{if HasLinuxAgents}}
