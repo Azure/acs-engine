@@ -131,6 +131,12 @@ func (uc *upgradeCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
 
+	if uc.containerService.Location == "" {
+		uc.containerService.Location = uc.location
+	} else if uc.containerService.Location != uc.location {
+		log.Fatalf("--location does not match api model location")
+	}
+
 	// get available upgrades for container service
 	orchestratorInfo, err := api.GetOrchestratorVersionProfile(uc.containerService.Properties.OrchestratorProfile)
 	if err != nil {
