@@ -103,7 +103,7 @@ write_files:
   permissions: "0644"
   owner: "root"
   content: |
-{{if IsKubernetesVersionLe "1.7.0"}}
+{{if IsKubernetesVersionLt "1.8.0"}}
     KUBELET_OPTS=--require-kubeconfig
 {{else}}
     KUBELET_OPTS=
