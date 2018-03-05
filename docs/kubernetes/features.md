@@ -19,8 +19,7 @@ Enable Managed Identity by adding `useManagedIdentity` in `kubernetesConfig`.
 
 ```json
 "kubernetesConfig": {
-  "useManagedIdentity": true,
-  "customHyperkubeImage": "docker.io/colemickens/hyperkube-amd64:3b15e8a446fa09d68a2056e2a5e650c90ae849ed"
+  "useManagedIdentity": true
 }
 ```
 
