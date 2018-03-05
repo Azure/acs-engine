@@ -4,7 +4,7 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
-        "etcdDiskSizeGB": "256"
+        "etcdDiskSizeGB": 256
       }
     },
     "masterProfile": {

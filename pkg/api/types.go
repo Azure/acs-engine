@@ -243,7 +243,7 @@ type KubernetesConfig struct {
 	GCHighThreshold                  int               `json:"gchighthreshold,omitempty"`
 	GCLowThreshold                   int               `json:"gclowthreshold,omitempty"`
 	EtcdVersion                      string            `json:"etcdVersion,omitempty"`
-	EtcdDiskSizeGB                   string            `json:"etcdDiskSizeGB,omitempty"`
+	EtcdDiskSizeGB                   int               `json:"etcdDiskSizeGB,omitempty"`
 	EnableDataEncryptionAtRest       *bool             `json:"enableDataEncryptionAtRest,omitempty"`
 	EnablePodSecurityPolicy          *bool             `json:"enablePodSecurityPolicy,omitempty"`
 	Addons                           []KubernetesAddon `json:"addons,omitempty"`

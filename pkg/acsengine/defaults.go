@@ -431,7 +431,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[m] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[m], DefaultMetricsServerAddonsConfig)
 		}
 
-		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
+		if 0 == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
 			a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
 		}
 
