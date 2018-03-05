@@ -143,7 +143,7 @@ install_helm() {
     mv linux-amd64/helm /usr/local/bin/helm
     echo $(date) " - Downloading prometheus values"
 
-    curl "$1" > prometheus_values.yaml 
+    curl "$1" > prometheus_values.yaml
 
     sleep 10
 
@@ -154,6 +154,23 @@ install_helm() {
     echo $(date) " - helm installed"
 }
 
+daemonset_api() {
+    SERVER_VERSION_REGEX="Server Version: v([0-9]+)\.([0-9]+)\.([0-9]+)$"
+    K8S_SERVER_VERSION=$(kubectl version --short | grep Server)
+    K8S_SERVER_VERSION_MAJOR=$(echo "$K8S_SERVER_VERSION" | sed -r "s/$SERVER_VERSION_REGEX/\1/g")
+    K8S_SERVER_VERSION_MINOR=$(sed -r "s/$SERVER_VERSION_REGEX/\2/g" "$K8S_SERVER_VERSION")
+
+    if [[ $K8S_SERVER_VERSION_MAJOR -gt 1 ]]; then
+        echo "apps/v1"
+    elif [[ $K8S_SERVER_VERSION_MAJOR -eq 1 ]]; then
+        if [[ $K8S_SERVER_VERSION_MINOR -gt 8 ]]; then
+            echo "apps/v1"
+        else
+            echo "apps/v1beta2"
+        fi
+    fi
+}
+
 install_cadvisor() {
     echo "$(date) - Installing cAdvisor"
     local NAMESPACE="$1"
@@ -162,6 +179,9 @@ install_cadvisor() {
     echo "$(date) - Using cAdvisor config at $CADVISOR_DS_CONFIG_URL"
 
     curl -o cadvisor_ds.yml "$CADVISOR_DS_CONFIG_URL"
+    DAEMONSET_API=$(daemonset_api)
+    echo "$(date) - Using DaemonSet api group $DAEMONSET_API"
+    sed -i 's|DAEMONSET_API|'"$DAEMONSET_API"'|g' cadvisor_ds.yml
     kubectl apply -f ./cadvisor_ds.yml
 }
 
