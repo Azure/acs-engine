@@ -69,6 +69,8 @@ const (
 )
 
 const (
+	// DCOSVersion1Dot11Dot0 is the major.minor.patch string for 1.11.0 versions of DCOS
+	DCOSVersion1Dot11Dot0 string = "1.11.0"
 	// DCOSVersion1Dot10Dot0 is the major.minor.patch string for 1.10.0 versions of DCOS
 	DCOSVersion1Dot10Dot0 string = "1.10.0"
 	// DCOSVersion1Dot9Dot0 is the major.minor.patch string for 1.9.0 versions of DCOS

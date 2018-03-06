@@ -585,6 +585,8 @@ func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProf
 func convertVLabsDcosConfig(vlabs *vlabs.DcosConfig, api *DcosConfig) {
 	api.DcosBootstrapURL = vlabs.DcosBootstrapURL
 	api.DcosWindowsBootstrapURL = vlabs.DcosWindowsBootstrapURL
+    api.DcosRepositoryURL = vlabs.DcosRepositoryURL
+    api.DcosClusterPackageListID = vlabs.DcosClusterPackageListID
 }
 
 func convertVLabsKubernetesConfig(vlabs *vlabs.KubernetesConfig, api *KubernetesConfig) {
