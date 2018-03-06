@@ -512,7 +512,7 @@ func convertVLabsWindowsProfile(vlabs *vlabs.WindowsProfile, api *WindowsProfile
 func convertV20160930OrchestratorProfile(v20160930 *v20160930.OrchestratorProfile, api *OrchestratorProfile) {
 	api.OrchestratorType = v20160930.OrchestratorType
 	if api.OrchestratorType == Kubernetes {
-		api.OrchestratorVersion = common.KubernetesVersion1Dot5Dot8
+		api.OrchestratorVersion = common.KubernetesVersion1Dot6Dot9
 	} else if api.OrchestratorType == DCOS {
 		api.OrchestratorVersion = DCOSVersion1Dot9Dot0
 	}

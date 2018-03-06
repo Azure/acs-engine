@@ -86,9 +86,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					return err
 				}
 				if o.KubernetesConfig.EnableAggregatedAPIs {
-					if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot7 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
+					if o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
 						return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
@@ -102,9 +100,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					}
 
 					if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
-						if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot7 ||
-							o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
-							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
+						if o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
 							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
 							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
 							return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
@@ -116,9 +112,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
 						return fmt.Errorf("enablePodSecurityPolicy requires the enableRbac feature as a prerequisite")
 					}
-					if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot7 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
+					if o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot0 ||
