@@ -1,36 +1,6 @@
 #!/bin/bash
 
-###########################################################
-# START SECRET DATA - ECHO DISABLED
-###########################################################
-
-# Following parameters now read from environment variable
-# Fields for `azure.json`
-# TENANT_ID SUBSCRIPTION_ID RESOURCE_GROUP LOCATION SUBNET
-# NETWORK_SECURITY_GROUP VIRTUAL_NETWORK VIRTUAL_NETWORK_RESOURCE_GROUP ROUTE_TABLE PRIMARY_AVAILABILITY_SET
-# SERVICE_PRINCIPAL_CLIENT_ID SERVICE_PRINCIPAL_CLIENT_SECRET KUBELET_PRIVATE_KEY TARGET_ENVIRONMENT NETWORK_POLICY
-# FQDNSuffix VNET_CNI_PLUGINS_URL CNI_PLUGINS_URL MAX_PODS KUBECONFIG_SERVER
-
-# Default values for backoff configuration
-# CLOUDPROVIDER_BACKOFF CLOUDPROVIDER_BACKOFF_RETRIES CLOUDPROVIDER_BACKOFF_EXPONENT CLOUDPROVIDER_BACKOFF_DURATION CLOUDPROVIDER_BACKOFF_JITTER
-# Default values for rate limit configuration
-# CLOUDPROVIDER_RATELIMIT CLOUDPROVIDER_RATELIMIT_QPS CLOUDPROVIDER_RATELIMIT_BUCKET
-
-# USE_MANAGED_IDENTITY_EXTENSION USE_INSTANCE_METADATA
-
-# Master only secrets
-# APISERVER_PRIVATE_KEY CA_CERTIFICATE CA_PRIVATE_KEY MASTER_FQDN KUBECONFIG_CERTIFICATE
-# KUBECONFIG_KEY ETCD_SERVER_CERTIFICATE ETCD_SERVER_PRIVATE_KEY ETCD_CLIENT_CERTIFICATE ETCD_CLIENT_PRIVATE_KEY
-# ETCD_PEER_CERTIFICATES ETCD_PEER_PRIVATE_KEYS ADMINUSER MASTER_INDEX
-
 set -x
-# Capture Interesting Network Stuffs during provision
-packetCaptureProvision() {
-    tcpdump -G 600 -W 1 -n -vv -w /var/log/azure/dnsdump.pcap -Z root -i eth0 udp port 53 > /dev/null 2>&1 &
-}
-
-packetCaptureProvision
-
 # Find distro name via ID value in releases files and upcase
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
@@ -566,35 +536,63 @@ function ensureJournal(){
     fi
 }
 
-function ensureApiserver() {
+function ensureK8s() {
     if $REBOOTREQUIRED; then
         return
     fi
-    kubernetesStarted=1
+    k8sHealthy=1
+    nodesActive=1
+    nodesReady=1
     for i in {1..600}; do
         if [ -e $KUBECTL ]
         then
-            $KUBECTL cluster-info
-            if [ "$?" = "0" ]
-            then
-                echo "kubernetes started, took $i seconds"
-                kubernetesStarted=0
-                break
-            fi
-        else
-            /usr/bin/docker ps | grep apiserver
-            if [ "$?" = "0" ]
-            then
-                echo "kubernetes started, took $i seconds"
-                kubernetesStarted=0
-                break
-            fi
+            break
         fi
         sleep 1
     done
-    if [ $kubernetesStarted -ne 0 ]
+    for i in {1..600}; do
+        $KUBECTL 2>/dev/null cluster-info
+            if [ "$?" = "0" ]
+            then
+                echo "k8s cluster is healthy, took $i seconds"
+                k8sHealthy=0
+                break
+            fi
+        sleep 1
+    done
+    if [ $k8sHealthy -ne 0 ]
     then
-        echo "kubernetes did not start"
+        echo "k8s cluster is not healthy after $i seconds"
+        exit 3
+    fi
+    for i in {1..1800}; do
+        nodes=$(${KUBECTL} get nodes 2>/dev/null | grep 'Ready' | wc -l)
+            if [ $nodes -eq $TOTAL_NODES ]
+            then
+                echo "all nodes are participating, took $i seconds"
+                nodesActive=0
+                break
+            fi
+        sleep 1
+    done
+    if [ $nodesActive -ne 0 ]
+    then
+        echo "still waiting for active nodes after $i seconds"
+        exit 3
+    fi
+    for i in {1..600}; do
+        notReady=$(${KUBECTL} get nodes 2>/dev/null | grep 'NotReady' | wc -l)
+            if [ $notReady -eq 0 ]
+            then
+                echo "all nodes are Ready, took $i seconds"
+                nodesReady=0
+                break
+            fi
+        sleep 1
+    done
+    if [ $nodesReady -ne 0 ]
+    then
+        echo "still waiting for Ready nodes after $i seconds"
         exit 3
     fi
 }
@@ -649,7 +647,7 @@ function ensurePodSecurityPolicy(){
     fi
     POD_SECURITY_POLICY_FILE="/etc/kubernetes/manifests/pod-security-policy.yaml"
     if [ -f $POD_SECURITY_POLICY_FILE ]; then
-        kubectl create -f $POD_SECURITY_POLICY_FILE
+        $KUBECTL create -f $POD_SECURITY_POLICY_FILE
     fi
 }
 
@@ -742,7 +740,7 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
     ensureFilepath $DOCKER
     ensureEtcdDataDir
     ensureEtcd
-    ensureApiserver
+    ensureK8s
     ensurePodSecurityPolicy
 fi
 
