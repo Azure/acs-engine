@@ -195,6 +195,21 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
+// PrivateCluster defines the configuration for a private cluster
+type PrivateCluster struct {
+	Enabled *bool                  `json:"enabled,omitempty"`
+	Jumpbox *PrivateJumpboxProfile `json:"jumpboxProfile,omitempty"`
+}
+
+// PrivateJumpboxProfile represents a jumpbox definition
+type PrivateJumpboxProfile struct {
+	Name         string `json:"name" validate:"required"`
+	VMSize       string `json:"vmSize" validate:"required"`
+	OSDiskSizeGB int    `json:"diskSizeGB,omitempty" validate:"min=0,max=1023"`
+	Username     string `json:"username,omitempty"`
+	PublicKey    string `json:"publicKey" validate:"required"`
+}
+
 // CloudProviderConfig contains the KubernetesConfig properties specific to the Cloud Provider
 // TODO use this when strict JSON checking accommodates struct embedding
 type CloudProviderConfig struct {
@@ -239,8 +254,7 @@ type KubernetesConfig struct {
 	EnableRbac                       *bool             `json:"enableRbac,omitempty"`
 	EnableSecureKubelet              *bool             `json:"enableSecureKubelet,omitempty"`
 	EnableAggregatedAPIs             bool              `json:"enableAggregatedAPIs,omitempty"`
-	EnablePrivateCluster             bool              `json:"enablePrivateCluster,omitempty"`
-	ProvisionJumpbox                 bool              `json:"provisionJumpbox,omitempty"`
+	PrivateCluster                   *PrivateCluster   `json:"privateCluster,omitempty"`
 	GCHighThreshold                  int               `json:"gchighthreshold,omitempty"`
 	GCLowThreshold                   int               `json:"gclowthreshold,omitempty"`
 	EtcdVersion                      string            `json:"etcdVersion,omitempty"`

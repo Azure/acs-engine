@@ -107,4 +107,6 @@ const (
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultMetricsServerAddonName is the name of the kubernetes metrics server addon deployment
 	DefaultMetricsServerAddonName = "metrics-server"
+	// DefaultPrivateClusterEnabled determines the acs-engine provided default for enabling kubernetes Private Cluster
+	DefaultPrivateClusterEnabled = false
 )

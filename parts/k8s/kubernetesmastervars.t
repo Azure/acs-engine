@@ -273,12 +273,12 @@
 {{if not IsHostedMaster }}
     {{if IsPrivateCluster}}
         "kubeconfigServer": "[concat('https://', variables('kubernetesAPIServerIP'), ':443')]",
-        "jumpboxVMName": "[concat(variables('resourceGroup'), '-jb')]",
-        "jumboxVMSize": "Standard_DS1_v2",
-        "jumpboxDiskSizeGB": "30",
-        "jumpboxOSDiskName": "[concat(variables('jumpboxVMName'), '-os-disk')]",
-        "jumpboxUsername": "azureuser",
-        "jumpboxPublicKey": "sshPublicKeyData",
+        "jumpboxVMName": "[parameters('jumpboxVMName')]",
+        "jumboxVMSize": "[parameters('jumpboxVMSize')]",
+        "jumpboxDiskSizeGB": "[parameters('jumpboxDiskSizeGB')]",
+        "jumpboxOSDiskName": "[concat(variables('jumpboxVMName'), '-osdisk')]",
+        "jumpboxUsername": "[parameters('jumpboxUsername')]",
+        "jumpboxPublicKey": "[parameters('jumpboxPublicKey')]",
         "jumpboxPublicIpAddressName": "[concat(variables('jumpboxVMName'), '-ip')]",
         "jumpboxNetworkInterfaceName": "[concat(variables('jumpboxVMName'), '-nic')]",
         "jumpboxNetworkSecurityGroupName": "[concat(variables('jumpboxVMName'), '-nsg')]",

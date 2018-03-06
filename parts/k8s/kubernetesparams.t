@@ -692,3 +692,37 @@
       },
       "type": "string"
     }
+{{if ProvisionJumpbox}}
+    ,"jumpboxVMName": {
+      "metadata": {
+        "description": "jumpbox VM Name"
+      },
+      "type": "string"
+    },
+    "jumpboxVMSize": {
+      {{GetMasterAllowedSizes}}
+      "metadata": {
+        "description": "The size of the Virtual Machine. Required"
+      }, 
+      "type": "string"
+    },
+    "jumpboxDiskSizeGB": {
+      {{PopulateClassicModeDefaultValue "jumpboxDiskSizeGB"}}
+      "metadata": {
+        "description": "Size in GB to allocate to the jumpbox VM OS."
+      }, 
+      "type": "int"
+    },
+    "jumpboxPublicKey": {
+      "metadata": {
+        "description": "SSH public key used for auth to the jumpbox. Required."
+      }, 
+      "type": "string"
+    },
+    "jumpboxUsername": {
+      "metadata": {
+        "description": "Username for the jumpbox. Default is azureuser."
+      }, 
+      "type": "string"
+    }
+{{end}}
