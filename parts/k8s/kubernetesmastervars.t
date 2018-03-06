@@ -273,6 +273,15 @@
 {{if not IsHostedMaster }}
     {{if IsPrivateCluster}}
         "kubeconfigServer": "[concat('https://', variables('kubernetesAPIServerIP'), ':443')]",
+        "jumpboxVMName": "[parameters('jumpboxVMName')]",
+        "jumboxVMSize": "[parameters('jumpboxVMSize')]",
+        "jumpboxDiskSizeGB": "[parameters('jumpboxDiskSizeGB')]",
+        "jumpboxOSDiskName": "[concat(variables('jumpboxVMName'), '-osdisk')]",
+        "jumpboxUsername": "[parameters('jumpboxUsername')]",
+        "jumpboxPublicKey": "[parameters('jumpboxPublicKey')]",
+        "jumpboxPublicIpAddressName": "[concat(variables('jumpboxVMName'), '-ip')]",
+        "jumpboxNetworkInterfaceName": "[concat(variables('jumpboxVMName'), '-nic')]",
+        "jumpboxNetworkSecurityGroupName": "[concat(variables('jumpboxVMName'), '-nsg')]",
     {{else}}
         "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterFqdnPrefix'), '-', variables('nameSuffix'))]",
         "masterLbID": "[resourceId('Microsoft.Network/loadBalancers',variables('masterLbName'))]",
