@@ -258,17 +258,6 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 		}
 	}
 
-	// Tests that apply to pre-1.6 releases
-	for _, k8sVersion := range []string{common.KubernetesVersion1Dot5Dot8} {
-		c := KubernetesConfig{
-			CloudProviderBackoff:   true,
-			CloudProviderRateLimit: true,
-		}
-		if err := c.Validate(k8sVersion); err == nil {
-			t.Error("should error because backoff and rate limiting are not available before v1.6.6")
-		}
-	}
-
 	// Tests that apply to 1.6 and later releases
 	for _, k8sVersion := range []string{common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot6Dot12, common.KubernetesVersion1Dot6Dot13,
 		common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9, common.KubernetesVersion1Dot7Dot10, common.KubernetesVersion1Dot7Dot12, common.KubernetesVersion1Dot7Dot13,
@@ -284,16 +273,6 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	}
 
 	trueVal := true
-	// Tests that apply to pre-1.8 releases
-	for _, k8sVersion := range []string{common.KubernetesVersion1Dot5Dot8, common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot7Dot7} {
-		c := KubernetesConfig{
-			UseCloudControllerManager: &trueVal,
-		}
-		if err := c.Validate(k8sVersion); err == nil {
-			t.Error("should error because UseCloudControllerManager is not available before v1.8")
-		}
-	}
-
 	// Tests that apply to 1.8 and later releases
 	for _, k8sVersion := range []string{common.KubernetesVersion1Dot8Dot1} {
 		c := KubernetesConfig{

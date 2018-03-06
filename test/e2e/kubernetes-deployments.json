@@ -21,10 +21,6 @@
 			"location": "westus2"
 		},
 		{
-			"cluster_definition": "kubernetes-releases/kubernetes1.5.json",
-			"location": "eastus"
-		},
-		{
 			"cluster_definition": "networkpolicy/kubernetes-calico.json",
 			"location": "eastus"
 		},

@@ -68,12 +68,4 @@ func TestLoadContainerServiceFromFile(t *testing.T) {
 	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesDefaultVersion {
 		t.Errorf("Failed  set orcherstator version when it is not set in the json, got %s", containerService.Properties.OrchestratorProfile.OrchestratorVersion)
 	}
-
-	containerService, _, err = apiloader.LoadContainerServiceFromFile("../acsengine/testdata/v20160930/kubernetes.json", true, false, nil)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	if containerService.Properties.OrchestratorProfile.OrchestratorVersion != common.KubernetesVersion1Dot5Dot8 {
-		t.Errorf("Failed  set orcherstator version when it is not set in the json, got %s", containerService.Properties.OrchestratorProfile.OrchestratorVersion)
-	}
 }

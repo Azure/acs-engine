@@ -52,19 +52,6 @@ func TestKubeletConfigNetworkPolicy(t *testing.T) {
 
 }
 
-func TestKubeletConfig1Dot5(t *testing.T) {
-	// Test Kubelet v1.5 settings
-	cs := createContainerService("testcluster", common.KubernetesVersion1Dot5Dot8, 3, 2)
-	setKubeletConfig(cs)
-	k := cs.Properties.OrchestratorProfile.KubernetesConfig.KubeletConfig
-	for _, key := range []string{"--non-masquerade-cidr", "--cgroups-per-qos", "--enforce-node-allocatable"} {
-		if _, ok := k[key]; ok {
-			t.Fatalf("'%s' kubelet config value should not be present for clusters < v1.6: %s",
-				key, k[key])
-		}
-	}
-}
-
 func TestKubeletConfigEnableSecureKubelet(t *testing.T) {
 	// Test EnableSecureKubelet = true
 	cs := createContainerService("testcluster", common.KubernetesVersion1Dot7Dot12, 3, 2)

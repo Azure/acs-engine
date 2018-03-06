@@ -63,7 +63,7 @@
     "value": "k8s-gcrio.azureedge.net/heapster:v1.2.0"
   },
   "kubernetesHyperkubeSpec": {
-    "value": "k8s-gcrio.azureedge.net/hyperkube-amd64:v1.5.3"
+    "value": "k8s-gcrio.azureedge.net/hyperkube-amd64:v1.6.13"
   },
   "kubernetesKubeDNSSpec": {
     "value": "k8s-gcrio.azureedge.net/kubedns-amd64:1.7"
