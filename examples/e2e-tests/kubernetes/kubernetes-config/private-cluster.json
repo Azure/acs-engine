@@ -4,7 +4,9 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
-        "enablePrivateCluster": true
+        "privateCluster": {
+          "enabled": true
+        }
       }
     },
     "masterProfile": {
