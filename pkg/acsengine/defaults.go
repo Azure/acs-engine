@@ -405,8 +405,20 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[r] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[r], DefaultReschedulerAddonsConfig)
 		}
 
+		if o.KubernetesConfig.PrivateCluster == nil {
+			o.KubernetesConfig.PrivateCluster = &api.PrivateCluster{}
+		}
+
+		if o.KubernetesConfig.PrivateCluster.Enabled == nil {
+			o.KubernetesConfig.PrivateCluster.Enabled = pointerToBool(api.DefaultPrivateClusterEnabled)
+		}
+
 		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
 			a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
+		}
+
+		if a.OrchestratorProfile.KubernetesConfig.PrivateCluster.Jumpbox != nil && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.Jumpbox.OSDiskSizeGB == 0 {
+			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.Jumpbox.OSDiskSizeGB = DefaultJumpboxDiskSize
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {

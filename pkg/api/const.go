@@ -103,4 +103,6 @@ const (
 	DefaultDashboardAddonName = "kubernetes-dashboard"
 	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
 	DefaultReschedulerAddonName = "rescheduler"
+	// DefaultPrivateClusterEnabled determines the acs-engine provided default for enabling kubernetes Private Cluster
+	DefaultPrivateClusterEnabled = false
 )

@@ -294,7 +294,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	kubeconfig := string(b)
 	// variable replacement
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('caCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
-	if properties.OrchestratorProfile.KubernetesConfig.EnablePrivateCluster {
+	if *properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled {
 		if properties.MasterProfile.Count > 1 {
 			// more than 1 master, use the internal lb IP
 			firstMasterIP := net.ParseIP(properties.MasterProfile.FirstConsecutiveStaticIP).To4()
@@ -907,10 +907,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return cs.Properties.OrchestratorProfile.IsAzureCNI()
 		},
 		"IsPrivateCluster": func() bool {
-			return cs.Properties.OrchestratorProfile.KubernetesConfig != nil && cs.Properties.OrchestratorProfile.KubernetesConfig.EnablePrivateCluster
+			return *cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled
 		},
 		"ProvisionJumpbox": func() bool {
-			return cs.Properties.OrchestratorProfile.KubernetesConfig != nil && cs.Properties.OrchestratorProfile.KubernetesConfig.EnablePrivateCluster && cs.Properties.OrchestratorProfile.KubernetesConfig.ProvisionJumpbox
+			return *cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled && cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Jumpbox != nil
 		},
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
@@ -1552,6 +1552,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion
 				case "etcdDiskSizeGB":
 					val = cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB
+				case "jumpboxDiskSizeGB":
+					val = strconv.Itoa(cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Jumpbox.OSDiskSizeGB)
 				default:
 					val = ""
 				}

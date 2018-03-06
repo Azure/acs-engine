@@ -406,12 +406,18 @@
                   "sku": "16.04-LTS",
                   "version": "latest"
               },
-              "osDisk": {
-                  "name": "[variables('jumpboxOSDiskName')]",
-                  "createOption": "fromImage",
-                  "diskSizeGB": "[variables('jumpboxDiskSizeGB')]"
-              },
-              "dataDisks": []
+          "osDisk": { 
+            "diskSizeGB": "[variables('jumpboxDiskSizeGB')]",
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+{{if .MasterProfile.IsStorageAccount}}
+            ,"name": "[variables('jumpboxOSDiskName')]"
+            ,"vhd": {
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('jumpboxVMName'),'-osdisk.vhd')]"
+            }
+{{end}}
+          },    
+          "dataDisks": []
           },
           "networkProfile": {
               "networkInterfaces": [
@@ -473,6 +479,7 @@
                       "subnet": {
                           "id": "[variables('vnetSubnetID')]"
                       },
+                      "primary": true,
                       "privateIPAllocationMethod": "Dynamic",
                       "publicIpAddress": {
                           "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('jumpboxPublicIpAddressName'))]"
@@ -626,11 +633,11 @@
               ,"diskSizeGB": "[variables('etcdDiskSizeGB')]"
               ,"lun": 0
               ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
-          {{if .MasterProfile.IsStorageAccount}}
+              {{if .MasterProfile.IsStorageAccount}}
               ,"vhd": {
                 "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/', variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-etcddisk.vhd')]"
               }
-          {{end}}
+              {{end}}
             }
           ],
           "imageReference": {

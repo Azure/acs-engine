@@ -123,6 +123,8 @@ const (
 	DefaultKubeletEventQPS = "0"
 	// DefaultKubeletCadvisorPort is 0, see --cadvisor-port at https://kubernetes.io/docs/reference/generated/kubelet/
 	DefaultKubeletCadvisorPort = "0"
+	// DefaultJumpboxDiskSize specifies the default size for private cluster jumpbox OS disk in GB
+	DefaultJumpboxDiskSize = 30
 )
 
 const (
