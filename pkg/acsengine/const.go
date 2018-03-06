@@ -88,7 +88,7 @@ const (
 	DefaultDashboardAddonName = "kubernetes-dashboard"
 	// DefaultTillerImage defines the Helm Tiller deployment version on Kubernetes Clusters
 	// TODO deprecate this usage, we should be favoring a more frequent upgrade cycle that pins fresh tiller versions to specific k8s versions
-	DefaultTillerImage = "tiller:v2.6.2"
+	DefaultTillerImage = "tiller:v2.8.1"
 	// DefaultACIConnectorImage defines the ACI Connector deployment version on Kubernetes Clusters
 	DefaultACIConnectorImage = "virtual-kubelet:latest"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
@@ -113,6 +113,8 @@ const (
 	DefaultReschedulerImage = "rescheduler:v0.3.1"
 	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
 	DefaultReschedulerAddonName = "rescheduler"
+	// DefaultMetricsServerAddonName is the name of the kubernetes Metrics server addon deployment
+	DefaultMetricsServerAddonName = "metrics-server"
 	// DefaultKubernetesKubeletMaxPods is the max pods per kubelet
 	DefaultKubernetesKubeletMaxPods = 110
 	// DefaultMasterEtcdServerPort is the default etcd server port for Kubernetes master nodes

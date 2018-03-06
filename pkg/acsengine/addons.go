@@ -76,6 +76,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			"azure-cloud-provider-deployment.yaml",
 			true,
 		},
+		{
+			"kubernetesmasteraddons-metrics-server-deployment.yaml",
+			"kube-metrics-server-deployment.yaml",
+			profile.OrchestratorProfile.IsMetricsServerEnabled(),
+		},
 	}
 }
 

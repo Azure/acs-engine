@@ -136,7 +136,7 @@ func kubernetesInfo(csOrch *OrchestratorProfile) ([]*OrchestratorVersionProfile,
 		if err != nil {
 			return nil, err
 		}
-		cons, err := semver.NewConstraint("<1.5.0")
+		cons, err := semver.NewConstraint("<1.6.0")
 		if err != nil {
 			return nil, err
 		}

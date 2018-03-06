@@ -11,7 +11,7 @@ During the upgrade, *acs-engine* successively visits virtual machines that const
  - create new VM and install desired orchestrator version
  - add the new VM to the cluster
 
-*acs-engine* allows one subsequent minor version upgrade at a time, for example, from ``1.5.x`` to ``1.6.y``.
+*acs-engine* allows one subsequent minor version upgrade at a time, for example, from ``1.6.x`` to ``1.7.y``.
 
 For upgrade that spans over more than a single minor version, this operation should be called several times, each time advancing the minor version by one. For example, to upgrade from ``1.6.x`` to ``1.8.z`` one should first upgrade the cluster to ``1.7.y``, followed by upgrading it to ``1.8.z``
 
@@ -35,6 +35,9 @@ To get the list of all available Kubernetes versions and upgrades, run the *orch
           "orchestratorVersion": "1.7.12"
         },
         {
+          "orchestratorVersion": "1.7.13"
+        },
+        {
           "orchestratorVersion": "1.8.1"
         },
         {
@@ -54,28 +57,6 @@ To get the list of all available Kubernetes versions and upgrades, run the *orch
         },
         {
           "orchestratorVersion": "1.8.8"
-        }
-      ]
-    },
-    {
-      "orchestratorType": "Kubernetes",
-      "orchestratorVersion": "1.5.8",
-      "upgrades": [
-        {
-          "orchestratorType": "",
-          "orchestratorVersion": "1.6.11"
-        },
-        {
-          "orchestratorVersion": "1.6.9"
-        },
-        {
-          "orchestratorVersion": "1.6.12"
-        },
-        {
-          "orchestratorVersion": "1.6.13"
-        },
-        {
-          "orchestratorVersion": "1.6.6"
         }
       ]
     },
@@ -106,6 +87,9 @@ To get the information specific to the cluster, provide its current orchestrator
         },
         {
           "orchestratorVersion": "1.7.12"
+        },
+        {
+          "orchestratorVersion": "1.7.13"
         },
         {
           "orchestratorVersion": "1.8.0"

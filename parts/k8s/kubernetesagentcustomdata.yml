@@ -103,10 +103,14 @@ write_files:
   permissions: "0644"
   owner: "root"
   content: |
+{{if IsKubernetesVersionLt "1.8.0"}}
+    KUBELET_OPTS=--require-kubeconfig
+{{else}}
+    KUBELET_OPTS=
+{{end}}
     KUBELET_CONFIG={{GetKubeletConfigKeyVals .KubernetesConfig }}
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
     DOCKER_OPTS=
-    KUBELET_OPTS=
     KUBELET_REGISTER_SCHEDULABLE=true
     KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}
 {{if IsKubernetesVersionGe "1.6.0"}}

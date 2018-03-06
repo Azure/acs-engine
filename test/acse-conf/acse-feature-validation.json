@@ -53,10 +53,6 @@
       "location": "southcentralus"
     },
     {
-      "cluster_definition": "kubernetes-releases/kubernetes1.5.json",
-      "location": "southcentralus"
-    },
-    {
       "cluster_definition": "networkpolicy/kubernetes-calico.json",
       "location": "southcentralus"
     },

@@ -95,6 +95,8 @@ const (
 	DefaultRBACEnabled = true
 	// DefaultSecureKubeletEnabled determines the acs-engine provided default for securing kubelet communications
 	DefaultSecureKubeletEnabled = true
+	// DefaultMetricsServerAddonEnabled determines the acs-engine provided default for enabling kubernetes metrics-server addon
+	DefaultMetricsServerAddonEnabled = false
 	// DefaultTillerAddonName is the name of the tiller addon deployment
 	DefaultTillerAddonName = "tiller"
 	// DefaultACIConnectorAddonName is the name of the tiller addon deployment
@@ -105,4 +107,6 @@ const (
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultPrivateClusterEnabled determines the acs-engine provided default for enabling kubernetes Private Cluster
 	DefaultPrivateClusterEnabled = false
+	// DefaultMetricsServerAddonName is the name of the kubernetes metrics server addon deployment
+	DefaultMetricsServerAddonName = "metrics-server"
 )

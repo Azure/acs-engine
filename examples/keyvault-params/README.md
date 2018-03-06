@@ -11,6 +11,12 @@ ACS-Engine enables you to retrieve the following k8s deployment parameters from 
 *	clientPrivateKey
 *	kubeConfigCertificate
 *	kubeConfigPrivateKey
+* etcdServerCertificate
+* etcdServerPrivateKey
+* etcdClientCertificate
+* etcdClientPrivateKey
+* etcdPeerCertificates
+* etcdPeerPrivateKeys
 *	servicePrincipal secret (a special case)
 
 The parameters above could still be set as plain text.

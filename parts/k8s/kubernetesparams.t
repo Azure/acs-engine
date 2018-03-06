@@ -293,6 +293,13 @@
       },
       "type": "string"
     },
+    "kubernetesMetricsServerSpec": {
+      {{PopulateClassicModeDefaultValue "kubernetesMetricsServerSpec"}}
+      "metadata": {
+        "description": "The container spec for Metrics Server."
+      },
+      "type": "string"
+    },
     "kubernetesTillerSpec": {
       {{PopulateClassicModeDefaultValue "kubernetesTillerSpec"}}
       "metadata": {

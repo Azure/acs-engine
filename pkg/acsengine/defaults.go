@@ -121,7 +121,12 @@ var (
 			ResourceManagerVMDNSSuffix: "cloudapp.usgovcloudapi.net",
 		},
 		OSImageConfig: map[api.Distro]AzureOSImageConfig{
-			api.Ubuntu: DefaultUbuntuImageConfig,
+			api.Ubuntu: {
+				ImageOffer:     "UbuntuServer",
+				ImageSku:       "16.04-LTS",
+				ImagePublisher: "Canonical",
+				ImageVersion:   "latest",
+			},
 			api.RHEL:   DefaultRHELOSImageConfig,
 			api.CoreOS: DefaultCoreOSImageConfig,
 		},
@@ -236,6 +241,17 @@ var (
 			},
 		},
 	}
+
+	// DefaultMetricsServerAddonsConfig is the default metrics-server Kubernetes addon Config
+	DefaultMetricsServerAddonsConfig = api.KubernetesAddon{
+		Name:    DefaultMetricsServerAddonName,
+		Enabled: pointerToBool(api.DefaultMetricsServerAddonEnabled),
+		Containers: []api.KubernetesContainerSpec{
+			{
+				Name: DefaultMetricsServerAddonName,
+			},
+		},
+	}
 )
 
 // SetPropertiesDefaults for the container Properties, returns true if certs are generated
@@ -287,6 +303,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				DefaultACIConnectorAddonsConfig,
 				DefaultDashboardAddonsConfig,
 				DefaultReschedulerAddonsConfig,
+				DefaultMetricsServerAddonsConfig,
 			}
 		} else {
 			// For each addon, provide default configuration if user didn't provide its own config
@@ -309,6 +326,11 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if r < 0 {
 				// Provide default acs-engine config for Rescheduler
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultReschedulerAddonsConfig)
+			}
+			m := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
+			if m < 0 {
+				// Provide default acs-engine config for Metrics Server
+				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultMetricsServerAddonsConfig)
 			}
 		}
 		if o.KubernetesConfig.KubernetesImageBase == "" {
@@ -403,6 +425,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		r := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultReschedulerAddonName)
 		if a.OrchestratorProfile.KubernetesConfig.Addons[r].IsEnabled(api.DefaultReschedulerAddonEnabled) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[r] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[r], DefaultReschedulerAddonsConfig)
+		}
+		m := getAddonsIndexByName(a.OrchestratorProfile.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
+		if a.OrchestratorProfile.KubernetesConfig.Addons[m].IsEnabled(api.DefaultMetricsServerAddonEnabled) {
+			a.OrchestratorProfile.KubernetesConfig.Addons[m] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[m], DefaultMetricsServerAddonsConfig)
 		}
 
 		if o.KubernetesConfig.PrivateCluster == nil {

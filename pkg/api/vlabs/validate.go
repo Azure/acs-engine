@@ -86,9 +86,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					return err
 				}
 				if o.KubernetesConfig.EnableAggregatedAPIs {
-					if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot7 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
+					if o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
 						return fmt.Errorf("enableAggregatedAPIs is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
@@ -102,9 +100,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					}
 
 					if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableDataEncryptionAtRest) {
-						if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot7 ||
-							o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
-							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
+						if o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
 							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
 							o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 {
 							return fmt.Errorf("enableDataEncryptionAtRest is only available in Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
@@ -116,9 +112,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 					if !helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
 						return fmt.Errorf("enablePodSecurityPolicy requires the enableRbac feature as a prerequisite")
 					}
-					if o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot7 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot5Dot8 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
+					if o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot6 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot9 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot6Dot11 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot0 ||
@@ -129,7 +123,8 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot7 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot9 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot10 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot12 {
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot12 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot13 {
 						return fmt.Errorf("enablePodSecurityPolicy is only supported in acs-engine for Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 							"1.8.0", o.OrchestratorVersion)
 					}
@@ -247,7 +242,7 @@ func (o *OrchestratorProfile) ValidateForUpgrade() error {
 	case Kubernetes:
 		switch o.OrchestratorVersion {
 		case common.KubernetesVersion1Dot6Dot13:
-		case common.KubernetesVersion1Dot7Dot12:
+		case common.KubernetesVersion1Dot7Dot13:
 		default:
 			return fmt.Errorf("Upgrade to Kubernetes version %s is not supported", o.OrchestratorVersion)
 		}
@@ -521,6 +516,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot7Dot9:  true,
 		common.KubernetesVersion1Dot7Dot10: true,
 		common.KubernetesVersion1Dot7Dot12: true,
+		common.KubernetesVersion1Dot7Dot13: true,
 		common.KubernetesVersion1Dot6Dot6:  true,
 		common.KubernetesVersion1Dot6Dot9:  true,
 		common.KubernetesVersion1Dot6Dot11: true,

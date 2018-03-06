@@ -1,5 +1,5 @@
 hash: 7ddcdfd12d54f159ec71d030acfaab7215b7657057d8052446832664a02ffcdb
-updated: 2018-01-11T13:29:13.722818-07:00
+updated: 2018-03-05T11:49:40.182606-08:00
 imports:
 - name: github.com/alexcesaro/statsd
   version: 7fea3f0d2fab1ad973e641e51dba45443a311a90
@@ -73,7 +73,7 @@ imports:
 - name: github.com/howeyc/gopass
   version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
 - name: github.com/imdario/mergo
-  version: 7fe0c75c13abdee74b09fcacef5ea1c6bba6a874
+  version: 163f41321a19dd09362d4c63cc2489db2015f1f4
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/influxdata/influxdb

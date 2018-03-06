@@ -144,10 +144,14 @@ MASTER_ADDONS_CONFIG_PLACEHOLDER
   permissions: "0644"
   owner: "root"
   content: |
+{{if IsKubernetesVersionLt "1.8.0"}}
+    KUBELET_OPTS=--require-kubeconfig
+{{else}}
+    KUBELET_OPTS=
+{{end}}
     KUBELET_CONFIG={{GetKubeletConfigKeyVals .MasterProfile.KubernetesConfig}}
     KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
     DOCKER_OPTS=
-    KUBELET_OPTS=
     KUBELET_NODE_LABELS={{GetMasterKubernetesLabels "',variables('labelResourceGroup'),'"}}
 {{if IsKubernetesVersionGe "1.6.0"}}
   {{if HasLinuxAgents}}
@@ -228,6 +232,10 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     sed -i "s|<kubernetesReschedulerMemoryRequests>|{{WrapAsVariable "kubernetesReschedulerMemoryRequests"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
     sed -i "s|<kubernetesReschedulerCPULimit>|{{WrapAsVariable "kubernetesReschedulerCPULimit"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
     sed -i "s|<kubernetesReschedulerMemoryLimit>|{{WrapAsVariable "kubernetesReschedulerMemoryLimit"}}|g" "/etc/kubernetes/addons/kube-rescheduler-deployment.yaml"
+{{end}}
+
+{{if .OrchestratorProfile.IsMetricsServerEnabled}}
+    sed -i "s|<kubernetesMetricsServerSpec>|{{WrapAsVariable "kubernetesMetricsServerSpec"}}|g" "/etc/kubernetes/addons/kube-metrics-server-deployment.yaml"
 {{end}}
 
 {{if EnableDataEncryptionAtRest }}

@@ -257,11 +257,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 	Describe("with a linux agent pool", func() {
 		It("should be able to autoscale", func() {
-			By("Determining whether this version of Kubernetes can hpa autoscale")
-			version, err := node.Version()
-			Expect(err).NotTo(HaveOccurred())
-			re := regexp.MustCompile("v1.9")
-			if eng.HasLinuxAgents() && re.FindString(version) == "" {
+			if eng.HasLinuxAgents() {
 				By("Creating a test php-apache deployment with request limit thresholds")
 				// Inspired by http://blog.kubernetes.io/2016/07/autoscaling-in-kubernetes.html
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))

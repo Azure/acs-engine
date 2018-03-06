@@ -137,6 +137,12 @@ func (sc *scaleCmd) validate(cmd *cobra.Command, args []string) {
 		log.Fatalf("error parsing the api model: %s", err.Error())
 	}
 
+	if sc.containerService.Location == "" {
+		sc.containerService.Location = sc.location
+	} else if sc.containerService.Location != sc.location {
+		log.Fatalf("--location does not match api model location")
+	}
+
 	if sc.agentPoolToScale == "" {
 		agentPoolCount := len(sc.containerService.Properties.AgentPoolProfiles)
 		if agentPoolCount > 1 {
