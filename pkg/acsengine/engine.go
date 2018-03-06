@@ -932,10 +932,20 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return cs.Properties.OrchestratorProfile.IsAzureCNI()
 		},
 		"IsPrivateCluster": func() bool {
-			return *cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled
+			if !cs.Properties.OrchestratorProfile.IsKubernetes() {
+				return false
+			} else if *cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled {
+				return true
+			}
+			return false
 		},
 		"ProvisionJumpbox": func() bool {
-			return *cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled && cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Jumpbox != nil
+			if !cs.Properties.OrchestratorProfile.IsKubernetes() {
+				return false
+			} else if *cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled && cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Jumpbox != nil {
+				return true
+			}
+			return false
 		},
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
