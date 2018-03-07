@@ -8,7 +8,7 @@ jobs:
   test:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.8.1
+      - image: quay.io/deis/go-dev:v1.9.0
         environment:
           GOPATH: /go
     steps:
@@ -34,7 +34,7 @@ jobs:
   swarm-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.8.1
+      - image: quay.io/deis/go-dev:v1.9.0
         environment:
           GOPATH: /go
     steps:
@@ -61,7 +61,7 @@ jobs:
   dcos-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.8.1
+      - image: quay.io/deis/go-dev:v1.9.0
         environment:
           GOPATH: /go
     steps:
@@ -84,7 +84,7 @@ jobs:
   swarmmode-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.8.1
+      - image: quay.io/deis/go-dev:v1.9.0
         environment:
           GOPATH: /go
     steps:
@@ -111,7 +111,7 @@ jobs:
   k8s-1.7-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.8.1
+      - image: quay.io/deis/go-dev:v1.9.0
         environment:
           GOPATH: /go
     steps:
@@ -140,7 +140,7 @@ jobs:
   k8s-windows-1.7-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.8.1
+      - image: quay.io/deis/go-dev:v1.9.0
         environment:
           GOPATH: /go
     steps:
@@ -168,7 +168,7 @@ jobs:
   k8s-1.9-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.8.1
+      - image: quay.io/deis/go-dev:v1.9.0
         environment:
           GOPATH: /go
     steps:
@@ -197,7 +197,7 @@ jobs:
   k8s-1.8-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.8.1
+      - image: quay.io/deis/go-dev:v1.9.0
         environment:
           GOPATH: /go
     steps:
@@ -226,7 +226,7 @@ jobs:
   k8s-windows-1.8-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.8.1
+      - image: quay.io/deis/go-dev:v1.9.0
         environment:
           GOPATH: /go
     steps:
@@ -254,7 +254,7 @@ jobs:
   k8s-windows-1.9-release-e2e:
     working_directory: /go/src/github.com/Azure/acs-engine
     docker:
-      - image: quay.io/deis/go-dev:v1.8.1
+      - image: quay.io/deis/go-dev:v1.9.0
         environment:
           GOPATH: /go
     steps:
