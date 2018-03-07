@@ -407,11 +407,11 @@
                   "version": "latest"
               },
           "osDisk": { 
-            "diskSizeGB": "[variables('jumpboxDiskSizeGB')]",
+            "diskSizeGB": "[variables('jumpboxOSDiskSizeGB')]",
             "caching": "ReadWrite",
-            "createOption": "FromImage"
+            "createOption": "FromImage",
+            "name": "[variables('jumpboxOSDiskName')]"
 {{if .MasterProfile.IsStorageAccount}}
-            ,"name": "[variables('jumpboxOSDiskName')]"
             ,"vhd": {
               "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('jumpboxVMName'),'-osdisk.vhd')]"
             }

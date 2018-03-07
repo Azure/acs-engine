@@ -443,8 +443,12 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
 		}
 
-		if a.OrchestratorProfile.KubernetesConfig.PrivateCluster.Jumpbox != nil && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.Jumpbox.OSDiskSizeGB == 0 {
-			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.Jumpbox.OSDiskSizeGB = DefaultJumpboxDiskSize
+		if a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile != nil && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.OSDiskSizeGB == 0 {
+			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.OSDiskSizeGB = DefaultJumpboxDiskSize
+		}
+
+		if a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile != nil && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.Username == "" {
+			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.Username = DefaultJumpboxUsername
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {

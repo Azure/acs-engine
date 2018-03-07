@@ -127,6 +127,8 @@ const (
 	DefaultKubeletCadvisorPort = "0"
 	// DefaultJumpboxDiskSize specifies the default size for private cluster jumpbox OS disk in GB
 	DefaultJumpboxDiskSize = 30
+	// DefaultJumpboxUsername specifies the default admin username for the private cluster jumpbox
+	DefaultJumpboxUsername = "azureuser"
 )
 
 const (

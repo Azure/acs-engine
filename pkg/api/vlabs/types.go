@@ -215,8 +215,8 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 
 // PrivateCluster defines the configuration for a private cluster
 type PrivateCluster struct {
-	Enabled *bool                  `json:"enabled,omitempty"`
-	Jumpbox *PrivateJumpboxProfile `json:"jumpboxProfile,omitempty"`
+	Enabled        *bool                  `json:"enabled,omitempty"`
+	JumpboxProfile *PrivateJumpboxProfile `json:"jumpboxProfile,omitempty"`
 }
 
 // PrivateJumpboxProfile represents a jumpbox definition

@@ -300,7 +300,7 @@ To auto-provision a jumpbox with your acs-engine deployment use:
       "kubernetesConfig": {
         "privateCluster": {
           "enabled": true,
-          "jumpbox": {
+          "jumpboxProfile": {
             "name": "my-jb",
             "vmSize": "Standard_D4s_v3",
             "diskSizeGB": 30,

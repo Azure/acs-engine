@@ -714,9 +714,9 @@ func convertPrivateClusterToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig
 	if a.PrivateCluster != nil {
 		v.PrivateCluster = &vlabs.PrivateCluster{}
 		v.PrivateCluster.Enabled = a.PrivateCluster.Enabled
-		if a.PrivateCluster.Jumpbox != nil {
-			v.PrivateCluster.Jumpbox = &vlabs.PrivateJumpboxProfile{}
-			convertPrivateJumpboxProfileToVlabs(a.PrivateCluster.Jumpbox, v.PrivateCluster.Jumpbox)
+		if a.PrivateCluster.JumpboxProfile != nil {
+			v.PrivateCluster.JumpboxProfile = &vlabs.PrivateJumpboxProfile{}
+			convertPrivateJumpboxProfileToVlabs(a.PrivateCluster.JumpboxProfile, v.PrivateCluster.JumpboxProfile)
 		}
 	}
 }
@@ -726,6 +726,7 @@ func convertPrivateJumpboxProfileToVlabs(api *PrivateJumpboxProfile, vlabsProfil
 	vlabsProfile.OSDiskSizeGB = api.OSDiskSizeGB
 	vlabsProfile.VMSize = api.VMSize
 	vlabsProfile.PublicKey = api.PublicKey
+	vlabsProfile.Username = api.Username
 }
 
 func convertAddonsToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {

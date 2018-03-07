@@ -275,7 +275,7 @@
         "kubeconfigServer": "[concat('https://', variables('kubernetesAPIServerIP'), ':443')]",
         "jumpboxVMName": "[parameters('jumpboxVMName')]",
         "jumboxVMSize": "[parameters('jumpboxVMSize')]",
-        "jumpboxDiskSizeGB": "[parameters('jumpboxDiskSizeGB')]",
+        "jumpboxOSDiskSizeGB": "[parameters('jumpboxOSDiskSizeGB')]",
         "jumpboxOSDiskName": "[concat(variables('jumpboxVMName'), '-osdisk')]",
         "jumpboxUsername": "[parameters('jumpboxUsername')]",
         "jumpboxPublicKey": "[parameters('jumpboxPublicKey')]",

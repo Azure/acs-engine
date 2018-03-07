@@ -699,9 +699,9 @@ func convertPrivateClusterToAPI(v *vlabs.KubernetesConfig, a *KubernetesConfig) 
 	if v.PrivateCluster != nil {
 		a.PrivateCluster = &PrivateCluster{}
 		a.PrivateCluster.Enabled = v.PrivateCluster.Enabled
-		if v.PrivateCluster.Jumpbox != nil {
-			a.PrivateCluster.Jumpbox = &PrivateJumpboxProfile{}
-			convertPrivateJumpboxProfileToAPI(v.PrivateCluster.Jumpbox, a.PrivateCluster.Jumpbox)
+		if v.PrivateCluster.JumpboxProfile != nil {
+			a.PrivateCluster.JumpboxProfile = &PrivateJumpboxProfile{}
+			convertPrivateJumpboxProfileToAPI(v.PrivateCluster.JumpboxProfile, a.PrivateCluster.JumpboxProfile)
 		}
 	}
 }
@@ -711,6 +711,7 @@ func convertPrivateJumpboxProfileToAPI(v *vlabs.PrivateJumpboxProfile, a *Privat
 	a.OSDiskSizeGB = v.OSDiskSizeGB
 	a.VMSize = v.VMSize
 	a.PublicKey = v.PublicKey
+	a.Username = v.Username
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {

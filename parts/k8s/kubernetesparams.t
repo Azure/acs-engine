@@ -706,8 +706,8 @@
       }, 
       "type": "string"
     },
-    "jumpboxDiskSizeGB": {
-      {{PopulateClassicModeDefaultValue "jumpboxDiskSizeGB"}}
+    "jumpboxOSDiskSizeGB": {
+      {{PopulateClassicModeDefaultValue "jumpboxOSDiskSizeGB"}}
       "metadata": {
         "description": "Size in GB to allocate to the jumpbox VM OS."
       }, 
