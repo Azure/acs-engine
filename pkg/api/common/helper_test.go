@@ -83,11 +83,6 @@ func Test_RationalizeReleaseAndVersion(t *testing.T) {
 		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot6Dot13)
 	}
 
-	version = RationalizeReleaseAndVersion(Kubernetes, "1.9", "", false)
-	if version != KubernetesVersion1Dot9Dot3 {
-		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot9Dot3)
-	}
-
 	version = RationalizeReleaseAndVersion(Kubernetes, "", "1.6.11", false)
 	if version != KubernetesVersion1Dot6Dot11 {
 		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot6Dot11)
@@ -119,8 +114,8 @@ func Test_RationalizeReleaseAndVersion(t *testing.T) {
 	}
 
 	version = RationalizeReleaseAndVersion(Kubernetes, "v1.9", "", false)
-	if version != KubernetesVersion1Dot9Dot3 {
-		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot9Dot3)
+	if version != KubernetesVersion1Dot9Dot4 {
+		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot9Dot4)
 	}
 
 	version = RationalizeReleaseAndVersion(Kubernetes, "1.10", "", false)
