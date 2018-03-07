@@ -221,11 +221,12 @@ type PrivateCluster struct {
 
 // PrivateJumpboxProfile represents a jumpbox definition
 type PrivateJumpboxProfile struct {
-	Name         string `json:"name" validate:"required"`
-	VMSize       string `json:"vmSize" validate:"required"`
-	OSDiskSizeGB int    `json:"diskSizeGB,omitempty" validate:"min=0,max=1023"`
-	Username     string `json:"username,omitempty"`
-	PublicKey    string `json:"publicKey" validate:"required"`
+	Name           string `json:"name" validate:"required"`
+	VMSize         string `json:"vmSize" validate:"required"`
+	OSDiskSizeGB   int    `json:"diskSizeGB,omitempty" validate:"min=0,max=1023"`
+	Username       string `json:"username,omitempty"`
+	PublicKey      string `json:"publicKey" validate:"required"`
+	StorageProfile string `json:"storageProfile,omitempty"`
 }
 
 // CloudProviderConfig contains the KubernetesConfig parameters specific to the Cloud Provider

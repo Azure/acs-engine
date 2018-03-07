@@ -664,12 +664,13 @@ func getParameters(cs *api.ContainerService, isClassicMode bool, generatorCode s
 		addValue(parametersMap, "etcdDownloadURLBase", cloudSpecConfig.KubernetesSpecConfig.EtcdDownloadURLBase)
 		addValue(parametersMap, "etcdVersion", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdVersion)
 		addValue(parametersMap, "etcdDiskSizeGB", cs.Properties.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB)
-		if cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile != nil {
+		if cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() {
 			addValue(parametersMap, "jumpboxVMName", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.Name)
 			addValue(parametersMap, "jumpboxVMSize", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.VMSize)
 			addValue(parametersMap, "jumpboxUsername", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.Username)
 			addValue(parametersMap, "jumpboxOSDiskSizeGB", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.OSDiskSizeGB)
 			addValue(parametersMap, "jumpboxPublicKey", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.PublicKey)
+			addValue(parametersMap, "jumpboxStorageProfile", cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile)
 		}
 		var totalNodes int
 		if cs.Properties.MasterProfile != nil {
@@ -947,9 +948,10 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return false
 		},
 		"ProvisionJumpbox": func() bool {
-			if !cs.Properties.OrchestratorProfile.IsKubernetes() {
-				return false
-			} else if *cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled && cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile != nil {
+			return cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision()
+		},
+		"JumpboxIsManagedDisks": func() bool {
+			if cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile == api.ManagedDisks {
 				return true
 			}
 			return false

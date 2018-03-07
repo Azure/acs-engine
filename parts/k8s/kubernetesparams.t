@@ -709,19 +709,25 @@
     "jumpboxOSDiskSizeGB": {
       {{PopulateClassicModeDefaultValue "jumpboxOSDiskSizeGB"}}
       "metadata": {
-        "description": "Size in GB to allocate to the jumpbox VM OS."
+        "description": "Size in GB to allocate to the private cluster jumpbox VM OS."
       }, 
       "type": "int"
     },
     "jumpboxPublicKey": {
       "metadata": {
-        "description": "SSH public key used for auth to the jumpbox. Required."
+        "description": "SSH public key used for auth to the private cluster jumpbox"
       }, 
       "type": "string"
     },
     "jumpboxUsername": {
       "metadata": {
-        "description": "Username for the jumpbox. Default is azureuser."
+        "description": "Username for the private cluster jumpbox"
+      }, 
+      "type": "string"
+    },
+    "jumpboxStorageProfile": {
+      "metadata": {
+        "description": "Storage Profile for the private cluster jumpbox"
       }, 
       "type": "string"
     }

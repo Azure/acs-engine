@@ -727,6 +727,7 @@ func convertPrivateJumpboxProfileToVlabs(api *PrivateJumpboxProfile, vlabsProfil
 	vlabsProfile.VMSize = api.VMSize
 	vlabsProfile.PublicKey = api.PublicKey
 	vlabsProfile.Username = api.Username
+	vlabsProfile.StorageProfile = api.StorageProfile
 }
 
 func convertAddonsToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {

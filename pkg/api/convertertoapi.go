@@ -712,6 +712,7 @@ func convertPrivateJumpboxProfileToAPI(v *vlabs.PrivateJumpboxProfile, a *Privat
 	a.VMSize = v.VMSize
 	a.PublicKey = v.PublicKey
 	a.Username = v.Username
+	a.StorageProfile = v.StorageProfile
 }
 
 func convertV20160930MasterProfile(v20160930 *v20160930.MasterProfile, api *MasterProfile) {

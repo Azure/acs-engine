@@ -378,7 +378,11 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('jumpboxVMName')]",
+      {{if JumpboxIsManagedDisks}}
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
+      {{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
+      {{end}}
       "location": "[variables('location')]",
       "properties": {
           "osProfile": {
@@ -397,7 +401,7 @@
               }
           },
           "hardwareProfile": {
-              "vmSize": "[variables('jumboxVMSize')]"
+              "vmSize": "[variables('jumpboxVMSize')]"
           },
           "storageProfile": {
               "imageReference": {
@@ -406,17 +410,23 @@
                   "sku": "16.04-LTS",
                   "version": "latest"
               },
-          "osDisk": { 
-            "diskSizeGB": "[variables('jumpboxOSDiskSizeGB')]",
-            "caching": "ReadWrite",
-            "createOption": "FromImage",
-            "name": "[variables('jumpboxOSDiskName')]"
-{{if .MasterProfile.IsStorageAccount}}
-            ,"vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('jumpboxVMName'),'-osdisk.vhd')]"
-            }
-{{end}}
-          },    
+            {{if JumpboxIsManagedDisks}}
+              "osDisk": {
+                  "createOption": "fromImage",
+                  "diskSizeGB": "[variables('jumpboxOSDiskSizeGB')]",
+                  "managedDisk": {
+                      "storageAccountType": "[variables('vmSizesMap')[variables('jumpboxVMSize')].storageAccountType]"
+                  }
+              },
+            {{else}}
+              "osDisk": {
+                "createOption": "fromImage",
+                "vhd": {
+                    "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('jumpboxStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('jumpboxVMName'),'jumpboxdisk.vhd')]"
+                },
+                "name": "[variables('jumpboxOSDiskName')]"
+              },
+            {{end}}   
           "dataDisks": []
           },
           "networkProfile": {
@@ -431,6 +441,17 @@
             "[concat('Microsoft.Network/networkInterfaces/', variables('jumpboxNetworkInterfaceName'))]"
         ]
     },
+    {{if not JumpboxIsManagedDisks}}
+    {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('jumpboxStorageAccountName')]",
+            "apiVersion": "[variables('apiVersionStorage')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "accountType": "[variables('vmSizesMap')[variables('jumpboxVMSize')].storageAccountType]"
+            }
+    },
+    {{end}}
     {
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('jumpboxNetworkSecurityGroupName')]",
@@ -491,10 +512,11 @@
               "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('jumpboxNetworkSecurityGroupName'))]"
           }
       },
-        "dependsOn": [
-            "[concat('Microsoft.Network/publicIpAddresses/', variables('jumpboxPublicIpAddressName'))]",
-            "[concat('Microsoft.Network/networkSecurityGroups/', variables('jumpboxNetworkSecurityGroupName'))]"
-        ]
+      "dependsOn": [
+          "[concat('Microsoft.Network/publicIpAddresses/', variables('jumpboxPublicIpAddressName'))]",
+          "[concat('Microsoft.Network/networkSecurityGroups/', variables('jumpboxNetworkSecurityGroupName'))]",
+          "[variables('vnetID')]"
+      ]
     },
   {{end}}
 {{end}}
