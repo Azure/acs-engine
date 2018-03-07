@@ -1754,7 +1754,7 @@ func isNSeriesSKU(profile *api.AgentPoolProfile) bool {
 func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 
 	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
-	dv := "384.111"
+	dv := "390.30"
 	dest := "/usr/local/nvidia"
 
 	/*
@@ -1799,22 +1799,31 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 	   that we have an agreement with NVIDIA for this specific gpu. Otherwise use the warning message.
 	*/
 	dm := map[string]string{
+		// K80
 		"Standard_NC6":      installScript,
 		"Standard_NC12":     installScript,
 		"Standard_NC24":     installScript,
 		"Standard_NC24r":    installScript,
+		// M60
 		"Standard_NV6":      installScript,
 		"Standard_NV12":     installScript,
 		"Standard_NV24":     installScript,
 		"Standard_NV24r":    installScript,
-		"Standard_NC6_v2":   na,
-		"Standard_NC12_v2":  na,
-		"Standard_NC24_v2":  na,
-		"Standard_NC24r_v2": na,
-		"Standard_ND6":      na,
-		"Standard_ND12":     na,
-		"Standard_ND24":     na,
-		"Standard_ND24r":    na,
+		// P40
+		"Standard_ND6":      installScript,
+		"Standard_ND12":     installScript,
+		"Standard_ND24":     installScript,
+		"Standard_ND24r":    installScript,
+		// P100
+		"Standard_NC6_v2":   installScript,
+		"Standard_NC12_v2":  installScript,
+		"Standard_NC24_v2":  installScript,
+		"Standard_NC24r_v2": installScript,
+		// V100
+		"Standard_NC6s_v2":   installScript,
+		"Standard_NC12s_v2":  installScript,
+		"Standard_NC24s_v2":  installScript,
+		"Standard_NC24rs_v2": installScript,
 	}
 	if _, ok := dm[profile.VMSize]; ok {
 		return dm[profile.VMSize]
