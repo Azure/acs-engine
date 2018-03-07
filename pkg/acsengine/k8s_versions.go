@@ -267,7 +267,7 @@ func getK8sVersionComponents(version string, overrides map[string]string) map[st
 		}
 
 	default:
-		ret = map[string]string{}
+		ret = nil
 	}
 	for k, v := range overrides {
 		ret[k] = v
