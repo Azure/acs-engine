@@ -56,7 +56,7 @@ var (
 
 	//DefaultDockerSpecConfig is the default Docker engine repo.
 	DefaultDockerSpecConfig = DockerSpecConfig{
-		DockerEngineRepo:         "https://aptdocker.azureedge.net/repo",
+		DockerEngineRepo:         "https://download.docker.com/linux/ubuntu",
 		DockerComposeDownloadURL: "https://github.com/docker/compose/releases/download",
 	}
 

@@ -92,7 +92,7 @@ var k8sComponentVersions = map[string]map[string]string{
 		"gclowthreshold":     strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 	"1.8": {
-		"dockerEngine":    "1.13.*",
+		"dockerEngine":    "17.12.*",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.8.3",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addon-resizer":   "addon-resizer:1.7",
@@ -119,7 +119,7 @@ var k8sComponentVersions = map[string]map[string]string{
 		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 	"1.7": {
-		"dockerEngine":    "1.13.*",
+		"dockerEngine":    "17.12.*",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addon-resizer":   "addon-resizer:1.7",
@@ -146,7 +146,7 @@ var k8sComponentVersions = map[string]map[string]string{
 		"gclowthreshold":  strconv.Itoa(DefaultKubernetesGCLowThreshold),
 	},
 	"1.6": {
-		"dockerEngine":    "1.12.*",
+		"dockerEngine":    "17.12.*",
 		"dashboard":       "kubernetes-dashboard-amd64:v1.6.3",
 		"exechealthz":     "exechealthz-amd64:1.2",
 		"addon-resizer":   "addon-resizer:1.7",
