@@ -1810,20 +1810,20 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 		"Standard_NV24":     installScript,
 		"Standard_NV24r":    installScript,
 		// P40
-		"Standard_ND6":      installScript,
-		"Standard_ND12":     installScript,
-		"Standard_ND24":     installScript,
-		"Standard_ND24r":    installScript,
+		"Standard_ND6s":      installScript,
+		"Standard_ND12s":     installScript,
+		"Standard_ND24s":     installScript,
+		"Standard_ND24rs":    installScript,
 		// P100
-		"Standard_NC6_v2":   installScript,
-		"Standard_NC12_v2":  installScript,
-		"Standard_NC24_v2":  installScript,
-		"Standard_NC24r_v2": installScript,
-		// V100
 		"Standard_NC6s_v2":   installScript,
 		"Standard_NC12s_v2":  installScript,
 		"Standard_NC24s_v2":  installScript,
 		"Standard_NC24rs_v2": installScript,
+		// V100
+		"Standard_NC6s_v3":   installScript,
+		"Standard_NC12s_v3":  installScript,
+		"Standard_NC24s_v3":  installScript,
+		"Standard_NC24rs_v3": installScript,
 	}
 	if _, ok := dm[profile.VMSize]; ok {
 		return dm[profile.VMSize]
