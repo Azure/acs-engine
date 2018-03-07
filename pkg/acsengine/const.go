@@ -86,9 +86,6 @@ const (
 	DefaultACIConnectorAddonName = "aci-connector"
 	// DefaultDashboardAddonName is the name of the kubernetes-dashboard addon deployment
 	DefaultDashboardAddonName = "kubernetes-dashboard"
-	// DefaultTillerImage defines the Helm Tiller deployment version on Kubernetes Clusters
-	// TODO deprecate this usage, we should be favoring a more frequent upgrade cycle that pins fresh tiller versions to specific k8s versions
-	DefaultTillerImage = "tiller:v2.8.1"
 	// DefaultACIConnectorImage defines the ACI Connector deployment version on Kubernetes Clusters
 	DefaultACIConnectorImage = "virtual-kubelet:latest"
 	// DefaultKubernetesDNSServiceIP specifies the IP address that kube-dns
@@ -109,8 +106,6 @@ const (
 	DefaultEtcdVersion = "3.2.16"
 	// DefaultEtcdDiskSize specifies the default size for Kubernetes master etcd disk volumes in GB
 	DefaultEtcdDiskSize = "128"
-	// DefaultReschedulerImage defines the rescheduler deployment version on Kubernetes Clusters
-	DefaultReschedulerImage = "rescheduler:v0.3.1"
 	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultMetricsServerAddonName is the name of the kubernetes Metrics server addon deployment
