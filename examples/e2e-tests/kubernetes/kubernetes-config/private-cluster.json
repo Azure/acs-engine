@@ -14,6 +14,7 @@
             "username": "azureuser",
             "publicKey": ""
           }
+          }
         }
       },
       "masterProfile": {
@@ -44,5 +45,5 @@
         "secret": ""
       },
       "certificateProfile": {}
-    }
   }
+}
