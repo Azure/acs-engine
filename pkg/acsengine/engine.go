@@ -294,7 +294,7 @@ func GenerateKubeConfig(properties *api.Properties, location string) (string, er
 	kubeconfig := string(b)
 	// variable replacement
 	kubeconfig = strings.Replace(kubeconfig, "{{WrapAsVerbatim \"variables('caCertificate')\"}}", base64.StdEncoding.EncodeToString([]byte(properties.CertificateProfile.CaCertificate)), -1)
-	if *properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled {
+	if helpers.IsTrueBoolPointer(properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled) {
 		if properties.MasterProfile.Count > 1 {
 			// more than 1 master, use the internal lb IP
 			firstMasterIP := net.ParseIP(properties.MasterProfile.FirstConsecutiveStaticIP).To4()
@@ -942,10 +942,8 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		"IsPrivateCluster": func() bool {
 			if !cs.Properties.OrchestratorProfile.IsKubernetes() {
 				return false
-			} else if *cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled {
-				return true
 			}
-			return false
+			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateCluster.Enabled)
 		},
 		"ProvisionJumpbox": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision()
@@ -960,12 +958,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 		},
 		"UseInstanceMetadata": func() bool {
-			if cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata == nil {
-				return true
-			} else if *cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata {
-				return true
-			}
-			return false
+			return helpers.IsTrueBoolPointer(cs.Properties.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata)
 		},
 		"GetVNETSubnetDependencies": func() string {
 			return getVNETSubnetDependencies(cs.Properties)
