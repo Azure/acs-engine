@@ -1,0 +1,10 @@
+#cloud-config
+
+write_files:
+
+# TODO: Add kubeconfig
+
+runcmd:
+- curl -LO https://storage.googleapis.com/kubernetes-release/release/v{{.OrchestratorProfile.OrchestratorVersion}}/bin/linux/amd64/kubectl
+- chmod +x ./kubectl
+- sudo mv ./kubectl /usr/local/bin/kubectl
