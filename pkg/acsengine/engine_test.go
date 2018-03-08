@@ -353,14 +353,14 @@ func TestGetGPUDriversInstallScript(t *testing.T) {
 
 	for _, sku := range validSkus {
 		s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: sku})
-		if s == "" || s == getGPUDriversNotInstalledWarningMessage(sku) {
+		if s == "" {
 			t.Fatalf("Expected NVIDIA driver install script for sku %v", sku)
 		}
 	}
 
 	for _, sku := range noLicenceSkus {
 		s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: sku})
-		if s != getGPUDriversNotInstalledWarningMessage(sku) {
+		if s != "" {
 			t.Fatalf("NVIDIA driver install script was provided for a VM sku (%v) that does not meet NVIDIA agreement.", sku)
 		}
 	}
