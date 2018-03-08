@@ -263,30 +263,42 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				phpApacheName := fmt.Sprintf("php-apache-%s-%v", cfg.Name, r.Intn(99999))
 				phpApacheDeploy, err := deployment.CreateLinuxDeploy("gcr.io/google_containers/hpa-example", phpApacheName, "default", "--requests=cpu=50m,memory=50M")
-				if err != nil {
-					fmt.Println(err)
-				}
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring that one php-apache pod is running before autoscale configuration or load applied")
 				running, err := pod.WaitOnReady(phpApacheName, "default", 3, 30*time.Second, cfg.Timeout)
+				if err != nil {
+					cleanupStuffs([]*deployment.Deployment{phpApacheDeploy}, []*service.Service{}, []*job.Job{})
+				}
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
 				phpPods, err := phpApacheDeploy.Pods()
+				if err != nil {
+					cleanupStuffs([]*deployment.Deployment{phpApacheDeploy}, []*service.Service{}, []*job.Job{})
+				}
 				Expect(err).NotTo(HaveOccurred())
 				// We should have exactly 1 pod to begin
 				Expect(len(phpPods)).To(Equal(1))
 
 				By("Exposing TCP 80 internally on the php-apache deployment")
 				err = phpApacheDeploy.Expose("ClusterIP", 80, 80)
+				if err != nil {
+					cleanupStuffs([]*deployment.Deployment{phpApacheDeploy}, []*service.Service{}, []*job.Job{})
+				}
 				Expect(err).NotTo(HaveOccurred())
 				s, err := service.Get(phpApacheName, "default")
+				if err != nil {
+					cleanupStuffs([]*deployment.Deployment{phpApacheDeploy}, []*service.Service{}, []*job.Job{})
+				}
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Assigning hpa configuration to the php-apache deployment")
 				// Apply autoscale characteristics to deployment
 				err = phpApacheDeploy.CreateDeploymentHPA(5, 1, 10)
+				if err != nil {
+					cleanupStuffs([]*deployment.Deployment{phpApacheDeploy}, []*service.Service{s}, []*job.Job{})
+				}
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Sending load to the php-apache service by creating a 3 replica deployment")
@@ -295,15 +307,24 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				loadTestName := fmt.Sprintf("load-test-%s-%v", cfg.Name, r.Intn(99999))
 				numLoadTestPods := 3
 				loadTestDeploy, err := deployment.RunLinuxDeploy("busybox", loadTestName, "default", commandString, numLoadTestPods)
+				if err != nil {
+					cleanupStuffs([]*deployment.Deployment{phpApacheDeploy}, []*service.Service{s}, []*job.Job{})
+				}
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring there are 3 load test pods")
 				running, err = pod.WaitOnReady(loadTestName, "default", 3, 30*time.Second, cfg.Timeout)
+				if err != nil {
+					cleanupStuffs([]*deployment.Deployment{phpApacheDeploy, loadTestDeploy}, []*service.Service{s}, []*job.Job{})
+				}
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
 				// We should have three load tester pods running
 				loadTestPods, err := loadTestDeploy.Pods()
+				if err != nil {
+					cleanupStuffs([]*deployment.Deployment{phpApacheDeploy, loadTestDeploy}, []*service.Service{s}, []*job.Job{})
+				}
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(loadTestPods)).To(Equal(numLoadTestPods))
 
@@ -313,17 +334,17 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Ensuring we have more than 1 apache-php pods due to hpa enforcement")
 				phpPods, err = phpApacheDeploy.Pods()
+				if err != nil {
+					cleanupStuffs([]*deployment.Deployment{phpApacheDeploy, loadTestDeploy}, []*service.Service{s}, []*job.Job{})
+				}
 				Expect(err).NotTo(HaveOccurred())
 				// We should have > 1 pods after autoscale effects
-				Expect(len(phpPods) > 1).To(BeTrue())
+				if len(phpPods) <= 1 {
+					cleanupStuffs([]*deployment.Deployment{phpApacheDeploy, loadTestDeploy}, []*service.Service{s}, []*job.Job{})
+				}
+				Fail("autoscale did not take effect")
 
-				By("Cleaning up after ourselves")
-				err = loadTestDeploy.Delete()
-				Expect(err).NotTo(HaveOccurred())
-				err = phpApacheDeploy.Delete()
-				Expect(err).NotTo(HaveOccurred())
-				err = s.Delete()
-				Expect(err).NotTo(HaveOccurred())
+				cleanupStuffs([]*deployment.Deployment{phpApacheDeploy, loadTestDeploy}, []*service.Service{s}, []*job.Job{})
 			} else {
 				Skip("This flavor/version of Kubernetes doesn't support hpa autoscale")
 			}
@@ -339,36 +360,50 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				By("Ensure there is a Running nginx pod")
 				running, err := pod.WaitOnReady(deploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+				if err != nil {
+					cleanupStuffs([]*deployment.Deployment{nginxDeploy}, []*service.Service{}, []*job.Job{})
+				}
 				Expect(err).NotTo(HaveOccurred())
 				Expect(running).To(Equal(true))
 
 				By("Exposing TCP 80 LB on the nginx deployment")
 				err = nginxDeploy.Expose("LoadBalancer", 80, 80)
+				if err != nil {
+					cleanupStuffs([]*deployment.Deployment{nginxDeploy}, []*service.Service{}, []*job.Job{})
+				}
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring we can connect to the service")
 				s, err := service.Get(deploymentName, "default")
+				if err != nil {
+					cleanupStuffs([]*deployment.Deployment{nginxDeploy}, []*service.Service{}, []*job.Job{})
+				}
 				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring the service root URL returns the expected payload")
 				valid := s.Validate("(Welcome to nginx)", 5, 30*time.Second, cfg.Timeout)
+				if !valid {
+					cleanupStuffs([]*deployment.Deployment{nginxDeploy}, []*service.Service{s}, []*job.Job{})
+				}
 				Expect(valid).To(BeTrue())
 
 				By("Ensuring we have outbound internet access from the nginx pods")
 				nginxPods, err := nginxDeploy.Pods()
+				if err != nil {
+					cleanupStuffs([]*deployment.Deployment{nginxDeploy}, []*service.Service{s}, []*job.Job{})
+				}
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(nginxPods)).ToNot(BeZero())
 				for _, nginxPod := range nginxPods {
 					pass, err := nginxPod.CheckLinuxOutboundConnection(5*time.Second, cfg.Timeout)
+					if err != nil {
+						cleanupStuffs([]*deployment.Deployment{nginxDeploy}, []*service.Service{s}, []*job.Job{})
+					}
 					Expect(err).NotTo(HaveOccurred())
 					Expect(pass).To(BeTrue())
 				}
 
-				By("Cleaning up after ourselves")
-				err = nginxDeploy.Delete()
-				Expect(err).NotTo(HaveOccurred())
-				err = s.Delete()
-				Expect(err).NotTo(HaveOccurred())
+				cleanupStuffs([]*deployment.Deployment{nginxDeploy}, []*service.Service{s}, []*job.Job{})
 			} else {
 				Skip("No linux agent was provisioned for this Cluster Definition")
 			}
@@ -381,13 +416,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				j, err := job.CreateJobFromFile(filepath.Join(WorkloadDir, "nvidia-smi.yaml"), "nvidia-smi", "default")
 				Expect(err).NotTo(HaveOccurred())
 				ready, err := j.WaitOnReady(30*time.Second, cfg.Timeout)
-				delErr := j.Delete()
-				if delErr != nil {
-					fmt.Printf("could not delete job %s\n", j.Metadata.Name)
-					fmt.Println(delErr)
+				if err != nil || !ready {
+					cleanupStuffs([]*deployment.Deployment{}, []*service.Service{}, []*job.Job{j})
 				}
 				Expect(err).NotTo(HaveOccurred())
 				Expect(ready).To(Equal(true))
+				cleanupStuffs([]*deployment.Deployment{}, []*service.Service{}, []*job.Job{j})
 			}
 		})
 	})
@@ -506,3 +540,32 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})*/
 	})
 })
+
+func cleanupStuffs(deps []*deployment.Deployment, svcs []*service.Service, jobs []*job.Job) error {
+	var errs []error
+	for _, dep := range deps {
+		err = dep.Delete()
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+	for _, svc := range svcs {
+		err := svc.Delete()
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+	for _, j := range jobs {
+		err := j.Delete()
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	var errStr string
+	for _, e := range errs {
+		errStr += e.Error()
+	}
+
+	return fmt.Errorf(errStr)
+}
