@@ -1754,7 +1754,7 @@ func isNSeriesSKU(profile *api.AgentPoolProfile) bool {
 func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 
 	// latest version of the drivers. Later this parameter could be bubbled up so that users can choose specific driver versions.
-	dv := "384.111"
+	dv := "390.30"
 	dest := "/usr/local/nvidia"
 
 	/*
@@ -1792,29 +1792,35 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - %s/bin/nvidia-smi
 - retrycmd_if_failure 5 10 systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
 
-	// We don't have an agreement in place with NVIDIA to provide the drivers on every sku. For this VMs we simply log a warning message.
-	na := getGPUDriversNotInstalledWarningMessage(profile.VMSize)
-
 	/* If a new GPU sku becomes available, add a key to this map, but only provide an installation script if you have a confirmation
 	   that we have an agreement with NVIDIA for this specific gpu. Otherwise use the warning message.
 	*/
 	dm := map[string]string{
-		"Standard_NC6":      installScript,
-		"Standard_NC12":     installScript,
-		"Standard_NC24":     installScript,
-		"Standard_NC24r":    installScript,
-		"Standard_NV6":      installScript,
-		"Standard_NV12":     installScript,
-		"Standard_NV24":     installScript,
-		"Standard_NV24r":    installScript,
-		"Standard_NC6_v2":   na,
-		"Standard_NC12_v2":  na,
-		"Standard_NC24_v2":  na,
-		"Standard_NC24r_v2": na,
-		"Standard_ND6":      na,
-		"Standard_ND12":     na,
-		"Standard_ND24":     na,
-		"Standard_ND24r":    na,
+		// K80
+		"Standard_NC6":   installScript,
+		"Standard_NC12":  installScript,
+		"Standard_NC24":  installScript,
+		"Standard_NC24r": installScript,
+		// M60
+		"Standard_NV6":   installScript,
+		"Standard_NV12":  installScript,
+		"Standard_NV24":  installScript,
+		"Standard_NV24r": installScript,
+		// P40
+		"Standard_ND6s":   installScript,
+		"Standard_ND12s":  installScript,
+		"Standard_ND24s":  installScript,
+		"Standard_ND24rs": installScript,
+		// P100
+		"Standard_NC6s_v2":   installScript,
+		"Standard_NC12s_v2":  installScript,
+		"Standard_NC24s_v2":  installScript,
+		"Standard_NC24rs_v2": installScript,
+		// V100
+		"Standard_NC6s_v3":   installScript,
+		"Standard_NC12s_v3":  installScript,
+		"Standard_NC24s_v3":  installScript,
+		"Standard_NC24rs_v3": installScript,
 	}
 	if _, ok := dm[profile.VMSize]; ok {
 		return dm[profile.VMSize]
@@ -1822,10 +1828,6 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 
 	// The VM is not part of the GPU skus, no extra steps.
 	return ""
-}
-
-func getGPUDriversNotInstalledWarningMessage(VMSize string) string {
-	return fmt.Sprintf("echo 'Warning: NVIDIA Drivers for this VM SKU (%v) are not automatically installed'", VMSize)
 }
 
 func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) string {

@@ -337,31 +337,24 @@ func TestGetGPUDriversInstallScript(t *testing.T) {
 		"Standard_NV12",
 		"Standard_NV24",
 		"Standard_NV24r",
-	}
-
-	// VMSize with GPU but NO NVIDIA agreement for drivers distribution
-	noLicenceSkus := []string{
-		"Standard_NC6_v2",
-		"Standard_NC12_v2",
-		"Standard_NC24_v2",
-		"Standard_NC24r_v2",
-		"Standard_ND6",
-		"Standard_ND12",
-		"Standard_ND24",
-		"Standard_ND24r",
+		"Standard_ND6s",
+		"Standard_ND12s",
+		"Standard_ND24s",
+		"Standard_ND24rs",
+		"Standard_NC6s_v2",
+		"Standard_NC12s_v2",
+		"Standard_NC24s_v2",
+		"Standard_NC24rs_v2",
+		"Standard_NC6s_v3",
+		"Standard_NC12s_v3",
+		"Standard_NC24s_v3",
+		"Standard_NC24rs_v3",
 	}
 
 	for _, sku := range validSkus {
 		s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: sku})
-		if s == "" || s == getGPUDriversNotInstalledWarningMessage(sku) {
+		if s == "" {
 			t.Fatalf("Expected NVIDIA driver install script for sku %v", sku)
-		}
-	}
-
-	for _, sku := range noLicenceSkus {
-		s := getGPUDriversInstallScript(&api.AgentPoolProfile{VMSize: sku})
-		if s != getGPUDriversNotInstalledWarningMessage(sku) {
-			t.Fatalf("NVIDIA driver install script was provided for a VM sku (%v) that does not meet NVIDIA agreement.", sku)
 		}
 	}
 
