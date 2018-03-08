@@ -338,13 +338,10 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					cleanupStuffs([]*deployment.Deployment{phpApacheDeploy, loadTestDeploy}, []*service.Service{s}, []*job.Job{})
 				}
 				Expect(err).NotTo(HaveOccurred())
-				// We should have > 1 pods after autoscale effects
-				if len(phpPods) <= 1 {
-					cleanupStuffs([]*deployment.Deployment{phpApacheDeploy, loadTestDeploy}, []*service.Service{s}, []*job.Job{})
-				}
-				Fail("autoscale did not take effect")
-
 				cleanupStuffs([]*deployment.Deployment{phpApacheDeploy, loadTestDeploy}, []*service.Service{s}, []*job.Job{})
+				// We should have > 1 pods after autoscale effects
+				Expect(len(phpPods) > 1).To(BeTrue())
+
 			} else {
 				Skip("This flavor/version of Kubernetes doesn't support hpa autoscale")
 			}
