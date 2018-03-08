@@ -464,7 +464,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata == nil {
-			a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = pointerToBool(api.DefaultUseInstanceMetadata)
+			a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata = pointerToBool(api.DefaultUseInstanceMetadata)
 		}
 
 		// Configure kubelet
