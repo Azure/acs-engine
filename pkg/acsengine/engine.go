@@ -1792,9 +1792,6 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - %s/bin/nvidia-smi
 - retrycmd_if_failure 5 10 systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
 
-	// We don't have an agreement in place with NVIDIA to provide the drivers on every sku. For this VMs we simply log a warning message.
-	na := getGPUDriversNotInstalledWarningMessage(profile.VMSize)
-
 	/* If a new GPU sku becomes available, add a key to this map, but only provide an installation script if you have a confirmation
 	   that we have an agreement with NVIDIA for this specific gpu. Otherwise use the warning message.
 	*/
@@ -1831,10 +1828,6 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 
 	// The VM is not part of the GPU skus, no extra steps.
 	return ""
-}
-
-func getGPUDriversNotInstalledWarningMessage(VMSize string) string {
-	return fmt.Sprintf("echo 'Warning: NVIDIA Drivers for this VM SKU (%v) are not automatically installed'", VMSize)
 }
 
 func getDCOSCustomDataPublicIPStr(orchestratorType string, masterCount int) string {
