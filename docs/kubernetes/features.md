@@ -303,7 +303,7 @@ To auto-provision a jumpbox with your acs-engine deployment use:
           "jumpboxProfile": {
             "name": "my-jb",
             "vmSize": "Standard_D4s_v3",
-            "diskSizeGB": 30,
+            "osDiskSizeGB": 30,
             "storageProfile": "ManagedDisks",
             "username": "azureuser",
             "publicKey": "xxx"
