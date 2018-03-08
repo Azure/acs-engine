@@ -195,6 +195,22 @@ func (a *KubernetesAddon) IsEnabled(ifNil bool) bool {
 	return *a.Enabled
 }
 
+// PrivateCluster defines the configuration for a private cluster
+type PrivateCluster struct {
+	Enabled        *bool                  `json:"enabled,omitempty"`
+	JumpboxProfile *PrivateJumpboxProfile `json:"jumpboxProfile,omitempty"`
+}
+
+// PrivateJumpboxProfile represents a jumpbox definition
+type PrivateJumpboxProfile struct {
+	Name           string `json:"name" validate:"required"`
+	VMSize         string `json:"vmSize" validate:"required"`
+	OSDiskSizeGB   int    `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	Username       string `json:"username,omitempty"`
+	PublicKey      string `json:"publicKey" validate:"required"`
+	StorageProfile string `json:"storageProfile,omitempty"`
+}
+
 // CloudProviderConfig contains the KubernetesConfig properties specific to the Cloud Provider
 // TODO use this when strict JSON checking accommodates struct embedding
 type CloudProviderConfig struct {
@@ -239,7 +255,7 @@ type KubernetesConfig struct {
 	EnableRbac                       *bool             `json:"enableRbac,omitempty"`
 	EnableSecureKubelet              *bool             `json:"enableSecureKubelet,omitempty"`
 	EnableAggregatedAPIs             bool              `json:"enableAggregatedAPIs,omitempty"`
-	EnablePrivateCluster             bool              `json:"enablePrivateCluster,omitempty"`
+	PrivateCluster                   *PrivateCluster   `json:"privateCluster,omitempty"`
 	GCHighThreshold                  int               `json:"gchighthreshold,omitempty"`
 	GCLowThreshold                   int               `json:"gclowthreshold,omitempty"`
 	EtcdVersion                      string            `json:"etcdVersion,omitempty"`
@@ -505,6 +521,9 @@ func (p *Properties) HasManagedDisks() bool {
 			return true
 		}
 	}
+	if p.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && p.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile == ManagedDisks {
+		return true
+	}
 	return false
 }
 
@@ -517,6 +536,9 @@ func (p *Properties) HasStorageAccountDisks() bool {
 		if agentPoolProfile.StorageProfile == StorageAccount {
 			return true
 		}
+	}
+	if p.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && p.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile == StorageAccount {
+		return true
 	}
 	return false
 }
@@ -649,6 +671,20 @@ func (o *OrchestratorProfile) GetAPIServerEtcdAPIVersion() string {
 	return ret
 }
 
+// IsMetricsServerEnabled checks if the metrics server addon is enabled
+func (o *OrchestratorProfile) IsMetricsServerEnabled() bool {
+	var metricsServerAddon KubernetesAddon
+	k := o.KubernetesConfig
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultMetricsServerAddonName {
+			metricsServerAddon = k.Addons[i]
+		}
+	}
+	k8sSemVer, _ := semver.NewVersion(o.OrchestratorVersion)
+	constraint, _ := semver.NewConstraint(">= 1.9.0")
+	return metricsServerAddon.IsEnabled(DefaultMetricsServerAddonEnabled) || constraint.Check(k8sSemVer)
+}
+
 // IsTillerEnabled checks if the tiller addon is enabled
 func (k *KubernetesConfig) IsTillerEnabled() bool {
 	var tillerAddon KubernetesAddon
@@ -693,16 +729,10 @@ func (k *KubernetesConfig) IsReschedulerEnabled() bool {
 	return reschedulerAddon.IsEnabled(DefaultReschedulerAddonEnabled)
 }
 
-// IsMetricsServerEnabled checks if the metrics server addon is enabled
-func (o *OrchestratorProfile) IsMetricsServerEnabled() bool {
-	var metricsServerAddon KubernetesAddon
-	k := o.KubernetesConfig
-	for i := range k.Addons {
-		if k.Addons[i].Name == DefaultMetricsServerAddonName {
-			metricsServerAddon = k.Addons[i]
-		}
+// PrivateJumpboxProvision checks if a private cluster has jumpbox auto-provisioning
+func (k *KubernetesConfig) PrivateJumpboxProvision() bool {
+	if k != nil && k.PrivateCluster != nil && *k.PrivateCluster.Enabled == true && k.PrivateCluster.JumpboxProfile != nil {
+		return true
 	}
-	k8sSemVer, _ := semver.NewVersion(o.OrchestratorVersion)
-	constraint, _ := semver.NewConstraint(">= 1.9.0")
-	return metricsServerAddon.IsEnabled(DefaultMetricsServerAddonEnabled) || constraint.Check(k8sSemVer)
+	return false
 }

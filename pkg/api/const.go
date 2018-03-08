@@ -93,6 +93,8 @@ const (
 	DefaultReschedulerAddonEnabled = false
 	// DefaultRBACEnabled determines the acs-engine provided default for enabling kubernetes RBAC
 	DefaultRBACEnabled = true
+	// DefaultUseInstanceMetadata determines the acs-engine provided default for enabling Azure cloudprovider instance metadata service
+	DefaultUseInstanceMetadata = true
 	// DefaultSecureKubeletEnabled determines the acs-engine provided default for securing kubelet communications
 	DefaultSecureKubeletEnabled = true
 	// DefaultMetricsServerAddonEnabled determines the acs-engine provided default for enabling kubernetes metrics-server addon
@@ -107,4 +109,6 @@ const (
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultMetricsServerAddonName is the name of the kubernetes metrics server addon deployment
 	DefaultMetricsServerAddonName = "metrics-server"
+	// DefaultPrivateClusterEnabled determines the acs-engine provided default for enabling kubernetes Private Cluster
+	DefaultPrivateClusterEnabled = false
 )

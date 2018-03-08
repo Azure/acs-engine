@@ -692,3 +692,43 @@
       },
       "type": "string"
     }
+{{if ProvisionJumpbox}}
+    ,"jumpboxVMName": {
+      "metadata": {
+        "description": "jumpbox VM Name"
+      },
+      "type": "string"
+    },
+    "jumpboxVMSize": {
+      {{GetMasterAllowedSizes}}
+      "metadata": {
+        "description": "The size of the Virtual Machine. Required"
+      }, 
+      "type": "string"
+    },
+    "jumpboxOSDiskSizeGB": {
+      {{PopulateClassicModeDefaultValue "jumpboxOSDiskSizeGB"}}
+      "metadata": {
+        "description": "Size in GB to allocate to the private cluster jumpbox VM OS."
+      }, 
+      "type": "int"
+    },
+    "jumpboxPublicKey": {
+      "metadata": {
+        "description": "SSH public key used for auth to the private cluster jumpbox"
+      }, 
+      "type": "string"
+    },
+    "jumpboxUsername": {
+      "metadata": {
+        "description": "Username for the private cluster jumpbox"
+      }, 
+      "type": "string"
+    },
+    "jumpboxStorageProfile": {
+      "metadata": {
+        "description": "Storage Profile for the private cluster jumpbox"
+      }, 
+      "type": "string"
+    }
+{{end}}

@@ -4,36 +4,46 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
-        "enablePrivateCluster": true
-      }
-    },
-    "masterProfile": {
-      "count": 3,
-      "dnsPrefix": "",
-      "vmSize": "Standard_D2_v2"
-    },
-    "agentPoolProfiles": [
-      {
-        "name": "linuxpool1",
-        "count": 3,
-        "vmSize": "Standard_D2_v2",
-        "availabilityProfile": "AvailabilitySet"
-      }
-    ],
-    "linuxProfile": {
-      "adminUsername": "azureuser",
-      "ssh": {
-        "publicKeys": [
-          {
-            "keyData": ""
+        "privateCluster": {
+          "enabled": true,
+          "jumpboxProfile": {
+            "name": "my-jb",
+            "vmSize": "Standard_D2_v2",
+            "diskSizeGB": 30,
+            "storageProfile": "ManagedDisks",
+            "username": "azureuser",
+            "publicKey": ""
           }
-        ]
-      }
-    },
-    "servicePrincipalProfile": {
-      "clientId": "",
-      "secret": ""
-    },
-    "certificateProfile": {}
+          }
+        }
+      },
+      "masterProfile": {
+        "count": 3,
+        "dnsPrefix": "",
+        "vmSize": "Standard_D2_v2"
+      },
+      "agentPoolProfiles": [
+        {
+          "name": "linuxpool1",
+          "count": 3,
+          "vmSize": "Standard_D2_v2",
+          "availabilityProfile": "AvailabilitySet"
+        }
+      ],
+      "linuxProfile": {
+        "adminUsername": "azureuser",
+        "ssh": {
+          "publicKeys": [
+            {
+              "keyData": ""
+            }
+          ]
+        }
+      },
+      "servicePrincipalProfile": {
+        "clientId": "",
+        "secret": ""
+      },
+      "certificateProfile": {}
   }
 }

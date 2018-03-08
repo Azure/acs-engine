@@ -281,14 +281,32 @@ You can build a private Kubernetes cluster with no public IP addresses assigned 
 
 ```
       "kubernetesConfig": {
-        "enablePrivateCluster": true
+        "privateCluster": {
+          "enabled": true
       }
 ```
 
-In order to access this cluster using kubectl commands, you will need a jumpbox in the same VNET (or onto a peer VNET that routes to the VNET). You can create a new jumpbox (if you don't already have one) in the Azure Portal under "Create a resource > Compute > Ubuntu Server 16.04 LTS VM" or using the [az cli](https://docs.microsoft.com/en-us/cli/azure/vm?view=azure-cli-latest#az_vm_create). You will then be able to:
+In order to access this cluster using kubectl commands, you will need a jumpbox in the same VNET (or onto a peer VNET that routes to the VNET). If you do not already have a jumpbox, you can use acs-engine to provision your jumpbox (see below) or create it manually. You can create a new jumpbox manually in the Azure Portal under "Create a resource > Compute > Ubuntu Server 16.04 LTS VM" or using the [az cli](https://docs.microsoft.com/en-us/cli/azure/vm?view=azure-cli-latest#az_vm_create). You will then be able to:
 - install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) on the jumpbox
 - copy the kubeconfig artifact for the right region from the deployment directory to the jumpbox
 - run `export KUBECONFIG=<path to your kubeconfig>`
 - run `kubectl` commands directly on the jumpbox
 
 Alternatively, you may also ssh into your nodes (given that your ssh key is on the jumpbox) and use the admin user kubeconfig on the cluster to run `kubectl` commands directly on the cluster. However, in the case of a multi-master private cluster, the connection will be refused when running commands on a master every time that master gets picked by the load balancer as it will be routing to itself (1 in 3 times for a 3 master cluster, 1 in 5 for 5 masters). This is expected behavior and therefore the method aforementioned of accessing nodes on the jumpbox using the `_output` directory kubeconfig is preferred.
+
+To auto-provision a jumpbox with your acs-engine deployment use:
+
+```
+      "kubernetesConfig": {
+        "privateCluster": {
+          "enabled": true,
+          "jumpboxProfile": {
+            "name": "my-jb",
+            "vmSize": "Standard_D4s_v3",
+            "osDiskSizeGB": 30,
+            "storageProfile": "ManagedDisks",
+            "username": "azureuser",
+            "publicKey": "xxx"
+          }
+      }
+```

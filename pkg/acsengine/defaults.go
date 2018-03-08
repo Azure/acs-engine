@@ -434,8 +434,28 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			a.OrchestratorProfile.KubernetesConfig.Addons[m] = assignDefaultAddonVals(a.OrchestratorProfile.KubernetesConfig.Addons[m], DefaultMetricsServerAddonsConfig)
 		}
 
+		if o.KubernetesConfig.PrivateCluster == nil {
+			o.KubernetesConfig.PrivateCluster = &api.PrivateCluster{}
+		}
+
+		if o.KubernetesConfig.PrivateCluster.Enabled == nil {
+			o.KubernetesConfig.PrivateCluster.Enabled = pointerToBool(api.DefaultPrivateClusterEnabled)
+		}
+
 		if "" == a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB {
 			a.OrchestratorProfile.KubernetesConfig.EtcdDiskSizeGB = DefaultEtcdDiskSize
+		}
+
+		if a.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.OSDiskSizeGB == 0 {
+			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.OSDiskSizeGB = DefaultJumpboxDiskSize
+		}
+
+		if a.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.Username == "" {
+			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.Username = DefaultJumpboxUsername
+		}
+
+		if a.OrchestratorProfile.KubernetesConfig.PrivateJumpboxProvision() && a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile == "" {
+			a.OrchestratorProfile.KubernetesConfig.PrivateCluster.JumpboxProfile.StorageProfile = api.StorageAccount
 		}
 
 		if a.OrchestratorProfile.KubernetesConfig.EnableRbac == nil {
@@ -444,6 +464,10 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 
 		if a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet == nil {
 			a.OrchestratorProfile.KubernetesConfig.EnableSecureKubelet = pointerToBool(api.DefaultSecureKubeletEnabled)
+		}
+
+		if a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata == nil {
+			a.OrchestratorProfile.KubernetesConfig.UseInstanceMetadata = pointerToBool(api.DefaultUseInstanceMetadata)
 		}
 
 		// Configure kubelet

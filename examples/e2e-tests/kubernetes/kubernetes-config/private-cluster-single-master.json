@@ -4,7 +4,17 @@
     "orchestratorProfile": {
       "orchestratorType": "Kubernetes",
       "kubernetesConfig": {
-        "enablePrivateCluster": true
+        "privateCluster": {
+          "enabled": true,
+          "jumpboxProfile": {
+            "name": "my-jb",
+            "vmSize": "Standard_D2_v2",
+            "diskSizeGB": 30,
+            "storageProfile": "ManagedDisks",
+            "username": "azureuser",
+            "publicKey": ""
+          }
+        }
       }
     },
     "masterProfile": {

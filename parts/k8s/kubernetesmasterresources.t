@@ -306,74 +306,219 @@
       "type": "Microsoft.Network/networkInterfaces"
     },
 {{else}}
+      {
+        "apiVersion": "[variables('apiVersionDefault')]",
+        "copy": {
+          "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
+          "name": "nicLoopNode"
+        },
+        "dependsOn": [
+  {{if .MasterProfile.IsCustomVNET}}
+          "[variables('nsgID')]"
+  {{else}}
+          "[variables('vnetID')]"
+  {{end}}
+  {{if gt .MasterProfile.Count 1}}
+          ,"[variables('masterInternalLbName')]"
+  {{end}}
+        ],
+        "location": "[variables('location')]",
+        "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]",
+        "properties": {
+          "ipConfigurations": [
+            {
+              "name": "ipconfig1",
+              "properties": {
+                "loadBalancerBackendAddressPools": [
+  {{if gt .MasterProfile.Count 1}}                
+                  {
+                    "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
+                  }
+  {{end}}
+                ],
+                "loadBalancerInboundNatRules": [
+                ],
+                "privateIPAddress": "[variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))]]",
+                "primary": true,
+                "privateIPAllocationMethod": "Static",
+                "subnet": {
+                  "id": "[variables('vnetSubnetID')]"
+                }
+              }
+            }
+  {{if IsAzureCNI}}
+            {{range $seq := loop 2 .MasterProfile.IPAddressCount}}
+            ,
+            {
+              "name": "ipconfig{{$seq}}",
+              "properties": {
+                "primary": false,
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                  "id": "[variables('vnetSubnetID')]"
+                }
+              }
+            }
+            {{end}}
+  {{end}}
+          ]
+  {{if not IsAzureCNI}}
+          ,
+          "enableIPForwarding": true
+  {{end}}
+  {{if .MasterProfile.IsCustomVNET}}
+          ,"networkSecurityGroup": {
+            "id": "[variables('nsgID')]"
+          }
+  {{end}}
+        },
+        "type": "Microsoft.Network/networkInterfaces"
+      },
+  {{if ProvisionJumpbox}}
     {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('jumpboxVMName')]",
+      {{if JumpboxIsManagedDisks}}
+      "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
+      {{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
-      "copy": {
-        "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
-        "name": "nicLoopNode"
+      {{end}}
+      "location": "[variables('location')]",
+      "properties": {
+          "osProfile": {
+              "computerName": "[variables('jumpboxVMName')]",
+              "adminUsername": "[variables('jumpboxUsername')]",
+              "linuxConfiguration": {
+                  "disablePasswordAuthentication": "true",
+                  "ssh": {
+                      "publicKeys": [
+                          {
+                              "path": "[concat('/home/', variables('jumpboxUsername'), '/.ssh/authorized_keys')]",
+                              "keyData": "[variables('jumpboxPublicKey')]"
+                          }
+                      ]
+                  }
+              }
+          },
+          "hardwareProfile": {
+              "vmSize": "[variables('jumpboxVMSize')]"
+          },
+          "storageProfile": {
+              "imageReference": {
+                  "publisher": "Canonical",
+                  "offer": "UbuntuServer",
+                  "sku": "16.04-LTS",
+                  "version": "latest"
+              },
+            {{if JumpboxIsManagedDisks}}
+              "osDisk": {
+                  "createOption": "fromImage",
+                  "diskSizeGB": "[variables('jumpboxOSDiskSizeGB')]",
+                  "managedDisk": {
+                      "storageAccountType": "[variables('vmSizesMap')[variables('jumpboxVMSize')].storageAccountType]"
+                  }
+              },
+            {{else}}
+              "osDisk": {
+                "createOption": "fromImage",
+                "vhd": {
+                    "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('jumpboxStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('jumpboxVMName'),'jumpboxdisk.vhd')]"
+                },
+                "name": "[variables('jumpboxOSDiskName')]"
+              },
+            {{end}}   
+          "dataDisks": []
+          },
+          "networkProfile": {
+              "networkInterfaces": [
+                  {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('jumpboxNetworkInterfaceName'))]"
+                  }
+              ]
+          }
+        },
+        "dependsOn": [
+            "[concat('Microsoft.Network/networkInterfaces/', variables('jumpboxNetworkInterfaceName'))]"
+        ]
+    },
+    {{if not JumpboxIsManagedDisks}}
+    {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('jumpboxStorageAccountName')]",
+            "apiVersion": "[variables('apiVersionStorage')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "accountType": "[variables('vmSizesMap')[variables('jumpboxVMSize')].storageAccountType]"
+            }
+    },
+    {{end}}
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('jumpboxNetworkSecurityGroupName')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "location": "[variables('location')]",
+      "properties": {
+          "securityRules": [
+              {
+                  "name": "default-allow-ssh",
+                  "properties": {
+                      "priority": 1000,
+                      "protocol": "TCP",
+                      "access": "Allow",
+                      "direction": "Inbound",
+                      "sourceAddressPrefix": "*",
+                      "sourcePortRange": "*",
+                      "destinationAddressPrefix": "*",
+                      "destinationPortRange": "22"
+                  }
+              }
+          ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIpAddresses",
+      "sku": {
+          "name": "Basic"
+      },
+      "name": "[variables('jumpboxPublicIpAddressName')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "location": "[variables('location')]",
+      "properties": {
+          "publicIpAllocationMethod": "Dynamic"
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('jumpboxNetworkInterfaceName')]",
+      "apiVersion": "[variables('apiVersionDefault')]",
+      "location": "[variables('location')]",
+      "properties": {
+          "ipConfigurations": [
+              {
+                  "name": "ipconfig1",
+                  "properties": {
+                      "subnet": {
+                          "id": "[variables('vnetSubnetID')]"
+                      },
+                      "primary": true,
+                      "privateIPAllocationMethod": "Dynamic",
+                      "publicIpAddress": {
+                          "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('jumpboxPublicIpAddressName'))]"
+                      }
+                  }
+              }
+          ],
+          "networkSecurityGroup": {
+              "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('jumpboxNetworkSecurityGroupName'))]"
+          }
       },
       "dependsOn": [
-{{if .MasterProfile.IsCustomVNET}}
-        "[variables('nsgID')]"
-{{else}}
-        "[variables('vnetID')]"
-{{end}}
-{{if gt .MasterProfile.Count 1}}
-        ,"[variables('masterInternalLbName')]"
-{{end}}
-      ],
-      "location": "[variables('location')]",
-      "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]",
-      "properties": {
-        "ipConfigurations": [
-          {
-            "name": "ipconfig1",
-            "properties": {
-              "loadBalancerBackendAddressPools": [
-{{if gt .MasterProfile.Count 1}}                
-                {
-                   "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
-                }
-{{end}}
-              ],
-              "loadBalancerInboundNatRules": [
-              ],
-              "privateIPAddress": "[variables('masterPrivateIpAddrs')[copyIndex(variables('masterOffset'))]]",
-              "primary": true,
-              "privateIPAllocationMethod": "Static",
-              "subnet": {
-                "id": "[variables('vnetSubnetID')]"
-              }
-            }
-          }
-{{if IsAzureCNI}}
-          {{range $seq := loop 2 .MasterProfile.IPAddressCount}}
-          ,
-          {
-            "name": "ipconfig{{$seq}}",
-            "properties": {
-              "primary": false,
-              "privateIPAllocationMethod": "Dynamic",
-              "subnet": {
-                "id": "[variables('vnetSubnetID')]"
-              }
-            }
-          }
-          {{end}}
-{{end}}
-        ]
-{{if not IsAzureCNI}}
-        ,
-        "enableIPForwarding": true
-{{end}}
-{{if .MasterProfile.IsCustomVNET}}
-        ,"networkSecurityGroup": {
-          "id": "[variables('nsgID')]"
-        }
-{{end}}
-      },
-      "type": "Microsoft.Network/networkInterfaces"
+          "[concat('Microsoft.Network/publicIpAddresses/', variables('jumpboxPublicIpAddressName'))]",
+          "[concat('Microsoft.Network/networkSecurityGroups/', variables('jumpboxNetworkSecurityGroupName'))]",
+          "[variables('vnetID')]"
+      ]
     },
+  {{end}}
 {{end}}
 {{if gt .MasterProfile.Count 1}}
     {
@@ -510,11 +655,11 @@
               ,"diskSizeGB": "[variables('etcdDiskSizeGB')]"
               ,"lun": 0
               ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
-          {{if .MasterProfile.IsStorageAccount}}
+              {{if .MasterProfile.IsStorageAccount}}
               ,"vhd": {
                 "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/', variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-etcddisk.vhd')]"
               }
-          {{end}}
+              {{end}}
             }
           ],
           "imageReference": {

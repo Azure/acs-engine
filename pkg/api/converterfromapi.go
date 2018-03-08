@@ -668,7 +668,6 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.EnableRbac = api.EnableRbac
 	vlabs.EnableSecureKubelet = api.EnableSecureKubelet
 	vlabs.EnableAggregatedAPIs = api.EnableAggregatedAPIs
-	vlabs.EnablePrivateCluster = api.EnablePrivateCluster
 	vlabs.EnableDataEncryptionAtRest = api.EnableDataEncryptionAtRest
 	vlabs.EnablePodSecurityPolicy = api.EnablePodSecurityPolicy
 	vlabs.GCHighThreshold = api.GCHighThreshold
@@ -680,6 +679,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	convertControllerManagerConfigToVlabs(api, vlabs)
 	convertCloudControllerManagerConfigToVlabs(api, vlabs)
 	convertAPIServerConfigToVlabs(api, vlabs)
+	convertPrivateClusterToVlabs(api, vlabs)
 }
 
 func convertKubeletConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
@@ -708,6 +708,26 @@ func convertAPIServerConfigToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfi
 	for key, val := range a.APIServerConfig {
 		v.APIServerConfig[key] = val
 	}
+}
+
+func convertPrivateClusterToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
+	if a.PrivateCluster != nil {
+		v.PrivateCluster = &vlabs.PrivateCluster{}
+		v.PrivateCluster.Enabled = a.PrivateCluster.Enabled
+		if a.PrivateCluster.JumpboxProfile != nil {
+			v.PrivateCluster.JumpboxProfile = &vlabs.PrivateJumpboxProfile{}
+			convertPrivateJumpboxProfileToVlabs(a.PrivateCluster.JumpboxProfile, v.PrivateCluster.JumpboxProfile)
+		}
+	}
+}
+
+func convertPrivateJumpboxProfileToVlabs(api *PrivateJumpboxProfile, vlabsProfile *vlabs.PrivateJumpboxProfile) {
+	vlabsProfile.Name = api.Name
+	vlabsProfile.OSDiskSizeGB = api.OSDiskSizeGB
+	vlabsProfile.VMSize = api.VMSize
+	vlabsProfile.PublicKey = api.PublicKey
+	vlabsProfile.Username = api.Username
+	vlabsProfile.StorageProfile = api.StorageProfile
 }
 
 func convertAddonsToVlabs(a *KubernetesConfig, v *vlabs.KubernetesConfig) {
