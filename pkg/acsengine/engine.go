@@ -34,6 +34,7 @@ const (
 	kubernetesMountetcd                      = "k8s/kubernetes_mountetcd.sh"
 	kubernetesMasterGenerateProxyCertsScript = "k8s/kubernetesmastergenerateproxycertscript.sh"
 	kubernetesAgentCustomDataYaml            = "k8s/kubernetesagentcustomdata.yml"
+	kubernetesJumpboxCustomDataYaml          = "k8s/kubernetesjumpboxcustomdata.yml"
 	kubeConfigJSON                           = "k8s/kubeconfig.json"
 	kubernetesWindowsAgentCustomDataPS1      = "k8s/kuberneteswindowssetup.ps1"
 )
@@ -1119,6 +1120,23 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 		},
 		"GetKubernetesAgentCustomData": func(profile *api.AgentPoolProfile) string {
 			str, e := t.getSingleLineForTemplate(kubernetesAgentCustomDataYaml, cs, profile)
+
+			if e != nil {
+				return ""
+			}
+
+			// add artifacts
+			str = substituteConfigString(str,
+				kubernetesArtifactSettingsInit(cs.Properties),
+				"k8s/artifacts",
+				"/etc/systemd/system",
+				"AGENT_ARTIFACTS_CONFIG_PLACEHOLDER",
+				cs.Properties.OrchestratorProfile.OrchestratorVersion)
+
+			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
+		},
+		"GetKubernetesJumpboxCustomData": func(p *api.Properties) string {
+			str, e := t.getSingleLineForTemplate(kubernetesJumpboxCustomDataYaml, cs, p)
 
 			if e != nil {
 				return ""

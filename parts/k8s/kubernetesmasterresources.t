@@ -386,6 +386,7 @@
       "location": "[variables('location')]",
       "properties": {
           "osProfile": {
+            {{GetKubernetesJumpboxCustomData .}}
               "computerName": "[variables('jumpboxVMName')]",
               "adminUsername": "[variables('jumpboxUsername')]",
               "linuxConfiguration": {
