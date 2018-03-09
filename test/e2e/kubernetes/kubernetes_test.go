@@ -65,9 +65,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should be running the expected version", func() {
-			v, err := node.Version()
+			version, err := node.Version()
 			Expect(err).NotTo(HaveOccurred())
-			version := strings.Split(v, "-")[0] // to account for -alpha and -beta suffixes
 
 			var expectedVersion string
 			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease != "" ||
@@ -82,7 +81,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					eng.Config.OrchestratorRelease,
 					eng.Config.OrchestratorVersion)
 			}
-			Expect(version).To(Equal("v" + expectedVersion))
+			expectedVersionRationalized := strings.Split(expectedVersion, "-")[0] // to account for -alpha and -beta suffixes
+			Expect(version).To(Equal("v" + expectedVersionRationalized))
 		})
 
 		It("should have kube-dns running", func() {
