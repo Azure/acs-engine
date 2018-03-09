@@ -74,8 +74,8 @@ func newDeployCmd() *cobra.Command {
 	f.StringVar(&dc.outputDirectory, "output-directory", "", "output directory (derived from FQDN if absent)")
 	f.StringVar(&dc.caCertificatePath, "ca-certificate-path", "", "path to the CA certificate to use for Kubernetes PKI assets")
 	f.StringVar(&dc.caPrivateKeyPath, "ca-private-key-path", "", "path to the CA private key to use for Kubernetes PKI assets")
-	f.StringVar(&dc.resourceGroup, "resource-group", "", "resource group to deploy to")
-	f.StringVar(&dc.location, "location", "", "location to deploy to")
+	f.StringVarP(&dc.resourceGroup, "resource-group", "g", "", "resource group to deploy to")
+	f.StringVarP(&dc.location, "location", "l", "", "location to deploy to")
 
 	addAuthFlags(&dc.authArgs, f)
 
