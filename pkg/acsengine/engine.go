@@ -2146,7 +2146,8 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - retrycmd_if_failure_no_stats 180 1 curl -fsSL https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list > /tmp/nvidia-docker.list
 - cat /tmp/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
 - apt_get_update
-- retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make nvidia-docker2
+- retrycmd_if_failure 5 5 300 apt-get install -y linux-headers-$(uname -r) gcc make
+- retrycmd_if_failure 5 5 300 apt-get -o Dpkg::Options::="--force-confold" install -y nvidia-docker2
 - mkdir -p %s
 - cd %s`, dest, dest)
 
