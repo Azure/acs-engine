@@ -2,7 +2,7 @@
 
 write_files:
 
-- path: "/etc/cecile"
+- path: "/home/{{WrapAsVariable "jumpboxUsername"}}/.kube/config"
   permissions: "0744"
   encoding: "gzip"
   owner: "root"
