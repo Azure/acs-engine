@@ -68,8 +68,8 @@ func newScaleCmd() *cobra.Command {
 	}
 
 	f := scaleCmd.Flags()
-	f.StringVar(&sc.location, "location", "", "location the cluster is deployed in")
-	f.StringVar(&sc.resourceGroupName, "resource-group", "", "the resource group where the cluster is deployed")
+	f.StringVarP(&sc.location, "location", "l", "", "location the cluster is deployed in")
+	f.StringVarP(&sc.resourceGroupName, "resource-group", "g", "", "the resource group where the cluster is deployed")
 	f.StringVar(&sc.deploymentDirectory, "deployment-dir", "", "the location of the output from `generate`")
 	f.IntVar(&sc.newDesiredAgentCount, "new-node-count", 0, "desired number of nodes")
 	f.BoolVar(&sc.classicMode, "classic-mode", false, "enable classic parameters and outputs")
