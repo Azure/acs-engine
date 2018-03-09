@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
@@ -42,7 +43,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	}
 
 	// Aggregated API configuration
-	if o.KubernetesConfig.EnableAggregatedAPIs || isKubernetesVersionGe(o.OrchestratorVersion, "1.9.0") {
+	if o.KubernetesConfig.EnableAggregatedAPIs || common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0") {
 		staticLinuxAPIServerConfig["--requestheader-client-ca-file"] = "/etc/kubernetes/certs/proxy-ca.crt"
 		staticLinuxAPIServerConfig["--proxy-client-cert-file"] = "/etc/kubernetes/certs/proxy.crt"
 		staticLinuxAPIServerConfig["--proxy-client-key-file"] = "/etc/kubernetes/certs/proxy.key"
@@ -71,7 +72,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 	}
 
 	// Audit Policy configuration
-	if isKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") {
+	if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.8.0") {
 		staticLinuxAPIServerConfig["--audit-policy-file"] = "/etc/kubernetes/manifests/audit-policy.yaml"
 	}
 
@@ -92,7 +93,7 @@ func setAPIServerConfig(cs *api.ContainerService) {
 
 	// RBAC configuration
 	if helpers.IsTrueBoolPointer(o.KubernetesConfig.EnableRbac) {
-		if isKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") {
+		if common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.7.0") {
 			defaultAPIServerConfig["--authorization-mode"] = "Node,RBAC"
 		} else {
 			defaultAPIServerConfig["--authorization-mode"] = "RBAC"

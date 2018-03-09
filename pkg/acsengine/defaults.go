@@ -839,17 +839,11 @@ func pointerToBool(b bool) *bool {
 	return &p
 }
 
-func isKubernetesVersionGe(actualVersion, version string) bool {
-	orchestratorVersion, _ := semver.NewVersion(actualVersion)
-	constraint, _ := semver.NewConstraint(">=" + version)
-	return constraint.Check(orchestratorVersion)
-}
-
 // combine user-provided --feature-gates vals with defaults
 // a minimum k8s version may be declared as required for defaults assignment
 func addDefaultFeatureGates(m map[string]string, version string, minVersion string, defaults string) {
 	if minVersion != "" {
-		if isKubernetesVersionGe(version, minVersion) {
+		if common.IsKubernetesVersionGe(version, minVersion) {
 			m["--feature-gates"] = combineValues(m["--feature-gates"], defaults)
 		} else {
 			m["--feature-gates"] = combineValues(m["--feature-gates"], "")
@@ -900,7 +894,5 @@ func enforceK8sVersionAddonOverrides(addons []api.KubernetesAddon, o *api.Orches
 }
 
 func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
-	k8sSemVer, _ := semver.NewVersion(strings.Split(o.OrchestratorVersion, "-")[0]) // to account for -alpha and -beta suffixes
-	metricsServerConstraint, _ := semver.NewConstraint(">= 1.9.0")
-	return pointerToBool(metricsServerConstraint.Check(k8sSemVer))
+	return pointerToBool(common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
 }
