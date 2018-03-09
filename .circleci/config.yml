@@ -204,7 +204,8 @@ jobs:
       - checkout
       - run: |
           echo 'export TIMEOUT=20m' >> $BASH_ENV
-          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/1.10.0-beta2/definition.json' >> $BASH_ENV
+          echo 'export ORCHESTRATOR_RELEASE=1.10' >> $BASH_ENV
+          echo 'export CLUSTER_DEFINITION=examples/e2e-tests/kubernetes/release/default/definition.json' >> $BASH_ENV
           echo 'export CREATE_VNET=true' >> $BASH_ENV
           echo 'export CLEANUP_ON_EXIT=false' >> $BASH_ENV
           echo 'export RETAIN_SSH=false' >> $BASH_ENV

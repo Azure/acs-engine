@@ -205,7 +205,7 @@ func TestIsReschedulerEnabled(t *testing.T) {
 }
 
 func TestIsMetricsServerEnabled(t *testing.T) {
-	v := "1.9.0"
+	v := "1.10.0"
 	o := OrchestratorProfile{
 		OrchestratorType:    "Kubernetes",
 		OrchestratorVersion: v,
@@ -215,6 +215,20 @@ func TestIsMetricsServerEnabled(t *testing.T) {
 		},
 	}
 	e := o.IsMetricsServerEnabled()
+	if e != true {
+		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return true for kubernetes version %s when no metrics-server addon has been specified, instead returned %t", v, e)
+	}
+
+	v = "1.9.0"
+	o = OrchestratorProfile{
+		OrchestratorType:    "Kubernetes",
+		OrchestratorVersion: v,
+		KubernetesConfig: &KubernetesConfig{Addons: []KubernetesAddon{
+			getMockAddon("addon"),
+		},
+		},
+	}
+	e = o.IsMetricsServerEnabled()
 	if e != true {
 		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return true for kubernetes version %s when no metrics-server addon has been specified, instead returned %t", v, e)
 	}
