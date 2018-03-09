@@ -413,7 +413,7 @@
               },
             {{if JumpboxIsManagedDisks}}
               "osDisk": {
-                  "createOption": "fromImage",
+                  "createOption": "FromImage",
                   "diskSizeGB": "[variables('jumpboxOSDiskSizeGB')]",
                   "managedDisk": {
                       "storageAccountType": "[variables('vmSizesMap')[variables('jumpboxVMSize')].storageAccountType]"
