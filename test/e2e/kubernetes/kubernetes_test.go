@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -64,8 +65,9 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 		})
 
 		It("should be running the expected version", func() {
-			version, err := node.Version()
+			v, err := node.Version()
 			Expect(err).NotTo(HaveOccurred())
+			version := strings.Split(v, "-")[0] // to account for -alpha and -beta suffixes
 
 			var expectedVersion string
 			if eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease != "" ||

@@ -2,6 +2,7 @@ package api
 
 import (
 	neturl "net/url"
+	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
@@ -680,7 +681,7 @@ func (o *OrchestratorProfile) IsMetricsServerEnabled() bool {
 			metricsServerAddon = k.Addons[i]
 		}
 	}
-	k8sSemVer, _ := semver.NewVersion(o.OrchestratorVersion)
+	k8sSemVer, _ := semver.NewVersion(strings.Split(o.OrchestratorVersion, "-")[0])
 	constraint, _ := semver.NewConstraint(">= 1.9.0")
 	return metricsServerAddon.IsEnabled(DefaultMetricsServerAddonEnabled) || constraint.Check(k8sSemVer)
 }
