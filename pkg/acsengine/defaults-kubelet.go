@@ -108,6 +108,11 @@ func setKubeletConfig(cs *api.ContainerService) {
 		setMissingKubeletValues(profile.KubernetesConfig, o.KubernetesConfig.KubeletConfig)
 		if !common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.11.0") {
 			addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.6.0", "Accelerators=true")
+
+		for _, addon := range profile.KubernetesConfig.Addons {
+			if addon.Name == "nvidia-device-plugin" && *addon.Enabled {
+				addDefaultFeatureGates(profile.KubernetesConfig.KubeletConfig, o.OrchestratorVersion, "1.10.0", "DevicePlugins=true")
+			}
 		}
 	}
 }

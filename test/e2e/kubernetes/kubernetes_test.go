@@ -222,6 +222,12 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 			Expect(running).To(Equal(true))
 		})
 
+		It("should have nvidia-device-plugin running", func() {
+			running, err := pod.WaitOnReady("nvidia-device-plugin", "kube-system", 3, 30*time.Second, cfg.Timeout)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(running).To(Equal(true))
+		})
+
 		It("should have tiller running", func() {
 			if hasTiller, tillerAddon := eng.HasAddon("tiller"); hasTiller {
 				running, err := pod.WaitOnReady("tiller", "kube-system", 3, 30*time.Second, cfg.Timeout)

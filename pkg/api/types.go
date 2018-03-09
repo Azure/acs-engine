@@ -874,6 +874,17 @@ func (k *KubernetesConfig) IsDashboardEnabled() bool {
 	return dashboardAddon.IsEnabled(DefaultDashboardAddonEnabled)
 }
 
+// IsNVIDIADevicePluginEnabled checks if the NVIDIA Device Plugin addon is enabled
+func (k *KubernetesConfig) IsNVIDIADevicePluginEnabled() bool {
+	var nvidiaDevicePluginAddon KubernetesAddon
+	for i := range k.Addons {
+		if k.Addons[i].Name == DefaultNVIDIADevicePluginAddonName {
+			nvidiaDevicePluginAddon = k.Addons[i]
+		}
+	}
+	return nvidiaDevicePluginAddon.IsEnabled(DefaultNVIDIADevicePluginAddonEnabled)
+}
+
 // IsReschedulerEnabled checks if the rescheduler addon is enabled
 func (k *KubernetesConfig) IsReschedulerEnabled() bool {
 	var reschedulerAddon KubernetesAddon

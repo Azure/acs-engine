@@ -33,6 +33,11 @@ func kubernetesAddonSettingsInit(profile *api.Properties) []kubernetesFeatureSet
 			true,
 		},
 		{
+			"kubernetesagentaddons-nvidia-device-plugin-daemonset.yaml",
+			"nvidia-device-plugin.yaml",
+			profile.OrchestratorProfile.KubernetesConfig.IsNVIDIADevicePluginEnabled(),
+		},
+		{
 			"kubernetesmasteraddons-kubernetes-dashboard-deployment.yaml",
 			"kubernetes-dashboard-deployment.yaml",
 			profile.OrchestratorProfile.KubernetesConfig.IsDashboardEnabled(),
