@@ -262,7 +262,7 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 	for _, k8sVersion := range []string{common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot6Dot12, common.KubernetesVersion1Dot6Dot13,
 		common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9, common.KubernetesVersion1Dot7Dot10, common.KubernetesVersion1Dot7Dot12, common.KubernetesVersion1Dot7Dot13,
 		common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2, common.KubernetesVersion1Dot8Dot4, common.KubernetesVersion1Dot8Dot6, common.KubernetesVersion1Dot8Dot7, common.KubernetesVersion1Dot8Dot8,
-		common.KubernetesVersion1Dot9Dot0, common.KubernetesVersion1Dot9Dot1, common.KubernetesVersion1Dot9Dot2, common.KubernetesVersion1Dot9Dot3} {
+		common.KubernetesVersion1Dot9Dot0, common.KubernetesVersion1Dot9Dot1, common.KubernetesVersion1Dot9Dot2, common.KubernetesVersion1Dot9Dot3, common.KubernetesVersion1Dot10Dot0} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,

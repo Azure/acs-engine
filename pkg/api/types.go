@@ -680,9 +680,7 @@ func (o *OrchestratorProfile) IsMetricsServerEnabled() bool {
 			metricsServerAddon = k.Addons[i]
 		}
 	}
-	k8sSemVer, _ := semver.NewVersion(o.OrchestratorVersion)
-	constraint, _ := semver.NewConstraint(">= 1.9.0")
-	return metricsServerAddon.IsEnabled(DefaultMetricsServerAddonEnabled) || constraint.Check(k8sSemVer)
+	return metricsServerAddon.IsEnabled(DefaultMetricsServerAddonEnabled)
 }
 
 // IsTillerEnabled checks if the tiller addon is enabled

@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
@@ -80,7 +81,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 					eng.Config.OrchestratorRelease,
 					eng.Config.OrchestratorVersion)
 			}
-			Expect(version).To(Equal("v" + expectedVersion))
+			expectedVersionRationalized := strings.Split(expectedVersion, "-")[0] // to account for -alpha and -beta suffixes
+			Expect(version).To(Equal("v" + expectedVersionRationalized))
 		})
 
 		It("should have kube-dns running", func() {
