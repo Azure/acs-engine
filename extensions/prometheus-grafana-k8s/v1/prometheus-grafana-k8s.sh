@@ -143,7 +143,7 @@ install_helm() {
     mv linux-amd64/helm /usr/local/bin/helm
     echo $(date) " - Downloading prometheus values"
 
-    curl "$1" > prometheus_values.yaml 
+    curl "$1" > prometheus_values.yaml
 
     sleep 10
 
@@ -152,6 +152,37 @@ install_helm() {
     helm init
 
     echo $(date) " - helm installed"
+}
+
+daemonset_api() {
+    SERVER_VERSION_REGEX="Server Version: v([0-9]+)\.([0-9]+)\.([0-9]+)$"
+    K8S_SERVER_VERSION=$(kubectl version --short | grep Server)
+    K8S_SERVER_VERSION_MAJOR=$(echo "$K8S_SERVER_VERSION" | sed -r "s/$SERVER_VERSION_REGEX/\1/g")
+    K8S_SERVER_VERSION_MINOR=$(sed -r "s/$SERVER_VERSION_REGEX/\2/g" "$K8S_SERVER_VERSION")
+
+    if [[ $K8S_SERVER_VERSION_MAJOR -gt 1 ]]; then
+        echo "apps/v1"
+    elif [[ $K8S_SERVER_VERSION_MAJOR -eq 1 ]]; then
+        if [[ $K8S_SERVER_VERSION_MINOR -gt 8 ]]; then
+            echo "apps/v1"
+        else
+            echo "apps/v1beta2"
+        fi
+    fi
+}
+
+install_cadvisor() {
+    echo "$(date) - Installing cAdvisor"
+    local NAMESPACE="$1"
+    echo "$(date) - Using namespace $NAMESPACE"
+    local CADVISOR_DS_CONFIG_URL="$2"
+    echo "$(date) - Using cAdvisor config at $CADVISOR_DS_CONFIG_URL"
+
+    curl -o cadvisor_ds.yml "$CADVISOR_DS_CONFIG_URL"
+    DAEMONSET_API=$(daemonset_api)
+    echo "$(date) - Using DaemonSet api group $DAEMONSET_API"
+    sed -i 's|DAEMONSET_API|'"$DAEMONSET_API"'|g' cadvisor_ds.yml
+    kubectl apply -f ./cadvisor_ds.yml
 }
 
 update_helm() {
@@ -257,6 +288,7 @@ ensure_k8s_namespace_exists() {
 
 NAMESPACE=default
 RAW_PROMETHEUS_CHART_VALS="https://raw.githubusercontent.com/Azure/acs-engine/master/extensions/prometheus-grafana-k8s/v1/prometheus_values.yaml"
+CADVISOR_CONFIG_URL="https://raw.githubusercontent.com/Azure/acs-engine/master/extensions/prometheus-grafana-k8s/v1/cadvisor_daemonset.yml"
 
 # retrieve and parse extension parameters
 if [[ -n "$1" ]]; then
@@ -268,6 +300,10 @@ if [[ -n "$1" ]]; then
     if [[ -n "${INPUT[1]}" ]]; then
         RAW_PROMETHEUS_CHART_VALS="${INPUT[1]}"
         echo "$(date) - Custom prometheus chart values url specified: $RAW_PROMETHEUS_CHART_VALS"
+    fi
+    if [[ -n "${INPUT[2]}" ]]; then
+        CADVISOR_CONFIG_URL="${INPUT[2]}"
+        echo "$(date) - Custom cAdvisor config url specified: $CADVISOR_CONFIG_URL"
     fi
 fi
 
@@ -312,6 +348,7 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 update_helm
+install_cadvisor $NAMESPACE $CADVISOR_CONFIG_URL
 install_prometheus $NAMESPACE
 install_grafana $NAMESPACE
 
@@ -389,7 +426,7 @@ chmod u+x sanitize_dashboard.py
 
 DB_RAW=$(cat << EOF
 {
-    "dashboard": $(curl -sL "https://grafana.com/api/dashboards/315/revisions/3/download" | ./sanitize_dashboard.py),
+    "dashboard": $(curl -sL "https://grafana.com/api/dashboards/3119/revisions/2/download" | ./sanitize_dashboard.py),
     "overwrite": false
 }
 EOF

@@ -1,5 +1,5 @@
 rbac:
-  create: false
+  create: true
 
 alertmanager:
   ## If false, alertmanager will not be installed
@@ -701,7 +701,7 @@ serverFiles:
 
         # Default to scraping over https. If required, just disable this or change to
         # `http`.
-        scheme: https
+        scheme: http
 
         # This TLS & bearer token file config is used to connect to the actual scrape
         # endpoints for cluster components. This is separate to discovery auth
@@ -726,12 +726,13 @@ serverFiles:
         relabel_configs:
           - action: labelmap
             regex: __meta_kubernetes_node_label_(.+)
-          - target_label: __address__
-            replacement: kubernetes.default.svc:443
-          - source_labels: [__meta_kubernetes_node_name]
-            regex: (.+)
-            target_label: __metrics_path__
-            replacement: /api/v1/nodes/${1}:4194/proxy/metrics
+          - source_labels: [__address__]
+            regex: (.+):(\d+)
+            target_label: __address__
+            replacement: ${1}:8080
+          - source_labels: [__meta_kubernetes_node_label_kubernetes_io_role]
+            regex: master
+            action: drop
 
       # Scrape config for service endpoints.
       #
