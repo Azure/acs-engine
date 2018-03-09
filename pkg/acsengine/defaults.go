@@ -298,7 +298,6 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		if o.KubernetesConfig == nil {
 			o.KubernetesConfig = &api.KubernetesConfig{}
 		}
-
 		// Add default addons specification, if no user-provided spec exists
 		if o.KubernetesConfig.Addons == nil {
 			o.KubernetesConfig.Addons = []api.KubernetesAddon{
@@ -308,6 +307,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 				DefaultReschedulerAddonsConfig,
 				DefaultMetricsServerAddonsConfig,
 			}
+			enforceK8sVersionAddonOverrides(o.KubernetesConfig.Addons, o)
 		} else {
 			// For each addon, provide default configuration if user didn't provide its own config
 			t := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultTillerAddonName)
@@ -334,6 +334,8 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			if m < 0 {
 				// Provide default acs-engine config for Metrics Server
 				o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, DefaultMetricsServerAddonsConfig)
+				m = getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
+				o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
 			}
 		}
 		if o.KubernetesConfig.KubernetesImageBase == "" {
@@ -890,4 +892,15 @@ func mapToString(valueMap map[string]string) string {
 		buf.WriteString(fmt.Sprintf("%s=%s,", key, valueMap[key]))
 	}
 	return strings.TrimSuffix(buf.String(), ",")
+}
+
+func enforceK8sVersionAddonOverrides(addons []api.KubernetesAddon, o *api.OrchestratorProfile) {
+	m := getAddonsIndexByName(o.KubernetesConfig.Addons, DefaultMetricsServerAddonName)
+	o.KubernetesConfig.Addons[m].Enabled = k8sVersionMetricsServerAddonEnabled(o)
+}
+
+func k8sVersionMetricsServerAddonEnabled(o *api.OrchestratorProfile) *bool {
+	k8sSemVer, _ := semver.NewVersion(strings.Split(o.OrchestratorVersion, "-")[0]) // to account for -alpha and -beta suffixes
+	metricsServerConstraint, _ := semver.NewConstraint(">= 1.9.0")
+	return pointerToBool(metricsServerConstraint.Check(k8sSemVer))
 }
