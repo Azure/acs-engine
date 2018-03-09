@@ -151,3 +151,10 @@ func RationalizeReleaseAndVersion(orchType, orchRel, orchVer string) (version st
 	}
 	return version
 }
+
+// IsKubernetesVersionGe returns if a semver string is >= to a compare-against semver string (suppport "-" suffixes)
+func IsKubernetesVersionGe(actualVersion, version string) bool {
+	orchestratorVersion, _ := semver.NewVersion(strings.Split(actualVersion, "-")[0]) // to account for -alpha and -beta suffixes
+	constraint, _ := semver.NewConstraint(">=" + version)
+	return constraint.Check(orchestratorVersion)
+}

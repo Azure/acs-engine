@@ -4,6 +4,7 @@ import (
 	neturl "net/url"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
 	"github.com/Azure/acs-engine/pkg/api/v20170131"
@@ -680,7 +681,7 @@ func (o *OrchestratorProfile) IsMetricsServerEnabled() bool {
 			metricsServerAddon = k.Addons[i]
 		}
 	}
-	return metricsServerAddon.IsEnabled(DefaultMetricsServerAddonEnabled)
+	return metricsServerAddon.IsEnabled(DefaultMetricsServerAddonEnabled || common.IsKubernetesVersionGe(o.OrchestratorVersion, "1.9.0"))
 }
 
 // IsTillerEnabled checks if the tiller addon is enabled

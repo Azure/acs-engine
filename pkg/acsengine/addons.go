@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Azure/acs-engine/pkg/api"
+	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/helpers"
 )
 
@@ -109,7 +110,7 @@ func kubernetesManifestSettingsInit(profile *api.Properties) []kubernetesFeature
 		{
 			"kubernetesmaster-audit-policy.yaml",
 			"audit-policy.yaml",
-			isKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.8.0"),
+			common.IsKubernetesVersionGe(profile.OrchestratorProfile.OrchestratorVersion, "1.8.0"),
 		},
 		{
 			"kubernetesmaster-kube-apiserver.yaml",
