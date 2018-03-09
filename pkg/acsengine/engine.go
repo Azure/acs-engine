@@ -1150,14 +1150,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				return ""
 			}
 
-			// add artifacts
-			str = substituteConfigString(str,
-				kubernetesArtifactSettingsInit(cs.Properties),
-				"k8s/artifacts",
-				"/etc/systemd/system",
-				"AGENT_ARTIFACTS_CONFIG_PLACEHOLDER",
-				cs.Properties.OrchestratorProfile.OrchestratorVersion)
-
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"WriteLinkedTemplatesForExtensions": func() string {
