@@ -207,7 +207,7 @@
       "name": "[variables('masterNSGName')]",
       "properties": {
         "securityRules": [
-{{if IsDCOS19}} 
+{{if IsDCOS19}}
             {
                 "properties": {
                     "priority": 201,

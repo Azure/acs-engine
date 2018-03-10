@@ -165,9 +165,8 @@ write_files:
   owner: root
   path: /etc/mesosphere/setup-flags/repository-url
   permissions: '0644'
-- content: '302987609a34f07c206da1791c5a553141416ad8
-
-'
+- content: |-
+        ', if(equals(variables('masterCount'), 1), 'eee6337ea89c74ba58986406d24e373bdeae8012', if(equals(variables('masterCount'), 3), '248a66388bba1adbcb14a52fd3b7b424ab06fa76', if(equals(variables('masterCount'), 5), '302987609a34f07c206da1791c5a553141416ad8', 'noMasterMatch'))), '
   owner: root
   path: /etc/mesosphere/setup-flags/cluster-package-list
   permissions: '0644'
