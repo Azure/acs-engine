@@ -388,9 +388,22 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				s, err := service.CreateServiceFromFile(filepath.Join(WorkloadDir, "ingress-nginx-ilb.yaml"), serviceName, "default")
 				Expect(err).NotTo(HaveOccurred())
 
-				By("Ensuring the service root URL returns the expected payload")
-				valid := s.Validate("(Welcome to nginx)", 5, 30*time.Second, cfg.Timeout)
-				Expect(valid).To(BeTrue())
+				By("Ensuring the ILB IP is assigned to the service")
+				curlDeploymentName := fmt.Sprintf("long-running-pod-%s-%v", cfg.Name, r.Intn(99999))
+				curlDeploy, err := deployment.CreateLinuxDeploy("library/nginx:latest", curlDeploymentName, "default", "")
+				Expect(err).NotTo(HaveOccurred())
+				running, err := pod.WaitOnReady(curlDeploymentName, "default", 3, 30*time.Second, cfg.Timeout)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(running).To(Equal(true))
+				curlPods, err := curlDeploy.Pods()
+				Expect(err).NotTo(HaveOccurred())
+				for i, curlPod := range curlPods {
+					if i < 1 {
+						pass, err := curlPod.ValidateCurlConnection(s.Status.LoadBalancer.Ingress[0]["ip"], 5*time.Second, cfg.Timeout)
+						Expect(err).NotTo(HaveOccurred())
+						Expect(pass).To(BeTrue())
+					}
+				}
 			} else {
 				Skip("No linux agent was provisioned for this Cluster Definition")
 			}
