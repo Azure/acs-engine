@@ -3,7 +3,7 @@ kind: DaemonSet
 metadata:
   labels:
     kubernetes.io/cluster-service: "true"
-  name: nvidia-device-plugin-daemonset
+  name: nvidia-device-plugin
   namespace: kube-system
 spec:
   template:
@@ -22,7 +22,7 @@ spec:
       - key: CriticalAddonsOnly
         operator: Exists
       containers:
-      - image: nvidia/k8s-device-plugin:1.9
+      - image: <kubernetesNVIDIADevicePluginSpec>
         name: nvidia-device-plugin-ctr
         securityContext:
           allowPrivilegeEscalation: false
