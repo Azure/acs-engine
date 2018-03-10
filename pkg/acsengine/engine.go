@@ -960,7 +960,7 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			if err != nil {
 				return ""
 			}
-			return kubeConfig
+			return escapeSingleLine(kubeConfig)
 		},
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
