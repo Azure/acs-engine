@@ -327,6 +327,48 @@ func (p *Pod) CheckLinuxOutboundConnection(sleep, duration time.Duration) (bool,
 	}
 }
 
+// ValidateCurlConnection connects to a URI on TCP 80
+func (p *Pod) ValidateCurlConnection(uri string, sleep, duration time.Duration) (bool, error) {
+	readyCh := make(chan bool, 1)
+	errCh := make(chan error)
+	var installedCurl bool
+	ctx, cancel := context.WithTimeout(context.Background(), duration)
+	defer cancel()
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pod (%s) to curl uri %s", duration.String(), p.Metadata.Name, uri)
+			default:
+				if !installedCurl {
+					_, err := p.Exec("--", "/usr/bin/apt", "update")
+					if err != nil {
+						break
+					}
+					_, err = p.Exec("--", "/usr/bin/apt", "install", "-y", "curl")
+					if err != nil {
+						break
+					}
+					installedCurl = true
+				}
+				_, err := p.Exec("--", "curl", uri)
+				if err == nil {
+					readyCh <- true
+				}
+				time.Sleep(sleep)
+			}
+		}
+	}()
+	for {
+		select {
+		case err := <-errCh:
+			return false, err
+		case ready := <-readyCh:
+			return ready, nil
+		}
+	}
+}
+
 // CheckWindowsOutboundConnection will keep retrying the check if an error is received until the timeout occurs or it passes. This helps us when DNS may not be available for some time after a pod starts.
 func (p *Pod) CheckWindowsOutboundConnection(sleep, duration time.Duration) (bool, error) {
 	exp, err := regexp.Compile("(StatusCode\\s*:\\s*200)")
