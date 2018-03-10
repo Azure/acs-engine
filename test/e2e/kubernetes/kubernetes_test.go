@@ -269,6 +269,8 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 
 				s, err := service.CreateServiceFromFile(filepath.Join(WorkloadDir, "ingress-nginx-ilb.yaml"), serviceName, "default")
 				Expect(err).NotTo(HaveOccurred())
+				svc, err := s.WaitForExternalIP(cfg.Timeout, 5*time.Second)
+				Expect(err).NotTo(HaveOccurred())
 
 				By("Ensuring the ILB IP is assigned to the service")
 				curlDeploymentName := fmt.Sprintf("long-running-pod-%s-%v", cfg.Name, r.Intn(99999))
@@ -281,7 +283,7 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				Expect(err).NotTo(HaveOccurred())
 				for i, curlPod := range curlPods {
 					if i < 1 {
-						pass, err := curlPod.ValidateCurlConnection(s.Status.LoadBalancer.Ingress[0]["ip"], 5*time.Second, cfg.Timeout)
+						pass, err := curlPod.ValidateCurlConnection(svc.Status.LoadBalancer.Ingress[0]["ip"], 5*time.Second, cfg.Timeout)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(pass).To(BeTrue())
 					}
