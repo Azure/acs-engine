@@ -1502,6 +1502,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return false
 		},
+		"IsNVIDIADevicePluginEnabled": func() bool {
+			return cs.Properties.OrchestratorProfile.KubernetesConfig.IsNVIDIADevicePluginEnabled()
+		},
 		"IsNSeriesSKU": func(profile *api.AgentPoolProfile) bool {
 			return isNSeriesSKU(profile)
 		},
