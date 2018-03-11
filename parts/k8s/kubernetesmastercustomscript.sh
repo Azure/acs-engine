@@ -64,12 +64,12 @@ fi
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
     echo "executing master node provision operations"
-    
+
     useradd -U "etcd"
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
     passwd -u "etcd"
     id "etcd"
-    
+
     echo `date`,`hostname`, beginGettingEtcdCerts>>/opt/m
     APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
     touch "${APISERVER_PRIVATE_KEY_PATH}"
@@ -251,12 +251,11 @@ function configAzureNetworkPolicy() {
     /sbin/ebtables -t nat --list
 
     # Enable CNI.
-    setNetworkPlugin cni
-    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+	configCNINetworkPolicy
 }
 
 # Configures Kubelet to use CNI and mount the appropriate hostpaths
-function configCalicoNetworkPolicy() {
+function configCNINetworkPolicy() {
     setNetworkPlugin cni
     setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
@@ -264,8 +263,8 @@ function configCalicoNetworkPolicy() {
 function configNetworkPolicy() {
     if [[ "${NETWORK_POLICY}" = "azure" ]]; then
         configAzureNetworkPolicy
-    elif [[ "${NETWORK_POLICY}" = "calico" ]]; then
-        configCalicoNetworkPolicy
+    elif [[ "${NETWORK_POLICY}" = "calico" ]] || [[ "${NETWORK_POLICY}" = "cilium" ]]; then
+        configCNINetworkPolicy
     else
         # No policy, defaults to kubenet.
         setNetworkPlugin kubenet
