@@ -1063,11 +1063,12 @@
       "allowedValues": [
         "none",
         "azure",
-        "calico"
+        "calico",
+        "cilium"
       ],
       "defaultValue": "none",
       "metadata": {
-        "description": "The network policy enforcement to use (none|azure|calico)"
+        "description": "The network policy enforcement to use (none|azure|calico|cilium)"
       },
       "type": "string"
     },
