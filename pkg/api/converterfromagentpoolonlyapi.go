@@ -1,6 +1,7 @@
 package api
 
 import "github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
+import "github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 
 ///////////////////////////////////////////////////////////
 // The converter exposes functions to convert the top level
@@ -28,6 +29,26 @@ func ConvertContainerServiceToV20170831AgentPoolOnly(api *ContainerService) *v20
 	v20170831HCP.Properties = &v20170831.Properties{}
 	convertPropertiesToV20170831AgentPoolOnly(api.Properties, v20170831HCP.Properties)
 	return v20170831HCP
+}
+
+// ConvertContainerServiceToV20180331AgentPoolOnly converts an unversioned ContainerService to a v20180331 ContainerService
+func ConvertContainerServiceToV20180331AgentPoolOnly(api *ContainerService) *v20180331.ManagedCluster {
+	v20180331HCP := &v20180331.ManagedCluster{}
+	v20180331HCP.ID = api.ID
+	v20180331HCP.Location = api.Location
+	v20180331HCP.Name = api.Name
+	if api.Plan != nil {
+		v20180331HCP.Plan = &v20180331.ResourcePurchasePlan{}
+		convertResourcePurchasePlanToV20180331AgentPoolOnly(api.Plan, v20180331HCP.Plan)
+	}
+	v20180331HCP.Tags = map[string]string{}
+	for k, v := range api.Tags {
+		v20180331HCP.Tags[k] = v
+	}
+	v20180331HCP.Type = api.Type
+	v20180331HCP.Properties = &v20180331.Properties{}
+	convertPropertiesToV20180331AgentPoolOnly(api.Properties, v20180331HCP.Properties)
+	return v20180331HCP
 }
 
 // convertResourcePurchasePlanToV20170831 converts a v20170831 ResourcePurchasePlan to an unversioned ResourcePurchasePlan
@@ -99,4 +120,92 @@ func convertServicePrincipalProfileToV20170831AgentPoolOnly(api *ServicePrincipa
 	v20170831.ClientID = api.ClientID
 	v20170831.Secret = api.Secret
 	// v20170831.KeyvaultSecretRef = api.KeyvaultSecretRef
+}
+
+// convertResourcePurchasePlanToV20180331 converts a v20180331 ResourcePurchasePlan to an unversioned ResourcePurchasePlan
+func convertResourcePurchasePlanToV20180331AgentPoolOnly(api *ResourcePurchasePlan, v20180331 *v20180331.ResourcePurchasePlan) {
+	v20180331.Name = api.Name
+	v20180331.Product = api.Product
+	v20180331.PromotionCode = api.PromotionCode
+	v20180331.Publisher = api.Publisher
+}
+
+func convertPropertiesToV20180331AgentPoolOnly(api *Properties, p *v20180331.Properties) {
+	p.ProvisioningState = v20180331.ProvisioningState(api.ProvisioningState)
+	if api.OrchestratorProfile != nil {
+		if api.OrchestratorProfile.OrchestratorVersion != "" {
+			p.KubernetesVersion = api.OrchestratorProfile.OrchestratorVersion
+		}
+	}
+	if api.HostedMasterProfile != nil {
+		p.DNSPrefix = api.HostedMasterProfile.DNSPrefix
+		p.FQDN = api.HostedMasterProfile.FQDN
+	}
+	p.AgentPoolProfiles = []*v20180331.AgentPoolProfile{}
+	for _, apiProfile := range api.AgentPoolProfiles {
+		v20180331Profile := &v20180331.AgentPoolProfile{}
+		convertAgentPoolProfileToV20180331AgentPoolOnly(apiProfile, v20180331Profile)
+		p.AgentPoolProfiles = append(p.AgentPoolProfiles, v20180331Profile)
+	}
+	if api.LinuxProfile != nil {
+		p.LinuxProfile = &v20180331.LinuxProfile{}
+		convertLinuxProfileToV20180331AgentPoolOnly(api.LinuxProfile, p.LinuxProfile)
+	}
+	if api.WindowsProfile != nil {
+		p.WindowsProfile = &v20180331.WindowsProfile{}
+		convertWindowsProfileToV20180331AgentPoolOnly(api.WindowsProfile, p.WindowsProfile)
+	}
+	if api.ServicePrincipalProfile != nil {
+		p.ServicePrincipalProfile = &v20180331.ServicePrincipalProfile{}
+		convertServicePrincipalProfileToV20180331AgentPoolOnly(api.ServicePrincipalProfile, p.ServicePrincipalProfile)
+	}
+	if api.AddonProfiles != nil {
+		p.AddonProfiles = make(map[string]v20180331.AddonProfile)
+		convertAddonsProfileToV20180331AgentPoolOnly(api.AddonProfiles, p.AddonProfiles)
+	}
+}
+
+func convertLinuxProfileToV20180331AgentPoolOnly(api *LinuxProfile, obj *v20180331.LinuxProfile) {
+	obj.AdminUsername = api.AdminUsername
+	obj.SSH.PublicKeys = []v20180331.PublicKey{}
+	for _, d := range api.SSH.PublicKeys {
+		obj.SSH.PublicKeys = append(obj.SSH.PublicKeys, v20180331.PublicKey{
+			KeyData: d.KeyData,
+		})
+	}
+}
+
+func convertWindowsProfileToV20180331AgentPoolOnly(api *WindowsProfile, v20180331Profile *v20180331.WindowsProfile) {
+	v20180331Profile.AdminUsername = api.AdminUsername
+	v20180331Profile.AdminPassword = api.AdminPassword
+}
+
+func convertAgentPoolProfileToV20180331AgentPoolOnly(api *AgentPoolProfile, p *v20180331.AgentPoolProfile) {
+	p.Name = api.Name
+	p.Count = api.Count
+	p.VMSize = api.VMSize
+	p.OSType = v20180331.OSType(api.OSType)
+	p.SetSubnet(api.Subnet)
+	p.OSDiskSizeGB = api.OSDiskSizeGB
+	p.StorageProfile = api.StorageProfile
+	p.VnetSubnetID = api.VnetSubnetID
+}
+
+func convertServicePrincipalProfileToV20180331AgentPoolOnly(api *ServicePrincipalProfile, v20180331 *v20180331.ServicePrincipalProfile) {
+	v20180331.ClientID = api.ClientID
+	v20180331.Secret = api.Secret
+	// v20180331.KeyvaultSecretRef = api.KeyvaultSecretRef
+}
+
+func convertAddonsProfileToV20180331AgentPoolOnly(api map[string]AddonProfile, p map[string]v20180331.AddonProfile) {
+	if api == nil {
+		return
+	}
+
+	for k, v := range api {
+		p[k] = v20180331.AddonProfile{
+			Enabled: v.Enabled,
+			Config:  v.Config,
+		}
+	}
 }

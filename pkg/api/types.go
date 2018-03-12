@@ -4,6 +4,7 @@ import (
 	neturl "net/url"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
+	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
 	"github.com/Azure/acs-engine/pkg/api/v20160930"
@@ -57,6 +58,13 @@ type Properties struct {
 	AADProfile              *AADProfile              `json:"aadProfile,omitempty"`
 	CustomProfile           *CustomProfile           `json:"customProfile,omitempty"`
 	HostedMasterProfile     *HostedMasterProfile     `json:"hostedMasterProfile,omitempty"`
+	AddonProfiles           map[string]AddonProfile  `json:"addonProfiles,omitempty"`
+}
+
+// AddonProfile represents the collection of addons for managed cluster
+type AddonProfile struct {
+	Enabled bool              `json:"enabled"`
+	Config  map[string]string `json:"config"`
 }
 
 // ServicePrincipalProfile contains the client and secret used by the cluster for Azure Resource CRUD
@@ -500,6 +508,14 @@ type V20170701ARMContainerService struct {
 type V20170831ARMManagedContainerService struct {
 	TypeMeta
 	*v20170831.ManagedCluster
+}
+
+// V20180331ARMManagedContainerService is the type we read and write from file
+// needed because the json that is sent to ARM and acs-engine
+// is different from the json that the ACS RP Api gets from ARM
+type V20180331ARMManagedContainerService struct {
+	TypeMeta
+	*v20180331.ManagedCluster
 }
 
 // HasWindows returns true if the cluster contains windows
