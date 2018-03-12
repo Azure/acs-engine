@@ -41,7 +41,7 @@ type Properties struct {
 	AddonProfiles           map[string]AddonProfile  `json:"addonProfiles,omitempty"`
 }
 
-// AddonProfile represents the collection of addons for managed cluster
+// AddonProfile represents an addon for managed cluster
 type AddonProfile struct {
 	Enabled bool              `json:"enabled"`
 	Config  map[string]string `json:"config"`
