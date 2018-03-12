@@ -105,7 +105,7 @@ const (
 	// DefaultEtcdVersion specifies the default etcd version to install
 	DefaultEtcdVersion = "3.2.16"
 	// DefaultEtcdDiskSize specifies the default size for Kubernetes master etcd disk volumes in GB
-	DefaultEtcdDiskSize = "128"
+	DefaultEtcdDiskSize = "256"
 	// DefaultReschedulerAddonName is the name of the rescheduler addon deployment
 	DefaultReschedulerAddonName = "rescheduler"
 	// DefaultMetricsServerAddonName is the name of the kubernetes Metrics server addon deployment
