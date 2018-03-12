@@ -1144,9 +1144,9 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
 		"GetKubernetesJumpboxCustomData": func(p *api.Properties) string {
-			str, e := t.getSingleLineForTemplate(kubernetesJumpboxCustomDataYaml, cs, p)
+			str, err := t.getSingleLineForTemplate(kubernetesJumpboxCustomDataYaml, cs, p)
 
-			if e != nil {
+			if err != nil {
 				return ""
 			}
 
