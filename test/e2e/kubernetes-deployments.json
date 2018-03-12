@@ -31,6 +31,10 @@
 		{
 			"cluster_definition": "vnet/kubernetesvnet.json",
 			"location": "westus2"
+		},
+		{
+			"cluster_definition": "kubernetes-clear-containers.json",
+			"location": "eastus"
 		}
 	]
 }
