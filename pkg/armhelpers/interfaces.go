@@ -102,6 +102,8 @@ type KubernetesClient interface {
 	GetNode(name string) (*v1.Node, error)
 	//UpdateNode updates the node in the api server with the passed in info
 	UpdateNode(node *v1.Node) (*v1.Node, error)
+	//DeleteNode deregisters node in the api server
+	DeleteNode(name string) error
 	//SupportEviction queries the api server to discover if it supports eviction, and returns supported type if it is supported
 	SupportEviction() (string, error)
 	//DeletePod deletes the passed in pod

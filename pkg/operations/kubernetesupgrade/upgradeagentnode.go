@@ -49,7 +49,7 @@ func (kan *UpgradeAgentNode) DeleteNode(vmName *string, drain bool) error {
 			kubeAPIServerURL = kan.UpgradeContainerService.Properties.MasterProfile.FQDN
 		}
 
-		err := operations.SafelyDrainNode(kan.Client, kan.logger, kubeAPIServerURL, kan.kubeConfig, *vmName, time.Minute)
+		err := operations.SafelyDrainNode(kan.Client, kan.logger, kubeAPIServerURL, kan.kubeConfig, *vmName, true, time.Minute)
 		if err != nil {
 			kan.logger.Warningf("Error draining agent VM %s. Proceeding with deletion. Error: %v", *vmName, err)
 			// Proceed with deletion anyways

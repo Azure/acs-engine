@@ -398,7 +398,7 @@ func (sc *scaleCmd) drainNodes(vmsToDelete []string) error {
 	for _, vmName := range vmsToDelete {
 		go func(vmName string) {
 			e := operations.SafelyDrainNode(sc.client, sc.logger,
-				masterURL, kubeConfig, vmName, time.Duration(60)*time.Minute)
+				masterURL, kubeConfig, vmName, false, time.Duration(60)*time.Minute)
 			if e != nil {
 				log.Errorf("Failed to drain node %s, got error %s", vmName, e.Error())
 				errChan <- &operations.VMScalingErrorDetails{Error: e, Name: vmName}
