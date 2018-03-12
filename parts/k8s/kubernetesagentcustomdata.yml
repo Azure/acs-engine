@@ -186,10 +186,10 @@ runcmd:
 - echo `date`,`hostname`, postaptupdate>>/opt/m
 - retrycmd_if_failure 5 10 apt-get install -y apt-transport-https ca-certificates nfs-common
 - echo `date`,`hostname`, aptinstall>>/opt/m
-- systemctl enable rpcbind
-- systemctl enable rpc-statd
-- systemctl start rpcbind
-- systemctl start rpc-statd
+- retrycmd_if_failure 5 5 timeout 10s systemctl enable rpcbind
+- retrycmd_if_failure 5 5 timeout 10s systemctl enable rpc-statd
+- retrycmd_if_failure 5 5 timeout 30s systemctl start rpcbind
+- retrycmd_if_failure 5 5 timeout 30s systemctl start rpc-statd
 - echo `date`,`hostname`, predockerinstall>>/opt/m
 - retrycmd_if_failure_no_stats 180 1 curl -fsSL https://aptdocker.azureedge.net/gpg > /tmp/aptdocker.gpg
 - cat /tmp/aptdocker.gpg | apt-key add -
@@ -199,9 +199,9 @@ runcmd:
 - retrycmd_if_failure 20 10 apt-get install -y ebtables docker-engine
 - touch /opt/azure/containers/dockerinstall.complete
 - echo "ExecStartPost=/sbin/iptables -P FORWARD ACCEPT" >> /etc/systemd/system/docker.service.d/exec_start.conf
-- systemctl daemon-reload
+- retrycmd_if_failure 5 5 timeout 60s systemctl daemon-reload
 - echo `date`,`hostname`, postdockerinstall>>/opt/m
-- systemctl restart docker
+- retrycmd_if_failure 5 5 timeout 60s systemctl restart docker
 - mkdir -p /etc/kubernetes/manifests
 - usermod -aG docker {{WrapAsVariable "username"}}
 {{if IsNSeriesSKU .}}
