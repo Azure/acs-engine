@@ -31,15 +31,20 @@ type drainOperation struct {
 type podFilter func(v1.Pod) bool
 
 // SafelyDrainNode safely drains a node so that it can be deleted from the cluster
-func SafelyDrainNode(az armhelpers.ACSEngineClient, logger *log.Entry, masterURL, kubeConfig, nodeName string, deleteNode bool, timeout time.Duration) error {
+func SafelyDrainNode(az armhelpers.ACSEngineClient, logger *log.Entry, masterURL, kubeConfig, nodeName string, timeout time.Duration) error {
 	//get client using kubeconfig
 	client, err := az.GetKubernetesClient(masterURL, kubeConfig, interval, timeout)
 	if err != nil {
 		return err
 	}
+	return SafelyDrainNodeWithClient(client, logger, nodeName, timeout)
+}
 
+// SafelyDrainNodeWithClient safely drains a node so that it can be deleted from the cluster
+func SafelyDrainNodeWithClient(client armhelpers.KubernetesClient, logger *log.Entry, nodeName string, timeout time.Duration) error {
 	//Mark the node unschedulable
 	var node *v1.Node
+	var err error
 	for i := 0; i < cordonMaxRetries; i++ {
 		node, err = client.GetNode(nodeName)
 		if err != nil {
@@ -62,16 +67,7 @@ func SafelyDrainNode(az armhelpers.ACSEngineClient, logger *log.Entry, masterURL
 
 	//Evict pods in node
 	drainOp := &drainOperation{client: client, node: node, logger: logger, timeout: timeout}
-	if err = drainOp.deleteOrEvictPodsSimple(); err != nil {
-		return err
-	}
-	// Deregister node in api server
-	if deleteNode {
-		if err = client.DeleteNode(nodeName); err != nil {
-			logger.Warnf("Node %s got an error (ignoring) while deregistering: %v", err)
-		}
-	}
-	return nil
+	return drainOp.deleteOrEvictPodsSimple()
 }
 
 func (o *drainOperation) deleteOrEvictPodsSimple() error {
