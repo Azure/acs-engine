@@ -8,7 +8,7 @@ import (
 func TestConvertFromV20180331AddonProfile(t *testing.T) {
 	addonName := "AddonFoo"
 	p := map[string]v20180331.AddonProfile{
-		addonName: v20180331.AddonProfile{
+		addonName: {
 			Enabled: true,
 			Config: map[string]string{
 				"opt1": "value1",
