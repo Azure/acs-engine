@@ -64,10 +64,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 func (m *MasterProfile) Validate() error {
 	// Don't need to call validate.Struct(m)
 	// It is handled by Properties.Validate()
-	if e := validateDNSName(m.DNSPrefix); e != nil {
-		return e
-	}
-	return nil
+	return validateDNSName(m.DNSPrefix)
 }
 
 // Validate implements APIObject

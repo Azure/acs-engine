@@ -17,7 +17,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
 	"github.com/Azure/azure-sdk-for-go/arm/network"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
-	"github.com/Azure/azure-sdk-for-go/arm/resources/subscriptions"
 	"github.com/Azure/azure-sdk-for-go/arm/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -55,7 +54,6 @@ type AzureClient struct {
 	interfacesClient              network.InterfacesClient
 	groupsClient                  resources.GroupsClient
 	providersClient               resources.ProvidersClient
-	subscriptionsClient           subscriptions.GroupClient
 	virtualMachinesClient         compute.VirtualMachinesClient
 	virtualMachineScaleSetsClient compute.VirtualMachineScaleSetsClient
 	disksClient                   disk.DisksClient

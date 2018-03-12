@@ -167,10 +167,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 
 // Validate implements APIObject
 func (m *MasterProfile) Validate() error {
-	if e := validateDNSName(m.DNSPrefix); e != nil {
-		return e
-	}
-	return nil
+	return validateDNSName(m.DNSPrefix)
 }
 
 // Validate implements APIObject

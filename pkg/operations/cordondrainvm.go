@@ -95,7 +95,7 @@ func mirrorPodFilter(pod v1.Pod) bool {
 
 func getControllerRef(pod *v1.Pod) *metav1.OwnerReference {
 	for _, ref := range pod.ObjectMeta.OwnerReferences {
-		if ref.Controller != nil && *ref.Controller == true {
+		if ref.Controller != nil && *ref.Controller {
 			return &ref
 		}
 	}

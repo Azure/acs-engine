@@ -94,7 +94,7 @@ func TestExpected(t *testing.T) {
 			continue
 		}
 
-		if certsGenerated == true {
+		if certsGenerated {
 			t.Errorf("cert generation unexpected for %s", containerService.Properties.OrchestratorProfile.OrchestratorType)
 		}
 
@@ -116,7 +116,7 @@ func TestExpected(t *testing.T) {
 				continue
 			}
 
-			if certsGenerated == true {
+			if certsGenerated {
 				t.Errorf("cert generation unexpected for %s", containerService.Properties.OrchestratorProfile.OrchestratorType)
 			}
 

@@ -38,7 +38,6 @@ type deployCmd struct {
 	caCertificatePath string
 	caPrivateKeyPath  string
 	classicMode       bool
-	noPrettyPrint     bool
 	parametersOnly    bool
 
 	// derived

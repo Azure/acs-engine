@@ -68,11 +68,7 @@ func (cli *CLIProvisioner) Run() error {
 			cli.Point.SetNodeWaitStart()
 			err := cli.waitForNodes()
 			cli.Point.RecordNodeWait(err)
-			if err != nil {
-
-				return err
-			}
-			return nil
+			return err
 		}
 	}
 	return fmt.Errorf("Unable to run provisioner")
@@ -189,7 +185,7 @@ func (cli *CLIProvisioner) waitForNodes() error {
 		cli.Config.SetKubeConfig()
 		log.Println("Waiting on nodes to go into ready state...")
 		ready := node.WaitOnReady(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
-		if ready == false {
+		if !ready {
 			return errors.New("Error: Not all nodes in a healthy state")
 		}
 		version, err := node.Version()
@@ -214,7 +210,7 @@ func (cli *CLIProvisioner) waitForNodes() error {
 			return fmt.Errorf("Error trying to install dcos client:%s", err)
 		}
 		ready := cluster.WaitForNodes(cli.Engine.NodeCount(), 10*time.Second, cli.Config.Timeout)
-		if ready == false {
+		if !ready {
 			return errors.New("Error: Not all nodes in a healthy state")
 		}
 	}

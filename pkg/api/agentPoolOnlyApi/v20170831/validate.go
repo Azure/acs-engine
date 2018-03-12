@@ -18,10 +18,7 @@ func init() {
 func (a *AgentPoolProfile) Validate() error {
 	// Don't need to call validate.Struct(a)
 	// It is handled by Properties.Validate()
-	if e := validatePoolName(a.Name); e != nil {
-		return e
-	}
-	return nil
+	return validatePoolName(a.Name)
 }
 
 // Validate implements APIObject

@@ -204,12 +204,12 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 
 	kubeConfig, err := acsengine.GenerateKubeConfig(uc.containerService.Properties, uc.location)
 	if err != nil {
-		log.Fatalf("failed to generate kube config") // TODO: cleanup
+		log.Fatalf("failed to generate kube config: %v", err) // TODO: cleanup
 	}
 
 	if err = upgradeCluster.UpgradeCluster(uc.authArgs.SubscriptionID, kubeConfig, uc.resourceGroupName,
 		uc.containerService, uc.nameSuffix, uc.agentPoolsToUpgrade); err != nil {
-		log.Fatalf("Error upgrading cluster: %s \n", err.Error())
+		log.Fatalf("Error upgrading cluster: %v\n", err)
 	}
 
 	apiloader := &api.Apiloader{
@@ -217,10 +217,9 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 			Locale: uc.locale,
 		},
 	}
-	b, e := apiloader.SerializeContainerService(uc.containerService, uc.apiVersion)
-
-	if e != nil {
-		return e
+	b, err := apiloader.SerializeContainerService(uc.containerService, uc.apiVersion)
+	if err != nil {
+		return err
 	}
 
 	f := acsengine.FileSaver{
@@ -229,9 +228,5 @@ func (uc *upgradeCmd) run(cmd *cobra.Command, args []string) error {
 		},
 	}
 
-	if e = f.SaveFile(uc.deploymentDirectory, "apimodel.json", b); e != nil {
-		return e
-	}
-
-	return nil
+	return f.SaveFile(uc.deploymentDirectory, "apimodel.json", b)
 }

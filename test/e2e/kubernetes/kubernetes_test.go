@@ -31,7 +31,6 @@ const (
 var (
 	cfg config.Config
 	eng engine.Engine
-	err error
 )
 
 var _ = BeforeSuite(func() {

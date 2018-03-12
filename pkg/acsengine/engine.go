@@ -2359,7 +2359,7 @@ func getLinkedTemplatesForExtensions(properties *api.Properties) string {
 			result += ","
 			dta, e := getMasterLinkedTemplateText(properties.MasterProfile, orchestratorType, extensionProfile, singleOrAll)
 			if e != nil {
-				fmt.Printf(e.Error())
+				fmt.Println(e.Error())
 				return ""
 			}
 			result += dta
@@ -2372,7 +2372,7 @@ func getLinkedTemplatesForExtensions(properties *api.Properties) string {
 				result += ","
 				dta, e := getAgentPoolLinkedTemplateText(agentPoolProfile, orchestratorType, extensionProfile, singleOrAll)
 				if e != nil {
-					fmt.Printf(e.Error())
+					fmt.Println(e.Error())
 					return ""
 				}
 				result += dta
@@ -2460,7 +2460,7 @@ func validateProfileOptedForExtension(extensionName string, profileExtensions []
 // to pass a root extensions url for testing
 func getLinkedTemplateTextForURL(rootURL, orchestrator, extensionName, version, query string) (string, error) {
 	supportsExtension, err := orchestratorSupportsExtension(rootURL, orchestrator, extensionName, version, query)
-	if supportsExtension == false {
+	if !supportsExtension {
 		return "", fmt.Errorf("Extension not supported for orchestrator. Error: %s", err)
 	}
 
@@ -2484,7 +2484,7 @@ func orchestratorSupportsExtension(rootURL, orchestrator, extensionName, version
 		return false, fmt.Errorf("Unable to parse supported-orchestrators.json for Extension %s Version %s", extensionName, version)
 	}
 
-	if stringInSlice(orchestrator, supportedOrchestrators) != true {
+	if !stringInSlice(orchestrator, supportedOrchestrators) {
 		return false, fmt.Errorf("Orchestrator: %s not in list of supported orchestrators for Extension: %s Version %s", orchestrator, extensionName, version)
 	}
 

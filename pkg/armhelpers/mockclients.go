@@ -125,9 +125,7 @@ func (msc *MockStorageClient) DeleteBlob(container, blob string) error {
 }
 
 //AddAcceptLanguages mock
-func (mc *MockACSEngineClient) AddAcceptLanguages(languages []string) {
-	return
-}
+func (mc *MockACSEngineClient) AddAcceptLanguages(languages []string) {}
 
 //DeployTemplate mock
 func (mc *MockACSEngineClient) DeployTemplate(resourceGroup, name string, template, parameters map[string]interface{}, cancel <-chan struct{}) (*resources.DeploymentExtended, error) {
