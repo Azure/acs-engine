@@ -148,6 +148,7 @@ var KubeConfigs = map[string]map[string]string{
 	common.KubernetesVersion1Dot9Dot2:  getK8sVersionComponents("1.9.2", nil),
 	common.KubernetesVersion1Dot9Dot1:  getK8sVersionComponents("1.9.1", nil),
 	common.KubernetesVersion1Dot9Dot0:  getK8sVersionComponents("1.9.0", nil),
+	common.KubernetesVersion1Dot8Dot9:  getK8sVersionComponents("1.8.9", nil),
 	common.KubernetesVersion1Dot8Dot8:  getK8sVersionComponents("1.8.8", nil),
 	common.KubernetesVersion1Dot8Dot7:  getK8sVersionComponents("1.8.7", nil),
 	common.KubernetesVersion1Dot8Dot6:  getK8sVersionComponents("1.8.6", map[string]string{"windowszip": "v1.8.6-2int.zip"}),

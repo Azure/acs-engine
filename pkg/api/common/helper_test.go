@@ -51,8 +51,8 @@ func TestGetLatestPatchVersion(t *testing.T) {
 	}
 
 	version = GetLatestPatchVersion("1.8", GetAllSupportedKubernetesVersions())
-	if version != KubernetesVersion1Dot8Dot8 {
-		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot8Dot8)
+	if version != KubernetesVersion1Dot8Dot9 {
+		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot8Dot9)
 	}
 
 	version = GetLatestPatchVersion("1.9", GetAllSupportedKubernetesVersions())
