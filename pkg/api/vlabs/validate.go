@@ -65,7 +65,8 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 			version := common.RationalizeReleaseAndVersion(
 				o.OrchestratorType,
 				o.OrchestratorRelease,
-				o.OrchestratorVersion)
+				o.OrchestratorVersion,
+				false)
 			if version == "" {
 				return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 			}
@@ -75,7 +76,8 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 			version := common.RationalizeReleaseAndVersion(
 				o.OrchestratorType,
 				o.OrchestratorRelease,
-				o.OrchestratorVersion)
+				o.OrchestratorVersion,
+				false)
 			if version == "" {
 				return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 			}
@@ -142,7 +144,8 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 			version := common.RationalizeReleaseAndVersion(
 				o.OrchestratorType,
 				o.OrchestratorRelease,
-				o.OrchestratorVersion)
+				o.OrchestratorVersion,
+				false)
 			if version == "" {
 				patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion)
 				// if there isn't a supported patch version for this version fail
@@ -433,14 +436,24 @@ func (a *Properties) Validate(isUpdate bool) error {
 			case Swarm:
 			case SwarmMode:
 			case Kubernetes:
-				version := common.RationalizeReleaseAndVersion(
-					a.OrchestratorProfile.OrchestratorType,
-					a.OrchestratorProfile.OrchestratorRelease,
-					a.OrchestratorProfile.OrchestratorVersion)
+				var version string
+				if a.HasWindows() {
+					version = common.RationalizeReleaseAndVersion(
+						a.OrchestratorProfile.OrchestratorType,
+						a.OrchestratorProfile.OrchestratorRelease,
+						a.OrchestratorProfile.OrchestratorVersion,
+						true)
+				} else {
+					version = common.RationalizeReleaseAndVersion(
+						a.OrchestratorProfile.OrchestratorType,
+						a.OrchestratorProfile.OrchestratorRelease,
+						a.OrchestratorProfile.OrchestratorVersion,
+						false)
+				}
 				if version == "" {
 					return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 				}
-				if _, ok := common.AllKubernetesWindowsSupportedVersions[version]; !ok {
+				if supported, ok := common.AllKubernetesWindowsSupportedVersions[version]; !ok || !supported {
 					return fmt.Errorf("Orchestrator %s version %s does not support Windows", a.OrchestratorProfile.OrchestratorType, version)
 				}
 			default:

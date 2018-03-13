@@ -58,7 +58,8 @@ var _ = Describe("Azure Container Cluster using the DCOS Orchestrator", func() {
 			expectedVersion := common.RationalizeReleaseAndVersion(
 				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorType,
 				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
-				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion)
+				eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion,
+				false)
 			Expect(version).To(Equal(expectedVersion))
 		})
 

@@ -569,7 +569,8 @@ func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProf
 		api.OrchestratorVersion = common.RationalizeReleaseAndVersion(
 			vlabscs.OrchestratorType,
 			vlabscs.OrchestratorRelease,
-			vlabscs.OrchestratorVersion)
+			vlabscs.OrchestratorVersion,
+			vp.HasWindows())
 	case DCOS:
 		if vlabscs.DcosConfig != nil {
 			api.DcosConfig = &DcosConfig{}
@@ -578,7 +579,8 @@ func convertVLabsOrchestratorProfile(vp *vlabs.Properties, api *OrchestratorProf
 		api.OrchestratorVersion = common.RationalizeReleaseAndVersion(
 			vlabscs.OrchestratorType,
 			vlabscs.OrchestratorRelease,
-			vlabscs.OrchestratorVersion)
+			vlabscs.OrchestratorVersion,
+			false)
 	}
 }
 

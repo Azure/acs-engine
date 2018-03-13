@@ -183,6 +183,15 @@ var AllKubernetesWindowsSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot10Dot0: false,
 }
 
+// GetAllSupportedKubernetesVersionsWindows returns a slice of all supported Kubernetes versions on Windows
+func GetAllSupportedKubernetesVersionsWindows() []string {
+	versions := make([]string, 0, len(AllKubernetesWindowsSupportedVersions))
+	for k := range AllKubernetesWindowsSupportedVersions {
+		versions = append(versions, k)
+	}
+	return versions
+}
+
 const (
 	// DCOSVersion1Dot10Dot0 is the major.minor.patch string for 1.10.0 versions of DCOS
 	DCOSVersion1Dot10Dot0 string = "1.10.0"
