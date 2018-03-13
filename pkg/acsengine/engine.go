@@ -35,7 +35,6 @@ const (
 	kubernetesMountetcd                      = "k8s/kubernetes_mountetcd.sh"
 	kubernetesMasterGenerateProxyCertsScript = "k8s/kubernetesmastergenerateproxycertscript.sh"
 	kubernetesAgentCustomDataYaml            = "k8s/kubernetesagentcustomdata.yml"
-	kubernetesJumpboxCustomDataYaml          = "k8s/kubernetesjumpboxcustomdata.yml"
 	kubeConfigJSON                           = "k8s/kubeconfig.json"
 	kubernetesWindowsAgentCustomDataPS1      = "k8s/kuberneteswindowssetup.ps1"
 )
@@ -956,13 +955,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 			}
 			return false
 		},
-		"GetKubeConfig": func() string {
-			kubeConfig, err := GenerateKubeConfig(cs.Properties, cs.Location)
-			if err != nil {
-				return ""
-			}
-			return escapeSingleLine(kubeConfig)
-		},
 		"UseManagedIdentity": func() bool {
 			return cs.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity
 		},
@@ -1140,15 +1132,6 @@ func (t *TemplateGenerator) getTemplateFuncMap(cs *api.ContainerService) templat
 				"/etc/systemd/system",
 				"AGENT_ARTIFACTS_CONFIG_PLACEHOLDER",
 				cs.Properties.OrchestratorProfile.OrchestratorVersion)
-
-			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
-		},
-		"GetKubernetesJumpboxCustomData": func(p *api.Properties) string {
-			str, err := t.getSingleLineForTemplate(kubernetesJumpboxCustomDataYaml, cs, p)
-
-			if err != nil {
-				return ""
-			}
 
 			return fmt.Sprintf("\"customData\": \"[base64(concat('%s'))]\",", str)
 		},
