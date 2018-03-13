@@ -513,7 +513,7 @@ function ensureKubelet() {
     systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 20 10 timeout 60s systemctl restart kubelet
+        retrycmd_if_failure 5 5 timeout 60s systemctl restart kubelet
     fi
 }
 
@@ -521,7 +521,7 @@ function extractKubectl(){
     systemctlEnableAndCheck kubectl-extract
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        systemctl restart kubectl-extract
+        retrycmd_if_failure 5 5 timeout 60s systemctl restart kubectl-extract
     fi
 }
 
@@ -534,7 +534,7 @@ function ensureJournal(){
     echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        systemctl restart systemd-journald.service
+        retrycmd_if_failure 5 5 timeout 60s systemctl restart systemd-journald.service
     fi
 }
 

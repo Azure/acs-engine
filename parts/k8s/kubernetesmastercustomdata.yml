@@ -368,7 +368,7 @@ runcmd:
 - /bin/chown -R etcd:etcd /var/lib/etcddisk
 - retrycmd_if_failure 5 5 timeout 30s systemctl stop etcd
 - retrycmd_if_failure 5 5 timeout 60s systemctl daemon-reload
-- systemctl restart etcd
+- retrycmd_if_failure 5 5 timeout 60s systemctl restart etcd
 - MEMBER="$(sudo etcdctl member list | grep -E {{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}} | cut -d{{WrapAsVariable "singleQuote"}}:{{WrapAsVariable "singleQuote"}} -f 1)"
 - sudo etcdctl member update ${MEMBER} {{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}
 - retrycmd_if_failure 5 5 curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --retry 5 --retry-delay 10 --retry-max-time 30 --max-time 60 "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}"/v2/machines
