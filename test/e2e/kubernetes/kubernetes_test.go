@@ -74,12 +74,14 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				expectedVersion = common.RationalizeReleaseAndVersion(
 					common.Kubernetes,
 					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorRelease,
-					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion)
+					eng.ClusterDefinition.Properties.OrchestratorProfile.OrchestratorVersion,
+					false)
 			} else {
 				expectedVersion = common.RationalizeReleaseAndVersion(
 					common.Kubernetes,
 					eng.Config.OrchestratorRelease,
-					eng.Config.OrchestratorVersion)
+					eng.Config.OrchestratorVersion,
+					false)
 			}
 			expectedVersionRationalized := strings.Split(expectedVersion, "-")[0] // to account for -alpha and -beta suffixes
 			Expect(version).To(Equal("v" + expectedVersionRationalized))
