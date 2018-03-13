@@ -513,7 +513,7 @@ function ensureKubelet() {
     systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        systemctl restart kubelet
+        retrycmd_if_failure 20 10 timeout 60s systemctl restart kubelet
     fi
 }
 
