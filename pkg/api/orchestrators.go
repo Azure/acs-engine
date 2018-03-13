@@ -184,6 +184,9 @@ func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, er
 	case currentMajor == 1 && currentMinor == 8:
 		nextMajor = 1
 		nextMinor = 9
+	case currentMajor == 1 && currentMinor == 9:
+		nextMajor = 1
+		nextMinor = 10
 	}
 	for ver, supported := range common.AllKubernetesSupportedVersions {
 		if !supported {

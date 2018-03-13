@@ -99,6 +99,11 @@ func (uc *UpgradeCluster) UpgradeCluster(subscriptionID uuid.UUID, kubeConfig, r
 		upgrader19.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
 		upgrader = upgrader19
 
+	case strings.HasPrefix(upgradeVersion, "1.10."):
+		upgrader110 := &Upgrader{}
+		upgrader110.Init(uc.Translator, uc.Logger, uc.ClusterTopology, uc.Client, kubeConfig, uc.StepTimeout)
+		upgrader = upgrader110
+
 	default:
 		return uc.Translator.Errorf("Upgrade to Kubernetes version %s is not supported", upgradeVersion)
 	}
