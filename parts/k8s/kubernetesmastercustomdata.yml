@@ -247,6 +247,13 @@ MASTER_ARTIFACTS_CONFIG_PLACEHOLDER
     # If Calico Policy enabled then update Cluster Cidr
     sed -i "s|<kubeClusterCidr>|{{WrapAsVariable "kubeClusterCidr"}}|g" "/etc/kubernetes/addons/calico-daemonset.yaml"
 {{end}}
+{{if eq .OrchestratorProfile.KubernetesConfig.NetworkPolicy "cilium"}}
+    # If Cilium Policy enabled then update the etcd certs and address
+    sed -i "s|<ETCD_URL>|{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
+    sed -i "s|<ETCD_CA>|$(base64 -w 0 /etc/kubernetes/certs/ca.crt)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
+    sed -i "s|<ETCD_CLIENT_KEY>|$(base64 -w 0 /etc/kubernetes/certs/etcdclient.key)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
+    sed -i "s|<ETCD_CLIENT_CERT>|$(base64 -w 0 /etc/kubernetes/certs/etcdclient.crt)|g" "/etc/kubernetes/addons/cilium-daemonset.yaml"
+{{end}}
 {{if UseCloudControllerManager }}
     sed -i "s|<kubernetesCcmImageSpec>|{{WrapAsVariable "kubernetesCcmImageSpec"}}|g" "/etc/kubernetes/manifests/cloud-controller-manager.yaml"
     sed -i "s|<kubernetesCloudControllerManagerConfig>|{{GetK8sRuntimeConfigKeyVals .OrchestratorProfile.KubernetesConfig.CloudControllerManagerConfig}}|g" "/etc/kubernetes/manifests/cloud-controller-manager.yaml"

@@ -4,6 +4,7 @@
 |---|---|---|---|---|
 |Managed Disks|Beta|`vlabs`|[kubernetes-vmas.json](../../examples/disks-managed/kubernetes-vmss.json)|[Description](#feat-managed-disks)|
 |Calico Network Policy|Alpha|`vlabs`|[kubernetes-calico.json](../../examples/networkpolicy/kubernetes-calico.json)|[Description](#feat-calico)|
+|Cilium Network Policy|Alpha|`vlabs`|[kubernetes-cilium.json](../../examples/networkpolicy/kubernetes-cilium.json)|[Description](#feat-cilium)|
 |Custom VNET|Beta|`vlabs`|[kubernetesvnet-azure-cni.json](../../examples/vnet/kubernetesvnet-azure-cni.json)|[Description](#feat-custom-vnet)|
 |Clear Containers Runtime|Alpha|`vlabs`|[kubernetes-clear-containers.json](../../examples/kubernetes-clear-containers.json)|[Description](#feat-clear-containers)|
 
@@ -161,6 +162,37 @@ Per default Calico still allows all communication within the cluster. Using Kube
 * [NetworkPolicy User Guide](https://kubernetes.io/docs/user-guide/networkpolicies/)
 * [NetworkPolicy Example Walkthrough](https://kubernetes.io/docs/getting-started-guides/network-policy/walkthrough/)
 * [Calico Kubernetes](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy)
+
+<a name="feat-cilium"></a>
+
+## Network Policy Enforcement with Cilium
+
+Using the default configuration, Kubernetes allows communication between all
+Pods within a cluster. To ensure that Pods can only be accessed by authorized
+Pods, a policy enforcement is needed. To enable policy enforcement using Cilium refer to the 
+[cluster definition](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig) 
+document under networkPolicy. There is also a reference cluster definition available 
+[here](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy/kubernetes-cilium.json).
+
+This will deploy a Cilium agent to every instance of the cluster
+using a Kubernetes DaemonSet. After a successful deployment you should be able
+to see these Pods running in your cluster:
+
+```
+kubectl get pods --namespace kube-system -l k8s-app=cilium -o wide
+NAME                READY     STATUS    RESTARTS   AGE       IP             NODE
+cilium-034zh   2/2       Running   0          2h        10.240.255.5   k8s-master-30179930-0
+cilium-qmr7n   2/2       Running   0          2h        10.240.0.4     k8s-agentpool1-30179930-1
+cilium-z3p02   2/2       Running   0          2h        10.240.0.5     k8s-agentpool1-30179930-0
+```
+
+Per default Cilium still allows all communication within the cluster. Using Kubernetes' NetworkPolicy API, 
+you can define stricter policies. Good resources to get information about that are:
+
+* [Cilum Network Policy Docs](https://cilium.readthedocs.io/en/latest/kubernetes/policy/#k8s-policy)
+* [NetworkPolicy User Guide](https://kubernetes.io/docs/user-guide/networkpolicies/)
+* [NetworkPolicy Example Walkthrough](https://kubernetes.io/docs/getting-started-guides/network-policy/walkthrough/)
+* [Cilium Kubernetes](https://github.com/Azure/acs-engine/blob/master/examples/networkpolicy)
 
 <a name="feat-custom-vnet"></a>
 
