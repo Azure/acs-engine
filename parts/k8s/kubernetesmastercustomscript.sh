@@ -204,6 +204,8 @@ function ensureFilepath() {
     fi
 }
 
+function retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
+
 function downloadUrl () {
 	# Wrapper around curl to download blobs more reliably.
 	# Workaround the --retry issues with a for loop and set a max timeout.
@@ -487,7 +489,7 @@ function ensureDocker() {
     systemctlEnableAndCheck docker
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        systemctl restart docker
+        retrycmd_if_failure 5 5 timeout 60s systemctl restart docker
         dockerStarted=1
         for i in {1..900}; do
             if ! /usr/bin/docker info; then
