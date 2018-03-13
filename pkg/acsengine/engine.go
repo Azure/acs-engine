@@ -1825,7 +1825,7 @@ func getGPUDriversInstallScript(profile *api.AgentPoolProfile) string {
 - umount /usr/lib/x86_64-linux-gnu
 - nvidia-modprobe -u -c0
 - %s/bin/nvidia-smi
-- retrycmd_if_failure 5 10 timeout 60s systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
+- retrycmd_if_failure 5 10 systemctl restart kubelet`, dv, dest, dest, fmt.Sprintf("%s/lib64", dest), dest)
 
 	/* If a new GPU sku becomes available, add a key to this map, but only provide an installation script if you have a confirmation
 	   that we have an agreement with NVIDIA for this specific gpu. Otherwise use the warning message.

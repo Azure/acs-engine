@@ -202,8 +202,6 @@ function ensureFilepath() {
     fi
 }
 
-function retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
-
 function downloadUrl () {
 	# Wrapper around curl to download blobs more reliably.
 	# Workaround the --retry issues with a for loop and set a max timeout.
@@ -299,12 +297,12 @@ function installClearContainersRuntime() {
 
 	# Load systemd changes
 	echo "Loading changes to systemd service files..."
-	retrycmd_if_failure 5 5 timeout 30s systemctl daemon-reload
+	systemctl daemon-reload
 
 	# Enable and start Clear Containers proxy service
 	echo "Enabling and starting Clear Containers proxy service..."
-	retrycmd_if_failure 5 5 timeout 10s systemctl enable cc-proxy
-	retrycmd_if_failure 5 5 timeout 30s systemctl start cc-proxy
+	systemctl enable cc-proxy
+	systemctl start cc-proxy
 
 	# CRIO has only been tested with the azure plugin
 	configAzureNetworkPolicy
@@ -446,7 +444,7 @@ function setupCRIO() {
 
 	# Load systemd changes
 	echo "Loading changes to systemd service files..."
-	retrycmd_if_failure 5 5 timeout 30s systemctl daemon-reload
+	systemctl daemon-reload
 }
 
 function ensureCRIO() {
@@ -456,8 +454,8 @@ function ensureCRIO() {
 			# Enable and start cri-o service
 			# Make sure this is done after networking plugins are installed
 			echo "Enabling and starting cri-o service..."
-			retrycmd_if_failure 5 5 timeout 10s systemctl enable crio crio-shutdown
-			retrycmd_if_failure 5 5 timeout 30s systemctl start crio
+			systemctl enable crio crio-shutdown
+			systemctl start crio
 		fi
 	fi
 }
@@ -488,12 +486,12 @@ function ensureDocker() {
     systemctlEnableAndCheck docker
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 5 5 timeout 60s systemctl restart docker
+        systemctl restart docker
         dockerStarted=1
         for i in {1..900}; do
             if ! /usr/bin/docker info; then
                 echo "status $?"
-                retrycmd_if_failure 5 5 timeout 60s systemctl restart docker
+                /bin/systemctl restart docker
             else
                 echo "docker started, took $i seconds"
                 dockerStarted=0
@@ -513,7 +511,7 @@ function ensureKubelet() {
     systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 5 5 timeout 60s systemctl restart kubelet
+        systemctl restart kubelet
     fi
 }
 
@@ -521,12 +519,12 @@ function extractKubectl(){
     systemctlEnableAndCheck kubectl-extract
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 5 5 timeout 60s systemctl restart kubectl-extract
+        systemctl restart kubectl-extract
     fi
 }
 
 function ensureJournal(){
-    retrycmd_if_failure 5 5 timeout 30s systemctl daemon-reload
+    systemctl daemon-reload
     systemctlEnableAndCheck systemd-journald.service
     echo "Storage=persistent" >> /etc/systemd/journald.conf
     echo "SystemMaxUse=1G" >> /etc/systemd/journald.conf
@@ -534,7 +532,7 @@ function ensureJournal(){
     echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 5 5 timeout 60s systemctl restart systemd-journald.service
+        systemctl restart systemd-journald.service
     fi
 }
 
