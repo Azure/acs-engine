@@ -25,10 +25,6 @@
 			"location": "eastus"
 		},
 		{
-			"cluster_definition": "networkpolicy/kubernetes-cilium.json",
-			"location": "eastus"
-		},
-		{
 			"cluster_definition": "kubernetes-config/kubernetes-clustersubnet.json",
 			"location": "eastus"
 		},
