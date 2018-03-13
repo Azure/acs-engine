@@ -273,18 +273,21 @@
 {{if not IsHostedMaster }}
     {{if IsPrivateCluster}}
         "kubeconfigServer": "[concat('https://', variables('kubernetesAPIServerIP'), ':443')]",
-        "jumpboxVMName": "[parameters('jumpboxVMName')]",
-        "jumpboxVMSize": "[parameters('jumpboxVMSize')]",
-        "jumpboxOSDiskSizeGB": "[parameters('jumpboxOSDiskSizeGB')]",
-        "jumpboxOSDiskName": "[concat(variables('jumpboxVMName'), '-osdisk')]",
-        "jumpboxUsername": "[parameters('jumpboxUsername')]",
-        "jumpboxPublicKey": "[parameters('jumpboxPublicKey')]",
-        "jumpboxStorageProfile": "[parameters('jumpboxStorageProfile')]",
-        "jumpboxPublicIpAddressName": "[concat(variables('jumpboxVMName'), '-ip')]",
-        "jumpboxNetworkInterfaceName": "[concat(variables('jumpboxVMName'), '-nic')]",
-        "jumpboxNetworkSecurityGroupName": "[concat(variables('jumpboxVMName'), '-nsg')]",
-        {{if not JumpboxIsManagedDisks}}
-        "jumpboxStorageAccountName": "[concat(variables('storageAccountBaseName'), 'jb')]",
+        {{if ProvisionJumpbox}}
+            "jumpboxVMName": "[parameters('jumpboxVMName')]",
+            "jumpboxVMSize": "[parameters('jumpboxVMSize')]",
+            "jumpboxOSDiskSizeGB": "[parameters('jumpboxOSDiskSizeGB')]",
+            "jumpboxOSDiskName": "[concat(variables('jumpboxVMName'), '-osdisk')]",
+            "jumpboxUsername": "[parameters('jumpboxUsername')]",
+            "jumpboxPublicKey": "[parameters('jumpboxPublicKey')]",
+            "jumpboxStorageProfile": "[parameters('jumpboxStorageProfile')]",
+            "jumpboxPublicIpAddressName": "[concat(variables('jumpboxVMName'), '-ip')]",
+            "jumpboxNetworkInterfaceName": "[concat(variables('jumpboxVMName'), '-nic')]",
+            "jumpboxNetworkSecurityGroupName": "[concat(variables('jumpboxVMName'), '-nsg')]",
+            "kubeconfig": "{{GetKubeConfig}}",
+            {{if not JumpboxIsManagedDisks}}
+            "jumpboxStorageAccountName": "[concat(variables('storageAccountBaseName'), 'jb')]",
+            {{end}}
         {{end}}
     {{else}}
         "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterFqdnPrefix'), '-', variables('nameSuffix'))]",

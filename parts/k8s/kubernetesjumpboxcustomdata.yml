@@ -1,0 +1,15 @@
+#cloud-config
+
+write_files:
+
+- path: "/home/{{WrapAsVariable "jumpboxUsername"}}/.kube/config"
+  permissions: "0644"
+  owner: "root"
+  content: |
+{{WrapAsVariable "kubeconfig"}}
+
+runcmd:
+- retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
+- retrycmd_if_failure 10 5 curl -LO https://storage.googleapis.com/kubernetes-release/release/v{{.OrchestratorProfile.OrchestratorVersion}}/bin/linux/amd64/kubectl
+- chmod +x ./kubectl
+- sudo mv ./kubectl /usr/local/bin/kubectl

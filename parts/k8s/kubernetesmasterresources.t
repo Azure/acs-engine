@@ -386,6 +386,7 @@
       "location": "[variables('location')]",
       "properties": {
           "osProfile": {
+            {{GetKubernetesJumpboxCustomData .}}
               "computerName": "[variables('jumpboxVMName')]",
               "adminUsername": "[variables('jumpboxUsername')]",
               "linuxConfiguration": {
@@ -412,7 +413,7 @@
               },
             {{if JumpboxIsManagedDisks}}
               "osDisk": {
-                  "createOption": "fromImage",
+                  "createOption": "FromImage",
                   "diskSizeGB": "[variables('jumpboxOSDiskSizeGB')]",
                   "managedDisk": {
                       "storageAccountType": "[variables('vmSizesMap')[variables('jumpboxVMSize')].storageAccountType]"
