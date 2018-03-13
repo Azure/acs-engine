@@ -6,115 +6,115 @@ write_files:
   permissions: "0644"
   owner: "root"
   content: |
-    [Service]
-    MountFlags=shared
+	[Service]
+	MountFlags=shared
 {{end}}
 - path: "/etc/systemd/system/docker.service.d/exec_start.conf"
   permissions: "0644"
   owner: "root"
   content: |
-    [Service]
-    ExecStart=
-    ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
+	[Service]
+	ExecStart=
+	ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay2 --bip={{WrapAsVariable "dockerBridgeCidr"}}
 
 - path: "/etc/docker/daemon.json"
   permissions: "0644"
   owner: "root"
   content: |
-    {
-      "live-restore": true,
-      "log-driver": "json-file",
-      "log-opts":  {
-         "max-size": "50m",
-         "max-file": "5"
-      }
-    }
+	{
+	  "live-restore": true,
+	  "log-driver": "json-file",
+	  "log-opts":  {
+		 "max-size": "50m",
+		 "max-file": "5"
+	  }
+	}
 
 - path: "/etc/kubernetes/certs/ca.crt"
   permissions: "0644"
   encoding: "base64"
   owner: "root"
   content: |
-    {{WrapAsVariable "caCertificate"}}
+	{{WrapAsVariable "caCertificate"}}
 
 - path: "/etc/kubernetes/certs/client.crt"
   permissions: "0644"
   encoding: "base64"
   owner: "root"
   content: |
-    {{WrapAsVariable "clientCertificate"}}
+	{{WrapAsVariable "clientCertificate"}}
 
 - path: "/var/lib/kubelet/kubeconfig"
   permissions: "0644"
   owner: "root"
   content: |
-    apiVersion: v1
-    kind: Config
-    clusters:
-    - name: localcluster
-      cluster:
-        certificate-authority: /etc/kubernetes/certs/ca.crt
-        server: https://{{WrapAsVariable "kubernetesAPIServerIP"}}:443
-    users:
-    - name: client
-      user:
-        client-certificate: /etc/kubernetes/certs/client.crt
-        client-key: /etc/kubernetes/certs/client.key
-    contexts:
-    - context:
-        cluster: localcluster
-        user: client
-      name: localclustercontext
-    current-context: localclustercontext
+	apiVersion: v1
+	kind: Config
+	clusters:
+	- name: localcluster
+	  cluster:
+		certificate-authority: /etc/kubernetes/certs/ca.crt
+		server: https://{{WrapAsVariable "kubernetesAPIServerIP"}}:443
+	users:
+	- name: client
+	  user:
+		client-certificate: /etc/kubernetes/certs/client.crt
+		client-key: /etc/kubernetes/certs/client.key
+	contexts:
+	- context:
+		cluster: localcluster
+		user: client
+	  name: localclustercontext
+	current-context: localclustercontext
 
 - path: "/etc/systemd/system/kubectl-extract.service"
   permissions: "0644"
   owner: "root"
   content: |
-    [Unit]
-    Description=Kubectl extraction
-    Requires=docker.service
-    After=docker.service
+	[Unit]
+	Description=Kubectl extraction
+	Requires=docker.service
+	After=docker.service
 {{if .IsCoreOS}}
-    ConditionPathExists=!/opt/kubectl
+	ConditionPathExists=!/opt/kubectl
 {{else}}
-    ConditionPathExists=!/usr/local/bin/kubectl
+	ConditionPathExists=!/usr/local/bin/kubectl
 {{end}}
 
-    [Service]
-    TimeoutStartSec=0
-    Restart=on-failure
-    RestartSec=5s
-    ExecStartPre=/bin/mkdir -p /tmp/kubectldir
-    ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
-    ExecStartPre=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
+	[Service]
+	TimeoutStartSec=0
+	Restart=on-failure
+	RestartSec=5s
+	ExecStartPre=/bin/mkdir -p /tmp/kubectldir
+	ExecStartPre=/usr/bin/docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
+	ExecStartPre=/usr/bin/docker run --rm -v /tmp/kubectldir:/opt/kubectldir {{WrapAsVariable "kubernetesHyperkubeSpec"}} /bin/bash -c "cp /hyperkube /opt/kubectldir/"
 {{if .IsCoreOS}}
-    ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /opt/kubectl
-    ExecStart=/bin/chmod a+x /opt/kubectl
+	ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /opt/kubectl
+	ExecStart=/bin/chmod a+x /opt/kubectl
 {{else}}
-    ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
-    ExecStart=/bin/chmod a+x /usr/local/bin/kubectl
+	ExecStartPre=/bin/mv /tmp/kubectldir/hyperkube /usr/local/bin/kubectl
+	ExecStart=/bin/chmod a+x /usr/local/bin/kubectl
 {{end}}
 
-    [Install]
-    WantedBy=multi-user.target
+	[Install]
+	WantedBy=multi-user.target
 
 - path: "/etc/default/kubelet"
   permissions: "0644"
   owner: "root"
   content: |
 {{if IsKubernetesVersionLt "1.8.0"}}
-    KUBELET_OPTS=--require-kubeconfig
+	KUBELET_OPTS=--require-kubeconfig
 {{else}}
-    KUBELET_OPTS=
+	KUBELET_OPTS=
 {{end}}
-    KUBELET_CONFIG={{GetKubeletConfigKeyVals .KubernetesConfig }}
-    KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
-    DOCKER_OPTS=
-    KUBELET_REGISTER_SCHEDULABLE=true
-    KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}
+	KUBELET_CONFIG={{GetKubeletConfigKeyVals .KubernetesConfig }}
+	KUBELET_IMAGE={{WrapAsVariable "kubernetesHyperkubeSpec"}}
+	DOCKER_OPTS=
+	KUBELET_REGISTER_SCHEDULABLE=true
+	KUBELET_NODE_LABELS={{GetAgentKubernetesLabels . "',variables('labelResourceGroup'),'"}}
 {{if IsKubernetesVersionGe "1.6.0"}}
-    KUBELET_NON_MASQUERADE_CIDR={{WrapAsVariable "kubernetesNonMasqueradeCidr"}}
+	KUBELET_NON_MASQUERADE_CIDR={{WrapAsVariable "kubernetesNonMasqueradeCidr"}}
 {{end}}
 
 AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
@@ -123,53 +123,53 @@ AGENT_ARTIFACTS_CONFIG_PLACEHOLDER
   permissions: "0755"
   owner: "root"
   content: |
-    #!/bin/bash
+	#!/bin/bash
 
 {{if IsAzureCNI}}
-    # SNAT outbound traffic from pods to destinations outside of VNET.
-    iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
+	# SNAT outbound traffic from pods to destinations outside of VNET.
+	iptables -t nat -A POSTROUTING -m iprange ! --dst-range 168.63.129.16 -m addrtype ! --dst-type local ! -d {{WrapAsVariable "vnetCidr"}} -j MASQUERADE
 {{end}}
 
-    exit 0
+	exit 0
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
   encoding: gzip
   owner: "root"
   content: !!binary |
-    {{WrapAsVariable "provisionScript"}}
+	{{WrapAsVariable "provisionScript"}}
 
 {{if .IsCoreOS}}
 - path: "/opt/azure/containers/provision-setup.sh"
   permissions: "0755"
   owner: "root"
   content: |
-    #!/bin/bash
-    /usr/bin/mkdir -p /etc/kubernetes/manifests
-    usermod -aG docker {{WrapAsVariable "username"}}
+	#!/bin/bash
+	/usr/bin/mkdir -p /etc/kubernetes/manifests
+	usermod -aG docker {{WrapAsVariable "username"}}
 
-    systemctl enable rpcbind
-    systemctl enable rpc-statd
-    systemctl start rpcbind
-    systemctl start rpc-statd
+	systemctl enable rpcbind
+	systemctl enable rpc-statd
+	systemctl start rpcbind
+	systemctl start rpc-statd
 
-    # Simulates runcmd completion
-    touch /opt/azure/containers/runcmd.complete
+	# Simulates runcmd completion
+	touch /opt/azure/containers/runcmd.complete
 
 coreos:
   units:
-    - name: start-provision-setup.service
-      command: "start"
-      content: |
-        # Note: Initiated as a service since there is no runcmd within CoreOS on cloud-config/Ignition
-        [Unit]
-        Description=Start provision setup service
+	- name: start-provision-setup.service
+	  command: "start"
+	  content: |
+		# Note: Initiated as a service since there is no runcmd within CoreOS on cloud-config/Ignition
+		[Unit]
+		Description=Start provision setup service
 
-        [Service]
-        ExecStart=/opt/azure/containers/provision-setup.sh
+		[Service]
+		ExecStart=/opt/azure/containers/provision-setup.sh
 {{else}}
 {{if not EnablePodSecurityPolicy}}
-    sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
+	sed -i "s|apparmor_parser|d|g" "/etc/systemd/system/kubelet.service"
 {{end}}
 runcmd:
 - echo `date`,`hostname`, startruncmd>>/opt/m
