@@ -21,11 +21,11 @@
     },
     {
       "apiVersion": "[variables('apiVersionStorage')]",
-{{if not IsPrivateCluster}}
+  {{if not IsPrivateCluster}}
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('masterPublicIPAddressName'))]"
       ],
-{{end}}
+  {{end}}
       "location": "[variables('location')]",
       "name": "[variables('masterStorageAccountName')]",
       "properties": {
@@ -39,10 +39,10 @@
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
-{{if not IsAzureCNI}}
+  {{if not IsAzureCNI}}
         ,
         "[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]"
-{{end}}
+  {{end}}
       ],
       "location": "[variables('location')]",
       "name": "[variables('virtualNetworkName')]",
@@ -60,12 +60,12 @@
               "networkSecurityGroup": {
                 "id": "[variables('nsgID')]"
               }
-{{if not IsAzureCNI}}
+  {{if not IsAzureCNI}}
               ,
               "routeTable": {
                 "id": "[variables('routeTableID')]"
               }
-{{end}}
+  {{end}}
             }
           }
         ]
@@ -236,15 +236,15 @@
         "name": "nicLoopNode"
       },
       "dependsOn": [
-{{if .MasterProfile.IsCustomVNET}}
+  {{if .MasterProfile.IsCustomVNET}}
         "[variables('nsgID')]",
-{{else}}
+  {{else}}
         "[variables('vnetID')]",
-{{end}}
+  {{end}}
         "[concat(variables('masterLbID'),'/inboundNatRules/SSH-',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')))]"
-{{if gt .MasterProfile.Count 1}}
+  {{if gt .MasterProfile.Count 1}}
         ,"[variables('masterInternalLbName')]"
-{{end}}
+  {{end}}
       ],
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), 'nic-', copyIndex(variables('masterOffset')))]",
@@ -257,12 +257,12 @@
                 {
                   "id": "[concat(variables('masterLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
-{{if gt .MasterProfile.Count 1}}
+  {{if gt .MasterProfile.Count 1}}
                 ,               
                 {
                    "id": "[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"
                 }
-{{end}}
+  {{end}}
               ],
               "loadBalancerInboundNatRules": [
                 {
@@ -277,7 +277,7 @@
               }
             }
           }
-{{if IsAzureCNI}}
+  {{if IsAzureCNI}}
           {{range $seq := loop 2 .MasterProfile.IPAddressCount}}
           ,
           {
@@ -291,17 +291,17 @@
             }
           }
           {{end}}
-{{end}}
+  {{end}}
         ]
-{{if not IsAzureCNI}}
+  {{if not IsAzureCNI}}
         ,
         "enableIPForwarding": true
-{{end}}
-{{if .MasterProfile.IsCustomVNET}}
+  {{end}}
+  {{if .MasterProfile.IsCustomVNET}}
         ,"networkSecurityGroup": {
           "id": "[variables('nsgID')]"
         }
-{{end}}
+  {{end}}
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
@@ -525,11 +525,11 @@
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "dependsOn": [
-{{if .MasterProfile.IsCustomVNET}}
+  {{if .MasterProfile.IsCustomVNET}}
         "[variables('nsgID')]"
-{{else}}
+  {{else}}
         "[variables('vnetID')]"
-{{end}}
+  {{end}}
       ],
       "location": "[variables('location')]",
       "name": "[variables('masterInternalLbName')]",
@@ -585,11 +585,11 @@
     },
 {{end}}
     {
-    {{if .MasterProfile.IsManagedDisks}}
+{{if .MasterProfile.IsManagedDisks}}
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",
-    {{else}}
+{{else}}
       "apiVersion": "[variables('apiVersionDefault')]",
-    {{end}}
+{{end}}
       "copy": {
         "count": "[sub(variables('masterCount'), variables('masterOffset'))]",
         "name": "vmLoopNode"
@@ -610,11 +610,11 @@
       },
       "location": "[variables('location')]",
       "name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')))]",
-      {{if UseManagedIdentity}}
+{{if UseManagedIdentity}}
       "identity": {
         "type": "systemAssigned"
       },
-      {{end}}
+{{end}}
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('masterAvailabilitySet'))]"
@@ -644,10 +644,10 @@
               ]
             }
           }
-          {{if .LinuxProfile.HasSecrets}}
+{{if .LinuxProfile.HasSecrets}}
           ,
           "secrets": "[variables('linuxProfileSecrets')]"
-          {{end}}
+{{end}}
         },
         "storageProfile": {
           "dataDisks": [
@@ -656,11 +656,11 @@
               ,"diskSizeGB": "[variables('etcdDiskSizeGB')]"
               ,"lun": 0
               ,"name": "[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"
-              {{if .MasterProfile.IsStorageAccount}}
+{{if .MasterProfile.IsStorageAccount}}
               ,"vhd": {
                 "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/', variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-etcddisk.vhd')]"
               }
-              {{end}}
+{{end}}
             }
           ],
           "imageReference": {
@@ -687,7 +687,7 @@
       },
       "type": "Microsoft.Compute/virtualMachines"
     },
-    {{if UseManagedIdentity}}
+{{if UseManagedIdentity}}
     {
       "apiVersion": "2014-10-01-preview",
       "copy": {
@@ -725,7 +725,7 @@
          "protectedSettings": {}
        }
      },
-     {{end}}
+{{end}}
     {
       "apiVersion": "[variables('apiVersionDefault')]",
       "copy": {
