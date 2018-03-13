@@ -3,9 +3,9 @@
 write_files:
 
 - path: "/home/{{WrapAsVariable "jumpboxUsername"}}/.kube/config"
-  permissions: "0644"
-  owner: "root"
-  content: |
+	permissions: "0644"
+	owner: "root"
+	content: |
 {{WrapAsVariable "kubeconfig"}}
 
 runcmd:

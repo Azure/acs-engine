@@ -19,36 +19,36 @@ set -x
 # CoreOS: /usr is read-only; therefore kubectl is installed at /opt/kubectl
 #   Details on install at kubernetetsmastercustomdataforcoreos.yml
 if [[ $OS == $COREOS_OS_NAME ]]; then
-    echo "Changing default kubectl bin location"
-    KUBECTL=/opt/kubectl
+	echo "Changing default kubectl bin location"
+	KUBECTL=/opt/kubectl
 fi
 
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
 ensureRunCommandCompleted()
 {
-    echo "waiting for runcmd to finish"
-    for i in {1..900}; do
-        if [ -e /opt/azure/containers/runcmd.complete ]; then
-            echo "runcmd finished, took $i seconds"
-            break
-        fi
-        sleep 1
-    done
+	echo "waiting for runcmd to finish"
+	for i in {1..900}; do
+		if [ -e /opt/azure/containers/runcmd.complete ]; then
+			echo "runcmd finished, took $i seconds"
+			break
+		fi
+		sleep 1
+	done
 }
 
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
 ensureDockerInstallCompleted()
 {
-    echo "waiting for docker install to finish"
-    for i in {1..900}; do
-        if [ -e /opt/azure/containers/dockerinstall.complete ]; then
-            echo "docker install finished, took $i seconds"
-            break
-        fi
-        sleep 1
-    done
+	echo "waiting for docker install to finish"
+	for i in {1..900}; do
+		if [ -e /opt/azure/containers/dockerinstall.complete ]; then
+			echo "docker install finished, took $i seconds"
+			break
+		fi
+		sleep 1
+	done
 }
 
 echo `date`,`hostname`, startscript>>/opt/m
@@ -57,75 +57,75 @@ echo `date`,`hostname`, startscript>>/opt/m
 # if a reboot is required.  Otherwise, the agents will encounter issue:
 # https://github.com/kubernetes/kubernetes/issues/41185
 if [ -f /var/run/reboot-required ]; then
-    REBOOTREQUIRED=true
+	REBOOTREQUIRED=true
 else
-    REBOOTREQUIRED=false
+	REBOOTREQUIRED=false
 fi
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
-    echo "executing master node provision operations"
-    
-    useradd -U "etcd"
-    usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
-    passwd -u "etcd"
-    id "etcd"
-    
-    echo `date`,`hostname`, beginGettingEtcdCerts>>/opt/m
-    APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
-    touch "${APISERVER_PRIVATE_KEY_PATH}"
-    chmod 0600 "${APISERVER_PRIVATE_KEY_PATH}"
-    chown root:root "${APISERVER_PRIVATE_KEY_PATH}"
+	echo "executing master node provision operations"
+	
+	useradd -U "etcd"
+	usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
+	passwd -u "etcd"
+	id "etcd"
+	
+	echo `date`,`hostname`, beginGettingEtcdCerts>>/opt/m
+	APISERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/apiserver.key"
+	touch "${APISERVER_PRIVATE_KEY_PATH}"
+	chmod 0600 "${APISERVER_PRIVATE_KEY_PATH}"
+	chown root:root "${APISERVER_PRIVATE_KEY_PATH}"
 
-    CA_PRIVATE_KEY_PATH="/etc/kubernetes/certs/ca.key"
-    touch "${CA_PRIVATE_KEY_PATH}"
-    chmod 0600 "${CA_PRIVATE_KEY_PATH}"
-    chown root:root "${CA_PRIVATE_KEY_PATH}"
+	CA_PRIVATE_KEY_PATH="/etc/kubernetes/certs/ca.key"
+	touch "${CA_PRIVATE_KEY_PATH}"
+	chmod 0600 "${CA_PRIVATE_KEY_PATH}"
+	chown root:root "${CA_PRIVATE_KEY_PATH}"
 
-    ETCD_SERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdserver.key"
-    touch "${ETCD_SERVER_PRIVATE_KEY_PATH}"
-    chmod 0600 "${ETCD_SERVER_PRIVATE_KEY_PATH}"
-    chown etcd:etcd "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+	ETCD_SERVER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdserver.key"
+	touch "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+	chmod 0600 "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+	chown etcd:etcd "${ETCD_SERVER_PRIVATE_KEY_PATH}"
 
-    ETCD_CLIENT_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdclient.key"
-    touch "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
-    chmod 0600 "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
-    chown root:root "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+	ETCD_CLIENT_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdclient.key"
+	touch "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+	chmod 0600 "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+	chown root:root "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
 
-    ETCD_PEER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.key"
-    touch "${ETCD_PEER_PRIVATE_KEY_PATH}"
-    chmod 0600 "${ETCD_PEER_PRIVATE_KEY_PATH}"
-    chown etcd:etcd "${ETCD_PEER_PRIVATE_KEY_PATH}"
+	ETCD_PEER_PRIVATE_KEY_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.key"
+	touch "${ETCD_PEER_PRIVATE_KEY_PATH}"
+	chmod 0600 "${ETCD_PEER_PRIVATE_KEY_PATH}"
+	chown etcd:etcd "${ETCD_PEER_PRIVATE_KEY_PATH}"
 
-    ETCD_SERVER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdserver.crt"
-    touch "${ETCD_SERVER_CERTIFICATE_PATH}"
-    chmod 0644 "${ETCD_SERVER_CERTIFICATE_PATH}"
-    chown root:root "${ETCD_SERVER_CERTIFICATE_PATH}"
+	ETCD_SERVER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdserver.crt"
+	touch "${ETCD_SERVER_CERTIFICATE_PATH}"
+	chmod 0644 "${ETCD_SERVER_CERTIFICATE_PATH}"
+	chown root:root "${ETCD_SERVER_CERTIFICATE_PATH}"
 
-    ETCD_CLIENT_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdclient.crt"
-    touch "${ETCD_CLIENT_CERTIFICATE_PATH}"
-    chmod 0644 "${ETCD_CLIENT_CERTIFICATE_PATH}"
-    chown root:root "${ETCD_CLIENT_CERTIFICATE_PATH}"
+	ETCD_CLIENT_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdclient.crt"
+	touch "${ETCD_CLIENT_CERTIFICATE_PATH}"
+	chmod 0644 "${ETCD_CLIENT_CERTIFICATE_PATH}"
+	chown root:root "${ETCD_CLIENT_CERTIFICATE_PATH}"
 
-    ETCD_PEER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.crt"
-    touch "${ETCD_PEER_CERTIFICATE_PATH}"
-    chmod 0644 "${ETCD_PEER_CERTIFICATE_PATH}"
-    chown root:root "${ETCD_PEER_CERTIFICATE_PATH}"
+	ETCD_PEER_CERTIFICATE_PATH="/etc/kubernetes/certs/etcdpeer${MASTER_INDEX}.crt"
+	touch "${ETCD_PEER_CERTIFICATE_PATH}"
+	chmod 0644 "${ETCD_PEER_CERTIFICATE_PATH}"
+	chown root:root "${ETCD_PEER_CERTIFICATE_PATH}"
 
-    set +x
-    echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
-    echo "${CA_PRIVATE_KEY}" | base64 --decode > "${CA_PRIVATE_KEY_PATH}"
-    echo "${ETCD_SERVER_PRIVATE_KEY}" | base64 --decode > "${ETCD_SERVER_PRIVATE_KEY_PATH}"
-    echo "${ETCD_CLIENT_PRIVATE_KEY}" | base64 --decode > "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
-    echo "${ETCD_PEER_KEY}" | base64 --decode > "${ETCD_PEER_PRIVATE_KEY_PATH}"
-    echo "${ETCD_SERVER_CERTIFICATE}" | base64 --decode > "${ETCD_SERVER_CERTIFICATE_PATH}"
-    echo "${ETCD_CLIENT_CERTIFICATE}" | base64 --decode > "${ETCD_CLIENT_CERTIFICATE_PATH}"
-    echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
-    set -x
+	set +x
+	echo "${APISERVER_PRIVATE_KEY}" | base64 --decode > "${APISERVER_PRIVATE_KEY_PATH}"
+	echo "${CA_PRIVATE_KEY}" | base64 --decode > "${CA_PRIVATE_KEY_PATH}"
+	echo "${ETCD_SERVER_PRIVATE_KEY}" | base64 --decode > "${ETCD_SERVER_PRIVATE_KEY_PATH}"
+	echo "${ETCD_CLIENT_PRIVATE_KEY}" | base64 --decode > "${ETCD_CLIENT_PRIVATE_KEY_PATH}"
+	echo "${ETCD_PEER_KEY}" | base64 --decode > "${ETCD_PEER_PRIVATE_KEY_PATH}"
+	echo "${ETCD_SERVER_CERTIFICATE}" | base64 --decode > "${ETCD_SERVER_CERTIFICATE_PATH}"
+	echo "${ETCD_CLIENT_CERTIFICATE}" | base64 --decode > "${ETCD_CLIENT_CERTIFICATE_PATH}"
+	echo "${ETCD_PEER_CERT}" | base64 --decode > "${ETCD_PEER_CERTIFICATE_PATH}"
+	set -x
 
-    echo `date`,`hostname`, endGettingEtcdCerts>>/opt/m
-    mkdir -p /opt/azure/containers && touch /opt/azure/containers/certs.ready
+	echo `date`,`hostname`, endGettingEtcdCerts>>/opt/m
+	mkdir -p /opt/azure/containers && touch /opt/azure/containers/certs.ready
 else
-    echo "skipping master node provision operations, this is an agent node"
+	echo "skipping master node provision operations, this is an agent node"
 fi
 
 KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
@@ -148,29 +148,29 @@ echo "${KUBELET_PRIVATE_KEY}" | base64 --decode > "${KUBELET_PRIVATE_KEY_PATH}"
 echo "${APISERVER_PUBLIC_KEY}" | base64 --decode > "${APISERVER_PUBLIC_KEY_PATH}"
 cat << EOF > "${AZURE_JSON_PATH}"
 {
-    "cloud":"${TARGET_ENVIRONMENT}",
-    "tenantId": "${TENANT_ID}",
-    "subscriptionId": "${SUBSCRIPTION_ID}",
-    "aadClientId": "${SERVICE_PRINCIPAL_CLIENT_ID}",
-    "aadClientSecret": "${SERVICE_PRINCIPAL_CLIENT_SECRET}",
-    "resourceGroup": "${RESOURCE_GROUP}",
-    "location": "${LOCATION}",
-    "subnetName": "${SUBNET}",
-    "securityGroupName": "${NETWORK_SECURITY_GROUP}",
-    "vnetName": "${VIRTUAL_NETWORK}",
-    "vnetResourceGroup": "${VIRTUAL_NETWORK_RESOURCE_GROUP}",
-    "routeTableName": "${ROUTE_TABLE}",
-    "primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
-    "cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
-    "cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
-    "cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
-    "cloudProviderBackoffDuration": ${CLOUDPROVIDER_BACKOFF_DURATION},
-    "cloudProviderBackoffJitter": ${CLOUDPROVIDER_BACKOFF_JITTER},
-    "cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
-    "cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
-    "cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
-    "useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
-    "useInstanceMetadata": ${USE_INSTANCE_METADATA}
+	"cloud":"${TARGET_ENVIRONMENT}",
+	"tenantId": "${TENANT_ID}",
+	"subscriptionId": "${SUBSCRIPTION_ID}",
+	"aadClientId": "${SERVICE_PRINCIPAL_CLIENT_ID}",
+	"aadClientSecret": "${SERVICE_PRINCIPAL_CLIENT_SECRET}",
+	"resourceGroup": "${RESOURCE_GROUP}",
+	"location": "${LOCATION}",
+	"subnetName": "${SUBNET}",
+	"securityGroupName": "${NETWORK_SECURITY_GROUP}",
+	"vnetName": "${VIRTUAL_NETWORK}",
+	"vnetResourceGroup": "${VIRTUAL_NETWORK_RESOURCE_GROUP}",
+	"routeTableName": "${ROUTE_TABLE}",
+	"primaryAvailabilitySetName": "${PRIMARY_AVAILABILITY_SET}",
+	"cloudProviderBackoff": ${CLOUDPROVIDER_BACKOFF},
+	"cloudProviderBackoffRetries": ${CLOUDPROVIDER_BACKOFF_RETRIES},
+	"cloudProviderBackoffExponent": ${CLOUDPROVIDER_BACKOFF_EXPONENT},
+	"cloudProviderBackoffDuration": ${CLOUDPROVIDER_BACKOFF_DURATION},
+	"cloudProviderBackoffJitter": ${CLOUDPROVIDER_BACKOFF_JITTER},
+	"cloudProviderRatelimit": ${CLOUDPROVIDER_RATELIMIT},
+	"cloudProviderRateLimitQPS": ${CLOUDPROVIDER_RATELIMIT_QPS},
+	"cloudProviderRateLimitBucket": ${CLOUDPROVIDER_RATELIMIT_BUCKET},
+	"useManagedIdentityExtension": ${USE_MANAGED_IDENTITY_EXTENSION},
+	"useInstanceMetadata": ${USE_INSTANCE_METADATA}
 }
 EOF
 
@@ -182,24 +182,24 @@ set -x
 
 # wait for presence of a file
 function ensureFilepath() {
-    if $REBOOTREQUIRED; then
-        return
-    fi
-    found=1
-    for i in {1..600}; do
-        if [ -e $1 ]
-        then
-            found=0
-            echo "$1 is present, took $i seconds to verify"
-            break
-        fi
-        sleep 1
-    done
-    if [ $found -ne 0 ]
-    then
-        echo "$1 is not present after $i seconds of trying to verify"
-        exit 1
-    fi
+	if $REBOOTREQUIRED; then
+		return
+	fi
+	found=1
+	for i in {1..600}; do
+		if [ -e $1 ]
+		then
+			found=0
+			echo "$1 is present, took $i seconds to verify"
+			break
+		fi
+		sleep 1
+	done
+	if [ $found -ne 0 ]
+	then
+		echo "$1 is not present after $i seconds of trying to verify"
+		exit 1
+	fi
 }
 
 function retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
@@ -208,15 +208,15 @@ function downloadUrl () {
 	# Wrapper around curl to download blobs more reliably.
 	# Workaround the --retry issues with a for loop and set a max timeout.
 	for i in 1 2 3 4 5; do curl --max-time 60 -fsSL ${1}; [ $? -eq 0 ] && break || sleep 10; done
-    echo Executed curl for \"${1}\" $i times
+	echo Executed curl for \"${1}\" $i times
 }
 
 function setMaxPods () {
-    sed -i "s/^KUBELET_MAX_PODS=.*/KUBELET_MAX_PODS=${1}/" /etc/default/kubelet
+	sed -i "s/^KUBELET_MAX_PODS=.*/KUBELET_MAX_PODS=${1}/" /etc/default/kubelet
 }
 
 function setNetworkPlugin () {
-    sed -i "s/^KUBELET_NETWORK_PLUGIN=.*/KUBELET_NETWORK_PLUGIN=${1}/" /etc/default/kubelet
+	sed -i "s/^KUBELET_NETWORK_PLUGIN=.*/KUBELET_NETWORK_PLUGIN=${1}/" /etc/default/kubelet
 }
 
 function setKubeletOpts () {
@@ -224,55 +224,55 @@ function setKubeletOpts () {
 }
 
 function setDockerOpts () {
-    sed -i "s#^DOCKER_OPTS=.*#DOCKER_OPTS=${1}#" /etc/default/kubelet
+	sed -i "s#^DOCKER_OPTS=.*#DOCKER_OPTS=${1}#" /etc/default/kubelet
 }
 
 function configAzureNetworkPolicy() {
-    CNI_CONFIG_DIR=/etc/cni/net.d
-    mkdir -p $CNI_CONFIG_DIR
+	CNI_CONFIG_DIR=/etc/cni/net.d
+	mkdir -p $CNI_CONFIG_DIR
 
-    chown -R root:root $CNI_CONFIG_DIR
-    chmod 755 $CNI_CONFIG_DIR
+	chown -R root:root $CNI_CONFIG_DIR
+	chmod 755 $CNI_CONFIG_DIR
 
-    # Download Azure VNET CNI plugins.
-    CNI_BIN_DIR=/opt/cni/bin
-    mkdir -p $CNI_BIN_DIR
+	# Download Azure VNET CNI plugins.
+	CNI_BIN_DIR=/opt/cni/bin
+	mkdir -p $CNI_BIN_DIR
 
-    # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
-    downloadUrl ${VNET_CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR
-    # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
-    downloadUrl ${CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR ./loopback ./portmap
-    chown -R root:root $CNI_BIN_DIR
-    chmod -R 755 $CNI_BIN_DIR
+	# Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
+	downloadUrl ${VNET_CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR
+	# Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
+	downloadUrl ${CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR ./loopback ./portmap
+	chown -R root:root $CNI_BIN_DIR
+	chmod -R 755 $CNI_BIN_DIR
 
-    # Copy config file
-    mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
-    chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
+	# Copy config file
+	mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
+	chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
 
-    # Dump ebtables rules.
-    /sbin/ebtables -t nat --list
+	# Dump ebtables rules.
+	/sbin/ebtables -t nat --list
 
-    # Enable CNI.
-    setNetworkPlugin cni
-    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+	# Enable CNI.
+	setNetworkPlugin cni
+	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
 # Configures Kubelet to use CNI and mount the appropriate hostpaths
 function configCalicoNetworkPolicy() {
-    setNetworkPlugin cni
-    setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
+	setNetworkPlugin cni
+	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
 function configNetworkPolicy() {
-    if [[ "${NETWORK_POLICY}" = "azure" ]]; then
-        configAzureNetworkPolicy
-    elif [[ "${NETWORK_POLICY}" = "calico" ]]; then
-        configCalicoNetworkPolicy
-    else
-        # No policy, defaults to kubenet.
-        setNetworkPlugin kubenet
-        setDockerOpts ""
-    fi
+	if [[ "${NETWORK_POLICY}" = "azure" ]]; then
+		configAzureNetworkPolicy
+	elif [[ "${NETWORK_POLICY}" = "calico" ]]; then
+		configCalicoNetworkPolicy
+	else
+		# No policy, defaults to kubenet.
+		setNetworkPlugin kubenet
+		setDockerOpts ""
+	fi
 }
 
 # Install the Clear Containers runtime
@@ -463,231 +463,231 @@ function ensureCRIO() {
 }
 
 function systemctlEnableAndCheck() {
-    systemctl enable $1
-    systemctl is-enabled $1
-    enabled=$?
-    for i in {1..900}; do
-        if [ $enabled -ne 0 ]; then
-            systemctl enable $1
-            systemctl is-enabled $1
-            enabled=$?
-        else
-            echo "$1 took $i seconds to be enabled by systemctl"
-            break
-        fi
-        sleep 1
-    done
-    if [ $enabled -ne 0 ]
-    then
-        echo "$1 could not be enabled by systemctl"
-        exit 5
-    fi
+	systemctl enable $1
+	systemctl is-enabled $1
+	enabled=$?
+	for i in {1..900}; do
+		if [ $enabled -ne 0 ]; then
+			systemctl enable $1
+			systemctl is-enabled $1
+			enabled=$?
+		else
+			echo "$1 took $i seconds to be enabled by systemctl"
+			break
+		fi
+		sleep 1
+	done
+	if [ $enabled -ne 0 ]
+	then
+		echo "$1 could not be enabled by systemctl"
+		exit 5
+	fi
 }
 
 function ensureDocker() {
-    systemctlEnableAndCheck docker
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 5 5 timeout 60s systemctl restart docker
-        dockerStarted=1
-        for i in {1..900}; do
-            if ! /usr/bin/docker info; then
-                echo "status $?"
-                retrycmd_if_failure 5 5 timeout 60s systemctl restart docker
-            else
-                echo "docker started, took $i seconds"
-                dockerStarted=0
-                break
-            fi
-            sleep 1
-        done
-        if [ $dockerStarted -ne 0 ]
-        then
-            echo "docker did not start"
-            exit 2
-        fi
-    fi
+	systemctlEnableAndCheck docker
+	# only start if a reboot is not required
+	if ! $REBOOTREQUIRED; then
+		retrycmd_if_failure 5 5 timeout 60s systemctl restart docker
+		dockerStarted=1
+		for i in {1..900}; do
+			if ! /usr/bin/docker info; then
+				echo "status $?"
+				retrycmd_if_failure 5 5 timeout 60s systemctl restart docker
+			else
+				echo "docker started, took $i seconds"
+				dockerStarted=0
+				break
+			fi
+			sleep 1
+		done
+		if [ $dockerStarted -ne 0 ]
+		then
+			echo "docker did not start"
+			exit 2
+		fi
+	fi
 }
 
 function ensureKubelet() {
-    systemctlEnableAndCheck kubelet
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        retrycmd_if_failure 20 10 timeout 60s systemctl restart kubelet
-    fi
+	systemctlEnableAndCheck kubelet
+	# only start if a reboot is not required
+	if ! $REBOOTREQUIRED; then
+		retrycmd_if_failure 20 10 timeout 60s systemctl restart kubelet
+	fi
 }
 
 function extractKubectl(){
-    systemctlEnableAndCheck kubectl-extract
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        systemctl restart kubectl-extract
-    fi
+	systemctlEnableAndCheck kubectl-extract
+	# only start if a reboot is not required
+	if ! $REBOOTREQUIRED; then
+		systemctl restart kubectl-extract
+	fi
 }
 
 function ensureJournal(){
-    retrycmd_if_failure 5 5 timeout 30s systemctl daemon-reload
-    systemctlEnableAndCheck systemd-journald.service
-    echo "Storage=persistent" >> /etc/systemd/journald.conf
-    echo "SystemMaxUse=1G" >> /etc/systemd/journald.conf
-    echo "RuntimeMaxUse=1G" >> /etc/systemd/journald.conf
-    echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
-    # only start if a reboot is not required
-    if ! $REBOOTREQUIRED; then
-        systemctl restart systemd-journald.service
-    fi
+	retrycmd_if_failure 5 5 timeout 30s systemctl daemon-reload
+	systemctlEnableAndCheck systemd-journald.service
+	echo "Storage=persistent" >> /etc/systemd/journald.conf
+	echo "SystemMaxUse=1G" >> /etc/systemd/journald.conf
+	echo "RuntimeMaxUse=1G" >> /etc/systemd/journald.conf
+	echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
+	# only start if a reboot is not required
+	if ! $REBOOTREQUIRED; then
+		systemctl restart systemd-journald.service
+	fi
 }
 
 function ensureK8s() {
-    if $REBOOTREQUIRED; then
-        return
-    fi
-    k8sHealthy=1
-    nodesActive=1
-    nodesReady=1
-    for i in {1..600}; do
-        if [ -e $KUBECTL ]
-        then
-            break
-        fi
-        sleep 1
-    done
-    for i in {1..600}; do
-        $KUBECTL 2>/dev/null cluster-info
-            if [ "$?" = "0" ]
-            then
-                echo "k8s cluster is healthy, took $i seconds"
-                k8sHealthy=0
-                break
-            fi
-        sleep 1
-    done
-    if [ $k8sHealthy -ne 0 ]
-    then
-        echo "k8s cluster is not healthy after $i seconds"
-        exit 3
-    fi
-    for i in {1..1800}; do
-        nodes=$(${KUBECTL} get nodes 2>/dev/null | grep 'Ready' | wc -l)
-            if [ $nodes -eq $TOTAL_NODES ]
-            then
-                echo "all nodes are participating, took $i seconds"
-                nodesActive=0
-                break
-            fi
-        sleep 1
-    done
-    if [ $nodesActive -ne 0 ]
-    then
-        echo "still waiting for active nodes after $i seconds"
-        exit 3
-    fi
-    for i in {1..600}; do
-        notReady=$(${KUBECTL} get nodes 2>/dev/null | grep 'NotReady' | wc -l)
-            if [ $notReady -eq 0 ]
-            then
-                echo "all nodes are Ready, took $i seconds"
-                nodesReady=0
-                break
-            fi
-        sleep 1
-    done
-    if [ $nodesReady -ne 0 ]
-    then
-        echo "still waiting for Ready nodes after $i seconds"
-        exit 3
-    fi
+	if $REBOOTREQUIRED; then
+		return
+	fi
+	k8sHealthy=1
+	nodesActive=1
+	nodesReady=1
+	for i in {1..600}; do
+		if [ -e $KUBECTL ]
+		then
+			break
+		fi
+		sleep 1
+	done
+	for i in {1..600}; do
+		$KUBECTL 2>/dev/null cluster-info
+			if [ "$?" = "0" ]
+			then
+				echo "k8s cluster is healthy, took $i seconds"
+				k8sHealthy=0
+				break
+			fi
+		sleep 1
+	done
+	if [ $k8sHealthy -ne 0 ]
+	then
+		echo "k8s cluster is not healthy after $i seconds"
+		exit 3
+	fi
+	for i in {1..1800}; do
+		nodes=$(${KUBECTL} get nodes 2>/dev/null | grep 'Ready' | wc -l)
+			if [ $nodes -eq $TOTAL_NODES ]
+			then
+				echo "all nodes are participating, took $i seconds"
+				nodesActive=0
+				break
+			fi
+		sleep 1
+	done
+	if [ $nodesActive -ne 0 ]
+	then
+		echo "still waiting for active nodes after $i seconds"
+		exit 3
+	fi
+	for i in {1..600}; do
+		notReady=$(${KUBECTL} get nodes 2>/dev/null | grep 'NotReady' | wc -l)
+			if [ $notReady -eq 0 ]
+			then
+				echo "all nodes are Ready, took $i seconds"
+				nodesReady=0
+				break
+			fi
+		sleep 1
+	done
+	if [ $nodesReady -ne 0 ]
+	then
+		echo "still waiting for Ready nodes after $i seconds"
+		exit 3
+	fi
 }
 
 function ensureEtcd() {
-    etcdIsRunning=1
-    for i in {1..600}; do
-        curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 https://127.0.0.1:2379/v2/machines;
-        if [ $? -eq 0 ]
-        then
-            etcdIsRunning=0
-            echo "Etcd setup successfully, took $i seconds"
-            break
-        fi
-        sleep 1
-    done
-    if [ $etcdIsRunning -ne 0 ]
-    then
-        echo "Etcd not accessible after $i seconds"
-        exit 3
-    fi
+	etcdIsRunning=1
+	for i in {1..600}; do
+		curl --cacert /etc/kubernetes/certs/ca.crt --cert /etc/kubernetes/certs/etcdclient.crt --key /etc/kubernetes/certs/etcdclient.key --max-time 60 https://127.0.0.1:2379/v2/machines;
+		if [ $? -eq 0 ]
+		then
+			etcdIsRunning=0
+			echo "Etcd setup successfully, took $i seconds"
+			break
+		fi
+		sleep 1
+	done
+	if [ $etcdIsRunning -ne 0 ]
+	then
+		echo "Etcd not accessible after $i seconds"
+		exit 3
+	fi
 }
 
 function ensureEtcdDataDir() {
-    mount | grep /dev/sdc1 | grep /var/lib/etcddisk
-    if [ "$?" = "0" ]
-    then
-        echo "Etcd is running with data dir at: /var/lib/etcddisk"
-        return
-    else
-        echo "/var/lib/etcddisk was not found at /dev/sdc1. Trying to mount all devices."
-        s = 5
-        for i in {1..60}; do
-            sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
-            if [ "$?" = "0" ]
-            then
-                (( t = ${i} * ${s} ))
-                echo "/var/lib/etcddisk mounted at: /dev/sdc1, took $t seconds"
-                return
-            fi
-            sleep $s
-        done
-    fi
+	mount | grep /dev/sdc1 | grep /var/lib/etcddisk
+	if [ "$?" = "0" ]
+	then
+		echo "Etcd is running with data dir at: /var/lib/etcddisk"
+		return
+	else
+		echo "/var/lib/etcddisk was not found at /dev/sdc1. Trying to mount all devices."
+		s = 5
+		for i in {1..60}; do
+			sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
+			if [ "$?" = "0" ]
+			then
+				(( t = ${i} * ${s} ))
+				echo "/var/lib/etcddisk mounted at: /dev/sdc1, took $t seconds"
+				return
+			fi
+			sleep $s
+		done
+	fi
 
    echo "Etcd data dir was not found at: /var/lib/etcddisk"
    exit 4
 }
 
 function ensurePodSecurityPolicy(){
-    if $REBOOTREQUIRED; then
-        return
-    fi
-    POD_SECURITY_POLICY_FILE="/etc/kubernetes/manifests/pod-security-policy.yaml"
-    if [ -f $POD_SECURITY_POLICY_FILE ]; then
-        $KUBECTL create -f $POD_SECURITY_POLICY_FILE
-    fi
+	if $REBOOTREQUIRED; then
+		return
+	fi
+	POD_SECURITY_POLICY_FILE="/etc/kubernetes/manifests/pod-security-policy.yaml"
+	if [ -f $POD_SECURITY_POLICY_FILE ]; then
+		$KUBECTL create -f $POD_SECURITY_POLICY_FILE
+	fi
 }
 
 function writeKubeConfig() {
-    KUBECONFIGDIR=/home/$ADMINUSER/.kube
-    KUBECONFIGFILE=$KUBECONFIGDIR/config
-    mkdir -p $KUBECONFIGDIR
-    touch $KUBECONFIGFILE
-    chown $ADMINUSER:$ADMINUSER $KUBECONFIGDIR
-    chown $ADMINUSER:$ADMINUSER $KUBECONFIGFILE
-    chmod 700 $KUBECONFIGDIR
-    chmod 600 $KUBECONFIGFILE
+	KUBECONFIGDIR=/home/$ADMINUSER/.kube
+	KUBECONFIGFILE=$KUBECONFIGDIR/config
+	mkdir -p $KUBECONFIGDIR
+	touch $KUBECONFIGFILE
+	chown $ADMINUSER:$ADMINUSER $KUBECONFIGDIR
+	chown $ADMINUSER:$ADMINUSER $KUBECONFIGFILE
+	chmod 700 $KUBECONFIGDIR
+	chmod 600 $KUBECONFIGFILE
 
-    # disable logging after secret output
-    set +x
-    echo "
+	# disable logging after secret output
+	set +x
+	echo "
 ---
 apiVersion: v1
 clusters:
 - cluster:
-    certificate-authority-data: \"$CA_CERTIFICATE\"
-    server: $KUBECONFIG_SERVER
+	certificate-authority-data: \"$CA_CERTIFICATE\"
+	server: $KUBECONFIG_SERVER
   name: \"$MASTER_FQDN\"
 contexts:
 - context:
-    cluster: \"$MASTER_FQDN\"
-    user: \"$MASTER_FQDN-admin\"
+	cluster: \"$MASTER_FQDN\"
+	user: \"$MASTER_FQDN-admin\"
   name: \"$MASTER_FQDN\"
 current-context: \"$MASTER_FQDN\"
 kind: Config
 users:
 - name: \"$MASTER_FQDN-admin\"
   user:
-    client-certificate-data: \"$KUBECONFIG_CERTIFICATE\"
-    client-key-data: \"$KUBECONFIG_KEY\"
+	client-certificate-data: \"$KUBECONFIG_CERTIFICATE\"
+	client-key-data: \"$KUBECONFIG_KEY\"
 " > $KUBECONFIGFILE
-    # renable logging after secrets
-    set -x
+	# renable logging after secrets
+	set -x
 }
 
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
@@ -737,21 +737,21 @@ echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 
 # master only
 if [[ ! -z "${MASTER_NODE}" ]]; then
-    writeKubeConfig
-    ensureFilepath $KUBECTL
-    ensureFilepath $DOCKER
-    ensureEtcdDataDir
-    ensureEtcd
-    ensureK8s
-    ensurePodSecurityPolicy
+	writeKubeConfig
+	ensureFilepath $KUBECTL
+	ensureFilepath $DOCKER
+	ensureEtcdDataDir
+	ensureEtcd
+	ensureK8s
+	ensurePodSecurityPolicy
 fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
-    # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
-    echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
-    sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
+	# mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
+	echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
+	sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
 
-    apt-mark unhold walinuxagent
+	apt-mark unhold walinuxagent
 fi
 
 echo "Install complete successfully"
