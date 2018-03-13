@@ -32,6 +32,44 @@ func Test_GetValidPatchVersion(t *testing.T) {
 	if version != KubernetesVersion1Dot9Dot2 {
 		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot9Dot2)
 	}
+
+	version = GetValidPatchVersion(Kubernetes, "1.10.0")
+	if version != KubernetesVersion1Dot10Dot0 {
+		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot10Dot0)
+	}
+}
+
+func TestGetLatestPatchVersion(t *testing.T) {
+	version := GetLatestPatchVersion("1.6", GetAllSupportedKubernetesVersions())
+	if version != KubernetesVersion1Dot6Dot13 {
+		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot9Dot3)
+	}
+
+	version = GetLatestPatchVersion("1.7", GetAllSupportedKubernetesVersions())
+	if version != KubernetesVersion1Dot7Dot13 {
+		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot9Dot3)
+	}
+
+	version = GetLatestPatchVersion("1.8", GetAllSupportedKubernetesVersions())
+	if version != KubernetesVersion1Dot8Dot8 {
+		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot9Dot3)
+	}
+
+	version = GetLatestPatchVersion("1.9", GetAllSupportedKubernetesVersions())
+	if version != KubernetesVersion1Dot9Dot3 {
+		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot9Dot3)
+	}
+
+	version = GetLatestPatchVersion("1.10", GetAllSupportedKubernetesVersions())
+	if version != KubernetesVersion1Dot10Dot0 {
+		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot10Dot0)
+	}
+
+	expected := "99.1.2"
+	version = GetLatestPatchVersion("99.1", []string{"99.1.1", "99.1.2-beta.5", expected})
+	if version != expected {
+		t.Errorf("GetLatestPatchVersion returned the wrong latest version, expected %s", expected)
+	}
 }
 
 func Test_RationalizeReleaseAndVersion(t *testing.T) {
@@ -83,5 +121,10 @@ func Test_RationalizeReleaseAndVersion(t *testing.T) {
 	version = RationalizeReleaseAndVersion(Kubernetes, "v1.9", "", false)
 	if version != KubernetesVersion1Dot9Dot3 {
 		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot9Dot3)
+	}
+
+	version = RationalizeReleaseAndVersion(Kubernetes, "1.10", "", false)
+	if version != KubernetesVersion1Dot10Dot0 {
+		t.Errorf("It is not Kubernetes version %s", KubernetesVersion1Dot10Dot0)
 	}
 }
