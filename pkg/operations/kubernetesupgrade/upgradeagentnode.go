@@ -5,8 +5,6 @@ import (
 	"math/rand"
 	"time"
 
-	"k8s.io/client-go/pkg/api/v1/node"
-
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
@@ -114,7 +112,7 @@ func (kan *UpgradeAgentNode) Validate(vmName *string) error {
 			if err != nil {
 				kan.logger.Infof("Agent VM: %s status error: %v", *vmName, err)
 				retryTimer.Reset(retry)
-			} else if node.IsNodeReady(agentNode) {
+			} else if IsNodeReady(agentNode) {
 				kan.logger.Infof("Agent VM: %s is ready", *vmName)
 				timeoutTimer.Stop()
 				return nil
