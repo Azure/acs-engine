@@ -1,13 +1,10 @@
 #!/bin/bash
 
 set -x
-# Find distro name via ID value in releases files and upcase
 OS=$(cat /etc/*-release | grep ^ID= | tr -d 'ID="' | awk '{print toupper($0)}')
 UBUNTU_OS_NAME="UBUNTU"
 RHEL_OS_NAME="RHEL"
 COREOS_OS_NAME="COREOS"
-
-# Set default filepaths
 KUBECTL=/usr/local/bin/kubectl
 DOCKER=/usr/bin/docker
 
@@ -16,35 +13,24 @@ ETCD_PEER_CERT=$(echo ${ETCD_PEER_CERTIFICATES} | cut -d'[' -f 2 | cut -d']' -f 
 ETCD_PEER_KEY=$(echo ${ETCD_PEER_PRIVATE_KEYS} | cut -d'[' -f 2 | cut -d']' -f 1 | cut -d',' -f $((${MASTER_INDEX}+1)))
 set -x
 
-# CoreOS: /usr is read-only; therefore kubectl is installed at /opt/kubectl
-#   Details on install at kubernetetsmastercustomdataforcoreos.yml
 if [[ $OS == $COREOS_OS_NAME ]]; then
-    echo "Changing default kubectl bin location"
     KUBECTL=/opt/kubectl
 fi
 
-# cloudinit runcmd and the extension will run in parallel, this is to ensure
-# runcmd finishes
 ensureRunCommandCompleted()
 {
-    echo "waiting for runcmd to finish"
     for i in {1..900}; do
         if [ -e /opt/azure/containers/runcmd.complete ]; then
-            echo "runcmd finished, took $i seconds"
             break
         fi
         sleep 1
     done
 }
 
-# cloudinit runcmd and the extension will run in parallel, this is to ensure
-# runcmd finishes
 ensureDockerInstallCompleted()
 {
-    echo "waiting for docker install to finish"
     for i in {1..900}; do
         if [ -e /opt/azure/containers/dockerinstall.complete ]; then
-            echo "docker install finished, took $i seconds"
             break
         fi
         sleep 1
@@ -53,9 +39,6 @@ ensureDockerInstallCompleted()
 
 echo `date`,`hostname`, startscript>>/opt/m
 
-# A delay to start the kubernetes processes is necessary
-# if a reboot is required.  Otherwise, the agents will encounter issue:
-# https://github.com/kubernetes/kubernetes/issues/41185
 if [ -f /var/run/reboot-required ]; then
     REBOOTREQUIRED=true
 else
@@ -63,8 +46,6 @@ else
 fi
 
 if [[ ! -z "${MASTER_NODE}" ]]; then
-    echo "executing master node provision operations"
-    
     useradd -U "etcd"
     usermod -p "$(head -c 32 /dev/urandom | base64)" "etcd"
     passwd -u "etcd"
@@ -124,8 +105,6 @@ if [[ ! -z "${MASTER_NODE}" ]]; then
 
     echo `date`,`hostname`, endGettingEtcdCerts>>/opt/m
     mkdir -p /opt/azure/containers && touch /opt/azure/containers/certs.ready
-else
-    echo "skipping master node provision operations, this is an agent node"
 fi
 
 KUBELET_PRIVATE_KEY_PATH="/etc/kubernetes/certs/client.key"
@@ -174,13 +153,7 @@ cat << EOF > "${AZURE_JSON_PATH}"
 }
 EOF
 
-###########################################################
-# END OF SECRET DATA
-###########################################################
-
 set -x
-
-# wait for presence of a file
 function ensureFilepath() {
     if $REBOOTREQUIRED; then
         return
@@ -190,14 +163,12 @@ function ensureFilepath() {
         if [ -e $1 ]
         then
             found=0
-            echo "$1 is present, took $i seconds to verify"
             break
         fi
         sleep 1
     done
     if [ $found -ne 0 ]
     then
-        echo "$1 is not present after $i seconds of trying to verify"
         exit 1
     fi
 }
@@ -205,8 +176,6 @@ function ensureFilepath() {
 function retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
 
 function downloadUrl () {
-	# Wrapper around curl to download blobs more reliably.
-	# Workaround the --retry issues with a for loop and set a max timeout.
 	for i in 1 2 3 4 5; do curl --max-time 60 -fsSL ${1}; [ $? -eq 0 ] && break || sleep 10; done
     echo Executed curl for \"${1}\" $i times
 }
@@ -230,34 +199,23 @@ function setDockerOpts () {
 function configAzureNetworkPolicy() {
     CNI_CONFIG_DIR=/etc/cni/net.d
     mkdir -p $CNI_CONFIG_DIR
-
     chown -R root:root $CNI_CONFIG_DIR
     chmod 755 $CNI_CONFIG_DIR
-
-    # Download Azure VNET CNI plugins.
     CNI_BIN_DIR=/opt/cni/bin
     mkdir -p $CNI_BIN_DIR
-
-    # Mirror from https://github.com/Azure/azure-container-networking/releases/tag/$AZURE_PLUGIN_VER/azure-vnet-cni-linux-amd64-$AZURE_PLUGIN_VER.tgz
     downloadUrl ${VNET_CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR
-    # Mirror from https://github.com/containernetworking/cni/releases/download/$CNI_RELEASE_VER/cni-amd64-$CNI_RELEASE_VERSION.tgz
     downloadUrl ${CNI_PLUGINS_URL} | tar -xz -C $CNI_BIN_DIR ./loopback ./portmap
     chown -R root:root $CNI_BIN_DIR
     chmod -R 755 $CNI_BIN_DIR
 
-    # Copy config file
     mv $CNI_BIN_DIR/10-azure.conflist $CNI_CONFIG_DIR/
     chmod 600 $CNI_CONFIG_DIR/10-azure.conflist
 
-    # Dump ebtables rules.
     /sbin/ebtables -t nat --list
-
-    # Enable CNI.
     setNetworkPlugin cni
     setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
-# Configures Kubelet to use CNI and mount the appropriate hostpaths
 function configCalicoNetworkPolicy() {
     setNetworkPlugin cni
     setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
@@ -269,83 +227,55 @@ function configNetworkPolicy() {
     elif [[ "${NETWORK_POLICY}" = "calico" ]]; then
         configCalicoNetworkPolicy
     else
-        # No policy, defaults to kubenet.
         setNetworkPlugin kubenet
         setDockerOpts ""
     fi
 }
 
-# Install the Clear Containers runtime
 function installClearContainersRuntime() {
-	# Add Clear Containers repository key
-	echo "Adding Clear Containers repository key..."
 	curl -sSL --retry 5 --retry-delay 10 --retry-max-time 30 "https://download.opensuse.org/repositories/home:clearcontainers:clear-containers-3/xUbuntu_16.04/Release.key" | apt-key add -
-
-	# Add Clear Container repository
-	echo "Adding Clear Containers repository..."
 	echo 'deb http://download.opensuse.org/repositories/home:/clearcontainers:/clear-containers-3/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/cc-runtime.list
 
-	# Install Clear Containers runtime
-	echo "Installing Clear Containers runtime..."
 	apt-get update
 	apt-get install --no-install-recommends -y \
 		cc-runtime
 
-	# Install thin tools for devicemapper configuration
-	echo "Installing thin tools to provision devicemapper..."
 	apt-get install --no-install-recommends -y \
 		lvm2 \
 		thin-provisioning-tools
 
-	# Load systemd changes
-	echo "Loading changes to systemd service files..."
 	retrycmd_if_failure 5 5 timeout 30s systemctl daemon-reload
 
-	# Enable and start Clear Containers proxy service
-	echo "Enabling and starting Clear Containers proxy service..."
 	retrycmd_if_failure 5 5 timeout 10s systemctl enable cc-proxy
 	retrycmd_if_failure 5 5 timeout 30s systemctl start cc-proxy
 
-	# CRIO has only been tested with the azure plugin
 	configAzureNetworkPolicy
 	setKubeletOpts " --container-runtime=remote --container-runtime-endpoint=/var/run/crio.sock"
 	setDockerOpts " --volume=/etc/cni/:/etc/cni:ro --volume=/opt/cni/:/opt/cni:ro"
 }
 
-# Install Go from source
 function installGo() {
 	export GO_SRC=/usr/local/go
 	export GOPATH="${HOME}/.go"
 
-	# Remove any old version of Go
 	if [[ -d "$GO_SRC" ]]; then
 		rm -rf "$GO_SRC"
 	fi
 
-	# Remove any old GOPATH
 	if [[ -d "$GOPATH" ]]; then
 		rm -rf "$GOPATH"
 	fi
 
-	# Get the latest Go version
 	GO_VERSION=$(curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://golang.org/VERSION?m=text")
 
-	echo "Installing Go version $GO_VERSION..."
-
-	# subshell
 	(
 	curl --retry 5 --retry-delay 10 --retry-max-time 30 -sSL "https://storage.googleapis.com/golang/${GO_VERSION}.linux-amd64.tar.gz" | sudo tar -v -C /usr/local -xz
 	)
 
-	# Set GOPATH and update PATH
-	echo "Setting GOPATH and updating PATH"
 	export PATH="${GO_SRC}/bin:${PATH}:${GOPATH}/bin"
 }
 
-# Build and install runc
 function buildRunc() {
-	# Clone the runc source
-	echo "Cloning the runc source..."
 	mkdir -p "${GOPATH}/src/github.com/opencontainers"
 	(
 	cd "${GOPATH}/src/github.com/opencontainers"
@@ -355,20 +285,13 @@ function buildRunc() {
 	make BUILDTAGS="seccomp apparmor"
 	make install
 	)
-
-	echo "Successfully built and installed runc..."
 }
 
-# Build and install CRI-O
 function buildCRIO() {
-	# Add CRI-O repositories
-	echo "Adding repositories required for cri-o..."
 	add-apt-repository -y ppa:projectatomic/ppa
 	add-apt-repository -y ppa:alexlarsson/flatpak
 	apt-get update
 
-	# Install CRI-O dependencies
-	echo "Installing dependencies for CRI-O..."
 	apt-get install --no-install-recommends -y \
 		btrfs-tools \
 		gcc \
@@ -389,10 +312,8 @@ function buildCRIO() {
 
 	installGo;
 
-	# Install md2man
 	go get github.com/cpuguy83/go-md2man
 
-	# Fix for templates dependency
 	(
 	go get -u github.com/docker/docker/daemon/logger/templates
 	cd "${GOPATH}/src/github.com/docker/docker"
@@ -402,8 +323,6 @@ function buildCRIO() {
 
 	buildRunc;
 
-	# Clone the CRI-O source
-	echo "Cloning the CRI-O source..."
 	mkdir -p "${GOPATH}/src/github.com/kubernetes-incubator"
 	(
 	cd "${GOPATH}/src/github.com/kubernetes-incubator"
@@ -416,27 +335,17 @@ function buildCRIO() {
 	make install.systemd
 	)
 
-	echo "Successfully built and installed CRI-O..."
-
-	# Cleanup the temporary directory
 	rm -vrf "$tmpd"
 
-	# Cleanup the Go install
 	rm -vrf "$GO_SRC" "$GOPATH"
 
 	setupCRIO;
 }
 
-# Setup CRI-O
 function setupCRIO() {
-	# Configure CRI-O
-	echo "Configuring CRI-O..."
-
-	# Configure crio systemd service file
 	SYSTEMD_CRI_O_SERVICE_FILE="/usr/local/lib/systemd/system/crio.service"
 	sed -i 's#ExecStart=/usr/local/bin/crio#ExecStart=/usr/local/bin/crio -log-level debug#' "$SYSTEMD_CRI_O_SERVICE_FILE"
 
-	# Configure /etc/crio/crio.conf
 	CRI_O_CONFIG="/etc/crio/crio.conf"
 	sed -i 's#storage_driver = ""#storage_driver = "devicemapper"#' "$CRI_O_CONFIG"
 	sed -i 's#storage_option = \[#storage_option = \["dm.directlvm_device=/dev/sdc", "dm.thinp_percent=95", "dm.thinp_metapercent=1", "dm.thinp_autoextend_threshold=80", "dm.thinp_autoextend_percent=20", "dm.directlvm_device_force=true"#' "$CRI_O_CONFIG"
@@ -444,18 +353,12 @@ function setupCRIO() {
 	sed -i 's#runtime_untrusted_workload = ""#runtime_untrusted_workload = "/usr/bin/cc-runtime"#' "$CRI_O_CONFIG"
 	sed -i 's#default_workload_trust = "trusted"#default_workload_trust = "untrusted"#' "$CRI_O_CONFIG"
 
-	# Load systemd changes
-	echo "Loading changes to systemd service files..."
 	retrycmd_if_failure 5 5 timeout 30s systemctl daemon-reload
 }
 
 function ensureCRIO() {
 	if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
-		# Make sure we can nest virtualization
 		if grep -q vmx /proc/cpuinfo; then
-			# Enable and start cri-o service
-			# Make sure this is done after networking plugins are installed
-			echo "Enabling and starting cri-o service..."
 			retrycmd_if_failure 5 5 timeout 10s systemctl enable crio crio-shutdown
 			retrycmd_if_failure 5 5 timeout 30s systemctl start crio
 		fi
@@ -472,30 +375,25 @@ function systemctlEnableAndCheck() {
             systemctl is-enabled $1
             enabled=$?
         else
-            echo "$1 took $i seconds to be enabled by systemctl"
             break
         fi
         sleep 1
     done
     if [ $enabled -ne 0 ]
     then
-        echo "$1 could not be enabled by systemctl"
         exit 5
     fi
 }
 
 function ensureDocker() {
     systemctlEnableAndCheck docker
-    # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
         retrycmd_if_failure 5 5 timeout 60s systemctl restart docker
         dockerStarted=1
         for i in {1..900}; do
             if ! /usr/bin/docker info; then
-                echo "status $?"
                 retrycmd_if_failure 5 5 timeout 60s systemctl restart docker
             else
-                echo "docker started, took $i seconds"
                 dockerStarted=0
                 break
             fi
@@ -503,7 +401,6 @@ function ensureDocker() {
         done
         if [ $dockerStarted -ne 0 ]
         then
-            echo "docker did not start"
             exit 2
         fi
     fi
@@ -511,7 +408,6 @@ function ensureDocker() {
 
 function ensureKubelet() {
     systemctlEnableAndCheck kubelet
-    # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
         retrycmd_if_failure 20 10 timeout 60s systemctl restart kubelet
     fi
@@ -519,7 +415,6 @@ function ensureKubelet() {
 
 function extractKubectl(){
     systemctlEnableAndCheck kubectl-extract
-    # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
         systemctl restart kubectl-extract
     fi
@@ -532,7 +427,6 @@ function ensureJournal(){
     echo "SystemMaxUse=1G" >> /etc/systemd/journald.conf
     echo "RuntimeMaxUse=1G" >> /etc/systemd/journald.conf
     echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf
-    # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
         systemctl restart systemd-journald.service
     fi
@@ -556,7 +450,6 @@ function ensureK8s() {
         $KUBECTL 2>/dev/null cluster-info
             if [ "$?" = "0" ]
             then
-                echo "k8s cluster is healthy, took $i seconds"
                 k8sHealthy=0
                 break
             fi
@@ -564,14 +457,12 @@ function ensureK8s() {
     done
     if [ $k8sHealthy -ne 0 ]
     then
-        echo "k8s cluster is not healthy after $i seconds"
         exit 3
     fi
     for i in {1..1800}; do
         nodes=$(${KUBECTL} get nodes 2>/dev/null | grep 'Ready' | wc -l)
             if [ $nodes -eq $TOTAL_NODES ]
             then
-                echo "all nodes are participating, took $i seconds"
                 nodesActive=0
                 break
             fi
@@ -579,14 +470,12 @@ function ensureK8s() {
     done
     if [ $nodesActive -ne 0 ]
     then
-        echo "still waiting for active nodes after $i seconds"
         exit 3
     fi
     for i in {1..600}; do
         notReady=$(${KUBECTL} get nodes 2>/dev/null | grep 'NotReady' | wc -l)
             if [ $notReady -eq 0 ]
             then
-                echo "all nodes are Ready, took $i seconds"
                 nodesReady=0
                 break
             fi
@@ -594,7 +483,6 @@ function ensureK8s() {
     done
     if [ $nodesReady -ne 0 ]
     then
-        echo "still waiting for Ready nodes after $i seconds"
         exit 3
     fi
 }
@@ -606,14 +494,12 @@ function ensureEtcd() {
         if [ $? -eq 0 ]
         then
             etcdIsRunning=0
-            echo "Etcd setup successfully, took $i seconds"
             break
         fi
         sleep 1
     done
     if [ $etcdIsRunning -ne 0 ]
     then
-        echo "Etcd not accessible after $i seconds"
         exit 3
     fi
 }
@@ -622,24 +508,20 @@ function ensureEtcdDataDir() {
     mount | grep /dev/sdc1 | grep /var/lib/etcddisk
     if [ "$?" = "0" ]
     then
-        echo "Etcd is running with data dir at: /var/lib/etcddisk"
         return
     else
-        echo "/var/lib/etcddisk was not found at /dev/sdc1. Trying to mount all devices."
         s = 5
         for i in {1..60}; do
             sudo mount -a && mount | grep /dev/sdc1 | grep /var/lib/etcddisk;
             if [ "$?" = "0" ]
             then
                 (( t = ${i} * ${s} ))
-                echo "/var/lib/etcddisk mounted at: /dev/sdc1, took $t seconds"
                 return
             fi
             sleep $s
         done
     fi
 
-   echo "Etcd data dir was not found at: /var/lib/etcddisk"
    exit 4
 }
 
@@ -662,8 +544,6 @@ function writeKubeConfig() {
     chown $ADMINUSER:$ADMINUSER $KUBECONFIGFILE
     chmod 700 $KUBECONFIGDIR
     chmod 600 $KUBECONFIGFILE
-
-    # disable logging after secret output
     set +x
     echo "
 ---
@@ -686,31 +566,24 @@ users:
     client-certificate-data: \"$KUBECONFIG_CERTIFICATE\"
     client-key-data: \"$KUBECONFIG_KEY\"
 " > $KUBECONFIGFILE
-    # renable logging after secrets
     set -x
 }
 
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
-	# If the container runtime is "clear-containers" we need to ensure the
-	# run command is completed _before_ we start installing all the dependencies
-	# for clear-containers to make sure there is not a dpkg lock.
 	ensureRunCommandCompleted
 	echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 fi
 
 if [[ $OS == $UBUNTU_OS_NAME ]]; then
-	# make sure walinuxagent doesn't get updated in the middle of running this script
 	apt-mark hold walinuxagent
 fi
 
-# master and node
 echo `date`,`hostname`, EnsureDockerStart>>/opt/m
 ensureDockerInstallCompleted
 ensureDocker
 echo `date`,`hostname`, configNetworkPolicyStart>>/opt/m
 configNetworkPolicy
 if [[ "$CONTAINER_RUNTIME" == "clear-containers" ]]; then
-	# Ensure we can nest virtualization
 	if grep -q vmx /proc/cpuinfo; then
 		echo `date`,`hostname`, installClearContainersRuntimeStart>>/opt/m
 		installClearContainersRuntime
@@ -730,12 +603,9 @@ echo `date`,`hostname`, ensureJournalStart>>/opt/m
 ensureJournal
 echo `date`,`hostname`, ensureJournalDone>>/opt/m
 
-# On all other runtimes, but "clear-containers" we can ensure the run command
-# completed here to allow for parallelizing the custom script
 ensureRunCommandCompleted
 echo `date`,`hostname`, RunCmdCompleted>>/opt/m
 
-# master only
 if [[ ! -z "${MASTER_NODE}" ]]; then
     writeKubeConfig
     ensureFilepath $KUBECTL
@@ -750,15 +620,10 @@ if [[ $OS == $UBUNTU_OS_NAME ]]; then
     # mitigation for bug https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1676635
     echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind
     sed -i "13i\echo 2dd1ce17-079e-403c-b352-a1921ee207ee > /sys/bus/vmbus/drivers/hv_util/unbind\n" /etc/rc.local
-
     apt-mark unhold walinuxagent
 fi
 
-echo "Install complete successfully"
-
 if $REBOOTREQUIRED; then
-  # wait 1 minute to restart node, so that the custom script extension can complete
-  echo 'reboot required, rebooting node in 1 minute'
   /bin/bash -c "shutdown -r 1 &"
 fi
 
