@@ -5,13 +5,14 @@ import (
 	"math/rand"
 	"time"
 
-	"k8s.io/client-go/pkg/api/v1/node"
-
 	"github.com/Azure/acs-engine/pkg/api"
 	"github.com/Azure/acs-engine/pkg/armhelpers"
 	"github.com/Azure/acs-engine/pkg/i18n"
 	"github.com/Azure/acs-engine/pkg/operations"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/pkg/api/v1/node"
 )
 
 const (
@@ -66,7 +67,10 @@ func (kan *UpgradeAgentNode) DeleteNode(vmName *string, drain bool) error {
 	}
 	// Delete VM in api server
 	if err = client.DeleteNode(*vmName); err != nil {
-		kan.logger.Warnf("Node %s got an error while deregistering: %v", *vmName, err)
+		statusErr, ok := err.(*errors.StatusError)
+		if ok && statusErr.ErrStatus.Reason != v1.StatusReasonNotFound {
+			kan.logger.Warnf("Node %s got an error while deregistering: %#v", *vmName, err)
+		}
 	}
 	return nil
 }
