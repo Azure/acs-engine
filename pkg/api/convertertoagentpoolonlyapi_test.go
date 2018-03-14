@@ -1,8 +1,9 @@
 package api
 
 import (
-	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 	"testing"
+
+	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 )
 
 func TestConvertFromV20180331AddonProfile(t *testing.T) {
