@@ -387,7 +387,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 			o.KubernetesConfig.ServiceCIDR = DefaultKubernetesServiceCIDR
 		}
 		// Enforce sane cloudprovider backoff defaults, if CloudProviderBackoff is true in KubernetesConfig
-		if o.KubernetesConfig.CloudProviderBackoff == true {
+		if o.KubernetesConfig.CloudProviderBackoff {
 			if o.KubernetesConfig.CloudProviderBackoffDuration == 0 {
 				o.KubernetesConfig.CloudProviderBackoffDuration = DefaultKubernetesCloudProviderBackoffDuration
 			}
@@ -405,7 +405,7 @@ func setOrchestratorDefaults(cs *api.ContainerService) {
 		constraint, _ := semver.NewConstraint(">= 1.6.6")
 		// Enforce sane cloudprovider rate limit defaults, if CloudProviderRateLimit is true in KubernetesConfig
 		// For k8s version greater or equal to 1.6.6, we will set the default CloudProviderRate* settings
-		if o.KubernetesConfig.CloudProviderRateLimit == true && constraint.Check(k8sSemVer) {
+		if o.KubernetesConfig.CloudProviderRateLimit && constraint.Check(k8sSemVer) {
 			if o.KubernetesConfig.CloudProviderRateLimitQPS == 0 {
 				o.KubernetesConfig.CloudProviderRateLimitQPS = DefaultKubernetesCloudProviderRateLimitQPS
 			}
@@ -824,7 +824,7 @@ func assignDefaultAddonVals(addon, defaults api.KubernetesAddon) api.KubernetesA
 	}
 	for key, val := range defaults.Config {
 		if addon.Config == nil {
-			addon.Config = make(map[string]string, 0)
+			addon.Config = make(map[string]string)
 		}
 		if v, ok := addon.Config[key]; !ok || v == "" {
 			addon.Config[key] = val
@@ -854,8 +854,7 @@ func addDefaultFeatureGates(m map[string]string, version string, minVersion stri
 }
 
 func combineValues(inputs ...string) string {
-	var valueMap map[string]string
-	valueMap = make(map[string]string)
+	valueMap := make(map[string]string)
 	for _, input := range inputs {
 		applyValueStringToMap(valueMap, input)
 	}

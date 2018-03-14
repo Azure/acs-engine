@@ -161,10 +161,7 @@ func (h *Manager) CreateTestReport(filepath string) error {
 	}
 	defer file.Close()
 	_, err = file.Write(data)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // CreateCombinedReport TBD needs definition

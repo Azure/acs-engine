@@ -143,10 +143,12 @@ var k8sComponentVersions = map[string]map[string]string{
 // KubeConfigs represents Docker images used for Kubernetes components based on Kubernetes versions (major.minor.patch)
 var KubeConfigs = map[string]map[string]string{
 	common.KubernetesVersion1Dot10Dot0: getK8sVersionComponents("1.10.0-beta.2", nil),
+	common.KubernetesVersion1Dot9Dot4:  getK8sVersionComponents("1.9.4", nil),
 	common.KubernetesVersion1Dot9Dot3:  getK8sVersionComponents("1.9.3", nil),
 	common.KubernetesVersion1Dot9Dot2:  getK8sVersionComponents("1.9.2", nil),
 	common.KubernetesVersion1Dot9Dot1:  getK8sVersionComponents("1.9.1", nil),
 	common.KubernetesVersion1Dot9Dot0:  getK8sVersionComponents("1.9.0", nil),
+	common.KubernetesVersion1Dot8Dot9:  getK8sVersionComponents("1.8.9", nil),
 	common.KubernetesVersion1Dot8Dot8:  getK8sVersionComponents("1.8.8", nil),
 	common.KubernetesVersion1Dot8Dot7:  getK8sVersionComponents("1.8.7", nil),
 	common.KubernetesVersion1Dot8Dot6:  getK8sVersionComponents("1.8.6", map[string]string{"windowszip": "v1.8.6-2int.zip"}),
@@ -154,6 +156,7 @@ var KubeConfigs = map[string]map[string]string{
 	common.KubernetesVersion1Dot8Dot2:  getK8sVersionComponents("1.8.2", map[string]string{"windowszip": "v1.8.2-2int.zip"}),
 	common.KubernetesVersion1Dot8Dot1:  getK8sVersionComponents("1.8.1", map[string]string{"windowszip": "v1.8.1-2int.zip"}),
 	common.KubernetesVersion1Dot8Dot0:  getK8sVersionComponents("1.8.0", map[string]string{"windowszip": "v1.8.0-2int.zip"}),
+	common.KubernetesVersion1Dot7Dot14: getK8sVersionComponents("1.7.14", nil),
 	common.KubernetesVersion1Dot7Dot13: getK8sVersionComponents("1.7.13", map[string]string{"windowszip": "v1.7.13-1int.zip"}),
 	common.KubernetesVersion1Dot7Dot12: getK8sVersionComponents("1.7.12", map[string]string{"windowszip": "v1.7.12-2int.zip"}),
 	common.KubernetesVersion1Dot7Dot10: getK8sVersionComponents("1.7.10", map[string]string{"windowszip": "v1.7.10-1int.zip"}),

@@ -59,27 +59,27 @@ func TestCustomHyperkubeImageField(t *testing.T) {
 
 func TestKubernetesAddon(t *testing.T) {
 	addon := getMockAddon("addon")
-	if addon.IsEnabled(true) != true {
+	if !addon.IsEnabled(true) {
 		t.Fatalf("KubernetesAddon.IsEnabled(true) should always return true when Enabled property is not specified")
 	}
 
-	if addon.IsEnabled(false) != false {
+	if addon.IsEnabled(false) {
 		t.Fatalf("KubernetesAddon.IsEnabled(false) should always return false when Enabled property is not specified")
 	}
 	e := true
 	addon.Enabled = &e
-	if addon.IsEnabled(false) != true {
+	if !addon.IsEnabled(false) {
 		t.Fatalf("KubernetesAddon.IsEnabled(false) should always return true when Enabled property is set to true")
 	}
-	if addon.IsEnabled(true) != true {
+	if !addon.IsEnabled(true) {
 		t.Fatalf("KubernetesAddon.IsEnabled(true) should always return true when Enabled property is set to true")
 	}
 	e = false
 	addon.Enabled = &e
-	if addon.IsEnabled(false) != false {
+	if addon.IsEnabled(false) {
 		t.Fatalf("KubernetesAddon.IsEnabled(false) should always return false when Enabled property is set to false")
 	}
-	if addon.IsEnabled(true) != false {
+	if addon.IsEnabled(true) {
 		t.Fatalf("KubernetesAddon.IsEnabled(true) should always return false when Enabled property is set to false")
 	}
 }
@@ -90,14 +90,14 @@ func TestIsTillerEnabled(t *testing.T) {
 			getMockAddon("addon"),
 		},
 	}
-	e := c.IsTillerEnabled()
-	if e != DefaultTillerAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsTillerEnabled() should return %t when no tiller addon has been specified, instead returned %t", DefaultTillerAddonEnabled, e)
+	enabled := c.IsTillerEnabled()
+	if enabled != DefaultTillerAddonEnabled {
+		t.Fatalf("KubernetesConfig.IsTillerEnabled() should return %t when no tiller addon has been specified, instead returned %t", DefaultTillerAddonEnabled, enabled)
 	}
 	c.Addons = append(c.Addons, getMockAddon(DefaultTillerAddonName))
-	e = c.IsTillerEnabled()
-	if e != true {
-		t.Fatalf("KubernetesConfig.IsTillerEnabled() should return true when a custom tiller addon has been specified, instead returned %t", e)
+	enabled = c.IsTillerEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsTillerEnabled() should return true when a custom tiller addon has been specified, instead returned %t", enabled)
 	}
 	b := false
 	c = KubernetesConfig{
@@ -108,9 +108,9 @@ func TestIsTillerEnabled(t *testing.T) {
 			},
 		},
 	}
-	e = c.IsTillerEnabled()
-	if e != false {
-		t.Fatalf("KubernetesConfig.IsTillerEnabled() should return false when a custom tiller addon has been specified as disabled, instead returned %t", e)
+	enabled = c.IsTillerEnabled()
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsTillerEnabled() should return false when a custom tiller addon has been specified as disabled, instead returned %t", enabled)
 	}
 }
 
@@ -120,14 +120,14 @@ func TestIsACIConnectorEnabled(t *testing.T) {
 			getMockAddon("addon"),
 		},
 	}
-	e := c.IsACIConnectorEnabled()
-	if e != DefaultACIConnectorAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return %t when no ACI connector addon has been specified, instead returned %t", DefaultACIConnectorAddonEnabled, e)
+	enabled := c.IsACIConnectorEnabled()
+	if enabled != DefaultACIConnectorAddonEnabled {
+		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return %t when no ACI connector addon has been specified, instead returned %t", DefaultACIConnectorAddonEnabled, enabled)
 	}
 	c.Addons = append(c.Addons, getMockAddon(DefaultACIConnectorAddonName))
-	e = c.IsACIConnectorEnabled()
-	if e != false {
-		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return true when ACI connector has been specified, instead returned %t", e)
+	enabled = c.IsACIConnectorEnabled()
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return true when ACI connector has been specified, instead returned %t", enabled)
 	}
 	b := true
 	c = KubernetesConfig{
@@ -138,9 +138,9 @@ func TestIsACIConnectorEnabled(t *testing.T) {
 			},
 		},
 	}
-	e = c.IsACIConnectorEnabled()
-	if e != true {
-		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return false when ACI connector addon has been specified as disabled, instead returned %t", e)
+	enabled = c.IsACIConnectorEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsACIConnectorEnabled() should return false when ACI connector addon has been specified as disabled, instead returned %t", enabled)
 	}
 }
 
@@ -150,14 +150,14 @@ func TestIsDashboardEnabled(t *testing.T) {
 			getMockAddon("addon"),
 		},
 	}
-	e := c.IsDashboardEnabled()
-	if e != DefaultDashboardAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsDashboardEnabled() should return %t when no kubernetes-dashboard addon has been specified, instead returned %t", DefaultDashboardAddonEnabled, e)
+	enabled := c.IsDashboardEnabled()
+	if enabled != DefaultDashboardAddonEnabled {
+		t.Fatalf("KubernetesConfig.IsDashboardEnabled() should return %t when no kubernetes-dashboard addon has been specified, instead returned %t", DefaultDashboardAddonEnabled, enabled)
 	}
 	c.Addons = append(c.Addons, getMockAddon(DefaultDashboardAddonName))
-	e = c.IsDashboardEnabled()
-	if e != true {
-		t.Fatalf("KubernetesConfig.IsDashboardEnabled() should return true when a custom kubernetes-dashboard addon has been specified, instead returned %t", e)
+	enabled = c.IsDashboardEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsDashboardEnabled() should return true when a custom kubernetes-dashboard addon has been specified, instead returned %t", enabled)
 	}
 	b := false
 	c = KubernetesConfig{
@@ -168,9 +168,9 @@ func TestIsDashboardEnabled(t *testing.T) {
 			},
 		},
 	}
-	e = c.IsDashboardEnabled()
-	if e != false {
-		t.Fatalf("KubernetesConfig.IsDashboardEnabled() should return false when a custom kubernetes-dashboard addon has been specified as disabled, instead returned %t", e)
+	enabled = c.IsDashboardEnabled()
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsDashboardEnabled() should return false when a custom kubernetes-dashboard addon has been specified as disabled, instead returned %t", enabled)
 	}
 }
 
@@ -180,14 +180,14 @@ func TestIsReschedulerEnabled(t *testing.T) {
 			getMockAddon("addon"),
 		},
 	}
-	e := c.IsReschedulerEnabled()
-	if e != DefaultReschedulerAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsReschedulerEnabled() should return %t when no rescheduler addon has been specified, instead returned %t", DefaultReschedulerAddonEnabled, e)
+	enabled := c.IsReschedulerEnabled()
+	if enabled != DefaultReschedulerAddonEnabled {
+		t.Fatalf("KubernetesConfig.IsReschedulerEnabled() should return %t when no rescheduler addon has been specified, instead returned %t", DefaultReschedulerAddonEnabled, enabled)
 	}
 	c.Addons = append(c.Addons, getMockAddon(DefaultReschedulerAddonName))
-	e = c.IsReschedulerEnabled()
-	if e != false {
-		t.Fatalf("KubernetesConfig.IsReschedulerEnabled() should return true when a custom rescheduler addon has been specified, instead returned %t", e)
+	enabled = c.IsReschedulerEnabled()
+	if enabled {
+		t.Fatalf("KubernetesConfig.IsReschedulerEnabled() should return true when a custom rescheduler addon has been specified, instead returned %t", enabled)
 	}
 	b := true
 	c = KubernetesConfig{
@@ -198,9 +198,9 @@ func TestIsReschedulerEnabled(t *testing.T) {
 			},
 		},
 	}
-	e = c.IsReschedulerEnabled()
-	if e != true {
-		t.Fatalf("KubernetesConfig.IsReschedulerEnabled() should return false when a custom rescheduler addon has been specified as enabled, instead returned %t", e)
+	enabled = c.IsReschedulerEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsReschedulerEnabled() should return false when a custom rescheduler addon has been specified as enabled, instead returned %t", enabled)
 	}
 }
 
@@ -214,15 +214,15 @@ func TestIsMetricsServerEnabled(t *testing.T) {
 		},
 		},
 	}
-	e := o.IsMetricsServerEnabled()
-	if e != DefaultMetricsServerAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return %t for kubernetes version %s when no metrics-server addon has been specified, instead returned %t", DefaultMetricsServerAddonEnabled, v, e)
+	enabled := o.IsMetricsServerEnabled()
+	if enabled != DefaultMetricsServerAddonEnabled {
+		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return %t for kubernetes version %s when no metrics-server addon has been specified, instead returned %t", DefaultMetricsServerAddonEnabled, v, enabled)
 	}
 
 	o.KubernetesConfig.Addons = append(o.KubernetesConfig.Addons, getMockAddon(DefaultMetricsServerAddonName))
-	e = o.IsMetricsServerEnabled()
-	if e != DefaultMetricsServerAddonEnabled {
-		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return %t for kubernetes version %s when the metrics-server addon has been specified, instead returned %t", DefaultMetricsServerAddonEnabled, v, e)
+	enabled = o.IsMetricsServerEnabled()
+	if enabled != DefaultMetricsServerAddonEnabled {
+		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return %t for kubernetes version %s when the metrics-server addon has been specified, instead returned %t", DefaultMetricsServerAddonEnabled, v, enabled)
 	}
 
 	b := true
@@ -237,9 +237,9 @@ func TestIsMetricsServerEnabled(t *testing.T) {
 		},
 		},
 	}
-	e = o.IsMetricsServerEnabled()
-	if e != true {
-		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return true for kubernetes version %s when the metrics-server addon has been specified as enabled, instead returned %t", v, e)
+	enabled = o.IsMetricsServerEnabled()
+	if !enabled {
+		t.Fatalf("KubernetesConfig.IsMetricsServerEnabled() should return true for kubernetes version %s when the metrics-server addon has been specified as enabled, instead returned %t", v, enabled)
 	}
 }
 

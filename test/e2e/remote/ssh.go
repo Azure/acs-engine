@@ -87,11 +87,7 @@ func (c *Connection) Execute(cmd string) ([]byte, error) {
 	}
 	defer session.Close()
 
-	out, err := session.CombinedOutput(cmd)
-	if err != nil {
-		return out, err
-	}
-	return out, nil
+	return session.CombinedOutput(cmd)
 }
 
 func (c *Connection) Write(data, path string) error {

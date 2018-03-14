@@ -730,7 +730,7 @@ func (k *KubernetesConfig) IsReschedulerEnabled() bool {
 
 // PrivateJumpboxProvision checks if a private cluster has jumpbox auto-provisioning
 func (k *KubernetesConfig) PrivateJumpboxProvision() bool {
-	if k != nil && k.PrivateCluster != nil && *k.PrivateCluster.Enabled == true && k.PrivateCluster.JumpboxProfile != nil {
+	if k != nil && k.PrivateCluster != nil && *k.PrivateCluster.Enabled && k.PrivateCluster.JumpboxProfile != nil {
 		return true
 	}
 	return false

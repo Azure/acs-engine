@@ -2,14 +2,15 @@ package armhelpers
 
 import (
 	"fmt"
+	"regexp"
+	"time"
+
 	"github.com/Azure/azure-sdk-for-go/arm/authorization"
 	"github.com/Azure/azure-sdk-for-go/arm/graphrbac"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
-	"regexp"
-	"time"
 )
 
 const (

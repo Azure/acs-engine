@@ -5,10 +5,6 @@ import (
 )
 
 func Test_GetAllSupportedKubernetesVersions(t *testing.T) {
-	allVersions := make([]string, 0, len(AllKubernetesSupportedVersions))
-	for k := range AllKubernetesSupportedVersions {
-		allVersions = append(allVersions, k)
-	}
 	responseFromGetter := GetAllSupportedKubernetesVersions()
 
 	if len(AllKubernetesSupportedVersions) != len(responseFromGetter) {

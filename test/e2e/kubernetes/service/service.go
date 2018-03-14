@@ -145,7 +145,7 @@ func (s *Service) Validate(check string, attempts int, sleep, wait time.Duration
 		if err == nil {
 			body, _ := ioutil.ReadAll(resp.Body)
 			matched, _ := regexp.MatchString(check, string(body))
-			if matched == true {
+			if matched {
 				defer resp.Body.Close()
 				return true
 			}

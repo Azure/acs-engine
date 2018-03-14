@@ -32,7 +32,7 @@ func (o *OrchestratorProfile) ValidateForUpgrade() error {
 	case Kubernetes:
 		switch o.OrchestratorVersion {
 		case common.KubernetesVersion1Dot6Dot13:
-		case common.KubernetesVersion1Dot7Dot13:
+		case common.KubernetesVersion1Dot7Dot14:
 		default:
 			return fmt.Errorf("Upgrade to Kubernetes %s is not supported", o.OrchestratorVersion)
 		}

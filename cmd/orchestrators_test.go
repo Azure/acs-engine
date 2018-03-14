@@ -40,7 +40,7 @@ var _ = Describe("The orchestrators command", func() {
 	It("should succeed", func() {
 		command := &orchestratorsCmd{
 			orchestrator: "kubernetes",
-			version:      "1.7.13",
+			version:      "1.7.14",
 		}
 
 		err := command.run(nil, nil)

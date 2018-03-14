@@ -260,9 +260,9 @@ func Test_KubernetesConfig_Validate(t *testing.T) {
 
 	// Tests that apply to 1.6 and later releases
 	for _, k8sVersion := range []string{common.KubernetesVersion1Dot6Dot11, common.KubernetesVersion1Dot6Dot12, common.KubernetesVersion1Dot6Dot13,
-		common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9, common.KubernetesVersion1Dot7Dot10, common.KubernetesVersion1Dot7Dot12, common.KubernetesVersion1Dot7Dot13,
-		common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2, common.KubernetesVersion1Dot8Dot4, common.KubernetesVersion1Dot8Dot6, common.KubernetesVersion1Dot8Dot7, common.KubernetesVersion1Dot8Dot8,
-		common.KubernetesVersion1Dot9Dot0, common.KubernetesVersion1Dot9Dot1, common.KubernetesVersion1Dot9Dot2, common.KubernetesVersion1Dot9Dot3, common.KubernetesVersion1Dot10Dot0} {
+		common.KubernetesVersion1Dot7Dot7, common.KubernetesVersion1Dot7Dot9, common.KubernetesVersion1Dot7Dot10, common.KubernetesVersion1Dot7Dot12, common.KubernetesVersion1Dot7Dot13, common.KubernetesVersion1Dot7Dot14,
+		common.KubernetesVersion1Dot8Dot1, common.KubernetesVersion1Dot8Dot2, common.KubernetesVersion1Dot8Dot4, common.KubernetesVersion1Dot8Dot6, common.KubernetesVersion1Dot8Dot7, common.KubernetesVersion1Dot8Dot8, common.KubernetesVersion1Dot8Dot9,
+		common.KubernetesVersion1Dot9Dot0, common.KubernetesVersion1Dot9Dot1, common.KubernetesVersion1Dot9Dot2, common.KubernetesVersion1Dot9Dot3, common.KubernetesVersion1Dot9Dot4, common.KubernetesVersion1Dot10Dot0} {
 		c := KubernetesConfig{
 			CloudProviderBackoff:   true,
 			CloudProviderRateLimit: true,
@@ -318,12 +318,24 @@ func Test_Properties_ValidateNetworkPolicy(t *testing.T) {
 			"should error on calico for windows clusters",
 		)
 	}
+
+	p.OrchestratorProfile.KubernetesConfig.NetworkPolicy = "cilium"
+	p.AgentPoolProfiles = []*AgentPoolProfile{
+		{
+			OSType: Windows,
+		},
+	}
+	if err := p.validateNetworkPolicy(); err == nil {
+		t.Errorf(
+			"should error on cilium for windows clusters",
+		)
+	}
 }
 
 func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T) {
 
 	t.Run("ServicePrincipalProfile with secret should pass", func(t *testing.T) {
-		p := getK8sDefaultProperties()
+		p := getK8sDefaultProperties(false)
 
 		if err := p.Validate(false); err != nil {
 			t.Errorf("should not error %v", err)
@@ -331,7 +343,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 
 	t.Run("ServicePrincipalProfile with KeyvaultSecretRef (with version) should pass", func(t *testing.T) {
-		p := getK8sDefaultProperties()
+		p := getK8sDefaultProperties(false)
 		p.ServicePrincipalProfile.Secret = ""
 		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
 			VaultID:       "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME",
@@ -344,7 +356,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 
 	t.Run("ServicePrincipalProfile with KeyvaultSecretRef (without version) should pass", func(t *testing.T) {
-		p := getK8sDefaultProperties()
+		p := getK8sDefaultProperties(false)
 		p.ServicePrincipalProfile.Secret = ""
 		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
 			VaultID:    "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME",
@@ -357,7 +369,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 
 	t.Run("ServicePrincipalProfile with Secret and KeyvaultSecretRef should NOT pass", func(t *testing.T) {
-		p := getK8sDefaultProperties()
+		p := getK8sDefaultProperties(false)
 		p.ServicePrincipalProfile.Secret = "secret"
 		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
 			VaultID:    "/subscriptions/SUB-ID/resourceGroups/RG-NAME/providers/Microsoft.KeyVault/vaults/KV-NAME",
@@ -370,7 +382,7 @@ func Test_ServicePrincipalProfile_ValidateSecretOrKeyvaultSecretRef(t *testing.T
 	})
 
 	t.Run("ServicePrincipalProfile with incorrect KeyvaultSecretRef format should NOT pass", func(t *testing.T) {
-		p := getK8sDefaultProperties()
+		p := getK8sDefaultProperties(false)
 		p.ServicePrincipalProfile.Secret = ""
 		p.ServicePrincipalProfile.KeyvaultSecretRef = &KeyvaultSecretRef{
 			VaultID:    "randomID",
@@ -461,8 +473,8 @@ func Test_AadProfile_Validate(t *testing.T) {
 	})
 }
 
-func getK8sDefaultProperties() *Properties {
-	return &Properties{
+func getK8sDefaultProperties(hasWindows bool) *Properties {
+	p := &Properties{
 		OrchestratorProfile: &OrchestratorProfile{
 			OrchestratorType: Kubernetes,
 		},
@@ -494,6 +506,24 @@ func getK8sDefaultProperties() *Properties {
 			Secret:   "clientSecret",
 		},
 	}
+
+	if hasWindows {
+		p.AgentPoolProfiles = []*AgentPoolProfile{
+			{
+				Name:                "agentpool",
+				VMSize:              "Standard_D2_v2",
+				Count:               1,
+				AvailabilityProfile: AvailabilitySet,
+				OSType:              Windows,
+			},
+		}
+		p.WindowsProfile = &WindowsProfile{
+			AdminUsername: "azureuser",
+			AdminPassword: "password",
+		}
+	}
+
+	return p
 }
 
 func Test_Properties_ValidateContainerRuntime(t *testing.T) {
@@ -528,6 +558,194 @@ func Test_Properties_ValidateContainerRuntime(t *testing.T) {
 	if err := p.validateContainerRuntime(); err == nil {
 		t.Errorf(
 			"should error on clear-containers for windows clusters",
+		)
+	}
+}
+
+func TestWindowsVersions(t *testing.T) {
+	p := getK8sDefaultProperties(true)
+	p.OrchestratorProfile.OrchestratorRelease = "1.6"
+	if err := p.Validate(false); err == nil {
+		t.Errorf(
+			"should error on invalid Windows version",
+		)
+	}
+
+	p = getK8sDefaultProperties(true)
+	p.OrchestratorProfile.OrchestratorRelease = "1.7"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Windows version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(true)
+	p.OrchestratorProfile.OrchestratorVersion = "1.7.13"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Windows version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(true)
+	p.OrchestratorProfile.OrchestratorVersion = "1.7.14"
+	if err := p.Validate(false); err == nil {
+		t.Errorf(
+			"should error on invalid Windows version",
+		)
+	}
+
+	p = getK8sDefaultProperties(true)
+	p.OrchestratorProfile.OrchestratorRelease = "1.8"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Windows version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(true)
+	p.OrchestratorProfile.OrchestratorVersion = "1.8.8"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Windows version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(true)
+	p.OrchestratorProfile.OrchestratorVersion = "1.8.9"
+	if err := p.Validate(false); err == nil {
+		t.Errorf(
+			"should error on invalid Windows version",
+		)
+	}
+
+	p = getK8sDefaultProperties(true)
+	p.OrchestratorProfile.OrchestratorRelease = "1.9"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Windows version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(true)
+	p.OrchestratorProfile.OrchestratorVersion = "1.9.3"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Windows version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(true)
+	p.OrchestratorProfile.OrchestratorVersion = "1.9.4"
+	if err := p.Validate(false); err == nil {
+		t.Errorf(
+			"should error on invalid Windows version",
+		)
+	}
+
+	p = getK8sDefaultProperties(true)
+	p.OrchestratorProfile.OrchestratorRelease = "1.10"
+	if err := p.Validate(false); err == nil {
+		t.Errorf(
+			"should error on invalid Windows version",
+		)
+	}
+}
+
+func TestLinuxVersions(t *testing.T) {
+	p := getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorRelease = "1.5"
+	if err := p.Validate(false); err == nil {
+		t.Errorf(
+			"should error on invalid Linux version",
+		)
+	}
+
+	p = getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorRelease = "1.6"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Linux version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorRelease = "1.7"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Linux version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorVersion = "1.7.14"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Linux version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorVersion = "1.7.15"
+	if err := p.Validate(false); err == nil {
+		t.Errorf(
+			"should error on invalid Linux version",
+		)
+	}
+
+	p = getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorRelease = "1.8"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Linux version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorVersion = "1.8.9"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Linux version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorVersion = "1.8.10"
+	if err := p.Validate(false); err == nil {
+		t.Errorf(
+			"should error on invalid Linux version",
+		)
+	}
+
+	p = getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorRelease = "1.9"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Linux version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorRelease = "1.10"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Linux version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorVersion = "1.9.4"
+	if err := p.Validate(false); err != nil {
+		t.Errorf(
+			"should not error on valid Linux version: %v", err,
+		)
+	}
+
+	p = getK8sDefaultProperties(false)
+	p.OrchestratorProfile.OrchestratorVersion = "1.9.5"
+	if err := p.Validate(false); err == nil {
+		t.Errorf(
+			"should error on invalid Linux version",
 		)
 	}
 }

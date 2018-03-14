@@ -65,7 +65,8 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 			version := common.RationalizeReleaseAndVersion(
 				o.OrchestratorType,
 				o.OrchestratorRelease,
-				o.OrchestratorVersion)
+				o.OrchestratorVersion,
+				false)
 			if version == "" {
 				return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 			}
@@ -75,7 +76,8 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 			version := common.RationalizeReleaseAndVersion(
 				o.OrchestratorType,
 				o.OrchestratorRelease,
-				o.OrchestratorVersion)
+				o.OrchestratorVersion,
+				false)
 			if version == "" {
 				return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 			}
@@ -124,7 +126,8 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot9 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot10 ||
 						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot12 ||
-						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot13 {
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot13 ||
+						o.OrchestratorVersion == common.KubernetesVersion1Dot7Dot14 {
 						return fmt.Errorf("enablePodSecurityPolicy is only supported in acs-engine for Kubernetes version %s or greater; unable to validate for Kubernetes version %s",
 							"1.8.0", o.OrchestratorVersion)
 					}
@@ -142,7 +145,8 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 			version := common.RationalizeReleaseAndVersion(
 				o.OrchestratorType,
 				o.OrchestratorRelease,
-				o.OrchestratorVersion)
+				o.OrchestratorVersion,
+				false)
 			if version == "" {
 				patchVersion := common.GetValidPatchVersion(o.OrchestratorType, o.OrchestratorVersion)
 				// if there isn't a supported patch version for this version fail
@@ -167,10 +171,7 @@ func (o *OrchestratorProfile) Validate(isUpdate bool) error {
 
 // Validate implements APIObject
 func (m *MasterProfile) Validate() error {
-	if e := validateDNSName(m.DNSPrefix); e != nil {
-		return e
-	}
-	return nil
+	return validateDNSName(m.DNSPrefix)
 }
 
 // Validate implements APIObject
@@ -242,7 +243,7 @@ func (o *OrchestratorProfile) ValidateForUpgrade() error {
 	case Kubernetes:
 		switch o.OrchestratorVersion {
 		case common.KubernetesVersion1Dot6Dot13:
-		case common.KubernetesVersion1Dot7Dot13:
+		case common.KubernetesVersion1Dot7Dot14:
 		default:
 			return fmt.Errorf("Upgrade to Kubernetes version %s is not supported", o.OrchestratorVersion)
 		}
@@ -433,14 +434,24 @@ func (a *Properties) Validate(isUpdate bool) error {
 			case Swarm:
 			case SwarmMode:
 			case Kubernetes:
-				version := common.RationalizeReleaseAndVersion(
-					a.OrchestratorProfile.OrchestratorType,
-					a.OrchestratorProfile.OrchestratorRelease,
-					a.OrchestratorProfile.OrchestratorVersion)
+				var version string
+				if a.HasWindows() {
+					version = common.RationalizeReleaseAndVersion(
+						a.OrchestratorProfile.OrchestratorType,
+						a.OrchestratorProfile.OrchestratorRelease,
+						a.OrchestratorProfile.OrchestratorVersion,
+						true)
+				} else {
+					version = common.RationalizeReleaseAndVersion(
+						a.OrchestratorProfile.OrchestratorType,
+						a.OrchestratorProfile.OrchestratorRelease,
+						a.OrchestratorProfile.OrchestratorVersion,
+						false)
+				}
 				if version == "" {
 					return fmt.Errorf("OrchestratorProfile is not able to be rationalized, check supported Release or Version")
 				}
-				if _, ok := common.AllKubernetesWindowsSupportedVersions[version]; !ok {
+				if supported, ok := common.AllKubernetesWindowsSupportedVersions[version]; !ok || !supported {
 					return fmt.Errorf("Orchestrator %s version %s does not support Windows", a.OrchestratorProfile.OrchestratorType, version)
 				}
 			default:
@@ -501,6 +512,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot9Dot1:  true,
 		common.KubernetesVersion1Dot9Dot2:  true,
 		common.KubernetesVersion1Dot9Dot3:  true,
+		common.KubernetesVersion1Dot9Dot4:  true,
 		common.KubernetesVersion1Dot8Dot0:  true,
 		common.KubernetesVersion1Dot8Dot1:  true,
 		common.KubernetesVersion1Dot8Dot2:  true,
@@ -508,6 +520,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot8Dot6:  true,
 		common.KubernetesVersion1Dot8Dot7:  true,
 		common.KubernetesVersion1Dot8Dot8:  true,
+		common.KubernetesVersion1Dot8Dot9:  true,
 		common.KubernetesVersion1Dot7Dot0:  true,
 		common.KubernetesVersion1Dot7Dot1:  true,
 		common.KubernetesVersion1Dot7Dot2:  true,
@@ -518,6 +531,7 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot7Dot10: true,
 		common.KubernetesVersion1Dot7Dot12: true,
 		common.KubernetesVersion1Dot7Dot13: true,
+		common.KubernetesVersion1Dot7Dot14: true,
 		common.KubernetesVersion1Dot6Dot6:  true,
 		common.KubernetesVersion1Dot6Dot9:  true,
 		common.KubernetesVersion1Dot6Dot11: true,
@@ -664,10 +678,12 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 		common.KubernetesVersion1Dot8Dot6:  true,
 		common.KubernetesVersion1Dot8Dot7:  true,
 		common.KubernetesVersion1Dot8Dot8:  true,
+		common.KubernetesVersion1Dot8Dot9:  true,
 		common.KubernetesVersion1Dot9Dot0:  true,
 		common.KubernetesVersion1Dot9Dot1:  true,
 		common.KubernetesVersion1Dot9Dot2:  true,
 		common.KubernetesVersion1Dot9Dot3:  true,
+		common.KubernetesVersion1Dot9Dot4:  true,
 		common.KubernetesVersion1Dot10Dot0: true,
 	}
 
@@ -705,7 +721,7 @@ func (a *Properties) validateNetworkPolicy() error {
 	}
 
 	// Temporary safety check, to be removed when Windows support is added.
-	if (networkPolicy == "calico") && a.HasWindows() {
+	if (networkPolicy == "calico" || networkPolicy == "cilium") && a.HasWindows() {
 		return fmt.Errorf("networkPolicy '%s' is not supporting windows agents", networkPolicy)
 	}
 

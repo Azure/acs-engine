@@ -116,7 +116,7 @@ func AreAllJobsCompleted(jobPrefix, namespace string) (bool, error) {
 	}
 
 	for _, s := range status {
-		if s == false {
+		if !s {
 			return false, nil
 		}
 	}
@@ -137,7 +137,7 @@ func WaitOnReady(jobPrefix, namespace string, sleep, duration time.Duration) (bo
 				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Jobs (%s) to complete in namespace (%s)", duration.String(), jobPrefix, namespace)
 			default:
 				ready, _ := AreAllJobsCompleted(jobPrefix, namespace)
-				if ready == true {
+				if ready {
 					readyCh <- true
 				} else {
 					time.Sleep(sleep)

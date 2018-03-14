@@ -63,6 +63,8 @@ const (
 	KubernetesVersion1Dot9Dot2 string = "1.9.2"
 	// KubernetesVersion1Dot9Dot3 is the major.minor.patch string for the 1.9.3 version of kubernetes
 	KubernetesVersion1Dot9Dot3 string = "1.9.3"
+	// KubernetesVersion1Dot9Dot4 is the major.minor.patch string for the 1.9.4 version of kubernetes
+	KubernetesVersion1Dot9Dot4 string = "1.9.4"
 	// KubernetesVersion1Dot8Dot0 is the major.minor.patch string for the 1.8.0 version of kubernetes
 	KubernetesVersion1Dot8Dot0 string = "1.8.0"
 	// KubernetesVersion1Dot8Dot1 is the major.minor.patch string for the 1.8.1 version of kubernetes
@@ -77,6 +79,8 @@ const (
 	KubernetesVersion1Dot8Dot7 string = "1.8.7"
 	// KubernetesVersion1Dot8Dot8 is the major.minor.patch string for the 1.8.8 version of kubernetes
 	KubernetesVersion1Dot8Dot8 string = "1.8.8"
+	// KubernetesVersion1Dot8Dot9 is the major.minor.patch string for the 1.8.9 version of kubernetes
+	KubernetesVersion1Dot8Dot9 string = "1.8.9"
 	// KubernetesVersion1Dot7Dot0 is the major.minor.patch string for the 1.7.0 version of kubernetes
 	KubernetesVersion1Dot7Dot0 string = "1.7.0"
 	// KubernetesVersion1Dot7Dot1 is the major.minor.patch string for the 1.7.1 version of kubernetes
@@ -97,6 +101,8 @@ const (
 	KubernetesVersion1Dot7Dot12 string = "1.7.12"
 	// KubernetesVersion1Dot7Dot13 is the major.minor.patch string for the 1.7.13 version of kubernetes
 	KubernetesVersion1Dot7Dot13 string = "1.7.13"
+	// KubernetesVersion1Dot7Dot14 is the major.minor.patch string for the 1.7.14 version of kubernetes
+	KubernetesVersion1Dot7Dot14 string = "1.7.14"
 	// KubernetesVersion1Dot6Dot6 is the major.minor.patch string for the 1.6.6 version of kubernetes
 	KubernetesVersion1Dot6Dot6 string = "1.6.6"
 	// KubernetesVersion1Dot6Dot9 is the major.minor.patch string for the 1.6.9 version of kubernetes
@@ -128,6 +134,7 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot7Dot10: true,
 	KubernetesVersion1Dot7Dot12: true,
 	KubernetesVersion1Dot7Dot13: true,
+	KubernetesVersion1Dot7Dot14: true,
 	KubernetesVersion1Dot8Dot0:  true,
 	KubernetesVersion1Dot8Dot1:  true,
 	KubernetesVersion1Dot8Dot2:  true,
@@ -135,10 +142,12 @@ var AllKubernetesSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot8Dot6:  true,
 	KubernetesVersion1Dot8Dot7:  true,
 	KubernetesVersion1Dot8Dot8:  true,
+	KubernetesVersion1Dot8Dot9:  true,
 	KubernetesVersion1Dot9Dot0:  true,
 	KubernetesVersion1Dot9Dot1:  true,
 	KubernetesVersion1Dot9Dot2:  true,
 	KubernetesVersion1Dot9Dot3:  true,
+	KubernetesVersion1Dot9Dot4:  true,
 	KubernetesVersion1Dot10Dot0: true,
 }
 
@@ -181,6 +190,15 @@ var AllKubernetesWindowsSupportedVersions = map[string]bool{
 	KubernetesVersion1Dot9Dot2:  true,
 	KubernetesVersion1Dot9Dot3:  true,
 	KubernetesVersion1Dot10Dot0: false,
+}
+
+// GetAllSupportedKubernetesVersionsWindows returns a slice of all supported Kubernetes versions on Windows
+func GetAllSupportedKubernetesVersionsWindows() []string {
+	versions := make([]string, 0, len(AllKubernetesWindowsSupportedVersions))
+	for k := range AllKubernetesWindowsSupportedVersions {
+		versions = append(versions, k)
+	}
+	return versions
 }
 
 const (

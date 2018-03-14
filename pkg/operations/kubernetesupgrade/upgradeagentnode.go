@@ -65,7 +65,7 @@ func (kan *UpgradeAgentNode) DeleteNode(vmName *string, drain bool) error {
 func (kan *UpgradeAgentNode) CreateNode(poolName string, agentNo int) error {
 	poolCountParameter := kan.ParametersMap[poolName+"Count"].(map[string]interface{})
 	poolCountParameter["value"] = agentNo + 1
-	agentCount, _ := poolCountParameter["value"]
+	agentCount := poolCountParameter["value"]
 	kan.logger.Infof("Agent pool: %s, set count to: %d temporarily during upgrade. Upgrading agent: %d",
 		poolName, agentCount, agentNo)
 

@@ -288,7 +288,7 @@ func (c *Cluster) InstallMarathonApp(filepath string, sleep, duration time.Durat
 			return 0, err
 		}
 		ready := c.WaitOnReady(app.ID, sleep, duration)
-		if ready == false {
+		if !ready {
 			return 0, fmt.Errorf("App %s was never installed", app.ID)
 		}
 	}
@@ -310,10 +310,7 @@ func (c *Cluster) InstallMarathonLB() error {
 func (c *Cluster) AppExists(path string) bool {
 	cmd := fmt.Sprintf("./dcos marathon app list | grep %s", path)
 	_, err := c.Connection.Execute(cmd)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 // AppHealthy returns true if the app is deployed and healthy
@@ -326,20 +323,14 @@ func (c *Cluster) AppHealthy(path string) bool {
 
 	var app MarathonApp
 	json.Unmarshal(out, &app)
-	if app.Instances == app.TaskHealthy {
-		return true
-	}
-	return false
+	return app.Instances == app.TaskHealthy
 }
 
 // PackageExists retruns true if the package name is found when doing dcos package list
 func (c *Cluster) PackageExists(name string) bool {
 	cmd := fmt.Sprintf("./dcos package list | grep %s", name)
 	_, err := c.Connection.Execute(cmd)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 // WaitOnReady will block until app is in ready state
@@ -354,7 +345,7 @@ func (c *Cluster) WaitOnReady(path string, sleep, duration time.Duration) bool {
 			case <-ctx.Done():
 				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for app (%s) to become ready", duration.String(), path)
 			default:
-				if c.AppExists(path) == true && c.AppHealthy(path) {
+				if c.AppExists(path) && c.AppHealthy(path) {
 					time.Sleep(sleep)
 					readyCh <- true
 				}
