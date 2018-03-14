@@ -99,7 +99,7 @@ k8s_17_cherry_pick() {
 			fi
 		fi
 
-        # cce920d45e merge#54334: fix azure disk mount failure on coreos and some other distros
+        # 32ceaa7918 fix #60625: add remount logic for azure file plugin on Windows
         # ...
         # b8fe713754 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
         # 1.7.13 does not need acbdec96da since 060111c603 supercedes it
@@ -107,11 +107,11 @@ k8s_17_cherry_pick() {
         if [ "${version}" \< "1.7.13" ]; then
                 git cherry-pick --allow-empty --keep-redundant-commits acbdec96da
         fi
-        git cherry-pick --allow-empty --keep-redundant-commits 76d7c23f62^..cce920d45e
+        git cherry-pick --allow-empty --keep-redundant-commits 76d7c23f62^..32ceaa7918
 }
 
 k8s_18_cherry_pick() {
-	# 4dcfaf655d fix get stats/summary issue in azure/release-1.8
+	# 4fd355d04a fix #60625: add remount logic for azure file plugin on Windows
 	# ...
 	# 4647f2f616 merge #52401: add windows implementation of GetMountRefs
 
@@ -129,13 +129,15 @@ k8s_18_cherry_pick() {
 	# ...
 	# 69644018c8 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
 
+	# !!!! From 1.8.9, need to manually resolve conflict of 63b4f60e43 with b42981f90b
+
 	git cherry-pick --allow-empty --keep-redundant-commits 69644018c8^..8d477271f7
 	git cherry-pick --allow-empty --keep-redundant-commits b42981f90b^..cb29df51c0
 	if [ "${version}" \< "1.8.6" ]; then
 		git cherry-pick --allow-empty --keep-redundant-commits b8594873f4
 	fi
 	git cherry-pick --allow-empty --keep-redundant-commits d75ef50170
-	git cherry-pick --allow-empty --keep-redundant-commits 4647f2f616^..4dcfaf655d
+	git cherry-pick --allow-empty --keep-redundant-commits 4647f2f616^..4fd355d04a
 }
 
 apply_acs_cherry_picks() {
