@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
+	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 	apvlabs "github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 	"github.com/Azure/acs-engine/pkg/api/common"
 	"github.com/Azure/acs-engine/pkg/api/v20160330"
@@ -206,6 +207,26 @@ func (a *Apiloader) LoadContainerServiceForAgentPoolOnlyCluster(contents []byte,
 			return nil, e
 		}
 		return ConvertV20170831AgentPoolOnly(managedCluster), nil
+	case v20180331.APIVersion:
+		managedCluster := &v20180331.ManagedCluster{}
+		if e := json.Unmarshal(contents, &managedCluster); e != nil {
+			return nil, e
+		}
+		// verify orchestrator version
+		if len(managedCluster.Properties.KubernetesVersion) > 0 && !common.AllKubernetesSupportedVersions[managedCluster.Properties.KubernetesVersion] {
+			return nil, a.Translator.Errorf("The selected orchestrator version '%s' is not supported", managedCluster.Properties.KubernetesVersion)
+		}
+		// use defaultKubernetesVersion arg if no version was supplied in the request contents
+		if managedCluster.Properties.KubernetesVersion == "" && defaultKubernetesVersion != "" {
+			if !common.AllKubernetesSupportedVersions[defaultKubernetesVersion] {
+				return nil, a.Translator.Errorf("The selected orchestrator version '%s' is not supported", defaultKubernetesVersion)
+			}
+			managedCluster.Properties.KubernetesVersion = defaultKubernetesVersion
+		}
+		if e := managedCluster.Properties.Validate(); validate && e != nil {
+			return nil, e
+		}
+		return ConvertV20180331AgentPoolOnly(managedCluster), nil
 	case apvlabs.APIVersion:
 		managedCluster := &apvlabs.ManagedCluster{}
 		if e := json.Unmarshal(contents, &managedCluster); e != nil {
@@ -296,6 +317,16 @@ func (a *Apiloader) serializeHostedContainerService(containerService *ContainerS
 		v20170831ContainerService := ConvertContainerServiceToV20170831AgentPoolOnly(containerService)
 		armContainerService := &V20170831ARMManagedContainerService{}
 		armContainerService.ManagedCluster = v20170831ContainerService
+		armContainerService.APIVersion = version
+		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", false)
+		if err != nil {
+			return nil, err
+		}
+		return b, nil
+	case v20180331.APIVersion:
+		v20180331ContainerService := ConvertContainerServiceToV20180331AgentPoolOnly(containerService)
+		armContainerService := &V20180331ARMManagedContainerService{}
+		armContainerService.ManagedCluster = v20180331ContainerService
 		armContainerService.APIVersion = version
 		b, err := helpers.JSONMarshalIndent(armContainerService, "", "  ", false)
 		if err != nil {
