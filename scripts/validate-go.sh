@@ -28,16 +28,18 @@ echo "==> Running static validations <=="
 gometalinter \
   --disable-all \
   --enable deadcode \
-  --severity deadcode:error \
   --enable gofmt \
+  --enable goimports \
   --enable ineffassign \
   --enable misspell \
+  --enable unused \
   --enable vet \
   --tests \
   --vendor \
   --deadline 60s \
   --skip test/i18n \
   --skip pkg/test \
+  --exclude pkg/i18n/i18n.go \
   --exclude pkg/i18n/translations.go \
   --exclude pkg/acsengine/templates.go \
   ./... || exit_code=1

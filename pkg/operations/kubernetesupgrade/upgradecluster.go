@@ -204,7 +204,7 @@ func (uc *UpgradeCluster) addVMToAgentPool(vm compute.VirtualMachine, isUpgradab
 	if vmPoolName == "" {
 		uc.Logger.Infof("VM: %s does not contain `poolName` tag, skipping.\n", *vm.Name)
 		return nil
-	} else if uc.AgentPoolsToUpgrade[vmPoolName] == false {
+	} else if !uc.AgentPoolsToUpgrade[vmPoolName] {
 		uc.Logger.Infof("Skipping upgrade of VM: %s in pool: %s.\n", *vm.Name, vmPoolName)
 		return nil
 	}

@@ -106,34 +106,22 @@ func (c *Config) ReadPublicSSHKey() (string, error) {
 
 // IsKubernetes will return true if the ORCHESTRATOR env var is set to kubernetes or not set at all
 func (c *Config) IsKubernetes() bool {
-	if c.Orchestrator == kubernetesOrchestrator {
-		return true
-	}
-	return false
+	return c.Orchestrator == kubernetesOrchestrator
 }
 
 // IsDCOS will return true if the ORCHESTRATOR env var is set to dcos
 func (c *Config) IsDCOS() bool {
-	if c.Orchestrator == dcosOrchestrator {
-		return true
-	}
-	return false
+	return c.Orchestrator == dcosOrchestrator
 }
 
 // IsSwarmMode will return true if the ORCHESTRATOR env var is set to dcos
 func (c *Config) IsSwarmMode() bool {
-	if c.Orchestrator == swarmModeOrchestrator {
-		return true
-	}
-	return false
+	return c.Orchestrator == swarmModeOrchestrator
 }
 
 // IsSwarm will return true if the ORCHESTRATOR env var is set to dcos
 func (c *Config) IsSwarm() bool {
-	if c.Orchestrator == swarmOrchestrator {
-		return true
-	}
-	return false
+	return c.Orchestrator == swarmOrchestrator
 }
 
 // SetRandomRegion sets Location to a random region

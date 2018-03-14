@@ -189,7 +189,7 @@ func AreAllPodsRunning(podPrefix, namespace string) (bool, error) {
 	}
 
 	for _, s := range status {
-		if s == false {
+		if !s {
 			return false, nil
 		}
 	}
@@ -213,7 +213,7 @@ func WaitOnReady(podPrefix, namespace string, successesNeeded int, sleep, durati
 				errCh <- fmt.Errorf("Timeout exceeded (%s) while waiting for Pods (%s) to become ready in namespace (%s), got %d of %d required successful pods ready results", duration.String(), podPrefix, namespace, successCount, successesNeeded)
 			default:
 				ready, _ := AreAllPodsRunning(podPrefix, namespace)
-				if ready == true {
+				if ready {
 					successCount = successCount + 1
 					if successCount >= successesNeeded {
 						readyCh <- true
@@ -248,9 +248,7 @@ func (p *Pod) WaitOnReady(sleep, duration time.Duration) (bool, error) {
 // Exec will execute the given command in the pod
 func (p *Pod) Exec(c ...string) ([]byte, error) {
 	execCmd := []string{"exec", p.Metadata.Name, "-n", p.Metadata.Namespace}
-	for _, s := range c {
-		execCmd = append(execCmd, s)
-	}
+	execCmd = append(execCmd, c...)
 	cmd := exec.Command("kubectl", execCmd...)
 	util.PrintCommand(cmd)
 	out, err := cmd.CombinedOutput()
@@ -430,7 +428,7 @@ func (p *Pod) ValidateHostPort(check string, attempts int, sleep time.Duration, 
 		out, err := cmd.CombinedOutput()
 		if err == nil {
 			matched, _ := regexp.MatchString(check, string(out))
-			if matched == true {
+			if matched {
 				return true
 			}
 		}

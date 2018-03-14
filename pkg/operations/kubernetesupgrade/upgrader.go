@@ -166,7 +166,7 @@ func (ku *Upgrader) upgradeMasterNodes() error {
 	// the OS disk has been deleted
 	for i := 0; i < mastersToCreate; i++ {
 		masterIndexToCreate := 0
-		for upgradedMastersIndex[masterIndexToCreate] == true {
+		for upgradedMastersIndex[masterIndexToCreate] {
 			masterIndexToCreate++
 		}
 

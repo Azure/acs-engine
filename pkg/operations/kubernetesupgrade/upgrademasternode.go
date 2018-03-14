@@ -35,11 +35,7 @@ type UpgradeMasterNode struct {
 // the node.
 // The 'drain' flag is not used for deleting master nodes.
 func (kmn *UpgradeMasterNode) DeleteNode(vmName *string, drain bool) error {
-	if err := operations.CleanDeleteVirtualMachine(kmn.Client, kmn.logger, kmn.ResourceGroup, *vmName); err != nil {
-		return err
-	}
-
-	return nil
+	return operations.CleanDeleteVirtualMachine(kmn.Client, kmn.logger, kmn.ResourceGroup, *vmName)
 }
 
 // CreateNode creates a new master/agent node with the targeted version of Kubernetes
@@ -47,11 +43,11 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 	templateVariables := kmn.TemplateMap["variables"].(map[string]interface{})
 
 	templateVariables["masterOffset"] = masterNo
-	masterOffsetVar, _ := templateVariables["masterOffset"]
+	masterOffsetVar := templateVariables["masterOffset"]
 	kmn.logger.Infof("Master offset: %v\n", masterOffsetVar)
 
 	templateVariables["masterCount"] = masterNo + 1
-	masterOffset, _ := templateVariables["masterCount"]
+	masterOffset := templateVariables["masterCount"]
 	kmn.logger.Infof("Master pool set count to: %v temporarily during upgrade...\n", masterOffset)
 
 	// Debug function - keep commented out
@@ -67,12 +63,7 @@ func (kmn *UpgradeMasterNode) CreateNode(poolName string, masterNo int) error {
 		kmn.TemplateMap,
 		kmn.ParametersMap,
 		nil)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // Validate will verify the that master node has been upgraded as expected.
