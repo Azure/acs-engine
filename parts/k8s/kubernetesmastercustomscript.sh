@@ -23,6 +23,8 @@ if [[ $OS == $COREOS_OS_NAME ]]; then
     KUBECTL=/opt/kubectl
 fi
 
+retrycmd_if_failure() { retries=$1; wait=$2; shift && shift; for i in $(seq 1 $retries); do ${@}; [ $? -eq 0  ] && break || sleep $wait; done; echo Executed \"$@\" $i times; }
+
 # cloudinit runcmd and the extension will run in parallel, this is to ensure
 # runcmd finishes
 ensureRunCommandCompleted()
@@ -507,6 +509,9 @@ function ensureDocker() {
 }
 
 function ensureKubelet() {
+    docker images
+    retrycmd_if_failure 5 1 docker pull $HYPERKUBE_URL
+    docker images
     systemctlEnableAndCheck kubelet
     # only start if a reboot is not required
     if ! $REBOOTREQUIRED; then
