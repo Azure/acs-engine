@@ -515,8 +515,10 @@
       },
       "dependsOn": [
           "[concat('Microsoft.Network/publicIpAddresses/', variables('jumpboxPublicIpAddressName'))]",
-          "[concat('Microsoft.Network/networkSecurityGroups/', variables('jumpboxNetworkSecurityGroupName'))]",
-          "[variables('vnetID')]"
+          "[concat('Microsoft.Network/networkSecurityGroups/', variables('jumpboxNetworkSecurityGroupName'))]"
+          {{if not .MasterProfile.IsCustomVNET}}
+            ,"[variables('vnetID')]"
+          {{end}}
       ]
     },
   {{end}}

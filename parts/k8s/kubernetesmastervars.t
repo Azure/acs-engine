@@ -288,6 +288,9 @@
             {{if not JumpboxIsManagedDisks}}
             "jumpboxStorageAccountName": "[concat(variables('storageAccountBaseName'), 'jb')]",
             {{end}}
+            {{if not .HasStorageAccountDisks}}
+            {{GetSizeMap}},
+            {{end}}
         {{end}}
     {{else}}
         "masterPublicIPAddressName": "[concat(variables('orchestratorName'), '-master-ip-', variables('masterFqdnPrefix'), '-', variables('nameSuffix'))]",
