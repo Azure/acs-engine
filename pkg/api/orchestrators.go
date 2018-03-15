@@ -168,7 +168,7 @@ func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, er
 	if err != nil {
 		return nil, err
 	}
-	currentMajor, currentMinor, currentPatch := currentVer.Major(), currentVer.Minor(), currentVer.Patch()
+	currentMajor, currentMinor := currentVer.Major(), currentVer.Minor()
 	var nextMajor, nextMinor int64
 
 	switch {
@@ -184,6 +184,9 @@ func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, er
 	case currentMajor == 1 && currentMinor == 8:
 		nextMajor = 1
 		nextMinor = 9
+	case currentMajor == 1 && currentMinor == 9:
+		nextMajor = 1
+		nextMinor = 10
 	}
 	for ver, supported := range common.AllKubernetesSupportedVersions {
 		if !supported {
@@ -194,7 +197,7 @@ func kubernetesUpgrades(csOrch *OrchestratorProfile) ([]*OrchestratorProfile, er
 			continue
 		}
 		// add patch upgrade
-		if nextVersion.Major() == currentMajor && nextVersion.Minor() == currentMinor && currentPatch < nextVersion.Patch() {
+		if nextVersion.Major() == currentMajor && nextVersion.Minor() == currentMinor && currentVer.LessThan(nextVersion) {
 			ret = append(ret, &OrchestratorProfile{
 				OrchestratorType:    Kubernetes,
 				OrchestratorVersion: ver,

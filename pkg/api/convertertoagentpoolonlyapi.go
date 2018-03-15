@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20170831"
+	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/v20180331"
 	"github.com/Azure/acs-engine/pkg/api/agentPoolOnlyApi/vlabs"
 	"github.com/Azure/acs-engine/pkg/api/common"
 )
@@ -31,6 +32,24 @@ func ConvertV20170831AgentPoolOnly(v20170831 *v20170831.ManagedCluster) *Contain
 	}
 	c.Type = v20170831.Type
 	c.Properties = convertV20170831AgentPoolOnlyProperties(v20170831.Properties)
+	return c
+}
+
+// ConvertV20180331AgentPoolOnly converts an AgentPoolOnly object into an in-memory container service
+func ConvertV20180331AgentPoolOnly(v20180331 *v20180331.ManagedCluster) *ContainerService {
+	c := &ContainerService{}
+	c.ID = v20180331.ID
+	c.Location = NormalizeAzureRegion(v20180331.Location)
+	c.Name = v20180331.Name
+	if v20180331.Plan != nil {
+		c.Plan = convertv20180331AgentPoolOnlyResourcePurchasePlan(v20180331.Plan)
+	}
+	c.Tags = map[string]string{}
+	for k, v := range v20180331.Tags {
+		c.Tags[k] = v
+	}
+	c.Type = v20180331.Type
+	c.Properties = convertV20180331AgentPoolOnlyProperties(v20180331.Properties)
 	return c
 }
 
@@ -268,4 +287,103 @@ func propertiesAsMap(contents []byte) (map[string]interface{}, bool) {
 		return nil, false
 	}
 	return properties.(map[string]interface{}), true
+}
+
+func convertv20180331AgentPoolOnlyResourcePurchasePlan(v20180331 *v20180331.ResourcePurchasePlan) *ResourcePurchasePlan {
+	return &ResourcePurchasePlan{
+		Name:          v20180331.Name,
+		Product:       v20180331.Product,
+		PromotionCode: v20180331.PromotionCode,
+		Publisher:     v20180331.Publisher,
+	}
+}
+
+func convertV20180331AgentPoolOnlyProperties(obj *v20180331.Properties) *Properties {
+	properties := &Properties{
+		ProvisioningState: ProvisioningState(obj.ProvisioningState),
+		MasterProfile:     nil,
+	}
+
+	properties.HostedMasterProfile = &HostedMasterProfile{}
+	properties.HostedMasterProfile.DNSPrefix = obj.DNSPrefix
+	properties.HostedMasterProfile.FQDN = obj.FQDN
+
+	properties.OrchestratorProfile = convertV20180331AgentPoolOnlyOrchestratorProfile(obj.KubernetesVersion)
+
+	properties.AgentPoolProfiles = make([]*AgentPoolProfile, len(obj.AgentPoolProfiles))
+	for i := range obj.AgentPoolProfiles {
+		properties.AgentPoolProfiles[i] = convertV20180331AgentPoolOnlyAgentPoolProfile(obj.AgentPoolProfiles[i], AvailabilitySet)
+	}
+	if obj.LinuxProfile != nil {
+		properties.LinuxProfile = convertV20180331AgentPoolOnlyLinuxProfile(obj.LinuxProfile)
+	}
+	if obj.WindowsProfile != nil {
+		properties.WindowsProfile = convertV20180331AgentPoolOnlyWindowsProfile(obj.WindowsProfile)
+	}
+
+	if obj.ServicePrincipalProfile != nil {
+		properties.ServicePrincipalProfile = convertV20180331AgentPoolOnlyServicePrincipalProfile(obj.ServicePrincipalProfile)
+	}
+	if obj.AddonProfiles != nil {
+		properties.AddonProfiles = convertV20180331AgentPoolOnlyAddonProfiles(obj.AddonProfiles)
+	}
+
+	return properties
+}
+
+func convertV20180331AgentPoolOnlyLinuxProfile(obj *v20180331.LinuxProfile) *LinuxProfile {
+	api := &LinuxProfile{
+		AdminUsername: obj.AdminUsername,
+	}
+	api.SSH.PublicKeys = []PublicKey{}
+	for _, d := range obj.SSH.PublicKeys {
+		api.SSH.PublicKeys = append(api.SSH.PublicKeys, PublicKey{KeyData: d.KeyData})
+	}
+	return api
+}
+
+func convertV20180331AgentPoolOnlyWindowsProfile(obj *v20180331.WindowsProfile) *WindowsProfile {
+	return &WindowsProfile{
+		AdminUsername: obj.AdminUsername,
+		AdminPassword: obj.AdminPassword,
+	}
+}
+
+func convertV20180331AgentPoolOnlyOrchestratorProfile(kubernetesVersion string) *OrchestratorProfile {
+	return &OrchestratorProfile{
+		OrchestratorType:    Kubernetes,
+		OrchestratorVersion: common.GetSupportedKubernetesVersion(kubernetesVersion),
+	}
+}
+
+func convertV20180331AgentPoolOnlyAgentPoolProfile(v20180331 *v20180331.AgentPoolProfile, availabilityProfile string) *AgentPoolProfile {
+	api := &AgentPoolProfile{}
+	api.Name = v20180331.Name
+	api.Count = v20180331.Count
+	api.VMSize = v20180331.VMSize
+	api.OSDiskSizeGB = v20180331.OSDiskSizeGB
+	api.OSType = OSType(v20180331.OSType)
+	api.StorageProfile = v20180331.StorageProfile
+	api.VnetSubnetID = v20180331.VnetSubnetID
+	api.Subnet = v20180331.GetSubnet()
+	api.AvailabilityProfile = availabilityProfile
+	return api
+}
+
+func convertV20180331AgentPoolOnlyServicePrincipalProfile(obj *v20180331.ServicePrincipalProfile) *ServicePrincipalProfile {
+	return &ServicePrincipalProfile{
+		ClientID: obj.ClientID,
+		Secret:   obj.Secret,
+	}
+}
+
+func convertV20180331AgentPoolOnlyAddonProfiles(obj map[string]v20180331.AddonProfile) map[string]AddonProfile {
+	api := make(map[string]AddonProfile)
+	for k, v := range obj {
+		api[k] = AddonProfile{
+			Enabled: v.Enabled,
+			Config:  v.Config,
+		}
+	}
+	return api
 }

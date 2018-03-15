@@ -13,6 +13,8 @@ import (
 
 // DeploymentError contains the root deployment error along with deployment operation errors
 type DeploymentError struct {
+	DeploymentName    string
+	ResourceGroup     string
 	TopError          error
 	StatusCode        int
 	Response          []byte
@@ -39,8 +41,8 @@ func (e *DeploymentError) Error() string {
 			}
 		}
 	}
-	return fmt.Sprintf("TopError[%s] StatusCode[%d] Response[%s] ProvisioningState[%s] Operations[%s]",
-		str, e.StatusCode, e.Response, e.ProvisioningState, strings.Join(ops, " | "))
+	return fmt.Sprintf("DeploymentName[%s] ResourceGroup[%s] TopError[%s] StatusCode[%d] Response[%s] ProvisioningState[%s] Operations[%s]",
+		e.DeploymentName, e.ResourceGroup, str, e.StatusCode, e.Response, e.ProvisioningState, strings.Join(ops, " | "))
 }
 
 // DeploymentValidationError contains validation error
@@ -62,6 +64,8 @@ func DeployTemplateSync(az ACSEngineClient, logger *logrus.Entry, resourceGroupN
 
 	logger.Infof("Getting detailed deployment errors for %s", deploymentName)
 	deploymentErr := &DeploymentError{}
+	deploymentErr.DeploymentName = deploymentName
+	deploymentErr.ResourceGroup = resourceGroupName
 	deploymentErr.TopError = err
 
 	if deploymentExtended == nil {
