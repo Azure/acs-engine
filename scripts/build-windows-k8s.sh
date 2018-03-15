@@ -95,6 +95,12 @@ k8s_17_cherry_pick() {
 					# In 1.7.13, the following commit is cherry-picked in upstream and has conflict
 					# with 137f4cb16e. So removing it.
 					git revert --no-edit 3aa179744f || true #only for linux
+
+					if [ ! "${version}" \< "1.7.14" ]; then
+						echo "version 1.7.14 and after..."
+						# From 1.7.14, 975d0a4bb9 conflict with 137f4cb16e. We use a36d59ddda in Azure repo instead of 975d0a4bb9
+						git revert --no-edit 975d0a4bb9 || true
+					fi
 				fi
 			fi
 		fi
@@ -102,12 +108,17 @@ k8s_17_cherry_pick() {
         # 32ceaa7918 fix #60625: add remount logic for azure file plugin on Windows
         # ...
         # b8fe713754 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
-        # 1.7.13 does not need acbdec96da since 060111c603 supercedes it
+        # From 1.7.13, acbdec96da is not needed since 060111c603 supercedes it
         git cherry-pick --allow-empty --keep-redundant-commits b8fe713754^..e912889a7f
         if [ "${version}" \< "1.7.13" ]; then
-                git cherry-pick --allow-empty --keep-redundant-commits acbdec96da
+            git cherry-pick --allow-empty --keep-redundant-commits acbdec96da
         fi
         git cherry-pick --allow-empty --keep-redundant-commits 76d7c23f62^..32ceaa7918
+
+		if [ ! "${version}" \< "1.7.14" ]; then
+			# From 1.7.14, 975d0a4bb9 conflict with 137f4cb16e. We use a36d59ddda in Azure repo instead of 975d0a4bb9
+			git cherry-pick --allow-empty --keep-redundant-commits a36d59ddda
+		fi
 }
 
 k8s_18_cherry_pick() {
@@ -129,7 +140,10 @@ k8s_18_cherry_pick() {
 	# ...
 	# 69644018c8 Use adapter vEthernet (HNSTransparent) on Windows host network to find node IP
 
-	# !!!! From 1.8.9, need to manually resolve conflict of 63b4f60e43 with b42981f90b
+	if [ ! "${version}" \< "1.8.9" ]; then
+		# From 1.8.9, 63b4f60e43 conflict with b42981f90b. We use 6a8305e419 in Azure repo instead of 63b4f60e43
+		git revert --no-edit 63b4f60e43 || true
+	fi
 
 	git cherry-pick --allow-empty --keep-redundant-commits 69644018c8^..8d477271f7
 	git cherry-pick --allow-empty --keep-redundant-commits b42981f90b^..cb29df51c0
@@ -138,6 +152,11 @@ k8s_18_cherry_pick() {
 	fi
 	git cherry-pick --allow-empty --keep-redundant-commits d75ef50170
 	git cherry-pick --allow-empty --keep-redundant-commits 4647f2f616^..4fd355d04a
+
+	if [ ! "${version}" \< "1.8.9" ]; then
+		# From 1.8.9, 63b4f60e43 conflict with b42981f90b. We use 6a8305e419 in Azure repo instead of 63b4f60e43
+		git cherry-pick --allow-empty --keep-redundant-commits 6a8305e419
+	fi
 }
 
 apply_acs_cherry_picks() {
