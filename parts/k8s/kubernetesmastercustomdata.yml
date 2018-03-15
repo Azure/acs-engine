@@ -398,5 +398,6 @@ runcmd:
 - bash /etc/kubernetes/generate-proxy-certs.sh
 {{end}}
 - apt-mark unhold walinuxagent
+- retrycmd_if_failure 1800 1 docker pull {{WrapAsVariable "kubernetesHyperkubeSpec"}}
 - touch /opt/azure/containers/runcmd.complete
 {{end}}
